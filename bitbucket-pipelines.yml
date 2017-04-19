@@ -13,5 +13,5 @@ pipelines:
           - pip install -U tox
           - pip --version
           - tox --version
-          - python -m unittest discover tests/
+          - python -m unittest discover pqueens/tests/
           
