@@ -20,8 +20,8 @@ setup(
               'pqueens.randomfields'],
     # add required third party packages here
     install_requires=[
-          'scipy',
           'numpy',
+          'scipy',
           'matplotlib'
       ],
     long_description=read('README.md'),
