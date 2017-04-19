@@ -18,5 +18,11 @@ setup(
     keywords = "Gaussian Processes, Unctertainty Quantification",
     packages=['pqueens',
               'pqueens.randomfields'],
+    # add required third party packages here
+    install_requires=[
+          'scipy',
+          'numpy',
+          'matplotlib'
+      ],
     long_description=read('README.md'),
 )
