@@ -18,7 +18,8 @@ setup(
     keywords = "Gaussian Processes, Unctertainty Quantification",
     packages=['pqueens',
               'pqueens.randomfields'],
-    # add required third party packages here
+    # for now do not add third party packages here but install them manually Using
+    # anaconda beforehand (we get some weird errors otherwise)
     #install_requires=[
     #      'numpy',
     #      'scipy',
