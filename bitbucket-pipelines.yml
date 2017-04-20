@@ -13,7 +13,6 @@ pipelines:
           - pip install -U tox
           - pip --version
           - tox --version
-          - python -m unittest discover pqueens/tests/
-          - coverage run pqueens/tests/dummy_test.py
+          - python -m unittest discover -s pqueens/tests/
+          - coverage run pqueens/tests/test_dummy.py
           - codecov --token=8eecedcc-6782-468a-b066-0e641741f210
-          
