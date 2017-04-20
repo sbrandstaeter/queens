@@ -14,7 +14,8 @@ pipelines:
           - pip --version
           - tox --version
           # do normal unit testing
-          #- python -m unittest discover -s pqueens/tests/
+          # - python -m unittest discover -s pqueens/tests/
           # use coverage to gauge test coverage
           - coverage run -m unittest discover -s pqueens/tests
+          # transfer test results to codecov.io
           - codecov --token=8eecedcc-6782-468a-b066-0e641741f210

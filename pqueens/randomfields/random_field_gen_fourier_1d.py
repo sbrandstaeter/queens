@@ -80,9 +80,6 @@ class RandomFieldGenFourier1D(RandomFieldGenFourier):
             raise RuntimeError('Number of random phase angles does not match '
                                'stochastic dimension of the field!')
 
-        #if len(loc[0,:]) is not 1:
-        #    raise RuntimeError('Location vector must have one dimensions!')
-
         # reorder phase angles in matrix
         xi = np.reshape(phase_angles, (-1,2))
         tempgp=0
@@ -91,4 +88,5 @@ class RandomFieldGenFourier1D(RandomFieldGenFourier):
             tempgp=tempgp+np.sqrt((super().compute_expansion_coefficient( \
             self.kb[i,0],self.largest_length,self.corr_length)))* \
             (xi[i,0]*np.cos(wk1*loc[:])+xi[i,1]*np.sin(wk1*loc[:]))
+
         return tempgp

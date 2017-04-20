@@ -3,5 +3,7 @@
 numpy
 scipy
 matplotlib
+sphinx
+# for code coverage purposes 
 codecov
 coverage

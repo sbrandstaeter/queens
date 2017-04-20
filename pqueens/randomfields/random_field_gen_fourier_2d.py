@@ -60,8 +60,7 @@ class RandomFieldGenFourier2D(RandomFieldGenFourier):
 
         self.act_energy_frac=sum_ck
 
-        # find out stochastic dimension based on kb
-        #self.stoch_dim=len(self.kb,1)*4
+        # commpute stochastic dimension based on kb
         self.stoch_dim=self.kb.shape[0]*4
 
 
@@ -84,8 +83,9 @@ class RandomFieldGenFourier2D(RandomFieldGenFourier):
             raise RuntimeError('Number of random phase angles {} does not match '
                                'stochastic dimension {} of the field!'.format(len(phase_angles), self.stoch_dim))
 
-        #if length(loc(1,:))~=2
-        #error('Error: Location vector must have two dimensions!')
+        if(len(loc[0,:]) != 2):
+            raise RuntimeError('Dimension of location vector must be two, not {}'.format(len(loc[0,:])))
+
         # reorder phase angles in matrix
         xi=np.reshape(phase_angles, (-1,4))
         tempgp = 0

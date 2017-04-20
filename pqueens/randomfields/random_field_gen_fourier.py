@@ -75,12 +75,6 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
             raise RuntimeError('energy fraction must be between 0 and 1.')
 
         self.des_energy_frac=energy_frac
-
-
-        # number of terms in expansion must be positive
-        #assert(num_ex_term_per_dim > 0,'Error: Numbers of expansion terms per dimension must be larger than 0')
-        #assert(num_terms > 0,'Error: Truncation threshold must be greater than  0')
-
         self.m=num_ex_term_per_dim
         self.trunc_thres=num_terms
 

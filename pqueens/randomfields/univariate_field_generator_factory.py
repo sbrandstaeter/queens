@@ -1,5 +1,4 @@
 
-#from  randomfields.random_field_gen_fourier_1d import RandomFieldGenFourier1D
 from pqueens.randomfields.random_field_gen_fourier_1d import RandomFieldGenFourier1D
 from pqueens.randomfields.random_field_gen_fourier_2d import RandomFieldGenFourier2D
 
@@ -20,7 +19,6 @@ class UniVarRandomFieldGeneratorFactory(object):
                                              num_terms_per_dim,
                                              total_terms)
             elif spatial_dimension ==2:
-                #raise NotImplementedError()
                 rf = RandomFieldGenFourier2D(my_marg_pdf,corr_length,
                                              energy_frac,
                                              field_bbox,
@@ -58,7 +56,6 @@ class UniVarRandomFieldGeneratorFactory(object):
         else:
             raise ValueError('Autocorrelation structure has to be either "squared_exp" or "exp", not {}'.format(corr_struct))
         return rf
-    factory = staticmethod(create_new_random_field_generator)
 
-    #def __init__(self,my_marg_pdf,spatial_dimension,corr_struct,
-    #corr_length,energy_frac,field_bbox,num_terms_per_dim,total_terms,varargin ):
+
+    factory = staticmethod(create_new_random_field_generator)

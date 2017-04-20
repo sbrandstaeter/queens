@@ -12,6 +12,7 @@ Install those using anaconda first
 - numpy
 - scipy
 - matplotlib
+- sphinx
 
 #### Installation directions ####
 
@@ -26,4 +27,5 @@ run `run setup.py install`
 
 
 #### Building the documentation ####
-Commands to build the html documentation using sphinx
+Navigate into the doc folder and type
+`make html` to build the html documentation

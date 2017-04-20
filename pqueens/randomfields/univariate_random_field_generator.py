@@ -1,5 +1,4 @@
 from scipy.stats import norm
-from scipy.stats import lognorm
 
 
 class UnivariateRandomFieldSimulator(object):
