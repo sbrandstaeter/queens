@@ -39,6 +39,34 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
 
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
 
+    # should trigger error because desired energy fraction not reached
+    def test_not_enough_fourier_terms(self):
+        with self.assertRaises(RuntimeError):
+            UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            self.marginal_pdf,
+            self.dimension,
+            self.corrstruct,
+            self.corr_length,
+            0.9999,
+            self.field_bbox,
+            5,
+            5)
+            
+    # should trigger error because number of phase angles do not match stochastic
+    # dimension
+    def test_wrong_number_phase_angles(self):
+        with self.assertRaises(RuntimeError):
+            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            self.marginal_pdf,
+            self.dimension,
+            self.corrstruct,
+            self.corr_length,
+            self.energy_frac,
+            self.field_bbox,
+            self.num_terms_per_dim,
+            self.total_terms)
+            mystuff.gen_sample_gauss_field(10,np.array((4,4)))
+
     def test_values_at_location(self):
 
         loc = np.array([0,25, 50,100])
