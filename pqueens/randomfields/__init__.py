@@ -1,2 +1,0 @@
-
-from .random_field_gen_fourier_1d import RandomFieldGenFourier1D
