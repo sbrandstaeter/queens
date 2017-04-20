@@ -11,7 +11,7 @@ from scipy.stats import norm
 from  pqueens.randomfields.random_field_gen_fourier_1d import RandomFieldGenFourier1D
 from  pqueens.randomfields.univariate_field_generator_factory import UniVarRandomFieldGeneratorFactory
 
-class Test(unittest.TestCase):
+class TestRandomFieldGeneratorConstruction(unittest.TestCase):
 
     def setUp(self):
         # setup some necessary variables to setup random field generators
@@ -26,7 +26,10 @@ class Test(unittest.TestCase):
         self.loc                     = [0, 10, 25, 100]
         self.seed                    = 42
 
-        self.my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+
+    def test_construction_1d(self):
+
+        my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
             self.marginal_pdf,
             self.dimension,
             self.corrstruct,
@@ -36,15 +39,19 @@ class Test(unittest.TestCase):
             self.num_terms_per_dim,
             self.total_terms)
 
-    def test_constructor(self):
-        my_stoch_dim = self.my_field_generator.get_stoch_dim()
+        my_stoch_dim = my_field_generator.get_stoch_dim()
         self.assertEqual(my_stoch_dim, 240,'Stochastic dimension is not correct!')
-        loc = np.array([1,2.3,23])
-        np.random.seed(self.seed)
-        xi = np.random.randn(my_stoch_dim,1)
-        my_vals = self.my_field_generator.evaluate_field_at_location(loc,xi)
-        # last two arguments are relative and absolute tolerance, repectively
-        np.testing.assert_allclose(my_vals,np.array([0.92106863, 0.96609547, 1.17947924]),1e-07,1e-07)
+
+        # trigger error because desired energy fraction not reached
+        # trigger error because corrlength to large w.r.t. bounding box
+
+        #def test_construction(self):
+
+        #self.assertEqual(self.my_stoch_dim, 240,'Stochastic dimension is not correct!')
+
+        # trigger error because desired energy fraction not reached
+        # trigger error because corrlength to large w.r.t. bounding box
+
 
 if __name__ == '__main__':
     unittest.main()
