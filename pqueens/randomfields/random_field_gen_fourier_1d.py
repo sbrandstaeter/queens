@@ -45,7 +45,6 @@ class RandomFieldGenFourier1D(RandomFieldGenFourier):
         index=0
 
         self.kb = np.empty([self.m,1])
-        print(self.m)
         for k1 in range(0,self.m):
             sum_ck=sum_ck+(self.compute_expansion_coefficient( \
                            k1,self.largest_length,self.corr_length))
