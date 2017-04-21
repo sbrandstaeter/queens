@@ -67,6 +67,21 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
             self.total_terms)
             mystuff.gen_sample_gauss_field(np.array([[10,10]]),np.array((4,4)))
 
+    #should trigger error because dimension of location is of
+    def test_wrong_locatio_dimension(self):
+        with self.assertRaises(RuntimeError):
+            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            self.marginal_pdf,
+            self.dimension,
+            self.corrstruct,
+            self.corr_length,
+            self.energy_frac,
+            self.field_bbox,
+            self.num_terms_per_dim,
+            self.total_terms)
+            xi = np.random.randn(mystuff.get_stoch_dim(),1)
+            mystuff.gen_sample_gauss_field(np.array([[10, 10, 10]]), xi)
+
     def test_values_at_location(self):
         np.random.seed(self.seed)
         xi = np.random.randn(self.my_stoch_dim,1)
