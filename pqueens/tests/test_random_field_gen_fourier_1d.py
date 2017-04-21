@@ -51,7 +51,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
             self.field_bbox,
             5,
             5)
-            
+
     # should trigger error because number of phase angles do not match stochastic
     # dimension
     def test_wrong_number_phase_angles(self):
@@ -68,7 +68,6 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
             mystuff.gen_sample_gauss_field(10,np.array((4,4)))
 
     def test_values_at_location(self):
-
         loc = np.array([0,25, 50,100])
         np.random.seed(self.seed)
         xi = np.random.randn(self.my_stoch_dim,1)
@@ -119,7 +118,6 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
         # using kstest
         test_statistic = (stats.kstest(my_vals[0, :], 'norm'))[0]
         self.assertAlmostEqual(test_statistic,0.030059684522705243)
-
 
 
 
