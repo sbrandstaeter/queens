@@ -51,16 +51,12 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
         # call superclass  first
         super().__init__(marginal_distribution)
 
-        # let's do some sanity checks
-        if dimension==1 or dimension==2 or dimension==3:
-            self.spatial_dim=dimension
-        else:
-            raise RuntimeError('Dimension of the field must be either 1,2, '
-                               'or 3 not'+dimension)
+        # sanity checks are done in factory
+        self.spatial_dim=dimension
 
         san_check_bbox=field_bbox.shape
         if san_check_bbox[0] is not self.spatial_dim*2:
-            raise RuntimeError('field bounding box must be size {} and not {}'.format(self.spatial_dim*2,san_check_bbox[0]))
+            raise ValueError('field bounding box must be size {} and not {}'.format(self.spatial_dim*2,san_check_bbox[0]))
 
         self.bounding_box=field_bbox
 
@@ -72,17 +68,17 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
         self.largest_length = bbox.max(0).max(0)
 
         if energy_frac<0 or energy_frac>1 :
-            raise RuntimeError('energy fraction must be between 0 and 1.')
+            raise ValueError('energy fraction must be between 0 and 1.')
 
         self.des_energy_frac=energy_frac
         self.m=num_ex_term_per_dim
         self.trunc_thres=num_terms
 
         if(corr_length<=0):
-            raise RuntimeError('Error: correlation length must be positive')
+            raise ValueError('Error: correlation length must be positive')
 
         if(corr_length>0.35*self.largest_length):
-            raise RuntimeError('correlation length must smaller than '
+            raise ValueError('correlation length must smaller than '
                                '0.35*largest dimension, please increase size '
                                'of bounding box.')
 

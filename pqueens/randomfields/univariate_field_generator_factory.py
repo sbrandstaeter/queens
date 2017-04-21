@@ -11,8 +11,6 @@ class UniVarRandomFieldGeneratorFactory(object):
                                           energy_frac, field_bbox,
                                           num_terms_per_dim, total_terms):
 
-    # TODO add sanity check for all input combinations
-
         if corr_struct == 'squared_exp':
             if spatial_dimension == 1:
                 rf = RandomFieldGenFourier1D(my_marg_pdf,corr_length,
@@ -54,7 +52,7 @@ class UniVarRandomFieldGeneratorFactory(object):
             else:
                 raise ValueError('Spatial dimension must be either 1,2, or 3, not {}'.format(spatial_dimension))
         else:
-            raise ValueError('Autocorrelation structure has to be either "squared_exp" or "exp", not {}'.format(corr_struct))
+            raise RuntimeError('Autocorrelation structure has to be either "squared_exp" or "exp", not {}'.format(corr_struct))
         return rf
 
 
