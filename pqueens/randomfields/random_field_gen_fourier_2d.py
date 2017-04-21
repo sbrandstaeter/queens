@@ -14,7 +14,7 @@ class RandomFieldGenFourier2D(RandomFieldGenFourier):
         corr_length (float): correlation length of random field
         energy_frac (float): energy fraction retianed by Fourier series expansion
         field_bbox (np.array): bouding box for field
-        num_ex_term_per_dim (int): number of expansion temrm per dimension
+        num_ex_term_per_dim (int): number of expansion terms per dimension
         num_terms (int): number of terms in expansion
 
 
@@ -43,17 +43,18 @@ class RandomFieldGenFourier2D(RandomFieldGenFourier):
         # setup truncation of fourier expansion
         num_ck=0
         sum_ck=0
-        index=0
-        # check if that length is correct
-        self.kb=np.empty([self.trunc_thres,2])
+
+        # use a temporary list because we do not know the final length yet
+        temp = []
         for k1 in range(0,self.m):
             for k2 in range(0,self.m):
                 if((k1**2+k2**2) <= self.trunc_thres):
-                    sum_ck=sum_ck+(self.compute_expansion_coefficient(k1,self.largest_length,self.corr_length) *
+                    sum_ck = sum_ck+(self.compute_expansion_coefficient(k1,self.largest_length,self.corr_length) *
                     self.compute_expansion_coefficient(k2,self.largest_length,self.corr_length))
-                    num_ck=num_ck+1
-                    self.kb[index,:]=np.array((k1,k2))
-                    index=index+1
+                    num_ck = num_ck+1
+                    temp.append(np.array((k1,k2)))
+
+        self.kb = np.array(temp)
 
         if (sum_ck < energy_frac):
             raise RuntimeError('Error: not converged try again')
@@ -62,8 +63,6 @@ class RandomFieldGenFourier2D(RandomFieldGenFourier):
 
         # commpute stochastic dimension based on kb
         self.stoch_dim=self.kb.shape[0]*4
-
-
 
     def gen_sample_gauss_field(self,loc, phase_angles):
         """ Generate sample of Gaussian field.
