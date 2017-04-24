@@ -5,9 +5,8 @@ from pqueens.randomfields.univariate_random_field_generator import UnivariateRan
 class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
     """ Karhuenen Loeve  based random field generator
 
-
-     Random field generation based on Karhunen-Loeve expansion using the
-     analytic solution of the Fredholm equation presented in [#f1]_.
+    Random field generation based on Karhunen-Loeve expansion using the
+    analytic solution of the Fredholm equation presented in [#f1]_.
 
     .. rubric:: Footnotes
     .. [#f1] Zhang, D., & Lu, Z. (2004). An efficient, high-order perturbation
@@ -15,20 +14,21 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
              polynomial expansions. Journal of Computational Physics, 194(2),
              773-794. http://doi.org/10.1016/j.jcp.2003.09.015
 
+
     Attributes:
-        m (int): number of terms in expansion in each direction
-        trunc_thres (int): truncation threshold for Fourier series
+        m (int):                 number of terms in expansion in each direction
+        trunc_thres (int):       truncation threshold for Fourier series
         largest_length (double): length of random field (for now equal in all
                                  dimensions based on largest dimension of
                                  bounding box
-        corr_length (double): correlation length of field
-                              (so far only isotropic fields)
-        w_n (np.array): roots of characteristic functions
-        lambda_n (np.array): eigenvalues of Fredholm equation
-        eps (double): = 0.000000001 tolerance for root finding
-                      TODO make static or set relative to corr_length
+        corr_length (double):    correlation length of field
+                                 (so far only isotropic fields)
+        w_n (np.array):          roots of characteristic functions
+        lambda_n (np.array):     eigenvalues of Fredholm equation
+
     """
-    EPS = 0.000000001
+    EPS = 0.000000001 
+    """tolerance for root finding """
 
     def __init__(self,marginal_distribution,corr_length,energy_frac,field_bbox,
                  dimension,num_ex_term_per_dim,num_terms):
@@ -86,13 +86,16 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
 
     def compute_roots_of_characteristic_equation(self):
-        """ Compute roots of characteristic equation
+        """Compute roots of characteristic equation
 
-        Deteils see (11) in [1].
+        Details see (11) in [#f1]_.
+
         Returns:
             np.array: vector containing the first m roots of the characteristic
-                equation. Where the number of root is stored in self.m
+                      equation. Where the number of root is stored in self.m
+
         """
+
         w_n =np.zeros((self.m,1))
         index=0
 
@@ -152,7 +155,7 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
     def  compute_w(self,w):
         """ Compute characteristic function
-        For details see (12) in [1]
+        For details see (12) in [#f1]_.
 
         Arguments:
             w (double): argument of characteristic function
@@ -173,6 +176,7 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
         Returns:
             np.array: values of the eigenfunctions at the locations loc
+
         """
         x=loc[:,dim].reshape(-1,1)
         helper=(np.ones((len(x),1)))

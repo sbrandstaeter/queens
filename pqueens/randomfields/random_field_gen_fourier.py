@@ -7,21 +7,20 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
     """Fourier series based random field generator
 
     Random field generator for univariate random fields based on a  Fourier
-    series expansion as described in [#f1]_
+    series expansion as described in [#f2]_
 
     .. rubric:: Footnotes
-    .. [#f1] Tamellini, L. (2012). Polynomial approximation of PDEs with
-    stochastic coefficients.
+    .. [#f2] Tamellini, L. (2012). Polynomial approximation of PDEs with
+        stochastic coefficients.
 
     Attributes:
 
-        m (int): number of terms in expansion in each direction
-        trunc_thres (int): truncation threshold for Fourier series
-        kb (np.array): array to store indices for Fourier expansion
+        m (int):                number of terms in expansion in each direction
+        trunc_thres (int):      truncation threshold for Fourier series
+        kb (np.array):          array to store indices for Fourier expansion
         largest_length (float): length of random field (for now equal in all
-            dimensions based on largest dimension of bounding box)
-        corr_length  (float): correlation length of field
-            (so far only isotropic fields)
+                                dimensions based on largest dimension of bounding box)
+        corr_length  (float):   correlation length of field (so far only isotropic fields)
 
     """
 
@@ -30,7 +29,6 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
         """
 
         Args:
-
             m (int):                number of terms in expansion in each
                                     direction
             trunc_thres (int):      truncation threshold for Fourier series

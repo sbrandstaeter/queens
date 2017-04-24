@@ -29,3 +29,5 @@ run `run setup.py install`
 #### Building the documentation ####
 Navigate into the doc folder and type
 `make html` to build the html documentation
+After adding new modules or classes rebuild autodoc by typing first
+`sphinx-apidoc -o doc/source pqueens -f`
