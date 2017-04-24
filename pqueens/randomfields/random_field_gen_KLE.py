@@ -39,6 +39,7 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         self.corr_length = None
         self.w_n = None
         self.lambda_n = None
+
         # call superclass  first
         super().__init__(marginal_distribution)
 
@@ -84,12 +85,14 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
 
 
-    def compute_roots_of_characteristic_equation(self, curr_dim):
-        # ComputeRootsOfCharEq compute roots of characteristic equation (see (11) in [1])
-        # argument curr_dim not really needed right now because we assume that the field is isotropic.
-        # However, in the future this might change ...
+    def compute_roots_of_characteristic_equation(self):
+        """ Compute roots of characteristic equation
 
-        #init w_n
+        Deteils see (11) in [1].
+        Returns:
+            np.array: vector containing the first m roots of the characteristic
+                equation. Where the number of root is stored in self.m
+        """
         w_n =np.zeros((self.m,1))
         index=0
 
@@ -101,20 +104,20 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
         # this function has poles which must be taken into account
         # while searching for roots using fzero(), where we can search
-        # for roots between the poles. The pole of the first part (2*corr_length_*w/(corr_length_^2 w^2 -1))
-        # is at sqrt(1/corr_length_) and the pole of the second part is
-        # at n/2 *pi, where k=1,3,5,7, ...
+        # for roots between the poles. The pole of the first part
+        # (2*corr_length_*w/(corr_length_^2 w^2 -1)) is at sqrt(1/corr_length_)
+        # and the pole of the second part is at n/2 *pi, where k=1,3,5,7, ...
 
         # check for root before the first pole of the tan function only
         # if the root of the first part lies before the root of the
         # second part.
         if (1/self.corr_length <np.pi/(self.largest_length*2)):
-             w_n[index] = scipy.optimize.brentq(self.compute_w,
+            w_n[index] = scipy.optimize.brentq(self.compute_w,
                                                 (1/self.corr_length) +
                                                  self.EPS,np.pi /
                                                  (2*self.largest_length) -
                                                 self.EPS)
-             index = index+1
+            index = index+1
 
 
         # we need odd n only but want a total of m roots hence
@@ -148,14 +151,29 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
 
     def  compute_w(self,w):
-        # compute_w characteristic function, see (12) in [1]
+        """ Compute characteristic function
+        For details see (12) in [1]
+
+        Arguments:
+            w (double): argument of characteristic function
+
+        Returns:
+            double: value of characteristic function at w
+
+        """
         return 2*self.corr_length*w/(self.corr_length**2*w**2-1) - \
                np.tan(w*self.largest_length)
 
     def  compute_eigen_function_vec(self,loc,dim):
-        # compute_eigen_function_vec  compute eigenfunctions of Fredholm equation
-        # fval = ComputeEigenfunctionVec(obj,loc,dim) returns the value of the eigenfunctions at the locations loc
-        # dim denotes the current dimension
+        """ Compute eigenfunctions of Fredholm equation
+
+        Arguments:
+            loc (np.array): vector of locations
+            dim (int): dimension of location to evaluate
+
+        Returns:
+            np.array: values of the eigenfunctions at the locations loc
+        """
         x=loc[:,dim].reshape(-1,1)
         helper=(np.ones((len(x),1)))
 
@@ -165,4 +183,5 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         temp2 = self.corr_length*np.kron((self.w_n[:,dim]),helper) * \
                np.cos(np.kron((self.w_n[:,dim]),x)) \
                + np.sin(np.kron((self.w_n[:,dim]),x))
+
         return temp1*temp2
