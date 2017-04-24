@@ -3,6 +3,9 @@ from pqueens.randomfields.random_field_gen_fourier_1d import RandomFieldGenFouri
 from pqueens.randomfields.random_field_gen_fourier_2d import RandomFieldGenFourier2D
 from pqueens.randomfields.random_field_gen_fourier_3d import RandomFieldGenFourier3D
 
+from pqueens.randomfields.random_field_gen_KLE_1d import RandomFieldGenKLE1D
+
+
 
 class UniVarRandomFieldGeneratorFactory(object):
     # Create based on arguments:
@@ -35,10 +38,9 @@ class UniVarRandomFieldGeneratorFactory(object):
 
         elif corr_struct == 'exp':
             if spatial_dimension == 1:
-                raise NotImplementedError()
-                #rf = RandomFieldGenKLE1D(my_marg_pdf,corr_length,energy_frac,
-                #                         field_bbox,spatial_dimension,
-                #                         num_terms_per_dim,total_terms)
+                rf = RandomFieldGenKLE1D(my_marg_pdf,corr_length,energy_frac,
+                                         field_bbox,spatial_dimension,
+                                         num_terms_per_dim,total_terms)
             elif spatial_dimension == 2:
                 raise NotImplementedError()
                 #rf = RandomFieldGenKLE2D(my_marg_pdf,corr_length,energy_frac,
