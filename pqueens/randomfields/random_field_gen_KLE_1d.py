@@ -16,8 +16,7 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
         # sanity checks are done in superclass
         w_n=np.zeros((self.m,self.spatial_dim))
         # Compute roots of characteristic function for each dimension
-        for i in range (self.spatial_dim):
-            w_n[:] = self.compute_roots_of_characteristic_equation(i)
+        w_n[:] = self.compute_roots_of_characteristic_equation()
         self.w_n=w_n
 
         # sum of eigenvalues
