@@ -27,7 +27,7 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         lambda_n (np.array):     eigenvalues of Fredholm equation
 
     """
-    EPS = 0.000000001 
+    EPS = 0.000000001
     """tolerance for root finding """
 
     def __init__(self,marginal_distribution,corr_length,energy_frac,field_bbox,
@@ -73,7 +73,7 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         # based on the number of terms per dimension, we can have only
         # num_ex_term_per_dim^dim terms in total
         # TODO check if this is true
-        if (num_ex_term_per_dim**self.spatial_dim > num_terms):
+        if (num_ex_term_per_dim**self.spatial_dim <= num_terms):
             raise ValueError('Number of terms in KLE expansion is too large. '
                              'Decrease number of terms or increase number of '
                              'terms per dimension')

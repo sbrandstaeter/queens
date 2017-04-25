@@ -4,7 +4,7 @@ from pqueens.randomfields.random_field_gen_fourier_2d import RandomFieldGenFouri
 from pqueens.randomfields.random_field_gen_fourier_3d import RandomFieldGenFourier3D
 
 from pqueens.randomfields.random_field_gen_KLE_1d import RandomFieldGenKLE1D
-
+from pqueens.randomfields.random_field_gen_KLE_2d import RandomFieldGenKLE2D
 
 
 class UniVarRandomFieldGeneratorFactory(object):
@@ -42,12 +42,12 @@ class UniVarRandomFieldGeneratorFactory(object):
                                          field_bbox,spatial_dimension,
                                          num_terms_per_dim,total_terms)
             elif spatial_dimension == 2:
-                raise NotImplementedError()
-                #rf = RandomFieldGenKLE2D(my_marg_pdf,corr_length,energy_frac,
-                #                         field_bbox,spatial_dimension,
-                #                         num_terms_per_dim,total_terms)
+                #raise NotImplementedError()
+                rf = RandomFieldGenKLE2D(my_marg_pdf,corr_length,energy_frac,
+                                         field_bbox,spatial_dimension,
+                                         num_terms_per_dim,total_terms)
             elif spatial_dimension == 3:
-                raise NotImplementedError()
+                raise NotImplementedError('Not yet  activated in factory')
                 #rf = RandomFieldGenKLE3D(my_marg_pdf,corr_length,energy_frac,
                 #                         field_bbox,spatial_dimension,
                 #                         num_terms_per_dim,total_terms);
