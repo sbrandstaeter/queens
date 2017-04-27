@@ -28,8 +28,8 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
         lambdas_array=4*self.corr_length**2 / (np.kron(fac1,fac2))
         lambdas_vec=lambdas_array.reshape(-1,1)
 
-        # in order to sort the eigenvalues we need to store the corresponding root indeces
-        # to access them later when computing the eigenfunctions
+        # in order to sort the eigenvalues we need to store the corresponding
+        # root indeces to access them later when computing the eigenfunctions
         # build up index vector for indexing
         index_dim=np.arange(0,self.m)
         index_dim1_h=np.tile(index_dim,(self.m,1))
@@ -48,11 +48,9 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
 
         # truncate and store in class variables
         self.lambda_n=lamda_sorted[0:self.trunc_thres,:]
-        print('lambda_n{}'.format(self.lambda_n))
         my_index_1 = np.array(lamda_sorted[0:self.trunc_thres,2]).astype(int)
         my_index_0 = np.array(lamda_sorted[0:self.trunc_thres,1]).astype(int)
 
-        print('trunc threshold {}'.format(self.trunc_thres))
         self.w_n = np.zeros((self.trunc_thres,2))
         self.w_n[:,1]=w_n[my_index_1,1]
         self.w_n[:,0]=w_n[my_index_0,0]
@@ -89,6 +87,7 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
 
         # use KLE expansion to compute random field values
         coeff=np.array(np.sqrt(self.lambda_n[:,0])*np.transpose(phase_angles))
-        values=np.dot(self.compute_eigen_function_vec(loc,0)*self.compute_eigen_function_vec(loc,1),coeff.T)
-    
+        values=np.dot(self.compute_eigen_function_vec(loc,0) *
+                      self.compute_eigen_function_vec(loc,1), coeff.T)
+
         return values

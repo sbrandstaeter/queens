@@ -20,6 +20,22 @@ pqueens\.randomfields\.random\_field\_gen\_KLE\_1d module
     :undoc-members:
     :show-inheritance:
 
+pqueens\.randomfields\.random\_field\_gen\_KLE\_2d module
+---------------------------------------------------------
+
+.. automodule:: pqueens.randomfields.random_field_gen_KLE_2d
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+pqueens\.randomfields\.random\_field\_gen\_KLE\_3d module
+---------------------------------------------------------
+
+.. automodule:: pqueens.randomfields.random_field_gen_KLE_3d
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 pqueens\.randomfields\.random\_field\_gen\_fourier module
 ---------------------------------------------------------
 

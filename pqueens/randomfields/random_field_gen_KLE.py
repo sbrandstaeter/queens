@@ -72,8 +72,7 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
         # based on the number of terms per dimension, we can have only
         # num_ex_term_per_dim^dim terms in total
-        # TODO check if this is true
-        if (num_ex_term_per_dim**self.spatial_dim <= num_terms):
+        if (num_ex_term_per_dim**self.spatial_dim < num_terms):
             raise ValueError('Number of terms in KLE expansion is too large. '
                              'Decrease number of terms or increase number of '
                              'terms per dimension')
@@ -128,8 +127,8 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         # additional pole from first part of characteristic equation
         for n in range(1, ((self.m-1)*2), 2):
             # check if root of first part lies in currrent considered interval
-            if(n*np.pi/(self.largest_length*2) < (1/self.corr_length) and
-              (n+2)*np.pi/(2*self.largest_length) > (1/self.corr_length) ):
+            if(n*np.pi/(self.largest_length*2) < (1/self.corr_length) and \
+               (n+2)*np.pi/(2*self.largest_length) > (1/self.corr_length) ):
                 w_n[index] = scipy.optimize.brentq(self.compute_w,n*np.pi /
                                                    (2*self.largest_length) +
                                                     self.EPS,(1/self.corr_length) -
@@ -149,7 +148,6 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
                                                   (2*self.largest_length) -
                                                   self.EPS)
                 index=index+1
-
         return w_n
 
 
