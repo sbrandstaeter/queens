@@ -71,93 +71,93 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
             self.total_terms)
             mystuff.gen_sample_gauss_field(np.array([[10,10,10]]),np.array((4,4)))
 
-    def test_values_at_location(self):
-        np.random.seed(self.seed)
-        xi = np.random.randn(self.my_stoch_dim,1)
+    # def test_values_at_location(self):
+    #     np.random.seed(self.seed)
+    #     xi = np.random.randn(self.my_stoch_dim,1)
+    #
+    #     my_vals = self.my_field_generator.evaluate_field_at_location(self.loc ,xi)
+    #
+    #     #np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
+    #     #print(my_vals)
+    #
+    #     # last two arguments are relative and absolute tolerance, respectively
+    #     np.testing.assert_allclose(my_vals,np.array([[-0.267680395167325],
+    #                                                  [-0.412873236037909],
+    #                                                  [0.954952124976213],
+    #                                                  [0.012506870927628],
+    #                                                  [-0.577963502928802],
+    #                                                  [-0.604534328429153],
+    #                                                  [0.700156654544350],
+    #                                                  [1.593227789669022],
+    #                                                  [0.378744421244974],
+    #                                                  [0.024225616536807]]),
+    #                                                  1e-07,1e-07)
 
-        my_vals = self.my_field_generator.evaluate_field_at_location(self.loc ,xi)
 
-        #np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        #print(my_vals)
-
-        # last two arguments are relative and absolute tolerance, respectively
-        np.testing.assert_allclose(my_vals,np.array([[-0.267680395167325],
-                                                     [-0.412873236037909],
-                                                     [0.954952124976213],
-                                                     [0.012506870927628],
-                                                     [-0.577963502928802],
-                                                     [-0.604534328429153],
-                                                     [0.700156654544350],
-                                                     [1.593227789669022],
-                                                     [0.378744421244974],
-                                                     [0.024225616536807]]),
-                                                     1e-07,1e-07)
-
-
-    def test_correlation(self):
-        my_vals = np.zeros((self.loc.shape[0], 100))
-        np.random.seed(self.seed)
-        for i in range(100):
-            xi = np.random.randn(self.my_stoch_dim,1)
-            my_vals[:, i] = self.my_field_generator.evaluate_field_at_location(self.loc, xi).ravel()
-
-        # compute empirical correlation coefficient
-        act_corr_at_dist_10_1 = np.corrcoef(my_vals[0, :], my_vals[3, :])
-        act_corr_at_dist_10_2 = np.corrcoef(my_vals[0, :], my_vals[2, :])
-        act_corr_at_dist_10_3 = np.corrcoef(my_vals[0, :], my_vals[1, :])
-
-        act_corr_at_dist_25_1 = np.corrcoef(my_vals[0, :], my_vals[6, :])
-        act_corr_at_dist_25_2 = np.corrcoef(my_vals[0, :], my_vals[5, :])
-        act_corr_at_dist_25_3 = np.corrcoef(my_vals[0, :], my_vals[4, :])
-
-        act_corr_at_dist_100_1 = np.corrcoef(my_vals[0, :], my_vals[7, :])
-        act_corr_at_dist_100_2 = np.corrcoef(my_vals[0, :], my_vals[8, :])
-        act_corr_at_dist_100_3 = np.corrcoef(my_vals[0, :], my_vals[9, :])
-
-        # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        # print(act_corr_at_dist_10_1[0,1])
-        # print(act_corr_at_dist_10_2[0,1])
-        # print(act_corr_at_dist_10_3[0,1])
-        #
-        # print(act_corr_at_dist_25_1[0,1])
-        # print(act_corr_at_dist_25_2[0,1])
-        # print(act_corr_at_dist_25_3[0,1])
-        #
-        # print(act_corr_at_dist_100_1[0,1])
-        # print(act_corr_at_dist_100_2[0,1])
-        # print(act_corr_at_dist_100_3[0,1])
-
-        ref_corr_at_dist_10_1 = 0.747298593919
-        ref_corr_at_dist_10_2 = 0.770542556376
-        ref_corr_at_dist_10_3 = 0.684855922778
-
-        ref_corr_at_dist_25_1 = 0.401498554318
-        ref_corr_at_dist_25_2 = 0.360519855663
-        ref_corr_at_dist_25_3 = 0.314194177166
-
-        ref_corr_at_dist_100_1 = 0.0326883974214
-        ref_corr_at_dist_100_2 = -0.0809117257197
-        ref_corr_at_dist_100_3 = 0.199733388172
-
-        self.assertAlmostEqual(act_corr_at_dist_10_1[0,1], ref_corr_at_dist_10_1,
-                            9, 'Correlation for distance 10 is not correct.')
-        self.assertAlmostEqual(act_corr_at_dist_10_2[0,1], ref_corr_at_dist_10_2,
-                           9, 'Correlation for distance 10 is not correct.')
-        self.assertAlmostEqual(act_corr_at_dist_10_3[0,1], ref_corr_at_dist_10_3,
-                           9, 'Correlation for distance 10 is not correct.')
-
-        self.assertAlmostEqual(act_corr_at_dist_25_1[0,1], ref_corr_at_dist_25_1,
-                            9, 'Correlation for distance 25 is not correct.')
-        self.assertAlmostEqual(act_corr_at_dist_25_2[0,1], ref_corr_at_dist_25_2,
-                            9, 'Correlation for distance 25 is not correct.')
-        self.assertAlmostEqual(act_corr_at_dist_25_3[0,1], ref_corr_at_dist_25_3,
-                           9, 'Correlation for distance 25 is not correct.')
-        self.assertAlmostEqual(act_corr_at_dist_100_1[0,1], ref_corr_at_dist_100_1,
-                            9,'Correlation for distance 100 is not correct.')
-        self.assertAlmostEqual(act_corr_at_dist_100_2[0,1], ref_corr_at_dist_100_2,
-                            9,'Correlation for distance 100 is not correct.')
-        self.assertAlmostEqual(act_corr_at_dist_100_3[0,1], ref_corr_at_dist_100_3,
-                            9,'Correlation for distance 100 is not correct.')
+    # def test_correlation(self):
+    #     my_vals = np.zeros((self.loc.shape[0], 100))
+    #     np.random.seed(self.seed)
+    #     for i in range(100):
+    #         xi = np.random.randn(self.my_stoch_dim,1)
+    #         my_vals[:, i] = self.my_field_generator.evaluate_field_at_location(self.loc, xi).ravel()
+    #
+    #     # compute empirical correlation coefficient
+    #     act_corr_at_dist_10_1 = np.corrcoef(my_vals[0, :], my_vals[3, :])
+    #     act_corr_at_dist_10_2 = np.corrcoef(my_vals[0, :], my_vals[2, :])
+    #     act_corr_at_dist_10_3 = np.corrcoef(my_vals[0, :], my_vals[1, :])
+    #
+    #     act_corr_at_dist_25_1 = np.corrcoef(my_vals[0, :], my_vals[6, :])
+    #     act_corr_at_dist_25_2 = np.corrcoef(my_vals[0, :], my_vals[5, :])
+    #     act_corr_at_dist_25_3 = np.corrcoef(my_vals[0, :], my_vals[4, :])
+    #
+    #     act_corr_at_dist_100_1 = np.corrcoef(my_vals[0, :], my_vals[7, :])
+    #     act_corr_at_dist_100_2 = np.corrcoef(my_vals[0, :], my_vals[8, :])
+    #     act_corr_at_dist_100_3 = np.corrcoef(my_vals[0, :], my_vals[9, :])
+    #
+    #     # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
+    #     # print(act_corr_at_dist_10_1[0,1])
+    #     # print(act_corr_at_dist_10_2[0,1])
+    #     # print(act_corr_at_dist_10_3[0,1])
+    #     #
+    #     # print(act_corr_at_dist_25_1[0,1])
+    #     # print(act_corr_at_dist_25_2[0,1])
+    #     # print(act_corr_at_dist_25_3[0,1])
+    #     #
+    #     # print(act_corr_at_dist_100_1[0,1])
+    #     # print(act_corr_at_dist_100_2[0,1])
+    #     # print(act_corr_at_dist_100_3[0,1])
+    #
+    #     ref_corr_at_dist_10_1 = 0.747298593919
+    #     ref_corr_at_dist_10_2 = 0.770542556376
+    #     ref_corr_at_dist_10_3 = 0.684855922778
+    #
+    #     ref_corr_at_dist_25_1 = 0.401498554318
+    #     ref_corr_at_dist_25_2 = 0.360519855663
+    #     ref_corr_at_dist_25_3 = 0.314194177166
+    #
+    #     ref_corr_at_dist_100_1 = 0.0326883974214
+    #     ref_corr_at_dist_100_2 = -0.0809117257197
+    #     ref_corr_at_dist_100_3 = 0.199733388172
+    #
+    #     self.assertAlmostEqual(act_corr_at_dist_10_1[0,1], ref_corr_at_dist_10_1,
+    #                         9, 'Correlation for distance 10 is not correct.')
+    #     self.assertAlmostEqual(act_corr_at_dist_10_2[0,1], ref_corr_at_dist_10_2,
+    #                        9, 'Correlation for distance 10 is not correct.')
+    #     self.assertAlmostEqual(act_corr_at_dist_10_3[0,1], ref_corr_at_dist_10_3,
+    #                        9, 'Correlation for distance 10 is not correct.')
+    #
+    #     self.assertAlmostEqual(act_corr_at_dist_25_1[0,1], ref_corr_at_dist_25_1,
+    #                         9, 'Correlation for distance 25 is not correct.')
+    #     self.assertAlmostEqual(act_corr_at_dist_25_2[0,1], ref_corr_at_dist_25_2,
+    #                         9, 'Correlation for distance 25 is not correct.')
+    #     self.assertAlmostEqual(act_corr_at_dist_25_3[0,1], ref_corr_at_dist_25_3,
+    #                        9, 'Correlation for distance 25 is not correct.')
+    #     self.assertAlmostEqual(act_corr_at_dist_100_1[0,1], ref_corr_at_dist_100_1,
+    #                         9,'Correlation for distance 100 is not correct.')
+    #     self.assertAlmostEqual(act_corr_at_dist_100_2[0,1], ref_corr_at_dist_100_2,
+    #                         9,'Correlation for distance 100 is not correct.')
+    #     self.assertAlmostEqual(act_corr_at_dist_100_3[0,1], ref_corr_at_dist_100_3,
+    #                         9,'Correlation for distance 100 is not correct.')
 
     def test_marginal_distribution(self):
         my_vals=np.zeros((1, 200))
