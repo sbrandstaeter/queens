@@ -71,27 +71,27 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
             self.total_terms)
             mystuff.gen_sample_gauss_field(np.array([[10,10,10]]),np.array((4,4)))
 
-    # def test_values_at_location(self):
-    #     np.random.seed(self.seed)
-    #     xi = np.random.randn(self.my_stoch_dim,1)
-    #
-    #     my_vals = self.my_field_generator.evaluate_field_at_location(self.loc ,xi)
-    #
-    #     #np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-    #     #print(my_vals)
-    #
-    #     # last two arguments are relative and absolute tolerance, respectively
-    #     np.testing.assert_allclose(my_vals,np.array([[-0.267680395167325],
-    #                                                  [-0.412873236037909],
-    #                                                  [0.954952124976213],
-    #                                                  [0.012506870927628],
-    #                                                  [-0.577963502928802],
-    #                                                  [-0.604534328429153],
-    #                                                  [0.700156654544350],
-    #                                                  [1.593227789669022],
-    #                                                  [0.378744421244974],
-    #                                                  [0.024225616536807]]),
-    #                                                  1e-07,1e-07)
+    def test_values_at_location(self):
+        np.random.seed(self.seed)
+        xi = np.random.randn(self.my_stoch_dim,1)
+
+        my_vals = self.my_field_generator.evaluate_field_at_location(self.loc ,xi)
+
+        #np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
+        #print(my_vals)
+
+        # last two arguments are relative and absolute tolerance, respectively
+        np.testing.assert_allclose(my_vals,np.array([[-0.267680395167325],
+                                                     [-0.412873236037909],
+                                                     [0.954952124976213],
+                                                     [0.012506870927628],
+                                                     [-0.577963502928802],
+                                                     [-0.604534328429153],
+                                                     [0.700156654544350],
+                                                     [1.593227789669022],
+                                                     [0.378744421244974],
+                                                     [0.024225616536807]]),
+                                                     1e-07,1e-07)
 
 
     # def test_correlation(self):
