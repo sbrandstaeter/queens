@@ -7,6 +7,7 @@ Created on April 19th 2017
 import unittest
 import numpy as np
 from scipy.stats import norm
+from scipy.stats import beta
 
 from  pqueens.randomfields.univariate_field_generator_factory import UniVarRandomFieldGeneratorFactory
 
@@ -25,6 +26,18 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
         self.loc                     = [0, 10, 25, 100]
         self.seed                    = 42
 
+    def test_construction_wrong_distribution(self):
+        with self.assertRaises(RuntimeError):
+            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            beta(2,4),
+            self.dimension,
+            self.corrstruct ,
+            self.corr_length,
+            self.energy_frac,
+            self.field_bbox,
+            self.num_terms_per_dim,
+            self.total_terms)
+            mystuff.gen_sample_gauss_field(10,np.array((4,4)))
 
     def test_construction_wrong_covariance(self):
         with self.assertRaises(RuntimeError):
@@ -50,8 +63,16 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
             self.field_bbox,
             self.num_terms_per_dim,
             self.total_terms)
-            mystuff.gen_sample_gauss_field(10,np.array((4,4)))
-
+        with self.assertRaises(ValueError):
+            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            self.marginal_pdf,
+            4, # should throw error
+            'exp',
+            self.corr_length,
+            self.energy_frac,
+            self.field_bbox,
+            self.num_terms_per_dim,
+            self.total_terms)
 
 class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
 
@@ -155,9 +176,22 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
             self.corrstruct ,
             self.corr_length,
             self.energy_frac,
-            np.array([100, 100, 100]),
+            np.array([-100, 100, 100]),
             self.num_terms_per_dim,
             self.total_terms)
+
+    #raise RuntimeError Number of terms in KLE expansion is too large. '
+    def test_num_expansion_terms(self):
+        with self.assertRaises(ValueError):
+            mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            self.marginal_pdf,
+            2,
+            self.corrstruct ,
+            self.corr_length,
+            self.energy_frac,
+            np.array([-100, 100, -100, 100]),
+            10,
+            120)
 
     #raise ValueError('energy fraction must be between 0 and 1.')
     def test_construction_wrong_engergy_frac(self):
