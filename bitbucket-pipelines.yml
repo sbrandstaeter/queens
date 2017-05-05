@@ -3,17 +3,33 @@
 # Only use spaces to indent your .yml configuration.
 # -----
 # You can specify a custom docker image from Docker Hub as your build environment.
-image: python:3.5.3
+# image: python:3.5.3
+#
+# pipelines:
+#   default:
+#     - step:
+#         script: # Modify the commands below to build your repository.
+#           - pip install --upgrade pip
+#           - pip install -r requirements.txt
+#           - pip install -U tox
+#           - pip --version
+#           - tox --version
+#           # do normal unit testing
+#           # - python -m unittest discover -s pqueens/tests/
+#           # use coverage to gauge test coverage
+#           - coverage run -m unittest discover -s pqueens/tests
+#           # transfer test results to codecov.io
+#           - codecov --token=8eecedcc-6782-468a-b066-0e641741f210
+
+image: continuumio/anaconda3
 
 pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
-          - pip install --upgrade pip
+          - conda create --name pqueens -y
+          - source activate pqueens
           - pip install -r requirements.txt
-          - pip install -U tox
-          - pip --version
-          - tox --version
           # do normal unit testing
           # - python -m unittest discover -s pqueens/tests/
           # use coverage to gauge test coverage
