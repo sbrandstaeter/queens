@@ -68,6 +68,23 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
             self.total_terms)
             mystuff.gen_sample_gauss_field(self.loc,np.array((4,4)))
 
+    # # should trigger error because dimension of location is wrong
+    def test_wrong_number_loc_dimensions(self):
+        mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+        self.marginal_pdf,
+        self.dimension,
+        self.corrstruct,
+        self.corr_length,
+        self.energy_frac,
+        self.field_bbox,
+        self.num_terms_per_dim,
+        self.total_terms)
+        xi = np.random.randn(self.my_stoch_dim,1)
+        with self.assertRaises(RuntimeError):
+            mystuff.gen_sample_gauss_field(np.array(([4,4,4],[4,4,4])),xi)
+        with self.assertRaises(RuntimeError):
+            mystuff.gen_sample_gauss_field(np.array(([4],[4],[4])),xi)
+
     def test_values_at_location(self):
         np.random.seed(self.seed)
         xi = np.random.randn(self.my_stoch_dim,1)
