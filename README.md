@@ -31,3 +31,14 @@ Navigate into the doc folder and type
 `make html` to build the html documentation
 After adding new modules or classes rebuild autodoc by typing first
 `sphinx-apidoc -o doc/source pqueens -f`
+
+### Run the test suite ###
+`python -m unittest discover pqueens/tests`
+
+run with coverage to get detailed test coverage report
+
+`coverage run -m unittest discover -s pqueens/tests`
+
+to view report run
+
+`coverage report -m`
