@@ -96,7 +96,7 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
                                'stochastic dimension of the field!')
 
         if len(loc[0,:]) is not 3:
-            raise RuntimeError('Location vector must have one dimensions!')
+            raise RuntimeError('Location vector must have three dimensions!')
 
         # use KLE expansion to compute random field values
         coeff=np.array(np.sqrt(self.lambda_n[:,0])*np.transpose(phase_angles))
