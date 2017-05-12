@@ -11,13 +11,17 @@ def read(fname):
 
 setup(
     name = "pqueens",
-    version = "0.01",
+    version = "0.1",
     author = "Jonas Biehler",
     author_email = "biehler@adco-engineering-gw.de",
     description = ("A package for Uncertainty Quantification and Bayesian optimization"),
     keywords = "Gaussian Processes, Unctertainty Quantification",
     packages=['pqueens',
-              'pqueens.randomfields'],
+              'pqueens.database',
+              'pqueens.randomfields',
+              #'pqueens.resources',
+              #'pqueens.schedulers',
+              'pqueens.utils'],
     # for now do not add third party packages here but install them manually Using
     # anaconda beforehand (we get some weird errors otherwise)
     #install_requires=[

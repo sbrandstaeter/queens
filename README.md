@@ -13,6 +13,11 @@ Install those using anaconda first
 - scipy
 - matplotlib
 - sphinx
+- pymongo
+
+MongoDB
+install
+https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.181134695.1149150790.1494232459-1730069423.1494232449
 
 #### Installation directions ####
 
