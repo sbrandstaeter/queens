@@ -1,5 +1,4 @@
 
-#import pqueens.resources.resource
 from .abstract_scheduler import AbstractScheduler
 
 import os
