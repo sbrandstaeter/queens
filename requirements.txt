@@ -4,8 +4,11 @@ numpy
 scipy
 matplotlib
 sphinx
+jupyter
 # for code coverage purposes
 codecov
 coverage
-# for database interfacing  
+# for database interfacing
 pymongo
+# for design of experiments
+pyDOE
