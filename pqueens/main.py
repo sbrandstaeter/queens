@@ -1,5 +1,5 @@
 
-
+import pqueens
 import argparse
 import os
 import time
@@ -7,8 +7,9 @@ import sys
 try: import simplejson as json
 except ImportError: import json
 
-from resources.resource import parse_resources_from_configuration
-from resources.resource import print_resources_status
+from  resources.resource import parse_resources_from_configuration
+from  resources.resource import print_resources_status
+from designers.designer_factory import DesignerFactory
 
 from database.mongodb import MongoDB
 
@@ -56,7 +57,6 @@ def get_options():
 
 def main():
     options = get_options()
-    #print("options {}".format(options))
 
     # create resource
     resources = parse_resources_from_configuration(options)
@@ -68,13 +68,21 @@ def main():
     sys.stderr.write('Using database at %s.\n' % db_address)
     db   = MongoDB(database_address=db_address)
 
+    # create designer
+    designer = DesignerFactory.create_designer(options['designer']['type'],
+                                               options['variables'],
+                                               options['designer']['seed'],
+                                               options['designer']['num_samples'])
+
+    suggester = designer.suggest_next_evaluation()
+
     # create dummy job
-    new_job = get_dummy_suggestion(db,experiment_name,options,'my-machine')
+    new_job = get_dummy_suggestion(db,suggester,experiment_name,options,'my-machine')
 
     # Submit the job to the appropriate resource
-
-    process_id = resources['my-machine'].attempt_dispatch(experiment_name, new_job, db_address, '/Users/jonas/work/adco/queens_code/pqueens/example_simulator_functions')
-    print(options['output_dir'])
+    process_id = resources['my-machine'].attempt_dispatch(experiment_name,
+                                                          new_job, db_address,
+                                                          options['output_dir'])
 
     # Set the status of the job appropriately (successfully submitted or not)
     if process_id is None:
@@ -86,31 +94,35 @@ def main():
         save_job(new_job, db, experiment_name)
 
     jobs = load_jobs(db, experiment_name)
+    print_resources_status(resources, jobs)
 
 
-def get_dummy_suggestion(db,experiment_name,options,resource_name):
+def get_dummy_suggestion(db,suggester,experiment_name,options,resource_name):
 
     jobs = load_jobs(db, experiment_name)
 
     job_id = len(jobs) + 1
 
+    variable_values = next(suggester)
+    i = 0
+    params = {}
+    for key, variable_meta_data in options['variables'].items():
+        params[key] = variable_meta_data
+        params[key]['values']=variable_values[i]
+        i+=1
+
     job = {
-        'id'          : job_id,
-        'params'      : {'x':{ "type" : "FLOAT",
-                               "size" : 1,
-                               "values" : 2.5},
-                         'y':{ "type" : "FLOAT",
-                                        "size" : 1,
-                                        "values" : 1.0}},
-        'expt_dir'    : '/Users/jonas/work/adco/queens_code/pqueens/example_simulator_functions',
-        #'tasks'       : task_names,
-        'resource'    : resource_name,
-        'main-file'   : options['main-file'],
-        'language'    : options['language'],
-        'status'      : 'new',
-        'submit time' : time.time(),
-        'start time'  : None,
-        'end time'    : None
+        'id'           : job_id,
+        'params' :       params,
+        'expt_dir'     : options['output_dir'],
+        'expt_name'    : experiment_name,
+        'resource'     : resource_name,
+        'driver_type'  : options['driver']['driver_type'],
+        'driver_params': options['driver']['driver_params'],
+        'status'       : 'new',
+        'submit time'  : time.time(),
+        'start time'   : None,
+        'end time'     : None
     }
 
     save_job(job, db, experiment_name)
@@ -137,8 +149,6 @@ def load_jobs(db, experiment_name):
 def save_job(job, db, experiment_name):
     """save a job to the database"""
     db.save(job, experiment_name, 'jobs', {'id' : job['id']})
-
-
 
 
 if __name__ == '__main__':
