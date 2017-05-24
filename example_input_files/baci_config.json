@@ -1,0 +1,41 @@
+{
+    "experiment-name" : "art_aaa_test",
+    "driver" :{
+      "driver_type"           : "baci",
+      "driver_params"         :{
+        "input_template"        : "/Users/jonas/work/adco/queens_code/try_out_stuff/invaaa_template_2.dat",
+        "path_to_executable"    : "",
+        "path_to_postprocessor" : "",
+        "post_process_options"  : "node etc"
+      }
+    },
+    "database"  :{
+      "address"   : "localhost:27017"
+    },
+    "resources" : {
+      "my-machine" : {
+        "scheduler"         : "local",
+        "max-concurrent"    : 1,
+        "max-finished-jobs" : 100
+      }
+    },
+    "designer" : {
+      "type" : "lhs",
+      "seed" : 42,
+      "num_samples" : 20
+    },
+    "variables" : {
+        "youngs" : {
+          "type" : "FLOAT",
+          "size" : 1,
+          "min"  : 1000000,
+          "max"  : 5000000
+        },
+        "beta" : {
+          "type" : "FLOAT",
+          "size" : 1,
+          "min"  : 1500000,
+          "max"  : 5000000
+        }
+    }
+}

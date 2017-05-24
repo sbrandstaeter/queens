@@ -1,0 +1,38 @@
+{
+    "experiment-name" : "branin-hifi-example",
+    "driver" :{
+      "driver_type"        : "python_vector_interface",
+      "driver_params" :{
+      "main-file"       : "branin_hifi.py"
+      }
+    },
+    "database"        :{
+        "address" : "localhost:27017"
+      },
+    "resources" : {
+      "my-machine" : {
+          "scheduler"         : "local",
+          "max-concurrent"    : 1,
+          "max-finished-jobs" : 100
+      }
+    },
+    "designer" : {
+      "type" : "lhs",
+      "seed" : 42,
+      "num_samples" : 20
+    },
+    "variables" : {
+        "x" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : -5,
+            "max"  : 10
+        },
+        "y" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : 0,
+            "max"  : 15
+        }
+    }
+}
