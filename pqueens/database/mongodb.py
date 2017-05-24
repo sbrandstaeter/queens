@@ -1,7 +1,7 @@
 
 import pymongo
-from database.abstractdb               import AbstractDB
-from utils.compression import compress_nested_container, decompress_nested_container
+from .abstractdb               import AbstractDB
+from pqueens.utils.compression import compress_nested_container, decompress_nested_container
 
 COMPRESS_TYPE = 'compressed array'
 

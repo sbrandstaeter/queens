@@ -1,5 +1,5 @@
 
-from schedulers.local_scheduler import LocalScheduler
+from .local_scheduler import LocalScheduler
 
 class SchedulerFactory(object):
     """ Create new scheduler """
