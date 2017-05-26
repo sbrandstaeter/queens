@@ -1,13 +1,12 @@
 from .abstract_designer import AbstractDesigner
-from pyDOE import lhs
 import numpy as np
 
-class LatinHyperCubeDesigner(AbstractDesigner):
-    """ Latin Hyper Cube designer for experiments
+class MonteCarloDesigner(AbstractDesigner):
+    """ Monte Carlo based design of experiments
 
     Attributes:
         self.num_samples (int): number of design points
-        self.lhd (np.array):    array with all samples/design points
+        self.mc (np.array):    array with all samples/design points
 
     """
 
@@ -19,23 +18,28 @@ class LatinHyperCubeDesigner(AbstractDesigner):
             num_samples (int) : Number of desired (random) samples
 
         """
-
         numparams = len(params)
         # fix seed of random number generator
         np.random.seed(seed)
         self.num_samples = num_samples
-        self.lhd = lhs(numparams, num_samples, 'maximin', iterations=10)
-        i = 0
-        for _ , value in params.items():
-            self.lhd[:,i] = self.lhd[:,i]*(value['max']-value['min'])+value['min']
+        self.mc = np.zeros((num_samples,numparams))
+
+        i=0
+        for _ ,value in params.items():
+            # get appropriate random number generator 
+            random_number_generator = getattr(np.random, value['distribution'])
+            my_args = value['distribution_parameter']
+            my_args.extend([num_samples])
+            self.mc[:,i] = random_number_generator(*my_args)
             i+=1
+
 
     def sample_generator(self):
         """ Generator to iterate over experimental design """
         i = 0
         while i < self.num_samples:
-            yield self.lhd[i,:]
+            yield self.mc[i,:]
             i += 1
 
     def get_all_samples(self):
-        return self.lhd
+        return self.mc
