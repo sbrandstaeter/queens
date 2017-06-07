@@ -26,10 +26,12 @@ class MonteCarloDesigner(AbstractDesigner):
 
         i=0
         for _ ,value in params.items():
-            # get appropriate random number generator 
+            # get appropriate random number generator
             random_number_generator = getattr(np.random, value['distribution'])
-            my_args = value['distribution_parameter']
+            # make a copy 
+            my_args = list(value['distribution_parameter'])
             my_args.extend([num_samples])
+            print("my_args{}".format(my_args))
             self.mc[:,i] = random_number_generator(*my_args)
             i+=1
 
