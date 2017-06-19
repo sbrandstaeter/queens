@@ -30,7 +30,7 @@ class LocalScheduler(AbstractScheduler):
         base_path = pathlib.Path(__file__).parent.parent
 
         # assemble shell command
-        cmd = ('python %s/launcher.py --db_address %s --experiment_name '
+        cmd = ('python %s/drivers/gen_driver_local.py --db_address %s --experiment_name '
                '%s --job_id %s' %
                (base_path, database_address, experiment_name, job_id))
 

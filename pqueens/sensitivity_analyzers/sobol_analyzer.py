@@ -31,9 +31,11 @@ def __init__(self,problem,calc_second_order=True,num_bootstrap_samples=100,
 
     """
     self.calc_second_order = calc_second_order
-    self.num_bootstrap = num_bootstrap
+    self.num_bootstrap = num_bootstrap_samples
     self.confidence_level  = confidence_level
     print("hello world Celcile")
+
+    # TODO extract the relvant information form the problem dict. 
 
 def analyze(self, Y):
     """ Compute sensitivity indices for given samples Y
@@ -45,3 +47,7 @@ def analyze(self, Y):
 
     Returns (dict) :
         dictionary with sensitivity indices
+
+    """
+    # look here for some inspiration
+    #https://github.com/SALib/SALib/blob/master/SALib/analyze/sobol.py

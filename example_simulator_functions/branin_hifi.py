@@ -7,7 +7,7 @@ def branin_hifi(x, y):
 
     print("Result {}".format(result))
 
-    return result
+    return np.array(result)
 
 def main(job_id, params):
     return branin_hifi(params['x'], params['y'])

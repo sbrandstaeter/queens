@@ -92,7 +92,7 @@ class Resource(object):
 
         max_concurrent (int):         The maximum number of jobs that can run
                                       concurrently on resource
-        # not sure if needed
+
         max_finished_jobs (int):      The maximum number of jobs that can be
                                       run to completion
     """
@@ -109,7 +109,7 @@ class Resource(object):
 
             max_concurrent (int):         The maximum number of jobs that can run
                                           concurrently on resource
-            # not sure if needed
+                                          
             max_finished_jobs (int):      The maximum number of jobs that can be
                                           run to completion
         """
@@ -174,7 +174,7 @@ class Resource(object):
             return 0
 
     def accepting_jobs(self, jobs):
-        """Is this resource currently accepting new jobs?
+        """ Is this resource currently accepting new jobs?
 
         Args:
             jobs (list): List with jobs
@@ -192,7 +192,7 @@ class Resource(object):
         return True
 
     def print_status(self, jobs):
-        """Print number of pending ans completed jobs
+        """ Print number of pending ans completed jobs
 
         Args:
             jobs (list): List with jobs
@@ -216,7 +216,7 @@ class Resource(object):
         return self.scheduler.alive(job['proc_id'])
 
     def attempt_dispatch(self, experiment_name, job, db_address, expt_dir):
-        """submit a new job using the scheduler of the resource
+        """ Submit a new job using the scheduler of the resource
 
         Args:
             experiment_name (str):  Name of experiment
@@ -225,7 +225,7 @@ class Resource(object):
             expt_dir  (str):        Directory associated with experiment
 
         Returns:
-            process_id (int):       Process ID of job
+            int:       Process ID of job
         """
         if job['resource'] != self.name:
             raise Exception("This job does not belong to me!")
