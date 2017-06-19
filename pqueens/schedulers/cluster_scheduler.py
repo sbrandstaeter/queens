@@ -67,7 +67,7 @@ class AbstractClusterScheduler(object):
         #   database_address = socket.gethostname()
 
         # the '<' is needed for execution of local python scripts on potentially remote servers
-        run_command = ['<', '/Users/jonas/work/adco/queens_code/pqueens/pqueens/dummy_launcher_pbs.py']
+        run_command = ['<', '/Users/jonas/work/adco/queens_code/pqueens/pqueens/drivers/dummy_driver_baci_pbs_kaiser.py']
 
         submit_command = self.submit_command()
 

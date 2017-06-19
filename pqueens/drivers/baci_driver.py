@@ -1,6 +1,7 @@
 import sys
 import os
-from pqueens.utils.injector import inject
+from utils.injector import inject
+#from pqueens.utils.injector import inject
 import numpy as np
 import docker
 
