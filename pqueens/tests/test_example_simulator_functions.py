@@ -9,6 +9,10 @@ import pqueens.example_simulator_functions.branin_hifi  as branin_hifi
 import pqueens.example_simulator_functions.branin_medfi as branin_medfi
 import pqueens.example_simulator_functions.branin_lofi  as branin_lofi
 
+import pqueens.example_simulator_functions.perdikaris_1dsin_lofi  as perdikaris_1dsin_lofi
+import pqueens.example_simulator_functions.perdikaris_1dsin_hifi  as perdikaris_1dsin_hifi
+
+
 
 class TestAgawal(unittest.TestCase):
 
@@ -27,6 +31,29 @@ class TestAgawal(unittest.TestCase):
         desired_result2 = 0.90450849718747361
         self.assertAlmostEqual(actual_result2, desired_result2, places=8,
                                msg=None, delta=None)
+
+
+class TestPerdikarisMultiFidelity(unittest.TestCase):
+
+    def setUp(self):
+        self.params1 = {'x': 0.6}
+        self.dummy_id = 100
+
+    def test_vals_params(self):
+        actual_result_hifi = perdikaris_1dsin_lofi.main(self.dummy_id, self.params1)
+        actual_result_lofi = perdikaris_1dsin_hifi.main(self.dummy_id, self.params1)
+
+        #print("actual_result_hifi {}".format(actual_result_hifi))
+        #print("actual_result_lofi {}".format(actual_result_lofi))
+
+        desired_result_hifi  = 0.5877852522924737
+        desired_result_lofi  = -0.2813038672746218
+
+        self.assertAlmostEqual(actual_result_hifi, desired_result_hifi,
+                               places=8, msg=None, delta=None)
+
+        self.assertAlmostEqual(actual_result_lofi, desired_result_lofi,
+                               places=8, msg=None, delta=None)
 
 class TestBraninMultiFidelity(unittest.TestCase):
 
