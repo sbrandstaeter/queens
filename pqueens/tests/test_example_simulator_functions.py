@@ -18,6 +18,9 @@ import pqueens.example_simulator_functions.park91a_lofi  as park91a_lofi
 import pqueens.example_simulator_functions.park91b_hifi  as park91b_hifi
 import pqueens.example_simulator_functions.park91b_lofi  as park91b_lofi
 
+import pqueens.example_simulator_functions.oakley_ohagan2004  as oakley_ohagan2004
+
+
 class TestAgawal(unittest.TestCase):
 
     def setUp(self):
@@ -119,8 +122,8 @@ class TestPark91bMultiFidelity(unittest.TestCase):
         actual_result_hifi = park91b_hifi.main(self.dummy_id, self.params1)
         actual_result_lofi = park91b_lofi.main(self.dummy_id, self.params1)
 
-        print("actual_result_hifi {}".format(actual_result_hifi))
-        print("actual_result_lofi {}".format(actual_result_lofi))
+        #print("actual_result_hifi {}".format(actual_result_hifi))
+        #print("actual_result_lofi {}".format(actual_result_lofi))
 
         desired_result_hifi  = 2.091792853577546
         desired_result_lofi  = 1.510151424293055
@@ -129,4 +132,22 @@ class TestPark91bMultiFidelity(unittest.TestCase):
                                places=8, msg=None, delta=None)
 
         self.assertAlmostEqual(actual_result_lofi, desired_result_lofi,
+                               places=8, msg=None, delta=None)
+
+class TestOakleyOHagan(unittest.TestCase):
+
+    def setUp(self):
+        self.params1 = {'x1': 0.3,'x2': 0.6,'x3': 0.5,'x4': 0.1,'x5': 0.9,
+                        'x6': 0.3,'x7': 0.6,'x8': 0.5,'x9': 0.1,'x10': 0.9,
+                        'x11': 0.3,'x12': 0.6,'x13': 0.5,'x14': 0.1,'x15': 0.9}
+        self.dummy_id = 100
+
+    def test_vals_params(self):
+        actual_result = oakley_ohagan2004.main(self.dummy_id, self.params1)
+
+        #print("actual_result {}".format(actual_result))
+
+        desired_result  = 24.496726490699082
+
+        self.assertAlmostEqual(actual_result, desired_result,
                                places=8, msg=None, delta=None)
