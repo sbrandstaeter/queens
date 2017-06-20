@@ -15,6 +15,8 @@ import pqueens.example_simulator_functions.perdikaris_1dsin_hifi  as perdikaris_
 import pqueens.example_simulator_functions.park91a_hifi  as park91a_hifi
 import pqueens.example_simulator_functions.park91a_lofi  as park91a_lofi
 
+import pqueens.example_simulator_functions.park91b_hifi  as park91b_hifi
+import pqueens.example_simulator_functions.park91b_lofi  as park91b_lofi
 
 class TestAgawal(unittest.TestCase):
 
@@ -100,6 +102,28 @@ class TestPark91aMultiFidelity(unittest.TestCase):
 
         desired_result_hifi  = 2.6934187033863846
         desired_result_lofi  = 3.2830146685714103
+
+        self.assertAlmostEqual(actual_result_hifi, desired_result_hifi,
+                               places=8, msg=None, delta=None)
+
+        self.assertAlmostEqual(actual_result_lofi, desired_result_lofi,
+                               places=8, msg=None, delta=None)
+
+class TestPark91bMultiFidelity(unittest.TestCase):
+
+    def setUp(self):
+        self.params1 = {'x1': 0.3,'x2': 0.6,'x3': 0.5,'x4': 0.1}
+        self.dummy_id = 100
+
+    def test_vals_params(self):
+        actual_result_hifi = park91b_hifi.main(self.dummy_id, self.params1)
+        actual_result_lofi = park91b_lofi.main(self.dummy_id, self.params1)
+
+        print("actual_result_hifi {}".format(actual_result_hifi))
+        print("actual_result_lofi {}".format(actual_result_lofi))
+
+        desired_result_hifi  = 2.091792853577546
+        desired_result_lofi  = 1.510151424293055
 
         self.assertAlmostEqual(actual_result_hifi, desired_result_hifi,
                                places=8, msg=None, delta=None)
