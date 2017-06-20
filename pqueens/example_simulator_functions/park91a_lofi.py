@@ -8,7 +8,7 @@ def park91a_lofi(x1, x2, x3, x4):
     a computer model. For the purpose of multi-fidelity simulation, [3]
     defined a corresponding lower fidelity function, which is  defined as
 
-    :math: `f({\\bf x}) = \\frac{x_1}{2}[\\sqrt{1+(x_2+x_3^2)\\frac{x_4}{x_1^2}}-1]+(x_1+3x_4)\\exp[1-\sin(x_3)]`
+    :math:`f_{lofi}({\\bf x})= [1 + \\frac{\sin(x_1)}{10} ] f_{hifi}({\\bf x}) - 2x_1 + x_2^2 + x_3^2 + 0.5`
 
     The high-fidelity version is defiend as is implemented in park91a_hifi
 
@@ -28,7 +28,7 @@ def park91a_lofi(x1, x2, x3, x4):
 
     [2] Cox, D. D., Park, J.-S., & Singer, C. E. (2001). A statistical method
         for tuning a computer code to a data base. Computational Statistics &
-        Data Analysis, 37(1), 77?92. http://doi.org/10.1016/S0167-9473(00)00057-8
+        Data Analysis, 37(1), 77-92. http://doi.org/10.1016/S0167-9473(00)00057-8
 
     [3] Xiong, S., Qian, P., & Wu, C. (2013). Sequential design and analysis of
         high-accuracy and low-accuracy computer codes. Technometrics.

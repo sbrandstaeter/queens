@@ -10,7 +10,7 @@ def park91a_hifi(x1, x2, x3, x4):
 
     The high-fidelity version is defiend as:
 
-    :math: `f({\\bf x}) = \\frac{x_1}{2}[\\sqrt{1+(x_2+x_3^2)\\frac{x_4}{x_1^2}}-1]+(x_1+3x_4)\\exp[1-\sin(x_3)]`
+    :math:`f({\\bf x}) = \\frac{x_1}{2}[\\sqrt{1+(x_2+x_3^2)\\frac{x_4}{x_1^2}}-1]+(x_1+3x_4)\\exp[1-\sin(x_3)]`
 
     Args:
         x1 (float): = Input parameter 1 [0,1)
