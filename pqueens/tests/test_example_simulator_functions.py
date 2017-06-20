@@ -20,6 +20,9 @@ import pqueens.example_simulator_functions.park91b_lofi  as park91b_lofi
 
 import pqueens.example_simulator_functions.oakley_ohagan2004  as oakley_ohagan2004
 
+import pqueens.example_simulator_functions.ma2009  as ma2009
+
+
 
 class TestAgawal(unittest.TestCase):
 
@@ -148,6 +151,22 @@ class TestOakleyOHagan(unittest.TestCase):
         #print("actual_result {}".format(actual_result))
 
         desired_result  = 24.496726490699082
+
+        self.assertAlmostEqual(actual_result, desired_result,
+                               places=8, msg=None, delta=None)
+
+class TestMa(unittest.TestCase):
+
+    def setUp(self):
+        self.params1 = {'x1': 0.25,'x2': 0.5}
+        self.dummy_id = 100
+
+    def test_vals_params(self):
+        actual_result = ma2009.main(self.dummy_id, self.params1)
+
+        #print("actual_result {}".format(actual_result))
+
+        desired_result  = 8.8888888888888875
 
         self.assertAlmostEqual(actual_result, desired_result,
                                places=8, msg=None, delta=None)
