@@ -22,6 +22,9 @@ import pqueens.example_simulator_functions.oakley_ohagan2004  as oakley_ohagan20
 
 import pqueens.example_simulator_functions.ma2009  as ma2009
 
+import pqueens.example_simulator_functions.currin88_hifi  as currin88_hifi
+import pqueens.example_simulator_functions.currin88_lofi  as currin88_lofi
+
 
 
 class TestAgawal(unittest.TestCase):
@@ -169,4 +172,26 @@ class TestMa(unittest.TestCase):
         desired_result  = 8.8888888888888875
 
         self.assertAlmostEqual(actual_result, desired_result,
+                               places=8, msg=None, delta=None)
+
+class TestCurrin88bMultiFidelity(unittest.TestCase):
+
+    def setUp(self):
+        self.params1 = {'x1': 0.6,'x2': 0.1}
+        self.dummy_id = 100
+
+    def test_vals_params(self):
+        actual_result_hifi = currin88_hifi.main(self.dummy_id, self.params1)
+        actual_result_lofi = currin88_lofi.main(self.dummy_id, self.params1)
+
+        #print("actual_result_hifi {}".format(actual_result_hifi))
+        #print("actual_result_lofi {}".format(actual_result_lofi))
+
+        desired_result_hifi  = 11.06777716201019
+        desired_result_lofi  = 10.964538831722423
+
+        self.assertAlmostEqual(actual_result_hifi, desired_result_hifi,
+                               places=8, msg=None, delta=None)
+
+        self.assertAlmostEqual(actual_result_lofi, desired_result_lofi,
                                places=8, msg=None, delta=None)
