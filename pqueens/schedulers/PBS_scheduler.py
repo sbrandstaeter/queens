@@ -44,7 +44,7 @@ class PBSScheduler(AbstractClusterScheduler):
             output (string): Output returned when submitting the job
 
         Returns:
-            (match object): with regular expression matching process id
+            match object: with regular expression matching process id
         """
         regex= r'(^\d+)'
         return re.search(regex, output)
@@ -56,7 +56,7 @@ class PBSScheduler(AbstractClusterScheduler):
             the resource to enable remote job submission
 
         Returns:
-            (list): Submission command(s)
+            list: Submission command(s)
         """
         command_list = self.connect_to_resource + ['qsub']
         return command_list
@@ -71,7 +71,7 @@ class PBSScheduler(AbstractClusterScheduler):
             process_id (int): id of process associated with job
 
         Returns:
-            (bool): is job alive or dead
+            bool: is job alive or dead
         """
 
         alive = False
