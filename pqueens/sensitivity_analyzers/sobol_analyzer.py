@@ -33,8 +33,9 @@ def __init__(self,problem,calc_second_order=True,num_bootstrap_samples=100,
     self.calc_second_order = calc_second_order
     self.num_bootstrap = num_bootstrap_samples
     self.confidence_level  = confidence_level
+    self.mumvariables = 2
 
-    # TODO extract the relvant information form the problem dict. 
+    # TODO extract the relvant information form the problem dict.
 
 def analyze(self, Y):
     """ Compute sensitivity indices for given samples Y
