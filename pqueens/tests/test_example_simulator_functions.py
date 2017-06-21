@@ -25,7 +25,8 @@ import pqueens.example_simulator_functions.ma2009  as ma2009
 import pqueens.example_simulator_functions.currin88_hifi  as currin88_hifi
 import pqueens.example_simulator_functions.currin88_lofi  as currin88_lofi
 
-
+import pqueens.example_simulator_functions.borehole_hifi  as borehole_hifi
+import pqueens.example_simulator_functions.borehole_lofi  as borehole_lofi
 
 class TestAgawal(unittest.TestCase):
 
@@ -189,6 +190,29 @@ class TestCurrin88bMultiFidelity(unittest.TestCase):
 
         desired_result_hifi  = 11.06777716201019
         desired_result_lofi  = 10.964538831722423
+
+        self.assertAlmostEqual(actual_result_hifi, desired_result_hifi,
+                               places=8, msg=None, delta=None)
+
+        self.assertAlmostEqual(actual_result_lofi, desired_result_lofi,
+                               places=8, msg=None, delta=None)
+
+class TestBoreholeMultiFidelity(unittest.TestCase):
+
+    def setUp(self):
+        self.params1 = {'rw':0.1, 'r':500, 'Tu':70000, 'Hu':1000, 'Tl':80,
+                        'Hl':750, 'L':1550, 'Kw':11100}
+        self.dummy_id = 100
+
+    def test_vals_params(self):
+        actual_result_hifi = borehole_hifi.main(self.dummy_id, self.params1)
+        actual_result_lofi = borehole_lofi.main(self.dummy_id, self.params1)
+
+        #print("actual_result_hifi {}".format(actual_result_hifi))
+        #print("actual_result_lofi {}".format(actual_result_lofi))
+
+        desired_result_hifi  = 56.03080181188316
+        desired_result_lofi  = 44.58779860979928
 
         self.assertAlmostEqual(actual_result_hifi, desired_result_hifi,
                                places=8, msg=None, delta=None)
