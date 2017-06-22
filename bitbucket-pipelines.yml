@@ -27,6 +27,7 @@ pipelines:
   default:
     - step:
         script: # Modify the commands below to build your repository.
+          - apt-get install gcc
           - conda create --name pqueens -y
           - source activate pqueens
           - pip install -r requirements.txt
