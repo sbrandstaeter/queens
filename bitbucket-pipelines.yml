@@ -24,7 +24,7 @@
 image: continuumio/anaconda3
 
 pipelines:
-  default:
+  custom:
     - step:
         script: # Modify the commands below to build your repository.
           - apt-get install gcc -y
