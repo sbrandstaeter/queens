@@ -38,9 +38,9 @@ pipelines:
           # transfer test results to codecov.io
           - codecov --token=8eecedcc-6782-468a-b066-0e641741f210
         services:
-          -database
+          - database
             
 definitions:
   services:
     database:
-      image: mongodb
+      image: mongodb:3.4
