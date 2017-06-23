@@ -49,16 +49,28 @@ class PBSScheduler(AbstractClusterScheduler):
         regex= r'(^\d+)'
         return re.search(regex, output)
 
-    def submit_command(self):
+    def submit_command(self,scheduler_options):
         """ Get submit command for PBS type scheduler
 
             The function actually prepends the commands necessary to connect to
             the resource to enable remote job submission
+        Args:
+            scheduler_options (dict): Options to pass to the scheduler
 
         Returns:
             list: Submission command(s)
         """
-        command_list = self.connect_to_resource + ['qsub']
+        # pre assamble some strings
+        proc_info = 'nodes={}:ppn={}'.format(scheduler_options['num_nodes'],
+                                             scheduler_options['num_procs_per_node'])
+        walltime_info = 'walltime={}'.format(scheduler_options['walltime'])
+
+        command_list =  self.connect_to_resource  \
+                        + ['qsub', '-M', scheduler_options['email'],
+                           '-m abe', '-N', scheduler_options['job_name'],
+                           '-l',proc_info, '-l', walltime_info, '-q',
+                           scheduler_options['queue']]
+
         return command_list
 
     def alive(self, process_id):

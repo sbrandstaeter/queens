@@ -42,7 +42,8 @@ class AbstractClusterScheduler(object):
     def alive(self, process_id):
         pass
 
-    def submit(self, job_id, experiment_name, experiment_dir, database_address):
+    def submit(self, job_id, experiment_name, experiment_dir, scheduler_options,
+               database_address):
         """ Function to submit new job to scheduling software on a given resource
 
         Args:
@@ -52,6 +53,8 @@ class AbstractClusterScheduler(object):
                 name of experiment
             experiment_dir  (string):
                 directory of experiment
+            scheduler_options (dict):
+                Options for scheduler
             database_address (string):
                 address of database to connect to
         Returns (int): proccess id of job
@@ -69,7 +72,9 @@ class AbstractClusterScheduler(object):
         # the '<' is needed for execution of local python scripts on potentially remote servers
         run_command = ['<', '/Users/jonas/work/adco/queens_code/pqueens/pqueens/drivers/dummy_driver_baci_pbs_kaiser.py']
 
-        submit_command = self.submit_command()
+        # assemble job_name for cluster
+        scheduler_options['job_name']='queens_{}_{}'.format(experiment_name,job_id)
+        submit_command = self.submit_command(scheduler_options)
 
         submit_command.extend(run_command)
 

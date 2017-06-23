@@ -1,11 +1,5 @@
 #!/usr/bin/env python
 # coding: utf8
-#PBS -M biehler@lnm.mw.tum.de
-#PBS -m abe
-#PBS -N queens_run_1
-#PBS -l nodes=1:ppn=16
-#PBS -l walltime=300:00:00
-#PBS -q opteron
 
 ################################################################################
 #
