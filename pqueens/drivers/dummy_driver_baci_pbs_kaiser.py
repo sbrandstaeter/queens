@@ -11,7 +11,33 @@
 
 import os
 import subprocess
+import json
+#import argparse
 
+from optparse import OptionParser
+
+# parser = OptionParser()
+# parser.add_option("--driver_params", dest="driver_params",
+#                   help="write report to FILE",)
+#
+# (options, args) = parser.parse_args()
+# print(options.driver_params)
+
+from sys import argv
+#script, param = argv
+print(argv[1:])
+data=json.loads(argv[1])
+print(data)
+
+#driver_options =json.loads(options.driver_params)
+#print(options)
+#print(driver_options)
+#parser = argparse.ArgumentParser(description="BACI driver")
+#parser.add_argument('--driver_params', type=str, default='',
+#                    help='Input file in .json format.')
+#args = parser.parse_args()
+
+#print('test{} sd {}'.format(options,args))
 # get PBS working directory
 srcdir=os.environ["PBS_O_WORKDIR"]
 os.chdir(srcdir)
@@ -23,6 +49,7 @@ DESTDIR='/home/biehler/queens_testing/my_first_queens_jobqueens_job_1/output/'
 # GENERAL SPECIFICATIONS
 PREFIX='queens_run_1'
 EXE=BACIDIR + '/baci-release'
+#EXE= driver_options['executable']
 EXEP=BACIDIR + '/post_drt_monitor'
 INPUT='/home/biehler/input/input2.dat'
 

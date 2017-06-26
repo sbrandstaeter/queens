@@ -10,6 +10,9 @@ scheduler_options['walltime'] = '300:00:00'
 scheduler_options['email']     = 'biehler@lnm.mw.tum.de'
 scheduler_options['queue']   = 'opteron'
 
+driver_options = {}
+driver_options['bla'] = '/home/biehler/baci/release/baci-release'
+
 #PBS -M biehler@lnm.mw.tum.de
 #PBS -m abe
 #PBS -N queens_run_1
@@ -17,5 +20,6 @@ scheduler_options['queue']   = 'opteron'
 #PBS -l walltime=300:00:00
 #PBS -q opteron
 
-my_scheduler.submit(1,'test','test2',scheduler_options,'database_adress')
+my_scheduler.submit(1,'test','test2',scheduler_options,
+                    driver_options,'database_adress')
 #my_scheduler.alive(322932)

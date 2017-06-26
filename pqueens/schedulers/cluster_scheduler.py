@@ -2,7 +2,7 @@
 import pqueens
 import subprocess
 import sys
-#import socket
+import json
 #import re
 #import os
 
@@ -27,7 +27,7 @@ class AbstractClusterScheduler(object):
         self.connect_to_resource = []
 
     @abstractmethod
-    def submit_command(self):
+    def submit_command(self,scheduler_options):
         pass
 
     @abstractmethod
@@ -43,7 +43,7 @@ class AbstractClusterScheduler(object):
         pass
 
     def submit(self, job_id, experiment_name, experiment_dir, scheduler_options,
-               database_address):
+               driver_options, database_address):
         """ Function to submit new job to scheduling software on a given resource
 
         Args:
@@ -55,6 +55,8 @@ class AbstractClusterScheduler(object):
                 directory of experiment
             scheduler_options (dict):
                 Options for scheduler
+            driver_options (dict):
+                Options for driver
             database_address (string):
                 address of database to connect to
         Returns (int): proccess id of job
@@ -69,8 +71,22 @@ class AbstractClusterScheduler(object):
         #if database_address == "localhost":
         #   database_address = socket.gethostname()
 
+        # note for posterity getting a dictionary with options properly from here
+        # to the driver script is a pain a geetting the quotations right is a
+        # nightmare. In any case the stuff below works, so do not touch it
+
+        # convert driver options dict to json
+        driver_options_json_str = json.dumps(driver_options)
+        # run it a second time (not quite sure why this is needed, but it
+        # does not work without it)
+        driver_options_json_str = json.dumps(driver_options_json_str)
+        driver_options_json_str = "\\'" +driver_options_json_str  + "\\'"
+
         # the '<' is needed for execution of local python scripts on potentially remote servers
-        run_command = ['<', '/Users/jonas/work/adco/queens_code/pqueens/pqueens/drivers/dummy_driver_baci_pbs_kaiser.py']
+        driver_args = '-F ' + driver_options_json_str
+        # one more time
+        driver_args = json.dumps(driver_args)
+        run_command = ['<', "/Users/jonas/work/adco/queens_code/pqueens/pqueens/drivers/dummy_driver_baci_pbs_kaiser.py" ,driver_args]
 
         # assemble job_name for cluster
         scheduler_options['job_name']='queens_{}_{}'.format(experiment_name,job_id)
