@@ -3,8 +3,7 @@ import pqueens
 import subprocess
 import sys
 import json
-#import re
-#import os
+
 
 from abc import ABCMeta, abstractmethod
 
@@ -62,14 +61,13 @@ class AbstractClusterScheduler(object):
         Returns (int): proccess id of job
 
         """
-        #base_path = os.path.dirname(os.path.realpath(queens.__file__))
-        # TODO add arguments to launcher such as experiment_name,
-        # experiment_dir, database_address, and jobid
 
-        # Since "localhost" might mean something different on the machine
-        # we are submitting to, set it to the actual name of the parent machine
-        #if database_address == "localhost":
-        #   database_address = socket.gethostname()
+        driver_options['experiment_dir'] = experiment_dir
+        driver_options['experiment_name'] = experiment_name
+        driver_options['job_id'] = job_id
+        # for now we assume that an ssh tunnel has been set up such
+        # that we can connect to the database via localhost:portid
+        driver_options['database_address'] = database_address
 
         # note for posterity getting a dictionary with options properly from here
         # to the driver script is a pain a geetting the quotations right is a
@@ -82,11 +80,13 @@ class AbstractClusterScheduler(object):
         driver_options_json_str = json.dumps(driver_options_json_str)
         driver_options_json_str = "\\'" +driver_options_json_str  + "\\'"
 
-        # the '<' is needed for execution of local python scripts on potentially remote servers
+        # the '<' is needed for execution of local python scripts on potentially
+        # remote servers
         driver_args = '-F ' + driver_options_json_str
         # one more time
         driver_args = json.dumps(driver_args)
-        run_command = ['<', "/Users/jonas/work/adco/queens_code/pqueens/pqueens/drivers/dummy_driver_baci_pbs_kaiser.py" ,driver_args]
+
+        run_command = ['<', scheduler_options['driver']  ,driver_args]
 
         # assemble job_name for cluster
         scheduler_options['job_name']='queens_{}_{}'.format(experiment_name,job_id)

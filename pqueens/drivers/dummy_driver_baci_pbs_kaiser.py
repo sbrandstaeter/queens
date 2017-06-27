@@ -12,46 +12,26 @@
 import os
 import subprocess
 import json
-#import argparse
-
-from optparse import OptionParser
-
-# parser = OptionParser()
-# parser.add_option("--driver_params", dest="driver_params",
-#                   help="write report to FILE",)
-#
-# (options, args) = parser.parse_args()
-# print(options.driver_params)
-
 from sys import argv
-#script, param = argv
-print(argv[1:])
-data=json.loads(argv[1])
-print(data)
 
-#driver_options =json.loads(options.driver_params)
-#print(options)
+# all necessary information is passed via this dictionary
+driver_options=json.loads(argv[1])
 #print(driver_options)
-#parser = argparse.ArgumentParser(description="BACI driver")
-#parser.add_argument('--driver_params', type=str, default='',
-#                    help='Input file in .json format.')
-#args = parser.parse_args()
 
-#print('test{} sd {}'.format(options,args))
 # get PBS working directory
 srcdir=os.environ["PBS_O_WORKDIR"]
 os.chdir(srcdir)
 
-BACIDIR=os.environ["HOME"]+'/baci/release'
-DESTDIR='/home/biehler/queens_testing/my_first_queens_jobqueens_job_1/output/'
+DESTDIR = driver_options['experiment_dir']
+PREFIX = str(driver_options['experiment_name']) + '_' + str(driver_options['job_id'])
+EXE = driver_options['executable']
+EXEP = driver_options['post_processor']
+INPUT=driver_options['input_template']
+post_process_command = driver_options['post_process_command']
 
-
-# GENERAL SPECIFICATIONS
-PREFIX='queens_run_1'
-EXE=BACIDIR + '/baci-release'
-#EXE= driver_options['executable']
-EXEP=BACIDIR + '/post_drt_monitor'
-INPUT='/home/biehler/input/input2.dat'
+# TODO connect to database
+# TODO get input parameters from database
+# TODO create actual input file using provided template
 
 # setup MPI environment
 MPI_RUN = '/opt/openmpi/1.6.2/gcc48/bin/mpirun'
@@ -60,14 +40,11 @@ MPI_HOME = '/opt/openmpi/1.6.2/gcc48'
 os.environ["MPI_HOME"] = MPI_HOME
 os.environ["MPI_RUN"] = MPI_RUN
 
-# try to create destdir, assume that its there if makedirs fails
-try:
-    os.makedirs(DESTDIR)
-except OSError:
-    pass
+output_directory = os.path.join(DESTDIR, 'output')
+if not os.path.isdir(output_directory):
+    os.mkdir(output_directory)
 
 # determine number of processors from nodefile
-#PROCS=16#os.system('cat $PBS_NODEFILE | wc -l')
 PBS_NODEFILE=os.environ["PBS_NODEFILE"]
 print(PBS_NODEFILE)
 command_list = ['cat',PBS_NODEFILE,'|','wc', '-l' ]
@@ -84,9 +61,8 @@ print(PROCS)
 
 # Add non-standard shared library paths
 # "LD_LIBRARY_PATH" seems to be also empty, so simply set it to MPI_HOME
-# eventually this should changed to mereyl append the MÜI_HOME path
+# eventually this should changed to mereyl append the MPI_HOME path
 os.environ["LD_LIBRARY_PATH"] = MPI_HOME
-
 
 # determine 'optimal' flags for the problem size
 if PROCS%16 == 0:
@@ -94,8 +70,6 @@ if PROCS%16 == 0:
 else:
     MPIFLAGS="--mca btl openib,sm,self"
 
-
-# Add executable name to the command
 # note that we directly write the output to the home folder and do not create
 # the appropriate directories on the nodes. This should be changed at some point.
 # So long be careful !
@@ -114,3 +88,6 @@ p = subprocess.Popen(runcommand_string,
 stdout, stderr = p.communicate()
 print(stdout)
 print(stderr)
+
+# TODO postprocess results
+# TODO write results to database
