@@ -58,7 +58,8 @@ class AbstractClusterScheduler(object):
                 Options for driver
             database_address (string):
                 address of database to connect to
-        Returns (int): proccess id of job
+        Returns:
+            int: proccess id of job
 
         """
 
@@ -95,6 +96,7 @@ class AbstractClusterScheduler(object):
         submit_command.extend(run_command)
 
         command_string = ' '.join(submit_command)
+
         process = subprocess.Popen(command_string,
                                 stdin=subprocess.PIPE,
                                 stdout=subprocess.PIPE,
