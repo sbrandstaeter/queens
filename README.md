@@ -22,7 +22,8 @@ https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.18113469
 #### Installation directions ####
 
 For developers:
-
+Install all requirements using the requirements file:
+`pip install -r requirements.txt`
 run `python setup.py develop` Using a virtual environment e.g. based on anaconda is highly recommended. In that case install command
 should be executed as follows:
 `/Applications/anaconda/envs/test/bin/python python setup.py develop`

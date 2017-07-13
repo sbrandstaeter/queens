@@ -1,1 +1,5 @@
 __pycache__
+# do not track doc files that are automatically build
+doc/build
+
+.coverage

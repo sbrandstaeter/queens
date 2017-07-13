@@ -5,6 +5,7 @@ scipy
 matplotlib
 sphinx
 jupyter
+scikit-learn
 # for code coverage purposes
 codecov
 coverage
@@ -12,3 +13,7 @@ coverage
 pymongo
 # for design of experiments
 pyDOE
+# for Gaussian Processes
+gpy
+#for making nice plots
+seaborn
