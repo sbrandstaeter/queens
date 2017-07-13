@@ -38,7 +38,7 @@ def currin88_lofi(x1, x2):
             Technometrics, 55(1), 37-46.
     """
 
-    maxarg = np.max([0, x2-1/20])
+    maxarg = np.maximum(np.zeros((1,len(x2)),dtype = float), x2-1/20)
 
     yh1 = currin88_hifi(x1+1/20, x2+1/20)
     yh2 = currin88_hifi(x1+1/20, maxarg)
