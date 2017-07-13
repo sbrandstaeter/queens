@@ -37,3 +37,5 @@ def main(job_id, params):
         float: Value of Branin function at parameters specified in input dict
     """
     return branin_hifi(params['x1'], params['x2'])
+
+
