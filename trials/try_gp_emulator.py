@@ -9,10 +9,9 @@ import numpy as np
 
 from  pqueens.designers.monte_carlo_designer import MonteCarloDesigner
 from  pqueens.designers.lhs_designer import LatinHyperCubeDesigner
-from  example_simulator_functions.branin_hifi import branin_hifi
+from  pqueens.example_simulator_functions.branin_hifi import branin_hifi
 from  pqueens.emulators.gp_emulator import GPEmulator
-
-import seaborn as sns
+from  pqueens.utils import pdf_estimation
 import matplotlib.pylab as plt
 
 
@@ -21,20 +20,20 @@ params =   {   "x" : {
                     "size" : 1,
                     "min"  : -5,
                     "max"  : 10,
-                    "distribution" : 'normal',
-                    "distribution_parameter" : [0,1]
+                    "distribution" : 'uniform',
+                    "distribution_parameter" : [-5,15]
                     },
                     "y" : {
                     "type" : "FLOAT",
                     "size" : 1,
                     "min"  : 0,
                     "max"  : 15,
-                    "distribution" : 'normal',
-                    "distribution_parameter" : [0,1]
+                    "distribution" : 'uniform',
+                    "distribution_parameter" : [0,15]
                     }
                 }
 
-num_design_points = 50
+num_design_points = 150
 seed = 49
 
 # create lhs design
@@ -47,53 +46,127 @@ y = branin_hifi(design_points[:,0],design_points[:,1])
 # build GP emulator based on available samples
 my_emulator = GPEmulator(design_points,y.reshape(-1,1),params)
 
-# compute mean and variance of mean using GP emulator
-mean_mean, var_mean = my_emulator.compute_mean()
+################################################################################
+# compute reference solution
+################################################################################
+my_mc_sampler = MonteCarloDesigner(params,43,1000)
+test_samples = my_mc_sampler.get_all_samples()
+ref_solution_sample_values = branin_hifi(test_samples[:,0],test_samples[:,1])
+# compute mean
+mean_ref_solution= np.mean(ref_solution_sample_values)
+# compute pdf estimate
+kde_bandwidth = pdf_estimation.estimate_bandwidth_for_kde(ref_solution_sample_values,
+                                                          np.amin(ref_solution_sample_values),
+                                                          np.amax(ref_solution_sample_values))
 
-print("mean_mean{}".format(mean_mean))
-print("var_mean{}".format(var_mean))
+my_pdf_ref, y_plot_ref  = pdf_estimation.estimate_pdf(ref_solution_sample_values,
+                                                      kde_bandwidth)
 
+
+# sort samples in ascending order first
+sample_values_ref_sorted=np.sort(ref_solution_sample_values,axis=0)
+
+# compute cdf
+cdf_ref = np.arange(1, len(sample_values_ref_sorted)+1) / \
+    float(len(sample_values_ref_sorted))
+
+
+# compute failure probability
+my_quantiles = np.linspace(0,100,1000)
+y_quantile_ref = np.percentile(ref_solution_sample_values,my_quantiles,axis=0)
+my_fail_prob_ref = 1-my_quantiles/100.0
+
+
+################################################################################
+# compute predictions and compute rmse
+################################################################################
+my_predictions_mean = my_emulator.predict(test_samples)
+reference_vec = np.reshape(ref_solution_sample_values,(-1,1))
+error = np.linalg.norm(reference_vec - my_predictions_mean)/ \
+    np.linalg.norm(reference_vec)
+
+print("GP emulator rmse error: {}".format(error))
+
+################################################################################
+# compute mean estimate using GP emulator
+################################################################################
+my_mean_mean, my_mean_var = my_emulator.compute_mean()
+
+print("Reference mean: {}".format(mean_ref_solution))
+print("GP emulator mean: {}".format(my_mean_mean))
+
+################################################################################
 # compute pdf estimate using GP emulator
-my_pdf, y_plot = my_emulator.compute_pdf()
+################################################################################
 
-fig = plt.figure(figsize=(12, 6))
-line, = plt.plot(y_plot, my_pdf['mean'], lw=2, color='red')
-line2, = plt.plot(y_plot, my_pdf['median'], lw=2, color='blue')
-plt.fill_between(y_plot,my_pdf['quant_low'], my_pdf['quant_high'],
-                 color='blue',alpha = 0.1)
-plt.tight_layout()
+my_pdf_hifi, y_plot_hifi  = my_emulator.compute_pdf()
+fig = plt.figure()
+fig.suptitle('Probability Density Function', fontsize=14)
+line1, = plt.plot(y_plot_hifi, my_pdf_hifi['mean'], lw=2, color='blue',label='GP mean')
+line2, = plt.plot(y_plot_hifi, my_pdf_hifi['median'], lw=2, color='green',label='GP median')
+plt.fill_between(y_plot_hifi,my_pdf_hifi['quant_low'], my_pdf_hifi['quant_high'],
+                  color='blue',alpha = 0.3,label='GP conf. reg.')
+
+line4, = plt.plot(y_plot_ref, my_pdf_ref, lw=2, color='red',label='MC reference')
 plt.ylabel('pdf(y)')
 plt.xlabel('y')
-plt.legend(('mean','median','confidence region'))
-fig.savefig('pdf.pdf', format='pdf',bbox_inches='tight')
+plt.legend()
+plt.show()
 
+################################################################################
+# compute cdf estimate using GP emulator
+################################################################################
+cdf_val, sample_values = my_emulator.compute_cdf()
 
-#compute cdf estimate using GP emulator
-my_cdf, y_plot = my_emulator.compute_cdf()
-fig = plt.figure(figsize=(12, 6))
-line, = plt.plot(y_plot, my_cdf, lw=2, color='red')
+fig = plt.figure()
+fig.suptitle('Cumulative Distribution Function', fontsize=14)
+x = np.append(sample_values['q_lower_bound'],
+              sample_values['q_upper_bound'][::-1])
+
+y = np.append(cdf_val,cdf_val[::-1])
+
+line5, = plt.plot(sample_values_ref_sorted, cdf_ref, lw=2, color='red',
+                  label='MC reference')
+
+p = plt.Polygon(np.c_[x,y], color="blue",alpha=0.3,label='GP conf. reg.')
+ax = plt.gca()
+ax.add_patch(p)
+line1, = plt.plot(sample_values['mean'], cdf_val, lw=2, color='blue',
+                  label='GP mean')
+line4, = plt.plot(sample_values['median'], cdf_val, lw=2, color='green',
+                  label='GP median')
+
+plt.legend()
+
 plt.ylabel('cdf(y)')
 plt.xlabel('y')
-#line2, = plt.plot(y_plot, my_cdf['median'], lw=2, color='blue')
-#plt.fill_between(y_plot,my_cdf['quant_low'], my_cdf['quant_high'],color='blue',alpha = 0.1)
-plt.tight_layout()
-fig.savefig('cdf.pdf', format='pdf',bbox_inches='tight')
+plt.show()
 
 
-# compute failure probabilities using GP emulator
+
+################################################################################
+# compute failure probability estimate using GP emulator
+################################################################################
 y_quantile, my_fail_prob = my_emulator.compute_failure_probability_function()
-fig = plt.figure(figsize=(12, 6))
+fig = plt.figure()
 plt.ylabel('failure probability')
 plt.xlabel('y_0')
-line, = plt.semilogy(y_quantile['mean'],my_fail_prob, lw=2, color='red')
-line, = plt.semilogy(y_quantile['quant_high'],my_fail_prob, lw=2, color='green')
-line, = plt.semilogy(y_quantile['quant_low'],my_fail_prob, lw=2, color='green')
-#my_min = np.min(y_quantile['quant_high'])
-#my_max = np.max(y_quantile['quant_low'])
-#x = np.linspace(my_min, my_max, num=len(y_quantile['quant_low']))
-#plt.fill_betweenx(x,y_quantile['quant_low'],y_quantile['quant_high'],color='blue',alpha = 0.1)
-#plt.fill_between(x, y_quantile['quant_low'], y_quantile['quant_high'], facecolor='green')
-#plt.fill_between(x, 1, y_quantile['quant_low'])
-plt.legend(('mean','quantile 0.95','quantile 0.05'))
-plt.tight_layout()
-fig.savefig('failure_prob.pdf', format='pdf',bbox_inches='tight')
+
+line1, = plt.plot(y_quantile['mean'],my_fail_prob, lw=2, color='blue',label='GP mean')
+line2, = plt.plot(y_quantile['median'],my_fail_prob, lw=2, color='green',label='GP median')
+line3, = plt.plot(y_quantile_ref,my_fail_prob_ref, lw=2, color='red',label='MC reference')
+
+
+x = np.append(y_quantile['q_upper_bound'],
+              y_quantile['q_lower_bound'][::-1])
+
+y = np.append(my_fail_prob,my_fail_prob[::-1])
+
+p = plt.Polygon(np.c_[x,y], color="blue",alpha=0.3,label='GP conf. reg.')
+ax = plt.gca()
+ax.add_patch(p)
+
+plt.legend()
+ax.set_yscale('log')
+plt.show()
+# fig.savefig('failure_prob.pdf', format='pdf',bbox_inches='tight')
