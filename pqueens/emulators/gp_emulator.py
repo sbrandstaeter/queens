@@ -3,6 +3,8 @@ import GPy
 from  pqueens.designers.monte_carlo_designer import MonteCarloDesigner
 from  pqueens.utils import pdf_estimation
 
+# TODO make tests for this class
+
 class GPEmulator(object):
     """ Class for creating GP based emulators
 
