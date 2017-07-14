@@ -177,8 +177,13 @@ class GPEmulator(object):
     def compute_cdf(self):
         """ Compute cumulative density function of emulator output
 
+        This function computes the cumulative distribution
+        function (cdf) of the emulator. Confindence bounds on the
+        cdf are also provided harnessing the Bayesian nature of the emulator.
+
         Returns:
-            np.array,np.array: cdf for values in second array
+            dict,np.array: dict with arrays of cdf values at the locations
+            stored in the second output argument
 
         """
         sample_values_raw = self.create_posterior_samples(self.num_emulator_samples,
@@ -239,7 +244,7 @@ class GPEmulator(object):
                                                  self.num_mc_samples)
 
         my_quantile = {}
-        y_quantile = np.percentile(my_evals,my_quantiles,axis=0)
+        y_quantile = np.percentile(my_evals,my_quantiles,axis=1)
         my_quantile['q_lower_bound'] = np.percentile(y_quantile, 2.5, 1)
         my_quantile['q_upper_bound'] = np.percentile(y_quantile, 97.5, 1)
         my_quantile['median'] = np.percentile(y_quantile, 50, 1)
