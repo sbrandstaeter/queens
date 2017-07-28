@@ -1,6 +1,6 @@
 from .abstract_designer import AbstractDesigner
-from pqueens.utils.factorial import compute_factorial
 import numpy as np
+import math
 
 class PseudoSaltelliDesigner(AbstractDesigner):
     """ Pseudo Saltelli designer for experiments
@@ -14,6 +14,7 @@ class PseudoSaltelliDesigner(AbstractDesigner):
         doi:10.1137/13926869
 
     Attributes:
+
         self.num_samples (int): number of design points
         self.ps (np.array): array with all samples/design points
 
@@ -30,7 +31,8 @@ class PseudoSaltelliDesigner(AbstractDesigner):
         """
         numparams = len(params)
         self.dim = len(params['X'])
-        self.nb_combi = (self.dim+2+compute_factorial(self.dim)//(2*compute_factorial(self.dim-2)))
+        self.nb_combi = (self.dim+2+math.factorial(self.dim)//(2*math.factorial(self.dim-2)))
+        print(self.nb_combi)
         # fix seed of random number generator
         np.random.seed(seed)
         self.num_samples = num_samples

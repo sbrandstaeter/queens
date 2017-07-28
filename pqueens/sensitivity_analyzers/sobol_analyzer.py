@@ -4,7 +4,6 @@ import os
 import combi
 import pyDOE
 import random
-from pqueens.utils.factorial import compute_factorial
 
 class SobolAnalyzer(object):
     """ Class for computing Sobol indices
@@ -155,7 +154,7 @@ class SobolAnalyzer(object):
         Y = np.asarray(Y)
         m = len(Y)
         S = self.create_Si_dict(dim)
-        nb_combi = (dim+2+compute_factorial(dim)//(2*compute_factorial(dim-2)))
+        nb_combi = (dim+2+math.factorial(dim)//(2*math.factorial(dim-2)))
 
         for j in range(dim):
             S['S1'][j] = self.compute_first_order_sensitivity_indice(Y[:,0], Y[:,j+1])
