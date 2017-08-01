@@ -63,7 +63,11 @@ class SobolAnalyzer(object):
         self.num_bootstrap_conf = num_bootstrap_conf
 
     def generate_bootstrap_samples(self,m):
-        """ Generate the samples necessary to make bootstrapping """
+        """ Generate the samples necessary to make bootstrapping
+        Args :
+        m (int) :
+            number of samples
+        """
         H = np.zeros((self.num_bootstrap_samples,m), dtype = int)
         for z in range(self.num_bootstrap_samples):
             a = 1
@@ -77,7 +81,17 @@ class SobolAnalyzer(object):
 
     def compute_first_order_sensitivity_indice(self,Y,Y_tilde,m):
         """ Compute the First-Order Indice Sensitivity Indices with
-        Algorithm 1 and Proposition 1 in [1] """
+        Algorithm 1 and Proposition 1 in [1]
+        Args:
+        Y (numpy.array) :
+            Evaluation of our sample X from the input space with the model (or
+            metamodel) of our problem.
+        Y_tilde (numpy.array) :
+            Evaluation of our sample X_tilde from the input space with the model
+            (or metamodel) of our problem.
+        m (int) :
+            number of samples
+        """
         # First order estimator following Le Gratiet et al. 2014
         S_M_N_K_L= np.zeros((self.output_samples,self.num_bootstrap_samples),dtype=float)
         H = self.generate_bootstrap_samples(m)
@@ -95,7 +109,15 @@ class SobolAnalyzer(object):
 
     def compute_second_order_sensitivity_indice(self,Y, Y_tilde, Y_tilde_bis, Y_tilde_ter,m):
         """ Compute the Second-Order Indice Sensitivity Indices with
-        Algorithm 1 and Proposition 1 in [1] """
+        Algorithm 1 and Proposition 1 in [1]
+        Args:
+        Y (numpy.array) :
+            Evaluation of our sample X from the input space with the model (or
+            metamodel) of our problem.
+        Y_tilde (numpy.array) :
+            Evaluation of our sample X_tilde from the input space with the model
+            (or metamodel) of our problem.
+        """
         S_M_N_K_L =  np.zeros((self.output_samples,self.num_bootstrap_samples), dtype = float)
         H = self.generate_bootstrap_samples(m)
         for k in range(self.output_samples):
@@ -117,7 +139,17 @@ class SobolAnalyzer(object):
         return S_M_N_K_L
 
     def compute_total_order_sensitivity_indice(self,Y, Y_tilde,m):
-        """ Compute the Total-Order Indice Sensitivity Indices [2] """
+        """ Compute the Total-Order Indice Sensitivity Indices [2]
+        Args:
+        Y (numpy.array) :
+            Evaluation of our sample X from the input space with the model (or
+            metamodel) of our problem.
+        Y_tilde (numpy.array) :
+            Evaluation of our sample X_tilde from the input space with the model
+            (or metamodel) of our problem.
+        m (int) :
+            number of samples
+        """
         S_M_N_K_L = np.zeros((self.output_samples,self.num_bootstrap_samples),dtype=float)
         H = self.generate_bootstrap_samples(m)
         for k in range(self.output_samples):
@@ -132,27 +164,32 @@ class SobolAnalyzer(object):
                 S_M_N_K_L[k,l] = 1-num_b/den_b
         return S_M_N_K_L
 
-    def compute_confidence_interval(self,conf_level, S_M_N_K_L, num_bootstrap_conf):
+    def compute_confidence_interval(self, S_M_N_K_L):
         """Function to compute the confidence intervals for our sensitivity
-        indice"""
+        indice
+        Args:
+        S_M_N_K_L (numpy.array) :
+            NumPy array containing all the values of the Sensitivity Indices get
+            thanks to Algorithm 1 and Proposition 1 in [1]
+        """
         S_M_N_K_L_bootstrap = np.zeros([self.num_bootstrap_samples*self.output_samples])
-        data_bootstrap = np.zeros([num_bootstrap_conf])
-        if not 0 < conf_level < 1:
+        data_bootstrap = np.zeros([self.num_bootstrap_conf])
+        if not 0 < self.confidence_level < 1:
             raise ValueError("Confidence level must be between 0 and 1")
         S_M_N_K_L_temp = S_M_N_K_L.reshape((1,self.num_bootstrap_samples*self.output_samples))
-        bootstrap_index = np.random.randint(len(S_M_N_K_L_temp), size = (self.num_bootstrap_samples*self.output_samples,num_bootstrap_conf))
+        bootstrap_index = np.random.randint(len(S_M_N_K_L_temp), size = (self.num_bootstrap_samples*self.output_samples,self.num_bootstrap_conf))
         S_M_N_K_L_bootstrap= S_M_N_K_L[bootstrap_index]
         data_bootstrap = np.average(np.abs(S_M_N_K_L_bootstrap), axis = 1)
-        return norm.ppf(0.5 + conf_level/2)*data_bootstrap.std(ddof = 1)
+        return norm.ppf(0.5 + self.confidence_level/2)*data_bootstrap.std(ddof = 1)
 
-    def create_Si_dict(self,dim):
+    def create_Si_dict(self):
         """ Create a dictionnary to store the results, function from
         the python library SALib """
-        S = dict((k,np.zeros(dim)) for k in ('S1','S1_conf','ST','ST_conf'))
+        S = dict((k,np.zeros(self.dim)) for k in ('S1','S1_conf','ST','ST_conf'))
         if self.calc_second_order:
-            S['S2'] = np.zeros((dim, dim))
+            S['S2'] = np.zeros((self.dim, self.dim))
             S['S2'][:] = np.nan
-            S['S2_conf'] = np.zeros((dim, dim))
+            S['S2_conf'] = np.zeros((self.dim, self.dim))
             S['S2_conf'][:] = np.nan
         return S
 
@@ -166,16 +203,16 @@ class SobolAnalyzer(object):
         """
         Y = np.asarray(Y)
         m = len(Y[0,:,:])
-        S = self.create_Si_dict(self.dim)
+        S = self.create_Si_dict()
         nb_combi = (self.dim+2+math.factorial(self.dim)//(2*math.factorial(self.dim-2)))
 
         for j in range(self.dim):
             S_M_N_K_L = self.compute_first_order_sensitivity_indice(Y[:,:,0], Y[:,:,j+1],m)
             S['S1'][j] = np.mean(S_M_N_K_L)
-            S['S1_conf'][j] = self.compute_confidence_interval(self.confidence_level, S_M_N_K_L, self.num_bootstrap_conf)
+            S['S1_conf'][j] = self.compute_confidence_interval(S_M_N_K_L)
             S_M_N_K_L_total = self.compute_total_order_sensitivity_indice(Y[:,:,0], Y[:,:,nb_combi-j-2],m)
             S['ST'][j] = np.mean(S_M_N_K_L_total)
-            S['ST_conf'][j] = self.compute_confidence_interval(self.confidence_level, S_M_N_K_L_total, self.num_bootstrap_conf)
+            S['ST_conf'][j] = self.compute_confidence_interval(S_M_N_K_L_total)
 
         # Second order (+conf.)
         if self.calc_second_order:
@@ -184,7 +221,7 @@ class SobolAnalyzer(object):
                     S_M_N_K_L_2 = self.compute_second_order_sensitivity_indice(Y[:,:,0],
                     Y[:,:,j+k+self.dim], Y[:,:,j+1], Y[:,:,k+1],m)
                     S['S2'][j, k] = np.mean(S_M_N_K_L_2)
-                    S['S2_conf'][j, k] = self.compute_confidence_interval(self.confidence_level, S_M_N_K_L_2, self.num_bootstrap_conf)
+                    S['S2_conf'][j, k] = self.compute_confidence_interval(S_M_N_K_L_2)
 
         print("{0:<30} {1:>10} {2:>10} {3:>15} {4:>10}".format(
             "Parameter",
@@ -200,11 +237,3 @@ class SobolAnalyzer(object):
                 S['S1_conf'][j],
                 S['ST'][j],
                 S['ST_conf'][j]))
-
-        if calc_second_order:
-            print('\n%s_1 %s_2 S2 S2_conf' % (title,title))
-
-        for j in list(range(self.dim))::
-            for k in list(range(j + 1, self.dim)):
-                print("%s %s %f %f" % (names[j], names[k],
-                S['S2'][j, k], S['S2_conf'][j, k]))
