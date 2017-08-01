@@ -3,8 +3,8 @@ import sys
 import time
 import argparse
 
-from .baci_driver import baci_driver
-from .python_driver_vector_interface import python_driver_vector_interface
+from pqueens.drivers.baci_driver import baci_driver
+from pqueens.drivers.python_driver_vector_interface import python_driver_vector_interface
 from pqueens.database.mongodb import MongoDB
 
 def main():
