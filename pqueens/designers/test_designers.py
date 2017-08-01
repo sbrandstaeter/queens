@@ -19,7 +19,6 @@ params = { 'X' :{'x1' : np.random.uniform(-math.pi, math.pi,num_samples), 'x2' :
 'X_tilde' :{'x1' : np.random.uniform(-math.pi, math.pi,num_samples), 'x2' : np.random.uniform(-math.pi, math.pi,num_samples),'x3' : np.random.uniform(-math.pi, math.pi,num_samples)}}
 
 GD = GroupDesigner(params,num_samples)
-
 Y = GD.get_all_samples()
 print(Y)
 
