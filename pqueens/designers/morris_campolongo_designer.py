@@ -80,8 +80,6 @@ class MorrisCampolongoDesigner(object):
             The confidence interval level (default 0.95)
         num_bootstrap_conf (int) :
             Number of bootstrap iterations for the computation of confidence intervals
-        output_samples (int):
-            The number of output samples Y (default 1)
 
         """
         self.num_traj = num_traj
