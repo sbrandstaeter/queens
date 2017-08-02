@@ -15,12 +15,12 @@ import random
 seed=43
 num_samples=5
 
-params = { 'X' :{'x1' : np.random.uniform(-math.pi, math.pi,num_samples), 'x2' : np.random.uniform(-math.pi, math.pi,num_samples),'x3' : np.random.uniform(-math.pi, math.pi,num_samples)},
-'X_tilde' :{'x1' : np.random.uniform(-math.pi, math.pi,num_samples), 'x2' : np.random.uniform(-math.pi, math.pi,num_samples),'x3' : np.random.uniform(-math.pi, math.pi,num_samples)}}
+# params = { 'X' :{'x1' : np.random.uniform(-math.pi, math.pi,num_samples), 'x2' : np.random.uniform(-math.pi, math.pi,num_samples),'x3' : np.random.uniform(-math.pi, math.pi,num_samples)},
+# 'X_tilde' :{'x1' : np.random.uniform(-math.pi, math.pi,num_samples), 'x2' : np.random.uniform(-math.pi, math.pi,num_samples),'x3' : np.random.uniform(-math.pi, math.pi,num_samples)}}
 
-GD = GroupDesigner(params,num_samples)
-Y = GD.get_all_samples()
-print(Y)
+# GD = GroupDesigner(params,num_samples)
+# Y = GD.get_all_samples()
+# print(Y)
 
 params = {
 'num_vars': 3,
@@ -29,7 +29,7 @@ params = {
 }
 num_traj = 10
 num_traj_chosen = 4
-optim = False
+optim = True
 grid_jump = 2
 nums_levels = 4
 dim = 3

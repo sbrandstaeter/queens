@@ -104,11 +104,6 @@ class MorrisAnalyzer(object):
         self.confidence_level  = confidence_level
         self.num_bootstrap_conf = num_bootstrap_conf
         self.output_samples = output_samples
-        self.bounds = np.ones((2,self.dim))
-        for i in range(self.dim):
-            self.bounds[0,i] = params['bounds'][i][0]
-            self.bounds[1,i] = params['bounds'][i][1]
-        # If our input space is not [0 1] scale length of Delta
 
     def compute_elementary_effect(self, B_star, perm):
         """ Function to compute the elementary effect for the different
@@ -120,90 +115,90 @@ class MorrisAnalyzer(object):
         """
         EE = np.ones((1,self.dim), dtype = float)
         for i in range(self.dim):
-            Delta_b = (B_star[i+1,perm[i]]-B_star[i,perm[i]])
+            s = np.sign(B_star[i+1,perm[i]]-B_star[i,perm[i]])
             if self.params['function'] == ma2009:
                 num = (ma2009(B_star[i+1,0],B_star[i+1,1])
                 -ma2009(B_star[i,0],B_star[i,1]))
-                den = Delta_b
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == perdikaris_1dsin_lofi:
                 num = (perdikaris_1dsin_lofi(B_star[i+1,0])
                 -perdikaris_1dsin_lofi(B_star[i,0]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == perdikaris_1dsin_hifi:
                 num = (perdikaris_1dsin_hifi(B_star[i+1,0])
                 -perdikaris_1dsin_hifi(B_star[i,0]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == branin_lofi:
                 num = (branin_lofi(B_star[i+1,0],B_star[i+1,1])
                 -branin_lofi(B_star[i,0],B_star[i,1]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == branin_medfi:
                 num = (branin_medfi(B_star[i+1,0],B_star[i+1,1])
                 -branin_medfi(B_star[i,0],B_star[i,1]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == branin_hifi:
                 num = (branin_hifi(B_star[i+1,0],B_star[i+1,1])
                 -branin_hifi(B_star[i,0],B_star[i,1]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == park91b_lofi:
                 num = (park91b_lofi(B_star[i+1,0],B_star[i+1,1],
                 B_star[i+1,2],B_star[i+1,3])-park91b_lofi(B_star[i,0],
                 B_star[i,1],B_star[i,2],B_star[i,3]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == park91b_hifi:
                 num = (park91b_hifi(B_star[i+1,0],B_star[i+1,1],
                 B_star[i+1,2],B_star[i+1,3])-park91b_hifi(B_star[i,0],
                 B_star[i,1],B_star[i,2],B_star[i,3]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == park91a_lofi:
                 num = (park91a_lofi(B_star[i+1,0],B_star[i+1,1],
                 B_star[i+1,2],B_star[i+1,3])-park91a_lofi(B_star[i,0],
                 B_star[i,1],B_star[i,2],B_star[i,3]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == park91a_hifi:
                 num = (park91a_hifi(B_star[i+1,0],B_star[i+1,1],
                 B_star[i+1,2],B_star[i+1,3])-park91a_hifi(B_star[i,0],
                 B_star[i,1],B_star[i,2],B_star[i,3]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == currin88_lofi:
                 num = (currin88_lofi(B_star[i+1,0],B_star[i+1,1])
                 -currin88_lofi(B_star[i,0],B_star[i,1]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == currin88_hifi:
                 num = (currin88_hifi(B_star[i+1,0],B_star[i+1,1])
                 -currin88_hifi(B_star[i,0],B_star[i,1]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == borehole_lofi:
                 num = (borehole_lofi(B_star[i+1,0],B_star[i+1,1],B_star[i+1,2],
                 B_star[i+1,3],B_star[i+1,4],B_star[i+1,5],B_star[i+1,6],B_star[i+1,7])
                 -borehole_lofi(B_star[i,0],B_star[i,1],B_star[i,2],B_star[i,3],
                 B_star[i,4],B_star[i,5],B_star[i,6],B_star[i,7]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == borehole_hifi:
                 num = (borehole_hifi(B_star[i+1,0],B_star[i+1,1],B_star[i+1,2],
                 B_star[i+1,3],B_star[i+1,4],B_star[i+1,5],B_star[i+1,6],B_star[i+1,7])
                 -borehole_hifi(B_star[i,0],B_star[i,1],B_star[i,2],B_star[i,3],
                 B_star[i,4],B_star[i,5],B_star[i,6],B_star[i,7]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
             if self.params['function'] == ishigami:
                 num = (ishigami(B_star[i+1,0],B_star[i+1,1],B_star[i+1,2])
                 -ishigami(B_star[i,0],B_star[i,1],B_star[i,2]))
-                den = (Delta_b)
-                EE[0,perm[i]] = num / den*(self.bounds[1,0]-self.bounds[0,0])
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
         return EE
 
     def compute_confidence_interval(self,conf_level, EET, num_traj_chosen,
@@ -226,7 +221,6 @@ class MorrisAnalyzer(object):
         EET = np.ones((self.num_traj_chosen,self.dim), dtype = float)
         for r in range(self.num_traj_chosen):
             EET[r,:] = self.compute_elementary_effect(B_star_chosen[r,:,:], perm_chosen[r,:])
-        print(EET)
         EE = np.ones((1,self.dim), dtype = float)
         for i in range(self.dim):
             EE[0,i] = np.mean(abs(EET[:,i]), axis = 0)
