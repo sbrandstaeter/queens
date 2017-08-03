@@ -17,6 +17,7 @@ from pqueens.example_simulator_functions.currin88_hifi import currin88_hifi
 from pqueens.example_simulator_functions.borehole_lofi import borehole_lofi
 from pqueens.example_simulator_functions.borehole_hifi import borehole_hifi
 from pqueens.example_simulator_functions.ishigami import ishigami
+from pqueens.example_simulator_functions.sobol import sobol
 
 class MorrisAnalyzer(object):
     """ Class to compute the sensitivity indices thanks to the Elementary Effect
@@ -199,6 +200,10 @@ class MorrisAnalyzer(object):
                 -ishigami(B_star[i,0],B_star[i,1],B_star[i,2]))
                 den = s*self.Delta
                 EE[0,perm[i]] = num / den
+            if self.params['function'] == sobol:
+                num = (sobol(B_star[i+1,:])-sobol(B_star[i,:]))
+                den = s*self.Delta
+                EE[0,perm[i]] = num / den
         return EE
 
     def compute_confidence_interval(self,conf_level, EET, num_traj_chosen,
@@ -220,6 +225,8 @@ class MorrisAnalyzer(object):
         as explained in [3] the trajectories are chosen to optimized the input space """
         EET = np.ones((self.num_traj_chosen,self.dim), dtype = float)
         for r in range(self.num_traj_chosen):
+            #print('B_star_chosen[r,:,:]')
+            #print(B_star_chosen[r,:,:])
             EET[r,:] = self.compute_elementary_effect(B_star_chosen[r,:,:], perm_chosen[r,:])
         EE = np.ones((1,self.dim), dtype = float)
         for i in range(self.dim):

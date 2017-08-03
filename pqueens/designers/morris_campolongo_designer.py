@@ -216,3 +216,4 @@ class MorrisCampolongoDesigner(object):
             return B_star_chosen, perm_chosen
         if self.optim == False:
             return B_star_optim, perm_optim
+        
