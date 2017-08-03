@@ -1,8 +1,5 @@
 import numpy as np
 import math
-import os
-import combi
-import pyDOE
 import random
 from scipy.stats import norm
 
@@ -67,6 +64,8 @@ class SobolAnalyzer(object):
         Args :
         m (int) :
             number of samples
+        Returns:
+            (np.array): array containing bootstrap permutations
         """
         H = np.zeros((self.num_bootstrap_samples,m), dtype = int)
         for z in range(self.num_bootstrap_samples):
@@ -81,9 +80,11 @@ class SobolAnalyzer(object):
 
     def compute_first_order_sensitivity_indice(self,Y,Y_tilde,m):
         """ Compute the First-Order Indice Sensitivity Indices with
+
         Algorithm 1 and Proposition 1 in [1]
+
         Args:
-        Y (numpy.array) :
+        Y (numpy.array):
             Evaluation of our sample X from the input space with the model (or
             metamodel) of our problem.
         Y_tilde (numpy.array) :
@@ -93,8 +94,12 @@ class SobolAnalyzer(object):
             number of samples
         """
         # First order estimator following Le Gratiet et al. 2014
-        S_M_N_K_L= np.zeros((self.output_samples,self.num_bootstrap_samples),dtype=float)
+        # init array
+        #
+        S_M_N_K_L= np.zeros((self.output_samples,self.num_bootstrap_samples))
+
         H = self.generate_bootstrap_samples(m)
+        # loop over realizations if there are any
         for k in range(self.output_samples):
             num = (np.sum(Y[k,:]*Y_tilde[k,:])/m-(np.sum(Y[k,:]+Y_tilde[k,:])/(2*m))**2)
             den = (sum(Y[k,:]**2)/m-(np.sum(Y[k,:]+Y_tilde[k,:])/(2*m))**2)
@@ -180,6 +185,7 @@ class SobolAnalyzer(object):
         bootstrap_index = np.random.randint(len(S_M_N_K_L_temp), size = (self.num_bootstrap_samples*self.output_samples,self.num_bootstrap_conf))
         S_M_N_K_L_bootstrap= S_M_N_K_L[bootstrap_index]
         data_bootstrap = np.average(np.abs(S_M_N_K_L_bootstrap), axis = 1)
+
         return norm.ppf(0.5 + self.confidence_level/2)*data_bootstrap.std(ddof = 1)
 
     def create_Si_dict(self):

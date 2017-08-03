@@ -17,6 +17,7 @@ class PseudoSaltelliDesigner(AbstractDesigner):
 
         self.num_samples (int): number of design points
         self.ps (np.array): array with all samples/design points
+        # TODO @Cecile add missing attributes here
 
     """
     def __init__(self,params,seed,num_samples):
@@ -25,8 +26,11 @@ class PseudoSaltelliDesigner(AbstractDesigner):
             params (dict):
                 Two samples X and X_tilde defining the input space,
                 as in Algorithm 1 [1].
-            seed (int) : Seed for random number generation
-            num_samples (int) : Number of desired (random) samples
+            seed (int):
+                Seed for random number generation
+            num_samples (int):
+                Number of desired (random) samples
+
 
         """
         numparams = len(params)
@@ -36,10 +40,12 @@ class PseudoSaltelliDesigner(AbstractDesigner):
         # fix seed of random number generator
         np.random.seed(seed)
         self.num_samples = num_samples
-        self.ps = np.ones((self.nb_combi,num_samples,self.dim), dtype = np.float64)
-        self.X_Stock = np.ones((2,num_samples,self.dim), dtype = np.float64)
-        self.X = np.ones((num_samples,self.dim), dtype = np.float64)
-        self.X_tilde = np.ones((num_samples,self.dim), dtype = np.float64)
+        # array with samples
+        self.ps = np.ones((self.nb_combi,num_samples,self.dim))
+
+        self.X_Stock = np.ones((2,num_samples,self.dim))
+        self.X = np.ones((num_samples,self.dim))
+        self.X_tilde = np.ones((num_samples,self.dim))
         n = 0
         for key, value in params.items():
             i = 0
@@ -53,7 +59,11 @@ class PseudoSaltelliDesigner(AbstractDesigner):
 
     def get_all_samples(self):
         """ Generate all possible combinaisons from X and X_tilde
-        necessary to compute the Sensitivity Indices with Algorithm 1 in [1] """
+        necessary to compute the Sensitivity Indices with Algorithm 1 in [1]
+        Returns:
+            (np.array): array with all samples
+        """
+
         for i in range(self.dim):
             X_tilde1 = self.X_tilde.copy()
             X_tilde1[:,i] = self.X[:,i]
