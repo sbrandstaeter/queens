@@ -44,4 +44,5 @@ pipelines:
 definitions:
   services:
     database:
-      image: mongodb:3.4
+      image: mongodb
+      #image: mongodb:3.4
