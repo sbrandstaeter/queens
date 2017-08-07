@@ -96,6 +96,8 @@ class SobolAnalyzer(object):
             (np.array): array containing bootstrap permutations
         """
         H = np.zeros((self.num_bootstrap_samples,num_samples), dtype = int)
+        # first row of the bootstrap indices matrix is unchanged, to fit to the
+        # algorithm of Le Gratiet
         H[0,:] = range(num_samples)
         for z in range(1,self.num_bootstrap_samples):
             a = 1
