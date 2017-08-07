@@ -28,6 +28,7 @@ class MonteCarloDesigner(AbstractDesigner):
         for _ ,value in params.items():
             # get appropriate random number generator
             random_number_generator = getattr(np.random, value['distribution'])
+            print(random_number_generator)
             # make a copy
             my_args = list(value['distribution_parameter'])
             my_args.extend([num_samples])
