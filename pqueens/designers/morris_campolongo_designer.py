@@ -87,15 +87,17 @@ class MorrisCampolongoDesigner(object):
         self.num_traj_chosen = num_traj_chosen
         self.grid_jump = grid_jump
         self.num_levels = num_levels
-        self.dim = params['num_vars']
+        self.numparams = len(params)
         self.Delta = self.grid_jump/(self.num_levels-1)
-        self.scale = np.ones((1,self.dim), dtype = float)
-        self.bounds = np.ones((2,self.dim))
-        for i in range(self.dim):
-            self.bounds[0,i] = params['bounds'][i][0]
-            self.bounds[1,i] = params['bounds'][i][1]
+        self.scale = np.ones((1,self.numparams))
+        self.bounds = np.ones((2,self.numparams))
+        i = 0
+        for name in params.keys():
+            self.bounds[0,i] = params[name]['min']
+            self.bounds[1,i] = params[name]['max']
             # If our input space is not [0 1] scale length of Delta
             self.scale[0,i] = (self.bounds[1,i]-self.bounds[0,i])
+            i = i+1
     def compute_distance(self,B_star_optim,m,l):
         """
         Function to compute the distance between a pair of trajectories m
@@ -112,8 +114,8 @@ class MorrisCampolongoDesigner(object):
             d_ml = 0
         else:
             s = 0
-            for i in range(self.dim+1):
-                for j in range(self.dim+1):
+            for i in range(self.numparams+1):
+                for j in range(self.numparams+1):
                     d = math.sqrt(np.sum(B_star_optim[m,i,:]-B_star_optim[m,j,:])**2)
                     s = s + d
             d_ml = s
@@ -142,7 +144,7 @@ class MorrisCampolongoDesigner(object):
         for subset in combinations(range(self.num_traj), self.num_traj_chosen):
             p[ind] = np.asarray(subset)
             ind = ind+1
-        D_stock = np.zeros((1,len(p)), dtype = float)
+        D_stock = np.zeros((1,len(p)))
         for i in range(len(p)):
             vector_possible = p[i]
             #print('vector_possible')
@@ -164,43 +166,43 @@ class MorrisCampolongoDesigner(object):
         Design or with the optimization of Campolongo
         """
         # Definition of useful matrices for the computation of the trajectories
-        B = np.zeros((self.dim+1,self.dim), dtype = float)
-        for i in range(self.dim+1):
-            for j in range(self.dim):
+        B = np.zeros((self.numparams+1,self.numparams))
+        for i in range(self.numparams+1):
+            for j in range(self.numparams):
                 if i > j:
                     B[i,j] = 1
-        J_k = np.ones((self.dim+1,self.dim), dtype = float)
-        J_1 = np.ones((self.dim+1,1), dtype = float)
+        J_k = np.ones((self.numparams+1,self.numparams))
+        J_1 = np.ones((self.numparams+1,1))
 
-        B_star = np.zeros((self.dim+1,self.dim), dtype = float)
-        B_star_optim =  np.zeros((self.num_traj,self.dim+1,self.dim), dtype = float)
-        P_star_optim =  np.zeros((self.num_traj,self.dim,self.dim), dtype = float)
-        perm_optim =  np.zeros((self.num_traj,self.dim), dtype = float)
-        B_star_chosen = np.ones((self.num_traj_chosen,self.dim+1,self.dim), dtype = float)
-        perm_chosen =  np.ones((self.num_traj_chosen,self.dim), dtype = float)
+        B_star = np.zeros((self.numparams+1,self.numparams))
+        B_star_optim =  np.zeros((self.num_traj,self.numparams+1,self.numparams))
+        P_star_optim =  np.zeros((self.num_traj,self.numparams,self.numparams))
+        perm_optim =  np.zeros((self.num_traj,self.numparams))
+        B_star_chosen = np.ones((self.num_traj_chosen,self.numparams+1,self.numparams))
+        perm_chosen =  np.ones((self.num_traj_chosen,self.numparams))
 
         for r in range(self.num_traj):
-            D_star = np.zeros((self.dim,self.dim), dtype = float)
-            for i in range(self.dim):
+            D_star = np.zeros((self.numparams,self.numparams))
+            for i in range(self.numparams):
                 D_star[i,i] = random.choice([-1,1])
 
-            perm = np.random.permutation(self.dim)
-            P_star = np.zeros((self.dim,self.dim), dtype = float)
-            for i in range(self.dim):
+            perm = np.random.permutation(self.numparams)
+            P_star = np.zeros((self.numparams,self.numparams))
+            for i in range(self.numparams):
                 P_star[i, perm[i]] = 1
-            choices = np.zeros((2,self.dim), dtype = float)
-            for i in range(self.dim):
+            choices = np.zeros((2,self.numparams))
+            for i in range(self.numparams):
                 choices[0,i] = 0
                 choices[1,i] = 1 - self.Delta
-            x_star = np.zeros((1,self.dim), dtype = float)
-            for i in range(self.dim):
+            x_star = np.zeros((1,self.numparams))
+            for i in range(self.numparams):
                 x_star[0,i] = random.choice(choices[:,i])
             # Computation of B_star
             B_star = np.dot(np.dot(J_1,x_star) +
             self.Delta/2*(np.dot((2*B - J_k),D_star) + J_k),P_star)
 
-            B_temp = np.zeros((self.dim+1,self.dim), dtype = float)
-            for i in range(self.dim):
+            B_temp = np.zeros((self.numparams+1,self.numparams))
+            for i in range(self.numparams):
                 B_temp[:,i] = self.bounds[0,i]
             B_star = self.scale*B_star+B_temp
             B_star_optim[r,:,:] = B_star
@@ -216,4 +218,3 @@ class MorrisCampolongoDesigner(object):
             return B_star_chosen, perm_chosen
         if self.optim == False:
             return B_star_optim, perm_optim
-        
