@@ -57,21 +57,11 @@ class MorrisAnalyzer(object):
         The confidence interval level (default 0.95)
     num_bootstrap_conf (int) :
         Number of bootstrap iterations for the computation of confidence intervals
-    output_samples (int):
-        The number of output samples Y (default 1)
 
-
-    Examples
-    --------
-    MCD = MorrisCampolongoDesigner(problem, num_traj ,optim, num_traj_chosen, grid_jump, num_levels)
-    X, perm = MCD.get_all_samples()
-
-    MA = MorrisAnalyzer(problem,num_traj_chosen,grid_jump,num_levels,confidence_level,num_bootstrap_conf, output_samples)
-    Si = MA.analyze(X, perm)
         """
 
     def __init__(self,params,num_traj_chosen,grid_jump,num_levels,
-                confidence_level,num_bootstrap_conf,output_samples):
+                confidence_level, num_bootstrap_conf):
         """
         Args:
         params (dict) :
@@ -92,125 +82,89 @@ class MorrisAnalyzer(object):
             The confidence interval level (default 0.95)
         num_bootstrap_conf (int) :
             Number of bootstrap iterations for the computation of confidence intervals
-        output_samples (int):
-            The number of output samples Y (default 1)
 
         """
         self.params = params
-        self.dim = params['num_vars']
+        self.numparams = len(params)
         self.num_traj_chosen = num_traj_chosen
         self.grid_jump = grid_jump
         self.num_levels = num_levels
         self.Delta = self.grid_jump/(self.num_levels-1)
         self.confidence_level  = confidence_level
         self.num_bootstrap_conf = num_bootstrap_conf
-        self.output_samples = output_samples
 
-    def compute_elementary_effect(self, B_star, perm):
+    def analyze(self, B_star_chosen, Y_chosen, perm_chosen):
+        """Compute the sensitivity indices thanks to the Morris Method,
+        The trajectories are chosen to optimized the input space as explained
+        in [3]
+        Args:
+        B_star_chosen (np.array):
+            np.array with the chosen trajectories which are defined in [1]
+        Y_chosen (np.array) :
+            np.array with the evaluation of the chosen trajectories by the
+            function of our problem
+        perm_chosen (np.array):
+            np.array associated to B_star_chosen which corresponds to the order
+            in which factors are moved
+        Returns :
+        Si (dict) :
+            dictionnary with the sensitivity indices
+        """
+        EET = np.ones((self.num_traj_chosen,self.numparams))
+        for r in range(self.num_traj_chosen):
+            EET[r,:] = self.compute_elementary_effect(B_star_chosen[r,:,:], Y_chosen[:,r], perm_chosen[r,:])
+        EE = np.ones((1,self.numparams))
+        for i in range(self.numparams):
+            EE[0,i] = np.mean(abs(EET[:,i]), axis = 0)
+
+        Si = dict((k, [None] * self.numparams)
+        for k in ['names', 'mu', 'mu_star', 'sigma', 'mu_star_conf'])
+        Si['mu'] = np.average(EET, 0)
+        Si['mu_star'] = np.average(np.abs(EET), 0)
+        Si['sigma'] = np.std(EET,axis=0)
+        j = 0
+        for name in self.params.keys():
+            Si['names'][j] = name
+            j = j + 1
+        for j in range(self.numparams):
+            Si['mu_star_conf'][j] = self.compute_confidence_interval(self.confidence_level,
+            EET[:,j], self.num_traj_chosen,self.num_bootstrap_conf)
+        return Si
+
+    def compute_elementary_effect(self, B_star, Y, perm):
         """ Function to compute the elementary effect for the different
         functions of the framework pqueens.
         Args:
-            B_star (np.array): np.array with the input space design from [1]
-            perm (np.array): np.array associated to B_star which corresponds
-            to the order in which factors are moved.
+        B_star (np.array) :
+            np.array with the trajectories defined in [1]
+        Y (np.array) :
+            np.array with the evaluation of the trajectories by the function
+            of our problem
+        perm (np.array) :
+            np.array associated to B_star which corresponds to the order
+            in which factors are moved.
         """
-        EE = np.ones((1,self.dim), dtype = float)
-        for i in range(self.dim):
+        EE = np.ones((1,self.numparams))
+        for i in range(self.numparams):
             s = np.sign(B_star[i+1,perm[i]]-B_star[i,perm[i]])
-            if self.params['function'] == ma2009:
-                num = (ma2009(B_star[i+1,0],B_star[i+1,1])
-                -ma2009(B_star[i,0],B_star[i,1]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == perdikaris_1dsin_lofi:
-                num = (perdikaris_1dsin_lofi(B_star[i+1,0])
-                -perdikaris_1dsin_lofi(B_star[i,0]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == perdikaris_1dsin_hifi:
-                num = (perdikaris_1dsin_hifi(B_star[i+1,0])
-                -perdikaris_1dsin_hifi(B_star[i,0]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == branin_lofi:
-                num = (branin_lofi(B_star[i+1,0],B_star[i+1,1])
-                -branin_lofi(B_star[i,0],B_star[i,1]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == branin_medfi:
-                num = (branin_medfi(B_star[i+1,0],B_star[i+1,1])
-                -branin_medfi(B_star[i,0],B_star[i,1]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == branin_hifi:
-                num = (branin_hifi(B_star[i+1,0],B_star[i+1,1])
-                -branin_hifi(B_star[i,0],B_star[i,1]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == park91b_lofi:
-                num = (park91b_lofi(B_star[i+1,0],B_star[i+1,1],
-                B_star[i+1,2],B_star[i+1,3])-park91b_lofi(B_star[i,0],
-                B_star[i,1],B_star[i,2],B_star[i,3]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == park91b_hifi:
-                num = (park91b_hifi(B_star[i+1,0],B_star[i+1,1],
-                B_star[i+1,2],B_star[i+1,3])-park91b_hifi(B_star[i,0],
-                B_star[i,1],B_star[i,2],B_star[i,3]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == park91a_lofi:
-                num = (park91a_lofi(B_star[i+1,0],B_star[i+1,1],
-                B_star[i+1,2],B_star[i+1,3])-park91a_lofi(B_star[i,0],
-                B_star[i,1],B_star[i,2],B_star[i,3]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == park91a_hifi:
-                num = (park91a_hifi(B_star[i+1,0],B_star[i+1,1],
-                B_star[i+1,2],B_star[i+1,3])-park91a_hifi(B_star[i,0],
-                B_star[i,1],B_star[i,2],B_star[i,3]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == currin88_lofi:
-                num = (currin88_lofi(B_star[i+1,0],B_star[i+1,1])
-                -currin88_lofi(B_star[i,0],B_star[i,1]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == currin88_hifi:
-                num = (currin88_hifi(B_star[i+1,0],B_star[i+1,1])
-                -currin88_hifi(B_star[i,0],B_star[i,1]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == borehole_lofi:
-                num = (borehole_lofi(B_star[i+1,0],B_star[i+1,1],B_star[i+1,2],
-                B_star[i+1,3],B_star[i+1,4],B_star[i+1,5],B_star[i+1,6],B_star[i+1,7])
-                -borehole_lofi(B_star[i,0],B_star[i,1],B_star[i,2],B_star[i,3],
-                B_star[i,4],B_star[i,5],B_star[i,6],B_star[i,7]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == borehole_hifi:
-                num = (borehole_hifi(B_star[i+1,0],B_star[i+1,1],B_star[i+1,2],
-                B_star[i+1,3],B_star[i+1,4],B_star[i+1,5],B_star[i+1,6],B_star[i+1,7])
-                -borehole_hifi(B_star[i,0],B_star[i,1],B_star[i,2],B_star[i,3],
-                B_star[i,4],B_star[i,5],B_star[i,6],B_star[i,7]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == ishigami:
-                num = (ishigami(B_star[i+1,0],B_star[i+1,1],B_star[i+1,2])
-                -ishigami(B_star[i,0],B_star[i,1],B_star[i,2]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
-            if self.params['function'] == sobol:
-                num = (sobol(B_star[i+1,:])-sobol(B_star[i,:]))
-                den = s*self.Delta
-                EE[0,perm[i]] = num / den
+            num = Y[i+1]-Y[i]
+            den = s*self.Delta
+            EE[0,perm[i]] = num / den
         return EE
 
-    def compute_confidence_interval(self,conf_level, EET, num_traj_chosen,
-                                    num_bootstrap_conf):
-        """Function to compute the confidence intervals for our sensitivity
-        indice mu_star, function inspired from compute_mu_star_confidence from
-        SALib"""
+    def compute_confidence_interval(self,conf_level, EET, num_traj_chosen, num_bootstrap_conf):
+        """ Compute the confidence intervals for sensitivity indice mu_star.
+        Function inspired from compute_mu_star_confidence from SALib
+        Args :
+        conf_level (float) :
+            value of our confidence level (should be between 0 and 1)
+        EET (np.array) :
+            np.array with the values of the elementary effects for each
+            trajectory
+        num_traj_chosen (int) :
+            Number of trajectories chosen in the design, with the brute-force
+            optimization from Campolongo.
+        """
         EET_bootstrap = np.zeros([num_traj_chosen])
         data_bootstrap = np.zeros([num_bootstrap_conf])
         if not 0 < conf_level < 1:
@@ -220,27 +174,13 @@ class MorrisAnalyzer(object):
         data_bootstrap = np.average(np.abs(EET_bootstrap), axis = 1)
         return norm.ppf(0.5 + conf_level/2)*data_bootstrap.std(ddof = 1)
 
-    def analyze(self, B_star_chosen, perm_chosen):
-        """Function to compute the sensitivity indices thanks to the Morris Method,
-        as explained in [3] the trajectories are chosen to optimized the input space """
-        EET = np.ones((self.num_traj_chosen,self.dim), dtype = float)
-        for r in range(self.num_traj_chosen):
-            #print('B_star_chosen[r,:,:]')
-            #print(B_star_chosen[r,:,:])
-            EET[r,:] = self.compute_elementary_effect(B_star_chosen[r,:,:], perm_chosen[r,:])
-        EE = np.ones((1,self.dim), dtype = float)
-        for i in range(self.dim):
-            EE[0,i] = np.mean(abs(EET[:,i]), axis = 0)
-
-        Si = dict((k, [None] * self.dim)
-        for k in ['names', 'mu', 'mu_star', 'sigma', 'mu_star_conf'])
-        Si['mu'] = np.average(EET, 0)
-        Si['mu_star'] = np.average(np.abs(EET), 0)
-        Si['sigma'] = np.std(EET,axis=0)
-        Si['names'] = self.params['names']
-        for j in range(self.dim):
-            Si['mu_star_conf'][j] = self.compute_confidence_interval(self.confidence_level,
-            EET[:,j], self.num_traj_chosen, self.num_bootstrap_conf)
+    def print_results(self, Si):
+        """ Function to print the results to the the console of our sensitivity
+        analysis
+        Args :
+        Si (dict) :
+            dictionnary with the results of the sensitivity analysis
+        """
         print("{0:<30} {1:>10} {2:>10} {3:>15} {4:>10}".format(
                 "Parameter",
                 "Mu_Star",
@@ -248,7 +188,7 @@ class MorrisAnalyzer(object):
                 "Mu_Star_Conf",
                 "Sigma")
                 )
-        for j in list(range(self.dim)):
+        for j in list(range(self.numparams)):
             print("{0!s:30} {1!s:10} {2!s:10} {3!s:15} {4!s:10}".format(
                     Si['names'][j],
                     Si['mu_star'][j],
@@ -256,4 +196,3 @@ class MorrisAnalyzer(object):
                     Si['mu_star_conf'][j],
                     Si['sigma'][j])
                     )
-        return Si
