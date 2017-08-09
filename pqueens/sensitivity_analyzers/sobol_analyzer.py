@@ -77,14 +77,16 @@ class SobolAnalyzer(object):
             S['ST'][j] = np.mean(S_M_N_K_L_total)
             S['ST_conf'][j] = self.compute_confidence_interval(S_M_N_K_L_total)
         # Second order (+conf.)
+        count = self.numparams + 1
         if self.calc_second_order:
             for j in range(self.numparams):
                 for k in range(j + 1, self.numparams):
+                    print(count)
                     S_M_N_K_L_2 = self.compute_second_order_sensitivity_indice(Y[:,:,0],
-                    Y[:,:,j+k+self.numparams],num_samples)
+                    Y[:,:,count],num_samples)
                     S['S2'][j, k] = np.mean(S_M_N_K_L_2) - S['S1'][j] - S['S1'][k]
                     S['S2_conf'][j, k] = self.compute_confidence_interval(S_M_N_K_L_2)
-
+                    count = count +1
         return S
 
     def generate_bootstrap_samples(self,num_samples):
