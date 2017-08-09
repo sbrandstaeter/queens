@@ -13,7 +13,7 @@ from SALib.test_functions import Ishigami
 
 # set up all necessary parameters for SA
 # dimension of input space
-dim = 3
+dim = 4
 #
 num_samples = 1000
 num_bootstrap_samples = 100
@@ -24,7 +24,7 @@ calc_second_order = True
 # fix seed for random number generation
 seed = 42
 
-nb_combi = dim+2+math.factorial(dim)//(2*math.factorial(dim-2))
+nb_indices = 2**dim - 1
 
 confidence_level = 0.95
 
@@ -52,6 +52,14 @@ params =   {   "x1" : {
                     "min"  : -math.pi,
                     "max"  : math.pi,
                     "distribution" : 'uniform',
+                    "distribution_parameter" : [-math.pi,math.pi]},
+
+                    "x4" : {
+                    "type" : "FLOAT",
+                    "size" : 1,
+                    "min"  : -math.pi,
+                    "max"  : math.pi,
+                    "distribution" : 'uniform',
                     "distribution_parameter" : [-math.pi,math.pi]}
                 }
 
@@ -59,9 +67,8 @@ PSD = PseudoSaltelliDesigner(params,seed,num_samples)
 X = PSD.get_all_samples()
 # in case we have several realizations of our gaussian processes
 for h in range(output_samples):
-    for s in range(nb_combi):
+    for s in range(nb_indices):
         Y[h,:,s] = ishigami.ishigami(X[:,s,0],X[:,s,1],X[:,s,2])
-
 SA = SobolAnalyzer(params,calc_second_order, num_bootstrap_samples,
                 confidence_level, output_samples)
 S = SA.analyze(Y)
@@ -77,4 +84,4 @@ problem = {
 
 X = saltelli.sample(problem, 1000)
 Y = Ishigami.evaluate(X)
-# Si = sobol.analyze(problem, Y, print_to_console=True)
+Si = sobol.analyze(problem, Y, print_to_console=True)
