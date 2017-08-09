@@ -1,6 +1,7 @@
 from .abstract_designer import AbstractDesigner
 import numpy as np
 import math
+from itertools import combinations
 
 class PseudoSaltelliDesigner(AbstractDesigner):
     """ Pseudo Saltelli designer for experiments
@@ -30,7 +31,8 @@ class PseudoSaltelliDesigner(AbstractDesigner):
                 Number of desired (random) samples
         """
         numparams = len(params)
-        nb_combi = (numparams+2+math.factorial(numparams)//(2*math.factorial(numparams-2)))
+        # Number of sensitivity indices
+        nb_indices = 2**numparams - 1
         # fix seed of random number generator
         np.random.seed(seed)
         self.num_samples = num_samples
@@ -38,7 +40,7 @@ class PseudoSaltelliDesigner(AbstractDesigner):
         X = np.ones((self.num_samples,numparams))
         X_tilde = np.ones((self.num_samples,numparams))
         # array with samples
-        self.ps = np.ones((num_samples,nb_combi,numparams))
+        self.ps = np.ones((num_samples,nb_indices+1,numparams))
 
         i=0
         for _ ,value in params.items():
@@ -52,21 +54,26 @@ class PseudoSaltelliDesigner(AbstractDesigner):
             i+=1
 
         # making all possible combinations between the factors of X and X_tilde
-        # loop to store all combinations with only one factor from X, for first-order
-        # sensitivity indices
-        for i in range(numparams):
-            X_tilde1 = X_tilde.copy()
-            X_tilde1[:,i] = X[:,i]
-            self.ps[:,i+1,:] = X_tilde1
-        # loop to store all combinations with two factors from X, for second-order
-        # sensitivity indices
-            for j in range(i+1,numparams):
-                X_tilde2 = X_tilde.copy()
-                X_tilde2[:,i] = X[:,i]
-                X_tilde2[:,j] = X[:,j]
-                self.ps[:,i+numparams+j,:] = X_tilde2
+        # loop to store all combinations with only one factor from X
+        # First generate all indices of the combinations
+        p = dict()
+        ind = 0
+        for k in range(numparams):
+            for subset in combinations(range(numparams), k):
+                p[ind] = np.asarray(subset)
+                ind = ind+1
+        del p[0]
+        # Generate now the tensor of size (nb_indices+1, )
         self.ps[:,0,:] = X
-        self.ps[:,nb_combi-1,:] = X_tilde
+        self.ps[:,nb_indices,:] = X_tilde
+        ps_temp = np.ones((self.num_samples,numparams))
+
+        k = 1
+        for i in range(nb_indices-1):
+            ps_temp[:,p[i+1]] = X[:,p[i+1]]
+            ps_temp[:,p[nb_indices-1-i]] = X_tilde[:,p[nb_indices-1-i]]
+            self.ps[:,k,:] = ps_temp
+            k = k +1
 
     def sample_generator(self):
         """ Generator to iterate over experimental design """
