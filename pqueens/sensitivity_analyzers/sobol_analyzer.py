@@ -67,13 +67,13 @@ class SobolAnalyzer(object):
         Y = np.asarray(Y)
         num_samples = len(Y[0,:,:])
         S = self.create_Si_dict()
-        nb_combi = (self.numparams+2+math.factorial(self.numparams)//(2*math.factorial(self.numparams-2)))
+        nb_indices = 2**self.numparams - 1
 
         for j in range(self.numparams):
             S_M_N_K_L = self.compute_first_order_sensitivity_indice(Y[:,:,0], Y[:,:,j+1],num_samples)
             S['S1'][j] = np.mean(S_M_N_K_L)
             S['S1_conf'][j] = self.compute_confidence_interval(S_M_N_K_L)
-            S_M_N_K_L_total = self.compute_total_order_sensitivity_indice(Y[:,:,0], Y[:,:,nb_combi-j-2],num_samples)
+            S_M_N_K_L_total = self.compute_total_order_sensitivity_indice(Y[:,:,0], Y[:,:,nb_indices-j-1],num_samples)
             S['ST'][j] = np.mean(S_M_N_K_L_total)
             S['ST_conf'][j] = self.compute_confidence_interval(S_M_N_K_L_total)
         # Second order (+conf.)
@@ -216,15 +216,15 @@ class SobolAnalyzer(object):
         S (dict): dictionnary with all values of the sensitivity indices
         """
         title = 'Parameter'
-        print('%s S1 S1_conf ST ST_conf' % title)
+        print('%s   S1       S1_conf    ST    ST_conf' % title)
         j = 0
         for name in self.params.keys():
-            print('%s %f %f %f %f' % (name, S['S1'][j], S['S1_conf'][j],
+            print('%s %f %f %f %f' % (name + '       ', S['S1'][j], S['S1_conf'][j],
             S['ST'][j], S['ST_conf'][j]))
             j = j+1
 
         if self.calc_second_order == True:
-            print('\n%s_1 %s_2 S2 S2_conf' % (title,title))
+            print('\n%s_1 %s_2    S2      S2_conf' % (title,title))
             j = 0
             params_temp = self.params.copy()
             for name in self.params.keys():
@@ -232,7 +232,7 @@ class SobolAnalyzer(object):
                 k = j+1
                 for name_b in params_temp.keys():
                     if k < self.numparams:
-                        print("%s %s %f %f" % (name, name_b, S['S2'][j, k],
+                        print("%s %s %f %f" % (name + '            ', name_b + '      ', S['S2'][j, k],
                         S['S2_conf'][j, k]))
                         k = k+1
                 j = j+1
