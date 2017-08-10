@@ -33,6 +33,9 @@ To uninstall:
 For users (maybe later on):
 run `run setup.py install`
 
+Update python packages using:
+`conda update --all`
+
 
 #### Building the documentation ####
 Navigate into the doc folder and type
@@ -43,10 +46,27 @@ After adding new modules or classes rebuild autodoc by typing first
 ### Run the test suite ###
 `python -m unittest discover pqueens/tests`
 
-run with coverage to get detailed test coverage report
-
+run with coverage to get detailed test coverage report:
 `coverage run -m unittest discover -s pqueens/tests`
 
-to view report run
-
+to view report run:
 `coverage report -m`
+
+
+#### Installation directions for installation within Docker container ####
+The main purpose of this is to be able to try and test the bitbucket pipeline
+and overall bitbucket setup locally. Unfortunately there are sometimes differences
+between test results obtained locally and results obtained online in the bitbucket
+repository. Testing things locally in a Docker container matching the bitbucket setup
+repository should help to speed up debugging.
+
+Bitbuckets documentation on the topic can be found here:
+https://confluence.atlassian.com/bitbucket/debug-your-pipelines-locally-with-docker-838273569.html
+
+- If docker is not already installed, install docker on your machine
+- Copy the code to a dedicated testing directory, e.g.,
+  `/Users/jonas/work/adco/test_bibucket_pipeline_locally/pqueens`
+- Run the following command:
+`docker run -it --volume=/Users/jonas/work/adco/test_bibucket_pipeline_locally/pqueens:/localDebugRepo --workdir="/localDebugRepo" --memory=4g --memory-swap=4g --entrypoint=/bin/bash continuumio/anaconda3`
+- You should now be in the docker container and inside the queens directory
+- From here, you can now run the individual commands in your pipeline
