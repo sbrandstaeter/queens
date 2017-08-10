@@ -26,7 +26,7 @@ Install all requirements using the requirements file:
 `pip install -r requirements.txt`
 run `python setup.py develop` Using a virtual environment e.g. based on anaconda is highly recommended. In that case install command
 should be executed as follows:
-`/Applications/anaconda/envs/test/bin/python python setup.py develop`
+`/Applications/anaconda/envs/test/bin/python setup.py develop`
 To uninstall:
 `python setup.py develop --uninstall`
 

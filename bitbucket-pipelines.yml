@@ -1,32 +1,18 @@
 # This is a sample build configuration for Python.
 # Check our guides at https://confluence.atlassian.com/x/x4UWN for more examples.
 # Only use spaces to indent your .yml configuration.
-# -----
-# You can specify a custom docker image from Docker Hub as your build environment.
-# image: python:3.5.3
-#
-# pipelines:
-#   default:
-#     - step:
-#         script: # Modify the commands below to build your repository.
-#           - pip install --upgrade pip
-#           - pip install -r requirements.txt
-#           - pip install -U tox
-#           - pip --version
-#           - tox --version
-#           # do normal unit testing
-#           # - python -m unittest discover -s pqueens/tests/
-#           # use coverage to gauge test coverage
-#           - coverage run -m unittest discover -s pqueens/tests
-#           # transfer test results to codecov.io
-#           - codecov --token=8eecedcc-6782-468a-b066-0e641741f210
+# You can check the pipelines file with bitbuckets online validator tool
+# https://bitbucket-pipelines.atlassian.io/validator
 
+# we need the anaconda python distribution because we otherwise do not have the linpack libraries in numpy
 image: continuumio/anaconda3
 
 pipelines:
+  # set to default in case it should atomatically run after each commit
   custom:
+    full_test_and_build_suite:
     - step:
-        script: # Modify the commands below to build your repository.
+        script:
           - apt-get install gcc -y
           - conda create --name pqueens -y
           - source activate pqueens
@@ -43,4 +29,4 @@ pipelines:
 definitions:
   services:
     database:
-      image: mongodb:3.4
+      image: mongo:3.4
