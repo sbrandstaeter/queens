@@ -186,4 +186,5 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
                np.cos(np.kron((self.w_n[:,dim]),x)) \
                + np.sin(np.kron((self.w_n[:,dim]),x))
 
+
         return temp1*temp2
