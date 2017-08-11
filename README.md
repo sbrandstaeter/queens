@@ -59,12 +59,12 @@ Bitbuckets own documentation about hwo to test the pipelines locally
 can be found
 [here](https://confluence.atlassian.com/bitbucket/debug-your-pipelines-locally-with-docker-838273569.html)
 
-In any case, the steps are fairly straightforward:
+In any case, the steps are fairly straightforward:  
+
 - If [Docker](https://www.docker.com/) is not already installed, install Docker on your machine by following these [instructions](https://www.docker.com/docker-mac)
 - Copy the QUEENS code to a dedicated testing directory, e.g.,
   `/Users/jonas/work/adco/test_bibucket_pipeline_locally/pqueens`
 - Run the following command to launch a Docker container with a Debian based Anaconda image and the source code from testing directory mounted as local folder in the Docker container:  
-
 ```shell
 docker run -it --volume=/Users/jonas/work/adco/test_bibucket_pipeline_locally/pqueens:/localDebugRepo
 --workdir="/localDebugRepo" --memory=4g --memory-swap=4g  
