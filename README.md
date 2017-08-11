@@ -1,72 +1,74 @@
-# README #
-
-### QUEENS ###
+# QUEENS #
 
 This repository is contains the python version of the QUEENS framework.
 
-[![Codecov private](https://img.shields.io/codecov/c/token/8eecedcc-6782-468a-b066-0e641741f210/bitbucket/codecov/example-python.svg)]()
-
-All of the stuff below has to be considered preliminary as I am learning by doing.
 #### Dependencies ####
-Install those using anaconda first
-- numpy
-- scipy
-- matplotlib
-- sphinx
-- pymongo
+All necessary third party libraries are listed in the requirements.txt file.
+To install all of these dependencies using pip, simply run:   
+`pip install -r requirements.txt`
 
 MongoDB
-install
-https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.181134695.1149150790.1494232459-1730069423.1494232449
+Installation instruction can be found [here](https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.181134695.1149150790.1494232459-1730069423.1494232449)
+
 
 #### Installation directions ####
+The use a virtual environment like [Anaconda](https://www.continuum.io/downloads) is highly recommended.
+After setting up Anaconda and a new, dedicated QUEENS development environment, all required third party libraries can be simply installed by running:  
+`pip install -r requirements.txt`  
+Next, if Anaconda is used, QUEENS can be installed using:     
+`/Applications/anaconda/envs/<your-environment-name>/bin/python setup.py develop`  
+Otherwise the command is simply:  
+`python setup.py develop`
 
-For developers:
-Install all requirements using the requirements file:
-`pip install -r requirements.txt`
-run `python setup.py develop` Using a virtual environment e.g. based on anaconda is highly recommended. In that case install command
-should be executed as follows:
-`/Applications/anaconda/envs/test/bin/python setup.py develop`
-To uninstall:
+To uninstall QUEENS run:  
 `python setup.py develop --uninstall`
 
-For users (maybe later on):
-run `run setup.py install`
-
-Update python packages using:
+To update Python packages in your Anaconda environment type:  
 `conda update --all`
 
 
 #### Building the documentation ####
-Navigate into the doc folder and type
-`make html` to build the html documentation
-After adding new modules or classes rebuild autodoc by typing first
-`sphinx-apidoc -o doc/source pqueens -f`
+QUEENS uses sphinx to automatically build a html documentation from  docstring. To build it, navigate into the doc folder and type:    
+`make html`  
+
+After adding new modules or classes to QUEENS, one needs to rebuild the autodoc index by running:    
+`sphinx-apidoc -o doc/source pqueens -f`  
+before the make command.
 
 ### Run the test suite ###
+QUEENS has a couple of unit and regression test. To run the test suite type:  
 `python -m unittest discover pqueens/tests`
 
-run with coverage to get detailed test coverage report:
-`coverage run -m unittest discover -s pqueens/tests`
+In order to get a detailed report showing code coverage etc., the test have to be run using the coverage tool. This is triggered by running the using:    
+`coverage run -m unittest discover -s pqueens/tests`  
 
-to view report run:
+To view the created report, run:  
 `coverage report -m`
 
 
-#### Installation directions for installation within Docker container ####
-The main purpose of this is to be able to try and test the bitbucket pipeline
-and overall bitbucket setup locally. Unfortunately there are sometimes differences
-between test results obtained locally and results obtained online in the bitbucket
-repository. Testing things locally in a Docker container matching the bitbucket setup
-repository should help to speed up debugging.
+#### Run the Bitbucket pipeline locally ####
+It is possible to test Bitbucket pipelines locally on your machine using
+Docker containers. The main purpose of this is to be able to try and test
+the Bitbucket pipeline as well as the overall bitbucket setup locally on
+your machine. This can help to fix differences between test results obtained
+locally and results obtained online in the bitbucket repository. Testing
+things locally in a Docker container matching the bitbucket setup repository
+is often very helpful speeds up the debugging process considerably.  
 
-Bitbuckets documentation on the topic can be found here:
-https://confluence.atlassian.com/bitbucket/debug-your-pipelines-locally-with-docker-838273569.html
+Bitbuckets own documentation about hwo to test the pipelines locally
+can be found
+[here](https://confluence.atlassian.com/bitbucket/debug-your-pipelines-locally-with-docker-838273569.html)
 
-- If docker is not already installed, install docker on your machine
-- Copy the code to a dedicated testing directory, e.g.,
+In any case, the steps are fairly straightforward:
+- If [Docker](https://www.docker.com/) is not already installed, install Docker on your machine by following these [instructions](https://www.docker.com/docker-mac)
+- Copy the QUEENS code to a dedicated testing directory, e.g.,
   `/Users/jonas/work/adco/test_bibucket_pipeline_locally/pqueens`
-- Run the following command:
-`docker run -it --volume=/Users/jonas/work/adco/test_bibucket_pipeline_locally/pqueens:/localDebugRepo --workdir="/localDebugRepo" --memory=4g --memory-swap=4g --entrypoint=/bin/bash continuumio/anaconda3`
+- Run the following command to launch a Docker container with a Debian based Anaconda image and the source code from testing directory mounted as local folder in the Docker container:  
+```shell
+docker run -it --volume=/Users/jonas/work/adco/test_bibucket_pipeline_locally/pqueens:/localDebugRepo
+--workdir="/localDebugRepo" --memory=4g --memory-swap=4g  
+--entrypoint=/bin/bash continuumio/anaconda3
+```
 - You should now be in the docker container and inside the queens directory
-- From here, you can now run the individual commands in your pipeline
+- Setup QUEENS following the instructions above
+- From here, you can now run the individual commands in your pipeline.
