@@ -64,6 +64,7 @@ In any case, the steps are fairly straightforward:
 - Copy the QUEENS code to a dedicated testing directory, e.g.,
   `/Users/jonas/work/adco/test_bibucket_pipeline_locally/pqueens`
 - Run the following command to launch a Docker container with a Debian based Anaconda image and the source code from testing directory mounted as local folder in the Docker container:  
+
 ```shell
 docker run -it --volume=/Users/jonas/work/adco/test_bibucket_pipeline_locally/pqueens:/localDebugRepo
 --workdir="/localDebugRepo" --memory=4g --memory-swap=4g  
