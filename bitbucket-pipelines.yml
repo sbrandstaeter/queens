@@ -13,6 +13,7 @@ pipelines:
     full_test_and_build_suite:
     - step:
         script:
+          - apt-get update -y
           - apt-get install gcc -y
           - conda create --name pqueens -y
           - source activate pqueens
