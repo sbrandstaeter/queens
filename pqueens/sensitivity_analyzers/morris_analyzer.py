@@ -2,22 +2,6 @@ import numpy as np
 import random
 import math
 from scipy.stats import norm
-from pqueens.example_simulator_functions.ma2009 import ma2009
-from pqueens.example_simulator_functions.perdikaris_1dsin_lofi import perdikaris_1dsin_lofi
-from pqueens.example_simulator_functions.perdikaris_1dsin_hifi import perdikaris_1dsin_hifi
-from pqueens.example_simulator_functions.branin_lofi import branin_lofi
-from pqueens.example_simulator_functions.branin_medfi import branin_medfi
-from pqueens.example_simulator_functions.branin_hifi import branin_hifi
-from pqueens.example_simulator_functions.park91b_lofi import park91b_lofi
-from pqueens.example_simulator_functions.park91b_hifi import park91b_hifi
-from pqueens.example_simulator_functions.park91a_lofi import park91a_lofi
-from pqueens.example_simulator_functions.park91a_hifi import park91a_hifi
-from pqueens.example_simulator_functions.currin88_lofi import currin88_lofi
-from pqueens.example_simulator_functions.currin88_hifi import currin88_hifi
-from pqueens.example_simulator_functions.borehole_lofi import borehole_lofi
-from pqueens.example_simulator_functions.borehole_hifi import borehole_hifi
-from pqueens.example_simulator_functions.ishigami import ishigami
-from pqueens.example_simulator_functions.sobol import sobol
 
 class MorrisAnalyzer(object):
     """ Class to compute the sensitivity indices thanks to the Elementary Effect
@@ -121,7 +105,7 @@ class MorrisAnalyzer(object):
         for k in ['names', 'mu', 'mu_star', 'sigma', 'mu_star_conf'])
         Si['mu'] = np.average(EET, 0)
         Si['mu_star'] = np.average(np.abs(EET), 0)
-        Si['sigma'] = np.std(EET,axis=0)
+        Si['sigma'] = np.std(EET,axis=0, ddof = 1)
         j = 0
         for name in self.params.keys():
             Si['names'][j] = name
@@ -169,7 +153,7 @@ class MorrisAnalyzer(object):
         data_bootstrap = np.zeros([num_bootstrap_conf])
         if not 0 < conf_level < 1:
             raise ValueError("Confidence level must be between 0 and 1")
-        bootstrap_index = np.random.randint(len(EET), size = (num_traj_chosen,num_bootstrap_conf))
+        bootstrap_index = np.random.randint(len(EET), size = (num_bootstrap_conf,num_traj_chosen))
         EET_bootstrap= EET[bootstrap_index]
         data_bootstrap = np.average(np.abs(EET_bootstrap), axis = 1)
         return norm.ppf(0.5 + conf_level/2)*data_bootstrap.std(ddof = 1)
