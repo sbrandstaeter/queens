@@ -3,6 +3,7 @@ import numpy as np
 import math
 import random
 from itertools import combinations
+from scipy.spatial.distance import cdist
 
 class MorrisCampolongoDesigner(object):
     """ Class to generate the Morris Design, necessary to perform sensitivity
@@ -110,16 +111,33 @@ class MorrisCampolongoDesigner(object):
             Number of the trajectories between which we want to
             calculate the distance
         """
-        if m == l:
-            d_ml = 0
+        if np.array_equal(B_star_optim[m,:,:], B_star_optim[l,:,:]):
+            distance = 0
         else:
-            s = 0
-            for i in range(self.numparams+1):
-                for j in range(self.numparams+1):
-                    d = math.sqrt(np.sum(B_star_optim[m,i,:]-B_star_optim[m,j,:])**2)
-                    s = s + d
-            d_ml = s
-        return d_ml
+            distance = np.array(np.sum(cdist(B_star_optim[m,:,:], B_star_optim[l,:,:])), dtype=np.float32)
+        return distance
+
+    def compute_distance_matrix(self,B_star, num_traj):
+        """
+        Store the distances between all pairs of trajectories
+
+        Attributes :
+        B_Star (np.array)
+            Tensor which stores the coordinates of each trajectories
+        num_traj (int) :
+            Number of trajectories we have
+
+        Returns :
+        distance_matrix (np.array)
+            Matrix of size (np.array x np.array) which indice (i,j) corresponds
+            to the distance between the trajectories i and j
+        """
+        distance_matrix = np.zeros((num_traj,num_traj))
+        for m in range(num_traj):
+            for l in range(m+1,num_traj):
+                distance_matrix[l,m] = self.compute_distance(B_star,m,l)**2
+
+        return distance_matrix
 
     # Choice of the best trajectories:
     def choose_best_trajectory(self,B_star_optim):
@@ -145,18 +163,15 @@ class MorrisCampolongoDesigner(object):
             p[ind] = np.asarray(subset)
             ind = ind+1
         D_stock = np.zeros((1,len(p)))
+        distance_matrix = self.compute_distance_matrix(B_star_optim, self.num_traj)
         for i in range(len(p)):
             vector_possible = p[i]
-            #print('vector_possible')
-            #print(vector_possible)
             D = 0
-            for j in vector_possible:
-                for k in vector_possible:
-                    temp = self.compute_distance(B_star_optim,j,k)
-                    D = D + self.compute_distance(B_star_optim,j,k)**2
-                    D = math.sqrt(D)
+            for j in range(len(vector_possible)):
+                for k in range(j+1,len(vector_possible)):
+                    D = D + distance_matrix[vector_possible[k],vector_possible[j]]
+            D = math.sqrt(D)
             D_stock[0,i]= D
-        # We are looking for the r maximums in D
         v,imax = D_stock.max(), D_stock.argmax()
         return p, imax
 
