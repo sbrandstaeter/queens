@@ -1,0 +1,89 @@
+import SALib
+import numpy as np
+import math
+import random
+import matplotlib.pyplot as plt
+from SALib.sample import morris as mrrs
+from SALib.test_functions import Ishigami
+from SALib.analyze import morris
+from SALib.sample import saltelli
+from pqueens.designers.morris_campolongo_designer import MorrisCampolongoDesigner
+from pqueens.sensitivity_analyzers.morris_analyzer import MorrisAnalyzer
+from pqueens.example_simulator_functions.ishigami import ishigami
+
+# test of my implementation of the Morris function
+paramsIshigami =   {   "x1" : {
+                    "type" : "FLOAT",
+                    "size" : 1,
+                    "min"  : -math.pi,
+                    "max"  : math.pi,
+                    "distribution" : 'uniform',
+                    "distribution_parameter" : [-math.pi,math.pi]
+                    },
+                    "x2" : {
+                    "type" : "FLOAT",
+                    "size" : 1,
+                    "min"  : -math.pi,
+                    "max"  : math.pi,
+                    "distribution" : 'uniform',
+                    "distribution_parameter" : [-math.pi,math.pi]
+                    },
+                    "x3" : {
+                    "type" : "FLOAT",
+                    "size" : 1,
+                    "min"  : -math.pi,
+                    "max"  : math.pi,
+                    "distribution" : 'uniform',
+                    "distribution_parameter" : [-math.pi,math.pi]},
+                }
+# Number of trajectories
+num_traj = 1000
+# Number of trajectories chosen
+num_traj_chosen = 1000
+# Grid jump size
+grid_jump = 2
+# Number of grid level
+num_levels = 4
+# Value of the confidence level
+confidence_level = 0.95
+# Do we perform brute-force optimization, if False, num_traj and num_traj_chosen
+# must be identical
+optim = False
+# Number of bootstrap samples to compute the confidence intervals
+num_bootstrap_conf = 1000
+
+MCD = MorrisCampolongoDesigner(paramsIshigami, num_traj ,optim, num_traj_chosen, grid_jump, num_levels)
+B_star, perm = MCD.get_all_samples()
+Y = np.ones((len(paramsIshigami),num_traj_chosen))
+for i in range(num_traj_chosen):
+    for j in range(len(paramsIshigami)):
+        Y[j,i] = ishigami(B_star[i,j,0],B_star[i,j,1],B_star[i,j,2])
+MA = MorrisAnalyzer(paramsIshigami,num_traj_chosen,grid_jump,num_levels,confidence_level,num_bootstrap_conf)
+Si = MA.analyze(B_star, Y, perm)
+print('The results with my implementation are :')
+S = MA.print_results(Si)
+
+plt.plot(Si['mu_star'], Si['sigma'],'ro')
+plt.xlabel('mu*')
+plt.ylabel('Sigma')
+plt.axis([0, 15, 0, 15])
+plt.text(Si['mu_star'][0]+0.015, Si['sigma'][0]+0.015,  r'x1')
+plt.text(Si['mu_star'][1]+0.015, Si['sigma'][1]+0.015,  r'x2')
+plt.text(Si['mu_star'][2]+0.015, Si['sigma'][2]+0.015,  r'x3')
+plt.title('Morris Sensitivity Indices ')
+plt.show()
+
+# Comparison with the SALib
+
+problemIshigami = {
+'num_vars': 3,
+'names': ['x1', 'x2','x3'],
+'bounds': [[-math.pi, math.pi],[-math.pi, math.pi],[-math.pi, math.pi]],
+'function': ishigami,
+'groups': None
+}
+
+X_SALib = mrrs.sample(problemIshigami, num_traj, num_levels=4, grid_jump=2, optimal_trajectories = None, local_optimization = False)
+Y_SALib = Ishigami.evaluate(X_SALib)
+print('The results with SALib are :')
+Si_SALib = morris.analyze(problemIshigami, X_SALib, Y_SALib, conf_level=0.95,  print_to_console=True, num_levels=4, grid_jump=2)
