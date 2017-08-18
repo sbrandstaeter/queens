@@ -54,9 +54,9 @@ num_bootstrap_conf = 1000
 
 MCD = MorrisCampolongoDesigner(paramsIshigami, num_traj ,optim, num_traj_chosen, grid_jump, num_levels)
 B_star, perm = MCD.get_all_samples()
-Y = np.ones((len(paramsIshigami),num_traj_chosen))
+Y = np.ones((len(paramsIshigami)+1,num_traj_chosen))
 for i in range(num_traj_chosen):
-    for j in range(len(paramsIshigami)):
+    for j in range(len(paramsIshigami)+1):
         Y[j,i] = ishigami(B_star[i,j,0],B_star[i,j,1],B_star[i,j,2])
 MA = MorrisAnalyzer(paramsIshigami,num_traj_chosen,grid_jump,num_levels,confidence_level,num_bootstrap_conf)
 Si = MA.analyze(B_star, Y, perm)
