@@ -94,13 +94,12 @@ class MorrisAnalyzer(object):
         Si (dict) :
             dictionnary with the sensitivity indices
         """
+        # computation of the distribution of all elementary effects
         EET = np.ones((self.num_traj_chosen,self.numparams))
         for r in range(self.num_traj_chosen):
             EET[r,:] = self.compute_elementary_effect(B_star_chosen[r,:,:], Y_chosen[:,r], perm_chosen[r,:])
-        EE = np.ones((1,self.numparams))
-        for i in range(self.numparams):
-            EE[0,i] = np.mean(abs(EET[:,i]), axis = 0)
 
+        # creation of the dictionnary to store all the results
         Si = dict((k, [None] * self.numparams)
         for k in ['names', 'mu', 'mu_star', 'sigma', 'mu_star_conf'])
         Si['mu'] = np.average(EET, 0)
