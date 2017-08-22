@@ -58,6 +58,14 @@ class SobolAnalyzer(object):
 
     def analyze(self,Y):
         """ Compute sensitivity indices for given samples Y
+        Y should have been computed with the SobolGratietDesigner, first the
+        design set is generated with the Designer and then the function or
+        metamodel is evaluated on it to give Y. When we evaluate a particular
+        function on one design set Y is a matrix of size (num_samples, nb_indices+1),
+        and when we have several realizations of a Gaussian process we evaluate
+        them on the design set X and then store them in a tensor of size
+        (output_samples, num_samples, nb_indices+1)
+
         Args:
         Y (numpy.array) :
             NumPy array containing the model outputs)
@@ -70,19 +78,19 @@ class SobolAnalyzer(object):
         nb_indices = 2**self.numparams - 1
 
         for j in range(self.numparams):
-            S_M_N_K_L = self.compute_first_order_sensitivity_indice(Y[:,:,0], Y[:,:,j+1],num_samples)
+            S_M_N_K_L = self.compute_sensitivity_indice(Y[:,:,0], Y[:,:,j+1],num_samples)
             S['S1'][j] = np.mean(S_M_N_K_L)
             S['S1_conf'][j] = self.compute_confidence_interval(S_M_N_K_L)
-            S_M_N_K_L_total = self.compute_total_order_sensitivity_indice(Y[:,:,0], Y[:,:,nb_indices-j-1],num_samples)
-            S['ST'][j] = np.mean(S_M_N_K_L_total)
+            S_M_N_K_L_total = self.compute_sensitivity_indice(Y[:,:,0], Y[:,:,nb_indices-j-1],num_samples)
+            S['ST'][j] = 1-np.mean(S_M_N_K_L_total)
             S['ST_conf'][j] = self.compute_confidence_interval(S_M_N_K_L_total)
+
         # Second order (+conf.)
         count = self.numparams + 1
         if self.calc_second_order:
             for j in range(self.numparams):
                 for k in range(j + 1, self.numparams):
-                    print(count)
-                    S_M_N_K_L_2 = self.compute_second_order_sensitivity_indice(Y[:,:,0],
+                    S_M_N_K_L_2 = self.compute_sensitivity_indice(Y[:,:,0],
                     Y[:,:,count],num_samples)
                     S['S2'][j, k] = np.mean(S_M_N_K_L_2) - S['S1'][j] - S['S1'][k]
                     S['S2_conf'][j, k] = self.compute_confidence_interval(S_M_N_K_L_2)
@@ -97,21 +105,13 @@ class SobolAnalyzer(object):
         Returns:
             (np.array): array containing bootstrap permutations
         """
-        H = np.zeros((self.num_bootstrap_samples,num_samples), dtype = int)
         # first row of the bootstrap indices matrix is unchanged, to fit to the
         # algorithm of Le Gratiet
-        H[0,:] = range(num_samples)
-        for z in range(1,self.num_bootstrap_samples):
-            a = 1
-            b = num_samples
-            liste =[]
-            for j in range(num_samples):
-                liste.append(random.randint(a,b-1))
-            H[z,:] = liste
-            H[z,:] = np.round(H[z,:])
-        return H
+        bootstrap_index = np.random.randint(num_samples, size = (self.num_bootstrap_samples,num_samples))
+        bootstrap_index[0,:] = range(num_samples)
+        return bootstrap_index
 
-    def compute_first_order_sensitivity_indice(self,Y,Y_tilde,num_samples):
+    def compute_sensitivity_indice(self,Y,Y_tilde,num_samples):
         """ Compute the first-order sensitivity indices
         Args:
         Y (numpy.array):
@@ -136,54 +136,6 @@ class SobolAnalyzer(object):
                 numerator = (np.sum(Y_b*Y_tilde_b)/num_samples-(np.sum(Y_b+Y_tilde_b)/(2*num_samples))**2)
                 denominator = (np.sum(Y_b**2)/num_samples-(np.sum(Y_b+Y_tilde_b)/(2*num_samples))**2)
                 S_M_N_K_L[k,l] = numerator/denominator
-        return S_M_N_K_L
-
-    def compute_second_order_sensitivity_indice(self,Y, Y_tilde,num_samples):
-        """ Compute the second-order sensitivity indices
-        Args:
-        Y (numpy.array) :
-            Evaluation of our sample X from the input space with the model (or
-            metamodel) of our problem.
-        Y_tilde (numpy.array) :
-            Evaluation of our sample X_tilde from the input space with the model
-            (or metamodel) of our problem.
-        num_samples (int) :
-            number of samples
-        """
-        S_M_N_K_L =  np.zeros((self.output_samples,self.num_bootstrap_samples))
-        H = self.generate_bootstrap_samples(num_samples)
-        # loop over realizations if there are any
-        for k in range(self.output_samples):
-            # loop to make bootstrapping over each realization
-            for l in range(self.num_bootstrap_samples):
-                Y_b = Y[:,H[l,:]]
-                Y_tilde_b = Y_tilde[:,H[l,:]]
-                numerator = (np.sum(Y_b[k,:]*Y_tilde_b[k,:])/num_samples-(np.sum(Y_b[k,:]+Y_tilde_b[k,:])/(2*num_samples))**2)
-                denominator = (np.sum(Y_b[k,:]**2)/num_samples-(np.sum(Y_b[k,:]+Y_tilde_b[k,:])/(2*num_samples))**2)
-                S_M_N_K_L[k,l] = numerator/denominator
-        return S_M_N_K_L
-
-    def compute_total_order_sensitivity_indice(self,Y, Y_tilde,num_samples):
-        """ Compute the total-order sensitivity indices
-        Args:
-        Y (numpy.array) :
-            Evaluation of our sample X from the input space with the model (or
-            metamodel) of our problem.
-        Y_tilde (numpy.array) :
-            Evaluation of our sample X_tilde from the input space with the model
-            (or metamodel) of our problem.
-        num_samples (int) :
-            number of samples
-        """
-        S_M_N_K_L = np.zeros((self.output_samples,self.num_bootstrap_samples))
-        H = self.generate_bootstrap_samples(num_samples)
-        for k in range(self.output_samples):
-            for l in range(self.num_bootstrap_samples):
-                Y_b = Y[k,H[l,:]]
-                Y_tilde_b = Y_tilde[k,H[l,:]]
-                numerator = (np.sum(Y_b*Y_tilde_b)/num_samples-(np.sum(Y_b+Y_tilde_b)/(2*num_samples))**2)
-                denominator = (np.sum(Y_b**2)/num_samples-(np.sum(Y_b+Y_tilde_b)/(2*num_samples))**2)
-                S_M_N_K_L[k,l] = 1-numerator/denominator
         return S_M_N_K_L
 
     def compute_confidence_interval(self, S_M_N_K_L):
