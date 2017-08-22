@@ -78,9 +78,11 @@ class SobolAnalyzer(object):
         nb_indices = 2**self.numparams - 1
 
         for j in range(self.numparams):
+            # First-order indices
             S_M_N_K_L = self.compute_sensitivity_indice(Y[:,:,0], Y[:,:,j+1],num_samples)
             S['S1'][j] = np.mean(S_M_N_K_L)
             S['S1_conf'][j] = self.compute_confidence_interval(S_M_N_K_L)
+            # Total order indices
             S_M_N_K_L_total = self.compute_sensitivity_indice(Y[:,:,0], Y[:,:,nb_indices-j-1],num_samples)
             S['ST'][j] = 1-np.mean(S_M_N_K_L_total)
             S['ST_conf'][j] = self.compute_confidence_interval(S_M_N_K_L_total)
@@ -123,7 +125,7 @@ class SobolAnalyzer(object):
         num_samples (int) :
             number of samples
         """
-        # First order estimator following Le Gratiet et al. 2014 Algorithm 1 and Proposition 1
+        # Estimator following Le Gratiet et al. 2014 Algorithm 1 and Proposition 1
         # init array
         S_M_N_K_L= np.zeros((self.output_samples,self.num_bootstrap_samples))
         H = self.generate_bootstrap_samples(num_samples)
