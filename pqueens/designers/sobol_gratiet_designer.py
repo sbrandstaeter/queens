@@ -3,8 +3,11 @@ import numpy as np
 import math
 from itertools import combinations
 
-class PseudoSaltelliDesigner(AbstractDesigner):
+class SobolGratietDesigner(AbstractDesigner):
     """ Pseudo Saltelli designer for experiments
+        The purpose of this class is to generate the design neccessary to compute
+        the sensitivity indices according to Le Gratiet method presented in [1],
+        with the two samples X and X_tilde.
 
     References:
 
@@ -17,14 +20,17 @@ class PseudoSaltelliDesigner(AbstractDesigner):
     Attributes:
 
         self.num_samples (int): number of design points
-        self.ps (np.array): array with all combinations from our samples/design points
+        self.ps (np.array): array with all combinations from our samples/design
+        points
     """
     def __init__(self,params,seed,num_samples):
         """
         Args:
             params (dict):
-                Two samples X and X_tilde defining the input space,
-                as in Algorithm 1 [1].
+                Dictionnary with the definition of the problem. Usuaally contains
+                the name of each parameter, and for each parameter its type, size,
+                minimum and maximum values, its distribution and its distribution
+                parameters.
             seed (int):
                 Seed for random number generation
             num_samples (int):
@@ -75,16 +81,11 @@ class PseudoSaltelliDesigner(AbstractDesigner):
             self.ps[:,k,:] = ps_temp
             k = k +1
 
-    def sample_generator(self):
-        """ Generator to iterate over experimental design """
-        i = 0
-        while i < self.num_samples:
-            yield self.ps[i,:]
-            i += 1
-
     def get_all_samples(self):
         """
         Returns:
-            ps (np.array): array with all combinations for all samples
+            ps (np.array): array with all combinations for all samples. The array
+            is of size (num_samples,nb_indices+1,numparams), it stores vertically
+            the different possible combinations to compute sensitivity indices.
         """
         return self.ps
