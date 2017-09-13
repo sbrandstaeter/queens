@@ -11,8 +11,6 @@ from random import *
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, Matern, ConstantKernel, WhiteKernel
 
-
-
 ## Definition of our problem
 # Dimension of our problem
 d = 3
@@ -23,7 +21,7 @@ Nz = 500
 # Number of bootstrap samples
 B = 300
 # Number of Monte-Carlo
-m = 10000
+m = 1000
 #
 T1 =[];
 T2 =[];
@@ -49,7 +47,7 @@ for s in n:
 	S_M_N_K_L_3 = np.zeros((h,Nz,B)) # tensor of size h x Nz x B
 
 	for i in range(0,h):
-		D_exp[i,:,:] = 2*math.pi*lhs(d,samples = s, criterion = 'maximin')-math.pi*np.ones((s,d))
+		D_exp[i,:,:] = 2*math.pi*lhs(d,samples = s)-math.pi*np.ones((s,d), dtype = np.float64)
 
 		# Build the known values of the Ishigami function at the experimental design set
 		z_exp[:,i] = Ishigami(D_exp[i,:,0], D_exp[i,:,1],D_exp[i,:,2])
@@ -113,6 +111,22 @@ for s in n:
 				S_M_N_K_L_1[i,k,l] =  Sobol_indice(mub, mu1_tildeb,m)
 				S_M_N_K_L_2[i,k,l] =  Sobol_indice(mub, mu2_tildeb,m)
 				S_M_N_K_L_3[i,k,l] =  Sobol_indice(mub, mu3_tildeb,m)
+	print('S_M_N_K_L_1')
+	print(S_M_N_K_L_1)
+	 Storage of the tensor with sensitivitz indices
+	base_string1 = "S_M_N_K_L_1"
+	file_name = base_string1 + str(s) + ".pickle"
+	with open(file_name, "wb") as f:
+		pickle.dump(S_M_N_K_L_1, f)
+	base_string2 = "S_M_N_K_L_2"
+	file_name = base_string2 + str(s) + ".pickle"
+	with open(file_name, "wb") as f:
+		pickle.dump(S_M_N_K_L_2, f)
+	base_string3 = "S_M_N_K_L_3"
+	file_name = base_string3 + str(s) + ".pickle"
+	with open(file_name, "wb") as f:
+		pickle.dump(S_M_N_K_L_3, f)
+
 
 	# Calculation of the sensitivity indices
 	S1 = np.mean(np.mean(S_M_N_K_L_1,axis=0))
@@ -134,44 +148,29 @@ for s in n:
 	SigmaMC3 = np.mean(np.var(np.mean(S_M_N_K_L_3,axis=0),axis=1))
 
 	# Evaluation of the 0.05 and 0.95 quantiles with a bootstrap procedure
-	# Number of bootstrap procedure N
-	Z1 = np.reshape(np.mean(S_M_N_K_L_1,axis=0),(1,Nz*B))
-	Z1 = Z1.transpose()
-	Z2 = np.reshape(np.mean(S_M_N_K_L_2,axis=0),(1,Nz*B))
-	Z2 = Z2.transpose()
-	Z3 = np.reshape(np.mean(S_M_N_K_L_3,axis=0),(1,Nz*B))
-	Z3 = Z3.transpose()
-	Q1 = np.zeros((N,2), dtype = float)
-	Q2 = np.zeros((N,2), dtype = float)
-	Q3 = np.zeros((N,2), dtype = float)
-	h = np.random.randint(Nz*B, size = (B,Nz*B))
-	Zq1 = Z1[h]
-	Zq2 = Z2[h]
-	Zq3 = Z3[h]
+	Z1 = np.reshape(S_M_N_K_L_1,(1,Nz*B*h))[0]
+	Z2 = np.reshape(S_M_N_K_L_2,(1,Nz*B*h))[0]
+	Z3 = np.reshape(S_M_N_K_L_3,(1,Nz*B*h))[0]
+	bootstrap = np.random.randint(Nz*B*h, size = (1,Nz*B*h))
+	Zq1 = Z1[bootstrap]
+	Zq2 = Z2[bootstrap]
+	Zq3 = Z3[bootstrap]
 	q11 =  np.percentile(Zq1, 2.5)
 	q12 =  np.percentile(Zq1, 97.5)
 	q21 =  np.percentile(Zq2, 2.5)
 	q22 =  np.percentile(Zq2, 97.5)
 	q31 =  np.percentile(Zq3, 2.5)
 	q32 =  np.percentile(Zq3, 97.5)
-	Q1[:,0] = q11
-	Q1[:,1] = q12
-	Q2[:,0] = q21
-	Q2[:,1] = q22
-	Q3[:,0] = q31
-	Q3[:,1] = q32
-
-	Q_11 = np.mean(Q1[:,0])
-	Q_12 = np.mean(Q1[:,1])
-	Q_21 = np.mean(Q2[:,0])
-	Q_22 = np.mean(Q2[:,1])
-	Q_31 = np.mean(Q3[:,0])
-	Q_32 = np.mean(Q3[:,1])
+	Q_11 = q11
+	Q_12 = q12
+	Q_21 = q21
+	Q_22 = q22
+	Q_31 = q31
+	Q_32 = q32
 
 	resultsS1 = [Q_11, S1, Q_12, SigmaMM1, SigmaMC1, Sigma1, abs((Sigma1 - (SigmaMM1+SigmaMC1))/Sigma1*100)]
 	resultsS2 = [Q_21, S2, Q_22, SigmaMM2, SigmaMC2, Sigma2, abs((Sigma2 - (SigmaMM2+SigmaMC2))/Sigma2*100)]
 	resultsS3 = [Q_31, S3, Q_32, SigmaMM3, SigmaMC3, Sigma3, abs((Sigma3 - (SigmaMM3+SigmaMC3))/Sigma3*100)]
-
 	T1 = np.concatenate((T1, resultsS1))
 	T2 = np.concatenate((T2, resultsS2))
 	T3 = np.concatenate((T3, resultsS3))
@@ -182,9 +181,9 @@ T3 = np.reshape(np.asarray(T3), (len(n),7))
 
 # Plot of the results
 plt.figure(1)
-plt.plot(np.asarray(n), T1[:,0].transpose(),'b--',label="0.05 quantile")
+plt.plot(np.asarray(n), T1[:,0].transpose(),'b--',label="0.025 quantile")
 plt.plot(np.asarray(n), T1[:,1].transpose(), 'r--', label="mean")
-plt.plot(np.asarray(n), T1[:,2].transpose(), 'g--', label="0.95 quantile")
+plt.plot(np.asarray(n), T1[:,2].transpose(), 'g--', label="0.975 quantile")
 plt.plot(np.asarray(n), 0.314*np.ones((1,len(n)), dtype = np.float64).transpose(), 'y--', label="Exact Value")
 plt.title('Sensitivity index S1')
 plt.xlabel('Size of the Experimental Design Set')
@@ -192,9 +191,9 @@ plt.ylabel('Values of the Sensitivity Indices')
 plt.legend()
 plt.show()
 plt.figure(2)
-plt.plot(np.asarray(n),T2[:,0].transpose(),'b--',label="0.05 quantile")
+plt.plot(np.asarray(n),T2[:,0].transpose(),'b--',label="0.025 quantile")
 plt.plot(np.asarray(n), T2[:,1].transpose(), 'r--', label="mean")
-plt.plot(np.asarray(n), T2[:,2].transpose(), 'g--', label="0.95 quantile")
+plt.plot(np.asarray(n), T2[:,2].transpose(), 'g--', label="0.975 quantile")
 plt.plot(np.asarray(n), 0.442*np.ones((1,len(n)), dtype = np.float64).transpose(), 'y--', label="Exact Value")
 plt.title('Sensitivity index S2')
 plt.xlabel('Size of the Experimental Design Set')
@@ -202,9 +201,9 @@ plt.ylabel('Values of the Sensitivity Indices')
 plt.legend()
 plt.show()
 plt.figure(3)
-plt.plot(np.asarray(n),T3[:,0].transpose(),'b--',label="0.05 quantile")
+plt.plot(np.asarray(n),T3[:,0].transpose(),'b--',label="0.025 quantile")
 plt.plot(np.asarray(n), T3[:,1].transpose(), 'r--', label="mean")
-plt.plot(np.asarray(n), T3[:,2].transpose(), 'g--', label="0.95 quantile")
+plt.plot(np.asarray(n), T3[:,2].transpose(), 'g--', label="0.975 quantile")
 plt.plot(np.asarray(n), np.zeros((1,len(n)), dtype = np.float64).transpose(), 'y--', label="Exact Value")
 plt.title('Sensitivity index S3')
 plt.xlabel('Size of the Experimental Design Set')
