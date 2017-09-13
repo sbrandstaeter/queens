@@ -2,16 +2,16 @@ import SALib
 import numpy as np
 import math
 import random
-import matplotlib.pyplot as plt
+from pqueens.designers.morris_campolongo_designer import MorrisCampolongoDesigner
+from pqueens.sensitivity_analyzers.morris_analyzer import MorrisAnalyzer
+from pqueens.example_simulator_functions.ishigami import ishigami
+# check with the SALib
 from SALib.sample import morris as mrrs
 from SALib.test_functions import Ishigami
 from SALib.analyze import morris
 from SALib.sample import saltelli
-from pqueens.designers.morris_campolongo_designer import MorrisCampolongoDesigner
-from pqueens.sensitivity_analyzers.morris_analyzer import MorrisAnalyzer
-from pqueens.example_simulator_functions.ishigami import ishigami
 
-# test of my implementation of the Morris function
+# test of my implementation of the Morris method
 paramsIshigami =   {   "x1" : {
                     "type" : "FLOAT",
                     "size" : 1,
@@ -63,18 +63,7 @@ Si = MA.analyze(B_star, Y, perm)
 print('The results with my implementation are :')
 S = MA.print_results(Si)
 
-plt.plot(Si['mu_star'], Si['sigma'],'ro')
-plt.xlabel('mu*')
-plt.ylabel('Sigma')
-plt.axis([0, 15, 0, 15])
-plt.text(Si['mu_star'][0]+0.015, Si['sigma'][0]+0.015,  r'x1')
-plt.text(Si['mu_star'][1]+0.015, Si['sigma'][1]+0.015,  r'x2')
-plt.text(Si['mu_star'][2]+0.015, Si['sigma'][2]+0.015,  r'x3')
-plt.title('Morris Sensitivity Indices ')
-plt.show()
-
 # Comparison with the SALib
-
 problemIshigami = {
 'num_vars': 3,
 'names': ['x1', 'x2','x3'],
@@ -82,7 +71,6 @@ problemIshigami = {
 'function': ishigami,
 'groups': None
 }
-
 X_SALib = mrrs.sample(problemIshigami, num_traj, num_levels=4, grid_jump=2, optimal_trajectories = None, local_optimization = False)
 Y_SALib = Ishigami.evaluate(X_SALib)
 print('The results with SALib are :')
