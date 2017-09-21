@@ -1,4 +1,3 @@
-
 ###### use requirements without version specifier for now ######
 numpy
 scipy
