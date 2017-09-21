@@ -10,7 +10,8 @@ from sklearn import *
 from random import *
 from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, Matern, ConstantKernel, WhiteKernel
-
+import time
+from  pqueens.emulators.gp_emulator import GPEmulator
 
 
 ## Definition of our problem
@@ -19,11 +20,11 @@ d = 3
 # Size of the Experimental Design Set
 n = [40, 50, 60, 70, 90, 120, 150, 200]
 # Number of samples for our Gaussian process
-Nz = 500
+Nz = 5000
 # Number of bootstrap samples
 B = 300
 # Number of Monte-Carlo
-m = 10000
+m = 1000
 #
 T1 =[];
 T2 =[];
@@ -61,6 +62,11 @@ for s in n:
 		# Fit to data using Maximum Likelihood Estimation of the parameters
 		gp.fit(D_exp[i,:,:], z_exp[:,i])
 
+		# begin of Jonas code
+		params = {}
+		my_emulator = GPEmulator(D_exp[i,:,:],z_exp[:,i].reshape(-1,1),params)
+		# end of Jonas Code
+
 		# Generate two samples (xi) and (xtildei) of the random vectors (Xi) and (Xtildei) with respect to the probability measure mu
 		x_1 = np.random.uniform(-math.pi,math.pi,m) # donne un vecteur ligne
 		x_2 = np.random.uniform(-math.pi,math.pi,m)
@@ -86,11 +92,23 @@ for s in n:
 		x_tilde3 = x_tilde3.reshape(3,m)
 
 		# Sample a realization z_n(x) of Z_n(x) with x = {x, xtilde}
+		time_a_scikit = time.time()
 		MU = gp.sample_y(x.transpose(), n_samples=Nz, random_state= np.random.RandomState(3))
 		MU1_tilde = gp.sample_y(x_tilde1.transpose(), n_samples=Nz, random_state= np.random.RandomState(3))
 		MU2_tilde = gp.sample_y(x_tilde2.transpose(), n_samples=Nz, random_state= np.random.RandomState(3))
 		MU3_tilde = gp.sample_y(x_tilde3.transpose(), n_samples=Nz, random_state= np.random.RandomState(3))
+		time_b_scikit = time.time()
+		print("Generating samples took {} secs".format(time_b_scikit-time_a_scikit))
+		# try emulator
+		time_a_gpy = time.time()
+		MU_gpy = my_emulator.compute_posterior_samples(x.transpose())
+		MU1_tilde_gpy = my_emulator.compute_posterior_samples(x_tilde1.transpose())
+		MU2_tilde_gpy = my_emulator.compute_posterior_samples(x_tilde2.transpose())
+		MU3_tilde_gpy = my_emulator.compute_posterior_samples(x_tilde3.transpose())
+		time_b_gpy = time.time()
+		print("Generating samples took {} secs with GPy".format(time_b_gpy-time_a_gpy))
 
+		# eof try emulator
 		for k in range(0,Nz):
 			mu = list(zip(*MU))[k]
 			mu1_tilde = list(zip(*MU1_tilde))[k]

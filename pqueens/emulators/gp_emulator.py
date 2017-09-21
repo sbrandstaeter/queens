@@ -50,7 +50,7 @@ class GPEmulator(object):
         self.m.optimize('bfgs', max_iters=200)
 
         # TODO remove hard coded values and pass via contructor argument instead
-        self.num_emulator_samples = 100
+        self.num_emulator_samples = 500
         self.num_mc_samples = 500
         #self.y_plot =  np.linspace(np.amin(self.y), np.max(self.y), 100)
 
@@ -208,3 +208,8 @@ class GPEmulator(object):
         my_evals.sort(axis=0)
         ys = np.arange(1, len(my_evals)+1)/float(len(my_evals))
         return ys, my_evals
+
+    def compute_posterior_samples(self,X_test):
+        """ Compute samples of posterior for X_test """
+        my_evals = self.m.posterior_samples_f(X_test,self.num_emulator_samples)
+        return my_evals
