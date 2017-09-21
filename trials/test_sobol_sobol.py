@@ -1,18 +1,27 @@
-import SALib
 import numpy as np
 import math
-import random
-import matplotlib.pyplot as plt
-from pqueens.designers.morris_campolongo_designer import MorrisCampolongoDesigner
-from pqueens.sensitivity_analyzers.morris_analyzer import MorrisAnalyzer
+from pqueens.sensitivity_analyzers.sobol_analyzer import SobolAnalyzer
+from pqueens.designers.sobol_gratiet_designer import SobolGratietDesigner
 from pqueens.example_simulator_functions import sobol_G
-# check the implementation with SALib
-from SALib.test_functions import Sobol_G
-from SALib.sample import morris as mrrs
-from SALib.analyze import morris
+import matplotlib.pyplot as plt
+# import SALib to verify my own implementation
 from SALib.sample import saltelli
+from SALib.test_functions import Sobol_G
+from SALib.analyze import sobol
+# set up all necessary parameters for SA
+num_samples = 1000
+num_bootstrap_samples = 1000
+# number of realization of emulator
+output_samples = 1
+# do we want to compute second order indices
+calc_second_order = True
+# fix seed for random number generation
+seed = 42
 
-# test of my implementation of the Morris method
+# value of confidence_level, should be between 0 and 1
+confidence_level = 0.95
+
+''' Test of the Sobol function'''
 paramsSobol =   {   "x1" : {
                     "type" : "FLOAT",
                     "size" : 1,
@@ -76,43 +85,32 @@ paramsSobol =   {   "x1" : {
                     "max"  : 1,
                     "distribution" : 'uniform',
                     "distribution_parameter" : [0,1]
-                    }}
+                    }
+                }
 
-# Number of trajectories
-num_traj = 10
-# Number of trajectories chosen
-num_traj_chosen = 4
-# Grid jump size
-grid_jump = 2
-# Number of grid level
-num_levels = 4
-# Value of the confidence level
-confidence_level = 0.95
-# Do we perform brute-force optimization, if False, num_traj and num_traj_chosen
-# must be identical
-optim = True
-# Number of bootstrap samples to compute the confidence intervals
-num_bootstrap_conf = 1000
-
-MCD = MorrisCampolongoDesigner(paramsSobol, num_traj ,optim, num_traj_chosen, grid_jump, num_levels)
-B_star, perm = MCD.get_all_samples()
-Y = np.ones((len(paramsSobol)+1,num_traj_chosen))
-for i in range(num_traj_chosen):
-    for j in range(len(paramsSobol)+1):
-        Y[j,i]  = sobol_G.evaluate(B_star[i,j,:])
-MA = MorrisAnalyzer(paramsSobol,num_traj_chosen,grid_jump,num_levels,confidence_level,num_bootstrap_conf)
-Si = MA.analyze(B_star, Y, perm)
+# number of sensitivity indices
+nb_indices = 2**len(paramsSobol) - 1
+Y = np.zeros((output_samples, num_samples, nb_indices+1))
+PSD = SobolGratietDesigner(paramsSobol,seed,num_samples)
+X = PSD.get_all_samples()
+# in case we have several realizations of our gaussian processes
+for h in range(output_samples):
+    for i in range(nb_indices+1):
+        for j in range(num_samples):
+            Y[h,j,i] = sobol_G.evaluate(X[j,i,:])
+SA = SobolAnalyzer(paramsSobol,calc_second_order, num_bootstrap_samples,
+                confidence_level, output_samples)
+S = SA.analyze(Y)
 print('The results with my implementation are :')
-S = MA.print_results(Si)
+S_print = SA.print_results(S)
 
-# Comparison with the SALib
+# SALib verification
 problemSobol = {
 'num_vars': 8,
-'names': ['x1', 'x2','x3','x4', 'x5','x6','x7','x8'],
-'bounds' : [[0,1]]*8,
-'groups': None
+'names': ['x1', 'x2','x3','x4', 'x5','x6','x7', 'x8'],
+'bounds' : [[0,1]]*8
 }
-X_SALib = mrrs.sample(problemSobol, num_traj, num_levels=4, grid_jump=2, optimal_trajectories = 4, local_optimization = False)
+X_SALib = saltelli.sample(problemSobol, 1000)
 Y_SALib = Sobol_G.evaluate(X_SALib)
 print('The results with SALib are :')
-Si_SALib = morris.analyze(problemSobol, X_SALib, Y_SALib, conf_level=0.95,  print_to_console=True, num_levels=4, grid_jump=2)
+Si = sobol.analyze(problemSobol, Y_SALib, print_to_console=True)

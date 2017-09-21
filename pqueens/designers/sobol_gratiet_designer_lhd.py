@@ -1,9 +1,10 @@
 from .abstract_designer import AbstractDesigner
 import numpy as np
 import math
+from pyDOE import lhs
 from itertools import combinations
 
-class SobolGratietDesigner(AbstractDesigner):
+class SobolGratietDesignerLHD(AbstractDesigner):
     """ Pseudo Saltelli designer for experiments
         The purpose of this class is to generate the design neccessary to compute
         the sensitivity indices according to Le Gratiet method presented in [1],
@@ -46,17 +47,13 @@ class SobolGratietDesigner(AbstractDesigner):
         X = np.ones((self.num_samples,numparams))
         X_tilde = np.ones((self.num_samples,numparams))
         # array with samples
+        self.X = lhs(numparams, num_samples)
+        self.X_tilde= lhs(numparams, num_samples)
         self.ps = np.ones((num_samples,nb_indices+1,numparams))
-
         i=0
         for _ ,value in params.items():
-            # get appropriate random number generator
-            random_number_generator = getattr(np.random, value['distribution'])
-            # make a copy
-            my_args = list(value['distribution_parameter'])
-            my_args.extend([num_samples])
-            X[:,i] = random_number_generator(*my_args)
-            X_tilde[:,i] = random_number_generator(*my_args)
+            self.X[:,i] = self.X[:,i]*(value['max']-value['min'])+value['min']
+            self.X_tilde[:,i] = self.X_tilde[:,i]*(value['max']-value['min'])+value['min']
             i+=1
 
         # making all possible combinations between the factors of X and X_tilde
@@ -70,14 +67,14 @@ class SobolGratietDesigner(AbstractDesigner):
                 ind = ind+1
         del p[0]
         # Generate now the tensor of size (nb_indices+1, )
-        self.ps[:,0,:] = X
-        self.ps[:,nb_indices,:] = X_tilde
+        self.ps[:,0,:] = self.X
+        self.ps[:,nb_indices,:] = self.X_tilde
         ps_temp = np.ones((self.num_samples,numparams))
 
         k = 1
         for i in range(nb_indices-1):
-            ps_temp[:,p[i+1]] = X[:,p[i+1]]
-            ps_temp[:,p[nb_indices-1-i]] = X_tilde[:,p[nb_indices-1-i]]
+            ps_temp[:,p[i+1]] = self.X[:,p[i+1]]
+            ps_temp[:,p[nb_indices-1-i]] = self.X_tilde[:,p[nb_indices-1-i]]
             self.ps[:,k,:] = ps_temp
             k = k +1
 

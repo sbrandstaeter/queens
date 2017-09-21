@@ -1,23 +1,33 @@
-import SALib
 import numpy as np
 import math
-import random
-from pqueens.designers.morris_campolongo_designer import MorrisCampolongoDesigner
-from pqueens.sensitivity_analyzers.morris_analyzer import MorrisAnalyzer
+from pqueens.sensitivity_analyzers.sobol_analyzer import SobolAnalyzer
+from pqueens.designers.sobol_gratiet_designer import SobolGratietDesigner
 from pqueens.example_simulator_functions.borehole_lofi import borehole_lofi
 from pqueens.example_simulator_functions.borehole_hifi import borehole_hifi
-# to check with SALib
-from SALib.sample import morris as mrrs
-from SALib.analyze import morris
+import matplotlib.pyplot as plt
+# import SALib to verify my own implementation
 from SALib.sample import saltelli
+from SALib.analyze import sobol
 
-# test of my implementation of the Morris method
+# set up all necessary parameters for SA
+num_samples = 1000
+num_bootstrap_samples = 1000
+# number of realization of emulator
+output_samples = 1
+# do we want to compute second order indices
+calc_second_order = True
+# fix seed for random number generation
+seed = 42
+# value of confidence_level, should be between 0 and 1
+confidence_level = 0.95
+
+''' Test of the Borehole function'''
 paramsBorehole =   {   "x1" : {
                     "type" : "FLOAT",
                     "size" : 1,
                     "min"  : 0.05,
                     "max"  : 0.15,
-                    "distribution" : 'normal',
+                    "distribution" : 'uniform',
                     "distribution_parameter" : [0.05,0.15]
                     },
                     "x2" : {
@@ -25,7 +35,7 @@ paramsBorehole =   {   "x1" : {
                     "size" : 1,
                     "min"  : 100,
                     "max"  : 50000,
-                    "distribution" : 'lognormal',
+                    "distribution" : 'uniform',
                     "distribution_parameter" : [100,50000]
                     },
                     "x3" : {
@@ -77,40 +87,31 @@ paramsBorehole =   {   "x1" : {
                     "distribution_parameter" : [9855,12045]
                     }
                 }
-# Number of trajectories
-num_traj = 10
-# Number of trajectories chosen
-num_traj_chosen = 4
-# Grid jump size
-grid_jump = 2
-# Number of grid level
-num_levels = 4
-# Value of the confidence level
-confidence_level = 0.95
-# Do we perform brute-force optimization, if False, num_traj and num_traj_chosen
-# must be identical
-optim = True
-# Number of bootstrap samples to compute the confidence intervals
-num_bootstrap_conf = 1000
-MCD = MorrisCampolongoDesigner(paramsBorehole, num_traj ,optim, num_traj_chosen, grid_jump, num_levels)
-B_star, perm = MCD.get_all_samples()
-Y = np.ones((len(paramsBorehole)+1,num_traj_chosen))
-for i in range(num_traj_chosen):
-    for j in range(len(paramsBorehole)+1):
-        Y[j,i] = borehole_lofi(B_star[i,j,0],B_star[i,j,1],B_star[i,j,2],B_star[i,j,3],B_star[i,j,4],B_star[i,j,5],B_star[i,j,6],B_star[i,j,7])
-MA = MorrisAnalyzer(paramsBorehole,num_traj_chosen,grid_jump,num_levels,confidence_level,num_bootstrap_conf)
-Si = MA.analyze(B_star, Y, perm)
-print('The results with my implementation are :')
-S = MA.print_results(Si)
 
-problemBorehole= {
+nb_indices = 2**len(paramsBorehole) - 1
+Y = np.zeros((output_samples, num_samples, nb_indices+1))
+PSD = SobolGratietDesigner(paramsBorehole,seed,num_samples)
+X = PSD.get_all_samples()
+
+# in case we have several realizations of our gaussian processes
+for h in range(output_samples):
+    for s in range(1+(len(paramsBorehole)*(len(paramsBorehole)+1))//2):
+        Y[h,:,s] = borehole_lofi(X[:,s,0],X[:,s,1],X[:,s,2],X[:,s,3],X[:,s,4],X[:,s,5],X[:,s,6],X[:,s,7])
+    for s in range(nb_indices-len(paramsBorehole)-1,nb_indices+1):
+        Y[h,:,s] = borehole_lofi(X[:,s,0],X[:,s,1],X[:,s,2],X[:,s,3],X[:,s,4],X[:,s,5],X[:,s,6],X[:,s,7])
+SA = SobolAnalyzer(paramsBorehole,calc_second_order, num_bootstrap_samples,
+                confidence_level, output_samples)
+S = SA.analyze(Y)
+print('The results with my implementation are :')
+S_print = SA.print_results(S)
+
+#Verification with the SALib implementation
+problemBorehole = {
 'num_vars': 8,
-'names': ['x1', 'x2','x3','x4','x5','x6','x7','x8'],
-'bounds' : [[0.05,0.15],[100,50000],[63070,115600],[990,1110],[63.1,116],[700,820],[1120,1680],[9855,12045]],
-'function': borehole_lofi,
-'groups': None
+'names': ['x1', 'x2','x3','x4', 'x5','x6','x7', 'x8'],
+'bounds' : [[0.05,0.15],[100,50000],[63070,115600],[990,1110],[63.1,116],[700,820],[1120,1680],[9855,12045]]
 }
-X_SALib = mrrs.sample(problemBorehole, num_traj, num_levels=4, grid_jump=2, optimal_trajectories = 4, local_optimization = False)
-Y_SALib =  borehole_lofi(X_SALib[:,0],X_SALib[:,1],X_SALib[:,2],X_SALib[:,3],X_SALib[:,4],X_SALib[:,5],X_SALib[:,6],X_SALib[:,7])
 print('The results with SALib are :')
-Si_SALib = morris.analyze(problemBorehole, X_SALib, Y_SALib, conf_level=0.95,  print_to_console=True, num_levels=4, grid_jump=2)
+X = saltelli.sample(problemBorehole, 1000)
+Y = borehole_hifi(X[:,0],X[:,1],X[:,2],X[:,3],X[:,4],X[:,5],X[:,6],X[:,7])
+Si = sobol.analyze(problemBorehole, Y, print_to_console=True)
