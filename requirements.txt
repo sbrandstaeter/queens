@@ -16,3 +16,4 @@ pyDOE
 gpy
 #for making nice plots
 seaborn
+docker
