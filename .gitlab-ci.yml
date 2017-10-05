@@ -14,9 +14,6 @@ full_test_and_build_suite:
   - coverage run -m unittest discover -s pqueens/tests
   # transfer test results to codecov.io
   - codecov --token=8eecedcc-6782-468a-b066-0e641741f210
-  services:
-    - database
 
 services:
-  database:
-    image: mongo:3.4
+  - mongo:3.4
