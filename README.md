@@ -2,16 +2,13 @@
 
 This repository is contains the python version of the QUEENS framework.
 
-#### Dependencies ####
+## Dependencies
 All necessary third party libraries are listed in the requirements.txt file.
 To install all of these dependencies using pip, simply run:   
 `pip install -r requirements.txt`
 
-MongoDB
-Installation instruction can be found [here](https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.181134695.1149150790.1494232459-1730069423.1494232449)
 
-
-#### Installation directions ####
+## Installation directions
 The use a virtual environment like [Anaconda](https://www.continuum.io/downloads) is highly recommended.
 After setting up Anaconda and a new, dedicated QUEENS development environment, all required third party libraries can be simply installed by running:  
 `pip install -r requirements.txt`  
@@ -26,8 +23,36 @@ To uninstall QUEENS run:
 To update Python packages in your Anaconda environment type:  
 `conda update --all`
 
+### Setup of MongoDB
+QUEENS writes results into a MongoDB database, therefore QUEENS needs to have write access to a MongoDB databases. However, MongoDB does not necessarily have to run on the same machine as QUEENS. In certain situations, it makes sense to have the database running on a different computer and connect to the database via port-forwarding.
 
-#### Building the documentation ####
+#### Installation of MongoDB
+Installation instructions if you are running OSX can be found [here](https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.181134695.1149150790.1494232459-1730069423.1494232449)  
+Installation instructions for LNM workstations running Fedora 22 are as follows.
+https://blog.bensoer.com/install-mongodb-3-0-on-fedora-22/   
+After installation, you need to start MongoDB. For LNM machines this requires that you can execute the commands:   
+`systemctl start mongod`   
+
+`systemctl stop mongod`   
+
+`systemctl restart`
+
+It could be that you have to edit the sudoers file `/etc/sudoers.d/` together with your administrator in order get the execution rights.
+
+
+#### LNM specific issues
+In order to connect to a MongoDB instance running on one of the LNM machines, one needs to be able to connect port 27017 from a remote host.
+By default,  the fire wall software `firewalld` blocks every incoming request. Hence, to enable a connections, we have add so called rules to firewalld in order to connect to the database.   
+
+First type   
+`sudo firewalld —list-all`   
+to see what firewall rules are already in place.
+If there is no rule in place which allows you to connect to port 27017, you can add such a rule by running the following command on the machine MongoDD is running on.   
+`sudo firewalld —zone=work —add-rich-rule ‘rule family=ipv4 source address=<ip-adress-you-want-to-connect-from> port port=27017 protocol=tcp accept’ —permanent`   
+Note that if you want to connect to the database from a cluster, you will also need to add this rule to the clusters master node.
+
+
+## Building the documentation
 QUEENS uses sphinx to automatically build a html documentation from  docstring. To build it, navigate into the doc folder and type:    
 `make html`  
 
@@ -35,7 +60,7 @@ After adding new modules or classes to QUEENS, one needs to rebuild the autodoc 
 `sphinx-apidoc -o doc/source pqueens -f`  
 before the make command.
 
-### Run the test suite ###
+## Run the test suite
 QUEENS has a couple of unit and regression test. To run the test suite type:  
 `python -m unittest discover pqueens/tests`
 
@@ -46,7 +71,7 @@ To view the created report, run:
 `coverage report -m`
 
 
-#### Run the Bitbucket pipeline locally ####
+## Run the Bitbucket pipeline locally
 It is possible to test Bitbucket pipelines locally on your machine using
 Docker containers. The main purpose of this is to be able to try and test
 the Bitbucket pipeline as well as the overall bitbucket setup locally on
@@ -55,7 +80,7 @@ locally and results obtained online in the bitbucket repository. Testing
 things locally in a Docker container matching the bitbucket setup repository
 is often very helpful speeds up the debugging process considerably.  
 
-Bitbuckets own documentation about hwo to test the pipelines locally
+Bitbuckets own documentation about how to test the pipelines locally
 can be found
 [here](https://confluence.atlassian.com/bitbucket/debug-your-pipelines-locally-with-docker-838273569.html)
 
