@@ -1,5 +1,17 @@
 __pycache__
 # do not track doc files that are automatically build
 doc/build
+doc/source/*.rst
+
+jupyter_notebooks/*.ipynb_checkpoints
 
 .coverage
+
+_posts/
+bin/
+build/
+database_data/
+diagnostic.data/
+dist/
+journal/
+pqueens.egg-info
