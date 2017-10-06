@@ -1,4 +1,4 @@
-image: continuumio/anaconda3
+image: continuumio/anaconda3:4.4.0
 
 
 full_test_and_build_suite:
