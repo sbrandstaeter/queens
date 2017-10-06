@@ -15,5 +15,5 @@ full_test_and_build_suite:
   # transfer test results to codecov.io
   - codecov --token=8eecedcc-6782-468a-b066-0e641741f210
 
-services:
-  - mongo:3.4
+#services:
+#  - mongo:3.4
