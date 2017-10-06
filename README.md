@@ -2,6 +2,10 @@
 
 This repository is contains the python version of the QUEENS framework.
 
+[![build status](https://gitlab.lrz.de/jbi/queens/badges/master/build.svg)](https://gitlab.lrz.de/jbi/queens/commits/master)
+
+[![coverage report](https://gitlab.lrz.de/jbi/queens/badges/master/coverage.svg)](https://gitlab.lrz.de/jbi/queens/commits/master)
+
 ## Dependencies
 All necessary third party libraries are listed in the requirements.txt file.
 To install all of these dependencies using pip, simply run:   
@@ -86,7 +90,8 @@ can be found
 
 In any case, the steps are fairly straightforward:  
 
-- If [Docker](https://www.docker.com/) is not already installed, install Docker on your machine by following these [instructions](https://www.docker.com/docker-mac)
+- If [Docker](https://www.docker.com/) is not already installed, install Docker on your machine
+   by following these [instructions](https://www.docker.com/docker-mac)
 - Copy the QUEENS code to a dedicated testing directory, e.g.,
   `/Users/jonas/work/adco/test_bibucket_pipeline_locally/pqueens`
 - Run the following command to launch a Docker container with a Debian based Anaconda image and the source code from testing directory mounted as local folder in the Docker container:  
@@ -98,3 +103,14 @@ docker run -it --volume=/Users/jonas/work/adco/test_bibucket_pipeline_locally/pq
 - You should now be in the docker container and inside the queens directory
 - Setup QUEENS following the instructions above
 - From here, you can now run the individual commands in your pipeline.
+
+
+## GitLab
+To get started with Gitlab checkout the help section [here](https://gitlab.lrz.de/help/ci/README.md)
+
+CI with with gitlab requires the setup of so called runners that build and test the code.
+To turn a machine into a runner, you have to install some software as described
+[here](https://docs.gitlab.com/runner/install/linux-repository.html)
+
+Next, you have to register the runner with your gitlab repo as described
+[here](https://docs.gitlab.com/runner/register/index.html)
