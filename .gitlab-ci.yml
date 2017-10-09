@@ -1,8 +1,9 @@
-image: continuumio/anaconda3:4.4.0
+image: continuumio/anaconda3
 
 
 full_test_and_build_suite:
   script:
+  - conda update conda && conda update python
   - apt-get update -y
   - apt-get install gcc -y
   - conda create --name pqueens -y
