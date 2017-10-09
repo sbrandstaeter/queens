@@ -40,7 +40,7 @@ class TestDatabase(unittest.TestCase):
             jobs = [jobs]
 
         test = jobs[0]['dummy_field1']
-        self.assertEqual(test, 'gargbage')
+        self.assertEqual(test, 'garbage')
 
         # remove dummy data
         db.remove(self.experiment_name, 'jobs')
