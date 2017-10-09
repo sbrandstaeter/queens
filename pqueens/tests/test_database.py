@@ -17,7 +17,8 @@ class TestDatabase(unittest.TestCase):
 
     def test_connection(self):
         # check if we can connect to mongodb
-        db = MongoDB(database_address="localhost:27017")
+        #db = MongoDB(database_address="localhost:27017")
+        db = MongoDB(database_address="mongodb:27017")
         self.assertIsInstance(db, MongoDB, 'First argument is not a MongoDB')
 
     def test_read_write_delete(self):
