@@ -4,6 +4,7 @@ import time
 import argparse
 
 from pqueens.drivers.baci_driver_docker import baci_driver_docker
+from pqueens.drivers.baci_driver_native import baci_driver_native
 from pqueens.drivers.python_driver_vector_interface import python_driver_vector_interface
 from pqueens.database.mongodb import MongoDB
 
@@ -57,8 +58,10 @@ def launch(db_address, experiment_name, job_id):
     try:
         if job['driver_type'].lower() == 'python_vector_interface':
             result = python_driver_vector_interface(job)
-        elif job['driver_type'].lower() == 'baci':
+        elif job['driver_type'].lower() == 'baci_docker':
             result = baci_driver_docker(job)
+        elif job['driver_type'].lower() == 'baci_native':
+            result = baci_driver_native(job)
         else:
             raise Exception("That driver type has not been implemented.")
 

@@ -1,0 +1,46 @@
+{
+    "experiment-name" : "art_aaa_test3",
+    "driver" :{
+      "driver_type"           : "baci_native",
+      "driver_params"         :{
+        "input_template"        : "/home/biehler/adco/projects/05_queens/queens/trials/invaaa_template_2_new.dat",
+        "path_to_executable"    : "/home/biehler/workspace/build_release/baci-release",
+        "path_to_postprocessor" : "/home/biehler/workspace/build_release/post_drt_monitor",
+        "post_process_options"  : ["--field=structure","--node=23","--start=25"],
+        "post_post_script"      : "/home/biehler/adco/projects/05_queens/queens/trials/post_post_script_invaaa.py"
+      }
+    },
+    "database"  :{
+      "address"   : "localhost:27017"
+    },
+    "resources" : {
+      "my-machine" : {
+        "scheduler"         : "local",
+        "max-concurrent"    : 5,
+        "max-finished-jobs" : 100
+      }
+    },
+    "designer" : {
+      "type" : "lhs",
+      "seed" : 42,
+      "num_samples" : 5
+    },
+    "variables" : {
+        "youngs" : {
+          "type" : "FLOAT",
+          "size" : 1,
+          "min"  : 1000000,
+          "max"  : 5000000,
+          "distribution" : "normal",
+          "distribution_parameter" : [400000,10000]
+        },
+        "beta" : {
+          "type" : "FLOAT",
+          "size" : 1,
+          "min"  : 1500000,
+          "max"  : 5000000,
+          "distribution" : "normal",
+          "distribution_parameter" : [400000,10000]
+        }
+    }
+}
