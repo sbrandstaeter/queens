@@ -41,7 +41,7 @@ class AbstractClusterScheduler(object):
     def alive(self, process_id):
         pass
 
-    def submit(self, job_id, experiment_name, experiment_dir, scheduler_options,
+    def submit(self, job_id, experiment_name, batch, experiment_dir, scheduler_options,
                driver_options, database_address):
         """ Function to submit new job to scheduling software on a given resource
 
@@ -62,10 +62,10 @@ class AbstractClusterScheduler(object):
             int: proccess id of job
 
         """
-
         driver_options['experiment_dir'] = experiment_dir
         driver_options['experiment_name'] = experiment_name
         driver_options['job_id'] = job_id
+        driver_options['batch'] = batch
         # for now we assume that an ssh tunnel has been set up such
         # that we can connect to the database via localhost:portid
         driver_options['database_address'] = database_address
@@ -87,10 +87,10 @@ class AbstractClusterScheduler(object):
         # one more time
         driver_args = json.dumps(driver_args)
 
-        run_command = ['<', scheduler_options['driver']  ,driver_args]
+        run_command = ['<', scheduler_options['driver'], driver_args]
 
         # assemble job_name for cluster
-        scheduler_options['job_name']='queens_{}_{}'.format(experiment_name,job_id)
+        scheduler_options['job_name'] = 'queens_{}_{}'.format(experiment_name, job_id)
         submit_command = self.submit_command(scheduler_options)
 
         submit_command.extend(run_command)
@@ -98,11 +98,11 @@ class AbstractClusterScheduler(object):
         command_string = ' '.join(submit_command)
 
         process = subprocess.Popen(command_string,
-                                stdin=subprocess.PIPE,
-                                stdout=subprocess.PIPE,
-                                stderr=subprocess.STDOUT,
-                                shell=True,
-                                universal_newlines = True)
+                                   stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.STDOUT,
+                                   shell=True,
+                                   universal_newlines=True)
 
         output, std_err = process.communicate()
         process.stdin.close()

@@ -4,8 +4,8 @@ class AbstractScheduler(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def submit(self, job_id, experiment_name, experiment_dir, scheduler_options,
-               database_address):
+    def submit(self, job_id, experiment_name, batch, experiment_dir,
+               scheduler_options, database_address):
         pass
 
     @abstractmethod
