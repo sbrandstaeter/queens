@@ -34,6 +34,8 @@ QUEENS writes results into a MongoDB database, therefore QUEENS needs to have wr
 Installation instructions if you are running OSX can be found [here](https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.181134695.1149150790.1494232459-1730069423.1494232449)  
 Installation instructions for LNM workstations running Fedora 22 are as follows.
 https://blog.bensoer.com/install-mongodb-3-0-on-fedora-22/   
+
+#### Starting MongoDB
 After installation, you need to start MongoDB. For LNM machines this requires that you can execute the commands:   
 `systemctl start mongod`   
 
@@ -43,6 +45,8 @@ After installation, you need to start MongoDB. For LNM machines this requires th
 
 It could be that you have to edit the sudoers file `/etc/sudoers.d/` together with your administrator in order get the execution rights.
 
+On a Mac you have to run
+`mongod --dbpath <path_to_your_database>`
 
 #### LNM specific issues
 In order to connect to a MongoDB instance running on one of the LNM machines, one needs to be able to connect port 27017 from a remote host.
