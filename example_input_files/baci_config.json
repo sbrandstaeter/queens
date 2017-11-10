@@ -1,7 +1,28 @@
 {
     "experiment-name" : "art_aaa_test3",
+    "database"  :{
+      "address"   : "localhost:27017"
+    },
+    "method": {
+      "method_name": "monte_carlo",
+      "method_options" :{
+        "seed" : 42,
+        "num_samples" : 5,
+        "model" : "model"
+      }
+    },
+    "model" : {
+      "type" : "simulation_model",
+      "interface" : "interface",
+      "parameters" : "parameters"
+    },
+    "interface" : {
+      "type" : "job_interface",
+      "resources": "resources",
+      "driver" : "driver"
+    },
     "driver" :{
-      "driver_type"           : "baci",
+      "driver_type"           : "baci_docker",
       "driver_params"         :{
         "input_template"        : "/Users/jonas/work/adco/queens_code/pqueens/trials/invaaa_template_2.dat",
         "path_to_executable"    : "./baci-release",
@@ -11,9 +32,6 @@
         "docker_container"      : "adco/baci-baked-in-centos"
       }
     },
-    "database"  :{
-      "address"   : "localhost:27017"
-    },
     "resources" : {
       "my-machine" : {
         "scheduler"         : "local",
@@ -21,12 +39,7 @@
         "max-finished-jobs" : 100
       }
     },
-    "designer" : {
-      "type" : "lhs",
-      "seed" : 42,
-      "num_samples" : 20
-    },
-    "variables" : {
+    "parameters" : {
         "youngs" : {
           "type" : "FLOAT",
           "size" : 1,

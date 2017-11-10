@@ -1,38 +1,41 @@
 {
-    "experiment-name" : "branin-hifi-example",
-    "driver" :{
-      "driver_type"        : "python_vector_interface",
-      "driver_params" :{
-      "main-file"       : "branin_hifi.py"
+    "experiment-name" : "art_aaa_test3",
+    "database"  :{
+      "address"   : "localhost:27017"
+    },
+    "method": {
+      "method_name": "monte_carlo",
+      "method_options" :{
+        "seed" : 42,
+        "num_samples" : 20,
+        "model" : "model"
       }
     },
-    "database"        :{
-        "address" : "localhost:27017"
-      },
-    "resources" : {
-      "my-machine" : {
-          "scheduler"         : "local",
-          "max-concurrent"    : 1,
-          "max-finished-jobs" : 100
-      }
+    "model" : {
+      "type" : "simulation_model",
+      "interface" : "interface",
+      "parameters" : "parameters"
     },
-    "designer" : {
-      "type" : "lhs",
-      "seed" : 42,
-      "num_samples" : 20
+    "interface" : {
+      "type" : "direct_python_interface",
+      "main_file" : "/Users/jonas/work/adco/queens_code/pqueens/pqueens/example_simulator_functions/branin_hifi.py"
     },
-    "variables" : {
-        "x" : {
+    "parameters" : {
+        "x1" : {
             "type" : "FLOAT",
             "size" : 1,
             "min"  : -5,
-            "max"  : 10
+            "max"  : 10,
+            "distribution" : "uniform",
+            "distribution_parameter" : [-5,10]
         },
-        "y" : {
+        "x2" : {
             "type" : "FLOAT",
             "size" : 1,
             "min"  : 0,
-            "max"  : 15
+            "max"  : 15,
+            "distribution" : "uniform",
+            "distribution_parameter" : [0,15]
         }
     }
 }
