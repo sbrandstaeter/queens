@@ -150,8 +150,7 @@ class JobInterface(Interface):
             time.sleep(self.polling_time)
 
         # get sample and response data
-        num_active_variables = samples[0].get_number_of_active_variables()
-        return self.__get_input_output_data(num_active_variables)
+        return self.__get_output_data()
 
 
     def __load_jobs(self):
@@ -235,30 +234,20 @@ class JobInterface(Interface):
                 return False
         return True
 
-    def __get_input_output_data(self, num_variables):
-        """ Extract input and output data from database and return it
+    def __get_output_data(self):
+        """ Extract output data from database and return it
 
         Args:
             num_variables (int): number of input variables
 
         Returns:
-            np.array,np.array: arrays with input and output data
+            np.array: arrays output data
         """
+        outputs = []
         if not self.__all_jobs_finished():
             print("Not all jobs are finished yet, try again later")
         else:
             jobs = self.__load_jobs()
-            num_jobs = len(jobs)
-            num_param = num_variables
-            # init arrays
-            outputs = np.zeros((num_jobs, 1))
-            inputs = np.zeros((num_jobs, num_param))
-            i = 0
             for job in jobs:
-                outputs[i] = job['result']
-                j = 0
-                for param in job['params']:
-                    inputs[i, j] = job['params'][param]
-                    j += 1
-                i += 1
-        return inputs, outputs
+                outputs.append(job['result'])
+        return  outputs

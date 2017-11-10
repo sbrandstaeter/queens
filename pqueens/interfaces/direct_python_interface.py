@@ -71,16 +71,7 @@ class DirectPythonInterface(Interface):
                                     suggester, as well as the corresponding outputs
         """
         outputs = []
-        num_vars = samples[0].get_number_of_active_variables()
-        num_samples = len(samples)
-        input_array = np.zeros((num_samples, num_vars))
-        i = 0
         for variables in samples:
-            input_array[i, :] = (variables.get_active_variables_vector()).ravel()
             params = variables.get_active_variables()
-            i += 1
-            # function call, the 1 is just a dummy id for the jobid the function
-            # interface requires right now
             outputs.append(self.function.main(1, params))
-        # convert output to numpy array before returning
-        return input_array, np.reshape(np.array(outputs), (-1, 1))
+        return outputs
