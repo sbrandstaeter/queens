@@ -92,7 +92,11 @@ confidence_level = 0.95
 optim = True
 # Number of bootstrap samples to compute the confidence intervals
 num_bootstrap_conf = 1000
-MCD = MorrisCampolongoDesigner(paramsBorehole, num_traj ,optim, num_traj_chosen, grid_jump, num_levels)
+
+# random seed
+seed = 2
+
+MCD = MorrisCampolongoDesigner(paramsBorehole, num_traj ,optim, num_traj_chosen, grid_jump, num_levels,seed)
 B_star, perm = MCD.get_all_samples()
 Y = np.ones((len(paramsBorehole)+1,num_traj_chosen))
 for i in range(num_traj_chosen):

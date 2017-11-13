@@ -46,6 +46,7 @@ class MorrisCampolongoDesigner(object):
         num_bootstrap_conf (int):   Number of bootstrap iterations for the
                                     computation of confidence intervals
         output_samples (int):       The number of output samples Y (default 1)
+        seed (int):                 Seed for random number generation
 
     # TODO why are there returns
     Returns:
@@ -56,7 +57,7 @@ class MorrisCampolongoDesigner(object):
     """
 
     def __init__(self, params, num_traj, optim, num_traj_chosen, grid_jump,
-                 num_levels):
+                 num_levels, seed):
         """ Initialize MorrisCampolongoDesigner
 
         Args:
@@ -76,6 +77,7 @@ class MorrisCampolongoDesigner(object):
             confidence_level (float):   The confidence interval level (default 0.95)
             num_bootstrap_conf (int):   Number of bootstrap iterations for the
                                         computation of confidence intervals
+            seed (int):                 Seed for random number generation
         """
         self.num_traj = num_traj
         self.optim = optim
@@ -93,6 +95,7 @@ class MorrisCampolongoDesigner(object):
             # If our input space is not [0 1] scale length of the different ranges
             self.scale[0, i] = (self.bounds[1, i]-self.bounds[0, i])
             i = i+1
+        self.seed = seed
 
     def compute_distance(self, B_star_optim, m, l):
         """ Compute distance between a pair of trajectories m and l
@@ -189,6 +192,11 @@ class MorrisCampolongoDesigner(object):
             ???
             # TODO find out return type
         """
+        # set seed
+        # TODO check if we really need two random libraries
+
+        random.seed(self.seed)
+        np.random.seed(self.seed)
         # Definition of useful matrices for the computation of the trajectories
         # initialisation of B a lower trinagular matrix with only ones
         B = np.zeros((self.numparams+1, self.numparams))
