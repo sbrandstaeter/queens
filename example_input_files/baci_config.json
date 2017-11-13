@@ -1,16 +1,36 @@
 {
     "experiment-name" : "art_aaa_test3",
-    "driver" :{
-      "driver_type"           : "baci",
-      "driver_params"         :{
-        "input_template"        : "/Users/jonas/work/adco/queens_code/try_out_stuff/invaaa_template_2.dat",
-        "path_to_executable"    : "",
-        "path_to_postprocessor" : "",
-        "post_process_options"  : "node etc"
-      }
-    },
     "database"  :{
       "address"   : "localhost:27017"
+    },
+    "method": {
+      "method_name": "monte_carlo",
+      "method_options" :{
+        "seed" : 42,
+        "num_samples" : 5,
+        "model" : "model"
+      }
+    },
+    "model" : {
+      "type" : "simulation_model",
+      "interface" : "interface",
+      "parameters" : "parameters"
+    },
+    "interface" : {
+      "type" : "job_interface",
+      "resources": "resources",
+      "driver" : "driver"
+    },
+    "driver" :{
+      "driver_type"           : "baci_docker",
+      "driver_params"         :{
+        "input_template"        : "/Users/jonas/work/adco/queens_code/pqueens/trials/invaaa_template_2.dat",
+        "path_to_executable"    : "./baci-release",
+        "path_to_postprocessor" : "./post_drt_monitor",
+        "post_process_options"  : " --field=structure  --node=23 --start=25",
+        "post_post_script"      : "/Users/jonas/work/adco/queens_code/pqueens/trials/post_post_script_invaaa.py",
+        "docker_container"      : "adco/baci-baked-in-centos"
+      }
     },
     "resources" : {
       "my-machine" : {
@@ -19,12 +39,7 @@
         "max-finished-jobs" : 100
       }
     },
-    "designer" : {
-      "type" : "lhs",
-      "seed" : 42,
-      "num_samples" : 20
-    },
-    "variables" : {
+    "parameters" : {
         "youngs" : {
           "type" : "FLOAT",
           "size" : 1,

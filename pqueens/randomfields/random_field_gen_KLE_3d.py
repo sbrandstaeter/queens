@@ -16,8 +16,10 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
 
         w_n=np.zeros((self.m,self.spatial_dim))
         # Compute roots of characteristic function for each dimension
+        roots = self.compute_roots_of_characteristic_equation().ravel()
         for i in range(self.spatial_dim):
-            w_n[:,i] = self.compute_roots_of_characteristic_equation().ravel()
+            #w_n[:,i] = self.compute_roots_of_characteristic_equation().ravel()
+            w_n[:,i] =roots
 
 
         # compute factors of denominator
@@ -29,6 +31,11 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         #compute eigenvalues and store in vector
         lambdas_array=8*self.corr_length**3 / (np.kron(np.kron(fac1,fac2),fac3))
         lambdas_vec=lambdas_array.reshape(-1,1)
+
+        # round values to achieve that lambda values are actually the same
+        # if we do not do this we cannot get a stable sort across multiple
+        # platforms
+        lambdas_vec = lambdas_vec.round(decimals=6)
 
 
         # in order to sort the eigenvalues we need to store the corresponding
@@ -51,12 +58,18 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         lambdas_vec=np.hstack((lambdas_vec,my_w_index))
 
         # sort in ascending order
-        lamda_sorted=lambdas_vec[lambdas_vec[:,0].argsort(),]
+        lamda_sorted2 = lambdas_vec[np.lexsort((lambdas_vec[:,3],
+                                                lambdas_vec[:,2],
+                                                lambdas_vec[:,1],
+                                                lambdas_vec[:,0] ))]
+
         # create view with reverse order
-        lamda_sorted = lamda_sorted[::-1]
+        lamda_sorted = lamda_sorted2[::-1]
+
 
         # truncate and store in class variables
         self.lambda_n=lamda_sorted[0:self.trunc_thres,:]
+
         my_index_2 = np.array(lamda_sorted[0:self.trunc_thres,3]).astype(int)
         my_index_1 = np.array(lamda_sorted[0:self.trunc_thres,2]).astype(int)
         my_index_0 = np.array(lamda_sorted[0:self.trunc_thres,1]).astype(int)
@@ -65,6 +78,7 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         self.w_n[:,2]=w_n[my_index_2,2]
         self.w_n[:,1]=w_n[my_index_1,1]
         self.w_n[:,0]=w_n[my_index_0,0]
+        np.set_printoptions(threshold=np.nan)
 
         retained_energy=np.sum(self.lambda_n[:,0]) / \
                         (self.largest_length**self.spatial_dim)
@@ -103,5 +117,6 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         values=np.dot(self.compute_eigen_function_vec(loc,0) *
                       self.compute_eigen_function_vec(loc,1) *
                       self.compute_eigen_function_vec(loc,2), coeff.T)
+
 
         return values

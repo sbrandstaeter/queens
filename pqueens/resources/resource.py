@@ -7,6 +7,8 @@ from functools import reduce
 import numpy as np
 import sys
 
+# TODO refactor this method into a class method
+
 def parse_resources_from_configuration(config):
     """ Parse the configuration dictionary
 
@@ -58,7 +60,7 @@ def print_resources_status(resources, jobs):
 
     """
     sys.stderr.write('\nResources:      ')
-    left_indent=16
+    left_indent = 16
     indentation = ' '*left_indent
 
     sys.stderr.write('NAME          PENDING    COMPLETE\n')
@@ -67,7 +69,7 @@ def print_resources_status(resources, jobs):
     total_pending = 0
     total_complete = 0
     #for resource in resources:
-    for _ , resource in resources.items():
+    for _, resource in resources.items():
         p = resource.num_pending(jobs)
         c = resource.num_complete(jobs)
         total_pending += p
@@ -109,20 +111,21 @@ class Resource(object):
 
             max_concurrent (int):         The maximum number of jobs that can run
                                           concurrently on resource
-                                          
+
             max_finished_jobs (int):      The maximum number of jobs that can be
                                           run to completion
         """
-        self.name              = name
-        self.scheduler         = scheduler
-        self.scheduler_class   = scheduler_class   # stored just for printing
-        self.max_concurrent    = max_concurrent
+        self.name = name
+        self.scheduler = scheduler
+        self.scheduler_class = scheduler_class   # stored just for printing
+        self.max_concurrent = max_concurrent
         self.max_finished_jobs = max_finished_jobs
-        self.exp_name          = exp_name
+        self.exp_name = exp_name
 
         if len(self.exp_name) == 0:
             sys.stderr.write("Warning: resource %s has no tasks assigned "
                              " to it" % self.name)
+
 
     def filter_my_jobs(self, jobs):
         """ Take a list of jobs and filter those that are on this resource
@@ -198,7 +201,7 @@ class Resource(object):
             jobs (list): List with jobs
         """
         sys.stderr.write("%-12s: %5d pending %5d complete\n" %
-            (self.name, self.num_pending(jobs), self.num_complete(jobs)))
+                         (self.name, self.num_pending(jobs), self.num_complete(jobs)))
 
     def is_job_alive(self, job):
         """ Query if a particular job is alive?
@@ -215,11 +218,12 @@ class Resource(object):
 
         return self.scheduler.alive(job['proc_id'])
 
-    def attempt_dispatch(self, experiment_name, job, db_address, expt_dir):
+    def attempt_dispatch(self, experiment_name, batch, job, db_address, expt_dir):
         """ Submit a new job using the scheduler of the resource
 
         Args:
             experiment_name (str):  Name of experiment
+            batch (string):         Batch number of job
             job (dict):             Job to submit
             db_address (str):       Adress of database to store job info in
             expt_dir  (str):        Directory associated with experiment
@@ -230,7 +234,7 @@ class Resource(object):
         if job['resource'] != self.name:
             raise Exception("This job does not belong to me!")
 
-        process_id = self.scheduler.submit(job['id'], experiment_name,
+        process_id = self.scheduler.submit(job['id'], experiment_name, batch,
                                            expt_dir, db_address)
 
         if process_id is not None:

@@ -11,12 +11,13 @@ class LocalScheduler(AbstractScheduler):
     """ Scheduler which submits jobs to the local machine via a shell command"""
 
 
-    def submit(self, job_id, experiment_name, experiment_dir, database_address):
+    def submit(self, job_id, experiment_name, batch, experiment_dir, database_address):
         """ Submit job locally by calling subprocess
 
         Args:
             job_id (int):               Id of job to be started
             experiment_name (string):   Name of experiment
+            batch (string):             Batch number
             experiment_dir (string):    Directory to write output to
             database_address (string):  Address of MongoDB database
 
@@ -31,8 +32,8 @@ class LocalScheduler(AbstractScheduler):
 
         # assemble shell command
         cmd = ('python %s/drivers/gen_driver_local.py --db_address %s --experiment_name '
-               '%s --job_id %s' %
-               (base_path, database_address, experiment_name, job_id))
+               '%s --job_id %s --batch %s' %
+               (base_path, database_address, experiment_name, job_id, batch))
 
         output_directory = os.path.join(experiment_dir, 'output')
         if not os.path.isdir(output_directory):

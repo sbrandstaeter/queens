@@ -95,21 +95,20 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         xi = np.random.randn(self.my_stoch_dim,1)
 
         my_vals = self.my_field_generator.evaluate_field_at_location(self.loc ,xi)
+        # 
+        # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
+        # print(my_vals)
 
-        #np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        #print(my_vals)
-
-        # last two arguments are relative and absolute tolerance, respectively
-        np.testing.assert_allclose(my_vals,np.array([[-0.267680395167325],
-                                                     [-0.412873236037909],
-                                                     [0.954952124976213],
-                                                     [0.012506870927628],
-                                                     [-0.577963502928802],
-                                                     [-0.604534328429153],
-                                                     [0.700156654544350],
-                                                     [1.593227789669022],
-                                                     [0.378744421244974],
-                                                     [0.024225616536807]]),
+        np.testing.assert_allclose(my_vals,np.array([[-0.267680380989928],
+                                                     [-0.764019048145033],
+                                                     [ 0.812101592243011],
+                                                     [ 0.506503220813194],
+                                                     [-0.722592329059823],
+                                                     [-0.034977903350059],
+                                                     [ 0.275229053348657],
+                                                     [ 0.611625601332445],
+                                                     [ 0.483895701080925],
+                                                     [ 0.900676537769744]]),
                                                      1e-07,1e-07)
 
 
@@ -146,17 +145,18 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         # print(act_corr_at_dist_100_2[0,1])
         # print(act_corr_at_dist_100_3[0,1])
 
-        ref_corr_at_dist_10_1 = 0.747298593919
-        ref_corr_at_dist_10_2 = 0.770542556376
-        ref_corr_at_dist_10_3 = 0.684855922778
+        ref_corr_at_dist_10_1 = 0.718169328847
+        ref_corr_at_dist_10_2 = 0.764240432309
+        ref_corr_at_dist_10_3 = 0.720324288459
 
-        ref_corr_at_dist_25_1 = 0.401498554318
-        ref_corr_at_dist_25_2 = 0.360519855663
-        ref_corr_at_dist_25_3 = 0.314194177166
+        ref_corr_at_dist_25_1 = 0.518546711936
+        ref_corr_at_dist_25_2 = 0.300828372072
+        ref_corr_at_dist_25_3 = 0.329607881848
 
-        ref_corr_at_dist_100_1 = 0.0326883974214
-        ref_corr_at_dist_100_2 = -0.0809117257197
-        ref_corr_at_dist_100_3 = 0.199733388172
+        ref_corr_at_dist_100_1 = 0.006476671345
+        ref_corr_at_dist_100_2 = 0.0994126929964
+        ref_corr_at_dist_100_3 = 0.0425402198459
+
 
         self.assertAlmostEqual(act_corr_at_dist_10_1[0,1], ref_corr_at_dist_10_1,
                             9, 'Correlation for distance 10 is not correct.')

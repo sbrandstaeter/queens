@@ -1,18 +1,18 @@
 '''
-Created on May 26th 2017
+Created on July 8th 2017
 @author: jbi
 
 '''
-
 import matplotlib.pyplot as plt
 import numpy as np
 
 from  pqueens.designers.monte_carlo_designer import MonteCarloDesigner
 from  pqueens.designers.lhs_designer import LatinHyperCubeDesigner
 from  pqueens.example_simulator_functions.branin_hifi import branin_hifi
-from  pqueens.emulators.gp_emulator import GPEmulator
+from  pqueens.example_simulator_functions.branin_lofi import branin_lofi
+from  pqueens.emulators.mf_nargp_emulator import MF_NARGP_Emulator
 from  pqueens.utils import pdf_estimation
-import seaborn as sns # makes plots more pretty 
+import seaborn as sns # makes plots more pretty
 import matplotlib.pylab as plt
 
 
@@ -34,18 +34,28 @@ params =   {   "x" : {
                     }
                 }
 
-num_design_points = 150
-seed = 49
+num_design_points = 50
+seed = 45
 
 # create lhs design
-my_lhs = LatinHyperCubeDesigner(params, seed, num_design_points)
-design_points = my_lhs.get_all_samples()
+my_lhs_lofi = LatinHyperCubeDesigner(params, seed, num_design_points)
+design_points_lofi = my_lhs_lofi.get_all_samples()
+
+my_lhs_hifi = LatinHyperCubeDesigner(params, seed, int(num_design_points/2))
+design_points_hifi = my_lhs_hifi.get_all_samples()
 
 # evaluate function at all design points
-y = branin_hifi(design_points[:,0],design_points[:,1])
+# get subset of experimental design
+y_hifi = branin_hifi(design_points_lofi[::2,0],design_points_lofi[::2,1])
+print("design_points_hifi{}".format(design_points_hifi))
+y_lofi = branin_lofi(design_points_lofi[:,0],design_points_lofi[:,1])
 
 # build GP emulator based on available samples
-my_emulator = GPEmulator(design_points,y.reshape(-1,1),params)
+my_emulator = MF_NARGP_Emulator(design_points_lofi,
+                                design_points_lofi[::2,:],
+                                y_lofi.reshape(-1,1),
+                                y_hifi.reshape(-1,1),
+                                params)
 
 ################################################################################
 # compute reference solution
@@ -63,7 +73,6 @@ kde_bandwidth = pdf_estimation.estimate_bandwidth_for_kde(ref_solution_sample_va
 my_pdf_ref, y_plot_ref  = pdf_estimation.estimate_pdf(ref_solution_sample_values,
                                                       kde_bandwidth)
 
-
 # sort samples in ascending order first
 sample_values_ref_sorted=np.sort(ref_solution_sample_values,axis=0)
 
@@ -77,7 +86,6 @@ my_quantiles = np.linspace(0,100,1000)
 y_quantile_ref = np.percentile(ref_solution_sample_values,my_quantiles,axis=0)
 my_fail_prob_ref = 1-my_quantiles/100.0
 
-
 ################################################################################
 # compute predictions and compute rmse
 ################################################################################
@@ -86,15 +94,15 @@ reference_vec = np.reshape(ref_solution_sample_values,(-1,1))
 error = np.linalg.norm(reference_vec - my_predictions_mean)/ \
     np.linalg.norm(reference_vec)
 
-print("GP emulator rmse error: {}".format(error))
+print("NARGP surrogate rmse error: {}".format(error))
 
 ################################################################################
 # compute mean estimate using GP emulator
 ################################################################################
-my_mean_mean, my_mean_var = my_emulator.compute_mean()
+my_mean_mean, my_mean_var  = my_emulator.compute_mean()
 
-print("Reference mean: {}".format(mean_ref_solution))
-print("GP emulator mean: {}".format(my_mean_mean))
+print("Ref mean {}".format(mean_ref_solution))
+print("NARGP mean {}".format(my_mean_mean))
 
 ################################################################################
 # compute pdf estimate using GP emulator
@@ -103,16 +111,18 @@ print("GP emulator mean: {}".format(my_mean_mean))
 my_pdf_hifi, y_plot_hifi  = my_emulator.compute_pdf()
 fig = plt.figure()
 fig.suptitle('Probability Density Function', fontsize=14)
-line1, = plt.plot(y_plot_hifi, my_pdf_hifi['mean'], lw=2, color='blue',label='GP mean')
-line2, = plt.plot(y_plot_hifi, my_pdf_hifi['median'], lw=2, color='green',label='GP median')
+line1, = plt.plot(y_plot_hifi, my_pdf_hifi['mean'], lw=2, color='blue',label='NARGP mean')
+line2, = plt.plot(y_plot_hifi, my_pdf_hifi['median'], lw=2, color='green',label='NARGP median')
 plt.fill_between(y_plot_hifi,my_pdf_hifi['quant_low'], my_pdf_hifi['quant_high'],
-                  color='blue',alpha = 0.3,label='GP conf. reg.')
+                  color='blue',alpha = 0.3,label='NARGP conf. reg.')
 
 line4, = plt.plot(y_plot_ref, my_pdf_ref, lw=2, color='red',label='MC reference')
 plt.ylabel('pdf(y)')
 plt.xlabel('y')
 plt.legend()
 plt.show()
+
+# fig.savefig('pdf.pdf', format='pdf',bbox_inches='tight')
 
 ################################################################################
 # compute cdf estimate using GP emulator
@@ -144,7 +154,6 @@ plt.xlabel('y')
 plt.show()
 
 
-
 ################################################################################
 # compute failure probability estimate using GP emulator
 ################################################################################
@@ -171,3 +180,43 @@ plt.legend()
 ax.set_yscale('log')
 plt.show()
 # fig.savefig('failure_prob.pdf', format='pdf',bbox_inches='tight')
+
+
+
+
+
+
+# # make some plots
+# # plot real function and gp approximations
+# # setup grid
+# nn = 100
+# lb = np.array([-5.0, 0.0])
+# ub = np.array([10.0, 15.0])
+# x1 = np.linspace(lb[0], ub[0], 50)
+# x2 = np.linspace(lb[1], ub[1], 50)
+# X, Y = np.meshgrid(x1, x2)
+#
+#
+# y_hifi = branin_hifi(design_points_hifi[:,0],design_points_hifi[:,1])
+# y_lofi = branin_lofi(design_points_hifi[:,0],design_points_hifi[:,1])
+#
+# print(y_lofi.shape)
+# hifi_plot = ml.griddata(design_points_hifi[:,0],design_points_hifi[:,1], y_hifi, X, Y, interp = 'linear')
+# lofi_plot = ml.griddata(design_points_hifi[:,0],design_points_hifi[:,1], y_lofi, X, Y, interp = 'linear')
+#
+# emulator_plot_mean = ml.griddata(test_points_hifi[:,0],test_points_hifi[:,1], my_predictions_mean.reshape((-1)), X, Y, interp = 'linear')
+# #emulator_plot_up_q = ml.griddata(design_points_hifi[:,0],design_points_hifi[:,1], my_quantiles_low.reshape((-1)), X, Y, interp = 'linear')
+# #emulator_plot_low_q = ml.griddata(design_points_hifi[:,0],design_points_hifi[:,1], my_quantiles_high.reshape((-1)), X, Y, interp = 'linear')
+#
+# fig = plt.figure()
+# ax = fig.add_subplot(111, projection='3d')
+# ax.plot_surface(X, Y, hifi_plot, color = '#377eb8', rstride=2, cstride=2,
+#                                 linewidth=0, antialiased=True, shade = True, alpha = 0.6)
+#
+# ax.plot_surface(X, Y, emulator_plot_mean, color = 'magenta', rstride=2, cstride=2,
+#                                  linewidth=0, antialiased=True, shade = True, alpha = 0.6)
+#
+# #plt.legend(('hifi','medfi','lofi'))
+# fig.savefig('branin_nargp.pdf', format='pdf',bbox_inches='tight')
+#
+# plt.show()

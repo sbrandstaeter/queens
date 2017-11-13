@@ -21,14 +21,14 @@ class MongoDB(AbstractDB):
         """
         try:
             self.client = pymongo.MongoClient(host=[database_address])
-            self.db     = self.client[database_name]
+            self.db = self.client[database_name]
 
             # Get the ID of this connection for locking.
             self.myId = self.db.last_status()['connectionId']
         except:
             raise Exception('Could not connect to MongoDB.')
 
-    def save(self, save_doc, experiment_name, experiment_field,
+    def save(self, save_doc, experiment_name, experiment_field, batch,
              field_filters=None):
         """ Save a document to the database.
 
@@ -41,6 +41,7 @@ class MongoDB(AbstractDB):
             save_doc (dict,list):       document to be saved to the db
             experiment_name (string):   experiment the data belongs to
             experiment_field (string):  experiment field data belongs to
+            batch (string):             batch the data belongs to
             field_filters (dict):       filter to find appropriate document
                                         to create or update
         """
@@ -49,7 +50,7 @@ class MongoDB(AbstractDB):
 
         save_doc = compress_nested_container(save_doc)
 
-        dbcollection = self.db[experiment_name][experiment_field]
+        dbcollection = self.db[experiment_name][batch][experiment_field]
         dbdocs       = list(dbcollection.find(field_filters))
 
         upsert = False
@@ -70,7 +71,7 @@ class MongoDB(AbstractDB):
         else:
             return result['updatedExisting']
 
-    def load(self, experiment_name, experiment_field, field_filters=None):
+    def load(self, experiment_name, batch, experiment_field, field_filters=None):
         """ Load document(s) from the database
 
         Decompresses any numpy arrays
@@ -78,6 +79,7 @@ class MongoDB(AbstractDB):
         Args:
             experiment_name (string):  experiment the data belongs to
             experiment_field (string): experiment field data belongs to
+            batch (string):            batch the data belongs to
             field_filters (dict):      filter to find appropriate document(s)
                                        to load
 
@@ -88,8 +90,8 @@ class MongoDB(AbstractDB):
         if field_filters is None:
             field_filters = {}
 
-        dbcollection = self.db[experiment_name][experiment_field]
-        dbdocs       = list(dbcollection.find(field_filters))
+        dbcollection = self.db[experiment_name][batch][experiment_field]
+        dbdocs = list(dbcollection.find(field_filters))
 
         if len(dbdocs) == 0:
             return None
@@ -98,13 +100,14 @@ class MongoDB(AbstractDB):
         else:
             return [decompress_nested_container(dbdoc) for dbdoc in dbdocs]
 
-    def remove(self, experiment_name, experiment_field, field_filters={}):
+    def remove(self, experiment_name, experiment_field, batch, field_filters={}):
         """ Remove a list of documents from the database
 
         Args:
             experiment_name (string):  experiment the data belongs to
             experiment_field (string): experiment field data belongs to
+            batch (string):            batch the data belongs to
             field_filters (dict):      filter to find appropriate document(s)
                                        to delete
          """
-        self.db[experiment_name][experiment_field].remove(field_filters)
+        self.db[experiment_name][batch][experiment_field].remove(field_filters)

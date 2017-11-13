@@ -12,6 +12,11 @@ from sklearn.gaussian_process import GaussianProcessRegressor
 from sklearn.gaussian_process.kernels import RBF, Matern, ConstantKernel, WhiteKernel
 import time
 from  pqueens.emulators.gp_emulator import GPEmulator
+<<<<<<< HEAD
+=======
+#
+
+>>>>>>> master
 
 ## Definition of our problem
 # Dimension of our problem
@@ -132,7 +137,11 @@ for s in n:
 				S_M_N_K_L_3[i,k,l] =  Sobol_indice(mub, mu3_tildeb,m)
 	print('S_M_N_K_L_1')
 	print(S_M_N_K_L_1)
+<<<<<<< HEAD
 	# Storage of the tensor with sensitivitz indices
+=======
+	 Storage of the tensor with sensitivitz indices
+>>>>>>> master
 	base_string1 = "S_M_N_K_L_1"
 	file_name = base_string1 + str(s) + ".pickle"
 	with open(file_name, "wb") as f:
