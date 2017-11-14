@@ -4,10 +4,14 @@ from itertools import combinations
 import scipy.spatial.distance
 import numpy as np
 from pqueens.models.model import Model
-from pqueens.variables.variables import Variables
+#from pqueens.variables.variables import Variables
 from .iterator import Iterator
 from scipy.stats import norm
 
+# TODO make two more tests for morris campolongo elementary effects
+# TODO make morris campolonogo work in general
+# TODO clean up the code, maybe add latex style documentation
+# TODO add examples as regression tests
 
 # from .abstract_designer import AbstractDesigner
 
@@ -15,10 +19,9 @@ class MorrisCampolongoIterator(Iterator):
     """ Morris Campolongo Iterator to compute elementary effects
 
     References :
-    [1] A. Saltelli, M. Ratto, T. Andres, F. Campolongo, T. Cariboni, D. Galtelli,
-        M. Saisana, S. Tarantola. "GLOBAL SENSITIVITY ANALYSIS. The Primer",
-        109 - 121,
-        ISBN : 978-0-470-05997-5
+    [1] A. Saltelli, M. Ratto, T. Andres, F. Campolongo, T. Cariboni,
+        D. Galtelli, M. Saisana, S. Tarantola. "GLOBAL SENSITIVITY ANALYSIS.
+        The Primer", 109 - 121, ISBN : 978-0-470-05997-5
 
     [2] Morris, M. (1991).  "Factorial Sampling Plans for Preliminary
         Computational Experiments."  Technometrics, 33(2):161-174,
@@ -50,7 +53,7 @@ class MorrisCampolongoIterator(Iterator):
         seed (int):                 Seed for random number generation
     """
     def __init__(self, model, num_traj, optim, num_traj_chosen, grid_jump,
-                 num_levels, seed, num_samples, confidence_level, num_bootstrap_conf):
+                 num_levels, seed, confidence_level, num_bootstrap_conf):
         super(MorrisCampolongoIterator, self).__init__(model)
         """ Initialize MorrisCampolongoIterator
 
@@ -70,8 +73,6 @@ class MorrisCampolongoIterator(Iterator):
 
             seed (int):             Seed for random number generation
 
-            num_samples (int):      Number of samples
-
             samples (np.array):      Samples
             perm (???):              ???
             Delta (???):             ???
@@ -86,15 +87,17 @@ class MorrisCampolongoIterator(Iterator):
         self.grid_jump = grid_jump
         self.num_levels = num_levels
         self.seed = seed
-        self.num_samples = num_samples
         self.samples = None
         # TODO define this
+        self.numparams = None
         self.perm = None
 
         # TODO add docstring
         self.Delta = self.grid_jump/(self.num_levels-1)
         self.confidence_level  = confidence_level
         self.num_bootstrap_conf = num_bootstrap_conf
+        self.outputs = None
+        self.sensitivity_indices = {}
 
     @classmethod
     def from_config_create_iterator(cls, config):
@@ -112,10 +115,13 @@ class MorrisCampolongoIterator(Iterator):
 
         model = Model.from_config_create_model(model_name, config)
 
-        return cls(model, method_options["num_traj"], method_options["optim"],
-                   method_options["num_traj_chosen"], method_options["grid_jump"],
-                   method_options["number_of_levels"], method_options["seed"],
-                   method_options["num_samples"], method_options["confidence_level"],
+        return cls(model, method_options["num_traj"],
+                   method_options["optim"],
+                   method_options["num_traj_chosen"],
+                   method_options["grid_jump"],
+                   method_options["number_of_levels"],
+                   method_options["seed"],
+                   method_options["confidence_level"],
                    method_options["num_bootstrap_conf"])
 
     def eval_model(self):
@@ -124,14 +130,14 @@ class MorrisCampolongoIterator(Iterator):
 
     def pre_run(self):
         """ Generate samples for subsequent analysis and update model """
+        random.seed(self.seed)
         np.random.seed(self.seed)
 
         distribution_info = self.model.get_parameter_distribution_info()
-        numparams = len(distribution_info)
-        # fix this
-        self.numparams = numparams
-        scale = np.ones((1, numparams))
-        bounds = np.ones((2, numparams))
+        self.numparams = len(distribution_info)
+
+        scale = np.ones((1, self.numparams ))
+        bounds = np.ones((2, self.numparams ))
         i = 0
         for distribution in distribution_info:
             bounds[0, i] = distribution['min']
@@ -142,62 +148,61 @@ class MorrisCampolongoIterator(Iterator):
 
         #self.samples = np.zeros((self.num_samples, numparams))
 
-        random.seed(self.seed)
-        np.random.seed(self.seed)
+
 
         # Definition of useful matrices for the computation of the trajectories
         # initialisation of B a lower trinagular matrix with only ones
-        B = np.zeros((numparams+1, numparams))
-        for i in range(numparams+1):
-            for j in range(numparams):
+        B = np.zeros((self.numparams +1, self.numparams ))
+        for i in range(self.numparams +1):
+            for j in range(self.numparams ):
                 if i > j:
                     B[i,j] = 1
         # initialisation of J_k a (k+1) x k matrix of ones
-        J_k = np.ones((numparams+1, numparams))
-        # initialisation of J_k a (k+1) x 1 matrix of ones
-        J_1 = np.ones((numparams+1, 1))
+        J_k = np.ones((self.numparams +1, self.numparams ))
+        # initialisation of J_1 a (k+1) x 1 matrix of ones
+        J_1 = np.ones((self.numparams +1, 1))
         # initialisation of the matrix B_star as defined in [2], which will stores
         # the coordinates of our different points of our trajectories
-        B_star = np.zeros((numparams+1, numparams))
+        B_star = np.zeros((self.numparams +1, self.numparams ))
         # matrix B_star in case no
-        B_star_optim = np.zeros((self.num_traj, numparams+1, numparams))
-        perm_optim = np.zeros((self.num_traj, numparams))
+        B_star_optim = np.zeros((self.num_traj, self.numparams +1, self.numparams ))
+        perm_optim = np.zeros((self.num_traj, self.numparams ))
         # initialisation of the matrix B_star where only the trajectories chosen
         # with the brute-force strategy are kept
-        B_star_chosen = np.ones((self.num_traj_chosen, numparams+1, numparams))
+        B_star_chosen = np.ones((self.num_traj_chosen, self.numparams +1, self.numparams ))
         # initialisation of the vector perm_chosen where only the permutation
         # indices of the trajectories chosen with the brute-force strategy are kept
-        perm_chosen = np.ones((self.num_traj_chosen, numparams))
+        perm_chosen = np.ones((self.num_traj_chosen, self.numparams ))
 
         # loop over each trajectory
         for r in range(self.num_traj):
             # defintion of D_star a d-dimensional diagonal matrix in which
             # each element is either -1 or 1 with equal probability
-            D_star = np.zeros((numparams, numparams))
-            for i in range(numparams):
+            D_star = np.zeros((self.numparams , self.numparams ))
+            for i in range(self.numparams ):
                 D_star[i, i] = random.choice([-1, 1])
 
             # definition of P_star the permutation matrix which gives the order
             # in which the factors are moved
-            perm = np.random.permutation(numparams)
-            P_star = np.zeros((numparams, numparams))
-            for i in range(numparams):
+            perm = np.random.permutation(self.numparams )
+            P_star = np.zeros((self.numparams , self.numparams ))
+            for i in range(self.numparams ):
                 P_star[i, perm[i]] = 1
             # initialisation of the first point of the trajectory x_star
-            choices = np.zeros((2, numparams))
-            for i in range(numparams):
+            choices = np.zeros((2, self.numparams ))
+            for i in range(self.numparams ):
                 choices[0, i] = 0
                 choices[1, i] = 1 - self.Delta
-            x_star = np.zeros((1, numparams))
-            for i in range(numparams):
+            x_star = np.zeros((1, self.numparams ))
+            for i in range(self.numparams ):
                 x_star[0, i] = random.choice(choices[:, i])
             # Computation of B_star
             B_star = np.dot(np.dot(J_1, x_star) +
                             self.Delta/2*(np.dot((2*B - J_k), D_star) + J_k), P_star)
             # rescaling of the B_star matrix in case where the ranges of the input
             # factors are not [0,1]
-            B_temp = np.zeros((numparams+1, numparams))
-            for i in range(numparams):
+            B_temp = np.zeros((self.numparams +1, self.numparams ))
+            for i in range(self.numparams ):
                 B_temp[:, i] = bounds[0, i]
             B_star = scale*B_star+B_temp
             # store the different trajectories in a 3-dimensional np.array and
@@ -213,28 +218,27 @@ class MorrisCampolongoIterator(Iterator):
             B_star_chosen = B_star_optim[p[i], :, :]
             perm_chosen = perm_optim[p[i], :]
             perm_chosen = perm_chosen.astype(int)
-            self.samples = B_star_chosen
+            # reshape into 2d array
+            self.samples = np.reshape(B_star_chosen, (-1, self.numparams ))
             self.perm = perm_chosen
 
         if not self.optim:
-            # in this case we do not choose any trjectory, we directly take all
+            # in this case we do not choose any trajectory, we directly take all
             # trajectories
-            self.samples = B_star_optim
+            self.samples = np.reshape(B_star_optim, (-1, self.numparams ))
             self.perm = perm_optim
 
     def core_run(self):
         """  Run Analysis on model """
 
-        inputs = np.reshape(self.samples,(-1,8))
-        #print("shape of inputs {}".format(inputs.shape))
-        self.model.update_model_from_sample_batch(inputs)
-        outputs = self.eval_model()
-        print("ouputs {}".format(np.reshape(outputs,(9,4),order='F')))
+        self.model.update_model_from_sample_batch(self.samples)
+        self.outputs = self.eval_model()
 
-        Si = self.__analyze(self.samples, np.reshape(outputs,(9,4), order='F'), self.perm)
-        S = self.__print_results(Si)
     def post_run(self):
         """ Analyze the results """
+
+        self.sensitivity_indices = self.__analyze(self.samples, self.outputs, self.perm)
+        S = self.__print_results(self.sensitivity_indices)
 
 
 
@@ -323,33 +327,37 @@ class MorrisCampolongoIterator(Iterator):
         return p, imax
 
     def __analyze(self, B_star_chosen, Y_chosen, perm_chosen):
-        """Compute the sensitivity indices thanks to the Morris Method,
-        The trajectories are chosen to optimized the input space as explained
+        """ Compute the sensitivity indices using Morris Method
+
+        The trajectories are chosen to optimized the input space as detailed
         in [3]
+
         Args:
-        B_star_chosen (np.array):
-            np.array with the chosen trajectories which are defined in [1]
-        Y_chosen (np.array) :
-            np.array with the evaluation of the chosen trajectories by the
-            function of our problem
-        perm_chosen (np.array):
-            np.array associated to B_star_chosen which corresponds to the order
-            in which factors are moved
-        Returns :
-        Si (dict) :
-            dictionnary with the sensitivity indices
+            B_star_chosen (np.array):  Array with the chosen trajectories
+            Y_chosen (np.array):       Array the evaluation of the chosen
+                                       trajectories by the function of our problem
+            perm_chosen (np.array):    Array associated to B_star_chosen which
+                                       corresponds to the order in which factors
+                                       are moved
+        Returns:
+            dict:                      dictionnary with the sensitivity indices
         """
+        # reshape B_star_chosen
+        B_star_chosen = np.reshape(B_star_chosen, (self.num_traj_chosen, self.numparams+1, -1), order='C')
+        Y_chosen = np.reshape(Y_chosen, (self.numparams+1, self.num_traj_chosen), order='F')
         # computation of the distribution of all elementary effects
-        EET = np.ones((self.num_traj_chosen,self.numparams))
+        EET = np.ones((self.num_traj_chosen, self.numparams))
         for r in range(self.num_traj_chosen):
-            EET[r,:] = self.__compute_elementary_effect(B_star_chosen[r,:,:], Y_chosen[:,r], perm_chosen[r,:])
+            EET[r, :] = self.__compute_elementary_effect(B_star_chosen[r, :, :],
+                                                         Y_chosen[:, r],
+                                                         perm_chosen[r, :])
 
         # creation of the dictionnary to store all the results
         Si = dict((k, [None] * self.numparams)
         for k in ['names', 'mu', 'mu_star', 'sigma', 'mu_star_conf'])
         Si['mu'] = np.average(EET, 0)
         Si['mu_star'] = np.average(np.abs(EET), 0)
-        Si['sigma'] = np.std(EET,axis=0, ddof = 1)
+        Si['sigma'] = np.std(EET, axis=0, ddof = 1)
         #j = 0
         #for name in self.params.keys():
         for j in range(self.numparams):
@@ -357,58 +365,52 @@ class MorrisCampolongoIterator(Iterator):
             #j = j + 1
         for j in range(self.numparams):
             Si['mu_star_conf'][j] = self.__compute_confidence_interval(self.confidence_level,
-            EET[:,j], self.num_traj_chosen,self.num_bootstrap_conf)
+            EET[:, j], self.num_traj_chosen,self.num_bootstrap_conf)
         return Si
 
     def __compute_elementary_effect(self, B_star, Y, perm):
-        """ Function to compute the elementary effect for the different
-        functions of the framework pqueens.
+        """ Compute elementary effects
+
         Args:
-        B_star (np.array) :
-            np.array with the trajectories defined in [1]
-        Y (np.array) :
-            np.array with the evaluation of the trajectories by the function
-            of our problem
-        perm (np.array) :
-            np.array associated to B_star which corresponds to the order
-            in which factors are moved.
+            B_star (np.array):  Array with the trajectories defined in [1]
+            Y (np.array):       Array with the evaluation of the trajectories
+                                by the function of our problem
+            perm (np.array):    Array associated to B_star which corresponds
+                                to the order in which factors are moved.
         """
         EE = np.ones((1, self.numparams))
         for i in range(self.numparams):
             s = np.sign(B_star[i+1, perm[i]]-B_star[i, perm[i]])
             num = Y[i+1]-Y[i]
             den = s*self.Delta
-            EE[0,perm[i]] = num / den
+            EE[0, perm[i]] = num / den
         return EE
 
-    def __compute_confidence_interval(self, conf_level, EET, num_traj_chosen, num_bootstrap_conf):
-        """ Compute the confidence intervals for sensitivity indice mu_star.
-        Function inspired from compute_mu_star_confidence from SALib
+    def __compute_confidence_interval(self, conf_level, EET, num_traj_chosen,
+                                      num_bootstrap_conf):
+        """ Compute the confidence intervals for sensitivity index mu_star
+
         Args :
-        conf_level (float) :
-            value of our confidence level (should be between 0 and 1)
-        EET (np.array) :
-            np.array with the values of the elementary effects for each
-            trajectory
-        num_traj_chosen (int) :
-            Number of trajectories chosen in the design, with the brute-force
-            optimization from Campolongo.
+            conf_level (float):     value of our confidence level (between 0 and 1)
+            EET (np.array):         Array with the values of the elementary effects
+                                    for each trajectory
+            num_traj_chosen (int):  Number of trajectories chosen in the design,
+                                    with the brute-force optimization from Campolongo.
         """
         EET_bootstrap = np.zeros([num_traj_chosen])
         data_bootstrap = np.zeros([num_bootstrap_conf])
         if not 0 < conf_level < 1:
             raise ValueError("Confidence level must be between 0 and 1")
-        bootstrap_index = np.random.randint(len(EET), size = (num_bootstrap_conf,num_traj_chosen))
+        bootstrap_index = np.random.randint(len(EET), size = (num_bootstrap_conf, num_traj_chosen))
         EET_bootstrap= EET[bootstrap_index]
         data_bootstrap = np.average(np.abs(EET_bootstrap), axis = 1)
         return norm.ppf(0.5 + conf_level/2)*data_bootstrap.std(ddof = 1)
 
     def __print_results(self, Si):
-        """ Function to print the results to the the console of our sensitivity
-        analysis
-        Args :
-        Si (dict) :
-            dictionnary with the results of the sensitivity analysis
+        """ Function to print the results
+
+        Args:
+            Si (dict):  dictionary with the results of the sensitivity analysis
         """
         print("{0:<30} {1:>10} {2:>10} {3:>15} {4:>10}".format(
             "Parameter",
