@@ -76,5 +76,7 @@ class Iterator(metaclass=abc.ABCMeta):
 
 from .monte_carlo_iterator import MonteCarloIterator
 from .morris_campolongo_iterator import MorrisCampolongoIterator
+from .saltelli_iterator import SaltelliIterator
 method_dict = {'monte_carlo': MonteCarloIterator,
-               'sa_morris_campolongo' : MorrisCampolongoIterator}
+               'sa_morris_campolongo' : MorrisCampolongoIterator,
+               'sa_saltelli' : SaltelliIterator}
