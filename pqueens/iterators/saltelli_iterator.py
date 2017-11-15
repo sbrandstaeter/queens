@@ -154,30 +154,17 @@ class SaltelliIterator(Iterator):
 
     def core_run(self):
         """ Run Analysis on model """
-
-        #self.model.update_model_from_sample_batch(self.get_all_samples())
-        #outputs = np.zeros((self.num_samples,self.num_indices))
+        # TODO find out why we have this dimension
         outputs = np.zeros((1, self.num_samples, self.num_indices+1))
-
 
         for s in range(1+(self.num_params*(self.num_params+1))//2):
             my_samples = self.get_all_samples()[:, s, :]
-            #print("my_samples {}".format(my_samples))
-            #exit()
             self.model.update_model_from_sample_batch(my_samples)
             outputs[0, :, s] = np.reshape(self.eval_model(), (-1))
-            #Y[h,:,s] = borehole_lofi(X[:,s,0],X[:,s,1],X[:,s,2],X[:,s,3],X[:,s,4],X[:,s,5],X[:,s,6],X[:,s,7])
         for s in range(self.num_indices-self.num_params-1, self.num_indices+1):
             my_samples = self.get_all_samples()[:, s, :]
             self.model.update_model_from_sample_batch(my_samples)
             outputs[0, :, s] = np.reshape(self.eval_model(), (-1))
-            #Y[h,:,s] = borehole_lofi(X[:,s,0],X[:,s,1],X[:,s,2],X[:,s,3],X[:,s,4],X[:,s,5],X[:,s,6],X[:,s,7])
-
-        #for s in range(self.num_indices):
-        #    my_samples = self.get_all_samples()[:,s,:]
-        #    print("Shape my_samples {}".format(my_samples.shape))
-        #    self.model.update_model_from_sample_batch(my_samples)
-        #    outputs[0,:,s] = np.reshape(self.eval_model(),(-1))
 
         S = self.__analyze(outputs)
         self.__print_results(S)
@@ -300,30 +287,25 @@ class SaltelliIterator(Iterator):
         return S
 
     def __print_results(self,S):
-        """ Function to print the results inspired from [SALib]
+        """ Function to print results
+
         Args:
-        S (dict): dictionnary with all values of the sensitivity indices
+
+            S (dict): Dictionary with values of the sensitivity indices
+
         """
+        parameter_names = self.model.get_parameter_names()
         title = 'Parameter'
         print('%s   S1       S1_conf    ST    ST_conf' % title)
-        #j = 0
-        #for name in self.params.keys():
-        for j in range(self.num_params):
-            print('%s %f %f %f %f' % (str(j) + '       ', S['S1'][j], S['S1_conf'][j],
+        j = 0
+        for name in parameter_names:
+            print('%s %f %f %f %f' % (name + '       ', S['S1'][j], S['S1_conf'][j],
                                       S['ST'][j], S['ST_conf'][j]))
-            # TODO get names
-            #j = j+1
-        #
-        # if self.calc_second_order == True:
-        #     print('\n%s_1 %s_2    S2      S2_conf' % (title,title))
-        #     j = 0
-        #     params_temp = self.params.copy()
-        #     for name in self.params.keys():
-        #         del params_temp[name]
-        #         k = j+1
-        #         for name_b in params_temp.keys():
-        #             if k < self.num_params:
-        #                 print("%s %s %f %f" % (name + '            ', name_b + '      ', S['S2'][j, k],
-        #                 S['S2_conf'][j, k]))
-        #                 k = k+1
-        #         j = j+1
+            j = j+1
+
+        if self.calc_second_order:
+            print('\n%s_1 %s_2    S2      S2_conf' % (title, title))
+            for j in range(self.num_params):
+                for k in range(j + 1, self.num_params):
+                    print("%s %s %f %f" % (parameter_names[j] + '            ', parameter_names[k] + '      ',
+                                           S['S2'][j, k], S['S2_conf'][j, k]))

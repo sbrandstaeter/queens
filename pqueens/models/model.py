@@ -71,6 +71,19 @@ class Model(metaclass=abc.ABCMeta):
 
         return distribution_info
 
+    def get_parameter_names(self):
+        """ Get names of all uncertain parameters
+
+        Returns:
+            list: List with names of uncertain parameters
+
+        """
+        parameter_names = []
+        for key, _ in self.uncertain_parameters.items():
+            parameter_names.append(key)
+
+        return parameter_names
+
     def update_model_from_sample(self, data_vector):
         """ Update model variables
 

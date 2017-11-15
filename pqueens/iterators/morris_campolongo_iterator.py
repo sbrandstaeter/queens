@@ -349,19 +349,19 @@ class MorrisCampolongoIterator(Iterator):
                                                          self.perm[r, :])
 
         # creation of the dictionnary to store all the results
+        # seriously WTF ??
         Si = dict((k, [None] * self.num_params)
         for k in ['names', 'mu', 'mu_star', 'sigma', 'mu_star_conf'])
         Si['mu'] = np.average(EET, 0)
         Si['mu_star'] = np.average(np.abs(EET), 0)
         Si['sigma'] = np.std(EET, axis=0, ddof=1)
-        #j = 0
-        #for name in self.params.keys():
-        for j in range(self.num_params):
-            Si['names'][j] = j
-            # TODO get names of parameters
-            #j = j + 1
-        for j in range(self.num_params):
+
+        j = 0
+        parameter_names = self.model.get_parameter_names()
+        for name in parameter_names:
+            Si['names'][j] = name
             Si['mu_star_conf'][j] = self.__compute_confidence_interval(EET[:, j])
+            j = j + 1
 
         self.sensitivity_indices = Si
 
@@ -408,7 +408,7 @@ class MorrisCampolongoIterator(Iterator):
             "Mu_Star_Conf",
             "Sigma"))
 
-        for j in list(range(self.num_params)):
+        for j in range(self.num_params):
             print("{0!s:30} {1!s:10} {2!s:10} {3!s:15} {4!s:10}".format(
                 self.sensitivity_indices['names'][j],
                 self.sensitivity_indices['mu_star'][j],
