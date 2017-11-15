@@ -84,6 +84,15 @@ class Model(metaclass=abc.ABCMeta):
 
         return parameter_names
 
+    def get_parameter(self):
+        """ Get complete parameter dictionary
+
+        Return:
+            dict: Dictionary with all pararameters
+
+        """
+        return self.uncertain_parameters
+
     def update_model_from_sample(self, data_vector):
         """ Update model variables
 
