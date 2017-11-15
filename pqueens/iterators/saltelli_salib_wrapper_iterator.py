@@ -4,6 +4,8 @@ from SALib.analyze import sobol
 from pqueens.models.model import Model
 from .iterator import Iterator
 
+# TODO deal with non-uniform input distribution
+
 class SaltelliSALibIterator(Iterator):
     """ Saltelli SALib iterator
 
@@ -15,17 +17,16 @@ class SaltelliSALibIterator(Iterator):
         calc_second_order (bool):           Calculate second-order sensitivities
         num_bootstrap_samples (int):        Number of bootstrap samples
         confidence_level (float):           The confidence interval level
-
         samples (np.array):                 Array with all samples
         outputs (list)                      List of all outputs corresponding to
                                             samples
-        self.salib_problem (dict):          Problem definition for SALib
-        self.num_params (int):              Number of parameters
-        self.sensitivity_incides (dict):    Dictionary with sensitivity indices
+        salib_problem (dict):               Problem definition for SALib
+        num_params (int):                   Number of parameters
+        sensitivity_incides (dict):         Dictionary with sensitivity indices
     """
     def __init__(self, model, seed, num_samples, calc_second_order,
                  num_bootstrap_samples, confidence_level):
-        """ Initialize SALib iterator object
+        """ Initialize Saltelli SALib iterator object
 
         Args:
             seed (int):                     Seed for random number generation
@@ -50,13 +51,13 @@ class SaltelliSALibIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config):
-        """ Create SALib iterator from problem description
+        """ Create Saltelli SALib iterator from problem description
 
         Args:
             config (dict): Dictionary with QUEENS problem description
 
         Returns:
-            iterator: SA Lib Iterator object
+            iterator: Saltelli SALib iterator object
 
         """
         method_options = config["method"]["method_options"]
