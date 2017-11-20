@@ -48,6 +48,9 @@ class Model(metaclass=abc.ABCMeta):
             model: Instance of model class
 
         """
+        from .simulation_model import SimulationModel
+        model_dict = {'simulation_model': SimulationModel}
+
         model_options = config[model_name]
         model_class = model_dict[model_options["type"]]
         return model_class.from_config_create_model(model_name, config)
@@ -120,7 +123,3 @@ class Model(metaclass=abc.ABCMeta):
             temp.update_variables_from_vector(data_vector)
             new_var = deepcopy(temp)
             self.variables.append(new_var)
-
-
-from .simulation_model import SimulationModel
-model_dict = {'simulation_model': SimulationModel}

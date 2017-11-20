@@ -30,6 +30,18 @@ class Iterator(metaclass=abc.ABCMeta):
             iterator: Iterator object
 
         """
+        from .monte_carlo_iterator import MonteCarloIterator
+        from .morris_campolongo_iterator import MorrisCampolongoIterator
+        from .saltelli_iterator import SaltelliIterator
+        from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
+        from .saltelli_iterator_new import SaltelliIteratorNew
+
+        method_dict = {'monte_carlo': MonteCarloIterator,
+                       'sa_morris_campolongo' : MorrisCampolongoIterator,
+                       'sa_saltelli' : SaltelliIterator,
+                       'sa_saltelli_salib' : SaltelliSALibIterator,
+                       'sa_saltelli_new' : SaltelliIteratorNew}
+
 
         method_name = config['method']['method_name']
         iterator_class = method_dict[method_name]
@@ -72,16 +84,3 @@ class Iterator(metaclass=abc.ABCMeta):
         self.core_run()
         self.post_run()
         self.finalize_run()
-
-
-from .monte_carlo_iterator import MonteCarloIterator
-from .morris_campolongo_iterator import MorrisCampolongoIterator
-from .saltelli_iterator import SaltelliIterator
-from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
-from .saltelli_iterator_new import SaltelliIteratorNew
-
-method_dict = {'monte_carlo': MonteCarloIterator,
-               'sa_morris_campolongo' : MorrisCampolongoIterator,
-               'sa_saltelli' : SaltelliIterator,
-               'sa_saltelli_salib' : SaltelliSALibIterator,
-               'sa_saltelli_new' : SaltelliIteratorNew}
