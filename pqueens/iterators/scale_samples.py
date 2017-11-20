@@ -1,5 +1,5 @@
 import numpy as np
-import scipy as sp
+import scipy.stats
 import warnings
 
 def scale_samples(samples, distribution_info):
@@ -55,7 +55,7 @@ def scale_samples(samples, distribution_info):
             if b2 <= 0:
                 raise ValueError('''Normal distribution: sigma must be > 0''')
             else:
-                scaled_samples[:, i] = sp.stats.norm.ppf(
+                scaled_samples[:, i] = scipy.stats.norm.ppf(
                     samples[:, i], loc=b1, scale=b2)
 
         elif distribution_info[i]['distribution'] == 'lognormal':
@@ -64,7 +64,7 @@ def scale_samples(samples, distribution_info):
                     '''Lognormal distribution: scale must be > 0''')
             else:
                 scaled_samples[:, i] = np.exp(
-                    sp.stats.norm.ppf(samples[:, i], loc=b1, scale=b2))
+                    scipy.stats.norm.ppf(samples[:, i], loc=b1, scale=b2))
 
         else:
             valid_distributions = ['uniform', 'normal', 'lognormal']
