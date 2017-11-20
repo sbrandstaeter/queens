@@ -3,9 +3,9 @@ import time
 import numpy as np
 
 from .interface import Interface
-from resources.resource import parse_resources_from_configuration
-from resources.resource import print_resources_status
-from database.mongodb import MongoDB
+from pqueens.resources.resource import parse_resources_from_configuration
+from pqueens.resources.resource import print_resources_status
+from pqueens.database.mongodb import MongoDB
 
 class JobInterface(Interface):
     """

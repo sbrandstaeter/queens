@@ -22,6 +22,14 @@ class Interface(metaclass=abc.ABCMeta):
             interface:              Instance of one of the derived interface classes
         """
 
+        # import here to avoid issues with circular inclusion
+        import pqueens.interfaces.job_interface
+        import pqueens.interfaces.direct_python_interface
+
+        interface_dict = {'job_interface': pqueens.interfaces.job_interface.JobInterface,
+                          'direct_python_interface': pqueens.interfaces.direct_python_interface.DirectPythonInterface }
+
+
         interface_options = config[interface_name]
         # determine which object to create
         interface_class = interface_dict[interface_options["type"]]
@@ -44,10 +52,3 @@ class Interface(metaclass=abc.ABCMeta):
                                     suggester, as well as the corresponding outputs
         """
         pass
-
-# import at end to avoid issues with circular inclusion
-from .job_interface import JobInterface
-from .direct_python_interface import DirectPythonInterface
-
-interface_dict = {'job_interface': JobInterface,
-                  'direct_python_interface': DirectPythonInterface}
