@@ -72,7 +72,7 @@ class TestScaleSamples(unittest.TestCase):
                              [-0.07281465,  -1.77264987,  28.48404597]])
 
         scaled_samples = scale_samples(self.samples, self.distribution_info)
-        print("shape scale_samples: {}".format(scaled_samples))
+        #print("shape scale_samples: {}".format(scaled_samples))
         np.testing.assert_allclose(scaled_samples,ref_vals, 1e-07, 1e-07)
 
     def test_wrong_distribution_parameters(self):
