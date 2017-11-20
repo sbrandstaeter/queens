@@ -3,7 +3,7 @@ from SALib.sample import saltelli
 from SALib.analyze import sobol
 from pqueens.models.model import Model
 from .iterator import Iterator
-
+import random
 # TODO deal with non-uniform input distribution
 
 class SaltelliSALibIterator(Iterator):
@@ -77,6 +77,7 @@ class SaltelliSALibIterator(Iterator):
     def pre_run(self):
         """ Generate samples for subsequent analysis and update model """
         np.random.seed(self.seed)
+        random.seed(self.seed)
         parameter_info = self.model.get_parameter()
 
         # setup SALib problem dict
@@ -104,6 +105,8 @@ class SaltelliSALibIterator(Iterator):
     def core_run(self):
         """ Run Analysis on model """
 
+        #print("Samples :{}".format(self.samples))
+        #exit()
         self.model.update_model_from_sample_batch(self.samples)
         self.outputs = np.reshape(self.eval_model(), (-1))
 
