@@ -83,20 +83,25 @@ class SaltelliSALibIterator(Iterator):
         # setup SALib problem dict
         names = []
         bounds = []
+        dists = []
         self.num_params = 0
         for key, value in parameter_info.items():
             names.append(key)
-            max_temp = value['max']
-            min_temp = value['min']
+            max_temp = value["distribution_parameter"][1]
+            min_temp = value["distribution_parameter"][0]
             bounds.append([min_temp, max_temp])
+            dist = self.__get_sa_lib_distribution_name(value["distribution"])
+            dists.append(dist)
             self.num_params += 1
 
         self.salib_problem = {
             'num_vars' : self.num_params,
             'names'    : names,
-            'bounds'   : bounds
+            'bounds'   : bounds,
+            'dists'    : dists
         }
-        self.samples = saltelli.sample(self.salib_problem, self.num_samples)
+        self.samples = saltelli.sample(self.salib_problem, self.num_samples,
+                                       self.calc_second_order)
 
     def get_all_samples(self):
         """ Return all samples """
@@ -142,3 +147,26 @@ class SaltelliSALibIterator(Iterator):
                 for k in range(j + 1, self.num_params):
                     print("%s %s %f %f" % (parameter_names[j] + '            ', parameter_names[k] + '      ',
                                            S['S2'][j, k], S['S2_conf'][j, k]))
+
+    def __get_sa_lib_distribution_name(self, distribution_name):
+        """ Convert QUEENS distribution name to SALib distribution name
+
+        Args:
+            distribution_name (string): Name of distribution
+
+        Returns:
+            string: Name of distribution in SALib
+        """
+        sa_lib_distribution_name = ''
+
+        if distribution_name == 'uniform':
+            sa_lib_distribution_name = 'unif'
+        elif distribution_name == 'normal':
+            sa_lib_distribution_name = 'norm'
+        elif distribution_name == 'lognormal':
+            sa_lib_distribution_name = 'lognorm'
+        else:
+            valid_dists = ['uniform', 'normal', 'lognormal']
+            raise ValueError('Distributions: choose one of %s' %
+                             ", ".join(valid_dists))
+        return sa_lib_distribution_name
