@@ -6,8 +6,10 @@ from pqueens.example_simulator_functions import sobol_G
 import matplotlib.pyplot as plt
 # import SALib to verify my own implementation
 from SALib.sample import saltelli
+from SALib.sample import latin
 from SALib.test_functions import Sobol_G
 from SALib.analyze import sobol
+import time
 # set up all necessary parameters for SA
 num_samples = 1000
 num_bootstrap_samples = 1000
@@ -94,12 +96,16 @@ Y = np.zeros((output_samples, num_samples, nb_indices+1))
 PSD = SobolGratietDesigner(paramsSobol,seed,num_samples)
 X = PSD.get_all_samples()
 # in case we have several realizations of our gaussian processes
+time_a = time.clock()
 for h in range(output_samples):
     for i in range(nb_indices+1):
         for j in range(num_samples):
             Y[h,j,i] = sobol_G.evaluate(X[j,i,:])
+time_b = time.clock()
+print("Time Cecile {}".format(time_b-time_a))
 SA = SobolAnalyzer(paramsSobol,calc_second_order, num_bootstrap_samples,
                 confidence_level, output_samples)
+print("Y shape {}".format(Y.shape))
 S = SA.analyze(Y)
 print('The results with my implementation are :')
 S_print = SA.print_results(S)
@@ -111,6 +117,11 @@ problemSobol = {
 'bounds' : [[0,1]]*8
 }
 X_SALib = saltelli.sample(problemSobol, 1000)
+X_SALib = latin.sample(problemSobol, 1000)
+time_a = time.clock()
 Y_SALib = Sobol_G.evaluate(X_SALib)
+time_b = time.clock()
+print("Time SALib {}".format(time_b-time_a))
+print("Y_SALib shape {}".format(Y_SALib.shape))
 print('The results with SALib are :')
 Si = sobol.analyze(problemSobol, Y_SALib, print_to_console=True)

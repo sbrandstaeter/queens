@@ -61,6 +61,7 @@ for h in range(output_samples):
         Y[h,:,s] = ishigami(X[:,s,0],X[:,s,1],X[:,s,2])
 SA = SobolAnalyzer(params,calc_second_order, num_bootstrap_samples,
                 confidence_level, output_samples)
+print("Y shape {}".format(Y.shape))
 S = SA.analyze(Y)
 print('The results with my implementation are :')
 S_print = SA.print_results(S)
@@ -72,9 +73,11 @@ problem = {
 'bounds': [[-math.pi, math.pi]]*3
 }
 X_SALib = saltelli.sample(problem, num_samples)
+print("X_SALib shape {}".format(X_SALib.shape))
 X = np.ones((num_samples, nb_indices+1, len(params)))
 for i in range(num_samples):
     X[i,:,:] = X_SALib[i*(nb_indices+1):i*(nb_indices+1)+nb_indices+1,:]
 Y_SALib = Ishigami.evaluate(X_SALib)
+print("Y_SALib shape {}".format(Y_SALib.shape))
 print('The results with SALib are :')
 Si_SALib = sobol.analyze(problem, Y_SALib, print_to_console=True)

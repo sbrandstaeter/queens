@@ -96,8 +96,12 @@ X = PSD.get_all_samples()
 # in case we have several realizations of our gaussian processes
 for h in range(output_samples):
     for s in range(1+(len(paramsBorehole)*(len(paramsBorehole)+1))//2):
+        print("s first{}".format(s))
+        #print("my_samples {}".format(X[:,s,0],X[:,s,1],X[:,s,2],X[:,s,3],X[:,s,4],X[:,s,5],X[:,s,6],X[:,s,7]))
+        #exit()
         Y[h,:,s] = borehole_lofi(X[:,s,0],X[:,s,1],X[:,s,2],X[:,s,3],X[:,s,4],X[:,s,5],X[:,s,6],X[:,s,7])
     for s in range(nb_indices-len(paramsBorehole)-1,nb_indices+1):
+        print("s second {}".format(s))
         Y[h,:,s] = borehole_lofi(X[:,s,0],X[:,s,1],X[:,s,2],X[:,s,3],X[:,s,4],X[:,s,5],X[:,s,6],X[:,s,7])
 SA = SobolAnalyzer(paramsBorehole,calc_second_order, num_bootstrap_samples,
                 confidence_level, output_samples)
@@ -113,5 +117,6 @@ problemBorehole = {
 }
 print('The results with SALib are :')
 X = saltelli.sample(problemBorehole, 1000)
+print("X {}".format(X.shape))
 Y = borehole_hifi(X[:,0],X[:,1],X[:,2],X[:,3],X[:,4],X[:,5],X[:,6],X[:,7])
 Si = sobol.analyze(problemBorehole, Y, print_to_console=True)
