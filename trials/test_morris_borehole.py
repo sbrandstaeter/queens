@@ -103,6 +103,7 @@ for i in range(num_traj_chosen):
     for j in range(len(paramsBorehole)+1):
         Y[j,i] = borehole_lofi(B_star[i,j,0],B_star[i,j,1],B_star[i,j,2],B_star[i,j,3],B_star[i,j,4],B_star[i,j,5],B_star[i,j,6],B_star[i,j,7])
 MA = MorrisAnalyzer(paramsBorehole,num_traj_chosen,grid_jump,num_levels,confidence_level,num_bootstrap_conf)
+print("Shape B_star {} and Y {}".format(B_star.shape,Y.shape))
 Si = MA.analyze(B_star, Y, perm)
 print('The results with my implementation are :')
 S = MA.print_results(Si)
@@ -117,4 +118,7 @@ problemBorehole= {
 X_SALib = mrrs.sample(problemBorehole, num_traj, num_levels=4, grid_jump=2, optimal_trajectories = 4, local_optimization = False)
 Y_SALib =  borehole_lofi(X_SALib[:,0],X_SALib[:,1],X_SALib[:,2],X_SALib[:,3],X_SALib[:,4],X_SALib[:,5],X_SALib[:,6],X_SALib[:,7])
 print('The results with SALib are :')
+print("Shape X_SALib {} and Y_SALib {}".format(X_SALib.shape,Y_SALib.shape))
 Si_SALib = morris.analyze(problemBorehole, X_SALib, Y_SALib, conf_level=0.95,  print_to_console=True, num_levels=4, grid_jump=2)
+print('The results with Ceciles input and SALib are :')
+Si_SALib = morris.analyze(problemBorehole, np.reshape(B_star,(36,8),order='C'),np.reshape(Y,(36,-1),order='F'), conf_level=0.95,  print_to_console=True, num_levels=4, grid_jump=2)
