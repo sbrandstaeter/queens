@@ -7,7 +7,7 @@ from .iterator import Iterator
 from . import sobol_sequence
 from .scale_samples import scale_samples
 
-class SaltelliIteratorNew(Iterator):
+class SaltelliIterator(Iterator):
     """ Pseudo Saltelli iterator
 
         This class is for performing sensitivity analysis using Sobol indices
@@ -54,7 +54,7 @@ class SaltelliIteratorNew(Iterator):
             num_bootstrap_samples (int):    Number of bootstrap samples
             confidence_level (float):       The confidence interval level
         """
-        super(SaltelliIteratorNew, self).__init__(model)
+        super(SaltelliIterator, self).__init__(model)
 
         self.num_samples = num_samples
         self.seed = seed

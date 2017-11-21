@@ -8,7 +8,7 @@ import numpy as np
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.variables.variables import Variables
-from pqueens.iterators.saltelli_iterator_new import SaltelliIteratorNew
+from pqueens.iterators.saltelli_iterator import SaltelliIterator
 
 class TestSASaltelliIshigami(unittest.TestCase):
     def setUp(self):
@@ -34,7 +34,7 @@ class TestSASaltelliIshigami(unittest.TestCase):
 
         # setup input paramater for init of Saltelli iterator
         # Note, initialization from config dict is done separately
-        self.my_iterator = SaltelliIteratorNew(self.model, seed=42, num_samples=3, calc_second_order=True,
+        self.my_iterator = SaltelliIterator(self.model, seed=42, num_samples=3, calc_second_order=True,
                             num_bootstrap_samples=1000, confidence_level=0.95)
 
 
@@ -81,7 +81,7 @@ class TestSASaltelliIshigami(unittest.TestCase):
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
         si = self.my_iterator.sensitivity_incides
-        #self.my_iterator._SaltelliIteratorNew__print_results()
+        #self.my_iterator._SaltelliIterator__print_results()
         #print("si {}".format(si))
 
         # ref vals S1
@@ -191,7 +191,7 @@ class TestSASaltelliBorehole(unittest.TestCase):
 
         # setup input paramater for init of Saltelli iterator
         # Note, initialization from config dict is done separately
-        self.my_iterator = SaltelliIteratorNew(self.model, seed=42, num_samples=3, calc_second_order=False,
+        self.my_iterator = SaltelliIterator(self.model, seed=42, num_samples=3, calc_second_order=False,
                             num_bootstrap_samples=1000, confidence_level=0.95)
 
     def test_correct_sampling(self):

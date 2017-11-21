@@ -32,15 +32,13 @@ class Iterator(metaclass=abc.ABCMeta):
         """
         from .monte_carlo_iterator import MonteCarloIterator
         from .morris_campolongo_iterator import MorrisCampolongoIterator
-        from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
-        from .saltelli_iterator_new import SaltelliIteratorNew
+        from .saltelli_iterator import SaltelliIterator
 
         method_dict = {'monte_carlo': MonteCarloIterator,
                        'sa_morris_campolongo' : MorrisCampolongoIterator,
                        'sa_saltelli' : SaltelliIterator,
-                       'sa_saltelli_salib' : SaltelliSALibIterator,
-                       'sa_saltelli_new' : SaltelliIteratorNew}
+                       'sa_saltelli_salib' : SaltelliSALibIterator}
 
 
         method_name = config['method']['method_name']
