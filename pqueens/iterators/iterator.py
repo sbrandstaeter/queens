@@ -31,13 +31,11 @@ class Iterator(metaclass=abc.ABCMeta):
 
         """
         from .monte_carlo_iterator import MonteCarloIterator
-        from .morris_campolongo_iterator import MorrisCampolongoIterator
         from .morris_salib_wrapper_iterator import MorrisSALibIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .saltelli_iterator import SaltelliIterator
 
         method_dict = {'monte_carlo': MonteCarloIterator,
-                       'sa_morris_campolongo' : MorrisCampolongoIterator,
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli' : SaltelliIterator,
                        'sa_saltelli_salib' : SaltelliSALibIterator}
