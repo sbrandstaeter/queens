@@ -158,8 +158,6 @@ class MorrisSALibIterator(Iterator):
                                      optimal_trajectories=self.num_optimal_trajectories,
                                      local_optimization=True)
 
-        #print("Sample shape {}".format(self.samples.shape))
-        print("Samples {}".format(self.samples))
 
 
     def core_run(self):
@@ -169,8 +167,6 @@ class MorrisSALibIterator(Iterator):
 
         self.outputs = self.eval_model()
 
-    def post_run(self):
-        """ Analyze the results """
         self.si = morris_analyzer.analyze(self.salib_problem,
                                           self.samples,
                                           self.outputs,
@@ -179,6 +175,9 @@ class MorrisSALibIterator(Iterator):
                                           print_to_console=False,
                                           num_levels=self.num_levels,
                                           grid_jump=self.grid_jump)
+
+    def post_run(self):
+        """ Analyze the results """
         self.__print_results()
 
     def __print_results(self):
