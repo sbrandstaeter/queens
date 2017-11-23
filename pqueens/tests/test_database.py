@@ -10,6 +10,7 @@ from pqueens.database.mongodb import MongoDB
 class TestDatabase(unittest.TestCase):
     def setUp(self):
         self.experiment_name = 'simple_test'
+        self.batch = 1
         self.dummy_job = {}
         self.dummy_job['dummy_field1'] = 'garbage'
         self.dummy_job['dummy_field2'] = 'rubbish'
@@ -33,9 +34,9 @@ class TestDatabase(unittest.TestCase):
             db = MongoDB(database_address="mongodb:27017")
 
         # save some dummy data
-        db.save(self.dummy_job, self.experiment_name, 'jobs', {'id' : self.job_id})
+        db.save(self.dummy_job, self.experiment_name, 'jobs', self.batch, {'id' : self.job_id})
         # try to retrieve it
-        jobs = db.load(self.experiment_name, 'jobs')
+        jobs = db.load(self.experiment_name, self.batch, 'jobs')
         if isinstance(jobs, dict):
             jobs = [jobs]
 
@@ -43,7 +44,7 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(test, 'garbage')
 
         # remove dummy data
-        db.remove(self.experiment_name, 'jobs')
-        jobs = db.load(self.experiment_name, 'jobs')
+        db.remove(self.experiment_name, 'jobs', self.batch)
+        jobs = db.load(self.experiment_name, self.batch, 'jobs')
         # assert that jobs is empty
         self.assertFalse(jobs)
