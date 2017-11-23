@@ -17,3 +17,5 @@ gpy
 #for making nice plots
 seaborn
 docker
+# for sensitivity analysis
+SALib
