@@ -7,16 +7,18 @@ class MonteCarloIterator(Iterator):
     """ Basic Monte Carlo Iterator to enable MC sampling
 
     Attributes:
-        model (model):      Model to be evaluated by iterator
-        seed  (int):        Seed for random number generation
-        num_samples (int):  Number of samples to compute
-
+        model (model):        Model to be evaluated by iterator
+        seed  (int):          Seed for random number generation
+        num_samples (int):    Number of samples to compute
+        samples (np.array):   Array with all samples
+        outputs (np.array):   Array with all model outputs
     """
     def __init__(self, model, seed, num_samples):
         super(MonteCarloIterator, self).__init__(model)
         self.seed = seed
         self.num_samples = num_samples
-        self.mc = None
+        self.samples = None
+        self.outputs = None
 
     @classmethod
     def from_config_create_iterator(cls, config):
@@ -45,7 +47,7 @@ class MonteCarloIterator(Iterator):
 
         distribution_info = self.model.get_parameter_distribution_info()
         numparams = len(distribution_info)
-        self.mc = np.zeros((self.num_samples, numparams))
+        self.samples = np.zeros((self.num_samples, numparams))
 
         i = 0
         for distribution in distribution_info:
@@ -54,7 +56,7 @@ class MonteCarloIterator(Iterator):
             # make a copy
             my_args = list(distribution['distribution_parameter'])
             my_args.extend([self.num_samples])
-            self.mc[:, i] = random_number_generator(*my_args)
+            self.samples [:, i] = random_number_generator(*my_args)
             i += 1
 
 
@@ -71,24 +73,14 @@ class MonteCarloIterator(Iterator):
         #     outputs.append(my_output)
 
         # variant 2
-        inputs = self.mc
-        self.model.update_model_from_sample_batch(inputs)
-        outputs = self.eval_model()
+        self.model.update_model_from_sample_batch(self.samples)
 
-        # Print
-        #print("Size of inputs {}".format(inputs.shape))
-        print("Inputs {}".format(np.array(inputs)))
-        #print("Size of outputs {}".format(outputs.shape))
-        print("Outputs {}".format(outputs))
+        self.outputs = self.eval_model()
 
+    def post_run(self):
+        """ Analyze the results """
 
-    def __sample_generator(self):
-        """ Generator to iterate over samples """
-        i = 0
-        while i < self.num_samples:
-            yield self.mc[i, :]
-            i += 1
-
-    def __get_all_samples(self):
-        """ Return all samples """
-        return self.mc
+        print("Size of inputs {}".format(self.samples.shape))
+        print("Inputs {}".format(self.samples))
+        print("Size of outputs {}".format(self.outputs.shape))
+        print("Outputs {}".format(self.outputs))
