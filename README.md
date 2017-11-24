@@ -17,7 +17,9 @@ The use a virtual environment like [Anaconda](https://www.continuum.io/downloads
 After setting up Anaconda and a new, dedicated QUEENS development environment, all required third party libraries can be simply installed by running:  
 `pip install -r requirements.txt`  
 Next, if Anaconda is used, QUEENS can be installed using:     
-`/Applications/anaconda/envs/<your-environment-name>/bin/python setup.py develop`  
+`/Applications/anaconda/envs/<your-environment-name>/bin/python setup.py develop`   
+If you encounter any problems try using the --user flag.
+
 Otherwise the command is simply:  
 `python setup.py develop`
 
