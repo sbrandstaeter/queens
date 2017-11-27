@@ -34,11 +34,13 @@ class Iterator(metaclass=abc.ABCMeta):
         from .morris_salib_wrapper_iterator import MorrisSALibIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .saltelli_iterator import SaltelliIterator
+        from .bayesian_optimization_iterator import BayesOptIterator
 
         method_dict = {'monte_carlo': MonteCarloIterator,
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli' : SaltelliIterator,
-                       'sa_saltelli_salib' : SaltelliSALibIterator}
+                       'sa_saltelli_salib' : SaltelliSALibIterator,
+                       'bayesian_optimization' : BayesOptIterator}
 
 
         method_name = config['method']['method_name']
