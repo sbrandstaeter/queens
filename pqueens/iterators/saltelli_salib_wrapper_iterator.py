@@ -50,7 +50,7 @@ class SaltelliSALibIterator(Iterator):
         self.sensitivity_incides = None
 
     @classmethod
-    def from_config_create_iterator(cls, config):
+    def from_config_create_iterator(cls, config, model=None):
         """ Create Saltelli SALib iterator from problem description
 
         Args:
@@ -61,9 +61,11 @@ class SaltelliSALibIterator(Iterator):
 
         """
         method_options = config["method"]["method_options"]
-        model_name = method_options["model"]
 
-        model = Model.from_config_create_model(model_name, config)
+        if model is None:
+            model_name = method_options["model"]
+            model = Model.from_config_create_model(model_name, config)
+
         return cls(model, method_options["seed"],
                    method_options["num_samples"],
                    method_options["calc_second_order"],

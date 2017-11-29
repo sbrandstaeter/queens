@@ -49,7 +49,9 @@ class Model(metaclass=abc.ABCMeta):
 
         """
         from .simulation_model import SimulationModel
-        model_dict = {'simulation_model': SimulationModel}
+        from .data_fit_surrogate_model import DataFitSurrogateModel
+        model_dict = {'simulation_model': SimulationModel,
+                      'datafit_surrogate_model': DataFitSurrogateModel}
 
         model_options = config[model_name]
         model_class = model_dict[model_options["type"]]

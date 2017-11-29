@@ -20,12 +20,12 @@ class Iterator(metaclass=abc.ABCMeta):
         self.model = model
 
     @classmethod
-    def from_config_create_iterator(cls, config):
+    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
         """ Create iterator from problem description
 
         Args:
             config (dict): Dictionary with QUEENS problem description
-
+            model (model): Model to iterate (optional)
         Returns:
             iterator: Iterator object
 
@@ -40,10 +40,12 @@ class Iterator(metaclass=abc.ABCMeta):
                        'sa_saltelli' : SaltelliIterator,
                        'sa_saltelli_salib' : SaltelliSALibIterator}
 
-
-        method_name = config['method']['method_name']
+        if iterator_name is None:
+            method_name = config['method']['method_name']
+        else:
+            method_name = config[iterator_name]['method_name']
         iterator_class = method_dict[method_name]
-        return iterator_class.from_config_create_iterator(config)
+        return iterator_class.from_config_create_iterator(config, model)
 
     def initialize_run(self):
         """ Optional setup step """

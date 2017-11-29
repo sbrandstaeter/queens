@@ -1,0 +1,65 @@
+{
+    "experiment-name" : "branin_gp_surrogate_test",
+    "database"  :{
+      "address"   : "localhost:27017"
+    },
+    "method": {
+      "method_name": "monte_carlo",
+      "method_options" :{
+        "seed" : 44,
+        "num_samples" : 200,
+        "model" : "gp_surrogate_model"
+      }
+    },
+    "gp_surrogate_model" : {
+      "type" : "datafit_surrogate_model",
+      "interface" : "approximation_interface",
+      "parameters" : "parameters",
+      "subordinate_model" : "truth_model",
+      "subordinate_iterator" : "thruth_model_iterator"
+    },
+    "approximation_interface" : {
+      "type" : "approximation_interface",
+      "approximation" : "gpy_regression"
+    },
+    "gpy_regression" : {
+      "type" : "gp_approximation_gpy",
+      "ard" : "True",
+      "length_scale" : 1,
+      "variance" : 1
+    },
+    "thruth_model_iterator" : {
+      "method_name": "monte_carlo",
+      "method_options" :{
+        "seed" : 42,
+        "num_samples" : 20
+      }
+    },
+    "truth_model" :{
+      "type" : "simulation_model",
+      "interface" : "interface",
+      "parameters" : "parameters"
+    },
+    "interface" : {
+      "type" : "direct_python_interface",
+      "main_file" : "/Users/jonas/work/adco/queens_code/pqueens/pqueens/example_simulator_functions/branin_hifi.py"
+    },
+    "parameters" : {
+        "x1" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : -5,
+            "max"  : 10,
+            "distribution" : "uniform",
+            "distribution_parameter" : [-5,10]
+        },
+        "x2" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : 0,
+            "max"  : 15,
+            "distribution" : "uniform",
+            "distribution_parameter" : [0,15]
+        }
+    }
+}

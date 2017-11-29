@@ -93,7 +93,7 @@ class MorrisSALibIterator(Iterator):
 
 
     @classmethod
-    def from_config_create_iterator(cls, config):
+    def from_config_create_iterator(cls, config, model=None):
         """ Create MorrisSALibIterator iterator from problem description
 
         Args:
@@ -104,9 +104,10 @@ class MorrisSALibIterator(Iterator):
 
         """
         method_options = config["method"]["method_options"]
-        model_name = method_options["model"]
 
-        model = Model.from_config_create_model(model_name, config)
+        if model is None:
+            model_name = method_options["model"]
+            model = Model.from_config_create_model(model_name, config)
 
         if not "num_traj_chosen" in method_options:
             method_options["num_traj_chosen"] = None
