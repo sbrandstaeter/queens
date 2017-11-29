@@ -19,3 +19,5 @@ seaborn
 docker
 # for sensitivity analysis
 SALib
+# making fancy plots
+plotly
