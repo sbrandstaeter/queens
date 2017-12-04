@@ -14,24 +14,21 @@ class Model(metaclass=abc.ABCMeta):
         Two, it acts as a factory for the instanciation of model objects.
 
     Attributes:
-        interface (interface):          Interface to simulations/functions
         uncertain_parameters (dict):    Dictionary with description of uncertain
                                         pararameters
         variables (list):               Set of model variables where model is evaluated
         responses (list):               Set of responses corresponding to variables
     """
 
-    def __init__(self, name, interface, uncertain_parameters):
+    def __init__(self, name, uncertain_parameters):
         """ Init model onject
 
         Args:
             name (string):                  Name of model
-            interface (interface):          Interface to simulations/functions
             uncertain_parameters (dict):    Dictionary with description of uncertain
                                             pararameters
         """
         self.name = name
-        self.interface = interface
         self.uncertain_parameters = uncertain_parameters
         self.variables = [Variables.from_uncertain_parameters_create(uncertain_parameters)]
         self.response = [None]
@@ -50,8 +47,11 @@ class Model(metaclass=abc.ABCMeta):
         """
         from .simulation_model import SimulationModel
         from .data_fit_surrogate_model import DataFitSurrogateModel
+        from .multifidelity_model import MultifidelityModel
+        
         model_dict = {'simulation_model': SimulationModel,
-                      'datafit_surrogate_model': DataFitSurrogateModel}
+                      'datafit_surrogate_model': DataFitSurrogateModel,
+                      'multi_fidelity_model' : MultifidelityModel}
 
         model_options = config[model_name]
         model_class = model_dict[model_options["type"]]

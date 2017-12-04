@@ -4,7 +4,12 @@ from pqueens.interfaces.interface import Interface
 from . model import Model
 
 class DataFitSurrogateModel(Model):
-    """ Surrogate model class """
+    """ Surrogate model class
+
+        Attributes:
+            interface (interface):          approximation interface
+
+    """
 
     def __init__(self, model_name, interface, model_parameters, subordinate_model,
                  subordinate_iterator):
@@ -21,8 +26,8 @@ class DataFitSurrogateModel(Model):
                                              training data
 
         """
-        super(DataFitSurrogateModel, self).__init__(model_name, interface,
-                                                    model_parameters)
+        super(DataFitSurrogateModel, self).__init__(model_name, model_parameters)
+        self.interface = interface
         self.subordinate_model = subordinate_model
         self.subordinate_iterator = subordinate_iterator
 
