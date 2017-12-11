@@ -1,5 +1,5 @@
 {
-    "experiment-name" : "rosenbrock_bayes_opt",
+    "experiment-name" : "art_aaa_test3",
     "database"  :{
       "address"   : "localhost:27017"
     },
@@ -8,7 +8,7 @@
       "method_options" :{
         "seed" : 42,
         "model" : "model",
-        "num_iter" : 40,
+        "num_iter" : 100,
         "use_ard" : "True",
         "num_initial_samples" : 10
       }
@@ -20,18 +20,24 @@
     },
     "interface" : {
       "type" : "direct_python_interface",
-      "main_file" : "/Users/jonas/work/adco/queens_code/pqueens/pqueens/example_simulator_functions/rosenbrock.py"
+      "main_file" : "/Users/jonas/work/adco/queens_code/pqueens/pqueens/example_simulator_functions/branin_hifi.py"
     },
     "parameters" : {
         "x1" : {
             "type" : "FLOAT",
+            "size" : 1,
+            "min"  : -5,
+            "max"  : 10,
             "distribution" : "uniform",
-            "distribution_parameter" : [-2,2]
+            "distribution_parameter" : [-5,10]
         },
         "x2" : {
             "type" : "FLOAT",
+            "size" : 1,
+            "min"  : 0,
+            "max"  : 15,
             "distribution" : "uniform",
-            "distribution_parameter" : [-1,3]
+            "distribution_parameter" : [0,15]
         }
     }
 }
