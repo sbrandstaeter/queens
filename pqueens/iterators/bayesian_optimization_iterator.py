@@ -7,6 +7,8 @@ from gpflowopt.domain import ContinuousParameter
 from gpflowopt.bo import BayesianOptimizer
 from gpflowopt.design import LatinHyperCube
 from gpflowopt.acquisition import ExpectedImprovement
+from gpflowopt.acquisition import LowerConfidenceBound
+
 
 class BayesOptIterator(Iterator):
     """ Iterator for Bayesian Optimization
@@ -30,7 +32,9 @@ class BayesOptIterator(Iterator):
         self.use_ard = use_ard
         self.num_initial_samples = num_initial_samples
 
-        self.results = None
+        self.inputs = []
+        self.results = []
+        self.results_bo = None
 
         #self.domain = None
         parameter_info = self.model.get_parameter()
@@ -67,8 +71,14 @@ class BayesOptIterator(Iterator):
 
     def prep_and_eval_model(self, X):
         """ Make compatible interface """
+        self.inputs.append(X)
+        print("X {}".format(X))
+        print("self.inputs. {}".format(self.inputs))
+
         self.model.update_model_from_sample_batch(X)
-        return self.eval_model()
+        results = self.eval_model()
+        self.results.append(results)
+        return results
 
     def core_run(self):
         """  Run Bayesian Optimization model """
@@ -84,14 +94,21 @@ class BayesOptIterator(Iterator):
         model.kern.lengthscales.transform = gpflow.transforms.Log1pe(1e-3)
 
         # create the Bayesian optimizer
-        alpha = ExpectedImprovement(model)
-        optimizer = BayesianOptimizer(self.domain, alpha)
+        #alpha = ExpectedImprovement(model)
+        alpha = LowerConfidenceBound(model)
+        optimizer = BayesianOptimizer(self.domain, alpha, scaling=False)
 
         # Run the Bayesian optimization
         with optimizer.silent():
-            self.results = optimizer.optimize(self.prep_and_eval_model,
-                                              n_iter=self.num_iter)
+            self.results_bo = optimizer.optimize(self.prep_and_eval_model,
+                                                 n_iter=self.num_iter)
 
     def post_run(self):
         """ Analyze the results """
-        print(self.results)
+        print("Evaluated inputs: {}".format(self.inputs))
+        print("Evaluated results: {}".format(self.results))
+        print("Summary BO {}".format(self.results_bo))
+
+#def fx(X):
+#    X = np.atleast_2d(X)#
+#    return np.sum(np.square(X), axis=1)[:, None]
