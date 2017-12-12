@@ -4,6 +4,7 @@ import gpflow
 from gpflowopt.bo import BayesianOptimizer
 from gpflowopt.design import LatinHyperCube
 from gpflowopt.acquisition import ExpectedImprovement
+from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer
 #from gpflowopt.optim import SciPyOptimizer
 
 def fx(X):
@@ -25,7 +26,9 @@ model.kern.lengthscales.transform = gpflow.transforms.Log1pe(1e-3)
 
 # Now create the Bayesian Optimizer
 alpha = ExpectedImprovement(model)
-optimizer = BayesianOptimizer(domain, alpha)
+acquisition_opt = StagedOptimizer([MCOptimizer(domain, 1000), SciPyOptimizer(domain)])
+optimizer = BayesianOptimizer(domain, alpha, optimizer=acquisition_opt)
+#optimizer = BayesianOptimizer(domain, alpha)
 
 # Run the Bayesian optimization
 #with optimizer.silent():
