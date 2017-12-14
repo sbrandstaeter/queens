@@ -4,15 +4,27 @@ import gpflow
 from gpflowopt.bo import BayesianOptimizer
 from gpflowopt.design import LatinHyperCube
 from gpflowopt.acquisition import ExpectedImprovement
-from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer
-#from gpflowopt.optim import SciPyOptimizer
+from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer, SciPyBasinHoppingOptimizer, SciPyDifferentialEvoOptimizer
+
+# def fx(X):
+#     X = np.atleast_2d(X)
+#     result = np.sum(np.square(X), axis=1)[:, None]
+#     #result = rosen(X)
+#     print("X: {}".format(X))
+#     print("fx: {}".format(result))
+#     return result
 
 def fx(X):
     X = np.atleast_2d(X)
-    result = np.sum(np.square(X), axis=1)[:, None]
+    a = 1. - X[:,0]
+    b = X[:,1] - X[:,0]*X[:,0]
+    result = a*a + b*b*100.
+    #print("result {}".format(result.shape))
+
+    #result = np.sum(np.square(X), axis=1)[:, None]
     print("X: {}".format(X))
     print("fx: {}".format(result))
-    return result
+    return np.reshape(result,(-1,1))
 
 
 domain = ContinuousParameter('x1', -2, 2) + ContinuousParameter('x2', -1, 2)
@@ -26,11 +38,13 @@ model.kern.lengthscales.transform = gpflow.transforms.Log1pe(1e-3)
 
 # Now create the Bayesian Optimizer
 alpha = ExpectedImprovement(model)
-acquisition_opt = StagedOptimizer([MCOptimizer(domain, 1000), SciPyOptimizer(domain)])
+#acquisition_opt = StagedOptimizer([MCOptimizer(domain, 1000), SciPyOptimizer(domain)])
+#acquisition_opt = SciPyBasinHoppingOptimizer(domain)
+acquisition_opt = SciPyDifferentialEvoOptimizer(domain)
+
 optimizer = BayesianOptimizer(domain, alpha, optimizer=acquisition_opt)
-#optimizer = BayesianOptimizer(domain, alpha)
 
 # Run the Bayesian optimization
 #with optimizer.silent():
-r = optimizer.optimize(fx, n_iter=15)
+r = optimizer.optimize(fx, n_iter=10)
 print(r)
