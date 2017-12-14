@@ -8,7 +8,7 @@ from gpflowopt.bo import BayesianOptimizer
 from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer, SciPyBasinHoppingOptimizer, SciPyDifferentialEvoOptimizer
 from gpflowopt.design import LatinHyperCube
 from gpflowopt.acquisition import ExpectedImprovement
-#from gpflowopt.acquisition import LowerConfidenceBound
+from gpflowopt.acquisition import LowerConfidenceBound
 
 
 class BayesOptIterator(Iterator):
@@ -95,7 +95,8 @@ class BayesOptIterator(Iterator):
         model.kern.lengthscales.transform = gpflow.transforms.Log1pe(1e-3)
 
         # create the Bayesian optimizer
-        alpha = ExpectedImprovement(model)
+        #alpha = ExpectedImprovement(model)
+        alpha = LowerConfidenceBound(model)
         #acquisition_opt = SciPyBasinHoppingOptimizer(self.domain)
         #acquisition_opt = StagedOptimizer([MCOptimizer(self.domain, 1000), SciPyOptimizer(self.domain)])
 
