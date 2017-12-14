@@ -5,7 +5,7 @@ from pqueens.models.model import Model
 import gpflow
 from gpflowopt.domain import ContinuousParameter
 from gpflowopt.bo import BayesianOptimizer
-from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer
+from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer, SciPyBasinHoppingOptimizer, SciPyDifferentialEvoOptimizer
 from gpflowopt.design import LatinHyperCube
 from gpflowopt.acquisition import ExpectedImprovement
 #from gpflowopt.acquisition import LowerConfidenceBound
@@ -96,14 +96,15 @@ class BayesOptIterator(Iterator):
 
         # create the Bayesian optimizer
         alpha = ExpectedImprovement(model)
-        #alpha = LowerConfidenceBound(model)
-        #acquisition_opt = StagedOptimizer([MCOptimizer(self.domain, 1000),
-        #                                   SciPyOptimizer(self.domain)])
+        #acquisition_opt = SciPyBasinHoppingOptimizer(self.domain)
+        #acquisition_opt = StagedOptimizer([MCOptimizer(self.domain, 1000), SciPyOptimizer(self.domain)])
+
+        acquisition_opt = SciPyDifferentialEvoOptimizer(self.domain)
+
 
         optimizer = BayesianOptimizer(self.domain, alpha,
-                                      optimizer=MCOptimizer(self.domain, 1000),
+                                      optimizer=acquisition_opt,
                                       scaling=False)
-        #optimizer = BayesianOptimizer(self.domain, alpha, scaling=False)
 
         # Run the Bayesian optimization
         with optimizer.silent():
