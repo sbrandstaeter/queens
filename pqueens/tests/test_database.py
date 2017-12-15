@@ -26,6 +26,17 @@ class TestDatabase(unittest.TestCase):
 
         self.assertIsInstance(db, MongoDB, 'First argument is not a MongoDB')
 
+    def test_droppping(self):
+        # check if we can connect to mongodb and clear preexisting db
+        try:
+            db = MongoDB(database_address="localhost:27017",drop_existing_db=True)
+        except:
+            # if local host fails try to use alias if db is in docker container
+            db = MongoDB(database_address="mongodb:27017",drop_existing_db=True)
+
+        self.assertIsInstance(db, MongoDB, 'First argument is not a MongoDB')
+
+
     def test_read_write_delete(self):
         try:
             db = MongoDB(database_address="localhost:27017")
