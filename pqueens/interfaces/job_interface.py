@@ -74,11 +74,15 @@ class JobInterface(Interface):
 
          # connect to the database
         db_address = config['database']['address']
+        if 'drop_existing' in config['database']:
+            drop_existing = config['database']['drop_existing']
+        else:
+            drop_existing = False
         experiment_name = config['experiment-name']
 
-        sys.stderr.write('Using database at %s.\n' % db_address)
+        #sys.stderr.write('Using database at %s.\n' % db_address)
 
-        db = MongoDB(database_address=db_address)
+        db = MongoDB(database_address=db_address,drop_existing_db=drop_existing)
 
         polling_time = config.get('polling-time', 30)
 

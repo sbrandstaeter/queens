@@ -1,11 +1,11 @@
 
 import pymongo
-from .abstractdb               import AbstractDB
+from pymongo.errors import ServerSelectionTimeoutError
 from pqueens.utils.compression import compress_nested_container, decompress_nested_container
 
 COMPRESS_TYPE = 'compressed array'
 
-class MongoDB(AbstractDB):
+class MongoDB(object):
     """ MongoDB based database to store data of computer experiments
 
     Attributes:
@@ -21,14 +21,15 @@ class MongoDB(AbstractDB):
             database_name (string):    name of database
             drop_existing_db (bool):   drop existing db if it exists
         """
-        try:
-            self.client = pymongo.MongoClient(host=[database_address])
-            if drop_existing_db:
-                self.client.drop_database(database_name)
-            self.db = self.client[database_name]
+        #try:
+        self.client = pymongo.MongoClient(host=[database_address],
+                                          serverSelectionTimeoutMS=100)
+        if drop_existing_db:
+            self.client.drop_database(database_name)
+        self.db = self.client[database_name]
 
-        except:
-            raise Exception('Could not connect to MongoDB.')
+        self.client.server_info() # Forces a call and raises
+        # ServerSelectionTimeoutError exception:
 
 
     def save(self, save_doc, experiment_name, experiment_field, batch,
