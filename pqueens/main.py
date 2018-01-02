@@ -11,18 +11,6 @@ except ImportError:
 # queens imports
 from pqueens.iterators.iterator import Iterator
 
-
-# TODO test job_interface
-# TODO deal with multiple resources ?
-# TODO think about printing stuff
-# TODO wite unit test
-# TODO write a regression test for all of it
-# TODO Move all designers to iterators
-# TODO Introduce new class for sampling iterators
-# TODO Move iterator construction into iterator base class
-# TODO write general post processing and plotting class
-
-
 def get_options():
     """ Parse options from command line and input file """
 
