@@ -8,7 +8,12 @@ from pqueens.drivers.baci_driver_native import baci_driver_native
 from pqueens.drivers.python_driver_vector_interface import python_driver_vector_interface
 from pqueens.database.mongodb import MongoDB
 
-def main():
+def main(args):
+    parsed_args = parse_args(args)
+    launch(parsed_args.db_address, parsed_args.experiment_name,
+           parsed_args.batch, parsed_args.job_id)
+
+def parse_args(args):
     parser = argparse.ArgumentParser(description="QUEENS")
 
     parser.add_argument('--experiment_name', type=str,
@@ -20,22 +25,21 @@ def main():
     parser.add_argument('--batch', type=str,
                         help='The batch to launch in the database.')
 
-    args = parser.parse_args()
+    parsed_args = parser.parse_args(args)
 
-    if not args.experiment_name:
-        parser.error('Experiment name must be given.')
+    if not parsed_args.experiment_name:
+        raise RuntimeError('Experiment name must be given.')
 
-    if not args.batch:
-        parser.error('Batch must be given.')
+    if not parsed_args.db_address:
+        raise RuntimeError('Database address must be given.')
 
-    if not args.db_address:
-        parser.error('Database address must be given.')
+    if not parsed_args.job_id:
+        raise RuntimeError('Job ID not given or an ID of 0 was used.')
 
-    if not args.job_id:
-        parser.error('Job ID not given or an ID of 0 was used.')
+    if not parsed_args.batch:
+        raise RuntimeError('Batch must be given.')
 
-    launch(args.db_address, args.experiment_name, args.batch, args.job_id)
-
+    return parsed_args
 
 def launch(db_address, experiment_name, batch, job_id):
     """
@@ -51,7 +55,7 @@ def launch(db_address, experiment_name, batch, job_id):
 
     db  = MongoDB(database_address = db_address)
     job = db.load(experiment_name, batch, 'jobs', {'id' : job_id})
-
+    print(job)
     start_time = time.time()
     print("start_time {}".format(start_time))
     job['start time'] = start_time
@@ -99,4 +103,4 @@ def launch(db_address, experiment_name, batch, job_id):
     db.save(job, experiment_name, 'jobs', batch, {'id' : job_id})
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main(sys.argv[1:]))

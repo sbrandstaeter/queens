@@ -25,7 +25,7 @@
     "driver" :{
       "driver_type"           : "baci_docker",
       "driver_params"         :{
-        "input_template"        : "/Users/jonas/work/adco/queens_code/pqueens/trials/invaaa_template_2.dat",
+        "input_template"        : "/Users/jonas/work/adco/queens_code/pqueens/trials/invaaa_template_2_new.dat",
         "path_to_executable"    : "./baci-release",
         "path_to_postprocessor" : "./post_drt_monitor",
         "post_process_options"  : " --field=structure  --node=23 --start=25",
