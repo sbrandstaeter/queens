@@ -91,7 +91,7 @@ class TestJobInterface(unittest.TestCase):
         self.config['parameters'] = uncertain_parameters
 
         dummy_resource = {}
-        dummy_resource['my_machine'] = {'scheduler': 'local', 'max-concurrent':5,
+        dummy_resource['my_machine'] = {'scheduler': 'my_local_scheduler', 'max-concurrent':5,
                                         'max-finished-jobs' : 100}
         self.config['database'] = {}
         self.config['database']['address'] = 'localhost:27017'
@@ -99,9 +99,13 @@ class TestJobInterface(unittest.TestCase):
         self.config['driver'] = {}
         self.config['driver']['driver_type'] = 'local'
         self.config['driver']['driver_params'] = {}
+        self.config['driver']['driver_params']['experiment_dir'] = 'dummy_dir'
 
         self.config['resources'] = {}
-        self.config['resources']['dummy_resource'] = dummy_resource
+        self.config['resources'] = dummy_resource
+
+        self.config['my_local_scheduler'] = {}
+        self.config['my_local_scheduler']['scheduler_type'] = 'local'
 
     def test_construction(self):
         interface = Interface.from_config_create_interface('test_interface', self.config)

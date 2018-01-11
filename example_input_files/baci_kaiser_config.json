@@ -1,7 +1,7 @@
 {
     "experiment-name" : "art_aaa_test3",
     "database"  :{
-      "address"   : "localhost:27017",
+      "address"   : "129.187.58.39:27017",
       "drop_existing" : "True"
     },
     "method": {
@@ -25,24 +25,29 @@
     "driver" :{
       "driver_type"           : "baci_docker",
       "driver_params"         :{
-        "input_template"        : "/Users/jonas/work/adco/queens_code/pqueens/trials/invaaa_template_2_new.dat",
-        "experiment_dir"        : "/Users/jonas/work/adco/queens_code/pqueens/example_input_files/output/",
-        "path_to_executable"    : "./baci-release",
-        "path_to_postprocessor" : "./post_drt_monitor",
-        "post_process_options"  : " --field=structure  --node=23 --start=25",
-        "post_post_script"      : "/Users/jonas/work/adco/queens_code/pqueens/trials/post_post_script_invaaa.py",
-        "docker_container"      : "adco/baci-baked-in-centos"
+        "executable" : "/home/biehler/baci/release/baci-release",
+        "post_processor" : "/home/biehler/baci/release/post_drt_monitor",
+        "input_template" : "/home/biehler/input/invaaa_template_3_new.dat",
+          "experiment_dir" : "/home/biehler/queens_testing/my_first_test",
+        "post_process_command" : "--field=structure  --node=23 --start=25",
+        "driver_file" : "/Users/jonas/work/adco/queens_code/pqueens/pqueens/drivers/dummy_driver_baci_pbs_kaiser.py"
       }
     },
     "resources" : {
-      "my-machine" : {
-        "scheduler"         : "local_scheduler",
+      "kaiser" : {
+        "scheduler"         : "kaiser_scheduler",
         "max-concurrent"    : 5,
         "max-finished-jobs" : 100
       }
     },
-    "local_scheduler" :{
-      "scheduler_type" : "local"
+    "kaiser_scheduler" : {
+      "scheduler_type" : "pbs",
+      "num_procs_per_node" : 1,
+      "num_nodes" : 1,
+      "walltime" : "300:00:00",
+      "email" : "biehler@lnm.mw.tum.de",
+      "queue" : "opteron",
+      "connect_to_resource" : ["ssh", "-T","-p 9001", "biehler@localhost"]
     },
     "parameters" : {
         "youngs" : {

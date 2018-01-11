@@ -53,7 +53,7 @@ PARAM_BOUNDS                    no                            // bound params to
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics
 RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESTARTEVRY                     0
 NLNSOL                          fullnewton                    // fullnewton lsnewton modnewton matfreenewton nlncg ptc
 TIMESTEP                        0.02
 NUMSTEP                         25
@@ -71,7 +71,7 @@ ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.01
 MAXITER                         150
 UZAWAPARAM                      1.0
-INT_STRATEGY                    Standard
+INT_STRATEGY                    Old
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.25
@@ -603,7 +603,7 @@ NODE 52 COORD 1.850000000000000e+01 0.000000000000000e+00 0.000000000000000e+00
 MAT 1 MAT_Struct_AAANeoHooke YOUNG {youngs} BETA {beta} NUE 0.49 DENS 0.001
 MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.044E6 BETA 1.881E6 NUE 0.49 DENS 0.001
 
-// fitted with neohooke, works quite wellA
+// fitted with neohooke, works quite well
 //MAT 1 MAT_Struct_NeoHooke YOUNG 2.73974e+06 NUE 6.18385e-02 DENS 0.001
 //MAT 2 MAT_Struct_NeoHooke YOUNG 4.21548e+06 NUE 3.78712e-01 DENS 0.001
 

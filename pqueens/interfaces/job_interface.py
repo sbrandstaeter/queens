@@ -86,11 +86,13 @@ class JobInterface(Interface):
 
         polling_time = config.get('polling-time', 30)
 
-        output_dir = config['output_dir']
+        output_dir = config['driver']['driver_params']["experiment_dir"]
 
         driver_type = config['driver']['driver_type']
 
         driver_params = config['driver']['driver_params']
+
+        # TODO get scheduler type and params
 
         parameters = config['parameters']
 
