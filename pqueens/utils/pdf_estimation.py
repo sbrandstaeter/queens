@@ -2,8 +2,6 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.neighbors import KernelDensity
 import numpy as np
 
-# TODO add tests for both methods
-
 def estimate_bandwidth_for_kde(samples,min_samples,max_samples):
     """ Estimate optimal bandwidth for kde of pdf
 
