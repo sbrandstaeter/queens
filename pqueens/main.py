@@ -1,5 +1,6 @@
 
 # standard imports
+import sys
 import argparse
 import os
 from collections import OrderedDict
@@ -11,7 +12,19 @@ except ImportError:
 # queens imports
 from pqueens.iterators.iterator import Iterator
 
-def get_options():
+
+def main(args):
+    """ Run analysis """
+    options = get_options(args)
+
+    # build iterator
+    my_iterator = Iterator.from_config_create_iterator(options)
+
+    # perform analysis
+    my_iterator.run()
+
+
+def get_options(args):
     """ Parse options from command line and input file """
 
     parser = argparse.ArgumentParser(description="QUEENS")
@@ -22,14 +35,14 @@ def get_options():
     parser.add_argument('--debug', type=str, default='no',
                         help='debug mode yes/no')
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     input_file = os.path.realpath(os.path.expanduser(args.input))
     try:
         with open(input_file, 'r') as f:
             options = json.load(f, object_pairs_hook=OrderedDict)
     except:
-        raise Exception("config.json did not load properly.")
+        raise FileNotFoundError("config.json did not load properly.")
 
     if args.output_dir is None:
         raise Exception("No output directory was given.")
@@ -53,15 +66,5 @@ def get_options():
 
     return  options
 
-def main():
-    """ Run analysis """
-    options = get_options()
-
-    # build iterator
-    my_iterator = Iterator.from_config_create_iterator(options)
-
-    # perform analysis
-    my_iterator.run()
-
 if __name__ == '__main__':
-    main()
+    sys.exit(main(sys.argv[1:]))
