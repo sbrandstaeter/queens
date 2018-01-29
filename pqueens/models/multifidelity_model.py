@@ -80,7 +80,7 @@ class MultifidelityModel(Model):
             # TODO check for same parameters
             sub_interface = Interface.from_config_create_interface(sub_interface_name, config)
             sub_model_parameters = config[parameters]
-            sub_models.append(SimulationModel(model_name, sub_interface, sub_model_parameters))
+            sub_models.append(SimulationModel(sub_model_name, sub_interface, sub_model_parameters))
 
 
         return cls(model_name, model_parameters, sub_models, model_evaluation_cost)
