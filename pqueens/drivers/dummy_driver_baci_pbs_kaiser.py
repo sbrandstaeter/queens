@@ -18,140 +18,177 @@ from pqueens.database.mongodb import MongoDB
 from pqueens.utils.injector import inject
 import numpy as np
 
-# all necessary information is passed via this dictionary
-driver_options = json.loads(sys.argv[1])
+def main(args):
+    # all necessary information is passed via this dictionary
+    driver_options = json.loads(args)
 
-# get PBS working directory
-srcdir = os.environ["PBS_O_WORKDIR"]
-os.chdir(srcdir)
+    # get PBS working directory
+    srcdir = os.environ["PBS_O_WORKDIR"]
+    os.chdir(srcdir)
 
-DESTDIR = str(driver_options['experiment_dir']) + '/' + \
-          str(driver_options['job_id'])
+    # connect to database and get job parameters
+    db = MongoDB(database_address=driver_options['database_address'])
 
-PREFIX = str(driver_options['experiment_name']) + '_' + \
-         str(driver_options['job_id'])
-EXE = driver_options['executable']
-EXEP = driver_options['post_processor']
+    job = init_job(driver_options, db)
 
-post_process_command = driver_options['post_process_command']
+    _, baci_input_file, baci_output = setup_dirs_and_files(driver_options)
 
-# connect to database and get job parameters
-db = MongoDB(database_address=driver_options['database_address'])
-job = db.load(driver_options['experiment_name'], driver_options['batch'], 'jobs',
-              {'id' : driver_options['job_id']})
+    # create actual input file in experiment dir folder
+    inject(job['params'], driver_options['input_template'], baci_input_file)
 
-start_time = time.time()
-job['start time'] = start_time
+    # assemble command to run BACI
+    runcommand_string = get_runcommand_string(driver_options, baci_input_file, baci_output)
 
-db.save(job, driver_options['experiment_name'], 'jobs', driver_options['batch'],
-        {'id' : driver_options['job_id']})
+    #run BACI
+    run(runcommand_string)
 
-sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
-                 % (start_time-job['submit time']))
+    # assemble command to run post processor
+    postcommand_string = get_postcommand_string(driver_options, baci_output)
 
-params = job['params']
+    # run postprocessing
+    run(postcommand_string)
 
-output_directory = os.path.join(DESTDIR, 'output')
-if not os.path.isdir(output_directory):
-    # make complete directory tree
-    os.makedirs(output_directory)
+    result = do_dummy_postpostprocessing(baci_output)
 
-# create input file using injector
-baci_input_file = DESTDIR + '/' + str(driver_options['experiment_name']) + \
-                  '_' + str(driver_options['job_id']) + '.dat'
+    finish_job(driver_options, db, job, result)
 
-# create ouput file name
-baci_output = output_directory + '/' + str(driver_options['experiment_name']) + \
-                  '_' + str(driver_options['job_id'])
+def get_num_nodes():
+    """ determine number of processors from nodefile """
+    pbs_nodefile = os.environ["PBS_NODEFILE"]
+    #print(pbs_nodefile)
+    command_list = ['cat', pbs_nodefile, '|', 'wc', '-l']
+    command_string = ' '.join(command_list)
+    p = subprocess.Popen(command_string,
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         shell=True,
+                         universal_newlines=True)
+    procs, _ = p.communicate()
+    return int(procs)
 
-# create actual input file in experiment dir folder
-inject(params,driver_options['input_template'],baci_input_file)
-INPUT = baci_input_file
+def setup_mpi(num_procs):
+    """ setup MPI environment """
+    mpi_run = '/opt/openmpi/1.6.2/gcc48/bin/mpirun'
+    mpi_home = '/opt/openmpi/1.6.2/gcc48'
 
-success = False
+    os.environ["MPI_HOME"] = mpi_home
+    os.environ["MPI_RUN"] = mpi_run
 
-# setup MPI environment
-MPI_RUN = '/opt/openmpi/1.6.2/gcc48/bin/mpirun'
-MPI_HOME = '/opt/openmpi/1.6.2/gcc48'
+    # Add non-standard shared library paths
+    # "LD_LIBRARY_PATH" seems to be also empty, so simply set it to MPI_HOME
+    # eventually this should changed to mereyl append the MPI_HOME path
+    os.environ["LD_LIBRARY_PATH"] = mpi_home
 
-os.environ["MPI_HOME"] = MPI_HOME
-os.environ["MPI_RUN"] = MPI_RUN
+    # determine 'optimal' flags for the problem size
+    if num_procs%16 == 0:
+        mpi_flags = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
+    else:
+        mpi_flags = "--mca btl openib,sm,self"
 
-# determine number of processors from nodefile
-PBS_NODEFILE = os.environ["PBS_NODEFILE"]
-print(PBS_NODEFILE)
-command_list = ['cat', PBS_NODEFILE, '|','wc', '-l' ]
-command_string = ' '.join(command_list)
-p = subprocess.Popen(command_string,
-                     stdin=subprocess.PIPE,
-                     stdout=subprocess.PIPE,
-                     stderr=subprocess.PIPE,
-                     shell=True,
-                     universal_newlines=True)
-PROCS, _ = p.communicate()
-PROCS = int(PROCS)
+    return mpi_run, mpi_flags
 
-# Add non-standard shared library paths
-# "LD_LIBRARY_PATH" seems to be also empty, so simply set it to MPI_HOME
-# eventually this should changed to mereyl append the MPI_HOME path
-os.environ["LD_LIBRARY_PATH"] = MPI_HOME
+def setup_dirs_and_files(driver_options):
+    """ Setup directory structure  """
+    dest_dir = str(driver_options['experiment_dir']) + '/' + \
+              str(driver_options['job_id'])
 
-# determine 'optimal' flags for the problem size
-if PROCS%16 == 0:
-    MPIFLAGS = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
-else:
-    MPIFLAGS = "--mca btl openib,sm,self"
+    prefix = str(driver_options['experiment_name']) + '_' + \
+             str(driver_options['job_id'])
 
-# note that we directly write the output to the home folder and do not create
-# the appropriate directories on the nodes. This should be changed at some point.
-# So long be careful !
+    output_directory = os.path.join(dest_dir, 'output')
+    if not os.path.isdir(output_directory):
+        # make complete directory tree
+        os.makedirs(output_directory)
 
-runcommand_list = [MPI_RUN , MPIFLAGS, '-np', str(PROCS), EXE, INPUT, baci_output]
+    # create input file using injector
+    baci_input_file = dest_dir + '/' + str(driver_options['experiment_name']) + \
+                      '_' + str(driver_options['job_id']) + '.dat'
 
-runcommand_string = ' '.join(runcommand_list)
-#print(runcommand_string)
-p = subprocess.Popen(runcommand_string,
-                     stdin=subprocess.PIPE,
-                     stdout=subprocess.PIPE,
-                     stderr=subprocess.PIPE,
-                     shell=True,
-                     universal_newlines = True)
+    # create ouput file name
+    baci_output = output_directory + '/' + str(driver_options['experiment_name']) + \
+                      '_' + str(driver_options['job_id'])
 
-stdout, stderr = p.communicate()
-print(stdout)
-print(stderr)
+    return prefix, baci_input_file, baci_output
 
-monitor_file = '--file=' + str(baci_output)
-# note for posterity post_drt_monitor does not like more than 1 proc
-postcommand_list = [MPI_RUN, MPIFLAGS, '-np', str(1), EXEP,
-                    post_process_command, monitor_file]
+def init_job(driver_options, db):
+    """ Initialize job in database """
+    job = db.load(driver_options['experiment_name'], driver_options['batch'], 'jobs',
+                  {'id' : driver_options['job_id']})
 
-postcommand_string = ' '.join(postcommand_list)
-#print(postcommand_string)
+    start_time = time.time()
+    job['start time'] = start_time
 
-p = subprocess.Popen(postcommand_string,
-                     stdin=subprocess.PIPE,
-                     stdout=subprocess.PIPE,
-                     stderr=subprocess.PIPE,
-                     shell=True,
-                     universal_newlines = True)
+    db.save(job, driver_options['experiment_name'], 'jobs', driver_options['batch'],
+            {'id' : driver_options['job_id']})
 
-stdout, stderr = p.communicate()
-print(stdout)
-print(stderr)
+    sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
+                     % (start_time-job['submit time']))
+    return job
 
-line = np.loadtxt(baci_output+'.mon', comments="#",skiprows=4, unpack=False)
-# for now simply compute norm of displacement
-result = np.sqrt(line[1]**2+line[2]**2+line[3]**2)
-print('And the results is: {}'.format(result))
+def finish_job(driver_options, db, job, result):
+    """ Finish job in database """
+    end_time = time.time()
 
-end_time = time.time()
+    job['result'] = result
+    job['status'] = 'complete'
+    job['end time'] = end_time
 
-job['result'] = result
-job['status'] = 'complete'
-job['end time'] = end_time
+    db.save(job, driver_options['experiment_name'], 'jobs', driver_options['batch'],
+            {'id' : driver_options['job_id']})
 
-db.save(job, driver_options['experiment_name'], 'jobs', driver_options['batch'],
-        {'id' : driver_options['job_id']})
+def do_dummy_postpostprocessing(baci_output):
+    """ Execute dummy post post processing step """
+    line = np.loadtxt(baci_output+'.mon', comments="#", skiprows=4, unpack=False)
+    # for now simply compute norm of displacement
+    result = np.sqrt(line[1]**2+line[2]**2+line[3]**2)
+    print('And the results is: {}'.format(result))
+    print('Written result to database')
+    return result
 
-print('Written result to database')
+def get_runcommand_string(driver_options, baci_input_file, baci_output):
+    """ Assemble run command for BACI """
+    procs = get_num_nodes()
+    mpir_run, mpi_flags = setup_mpi(procs)
+    executable = driver_options['executable']
+
+    # note that we directly write the output to the home folder and do not create
+    # the appropriate directories on the nodes. This should be changed at some point.
+    # So long be careful !
+
+    runcommand_list = [mpir_run, mpi_flags, '-np', str(procs), executable,
+                       baci_input_file, baci_output]
+    runcommand_string = ' '.join(runcommand_list)
+    return runcommand_string
+
+
+def get_postcommand_string(driver_options, baci_output):
+    """ Assemble post processing command for BACI """
+    procs = get_num_nodes()
+    mpir_run, mpi_flags = setup_mpi(procs)
+    post_processor_exec = driver_options['post_processor']
+    monitor_file = '--file=' + str(baci_output)
+    post_process_command = driver_options['post_process_command']
+    # note for posterity post_drt_monitor does not like more than 1 proc
+    postcommand_list = [mpir_run, mpi_flags, '-np', str(1), post_processor_exec,
+                        post_process_command, monitor_file]
+
+    postcommand_string = ' '.join(postcommand_list)
+    return postcommand_string
+
+def run(command_string):
+    """ Execute passed command """
+    p = subprocess.Popen(command_string,
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         shell=True,
+                         universal_newlines=True)
+
+    stdout, stderr = p.communicate()
+    print(stdout)
+    print(stderr)
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1]))
