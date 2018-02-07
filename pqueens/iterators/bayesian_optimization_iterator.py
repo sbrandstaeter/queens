@@ -5,10 +5,11 @@ from pqueens.models.model import Model
 import gpflow
 from gpflowopt.domain import ContinuousParameter
 from gpflowopt.bo import BayesianOptimizer
-from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer, SciPyBasinHoppingOptimizer, SciPyDifferentialEvoOptimizer
+from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer
+#, SciPyBasinHoppingOptimizer, SciPyDifferentialEvoOptimizer
 from gpflowopt.design import LatinHyperCube
 from gpflowopt.acquisition import ExpectedImprovement
-from gpflowopt.acquisition import LowerConfidenceBound
+#from gpflowopt.acquisition import LowerConfidenceBound
 
 
 class BayesOptIterator(Iterator):
@@ -33,11 +34,10 @@ class BayesOptIterator(Iterator):
         self.use_ard = use_ard
         self.num_initial_samples = num_initial_samples
 
-        self.inputs = []
-        self.results = []
+        self.inputs = None
+        self.results = None
         self.results_bo = None
 
-        #self.domain = None
         parameter_info = self.model.get_parameter()
         self.num_params = len(parameter_info)
 
@@ -71,18 +71,30 @@ class BayesOptIterator(Iterator):
         return self.model.evaluate()
 
     def prep_and_eval_model(self, X):
-        """ Make compatible interface """
-        self.inputs.append(X)
-        print("X {}".format(X))
-        print("self.inputs. {}".format(self.inputs))
+        """ Interface function to create a compatible interface to GPflowOpt
+
+        Args:
+            X (np.array): Array with to be evaluated inputs
+
+        Returns:
+            np.array: Array with results corresponding to inputs
+        """
+        if self.inputs is None:
+            self.inputs = X
+        else:
+            self.inputs = np.append(self.inputs, X, axis=0)
 
         self.model.update_model_from_sample_batch(X)
         results = self.eval_model()
-        self.results.append(results)
+        if self.results is None:
+            self.results = results
+        else:
+            self.results = np.append(self.results, results, axis=0)
+
         return results
 
     def core_run(self):
-        """  Run Bayesian Optimization model """
+        """  Run Bayesian Optimization """
         # Run initial experimental design
         lhd = LatinHyperCube(self.num_initial_samples, self.domain)
         X = lhd.generate()
@@ -95,12 +107,15 @@ class BayesOptIterator(Iterator):
         model.kern.lengthscales.transform = gpflow.transforms.Log1pe(1e-3)
 
         # create the Bayesian optimizer
-        #alpha = ExpectedImprovement(model)
-        alpha = LowerConfidenceBound(model)
+        # TODO make acquisition function an option
+        alpha = ExpectedImprovement(model)
+        # alpha = LowerConfidenceBound(model)
+        # TODO make optimizer an option
         #acquisition_opt = SciPyBasinHoppingOptimizer(self.domain)
-        #acquisition_opt = StagedOptimizer([MCOptimizer(self.domain, 1000), SciPyOptimizer(self.domain)])
+        #acquisition_opt = SciPyDifferentialEvoOptimizer(self.domain)
 
-        acquisition_opt = SciPyDifferentialEvoOptimizer(self.domain)
+        acquisition_opt = StagedOptimizer([MCOptimizer(self.domain, 1000),
+                                           SciPyOptimizer(self.domain)])
 
 
         optimizer = BayesianOptimizer(self.domain, alpha,
@@ -117,7 +132,3 @@ class BayesOptIterator(Iterator):
         print("Evaluated inputs: {}".format(self.inputs))
         print("Evaluated results: {}".format(self.results))
         print("Summary BO {}".format(self.results_bo))
-
-#def fx(X):
-#    X = np.atleast_2d(X)#
-#    return np.sum(np.square(X), axis=1)[:, None]

@@ -8,7 +8,7 @@
       "method_options" :{
         "seed" : 42,
         "model" : "model",
-        "num_iter" : 100,
+        "num_iter" : 10,
         "use_ard" : "True",
         "num_initial_samples" : 10
       }
