@@ -63,17 +63,6 @@ class GPEmulator(object):
         self.num_mc_samples = 500
         #self.y_plot =  np.linspace(np.amin(self.y), np.max(self.y), 100)
 
-        Args:
-            x_test (np.array): test locations at which to predict
-
-        Returns:
-            np.array,np.array: mean and variance of posterior
-            predictive distribution
-        """
-        mean_x_test, var_x_test = self.m.predict_noiseless(x_test)
-
-        return mean_x_test, var_x_test
-
     def compute_mean(self):
         """ Compute mean of emulator output w.r.t. x
 

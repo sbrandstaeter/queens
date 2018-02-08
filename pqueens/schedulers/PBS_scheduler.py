@@ -1,10 +1,9 @@
 
-import pqueens
+
 import sys
 import subprocess
 import re
-from .cluster_scheduler import AbstractClusterScheduler
-
+from pqueens.schedulers.cluster_scheduler import AbstractClusterScheduler
 
 
 class PBSScheduler(AbstractClusterScheduler):
@@ -23,19 +22,55 @@ class PBSScheduler(AbstractClusterScheduler):
                                     connect to resaurce
     """
 
-    def __init__(self, connect_to_resource_command=[]):
+    def __init__(self, scheduler_name, num_procs_per_node, num_nodes, walltime,
+                 user_mail, queue, connect_to_resource):
         """
         Args:
+            scheduler_name (string):    Name of Scheduler
+            num_procs_per_node (int):   Number of procs per node
+            num_nodes (int):            Number of nodes
+            walltime (string):          Wall time in hours
+            user_mail (string):         Email adress of user
+            queue (string):             Name of queue
             connect_to_resource (list): list containing commands to
                                         connect to resaurce
         """
         super(PBSScheduler, self).__init__()
-        self.connect_to_resource = connect_to_resource_command
+        self.name = scheduler_name
+        self.num_procs_per_node = num_procs_per_node
+        self.num_nodes = num_nodes
+        self.walltime = walltime
+        self.user_mail = user_mail
+        self.queue = queue
+        self.connect_to_resource = connect_to_resource
+
+    @classmethod
+    def from_config_create_scheduler(cls, scheduler_name, config):
+        """ Create PBS scheduler from config dictionary
+
+        Args:
+            scheduler_name (str):   name of scheduler
+            config (dict):          dictionary containing problem description
+
+        Returns:
+            scheduler:              instance of PBSScheduler
+        """
+        options = config[scheduler_name]
+
+        num_procs_per_node = options['num_procs_per_node']
+        num_nodes = options['num_nodes']
+        walltime = options['walltime']
+        user_mail = options['email']
+        queue = options['queue']
+        connect_to_resource = options["connect_to_resource"]
+
+        return cls(scheduler_name, num_procs_per_node, num_nodes, walltime,
+                   user_mail, queue, connect_to_resource)
 
     def output_regexp(self):
         return r'(^\d+)'
 
-    def get_process_id_from_output(self,output):
+    def get_process_id_from_output(self, output):
         """ Helper function to retrieve process id
 
             Helper function to retrieve after submitting a job to the job
@@ -46,30 +81,30 @@ class PBSScheduler(AbstractClusterScheduler):
         Returns:
             match object: with regular expression matching process id
         """
-        regex= r'(^\d+)'
+        regex = r'(^\d+)'
         return re.search(regex, output)
 
-    def submit_command(self,scheduler_options):
+    def submit_command(self, job_name):
         """ Get submit command for PBS type scheduler
 
             The function actually prepends the commands necessary to connect to
             the resource to enable remote job submission
         Args:
-            scheduler_options (dict): Options to pass to the scheduler
+            job_name (string): name of job to submit
 
         Returns:
             list: Submission command(s)
         """
-        # pre assamble some strings
-        proc_info = 'nodes={}:ppn={}'.format(scheduler_options['num_nodes'],
-                                             scheduler_options['num_procs_per_node'])
-        walltime_info = 'walltime={}'.format(scheduler_options['walltime'])
+        # pre assemble some strings
+        proc_info = 'nodes={}:ppn={}'.format(self.num_nodes,
+                                             self.num_procs_per_node)
+        walltime_info = 'walltime={}'.format(self.walltime)
 
-        command_list =  self.connect_to_resource  \
-                        + ['qsub', '-M', scheduler_options['email'],
-                           '-m abe', '-N', scheduler_options['job_name'],
-                           '-l',proc_info, '-l', walltime_info, '-q',
-                           scheduler_options['queue']]
+        command_list = self.connect_to_resource  \
+                       + ['qsub', '-M', self.user_mail,
+                          '-m abe', '-N', job_name,
+                          '-l', proc_info, '-l', walltime_info, '-q',
+                          self.queue]
 
         return command_list
 
@@ -93,11 +128,11 @@ class PBSScheduler(AbstractClusterScheduler):
             command_string = ' '.join(command_list)
 
             process = subprocess.Popen(command_string,
-                                    stdin=subprocess.PIPE,
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT,
-                                    shell=True,
-                                    universal_newlines = True)
+                                       stdin=subprocess.PIPE,
+                                       stdout=subprocess.PIPE,
+                                       stderr=subprocess.STDOUT,
+                                       shell=True,
+                                       universal_newlines=True)
 
             output, std_err = process.communicate()
             process.stdin.close()
@@ -116,7 +151,7 @@ class PBSScheduler(AbstractClusterScheduler):
         elif status == 'R':
             sys.stderr.write("Job %d is running.\n" % (process_id))
             alive = True
-        elif status in ['H','S']:
+        elif status in ['H', 'S']:
             sys.stderr.write("Job %d is held or suspended.\n" % (process_id))
             alive = False
 
@@ -126,11 +161,11 @@ class PBSScheduler(AbstractClusterScheduler):
                 command_list = self.connect_to_resource + ['qdel', str(process_id)]
                 command_string = ' '.join(command_list)
                 process = subprocess.Popen(command_string,
-                                        stdin=subprocess.PIPE,
-                                        stdout=subprocess.PIPE,
-                                        stderr=subprocess.STDOUT,
-                                        shell=True,
-                                        universal_newlines = True)
+                                           stdin=subprocess.PIPE,
+                                           stdout=subprocess.PIPE,
+                                           stderr=subprocess.STDOUT,
+                                           shell=True,
+                                           universal_newlines=True)
 
                 output, std_err = process.communicate()
                 process.stdin.close()

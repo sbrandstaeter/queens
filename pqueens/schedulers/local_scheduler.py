@@ -1,17 +1,39 @@
 
-from .abstract_scheduler import AbstractScheduler
-
 import os
 import subprocess
 import sys
 import pathlib
 
+from pqueens.schedulers.scheduler import Scheduler
 
-class LocalScheduler(AbstractScheduler):
+class LocalScheduler(Scheduler):
     """ Scheduler which submits jobs to the local machine via a shell command"""
 
+    def __init__(self, scheduler_name):
+        """ Create LocalScheduler
 
-    def submit(self, job_id, experiment_name, batch, experiment_dir, database_address):
+        Args:
+            scheduler_name (string):    Name of scheduler
+        """
+        self.name = scheduler_name
+
+    @classmethod
+    def from_config_create_scheduler(cls, scheduler_name, config):
+        """ Create scheduler from config dictionary
+
+        Args:
+            scheduler_name (str):   Name of scheduler
+            config (dict):          Dictionary containing problem description
+
+        Returns:
+            scheduler:              Instance of LocalScheduler
+        """
+
+        return cls(scheduler_name)
+
+
+    def submit(self, job_id, experiment_name, batch, experiment_dir,
+               database_address, driver_option={}):
         """ Submit job locally by calling subprocess
 
         Args:
@@ -20,12 +42,14 @@ class LocalScheduler(AbstractScheduler):
             batch (string):             Batch number
             experiment_dir (string):    Directory to write output to
             database_address (string):  Address of MongoDB database
+            driver_options (dict):      Options for driver (optional)
 
         Returns:
             int: id of process associated with the job,
                  or None if submission failed
 
         """
+        # TODO implement proper driver hierarchy 
         # TODO find a better way to do this
         #base_path = os.path.dirname(os.path.realpath(pqueens.__file__))
         base_path = pathlib.Path(__file__).parent.parent
@@ -45,8 +69,8 @@ class LocalScheduler(AbstractScheduler):
         print("starting process")
         print("output_file{}".format(output_file))
         process = subprocess.Popen(cmd, stdout=output_file,
-                                        stderr=output_file,
-                                        shell=True)
+                                   stderr=output_file,
+                                   shell=True)
 
         process.poll()
         if process.returncode is not None and process.returncode < 0:

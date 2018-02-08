@@ -19,3 +19,7 @@ seaborn
 docker
 # for sensitivity analysis
 SALib
+# making fancy plots
+plotly
+# create mock objects for unit testing
+mock

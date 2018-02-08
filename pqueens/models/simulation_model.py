@@ -3,7 +3,12 @@ from . model import Model
 from pqueens.interfaces.interface import Interface
 
 class SimulationModel(Model):
-    """ Simulation model class """
+    """ Simulation model class
+
+    Attributes:
+        interface (interface):          Interface to simulations/functions
+
+    """
 
     def __init__(self, model_name, interface, model_parameters):
         """ Initialize simulation model
@@ -15,8 +20,8 @@ class SimulationModel(Model):
                                         model parameters
 
         """
-        super(SimulationModel, self).__init__(model_name, interface,
-                                              model_parameters)
+        super(SimulationModel, self).__init__(model_name, model_parameters)
+        self.interface = interface
 
     @classmethod
     def from_config_create_model(cls, model_name, config):

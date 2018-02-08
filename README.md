@@ -68,9 +68,76 @@ Cauchy:129.187.58.39
 Schmarrn:129.187.58.24
 Jonas Laptop:129.187.58.120
 
+#### QUEENS and cluster jobs on Kaiser
+QUEENS offers the possibility to perform the actual model evaluations on a HPC-cluster
+such as Kaiser. Setting things up is unfortunately not really as straightforward as it could be yet. However, the following steps can be used as guidance to set up QUEENS such that QUEENS is running on one machine, the MongoDB is running on a second machine and the model evaluations are performed on a third machine, in this case Kaiser.
+To avoid confusion, these three machine will be referred to as
+- localhost (Local machine running QUEENS)
+- db_server  (machine running MongoDB, e.g., Cauchy)
+- compute machine (HPC-cluster, e.g., Kaiser)   
+
+in the following.
+
+##### Preparing the compute machine
+First we have to install some software on the compute cluster. The following steps
+are tried and tested on the LNM Kaiser system. It is not guaranteed that the steps
+will be the same on other systems
+
+1. Install miniconda3 with python 3.6 on Kaiser
+2. Add public ssh-key of Kaiser to LRZ GitLab repo in order to be able to clone it from Kaiser
+3. Clone this repo
+4. Install requirements and QUEENS using pip on Kaiser
+
+##### Preparing the db_server
+The machine running the MongoDB database does not need to be the same as either the
+machine running QUEENS or the compute cluster. However, the other machines need to be
+able to connect to the MongoDB via tcp in order to write data. For that to work
+within the LNM network, all of the machines need to be connected to the internal network.
+
+1. Install MongoDB. If you are using CentOS, a nice guide can be found
+[here](https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-centos-7).
+2. Make sure you can connect to the database from the computer running QUEENS.
+This usually entails two steps.
+  1. Open the respective ports in the firewall and allowing both localhost and the
+  compute machine to connect to the db_server. This can be achieved by adding
+  rich-rules to firewalld using firewall-cmd as described above.
+  2. Edit the MongoDB config file such that it allows connections from anywhere
+  (probably not the safest option, but ok for now). If you followed the standard
+  installation instructions, you should edit the config file using   
+  `sudo vim /etc/mongod.conf`  
+  And comment out the `bindIp` like shown   
+  ```shell
+  # network interfaces
+   net:
+   port: 27017
+   # bindIp: 127.0.0.1  <- comment out this line
+   ```   
+
+##### Preparing localhost
+1. Install QUEENS
+2. Activate ssh-port-forwarding so that you can connect to the compute machines
+ without having to enter your password. To learn more about how ssh port forwarding
+ work click [here](https://chamibuddhika.wordpress.com/2012/03/21/ssh-tunnelling-explained/).
+ Without explanation of all the details, here is an example. Assuming the compute machine is Kaiser
+ and the db_server is cauchy, you have to run the following command on your localhost to
+ set up ssh port forwarding  
+ `ssh -fN -L 9001:kaiser.lnm.mw.tum.de:22 biehler@cauchy.lnm.mw.tum.de`   
+ To see if port forwarding works type  
+ `ssh -p 9001 biehler@localhost`  
+ to connect to Kaiser.   
+ Connecting via ssh to the compute machine needs to work without having to type your
+ password. This can be achieved by copying your ssh key from localhost to kaiser.
+ Depending on your system, you need to locate the file with the ssh keys. On my mac I can
+ activate passwordless ssh to Kaiser by running the following   
+`cat .ssh/id_rsa.pub | ssh biehler@kaiser 'cat >> .ssh/authorized_keys'`   
+ The easiest way to disable ssh port forwarding is to run   
+ `killall ssh`  
+ Beware, this kills all ssh processes not just the port forwarding one.
+
 
 ## Building the documentation
-QUEENS uses sphinx to automatically build a html documentation from  docstring. To build it, navigate into the doc folder and type:    
+QUEENS uses sphinx to automatically build a html documentation from  docstring.
+To build it, navigate into the doc folder and type:    
 `make html`  
 
 After adding new modules or classes to QUEENS, one needs to rebuild the autodoc index by running:    

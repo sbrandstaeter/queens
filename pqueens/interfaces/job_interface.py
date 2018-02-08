@@ -74,19 +74,25 @@ class JobInterface(Interface):
 
          # connect to the database
         db_address = config['database']['address']
+        if 'drop_existing' in config['database']:
+            drop_existing = config['database']['drop_existing']
+        else:
+            drop_existing = False
         experiment_name = config['experiment-name']
 
-        sys.stderr.write('Using database at %s.\n' % db_address)
+        #sys.stderr.write('Using database at %s.\n' % db_address)
 
-        db = MongoDB(database_address=db_address)
+        db = MongoDB(database_address=db_address,drop_existing_db=drop_existing)
 
         polling_time = config.get('polling-time', 30)
 
-        output_dir = config['output_dir']
+        output_dir = config['driver']['driver_params']["experiment_dir"]
 
         driver_type = config['driver']['driver_type']
 
         driver_params = config['driver']['driver_params']
+
+        # TODO get scheduler type and params
 
         parameters = config['parameters']
 

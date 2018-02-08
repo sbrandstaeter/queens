@@ -1,67 +1,52 @@
 
-import pqueens
+import abc
+
+#import pqueens
 import subprocess
 import sys
 import json
 
-
-from abc import ABCMeta, abstractmethod
-
-
-class AbstractClusterScheduler(object):
+class AbstractClusterScheduler(metaclass=abc.ABCMeta):
     """ Abstract base class for an interface to cluster scheduling software
 
     Attributes:
-        connect_to_resource (list):     shell commands to connect resource
+        connect_to_resource (list):     Shell commands to connect resource
                                         running the scheduling software
     """
-    __metaclass__ = ABCMeta
 
-    def __init__(self):
-        """
-        Args:
-            connect_to_resource (list):     shell commands to connect resource
-                                            running the scheduling software
-        """
-        self.connect_to_resource = []
-
-    @abstractmethod
-    def submit_command(self,scheduler_options):
+    @abc.abstractmethod
+    def submit_command(self, job_name):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def output_regexp(self):
         pass
 
-    @abstractmethod
-    def get_process_id_from_output(self,output):
+    @abc.abstractmethod
+    def get_process_id_from_output(self, output):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def alive(self, process_id):
         pass
 
-    def submit(self, job_id, experiment_name, batch, experiment_dir, scheduler_options,
-               driver_options, database_address):
+    def submit(self, job_id, experiment_name, batch, experiment_dir,
+               database_address, driver_options):
         """ Function to submit new job to scheduling software on a given resource
 
         Args:
-            job_id (int):
-                id of job to submit
-            experiment_name (string):
-                name of experiment
-            experiment_dir  (string):
-                directory of experiment
-            scheduler_options (dict):
-                Options for scheduler
-            driver_options (dict):
-                Options for driver
-            database_address (string):
-                address of database to connect to
+            job_id (int):               Id of job to submit
+            experiment_name (string):   Name of experiment
+            batch (string):             Batch number of job
+            experiment_dir (string):    Directory of experiment
+            database_address (string):  Address of database to connect to
+            driver_options (dict):      Options for driver
+
         Returns:
             int: proccess id of job
 
         """
+
         driver_options['experiment_dir'] = experiment_dir
         driver_options['experiment_name'] = experiment_name
         driver_options['job_id'] = job_id
@@ -87,11 +72,11 @@ class AbstractClusterScheduler(object):
         # one more time
         driver_args = json.dumps(driver_args)
 
-        run_command = ['<', scheduler_options['driver'], driver_args]
+        run_command = ['<', driver_options['driver_file'], driver_args]
 
         # assemble job_name for cluster
-        scheduler_options['job_name'] = 'queens_{}_{}'.format(experiment_name, job_id)
-        submit_command = self.submit_command(scheduler_options)
+        job_name = 'queens_{}_{}'.format(experiment_name, job_id)
+        submit_command = self.submit_command(job_name)
 
         submit_command.extend(run_command)
 

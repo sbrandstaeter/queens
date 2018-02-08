@@ -25,9 +25,11 @@ class Interface(metaclass=abc.ABCMeta):
         # import here to avoid issues with circular inclusion
         import pqueens.interfaces.job_interface
         import pqueens.interfaces.direct_python_interface
+        import pqueens.interfaces.approximation_interface
 
         interface_dict = {'job_interface': pqueens.interfaces.job_interface.JobInterface,
-                          'direct_python_interface': pqueens.interfaces.direct_python_interface.DirectPythonInterface }
+                          'direct_python_interface': pqueens.interfaces.direct_python_interface.DirectPythonInterface,
+                          'approximation_interface': pqueens.interfaces.approximation_interface.ApproximationInterface }
 
 
         interface_options = config[interface_name]
