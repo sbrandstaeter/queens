@@ -29,7 +29,7 @@
         "experiment_dir"        : "/Users/jonas/work/adco/queens_code/pqueens/example_input_files/output/",
         "path_to_executable"    : "./baci-release",
         "path_to_postprocessor" : "./post_drt_monitor",
-        "post_process_options"  : " --field=structure  --node=23 --start=25",
+        "post_process_options"  : ["--field=structure  --node=23 --start=25"],
         "post_post_script"      : "/Users/jonas/work/adco/queens_code/pqueens/trials/post_post_script_invaaa.py",
         "docker_container"      : "adco/baci-baked-in-centos"
       }

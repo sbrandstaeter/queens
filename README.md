@@ -55,11 +55,18 @@ In order to connect to a MongoDB instance running on one of the LNM machines, on
 By default,  the fire wall software `firewalld` blocks every incoming request. Hence, to enable a connections, we have add so called rules to firewalld in order to connect to the database.   
 
 First type   
-`sudo firewalld —list-all`   
+`sudo firewall-cmd --list-all`   
 to see what firewall rules are already in place.
 If there is no rule in place which allows you to connect to port 27017, you can add such a rule by running the following command on the machine MongoDD is running on.   
-`sudo firewalld —zone=work —add-rich-rule ‘rule family=ipv4 source address=<ip-adress-you-want-to-connect-from> port port=27017 protocol=tcp accept’ —permanent`   
+`sudo firewall-cmd --zone=work --add-rich-rule 'rule family=ipv4 source address=<adress-you-want-to-connnect-to>port port=27017 protocol=tcp accept' --permanent`   
 Note that if you want to connect to the database from a cluster, you will also need to add this rule to the clusters master node.
+Also, to apply the changes run
+`sudo firewall-cmd --reload`  
+
+### some IP-adresses
+Cauchy:129.187.58.39
+Schmarrn:129.187.58.24
+Jonas Laptop:129.187.58.120
 
 #### QUEENS and cluster jobs on Kaiser
 QUEENS offers the possibility to perform the actual model evaluations on a HPC-cluster

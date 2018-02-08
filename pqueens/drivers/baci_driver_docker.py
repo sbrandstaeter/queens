@@ -39,16 +39,17 @@ def baci_driver_docker(job):
 
     # assemble baci run and post process command
     baci_cmd = driver_params['path_to_executable'] + ' ' + baci_input_file + ' ' + baci_output_file
-    post_cmd = driver_params['path_to_postprocessor'] + ' ' + driver_params['post_process_options'] + ' --file='+baci_output_file
 
     volume_map = {job['expt_dir']: {'bind': job['expt_dir'], 'mode': 'rw'}}
 
-    # run BACI in container
-    temp_out = run_baci(driver_params['docker_container'], baci_cmd, volume_map)
-
-    temp_out = run_post_processing(driver_params['docker_container'], post_cmd,
-                                   volume_map)
-
+    temp_out = client.containers.run(driver_params['docker_container'],
+                                     baci_cmd, volumes=volume_map)
+    i = 1
+    for post_process_option in driver_params['post_process_options']:
+        post_cmd = driver_params['path_to_postprocessor'] + ' ' + post_process_option + ' --file='+baci_output_file + ' --output='+baci_output_file+'_'+str(i)
+        temp_out = client.containers.run(driver_params['docker_container'],
+                                         post_cmd, volumes=volume_map)
+        i += 1
     print(temp_out)
 
     result = run_post_post_processing(driver_params['post_post_script'],
@@ -103,5 +104,8 @@ def run_post_post_processing(post_post_script, baci_output_file):
     spec = importlib.util.spec_from_file_location("module.name", post_post_script)
     post_post_proc = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(post_post_proc)
-    result = post_post_proc.run(baci_output_file+'.mon')
+    result = post_post_proc.run(baci_output_file)
+
+    sys.stderr.write("Got result %s\n" % (result))
+
     return result
