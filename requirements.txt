@@ -14,6 +14,7 @@ pymongo
 pyDOE
 # for Gaussian Processes
 gpy
+gpflow
 #for making nice plots
 seaborn
 docker
