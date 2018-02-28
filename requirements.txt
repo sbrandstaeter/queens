@@ -1,6 +1,6 @@
 ###### use requirements without version specifier for now ######
 numpy==1.14.1
-scipy
+scipy==1.0.0
 matplotlib
 sphinx
 jupyter
