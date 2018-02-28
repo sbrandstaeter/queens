@@ -81,7 +81,7 @@ class TestGenDriverLocal(unittest.TestCase):
 
         mock_save.return_value = 1
 
-        launch(db_address='mongodb:27017', experiment_name='simple_test',
+        launch(db_address='localhost:27017', experiment_name='simple_test',
                batch=1, job_id=1)
 
         mock_driver.assert_called_with({'id': 1,
