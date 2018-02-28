@@ -14,7 +14,6 @@ pymongo
 pyDOE
 # for Gaussian Processes
 gpy
-gpflow
 #for making nice plots
 seaborn
 docker
@@ -24,3 +23,7 @@ SALib
 plotly
 # create mock objects for unit testing
 mock
+# for Gaussian processes and BO we need GPFlow, currently we rely on v0.4
+# note that GPFlow will install TensorFlow as well
+git+git://github.com/GPflow/GPflow.git@0.4.0#egg=gpflow
+git+git://github.com/GPflow/GPflowOpt.git#egg=gpflow_opt
