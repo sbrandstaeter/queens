@@ -366,7 +366,7 @@ class TestSAMorrisIshigami(unittest.TestCase):
 
 
     def test_correct_sampling(self):
-        """ Test if scaling works correctly """
+        """ Test if sampling works correctly """
         self.my_iterator.pre_run()
 
         # asser that samples match
@@ -386,9 +386,25 @@ class TestSAMorrisIshigami(unittest.TestCase):
                              [3.1415926536, -3.1415926536, 3.1415926536],
                              [3.1415926536, 1.0471975512, 3.1415926536],
                              [3.1415926536, 1.0471975512, -1.0471975512]])
+        ref_vals = np.array([[-1.0471975512, -3.1415926536, -3.1415926536],
+                             [3.1415926536, -3.1415926536, -3.1415926536],
+                             [3.1415926536, -3.1415926536, 1.0471975512],
+                             [3.1415926536, 1.0471975512, 1.0471975512],
+                             [1.0471975512, 3.1415926536, 3.1415926536],
+                             [-3.1415926536, 3.1415926536, 3.1415926536],
+                             [-3.1415926536, 3.1415926536, -1.0471975512],
+                             [-3.1415926536, -1.0471975512, -1.0471975512],
+                             [3.1415926536, 3.1415926536, 1.0471975512],
+                             [3.1415926536, 3.1415926536, -3.1415926536],
+                             [3.1415926536, -1.0471975512, -3.1415926536],
+                             [-1.0471975512, -1.0471975512, -3.1415926536],
+                             [-3.1415926536, 1.0471975512, -1.0471975512],
+                             [-3.1415926536, 1.0471975512, 3.1415926536],
+                             [-3.1415926536, -3.1415926536, 3.1415926536],
+                             [1.0471975512, -3.1415926536, 3.1415926536]])
 
         np.set_printoptions(precision=10)
-        #print("self.samples {}".format(self.my_iterator.samples))
+        print("self.samples {}".format(self.my_iterator.samples))
         #print("shape scale_samples: {}".format(scaled_samples))
         np.testing.assert_allclose(self.my_iterator.samples,ref_vals, 1e-07, 1e-07)
 
@@ -410,15 +426,15 @@ class TestSAMorrisIshigami(unittest.TestCase):
         #print("si sigma {}".format(si['sigma']))
 
         # ref vals
-        ref_mu = np.array([13.9528502149, 0., -3.1243980517])
-        
-        ref_mu_star = np.array([13.9528502149, 7.875, 3.1243980517])
+        ref_mu = np.array([13.9528502149, 0., 2.984564e-12])
+
+        ref_mu_star = np.array([13.9528502149, 7.875, 2.984564e-12])
 
         ref_mu_star_conf = np.array([6.9666750666351737e-15,
                                      3.4833375333175868e-15,
-                                     5.3792882010631073])
+                                     1.609175e-16])
 
-        ref_sigma = np.array([0.,9.0932667397,6.2487961033])
+        ref_sigma = np.array([0.,9.0932667397,1.899489e-16])
 
         np.testing.assert_allclose(si['mu'], ref_mu, 1e-07, 1e-07)
         np.testing.assert_allclose(si['mu_star'], ref_mu_star, 1e-07, 1e-07)
