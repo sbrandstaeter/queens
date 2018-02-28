@@ -1,5 +1,5 @@
 ###### use requirements without version specifier for now ######
-numpy
+numpy==1.14.1
 scipy
 matplotlib
 sphinx
