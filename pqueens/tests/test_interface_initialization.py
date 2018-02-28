@@ -4,6 +4,7 @@ Created on Dezember 11th  2017
 
 '''
 import unittest
+import mock
 import numpy as np
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.interfaces.approximation_interface import ApproximationInterface
@@ -107,7 +108,8 @@ class TestJobInterface(unittest.TestCase):
         self.config['my_local_scheduler'] = {}
         self.config['my_local_scheduler']['scheduler_type'] = 'local'
 
-    def test_construction(self):
+    @mock.patch.multiple('pqueens.database.mongodb.MongoDB', __init__=mock.Mock(return_value=None), load=mock.DEFAULT, save=mock.DEFAULT)
+    def test_construction(self, **mocks):
         interface = Interface.from_config_create_interface('test_interface', self.config)
         # ensure correct type
         self.assertIsInstance(interface, JobInterface)

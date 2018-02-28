@@ -16,7 +16,7 @@ from pqueens.drivers.baci_driver_docker import run_baci
 
 class TestGenDriverLocal(unittest.TestCase):
     # create mock for Database, specifically for load and save functions
-    @mock.patch.multiple('pqueens.database.mongodb.MongoDB', load=mock.DEFAULT, save=mock.DEFAULT)
+    @mock.patch.multiple('pqueens.database.mongodb.MongoDB', __init__=mock.Mock(return_value=None), load=mock.DEFAULT, save=mock.DEFAULT)
     # create mock for respective local driver
     @mock.patch('pqueens.drivers.gen_driver_local.baci_driver_native', return_value='1.5')
     def test_baci_native(self, mock_driver, **mocks):
@@ -42,7 +42,7 @@ class TestGenDriverLocal(unittest.TestCase):
                                         'end time'     : mock.ANY,
                                         'result'       : '1.5'})
 
-    @mock.patch.multiple('pqueens.database.mongodb.MongoDB', load=mock.DEFAULT, save=mock.DEFAULT)
+    @mock.patch.multiple('pqueens.database.mongodb.MongoDB', __init__=mock.Mock(return_value=None),load=mock.DEFAULT, save=mock.DEFAULT)
     @mock.patch('pqueens.drivers.gen_driver_local.baci_driver_docker', return_value='1.5')
     def test_baci_docker(self, mock_driver, **mocks):
         mock_load = mocks['load']
@@ -67,7 +67,7 @@ class TestGenDriverLocal(unittest.TestCase):
                                         'end time'     : mock.ANY,
                                         'result'       : '1.5'})
 
-    @mock.patch.multiple('pqueens.database.mongodb.MongoDB', load=mock.DEFAULT, save=mock.DEFAULT)
+    @mock.patch.multiple('pqueens.database.mongodb.MongoDB',__init__=mock.Mock(return_value=None), load=mock.DEFAULT, save=mock.DEFAULT)
     @mock.patch('pqueens.drivers.gen_driver_local.python_driver_vector_interface', return_value='1.5')
     def test_python_vector(self, mock_driver, **mocks):
         mock_load = mocks['load']
@@ -92,7 +92,7 @@ class TestGenDriverLocal(unittest.TestCase):
                                         'end time'     : mock.ANY,
                                         'result'       : '1.5'})
 
-    @mock.patch.multiple('pqueens.database.mongodb.MongoDB', load=mock.DEFAULT, save=mock.DEFAULT)
+    @mock.patch.multiple('pqueens.database.mongodb.MongoDB', __init__=mock.Mock(return_value=None), load=mock.DEFAULT, save=mock.DEFAULT)
     @mock.patch('pqueens.drivers.gen_driver_local.python_driver_vector_interface', return_value='1.5')
     def test_unknown_driver(self, mock_driver, **mocks):
         mock_load = mocks['load']
