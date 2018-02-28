@@ -404,7 +404,7 @@ class TestSAMorrisIshigami(unittest.TestCase):
                              [1.0471975512, -3.1415926536, 3.1415926536]])
 
         np.set_printoptions(precision=10)
-        print("self.samples {}".format(self.my_iterator.samples))
+        #print("self.samples {}".format(self.my_iterator.samples))
         #print("shape scale_samples: {}".format(scaled_samples))
         np.testing.assert_allclose(self.my_iterator.samples,ref_vals, 1e-07, 1e-07)
 
