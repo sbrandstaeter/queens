@@ -42,13 +42,13 @@ def baci_driver_docker(job):
 
     volume_map = {job['expt_dir']: {'bind': job['expt_dir'], 'mode': 'rw'}}
 
-    temp_out = client.containers.run(driver_params['docker_container'],
-                                     baci_cmd, volumes=volume_map)
+    temp_out = run_baci(driver_params['docker_container'],
+                        baci_cmd, volume_map)
     i = 1
     for post_process_option in driver_params['post_process_options']:
         post_cmd = driver_params['path_to_postprocessor'] + ' ' + post_process_option + ' --file='+baci_output_file + ' --output='+baci_output_file+'_'+str(i)
-        temp_out = client.containers.run(driver_params['docker_container'],
-                                         post_cmd, volumes=volume_map)
+        temp_out = run_post_processing(driver_params['docker_container'],
+                                       post_cmd, volume_map)
         i += 1
     print(temp_out)
 

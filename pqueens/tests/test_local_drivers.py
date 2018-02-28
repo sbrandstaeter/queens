@@ -178,7 +178,7 @@ class TestBaciDriverDocker(unittest.TestCase):
         driver_params['input_template'] = 'test_template'
         driver_params['path_to_executable'] = 'mock_path'
         driver_params['path_to_postprocessor'] = 'mock_post_processor'
-        driver_params['post_process_options'] = 'mock_post_process_options'
+        driver_params['post_process_options'] = ['mock_post_process_options']
         driver_params['docker_container'] = 'mock_container'
         driver_params['post_post_script'] = 'mock_post_process_script'
         self.mock_job['driver_params'] = driver_params
@@ -186,7 +186,8 @@ class TestBaciDriverDocker(unittest.TestCase):
         self.mock_baci_input_file = self.mock_job['expt_dir'] + '/' + self.mock_job['expt_name'] + '_' + str(self.mock_job['id']) + '.dat'
         self.mock_baci_output_file = self.mock_job['expt_dir'] + '/'+ self.mock_job['expt_name'] + '_' + str(self.mock_job['id'])
         self.mock_baci_cmd = driver_params['path_to_executable'] + ' ' + self.mock_baci_input_file  + ' ' + self.mock_baci_output_file
-        self.mock_post_cmd = driver_params['path_to_postprocessor'] + ' ' + driver_params['post_process_options'] + ' --file='+self.mock_baci_output_file
+        self.mock_post_cmd = driver_params['path_to_postprocessor'] + ' ' + 'mock_post_process_options' \
+                             + ' --file='+self.mock_baci_output_file + ' --output=mock_dir/mock_exp_name_1_1'
         self.mock_volume_map = {self.mock_job['expt_dir']: {'bind': self.mock_job['expt_dir'], 'mode': 'rw'}}
 
     # mock os is valid dir
