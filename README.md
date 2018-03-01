@@ -14,7 +14,9 @@ To install all of these dependencies using pip, simply run:
 
 ## Installation directions
 The use a virtual environment like [Anaconda](https://www.continuum.io/downloads) is highly recommended.
-After setting up Anaconda and a new, dedicated QUEENS development environment, all required third party libraries can be simply installed by running:  
+After setting up Anaconda and a new, dedicated QUEENS development environment via
+`conda create -n <name_of_new_environment> python=3.6`   
+, all required third party libraries can be simply installed by running:  
 `pip install -r requirements.txt`  
 Next, if Anaconda is used, QUEENS can be installed using:     
 `/Applications/anaconda/envs/<your-environment-name>/bin/python setup.py develop`   
@@ -191,6 +193,21 @@ To get started with Gitlab checkout the help section [here](https://gitlab.lrz.d
 CI with with gitlab requires the setup of so called runners that build and test the code.
 To turn a machine into a runner, you have to install some software as described
 [here](https://docs.gitlab.com/runner/install/linux-repository.html)
+As of 02/2018 the steps are as follows:  
+1. For RHEL/CentOS/Fedora run  
+`curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm. h | sudo bash`
+2. To install run:
+`sudo yum install gitlab-runner`
+
 
 Next, you have to register the runner with your gitlab repo as described
 [here](https://docs.gitlab.com/runner/register/index.html)
+
+
+## Anaconda tips and tricks
+1. Create new anaconda environment
+`conda create -n <name_of_new_environment> python=3.6`  
+2. List all packages linked into an anaconda environment
+`conda list -n <your_environment_name`
+3. Activate environment
+`source activate <your_environment_name>
