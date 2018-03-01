@@ -6,7 +6,7 @@ full_test_and_build_suite:
   - conda update conda && conda update python
   - apt-get update -y
   - apt-get install gcc -y
-  - conda create --name pqueens -y
+  - conda create --name pqueens -y python=3.6
   - source activate pqueens
   - pip install -r requirements.txt
   # do normal unit testing
