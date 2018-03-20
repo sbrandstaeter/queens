@@ -4,7 +4,7 @@ This repository is contains the python version of the QUEENS framework.
 
 [![build status](https://gitlab.lrz.de/jbi/queens/badges/master/build.svg)](https://gitlab.lrz.de/jbi/queens/commits/master)
 
-[![coverage report](https://gitlab.lrz.de/jbi/queens/badges/master/coverage.svg)](https://gitlab.lrz.de/jbi/queens/commits/master)
+[![coverage report](https://gitlab.lrz.de/jbi/queens/badges/master/coverage.svg)](https://codecov.io/bitbucket/jbi35/pqueens/commit/6c9c94b0e6e8f6c2b5aad07b34e69c72a4d1edce)
 
 ## Dependencies
 All necessary third party libraries are listed in the requirements.txt file.
