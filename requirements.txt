@@ -25,6 +25,6 @@ plotly
 mock
 # for Gaussian processes and BO we need GPFlow, currently we rely on v0.4
 # install TensorFlow v1.5 because newer versions will cause weird crashes
-pip install tensorflow==1.5
+tensorflow==1.5
 git+git://github.com/GPflow/GPflow.git@0.4.0#egg=gpflow
 git+git://github.com/GPflow/GPflowOpt.git#egg=gpflow_opt
