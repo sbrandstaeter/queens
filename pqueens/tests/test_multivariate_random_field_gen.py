@@ -125,7 +125,7 @@ class TestMultivariateRandomFieldGenerator(unittest.TestCase):
         my_cross_correlation = np.corrcoef(my_vals[:, 1], my_vals[:, 2])
         ref_cross_correlation = 0.80579072011487696
         # chose lose tolerance as this differs quite a bit from machine to machine
-        np.testing.assert_allclose(my_cross_correlation[0,1],ref_cross_correlation,1e-2,0)
+        np.testing.assert_allclose(my_cross_correlation[0,1],ref_cross_correlation,1e-1)
         #self.assertAlmostEqual(my_cross_correlation[0,1], ref_cross_correlation,
         #                           7, 'Cross correlation is not correct.')
 
