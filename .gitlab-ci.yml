@@ -10,6 +10,7 @@ full_test_and_build_suite:
   - source activate pqueens
   - pip install --upgrade setuptools
   - pip install --upgrade pip
+  - pip install numpy
   - pip install -r requirements.txt
   # do normal unit testing
   # - python -m unittest discover -s pqueens/tests/
