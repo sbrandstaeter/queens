@@ -1,4 +1,3 @@
-
 import sys
 import time
 import argparse
@@ -9,11 +8,24 @@ from pqueens.drivers.python_driver_vector_interface import python_driver_vector_
 from pqueens.database.mongodb import MongoDB
 
 def main(args):
+    """ Launch driver
+
+        Args:
+            args (list): Command line options
+    """
     parsed_args = parse_args(args)
     launch(parsed_args.db_address, parsed_args.experiment_name,
            parsed_args.batch, parsed_args.job_id)
 
 def parse_args(args):
+    """ Parse command line options
+
+        Args:
+            args: Commad line options
+
+        Returns:
+            dict: Parsed command line options
+    """
     parser = argparse.ArgumentParser(description="QUEENS")
 
     parser.add_argument('--experiment_name', type=str,

@@ -12,7 +12,7 @@ def baci_driver_docker(job):
             job(dict): Dict containing all information to run the simulation
 
         Returns:
-            (float): result
+            float: result
     """
 
     sys.stderr.write("Running BACI job.\n")

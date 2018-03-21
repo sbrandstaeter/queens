@@ -9,10 +9,10 @@ def baci_driver_native(job):
         Driver to run BACI natively on host machine
 
         Args:
-            job(dict): Dict containing all information to run the simulation
+            job (dict): Dict containing all information to run the simulation
 
         Returns:
-            (float): result
+            float: result
     """
 
     sys.stderr.write("Running BACI job.\n")
