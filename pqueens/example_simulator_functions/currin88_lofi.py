@@ -20,7 +20,7 @@ def currin88_lofi(x1, x2):
 
 
     Returns:
-        float: value of currin88 function
+        float: Value of currin88 function
 
     References:
 

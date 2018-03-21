@@ -13,26 +13,26 @@ def park91a_lofi(x1, x2, x3, x4):
     The high-fidelity version is defiend as is implemented in park91a_hifi
 
     Args:
-        x1 (float): = Input parameter 1 [0,1)
-        x2 (float): = Input parameter 2 [0,1)
-        x3 (float): = Input parameter 3 [0,1)
-        x4 (float): = Input parameter 4 [0,1)
+        x1 (float):  Input parameter 1 [0,1)
+        x2 (float):  Input parameter 2 [0,1)
+        x3 (float):  Input parameter 3 [0,1)
+        x4 (float):  Input parameter 4 [0,1)
 
     Returns:
-        float: value of function at parameters
+        float: Value of function at parameters
 
     References:
 
-    [1] Park, J.-S.(1991). Tuning complex computer codes to data and optimal
-        designs, Ph.D Thesis
+        [1] Park, J.-S.(1991). Tuning complex computer codes to data and optimal
+            designs, Ph.D Thesis
 
-    [2] Cox, D. D., Park, J.-S., & Singer, C. E. (2001). A statistical method
-        for tuning a computer code to a data base. Computational Statistics &
-        Data Analysis, 37(1), 77-92. http://doi.org/10.1016/S0167-9473(00)00057-8
+        [2] Cox, D. D., Park, J.-S., & Singer, C. E. (2001). A statistical method
+            for tuning a computer code to a data base. Computational Statistics &
+            Data Analysis, 37(1), 77-92. http://doi.org/10.1016/S0167-9473(00)00057-8
 
-    [3] Xiong, S., Qian, P., & Wu, C. (2013). Sequential design and analysis of
-        high-accuracy and low-accuracy computer codes. Technometrics.
-        http://doi.org/10.1080/00401706.2012.723572
+        [3] Xiong, S., Qian, P., & Wu, C. (2013). Sequential design and analysis of
+            high-accuracy and low-accuracy computer codes. Technometrics.
+            http://doi.org/10.1080/00401706.2012.723572
 
     """
     yh = park91a_hifi(x1, x2, x3, x4)

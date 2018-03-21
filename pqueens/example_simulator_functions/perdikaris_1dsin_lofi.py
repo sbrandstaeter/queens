@@ -13,9 +13,9 @@ def perdikaris_1dsin_lofi(x):
 
     Args:
 
-     x (float): = Input parameter
+     x (float): Input parameter
     Returns:
-        float: value of function at x
+        float: Value of function at x
 
     References:
         [1] Perdikaris, P. et al., 2017. Nonlinear information fusion algorithms

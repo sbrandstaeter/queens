@@ -14,7 +14,7 @@ def branin_medfi(x1,x2):
         x2 (float): second input parameter
 
     Returns:
-        float: value of medium fidelity Branin function
+        float: Value of medium fidelity Branin function
 
     References:
         [1] Perdikaris, P. et al., 2017. Nonlinear information fusion algorithms

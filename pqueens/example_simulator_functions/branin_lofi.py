@@ -12,7 +12,7 @@ def branin_lofi(x1, x2):
         x2 (float): second input parameter
 
     Returns:
-        float: value of low-fidelity Branin function
+        float: Value of low-fidelity Branin function
 
 
     References:

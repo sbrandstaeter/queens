@@ -33,13 +33,13 @@ def oakley_ohagan2004_func(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12,
         x15 (float): Input parameter 15
 
     Returns:
-        float: value of function at parameters
+        float: Value of function at parameters
 
     References:
 
-    [1] Oakley, J. E., & O'Hagan, A. (2004). Probabilistic sensitivity analysis
-        of complex models: a Bayesian approach. Journal of the Royal Statistical
-        Society: Series B (Statistical Methodology), 66(3), 751-769.
+        [1] Oakley, J. E., & O'Hagan, A. (2004). Probabilistic sensitivity analysis
+            of complex models: a Bayesian approach. Journal of the Royal Statistical
+            Society: Series B (Statistical Methodology), 66(3), 751-769.
     """
     xx = np.array([[x1],[x2],[x3],[x4],[x5],[x6],[x7],[x8],[x9],[x10],[x11],[x12],[x13],[x14],[x15]])
 

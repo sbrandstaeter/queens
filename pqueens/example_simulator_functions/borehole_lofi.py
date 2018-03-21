@@ -35,15 +35,14 @@ def borehole_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
         Kw (float): hydraulic conductivity of borehole (m/yr)  [9855, 12045]
 
     Returns:
-
-    float : The response is water flow rate, in m^3/yr.
+        float : The response is water flow rate, in m^3/yr.
 
 
     References:
 
-    [1] Xiong, S., Qian, P. Z., & Wu, C. J. (2013). Sequential design and
-        analysis of high-accuracy and low-accuracy computer codes.
-        Technometrics, 55(1), 37-46.
+        [1] Xiong, S., Qian, P. Z., & Wu, C. J. (2013). Sequential design and
+            analysis of high-accuracy and low-accuracy computer codes.
+            Technometrics, 55(1), 37-46.
     """
 
     frac1 = 5 * Tu * (Hu-Hl)

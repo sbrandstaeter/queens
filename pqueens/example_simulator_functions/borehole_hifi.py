@@ -41,49 +41,48 @@ def borehole_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
         Kw (float): hydraulic conductivity of borehole (m/yr)  [9855, 12045]
 
     Returns:
-
-    float : The response is water flow rate, in m^3/yr.
+        float : The response is water flow rate, in m^3/yr.
 
 
     References:
 
-    [1] An, J., & Owen, A. (2001). Quasi-regression. Journal of Complexity,
-        17(4), 588-607.
+        [1] An, J., & Owen, A. (2001). Quasi-regression. Journal of Complexity,
+            17(4), 588-607.
 
-    [2] Gramacy, R. B., & Lian, H. (2012). Gaussian process single-index models
-        as emulators for computer experiments. Technometrics, 54(1), 30-41.
+        [2] Gramacy, R. B., & Lian, H. (2012). Gaussian process single-index models
+            as emulators for computer experiments. Technometrics, 54(1), 30-41.
 
-    [3] Harper, W. V., & Gupta, S. K. (1983). Sensitivity/uncertainty analysis
-        of a borehole scenario comparing Latin Hypercube Sampling and
-        deterministic sensitivity approaches (No. BMI/ONWI-516).
-        Battelle Memorial Inst., Columbus, OH (USA). Office of Nuclear
-        Waste Isolation.
+        [3] Harper, W. V., & Gupta, S. K. (1983). Sensitivity/uncertainty analysis
+            of a borehole scenario comparing Latin Hypercube Sampling and
+            deterministic sensitivity approaches (No. BMI/ONWI-516).
+            Battelle Memorial Inst., Columbus, OH (USA). Office of Nuclear
+            Waste Isolation.
 
-    [4] Joseph, V. R., Hung, Y., & Sudjianto, A. (2008). Blind kriging:
-        A new method for developing metamodels. Journal of mechanical design,
-        130, 031102.
+        [4] Joseph, V. R., Hung, Y., & Sudjianto, A. (2008). Blind kriging:
+            A new method for developing metamodels. Journal of mechanical design,
+            130, 031102.
 
-    [5] Moon, H. (2010). Design and Analysis of Computer Experiments for
-        Screening Input Variables (Doctoral dissertation, Ohio State University).
+        [5] Moon, H. (2010). Design and Analysis of Computer Experiments for
+            Screening Input Variables (Doctoral dissertation, Ohio State University).
 
-    [6] Moon, H., Dean, A. M., & Santner, T. J. (2012). Two-stage
-        sensitivity-based group screening in computer experiments.
-        Technometrics, 54(4), 376-387.
+        [6] Moon, H., Dean, A. M., & Santner, T. J. (2012). Two-stage
+            sensitivity-based group screening in computer experiments.
+            Technometrics, 54(4), 376-387.
 
-    [7] Morris, M. D., Mitchell, T. J., & Ylvisaker, D. (1993).
-        Bayesian design and analysis of computer experiments: use of derivatives
-        in surface prediction. Technometrics, 35(3), 243-255.
+        [7] Morris, M. D., Mitchell, T. J., & Ylvisaker, D. (1993).
+            Bayesian design and analysis of computer experiments: use of derivatives
+            in surface prediction. Technometrics, 35(3), 243-255.
 
-    [8] Xiong, S., Qian, P. Z., & Wu, C. J. (2013). Sequential design and
-        analysis of high-accuracy and low-accuracy computer codes.
-        Technometrics, 55(1), 37-46.
+        [8] Xiong, S., Qian, P. Z., & Wu, C. J. (2013). Sequential design and
+            analysis of high-accuracy and low-accuracy computer codes.
+            Technometrics, 55(1), 37-46.
 
-    [9] Worley, B. A. (1987). Deterministic uncertainty analysis
-        (No. CONF-871101-30). Oak Ridge National Lab., TN (USA).
+        [9] Worley, B. A. (1987). Deterministic uncertainty analysis
+            (No. CONF-871101-30). Oak Ridge National Lab., TN (USA).
 
-    [10] Zhou, Q., Qian, P. Z., & Zhou, S. (2011). A simple approach to
-         emulation for computer models with qualitative and quantitative
-         factors. Technometrics, 53(3).
+        [10] Zhou, Q., Qian, P. Z., & Zhou, S. (2011). A simple approach to
+             emulation for computer models with qualitative and quantitative
+             factors. Technometrics, 53(3).
 
     for further information, see also http://www.sfu.ca/~ssurjano/borehole.html
     """

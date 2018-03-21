@@ -12,13 +12,13 @@ def park91b_lofi(x1, x2, x3, x4):
     The corresponding high-fidelity function is impelemented in park91b_hifi.
 
     Args:
-        x1 (float): = Input parameter 1 [0,1)
-        x2 (float): = Input parameter 2 [0,1)
-        x3 (float): = Input parameter 3 [0,1)
-        x4 (float): = Input parameter 4 [0,1)
+        x1 (float):  Input parameter 1 [0,1)
+        x2 (float):  Input parameter 2 [0,1)
+        x3 (float):  Input parameter 3 [0,1)
+        x4 (float):  Input parameter 4 [0,1)
 
     Returns:
-        float: value of function at parameters
+        float: Value of function at parameters
 
     References:
         [1] Park, J.-S.(1991). Tuning complex computer codes to data and optimal

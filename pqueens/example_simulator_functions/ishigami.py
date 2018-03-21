@@ -16,6 +16,16 @@ def ishigami(x1, x2, x3, p1=None, p2=None):
     Typically distributions of the input random variables are is:
     :math:`x_i ~` Uniform[:math:`-\pi, \pi`], for all i = 1, 2, 3
 
+    Args:
+        x1 (float): Input parameter 1
+        x2 (float): Input parameter 2
+        x3 (float): Input parameter 3
+        p1 (float): Coefficient (optional), with default value 7
+        p2 (float): Coefficient (optional), with default value 0.1
+
+    Returns:
+        float : Value of ishigami function at [x1, x2, x3]
+
     References:
 
         [1] Crestaux, T., Martinez, J.-M., Le Maitre, O., & Lafitte, O. (2007).
@@ -38,16 +48,6 @@ def ishigami(x1, x2, x3, p1=None, p2=None):
             reducing multipliers in Monte Carlo computations of a global
             sensitivity index. Computer Physics Communications, 117(1), 52-61.
 
-
-    Args:
-        x1 (float): Input parameter 1
-        x2 (float): Input parameter 2
-        x3 (float): Input parameter 3
-        p1 (float): Coefficient (optional), with default value 7
-        p2 (float): Coefficient (optional), with default value 0.1
-
-    Returns:
-        float : Value of ishigami function at [x1, x2, x3]
     """
 
     if p1 is None:

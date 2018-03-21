@@ -1,5 +1,13 @@
 def rosenbrock(x1, x2):
-    """ Rosenbrock banana function """
+    """ Rosenbrocks banana function
+
+    Args:
+        x1 (float):  Input one
+        x2 (float):  Input two
+
+    Returns:
+        float: Value of Rosenbrock function
+    """
 
     a = 1. - x1
     b = x2 - x1*x1

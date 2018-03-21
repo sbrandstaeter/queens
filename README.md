@@ -146,7 +146,7 @@ To build it, navigate into the doc folder and type:
 `make html`  
 
 After adding new modules or classes to QUEENS, one needs to rebuild the autodoc index by running:    
-`sphinx-apidoc -o doc/source pqueens -f`  
+`sphinx-apidoc -o doc/source pqueens -f -M`  
 before the make command.
 
 ## Run the test suite
