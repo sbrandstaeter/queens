@@ -2,6 +2,8 @@ __pycache__
 # do not track doc files that are automatically build
 doc/build
 doc/source/*.rst
+# but keep index.rst
+!doc/source/index.rst
 
 jupyter_notebooks/*.ipynb_checkpoints
 
