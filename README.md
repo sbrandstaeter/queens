@@ -11,6 +11,9 @@ All necessary third party libraries are listed in the requirements.txt file.
 To install all of these dependencies using pip, simply run:   
 `pip install -r requirements.txt`
 
+To be able to build the documentation, an additional package *pandoc* is needed.
+Installation instructions are provided [here](http://pandoc.org/installing.html)
+
 
 ## Installation directions
 The use a virtual environment like [Anaconda](https://www.continuum.io/downloads) is highly recommended.
