@@ -1,6 +1,8 @@
 import numpy as np
+from sklearn.model_selection import KFold
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from .interface import Interface
+
 
 class ApproximationInterface(Interface):
     """ Class for mapping input variables to responses using an approximation
@@ -94,3 +96,30 @@ class ApproximationInterface(Interface):
     def is_initiliazed(self):
         """ Is the approximation properly initialzed """
         return self.approx_init
+
+    def cross_validate(self, X, Y, folds):
+        """ Cross validation function which calls the regression approximation
+
+        Args:
+            X (np.array):   Array of inputs
+            Y (np.array):   Array of outputs
+            folds (int):    In how many subsets do we split for cv
+
+        Returns:
+            np.array:        Array with predictions
+        """
+        # init output array
+        outputs = np.zeros_like(Y, dtype=float)
+        # set random_state=None, shuffle=False)
+        # TODO check out random ness feature
+        kf = KFold(n_splits=folds)
+        kf.get_n_splits(X)
+
+        for train_index, test_index in kf.split(X):
+            approximation = RegressionApproximation.from_options(self.approximation_config,
+                                                                 X[train_index],
+                                                                 Y[train_index])
+            approximation.train()
+            outputs[test_index], _ = approximation.predict_f(X[test_index])
+
+        return outputs

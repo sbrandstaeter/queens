@@ -48,7 +48,7 @@ class Model(metaclass=abc.ABCMeta):
         from .simulation_model import SimulationModel
         from .data_fit_surrogate_model import DataFitSurrogateModel
         from .multifidelity_model import MultifidelityModel
-        
+
         model_dict = {'simulation_model': SimulationModel,
                       'datafit_surrogate_model': DataFitSurrogateModel,
                       'multi_fidelity_model' : MultifidelityModel}
@@ -125,3 +125,24 @@ class Model(metaclass=abc.ABCMeta):
             temp.update_variables_from_vector(data_vector)
             new_var = deepcopy(temp)
             self.variables.append(new_var)
+
+    def convert_array_to_model_variables(self, data):
+        """ Convert input data to model variables
+
+            Args:
+                data (np.array): 2d array with variable values
+
+            Returns:
+                queens.variables: Converted array
+
+            Raises:
+        """
+        temp = deepcopy(self.variables[0])
+        variables = []
+        for i in range(data.shape[0]):
+            data_vector = data[i, :]
+            temp.update_variables_from_vector(data_vector)
+            new_var = deepcopy(temp)
+            variables.append(new_var)
+
+        return variables
