@@ -15,6 +15,8 @@ class TestDataFitSurrogateModel(unittest.TestCase):
                                          "interface" : "dummy_interface",
                                          "parameters" : "parameters",
                                          "subordinate_model" : "dummy_model",
+                                         "eval_fit" : "kfold",
+                                         "error_measures" : ["sum_squared"],
                                          "subordinate_iterator" : "dummy_iterator",
                                          "parameters" : "dummy_parameters"},
                              "dummy_parameters" : {"youngs" : {"type" : "FLOAT",
