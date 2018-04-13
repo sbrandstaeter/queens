@@ -198,7 +198,7 @@ To turn a machine into a runner, you have to install some software as described
 [here](https://docs.gitlab.com/runner/install/linux-repository.html)
 As of 02/2018 the steps are as follows:  
 1. For RHEL/CentOS/Fedora run  
-`curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm. h | sudo bash`
+`curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh | sudo bash`
 2. To install run:
 `sudo yum install gitlab-runner`
 
