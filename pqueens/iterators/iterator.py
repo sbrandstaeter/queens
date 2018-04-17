@@ -1,5 +1,6 @@
 import abc
 
+# TODO add iteraotr name to attributes
 
 class Iterator(metaclass=abc.ABCMeta):
     """ Base class for Iterator hierarchy
@@ -35,8 +36,11 @@ class Iterator(metaclass=abc.ABCMeta):
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .saltelli_iterator import SaltelliIterator
         from .bayesian_optimization_iterator import BayesOptIterator
+        from .lhs_iterator_mf import MF_LHSIterator
+
 
         method_dict = {'monte_carlo': MonteCarloIterator,
+                       'lhs_mf': MF_LHSIterator,
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli' : SaltelliIterator,
                        'sa_saltelli_salib' : SaltelliSALibIterator,
@@ -44,10 +48,13 @@ class Iterator(metaclass=abc.ABCMeta):
 
         if iterator_name is None:
             method_name = config['method']['method_name']
+            iterator_class = method_dict[method_name]
+            iterator = iterator_class.from_config_create_iterator(config, model)
         else:
             method_name = config[iterator_name]['method_name']
-        iterator_class = method_dict[method_name]
-        return iterator_class.from_config_create_iterator(config, model)
+            iterator_class = method_dict[method_name]
+            iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
+        return iterator
 
     def initialize_run(self):
         """ Optional setup step """
