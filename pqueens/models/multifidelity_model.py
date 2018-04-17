@@ -36,7 +36,7 @@ class MultifidelityModel(Model):
         super(MultifidelityModel, self).__init__(model_name, model_parameters)
 
         self.eval_cost_per_level = eval_cost_per_level
-        self.num_levels = len(eval_cost_per_level)
+        self.num_levels = len(model_sequence)
         self.__model_sequence = model_sequence
         self.__admissible_response_modes = ['uncorrected_lofi',
                                             'aggregated_model',
@@ -113,17 +113,18 @@ class MultifidelityModel(Model):
 
     def set_hifi_model_index(self, hifi_index):
         """ Choose which model is used as hi-fi model """
+        print("hifi_index {} len(self.__model_sequence {}".format(hifi_index,len(self.__model_sequence)))
         if hifi_index > len(self.__model_sequence):
-            self.__active_hf_model_ind = hifi_index
-        else:
             raise ValueError("Index for hi-fi model is out of range")
+        else:
+            self.__active_hf_model_ind = hifi_index
 
     def set_lofi_model_index(self, lofi_index):
         """ Choose which model is used as lo-fi model """
         if lofi_index > len(self.__model_sequence):
-            self.__active_lf_model_ind = lofi_index
-        else:
             raise ValueError("Index for lo-fi model is out of range")
+        else:
+            self.__active_lf_model_ind = lofi_index
 
     def _lofi_model(self):
         """ Get current low-fidelity model """
