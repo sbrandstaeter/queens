@@ -34,7 +34,7 @@ class MF_ICM_GP_Regression(object):
         num_fidelity_levels = len(Xtrain)
         return cls(Xtrain, ytrain, num_fidelity_levels)
 
-    def __init__(self,Xtrain,ytrain,num_fidelity_levels):
+    def __init__(self, Xtrain, ytrain, num_fidelity_levels):
         """
         Args:
             Xtrain (list):
@@ -50,27 +50,20 @@ class MF_ICM_GP_Regression(object):
         if dim_x is not Xtrain[1].shape[1]:
             raise Exception("Dimension of low fidelity inputs and high fidelity inputs must be the same")
 
-        # TODO extend this to an arbitrary number of levels
-
         self.Xtrain = Xtrain
         self.ytrain = ytrain
-
-        X_lofi = Xtrain[0]
-        y_lofi = ytrain[0]
-
-        X_hifi = Xtrain[1]
-        y_hifi = ytrain[1]
 
         self.num_fidelity_levels = num_fidelity_levels
 
 
         # define icm multi output kernel
         icm = GPy.util.multioutput.ICM(input_dim=dim_x,
-                                        num_outputs=self.num_fidelity_levels,
-                                        kernel=GPy.kern.RBF(dim_x))
+                                       num_outputs=self.num_fidelity_levels,
+                                       kernel=GPy.kern.RBF(dim_x))
 
-        self.m = GPy.models.GPCoregionalizedRegression([X_lofi, X_hifi],
-                                                       [y_lofi, y_hifi],
+
+        self.m = GPy.models.GPCoregionalizedRegression(self.Xtrain,
+                                                       self.ytrain,
                                                        kernel=icm)
 
     def train(self):
