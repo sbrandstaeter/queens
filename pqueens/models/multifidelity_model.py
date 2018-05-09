@@ -113,7 +113,6 @@ class MultifidelityModel(Model):
 
     def set_hifi_model_index(self, hifi_index):
         """ Choose which model is used as hi-fi model """
-        print("hifi_index {} len(self.__model_sequence {}".format(hifi_index,len(self.__model_sequence)))
         if hifi_index > len(self.__model_sequence):
             raise ValueError("Index for hi-fi model is out of range")
         else:
