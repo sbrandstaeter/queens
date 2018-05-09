@@ -22,10 +22,13 @@ class RegressionApproximationMF(metaclass=abc.ABCMeta):
 
         """
         from .mf_icm_gp_regression import MF_ICM_GP_Regression
-        from .mf_nar_gp_regression import MF_NAR_GP_Regression
+        from .mf_nar_gp_regression_2_levels import MF_NAR_GP_Regression_2_Levels
+        from .mf_nar_gp_regression_3_levels import MF_NAR_GP_Regression_3_Levels
+
 
         approx_dict = {'mf_icm_gp_approximation_gpy': MF_ICM_GP_Regression,
-                       'mf_nar_gp_approximation_gpy': MF_NAR_GP_Regression}
+                       'mf_nar_gp_approximation_gpy_2_levels': MF_NAR_GP_Regression_2_Levels,
+                       'mf_nar_gp_approximation_gpy_3_levels': MF_NAR_GP_Regression_3_Levels}
 
         approximation_class = approx_dict[approx_options["type"]]
 

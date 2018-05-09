@@ -2,7 +2,7 @@ import numpy as np
 import GPy
 
 
-class MF_NAR_GP_Regression(object):
+class MF_NAR_GP_Regression_2_Levels(object):
     """ Class for creating multi-fidelity nonlinear auto-regressive GP based emulator
 
         This class constructs a multi fidelity GP emulator, using nonlinear
@@ -53,11 +53,9 @@ class MF_NAR_GP_Regression(object):
         if dim_x is not Xtrain[1].shape[1]:
             raise Exception("Dimension of low fidelity inputs and high fidelity inputs must be the same")
         self.num_fidelity_levels = 2
-        # TODO extend this to an arbitrary number of levels
 
         self.X_lofi = Xtrain[0]
         self.y_lofi = ytrain[0]
-
         self.X_hifi = Xtrain[1]
         self.y_hifi = ytrain[1]
 
@@ -71,6 +69,8 @@ class MF_NAR_GP_Regression(object):
             raise Exception("High fidelity inputs are not subset of low fidelity inputs")
 
         self.active_dimensions = np.arange(0, self.input_dimension)
+        #self.active_dimensions = np.arange(0, 2)
+
         # TODO remove hard coded values and pass via contructor argument instead
         self.num_emulator_samples = 100
         self.m1 = None
@@ -80,7 +80,7 @@ class MF_NAR_GP_Regression(object):
         # train gp on low fidelity data
         k1 = GPy.kern.RBF(self.input_dimension, ARD=True)
         self.m1 = GPy.models.GPRegression(X=self.X_lofi, Y=self.y_lofi,
-                                          kernel=k1)
+                                          kernel=k1, normalizer=True)
 
         self.m1[".*Gaussian_noise"] = self.m1.Y.var()*0.01
         self.m1[".*Gaussian_noise"].fix()
@@ -100,7 +100,8 @@ class MF_NAR_GP_Regression(object):
              + GPy.kern.RBF(self.input_dimension,
                             active_dims=self.active_dimensions, ARD=True)
 
-        self.m2 = GPy.models.GPRegression(X=XX, Y=self.y_hifi, kernel=k2)
+        self.m2 = GPy.models.GPRegression(X=XX, Y=self.y_hifi,
+                                          kernel=k2, normalizer=True)
 
         self.m2[".*Gaussian_noise"] = self.m2.Y.var()*0.01
         self.m2[".*Gaussian_noise"].fix()
@@ -148,7 +149,7 @@ class MF_NAR_GP_Regression(object):
         var = np.mean(tmp_v, axis=0)[:, None]+ np.var(tmp_m, axis=0)[:, None]
         var_x_test = np.abs(var)
 
-        return mean_x_test, var_x_test
+        return mean_x_test.reshape((-1, 1)), var_x_test.reshape((-1, 1))
 
     def predict_f_samples(self, Xnew, num_samples, level=None):
         """ Produce samples from the posterior latent funtion Xnew
