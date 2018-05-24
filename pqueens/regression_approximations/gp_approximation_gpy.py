@@ -38,42 +38,24 @@ class GPGPyRegression(RegressionApproximation):
         self.X = X
         self.y = y
 
-        # kernel type
-        #cov_type = approx_options["cov_type"]
-        # TODO make covariance type adjustable through inout file
-
-        # ARD
-        ARD = approx_options["ard"]
-
         # input dimension
         input_dim = self.X.shape[1]
+        # simple GP Model
+        k = GPy.kern.RBF(input_dim, ARD=True)
 
-        # lengthscale
-        lengthscale = approx_options["length_scale"]
-
-        # variance
-        var = approx_options["variance"]
-
-         # create simple GP Model
-        #k = GPy.kern.RBF(2,ARD=True) + GPy.kern.White(2)
-        k = GPy.kern.RBF(input_dim=input_dim, variance=var,
-                         lengthscale=lengthscale, ARD=ARD)
-
-        self.m = GPy.models.GPRegression(self.X, self.y, kernel=k)
-        self.m.kern.lengthscale = 1.
+        self.m = GPy.models.GPRegression(self.X, self.y,
+                                         kernel=k,
+                                         normalizer=True)
 
     def train(self):
         """ Train the GP by maximizing the likelihood """
 
-        self.m[".*Gaussian_noise"] = self.m.Y.var()*0.1
+        self.m[".*Gaussian_noise"] = self.m.Y.var()*0.01
         self.m[".*Gaussian_noise"].fix()
         self.m.optimize(max_iters=500)
-
         self.m[".*Gaussian_noise"].unfix()
         self.m[".*Gaussian_noise"].constrain_positive()
-
-        #self.m.optimize_restarts(30, optimizer="bfgs",  max_iters=1000)
-        self.m.optimize_restarts(1, optimizer="bfgs", max_iters=1000)
+        self.m.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
 
     def predict_f(self, Xnew):
         """ Compute the mean and variance of the latent function at Xnew
