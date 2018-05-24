@@ -67,7 +67,7 @@ class ApproximationInterface(Interface):
             np.array:               Array with results correspoding to samples
         """
         if not self.approx_init:
-            raise RuntimeError("Approximation has not been properly initialzed, cannot continue!")
+            raise RuntimeError("Approximation has not been properly initialized, cannot continue!")
 
         inputs = []
         for variables in samples:
@@ -78,8 +78,8 @@ class ApproximationInterface(Interface):
         num_active_vars = samples[0].get_number_of_active_variables()
         inputs = np.reshape(np.array(inputs), (-1, num_active_vars), order='F')
         # predict_f reaturns mean and variance, for now return only mean
-        outputs, _ = self.approximation.predict_f(inputs)
-        return outputs
+        outputs, variance = self.approximation.predict_f(inputs)
+        return outputs, variance
 
     def build_approximation(self, Xtrain, Ytrain):
         """ Build and train underlying regression model
