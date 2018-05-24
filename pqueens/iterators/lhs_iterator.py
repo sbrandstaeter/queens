@@ -26,7 +26,7 @@ class LHSIterator(Iterator):
         self.outputs = None
 
     @classmethod
-    def from_config_create_iterator(cls, config, model=None):
+    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
         """ Create LHS iterator from problem description
 
         Args:
@@ -36,7 +36,10 @@ class LHSIterator(Iterator):
             iterator: LHSIterator object
 
         """
-        method_options = config["method"]["method_options"]
+        if iterator_name is None:
+            method_options = config["method"]["method_options"]
+        else:
+            method_options = config[iterator_name]["method_options"]
         if model is None:
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)

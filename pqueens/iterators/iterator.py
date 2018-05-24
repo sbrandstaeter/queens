@@ -36,10 +36,12 @@ class Iterator(metaclass=abc.ABCMeta):
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .saltelli_iterator import SaltelliIterator
         from .bayesian_optimization_iterator import BayesOptIterator
+        from .lhs_iterator import LHSIterator
         from .lhs_iterator_mf import MF_LHSIterator
 
 
         method_dict = {'monte_carlo': MonteCarloIterator,
+                       'lhs': LHSIterator,
                        'lhs_mf': MF_LHSIterator,
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli' : SaltelliIterator,
