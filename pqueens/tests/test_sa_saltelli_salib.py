@@ -299,7 +299,7 @@ class TestSASaltelliBorehole(unittest.TestCase):
         np.testing.assert_allclose(self.my_iterator.samples,ref_vals, 1e-07, 1e-07)
 
     def test_correct_sensitivity_indices(self):
-        """ Test if we get error when the number os distributions doas not match
+        """ Test if we get error when the number of distributions does not match
             the number of parameters """
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
