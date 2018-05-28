@@ -57,8 +57,8 @@ class DataFitSurrogateModel(Model):
 
         subordinate_model_name = model_options["subordinate_model"]
         subordinate_iterator_name = model_options["subordinate_iterator"]
-        eval_fit =  model_options.get("eval_fit", None)
-        error_measures = model_options.get("error_measures",None)
+        eval_fit = model_options.get("eval_fit", None)
+        error_measures = model_options.get("error_measures", None)
 
         # create subordinate model
         subordinate_model = Model.from_config_create_model(subordinate_model_name,

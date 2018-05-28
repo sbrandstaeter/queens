@@ -23,7 +23,7 @@ class LHSIterator(Iterator):
         self.num_samples = num_samples
         self.num_iterations = num_iterations
         self.samples = None
-        self.outputs = None
+        self.output = None
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
@@ -68,7 +68,7 @@ class LHSIterator(Iterator):
 
         self.model.update_model_from_sample_batch(self.samples)
 
-        self.outputs = self.eval_model()
+        self.output = self.eval_model()
 
 
     def post_run(self):
@@ -76,5 +76,5 @@ class LHSIterator(Iterator):
 
         print("Size of inputs {}".format(self.samples.shape))
         print("Inputs {}".format(self.samples))
-        print("Size of outputs {}".format(self.outputs.shape))
-        print("Outputs {}".format(self.outputs))
+        print("Size of outputs {}".format(self.output['mean'].shape))
+        print("Outputs {}".format(self.output['mean']))

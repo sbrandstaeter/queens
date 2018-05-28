@@ -44,15 +44,13 @@ class Interface(metaclass=abc.ABCMeta):
     def map(self, samples):
         """
         Mapping function which orchestrates call to external simulation software
-
-        First variant of map function with a generator as arguments, which can be
-        looped over.
+        or approximation
 
         Args:
             samples (list):  list of variables objects
 
         Returns:
-            np.array,np.array       two arrays containing the inputs from the
-                                    suggester, as well as the corresponding outputs
+            dict:           Dictionary with results. Mean, variance and posterior
+                            samples can be contained in this dict
         """
         pass

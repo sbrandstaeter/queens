@@ -21,7 +21,7 @@ class MF_LHSIterator(Iterator):
         num_iterations (int): Number of optimization iterations of design
         mode (str):           Mode of sampling (nested/independent)
         samples (list):       List of arrays with all samples
-        outputs (list):       List of arrays with all model outputs
+        outputs (list):       List of dicts with all model outputs
 
     """
     def __init__(self, model, seed, num_samples, num_iterations, mode):
@@ -116,8 +116,8 @@ class MF_LHSIterator(Iterator):
         for i in range(self.model.num_levels):
             print("Size of inputs in LHS{}".format(self.samples[i].shape))
             print("Inputs {}".format(self.samples[i]))
-            print("Size of outputs {}".format(self.outputs[i].shape))
-            print("Outputs {}".format(self.outputs[i]))
+            print("Size of outputs {}".format(self.outputs[i]['mean'].shape))
+            print("Outputs {}".format(self.outputs[i]['mean']))
 
     def select_random_subset(self, samples, subset_size):
         """ Select a subset of provided samples and return it

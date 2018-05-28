@@ -18,7 +18,7 @@ class MonteCarloIterator(Iterator):
         self.seed = seed
         self.num_samples = num_samples
         self.samples = None
-        self.outputs = None
+        self.output = None
 
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
@@ -76,12 +76,12 @@ class MonteCarloIterator(Iterator):
         # variant 2
         self.model.update_model_from_sample_batch(self.samples)
 
-        self.outputs = self.eval_model()
+        self.output = self.eval_model()
 
     def post_run(self):
         """ Analyze the results """
 
         print("Size of inputs {}".format(self.samples.shape))
         print("Inputs {}".format(self.samples))
-        print("Size of outputs {}".format(self.outputs.shape))
-        print("Outputs {}".format(self.outputs))
+        print("Size of outputs {}".format(self.output['mean'].shape))
+        print("Outputs {}".format(self.output['mean']))

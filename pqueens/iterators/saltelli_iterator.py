@@ -37,7 +37,7 @@ class SaltelliIterator(Iterator):
         num_bootstrap_samples (int):    Number of bootstrap samples
         confidence_level (float):       The confidence interval level
         samples (np.array):             Array with all samples
-        outputs (np.array):             Array with all model outputs
+        output (dict):                  Dict with all model outputs
         num_params (int):               Number of uncertain model parameters
         sensitivity_incides (dict):     Dictionary holdin sensitivity incides
     """
@@ -62,7 +62,7 @@ class SaltelliIterator(Iterator):
         self.num_bootstrap_samples = num_bootstrap_samples
         self.confidence_level = confidence_level
         self.samples = None
-        self.outputs = None
+        self.output = None
 
         distribution_info = self.model.get_parameter_distribution_info()
         self.num_params = len(distribution_info)
@@ -183,10 +183,10 @@ class SaltelliIterator(Iterator):
         self.model.update_model_from_sample_batch(self.samples)
 
         # evaluate
-        self.outputs = np.reshape(self.eval_model(), (-1))
+        self.output = self.eval_model()
 
         # analyse
-        self.__analyze(self.outputs)
+        self.__analyze(np.reshape(self.output['mean'],(-1)))
 
     def post_run(self):
         """ Analyze the results """

@@ -34,7 +34,7 @@ class TestDirectPythonInterface(unittest.TestCase):
         self.variables.variables['x3']['value'] = 1.0
 
         my_samples = self.variables
-        ref_vals = np.array([5.8821320112036846])
+        ref_vals = np.array([[5.8821320112036846]])
 
         output = self.interface.map([my_samples])
-        np.testing.assert_allclose(output,ref_vals, 1e-09, 1e-09)
+        np.testing.assert_allclose(output["mean"],ref_vals, 1e-09, 1e-09)

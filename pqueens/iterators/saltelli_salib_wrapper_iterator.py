@@ -18,7 +18,7 @@ class SaltelliSALibIterator(Iterator):
         num_bootstrap_samples (int):        Number of bootstrap samples
         confidence_level (float):           The confidence interval level
         samples (np.array):                 Array with all samples
-        outputs (list)                      List of all outputs corresponding to
+        output (dict)                       Dict with all outputs corresponding to
                                             samples
         salib_problem (dict):               Problem definition for SALib
         num_params (int):                   Number of parameters
@@ -44,7 +44,7 @@ class SaltelliSALibIterator(Iterator):
         self.confidence_level = confidence_level
 
         self.samples = None
-        self.outputs = None
+        self.output = None
         self.salib_problem = None
         self.num_params = None
         self.sensitivity_incides = None
@@ -115,11 +115,11 @@ class SaltelliSALibIterator(Iterator):
         #print("Samples :{}".format(self.samples))
         #exit()
         self.model.update_model_from_sample_batch(self.samples)
-        self.outputs = np.reshape(self.eval_model(), (-1))
+        self.output = self.eval_model()
 
         # do actual sensitivity analysis
         self.sensitivity_incides = sobol.analyze(self.salib_problem,
-                                                 self.outputs,
+                                                 np.reshape(self.output['mean'], (-1)),
                                                  calc_second_order=self.calc_second_order,
                                                  num_resamples=self.num_bootstrap_samples,
                                                  conf_level=self.confidence_level,

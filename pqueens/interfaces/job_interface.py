@@ -247,13 +247,15 @@ class JobInterface(Interface):
             num_variables (int): number of input variables
 
         Returns:
-            np.array: arrays output data
+            np.array: output data
         """
-        outputs = []
+        output = {}
+        mean_values = []
         if not self.__all_jobs_finished():
             print("Not all jobs are finished yet, try again later")
         else:
             jobs = self.__load_jobs()
             for job in jobs:
-                outputs.append(job['result'])
-        return  outputs
+                mean_values.append(job['result'])
+        output['mean'] = np.reshape(np.array(mean_values), (-1, 1))
+        return  output

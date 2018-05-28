@@ -36,7 +36,7 @@ class MorrisSALibIterator(Iterator):
 
         samples (np.array):         Samples at which model is evaluated
 
-        outputs (np.array):         Results at samples
+        output (np.array):          Results at samples
 
         salib_problem (dict):       Dictionary with SALib problem description
 
@@ -86,7 +86,7 @@ class MorrisSALibIterator(Iterator):
 
         self.num_params = None
         self.samples = None
-        self.outputs = None
+        self.output = None
         self.salib_problem = {}
         self.si = {}
 
@@ -166,11 +166,11 @@ class MorrisSALibIterator(Iterator):
 
         self.model.update_model_from_sample_batch(self.samples)
 
-        self.outputs = self.eval_model()
+        self.output = self.eval_model()
 
         self.si = morris_analyzer.analyze(self.salib_problem,
                                           self.samples,
-                                          self.outputs,
+                                          np.reshape(self.output['mean'], (-1)),
                                           num_resamples=self.num_bootstrap_samples,
                                           conf_level=self.confidence_level,
                                           print_to_console=False,

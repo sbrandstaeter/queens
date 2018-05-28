@@ -98,7 +98,7 @@ class TestLHSIterator(unittest.TestCase):
                                 [-6.4173504897],
                                 [3.1739282221]])
 
-        np.testing.assert_allclose(self.my_iterator.outputs[0:10],
+        np.testing.assert_allclose(self.my_iterator.output["mean"][0:10],
                                    ref_results, 1e-09, 1e-09)
 
 class TestMCIterator(unittest.TestCase):
@@ -187,5 +187,5 @@ class TestMCIterator(unittest.TestCase):
                                 [7.6591139616e+00],
                                 [1.1519434320e+01]])
 
-        np.testing.assert_allclose(self.my_iterator.outputs[0:10],
+        np.testing.assert_allclose(self.my_iterator.output["mean"][0:10],
                                    ref_results, 1e-09, 1e-09)

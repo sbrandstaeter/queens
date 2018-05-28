@@ -60,9 +60,6 @@ class DirectPythonInterface(Interface):
     def map(self, samples):
         """ Mapping function which orchestrates call to simulator function
 
-            First variant of map function with a generator as arguments, which
-            can be looped over.
-
         Args:
             samples (list):         list of variables objects
 
@@ -70,8 +67,10 @@ class DirectPythonInterface(Interface):
             np.array,np.array       two arrays containing the inputs from the
                                     suggester, as well as the corresponding outputs
         """
-        outputs = []
+        output = {}
+        mean_values = []
         for variables in samples:
             params = variables.get_active_variables()
-            outputs.append(self.function.main(1, params))
-        return outputs
+            mean_values.append(self.function.main(1, params))
+        output['mean'] = np.reshape(np.array(mean_values), (-1, 1))
+        return output
