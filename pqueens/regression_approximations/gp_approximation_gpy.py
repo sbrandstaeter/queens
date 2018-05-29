@@ -1,3 +1,4 @@
+import numpy as np
 import GPy
 from . regression_approximation import RegressionApproximation
 
@@ -26,9 +27,10 @@ class GPGPyRegression(RegressionApproximation):
         Returns:
             gp_approximation_gpy: approximation object
         """
-        return cls(x_train, y_train, approx_options)
+        num_posterior_samples = approx_options.get('num_posterior_samples', None)
+        return cls(x_train, y_train, num_posterior_samples)
 
-    def __init__(self, X, y, approx_options):
+    def __init__(self, X, y, num_posterior_samples):
         """
         Args:
             approx_options (dict):  Dictionary with model options
@@ -37,6 +39,7 @@ class GPGPyRegression(RegressionApproximation):
         """
         self.X = X
         self.y = y
+        self.num_posterior_samples = num_posterior_samples
 
         # input dimension
         input_dim = self.X.shape[1]
@@ -56,6 +59,25 @@ class GPGPyRegression(RegressionApproximation):
         self.m[".*Gaussian_noise"].unfix()
         self.m[".*Gaussian_noise"].constrain_positive()
         self.m.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
+
+    def predict(self, Xnew):
+        """ Compute latent function at Xnew
+
+        Args:
+            Xnew (np.array): Inputs at which to evaluate latent function f
+
+        Returns:
+            dict: Dictionary with mean, variance, and posibly posterior samples
+                  of latent function at Xnew
+        """
+        output = {}
+        mean, variance = self.predict_f(Xnew)
+        output['mean'] = np.reshape(np.array(mean), (-1, 1))
+        output['variance'] = np.reshape(np.array(variance), (-1, 1))
+        if self.num_posterior_samples is not None:
+            output['post_samples'] = self.predict_f_samples(Xnew, self.num_posterior_samples)
+
+        return output
 
     def predict_f(self, Xnew):
         """ Compute the mean and variance of the latent function at Xnew
@@ -80,26 +102,3 @@ class GPGPyRegression(RegressionApproximation):
                 np.array, np.array: mean and variance of latent functions at Xnew
         """
         return self.m.posterior_samples_f(Xnew, num_samples)
-
-
-    # def predict_f_full_cov(self, Xnew):
-    #     """ Compute the mean and covariance matrix of the latent function(s) at the
-    #     points Xnew.
-    #     """
-    #     return self.m.predict_noiseless(Xnew, full_cov=True)
-    #
-    # def predict_y(self, Xnew):
-    #     """ Compute the mean and variance of held-out data at the points Xnew
-    #     """
-    #     return  self.m.predict(Xnew, full_cov=False, Y_metadata=None, kern=None,
-    #                            likelihood=None, include_likelihood=True)
-    #
-    #
-    # def predict_density(self, Xnew, Ynew):
-    #     """ Compute the (log) density of the data Ynew at the points Xnew
-    #         Note that this computes the log density of the data individually,
-    #         ignoring correlations between them. The result is a matrix the same
-    #         shape as Ynew containing the log densities.
-    #
-    #     """
-    #     return self.m.log_predictive_density(Xnew, Ynew, Y_metadata=None)

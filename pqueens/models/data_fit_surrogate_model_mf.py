@@ -85,7 +85,9 @@ class MFDataFitSurrogateModel(Model):
             self.build_approximation()
 
         self.response = self.interface.map(self.variables)
-        return np.reshape(np.array(self.response), (-1, 1))
+        return self.response
+
+
 
     def build_approximation(self):
         """ Build underlying approximation """
@@ -94,7 +96,9 @@ class MFDataFitSurrogateModel(Model):
 
         # get samples and results
         X = self.subordinate_iterator.samples
-        Y = self.subordinate_iterator.outputs
+        Y = []
+        for level in self.subordinate_iterator.outputs:
+            Y.append(level['mean'])
 
         # train regression model on the data
         self.interface.build_approximation(X, Y)

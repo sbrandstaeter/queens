@@ -93,12 +93,14 @@ class MultifidelityModel(Model):
         elif self.response_mode == 'aggregated_model':
             self.response = self._lofi_model().interface.map(self.variables)
             self.response = [self.response, self._hifi_model().interface.map(self.variables)]
+            # this case needs to be adapted to new output structure
+            raise NotImplementedError
         elif self.response_mode == 'bypass_lofi':
             self.response = self._hifi_model().interface.map(self.variables)
         else:
             raise RuntimeError("Unknown response type")
 
-        return np.reshape(np.array(self.response), (-1, 1))
+        return self.response
 
     def set_response_mode(self, new_response_mode):
         """ Set response mode of multi-fidelity model """

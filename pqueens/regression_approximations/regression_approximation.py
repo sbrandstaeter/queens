@@ -33,9 +33,5 @@ class RegressionApproximation(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def predict_f(self, Xnew):
-        pass
-
-    @abc.abstractmethod
-    def predict_f_samples(self, Xnew, num_samples):
+    def predict(self, Xnew):
         pass

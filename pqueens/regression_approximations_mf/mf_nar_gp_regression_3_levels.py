@@ -18,7 +18,8 @@ class MF_NAR_GP_Regression_3_Levels(object):
         X_hifi (np.array):              Training inputs high-fidelity
         input_dimension (int):          Dimension of training inputs
         active_dimensions (int):
-        num_emulator_samples (int):
+        num_posterior_samples (int):    Number of posterior samples for inference
+                                        and prediction
         m1 (GPy.model):                 GPy based Gaussian process model
         m2 (GPy.model):                 GPy based Gaussian process model
         m3 (GPy.model):                 GPy based Gaussian process model
@@ -40,15 +41,17 @@ class MF_NAR_GP_Regression_3_Levels(object):
         """
         if len(Xtrain) != 3:
             raise ValueError("MF_NAR_GP_Regression_ThreeLevel is only implemented for three levels")
-        return cls(Xtrain, ytrain)
 
-    def __init__(self, Xtrain, ytrain):
+        num_posterior_samples = approx_options.get('num_posterior_samples', 100)
+        return cls(Xtrain, ytrain, num_posterior_samples)
+
+    def __init__(self, Xtrain, ytrain, num_posterior_samples):
         """
         Args:
-            Xtrain (list):
-                list of arrays of location of design points
-            ytrain (np.array):
-                list of arrays of values at desing points
+            Xtrain (list):                  List of arrays of location of design points
+            ytrain (np.array):              List of arrays of values at desing points
+            num_posterior_samples (int):    Number of posterior samples for inference
+                                            and prediction
         """
 
         # check that X_lofi and X_hifi have the same dimension
@@ -81,8 +84,7 @@ class MF_NAR_GP_Regression_3_Levels(object):
 
         self.active_dimensions = np.arange(0, 2)
 
-        # TODO remove hard coded values and pass via contructor argument instead
-        self.num_emulator_samples = 100
+        self.num_posterior_samples = num_posterior_samples
 
         self.m1 = None
         self.m2 = None
@@ -123,7 +125,7 @@ class MF_NAR_GP_Regression_3_Levels(object):
 
 
         # Prepare for level 3: sample f_1 at X3
-        nsamples = self.num_emulator_samples
+        nsamples = self.num_posterior_samples
         ntest = self.X_hifi.shape[0]
         mu0, C0 = self.m1.predict(self.X_hifi, full_cov=True)
         Z = np.random.multivariate_normal(mu0.flatten(), C0, nsamples)
@@ -160,12 +162,30 @@ class MF_NAR_GP_Regression_3_Levels(object):
         self.m3.optimize_restarts(30, optimizer="bfgs",  max_iters=1000)
 
 
-    def predict_f(self, x_test, level=None):
-        """ Compute the mean and variance of the latent function at Xnew
+    def predict(self, x_test):
+        """ Compute latent function at x_test
 
         Args:
-            Xnew (np.array): Inputs at which to evaluate latent function f
-            level (int): level for which to make prediction
+            x_test (np.array): Inputs at which to evaluate latent function f
+
+        Returns:
+            dict: Dictionary with mean, variance, and posibly posterior samples
+                  of latent function at x_test
+        """
+        output = {}
+        mean, variance = self.predict_f(x_test)
+        output['mean'] = np.reshape(np.array(mean), (-1, 1))
+        output['variance'] = np.reshape(np.array(variance), (-1, 1))
+        if self.num_posterior_samples is not None:
+            output['post_samples'] = self.predict_f_samples(x_test, self.num_posterior_samples)
+
+        return output
+
+    def predict_f(self, x_test):
+        """ Compute the mean and variance of the latent function at x_test
+
+        Args:
+            x_test (np.array): Inputs at which to evaluate latent function f
 
         Returns:
             np.array, np.array: mean and varaince of latent function at Xnew
@@ -181,19 +201,19 @@ class MF_NAR_GP_Regression_3_Levels(object):
         mu1, C1 = self.m1.predict(x_test, full_cov=True)
         # generate nsample samples at x
         Z = np.random.multivariate_normal(mu1.flatten(),C1,
-                                          self.num_emulator_samples)
+                                          self.num_posterior_samples)
 
 
 
         # push samples through f_2 and f_3
-        tmp_m = np.zeros((self.num_emulator_samples**2, num_test_points))
-        tmp_v = np.zeros((self.num_emulator_samples**2, num_test_points))
+        tmp_m = np.zeros((self.num_posterior_samples**2, num_test_points))
+        tmp_v = np.zeros((self.num_posterior_samples**2, num_test_points))
         cnt = 0
 
-        for i in range(0, self.num_emulator_samples):
+        for i in range(0, self.num_posterior_samples):
             mu, C = self.m2.predict(np.hstack((x_test, Z[i, :][:, None])), full_cov=True)
-            Q = np.random.multivariate_normal(mu.flatten(), C, self.num_emulator_samples)
-            for j in range(0, self.num_emulator_samples):
+            Q = np.random.multivariate_normal(mu.flatten(), C, self.num_posterior_samples)
+            for j in range(0, self.num_posterior_samples):
                 mu, v = self.m3.predict(np.hstack((x_test, Q[j, :][:, None])))
                 tmp_m[cnt, :] = mu.flatten()
                 tmp_v[cnt, :] = v.flatten()
@@ -205,7 +225,7 @@ class MF_NAR_GP_Regression_3_Levels(object):
         mean_x_test = mean_x_test[:, None]
         var_x_test = np.abs(v3[:, None])
         #
-        # for i in range(0, self.num_emulator_samples):
+        # for i in range(0, self.num_posterior_samples):
         #     mu, v = self.m2.predict(np.hstack((x_test, Z[i, :][:, None])))
         #     tmp_m[i, :] = mu.flatten()
         #     tmp_v[i, :] = v.flatten()
@@ -223,14 +243,12 @@ class MF_NAR_GP_Regression_3_Levels(object):
 
 
 
-    def predict_f_samples(self, Xnew, num_samples, level=None):
+    def predict_f_samples(self, Xnew, num_samples):
         """ Produce samples from the posterior latent funtion Xnew
 
             Args:
                 Xnew (np.array):    Inputs at which to evaluate latent function f
                 num_samples (int):  Number of posterior realizations of GP
-                level (int): level for which to make prediction
-
 
             Returns:
                 np.array: samples of latent function at Xnew

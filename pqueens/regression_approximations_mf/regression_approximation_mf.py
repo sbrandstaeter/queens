@@ -39,6 +39,10 @@ class RegressionApproximationMF(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
+    def predict(self, Xnew):
+        pass
+
+    @abc.abstractmethod
     def predict_f(self, Xnew):
         pass
 

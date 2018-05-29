@@ -84,8 +84,8 @@ class DataFitSurrogateModel(Model):
         if not self.interface.is_initiliazed():
             self.build_approximation()
 
-        self.response, response_var = self.interface.map(self.variables)
-        return np.reshape(np.array(self.response), (-1, 1)), np.reshape(np.array(response_var), (-1, 1)),
+        self.response = self.interface.map(self.variables)
+        return self.response
 
     def build_approximation(self):
         """ Build underlying approximation """
@@ -94,7 +94,7 @@ class DataFitSurrogateModel(Model):
 
         # get samples and results
         X = self.subordinate_iterator.samples
-        Y = self.subordinate_iterator.outputs
+        Y = self.subordinate_iterator.output['mean']
 
         # train regression model on the data
         self.interface.build_approximation(X, Y)

@@ -80,11 +80,7 @@ class ApproximationInterfaceMF(Interface):
         # get inputs as array and reshape
         num_active_vars = samples[0].get_number_of_active_variables()
         inputs = np.reshape(np.array(inputs), (-1, num_active_vars), order='F')
-        # predict_f reaturns mean and variance, for now return only mean
-        mean, variance = self.approximation.predict_f(inputs, level)
-        output = {}
-        output['mean'] = np.reshape(np.array(mean), (-1, 1))
-        output['variance'] = np.reshape(np.array(variance), (-1, 1))
+        output = self.approximation.predict(inputs)
         return output
 
     def build_approximation(self, Xtrain, Ytrain):

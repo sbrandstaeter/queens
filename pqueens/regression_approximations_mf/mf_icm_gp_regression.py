@@ -32,9 +32,10 @@ class MF_ICM_GP_Regression(object):
             gp_approximation_gpy: approximation object
         """
         num_fidelity_levels = len(Xtrain)
-        return cls(Xtrain, ytrain, num_fidelity_levels)
+        num_posterior_samples = approx_options.get('num_posterior_samples', None)
+        return cls(Xtrain, ytrain, num_fidelity_levels, num_posterior_samples)
 
-    def __init__(self, Xtrain, ytrain, num_fidelity_levels):
+    def __init__(self, Xtrain, ytrain, num_fidelity_levels, num_posterior_samples):
         """
         Args:
             Xtrain (list):
@@ -43,6 +44,8 @@ class MF_ICM_GP_Regression(object):
                 list of arrays of values at desing points
             num_fidelity_levels (int):
                 number of fidelity levels
+            num_posterior_samples (int):
+                number of posterior samples for prediction
         """
 
         # check that X_lofi and X_hifi have the same dimension
@@ -52,8 +55,8 @@ class MF_ICM_GP_Regression(object):
 
         self.Xtrain = Xtrain
         self.ytrain = ytrain
-
         self.num_fidelity_levels = num_fidelity_levels
+        self.num_posterior_samples = num_posterior_samples
 
 
         # define icm multi output kernel
@@ -80,6 +83,26 @@ class MF_ICM_GP_Regression(object):
         self.m[".*Gaussian_noise"].unfix()
         self.m[".*Gaussian_noise"].constrain_positive()
         self.m.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
+
+    def predict(self, Xnew):
+        """ Compute latent function at Xnew
+
+        Args:
+            Xnew (np.array): Inputs at which to evaluate latent function f
+
+        Returns:
+            dict: Dictionary with mean, varaince and posterior samples
+                  of latent function at Xnew
+
+        """
+        output = {}
+        mean, variance = self.predict_f(Xnew)
+        output['mean'] = np.reshape(np.array(mean), (-1, 1))
+        output['variance'] = np.reshape(np.array(variance), (-1, 1))
+        if self.num_posterior_samples is not None:
+            output['post_samples'] = self.predict_f_samples(Xnew, self.num_posterior_samples)
+        print("output type {}".format(type(output)))
+        return output
 
 
     def predict_f(self, Xnew, level=None):
