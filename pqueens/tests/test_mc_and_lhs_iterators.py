@@ -49,7 +49,11 @@ class TestLHSIterator(unittest.TestCase):
         self.model = SimulationModel("my_model", self.interface, uncertain_parameters)
 
         # create LHS iterator
-        self.my_iterator = LHSIterator(self.model, seed=42, num_samples=100, num_iterations=1)
+        self.my_iterator = LHSIterator(self.model,
+                                       seed=42,
+                                       num_samples=100,
+                                       num_iterations=1,
+                                       result_description=None)
 
     def test_correct_sampling(self):
         """ Test if we get correct samples"""

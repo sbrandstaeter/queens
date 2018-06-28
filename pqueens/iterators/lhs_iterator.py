@@ -13,15 +13,17 @@ class LHSIterator(Iterator):
         seed  (int):          Seed for random number generation
         num_samples (int):    Number of samples to compute
         num_iterations (int): Number of optimization iterations of design
+        result_description (dict):  Description of desired results
         samples (np.array):   Array with all samples
         outputs (np.array):   Array with all model outputs
 
     """
-    def __init__(self, model, seed, num_samples, num_iterations):
+    def __init__(self, model, seed, num_samples, num_iterations, result_description):
         super(LHSIterator, self).__init__(model)
         self.seed = seed
         self.num_samples = num_samples
         self.num_iterations = num_iterations
+        self.result_description = result_description
         self.samples = None
         self.output = None
 
@@ -43,8 +45,14 @@ class LHSIterator(Iterator):
         if model is None:
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)
-        return cls(model, method_options["seed"], method_options["num_samples"],
-                   method_options["num_iterations"])
+
+        result_description_section = method_options.get("result_description", None)
+        result_description = config.get(result_description_section, None)
+
+        return cls(model, method_options["seed"],
+                   method_options["num_samples"],
+                   method_options["num_iterations"],
+                   result_description)
 
     def eval_model(self):
         """ Evaluate the model """
@@ -73,8 +81,10 @@ class LHSIterator(Iterator):
 
     def post_run(self):
         """ Analyze the results """
-
-        print("Size of inputs {}".format(self.samples.shape))
-        print("Inputs {}".format(self.samples))
-        print("Size of outputs {}".format(self.output['mean'].shape))
-        print("Outputs {}".format(self.output['mean']))
+        if self.result_description is not None:
+            process_ouputs(self.output, self.result_description)
+        else:
+            print("Size of inputs {}".format(self.samples.shape))
+            print("Inputs {}".format(self.samples))
+            print("Size of outputs {}".format(self.output['mean'].shape))
+            print("Outputs {}".format(self.output['mean']))
