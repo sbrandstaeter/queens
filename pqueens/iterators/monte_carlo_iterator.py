@@ -2,26 +2,29 @@ import numpy as np
 from .iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.variables.variables import Variables
+from pqueens.utils.process_outputs import process_ouputs
 
 class MonteCarloIterator(Iterator):
     """ Basic Monte Carlo Iterator to enable MC sampling
 
     Attributes:
-        model (model):        Model to be evaluated by iterator
-        seed  (int):          Seed for random number generation
-        num_samples (int):    Number of samples to compute
-        samples (np.array):   Array with all samples
-        outputs (np.array):   Array with all model outputs
+        model (model):              Model to be evaluated by iterator
+        seed  (int):                Seed for random number generation
+        num_samples (int):          Number of samples to compute
+        result_description (dict):  Description of desired results
+        samples (np.array):         Array with all samples
+        outputs (np.array):         Array with all model outputs
     """
-    def __init__(self, model, seed, num_samples):
+    def __init__(self, model, seed, num_samples, result_description):
         super(MonteCarloIterator, self).__init__(model)
         self.seed = seed
         self.num_samples = num_samples
+        self.result_description = result_description
         self.samples = None
         self.output = None
 
     @classmethod
-    def from_config_create_iterator(cls, config, model=None):
+    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
         """ Create MC iterator from problem description
 
         Args:
@@ -31,12 +34,20 @@ class MonteCarloIterator(Iterator):
             iterator: MonteCarloIterator object
 
         """
-        method_options = config["method"]["method_options"]
-        # TODO add security check if there is a conflict
+        if iterator_name is None:
+            method_options = config["method"]["method_options"]
+        else:
+            method_options = config[iterator_name]["method_options"]
         if model is None:
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)
-        return cls(model, method_options["seed"], method_options["num_samples"])
+
+        result_description_section = method_options.get("result_description", None)
+        result_description = config.get(result_description_section, None)
+        return cls(model,
+                   method_options["seed"],
+                   method_options["num_samples"],
+                   result_description)
 
     def eval_model(self):
         """ Evaluate the model """
@@ -80,8 +91,10 @@ class MonteCarloIterator(Iterator):
 
     def post_run(self):
         """ Analyze the results """
-
-        print("Size of inputs {}".format(self.samples.shape))
-        print("Inputs {}".format(self.samples))
-        print("Size of outputs {}".format(self.output['mean'].shape))
-        print("Outputs {}".format(self.output['mean']))
+        if self.result_description is not None:
+            process_ouputs(self.output, self.result_description)
+        else:
+            print("Size of inputs {}".format(self.samples.shape))
+            print("Inputs {}".format(self.samples))
+            print("Size of outputs {}".format(self.output['mean'].shape))
+            print("Outputs {}".format(self.output['mean']))

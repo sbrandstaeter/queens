@@ -137,7 +137,10 @@ class TestMCIterator(unittest.TestCase):
         self.model = SimulationModel("my_model", self.interface, uncertain_parameters)
 
         # create LHS iterator
-        self.my_iterator = MonteCarloIterator(self.model, seed=42, num_samples=100)
+        self.my_iterator = MonteCarloIterator(self.model,
+                                              seed=42,
+                                              num_samples=100,
+                                              result_description=None)
 
     def test_correct_sampling(self):
         """ Test if we get correct samples"""
