@@ -11,8 +11,47 @@ def plot_pdf(pdf_estimate, support_points, bayes=False):
             support_points (np.array):  Supporting points
             bayes (bool):               Do we want to plot confidence intervals
     """
-    raise NotImplementedError
+    mean_pdf = go.Scatter(
+        x=support_points,
+        y=pdf_estimate["mean"],
+        mode='markers-line',
+        name='Mean'
+    )
 
+    data = [mean_pdf]
+
+    if bayes is True:
+        q5_pdf = go.Scatter(
+            x=support_points,
+            y=pdf_estimate["q5"],
+            mode='markers-line',
+            name='5% quantile'
+        )
+        data.append(q5_pdf)
+
+        q95_pdf = go.Scatter(
+            x=support_points,
+            y=pdf_estimate["q95"],
+            mode='markers-line',
+            name='95% quantile'
+        )
+        data.append(q95_pdf)
+
+        median_pdf = go.Scatter(
+            x=support_points,
+            y=pdf_estimate["median"],
+            mode='markers-line',
+            name='median'
+        )
+        data.append(median_pdf)
+
+    layout = dict(title='Probability Density Function',
+                  xaxis=dict(title='QOI'),
+                  yaxis=dict(title='PDF'),
+                 )
+
+    fig = go.Figure(data=data, layout=layout)
+    plotly.offline.plot(fig, filename='PDF.html', auto_open=True)
 
 def plot_cdf(cdf_estimate, support_points, bayes=False):
     """ Create cdf plot based on passed data
@@ -72,7 +111,8 @@ def plot_cdf(cdf_estimate, support_points, bayes=False):
                   yaxis=dict(title='CDF'),
                  )
 
-    plotly.offline.plot({"data": data, "layout": layout})
+    fig = go.Figure(data=data, layout=layout)
+    plotly.offline.plot(fig, filename='CDF.html', auto_open=True)
 
 def plot_icdf(icdf_estimate, support_points, bayes=False):
     """ Create icdf plot based on passed data

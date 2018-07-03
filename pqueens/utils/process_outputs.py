@@ -4,6 +4,8 @@ from pqueens.utils.plot_outputs import plot_pdf
 from pqueens.utils.plot_outputs import plot_cdf
 from pqueens.utils.plot_outputs import plot_failprob
 from pqueens.utils.plot_outputs import plot_icdf
+from sklearn.grid_search import GridSearchCV
+from sklearn.neighbors import KernelDensity
 
 def process_ouputs(output_data, output_description):
     """ Process output from QUEENS models
@@ -35,14 +37,16 @@ def process_ouputs(output_data, output_description):
     mean_mean = estimate_mean(output_data)
     var_mean = estimate_var(output_data)
 
-    #pdf_mean, pdf_conf = estimate_pdf(output_data,support_points)
+    pdf_estimate = estimate_pdf(output_data, support_points, bayesian)
     cdf_estimate = estimate_cdf(output_data, support_points, bayesian)
     #icdf_mean, icdf_mean = estimate_icdf(output_data, support_points)
     #f_prob_mean, f_prob_conf = estimate_failprob(output_data, support_points)
 
     if plot_results is True:
-    #    plot_pdf(support_points, pdf_mean, pdf_conf)
+        #plot_pdf(pdf_estimate, support_points, bayesian)
         plot_cdf(cdf_estimate, support_points, bayesian)
+        plot_pdf(pdf_estimate, support_points, bayesian)
+
     #    plot_icdf(support_points, pdf_mean, pdf_conf)
     #    plot_failprob(support_points, pdf_mean, pdf_conf)
 
@@ -93,20 +97,6 @@ def estimate_var(output_data):
     """
     samples = output_data["mean"]
     return np.var(samples)
-
-def estimate_pdf(output_data, support_points, bayesian):
-    """ Compute estimate of PDF based on provided sampling data
-
-    Args:
-        output_data (dict):         Dictionary with output data
-        support_points (np.array):  Points where to evaluate pdf
-        bayesian (bool):            Compute confindence intervals etc.
-
-    Returns:
-        pdf:                        Dictionary with pdf estimates
-
-    """
-    raise NotImplementedError
 
 def estimate_cdf(output_data, support_points, bayesian):
     """ Compute estimate of CDF based on provided sampling data
@@ -185,3 +175,89 @@ def estimate_failprob(output_data, failure_thesholds, bayesian):
 
     """
     raise NotImplementedError
+
+def estimate_pdf(output_data, support_points, bayesian):
+    """ Compute estimate of PDF based on provided sampling data
+
+    Args:
+        output_data (dict):         Dictionary with output data
+        support_points (np.array):  Points where to evaluate pdf
+        bayesian (bool):            Compute confindence intervals etc.
+
+    Returns:
+        pdf:                        Dictionary with pdf estimates
+
+    """
+    pdf = {}
+    pdf["x"] = support_points
+    if bayesian is False:
+        samples = output_data["mean"]
+        min_samples = np.amin(samples)
+        max_samples = np.amax(samples)
+        bandwidth = estimate_bandwidth_for_kde(samples, min_samples, max_samples)
+        pdf["mean"] = perform_kde(samples, bandwidth, support_points)
+    else:
+        min_samples = np.amin(support_points)
+        max_samples = np.amax(support_points)
+        mean_samples = output_data["mean"]
+        # estimate kernel bandwidth only once
+        bandwidth = estimate_bandwidth_for_kde(mean_samples,
+                                               min_samples,
+                                               max_samples)
+        raw_data = output_data["post_samples"]
+        num_realizations = raw_data.shape[1]
+        pdf_values = np.zeros((num_realizations, len(support_points)))
+        for i in range(num_realizations):
+            data = raw_data[:, i]
+            pdf_values[i, :] = perform_kde(data, bandwidth, support_points)
+
+        pdf["post_samples"] = pdf_values
+        # now we compute mean, median probability density function
+        pdf["mean"] = np.mean(pdf_values, axis=0)
+        pdf["median"] = np.median(pdf_values, axis=0)
+        pdf["q5"] = np.percentile(pdf_values, 5, axis=0)
+        pdf["q95"] = np.percentile(pdf_values, 95, axis=0)
+
+    return pdf
+
+def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
+    """ Estimate optimal bandwidth for kde of pdf
+
+    Args:
+        samples (np.array):  samples for which to estimate pdf
+        min_samples (float): smallest value
+        max_samples (float): largest value
+    Returns:
+        float: estimate for optimal kernel_bandwidth
+    """
+    kernel_bandwidth = 0
+    kernel_bandwidth_upper_bound = (max_samples-min_samples)/2.0
+    kernel_bandwidth_lower_bound = (max_samples-min_samples)/20.0
+
+     # do 20-fold cross-validation
+    grid = GridSearchCV(KernelDensity(), {'bandwidth': \
+        np.linspace(kernel_bandwidth_lower_bound,
+                    kernel_bandwidth_upper_bound,
+                    40)}, cv=20)
+
+    grid.fit(samples.reshape(-1, 1))
+    kernel_bandwidth = grid.best_params_['bandwidth']
+
+    return kernel_bandwidth
+
+def perform_kde(samples, kernel_bandwidth, support_points):
+    """ Estimate pdf using kernel density estimation
+
+    Args:
+        samples (np.array):         samples for which to estimate pdf
+        kernel_bandwidth (float):   kernel width to use in kde
+        support_points (np.array):  points where to evaluate pdf
+    Returns:
+        np.array:                   pdf_estimate at support points
+    """
+
+    kde = KernelDensity(kernel='gaussian', bandwidth=\
+        kernel_bandwidth).fit(samples.reshape(-1, 1))
+
+    y_density = np.exp(kde.score_samples(support_points.reshape(-1, 1)))
+    return y_density
