@@ -39,16 +39,14 @@ def process_ouputs(output_data, output_description):
 
     pdf_estimate = estimate_pdf(output_data, support_points, bayesian)
     cdf_estimate = estimate_cdf(output_data, support_points, bayesian)
-    #icdf_mean, icdf_mean = estimate_icdf(output_data, support_points)
+    icdf_estimate = estimate_icdf(output_data, bayesian)
     #f_prob_mean, f_prob_conf = estimate_failprob(output_data, support_points)
 
     if plot_results is True:
-        #plot_pdf(pdf_estimate, support_points, bayesian)
         plot_cdf(cdf_estimate, support_points, bayesian)
         plot_pdf(pdf_estimate, support_points, bayesian)
-
-    #    plot_icdf(support_points, pdf_mean, pdf_conf)
-    #    plot_failprob(support_points, pdf_mean, pdf_conf)
+        plot_icdf(icdf_estimate, bayesian)
+        #plot_failprob(support_points, pdf_mean, pdf_conf)
 
 def estimate_result_interval(output_data):
     """ Estimate interval of output data
@@ -147,19 +145,43 @@ def estimate_cdf(output_data, support_points, bayesian):
 
     return cdf
 
-def estimate_icdf(output_data, support_points, bayesian):
+def estimate_icdf(output_data, bayesian):
     """ Compute estimate of inverse CDF based on provided sampling data
 
     Args:
         output_data (dict):         Dictionary with output data
-        support_points (np.array):  Points where to evaluate icdf
         bayesian (bool):            Compute confindence intervals etc.
 
     Returns:
         icdf:                        Dictionary with icdf estimates
 
     """
-    raise NotImplementedError
+    my_percentiles = 100*np.linspace(0+1/1000, 1-1/1000, 999)
+    icdf = {}
+    icdf["x"] = my_percentiles
+    if bayesian is False:
+        samples = output_data["mean"]
+        icdf_values = np.zeros_like(my_percentiles)
+        for i, percentile in enumerate(my_percentiles):
+            icdf_values[i] = np.percentile(samples, percentile, axis=0)
+        icdf["mean"] = icdf_values
+    else:
+        raw_data = output_data["post_samples"]
+        num_realizations = raw_data.shape[1]
+        icdf_values = np.zeros((len(my_percentiles), num_realizations))
+        for i, point in enumerate(my_percentiles):
+            icdf_values[i, :] = np.percentile(raw_data, point, axis=0)
+
+
+        icdf["post_samples"] = icdf_values
+        # now we compute mean, median cumulative distribution function
+        icdf["mean"] = np.mean(icdf_values, axis=1)
+        icdf["median"] = np.median(icdf_values, axis=1)
+        icdf["q5"] = np.percentile(icdf_values, 5, axis=1)
+        icdf["q95"] = np.percentile(icdf_values, 95, axis=1)
+
+    return icdf
+
 
 def estimate_failprob(output_data, failure_thesholds, bayesian):
     """ Compute estimate of failure probability plot based on passed data

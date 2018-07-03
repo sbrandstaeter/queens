@@ -1,6 +1,5 @@
 import plotly
 import plotly.graph_objs as go
-import numpy as np
 
 
 def plot_pdf(pdf_estimate, support_points, bayes=False):
@@ -114,15 +113,56 @@ def plot_cdf(cdf_estimate, support_points, bayes=False):
     fig = go.Figure(data=data, layout=layout)
     plotly.offline.plot(fig, filename='CDF.html', auto_open=True)
 
-def plot_icdf(icdf_estimate, support_points, bayes=False):
+def plot_icdf(icdf_estimate, bayes=False):
     """ Create icdf plot based on passed data
 
         Args:
             icdf_estimate   (dict):      Estimate of icdf at supporting points
-            support_points (np.array):   Supporting points
             bayes (bool):                Do we want to plot confidence intervals
     """
-    raise NotImplementedError
+    # Create a trace
+    my_percentiles = icdf_estimate["x"]
+    mean_icdf = go.Scatter(
+        x=my_percentiles,
+        y=icdf_estimate["mean"],
+        mode='markers-line',
+        name='Mean'
+    )
+    data = [mean_icdf]
+
+    if bayes is True:
+        q5_icdf = go.Scatter(
+            x=my_percentiles,
+            y=icdf_estimate["q5"],
+            mode='markers-line',
+            name='5% quantile'
+        )
+        data.append(q5_icdf)
+
+        q95_icdf = go.Scatter(
+            x=my_percentiles,
+            y=icdf_estimate["q95"],
+            mode='markers-line',
+            name='95% quantile'
+        )
+        data.append(q95_icdf)
+
+        median_icdf = go.Scatter(
+            x=my_percentiles,
+            y=icdf_estimate["median"],
+            mode='markers-line',
+            name='median'
+        )
+        data.append(median_icdf)
+
+    layout = dict(title='Inverse Cumulative Density Function',
+                  xaxis=dict(title='QOI'),
+                  yaxis=dict(title='ICDF'),
+                 )
+
+    fig = go.Figure(data=data, layout=layout)
+    plotly.offline.plot(fig, filename='ICDF.html', auto_open=True)
+
 
 
 def plot_failprob(failprob_estimate, failure_threshold, bayes=False):
