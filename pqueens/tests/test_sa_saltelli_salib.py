@@ -25,6 +25,9 @@ class TestSASaltelliSALib(unittest.TestCase):
         uncertain_parameters['x2'] = uncertain_parameter
         uncertain_parameters['x3'] = uncertain_parameter
 
+        some_settings = {}
+        some_settings["experiment_name"] = "test"
+
         self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
         # create interface
         self.interface =  DirectPythonInterface('test_interface',
@@ -37,7 +40,7 @@ class TestSASaltelliSALib(unittest.TestCase):
         # setup input paramater for init of Saltelli iterator
         # Note, initialization from config dict is done separately
         self.my_iterator = SaltelliSALibIterator(self.model, seed=42, num_samples=3, calc_second_order=True,
-                            num_bootstrap_samples=1000, confidence_level=0.95)
+                            num_bootstrap_samples=1000, confidence_level=0.95, global_settings=some_settings)
 
 
 
@@ -182,6 +185,9 @@ class TestSASaltelliBorehole(unittest.TestCase):
         uncertain_parameters['L'] = uncertain_parameter7
         uncertain_parameters['Kw'] = uncertain_parameter8
 
+        some_settings = {}
+        some_settings["experiment_name"] = "test"
+
         self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
         # create interface
         self.interface =  DirectPythonInterface('test_interface',
@@ -194,7 +200,7 @@ class TestSASaltelliBorehole(unittest.TestCase):
         # setup input paramater for init of Saltelli iterator
         # Note, initialization from config dict is done separately
         self.my_iterator = SaltelliSALibIterator(self.model, seed=42, num_samples=3, calc_second_order=False,
-                            num_bootstrap_samples=1000, confidence_level=0.95)
+                            num_bootstrap_samples=1000, confidence_level=0.95, global_settings=some_settings)
 
     def test_correct_sampling(self):
         """ Test if scaling works correctly """

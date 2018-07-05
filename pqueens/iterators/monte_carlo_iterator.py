@@ -3,6 +3,7 @@ from .iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.variables.variables import Variables
 from pqueens.utils.process_outputs import process_ouputs
+from pqueens.utils.process_outputs import write_results
 
 class MonteCarloIterator(Iterator):
     """ Basic Monte Carlo Iterator to enable MC sampling
@@ -15,8 +16,8 @@ class MonteCarloIterator(Iterator):
         samples (np.array):         Array with all samples
         outputs (np.array):         Array with all model outputs
     """
-    def __init__(self, model, seed, num_samples, result_description):
-        super(MonteCarloIterator, self).__init__(model)
+    def __init__(self, model, seed, num_samples, result_description, global_settings):
+        super(MonteCarloIterator, self).__init__(model, global_settings)
         self.seed = seed
         self.num_samples = num_samples
         self.result_description = result_description
@@ -44,10 +45,13 @@ class MonteCarloIterator(Iterator):
 
         result_description_section = method_options.get("result_description", None)
         result_description = config.get(result_description_section, None)
+        global_settings = config.get("global_settings", None)
+
         return cls(model,
                    method_options["seed"],
                    method_options["num_samples"],
-                   result_description)
+                   result_description,
+                   global_settings)
 
     def eval_model(self):
         """ Evaluate the model """
@@ -92,7 +96,8 @@ class MonteCarloIterator(Iterator):
     def post_run(self):
         """ Analyze the results """
         if self.result_description is not None:
-            process_ouputs(self.output, self.result_description)
+            results = process_ouputs(self.output, self.result_description)
+            write_results(results, self.output_dir, "test")
         else:
             print("Size of inputs {}".format(self.samples.shape))
             print("Inputs {}".format(self.samples))

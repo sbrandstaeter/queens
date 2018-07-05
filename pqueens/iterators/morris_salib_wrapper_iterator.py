@@ -46,7 +46,7 @@ class MorrisSALibIterator(Iterator):
 
     def __init__(self, model, num_trajectories, local_optimization,
                  num_optimal_trajectories, grid_jump, num_levels, seed,
-                 confidence_level, num_bootstrap_samples):
+                 confidence_level, num_bootstrap_samples, global_settings):
         """ Initialize MorrisSALibIterator
 
         Args:
@@ -74,7 +74,7 @@ class MorrisSALibIterator(Iterator):
                                           sensitivity measures
 
         """
-        super(MorrisSALibIterator, self).__init__(model)
+        super(MorrisSALibIterator, self).__init__(model, global_settings)
         self.num_trajectories = num_trajectories
         self.local_optimization = local_optimization
         self.num_optimal_trajectories = num_optimal_trajectories
@@ -119,7 +119,8 @@ class MorrisSALibIterator(Iterator):
                    method_options["number_of_levels"],
                    method_options["seed"],
                    method_options["confidence_level"],
-                   method_options["num_bootstrap_samples"])
+                   method_options["num_bootstrap_samples"],
+                   config["global_settings"])
 
     def eval_model(self):
         """ Evaluate the model """

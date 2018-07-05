@@ -25,7 +25,7 @@ class SaltelliSALibIterator(Iterator):
         sensitivity_incides (dict):         Dictionary with sensitivity indices
     """
     def __init__(self, model, seed, num_samples, calc_second_order,
-                 num_bootstrap_samples, confidence_level):
+                 num_bootstrap_samples, confidence_level, global_settings):
         """ Initialize Saltelli SALib iterator object
 
         Args:
@@ -35,7 +35,7 @@ class SaltelliSALibIterator(Iterator):
             num_bootstrap_samples (int):    Number of bootstrap samples
             confidence_level (float):       The confidence interval level
         """
-        super(SaltelliSALibIterator, self).__init__(model)
+        super(SaltelliSALibIterator, self).__init__(model, global_settings)
 
         self.seed = seed
         self.num_samples = num_samples
@@ -70,7 +70,8 @@ class SaltelliSALibIterator(Iterator):
                    method_options["num_samples"],
                    method_options["calc_second_order"],
                    method_options["num_bootstrap_samples"],
-                   method_options["confidence_level"])
+                   method_options["confidence_level"],
+                   config["global_settings"])
 
     def eval_model(self):
         """ Evaluate the model """

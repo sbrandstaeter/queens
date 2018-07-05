@@ -18,8 +18,8 @@ class LHSIterator(Iterator):
         outputs (np.array):   Array with all model outputs
 
     """
-    def __init__(self, model, seed, num_samples, num_iterations, result_description):
-        super(LHSIterator, self).__init__(model)
+    def __init__(self, model, seed, num_samples, num_iterations, result_description, global_settings):
+        super(LHSIterator, self).__init__(model, global_settings)
         self.seed = seed
         self.num_samples = num_samples
         self.num_iterations = num_iterations

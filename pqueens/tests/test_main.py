@@ -11,7 +11,8 @@ from pqueens.main import main as queens_main
 
 class TestQUEENSMain(unittest.TestCase):
     def setUp(self):
-        self.options = {"method": {"method_name": "monte_carlo",
+        self.options = {"experiment_name" : "my_test",
+                        "method": {"method_name": "monte_carlo",
                                    "method_options":{"seed" : 42,
                                                      "num_samples" : 20,
                                                      "model" : "model"}}}
@@ -28,7 +29,7 @@ class TestQUEENSMain(unittest.TestCase):
         mock_iterator.assert_called_with(self.options)
         mock_iterator.return_value.run.assert_called()
 
-    @mock.patch("json.load", return_value={"dummy": "entry"})
+    @mock.patch("json.load", return_value={"experiment_name": "entry"})
     @mock.patch("builtins.open", create=True)
     @mock.patch('os.path.isdir', return_value=True)
     def test_option_parsing_function(self, mock_isdir, mock_open, mock_json):
@@ -40,7 +41,7 @@ class TestQUEENSMain(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             get_options(self.args)
 
-    @mock.patch("json.load", return_value={"dummy": "entry"})
+    @mock.patch("json.load", return_value={"experiment_name": "entry"})
     @mock.patch("builtins.open", create=True)
     def test_option_parsing_no_proper_output_dir(self, mock_open, mock_json):
         args = ['--input', '/helper_example_config.json',
@@ -53,7 +54,7 @@ class TestQUEENSMain(unittest.TestCase):
         with self.assertRaises(Exception):
             get_options(self.args)
 
-    @mock.patch("json.load", return_value={"dummy": "entry"})
+    @mock.patch("json.load", return_value={"experiment_name": "entry"})
     @mock.patch("builtins.open", create=True)
     @mock.patch('os.path.isdir', return_value=True)
     def test_option_parsing_check_proper_debug_flags(self, mock_isdir, mock_open, mock_json):

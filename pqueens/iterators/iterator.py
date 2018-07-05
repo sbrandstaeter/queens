@@ -17,8 +17,9 @@ class Iterator(metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, model):
+    def __init__(self, model, global_settings):
         self.model = model
+        self.global_settings = global_settings
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):

@@ -14,7 +14,9 @@ def side_effect(X):
 
 class TestBayesianOptimizationIterator(unittest.TestCase):
     def setUp(self):
-        self.dummy_config = {"method": {"method_name": "bayesian_optimization",
+        self.dummy_config = { "global_settings": { "experiment_name" : "test",
+                                                   "output_dir" : "/dummy/dir"},
+                              "method": {"method_name": "bayesian_optimization",
                                         "method_options" :{ "seed" : 42,
                                                             "model" : "model",
                                                             "num_iter" : 10,
@@ -53,9 +55,11 @@ class TestBayesianOptimizationIterator(unittest.TestCase):
     @mock.patch('pqueens.iterators.bayesian_optimization_iterator.BayesianOptimizer.optimize')
     def test_core_run(self,  mocks, mock2, mock3):
         mocks.get_parameter.return_value = self.dummy_params
-
+        some_settings = {}
+        some_settings["experiment_name"] = "test"
         my_iterator = BayesOptIterator(mocks, seed=42, num_iter=10,
-                                       use_ard="True", num_initial_samples=5)
+                                       use_ard="True", num_initial_samples=5,
+                                       global_settings=some_settings)
         my_iterator.core_run()
         np.testing.assert_array_equal(np.array([[3250], [5500], [1000], [7750], [10000]]),mock2.call_args[0][0])
 

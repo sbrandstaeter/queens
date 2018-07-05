@@ -5,11 +5,10 @@ from pqueens.models.model import Model
 import gpflow
 from gpflowopt.domain import ContinuousParameter
 from gpflowopt.bo import BayesianOptimizer
-from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer
-#, SciPyBasinHoppingOptimizer, SciPyDifferentialEvoOptimizer
+from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer, SciPyBasinHoppingOptimizer, SciPyDifferentialEvoOptimizer
 from gpflowopt.design import LatinHyperCube
 from gpflowopt.acquisition import ExpectedImprovement
-#from gpflowopt.acquisition import LowerConfidenceBound
+from gpflowopt.acquisition import LowerConfidenceBound
 
 
 class BayesOptIterator(Iterator):
@@ -27,8 +26,9 @@ class BayesOptIterator(Iterator):
         results ():                 Container for results from gpflowopt
 
     """
-    def __init__(self, model, seed, num_iter, use_ard, num_initial_samples):
-        super(BayesOptIterator, self).__init__(model)
+    def __init__(self, model, seed, num_iter, use_ard, num_initial_samples,
+                 global_settings):
+        super(BayesOptIterator, self).__init__(model, global_settings)
         self.seed = seed
         self.num_iter = num_iter
         self.use_ard = use_ard
@@ -64,7 +64,8 @@ class BayesOptIterator(Iterator):
         model_name = method_options["model"]
         model = Model.from_config_create_model(model_name, config)
         return cls(model, method_options["seed"], method_options["num_iter"],
-                   method_options["use_ard"], method_options["num_initial_samples"])
+                   method_options["use_ard"], method_options["num_initial_samples"],
+                   config["global_settings"])
 
     def eval_model(self):
         """ Evaluate the model """

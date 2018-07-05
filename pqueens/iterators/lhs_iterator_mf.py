@@ -24,8 +24,8 @@ class MF_LHSIterator(Iterator):
         outputs (list):       List of dicts with all model outputs
 
     """
-    def __init__(self, model, seed, num_samples, num_iterations, mode):
-        super(MF_LHSIterator, self).__init__(model)
+    def __init__(self, model, seed, num_samples, num_iterations, mode, global_settings):
+        super(MF_LHSIterator, self).__init__(model, global_settings)
         if type(self.model) is not MultifidelityModel:
             raise RuntimeError("MF_LHS Iterator requires a multi-fidelity model")
 
@@ -58,8 +58,11 @@ class MF_LHSIterator(Iterator):
         if model is None:
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)
-        return cls(model, method_options["seed"], method_options["num_samples"],
-                   method_options["num_iterations"], method_options["mode"])
+        return cls(model, method_options["seed"],
+                   method_options["num_samples"],
+                   method_options["num_iterations"],
+                   method_options["mode"],
+                   config["global_settings"])
 
     def eval_model(self):
         """ Evaluate the model """

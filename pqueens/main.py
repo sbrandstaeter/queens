@@ -62,9 +62,19 @@ def get_options(args):
 
     options["debug"] = debug
     options["input_file"] = input_file
-    options["output_dir"] = output_dir
 
-    return  options
+    # move some parameters into a global settings dict to be passed to e.g.
+    # iterators facilitating input output stuff
+    global_settings = {}
+    global_settings["output_dir"] = output_dir
+    global_settings["experiment_name"] = options["experiment_name"]
+
+    #remove experiment_name field from options dict
+    options["global_settings"] = global_settings
+    #remove experiment_name field from options dict make copy first
+    final_options = dict(options)
+    del  final_options["experiment_name"]
+    return  final_options
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

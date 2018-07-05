@@ -43,7 +43,7 @@ class SaltelliIterator(Iterator):
     """
 
     def __init__(self, model, seed, num_samples, calc_second_order,
-                 num_bootstrap_samples, confidence_level):
+                 num_bootstrap_samples, confidence_level, global_settings):
         """ Initialize Saltelli iterator object
 
         Args:
@@ -54,7 +54,7 @@ class SaltelliIterator(Iterator):
             num_bootstrap_samples (int):    Number of bootstrap samples
             confidence_level (float):       The confidence interval level
         """
-        super(SaltelliIterator, self).__init__(model)
+        super(SaltelliIterator, self).__init__(model, global_settings)
 
         self.num_samples = num_samples
         self.seed = seed
@@ -89,7 +89,8 @@ class SaltelliIterator(Iterator):
                    method_options["num_samples"],
                    method_options["calc_second_order"],
                    method_options["num_bootstrap_samples"],
-                   method_options["confidence_level"])
+                   method_options["confidence_level"],
+                   config["global_settings"])
 
     def eval_model(self):
         """ Evaluate the model """

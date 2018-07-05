@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 import warnings
 from pqueens.utils.plot_outputs import plot_pdf
 from pqueens.utils.plot_outputs import plot_cdf
@@ -10,9 +11,12 @@ from sklearn.neighbors import KernelDensity
 def process_ouputs(output_data, output_description):
     """ Process output from QUEENS models
 
-        Args:
-            output_data (dict):         Dictionary containing model output
-            output_descripion (dict):   Dictionary describing desired output quantities
+    Args:
+        output_data (dict):         Dictionary containing model output
+        output_descripion (dict):   Dictionary describing desired output quantities
+
+    Returns:
+        dict:                       Dictionary with processed results
     """
 
     # do we want confindence intervals
@@ -21,10 +25,11 @@ def process_ouputs(output_data, output_description):
     if "post_samples" not in output_data and bayesian is True:
         warnings.warn("Warning: Output data does not contain posterior samples. Not computing confidence intervals")
         bayesian = False
+
     # do we want plotting
     plot_results = output_description.get('plot_results', False)
 
-    # result intervale
+    # result interval
     result_interval = output_description.get('result_interval', None)
     if result_interval is None:
         # estimate interval from resutls
@@ -40,13 +45,42 @@ def process_ouputs(output_data, output_description):
     pdf_estimate = estimate_pdf(output_data, support_points, bayesian)
     cdf_estimate = estimate_cdf(output_data, support_points, bayesian)
     icdf_estimate = estimate_icdf(output_data, bayesian)
-    #f_prob_mean, f_prob_conf = estimate_failprob(output_data, support_points)
 
     if plot_results is True:
         plot_cdf(cdf_estimate, support_points, bayesian)
         plot_pdf(pdf_estimate, support_points, bayesian)
         plot_icdf(icdf_estimate, bayesian)
-        #plot_failprob(support_points, pdf_mean, pdf_conf)
+
+    processed_results = {}
+    processed_results["mean"] = mean_mean
+    processed_results["var"] = var_mean
+    processed_results["pdf_estimate"] = pdf_estimate
+    processed_results["cdf_estimate"] = cdf_estimate
+    processed_results["icdf_estimate"] = icdf_estimate
+
+    return processed_results
+
+def write_results(processed_results, path_to_file, file_name):
+    """ Write results to pickle file
+
+    Args:
+        processed_results (dict):  Dictionary with results
+        path_to_file (str):        Path to write resutls to
+        file_name (str):           Name of resutl file
+
+    """
+
+    pickle_file = path_to_file + file_name + ".pickle"
+
+    with open(pickle_file, 'wb') as handle:
+        pickle.dump(processed_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+    with open(pickle_file, 'rb') as handle:
+        b = pickle.load(handle)
+
+    print(b)
+
+
 
 def estimate_result_interval(output_data):
     """ Estimate interval of output data

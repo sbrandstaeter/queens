@@ -38,6 +38,9 @@ class TestLHSIterator(unittest.TestCase):
         uncertain_parameters['x2'] = uncertain_parameter2
         uncertain_parameters['x3'] = uncertain_parameter3
 
+        some_settings = {}
+        some_settings["experiment_name"] = "test"
+
         self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
 
         # create interface
@@ -53,7 +56,8 @@ class TestLHSIterator(unittest.TestCase):
                                        seed=42,
                                        num_samples=100,
                                        num_iterations=1,
-                                       result_description=None)
+                                       result_description=None,
+                                       global_settings=some_settings)
 
     def test_correct_sampling(self):
         """ Test if we get correct samples"""
@@ -130,6 +134,9 @@ class TestMCIterator(unittest.TestCase):
         uncertain_parameters['x2'] = uncertain_parameter2
         uncertain_parameters['x3'] = uncertain_parameter3
 
+        some_settings = {}
+        some_settings["experiment_name"] = "test"
+
         self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
 
         # create interface
@@ -144,7 +151,8 @@ class TestMCIterator(unittest.TestCase):
         self.my_iterator = MonteCarloIterator(self.model,
                                               seed=42,
                                               num_samples=100,
-                                              result_description=None)
+                                              result_description=None,
+                                              global_settings=some_settings)
 
     def test_correct_sampling(self):
         """ Test if we get correct samples"""
