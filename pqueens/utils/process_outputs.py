@@ -70,15 +70,15 @@ def write_results(processed_results, path_to_file, file_name):
 
     """
 
-    pickle_file = path_to_file + file_name + ".pickle"
+    pickle_file = path_to_file + '/' + file_name + ".pickle"
 
     with open(pickle_file, 'wb') as handle:
         pickle.dump(processed_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    with open(pickle_file, 'rb') as handle:
-        b = pickle.load(handle)
+    #with open(pickle_file, 'rb') as handle:
+    #    b = pickle.load(handle)
 
-    print(b)
+    #print("Pickle File {}".format(pickle_file))
 
 
 
