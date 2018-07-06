@@ -151,10 +151,10 @@ before the make command.
 
 ## Run the test suite
 QUEENS has a couple of unit and regression test. To run the test suite type:  
-`python -m unittest discover pqueens/tests`
+`python -m unittest discover pqueens/tests/unittest`
 
 In order to get a detailed report showing code coverage etc., the test have to be run using the coverage tool. This is triggered by running the using:    
-`coverage run -m unittest discover -s pqueens/tests`  
+`coverage run -m unittest discover -s pqueens/tests/unittest`  
 
 To view the created report, run:  
 `coverage report -m`
