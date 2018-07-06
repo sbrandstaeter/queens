@@ -97,7 +97,9 @@ class MonteCarloIterator(Iterator):
         """ Analyze the results """
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description)
-            write_results(results, self.output_dir, "test")
+            write_results(results,
+                          self.global_settings["output_dir"],
+                          self.global_settings["experiment_name"])
         else:
             print("Size of inputs {}".format(self.samples.shape))
             print("Inputs {}".format(self.samples))
