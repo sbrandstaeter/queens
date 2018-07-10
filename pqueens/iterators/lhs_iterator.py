@@ -2,7 +2,8 @@ import numpy as np
 from pyDOE import lhs
 from .iterator import Iterator
 from pqueens.models.model import Model
-#from pqueens.variables.variables import Variables
+from pqueens.utils.process_outputs import process_ouputs
+from pqueens.utils.process_outputs import write_results
 from .scale_samples import scale_samples
 
 class LHSIterator(Iterator):
@@ -18,7 +19,8 @@ class LHSIterator(Iterator):
         outputs (np.array):   Array with all model outputs
 
     """
-    def __init__(self, model, seed, num_samples, num_iterations, result_description, global_settings):
+    def __init__(self, model, seed, num_samples, num_iterations,
+                 result_description, global_settings):
         super(LHSIterator, self).__init__(model, global_settings)
         self.seed = seed
         self.num_samples = num_samples
@@ -47,11 +49,14 @@ class LHSIterator(Iterator):
             model = Model.from_config_create_model(model_name, config)
 
         result_description = method_options.get("result_description", None)
+        global_settings = config.get("global_settings", None)
+
 
         return cls(model, method_options["seed"],
                    method_options["num_samples"],
                    method_options["num_iterations"],
-                   result_description)
+                   result_description,
+                   global_settings)
 
     def eval_model(self):
         """ Evaluate the model """
@@ -81,7 +86,11 @@ class LHSIterator(Iterator):
     def post_run(self):
         """ Analyze the results """
         if self.result_description is not None:
-            process_ouputs(self.output, self.result_description)
+            results = process_ouputs(self.output, self.result_description)
+            if self.result_description["write_results"] is True:
+                write_results(results,
+                              self.global_settings["output_dir"],
+                              self.global_settings["experiment_name"])
         else:
             print("Size of inputs {}".format(self.samples.shape))
             print("Inputs {}".format(self.samples))
