@@ -75,12 +75,6 @@ def write_results(processed_results, path_to_file, file_name):
     with open(pickle_file, 'wb') as handle:
         pickle.dump(processed_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-    #with open(pickle_file, 'rb') as handle:
-    #    b = pickle.load(handle)
-
-    #print("Pickle File {}".format(pickle_file))
-
-
 
 def estimate_result_interval(output_data):
     """ Estimate interval of output data
