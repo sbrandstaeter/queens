@@ -1,0 +1,94 @@
+{
+  "experiment_name" : "xxx",
+  "database"  :{
+    "address"   : "localhost:27017"
+  },
+  "method": {
+    "method_name": "lhs",
+    "method_options" :{
+      "seed" : 42,
+      "num_samples" : 1000,
+      "model" : "model",
+      "num_iterations" : 5,
+      "result_description" : {
+          "write_results" : true,
+          "plot_results" : false
+      }
+    }
+  },
+  "model" : {
+    "type" : "simulation_model",
+    "interface" : "interface",
+    "parameters" : "parameters"
+  },
+  "interface" : {
+    "type" : "direct_python_interface",
+    "main_file" : "/Users/jonas/work/02_adco/queens_code/pqueens/pqueens/example_simulator_functions/borehole_lofi.py"
+  },
+  "parameters" : {
+    "rw" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 0.05,
+      "max"  : 0.15,
+      "distribution" : "uniform",
+      "distribution_parameter" : [0.05,0.15]
+    },
+    "r" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 100,
+      "max"  : 50000,
+      "distribution" : "uniform",
+      "distribution_parameter" : [100,50000]
+    },
+    "Tu" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 63070,
+      "max"  : 115600,
+      "distribution" : "uniform",
+      "distribution_parameter" : [63070,115600]
+    },
+    "Hu" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 990,
+      "max"  : 1110,
+      "distribution" : "uniform",
+      "distribution_parameter" : [990,1110]
+    },
+    "Tl" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 63.1,
+      "max"  : 116,
+      "distribution" : "uniform",
+      "distribution_parameter" : [63.1,116]
+    },
+    "Hl" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 700,
+      "max"  : 820,
+      "distribution" : "uniform",
+      "distribution_parameter" : [700,820]
+    },
+    "L" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 1120,
+      "max"  : 1680,
+      "distribution" : "uniform",
+      "distribution_parameter" : [1120,1680]
+    },
+    "Kw" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 9855,
+      "max"  : 12045,
+      "distribution" : "uniform",
+      "distribution_parameter" : [9855,12045]
+    }
+  }
+}
