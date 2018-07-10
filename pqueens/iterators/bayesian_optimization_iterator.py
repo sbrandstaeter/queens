@@ -1,6 +1,7 @@
 import numpy as np
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
+from pqueens.utils.process_outputs import write_results
 
 import gpflow
 from gpflowopt.domain import ContinuousParameter
@@ -23,11 +24,12 @@ class BayesOptIterator(Iterator):
         num_iter (int):             Number of iterations to run Bayesian optimizer
         use_ard (bool):             Flag whether or not to use ARD in covariance
                                     function
-        results ():                 Container for results from gpflowopt
+        results (dict):             Container for results from gpflowopt
+        result_description (dict):  Dict with description for result processing
 
     """
     def __init__(self, model, seed, num_iter, use_ard, num_initial_samples,
-                 global_settings):
+                 result_description, global_settings):
         super(BayesOptIterator, self).__init__(model, global_settings)
         self.seed = seed
         self.num_iter = num_iter
@@ -37,6 +39,7 @@ class BayesOptIterator(Iterator):
         self.inputs = None
         self.results = None
         self.results_bo = None
+        self.result_description = result_description
 
         parameter_info = self.model.get_parameter()
         self.num_params = len(parameter_info)
@@ -50,7 +53,7 @@ class BayesOptIterator(Iterator):
         self.domain = np.sum(gpflow_params)
 
     @classmethod
-    def from_config_create_iterator(cls, config):
+    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
         """ Create Bayesian Optimization iterator from problem description
 
         Args:
@@ -60,12 +63,22 @@ class BayesOptIterator(Iterator):
             iterator: BayesOptIterator object
 
         """
-        method_options = config["method"]["method_options"]
-        model_name = method_options["model"]
-        model = Model.from_config_create_model(model_name, config)
+        if iterator_name is None:
+            method_options = config["method"]["method_options"]
+        else:
+            method_options = config[iterator_name]["method_options"]
+        if model is None:
+            model_name = method_options["model"]
+            model = Model.from_config_create_model(model_name, config)
+
+        result_description_section = method_options.get("result_description", None)
+        result_description = config.get(result_description_section, None)
+        global_settings = config.get("global_settings", None)
+        #method_options = config["method"]["method_options"]
+
         return cls(model, method_options["seed"], method_options["num_iter"],
                    method_options["use_ard"], method_options["num_initial_samples"],
-                   config["global_settings"])
+                   result_description, global_settings)
 
     def eval_model(self):
         """ Evaluate the model """
@@ -88,11 +101,11 @@ class BayesOptIterator(Iterator):
         self.model.update_model_from_sample_batch(X)
         results = self.eval_model()
         if self.results is None:
-            self.results = results
+            self.results = results["mean"]
         else:
-            self.results = np.append(self.results, results, axis=0)
+            self.results = np.append(self.results, results["mean"], axis=0)
 
-        return results
+        return results["mean"]
 
     def core_run(self):
         """  Run Bayesian Optimization """
@@ -130,6 +143,12 @@ class BayesOptIterator(Iterator):
 
     def post_run(self):
         """ Analyze the results """
-        print("Evaluated inputs: {}".format(self.inputs))
-        print("Evaluated results: {}".format(self.results))
-        print("Summary BO {}".format(self.results_bo))
+        if self.result_description is not None \
+        and self.result_description["write_results"] is True:
+            write_results(self.results_bo,
+                          self.global_settings["output_dir"],
+                          self.global_settings["experiment_name"])
+        else:
+            print("Evaluated inputs: {}".format(self.inputs))
+            print("Evaluated results: {}".format(self.results))
+            print("Summary BO {}".format(self.results_bo))

@@ -1,0 +1,47 @@
+{
+    "experiment_name" : "xxx",
+    "database"  :{
+      "address"   : "localhost:27017"
+    },
+    "method": {
+      "method_name": "bayesian_optimization",
+      "method_options" :{
+        "seed" : 42,
+        "model" : "model",
+        "num_iter" : 10,
+        "use_ard" : "True",
+        "num_initial_samples" : 10,
+        "result_description" : "bo_results"
+      }
+    },
+    "model" : {
+      "type" : "simulation_model",
+      "interface" : "interface",
+      "parameters" : "parameters"
+    },
+    "interface" : {
+      "type" : "direct_python_interface",
+      "main_file" : "/Users/jonas/work/02_adco/queens_code/pqueens/pqueens/example_simulator_functions/branin_hifi.py"
+    },
+    "parameters" : {
+        "x1" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : -5,
+            "max"  : 10,
+            "distribution" : "uniform",
+            "distribution_parameter" : [-5,10]
+        },
+        "x2" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : 0,
+            "max"  : 15,
+            "distribution" : "uniform",
+            "distribution_parameter" : [0,15]
+        }
+    },
+    "bo_results" : {
+        "write_results" : true
+    }
+}
