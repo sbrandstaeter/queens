@@ -72,9 +72,7 @@ class BayesOptIterator(Iterator):
             model = Model.from_config_create_model(model_name, config)
 
         result_description = method_options.get("result_description", None)
-        #result_description = config.get(result_description_section, None)
         global_settings = config.get("global_settings", None)
-        #method_options = config["method"]["method_options"]
 
         return cls(model, method_options["seed"], method_options["num_iter"],
                    method_options["use_ard"], method_options["num_initial_samples"],
