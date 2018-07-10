@@ -11,7 +11,9 @@
         "num_iter" : 10,
         "use_ard" : "True",
         "num_initial_samples" : 10,
-        "result_description" : "bo_results"
+        "result_description" : {
+            "write_results" : true
+        }
       }
     },
     "model" : {
@@ -40,8 +42,5 @@
             "distribution" : "uniform",
             "distribution_parameter" : [0,15]
         }
-    },
-    "bo_results" : {
-        "write_results" : true
     }
 }

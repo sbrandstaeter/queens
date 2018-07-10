@@ -43,8 +43,7 @@ class MonteCarloIterator(Iterator):
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)
 
-        result_description_section = method_options.get("result_description", None)
-        result_description = config.get(result_description_section, None)
+        result_description = method_options.get("result_description", None)
         global_settings = config.get("global_settings", None)
 
         return cls(model,
@@ -97,9 +96,10 @@ class MonteCarloIterator(Iterator):
         """ Analyze the results """
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description)
-            write_results(results,
-                          self.global_settings["output_dir"],
-                          self.global_settings["experiment_name"])
+            if self.result_description["write_results"] is True:
+                write_results(results,
+                              self.global_settings["output_dir"],
+                              self.global_settings["experiment_name"])
         else:
             print("Size of inputs {}".format(self.samples.shape))
             print("Inputs {}".format(self.samples))

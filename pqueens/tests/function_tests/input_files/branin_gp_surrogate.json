@@ -9,7 +9,12 @@
         "seed" : 44,
         "num_samples" : 200,
         "model" : "gp_surrogate_model",
-        "result_description" : "mc_results"
+        "result_description" : {
+            "write_results" : true,
+            "plot_results" : false,
+            "bayesian" : true,
+            "num_support_points" : 200
+        }
       }
     },
     "gp_surrogate_model" : {
@@ -65,10 +70,5 @@
             "distribution" : "uniform",
             "distribution_parameter" : [0,15]
         }
-    },
-    "mc_results" : {
-        "plot_results" : false,
-        "bayesian" : true,
-        "num_support_points" : 200
     }
 }

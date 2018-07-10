@@ -71,8 +71,8 @@ class BayesOptIterator(Iterator):
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)
 
-        result_description_section = method_options.get("result_description", None)
-        result_description = config.get(result_description_section, None)
+        result_description = method_options.get("result_description", None)
+        #result_description = config.get(result_description_section, None)
         global_settings = config.get("global_settings", None)
         #method_options = config["method"]["method_options"]
 
@@ -143,11 +143,11 @@ class BayesOptIterator(Iterator):
 
     def post_run(self):
         """ Analyze the results """
-        if self.result_description is not None \
-        and self.result_description["write_results"] is True:
-            write_results(self.results_bo,
-                          self.global_settings["output_dir"],
-                          self.global_settings["experiment_name"])
+        if self.result_description is not None:
+            if self.result_description["write_results"] is True:
+                write_results(self.results_bo,
+                              self.global_settings["output_dir"],
+                              self.global_settings["experiment_name"])
         else:
             print("Evaluated inputs: {}".format(self.inputs))
             print("Evaluated results: {}".format(self.results))

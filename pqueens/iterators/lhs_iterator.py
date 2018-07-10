@@ -46,8 +46,7 @@ class LHSIterator(Iterator):
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)
 
-        result_description_section = method_options.get("result_description", None)
-        result_description = config.get(result_description_section, None)
+        result_description = method_options.get("result_description", None)
 
         return cls(model, method_options["seed"],
                    method_options["num_samples"],
