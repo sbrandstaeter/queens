@@ -110,6 +110,7 @@ class BayesOptIterator(Iterator):
     def core_run(self):
         """  Run Bayesian Optimization """
         # Run initial experimental design
+        np.random.seed(self.seed)
         lhd = LatinHyperCube(self.num_initial_samples, self.domain)
         X = lhd.generate()
         Y = self.prep_and_eval_model(X)
