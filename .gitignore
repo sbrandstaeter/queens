@@ -20,3 +20,4 @@ diagnostic.data/
 dist/
 journal/
 pqueens.egg-info
+.pytest_cache/
