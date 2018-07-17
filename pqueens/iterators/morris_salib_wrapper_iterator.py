@@ -4,6 +4,8 @@ from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
 from pqueens.models.model import Model
 from .iterator import Iterator
+from pqueens.utils.process_outputs import write_results
+
 
 
 class MorrisSALibIterator(Iterator):
@@ -46,7 +48,8 @@ class MorrisSALibIterator(Iterator):
 
     def __init__(self, model, num_trajectories, local_optimization,
                  num_optimal_trajectories, grid_jump, num_levels, seed,
-                 confidence_level, num_bootstrap_samples, global_settings):
+                 confidence_level, num_bootstrap_samples, result_description,
+                 global_settings):
         """ Initialize MorrisSALibIterator
 
         Args:
@@ -72,6 +75,8 @@ class MorrisSALibIterator(Iterator):
             num_bootstrap_samples (int):  Number of bootstrap samples used to
                                           compute confidence intervals for
                                           sensitivity measures
+            result_description (dict):      Dictionary with desired result description
+
 
         """
         super(MorrisSALibIterator, self).__init__(model, global_settings)
@@ -83,6 +88,7 @@ class MorrisSALibIterator(Iterator):
         self.confidence_level = confidence_level
         self.num_bootstrap_samples = num_bootstrap_samples
         self.grid_jump = grid_jump
+        self.result_description = result_description
 
         self.num_params = None
         self.samples = None
@@ -120,6 +126,7 @@ class MorrisSALibIterator(Iterator):
                    method_options["seed"],
                    method_options["confidence_level"],
                    method_options["num_bootstrap_samples"],
+                   method_options.get("result_description", None),
                    config["global_settings"])
 
     def eval_model(self):
@@ -178,11 +185,28 @@ class MorrisSALibIterator(Iterator):
                                           num_levels=self.num_levels,
                                           grid_jump=self.grid_jump)
 
+
     def post_run(self):
         """ Analyze the results """
-        self.__print_results()
+        results = self.process_results()
+        if self.result_description is not None:
+            if self.result_description["write_results"] is True:
+                write_results(results, self.global_settings["output_dir"],
+                              self.global_settings["experiment_name"])
+            else:
+                self.print_results(results)
 
-    def __print_results(self):
+
+    def process_results(self):
+        """ Write all results to self contained dictionary """
+
+        results = {}
+        results["parameter_names"] = self.model.get_parameter_names()
+        results["sensitivity_incides"] = self.si
+        return results
+
+
+    def print_results(self, results):
         """ Print results to screen """
 
         print("{0:<30} {1:>10} {2:>10} {3:>15} {4:>10}".format(
@@ -194,8 +218,8 @@ class MorrisSALibIterator(Iterator):
 
         for j in range(self.num_params):
             print("{0!s:30} {1!s:10} {2!s:10} {3!s:15} {4!s:10}".format(
-                self.si['names'][j],
-                self.si['mu_star'][j],
-                self.si['mu'][j],
-                self.si['mu_star_conf'][j],
-                self.si['sigma'][j]))
+                results['sensitivity_incides']['names'][j],
+                results['sensitivity_incides']['mu_star'][j],
+                results['sensitivity_incides']['mu'][j],
+                results['sensitivity_incides']['mu_star_conf'][j],
+                results['sensitivity_incides']['sigma'][j]))
