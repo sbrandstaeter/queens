@@ -148,7 +148,7 @@ class SaltelliSALibIterator(Iterator):
         """ Function to print results """
 
         S = results["sensitivity_incides"]
-        parameter_names = results["parameter_names"]  #self.model.get_parameter_names()
+        parameter_names = results["parameter_names"]
         title = 'Parameter'
         print('%s   S1       S1_conf    ST    ST_conf' % title)
         j = 0
