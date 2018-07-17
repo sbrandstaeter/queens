@@ -4,6 +4,8 @@ from SALib.analyze import sobol
 from pqueens.models.model import Model
 from .iterator import Iterator
 import random
+from pqueens.utils.process_outputs import write_results
+
 # TODO deal with non-uniform input distribution
 
 class SaltelliSALibIterator(Iterator):
@@ -25,7 +27,8 @@ class SaltelliSALibIterator(Iterator):
         sensitivity_incides (dict):         Dictionary with sensitivity indices
     """
     def __init__(self, model, seed, num_samples, calc_second_order,
-                 num_bootstrap_samples, confidence_level, global_settings):
+                 num_bootstrap_samples, confidence_level, result_description,
+                 global_settings):
         """ Initialize Saltelli SALib iterator object
 
         Args:
@@ -34,6 +37,7 @@ class SaltelliSALibIterator(Iterator):
             calc_second_order (bool):       Calculate second-order sensitivities
             num_bootstrap_samples (int):    Number of bootstrap samples
             confidence_level (float):       The confidence interval level
+            result_description (dict):      Dictionary with desired result description
         """
         super(SaltelliSALibIterator, self).__init__(model, global_settings)
 
@@ -42,12 +46,14 @@ class SaltelliSALibIterator(Iterator):
         self.calc_second_order = calc_second_order
         self.num_bootstrap_samples = num_bootstrap_samples
         self.confidence_level = confidence_level
+        self.result_description = result_description
 
         self.samples = None
         self.output = None
         self.salib_problem = None
         self.num_params = None
         self.sensitivity_incides = None
+
 
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
@@ -71,6 +77,7 @@ class SaltelliSALibIterator(Iterator):
                    method_options["calc_second_order"],
                    method_options["num_bootstrap_samples"],
                    method_options["confidence_level"],
+                   method_options.get("result_description", None),
                    config["global_settings"])
 
     def eval_model(self):
@@ -128,14 +135,20 @@ class SaltelliSALibIterator(Iterator):
 
     def post_run(self):
         """ Analyze the results """
-        self.__print_results()
+        results = self.process_results()
+        if self.result_description is not None:
+            if self.result_description["write_results"] is True:
+                write_results(results, self.global_settings["output_dir"],
+                              self.global_settings["experiment_name"])
+            else:
+                self.print_results(results)
 
 
-    def __print_results(self):
+    def print_results(self, results):
         """ Function to print results """
 
-        S = self.sensitivity_incides
-        parameter_names = self.model.get_parameter_names()
+        S = results["sensitivity_incides"]
+        parameter_names = results["parameter_names"]  #self.model.get_parameter_names()
         title = 'Parameter'
         print('%s   S1       S1_conf    ST    ST_conf' % title)
         j = 0
@@ -144,7 +157,7 @@ class SaltelliSALibIterator(Iterator):
                                       S['ST'][j], S['ST_conf'][j]))
             j = j+1
 
-        if self.calc_second_order:
+        if results["second_order"]:
             print('\n%s_1 %s_2    S2      S2_conf' % (title, title))
             for j in range(self.num_params):
                 for k in range(j + 1, self.num_params):
@@ -173,3 +186,13 @@ class SaltelliSALibIterator(Iterator):
             raise ValueError('Distributions: choose one of %s' %
                              ", ".join(valid_dists))
         return sa_lib_distribution_name
+
+    def process_results(self):
+        """ Write all results to self contained dictionary """
+
+        results = {}
+        results["parameter_names"] = self.model.get_parameter_names()
+        results["sensitivity_incides"] = self.sensitivity_incides
+        results["second_order"] = self.calc_second_order
+
+        return results
