@@ -6,6 +6,8 @@ from pqueens.models.model import Model
 from .iterator import Iterator
 from . import sobol_sequence
 from .scale_samples import scale_samples
+from pqueens.utils.process_outputs import write_results
+
 
 class SaltelliIterator(Iterator):
     """ Pseudo Saltelli iterator
@@ -43,7 +45,8 @@ class SaltelliIterator(Iterator):
     """
 
     def __init__(self, model, seed, num_samples, calc_second_order,
-                 num_bootstrap_samples, confidence_level, global_settings):
+                 num_bootstrap_samples, confidence_level, result_description,
+                 global_settings):
         """ Initialize Saltelli iterator object
 
         Args:
@@ -52,6 +55,7 @@ class SaltelliIterator(Iterator):
             num_samples (int):              Number of desired (random) samples
             calc_second_order (bool):       Calculate second-order sensitivities
             num_bootstrap_samples (int):    Number of bootstrap samples
+            result_description (dict):      Description of desired results
             confidence_level (float):       The confidence interval level
         """
         super(SaltelliIterator, self).__init__(model, global_settings)
@@ -61,12 +65,13 @@ class SaltelliIterator(Iterator):
         self.calc_second_order = calc_second_order
         self.num_bootstrap_samples = num_bootstrap_samples
         self.confidence_level = confidence_level
+        self.result_description = result_description
         self.samples = None
         self.output = None
 
         distribution_info = self.model.get_parameter_distribution_info()
         self.num_params = len(distribution_info)
-        self.sensitivity_incides = self.__create_si_dict()
+        self.sensitivity_incides = self.create_si_dict()
 
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
@@ -90,6 +95,7 @@ class SaltelliIterator(Iterator):
                    method_options["calc_second_order"],
                    method_options["num_bootstrap_samples"],
                    method_options["confidence_level"],
+                   method_options.get("result_description", None),
                    config["global_settings"])
 
     def eval_model(self):
@@ -187,14 +193,19 @@ class SaltelliIterator(Iterator):
         self.output = self.eval_model()
 
         # analyse
-        self.__analyze(np.reshape(self.output['mean'],(-1)))
+        self.analyze(np.reshape(self.output['mean'],(-1)))
 
     def post_run(self):
         """ Analyze the results """
+        results = self.process_results()
+        if self.result_description is not None:
+            if self.result_description["write_results"] is True:
+                write_results(results, self.global_settings["output_dir"],
+                              self.global_settings["experiment_name"])
+            else:
+                self.print_results(results)
 
-        self.__print_results()
-
-    def __analyze(self, Y):
+    def analyze(self, Y):
         """ Perform Sobol Analysis on model outputs.
 
         Computes a dictionary with keys 'S1', 'S1_conf', 'ST', and 'ST_conf', where
@@ -215,10 +226,8 @@ class SaltelliIterator(Iterator):
             raise RuntimeError("Confidence level must be between 0-1.")
 
         # normalize the model outputs
-        # TODO, do we really need this ?
         Y = (Y - Y.mean())/Y.std()
-
-        A, B, AB, BA = self.__separate_output_values(Y)
+        A, B, AB, BA = self.separate_output_values(Y)
 
         r = np.random.randint(N, size=(N, self.num_bootstrap_samples))
         Z = norm.ppf(0.5 + self.confidence_level / 2)
@@ -226,24 +235,24 @@ class SaltelliIterator(Iterator):
         S = self.sensitivity_incides
 
         for j in range(self.num_params):
-            S['S1'][j] = self.__first_order(A, AB[:, j], B)
-            S['S1_conf'][j] = Z * self.__first_order(A[r], AB[r, j], B[r]).std(ddof=1)
-            S['ST'][j] = self.__total_order(A, AB[:, j], B)
-            S['ST_conf'][j] = Z * self.__total_order(A[r], AB[r, j], B[r]).std(ddof=1)
+            S['S1'][j] = self.first_order(A, AB[:, j], B)
+            S['S1_conf'][j] = Z * self.first_order(A[r], AB[r, j], B[r]).std(ddof=1)
+            S['ST'][j] = self.total_order(A, AB[:, j], B)
+            S['ST_conf'][j] = Z * self.total_order(A[r], AB[r, j], B[r]).std(ddof=1)
 
         # Second order (+conf.)
         if self.calc_second_order:
             for j in range(self.num_params):
                 for k in range(j + 1, self.num_params):
-                    S['S2'][j, k] = self.__second_order(
+                    S['S2'][j, k] = self.second_order(
                         A, AB[:, j], AB[:, k], BA[:, j], B)
-                    S['S2_conf'][j, k] = Z * self.__second_order(A[r], AB[r, j],
+                    S['S2_conf'][j, k] = Z * self.second_order(A[r], AB[r, j],
                         AB[r, k], BA[r, j], B[r]).std(ddof=1)
 
         self.sensitivity_incides = S
 
 
-    def __first_order(self, A, AB, B):
+    def first_order(self, A, AB, B):
         """ Compute first order indices, normalized by sample variance
 
         Args:
@@ -257,7 +266,7 @@ class SaltelliIterator(Iterator):
         return np.mean(B * (AB - A), axis=0) / np.var(np.r_[A, B], axis=0)
 
 
-    def __total_order(self, A, AB, B):
+    def total_order(self, A, AB, B):
         """ Compute total order indices, normalized by sample variance
 
         Args:
@@ -272,7 +281,7 @@ class SaltelliIterator(Iterator):
         return 0.5 * np.mean((A - AB) ** 2, axis=0) / np.var(np.r_[A, B], axis=0)
 
 
-    def __second_order(self, A, ABj, ABk, BAj, B):
+    def second_order(self, A, ABj, ABk, BAj, B):
         """ Compute second order indices, normalized by sample variance
 
         Args:
@@ -285,13 +294,13 @@ class SaltelliIterator(Iterator):
 
         """
         Vjk = np.mean(BAj * ABk - A * B, axis=0) / np.var(np.r_[A, B], axis=0)
-        Sj = self.__first_order(A, ABj, B)
-        Sk = self.__first_order(A, ABk, B)
+        Sj = self.first_order(A, ABj, B)
+        Sk = self.first_order(A, ABk, B)
 
         return Vjk - Sj - Sk
 
 
-    def __create_si_dict(self):
+    def create_si_dict(self):
         """ Create a dictionnary to store the results
 
         Returns:
@@ -306,7 +315,7 @@ class SaltelliIterator(Iterator):
             S['S2_conf'][:] = np.nan
         return S
 
-    def __separate_output_values(self, Y):
+    def separate_output_values(self, Y):
         """ From all computed samples in Y get results corresponding to the
         matrices A, B, AB, BA, see Saltelli et a. 2010.
 
@@ -329,12 +338,12 @@ class SaltelliIterator(Iterator):
 
         return A, B, AB, BA
 
-    def __print_results(self):
+    def print_results(self, results):
         """ Function to print results """
 
         # get shorter name
-        S = self.sensitivity_incides
-        parameter_names = self.model.get_parameter_names()
+        S = results["sensitivity_incides"]
+        parameter_names = results["parameter_names"]
         title = 'Parameter'
         print('%s   S1       S1_conf    ST    ST_conf' % title)
         j = 0
@@ -349,3 +358,14 @@ class SaltelliIterator(Iterator):
                 for k in range(j + 1, self.num_params):
                     print("%s %s %f %f" % (parameter_names[j] + '            ', parameter_names[k] + '      ',
                                            S['S2'][j, k], S['S2_conf'][j, k]))
+
+
+    def process_results(self):
+        """ Write all results to self contained dictionary """
+
+        results = {}
+        results["parameter_names"] = self.model.get_parameter_names()
+        results["sensitivity_incides"] = self.sensitivity_incides
+        results["second_order"] = self.calc_second_order
+
+        return results
