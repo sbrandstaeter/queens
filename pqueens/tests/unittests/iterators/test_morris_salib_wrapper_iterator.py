@@ -14,16 +14,21 @@ from pqueens.iterators.morris_salib_wrapper_iterator import MorrisSALibIterator
 
 class TestSAMorrisIshigami(unittest.TestCase):
     def setUp(self):
+
         uncertain_parameters = {}
         uncertain_parameter = {}
+        random_variables = {}
         uncertain_parameter["type"] = "FLOAT"
         uncertain_parameter["size"] = 1
-        uncertain_parameter["min"] = -3.14159265359
         uncertain_parameter["max"] = 3.14159265359
+        uncertain_parameter["min"] = -3.14159265359
+        #luncertain_parameter["distribution"] = "uniform"
+        #uncertain_parameter["distribution_parameter"] = [-3.14159265359,3.14159265359]
 
-        uncertain_parameters['x1'] = uncertain_parameter
-        uncertain_parameters['x2'] = uncertain_parameter
-        uncertain_parameters['x3'] = uncertain_parameter
+        random_variables['x1'] = uncertain_parameter
+        random_variables['x2'] = uncertain_parameter
+        random_variables['x3'] = uncertain_parameter
+        uncertain_parameters["random_variables"] = random_variables
 
         some_settings = {}
         some_settings["experiment_name"] = "test"
@@ -47,6 +52,7 @@ class TestSAMorrisIshigami(unittest.TestCase):
                                                seed=42,
                                                confidence_level=0.95,
                                                num_bootstrap_samples=1000,
+                                               result_description=None,
                                                global_settings=some_settings)
 
 

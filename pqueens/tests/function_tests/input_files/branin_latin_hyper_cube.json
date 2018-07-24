@@ -26,6 +26,7 @@
     "main_file" : "/Users/jonas/work/02_adco/queens_code/pqueens/pqueens/example_simulator_functions/branin_hifi.py"
   },
   "parameters" : {
+    "random_variables" : {
       "x1" : {
           "type" : "FLOAT",
           "size" : 1,
@@ -42,5 +43,6 @@
           "distribution" : "uniform",
           "distribution_parameter" : [0,15]
       }
+    }
   }
 }

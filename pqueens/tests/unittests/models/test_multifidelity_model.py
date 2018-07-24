@@ -14,8 +14,8 @@ class TestMultiFidelityModel(unittest.TestCase):
                                         "model_hierarchy" : ["lofi_borehole", "hifi_borehole"],
                                         "eval_cost_per_level" :[1, 1],
                                         "parameters" : "parameters"},
-                             "parameters" : {"youngs" : {"type" : "FLOAT",
-                                                               "size" : 1,}
+                             "parameters" : {"random_variables" :{"youngs" : {"type" : "FLOAT",
+                                                               "size" : 1}}
                                             },
                              "hifi_borehole" : {"type" : "simulation_model",
                                                 "interface" : "interface_hifi"

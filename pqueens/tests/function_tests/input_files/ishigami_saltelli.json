@@ -27,8 +27,8 @@
     "type" : "direct_python_interface",
     "main_file" : "/Users/jonas/work/02_adco/queens_code/pqueens/pqueens/example_simulator_functions/ishigami.py"
   },
-  "parameters" :
-    {
+  "parameters" : {
+    "random_variables" : {
       "x1" : {
         "type" : "FLOAT",
         "size" : 1,
@@ -53,5 +53,6 @@
       "distribution" : "uniform",
       "distribution_parameter" : [-3.14159265359,3.14159265359]
     }
+  }
   }
 }

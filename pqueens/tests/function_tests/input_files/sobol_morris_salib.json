@@ -32,53 +32,55 @@
     "main_file" : "/Users/jonas/work/02_adco/queens_code/pqueens/pqueens/example_simulator_functions/sobol_8dim.py"
   },
   "parameters" : {
-    "x1" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : 0,
-      "max"  : 1
-      },
-      "x2" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : 0,
-      "max"  : 1
-      },
-      "x3" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : 0,
-      "max"  : 1
-      },
-      "x4" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : 0,
-      "max"  : 1
-      },
-      "x5" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : 0,
-      "max"  : 1
-      },
-      "x6" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : 0,
-      "max"  : 1
-      },
-      "x7" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : 0,
-      "max"  : 1
-      },
-      "x8" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : 0,
-      "max"  : 1
+    "random_variables" : {
+      "x1" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "min"  : 0,
+        "max"  : 1
+        },
+        "x2" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "min"  : 0,
+        "max"  : 1
+        },
+        "x3" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "min"  : 0,
+        "max"  : 1
+        },
+        "x4" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "min"  : 0,
+        "max"  : 1
+        },
+        "x5" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "min"  : 0,
+        "max"  : 1
+        },
+        "x6" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "min"  : 0,
+        "max"  : 1
+        },
+        "x7" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "min"  : 0,
+        "max"  : 1
+        },
+        "x8" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "min"  : 0,
+        "max"  : 1
+      }
     }
   }
 }

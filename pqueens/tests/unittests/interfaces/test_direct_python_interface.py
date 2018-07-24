@@ -13,6 +13,7 @@ from pqueens.interfaces.interface import Interface
 class TestDirectPythonInterface(unittest.TestCase):
     def setUp(self):
 
+        random_variables = {}
         uncertain_parameters = {}
         uncertain_parameter = {}
         uncertain_parameter["type"] = "FLOAT"
@@ -20,9 +21,10 @@ class TestDirectPythonInterface(unittest.TestCase):
         uncertain_parameter["distribution"] = "uniform"
         uncertain_parameter["distribution_parameter"] = [-3.14159265359,3.14159265359]
 
-        uncertain_parameters['x1'] = uncertain_parameter
-        uncertain_parameters['x2'] = uncertain_parameter
-        uncertain_parameters['x3'] = uncertain_parameter
+        random_variables['x1'] = uncertain_parameter
+        random_variables['x2'] = uncertain_parameter
+        random_variables['x3'] = uncertain_parameter
+        uncertain_parameters["random_variables"] = random_variables
 
         self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
         # create interface

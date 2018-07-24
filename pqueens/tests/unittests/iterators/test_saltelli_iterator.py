@@ -12,6 +12,7 @@ from pqueens.iterators.saltelli_iterator import SaltelliIterator
 
 class TestSASaltelliIshigami(unittest.TestCase):
     def setUp(self):
+        random_variables = {}
         uncertain_parameters = {}
         uncertain_parameter = {}
         uncertain_parameter["type"] = "FLOAT"
@@ -19,9 +20,10 @@ class TestSASaltelliIshigami(unittest.TestCase):
         uncertain_parameter["distribution"] = "uniform"
         uncertain_parameter["distribution_parameter"] = [-3.14159265359, 3.14159265359]
 
-        uncertain_parameters['x1'] = uncertain_parameter
-        uncertain_parameters['x2'] = uncertain_parameter
-        uncertain_parameters['x3'] = uncertain_parameter
+        random_variables['x1'] = uncertain_parameter
+        random_variables['x2'] = uncertain_parameter
+        random_variables['x3'] = uncertain_parameter
+        uncertain_parameters["random_variables"] = random_variables
 
         some_settings = {}
         some_settings["experiment_name"] = "test"
@@ -37,8 +39,12 @@ class TestSASaltelliIshigami(unittest.TestCase):
 
         # setup input paramater for init of Saltelli iterator
         # Note, initialization from config dict is done separately
-        self.my_iterator = SaltelliIterator(self.model, seed=42, num_samples=3, calc_second_order=True,
-                            num_bootstrap_samples=1000, confidence_level=0.95,global_settings=some_settings)
+        self.my_iterator = SaltelliIterator(self.model, seed=42, num_samples=3,
+                                            calc_second_order=True,
+                                            num_bootstrap_samples=1000,
+                                            confidence_level=0.95,
+                                            result_description=None,
+                                            global_settings=some_settings)
 
 
 
@@ -115,6 +121,7 @@ class TestSASaltelliIshigami(unittest.TestCase):
 class TestSASaltelliBorehole(unittest.TestCase):
     def setUp(self):
         uncertain_parameters = {}
+        random_variables = {}
 
         #| rw  ~ N(0.10,0.0161812)
         uncertain_parameter1 = {}
@@ -174,14 +181,17 @@ class TestSASaltelliBorehole(unittest.TestCase):
         uncertain_parameter8["distribution"] = "uniform"
         uncertain_parameter8["distribution_parameter"] = [9855, 12045]
 
-        uncertain_parameters['rw'] = uncertain_parameter1
-        uncertain_parameters['r'] = uncertain_parameter2
-        uncertain_parameters['Tu'] = uncertain_parameter3
-        uncertain_parameters['Hu'] = uncertain_parameter4
-        uncertain_parameters['Tl'] = uncertain_parameter5
-        uncertain_parameters['Hl'] = uncertain_parameter6
-        uncertain_parameters['L'] = uncertain_parameter7
-        uncertain_parameters['Kw'] = uncertain_parameter8
+        random_variables['rw'] = uncertain_parameter1
+        random_variables['r'] = uncertain_parameter2
+        random_variables['Tu'] = uncertain_parameter3
+        random_variables['Hu'] = uncertain_parameter4
+        random_variables['Tl'] = uncertain_parameter5
+        random_variables['Hl'] = uncertain_parameter6
+        random_variables['L'] = uncertain_parameter7
+        random_variables['Kw'] = uncertain_parameter8
+
+        uncertain_parameters["random_variables"] = random_variables
+
 
         some_settings = {}
         some_settings["experiment_name"] = "test"
@@ -197,8 +207,12 @@ class TestSASaltelliBorehole(unittest.TestCase):
 
         # setup input paramater for init of Saltelli iterator
         # Note, initialization from config dict is done separately
-        self.my_iterator = SaltelliIterator(self.model, seed=42, num_samples=3, calc_second_order=False,
-                            num_bootstrap_samples=1000, confidence_level=0.95,global_settings=some_settings)
+        self.my_iterator = SaltelliIterator(self.model, seed=42, num_samples=3,
+                                            calc_second_order=False,
+                                            num_bootstrap_samples=1000,
+                                            confidence_level=0.95,
+                                            result_description=None,
+                                            global_settings=some_settings)
 
     def test_correct_sampling(self):
         """ Test if scaling works correctly """

@@ -23,7 +23,8 @@ class TestJobInterface(unittest.TestCase):
         uncertain_parameters['x3'] = uncertain_parameter
 
         self.config = {}
-        self.config['experiment-name'] = 'test-experiment'
+        self.config['global_settings'] = {}
+        self.config['global_settings']['experiment_name'] = 'test-experiment'
         self.config['test_interface'] = {'type':'job_interface',
                                          'resources': 'dummy_resource'}
 

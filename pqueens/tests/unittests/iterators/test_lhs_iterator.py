@@ -14,6 +14,7 @@ from pqueens.iterators.lhs_iterator import LHSIterator
 class TestLHSIterator(unittest.TestCase):
     """ Test LHS Iterator """
     def setUp(self):
+        random_variables = {}
         uncertain_parameters = {}
         uncertain_parameter1 = {}
         uncertain_parameter1["type"] = "FLOAT"
@@ -33,9 +34,10 @@ class TestLHSIterator(unittest.TestCase):
         uncertain_parameter3["distribution"] = "lognormal"
         uncertain_parameter3["distribution_parameter"] = [0.3, 1]
 
-        uncertain_parameters['x1'] = uncertain_parameter1
-        uncertain_parameters['x2'] = uncertain_parameter2
-        uncertain_parameters['x3'] = uncertain_parameter3
+        random_variables['x1'] = uncertain_parameter1
+        random_variables['x2'] = uncertain_parameter2
+        random_variables['x3'] = uncertain_parameter3
+        uncertain_parameters["random_variables"] = random_variables
 
         some_settings = {}
         some_settings["experiment_name"] = "test"
