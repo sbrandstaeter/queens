@@ -66,10 +66,30 @@ class LHSIterator(Iterator):
         """ Generate samples for subsequent LHS analysis """
         np.random.seed(self.seed)
 
-        distribution_info = self.model.get_parameter_distribution_info()
-        numparams = len(distribution_info)
+        parameters = self.model.get_parameter()
+        num_inputs = 0
+        # get random Variables
+        random_variables = parameters.get("random_variables", None)
+        # get number of rv
+        if random_variables is not None:
+            num_rv = len(random_variables)
+        num_inputs += num_rv
+        # get random fields
+        random_fields = parameters.get("random_fields", None)
+        if random_fields is not None:
+            raise RuntimeError("LHS Sampling is currentyl not implemented in conjunction with random fields.")
+
+        # loop over random variables to generate samples
+        distribution_info = []
+        for _, rv in random_variables.items():
+            # get appropriate random number generator
+            temp = {}
+            temp["distribution"] = rv["distribution"]
+            temp["distribution_parameter"] = rv["distribution_parameter"]
+            distribution_info.append(temp)
+
         # create latin hyper cube samples in unit hyper cube
-        hypercube_samples = lhs(numparams, self.num_samples,
+        hypercube_samples = lhs(num_inputs, self.num_samples,
                                 'maximin', iterations=self.num_iterations)
         # scale and transform samples according to the inverse cdf
         self.samples = scale_samples(hypercube_samples, distribution_info)

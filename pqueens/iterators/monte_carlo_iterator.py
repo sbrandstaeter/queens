@@ -4,6 +4,11 @@ from pqueens.models.model import Model
 from pqueens.variables.variables import Variables
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
+from pqueens.randomfields.univariate_field_generator_factory import UniVarRandomFieldGeneratorFactory
+
+from scipy import stats
+from scipy.stats import norm
+
 
 class MonteCarloIterator(Iterator):
     """ Basic Monte Carlo Iterator to enable MC sampling
@@ -35,6 +40,7 @@ class MonteCarloIterator(Iterator):
             iterator: MonteCarloIterator object
 
         """
+        print(config.get("experiment_name"))
         if iterator_name is None:
             method_options = config["method"]["method_options"]
         else:
@@ -60,19 +66,74 @@ class MonteCarloIterator(Iterator):
         """ Generate samples for subsequent MC analysis and update model """
         np.random.seed(self.seed)
 
-        distribution_info = self.model.get_parameter_distribution_info()
-        numparams = len(distribution_info)
-        self.samples = np.zeros((self.num_samples, numparams))
+        parameters = self.model.get_parameter()
+        num_inputs = 0
+        # get random Variables
+        random_variables = parameters.get("random_variables", None)
+        # get number of rv
+        if random_variables is not None:
+            num_rv = len(random_variables)
+        num_inputs += num_rv
+        # get random fields
+        random_fields = parameters.get("random_fields", None)
 
+        num_eval_locations = []
+        # get number of random random_fields
+        if random_fields is not None:
+            num_rf = len(random_fields)
+            for _, rf in random_fields.items():
+                dim = rf["dimension"]
+                eval_locations_list = rf.get("eval_locations", None)
+                eval_locations = np.array(eval_locations_list).reshape(-1, dim)
+                temp = eval_locations.shape[0]
+                num_eval_locations.append(temp)
+                num_inputs += temp
+
+
+        self.samples = np.zeros((self.num_samples, num_inputs))
+        # loop over random variables to generate samples
         i = 0
-        for distribution in distribution_info:
+        for _, rv in random_variables.items():
             # get appropriate random number generator
-            random_number_generator = getattr(np.random, distribution['distribution'])
+            random_number_generator = getattr(np.random, rv["distribution"])
             # make a copy
-            my_args = list(distribution['distribution_parameter'])
+            my_args = list(rv["distribution_parameter"])
             my_args.extend([self.num_samples])
-            self.samples [:, i] = random_number_generator(*my_args)
+            self.samples[:, i] = random_number_generator(*my_args)
             i += 1
+
+        # loop over random fields to generate samples
+        field_num = 0
+        if random_fields is not None:
+            for _, rf in random_fields.items():
+                print("rf corrstruct {}".format(rf.get("corrstruct")))
+                # create appropriate random field generator
+                my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+                    # TODO put actual distribution there
+                    #rv.get("marginal_pdf"),
+                    norm(0, 1),
+                    rf.get("dimension"),
+                    rf.get("corrstruct"),
+                    rf.get("corr_length"),
+                    rf.get("energy_frac"),
+                    np.array(rf.get("field_bbox")),
+                    rf.get("num_terms_per_dim"),
+                    rf.get("total_terms"))
+
+                dim = rf["dimension"]
+                eval_locations_list = rf.get("eval_locations", None)
+                eval_locations = np.array(eval_locations_list).reshape(-1, dim)
+                my_stoch_dim = my_field_generator.get_stoch_dim()
+
+                my_vals = np.zeros((self.num_samples, eval_locations.shape[0]))
+                for i in range(self.num_samples):
+                    xi = np.random.randn(my_stoch_dim, 1)
+                    my_vals[i, :] = my_field_generator.evaluate_field_at_location(eval_locations, xi)
+
+                self.samples[:, num_rv+field_num:num_rv+field_num+len(eval_locations)] = my_vals
+                field_num += 1
+        #print("Samples are: {}".format(self.samples))
+        #exit()
 
 
     def core_run(self):

@@ -2,10 +2,13 @@ import numpy as np
 class Variables(object):
     """ Class for storing variables
 
-    For now basically only a wrapper around a dictionary
-    At this point variables are simply a dictionary with three fields. The key
-    is the name of the variable and then we have a 'type' field, a 'value'
-    field and a 'active' field
+    For now basically only a wrapper around a dictionary with two sub dictionaries.
+    One for random variables and one for random fields.
+
+    At this point random variables are simply a dictionary with three fields.
+    The key is the name of the variable and then we have a 'type' field, a 'value'
+    field and a 'active' field. The same basically applies to random fields,
+    with the difference being that multiple values are stored.
 
     Attributes:
         variables (dict):  dictionary containing the data
@@ -22,9 +25,14 @@ class Variables(object):
         """
         values = []
         active = []
-        for key, data in uncertain_parameters.items():
+        for _, _ in uncertain_parameters["random_variables"].items():
             values.append(None)
             active.append(True)
+        if uncertain_parameters.get("random_fields") is not None:
+            for _, _ in uncertain_parameters["random_fields"].items():
+                values.append(None)
+                active.append(True)
+
         return cls(uncertain_parameters, values, active)
 
     @classmethod
@@ -40,6 +48,7 @@ class Variables(object):
         """
 
         values = data_vector.tolist()
+        # TODO fix this
         active = [True]*len(values)
 
         return cls(uncertain_parameters, values, active)
@@ -55,12 +64,26 @@ class Variables(object):
         """
         self.variables = {}
         i = 0
-        for key, data in uncertain_parameters.items():
+        for key, data in uncertain_parameters["random_variables"].items():
             self.variables[key] = {}
-            self.variables[key]['value'] = values[i]
+            my_size = data['size']
+            self.variables[key]['size'] = my_size
+            self.variables[key]['value'] = values[i:i+my_size]
             self.variables[key]['type'] = data['type']
             self.variables[key]['active'] = active[i]
             i += 1
+        if uncertain_parameters.get("random_fields") is not None:
+            for key, data in uncertain_parameters["random_fields"].items():
+                self.variables[key] = {}
+                dim = data["dimension"]
+                eval_locations_list = data.get("eval_locations", None)
+                eval_locations = np.array(eval_locations_list).reshape(-1, dim)
+                my_size = eval_locations.shape[0]
+                self.variables[key]['size'] = my_size
+                self.variables[key]['value'] = values[i:i+my_size]
+                self.variables[key]['type'] = data['type']
+                self.variables[key]['active'] = active[i]
+                i += 1
 
     def get_active_variables(self):
         """ Get dictinary of all active variables
@@ -72,6 +95,11 @@ class Variables(object):
         for key, data in self.variables.items():
             if data['active'] is not True:
                 continue
+            # TODO store value entries as list or make sure that is
+            # other wise compatiple
+            #if len(data['value']) > 1:
+            #    active_vars[key] = data['value'].tolist()
+            #else:
             active_vars[key] = data['value']
         return active_vars
 
@@ -109,6 +137,7 @@ class Variables(object):
             new_variable_data (dict): data to update the variables with
         """
         for key, _ in self.variables.items():
+            self.variables[key]['size'] = new_variable_data[key]['size']
             self.variables[key]['value'] = new_variable_data[key]['value']
             self.variables[key]['active'] = new_variable_data[key]['active']
             self.variables[key]['type'] = new_variable_data[key]['type']
@@ -121,7 +150,8 @@ class Variables(object):
         """
         i = 0
         for key, _ in self.variables.items():
-            self.variables[key]['value'] = data_vector[i]
-            i += 1
+            my_size = self.variables[key]['size']
+            self.variables[key]['value'] = data_vector[i:i+my_size]
+            i += my_size
         if i != len(data_vector):
             raise IndexError('The passed vector is to long!')

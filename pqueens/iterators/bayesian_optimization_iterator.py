@@ -41,11 +41,24 @@ class BayesOptIterator(Iterator):
         self.results_bo = None
         self.result_description = result_description
 
-        parameter_info = self.model.get_parameter()
-        self.num_params = len(parameter_info)
+        parameters = self.model.get_parameter()
+        num_inputs = 0
+        # get random Variables
+        random_variables = parameters.get("random_variables", None)
+        # get number of rv
+        if random_variables is not None:
+            num_rv = len(random_variables)
+        num_inputs += num_rv
+        # get random fields
+        random_fields = parameters.get("random_fields", None)
+        if random_fields is not None:
+            raise RuntimeError("LHS Sampling is currentyl not implemented in conjunction with random fields.")
+        self.num_params = num_inputs
+
 
         gpflow_params = []
-        for param_name, param_info in parameter_info.items():
+        # TODO what happens for non-uniform input??
+        for param_name, param_info in random_variables.items():
             gpflow_params.append(ContinuousParameter(param_name,
                                                      param_info["distribution_parameter"][0],
                                                      param_info["distribution_parameter"][1]))

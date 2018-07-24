@@ -144,7 +144,8 @@ class MorrisSALibIterator(Iterator):
         names = []
         bounds = []
         self.num_params = 0
-        for key, value in parameter_info.items():
+        for key, value in parameter_info["random_variables"].items():
+            print(value)
             names.append(key)
             max_temp = value["max"]
             min_temp = value["min"]
@@ -152,6 +153,10 @@ class MorrisSALibIterator(Iterator):
             if "distribution" in value:
                 raise ValueError("Parameters must not have probability distributions")
             self.num_params += 1
+
+        if parameter_info.get("random_fields", None) is not None:
+            raise RuntimeError("LHS Sampling is currentyl not implemented in conjunction with random fields.")
+
 
         self.salib_problem = {
             'num_vars' : self.num_params,

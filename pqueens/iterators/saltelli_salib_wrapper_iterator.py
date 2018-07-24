@@ -95,7 +95,7 @@ class SaltelliSALibIterator(Iterator):
         bounds = []
         dists = []
         self.num_params = 0
-        for key, value in parameter_info.items():
+        for key, value in parameter_info["random_variables"].items():
             names.append(key)
             max_temp = value["distribution_parameter"][1]
             min_temp = value["distribution_parameter"][0]
@@ -103,6 +103,11 @@ class SaltelliSALibIterator(Iterator):
             dist = self.__get_sa_lib_distribution_name(value["distribution"])
             dists.append(dist)
             self.num_params += 1
+
+        random_fields = parameter_info.get("random_fields", None)
+        if random_fields is not None:
+            raise RuntimeError("The SaltelliIterator does not work in conjunction with random fields.")
+
 
         self.salib_problem = {
             'num_vars' : self.num_params,

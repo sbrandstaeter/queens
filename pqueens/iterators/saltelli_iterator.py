@@ -68,10 +68,8 @@ class SaltelliIterator(Iterator):
         self.result_description = result_description
         self.samples = None
         self.output = None
+        self.num_params = None
 
-        distribution_info = self.model.get_parameter_distribution_info()
-        self.num_params = len(distribution_info)
-        self.sensitivity_incides = self.create_si_dict()
 
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
@@ -116,6 +114,29 @@ class SaltelliIterator(Iterator):
         # fix seed of random number generator
         np.random.seed(self.seed)
         random.seed(self.seed)
+
+        parameters = self.model.get_parameter()
+        random_variables = parameters.get("random_variables", None)
+        # get number of rv
+        if random_variables is not None:
+            num_rv = len(random_variables)
+        self.num_params = num_rv
+        # get random fields
+        random_fields = parameters.get("random_fields", None)
+        if random_fields is not None:
+            raise RuntimeError("The SaltelliIterator does not work in conjunction with random fields.")
+
+        # loop over random variables to generate samples
+        distribution_info = []
+        for _, rv in random_variables.items():
+            # get appropriate random number generator
+            temp = {}
+            temp["distribution"] = rv["distribution"]
+            temp["distribution_parameter"] = rv["distribution_parameter"]
+            distribution_info.append(temp)
+
+
+        self.sensitivity_incides = self.create_si_dict()
 
         # How many values of the Sobol sequence to skip
         skip_values = 1000
@@ -169,8 +190,10 @@ class SaltelliIterator(Iterator):
 
             index += 1
 
+
         # scaling values to other distributions
-        distribution_info = self.model.get_parameter_distribution_info()
+        #distribution_info = self.model.get_parameter_distribution_info()
+
         scaled_saltelli = scale_samples(saltelli_sequence, distribution_info)
         self.samples = scaled_saltelli
 
