@@ -22,7 +22,8 @@ def parse_resources_from_configuration(config):
     if "resources" in config:
         resources = dict()
         for resource_name, _ in config["resources"].items():
-            exp_name = config.get("experiment-name")
+            global_settings = config.get("global_settings")
+            exp_name = global_settings.get("experiment_name")
             resources[resource_name] = resource_factory(resource_name,
                                                         exp_name,
                                                         config)
