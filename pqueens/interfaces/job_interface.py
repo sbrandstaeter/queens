@@ -78,7 +78,7 @@ class JobInterface(Interface):
             drop_existing = config['database']['drop_existing']
         else:
             drop_existing = False
-        experiment_name = config['experiment-name']
+        experiment_name = config['global_settings']['experiment_name']
 
         #sys.stderr.write('Using database at %s.\n' % db_address)
 
