@@ -61,8 +61,8 @@ class UnivariateRandomFieldSimulator(object):
         self.stoch_dim = None
 
          # check whether we have a normal or lognormal distributon
-        if (marginal_distribution.dist.name is not 'norm' and
-            marginal_distribution.dist.name is not 'lognorm'):
+        if (marginal_distribution.dist.name != 'norm' and
+            marginal_distribution.dist.name != 'lognorm'):
             raise RuntimeError('Error: marginal_distribution must be either '
                                'Normal or Lognormal')
         self.prob_dist = marginal_distribution
