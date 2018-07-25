@@ -1,13 +1,11 @@
 import numpy as np
 from .iterator import Iterator
 from pqueens.models.model import Model
-from pqueens.variables.variables import Variables
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 from pqueens.randomfields.univariate_field_generator_factory import UniVarRandomFieldGeneratorFactory
-
-from scipy import stats
-from scipy.stats import norm
+from pqueens.utils.input_to_random_variable import get_distribution_object
+from pqueens.utils.input_to_random_variable import get_random_samples
 
 
 class MonteCarloIterator(Iterator):
@@ -78,9 +76,8 @@ class MonteCarloIterator(Iterator):
         random_fields = parameters.get("random_fields", None)
 
         num_eval_locations = []
-        # get number of random random_fields
+
         if random_fields is not None:
-            num_rf = len(random_fields)
             for _, rf in random_fields.items():
                 dim = rf["dimension"]
                 eval_locations_list = rf.get("eval_locations", None)
@@ -94,12 +91,7 @@ class MonteCarloIterator(Iterator):
         # loop over random variables to generate samples
         i = 0
         for _, rv in random_variables.items():
-            # get appropriate random number generator
-            random_number_generator = getattr(np.random, rv["distribution"])
-            # make a copy
-            my_args = list(rv["distribution_parameter"])
-            my_args.extend([self.num_samples])
-            self.samples[:, i] = random_number_generator(*my_args)
+            self.samples[:, i] = get_random_samples(rv, self.num_samples)
             i += 1
 
         # loop over random fields to generate samples
@@ -109,9 +101,7 @@ class MonteCarloIterator(Iterator):
                 print("rf corrstruct {}".format(rf.get("corrstruct")))
                 # create appropriate random field generator
                 my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                    # TODO put actual distribution there
-                    #rv.get("marginal_pdf"),
-                    norm(0, 1),
+                    get_distribution_object(rf),
                     rf.get("dimension"),
                     rf.get("corrstruct"),
                     rf.get("corr_length"),
@@ -132,23 +122,11 @@ class MonteCarloIterator(Iterator):
 
                 self.samples[:, num_rv+field_num:num_rv+field_num+len(eval_locations)] = my_vals
                 field_num += 1
-        #print("Samples are: {}".format(self.samples))
-        #exit()
 
 
     def core_run(self):
         """  Run Monte Carlo Analysis on model """
-        # variant 1
-        # inputs = []
-        # outputs = []
-        # for sample in self.__sample_generator():
-        #     my_input = sample
-        #     self.model.update_model_from_sample(my_input)
-        #     my_output = self.eval_model()
-        #     inputs.append(my_input)
-        #     outputs.append(my_output)
 
-        # variant 2
         self.model.update_model_from_sample_batch(self.samples)
 
         self.output = self.eval_model()
