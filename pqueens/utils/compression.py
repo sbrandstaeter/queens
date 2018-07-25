@@ -1,5 +1,7 @@
 import zlib
 import numpy as np
+import base64
+
 
 COMPRESS_TYPE = 'compressed array'
 def compress_array(a):
@@ -10,10 +12,11 @@ def compress_array(a):
     Returns:
         dict: compressed array
     """
+    print("Type a")
+    print(type(a))
     return {'ctype'  : COMPRESS_TYPE,
             'shape'  : list(a.shape),
-            'value'  : (zlib.compress(a).encode('base64'))}
-
+            'value'  : base64.b64encode(zlib.compress(a))}
 
 def decompress_array(a):
     """ Decompress numpy array compressed with compress array using zlib
@@ -23,7 +26,8 @@ def decompress_array(a):
     Returns:
         (np.array) uncompressed np.array
     """
-    return np.fromstring(zlib.decompress(a['value'].decode('base64'))).reshape(a['shape'])
+    return np.fromstring(zlib.decompress(base64.b64decode(a['value']))).reshape(a['shape'])
+
 
 
 def compress_nested_container(u_container):
