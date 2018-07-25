@@ -65,32 +65,6 @@ class Model(metaclass=abc.ABCMeta):
         """ Evaluate model with current set of variables """
         pass
 
-    def get_parameter_distribution_info(self):
-        """ Get probability distributions for all uncertain parameters
-
-        Returns:
-            list: List with probability distribution information
-
-        """
-        distribution_info = []
-        for _, value in self.uncertain_parameters.items():
-            distribution_info.append(value)
-
-        return distribution_info
-
-    def get_parameter_names(self):
-        """ Get names of all uncertain parameters
-
-        Returns:
-            list: List with names of uncertain parameters
-
-        """
-        parameter_names = []
-        for key, _ in self.uncertain_parameters.items():
-            parameter_names.append(key)
-
-        return parameter_names
-
     def get_parameter(self):
         """ Get complete parameter dictionary
 

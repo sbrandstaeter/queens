@@ -36,6 +36,8 @@ class MorrisSALibIterator(Iterator):
 
         num_params (int):           Number of model parameters
 
+        parameter_names (list):     List with parameter names
+
         samples (np.array):         Samples at which model is evaluated
 
         output (np.array):          Results at samples
@@ -91,6 +93,7 @@ class MorrisSALibIterator(Iterator):
         self.result_description = result_description
 
         self.num_params = None
+        self.parameter_names = []
         self.samples = None
         self.output = None
         self.salib_problem = {}
@@ -141,12 +144,10 @@ class MorrisSALibIterator(Iterator):
         parameter_info = self.model.get_parameter()
 
         # setup SALib problem dict
-        names = []
         bounds = []
         self.num_params = 0
         for key, value in parameter_info["random_variables"].items():
-            print(value)
-            names.append(key)
+            self.parameter_names.append(key)
             max_temp = value["max"]
             min_temp = value["min"]
             bounds.append([min_temp, max_temp])
@@ -160,7 +161,7 @@ class MorrisSALibIterator(Iterator):
 
         self.salib_problem = {
             'num_vars' : self.num_params,
-            'names'    : names,
+            'names'    : self.parameter_names,
             'bounds'   : bounds,
             'groups'   : None
             }
@@ -206,7 +207,7 @@ class MorrisSALibIterator(Iterator):
         """ Write all results to self contained dictionary """
 
         results = {}
-        results["parameter_names"] = self.model.get_parameter_names()
+        results["parameter_names"] = self.parameter_names
         results["sensitivity_incides"] = self.si
         return results
 

@@ -24,6 +24,7 @@ class SaltelliSALibIterator(Iterator):
                                             samples
         salib_problem (dict):               Problem definition for SALib
         num_params (int):                   Number of parameters
+        parameter_names (list):             List with parameter names
         sensitivity_incides (dict):         Dictionary with sensitivity indices
     """
     def __init__(self, model, seed, num_samples, calc_second_order,
@@ -52,6 +53,7 @@ class SaltelliSALibIterator(Iterator):
         self.output = None
         self.salib_problem = None
         self.num_params = None
+        self.parameter_names = []
         self.sensitivity_incides = None
 
 
@@ -91,12 +93,11 @@ class SaltelliSALibIterator(Iterator):
         parameter_info = self.model.get_parameter()
 
         # setup SALib problem dict
-        names = []
         bounds = []
         dists = []
         self.num_params = 0
         for key, value in parameter_info["random_variables"].items():
-            names.append(key)
+            self.parameter_names.append(key)
             max_temp = value["distribution_parameter"][1]
             min_temp = value["distribution_parameter"][0]
             bounds.append([min_temp, max_temp])
@@ -111,7 +112,7 @@ class SaltelliSALibIterator(Iterator):
 
         self.salib_problem = {
             'num_vars' : self.num_params,
-            'names'    : names,
+            'names'    : self.parameter_names,
             'bounds'   : bounds,
             'dists'    : dists
         }
@@ -125,8 +126,6 @@ class SaltelliSALibIterator(Iterator):
     def core_run(self):
         """ Run Analysis on model """
 
-        #print("Samples :{}".format(self.samples))
-        #exit()
         self.model.update_model_from_sample_batch(self.samples)
         self.output = self.eval_model()
 
@@ -196,7 +195,7 @@ class SaltelliSALibIterator(Iterator):
         """ Write all results to self contained dictionary """
 
         results = {}
-        results["parameter_names"] = self.model.get_parameter_names()
+        results["parameter_names"] = self.parameter_names
         results["sensitivity_incides"] = self.sensitivity_incides
         results["second_order"] = self.calc_second_order
 

@@ -41,6 +41,7 @@ class SaltelliIterator(Iterator):
         samples (np.array):             Array with all samples
         output (dict):                  Dict with all model outputs
         num_params (int):               Number of uncertain model parameters
+        parameter_names (list):         List of parameter names
         sensitivity_incides (dict):     Dictionary holdin sensitivity incides
     """
 
@@ -69,7 +70,7 @@ class SaltelliIterator(Iterator):
         self.samples = None
         self.output = None
         self.num_params = None
-
+        self.parameter_names = []
 
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
@@ -128,7 +129,9 @@ class SaltelliIterator(Iterator):
 
         # loop over random variables to generate samples
         distribution_info = []
-        for _, rv in random_variables.items():
+        for name, rv in random_variables.items():
+            # store name
+            self.parameter_names.append(name)
             # get appropriate random number generator
             temp = {}
             temp["distribution"] = rv["distribution"]
@@ -192,8 +195,6 @@ class SaltelliIterator(Iterator):
 
 
         # scaling values to other distributions
-        #distribution_info = self.model.get_parameter_distribution_info()
-
         scaled_saltelli = scale_samples(saltelli_sequence, distribution_info)
         self.samples = scaled_saltelli
 
@@ -387,7 +388,7 @@ class SaltelliIterator(Iterator):
         """ Write all results to self contained dictionary """
 
         results = {}
-        results["parameter_names"] = self.model.get_parameter_names()
+        results["parameter_names"] = self.parameter_names
         results["sensitivity_incides"] = self.sensitivity_incides
         results["second_order"] = self.calc_second_order
 
