@@ -27,7 +27,7 @@ class UnivariateRandomFieldSimulator(object):
             needed to generate samples
 
     """
-    def __init__(self,marginal_distribution):
+    def __init__(self, marginal_distribution):
         """
         Args:
             spatial_dim (int): spatial dimension of the field, i.e., 1,2, or 3
@@ -48,23 +48,23 @@ class UnivariateRandomFieldSimulator(object):
                 variable needed to generate samples
 
         """
-        self.spatial_dim        = None
-        self.prob_dist          = None
-        self.autocov_type       = None
-        self.truncated          = False
-        self.lower_bound        = 0
-        self.upper_bound        = 0
-        self.space_discretized  = False
-        self.bounding_box       = None
-        self.des_energy_frac    = None
-        self.act_energy_frac    = None
-        self.stoch_dim          = None
+        self.spatial_dim = None
+        self.prob_dist = None
+        self.autocov_type = None
+        self.truncated = False
+        self.lower_bound = 0
+        self.upper_bound = 0
+        self.space_discretized = False
+        self.bounding_box = None
+        self.des_energy_frac = None
+        self.act_energy_frac = None
+        self.stoch_dim = None
 
          # check whether we have a normal or lognormal distributon
         if (marginal_distribution.dist.name is not 'norm' and
             marginal_distribution.dist.name is not 'lognorm'):
             raise RuntimeError('Error: marginal_distribution must be either '
-            'Normal or Lognormal')
+                               'Normal or Lognormal')
         self.prob_dist = marginal_distribution
 
     def gen_sample_gauss_field(self, x, xi):
@@ -94,7 +94,7 @@ class UnivariateRandomFieldSimulator(object):
         """
         return self.stoch_dim
 
-    def evaluate_field_at_location(self,x, xi):
+    def evaluate_field_at_location(self, x, xi):
         """Generate sample of random field based on xi and evaluate it at x
 
         Args:
@@ -104,7 +104,7 @@ class UnivariateRandomFieldSimulator(object):
         Returns:
             np.array: value of random field at locations x
         """
-        values = self.gen_sample_gauss_field(x,xi)
+        values = self.gen_sample_gauss_field(x, xi)
 
         # translate field
-        return self.prob_dist.ppf(norm.cdf(values,0,1))
+        return self.prob_dist.ppf(norm.cdf(values, 0, 1))
