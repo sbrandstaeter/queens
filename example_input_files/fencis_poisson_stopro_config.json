@@ -1,0 +1,73 @@
+{
+    "experiment_name" : "first_fenics_test",
+    "database"  :{
+      "address"   : "localhost:27017",
+      "drop_existing" : "True"
+    },
+    "method": {
+      "method_name": "monte_carlo",
+      "method_options" :{
+        "seed" : 42,
+        "num_samples" : 5,
+        "model" : "model"
+      }
+    },
+    "model" : {
+      "type" : "simulation_model",
+      "interface" : "interface",
+      "parameters" : "parameters"
+    },
+    "interface" : {
+      "type" : "job_interface",
+      "resources": "resources",
+      "driver" : "driver"
+    },
+    "driver" :{
+      "driver_type"           : "fenics_docker",
+      "driver_params"         :{
+        "input_template"        : "/Users/jonas/work/02_adco/queens_code/pqueens/trials/try_fenics_stopro_template.py",
+        "experiment_dir"        : "/Users/jonas/work/02_adco/queens_code/pqueens/example_input_files/output/",
+        "docker_container"      : "quay.io/fenicsproject/stable"
+      }
+    },
+    "resources" : {
+      "my-machine" : {
+        "scheduler"         : "local_scheduler",
+        "max-concurrent"    : 5,
+        "max-finished-jobs" : 100
+      }
+    },
+    "local_scheduler" :{
+      "scheduler_type" : "local"
+    },
+    "parameters" : {
+        "random_variables" : {
+          "test_kappa" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : 1,
+            "max"  : 4,
+            "distribution" : "uniform",
+            "distribution_parameter" : [1,40]
+            }
+        },
+        "random_fields" : {
+          "test_stopro" : {
+            "type" : "FLOAT",
+            "dim" :  2,
+            "min"  : 0,
+            "max"  : 1,
+            "distribution" : "normal",
+            "distribution_parameter" : [0, 1],
+            "dimension" : 2,
+            "corrstruct" : "squared_exp",
+            "corr_length": 0.4,
+            "energy_frac" : 0.95,
+            "field_bbox" : [-2, 2, -2, 2],
+            "num_terms_per_dim" : 120,
+            "total_terms": 120,
+            "eval_locations" : [1, 1, 2, 2]
+        }
+      }
+    }
+}
