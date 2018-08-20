@@ -34,6 +34,9 @@ To uninstall QUEENS run:
 To update Python packages in your Anaconda environment type:  
 `conda update --all`
 
+To get your anaconda environments into your Jupyter kernel run:
+`conda install nb_conda_kernels`
+
 ### Setup of MongoDB
 QUEENS writes results into a MongoDB database, therefore QUEENS needs to have write access to a MongoDB databases. However, MongoDB does not necessarily have to run on the same machine as QUEENS. In certain situations, it makes sense to have the database running on a different computer and connect to the database via port-forwarding.
 
