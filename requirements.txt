@@ -29,3 +29,4 @@ mock
 tensorflow==1.5
 git+git://github.com/GPflow/GPflow.git@0.4.0#egg=gpflow
 git+git://github.com/GPflow/GPflowOpt.git#egg=gpflow_opt
+pytest
