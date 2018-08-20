@@ -5,6 +5,8 @@ from pqueens.models.model import Model
 from .iterator import Iterator
 import random
 from pqueens.utils.process_outputs import write_results
+import plotly
+import plotly.graph_objs as go
 
 # TODO deal with non-uniform input distribution
 
@@ -146,6 +148,8 @@ class SaltelliSALibIterator(Iterator):
                               self.global_settings["experiment_name"])
             else:
                 self.print_results(results)
+            if self.result_description["plot_results"] is True:
+                self.plot_results(results)
 
 
     def print_results(self, results):
@@ -200,3 +204,23 @@ class SaltelliSALibIterator(Iterator):
         results["second_order"] = self.calc_second_order
 
         return results
+
+    def plot_results(self, results):
+        """ Create bar graph of first order sensitivity indices
+
+            Args:
+                results   (dict):    Dictionary with results
+        """
+        bars = go.Bar(
+            x=results["parameter_names"],
+            y=results["sensitivity_incides"]["S1"]
+            )
+        data = [bars]
+
+        layout = dict(title='First-Order Sensitivity Indices',
+                      xaxis=dict(title='Parameter'),
+                      yaxis=dict(title='Main Effect'),
+                     )
+
+        fig = go.Figure(data=data, layout=layout)
+        plotly.offline.plot(fig, filename='bar_chart.html', auto_open=True)
