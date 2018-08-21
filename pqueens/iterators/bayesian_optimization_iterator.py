@@ -6,10 +6,11 @@ from pqueens.utils.process_outputs import write_results
 import gpflow
 from gpflowopt.domain import ContinuousParameter
 from gpflowopt.bo import BayesianOptimizer
-from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer, SciPyBasinHoppingOptimizer, SciPyDifferentialEvoOptimizer
+from gpflowopt.optim import StagedOptimizer, MCOptimizer, SciPyOptimizer
+#from gpflowopt.optim import SciPyBasinHoppingOptimizer, SciPyDifferentialEvoOptimizer
 from gpflowopt.design import LatinHyperCube
 from gpflowopt.acquisition import ExpectedImprovement
-from gpflowopt.acquisition import LowerConfidenceBound
+#from gpflowopt.acquisition import LowerConfidenceBound
 
 
 class BayesOptIterator(Iterator):
