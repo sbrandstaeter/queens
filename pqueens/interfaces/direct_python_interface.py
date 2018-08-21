@@ -1,7 +1,8 @@
-import numpy as np
+import os
 import importlib.util
+import numpy as np
 from .interface import Interface
-from pqueens.variables.variables import Variables
+
 
 class DirectPythonInterface(Interface):
     """ Class for mapping input variables to responses using a python function
@@ -30,13 +31,30 @@ class DirectPythonInterface(Interface):
             variables (dict):           dictionary with variables
 
         """
+
         self.name = interface_name
         self.variables = variables
-        # import function using importlib
-        spec = importlib.util.spec_from_file_location("my_function", function_file)
-        my_function = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(my_function)
+
+        # get path to queens example simulator functions directory
+        function_dir = os.path.join(os.path.dirname(__file__), '..', 'example_simulator_functions')
+        abs_function_dir = os.path.abspath(function_dir)
+        # join paths intelligently, i.e., if function_files contains an
+        # absolute path it will preserved, otherwise the call belwo will prepend
+        # the absolute path to the example_simalator_functions directory
+        abs_function_file = os.path.join(abs_function_dir, function_file)
+
+        try:
+            spec = importlib.util.spec_from_file_location("my_function", abs_function_file)
+            my_function = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(my_function)
+        except FileNotFoundError:
+            print('Did not find file locally, trying absolute path')
+            raise FileNotFoundError("Could not import specified python function "
+                                    "file! Fix your config file!")
+
         self.function = my_function
+
+
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
