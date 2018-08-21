@@ -172,7 +172,7 @@ class MorrisSALibIterator(Iterator):
                                      num_levels=self.num_levels,
                                      grid_jump=self.grid_jump,
                                      optimal_trajectories=self.num_optimal_trajectories,
-                                     local_optimization=True)
+                                     local_optimization=self.local_optimization)
 
 
 
