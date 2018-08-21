@@ -23,7 +23,7 @@
   },
   "interface" : {
     "type" : "direct_python_interface",
-    "main_file" : "/Users/jonas/work/02_adco/queens_code/pqueens/pqueens/example_simulator_functions/borehole_lofi.py"
+    "main_file" : "borehole_lofi.py"
   },
   "parameters" : {
     "random_variables" :{

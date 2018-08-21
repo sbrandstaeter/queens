@@ -29,7 +29,7 @@
   "interface" : {
     "type" : "direct_python_interface",
 
-    "main_file" : "/Users/jonas/work/02_adco/queens_code/pqueens/pqueens/example_simulator_functions/sobol_8dim.py"
+    "main_file" : "sobol_8dim.py"
   },
   "parameters" : {
     "random_variables" : {
