@@ -43,7 +43,7 @@ class TestMCIterator(unittest.TestCase):
 
         # create interface
         self.interface = DirectPythonInterface('test_interface',
-                                               'pqueens/example_simulator_functions/ishigami.py',
+                                               'ishigami.py',
                                                self.variables)
 
         # create mock model

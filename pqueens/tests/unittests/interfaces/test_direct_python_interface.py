@@ -28,7 +28,7 @@ class TestDirectPythonInterface(unittest.TestCase):
 
         self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
         # create interface
-        self.interface =  DirectPythonInterface('test_interface','pqueens/example_simulator_functions/ishigami.py',self.variables)
+        self.interface =  DirectPythonInterface('test_interface','ishigami.py',self.variables)
 
     def test_mapping(self):
         """ Test if mapping works correctly """
@@ -61,7 +61,7 @@ class TestDirectPythonInterfaceInitialization(unittest.TestCase):
         #self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
         self.config = {}
         self.config['test_interface'] = {'type':'direct_python_interface',
-                                         'main_file':'pqueens/example_simulator_functions/ishigami.py'}
+                                         'main_file':'ishigami.py'}
 
         self.config['parameters'] = uncertain_parameters
 

@@ -36,7 +36,7 @@ class TestSAMorrisIshigami(unittest.TestCase):
         self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
         # create interface
         self.interface =  DirectPythonInterface('test_interface',
-                                                'pqueens/example_simulator_functions/ishigami.py',
+                                                'ishigami.py',
                                                 self.variables)
 
         # create mock model
