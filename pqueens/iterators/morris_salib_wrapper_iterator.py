@@ -140,6 +140,7 @@ class MorrisSALibIterator(Iterator):
         """ Generate samples for subsequent analysis and update model """
         random.seed(self.seed)
         np.random.seed(self.seed)
+        np.random.RandomState(seed=self.seed)
 
         parameter_info = self.model.get_parameter()
 
