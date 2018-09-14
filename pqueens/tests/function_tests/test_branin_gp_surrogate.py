@@ -11,4 +11,4 @@ def test_branin_gp_surrogate(tmpdir):
     result_file = str(tmpdir)+'/'+'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
-    assert results["pdf_estimate"]["mean"][1] == pytest.approx(8.860833411995653e-05)
+    assert results["pdf_estimate"]["mean"][1] == pytest.approx(8.860833411995653e-05, rel=1e-3)
