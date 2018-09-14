@@ -101,4 +101,10 @@ class GPGPyRegression(RegressionApproximation):
             Returns:
                 np.array, np.array: mean and variance of latent functions at Xnew
         """
-        return self.m.posterior_samples_f(Xnew, num_samples)
+
+        post_samples = self.m.posterior_samples_f(Xnew, num_samples)
+        # GPy returns 3d array middle dimension indicates number of ouputs, i.e.
+        # it is only != 1 for multioutput processes
+        if post_samples.shape[1] != 1:
+            raise Exception("GPGPyRegression can not deal with multioutput GPs")
+        return np.reshape(post_samples, (Xnew.shape[0], num_samples))
