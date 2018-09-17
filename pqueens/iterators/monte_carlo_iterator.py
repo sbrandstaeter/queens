@@ -134,7 +134,7 @@ class MonteCarloIterator(Iterator):
     def post_run(self):
         """ Analyze the results """
         if self.result_description is not None:
-            results = process_ouputs(self.output, self.result_description)
+            results = process_ouputs(self.output, self.result_description, self.samples)
             if self.result_description["write_results"] is True:
                 write_results(results,
                               self.global_settings["output_dir"],
