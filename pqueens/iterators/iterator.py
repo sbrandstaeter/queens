@@ -1,6 +1,8 @@
 import abc
 
-# TODO add iteraotr name to attributes
+# TODO add iterator name to attributes
+# TODO pull model out of base class and add to all subclasses
+# TODO add docstring to global settings
 
 class Iterator(metaclass=abc.ABCMeta):
     """ Base class for Iterator hierarchy
@@ -39,6 +41,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from .bayesian_optimization_iterator import BayesOptIterator
         from .lhs_iterator import LHSIterator
         from .lhs_iterator_mf import MF_LHSIterator
+        from .data_iterator import DataIterator
 
 
         method_dict = {'monte_carlo': MonteCarloIterator,
@@ -47,7 +50,8 @@ class Iterator(metaclass=abc.ABCMeta):
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli' : SaltelliIterator,
                        'sa_saltelli_salib' : SaltelliSALibIterator,
-                       'bayesian_optimization' : BayesOptIterator}
+                       'bayesian_optimization' : BayesOptIterator,
+                       'read_data_from_file' : DataIterator}
 
         if iterator_name is None:
             method_name = config['method']['method_name']
