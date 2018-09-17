@@ -8,12 +8,13 @@ from pqueens.utils.plot_outputs import plot_icdf
 from sklearn.grid_search import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
-def process_ouputs(output_data, output_description):
+def process_ouputs(output_data, output_description, input_data=None):
     """ Process output from QUEENS models
 
     Args:
         output_data (dict):         Dictionary containing model output
         output_descripion (dict):   Dictionary describing desired output quantities
+        input_data (np.array):          Array containing model input
 
     Returns:
         dict:                       Dictionary with processed results
@@ -57,6 +58,11 @@ def process_ouputs(output_data, output_description):
     processed_results["pdf_estimate"] = pdf_estimate
     processed_results["cdf_estimate"] = cdf_estimate
     processed_results["icdf_estimate"] = icdf_estimate
+
+    # add the actual raw input and output data
+    processed_results["raw_output_data"] = output_data
+    if input_data is not None:
+        processed_results["input_data"] = input_data
 
     return processed_results
 
@@ -284,11 +290,13 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
     kernel_bandwidth_upper_bound = (max_samples-min_samples)/2.0
     kernel_bandwidth_lower_bound = (max_samples-min_samples)/20.0
 
-     # do 20-fold cross-validation
+    # do 20-fold cross validaton unless we have fewer samples
+    num_cv = min(samples.shape[0], 20)
+    # cross-validation
     grid = GridSearchCV(KernelDensity(), {'bandwidth': \
         np.linspace(kernel_bandwidth_lower_bound,
                     kernel_bandwidth_upper_bound,
-                    40)}, cv=20)
+                    40)}, cv=num_cv)
 
     grid.fit(samples.reshape(-1, 1))
     kernel_bandwidth = grid.best_params_['bandwidth']
