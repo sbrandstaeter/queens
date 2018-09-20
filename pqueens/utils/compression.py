@@ -12,8 +12,6 @@ def compress_array(a):
     Returns:
         dict: compressed array
     """
-    print("Type a")
-    print(type(a))
     return {'ctype'  : COMPRESS_TYPE,
             'shape'  : list(a.shape),
             'value'  : base64.b64encode(zlib.compress(a))}
