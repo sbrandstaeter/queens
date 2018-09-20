@@ -10,9 +10,12 @@ def inject(params, file_template, output_file):
 
     with open(file_template, encoding='utf-8') as f:
         my_file = f.read()
-    # TODO actually check size of values
     for name, value in params.items():
-        my_file = my_file.replace('{{{}}}'.format(name), str(value))
+        if len(value) > 1:
+            my_file = my_file.replace('{{{}}}'.format(name), str(value))
+        else:
+            my_file = my_file.replace('{{{}}}'.format(name), str(value[0]))
+
 
     with open(output_file, mode='w', encoding='utf-8') as f:
         f.write(my_file)
