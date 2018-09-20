@@ -13,4 +13,4 @@ def run(path_to_scalarvalues_csv):
     output, _ = p2.communicate()
 
     entries = output.decode().strip('\n').split(",")
-    return entries[19]
+    return float(entries[19])
