@@ -1,11 +1,22 @@
+#!/home/biehler/miniconda3/bin/python
+# coding: utf8
+
+################################################################################
+#
+#  Very basic lauchner script to launch BACI jobs on Kaiser cluster
+#  Attention a lot of things are hard coded here that probably should not be
+#  hard coded, so proceed with caution. #!/usr/bin/env python
+#                                        #
+################################################################################
+
 import os
 import subprocess
 import json
 import sys
 import time
+import importlib.util
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.injector import inject
-import numpy as np
 
 def main(args):
     """
@@ -41,13 +52,11 @@ def main(args):
     #run BACI
     run(runcommand_string)
 
-    # assemble command to run post processor
-    postcommand_string = get_postcommand_string(driver_options, baci_output)
+    # do postprocessing
+    do_postprocessing(driver_options, baci_output)
 
-    # run postprocessing
-    run(postcommand_string)
-
-    result = do_dummy_postpostprocessing(baci_output)
+    # extract actual QOI from post processed result using a script
+    result = do_postpostprocessing(driver_options, baci_output)
 
     finish_job(driver_options, db, job, result)
 
@@ -166,21 +175,30 @@ def finish_job(driver_options, db, job, result):
     db.save(job, driver_options['experiment_name'], 'jobs', driver_options['batch'],
             {'id' : driver_options['job_id']})
 
-def do_dummy_postpostprocessing(baci_output):
-    """ Execute dummy post post processing step
+def do_postpostprocessing(driver_options, baci_output):
+    """ Execute post post processing step
 
         Args:
-            baci_output (str): Path to BACI monitor file
+            driver_options (dict): Options dictionary
+            baci_output (str): Path to BACI output files
 
         Returns:
             float: Postprocessed result
     """
-    line = np.loadtxt(baci_output+'.mon', comments="#", skiprows=4, unpack=False)
-    # for now simply compute norm of displacement
-    result = np.sqrt(line[1]**2+line[2]**2+line[3]**2)
-    print('And the results is: {}'.format(result))
-    print('Written result to database')
+    post_post_script = driver_options.get('post_post_script', None)
+    result = None
+    if post_post_script != None:
+        spec = importlib.util.spec_from_file_location("module.name", post_post_script)
+        post_post_proc = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(post_post_proc)
+        result = post_post_proc.run(baci_output)
+        print('Got result: {}'.format(result))
+    else:
+        raise RuntimeError("You need to provide post_post_script in the driver "
+                           "driver_params section of the config file to get results")
+
     return result
+
 
 def get_runcommand_string(driver_options, baci_input_file, baci_output):
     """ Assemble run command for BACI
@@ -195,7 +213,7 @@ def get_runcommand_string(driver_options, baci_input_file, baci_output):
     """
     procs = get_num_nodes()
     mpir_run, mpi_flags = setup_mpi(procs)
-    executable = driver_options['executable']
+    executable = driver_options['path_to_executable']
 
     # note that we directly write the output to the home folder and do not create
     # the appropriate directories on the nodes. This should be changed at some point.
@@ -206,6 +224,16 @@ def get_runcommand_string(driver_options, baci_input_file, baci_output):
     runcommand_string = ' '.join(runcommand_list)
     return runcommand_string
 
+def do_postprocessing(driver_options, baci_output):
+    """ Assemble post processing command for BACI
+
+        Args:
+            driver_options (dict): Options dictionary
+            baci_output (str):     Path to BACI output file
+    """
+    command = get_postcommand_string(driver_options, baci_output)
+    if command != None:
+        run(command)
 
 def get_postcommand_string(driver_options, baci_output):
     """ Assemble post processing command for BACI
@@ -219,15 +247,19 @@ def get_postcommand_string(driver_options, baci_output):
     """
     procs = get_num_nodes()
     mpir_run, mpi_flags = setup_mpi(procs)
-    post_processor_exec = driver_options['post_processor']
-    monitor_file = '--file=' + str(baci_output)
-    post_process_command = driver_options['post_process_command']
-    # note for posterity post_drt_monitor does not like more than 1 proc
-    postcommand_list = [mpir_run, mpi_flags, '-np', str(1), post_processor_exec,
-                        post_process_command, monitor_file]
+    post_processor_exec = driver_options.get('path_to_postprocessor', None)
+    postcommand_string = None
+    if post_processor_exec != None:
+        monitor_file = '--file=' + str(baci_output)
+        post_process_command = driver_options.get('post_process_command', "")
+        # note for posterity post_drt_monitor does not like more than 1 proc
+        postcommand_list = [mpir_run, mpi_flags, '-np', str(1), post_processor_exec,
+                            post_process_command, monitor_file]
 
-    postcommand_string = ' '.join(postcommand_list)
+        postcommand_string = ' '.join(postcommand_list)
+
     return postcommand_string
+
 
 def run(command_string):
     """ Execute passed command
