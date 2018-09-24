@@ -54,7 +54,7 @@ class LHSIterator(Iterator):
 
         return cls(model, method_options["seed"],
                    method_options["num_samples"],
-                   method_options["num_iterations"],
+                   method_options.get("num_iterations", 10),
                    result_description,
                    global_settings)
 
@@ -111,8 +111,8 @@ class LHSIterator(Iterator):
                 write_results(results,
                               self.global_settings["output_dir"],
                               self.global_settings["experiment_name"])
-        else:
-            print("Size of inputs {}".format(self.samples.shape))
-            print("Inputs {}".format(self.samples))
-            print("Size of outputs {}".format(self.output['mean'].shape))
-            print("Outputs {}".format(self.output['mean']))
+        #else:
+        print("Size of inputs {}".format(self.samples.shape))
+        print("Inputs {}".format(self.samples))
+        print("Size of outputs {}".format(self.output['mean'].shape))
+        print("Outputs {}".format(self.output['mean']))
