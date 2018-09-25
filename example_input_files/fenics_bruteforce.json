@@ -1,0 +1,68 @@
+{
+  "experiment_name" : "fenics_run1",
+  "database"  :{
+    "address"   : "129.187.58.88:27017", # TODO: which port?
+    "drop_existing" : "True"
+  },
+  "method": {
+    "method_name": "monte_carlo",
+    "method_options" :{
+      "seed" : 1,           # Check what a seed actually means for MC
+      "num_samples" : 3,
+      "model" : "model",  # Is that necessary?
+      "result_description" : {
+          "write_results" : true,
+          "plot_results" : false
+      }
+    }
+  },
+  "model" : {
+    "type" : "simulation_model",
+    "interface" : "interface", # is that necessary?
+    "parameters" : "parameters" # is that necessary?
+  },
+  "interface" : {
+    "type" : "job_interface",
+    "resources": "resources", # is that necessary?
+    "driver" : "driver"       # is that necessary?
+  },
+  "driver" :{
+    "driver_type"           : "fenics_driver_anaconda", # TODO: Check Bruteforce version
+    "driver_params"         :{
+      "input_template"        : "/home/nitzler/workspace/FENICS/wing_demonstrator/input/input_1.dat",
+      "path_to_executable"    : "/home/nitzler/workspace/FENICS/wing_demonstrator/2D_naca.py",
+      "path_to_postprocessor" : "/home/nitzler/workspace/FENICS/post_processor", # Check that
+      "post_process_options"  : [" "],
+      "experiment_dir"        : "/home/nitzler/workspace/FENICS/experimental_run_1",
+      "post_post_script"      : "/home/nitzler/workspace/FENICS/post_post.py", # Check what that is supposed to be
+      "driver_file"           : "/home/nitzler/workspace/FENICS/wing_demonstrator/slurm_FENICS.sh"
+    }
+  },
+  "resources" : {
+    "bruteforce" : { # Can that name be chosen?
+      "scheduler"         : "kaiser_scheduler", # Can that name be chosen?
+      "max-concurrent"    : 50,
+      "max-finished-jobs" : 100
+    }
+  },
+  "kaiser_scheduler" : {
+    "scheduler_type" : "slurm", # Can that name be chosen?
+    "num_procs_per_node" : 1,
+    "num_nodes" : 1,
+    "walltime" : "8:00:00",
+    "email" : "nitzler@lnm.mw.tum.de",
+    "connect_to_resource" : ["ssh", "-T","-p 9001", "nitzler@localhost"] # check port
+  },
+  "parameters" : {
+    "random_variables" : {
+      "velocity" : {
+          "type" : "FLOAT",
+          "size" : 1,
+          "min"  : 2.0,
+          "max"  : 3.0,
+          "distribution" : "uniform",
+          "distribution_parameter" : [2.0,3.0]
+      }
+    }
+  }
+}
