@@ -19,7 +19,6 @@ def process_ouputs(output_data, output_description, input_data=None):
     Returns:
         dict:                       Dictionary with processed results
     """
-
     # do we want confindence intervals
     bayesian = output_description.get('bayesian', False)
     # check if we have the data to support this
@@ -32,6 +31,8 @@ def process_ouputs(output_data, output_description, input_data=None):
 
     # result interval
     result_interval = output_description.get('result_interval', None)
+    # TODO: we get an error below!
+    output_data["mean"]=output_data["mean"].astype(np.float)
     if result_interval is None:
         # estimate interval from resutls
         result_interval = estimate_result_interval(output_data)
@@ -95,7 +96,9 @@ def estimate_result_interval(output_data):
 
     """
     samples = output_data["mean"]
+    print(samples)
     min_data = np.amin(samples)
+    print(min_data)
     max_data = np.amax(samples)
 
     interval_length = max_data - min_data

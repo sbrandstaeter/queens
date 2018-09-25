@@ -1,6 +1,6 @@
-
+import pdb
 import abc
-
+import re
 #import pqueens
 import subprocess
 import sys
@@ -46,7 +46,6 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
             int: proccess id of job
 
         """
-
         driver_options['experiment_dir'] = experiment_dir
         driver_options['experiment_name'] = experiment_name
         driver_options['job_id'] = job_id
@@ -61,18 +60,29 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
 
         # convert driver options dict to json
         driver_options_json_str = json.dumps(driver_options)
+        # add a little trick to escape quotes in json file
+        driver_options_json_str = driver_options_json_str.replace('"',r'"\\""')
         # run it a second time (not quite sure why this is needed, but it
         # does not work without it)
-        driver_options_json_str = json.dumps(driver_options_json_str)
-        driver_options_json_str = "\\'" +driver_options_json_str  + "\\'"
-
-        # the '<' is needed for execution of local python scripts on potentially
+        #driver_options_json_str = json.dumps(driver_options_json_str)
+        #driver_options_json_str = "\\'" +driver_options_json_str + "\\'"
+        #driver_options_json_str = "'" +driver_options_json_str + "'"
+       # driver_options_json_str = driver_options_json_str
+       # the '<' is needed for execution of local python scripts on potentially
         # remote servers
-        driver_args = '-F ' + driver_options_json_str
-        # one more time
-        driver_args = json.dumps(driver_args)
+        #driver_args = "--export=VAR=" + "'"+ driver_options_json_str + "'"
 
-        run_command = ['<', driver_options['driver_file'], driver_args]
+        #driver_args = r'--export=VAR=\"' + driver_options_json_str + r'\"'
+
+        driver_args = r'\"' + driver_options_json_str + r'\"'
+
+        #driver_args = driver_options_json_str
+
+        # one more time
+        # driver_args = json.dumps(driver_args)
+
+       # run_command = ['<', driver_options['driver_file'], driver_args]
+        run_command = [driver_options['driver_file'], driver_args]
 
         # assemble job_name for cluster
         job_name = 'queens_{}_{}'.format(experiment_name, job_id)
@@ -82,6 +92,8 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
 
         command_string = ' '.join(submit_command)
 
+        #pdb.set_trace()
+        # Error happens below:ValueError: Invalid file object: <_io.TextIOWrapper name=10 encoding='UTF-8'>
         process = subprocess.Popen(command_string,
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
@@ -95,7 +107,7 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
         # get the process id from text output
         match = self.get_process_id_from_output(output)
         try:
-            return int(match.group(1))
+            return int(match)
         except:
             sys.stderr.write(output)
             return None
