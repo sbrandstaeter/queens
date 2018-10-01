@@ -44,8 +44,33 @@ def main(args):
 
     _, baci_input_file, baci_output = setup_dirs_and_files(driver_options)
 
+    result = None
+    try:
+        result = run_and_postprocess(job['params'], driver_options, baci_input_file, baci_output)
+    except:
+        print("Something went wrong during running the simulation")
+
+    finish_job(driver_options, db, job, result)
+
+def run_and_postprocess(job_params, driver_options, baci_input_file, baci_output):
+    """ Run and post process BACI simulation
+
+        Encapsulate everything BACI related into this function such that errors
+        can be caught and the job status set accordingly
+
+    Args:
+        job_params (dict):          Dictionay with job parameter
+        driver_options (dict):      Dictionary with driver options
+        baci_input_file (str):      BACI input file
+        baci_output (str):          Stem of BACI output
+
+    Returns:
+        float: result of simulation
+
+    """
+
     # create actual input file in experiment dir folder
-    inject(job['params'], driver_options['input_template'], baci_input_file)
+    inject(job_params, driver_options['input_template'], baci_input_file)
 
     # assemble command to run BACI
     runcommand_string = get_runcommand_string(driver_options, baci_input_file, baci_output)
@@ -59,7 +84,8 @@ def main(args):
     # extract actual QOI from post processed result using a script
     result = do_postpostprocessing(driver_options, baci_output)
 
-    finish_job(driver_options, db, job, result)
+    return result
+
 
 def get_num_nodes():
     """ determine number of processors from nodefile """
