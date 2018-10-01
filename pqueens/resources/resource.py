@@ -69,23 +69,27 @@ def print_resources_status(resources, jobs):
     left_indent = 16
     indentation = ' '*left_indent
 
-    sys.stderr.write('NAME          PENDING    COMPLETE\n')
+    sys.stderr.write('NAME          PENDING    COMPLETE    FAILED\n')
     sys.stderr.write(indentation)
-    sys.stderr.write('----          -------    --------\n')
+    sys.stderr.write('----          -------    --------    ------\n')
     total_pending = 0
     total_complete = 0
+    total_failed = 0
     #for resource in resources:
     for _, resource in resources.items():
         p = resource.num_pending(jobs)
         c = resource.num_complete(jobs)
+        f = resource.num_failed(jobs)
         total_pending += p
         total_complete += c
-        sys.stderr.write("%s%-12.12s  %-9d  %-10d\n" % (indentation,
-                                                        resource.name,
-                                                        p, c))
-    sys.stderr.write("%s%-12.12s  %-9d  %-10d\n" % (indentation, '*TOTAL*',
-                                                    total_pending,
-                                                    total_complete))
+        total_failed += f
+        sys.stderr.write("%s%-12.12s  %-9d  %-10d  %-9d\n" % (indentation,
+                                                              resource.name,
+                                                              p, c, f))
+    sys.stderr.write("%s%-12.12s  %-9d  %-10d  %-9d\n" % (indentation, '*TOTAL*',
+                                                          total_pending,
+                                                          total_complete,
+                                                          total_failed))
     sys.stderr.write('\n')
 
 class Resource(object):
@@ -160,6 +164,24 @@ class Resource(object):
             return reduce(add, pending_jobs, 0)
         else:
             return 0
+
+    def num_failed(self, jobs):
+        """ Take a list of jobs and filter those that have failed
+
+        Args:
+            jobs (list): List with jobs
+
+        Returns:
+            list: List with jobs that have failed
+
+        """
+        jobs = self.filter_my_jobs(jobs)
+        if jobs:
+            failed_jobs = map(lambda x: x['status'] in ['failed'], jobs)
+            return reduce(add, failed_jobs, 0)
+        else:
+            return 0
+
 
     def num_complete(self, jobs):
         """ Take a list of jobs and filter those that are complete

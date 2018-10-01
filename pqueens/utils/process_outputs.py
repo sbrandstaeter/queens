@@ -19,7 +19,29 @@ def process_ouputs(output_data, output_description, input_data=None):
     Returns:
         dict:                       Dictionary with processed results
     """
+    processed_results = {}
+    try:
+        processed_results = do_processing(output_data, output_description)
+    except:
+        print("Could not process results properly")
 
+    # add the actual raw input and output data
+    processed_results["raw_output_data"] = output_data
+    if input_data is not None:
+        processed_results["input_data"] = input_data
+
+    return processed_results
+
+def do_processing(output_data, output_description):
+    """ Do actual processing of output
+
+    Args:
+        output_data (dict):         Dictionary containing model output
+        output_descripion (dict):   Dictionary describing desired output quantities
+
+    Returns:
+        dict:                       Dictionary with processed results
+    """
     # do we want confindence intervals
     bayesian = output_description.get('bayesian', False)
     # check if we have the data to support this
@@ -58,11 +80,6 @@ def process_ouputs(output_data, output_description, input_data=None):
     processed_results["pdf_estimate"] = pdf_estimate
     processed_results["cdf_estimate"] = cdf_estimate
     processed_results["icdf_estimate"] = icdf_estimate
-
-    # add the actual raw input and output data
-    processed_results["raw_output_data"] = output_data
-    if input_data is not None:
-        processed_results["input_data"] = input_data
 
     return processed_results
 
