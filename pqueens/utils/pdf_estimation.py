@@ -1,4 +1,4 @@
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 import numpy as np
 

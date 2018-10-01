@@ -5,7 +5,7 @@ from pqueens.utils.plot_outputs import plot_pdf
 from pqueens.utils.plot_outputs import plot_cdf
 from pqueens.utils.plot_outputs import plot_failprob
 from pqueens.utils.plot_outputs import plot_icdf
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
 def process_ouputs(output_data, output_description, input_data=None):
