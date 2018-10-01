@@ -2,7 +2,7 @@ import sys
 import time
 import numpy as np
 
-from .interface import Interface
+from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
@@ -82,7 +82,7 @@ class JobInterface(Interface):
 
         #sys.stderr.write('Using database at %s.\n' % db_address)
 
-        db = MongoDB(database_address=db_address,drop_existing_db=drop_existing)
+        db = MongoDB(database_address=db_address, drop_existing_db=drop_existing)
 
         polling_time = config.get('polling-time', 30)
 
@@ -91,8 +91,6 @@ class JobInterface(Interface):
         driver_type = config['driver']['driver_type']
 
         driver_params = config['driver']['driver_params']
-
-        # TODO get scheduler type and params
 
         parameters = config['parameters']
 
@@ -116,7 +114,7 @@ class JobInterface(Interface):
 
         """
         self.batch_number += 1
-        jobs = self.__load_jobs()
+        jobs = self.load_jobs()
         for variables in samples:
             processed_suggestion = False
             while not processed_suggestion:
@@ -124,42 +122,71 @@ class JobInterface(Interface):
                 for resource_name, resource in self.resources.items():
                     if resource.accepting_jobs(jobs):
 
-                        new_job = self.__create_new_job(variables, resource_name)
+                        new_job = self.create_new_job(variables, resource_name)
 
                         # Submit the job to the appropriate resource
-                        process_id = resource.attempt_dispatch(self.experiment_name,
-                                                               self.batch_number,
-                                                               new_job,
-                                                               self.db_address,
-                                                               self.output_dir)
+                        process_id = self.attempt_dispatch(resource, new_job)
+                        #process_id = resource.attempt_dispatch(self.experiment_name,
+                        #                                       self.batch_number,
+                        #                                       new_job,
+                        #                                       self.db_address,
+                        #                                       self.output_dir)
 
                         # Set the status of the job appropriately (successfully submitted or not)
                         if process_id is None:
                             new_job['status'] = 'broken'
-                            self.__save_job(new_job)
+                            self.save_job(new_job)
                         else:
                             print("suggested_job[status{} ".format(new_job['status']))
                             new_job['status'] = 'pending'
                             new_job['proc_id'] = process_id
-                            self.__save_job(new_job)
+                            self.save_job(new_job)
 
                         processed_suggestion = True
-                        jobs = self.__load_jobs()
+                        jobs = self.load_jobs()
                         print_resources_status(self.resources, jobs)
 
                     else:
                         time.sleep(self.polling_time)
-                        jobs = self.__load_jobs()
+                        jobs = self.load_jobs()
 
 
-        while not self.__all_jobs_finished():
+        while not self.all_jobs_finished():
             time.sleep(self.polling_time)
 
         # get sample and response data
-        return self.__get_output_data()
+        return self.get_output_data()
 
+    def attempt_dispatch(self, resource, new_job):
+        """ Attempt to dispatch job multiple times
 
-    def __load_jobs(self):
+        Submitting jobs to the queue sometimes fails, hence we try multiple times
+        before giving up. We also wait two seconds between submit commands
+
+        Args:
+            resource (resource object): Resource to submit job to
+            new_job (dict):             Dictionary with job
+
+        Returns:
+            int: Process ID of submitted job if successfull, None otherwise
+        """
+        process_id = None
+        num_tries = 0
+
+        while process_id is None and num_tries < 10:
+            time.sleep(2)
+
+            # Submit the job to the appropriate resource
+            process_id = resource.attempt_dispatch(self.experiment_name,
+                                                   self.batch_number,
+                                                   new_job,
+                                                   self.db_address,
+                                                   self.output_dir)
+            num_tries += 1
+
+        return process_id
+
+    def load_jobs(self):
         """ Load jobs from the jobs database
 
         Returns:
@@ -173,7 +200,7 @@ class JobInterface(Interface):
             jobs = [jobs]
         return jobs
 
-    def __save_job(self, job):
+    def save_job(self, job):
         """ Save a job to the job database
 
         Args:
@@ -181,7 +208,7 @@ class JobInterface(Interface):
         """
         self.db.save(job, self.experiment_name, 'jobs', str(self.batch_number), {'id' : job['id']})
 
-    def __create_new_job(self, variables, resource_name):
+    def create_new_job(self, variables, resource_name):
         """ Create new job and save it to database and return it
 
         Args:
@@ -193,7 +220,7 @@ class JobInterface(Interface):
         """
 
         print("Created new job")
-        jobs = self.__load_jobs()
+        jobs = self.load_jobs()
         job_id = len(jobs) + 1
 
         job = {
@@ -210,11 +237,11 @@ class JobInterface(Interface):
             'end time'     : None
         }
 
-        self.__save_job(job)
+        self.save_job(job)
 
         return job
 
-    def __tired(self, resource):
+    def tired(self, resource):
         """ Quick check wether a resource is fully occupied
 
         Args:
@@ -222,25 +249,28 @@ class JobInterface(Interface):
         Returns:
             bool: whether or not resource is tired
         """
-        jobs = self.__load_jobs()
+        jobs = self.load_jobs()
         if resource.accepting_jobs(jobs):
             return False
         return True
 
-    def __all_jobs_finished(self):
+    def all_jobs_finished(self):
         """ Determine whether all jobs are finished
+
+        Finished can either mean, complete or failed
 
         Returns:
             bool: returns true if all jobs in the database have reached completion
+                  or failed
         """
-        jobs = self.__load_jobs()
+        jobs = self.load_jobs()
         print_resources_status(self.resources, jobs)
         for job in jobs:
-            if job['status'] != 'complete':
+            if job['status'] != 'complete' and job['status'] != 'failed' and job['status'] != 'broken':
                 return False
         return True
 
-    def __get_output_data(self):
+    def get_output_data(self):
         """ Extract output data from database and return it
 
         Args:
@@ -251,10 +281,10 @@ class JobInterface(Interface):
         """
         output = {}
         mean_values = []
-        if not self.__all_jobs_finished():
+        if not self.all_jobs_finished():
             print("Not all jobs are finished yet, try again later")
         else:
-            jobs = self.__load_jobs()
+            jobs = self.load_jobs()
             for job in jobs:
                 mean_values.append(job['result'])
         output['mean'] = np.reshape(np.array(mean_values), (-1, 1))

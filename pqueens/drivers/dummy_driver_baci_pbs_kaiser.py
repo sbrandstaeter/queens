@@ -14,6 +14,7 @@ import subprocess
 import json
 import sys
 import time
+import numpy as np
 import importlib.util
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.injector import inject
@@ -168,9 +169,14 @@ def finish_job(driver_options, db, job, result):
     """
     end_time = time.time()
 
-    job['result'] = result
-    job['status'] = 'complete'
-    job['end time'] = end_time
+    if result is not None:
+        job['result'] = result
+        job['status'] = 'complete'
+        job['end time'] = end_time
+    else:
+        job['result'] = np.nan
+        job['status'] = 'failed'
+        job['end time'] = end_time
 
     db.save(job, driver_options['experiment_name'], 'jobs', driver_options['batch'],
             {'id' : driver_options['job_id']})
