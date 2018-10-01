@@ -137,7 +137,6 @@ class JobInterface(Interface):
                             new_job['status'] = 'broken'
                             self.save_job(new_job)
                         else:
-                            print("suggested_job[status{} ".format(new_job['status']))
                             new_job['status'] = 'pending'
                             new_job['proc_id'] = process_id
                             self.save_job(new_job)
