@@ -1,41 +1,61 @@
 {
-    "experiment-name" : "ansys_plate_example",
-    "driver" :{
+    "experiment_name" : "ansys_plate_example",
+ 		"database"  :{
+    	"address"   : "localhost:27017",
+      "drop_existing" : "True"
+    },
+		"driver" :{
       "driver_type"           : "ansys_native",
       "driver_params"         :{
         "input_template"        : "/home/biehler/adco/projects/05_queens/queens/trials/ansys_plate_template.inp",
         "path_to_executable"    : "/lnm/programs64/ansys_inc/v140/ansys/bin/ansys140",
-        "post_post_script"      : "/home/biehler/adco/projects/05_queens/queens/trials/post_post_script_ansys_plate.py"
-      }
+        "post_post_script"      : "/home/biehler/adco/projects/05_queens/queens/trials/post_post_script_ansys_plate.py",
+         "experiment_dir"       : "/home/biehler/adco/projects/03_ansys_interface/trial_1"
+		  }
     },
-    "database"  :{
-      "address"   : "localhost:27017"
-    },
+		"model" : {
+    "type" : "simulation_model",
+    "interface" : "interface",
+    "parameters" : "parameters"
+  	},
+  	"interface" : {
+    	"type" : "job_interface",
+    	"resources": "resources",
+    	"driver" : "driver"
+  	},
     "resources" : {
       "my-machine" : {
-        "scheduler"         : "local",
+        "scheduler"         : "local_scheduler",
         "max-concurrent"    : 5,
         "max-finished-jobs" : 100
       }
     },
-    "designer" : {
-      "type" : "lhs",
+		"local_scheduler" : {
+			"scheduler_type" : "local"
+		},
+    "method" : {
+			"method_name" : "lhs",
+      "method_options" : {
       "seed" : 42,
       "num_samples" : 5,
-      "num_iterations" : 10
+      "num_iterations" : 10,
+			"model" : "model"
+			}
     },
-    "variables" : {
+		"parameters" : {
+			"random_variables" : {	
         "young" : {
           "type" : "FLOAT",
           "size" : 1,
           "distribution" : "uniform",
-          "distribution_parameter" : [400000,10000]
+          "distribution_parameter" : [4000,10000]
         },
         "load" : {
           "type" : "FLOAT",
           "size" : 1,
           "distribution" : "uniform",
-          "distribution_parameter" : [400000,10000]
+          "distribution_parameter" : [1,4]
         }
+			}
     }
 }
