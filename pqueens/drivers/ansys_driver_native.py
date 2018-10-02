@@ -37,10 +37,10 @@ def ansys_driver_native(job):
     # create input file using injector
     inject(params, driver_params['input_template'], ansys_input_file)
     # second injection to set output file
-    ansys_output={}
+    ansys_output = {}
     ansys_output["output"] = ansys_output_file
     inject(ansys_output, ansys_input_file, ansys_input_file)
-		
+    
     # get ansys run and post process command
     ansys_cmd = [driver_params['path_to_executable'],
                  "-b -g -p aa_t_a -dir ",
