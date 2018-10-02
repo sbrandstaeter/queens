@@ -1,0 +1,41 @@
+{
+    "experiment-name" : "ansys_plate_example",
+    "driver" :{
+      "driver_type"           : "ansys_native",
+      "driver_params"         :{
+        "input_template"        : "/home/biehler/adco/projects/05_queens/queens/trials/ansys_plate_template.inp",
+        "path_to_executable"    : "/lnm/programs64/ansys_inc/v140/ansys/bin/ansys140",
+        "post_post_script"      : "/home/biehler/adco/projects/05_queens/queens/trials/post_post_script_ansys_plate.py"
+      }
+    },
+    "database"  :{
+      "address"   : "localhost:27017"
+    },
+    "resources" : {
+      "my-machine" : {
+        "scheduler"         : "local",
+        "max-concurrent"    : 5,
+        "max-finished-jobs" : 100
+      }
+    },
+    "designer" : {
+      "type" : "lhs",
+      "seed" : 42,
+      "num_samples" : 5,
+      "num_iterations" : 10
+    },
+    "variables" : {
+        "young" : {
+          "type" : "FLOAT",
+          "size" : 1,
+          "distribution" : "uniform",
+          "distribution_parameter" : [400000,10000]
+        },
+        "load" : {
+          "type" : "FLOAT",
+          "size" : 1,
+          "distribution" : "uniform",
+          "distribution_parameter" : [400000,10000]
+        }
+    }
+}
