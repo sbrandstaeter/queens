@@ -5,6 +5,7 @@ import argparse
 from pqueens.drivers.baci_driver_docker import baci_driver_docker
 from pqueens.drivers.fenics_driver_docker_new import fenics_driver_docker
 from pqueens.drivers.baci_driver_native import baci_driver_native
+from pqueens.drivers.ansys_driver_native import ansys_driver_native
 from pqueens.drivers.python_driver_vector_interface import python_driver_vector_interface
 from pqueens.database.mongodb import MongoDB
 
@@ -88,6 +89,8 @@ def launch(db_address, experiment_name, batch, job_id):
             result = baci_driver_native(job)
         elif job['driver_type'].lower() == 'fenics_docker':
             result = fenics_driver_docker(job)
+        elif job['driver_type'].lower() == 'ansys_native':
+            result = ansys_driver_native(job)
         else:
             raise Exception("That driver type has not been implemented.")
 

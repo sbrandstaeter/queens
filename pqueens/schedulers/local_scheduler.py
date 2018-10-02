@@ -66,8 +66,6 @@ class LocalScheduler(Scheduler):
         output_filename = os.path.join(output_directory, '%08d.out' % job_id)
         output_file = open(output_filename, 'w')
 
-        print("starting process")
-        print("output_file{}".format(output_file))
         process = subprocess.Popen(cmd, stdout=output_file,
                                    stderr=output_file,
                                    shell=True)
