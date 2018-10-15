@@ -1,5 +1,4 @@
 
-
 import sys
 import subprocess
 import re
@@ -19,7 +18,7 @@ class SlurmScheduler(AbstractClusterScheduler):
 
     Attributes:
         connect_to_resource (list): list containing commands to
-                                    connect to resaurce
+                                    connect to resource
     """
 
     def __init__(self, scheduler_name, num_procs_per_node, num_nodes, walltime,
@@ -51,7 +50,7 @@ class SlurmScheduler(AbstractClusterScheduler):
             config (dict):          dictionary containing problem description
 
         Returns:
-            scheduler:              instance of PBSScheduler
+            scheduler:              instance of SlurmScheduler
         """
         options = config[scheduler_name]
 
@@ -79,8 +78,9 @@ class SlurmScheduler(AbstractClusterScheduler):
         Returns:
             match object: with regular expression matching process id
         """
-        regex = r'(^\d+)'
-        return re.search(regex, output)
+        #regex = r'(^\d+)'
+        regex=output.split()
+        return regex[-1]
 
     def submit_command(self, job_name):
         """ Get submit command for Slurm type scheduler
@@ -93,15 +93,15 @@ class SlurmScheduler(AbstractClusterScheduler):
         Returns:
             list: Submission command(s)
         """
+
         # pre assemble some strings
-        proc_info = 'nodes={}:ppn={}'.format(self.num_nodes,
-                                             self.num_procs_per_node)
-        walltime_info = 'walltime={}'.format(self.walltime)
+        proc_info = '-N {} -c {}'.format(self.num_nodes, self.num_procs_per_node)
+        walltime_info = '-t {}'.format(self.walltime)
+        mail_info = '--mail-user={}'.format(self.user_mail)
+        job_info = '--job-name={}'.format(job_name)
 
         command_list = self.connect_to_resource  \
-                       + ['sbatch', '--mail-user=', self.user_mail,
-                          '--mail-type=BEGIN,END,FAIL', '-J', job_name,
-                          '--ntasks', proc_info, '--time', walltime_info]
+                       + ['sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
         return command_list
 
     def alive(self, process_id):
