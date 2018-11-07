@@ -51,7 +51,7 @@ After installation, you need to start MongoDB. For LNM machines this requires th
 
 `systemctl stop mongod`   
 
-`systemctl restart`
+`systemctl restart mongod`
 
 It could be that you have to edit the sudoers file `/etc/sudoers.d/` together with your administrator in order get the execution rights.
 
