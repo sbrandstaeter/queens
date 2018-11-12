@@ -65,18 +65,26 @@ By default,  the fire wall software `firewalld` blocks every incoming request. H
 First type   
 `sudo firewall-cmd --list-all`   
 to see what firewall rules are already in place.
-If there is no rule in place which allows you to connect to port 27017, you can add such a rule by running the following command on the machine MongoDD is running on.   
+
+If there is no rule in place which allows you to connect to port 27017, you can add such a rule by running the following command on the machine MongoDB is running on.   
 `sudo firewall-cmd --zone=work --add-rich-rule 'rule family=ipv4 source address=<adress-you-want-to-connnect-to> port port=27017 protocol=tcp accept' --permanent`   
 Note that if you want to connect to the database from a cluster, you will also need to add this rule for the ip address of the clusters master node.
-Also, to apply the changes run   
+
+**Bruteforce**: In case your computing cluster is Bruteforce and MongoDB is running on your local machine, the **only** rule that should be in place is:
+``sudo firewall-cmd --zone=work --add-rich-rule 'rule family=ipv4 source address=129.187.58.13 port port=27017 protocol=tcp accept' --permanent``
+
+Also, to apply the changes run  
 `sudo firewall-cmd --reload`  
 
-### some IP-adresses
-Cauchy:129.187.58.39
-Schmarrn:129.187.58.24
-Jonas Laptop:129.187.58.120
+### Some IP-adresses
+- Cauchy: 129.187.58.39
+- Bohr: 129.187.58.88
+- Schmarrn: 129.187.58.24
+- Bruteforce (master node global IP): 129.187.58.13
+- Bruteforce (master node local IP): 10.10.0.1
+- Jonas B. Laptop: 129.187.58.120
 
-#### QUEENS and cluster jobs on Kaiser
+#### QUEENS and cluster jobs
 QUEENS offers the possibility to perform the actual model evaluations on a HPC-cluster
 such as Kaiser. Setting things up is unfortunately not really as straightforward as it could be yet. However, the following steps can be used as guidance to set up QUEENS such that QUEENS is running on one machine, the MongoDB is running on a second machine and the model evaluations are performed on a third machine, in this case Kaiser.
 To avoid confusion, these three machine will be referred to as
@@ -86,15 +94,20 @@ To avoid confusion, these three machine will be referred to as
 
 in the following.
 
-##### Preparing the compute machine
+##### Preparing the compute machine (e.g. Kaiser or Bruteforce)
 First we have to install some software on the compute cluster. The following steps
-are tried and tested on the LNM Kaiser system. It is not guaranteed that the steps
+are tried and tested on the LNM Kaiser and Bruteforce system. It is not guaranteed that the steps
 will be the same on other systems
 
-1. Install miniconda3 with python 3.6 on Kaiser
-2. Add public ssh-key of Kaiser to LRZ GitLab repo in order to be able to clone it from Kaiser
+1. Install miniconda3 with python 3.6 on the cluster
+2. Add public ssh-key of Cluster to LRZ GitLab repo in order to be able to clone QUEENS
 3. Clone this repo
-4. Install requirements and QUEENS using pip on Kaiser
+4. Install requirements and QUEENS using pip on Kaiser or Bruteforce
+5. (**ONLY BRUTEFORCE:**) On Bruteforce a port-forwarding to the db-server is necessary as the computing nodes cannot reach networks outside of Bruteforce:
+   1. On master node run the command `ssh -fN -g -L 27017:localhost:27017 <user>@<computer_name>.lnm.mw.tum.de`
+   2. *Be careful*: Now the address of the MongoDB server in the input-file has to be changed to the global Bruteforce IP-adress with port 27017: `129.187.58.13:27017`.
+   3. The command above will now forward port 27017 of the Bruteforce's master node to the local host port 27017 (e.g. your personal work station) which is the interface to the DB (running locally)
+   4. Currently, the driver file used on Bruteforce contains the local IP-address of its master node (`10.10.0.1:27017`) hard-coded to enable port-forwarding from slave nodes to the external DB-server
 
 ##### Preparing the db_server
 The machine running the MongoDB database does not need to be the same as either the
