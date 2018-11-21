@@ -1,4 +1,4 @@
-#!/home/nitzler/programs/anaconda/anaconda3/envs/py36/bin/python
+#!/home/biehler/miniconda3/bin/python
 # coding: utf8
 
 
@@ -122,7 +122,7 @@ def setup_dirs_and_files(driver_options):
 
     # create input file using injector
     baci_input_file = dest_dir + '/' + str(driver_options['experiment_name']) + \
-                      '_' + str(driver_options['job_id']) + '.py'
+                      '_' + str(driver_options['job_id']) + '.dat'
 
     # create ouput file name
     baci_output =  output_directory + '/' + str(driver_options['experiment_name']) + \
@@ -219,7 +219,7 @@ def get_runcommand_string(driver_options, baci_input_file, baci_output):
    # runcommand_list = [mpir_run, mpi_flags, '-np', str(procs), executable,
    #                       baci_input_file, baci_output]
     runcommand_list = [executable,
-                       baci_input_file, '--output_file', baci_output]
+                       baci_input_file, baci_output]
 
     runcommand_string = ' '.join(runcommand_list)
     return runcommand_string
