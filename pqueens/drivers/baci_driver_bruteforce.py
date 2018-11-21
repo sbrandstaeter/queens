@@ -219,9 +219,10 @@ def get_runcommand_string(driver_options, baci_input_file, baci_output):
    # runcommand_list = [mpir_run, mpi_flags, '-np', str(procs), executable,
    #                       baci_input_file, baci_output]
     runcommand_list = [mpir_run, mpi_flags, '-np', str(procs), executable,
-                       baci_input_file, '--output_file', baci_output]
+                       baci_input_file, baci_output]
 
     runcommand_string = ' '.join(runcommand_list)
+    print(runcommand_string)
     return runcommand_string
 
 def do_postprocessing(driver_options, baci_output):
@@ -246,7 +247,7 @@ def get_postcommand_string(driver_options, baci_output):
             str: Post processing command for BACI
     """
     procs = get_num_nodes()
-#    mpir_run, mpi_flags = setup_mpi(procs)
+    mpir_run, mpi_flags = setup_mpi(procs)
     post_processor_exec = driver_options.get('path_to_postprocessor', None)
     postcommand_string = None
     if post_processor_exec != None:
@@ -257,7 +258,7 @@ def get_postcommand_string(driver_options, baci_output):
         postcommand_list = [mpir_run, mpi_flags, '-np', str(1), post_processor_exec,
                             post_process_command, monitor_file]
         #postcommand_list = [post_processor_exec,
-                            post_process_command, monitor_file]
+                           # post_process_command, monitor_file]
 
 
         postcommand_string = ' '.join(postcommand_list)
