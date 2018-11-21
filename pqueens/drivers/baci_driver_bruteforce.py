@@ -72,34 +72,34 @@ def get_num_nodes():
     procs, _ = p.communicate()
     return int(procs)
 
-#def setup_mpi(num_procs):
-#    """ setup MPI environment
-#
-#        Args:
-#            num_procs (int): Number of processors to use
-#
-#        Returns:
-#            str, str: MPI runcommand, MPI flags
-#    """
-#    mpi_run = '/opt/openmpi/1.6.2/gcc48/bin/mpirun'
-#    mpi_home = '/opt/openmpi/1.6.2/gcc48'
-#
-#    os.environ["MPI_HOME"] = mpi_home
-#    os.environ["MPI_RUN"] = mpi_run
-#
-#    # Add non-standard shared library paths
-#    # "LD_LIBRARY_PATH" seems to be also empty, so simply set it to MPI_HOME
-#    # eventually this should changed to mereyl append the MPI_HOME path
-#    os.environ["LD_LIBRARY_PATH"] = mpi_home
-#
-#    # determine 'optimal' flags for the problem size
-#    if num_procs%16 == 0:
-#        mpi_flags = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
-#    else:
-#        mpi_flags = "--mca btl openib,sm,self"
-#
-#    return mpi_run, mpi_flags
-#
+def setup_mpi(num_procs):
+    """ setup MPI environment
+
+        Args:
+            num_procs (int): Number of processors to use
+
+        Returns:
+            str, str: MPI runcommand, MPI flags
+    """
+    mpi_run = '/cluster/mpi/intel/openmpi/1.10.1/bin/mpirun'
+    mpi_home = '/cluster/mpi/intel/openmpi/1.10.1'
+
+    os.environ["MPI_HOME"] = mpi_home
+    os.environ["MPI_RUN"] = mpi_run
+
+    # Add non-standard shared library paths
+    # "LD_LIBRARY_PATH" seems to be also empty, so simply set it to MPI_HOME
+    # eventually this should changed to mereyl append the MPI_HOME path
+    os.environ["LD_LIBRARY_PATH"] = mpi_home
+
+    # determine 'optimal' flags for the problem size
+    if num_procs%16 == 0:
+        mpi_flags = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
+    else:
+        mpi_flags = "--mca btl openib,sm,self"
+
+    return mpi_run, mpi_flags
+
 def setup_dirs_and_files(driver_options):
     """ Setup directory structure
 
@@ -209,7 +209,7 @@ def get_runcommand_string(driver_options, baci_input_file, baci_output):
             str: Complete command to execute BACI
     """
     procs = get_num_nodes()
-    #mpir_run, mpi_flags = setup_mpi(procs)
+    mpir_run, mpi_flags = setup_mpi(procs)
     executable = driver_options['path_to_executable']
 
     # note that we directly write the output to the home folder and do not create
@@ -218,7 +218,7 @@ def get_runcommand_string(driver_options, baci_input_file, baci_output):
     # TODO: Check MPI run below, I commented it out but probably necessary?
    # runcommand_list = [mpir_run, mpi_flags, '-np', str(procs), executable,
    #                       baci_input_file, baci_output]
-    runcommand_list = [executable,
+    runcommand_list = [mpir_run, mpi_flags, '-np', str(procs), executable,
                        baci_input_file, '--output_file', baci_output]
 
     runcommand_string = ' '.join(runcommand_list)
@@ -254,9 +254,9 @@ def get_postcommand_string(driver_options, baci_output):
         post_process_command = driver_options.get('post_process_command', "")
         # note for posterity post_drt_monitor does not like more than 1 proc
         # TODO: CHECK MPI here
-       # postcommand_list = [mpir_run, mpi_flags, '-np', str(1), post_processor_exec,
-        #                    post_process_command, monitor_file]
-        postcommand_list = [post_processor_exec,
+        postcommand_list = [mpir_run, mpi_flags, '-np', str(1), post_processor_exec,
+                            post_process_command, monitor_file]
+        #postcommand_list = [post_processor_exec,
                             post_process_command, monitor_file]
 
 
