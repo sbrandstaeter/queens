@@ -95,8 +95,8 @@ class SlurmScheduler(AbstractClusterScheduler):
         """
 
         # pre assemble some strings
-        proc_info = '-N {} -c {}'.format(self.num_nodes, self.num_procs_per_node)
-        walltime_info = '-t {}'.format(self.walltime)
+        proc_info = '--nodes={} --ntasks={}'.format(self.num_nodes, self.num_procs_per_node)
+        walltime_info = '--time={}'.format(self.walltime)
         mail_info = '--mail-user={}'.format(self.user_mail)
         job_info = '--job-name={}'.format(job_name)
 

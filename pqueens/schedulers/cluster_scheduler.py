@@ -91,7 +91,6 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
         submit_command.extend(run_command)
 
         command_string = ' '.join(submit_command)
-
         #pdb.set_trace()
         # Error happens below:ValueError: Invalid file object: <_io.TextIOWrapper name=10 encoding='UTF-8'>
         process = subprocess.Popen(command_string,

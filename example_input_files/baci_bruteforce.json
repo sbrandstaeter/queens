@@ -49,7 +49,7 @@
   },
   "bruteforce_scheduler" : {
     "scheduler_type" : "slurm",
-    "num_procs_per_node" : 3,
+    "num_procs_per_node" : 4,
     "num_nodes" : 1,
     "walltime" : "8:00:00",
     "email" : "nitzler@lnm.mw.tum.de",
