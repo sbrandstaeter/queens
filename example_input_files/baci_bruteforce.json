@@ -32,7 +32,7 @@
       "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/queen_of_hearts_1_1.dat",
       "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
       "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_processor",
-      "post_process_options"  : [" "],
+      "post_process_options"  : "--field=structure --node=20 --start=2",
 
       "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/experimental_run_1",
       "post_post_script"      : "/home/nitzler/workspace/BACI_Rep/output/post_post_script_assb_variance.py",
