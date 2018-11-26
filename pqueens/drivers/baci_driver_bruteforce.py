@@ -54,8 +54,8 @@ def main(args):
     # do postprocessing
     do_postprocessing(driver_options, baci_output)
 
-    my_file = open(baci_output, 'r')
-    result = my_file.readline()
+    # extract actual QoI from post processed result using a postpost-scipt
+    result = do_postpostprocessing(driver_options, baci_output)
     finish_job(driver_options, db, job, result)
 
 def get_num_nodes():
@@ -173,31 +173,30 @@ def finish_job(driver_options, db, job, result):
     db.save(job, driver_options['experiment_name'], 'jobs', driver_options['batch'],
             {'id' : driver_options['job_id']})
 
-#def do_postpostprocessing(driver_options, baci_output):
-#    """ Execute post post processing step
-#
-#        Args:
-#            driver_options (dict): Options dictionary
-#            baci_output (str): Path to BACI output files
-#
-#        Returns:
-#            float: Postprocessed result
-#    """
-#    post_post_script = driver_options.get('post_post_script', None)
-#    result = None
-#    if post_post_script != None:
-#        spec = importlib.util.spec_from_file_location("module.name", post_post_script)
-#    print(runcommand_string)
-#        post_post_proc = importlib.util.module_from_spec(spec)
-#        spec.loader.exec_module(post_post_proc)
-#        result = post_post_proc.run(baci_output)
-#        print('Got result: {}'.format(result))
-#    else:
-#        raise RuntimeError("You need to provide post_post_script in the driver "
-#                           "driver_params section of the config file to get results")
-#
-#    return result
-#
+def do_postpostprocessing(driver_options, baci_output):
+    """ Execute post post processing step
+
+        Args:
+            driver_options (dict): Options dictionary
+            baci_output (str): Path to BACI output files
+
+        Returns:
+            float: Postprocessed result
+    """
+    post_post_script = driver_options.get('post_post_script', None)
+    result = None
+    if post_post_script != None:
+        spec = importlib.util.spec_from_file_location("module.name", post_post_script)
+        post_post_proc = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(post_post_proc)
+        result = post_post_proc.run(baci_output)
+        print('Got result: {}'.format(result))
+    else:
+        raise RuntimeError("You need to provide post_post_script in the driver "
+                           "driver_params section of the config file to get results")
+
+    return result
+
 
 def get_runcommand_string(driver_options, baci_input_file, baci_output):
     """ Assemble run command for BACI

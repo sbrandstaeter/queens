@@ -1,5 +1,5 @@
 {
-  "experiment_name" : "Martins_heart",
+  "experiment_name" : "FSI",
   "database"  :{
     "address" : "129.187.58.13:27017",
     "drop_existing" : "True"
@@ -29,7 +29,7 @@
   "driver" :{
     "driver_type"           : "baci_bruteforce",
     "driver_params"         :{
-      "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/queen_of_hearts_1_1.dat",
+      "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/single_bending_wall_fsi_2d_UQ.dat",
       "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
       "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_processor",
       "post_process_options"  : "--field=structure --node=20 --start=2",
@@ -57,13 +57,13 @@
   },
   "parameters" : {
     "random_variables" : {
-      "velocity" : {
+      "u_uq" : {
           "type" : "FLOAT",
           "size" : 1,
-          "min"  : 2.0,
-          "max"  : 3.0,
+          "min"  : 0.04,
+          "max"  : 0.06,
           "distribution" : "uniform",
-          "distribution_parameter" : [2.0,3.0]
+          "distribution_parameter" : [0.04,0.06]
       }
     }
   }
