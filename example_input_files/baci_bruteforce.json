@@ -31,11 +31,11 @@
     "driver_params"         :{
       "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/single_bending_wall_fsi_2d_UQ.dat",
       "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
-      "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_processor",
-      "post_process_options"  : "--field=structure --node=20 --start=2",
+      "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
+      "post_process_options"  : "--field=structure --node=37 --start=1",
 
-      "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/experimental_run_1",
-      "post_post_script"      : "/home/nitzler/workspace/BACI_Rep/output/post_post_script_assb_variance.py",
+      "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/first_trial_fsi",
+      "post_post_script"      : "/home/nitzler/workspace/QUEENS_Rep/queens/trials/post_post_script_FSI.py",
 
       "driver_file" : "/home/nitzler/workspace/QUEENS_Rep/queens/pqueens/drivers/baci_driver_bruteforce.py"
     }
@@ -60,8 +60,6 @@
       "u_uq" : {
           "type" : "FLOAT",
           "size" : 1,
-          "min"  : 0.04,
-          "max"  : 0.06,
           "distribution" : "uniform",
           "distribution_parameter" : [0.04,0.06]
       }

@@ -35,9 +35,7 @@ def main(args):
 
     # get SLURM working directory
     srcdir = os.environ["SLURM_SUBMIT_DIR"]
-    print(srcdir)
     os.chdir(srcdir)
-    #print(args)
     # connect to database and get job parameters
     db = MongoDB(database_address='10.10.0.1:27017')
     job = init_job(driver_options, db)
@@ -48,7 +46,6 @@ def main(args):
     # assemble command to run BACI
     runcommand_string, my_env = get_runcommand_string(driver_options, baci_input_file, baci_output)
     #run BACI
-    #runcommand_string = 'cd $HOME && module purge && module load intel-studio-2016 mpi/openmpi/intel/1.10.1 && LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MPI_HOME/lib && export LD_LIBRARY_PATH && ' + runcommand_string
     run(runcommand_string, my_env)
 
     # do postprocessing
@@ -61,7 +58,6 @@ def main(args):
 def get_num_nodes():
     """ determine number of processors from nodefile """
     slurm_nodefile = os.environ["SLURM_JOB_NODELIST"]
-    #print(slurm_nodefile)
     command_list = ['cat', slurm_nodefile, '|', 'wc', '-l']
     command_string = ' '.join(command_list)
     p = subprocess.Popen(command_string,
@@ -90,8 +86,6 @@ def setup_mpi(num_procs):
     os.environ["LD_LIBRARY_PATH"] += "/cluster/mpi/intel/openmpi/1.10.1'/lib"
 
     # Add non-standard shared library paths
-    # "LD_LIBRARY_PATH" seems to be also empty, so simply set it to MPI_HOME
-    # eventually this should changed to mereyl append the MPI_HOME path
     my_env = os.environ.copy()
     # determine 'optimal' flags for the problem size
     if num_procs%16 == 0:
@@ -103,6 +97,8 @@ def setup_mpi(num_procs):
 
 def setup_dirs_and_files(driver_options):
     """ Setup directory structure
+        print(post_process_command)
+        print(post_process_command)
 
         Args:
             driver_options (dict): Options dictionary
@@ -190,7 +186,6 @@ def do_postpostprocessing(driver_options, baci_output):
         post_post_proc = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(post_post_proc)
         result = post_post_proc.run(baci_output)
-        print('Got result: {}'.format(result))
     else:
         raise RuntimeError("You need to provide post_post_script in the driver "
                            "driver_params section of the config file to get results")
@@ -217,8 +212,6 @@ def get_runcommand_string(driver_options, baci_input_file, baci_output):
     # the appropriate directories on the nodes. This should be changed at some point.
     # So long be careful !
     # TODO: Check MPI run below, I commented it out but probably necessary?
-   # runcommand_list = [mpir_run, mpi_flags, '-np', str(procs), executable,
-   #                       baci_input_file, baci_output]
     runcommand_list = [mpir_run, mpi_flags, executable,
                        baci_input_file, baci_output]
 
@@ -233,8 +226,6 @@ def do_postprocessing(driver_options, baci_output):
             baci_output (str):     Path to BACI output file
     """
     runcommand_string, my_env = get_postcommand_string(driver_options, baci_output)
-    #runcommand_string = 'cd $HOME && module purge && module load intel-studio-2016 mpi/openmpi/intel/1.10.1 && LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$MPI_HOME/lib && export LD_LIBRARY_PATH && ' + runcommand_string
-
     if runcommand_string != None:
         run(runcommand_string, my_env)
 
@@ -249,18 +240,18 @@ def get_postcommand_string(driver_options, baci_output):
             str: Post processing command for BACI
     """
     procs = get_num_nodes()
-    mpir_run, mpi_flags,my_env = setup_mpi(procs)
+    mpir_run, _ ,my_env = setup_mpi(procs)
     post_processor_exec = driver_options.get('path_to_postprocessor', None)
     postcommand_string = None
     if post_processor_exec != None:
         monitor_file = '--file=' + str(baci_output)
         post_process_command = driver_options.get('post_process_command', "")
+        post_process_options = driver_options.get('post_process_options', None)
         # note for posterity post_drt_monitor does not like more than 1 proc
         # TODO: CHECK MPI here
-        postcommand_list = [mpir_run, mpi_flags, post_processor_exec, post_process_command, monitor_file]
-        #postcommand_list = [post_processor_exec,
-                           # post_process_command, monitor_file]
-
+        postcommand_list = [mpir_run, '-np 1', post_processor_exec,
+                            post_process_command, monitor_file,
+                            post_process_options]
 
         postcommand_string = ' '.join(postcommand_list)
 
@@ -273,7 +264,6 @@ def run(command_string,my_env):
         Args:
             command_string (str): Command to execute
     """
-    print(command_string)
     p = subprocess.Popen(command_string,
                          env=my_env,
                          stdin=subprocess.PIPE,

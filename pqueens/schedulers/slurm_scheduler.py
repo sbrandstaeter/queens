@@ -6,15 +6,14 @@ from pqueens.schedulers.cluster_scheduler import AbstractClusterScheduler
 
 
 class SlurmScheduler(AbstractClusterScheduler):
-    """ Minimal interface to Torque queing system to submit and query jobs
+    """ Minimal interface to SLURM queing system to submit and query jobs
 
     This class provides a basic interface to the Slurm job queing system to submit
     and query jobs to a cluster. This also works if the cluster is a remote
     resource that has to be connected to via ssh. When submitting the job, the
     process id is returned to enable queries about the job status later on.
 
-    This scheduler is written specifically for the LNM Bruteforce cluster,
-    but can serve as an example for other Torque queueing systems using Slurm
+    This scheduler is written specifically for the LNM Bruteforce cluster
 
     Attributes:
         connect_to_resource (list): list containing commands to
@@ -120,7 +119,7 @@ class SlurmScheduler(AbstractClusterScheduler):
         alive = False
         try:
             # join lists
-            command_list = self.connect_to_resource + ['sinfo', str(process_id)]
+            command_list = self.connect_to_resource + ['squeue --job', str(process_id)]
             command_string = ' '.join(command_list)
 
             process = subprocess.Popen(command_string,
@@ -134,7 +133,7 @@ class SlurmScheduler(AbstractClusterScheduler):
             process.stdin.close()
             output2 = output.split()
             # second to last entry is (should be )the job status
-            status = output2[-2] #TODO: Check if that still holds
+            status = output2[-4] #TODO: Check if that still holds
         except:
             # job not found
             status = -1
