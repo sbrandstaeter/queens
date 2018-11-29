@@ -1,0 +1,89 @@
+{
+    "experiment_name" : "assb_trial1",
+    "database"  :{
+      "address"   : "localhost:27017",
+      "drop_existing" : "True"
+    },
+    "method": {
+      "method_name": "monte_carlo",
+      "method_options" :{
+        "seed" : 44,
+        "num_samples" : 1000,
+        "model" : "gp_surrogate_model",
+        "result_description" : {
+          "plot_results" : true,
+          "write_results" : true,
+          "bayesian" : false,
+          "num_support_points" : 200
+        }
+      }
+    },
+    "gp_surrogate_model" : {
+      "type" : "datafit_surrogate_model",
+      "interface" : "approximation_interface",
+      "parameters" : "parameters",
+      "subordinate_model" : "truth_model",
+      "subordinate_iterator" : "thruth_model_iterator",
+      "eval_fit" : "kfold",
+      "error_measures" : ["sum_squared", "mean_squared", "root_mean_squared", "sum_abs", "mean_abs", "abs_max"]
+    },
+    "approximation_interface" : {
+      "type" : "approximation_interface",
+      "approximation" : "gpy_regression"
+    },
+    "gpy_regression" : {
+      "type" : "gp_approximation_gpy",
+      "ard" : "True",
+      "length_scale" : 1,
+      "variance" : 1,
+      "num_posterior_samples" : 2
+    },
+    "thruth_model_iterator" : {
+      "method_name": "read_data_from_file",
+      "method_options" :{
+        "path_to_data" : "/Users/jonas/work/02_adco/queens_code/pqueens/example_input_files/assb_data.pickle"
+      }
+    },
+    "truth_model" :{
+      "type" : "simulation_model",
+      "interface" : "interface",
+      "parameters" : "parameters"
+    },
+    "interface" : {
+      "type" : "direct_python_interface",
+      "main_file" : "/Users/jonas/work/02_adco/queens_code/pqueens/pqueens/example_simulator_functions/branin_hifi.py"
+    },
+    "parameters" : {
+      "random_variables" : {
+        "diff_coeff" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : 1e-10,
+            "max"  : 10e-10,
+            "distribution" : "uniform",
+            "distribution_parameter" : [1e-10,10e-10]
+        },
+        "kappa" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : 3e1,
+            "max"  : 10e1,
+            "distribution" : "uniform",
+            "distribution_parameter" : [3e1,10e1]
+        },
+        "curr_exchange" : {
+            "type" : "FLOAT",
+            "size" : 1,
+            "min"  : 1.04e-5,
+            "max"  : 1.04e-3,
+            "distribution" : "uniform",
+            "distribution_parameter" : [1.04e-5,1.04e-3]
+        }
+      }
+    },
+    "mc_results" : {
+        "plot_results" : true,
+        "bayesian" : true,
+        "num_support_points" : 200
+    }
+}
