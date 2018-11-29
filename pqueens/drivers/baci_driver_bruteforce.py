@@ -1,27 +1,26 @@
-#!/home/biehler/miniconda3/bin/python
+#!/home/nitzler/programs/anaconda/anaconda3/envs/py36/bin/python
 # coding: utf8
+
 
 ################################################################################
 #
-#  Very basic lauchner script to launch BACI jobs on Kaiser cluster
+#  Very basic lauchner script to launch BACI jobs on Bruteforce cluster
 #  Attention a lot of things are hard coded here that probably should not be
 #  hard coded, so proceed with caution. #!/usr/bin/env python
 #                                        #
 ################################################################################
-
 import os
 import subprocess
 import json
 import sys
 import time
-import numpy as np
 import importlib.util
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.injector import inject
 
 def main(args):
     """
-        Very basic lauchner script to launch BACI jobs on Kaiser cluster.
+        Very basic lauchner script to launch BACI jobs on Bruteforce cluster.
 
         Attention a lot of things are hard coded here that probably should not be
         hard coded, so proceed with caution.
@@ -29,69 +28,37 @@ def main(args):
         Args:
             args (JSON document): file-like object containing a JSON document
     """
-
+    # The following is necessary to fix JSON FORMAT reader
+    args=args.replace('\\', '\"')
     # all necessary information is passed via this dictionary
     driver_options = json.loads(args)
 
-    # get PBS working directory
-    srcdir = os.environ["PBS_O_WORKDIR"]
+    # get SLURM working directory
+    srcdir = os.environ["SLURM_SUBMIT_DIR"]
     os.chdir(srcdir)
-
     # connect to database and get job parameters
-    db = MongoDB(database_address=driver_options['database_address'])
-
+    db = MongoDB(database_address='10.10.0.1:27017')
     job = init_job(driver_options, db)
-
     _, baci_input_file, baci_output = setup_dirs_and_files(driver_options)
-
-    result = None
-    try:
-        result = run_and_postprocess(job['params'], driver_options, baci_input_file, baci_output)
-    except:
-        print("Something went wrong during running the simulation")
-
-    finish_job(driver_options, db, job, result)
-
-def run_and_postprocess(job_params, driver_options, baci_input_file, baci_output):
-    """ Run and post process BACI simulation
-
-        Encapsulate everything BACI related into this function such that errors
-        can be caught and the job status set accordingly
-
-    Args:
-        job_params (dict):          Dictionay with job parameter
-        driver_options (dict):      Dictionary with driver options
-        baci_input_file (str):      BACI input file
-        baci_output (str):          Stem of BACI output
-
-    Returns:
-        float: result of simulation
-
-    """
-
-    # create actual input file in experiment dir folder
-    inject(job_params, driver_options['input_template'], baci_input_file)
+     #creat actual input file in experiment dir folder
+    inject(job['params'], driver_options['input_template'], baci_input_file)
 
     # assemble command to run BACI
-    runcommand_string = get_runcommand_string(driver_options, baci_input_file, baci_output)
-
+    runcommand_string, my_env = get_runcommand_string(driver_options, baci_input_file, baci_output)
     #run BACI
-    run(runcommand_string)
+    run(runcommand_string, my_env)
 
     # do postprocessing
     do_postprocessing(driver_options, baci_output)
 
-    # extract actual QOI from post processed result using a script
+    # extract actual QoI from post processed result using a postpost-scipt
     result = do_postpostprocessing(driver_options, baci_output)
-
-    return result
-
+    finish_job(driver_options, db, job, result)
 
 def get_num_nodes():
     """ determine number of processors from nodefile """
-    pbs_nodefile = os.environ["PBS_NODEFILE"]
-    #print(pbs_nodefile)
-    command_list = ['cat', pbs_nodefile, '|', 'wc', '-l']
+    slurm_nodefile = os.environ["SLURM_JOB_NODELIST"]
+    command_list = ['cat', slurm_nodefile, '|', 'wc', '-l']
     command_string = ' '.join(command_list)
     p = subprocess.Popen(command_string,
                          stdin=subprocess.PIPE,
@@ -111,27 +78,27 @@ def setup_mpi(num_procs):
         Returns:
             str, str: MPI runcommand, MPI flags
     """
-    mpi_run = '/opt/openmpi/1.6.2/gcc48/bin/mpirun'
-    mpi_home = '/opt/openmpi/1.6.2/gcc48'
+    mpi_run = '/cluster/mpi/intel/openmpi/1.10.1/bin/mpirun'
+    mpi_home = '/cluster/mpi/intel/openmpi/1.10.1'
 
     os.environ["MPI_HOME"] = mpi_home
     os.environ["MPI_RUN"] = mpi_run
+    os.environ["LD_LIBRARY_PATH"] += "/cluster/mpi/intel/openmpi/1.10.1'/lib"
 
     # Add non-standard shared library paths
-    # "LD_LIBRARY_PATH" seems to be also empty, so simply set it to MPI_HOME
-    # eventually this should changed to mereyl append the MPI_HOME path
-    os.environ["LD_LIBRARY_PATH"] = mpi_home
-
+    my_env = os.environ.copy()
     # determine 'optimal' flags for the problem size
     if num_procs%16 == 0:
         mpi_flags = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
     else:
         mpi_flags = "--mca btl openib,sm,self"
 
-    return mpi_run, mpi_flags
+    return mpi_run, mpi_flags, my_env
 
 def setup_dirs_and_files(driver_options):
     """ Setup directory structure
+        print(post_process_command)
+        print(post_process_command)
 
         Args:
             driver_options (dict): Options dictionary
@@ -147,7 +114,7 @@ def setup_dirs_and_files(driver_options):
 
     output_directory = os.path.join(dest_dir, 'output')
     if not os.path.isdir(output_directory):
-        # make complete directory tree
+        # make complete directory treesr/sbin:/sbin:"
         os.makedirs(output_directory)
 
     # create input file using injector
@@ -155,7 +122,7 @@ def setup_dirs_and_files(driver_options):
                       '_' + str(driver_options['job_id']) + '.dat'
 
     # create ouput file name
-    baci_output = output_directory + '/' + str(driver_options['experiment_name']) + \
+    baci_output =  output_directory + '/' + str(driver_options['experiment_name']) + \
                       '_' + str(driver_options['job_id'])
 
     return prefix, baci_input_file, baci_output
@@ -195,14 +162,9 @@ def finish_job(driver_options, db, job, result):
     """
     end_time = time.time()
 
-    if result is not None:
-        job['result'] = result
-        job['status'] = 'complete'
-        job['end time'] = end_time
-    else:
-        job['result'] = np.nan
-        job['status'] = 'failed'
-        job['end time'] = end_time
+    job['result'] = result
+    job['status'] = 'complete'
+    job['end time'] = end_time
 
     db.save(job, driver_options['experiment_name'], 'jobs', driver_options['batch'],
             {'id' : driver_options['job_id']})
@@ -224,7 +186,6 @@ def do_postpostprocessing(driver_options, baci_output):
         post_post_proc = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(post_post_proc)
         result = post_post_proc.run(baci_output)
-        print('Got result: {}'.format(result))
     else:
         raise RuntimeError("You need to provide post_post_script in the driver "
                            "driver_params section of the config file to get results")
@@ -243,18 +204,19 @@ def get_runcommand_string(driver_options, baci_input_file, baci_output):
         Returns:
             str: Complete command to execute BACI
     """
-    procs = get_num_nodes()
-    mpir_run, mpi_flags = setup_mpi(procs)
+    procs = 4
+    mpir_run, mpi_flags, my_env = setup_mpi(procs)
     executable = driver_options['path_to_executable']
 
     # note that we directly write the output to the home folder and do not create
     # the appropriate directories on the nodes. This should be changed at some point.
     # So long be careful !
-
-    runcommand_list = [mpir_run, mpi_flags, '-np', str(procs), executable,
+    # TODO: Check MPI run below, I commented it out but probably necessary?
+    runcommand_list = [mpir_run, mpi_flags, executable,
                        baci_input_file, baci_output]
+
     runcommand_string = ' '.join(runcommand_list)
-    return runcommand_string
+    return runcommand_string, my_env
 
 def do_postprocessing(driver_options, baci_output):
     """ Assemble post processing command for BACI
@@ -263,9 +225,9 @@ def do_postprocessing(driver_options, baci_output):
             driver_options (dict): Options dictionary
             baci_output (str):     Path to BACI output file
     """
-    command = get_postcommand_string(driver_options, baci_output)
-    if command != None:
-        run(command)
+    runcommand_string, my_env = get_postcommand_string(driver_options, baci_output)
+    if runcommand_string != None:
+        run(runcommand_string, my_env)
 
 def get_postcommand_string(driver_options, baci_output):
     """ Assemble post processing command for BACI
@@ -278,28 +240,32 @@ def get_postcommand_string(driver_options, baci_output):
             str: Post processing command for BACI
     """
     procs = get_num_nodes()
-    mpir_run, mpi_flags = setup_mpi(procs)
+    mpir_run, _ ,my_env = setup_mpi(procs)
     post_processor_exec = driver_options.get('path_to_postprocessor', None)
     postcommand_string = None
     if post_processor_exec != None:
         monitor_file = '--file=' + str(baci_output)
         post_process_command = driver_options.get('post_process_command', "")
+        post_process_options = driver_options.get('post_process_options', None)
         # note for posterity post_drt_monitor does not like more than 1 proc
-        postcommand_list = [mpir_run, mpi_flags, '-np', str(1), post_processor_exec,
-                            post_process_command, monitor_file]
+        # TODO: CHECK MPI here
+        postcommand_list = [mpir_run, '-np 1', post_processor_exec,
+                            post_process_command, monitor_file,
+                            post_process_options]
 
         postcommand_string = ' '.join(postcommand_list)
 
-    return postcommand_string
+    return postcommand_string, my_env
 
 
-def run(command_string):
+def run(command_string,my_env):
     """ Execute passed command
 
         Args:
             command_string (str): Command to execute
     """
     p = subprocess.Popen(command_string,
+                         env=my_env,
                          stdin=subprocess.PIPE,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.PIPE,
@@ -307,9 +273,8 @@ def run(command_string):
                          universal_newlines=True)
 
     stdout, stderr = p.communicate()
-    print(stdout)
     print(stderr)
-
+    print(stdout)
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1]))

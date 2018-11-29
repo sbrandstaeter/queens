@@ -5,7 +5,7 @@ from pqueens.utils.plot_outputs import plot_pdf
 from pqueens.utils.plot_outputs import plot_cdf
 from pqueens.utils.plot_outputs import plot_failprob
 from pqueens.utils.plot_outputs import plot_icdf
-from sklearn.grid_search import GridSearchCV
+from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
 def process_ouputs(output_data, output_description, input_data=None):
@@ -15,6 +15,29 @@ def process_ouputs(output_data, output_description, input_data=None):
         output_data (dict):         Dictionary containing model output
         output_descripion (dict):   Dictionary describing desired output quantities
         input_data (np.array):          Array containing model input
+
+    Returns:
+        dict:                       Dictionary with processed results
+    """
+    processed_results = {}
+    try:
+        processed_results = do_processing(output_data, output_description)
+    except:
+        print("Could not process results properly")
+
+    # add the actual raw input and output data
+    processed_results["raw_output_data"] = output_data
+    if input_data is not None:
+        processed_results["input_data"] = input_data
+
+    return processed_results
+
+def do_processing(output_data, output_description):
+    """ Do actual processing of output
+
+    Args:
+        output_data (dict):         Dictionary containing model output
+        output_descripion (dict):   Dictionary describing desired output quantities
 
     Returns:
         dict:                       Dictionary with processed results
@@ -59,11 +82,6 @@ def process_ouputs(output_data, output_description, input_data=None):
     processed_results["pdf_estimate"] = pdf_estimate
     processed_results["cdf_estimate"] = cdf_estimate
     processed_results["icdf_estimate"] = icdf_estimate
-
-    # add the actual raw input and output data
-    processed_results["raw_output_data"] = output_data
-    if input_data is not None:
-        processed_results["input_data"] = input_data
 
     return processed_results
 

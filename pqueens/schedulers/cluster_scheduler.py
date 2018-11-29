@@ -1,7 +1,5 @@
-import pdb
 import abc
 import re
-#import pqueens
 import subprocess
 import sys
 import json
@@ -64,24 +62,10 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
         driver_options_json_str = driver_options_json_str.replace('"',r'"\\""')
         # run it a second time (not quite sure why this is needed, but it
         # does not work without it)
-        #driver_options_json_str = json.dumps(driver_options_json_str)
-        #driver_options_json_str = "\\'" +driver_options_json_str + "\\'"
-        #driver_options_json_str = "'" +driver_options_json_str + "'"
-       # driver_options_json_str = driver_options_json_str
-       # the '<' is needed for execution of local python scripts on potentially
-        # remote servers
-        #driver_args = "--export=VAR=" + "'"+ driver_options_json_str + "'"
-
-        #driver_args = r'--export=VAR=\"' + driver_options_json_str + r'\"'
+      # remote servers
 
         driver_args = r'\"' + driver_options_json_str + r'\"'
 
-        #driver_args = driver_options_json_str
-
-        # one more time
-        # driver_args = json.dumps(driver_args)
-
-       # run_command = ['<', driver_options['driver_file'], driver_args]
         run_command = [driver_options['driver_file'], driver_args]
 
         # assemble job_name for cluster
@@ -91,9 +75,6 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
         submit_command.extend(run_command)
 
         command_string = ' '.join(submit_command)
-
-        #pdb.set_trace()
-        # Error happens below:ValueError: Invalid file object: <_io.TextIOWrapper name=10 encoding='UTF-8'>
         process = subprocess.Popen(command_string,
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,
