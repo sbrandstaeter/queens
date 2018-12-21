@@ -49,11 +49,14 @@ class Model(metaclass=abc.ABCMeta):
         from .data_fit_surrogate_model import DataFitSurrogateModel
         from .data_fit_surrogate_model_mf import MFDataFitSurrogateModel
         from .multifidelity_model import MultifidelityModel
-
+        from .bmfmc_model import BMFMCModel
+        from .joint_prob_model import JointProbModel
         model_dict = {'simulation_model': SimulationModel,
                       'datafit_surrogate_model': DataFitSurrogateModel,
                       'datafit_surrogate_model_mf': MFDataFitSurrogateModel,
-                      'multi_fidelity_model' : MultifidelityModel}
+                      'multi_fidelity_model' : MultifidelityModel,
+                      'bmfmc_model' : BMFMCModel,
+                      'joint_model' : JointProbModel}
 
         model_options = config[model_name]
         model_class = model_dict[model_options["type"]]

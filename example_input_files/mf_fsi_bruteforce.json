@@ -1,0 +1,152 @@
+{
+  "experiment-name" : "bmfmc_fsi",
+  "database"  :{
+    "address"   : "129.187.58.13:27017",
+    "drop_existing" : "True"
+  },
+  "method": {
+    "method_name": "bmfmc",
+    "method_options" :{
+      "calc_second_order" : "True",
+      "num_samples" : 6,
+      "subiterator_hierachy" : ["iter_lofi_1, iter_lofi_2"],
+      "model" : "model",
+      "joint_proxy": {
+        "type" : "gp_joint_approximation",
+        "ard" : "False",
+        "length_scale" : 1,
+        "variance" : 1
+      },
+      "result_description" : {
+        "write_results" : true,
+        "plot_results" : false
+      }
+    }
+  },
+  "model" : {
+    "type" : "multi_fidelity_model",
+    "model_hierarchy" : ["hifi", "lofi_1", "lofi_2"],
+    "eval_cost_per_level" :[1, 6, 6],
+    "parameters" : "parameters"
+  },
+  "iter_lofi_1": {
+     "method_name": "read_data_from_file",
+     "method_options" :{
+        "path_to_data": "bablbalbla",
+        "global_settings": ""
+     }
+  },
+  "iter_lofi_2": {
+     "method_name": "point_list",
+     "method_options" :{
+        "model": "lofi_2",
+        "result_description": {
+          "write_results": "True",
+          "plot_results": "False"
+        }
+     }
+  },
+  "hifi_fsi" : {
+    "type" : "simulation_model",
+    "interface" : "interface_hifi"
+  },
+  "lofi_1" : {
+    "type" : "simulation_model",
+    "interface" : "interface_lofi_1"
+  },
+  "lofi_2" : {
+    "type" : "simulation_model",
+    "interface" : "interface_lofi_2"
+  },
+ "interface_lofi_1" : {
+    "type" : "job_interface",
+    "resources": "resources",
+    "driver" : "driver_lofi_1"
+  },
+  "interface_lofi_2" : {
+    "type" : "job_interface",
+    "resources": "resources",
+    "driver" : "driver_lofi_2"
+  },
+  "interface_hifi" : {
+    "type" : "job_interface",
+    "resources": "resources",
+    "driver" : "driver_hifi"
+  },
+  "driver_lofi_1" :{
+    "driver_type"           : "baci_bruteforce",
+    "driver_params"         :{
+      "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/fsi_UQ_lofi.dat",
+      "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
+      "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
+      "post_process_options"  : "--field=structure --node=37 --start=1",
+      "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/fsi_bmfmc",
+      "post_post_script"      : "/home/nitzler/workspace/QUEENS_Rep/queens/trials/post_post_script_FSI.py",
+      "driver_file" : "/home/nitzler/workspace/QUEENS_Rep/queens/pqueens/drivers/baci_driver_bruteforce.py"
+    }
+  },
+  "driver_lofi_2" :{
+    "driver_type"           : "baci_bruteforce",
+    "driver_params"         :{
+      "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/fsi_UQ_lofi.dat",
+      "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
+      "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
+      "post_process_options"  : "--field=structure --node=37 --start=1",
+      "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/fsi_bmfmc",
+      "post_post_script"      : "/home/nitzler/workspace/QUEENS_Rep/queens/trials/post_post_script_FSI.py",
+      "driver_file" : "/home/nitzler/workspace/QUEENS_Rep/queens/pqueens/drivers/baci_driver_bruteforce.py"
+    }
+  },
+  "driver_hifi" :{
+    "driver_type"           : "baci_bruteforce",
+    "driver_params"         :{
+      "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/fsi_UQ_hifi.dat",
+      "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
+      "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
+      "post_process_options"  : "--field=structure --node=37 --start=1",
+      "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/fsi_bmfmc",
+      "post_post_script"      : "/home/nitzler/workspace/QUEENS_Rep/queens/trials/post_post_script_FSI.py",
+      "driver_file" : "/home/nitzler/workspace/QUEENS_Rep/queens/pqueens/drivers/baci_driver_bruteforce.py"
+    }
+  },
+  "resources" : {
+    "bruteforce" : {
+      "scheduler"         : "bruteforce_scheduler",
+      "max-concurrent"    : 50,
+      "max-finished-jobs" : 100
+    }
+  },
+  "bruteforce_scheduler" : {
+    "scheduler_type" : "slurm",
+    "num_procs_per_node" : 4,
+    "num_nodes" : 1,
+    "walltime" : "8:00:00",
+    "email" : "nitzler@lnm.mw.tum.de",
+    "connect_to_resource" : ["ssh", "-T", "nitzler@bruteforce"]
+  },
+  "parameters" : {
+    "E_modul" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 0.05,
+      "max"  : 0.15,
+      "distribution" : "uniform",
+      "distribution_parameter" : [0.05,0.15]
+    },
+    "Rand_vel_1" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 0.05,
+      "max"  : 0.15,
+      "distribution" : "uniform",
+      "distribution_parameter" : [0.05,0.15]
+    },
+    "Rand_vel_2" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 0.05,
+      "max"  : 0.15,
+      "distribution" : "uniform",
+      "distribution_parameter" : [0.05,0.15]
+    }
+  }

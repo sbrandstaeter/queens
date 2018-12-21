@@ -5,21 +5,22 @@ from . model import Model
 
 
 
-class DataFitSurrogateModel(Model):
-    """ Surrogate model class
+class JointProbModel(Model):
+    """ Joint probability model class
 
         Attributes:
-            interface (interface):          approximation interface
+            interface_db (interface):          approximation interface data
+            from db
 
     """
 
-    def __init__(self, model_name, interface, model_parameters, subordinate_model,
-                 subordinate_iterator, eval_fit, error_measures):
+    def __init__(self, model_name, interface_db, model_parameters,
+                 iterator_db, eval_fit, error_measures):
         """ Initialize data fit surrogate model
 
         Args:
             model_name (string):        Name of model
-            interface (interface):      Interface to simulator
+            interface_db (interface):      Interface to databank
             model_parameters (dict):    Dictionary with description of
                                         model parameters
             subordinate_model (model):  Model the surrogate is based on
@@ -30,11 +31,9 @@ class DataFitSurrogateModel(Model):
             error_measures (list):          List of error measures to compute
 
         """
-        super(DataFitSurrogateModel, self).__init__(model_name, model_parameters)
-        self.interface = interface
-        # TODO remove this property, as this is not needed
-        self.subordinate_model = subordinate_model
-        self.subordinate_iterator = subordinate_iterator
+        super(JointProbModel, self).__init__(model_name, model_parameters)
+        self.interface = interface_db
+        self.iterator = iterator_db
         self.eval_fit = eval_fit
         self.error_measures = error_measures
 
@@ -47,7 +46,8 @@ class DataFitSurrogateModel(Model):
             config (dict):       Dictionary containing problem description
 
         Returns:
-            data_fit_surrogate_model:   Instance of DataFitSurrogateModel 
+            data_fit_surrogate_model:   Instance of DataFitSurrogateModel
+
         """
         # get options
         model_options = config[model_name]
@@ -55,25 +55,18 @@ class DataFitSurrogateModel(Model):
         parameters = model_options["parameters"]
         model_parameters = config[parameters]
 
-        subordinate_model_name = model_options["subordinate_model"]
-        subordinate_iterator_name = model_options["subordinate_iterator"]
+        iterator_name = model_options["db_iterator"]
         eval_fit = model_options.get("eval_fit", None)
         error_measures = model_options.get("error_measures", None)
 
-        # create subordinate model
-        subordinate_model = Model.from_config_create_model(subordinate_model_name,
-                                                           config)
+        # create iterator for databank point selection
+        db_iterator = Iterator.from_config_create_iterator(config, iterator_name, subordinate_model)
 
-        # create subordinate iterator
-        subordinate_iterator = Iterator.from_config_create_iterator(config,
-                                                                    subordinate_iterator_name,
-                                                                    subordinate_model)
-
-        # create interface
+        # create interface to databank
         interface = Interface.from_config_create_interface(interface_name, config)
 
         return cls(model_name, interface, model_parameters, subordinate_model,
-                   subordinate_iterator, eval_fit, error_measures)
+                   db_iterator, eval_fit, error_measures)
 
     def evaluate(self):
         """ Evaluate model with current set of variables
@@ -90,11 +83,11 @@ class DataFitSurrogateModel(Model):
     def build_approximation(self):
         """ Build underlying approximation """
 
-        self.subordinate_iterator.run()
+        self.db_iterator.run()
 
         # get samples and results
-        X = self.subordinate_iterator.samples
-        Y = self.subordinate_iterator.output['mean']
+        X = self.db_iterator.samples
+        Y = self.db_iterator.output['mean']
 
         # train regression model on the data
         self.interface.build_approximation(X, Y)
