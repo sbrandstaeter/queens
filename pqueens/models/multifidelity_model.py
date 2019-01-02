@@ -42,7 +42,6 @@ class MultifidelityModel(Model):
                                             'aggregated_model',
                                             'bypass_lofi']
 
-
         self.__active_lf_model_ind = None
         self.__active_hf_model_ind = None
         self.response_mode = None

@@ -51,7 +51,7 @@ class BmfmcInterface(Interface):
         return cls(interface_name, approximation_config, parameters)
 
 
-# TODO: Samples are chosen by iterator but can now be python tuples rather for
+# TODO: Samples are chosen by iterator but can now be python tuples for
 # implicit functions rather than plain x_vec data (For now it stays a x--> y
 # mapping for the first trials)
     def map(self, samples):
