@@ -5,7 +5,7 @@
     "drop_existing" : "True"
   },
   "method": {
-    "method_name": "bmfmc", this iterator sets the "point_list" used below. Still sub_iterator neeed to decide if data is already there or needs to be evaluated!
+    "method_name": "bmfmc",
     "method_options" :{
       "calc_second_order" : "True",
       "num_samples" : 3,
@@ -91,55 +91,79 @@
   },
   "parameters" : {
     "random_variables" : {
-      "E_modul" : {
+      "emodul" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "lognormal",
         "distribution_parameter" : [0.05,0.15]
       },
-      "Rand_vel_1" : {
+      "rand_1" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
         "distribution_parameter" : [0.0,1.0]
       },
-      "Rand_vel_2" : {
+      "rand_2" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
         "distribution_parameter" : [0.0,1.0]
       },
-       "Rand_vel_3" : {
+       "rand_3" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
         "distribution_parameter" : [0.0,1.0]
       },
-       "Rand_vel_4" : {
+       "rand_4" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
         "distribution_parameter" : [0.0,1.0]
       },
-       "Rand_vel_5" : {
+       "rand_5" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
         "distribution_parameter" : [0.0,1.0]
       },
-       "Rand_vel_6" : {
+       "rand_6" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
         "distribution_parameter" : [0.0,1.0]
       },
-       "Rand_vel_7" : {
+       "rand_7" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
         "distribution_parameter" : [0.0,1.0]
       },
-       "Rand_vel_8" : {
+       "rand_8" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "normal",
+        "distribution_parameter" : [0.0,1.0]
+      },
+       "rand_9" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "normal",
+        "distribution_parameter" : [0.0,1.0]
+      },
+        "rand_10" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "normal",
+        "distribution_parameter" : [0.0,1.0]
+      },
+        "rand_11" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "normal",
+        "distribution_parameter" : [0.0,1.0]
+      },
+        "rand_12" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
