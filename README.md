@@ -40,10 +40,11 @@ To get your anaconda environments into your Jupyter kernel run:
 ### Setup of MongoDB
 QUEENS writes results into a MongoDB database, therefore QUEENS needs to have write access to a MongoDB databases. However, MongoDB does not necessarily have to run on the same machine as QUEENS. In certain situations, it makes sense to have the database running on a different computer and connect to the database via port-forwarding.
 
-#### Installation of MongoDB
+#### Installation of MongoDB (version 3.0)
 Installation instructions if you are running OSX can be found [here](https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.181134695.1149150790.1494232459-1730069423.1494232449)  
 Installation instructions for LNM workstations running Fedora 22 are as follows.
 https://blog.bensoer.com/install-mongodb-3-0-on-fedora-22/   
+We strongly recommend the use of MongoDB version 3.0 as this is proven to work in the current framework.
 
 #### Starting MongoDB
 After installation, you need to start MongoDB. For LNM machines this requires that you can execute the commands:   
