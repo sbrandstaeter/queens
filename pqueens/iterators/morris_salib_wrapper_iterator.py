@@ -107,6 +107,7 @@ class MorrisSALibIterator(Iterator):
 
         Args:
             config (dict): Dictionary with QUEENS problem description
+            model (model): Model to iterate (optional)
 
         Returns:
             iterator: MorrisSALibIterator iterator object

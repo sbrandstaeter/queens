@@ -33,26 +33,29 @@ class MonteCarloIterator(Iterator):
 
         Args:
             config (dict): Dictionary with QUEENS problem description
+            iterator_name (str): Name of iterator to identify right section
+                                 in options dict (optional)
+            model (model):       Model to use (optional)
 
         Returns:
             iterator: MonteCarloIterator object
 
         """
-        print(config.get("experiment_name"))
+        print(config.get('experiment_name'))
         if iterator_name is None:
-            method_options = config["method"]["method_options"]
+            method_options = config['method']['method_options']
         else:
-            method_options = config[iterator_name]["method_options"]
+            method_options = config[iterator_name]['method_options']
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options['model']
             model = Model.from_config_create_model(model_name, config)
 
-        result_description = method_options.get("result_description", None)
-        global_settings = config.get("global_settings", None)
+        result_description = method_options.get('result_description', None)
+        global_settings = config.get('global_settings', None)
 
         return cls(model,
-                   method_options["seed"],
-                   method_options["num_samples"],
+                   method_options['seed'],
+                   method_options['num_samples'],
                    result_description,
                    global_settings)
 
@@ -67,13 +70,14 @@ class MonteCarloIterator(Iterator):
         parameters = self.model.get_parameter()
         num_inputs = 0
         # get random Variables
-        random_variables = parameters.get("random_variables", None)
+        random_variables = parameters.get('random_variables', None)
         # get number of rv
         if random_variables is not None:
             num_rv = len(random_variables)
         num_inputs += num_rv
+
         # get random fields
-        random_fields = parameters.get("random_fields", None)
+        random_fields = parameters.get('random_fields', None)
 
         num_eval_locations = []
 
@@ -85,7 +89,6 @@ class MonteCarloIterator(Iterator):
                 temp = eval_locations.shape[0]
                 num_eval_locations.append(temp)
                 num_inputs += temp
-
 
         self.samples = np.zeros((self.num_samples, num_inputs))
         # loop over random variables to generate samples
@@ -122,7 +125,6 @@ class MonteCarloIterator(Iterator):
 
                 self.samples[:, num_rv+field_num:num_rv+field_num+len(eval_locations)] = my_vals
                 field_num += 1
-
 
     def core_run(self):
         """  Run Monte Carlo Analysis on model """

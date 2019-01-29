@@ -65,6 +65,7 @@ class SaltelliSALibIterator(Iterator):
 
         Args:
             config (dict): Dictionary with QUEENS problem description
+            model (model): Model to iterate (optional)
 
         Returns:
             iterator: Saltelli SALib iterator object

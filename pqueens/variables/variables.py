@@ -13,6 +13,38 @@ class Variables(object):
     Attributes:
         variables (dict):  dictionary containing the data
     """
+    def __init__(self, uncertain_parameters, values, active):
+        """ Initialize variable object
+
+        Args:
+            uncertain_parameters (dict): description of all uncertain params
+            values (list):               list with variable values
+            active (list):               list with flag whether or not variable
+                                         is active
+        """
+        self.variables = {}
+        i = 0
+        for key, data in uncertain_parameters["random_variables"].items():
+            self.variables[key] = {}
+            my_size = data['size']
+            self.variables[key]['size'] = my_size
+            self.variables[key]['value'] = values[i:i+my_size]
+            self.variables[key]['type'] = data['type']
+            self.variables[key]['active'] = active[i]
+            i += 1
+        if uncertain_parameters.get("random_fields") is not None:
+            for key, data in uncertain_parameters["random_fields"].items():
+                self.variables[key] = {}
+                dim = data["dimension"]
+                eval_locations_list = data.get("eval_locations", None)
+                eval_locations = np.array(eval_locations_list).reshape(-1, dim)
+                my_size = eval_locations.shape[0]
+                self.variables[key]['size'] = my_size
+                self.variables[key]['value'] = values[i:i+my_size]
+                self.variables[key]['type'] = data['type']
+                self.variables[key]['active'] = active[i]
+                i += 1
+
     @classmethod
     def from_uncertain_parameters_create(cls, uncertain_parameters):
         """ Create variables from uncertain parameter
@@ -53,38 +85,6 @@ class Variables(object):
 
         return cls(uncertain_parameters, values, active)
 
-    def __init__(self, uncertain_parameters, values, active):
-        """ Initialize variable object
-
-        Args:
-            uncertain_parameters (dict): description of all uncertain params
-            values (list):               list with variable values
-            active (list):               list with flag whether or not variable
-                                         is active
-        """
-        self.variables = {}
-        i = 0
-        for key, data in uncertain_parameters["random_variables"].items():
-            self.variables[key] = {}
-            my_size = data['size']
-            self.variables[key]['size'] = my_size
-            self.variables[key]['value'] = values[i:i+my_size]
-            self.variables[key]['type'] = data['type']
-            self.variables[key]['active'] = active[i]
-            i += 1
-        if uncertain_parameters.get("random_fields") is not None:
-            for key, data in uncertain_parameters["random_fields"].items():
-                self.variables[key] = {}
-                dim = data["dimension"]
-                eval_locations_list = data.get("eval_locations", None)
-                eval_locations = np.array(eval_locations_list).reshape(-1, dim)
-                my_size = eval_locations.shape[0]
-                self.variables[key]['size'] = my_size
-                self.variables[key]['value'] = values[i:i+my_size]
-                self.variables[key]['type'] = data['type']
-                self.variables[key]['active'] = active[i]
-                i += 1
-
     def get_active_variables(self):
         """ Get dictinary of all active variables
 
@@ -97,9 +97,9 @@ class Variables(object):
                 continue
             # TODO store value entries as list or make sure that is
             # other wise compatiple
-            #if len(data['value']) > 1:
+            # if len(data['value']) > 1:
             #    active_vars[key] = data['value'].tolist()
-            #else:
+            # else:
             active_vars[key] = data['value']
         return active_vars
 

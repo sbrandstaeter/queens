@@ -49,7 +49,7 @@ def get_options(args):
 
     output_dir = os.path.realpath(os.path.expanduser(args.output_dir))
     if not os.path.isdir(output_dir):
-        raise Exception("Output directory was not set propertly.")
+        raise Exception("Output directory does not exist.")
 
     if args.debug == 'yes':
         debug = True
@@ -69,12 +69,13 @@ def get_options(args):
     global_settings["output_dir"] = output_dir
     global_settings["experiment_name"] = options["experiment_name"]
 
-    #remove experiment_name field from options dict
+    # remove experiment_name field from options dict
     options["global_settings"] = global_settings
-    #remove experiment_name field from options dict make copy first
+    # remove experiment_name field from options dict make copy first
     final_options = dict(options)
-    del  final_options["experiment_name"]
-    return  final_options
+    del final_options["experiment_name"]
+    return final_options
+
 
 if __name__ == '__main__':
     sys.exit(main(sys.argv[1:]))

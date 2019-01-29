@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def borehole_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
     """ Low-fidelity version of Borehole benchmark function
 
@@ -54,6 +55,7 @@ def borehole_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
     y = frac1 / frac2
     return y
 
+
 def main(job_id, params):
     """ Interface to low-fidelity borehole function
 
@@ -64,4 +66,4 @@ def main(job_id, params):
         float: Value of borehole function at parameters specified in input dict
     """
     return borehole_lofi(params['rw'], params['r'], params['Tu'], params['Hu'],
-                         params['Tl'],params['Hl'],params['L'],params['Kw'])
+                         params['Tl'], params['Hl'], params['L'], params['Kw'])

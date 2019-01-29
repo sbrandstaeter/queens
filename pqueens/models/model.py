@@ -5,7 +5,7 @@ from copy import deepcopy
 class Model(metaclass=abc.ABCMeta):
     """ Base class of model hierarchy
 
-        The model hierarchy contains a set of variables, an interface,
+         The model hierarchy contains a set of variables, an interface,
         and a set of responses. An iterator operates on the model to map
         the variables into responses using the interface.
 
