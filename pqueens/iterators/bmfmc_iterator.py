@@ -10,7 +10,6 @@ from pqueens.utils.process_outputs import write_results
 from .scale_samples import scale_samples
 from pqueens.database import mongodb as db
 from pqueens.iterators.data_iterator import DataIterator
-from pqueens.iterators.point_list_iterator import PointListIterator
 
 class BmfmcIterator(Iterator):
     """ Basic BMFMC Iterator to enable selective sampling for the hifi-lofi

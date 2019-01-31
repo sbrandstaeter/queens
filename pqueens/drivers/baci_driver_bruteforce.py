@@ -55,6 +55,8 @@ def main(args):
     result = do_postpostprocessing(driver_options, baci_output)
     finish_job(driver_options, db, job, result)
 
+
+
 def get_num_nodes():
     """ determine number of processors from nodefile """
     slurm_nodefile = os.environ["SLURM_JOB_NODELIST"]
@@ -189,6 +191,26 @@ def do_postpostprocessing(driver_options, baci_output):
     else:
         raise RuntimeError("You need to provide post_post_script in the driver "
                            "driver_params section of the config file to get results")
+
+
+    # cleanup of unnecessary data after QoI got extracted and flag is set in config
+    if driver_options["delete_field_data"]:
+        # Delete every ouput file exept the .mon file
+        # --> use baci_output to get path to current folder
+        # --> start subprocess to delete files with linux commands
+        _, _, my_env = setup_mpi(1) # Set environment for one core
+        command_string = "cd "+ baci_output + " & find . ! -name '*.mon' -type f -exec rm -f {} +" # This is the actual linux commmand
+        p = subprocess.Popen(command_string,
+                             env=my_env,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             shell=True,
+                             universal_newlines=True)
+
+        stdout, stderr = p.communicate()
+        print(stderr)
+        print(stdout)
 
     return result
 

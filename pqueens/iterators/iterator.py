@@ -42,7 +42,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from .lhs_iterator import LHSIterator
         from .lhs_iterator_mf import MF_LHSIterator
         from .data_iterator import DataIterator
-        from .bmfmc_iterator import BMFMCIterator
+        from .bmfmc_iterator import BmfmcIterator
 
 
         method_dict = {'monte_carlo': MonteCarloIterator,
@@ -52,7 +52,7 @@ class Iterator(metaclass=abc.ABCMeta):
                        'sa_saltelli' : SaltelliIterator,
                        'sa_saltelli_salib' : SaltelliSALibIterator,
                        'bayesian_optimization' : BayesOptIterator,
-                       'bmfmc' : BMFMCIterator,
+                       'bmfmc' : BmfmcIterator,
                        'read_data_from_file' : DataIterator}
 
         if iterator_name is None:

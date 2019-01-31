@@ -1,4 +1,3 @@
-
 import sys
 import subprocess
 import re
@@ -6,7 +5,7 @@ from pqueens.schedulers.cluster_scheduler import AbstractClusterScheduler
 
 
 class SlurmScheduler(AbstractClusterScheduler):
-   """ Minimal interface to SLURM queing system to submit and query jobs
+    """ Minimal interface to SLURM queing system to submit and query jobs
 
     This class provides a basic interface to the Slurm job queing system to submit
     and query jobs to a cluster. This also works if the cluster is a remote
@@ -20,8 +19,7 @@ class SlurmScheduler(AbstractClusterScheduler):
                                     connect to resource
     """
 
-    def __init__(self, scheduler_name, num_procs_per_node, num_nodes, walltime,
-                 user_mail, connect_to_resource):
+    def __init__(self, scheduler_name, num_procs_per_node, num_nodes, walltime, user_mail, connect_to_resource, output):
         """
         Args:
             scheduler_name (string):    Name of Scheduler
@@ -31,6 +29,7 @@ class SlurmScheduler(AbstractClusterScheduler):
             user_mail (string):         Email adress of user
             connect_to_resource (list): list containing commands to
                                         connect to resource
+            output (boolean):           Flag for slurm output
         """
         super(SlurmScheduler, self).__init__()
         self.name = scheduler_name
@@ -39,6 +38,7 @@ class SlurmScheduler(AbstractClusterScheduler):
         self.walltime = walltime
         self.user_mail = user_mail
         self.connect_to_resource = connect_to_resource
+        self.output = output
 
     @classmethod
     def from_config_create_scheduler(cls, scheduler_name, config):
@@ -58,9 +58,9 @@ class SlurmScheduler(AbstractClusterScheduler):
         walltime = options['walltime']
         user_mail = options['email']
         connect_to_resource = options["connect_to_resource"]
+        output = options["slurm_output"]
 
-        return cls(scheduler_name, num_procs_per_node, num_nodes, walltime,
-                   user_mail, connect_to_resource)
+        return cls(scheduler_name, num_procs_per_node, num_nodes, walltime, user_mail, connect_to_resource, output)
 
     def output_regexp(self): # TODO Check what this does exactly
         return r'(^\d+)'
@@ -92,15 +92,21 @@ class SlurmScheduler(AbstractClusterScheduler):
         Returns:
             list: Submission command(s)
         """
-
+        # TODO: CHECK dev\null
         # pre assemble some strings
         proc_info = '--nodes={} --ntasks={}'.format(self.num_nodes, self.num_procs_per_node)
         walltime_info = '--time={}'.format(self.walltime)
         mail_info = '--mail-user={}'.format(self.user_mail)
         job_info = '--job-name={}'.format(job_name)
 
-        command_list = self.connect_to_resource  \
-                       + ['sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
+
+        if self.output:
+            command_list = self.connect_to_resource  \
+                          + [r'sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
+        else:
+            command_list = self.connect_to_resource  \
+                          + [r'sbatch --mail-type=ALL --output=\dev\null --error=\dev\null', mail_info, job_info, proc_info, walltime_info]
+
         return command_list
 
     def alive(self, process_id):
