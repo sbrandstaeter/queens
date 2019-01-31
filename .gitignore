@@ -8,7 +8,8 @@ doc/source/*.rst
 !doc/source/tutorials.rst
 !doc/source/architecture.rst
 
-jupyter_notebooks/*.ipynb_checkpoints
+# notebook checkpoints
+*.ipynb_checkpoints
 
 .coverage
 
