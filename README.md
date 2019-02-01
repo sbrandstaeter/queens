@@ -7,30 +7,35 @@ This repository contains the code of the QUEENS framework.
 [![coverage report](https://gitlab.lrz.de/jbi/queens/badges/master/coverage.svg)](https://codecov.io/bitbucket/jbi35/pqueens/commit/6c9c94b0e6e8f6c2b5aad07b34e69c72a4d1edce)
 
 ## Installation directions
+**Interlude:**<br />
+In the current version the *QUEENS* installation has to be done twice: On the localhost (e.g. *bohr*) **and** on the compute machine (e.g. *bruteforce*).<br />
 The use of a virtual environment like [Anaconda](https://www.anaconda.com/distribution/) is highly recommended.
-For the installation on a cluster, copy the executable to the desired directory and install Anaconda. <br />
-To ensure a clean environment management, we recommend a distinct QUEENS environment which can be set up as followed:<br />
+For the installation on a cluster, copy the Anaconda-executable to the desired directory and install Anaconda. <br />
+To ensure a clean environment management, we recommend a distinct *QUEENS* environment which can be set up as followed:<br />
 `conda create -n <name_of_QUEENS_environment> python=3.6`   
 
+All Python related commands should be executed with active *QUEENS* environment so that the packages get installed within this environment.<br />
 Activate the new environment by typing:<br />
 `source activate <name_of_QUEENS_environment>` <br />
-All required third party libraries will then be installed into the QUEENS environment via the command: <br />
+
+**Installation:**<br />
+All required third party libraries will then be installed into the *QUEENS* environment via the command: <br />
 `pip install -r requirements.txt`  
-Next, with active environment, QUEENS can be installed using:     
+Next, (with active environment) QUEENS can be installed using:     
 `python setup.py develop`   
-If you encounter any problems try using the --user flag.
-
-To uninstall QUEENS run:  
-`python setup.py develop --uninstall`
-
-To update Python packages in your Anaconda environment type:  
-`conda update --all`
-
-To get your anaconda environments into your Jupyter kernel run:
+If you encounter any problems try using the --user flag.<br />
+To update Python packages in your Anaconda environment type:  <br />
+`conda update --all`<br />
+To get your anaconda environments into your Jupyter kernel run:<br />
 `conda install nb_conda_kernels`
 
 To be able to build the documentation, an additional package *pandoc* is needed.
 Installation instructions are provided [here](http://pandoc.org/installing.html)
+
+**Uninstall:**<br />
+To uninstall *QUEENS* run:  
+`python setup.py develop --uninstall`
+
 ### Setup of MongoDB
 QUEENS writes results into a MongoDB database, therefore QUEENS needs to have write access to a MongoDB databases. However, MongoDB does not necessarily have to run on the same machine as QUEENS. In certain situations, it makes sense to have the database running on a different computer and connect to the database via port-forwarding.
 
