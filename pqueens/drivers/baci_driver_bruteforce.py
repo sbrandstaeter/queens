@@ -199,7 +199,7 @@ def do_postpostprocessing(driver_options, baci_output):
         # --> use baci_output to get path to current folder
         # --> start subprocess to delete files with linux commands
         _, _, my_env = setup_mpi(1) # Set environment for one core
-        command_string = "cd "+ baci_output + "&& ls | grep -v *.mon | xargs rm" # This is the actual linux commmand
+        command_string = "cd "+ baci_output + "&& (ls | grep -v *.mon) >> testfile.txt" # This is the actual linux commmand
         p = subprocess.Popen(command_string,
                              env=my_env,
                              stdin=subprocess.PIPE,
