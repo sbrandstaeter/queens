@@ -100,12 +100,15 @@ class SlurmScheduler(AbstractClusterScheduler):
         job_info = '--job-name={}'.format(job_name)
 
 
-        if self.output:
+        if self.output.lower()=="true" or self.output=="":
             command_list = self.connect_to_resource  \
                           + [r'sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
-        else:
+        elif self.output.lower()=="false":
             command_list = self.connect_to_resource  \
                           + [r'sbatch --mail-type=ALL --output=\dev\null --error=\dev\null', mail_info, job_info, proc_info, walltime_info]
+        else:
+            raise RuntimeError("The Scheduler requires a 'True' or 'False' value
+                               for the slurm_output parameter")
 
         return command_list
 

@@ -52,7 +52,7 @@ def main(args):
     do_postprocessing(driver_options, baci_output)
 
     # extract actual QoI from post processed result using a postpost-scipt
-    result, error = do_postpostprocessing(driver_options, baci_output)
+    result = do_postpostprocessing(driver_options, baci_output)
     finish_job(driver_options, db, job, result)
 
 
@@ -194,12 +194,13 @@ def do_postpostprocessing(driver_options, baci_output):
 
 
     # cleanup of unnecessary data after QoI got extracted and flag is set in config
-    if driver_options["delete_field_data"]:
+
+    if driver_options["delete_field_data"].lower()=="true":
         # Delete every ouput file exept the .mon file
         # --> use baci_output to get path to current folder
         # --> start subprocess to delete files with linux commands
         _, _, my_env = setup_mpi(1) # Set environment for one core
-        command_string = "cd "+ baci_output + "&& (ls | grep -v *.mon) >> testfile.txt" # This is the actual linux commmand
+        command_string = "cd "+ baci_output + "&& ls | grep -v *.mon | xargs rm" # This is the actual linux commmand
         p = subprocess.Popen(command_string,
                              env=my_env,
                              stdin=subprocess.PIPE,
@@ -212,7 +213,26 @@ def do_postpostprocessing(driver_options, baci_output):
         print(stderr) #TODO: Check were to give error msg
         print(stdout)
 
-    return result, error
+    # Put files that were not compliant with the requirements from the
+    # postpost_processing scripts in a special folder and do not pass on result
+    # of those files
+    if error !="":
+
+        result = None
+        command_string = "cd "+ baci_output + "&& cd ../.. && mkdir -p postpost_error && cd " + baci_ouput + "&& cd .. && mv *.dat ../postpost_error/" # This is the actual linux commmand
+        p = subprocess.Popen(command_string,
+                             env=my_env,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             shell=True,
+                             universal_newlines=True)
+
+        stdout, stderr = p.communicate()
+        print(stderr) #TODO: Check were to give error msg
+        print(stdout)
+
+    return result
 
 
 def get_runcommand_string(driver_options, baci_input_file, baci_output):

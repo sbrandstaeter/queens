@@ -19,13 +19,13 @@ def run(path_to_output_data):
 
     # Discuss with Jonas B. how we want to deal with transient QoI behavior
     # for test purpose just take the maximum for now
-    entry_out = entries[1,-1] # this is just the last entry in the dx column
+    entry_out = entries[-1,1] # this is just the last entry in the dx column
 
     ####### ERROR DEFINITION #############################
     MAXTIME = 20
-    tol = 1e-3
+    tol = 3
     error = False
-    if np.abs(MAXTIME - float(entries[0,-1])) > tol :
+    if np.abs(MAXTIME - float(entries[-1,0])) > tol :
         error = True
 
     return entry_out, error
