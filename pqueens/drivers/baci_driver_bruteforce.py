@@ -52,7 +52,7 @@ def main(args):
     do_postprocessing(driver_options, baci_output)
 
     # extract actual QoI from post processed result using a postpost-scipt
-    result = do_postpostprocessing(driver_options, baci_output)
+    result, error = do_postpostprocessing(driver_options, baci_output)
     finish_job(driver_options, db, job, result)
 
 
@@ -187,7 +187,7 @@ def do_postpostprocessing(driver_options, baci_output):
         spec = importlib.util.spec_from_file_location("module.name", post_post_script)
         post_post_proc = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(post_post_proc)
-        result = post_post_proc.run(baci_output)
+        result, error = post_post_proc.run(baci_output)
     else:
         raise RuntimeError("You need to provide post_post_script in the driver "
                            "driver_params section of the config file to get results")
@@ -199,7 +199,7 @@ def do_postpostprocessing(driver_options, baci_output):
         # --> use baci_output to get path to current folder
         # --> start subprocess to delete files with linux commands
         _, _, my_env = setup_mpi(1) # Set environment for one core
-        command_string = "cd "+ baci_output + " & find . ! -name '*.mon' -type f -exec rm -f {} +" # This is the actual linux commmand
+        command_string = "cd "+ baci_output + "&& ls | grep -v *.mon | xargs rm" # This is the actual linux commmand
         p = subprocess.Popen(command_string,
                              env=my_env,
                              stdin=subprocess.PIPE,
@@ -209,10 +209,10 @@ def do_postpostprocessing(driver_options, baci_output):
                              universal_newlines=True)
 
         stdout, stderr = p.communicate()
-        print(stderr)
+        print(stderr) #TODO: Check were to give error msg
         print(stdout)
 
-    return result
+    return result, error
 
 
 def get_runcommand_string(driver_options, baci_input_file, baci_output):

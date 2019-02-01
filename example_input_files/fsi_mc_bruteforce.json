@@ -8,7 +8,7 @@
     "method_name": "monte_carlo",
     "method_options" :{
       "seed" : 1,
-      "num_samples" : 1,
+      "num_samples" : 5,
       "model" : "model",
       "result_description" : {
           "write_results" : true,
@@ -36,7 +36,7 @@
       "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/hifi_testrun",
       "post_post_script"      : "/home/nitzler/workspace/QUEENS_Rep/queens/trials/post_post_script_FSI.py",
       "driver_file" : "/home/nitzler/workspace/QUEENS_Rep/queens/pqueens/drivers/baci_driver_bruteforce.py",
-      "delete_field_data" : "True"
+      "delete_field_data" : "False"
     }
   },
   "resources" : {
@@ -53,7 +53,7 @@
     "walltime" : "8:00:00",
     "email" : "nitzler@lnm.mw.tum.de",
     "connect_to_resource" : ["ssh", "-T", "nitzler@bruteforce"],
-    "slurm_output" : "False"
+    "slurm_output" : "True"
   },
   "parameters" : {
     "random_variables" : {
