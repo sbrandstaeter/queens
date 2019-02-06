@@ -1,4 +1,6 @@
+from pqueens.utils.input_to_random_variable import get_distribution_object
 import numpy as np
+
 class Variables(object):
     """ Class for storing variables
 
@@ -30,8 +32,10 @@ class Variables(object):
             self.variables[key]['size'] = my_size
             self.variables[key]['value'] = values[i:i+my_size]
             self.variables[key]['type'] = data['type']
+            self.variables[key]['distribution'] = get_distribution_object(data)
             self.variables[key]['active'] = active[i]
             i += 1
+
         if uncertain_parameters.get("random_fields") is not None:
             for key, data in uncertain_parameters["random_fields"].items():
                 self.variables[key] = {}

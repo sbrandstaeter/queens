@@ -13,7 +13,8 @@
             "write_results" : true,
             "plot_results" : false,
             "bayesian" : true,
-            "num_support_points" : 200
+            "num_support_points" : 200,
+            "estimate_all" : true
         }
       }
     },

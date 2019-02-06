@@ -14,16 +14,17 @@ def process_ouputs(output_data, output_description, input_data=None):
     Args:
         output_data (dict):         Dictionary containing model output
         output_descripion (dict):   Dictionary describing desired output quantities
-        input_data (np.array):          Array containing model input
+        input_data (np.array):      Array containing model input
 
     Returns:
         dict:                       Dictionary with processed results
     """
     processed_results = {}
-    try:
-        processed_results = do_processing(output_data, output_description)
-    except:
-        print("Could not process results properly")
+    processed_results = do_processing(output_data, output_description)
+    # try:
+    #     processed_results = do_processing(output_data, output_description)
+    # except:
+    #     print("Could not process results properly")
 
     # add the actual raw input and output data
     processed_results["raw_output_data"] = output_data
@@ -42,7 +43,7 @@ def do_processing(output_data, output_description):
     Returns:
         dict:                       Dictionary with processed results
     """
-    # do we want confindence intervals
+    # do we want confidence intervals
     bayesian = output_description.get('bayesian', False)
     # check if we have the data to support this
     if "post_samples" not in output_data and bayesian is True:
@@ -65,21 +66,40 @@ def do_processing(output_data, output_description):
     mean_mean = estimate_mean(output_data)
     var_mean = estimate_var(output_data)
 
-    pdf_estimate = estimate_pdf(output_data, support_points, bayesian)
-    cdf_estimate = estimate_cdf(output_data, support_points, bayesian)
-    icdf_estimate = estimate_icdf(output_data, bayesian)
-
-    if plot_results is True:
-        plot_cdf(cdf_estimate, support_points, bayesian)
-        plot_pdf(pdf_estimate, support_points, bayesian)
-        plot_icdf(icdf_estimate, bayesian)
-
     processed_results = {}
     processed_results["mean"] = mean_mean
     processed_results["var"] = var_mean
-    processed_results["pdf_estimate"] = pdf_estimate
-    processed_results["cdf_estimate"] = cdf_estimate
-    processed_results["icdf_estimate"] = icdf_estimate
+
+    # do we want to estimate all the below (i.e. pdf, cdf, icdf)
+    est_all = output_description.get('estimate_all', False)
+
+    # do we want pdf estimation
+    est_pdf = output_description.get('estimate_pdf', False)
+    if (est_pdf or est_all) is True:
+        pdf_estimate = estimate_pdf(output_data, support_points, bayesian)
+        if plot_results is True:
+            plot_pdf(pdf_estimate, support_points, bayesian)
+
+        processed_results["pdf_estimate"] = pdf_estimate
+
+    # do we want cdf estimation
+    est_cdf = output_description.get('estimate_cdf', False)
+    if (est_cdf or est_all) is True:
+        cdf_estimate = estimate_cdf(output_data, support_points, bayesian)
+        if plot_results is True:
+            plot_cdf(cdf_estimate, support_points, bayesian)
+
+        processed_results["cdf_estimate"] = cdf_estimate
+
+    # do we want icdf estimation
+    est_icdf = output_description.get('estimate_icdf', False)
+    if (est_icdf or est_all) is True:
+        icdf_estimate = estimate_icdf(output_data, bayesian)
+
+        if plot_results is True:
+            plot_icdf(icdf_estimate, bayesian)
+
+        processed_results["icdf_estimate"] = icdf_estimate
 
     return processed_results
 
