@@ -286,5 +286,6 @@ class JobInterface(Interface):
             jobs = self.load_jobs()
             for job in jobs:
                 mean_values.append(job['result'])
-        output['mean'] = np.reshape(np.array(mean_values), (-1, 1))
+        output['mean'] = np.reshape(mean_values, (-1, mean_values[1].shape[0]))
+
         return  output

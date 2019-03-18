@@ -104,7 +104,7 @@ class BmfmcIterator(Iterator):
         n_bins = self.num_samples//2
         break_points = np.linspace(minval, maxval, n_bins+1)
 
-        # Binning using cut function of pandas
+        # Binning using cut function of pandas -> gives every y a bin number
         bin_vec = pd.cut(mc_y, bins=break_points, labels=False,
                         include_lowest=True, retbins=True)
 
@@ -112,6 +112,7 @@ class BmfmcIterator(Iterator):
         mapping_points_x = []
         mapping_points_y = []
         for bin_n in range(self.num_samples//2):
+            # create boolean vector with length of y that filters all y beloning to one active bin
             boolean_vec = [bin_vec==bin_n] # Check if this is enough to create a boolean vec or if for loop is necessary
             bin_data_x = mc_x[boolean_vec]
             bin_data_y = mc_y[boolean_vec]

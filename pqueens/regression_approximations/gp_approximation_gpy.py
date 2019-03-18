@@ -44,7 +44,7 @@ class GPGPyRegression(RegressionApproximation):
         # input dimension
         input_dim = self.X.shape[1]
         # simple GP Model
-        k = GPy.kern.RBF(input_dim, ARD=True)
+        k = GPy.kern.RBF(input_dim, ARD=False)
 
         self.m = GPy.models.GPRegression(self.X, self.y,
                                          kernel=k,
@@ -108,3 +108,5 @@ class GPGPyRegression(RegressionApproximation):
         if post_samples.shape[1] != 1:
             raise Exception("GPGPyRegression can not deal with multioutput GPs")
         return np.reshape(post_samples, (Xnew.shape[0], num_samples))
+
+

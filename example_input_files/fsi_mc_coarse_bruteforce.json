@@ -1,5 +1,5 @@
 {
-  "experiment_name" : "FSI_MC_lofi_numerical",
+  "experiment_name" : "FSI_MC_lofi_combined",
   "database"  :{
     "address" : "129.187.58.13:27017",
     "drop_existing" : "True"
@@ -29,11 +29,11 @@
   "driver" :{
     "driver_type"           : "baci_bruteforce",
     "driver_params"         :{
-      "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/lofi_numerical.dat",
+      "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/lofi_combined.dat",
       "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
       "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
-      "post_process_options"  : ["--field=structure --node=1260 --start=1","--field=structure --node=1261 --start=1", "--field=structure --node=2110 --start=1"],
-      "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/lofi_numerical",
+      "post_process_options"  : ["--field=structure --node=220 --start=1","--field=structure --node=219 --start=1", "--field=structure --node=344 --start=1"],
+      "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/lofi_combined",
       "post_post_script"      : "/home/nitzler/workspace/QUEENS_Rep/queens/trials/post_post_script_FSI.py",
       "driver_file" : "/home/nitzler/workspace/QUEENS_Rep/queens/pqueens/drivers/baci_driver_bruteforce.py",
       "delete_field_data" : "True"
