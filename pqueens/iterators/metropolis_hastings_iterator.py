@@ -196,4 +196,4 @@ class MetropolisHastingsIterator(Iterator):
         print("Size of outputs {}".format(chain.shape))
         print("\tmean±std: {}±{}".format(results['mean'], np.sqrt(results['var'])))
         print("\tvar: {}".format(results['var']))
-
+        print("\tcov: {}".format(results['cov'].tolist()))

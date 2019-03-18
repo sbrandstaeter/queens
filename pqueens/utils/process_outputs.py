@@ -70,6 +70,10 @@ def do_processing(output_data, output_description):
     processed_results["mean"] = mean_mean
     processed_results["var"] = var_mean
 
+    if output_description.get('cov', False):
+        cov_mean = estimate_cov(output_data)
+        processed_results["cov"] = cov_mean
+
     # do we want to estimate all the below (i.e. pdf, cdf, icdf)
     est_all = output_description.get('estimate_all', False)
 
@@ -152,7 +156,7 @@ def estimate_mean(output_data):
 
     """
     samples = output_data["mean"]
-    return np.mean(samples)
+    return np.mean(samples, axis=0)
 
 def estimate_var(output_data):
     """ Estimate variance based on standard unbiased estimator
@@ -165,7 +169,31 @@ def estimate_var(output_data):
 
     """
     samples = output_data["mean"]
-    return np.var(samples, ddof=1)
+    return np.var(samples, ddof=1, axis=0)
+
+def estimate_cov(output_data):
+    """ Estimate covariance based on standard unbiased estimator
+
+    Args:
+        output_data (dict):       Dictionary with output data
+
+    Returns:
+        numpy.array                    Unbiased covariance estimate
+
+    """
+    samples = output_data["mean"]
+
+    # we don't know wether rows or columns represent variables or observations
+    # most likely the larger number represents the observations
+    rows, cols = samples.shape
+    if rows > cols:
+        rowvar = False
+    elif cols < rows:
+        row_variable = True
+    else:
+        raise ValueError("Unable to calculate covariance since "
+                         "number of variables is equal to number of observations")
+    return np.cov(samples, rowvar=rowvar)
 
 def estimate_cdf(output_data, support_points, bayesian):
     """ Compute estimate of CDF based on provided sampling data

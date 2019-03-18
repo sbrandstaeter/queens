@@ -42,7 +42,7 @@ class NormalProposal(ProposalDistribution):
 
     def draw(self, num_draws=1):
         uncorrelated_vector = np.random.randn(self.dimension, num_draws)
-        return np.dot(self.low_chol, uncorrelated_vector)
+        return np.squeeze(np.dot(self.low_chol, uncorrelated_vector))
 
 
 def create_proposal_distribution(proposal_options):

@@ -155,7 +155,7 @@ class Variables(object):
         i = 0
         for key, _ in self.variables.items():
             my_size = self.variables[key]['size']
-            self.variables[key]['value'] = data_vector[i:i+my_size]
+            self.variables[key]['value'] = np.squeeze(data_vector[i:i+my_size])
             i += my_size
         if i != len(data_vector):
             raise IndexError('The passed vector is to long!')

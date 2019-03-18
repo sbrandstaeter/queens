@@ -1,4 +1,3 @@
-import numpy as np
 import scipy.stats
 
 def gaussian_logpdf(x):
@@ -7,8 +6,8 @@ def gaussian_logpdf(x):
     Used as a basic test function for MCMC methods.
 
     The log likelihood is defined as (see [1]):
-    :math:`f({x}) = \\frac{-(x-\\mu)^2}{2\\sigma^2}
-                    - log(\\sqrt(2 \\pi * \\sigma^2) `
+
+    :math:`f({x}) = \\frac{-(x-\\mu)^2}{2\\sigma^2} - \\log(\\sqrt(2 \\pi \\sigma^2)`
 
     Args:
         x (float):
