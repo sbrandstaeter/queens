@@ -20,11 +20,10 @@ def process_ouputs(output_data, output_description, input_data=None):
         dict:                       Dictionary with processed results
     """
     processed_results = {}
-    processed_results = do_processing(output_data, output_description)
-    # try:
-    #     processed_results = do_processing(output_data, output_description)
-    # except:
-    #     print("Could not process results properly")
+    try:
+        processed_results = do_processing(output_data, output_description)
+    except:
+        print("Could not process results properly")
 
     # add the actual raw input and output data
     processed_results["raw_output_data"] = output_data
@@ -56,7 +55,7 @@ def do_processing(output_data, output_description):
     # result interval
     result_interval = output_description.get('result_interval', None)
     if result_interval is None:
-        # estimate interval from resutls
+        # estimate interval from results
         result_interval = estimate_result_interval(output_data)
 
     # get number of support support points
@@ -183,17 +182,18 @@ def estimate_cov(output_data):
     """
     samples = output_data["mean"]
 
-    # we don't know wether rows or columns represent variables or observations
+    # we don't know whether rows or columns represent variables or observations
     # most likely the larger number represents the observations
     rows, cols = samples.shape
     if rows > cols:
-        rowvar = False
+        row_variable = False
     elif cols < rows:
         row_variable = True
     else:
-        raise ValueError("Unable to calculate covariance since "
-                         "number of variables is equal to number of observations")
-    return np.cov(samples, rowvar=rowvar)
+        warnings.warn("Unable to identify row or column variable. Assuming default: rowvar = True.")
+        row_variable = True
+
+    return np.cov(samples, rowvar=row_variable)
 
 def estimate_cdf(output_data, support_points, bayesian):
     """ Compute estimate of CDF based on provided sampling data
