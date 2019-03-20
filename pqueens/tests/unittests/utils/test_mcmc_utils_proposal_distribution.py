@@ -1,10 +1,20 @@
-import pytest
+"""
+Test-module for proposal distributions of mcmc_utils module
+
+@author: Sebastian Brandstaeter
+"""
+
 import numpy as np
-from pqueens.utils.mcmc_utils import NormalProposal, create_proposal_distribution
+import pytest
+
+from pqueens.utils.mcmc_utils import create_proposal_distribution
+from pqueens.utils.mcmc_utils import NormalProposal
 
 
 @pytest.fixture(scope='module')
 def valid_lower_cholesky():
+    """ Lower triangular matrix of a Cholesky decomposition. """
+
     return np.array([[1.0, 0.0, 0.],
                      [0.1, 2.0, 0.],
                      [1.0, 0.8, 3.]])
@@ -12,17 +22,32 @@ def valid_lower_cholesky():
 
 @pytest.fixture(scope='module')
 def valid_covariance_matrix(valid_lower_cholesky):
+    """ Recompose matrix based on given Cholesky decomposition. """
+
     return np.dot(valid_lower_cholesky, valid_lower_cholesky.T)
 
 
 @pytest.fixture(scope='module')
 def invalid_dimension_covariance_matrix():
+    """
+    A numpy array of dimension 3.
+
+    valid covariance is either a scalar (dimension 1)
+    or a matrix (dimension 2)
+    """
+
     return np.array([[[1.0, 0.1], [1.0, 0.1]],
                      [[0.2, 2.0], [0.2, 2.0]]])
 
 
 @pytest.fixture(scope='module')
 def invalid_rectangular_covariance_matrix():
+    """
+    Rectangular matrix to test ValueError of covariance matrix.
+
+    a valid covariance matrix has to be quadratic
+    """
+
     return np.array([[1.0, 0.1],
                      [0.2, 2.0],
                      [3.0, 0.3]])
@@ -30,38 +55,48 @@ def invalid_rectangular_covariance_matrix():
 
 @pytest.fixture(scope='module')
 def invalid_nonsymmetric_covariance_matrix():
+    """
+    A non-symmetric matrix.
+
+    valid covariance matrix has to be symmetric
+    """
     return np.array([[1.0, 0.1],
                      [0.2, 2.0]])
 
 
 @pytest.fixture(scope='module')
 def uncorrelated_vector():
+    """
+    A vector of uncorrelated samples from standard normal distribution.
+
+    as expected by a call to a Gaussian random number generator
+    """
     return np.array([1.0, 2.0, 3.0])
 
 
 def test_init_NormalProposal_wrong_dimension(invalid_dimension_covariance_matrix):
-    """ test ValueError of init method of NormalProposal class"""
+    """ Test ValueError of init method of NormalProposal class. """
 
     with pytest.raises(ValueError, match=r'.*Wrong dimension.*'):
         NormalProposal(invalid_dimension_covariance_matrix)
 
 
 def test_init_NormalProposal_not_quadratic(invalid_rectangular_covariance_matrix):
-    """ test ValueError of init method of NormalProposal class"""
+    """ Test ValueError of init method of NormalProposal class. """
 
     with pytest.raises(ValueError, match=r'.*not quadratic.*'):
         NormalProposal(invalid_rectangular_covariance_matrix)
 
 
 def test_init_NormalProposal_not_symmetric(invalid_nonsymmetric_covariance_matrix):
-    """ test ValueError of init method of NormalProposal class"""
+    """ Test ValueError of init method of NormalProposal class. """
 
     with pytest.raises(ValueError, match=r'.*not symmetric.*'):
         NormalProposal(invalid_nonsymmetric_covariance_matrix)
 
 
 def test_init_NormalProposal_univariate():
-    """ test init method of NormalProposal class (univariate case)"""
+    """ Test init method of NormalProposal class (univariate case). """
 
     covariance = np.asarray(2.0)
     # cholesky decomposition of a scalar is root of scalar
@@ -74,7 +109,7 @@ def test_init_NormalProposal_univariate():
 
 
 def test_init_NormalProposal_multivariate(valid_covariance_matrix, valid_lower_cholesky):
-    """ test init method of NormalProposal class (multivariate case)"""
+    """ Test init method of NormalProposal class (multivariate case). """
 
     multivariate_normal_proposal = NormalProposal(valid_covariance_matrix)
 
@@ -83,8 +118,11 @@ def test_init_NormalProposal_multivariate(valid_covariance_matrix, valid_lower_c
     np.testing.assert_allclose(multivariate_normal_proposal.low_chol, valid_lower_cholesky)
 
 
-def test_draw_NormalProposal(valid_covariance_matrix, valid_lower_cholesky, uncorrelated_vector, mocker):
-    """ test the draw method of normal proposal distribution"""
+def test_draw_NormalProposal(valid_covariance_matrix,
+                             valid_lower_cholesky,
+                             uncorrelated_vector,
+                             mocker):
+    """ Test the draw method of normal proposal distribution. """
 
     # univariate case
     standard_normal_sample = np.asarray(0.1)
@@ -106,10 +144,10 @@ def test_draw_NormalProposal(valid_covariance_matrix, valid_lower_cholesky, unco
 
 
 def test_create_proposal_distribution_normal(valid_covariance_matrix):
-    """ test creation routine of proposal distribution objects"""
+    """ Test creation routine of proposal distribution objects. """
 
     normal_options = {'type': 'normal',
-                                   'proposal_covariance': valid_covariance_matrix}
+                      'proposal_covariance': valid_covariance_matrix}
 
     normal_proposal = create_proposal_distribution(normal_options)
 
@@ -117,7 +155,7 @@ def test_create_proposal_distribution_normal(valid_covariance_matrix):
 
 
 def test_create_proposal_distribution_invalid():
-    """ test creation routine of proposal distribution objects"""
+    """ Test creation routine of proposal distribution objects. """
 
     invalid_options = {'proposal_covariance': 1.0}
 

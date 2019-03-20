@@ -1,25 +1,49 @@
+"""
+Metropolis-Hastings algorithm
+
+"The Metropolis-Hastings algorithm is a Markov Chain Monte Carlo (MCMC)
+method for obtaining a sequence of random samples from a probability
+distribution from which direct sampling is difficult." [1]
+
+References:
+    [1]: https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm
+
+"""
+
 import numpy as np
+
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils.mcmc_utils import create_proposal_distribution, mh_select
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 
+
 class MetropolisHastingsIterator(Iterator):
-    """ Basic Markov Chain Monte Carlo Iterator based on Metropolis-Hastings Algorithm
+    """
+    Iterator based on Metropolis-Hastings algorithm
+
+    The Metropolis-Hastings algorithm can be considered the benchmark
+    Markov Chain Monte Carlo (MCMC) algorithm. It may be used to sample
+    from complex, intractable probability distributions from which
+    direct sampling is difficult or impossible.
+    The implemented version is a random walk Metropolis-Hastings
+    algorithm.
 
     Attributes:
         accepted (int): number of accepted proposals
         log_likelihood (np.array): log of pdf of likelihood at samples
         log_posterior (np.array): log of pdf of posterior at samples
         log_prior (np.array): log of pdf of prior at samples
-        num_burn_in (int): Number of burnin samples
-        num_samples (int): Number of samples in chain (chain length)
-        proposal_distribution (scipy.stats.rv_continuous): Proposal distribution, that gives zero-mean deviates
-        proposal_covariance (numpy.array): covariance matrix of proposal distribution
+        num_burn_in (int): Number of burn-in samples
+        num_samples (int): Total number of samples
+                           (initial + burn-in + chain)
+        proposal_distribution (scipy.stats.rv_continuous): Proposal distribution
+                                                           giving zero-mean deviates
         result_description (dict):  Description of desired results
         samples (numpy.array): Array with all samples
-        scale_covariance (float): Scale of covariance of gaussian proposal distribution
+        scale_covariance (float): Scale of covariance matrix
+                                  of gaussian proposal distribution
         seed (int): Seed for random number generator
 
     """
@@ -33,7 +57,8 @@ class MetropolisHastingsIterator(Iterator):
         self.proposal_distribution = proposal_distribution
         self.result_description = result_description
 
-        # check if dimensions of proposal distribution and parameter space agree
+        # check agreement of dimensions of proposal distribution and
+        # parameter space
         num_variables = self.model.variables[0].get_number_of_active_variables()
         if num_variables is not self.proposal_distribution.dimension:
             raise ValueError("Dimensions of proposal distribution"
@@ -53,18 +78,19 @@ class MetropolisHastingsIterator(Iterator):
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None,
                                     model=None):
-        """ Create Metropolis-Hastings iterator from problem description
+        """
+        Create Metropolis-Hastings iterator from problem description
 
         Args:
             config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
+            iterator_name (str): Name of iterator (optional)
             model (model):       Model to use (optional)
 
         Returns:
             iterator: MetropolisHastingsIterator object
 
         """
+
         print("Metropolis-Hastings Iterator for experiment: {0}"
               .format(config.get('global_settings').get('experiment_name')))
         if iterator_name is None:
@@ -84,7 +110,8 @@ class MetropolisHastingsIterator(Iterator):
         if proposal_options is not None:
             proposal_distribution = create_proposal_distribution(proposal_options)
         else:
-            raise ValueError('Could not find proposal distribution "{0}" in input file.'.format(name_proposal_distribution))
+            raise ValueError(f'Could not find proposal distribution'
+                             f' "{name_proposal_distribution}" in input file.')
 
         return cls(global_settings=global_settings,
                    model=model,
@@ -96,14 +123,17 @@ class MetropolisHastingsIterator(Iterator):
                    seed=method_options['seed'])
 
     def eval_model(self):
-        """ Evaluate the model """
+        """ Evaluate model at current sample. """
         result_dict = self.model.evaluate()
         return result_dict
 
     def eval_log_prior(self, sample):
-        """ Evaluate the log of the prior at sample
-        Note: we assume a multiplicative split of the prior
         """
+        Evaluate natural logarithm of prior at sample.
+
+        Note: we assume a multiplicative split of prior pdf
+        """
+
         log_prior = 0.
         i = 0
         for _, variable in self.model.variables[0].variables.items():
@@ -113,7 +143,7 @@ class MetropolisHastingsIterator(Iterator):
         return log_prior
 
     def eval_log_likelihood(self, sample):
-        """ Evaluate the log of the likelihood at sample"""
+        """ Evaluate natural logarithm of likelihood at sample. """
 
         self.model.update_model_from_sample(sample)
         log_likelihood = self.eval_model()['mean']
@@ -121,7 +151,7 @@ class MetropolisHastingsIterator(Iterator):
         return log_likelihood
 
     def do_mh_step(self, step_id):
-        """ Metropolis (Hastings) Step"""
+        """ Metropolis (Hastings) step. """
 
         cur_sample = self.samples[step_id-1]
         delta_proposal = self.proposal_distribution.draw() * self.scale_covariance
@@ -147,10 +177,10 @@ class MetropolisHastingsIterator(Iterator):
             self.log_prior[step_id] = self.log_prior[step_id-1]
             self.log_posterior[step_id] = self.log_posterior[step_id-1]
 
-    def pre_run(self):
-        """ Draw initial sample """
+    def initialize_run(self):
+        """ Draw initial sample. """
 
-        print("Welcome to Metropolis-Hastings Pre Run")
+        print("Initialize Metropolis-Hastings run.")
         np.random.seed(self.seed)
 
         # draw initial sample from prior distribution
@@ -164,36 +194,47 @@ class MetropolisHastingsIterator(Iterator):
         self.log_posterior[0] = self.log_likelihood[0] + self.log_prior[0]
 
     def core_run(self):
-        print('Welcome to Metropolis-Hastings Core Run.')
+        """
+        Core run of Metropolis-Hastings iterator
 
+        1.) Burn-in phase
+        2.) Sampling phase
+        """
+
+        print('Welcome to Metropolis-Hastings core run.')
+
+        # Burn-in phase
         for i in range(1, self.num_burn_in + 1):
             self.do_mh_step(i)
 
-        if self.num_burn_in is not 0:
-            burnin_accept_rate = self.accepted / self.num_burn_in
-            print("Acceptance rate during burn in: {0}".format(burnin_accept_rate))
+        if self.num_burn_in:
+            burn_in_accept_rate = self.accepted / self.num_burn_in
+            print("Acceptance rate during burn in: {0}".format(burn_in_accept_rate))
         # reset number of accepted samples
         self.accepted = 0
 
+        # Sampling phase
         for i in range(self.num_burn_in + 1, self.num_burn_in + self.num_samples + 1):
             self.do_mh_step(i)
 
     def post_run(self):
-        """ Analyze the results """
+        """ Analyze the resulting chain. """
+
         chain = self.samples[self.num_burn_in + 1:self.num_samples + self.num_burn_in + 1]
 
         accept_rate = self.accepted / self.num_samples
 
-        # process output requires take a dict as input with label 'mean'
-        if self.result_description is not None:
+        if self.result_description:
+            # process output takes a dict as input with key 'mean'
             results = process_ouputs({'mean': chain}, self.result_description)
-            if self.result_description["write_results"] is True:
+            if self.result_description["write_results"]:
                 write_results(results,
                               self.global_settings["output_dir"],
                               self.global_settings["experiment_name"])
 
-        print("Acceptance rate: {}".format(accept_rate))
-        print("Size of outputs {}".format(chain.shape))
-        print("\tmean±std: {}±{}".format(results.get('mean', None), np.sqrt(results.get('var', None))))
-        print("\tvar: {}".format(results.get('var', None)))
-        print("\tcov: {}".format(results.get('cov', np.array(None)).tolist()))
+            print("Acceptance rate: {}".format(accept_rate))
+            print("Size of outputs {}".format(chain.shape))
+            print("\tmean±std: {}±{}".format(results.get('mean', None),
+                                             np.sqrt(results.get('var', None))))
+            print("\tvar: {}".format(results.get('var', None)))
+            print("\tcov: {}".format(results.get('cov', np.array(None)).tolist()))
