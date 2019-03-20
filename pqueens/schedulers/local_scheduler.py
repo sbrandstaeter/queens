@@ -33,7 +33,7 @@ class LocalScheduler(Scheduler):
 
 
     def submit(self, job_id, experiment_name, batch, experiment_dir,
-               database_address, driver_option={}):
+               database_address, driver_params={}):
         """ Submit job locally by calling subprocess
 
         Args:
@@ -54,10 +54,16 @@ class LocalScheduler(Scheduler):
         #base_path = os.path.dirname(os.path.realpath(pqueens.__file__))
         base_path = pathlib.Path(__file__).parent.parent
 
+
+        # get path to Python interpreter
+        # scheduler and driver should be called with the same Python executable
+        python_path = sys.executable
+
         # assemble shell command
-        cmd = ('python %s/drivers/gen_driver_local.py --db_address %s --experiment_name '
+        cmd = ('%s %s/drivers/gen_driver_local.py --db_address %s --experiment_name '
                '%s --job_id %s --batch %s' %
-               (base_path, database_address, experiment_name, job_id, batch))
+               (python_path, base_path, database_address, experiment_name, job_id, batch))
+
 
         output_directory = os.path.join(experiment_dir, 'output')
         if not os.path.isdir(output_directory):
@@ -66,7 +72,8 @@ class LocalScheduler(Scheduler):
         output_filename = os.path.join(output_directory, '%08d.out' % job_id)
         output_file = open(output_filename, 'w')
 
-        process = subprocess.Popen(cmd, stdout=output_file,
+        process = subprocess.Popen(cmd,
+                                   stdout=output_file,
                                    stderr=output_file,
                                    shell=True)
 
