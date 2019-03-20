@@ -194,6 +194,6 @@ class MetropolisHastingsIterator(Iterator):
 
         print("Acceptance rate: {}".format(accept_rate))
         print("Size of outputs {}".format(chain.shape))
-        print("\tmean±std: {}±{}".format(results['mean'], np.sqrt(results['var'])))
-        print("\tvar: {}".format(results['var']))
-        print("\tcov: {}".format(results['cov'].tolist()))
+        print("\tmean±std: {}±{}".format(results.get('mean', None), np.sqrt(results.get('var', None))))
+        print("\tvar: {}".format(results.get('var', None)))
+        print("\tcov: {}".format(results.get('cov', np.array(None)).tolist()))
