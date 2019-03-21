@@ -246,7 +246,7 @@ def get_runcommand_string(driver_options, baci_input_file, baci_output):
         Returns:
             str: Complete command to execute BACI
     """
-    procs = 4
+    procs = 4 # TODO: Check why this was hard coded and change that or delete it
     mpir_run, mpi_flags, my_env = setup_mpi(procs)
     executable = driver_options['path_to_executable']
 

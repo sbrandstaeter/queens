@@ -5,6 +5,7 @@ from SALib.sample import morris
 from pqueens.models.model import Model
 from .iterator import Iterator
 from pqueens.utils.process_outputs import write_results
+import matplotlib.pyplot as plt
 
 
 
@@ -164,18 +165,14 @@ class MorrisSALibIterator(Iterator):
             'num_vars' : self.num_params,
             'names'    : self.parameter_names,
             'bounds'   : bounds,
-            'groups'   : None
+            'groups'   : None,
             }
 
         self.samples = morris.sample(self.salib_problem,
                                      self.num_trajectories,
                                      num_levels=self.num_levels,
-                                     grid_jump=self.grid_jump,
                                      optimal_trajectories=self.num_optimal_trajectories,
                                      local_optimization=self.local_optimization)
-
-
-
     def core_run(self):
         """ Run Analysis on model """
 
@@ -189,8 +186,7 @@ class MorrisSALibIterator(Iterator):
                                           num_resamples=self.num_bootstrap_samples,
                                           conf_level=self.confidence_level,
                                           print_to_console=False,
-                                          num_levels=self.num_levels,
-                                          grid_jump=self.grid_jump)
+                                          num_levels=self.num_levels)
 
 
     def post_run(self):
@@ -200,6 +196,9 @@ class MorrisSALibIterator(Iterator):
             if self.result_description["write_results"] is True:
                 write_results(results, self.global_settings["output_dir"],
                               self.global_settings["experiment_name"])
+                self.print_results(results)
+                if self.result_description["plot_results"] is True:
+                    self.plot_results(results)
             else:
                 self.print_results(results)
 
@@ -230,3 +229,13 @@ class MorrisSALibIterator(Iterator):
                 results['sensitivity_incides']['mu'][j],
                 results['sensitivity_incides']['mu_star_conf'][j],
                 results['sensitivity_incides']['sigma'][j]))
+
+    def plot_results(self, results):
+        fig, ax = plt.subplots()
+        ax.bar(results['sensitivity_incides']['names'],results['sensitivity_incides']['mu_star'], yerr=results['sensitivity_incides']['sigma'],align='center',alpha=0.6,ecolor='black',capsize=10)
+        ax.set_xlabel('Factors')
+        ax.set_ylabel('$\mu^*_i$ (blue bars) and $\sigma_i$ (black confidence intervals)')
+        ax.set_title('Elementary Effects Analysis')
+        ax.yaxis.grid(True)
+        plt.show()
+
