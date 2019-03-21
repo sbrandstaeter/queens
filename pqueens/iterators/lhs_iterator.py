@@ -34,7 +34,10 @@ class LHSIterator(Iterator):
         """ Create LHS iterator from problem description
 
         Args:
-            config (dict): Dictionary with QUEENS problem description
+            config (dict):       Dictionary with QUEENS problem description
+            iterator_name (str): Name of iterator to identify right section
+                                 in options dict (optional)
+            model (model):       Model to use (optional)
 
         Returns:
             iterator: LHSIterator object

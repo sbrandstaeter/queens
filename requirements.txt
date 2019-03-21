@@ -3,6 +3,7 @@ numpy==1.14.1
 scipy==1.0.0
 matplotlib
 sphinx
+bleach==1.5.0
 nbsphinx
 jupyter
 scikit-learn
@@ -19,7 +20,7 @@ gpy
 seaborn
 docker
 # for sensitivity analysis
-SALib
+SALib==1.3.3
 # making fancy plots
 plotly
 # create mock objects for unit testing
@@ -28,6 +29,6 @@ mock
 # install TensorFlow v1.5 because newer versions will cause weird crashes
 tensorflow==1.5
 git+git://github.com/GPflow/GPflow.git@0.4.0#egg=gpflow
-git+git://github.com/GPflow/GPflowOpt.git#egg=gpflow_opt
+git+git://github.com/GPflow/GPflowOpt.git@8a2671d8a3ed6825ed5b28fcad86b2ee1e30b467#egg=gpflowopt
 pytest
 pytest-mock

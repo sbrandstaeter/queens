@@ -1,0 +1,58 @@
+{
+    "experiment_name" : "biax_tensile_bo",
+    "database"  :{
+      "address"   : "localhost:27017",
+      "drop_existing" : true
+    },
+    "method": {
+      "method_name": "bayesian_optimization",
+      "method_options" :{
+        "seed" : 42,
+        "model" : "model",
+        "num_iter" : 1,
+        "use_ard" : "True",
+        "num_initial_samples" : 2
+      }
+    },
+    "model" : {
+      "type" : "simulation_model",
+      "interface" : "interface",
+      "parameters" : "parameters"
+    },
+    "interface" : {
+      "type" : "job_interface",
+      "resources": "resources",
+      "driver" : "driver"
+    },
+    "driver" :{
+      "driver_type"           : "baci_native",
+      "driver_params"         :{
+        "input_template"        : "/home/brandstaeter/workspace/queens/trials/biax_membrane_tensile_test_template1.dat",
+        "path_to_executable"    : "/home/brandstaeter/workspace/build_release_master/baci-release",
+        "path_to_postprocessor" : "/home/brandstaeter/workspace/build_release_master/post_drt_monitor",
+        "post_process_options"  : ["--field=structure  --node=1320 --start=1", "--field=structure  --node=201 --start=1"],
+        "post_post_script"      : "/home/brandstaeter/workspace/queens/trials/post_post_script_biax_bo.py",
+        "experiment_dir"        : "/home/brandstaeter/coding/queens/develop_mh/output/experiments"
+      }
+    },
+    "resources" : {
+      "my-machine" : {
+        "scheduler"         : "scheduler",
+        "max-concurrent"    : 3,
+        "max-finished-jobs" : 100
+      }
+    },
+    "parameters" : {
+      "random_variables" : {
+        "mue" : {
+          "type" : "FLOAT",
+          "size" : 1,
+          "distribution" : "uniform",
+          "distribution_parameter" : [0.05, 1.6]
+        }
+      }
+    },
+    "scheduler" : {
+      "scheduler_type" : "local"
+    }
+}

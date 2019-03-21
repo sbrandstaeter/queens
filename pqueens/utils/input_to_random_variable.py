@@ -4,7 +4,7 @@ import scipy.stats
 # TODO write tests
 
 def get_random_samples(description, num_samples):
-    """ Get random samples based QUEENS discription of distribution using numpy
+    """ Get random samples based QUEENS description of distribution using numpy
 
     Args:
         description (dict):         Dictionary containing QUEENS distribution
@@ -34,7 +34,7 @@ def get_distribution_object(description):
     """
     distribution_parameter = list(description["distribution_parameter"])
     distribution = None
-    if  description["distribution"] == 'normal':
+    if description["distribution"] == 'normal':
         print(distribution_parameter)
         distribution = scipy.stats.norm(distribution_parameter[0], distribution_parameter[1])
     elif description["distribution"] == 'lognormal':

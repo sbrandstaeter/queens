@@ -78,6 +78,7 @@ class SaltelliIterator(Iterator):
 
         Args:
             config (dict): Dictionary with QUEENS problem description
+            model (model): Model to use (optional)
 
         Returns:
             iterator: SaltelliIterator object

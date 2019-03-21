@@ -11,13 +11,13 @@ class DirectPythonInterface(Interface):
         i.e. responses by making direct calls to a python function. The function
         has to be defined in a file, which is passed as an argument at runtime.
         The structure of the file must adhere to the structure of the files
-        in the folder pqueens/example_input_files. In fact the purppose of
+        in the folder pqueens/example_input_files. In fact the purpose of
         this class is to be able to call the test examples in said folder.
 
     Attributes:
         name (string):                  name of interface
         variables (dict):               dictionary with variables
-        function (function object):     adress of database to use
+        function (function object):     address of database to use
 
     """
 
@@ -38,11 +38,10 @@ class DirectPythonInterface(Interface):
         # get path to queens example simulator functions directory
         function_dir = os.path.join(os.path.dirname(__file__), '..', 'example_simulator_functions')
         abs_function_dir = os.path.abspath(function_dir)
-        # join paths intelligently, i.e., if function_files contains an
-        # absolute path it will preserved, otherwise the call belwo will prepend
-        # the absolute path to the example_simalator_functions directory
+        # join paths intelligently, i.e., if function_file contains an
+        # absolute path it will be preserved, otherwise the call below will
+        # prepend the absolute path to the example_simulator_functions directory
         abs_function_file = os.path.join(abs_function_dir, function_file)
-
         try:
             spec = importlib.util.spec_from_file_location("my_function", abs_function_file)
             my_function = importlib.util.module_from_spec(spec)
@@ -53,8 +52,6 @@ class DirectPythonInterface(Interface):
                                     "file! Fix your config file!")
 
         self.function = my_function
-
-
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -72,7 +69,7 @@ class DirectPythonInterface(Interface):
         function_file = interface_options["main_file"]
         parameters = config['parameters']
 
-        # instanciate object
+        # instantiate object
         return cls(interface_name, function_file, parameters)
 
     def map(self, samples):

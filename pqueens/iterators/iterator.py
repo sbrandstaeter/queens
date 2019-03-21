@@ -4,6 +4,7 @@ import abc
 # TODO pull model out of base class and add to all subclasses
 # TODO add docstring to global settings
 
+
 class Iterator(metaclass=abc.ABCMeta):
     """ Base class for Iterator hierarchy
 
@@ -11,7 +12,7 @@ class Iterator(metaclass=abc.ABCMeta):
     hierarchies in QUEENS.The job of the iterator hierarchy is to coordinate
     and execute simulations/function evaluations. The purpose of this base class
     is twofold. First, it defines the unified interface of the iterator hierarchy.
-    Second, it works as factory which allows unified instanciation of iterator object
+    Second, it works as factory which allows unified instantiation of iterator object
     by calling its classmethods.
 
     Attributes:
@@ -28,8 +29,11 @@ class Iterator(metaclass=abc.ABCMeta):
         """ Create iterator from problem description
 
         Args:
-            config (dict): Dictionary with QUEENS problem description
-            model (model): Model to iterate (optional)
+            config (dict):       Dictionary with QUEENS problem description
+            iterator_name (str): Name of iterator to identify right section
+                                 in options dict (optional)
+            model (model):       Model to use (optional)
+
         Returns:
             iterator: Iterator object
 
@@ -43,7 +47,6 @@ class Iterator(metaclass=abc.ABCMeta):
         from .lhs_iterator_mf import MF_LHSIterator
         from .data_iterator import DataIterator
         from .bmfmc_iterator import BmfmcIterator
-
 
         method_dict = {'monte_carlo': MonteCarloIterator,
                        'lhs': LHSIterator,

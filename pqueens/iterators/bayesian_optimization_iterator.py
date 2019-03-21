@@ -72,6 +72,8 @@ class BayesOptIterator(Iterator):
 
         Args:
             config (dict): Dictionary with QUEENS problem description
+            iterator_name (string): Name of iterator to use (optional)
+            model (model): Model to iterate (optional)
 
         Returns:
             iterator: BayesOptIterator object

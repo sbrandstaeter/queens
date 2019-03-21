@@ -43,8 +43,8 @@ class MF_LHSIterator(Iterator):
         Args:
             config (dict):       Dictionary with QUEENS problem description
             iterator_name (str): Name of iterator to identify right section
-                                 in options dict
-            model (model):       Model to use
+                                 in options dict (optional)
+            model (model):       Model to use (optional)
 
         Returns:
             iterator: MF_LHSIterator object

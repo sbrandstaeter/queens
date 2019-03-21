@@ -9,7 +9,7 @@ class DataIterator(Iterator):
 
     Attributes:
         samples (np.array):         Array with all samples
-        outputs (np.array):         Array with all model outputs
+        output (np.array):          Array with all model outputs
         path_to_data (string):      Path to pickle file containing data
         result_description (dict):  Description of desired results
 
@@ -26,7 +26,10 @@ class DataIterator(Iterator):
         """ Create data iterator from problem description
 
         Args:
-            config (dict): Dictionary with QUEENS problem description
+            config (dict):       Dictionary with QUEENS problem description
+            iterator_name (str): Name of iterator to identify right section
+                                 in options dict (optional)
+            model (model):       Model to use (optional)
 
         Returns:
             iterator: DataIterator object
@@ -66,7 +69,7 @@ class DataIterator(Iterator):
                 write_results(results,
                               self.global_settings["output_dir"],
                               self.global_settings["experiment_name"])
-        #else:
+        # else:
         print("Size of inputs {}".format(self.samples.shape))
         print("Inputs {}".format(self.samples))
         print("Size of outputs {}".format(self.output['mean'].shape))
@@ -88,6 +91,5 @@ class DataIterator(Iterator):
 
         samples = data["input_data"]
         output = data["raw_output_data"]
-
 
         return samples, output

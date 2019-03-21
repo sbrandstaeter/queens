@@ -37,25 +37,29 @@ def baci_driver_docker(job):
     # create input file using injector
     inject(params, driver_params['input_template'], baci_input_file)
 
-    # assemble baci run and post process command
+    # assemble baci run command
     baci_cmd = driver_params['path_to_executable'] + ' ' + baci_input_file + ' ' + baci_output_file
 
+    # assemble volume map for docker container
     volume_map = {job['expt_dir']: {'bind': job['expt_dir'], 'mode': 'rw'}}
 
+    # run BACI
     temp_out = run_baci(driver_params['docker_container'],
                         baci_cmd, volume_map)
-    i = 1
-    for post_process_option in driver_params['post_process_options']:
-        post_cmd = driver_params['path_to_postprocessor'] + ' ' + post_process_option + ' --file='+baci_output_file + ' --output='+baci_output_file+'_'+str(i)
-        temp_out = run_post_processing(driver_params['docker_container'],
-                                       post_cmd, volume_map)
-        i += 1
+    print("Communicate run baci")
     print(temp_out)
 
+    # Post-process BACI run
+    for i, post_process_option in enumerate(driver_params['post_process_options']):
+        post_cmd = driver_params['path_to_postprocessor'] + ' ' + post_process_option + ' --file='+baci_output_file + ' --output='+baci_output_file+'_'+str(i+1)
+        temp_out = run_post_processing(driver_params['docker_container'],
+                                       post_cmd, volume_map)
+        print("Communicate post-processing")
+        print(temp_out)
+
+    # Call post post-processing script
     result = run_post_post_processing(driver_params['post_post_script'],
                                       baci_output_file)
-
-    sys.stderr.write("Got result %s\n" % (result))
 
     return result
 
