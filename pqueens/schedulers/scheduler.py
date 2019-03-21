@@ -20,9 +20,11 @@ class Scheduler(metaclass=abc.ABCMeta):
         # import here to avoid issues with circular inclusion
         import pqueens.schedulers.local_scheduler
         import pqueens.schedulers.PBS_scheduler
+        import pqueens.schedulers.slurm_scheduler
 
         scheduler_dict = {'local': pqueens.schedulers.local_scheduler.LocalScheduler,
-                          'pbs': pqueens.schedulers.PBS_scheduler.PBSScheduler}
+                          'pbs': pqueens.schedulers.PBS_scheduler.PBSScheduler,
+                          'slurm': pqueens.schedulers.slurm_scheduler.SlurmScheduler}
 
         scheduler_options = config[scheduler_name]
         # determine which object to create
