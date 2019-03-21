@@ -12,4 +12,4 @@ def test_borehole_latin_hyper_cube(tmpdir):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(62.05240444441511)
-    assert results["var"] == pytest.approx(1370.3836670159617)
+    assert results["var"] == pytest.approx(1371.7554224384000)

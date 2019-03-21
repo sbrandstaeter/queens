@@ -145,7 +145,7 @@ def estimate_var(output_data):
 
     """
     samples = output_data["mean"]
-    return np.var(samples)
+    return np.var(samples, ddof=1)
 
 def estimate_cdf(output_data, support_points, bayesian):
     """ Compute estimate of CDF based on provided sampling data

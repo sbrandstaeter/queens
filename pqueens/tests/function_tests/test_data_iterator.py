@@ -29,4 +29,4 @@ def test_branin_data_iterator(tmpdir, mocker):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(1.3273452195599997)
-    assert results["var"] == pytest.approx(40.34221875986952)
+    assert results["var"] == pytest.approx(44.82468751096612)
