@@ -1,4 +1,7 @@
+import sys
+
 import numpy as np
+
 from pqueens.randomfields.random_field_gen_KLE import RandomFieldGenKLE
 
 class RandomFieldGenKLE3D(RandomFieldGenKLE):
@@ -78,7 +81,7 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         self.w_n[:,2]=w_n[my_index_2,2]
         self.w_n[:,1]=w_n[my_index_1,1]
         self.w_n[:,0]=w_n[my_index_0,0]
-        np.set_printoptions(threshold=np.nan)
+        np.set_printoptions(threshold=sys.maxsize)
 
         retained_energy=np.sum(self.lambda_n[:,0]) / \
                         (self.largest_length**self.spatial_dim)
