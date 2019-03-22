@@ -119,8 +119,7 @@ class TestMultivariateRandomFieldGenerator(unittest.TestCase):
         my_vals = np.zeros((100, self.num_fields))
         for i in range(100):
             xi = np.random.randn(my_stoch_dim,1)
-            my_vals[i, :] = my_field_generator.evaluate_field_at_location( \
-                           np.array([[10]]), np.array(xi))
+            my_vals[i, :] = my_field_generator.evaluate_field_at_location(np.array([[10]]), np.array(xi))
 
         my_cross_correlation = np.corrcoef(my_vals[:, 1], my_vals[:, 2])
         ref_cross_correlation = 0.80579072011487696

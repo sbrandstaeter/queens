@@ -1,5 +1,8 @@
+import sys
+
 import numpy as np
 import scipy
+
 from  pqueens.randomfields.univariate_field_generator_factory import UniVarRandomFieldGeneratorFactory
 
 class MultiVariateRandomFieldGenerator(object):
@@ -126,10 +129,9 @@ class MultiVariateRandomFieldGenerator(object):
                         locations
 
         """
-
         new_vals=np.zeros((x.shape[0],self.var_dim))
         helper = np.dot(self.pre_factor,xi)
-        np.set_printoptions(threshold=np.nan)
+        np.set_printoptions(threshold=sys.maxsize)
 
         my_xi=helper.reshape(-1,self.var_dim,order='F')
 
