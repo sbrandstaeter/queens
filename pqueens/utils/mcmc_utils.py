@@ -76,3 +76,47 @@ def mh_select(log_acceptance_probability, current_sample, proposed_sample):
         return proposed_sample, True
 
     return current_sample, False
+
+def tune_scale_covariance(scale_covariance, accept_rate):
+    """
+    Tune the acceptance rate according to the last tuning interval
+
+    The goal is an acceptance rate within 20\% - 50\%.
+    The (acceptance) rate is adapted according to the following rule:
+
+        Acceptance Rate    Variance adaptation factor
+        ---------------    --------------------------
+        <0.001                       x 0.1
+        <0.05                        x 0.5
+        <0.2                         x 0.9
+        >0.5                         x 1.1
+        >0.75                        x 2
+        >0.95                        x 10
+
+    The implementation is taken from [1].
+
+    Reference:
+    [1]: https://github.com/pymc-devs/pymc3/blob/master/pymc3/step_methods/metropolis.py
+    """
+
+    # Switch statement
+    if accept_rate < 0.001:
+        # reduce by 90 percent
+        scale_covariance *= 0.1
+    elif accept_rate < 0.05:
+        # reduce by 50 percent
+        scale_covariance *= 0.5
+    elif accept_rate < 0.2:
+        # reduce by ten percent
+        scale_covariance *= 0.9
+    elif accept_rate > 0.95:
+        # increase by factor of ten
+        scale_covariance *= 10.0
+    elif accept_rate > 0.75:
+        # increase by double
+        scale_covariance *= 2.0
+    elif accept_rate > 0.5:
+        # increase by ten percent
+        scale_covariance *= 1.1
+
+    return scale_covariance

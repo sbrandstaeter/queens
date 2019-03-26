@@ -14,7 +14,7 @@ import numpy as np
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
-from pqueens.utils.mcmc_utils import create_proposal_distribution, mh_select
+from pqueens.utils import mcmc_utils
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 
@@ -45,12 +45,15 @@ class MetropolisHastingsIterator(Iterator):
         scale_covariance (float): Scale of covariance matrix
                                   of gaussian proposal distribution
         seed (int): Seed for random number generator
+        tune (bool): Tune the scale of covariance
+        tune_interval (int): Tune the scale of the covariance every
+                             tune_interval-th step
 
     """
 
     def __init__(self, global_settings, model, num_burn_in, num_samples,
                  proposal_distribution, result_description, scale_covariance,
-                 seed):
+                 seed, tune, tune_intervall):
         super().__init__(model, global_settings)
         self.num_burn_in = num_burn_in
         self.num_samples = num_samples
@@ -66,10 +69,13 @@ class MetropolisHastingsIterator(Iterator):
 
         tot_num_samples = self.num_samples+self.num_burn_in+1
         self.samples = np.zeros((tot_num_samples, num_variables))
+        self.tune = tune
+        self.tune_interval = tune_intervall
         self.scale_covariance = scale_covariance
         self.seed = seed
 
         self.accepted = 0
+        self.accepted_interval = 0
 
         self.log_likelihood = np.zeros(tot_num_samples)
         self.log_prior = np.zeros(tot_num_samples)
@@ -108,10 +114,13 @@ class MetropolisHastingsIterator(Iterator):
         name_proposal_distribution = method_options['proposal_distribution']
         proposal_options = config.get(name_proposal_distribution, None)
         if proposal_options is not None:
-            proposal_distribution = create_proposal_distribution(proposal_options)
+            proposal_distribution = mcmc_utils.create_proposal_distribution(proposal_options)
         else:
             raise ValueError(f'Could not find proposal distribution'
                              f' "{name_proposal_distribution}" in input file.')
+
+        tune = method_options.get('tune', False)
+        tune_interval = method_options.get('tune_interval', 100)
 
         return cls(global_settings=global_settings,
                    model=model,
@@ -120,7 +129,9 @@ class MetropolisHastingsIterator(Iterator):
                    proposal_distribution=proposal_distribution,
                    result_description=result_description,
                    scale_covariance=method_options['scale_covariance'],
-                   seed=method_options['seed'])
+                   seed=method_options['seed'],
+                   tune=tune,
+                   tune_intervall=tune_interval)
 
     def eval_model(self):
         """ Evaluate model at current sample. """
@@ -153,6 +164,14 @@ class MetropolisHastingsIterator(Iterator):
     def do_mh_step(self, step_id):
         """ Metropolis (Hastings) step. """
 
+        # tune covariance of proposal
+        if not step_id % self.tune_interval and self.tune:
+            accept_rate_interval = self.accepted_interval / self.tune_interval
+            print(f"Current acceptance rate: {accept_rate_interval}.")
+            self.scale_covariance = mcmc_utils.tune_scale_covariance(self.scale_covariance,
+                                                                     accept_rate_interval)
+            self.accepted_interval = 0
+
         cur_sample = self.samples[step_id-1]
         delta_proposal = self.proposal_distribution.draw() * self.scale_covariance
         proposal = cur_sample + delta_proposal
@@ -163,9 +182,10 @@ class MetropolisHastingsIterator(Iterator):
         log_posterior_prop = log_likelihood_prop + log_prior_prop
         log_accept_prob = log_posterior_prop - self.log_posterior[step_id-1]
 
-        new_sample, accepted = mh_select(log_accept_prob, cur_sample, proposal)
+        new_sample, accepted = mcmc_utils.mh_select(log_accept_prob, cur_sample, proposal)
 
         self.accepted += accepted
+        self.accepted_interval += accepted
 
         self.samples[step_id] = new_sample
         if accepted:
@@ -212,6 +232,7 @@ class MetropolisHastingsIterator(Iterator):
             print("Acceptance rate during burn in: {0}".format(burn_in_accept_rate))
         # reset number of accepted samples
         self.accepted = 0
+        self.accepted_interval = 0
 
         # Sampling phase
         for i in range(self.num_burn_in + 1, self.num_burn_in + self.num_samples + 1):
