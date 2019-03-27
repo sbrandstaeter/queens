@@ -1,4 +1,4 @@
-#!/home/nitzler/programs/anaconda/anaconda3/envs/py36/bin/python
+#!/home/nitzler/programs/anaconda/anaconda3/envs/py36/bin/python #TODO: Remove hard coded paths
 # coding: utf8
 
 
@@ -29,7 +29,7 @@ def main(args):
             args (JSON document): file-like object containing a JSON document
     """
     # The following is necessary to fix JSON FORMAT reader
-    args=args.replace('\\', '\"')
+    args=args.replace('\\', '\"') #TODO: This is not very nice and should be changed in the future
     # all necessary information is passed via this dictionary
     driver_options = json.loads(args)
 

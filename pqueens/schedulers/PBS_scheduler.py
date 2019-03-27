@@ -1,5 +1,3 @@
-
-
 import sys
 import subprocess
 import re
@@ -19,7 +17,7 @@ class PBSScheduler(AbstractClusterScheduler):
 
     Attributes:
         connect_to_resource (list): list containing commands to
-                                    connect to resaurce
+                                    connect to resource
     """
 
     def __init__(self, scheduler_name, num_procs_per_node, num_nodes, walltime,
@@ -56,7 +54,6 @@ class PBSScheduler(AbstractClusterScheduler):
             scheduler:              instance of PBSScheduler
         """
         options = config[scheduler_name]
-
         num_procs_per_node = options['num_procs_per_node']
         num_nodes = options['num_nodes']
         walltime = options['walltime']
@@ -108,7 +105,7 @@ class PBSScheduler(AbstractClusterScheduler):
 
         return command_list
 
-    def alive(self, process_id):
+    def alive(self, process_id): # TODO: This methods needs to be checked as might not be called properly
         """ Check whether job is alive
 
         The function checks if job is alive. If it is not i.e., the job is

@@ -1,7 +1,6 @@
 
 #from pqueens.schedulers.scheduler_factory import SchedulerFactory
 from pqueens.schedulers.scheduler import Scheduler
-
 #import importlib
 from operator import add
 from functools import reduce
@@ -68,7 +67,6 @@ def print_resources_status(resources, jobs):
     sys.stderr.write('\nResources:      ')
     left_indent = 16
     indentation = ' '*left_indent
-
     sys.stderr.write('NAME          PENDING    COMPLETE    FAILED\n')
     sys.stderr.write(indentation)
     sys.stderr.write('----          -------    --------    ------\n')
