@@ -1,4 +1,4 @@
-#!/home/biehler/miniconda3/bin/python
+#!/home/biehler/miniconda3/bin/python # TODO: Remove hard coded path
 # coding: utf8
 
 ################################################################################
@@ -29,7 +29,8 @@ def main(args):
         Args:
             args (JSON document): file-like object containing a JSON document
     """
-
+    # The following is necessary to fix JSON FORMAT reader
+    args=args.replace('\\', '\"') # TODO: This is not very nice and should be changed in the future
     # all necessary information is passed via this dictionary
     driver_options = json.loads(args)
 
@@ -39,9 +40,7 @@ def main(args):
 
     # connect to database and get job parameters
     db = MongoDB(database_address=driver_options['database_address'])
-
     job = init_job(driver_options, db)
-
     _, baci_input_file, baci_output = setup_dirs_and_files(driver_options)
 
     result = None

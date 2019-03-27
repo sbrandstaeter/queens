@@ -1,5 +1,4 @@
 import abc
-import re
 import subprocess
 import sys
 import json
@@ -44,6 +43,7 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
             int: proccess id of job
 
         """
+
         driver_options['experiment_dir'] = experiment_dir
         driver_options['experiment_name'] = experiment_name
         driver_options['job_id'] = job_id
@@ -52,28 +52,20 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
         # that we can connect to the database via localhost:portid
         driver_options['database_address'] = database_address
 
-        # note for posterity getting a dictionary with options properly from here
-        # to the driver script is a pain a geetting the quotations right is a
-        # nightmare. In any case the stuff below works, so do not touch it
-
         # convert driver options dict to json
         driver_options_json_str = json.dumps(driver_options)
-        # add a little trick to escape quotes in json file
+        # escape quotes in json file (string interpretation made problems)
+        # TODO: Check if there is a more elegant way to do this, for now this is a work around
         driver_options_json_str = driver_options_json_str.replace('"',r'"\\""')
-        # run it a second time (not quite sure why this is needed, but it
-        # does not work without it)
-      # remote servers
 
+        # remote computing
         driver_args = r'\"' + driver_options_json_str + r'\"'
-
         run_command = [driver_options['driver_file'], driver_args]
 
         # assemble job_name for cluster
         job_name = 'queens_{}_{}'.format(experiment_name, job_id)
         submit_command = self.submit_command(job_name)
-
         submit_command.extend(run_command)
-
         command_string = ' '.join(submit_command)
         process = subprocess.Popen(command_string,
                                    stdin=subprocess.PIPE,

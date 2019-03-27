@@ -1,8 +1,6 @@
 import sys
 import subprocess
-import re
 from pqueens.schedulers.cluster_scheduler import AbstractClusterScheduler
-
 
 class SlurmScheduler(AbstractClusterScheduler):
     """ Minimal interface to SLURM queing system to submit and query jobs
@@ -12,7 +10,8 @@ class SlurmScheduler(AbstractClusterScheduler):
     resource that has to be connected to via ssh. When submitting the job, the
     process id is returned to enable queries about the job status later on.
 
-    This scheduler is written specifically for the LNM Bruteforce cluster
+    This scheduler is written specifically for the LNM Bruteforce cluster but can be used
+    as an example for other Slurm based systems
 
     Attributes:
         connect_to_resource (list): list containing commands to
@@ -52,7 +51,6 @@ class SlurmScheduler(AbstractClusterScheduler):
             scheduler:              instance of SlurmScheduler
         """
         options = config[scheduler_name]
-
         num_procs_per_node = options['num_procs_per_node']
         num_nodes = options['num_nodes']
         walltime = options['walltime']
@@ -65,8 +63,7 @@ class SlurmScheduler(AbstractClusterScheduler):
     def output_regexp(self): # TODO Check what this does exactly
         return r'(^\d+)'
 
-    def get_process_id_from_output(self, output): # TODO: Check what this does
-                                                  # exaclty
+    def get_process_id_from_output(self, output):
         """ Helper function to retrieve process id
 
             Helper function to retrieve after submitting a job to the job
@@ -77,7 +74,6 @@ class SlurmScheduler(AbstractClusterScheduler):
         Returns:
             match object: with regular expression matching process id
         """
-        #regex = r'(^\d+)'
         regex=output.split()
         return regex[-1]
 
@@ -92,7 +88,6 @@ class SlurmScheduler(AbstractClusterScheduler):
         Returns:
             list: Submission command(s)
         """
-        # TODO: CHECK dev\null
         # pre assemble some strings
         proc_info = '--nodes={} --ntasks={}'.format(self.num_nodes, self.num_procs_per_node)
         walltime_info = '--time={}'.format(self.walltime)
@@ -105,7 +100,7 @@ class SlurmScheduler(AbstractClusterScheduler):
                           + [r'sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
         elif self.output.lower()=="false":
             command_list = self.connect_to_resource  \
-                          + [r'sbatch --mail-type=ALL --output=\dev\null --error=\dev\null', mail_info, job_info, proc_info, walltime_info]
+                          + [r'sbatch --mail-type=ALL --output=/dev/null --error=/dev/null', mail_info, job_info, proc_info, walltime_info]
         else:
             raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
 
@@ -142,11 +137,13 @@ class SlurmScheduler(AbstractClusterScheduler):
             output2 = output.split()
             # second to last entry is (should be )the job status
             status = output2[-4] #TODO: Check if that still holds
+            print('This is a test output')
         except:
             # job not found
             status = -1
             sys.stderr.write("EXC: %s\n" % str(sys.exc_info()[0]))
             sys.stderr.write("Could not find job for process id %d\n" % process_id)
+            print('job wasnt found')
 
         if status == 'Q':
             sys.stderr.write("Job %d waiting in queue.\n" % (process_id))
