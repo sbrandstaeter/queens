@@ -12,4 +12,4 @@ def test_branin_latin_hyper_cube(tmpdir):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(53.17279969296224)
-    assert results["var"] == pytest.approx(2579.0686127527556)
+    assert results["var"] == pytest.approx(2581.6502630157715)

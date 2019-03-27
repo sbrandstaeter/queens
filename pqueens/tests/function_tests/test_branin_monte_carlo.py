@@ -12,4 +12,4 @@ def test_branin_monte_carlo(tmpdir):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(55.81419875080866)
-    assert results["var"] == pytest.approx(2751.3646868785227)
+    assert results["var"] == pytest.approx(2754.1188056842070)
