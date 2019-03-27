@@ -45,6 +45,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from .metropolis_hastings_iterator import MetropolisHastingsIterator
         from .monte_carlo_iterator import MonteCarloIterator
         from .morris_salib_wrapper_iterator import MorrisSALibIterator
+        from pqueens.iterators.optimization_iterator import OptimizationIterator
         from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
 
@@ -53,6 +54,7 @@ class Iterator(metaclass=abc.ABCMeta):
                        'lhs_mf': MF_LHSIterator,
                        'metropolis_hastings' : MetropolisHastingsIterator,
                        'monte_carlo': MonteCarloIterator,
+                       'optimization' : OptimizationIterator,
                        'read_data_from_file': DataIterator,
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli': SaltelliIterator,
