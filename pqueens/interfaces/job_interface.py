@@ -84,7 +84,7 @@ class JobInterface(Interface):
 
         db = MongoDB(database_address=db_address, drop_existing_db=drop_existing)
 
-        polling_time = config.get('polling-time', 30)
+        polling_time = config.get('polling-time', 5)
 
         output_dir = config['driver']['driver_params']["experiment_dir"]
 
@@ -160,7 +160,7 @@ class JobInterface(Interface):
         """ Attempt to dispatch job multiple times
 
         Submitting jobs to the queue sometimes fails, hence we try multiple times
-        before giving up. We also wait two seconds between submit commands
+        before giving up. We also wait one second between submit commands
 
         Args:
             resource (resource object): Resource to submit job to
@@ -173,7 +173,8 @@ class JobInterface(Interface):
         num_tries = 0
 
         while process_id is None and num_tries < 10:
-            time.sleep(2)
+            if num_tries > 0:
+                time.sleep(1)
 
             # Submit the job to the appropriate resource
             process_id = resource.attempt_dispatch(self.experiment_name,
@@ -286,5 +287,6 @@ class JobInterface(Interface):
             jobs = self.load_jobs()
             for job in jobs:
                 mean_values.append(job['result'])
-        output['mean'] = np.reshape(np.array(mean_values), (-1, 1))
+        output['mean'] = np.reshape(mean_values, (-1, mean_values[1].shape[0]))
+
         return  output
