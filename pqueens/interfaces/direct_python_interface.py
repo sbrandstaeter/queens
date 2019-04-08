@@ -1,6 +1,8 @@
 import os
 import importlib.util
+
 import numpy as np
+
 from .interface import Interface
 
 
@@ -79,13 +81,19 @@ class DirectPythonInterface(Interface):
             samples (list):         list of variables objects
 
         Returns:
-            np.array,np.array       two arrays containing the inputs from the
-                                    suggester, as well as the corresponding outputs
+            dict: dictionary with
+                  key:     value:
+                  'mean' | ndarray shape:(samples size, shape_of_response)
         """
         output = {}
         mean_values = []
         for variables in samples:
             params = variables.get_active_variables()
-            mean_values.append(self.function.main(1, params))
-        output['mean'] = np.reshape(np.array(mean_values), (-1, 1))
+            mean_value = np.squeeze(self.function.main(1, params))
+            if not mean_value.shape:
+                mean_value = np.expand_dims(mean_value, axis=0)
+            mean_values.append(mean_value)
+
+        output['mean'] = np.array(mean_values)
+
         return output

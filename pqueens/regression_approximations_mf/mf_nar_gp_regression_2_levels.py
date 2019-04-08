@@ -114,16 +114,16 @@ class MF_NAR_GP_Regression_2_Levels(object):
         """ Compute latent function at x_test
 
         Args:
-            Xnew (np.array): Inputs at which to evaluate latent function f
+            x_test (np.array): Inputs at which to evaluate latent function f
 
         Returns:
-            dict: Dictionary with mean, variance, and posibly posterior samples
-                  of latent function at x_test
+            dict: Dictionary with mean, variance, and possibly
+                  posterior samples of latent function at x_test
         """
         output = {}
         mean, variance = self.predict_f(x_test)
-        output['mean'] = np.reshape(np.array(mean), (-1, 1))
-        output['variance'] = np.reshape(np.array(variance), (-1, 1))
+        output['mean'] = mean
+        output['variance'] = variance
         if self.num_posterior_samples is not None:
             output['post_samples'] = self.predict_f_samples(x_test, self.num_posterior_samples)
 
