@@ -1,4 +1,3 @@
-import sys
 import time
 import numpy as np
 
@@ -277,7 +276,11 @@ class JobInterface(Interface):
             num_variables (int): number of input variables
 
         Returns:
-            np.array: output data
+            dict: output dictionary; i
+                  key:   | value:
+                  'mean' | ndarray shape(batch_size, shape_of_response)
+                  'var'  | ndarray (optional)
+
         """
         output = {}
         mean_values = []
@@ -286,7 +289,11 @@ class JobInterface(Interface):
         else:
             jobs = self.load_jobs()
             for job in jobs:
-                mean_values.append(job['result'])
-        output['mean'] = np.reshape(mean_values, (-1, 1))
+                mean_value = np.squeeze(job['result'])
+                if not mean_value.shape:
+                    mean_value = np.expand_dims(mean_value, axis=0)
+                mean_values.append(mean_value)
+
+        output['mean'] = np.array(mean_values)
 
         return  output
