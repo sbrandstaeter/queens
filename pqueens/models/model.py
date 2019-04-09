@@ -1,6 +1,10 @@
 import abc
-from pqueens.variables.variables import Variables
 from copy import deepcopy
+
+import numpy as np
+
+from pqueens.variables.variables import Variables
+
 
 class Model(metaclass=abc.ABCMeta):
     """ Base class of model hierarchy
@@ -11,11 +15,11 @@ class Model(metaclass=abc.ABCMeta):
 
         As with the Iterator hierarchy, the purpose of the this base class is
         twofold. One, it defines a unified interface for all derived classes.
-        Two, it acts as a factory for the instanciation of model objects.
+        Two, it acts as a factory for the instantiation of model objects.
 
     Attributes:
         uncertain_parameters (dict):    Dictionary with description of uncertain
-                                        pararameters
+                                        parameters
         variables (list):               Set of model variables where model is evaluated
         responses (list):               Set of responses corresponding to variables
     """
@@ -26,7 +30,7 @@ class Model(metaclass=abc.ABCMeta):
         Args:
             name (string):                  Name of model
             uncertain_parameters (dict):    Dictionary with description of uncertain
-                                            pararameters
+                                            parameters
         """
         self.name = name
         self.uncertain_parameters = uncertain_parameters
@@ -69,7 +73,7 @@ class Model(metaclass=abc.ABCMeta):
         """ Get complete parameter dictionary
 
         Return:
-            dict: Dictionary with all pararameters
+            dict: Dictionary with all parameters
 
         """
         return self.uncertain_parameters
@@ -93,13 +97,12 @@ class Model(metaclass=abc.ABCMeta):
             data (np.array): 2d array with variable values
 
         """
-        temp = self.variables[0]
-        temp = deepcopy(self.variables[0])
+        temp_variable = deepcopy(self.variables[0])
         self.variables = []
         for i in range(data.shape[0]):
             data_vector = data[i, :]
-            temp.update_variables_from_vector(data_vector)
-            new_var = deepcopy(temp)
+            temp_variable.update_variables_from_vector(data_vector)
+            new_var = deepcopy(temp_variable)
             self.variables.append(new_var)
 
     def convert_array_to_model_variables(self, data):
