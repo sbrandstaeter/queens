@@ -72,6 +72,16 @@ def data_batch(data_vector):
     return data_batch
 
 
+@pytest.fixture(scope='module')
+def responses():
+    """ Possible responses for vector valued model. """
+
+    responses = dict()
+    responses['mean'] = np.array([[1., 1.],
+                                  [2., 2.]])
+
+    return responses
+
 def test_get_parameters(model, model_name, uncertain_parameters):
     """
     Test get_parameters
@@ -110,3 +120,48 @@ def test_convert_array_to_model_variables(data_batch, model):
     for i, variable in enumerate(variables):
         np.testing.assert_allclose(variable.variables['x1']['value'], data_batch[i, 0])
         np.testing.assert_allclose(variable.variables['x2']['value'], data_batch[i, 1:])
+
+
+def test_get_precalculated_response_for_sample_batch(data_batch, responses, model, mocker):
+    """ Return responses if sample batch as already been evaluated. """
+
+    # emulate the evaluation of the data_batch
+    model.update_model_from_sample_batch(data_batch)
+    model.response = responses
+
+    # retrieve the responses
+    actual_responses = model.get_precalculated_response_for_sample_batch(data_batch)
+
+    np.testing.assert_allclose(actual_responses['mean'], responses['mean'])
+
+
+def test_get_precalculated_response_for_sample_batch_warning(data_batch, responses, model, mocker):
+    """ Warn if batch was NOT precalculated. """
+
+    # emulate the evaluation of the data_batch
+    model.update_model_from_sample_batch(2 * data_batch)
+    model.response = responses
+
+    # check for the warning if requested data batch does not agree with
+    # currently set variables of model
+    # additionally the correct variables should be set and evaluated
+    with pytest.warns(RuntimeWarning):
+        # this should warn
+        actual_responses = model.get_precalculated_response_for_sample_batch(data_batch)
+
+        # variables should be set correctly now
+        assert len(model.variables) is 2
+        for i, variables in enumerate(model.variables):
+            np.testing.assert_allclose(variables.variables['x1']['value'], data_batch[i, 0])
+            np.testing.assert_allclose(variables.variables['x2']['value'], data_batch[i, 1:])
+
+        # responses should be correct nevertheless
+        np.testing.assert_allclose(actual_responses['mean'], responses['mean'])
+
+
+def test_get_precalculated_response_for_sample_batch_error(data_batch, responses, model, mocker):
+    """ Raise Value if requested batch size does not match current variables size. """
+
+    with pytest.warns(RuntimeWarning):
+        # this should raise an error
+        model.get_precalculated_response_for_sample_batch(data_batch)
