@@ -1,71 +1,83 @@
 '''
-Created on November 20th  2017
-@author: jbi
+Testing suite for DirectPythonInterface
+
+Created on April 10th 2019
+@author: Sebastian Brandstaeter
 
 '''
-import unittest
 import numpy as np
+import pytest
+
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.variables.variables import Variables
 from pqueens.interfaces.interface import Interface
 
 
-class TestDirectPythonInterface(unittest.TestCase):
-    def setUp(self):
+@pytest.fixture(scope='module')
+def uncertain_parameters():
+    """ Options dictionary to create variables. """
 
-        random_variables = {}
-        uncertain_parameters = {}
-        uncertain_parameter = {}
-        uncertain_parameter["type"] = "FLOAT"
-        uncertain_parameter["size"] = 1
-        uncertain_parameter["distribution"] = "uniform"
-        uncertain_parameter["distribution_parameter"] = [-3.14159265359,3.14159265359]
+    uncertain_parameter = {}
+    uncertain_parameter['type'] = "FLOAT"
+    uncertain_parameter['size'] = 1
+    uncertain_parameter['distribution'] = "uniform"
+    uncertain_parameter['distribution_parameter'] = [-3.14, 3.14]
+    uncertain_parameter['value'] = 1.0
 
-        random_variables['x1'] = uncertain_parameter
-        random_variables['x2'] = uncertain_parameter
-        random_variables['x3'] = uncertain_parameter
-        uncertain_parameters["random_variables"] = random_variables
+    random_variables = {}
+    random_variables['x1'] = uncertain_parameter
+    random_variables['x2'] = uncertain_parameter
+    random_variables['x3'] = uncertain_parameter
 
-        self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
-        # create interface
-        self.interface =  DirectPythonInterface('test_interface','ishigami.py',self.variables)
+    uncertain_parameters = {}
+    uncertain_parameters['random_variables'] = random_variables
 
-    def test_mapping(self):
-        """ Test if mapping works correctly """
-        # create samples
-        self.variables.variables['x1']['value'] = 1.0
-        self.variables.variables['x2']['value'] = 1.0
-        self.variables.variables['x3']['value'] = 1.0
-
-        my_samples = self.variables
-        ref_vals = np.array([[5.8821320112036846]])
-
-        output = self.interface.map([my_samples])
-        np.testing.assert_allclose(output["mean"],ref_vals, 1e-09, 1e-09)
-
-class TestDirectPythonInterfaceInitialization(unittest.TestCase):
-    def setUp(self):
-
-        uncertain_parameters = {}
-        uncertain_parameter = {}
-        uncertain_parameter["type"] = "FLOAT"
-        uncertain_parameter["size"] = 1
-        uncertain_parameter["distribution"] = "uniform"
-        uncertain_parameter["distribution_parameter"] = [-3.14159265359, 3.14159265359]
-
-        uncertain_parameters['x1'] = uncertain_parameter
-        uncertain_parameters['x2'] = uncertain_parameter
-        uncertain_parameters['x3'] = uncertain_parameter
+    return uncertain_parameters
 
 
-        #self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
-        self.config = {}
-        self.config['test_interface'] = {'type':'direct_python_interface',
-                                         'main_file':'ishigami.py'}
+@pytest.fixture(scope='module')
+def variables(uncertain_parameters):
+    """ An instance of Variables class. """
 
-        self.config['parameters'] = uncertain_parameters
+    variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
 
-    def test_construction(self):
-        interface = Interface.from_config_create_interface('test_interface', self.config)
-        # ensure correct type
-        self.assertIsInstance(interface, DirectPythonInterface)
+    # set values
+    data_vector = np.ones(3)
+    variables.update_variables_from_vector(data_vector)
+    return  variables
+
+
+@pytest.fixture(scope='module')
+def direct_python_interface(variables):
+    """ An instance of Variables class. """
+
+    interface_name = 'test_interface'
+    python_function_name = 'ishigami.py'
+    return DirectPythonInterface(interface_name, python_function_name, variables)
+
+@pytest.fixture(scope='module')
+def config(uncertain_parameters):
+    """ Minimal configuration dictionary to create an interface. """
+    config = {}
+    config['test_interface'] = {'type':'direct_python_interface',
+                                'main_file':'ishigami.py'}
+
+    config['parameters'] = uncertain_parameters
+
+    return config
+
+
+def test_map(variables, direct_python_interface):
+    """ Test mapping from input to response/ output. """
+    ref_vals = np.array([[5.8821320112036846]])
+
+    output = direct_python_interface.map([variables])
+    np.testing.assert_allclose(output["mean"],ref_vals, 1e-09, 1e-09)
+
+
+def test_create_from_config(variables, config):
+    """ Given a config dict instantiate DirectPythonInterface. """
+
+    interface = Interface.from_config_create_interface('test_interface', config)
+    # ensure correct type
+    assert isinstance(interface, DirectPythonInterface)
