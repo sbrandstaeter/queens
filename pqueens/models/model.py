@@ -26,7 +26,7 @@ class Model(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, name, uncertain_parameters):
-        """ Init model onject
+        """ Init model object
 
         Args:
             name (string):                  Name of model
