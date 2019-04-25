@@ -33,13 +33,24 @@ class OptimizationIterator(Iterator):
                                     post-processing
     """
 
-    def __init__(self, global_settings, initial_guess, max_func_evals, model, result_description):
+    def __init__(self,
+                 algorithm,
+                 bounds,
+                 constraints,
+                 global_settings,
+                 initial_guess,
+                 max_func_evals,
+                 model,
+                 result_description,
+                 ):
         super().__init__(model, global_settings)
 
+        self.algorithm = algorithm
+        self.bounds = bounds
+        self.cons = constraints
         self.initial_guess = initial_guess
         self.max_func_evals = max_func_evals
         self.result_description = result_description
-        self.bounds = (-np.inf, np.inf)
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None,
@@ -69,12 +80,32 @@ class OptimizationIterator(Iterator):
         result_description = method_options.get('result_description', None)
         global_settings = config.get('global_settings', None)
 
-
         initial_guess = np.array(method_options['initial_guess'])
+
+        bounds = method_options.get("bounds", None)
+
+        if bounds is None:
+            bounds = [(-np.inf, np.inf)] * initial_guess.shape[0]
+
+        constraints_dict = method_options.get('constraints', None)
+
+        constraints = None
+        if constraints_dict:
+            constraints = list()
+            for _,value in constraints_dict.items():
+                # evaluate string of lambda function into real lambda function
+                value['fun'] = eval(value['fun'])
+                constraints.append(value)
+
         max_func_evals = method_options.get('max_func_evals', None)
+        algorithm = method_options.get('algorithm', 'L-BFGS-B')
+        algorithm = algorithm.upper()
 
         # initialize objective function
-        return cls(global_settings=global_settings,
+        return cls(algorithm=algorithm,
+                   bounds=bounds,
+                   constraints=constraints,
+                   global_settings=global_settings,
                    max_func_evals=max_func_evals,
                    model=model,
                    result_description=result_description,
@@ -129,12 +160,54 @@ class OptimizationIterator(Iterator):
 
         print('Welcome to Optimization core run.')
         start = time.time()
-        self.solution = scipy.optimize.least_squares(self.eval_cost_function,
-                                                     self.initial_guess,
-                                                     jac=self.eval_jacobian,
-                                                     bounds=self.bounds,
-                                                     max_nfev=self.max_func_evals,
-                                                     verbose=1)
+        # nonlinear least squares with bounds using Jacobian
+        if self.algorithm == 'LSQ':
+            self.solution = scipy.optimize.least_squares(self.eval_cost_function,
+                                                         self.initial_guess,
+                                                         jac=self.eval_jacobian,
+                                                         bounds=self.bounds,
+                                                         max_nfev=self.max_func_evals,
+                                                         verbose=1)
+        # minimization with bounds using Jacobian
+        elif self.algorithm in {'L-BFGS-B', 'TNC'}:
+            self.solution = scipy.optimize.minimize(self.eval_cost_function,
+                                                    self.initial_guess,
+                                                    method=self.algorithm,
+                                                    jac=self.eval_jacobian,
+                                                    bounds=self.bounds,
+                                                    options={'maxiter' : int(1e4),
+                                                             'disp' : True})
+        # Constrained Optimimization BY Linear Approximation:
+        # minimization with constraints without Jacobian
+        elif self.algorithm in {'COBYLA'}:
+            self.solution = scipy.optimize.minimize(self.eval_cost_function,
+                                                    self.initial_guess,
+                                                    method=self.algorithm,
+                                                    constraints=self.cons,
+                                                    options={'disp' : True})
+        # Sequential Least SQuares Programming:
+        # minimization with bounds and constraints using Jacobian
+        elif self.algorithm in {'SLSQP'}:
+            self.solution = scipy.optimize.minimize(self.eval_cost_function,
+                                                    self.initial_guess,
+                                                    method=self.algorithm,
+                                                    jac=self.eval_jacobian,
+                                                    bounds=self.bounds,
+                                                    constraints=self.cons,
+                                                    options={'disp' : True})
+        # minimization (unconstrained, unbounded) without Jacobian
+        elif self.algorithm in {'NELDER-MEAD', 'POWELL'}:
+            self.solution = scipy.optimize.minimize(self.eval_cost_function,
+                                                    self.initial_guess,
+                                                    method=self.algorithm,
+                                                    options={'disp' : True})
+        # minimization (unconstrained, unbounded) using Jacobian
+        elif self.algorithm in {'CG', 'BFGS'}:
+            self.solution = scipy.optimize.minimize(self.eval_cost_function,
+                                                    self.initial_guess,
+                                                    method=self.algorithm,
+                                                    jac=self.eval_jacobian,
+                                                    options={'disp' : True})
         end = time.time()
         print(f"Optimization took {end-start} seconds.")
 
@@ -142,8 +215,9 @@ class OptimizationIterator(Iterator):
         """ Analyze the resulting optimum. """
 
         print(f"The optimum:\n\t{self.solution.x}")
-        print(f"Cost:\n\t{self.solution.cost}")
-        print(f"Optimality:\n\t{self.solution.optimality}")
+        if self.algorithm == 'LSQ':
+            print(f"Optimality:\n\t{self.solution.optimality}")
+            print(f"Cost:\n\t{self.solution.cost}")
 
         if self.result_description:
             if self.result_description["write_results"]:

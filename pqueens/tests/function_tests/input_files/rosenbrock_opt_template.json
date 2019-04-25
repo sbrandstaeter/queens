@@ -1,5 +1,5 @@
 {
-  "experiment_name" : "ResRosenbrockLSQ",
+  "experiment_name" : "Rosenbrock",
   "database"  :{
     "address"   : "localhost:27017"
   },
@@ -7,13 +7,13 @@
     "method_name": "optimization",
     "method_options" : {
       "model" : "model",
-      "algorithm" : "LSQ",
+      "algorithm" : "{algorithm}",
       "initial_guess" : [-3.0, -4.0],
       "result_description" : {
           "write_results" : true
       },
-      "bounds": [[-Infinity, -Infinity],
-                 [Infinity, Infinity]]
+      "bounds": [[-Infinity, Infinity],
+                 [-Infinity, Infinity]]
     }
   },
   "model" : {
@@ -27,7 +27,7 @@
   },
   "interface" : {
     "type" : "direct_python_interface",
-    "main_file" : "residual_rosenbrock.py"
+    "main_file" : "rosenbrock.py"
   },
   "parameters" : {
     "random_variables" : {

@@ -1,5 +1,5 @@
 {
-  "experiment_name" : "ResRosenbrockLSQ",
+  "experiment_name" : "Paraboloid",
   "database"  :{
     "address"   : "localhost:27017"
   },
@@ -7,13 +7,28 @@
     "method_name": "optimization",
     "method_options" : {
       "model" : "model",
-      "algorithm" : "LSQ",
-      "initial_guess" : [-3.0, -4.0],
+      "initial_guess" : [2.0, 0.0],
+      "algorithm" : "{algorithm}",
       "result_description" : {
-          "write_results" : true
+          "write_results" : true,
+          "plot_results" : true
       },
-      "bounds": [[-Infinity, -Infinity],
-                 [Infinity, Infinity]]
+      "bounds": [[0, Infinity],
+                 [0, Infinity]],
+      "constraints" : {
+        "cons1": {
+          "type": "ineq",
+          "fun": "lambda x:  x[0] - 2 * x[1] + 2"
+        },
+        "cons2": {
+          "type": "ineq",
+          "fun": "lambda x: -x[0] - 2 * x[1] + 6"
+        },
+        "cons3": {
+          "type": "ineq",
+          "fun": "lambda x: -x[0] + 2 * x[1] + 2"
+        }
+      }
     }
   },
   "model" : {
@@ -27,7 +42,7 @@
   },
   "interface" : {
     "type" : "direct_python_interface",
-    "main_file" : "residual_rosenbrock.py"
+    "main_file" : "paraboloid.py"
   },
   "parameters" : {
     "random_variables" : {
