@@ -28,7 +28,7 @@ class OptimizationIterator(Iterator):
     Attributes:
         initial_guess (np.array): initial guess, i.e. start point of
                                   optimization
-        max_func_evals (int) : maximal number of function evaluations
+        max_feval (int) : maximal number of function evaluations
         result_description (dict):  Description of desired
                                     post-processing
     """
@@ -39,7 +39,8 @@ class OptimizationIterator(Iterator):
                  constraints,
                  global_settings,
                  initial_guess,
-                 max_func_evals,
+                 jac_method,
+                 max_feval,
                  model,
                  result_description,
                  ):
@@ -49,8 +50,14 @@ class OptimizationIterator(Iterator):
         self.bounds = bounds
         self.cons = constraints
         self.initial_guess = initial_guess
-        self.max_func_evals = max_func_evals
+        self.jac_method = jac_method
+        self.jac_rel_step = None
+        self.max_feval = max_feval
         self.result_description = result_description
+
+        self.eval_jacobian = False
+        if self.algorithm in ['CG', 'BFGS', 'L-BFGS-B', 'TNC', 'SLSQP', 'LSQ']:
+            self.eval_jacobian = True
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None,
@@ -89,27 +96,29 @@ class OptimizationIterator(Iterator):
 
         constraints_dict = method_options.get('constraints', None)
 
-        constraints = None
+        constraints = list()
         if constraints_dict:
-            constraints = list()
             for _,value in constraints_dict.items():
                 # evaluate string of lambda function into real lambda function
                 value['fun'] = eval(value['fun'])
                 constraints.append(value)
 
-        max_func_evals = method_options.get('max_func_evals', None)
+        max_feval = method_options.get('max_feval', None)
         algorithm = method_options.get('algorithm', 'L-BFGS-B')
         algorithm = algorithm.upper()
+
+        jac_method = method_options.get('jac_method', '2-point')
 
         # initialize objective function
         return cls(algorithm=algorithm,
                    bounds=bounds,
                    constraints=constraints,
                    global_settings=global_settings,
-                   max_func_evals=max_func_evals,
+                   initial_guess=initial_guess,
+                   jac_method=jac_method,
+                   max_feval=max_feval,
                    model=model,
-                   result_description=result_description,
-                   initial_guess=initial_guess)
+                   result_description=result_description)
 
     def eval_model(self):
         """ Evaluate model at current point. """
@@ -117,27 +126,39 @@ class OptimizationIterator(Iterator):
         result_dict = self.model.evaluate()
         return result_dict
 
-    def eval_cost_function(self, x0):
+    def objective_function(self, x0):
         """
-        Evaluate cost function at x0.
+        Evaluate objective function at x0.
         """
 
-        x_batch, _ = get_positions(x0, method='2-point', rel_step=None, bounds=self.bounds)
+        if self.eval_jacobian:
+            x_batch, _ = get_positions(x0,
+                                       method=self.jac_method,
+                                       rel_step=self.jac_rel_step,
+                                       bounds=self.bounds)
+        else:
+            x_batch = np.atleast_2d(x0)
 
         self.model.update_model_from_sample_batch(x_batch)
-        f_batch = np.squeeze(self.eval_model()['mean'])
+        f_batch = np.atleast_1d(np.squeeze(self.eval_model()['mean']))
 
         f0 = f_batch[0]
 
         return f0
 
-    def eval_jacobian(self, x0, method='2-point', rel_step=None):
+    def jacobian(self, x0):
         """
-        Evaluate Jacobian of cost function at x0.
+        Evaluate Jacobian of objective function at x0.
         """
 
-        positions, delta_positions = get_positions(x0, method=method, rel_step=rel_step, bounds=self.bounds)
-        _, use_one_sided = compute_step_with_bounds(x0, method=method, rel_step=rel_step, bounds=self.bounds)
+        positions, delta_positions = get_positions(x0,
+                                                   method=self.jac_method,
+                                                   rel_step=self.jac_rel_step,
+                                                   bounds=self.bounds)
+        _, use_one_sided = compute_step_with_bounds(x0,
+                                                    method=self.jac_method,
+                                                    rel_step=self.jac_rel_step,
+                                                    bounds=self.bounds)
 
         response = self.model.get_precalculated_response_for_sample_batch(positions)
         f = response['mean']
@@ -145,7 +166,7 @@ class OptimizationIterator(Iterator):
         f0 = f[0] # first entry corresponds to f(x0)
         f_perturbed = np.delete(f, 0, 0) # delete the first entry
 
-        J = fd_jacobian(f0, f_perturbed, delta_positions, use_one_sided, method=method)
+        J = fd_jacobian(f0, f_perturbed, delta_positions, use_one_sided, method=self.jac_method)
         return J
 
     def initialize_run(self):
@@ -162,25 +183,25 @@ class OptimizationIterator(Iterator):
         start = time.time()
         # nonlinear least squares with bounds using Jacobian
         if self.algorithm == 'LSQ':
-            self.solution = scipy.optimize.least_squares(self.eval_cost_function,
+            self.solution = scipy.optimize.least_squares(self.objective_function,
                                                          self.initial_guess,
-                                                         jac=self.eval_jacobian,
+                                                         jac=self.jacobian,
                                                          bounds=self.bounds,
-                                                         max_nfev=self.max_func_evals,
+                                                         max_nfev=self.max_feval,
                                                          verbose=1)
         # minimization with bounds using Jacobian
         elif self.algorithm in {'L-BFGS-B', 'TNC'}:
-            self.solution = scipy.optimize.minimize(self.eval_cost_function,
+            self.solution = scipy.optimize.minimize(self.objective_function,
                                                     self.initial_guess,
                                                     method=self.algorithm,
-                                                    jac=self.eval_jacobian,
+                                                    jac=self.jacobian,
                                                     bounds=self.bounds,
                                                     options={'maxiter' : int(1e4),
                                                              'disp' : True})
         # Constrained Optimimization BY Linear Approximation:
         # minimization with constraints without Jacobian
         elif self.algorithm in {'COBYLA'}:
-            self.solution = scipy.optimize.minimize(self.eval_cost_function,
+            self.solution = scipy.optimize.minimize(self.objective_function,
                                                     self.initial_guess,
                                                     method=self.algorithm,
                                                     constraints=self.cons,
@@ -188,25 +209,25 @@ class OptimizationIterator(Iterator):
         # Sequential Least SQuares Programming:
         # minimization with bounds and constraints using Jacobian
         elif self.algorithm in {'SLSQP'}:
-            self.solution = scipy.optimize.minimize(self.eval_cost_function,
+            self.solution = scipy.optimize.minimize(self.objective_function,
                                                     self.initial_guess,
                                                     method=self.algorithm,
-                                                    jac=self.eval_jacobian,
+                                                    jac=self.jacobian,
                                                     bounds=self.bounds,
                                                     constraints=self.cons,
                                                     options={'disp' : True})
         # minimization (unconstrained, unbounded) without Jacobian
         elif self.algorithm in {'NELDER-MEAD', 'POWELL'}:
-            self.solution = scipy.optimize.minimize(self.eval_cost_function,
+            self.solution = scipy.optimize.minimize(self.objective_function,
                                                     self.initial_guess,
                                                     method=self.algorithm,
                                                     options={'disp' : True})
         # minimization (unconstrained, unbounded) using Jacobian
         elif self.algorithm in {'CG', 'BFGS'}:
-            self.solution = scipy.optimize.minimize(self.eval_cost_function,
+            self.solution = scipy.optimize.minimize(self.objective_function,
                                                     self.initial_guess,
                                                     method=self.algorithm,
-                                                    jac=self.eval_jacobian,
+                                                    jac=self.jacobian,
                                                     options={'disp' : True})
         end = time.time()
         print(f"Optimization took {end-start} seconds.")
