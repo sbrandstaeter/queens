@@ -136,12 +136,20 @@ class OptimizationIterator(Iterator):
                                        method=self.jac_method,
                                        rel_step=self.jac_rel_step,
                                        bounds=self.bounds)
+            precalculated = self.model.check_for_precalculated_response_of_sample_batch(x_batch)
         else:
             x_batch = np.atleast_2d(x0)
+            precalculated = False
 
-        self.model.update_model_from_sample_batch(x_batch)
-        f_batch = np.atleast_1d(np.squeeze(self.eval_model()['mean']))
+        # try to recover if response was not found to be precalculated
+        if not precalculated:
+            self.model.update_model_from_sample_batch(x_batch)
+            self.eval_model()
 
+        # model response should now correspond to objective function evaluated at positions
+        f_batch = np.atleast_1d(np.squeeze(self.model.response['mean']))
+
+        # first entry corresponds to f(x0)
         f0 = f_batch[0]
 
         return f0
@@ -160,11 +168,18 @@ class OptimizationIterator(Iterator):
                                                     rel_step=self.jac_rel_step,
                                                     bounds=self.bounds)
 
-        response = self.model.get_precalculated_response_for_sample_batch(positions)
-        f = response['mean']
+        precalculated = self.model.check_for_precalculated_response_of_sample_batch(positions)
 
-        f0 = f[0] # first entry corresponds to f(x0)
-        f_perturbed = np.delete(f, 0, 0) # delete the first entry
+        # try to recover if response was not found to be precalculated
+        if not precalculated:
+            self.model.update_model_from_sample_batch(positions)
+            self.eval_model()
+
+        # model response should now correspond to objective function evaluated at positions
+        f_batch = self.model.response['mean']
+
+        f0 = f_batch[0] # first entry corresponds to f(x0)
+        f_perturbed = np.delete(f_batch, 0, 0) # delete the first entry
 
         J = fd_jacobian(f0, f_perturbed, delta_positions, use_one_sided, method=self.jac_method)
         return J
