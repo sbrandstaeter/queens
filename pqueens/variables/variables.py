@@ -118,7 +118,7 @@ class Variables(object):
             if data['active'] is not True:
                 continue
             active_var_vals.append(data['value'])
-        return np.array(active_var_vals).reshape((-1, 1))
+        return np.hstack(active_var_vals)
 
     def get_number_of_active_variables(self):
         """ Get number of currently active variables

@@ -25,7 +25,7 @@ class Model(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, name, uncertain_parameters):
-        """ Init model onject
+        """ Init model object
 
         Args:
             name (string):                  Name of model
@@ -125,3 +125,32 @@ class Model(metaclass=abc.ABCMeta):
             variables.append(new_var)
 
         return variables
+
+    def check_for_precalculated_response_of_sample_batch(self, sample_batch):
+        """
+        Check if the batch of samples has already been evaluated.
+
+        Args:
+        sample_batch (2d numpy.ndarray): each row corresponds to a sample
+
+        Returns:
+        precalculated (bool): True: batch of samples was already calculated
+
+        """
+
+        precalculated = True
+        if sample_batch.shape[0] is not len(self.variables):
+            # Dimension mismatch:
+            # There should be as many samples to check as variables already set.
+            precalculated = False
+        else:
+            for i in range(sample_batch.shape[0]):
+                sample_vector = sample_batch[i, :]
+                cur_sample_vector = self.variables[i].get_active_variables_vector()
+                cur_sample_vector = np.ravel(cur_sample_vector)
+                if not np.array_equal(sample_vector, cur_sample_vector):
+                    # Sample batch was NOT found to be precalculated.
+                    precalculated = False
+                    break
+
+        return precalculated

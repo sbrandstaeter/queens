@@ -72,6 +72,16 @@ def data_batch(data_vector):
     return data_batch
 
 
+@pytest.fixture(scope='module')
+def responses():
+    """ Possible responses for vector valued model. """
+
+    responses = dict()
+    responses['mean'] = np.array([[1., 1.],
+                                  [2., 2.]])
+
+    return responses
+
 def test_get_parameters(model, model_name, uncertain_parameters):
     """
     Test get_parameters
@@ -110,3 +120,35 @@ def test_convert_array_to_model_variables(data_batch, model):
     for i, variable in enumerate(variables):
         np.testing.assert_allclose(variable.variables['x1']['value'], data_batch[i, 0])
         np.testing.assert_allclose(variable.variables['x2']['value'], data_batch[i, 1:])
+
+
+def test_check_for_precalculated_response_of_sample_batch(data_batch, model, mocker):
+    """ check if sample batch as already been evaluated. """
+
+    # emulate the evaluation of the data_batch
+    model.update_model_from_sample_batch(data_batch)
+
+    # check that data_batch has indeed been already evaluated
+    precalculated = model.check_for_precalculated_response_of_sample_batch(data_batch)
+
+    assert precalculated is True
+
+
+def test_check_for_precalculated_response_of_sample_batch_wrong_data(data_batch, model):
+    """ Batch was NOT precalculated. """
+
+    # emulate the evaluation of a different data_batch
+    model.update_model_from_sample_batch(2 * data_batch)
+
+    # the check should return False
+    precalculated = model.check_for_precalculated_response_of_sample_batch(data_batch)
+
+    assert precalculated is False
+
+def test_check_for_precalculated_response_of_sample_batch_wrong_size(data_batch, model):
+    """ Requested batch size does not match current variables size. """
+
+    precalculated = model.check_for_precalculated_response_of_sample_batch(data_batch)
+
+    assert precalculated is False
+
