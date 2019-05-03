@@ -5,7 +5,9 @@ from SALib.sample import morris
 from pqueens.models.model import Model
 from .iterator import Iterator
 from pqueens.utils.process_outputs import write_results
-import matplotlib.pyplot as plt
+import matplotlib as mpl
+mpl.use('TkAgg')
+from matplotlib import pyplot as plt
 
 
 
