@@ -31,6 +31,7 @@ class SlurmScheduler(AbstractClusterScheduler):
             output (boolean):           Flag for slurm output
         """
         super(SlurmScheduler, self).__init__()
+        # TODO: Does the latter trigger the abstact cluster scheduler??
         self.name = scheduler_name
         self.num_procs_per_node = num_procs_per_node
         self.num_nodes = num_nodes

@@ -44,12 +44,12 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
 
         """
 
+########### Define driver options to send upcoming job ################################
+
         driver_options['experiment_dir'] = experiment_dir
         driver_options['experiment_name'] = experiment_name
         driver_options['job_id'] = job_id
         driver_options['batch'] = batch
-        # for now we assume that an ssh tunnel has been set up such
-        # that we can connect to the database via localhost:portid
         driver_options['database_address'] = database_address
 
         # convert driver options dict to json
@@ -58,15 +58,25 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
         # TODO: Check if there is a more elegant way to do this, for now this is a work around
         driver_options_json_str = driver_options_json_str.replace('"',r'"\\""')
 
-        # remote computing
         driver_args = r'\"' + driver_options_json_str + r'\"'
+
+########### Assemble actual run command ###################################################
+# TODO: some comments: driver args are not necessary anymore if driver copy is availibe in singularity file and we actully build from scatch
+# check about batch and job_id
+# rather than sending input args over ssh maybe write a temp file that is used as an input for another routine?
+# driver file is not necessary anymore
+
         run_command = [driver_options['driver_file'], driver_args]
 
         # assemble job_name for cluster
         job_name = 'queens_{}_{}'.format(experiment_name, job_id)
-        submit_command = self.submit_command(job_name)
-        submit_command.extend(run_command)
+        submit_command = self.submit_command(job_name) #TODO: submit command contains slurm based infos which could be part of the singularity file -> scheduler and driver and postpost in singularity ??
+
+        submit_command.extend(run_command) # TODO: run command contains: see above
         command_string = ' '.join(submit_command)
+
+########### Run via subprocess ################################################################
+
         process = subprocess.Popen(command_string,
                                    stdin=subprocess.PIPE,
                                    stdout=subprocess.PIPE,

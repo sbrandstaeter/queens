@@ -1,9 +1,6 @@
-
 import os
-import subprocess
 import sys
 import pathlib
-
 from pqueens.schedulers.scheduler import Scheduler
 
 class LocalScheduler(Scheduler):
@@ -14,8 +11,15 @@ class LocalScheduler(Scheduler):
 
         Args:
             scheduler_name (string):    Name of scheduler
+            num_procs_per_node (int):   Number of procs per node
+            walltime (string):          Wall time in hours
+            output (boolean):           Flag for meta output
         """
+        super(LocalScheduler, self).__init__() #TODO: Check if correct as wasnt here before
         self.name = scheduler_name
+        self.num_procs_per_node = num_procs_per_node
+        self.walltime = walltime
+        self.output = output
 
     @classmethod
     def from_config_create_scheduler(cls, scheduler_name, config):
@@ -28,63 +32,53 @@ class LocalScheduler(Scheduler):
         Returns:
             scheduler:              Instance of LocalScheduler
         """
+        options = config[scheduler_name]
+        num_procs_per_node = options['num_procs_per_node']
+        walltime = options['walltime']
+        output = options["meta_output"]
 
-        return cls(scheduler_name)
+        return cls(scheduler_name, num_procs_per_node, walltime, output)
 
+    def output_regexp(self): # TODO Check what this does exactly
+        return r'(^\d+)'
 
-    def submit(self, job_id, experiment_name, batch, experiment_dir,
-               database_address, driver_params={}):
-        """ Submit job locally by calling subprocess
+    def get_process_id_from_output(self, output):
+        """ Helper function to retrieve process id
 
+            Helper function to retrieve after submitting a job to the job
+            scheduling software
         Args:
-            job_id (int):               Id of job to be started
-            experiment_name (string):   Name of experiment
-            batch (string):             Batch number
-            experiment_dir (string):    Directory to write output to
-            database_address (string):  Address of MongoDB database
-            driver_options (dict):      Options for driver (optional)
+            output (string): Output returned when submitting the job
 
         Returns:
-            int: id of process associated with the job,
-                 or None if submission failed
-
+            match object: with regular expression matching process id
         """
-        # TODO implement proper driver hierarchy 
-        # TODO find a better way to do this
-        #base_path = os.path.dirname(os.path.realpath(pqueens.__file__))
-        base_path = pathlib.Path(__file__).parent.parent
+        regex=output.split()
+        return regex[-1]
 
 
-        # get path to Python interpreter
-        # scheduler and driver should be called with the same Python executable
-        python_path = sys.executable
 
-        # assemble shell command
-        cmd = ('%s %s/drivers/gen_driver_local.py --db_address %s --experiment_name '
-               '%s --job_id %s --batch %s' %
-               (python_path, base_path, database_address, experiment_name, job_id, batch))
+    def submit(self, job_name):
+        """ Get submit command for local scheduler
 
+            The function actually prepends the commands necessary to
+            start the driver with the actual simulation description
+        Args:
+            job_name (string): name of job to submit
 
-        output_directory = os.path.join(experiment_dir, 'output')
-        if not os.path.isdir(output_directory):
-            os.mkdir(output_directory)
-
-        output_filename = os.path.join(output_directory, '%08d.out' % job_id)
-        output_file = open(output_filename, 'w')
-
-        process = subprocess.Popen(cmd,
-                                   stdout=output_file,
-                                   stderr=output_file,
-                                   shell=True)
-
-        process.poll()
-        if process.returncode is not None and process.returncode < 0:
-            sys.stderr.write("Failed to submit job or job crashed "
-                             "with return code %d !\n" % process.returncode)
-            return None
+        Returns:
+            list: Submission command(s)
+        """
+        # TODO: check with instance writes the output if no slurm is used
+        if self.output.lower()=="true" or self.output=="":
+            command_list = [r'mpirun -np', self.num_procs_per_node]
+        elif self.output.lower()=="false":
+            command_list = [r'mpirun -np', self.num_procs_per_node] # TODO supress output
         else:
-            sys.stderr.write("Submitted job as process: %d\n" % process.pid)
-            return process.pid
+            raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
+
+
+        return command_list
 
 
     def alive(self, process_id):
@@ -98,7 +92,7 @@ class LocalScheduler(Scheduler):
         """
         try:
             # Send an alive signal to proc
-            os.kill(process_id, 0)
+            os.kill(process_id, 0) # TODO check if we find a better solution for that
         except OSError:
             return False
         else:

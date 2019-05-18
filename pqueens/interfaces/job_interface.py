@@ -6,6 +6,7 @@ from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
+from pqueens.drivers import Driver
 
 class JobInterface(Interface):
     """
@@ -24,14 +25,12 @@ class JobInterface(Interface):
         db (mongodb):               mongodb to store results and job info
         polling_time (int):         how frequently do we check if jobs are done
         output_dir (string):        directory to write output to
-        driver_type (string):       what kind of simulation driver are we using
-        driver_params (dict):       parameters for simulatio driver
         parameters (dict):          dictionary with parameters
 
     """
 
     def __init__(self, interface_name, resources, experiment_name, db_address,
-                 db, polling_time, output_dir, driver_type, driver_params, parameters):
+                 db, polling_time, output_dir, parameters):
         """ Create JobInterface
 
         Args:
@@ -42,8 +41,6 @@ class JobInterface(Interface):
             db (mongodb):               mongodb to store results and job info
             polling_time (int):         how frequently do we check if jobs are done
             output_dir (string):        directory to write output to
-            driver_type (string):       what kind of simulation driver are we using
-            driver_params (dict):       parameters for simulatio driver
             variables (dict):           dictionary with parameters
         """
         self.name = interface_name
@@ -53,8 +50,6 @@ class JobInterface(Interface):
         self.db = db
         self.polling_time = polling_time
         self.output_dir = output_dir
-        self.driver_type = driver_type
-        self.driver_params = driver_params
         self.parameters = parameters
         self.batch_number = 1
 
@@ -86,24 +81,20 @@ class JobInterface(Interface):
 
         polling_time = config.get('polling-time', 5)
 
-        output_dir = config['driver']['driver_params']["experiment_dir"]
-
-        driver_type = config['driver']['driver_type']
-
-        driver_params = config['driver']['driver_params']
+        output_dir = config['driver']['driver_params']["experiment_dir"] #TODO: This is not nice -> should be solved solemny over Driver class
 
         parameters = config['parameters']
 
         # instanciate object
         return cls(interface_name, resources, experiment_name, db_address, db,
-                   polling_time, output_dir, driver_type, driver_params, parameters)
+                   polling_time, output_dir, parameters)
 
 
     def map(self, samples):
         """
         Mapping function which orchestrates call to external simulation software
 
-        Second vairiant which takes the input samples as argument
+        Second variant which takes the input samples as argument
 
         Args:
             samples (list):         list of variables objects
@@ -229,8 +220,6 @@ class JobInterface(Interface):
             'expt_dir'     : self.output_dir,
             'expt_name'    : self.experiment_name,
             'resource'     : resource_name,
-            'driver_type'  : self.driver_type,
-            'driver_params': self.driver_params,
             'status'       : 'new',
             'submit time'  : time.time(),
             'start time'   : None,

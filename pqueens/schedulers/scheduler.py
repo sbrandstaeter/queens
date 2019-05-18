@@ -1,9 +1,9 @@
-
 import abc
-
 
 class Scheduler(metaclass=abc.ABCMeta):
     """ Base class for schedulers """
+
+    def __init__(self): #TODO: this is new so check for correct parsing
 
     @classmethod
     def from_config_create_scheduler(cls, scheduler_name, config):
@@ -29,6 +29,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         scheduler_options = config[scheduler_name]
         # determine which object to create
         scheduler_class = scheduler_dict[scheduler_options["scheduler_type"]]
+
         return scheduler_class.from_config_create_scheduler(scheduler_name,
                                                             config)
 
