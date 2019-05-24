@@ -208,7 +208,6 @@ class MetropolisHastingsIterator(Iterator):
                                     for model_variable in self.model.variables
                                     for variable_name, variable
                                     in model_variable.variables.items()]).T
-
         self.log_likelihood[0] = self.eval_log_likelihood(self.samples[0])
         self.log_prior[0] = self.eval_log_prior(self.samples[0])
         self.log_posterior[0] = self.log_likelihood[0] + self.log_prior[0]
@@ -241,19 +240,30 @@ class MetropolisHastingsIterator(Iterator):
     def post_run(self):
         """ Analyze the resulting chain. """
 
+        initial_sample = self.samples[0]
+        chain_burn_in = self.samples[1 : self.num_burn_in + 1]
         chain = self.samples[self.num_burn_in + 1:self.num_samples + self.num_burn_in + 1]
 
         accept_rate = self.accepted / self.num_samples
 
         if self.result_description:
             # process output takes a dict as input with key 'mean'
-            results = process_ouputs({'mean': chain}, self.result_description)
+            results = process_ouputs({'mean': chain,
+                                      'accept_rate': accept_rate,
+                                      'chain_burn_in': chain_burn_in,
+                                      'initial_sample': initial_sample,
+                                      'log_likelihood' : self.log_likelihood,
+                                      'log_prior' : self.log_prior,
+                                      'log_posterior' : self.log_posterior
+                                     },
+                                     self.result_description)
             if self.result_description["write_results"]:
                 write_results(results,
                               self.global_settings["output_dir"],
                               self.global_settings["experiment_name"])
 
             print("Acceptance rate: {}".format(accept_rate))
+            print(f"Covariance of proposal: {self.scale_covariance * self.proposal_distribution.covariance}")
             print("Size of outputs {}".format(chain.shape))
             print("\tmean±std: {}±{}".format(results.get('mean', None),
                                              np.sqrt(results.get('var', None))))
