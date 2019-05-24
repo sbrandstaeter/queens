@@ -23,7 +23,7 @@ from pqueens.utils.process_outputs import write_results
 
 class OptimizationIterator(Iterator):
     """
-    Iterator for deteriministic optimization problems
+    Iterator for deterministic optimization problems
 
     Attributes:
         initial_guess (np.array): initial guess, i.e. start point of

@@ -4,7 +4,7 @@ vector-valued functions
 
 NOTE:
 Implementation is heavily based on the scipy.optimize._numdiff module.
-We do NOT support complex scheme 'cs' and sparesity.
+We do NOT support complex scheme 'cs' and sparsity.
 
 The motivation behind this reimplementation is to enable the parallel
 computation of all function values required for the finite difference
