@@ -34,9 +34,11 @@ class Driver(metaclass=abc.ABCMeta)
         self.post_options = base_settings['post_options']
         self.postpostprocessor = base_settings['postpostprocessor']
         self.mpi_config = None # config mpi for each machine (command itself is organized via scheduler)
+        # add scheduler specific attributes to minimize communication
+        self.scheduler_cmd = base_settings['scheduler_cmd']
 
     @classmethod
-    def from_config_create_driver(cls, config, driver_type=None, database=None, scheduler_obj = None):
+    def from_config_create_driver(cls, config, job_id, batch):
         """ Create driver from problem description
 
         Args:
@@ -68,25 +70,71 @@ class Driver(metaclass=abc.ABCMeta)
 
         if driver_type is None:
             driver_version = config['driver']['driver_type']
-            driver_class = driver__dict[driver_version]
-        if scheduler_obj:
+        else:
+            driver_version = config['driver'][driver_type]
+        driver_class = driver_dict[driver_version]
+        if scheduler_obj: #TODO: check if this can be deleted!
             self.mpi_config = {'num_procs' = scheduler_obj.num_procs_per_node}
 
  ###### create base settings #####################
             driver_options = config['driver']['driver_options']
+            scheduler_name = config['resources']['scheduler']
+            scheduler_options = config[scheduler_name]
             base_settings['experiment_name']= driver_options['experiment_dir']
-            base_settings['job_id']= driver_options['job_id']
+            base_settings['job_id']= job_id
             base_settings['input_file']=None
             base_settings['output_file']=None
             base_settings['job']= None
-            base_settings['batch']=driver_options['batch']
+            base_settings['batch']=batch
             base_settings['executable']=driver_options['path_to_executable']
             base_settings['databank']=MongoDB(database_address=driver_options['database_address'])
             base_settings['result']=None
             base_settings['postprocessor']=driver_options['path_to_postprocessor']
             base_settings['post_options']=driver_options['post_process_options']
             base_settings['postpostprocessor']=driver_options['post_post_script']
+    ### here comes some case / if statement dependent on the scheduler type
+            if scheduler_options['scheduler_type'] == 'slurm':
+                # read necessary variables from config
+                num_nodes = scheduler_options['num_nodes']
+                num_procs_per_node = scheduler_options['num_procs_per_node']
+                walltime = scheduler_options['walltime']
+                user_mail = scheduler_options['email']
+                output = scheduler_options['slurm_output']
+                # pre assemble some strings
+                proc_info = '--nodes={} --ntasks={}'.format(num_nodes, num_procs_per_node)
+                walltime_info = '--time={}'.format(walltime)
+                mail_info = '--mail-user={}'.format(user_mail)
+                job_info = '--job-name=queens_{}_{}'.format(base_settings['experiment_name'], base_settings['job_id'])
 
+                if output.lower()=="true" or output=="":
+                    command_list = [r'sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
+                elif output.lower()=="false":
+                    command_list = [r'sbatch --mail-type=ALL --output=/dev/null --error=/dev/null', mail_info, job_info, proc_info, walltime_info]
+                else:
+                    raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
+                scheduler_cmd = ' '.join(command_list)
+
+            elif scheduler_options['scheduler_type'] == 'pbs':
+                # read necessary variables from config
+                num_nodes = scheduler_options['num_nodes']
+                num_procs_per_node = scheduler_options['num_procs_per_node']
+                walltime = scheduler_options['walltime']
+                user_mail = scheduler_options['email']
+                queue = scheduler_options['queue']
+                # pre assemble some strings
+                proc_info = 'nodes={}:ppn={}'.format(num_nodes, num_procs_per_node)
+                walltime_info = 'walltime={}'.format(walltime)
+                job_info = 'queens_{}_{}'.format(base_settings['experiment_name'], base_settings['job_id'])
+                command_list = ['qsub', '-M', user_mail, '-m abe', '-N', job_info, '-l', proc_info, '-l', walltime_info, '-q', queue]
+                scheduler_cmd = ' '.join(command_list)
+
+            elif scheduler_options['scheduler_type'] == 'local':
+                scheduler_cmd = None #TODO maybe we need to change this
+            else:
+                raise ValueError('Driver cannot find a valid scheduler type in JSON file!')
+
+
+            base_settings['scheduler_cmd']=scheduler_cmd
 
             driver = driver_class.from_config_create_driver(config, base_settings)
         else:
@@ -103,7 +151,7 @@ class Driver(metaclass=abc.ABCMeta)
         self.prepare_environment()
         self.init_job()
         self.run_job()
-        self.finish_job()
+        self.finish_and_clean()
 
 ##### Auxiliary high-level methods ########################################
 
@@ -201,9 +249,8 @@ class Driver(metaclass=abc.ABCMeta)
         """ Actual method to run the job on computing machine
             using run_subprocess method from base class
         """
-
         # assemble run command
-        command_list = [self.mpi_config['mpi_run'], self.mpi_config['flags'], self.executable, self.input_file, self.output_file]
+        command_list = [self.scheduler_cmd, self.mpi_config['mpi_run'], self.mpi_config['flags'], self.executable, self.input_file, self.output_file]
         command_string = ' '.join(command_list)
         _ = self.run_subprocess(command_string)
 
@@ -272,11 +319,4 @@ class Driver(metaclass=abc.ABCMeta)
     @abc.abstractmethod
     def setup_mpi(self):
         """ Configure and set up the environment for multi_threats """
-        pass
-
-#### TODO Optional methods ##########################################################
-
-    def create_singularity_container(self):
-        """ Add current environment to predisigned singularity container
-            for cluster executions """
         pass

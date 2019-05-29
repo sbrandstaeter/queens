@@ -3,11 +3,11 @@ import json
 import sys
 import importlib.util
 
-from .drivers import Driver
+from .drivers.driver import Driver
 
 
 class Baci_driver_bruteforce(Driver):
-    """ Drover to run BACI on the HPC cluster bruteforce (via Slurm)
+    """ Driver to run BACI on the HPC cluster bruteforce (via Slurm)
 
     Args:
 
@@ -25,7 +25,7 @@ class Baci_driver_bruteforce(Driver):
         Returns:
             driver: Baci_driver_bruteforce object
         """
-        num_procs = config[]
+        num_procs = config[] #TODO args!
         return cls(base_settings)
 
 

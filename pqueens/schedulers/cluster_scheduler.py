@@ -50,7 +50,7 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
         driver_options['experiment_name'] = experiment_name
         driver_options['job_id'] = job_id
         driver_options['batch'] = batch
-        driver_options['database_address'] = database_address
+        driver_options['database_address'] = database_address # This is necessary, because
 
         # convert driver options dict to json
         driver_options_json_str = json.dumps(driver_options)
@@ -61,12 +61,12 @@ class AbstractClusterScheduler(metaclass=abc.ABCMeta):
         driver_args = r'\"' + driver_options_json_str + r'\"'
 
 ########### Assemble actual run command ###################################################
-# TODO: some comments: driver args are not necessary anymore if driver copy is availibe in singularity file and we actully build from scatch
+# TODO: some comments: driver args are not necessary anymore if driver copy is availibe in singularity file and we actully build from scratch
 # check about batch and job_id
 # rather than sending input args over ssh maybe write a temp file that is used as an input for another routine?
 # driver file is not necessary anymore
 
-        run_command = [driver_options['driver_file'], driver_args]
+        run_command = [driver_options['driver_file'], driver_args] #TODO: this needs to be changed to a object call rather then subprocess cmd
 
         # assemble job_name for cluster
         job_name = 'queens_{}_{}'.format(experiment_name, job_id)

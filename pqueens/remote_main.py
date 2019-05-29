@@ -1,8 +1,7 @@
 # Imports
 import argparse
 import os
-from pqueens.drivers import Driver
-from pqueens.schedulers import Scheduler
+from pqueens.derivers.driver import Driver
 try:
     import simplejson as json
 except ImportError:
@@ -20,18 +19,15 @@ def main(args):
 # --> copy json file in the same directory as this remote_main file so that we can check via reltive path
     try:
         with open('temp.json', 'r') as f:
-            options = json.load(f, object_pairs_hook=OrderedDict)
+            config = json.load(f, object_pairs_hook=OrderedDict)
     except:
         raise FileNotFoundError("temp.json did not load properly.")
-    options["input_file"] = input_file
-
 
 ## Create Driver and Scheduler object from input JSON temp file
-#TODO: Somehow a database object needs to be passed to driver --> Check how this is done in scheduler and maybe create driver directly here and not explitly in this file
-    driver = Driver.from_config_create_driver(options)
-    scheduler = Scheduler.from_config_create_scheduler(options)
+#TODO: Somehow a database object needs to be passed to driver --> Check how this is done in scheduler scheduler = Scheduler.from_config_create_scheduler(options) # creates driver_obj as well
 ## Run the simulations via object methods
-    scheduler.main_run(job_id, batch, driver)
+    driver_obj = Driver.from_config_create_driver(config, job_id, batch)
+    driver_obj.main_run(job_id,batch) #TODO what about slurm cmd?
 ## Clean-up and delete all temp files
     os.remove('temp.json')
 

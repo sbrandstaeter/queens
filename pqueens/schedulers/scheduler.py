@@ -33,10 +33,22 @@ class Scheduler(metaclass=abc.ABCMeta):
         return scheduler_class.from_config_create_scheduler(scheduler_name,
                                                             config)
 
+##################################### executed locally e.g. remote ######################################
+    #TODO: method below actually submits the command also on remote but should not be for ssh comm-> gets called locally
+     # this is basically the main method --> we should add the construction of the driver class (maybe here)
     @abc.abstractmethod
     def submit(self, job_id, experiment_name, batch, experiment_dir,
                scheduler_options, database_address):
         pass
+
+################################# executed only on workstation #####################################
+    #TODO: new method that is implemented maybe on this level and takes only care for ssh communication
+    # we could make it a class method so that the actual scheduler does not need to be created locally
+    # --> we need to check were the actual scheduler gets called/created and change that to a call to this method.
+    # --> for local -- either ssh into itself or make an case statement
+
+    def connect_ssh()
+###################################################################################################
 
     @abc.abstractmethod
     def alive(self,process_id):
