@@ -182,18 +182,13 @@ def estimate_cov(output_data):
     """
     samples = output_data["mean"]
 
-    # we don't know whether rows or columns represent variables or observations
-    # most likely the larger number represents the observations
-    rows, cols = samples.shape
-    if rows > cols:
-        row_variable = False
-    elif cols < rows:
-        row_variable = True
-    else:
-        warnings.warn("Unable to identify row or column variable. Assuming default: rowvar = True.")
-        row_variable = True
+    # we assume that rows represent observations and columns represent variables
+    row_variable = False
 
-    return np.cov(samples, rowvar=row_variable)
+    cov = np.zeros((samples.shape[1], samples.shape[2], samples.shape[2]))
+    for i in range(samples.shape[1]):
+        cov[i] = np.cov(samples[:,i,:], rowvar=row_variable)
+    return cov
 
 def estimate_cdf(output_data, support_points, bayesian):
     """ Compute estimate of CDF based on provided sampling data
