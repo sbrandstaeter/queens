@@ -3,10 +3,11 @@ import abc
 class Scheduler(metaclass=abc.ABCMeta):
     """ Base class for schedulers """
 
-    def __init__(self): #TODO: this is new so check for correct parsing
+    def __init__(self, base_settings):
+        # add base class scheduler stuff here
 
     @classmethod
-    def from_config_create_scheduler(cls, scheduler_name, config):
+    def from_config_create_scheduler(cls, config, scheduler_name=None):
         """ Create scheduler from problem description
 
         Args:
@@ -18,38 +19,82 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         """
         # import here to avoid issues with circular inclusion
-        import pqueens.schedulers.local_scheduler
-        import pqueens.schedulers.PBS_scheduler
-        import pqueens.schedulers.slurm_scheduler
+        from .schedulers import Local_scheduler
+        from .schedulers import PBS_scheduler
+        from .schedulers import Slurm_scheduler
 
-        scheduler_dict = {'local': pqueens.schedulers.local_scheduler.LocalScheduler,
-                          'pbs': pqueens.schedulers.PBS_scheduler.PBSScheduler,
-                          'slurm': pqueens.schedulers.slurm_scheduler.SlurmScheduler}
+        scheduler_dict = {'local': LocalScheduler,
+                          'pbs': PBSScheduler,
+                          'slurm': SlurmScheduler}
 
-        scheduler_options = config[scheduler_name]
+        if scheduler_name:
+            scheduler_options = config[scheduler_name]
+        else:
+            scheduler_options = config['scheduler']
+
         # determine which object to create
         scheduler_class = scheduler_dict[scheduler_options["scheduler_type"]]
 
-        return scheduler_class.from_config_create_scheduler(scheduler_name,
-                                                            config)
-
-##################################### executed locally e.g. remote ######################################
-    #TODO: method below actually submits the command also on remote but should not be for ssh comm-> gets called locally
-     # this is basically the main method --> we should add the construction of the driver class (maybe here)
-    @abc.abstractmethod
-    def submit(self, job_id, experiment_name, batch, experiment_dir,
-               scheduler_options, database_address):
+########### create base settings #################################################
+        scheduler = scheduler_class.from_config_create_scheduler(config, base_settings, scheduler_name=None)
+        return scheduler
+############Some basic functions that should be added to resources.py and implemented here ############################################################################
+    def init():
         pass
 
-################################# executed only on workstation #####################################
-    #TODO: new method that is implemented maybe on this level and takes only care for ssh communication
-    # we could make it a class method so that the actual scheduler does not need to be created locally
-    # --> we need to check were the actual scheduler gets called/created and change that to a call to this method.
-    # --> for local -- either ssh into itself or make an case statement
+    def clean_up():
+        pass
 
-    def connect_ssh()
-###################################################################################################
+########## Auxiliary high-level methods #############################################
+
+    def run_subprocess(command_string, my_env = None):
+        """ Method to run command_string outside of Python """
+        if (my_env is None) and ('my_env' in mpi_config):
+            p = subprocess.Popen(command_string,
+                             env = self.mpi_config['my_env'],
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             shell=True,
+                             universal_newlines=True)
+        else:
+            p = subprocess.Popen(command_string,
+                             env = my_env,
+                             stdin=subprocess.PIPE,
+                             stdout=subprocess.PIPE,
+                             stderr=subprocess.PIPE,
+                             shell=True,
+                             universal_newlines=True)
+
+        stdout, stderr = p.communicate()
+        p.poll()
+        print(stderr)
+        print(stdout)
+        return stdout, stderr, p #TODO if poll and return p is helpful
+
+
+########## Base class methods ###########################################################
+
+
+######### Children methods that need to be implemented / abstractmethods ######################
+    @abc.abstractmethod # how to check this is dependent on cluster / env
+    def alive(self,process_id):
+        pass
 
     @abc.abstractmethod
-    def alive(self,process_id):
+    def submit(self, job_id, batch):
+        pass
+
+########## #TODO Some optional stuff-> prob better done in child-class  #################################################################
+    def create_singularity_container(self):
+        """ Add current environment to predesigned singularity container for cluster applications """
+        pass
+
+    def check_files_remote(self):
+        pass
+
+    def send_files_remote(self):
+        pass
+
+    def clean_files_remote(self):
         pass

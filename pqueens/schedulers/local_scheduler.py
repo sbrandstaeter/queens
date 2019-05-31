@@ -9,11 +9,12 @@ from .schedulers.scheduler import Scheduler
 class LocalScheduler(Scheduler):
     """ Scheduler which submits jobs to the local machine via a shell command"""
 
-    def __init__(self, base_settings):
+    def __init__(self, base_settings,scheduler_name):
+        self.name = scheduler_name
         super(LocalScheduler, self).__init__(base_settings)
 
     @classmethod
-    def from_config_create_scheduler(cls, config, base_settings):
+    def from_config_create_scheduler(cls, config, base_settings, scheduler_name=None):
         """ Create scheduler from config dictionary
 
         Args:
@@ -23,8 +24,7 @@ class LocalScheduler(Scheduler):
         Returns:
             scheduler:              Instance of LocalScheduler
         """
-
-        return cls(base_settings)
+        return cls(base_settings,scheduler_name)
 
 
 ######### abstract-methods that must be implemented #######################
@@ -45,8 +45,8 @@ class LocalScheduler(Scheduler):
         else:
             return True
 
-    def submit(self, job_id, experiment_name, batch, experiment_dir,
-               database_address, driver_params={}):
+    def submit(self, job_id, batch):
         """ Submit job by calling corresponding Driver method
         """
-        self.driver.main_run() # This is the only mehtod necessary: rest will be taken care of in the driver
+        driver_obj = Driver.from_config_create_driver(config, job_id, batch)
+        driver_obj.main_run() # This is the only mehtod necessary: rest will be taken care of in the driver

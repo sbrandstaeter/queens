@@ -1,10 +1,9 @@
 import sys
 import subprocess
 import re
-from pqueens.schedulers.cluster_scheduler import AbstractClusterScheduler
+from .schedulers.scheduler import Scheduler
 
-
-class PBSScheduler(AbstractClusterScheduler):
+class PBSScheduler(Scheduler):
     """ Minimal interface to Torque queing system to submit and query jobs
 
     This class provides a basic interface to the PBS job queing system to submit
@@ -20,8 +19,7 @@ class PBSScheduler(AbstractClusterScheduler):
                                     connect to resource
     """
 
-    def __init__(self, scheduler_name, num_procs_per_node, num_nodes, walltime,
-                 user_mail, queue, connect_to_resource):
+    def __init__(self, scheduler_name, base_settings):
         """
         Args:
             scheduler_name (string):    Name of Scheduler
@@ -33,17 +31,12 @@ class PBSScheduler(AbstractClusterScheduler):
             connect_to_resource (list): list containing commands to
                                         connect to resaurce
         """
-        super(PBSScheduler, self).__init__()
+        super(PBSScheduler, self).__init__(base_settings)
         self.name = scheduler_name
-        self.num_procs_per_node = num_procs_per_node
-        self.num_nodes = num_nodes
-        self.walltime = walltime
-        self.user_mail = user_mail
-        self.queue = queue
         self.connect_to_resource = connect_to_resource
 
     @classmethod
-    def from_config_create_scheduler(cls, scheduler_name, config):
+    def from_config_create_scheduler(cls, config, base_setings,scheduler_name=None):
         """ Create PBS scheduler from config dictionary
 
         Args:
@@ -54,15 +47,10 @@ class PBSScheduler(AbstractClusterScheduler):
             scheduler:              instance of PBSScheduler
         """
         options = config[scheduler_name]
-        num_procs_per_node = options['num_procs_per_node']
-        num_nodes = options['num_nodes']
-        walltime = options['walltime']
-        user_mail = options['email']
-        queue = options['queue']
         connect_to_resource = options["connect_to_resource"]
+        return cls(scheduler_name, connect_to_resource, base_settings)
 
-        return cls(scheduler_name, num_procs_per_node, num_nodes, walltime,
-                   user_mail, queue, connect_to_resource)
+########### auxiliary methods #################################################
 
     def output_regexp(self):
         return r'(^\d+)'
@@ -81,29 +69,38 @@ class PBSScheduler(AbstractClusterScheduler):
         regex = r'(^\d+)'
         return re.search(regex, output)
 
-    def submit_command(self, job_name):
-        """ Get submit command for PBS type scheduler
+######## children methods that need to be implemented
 
-            The function actually prepends the commands necessary to connect to
-            the resource to enable remote job submission
+    def submit(self, job_id, batch):
+        """ Function to submit new job to scheduling software on a given resource
+
+
         Args:
-            job_name (string): name of job to submit
+            job_id (int):               Id of job to submit
+            experiment_name (string):   Name of experiment
+            batch (string):             Batch number of job
+            experiment_dir (string):    Directory of experiment
+            database_address (string):  Address of database to connect to
+            driver_options (dict):      Options for driver
 
         Returns:
-            list: Submission command(s)
+            int: proccess id of job
+
         """
-        # pre assemble some strings
-        proc_info = 'nodes={}:ppn={}'.format(self.num_nodes,
-                                             self.num_procs_per_node)
-        walltime_info = 'walltime={}'.format(self.walltime)
+        remote_args_list = '--job_id={} --batch={}'.format(job_id, batch) #TODO finalize args
+        remote_args = ' '.join(remote_args_list)
+        singularity = #TODO: Check how to switch to singularity env / container
+        cmdlist_remote_main = [self.connect_to_ressource, singularity, './remote_main.py', remote_args]
+        cmd_remote_main = ' '.join(cmdlist_remote_main)
+        stdout, stderr, p = super run_subprocess(cmd_remote_main)
 
-        command_list = self.connect_to_resource  \
-                       + ['qsub', '-M', self.user_mail,
-                          '-m abe', '-N', job_name,
-                          '-l', proc_info, '-l', walltime_info, '-q',
-                          self.queue]
-
-        return command_list
+        # get the process id from text output
+        match = self.get_process_id_from_output(stdout)
+        try:
+            return int(match)
+        except:
+            sys.stderr.write(output)
+            return None
 
     def alive(self, process_id): # TODO: This methods needs to be checked as might not be called properly
         """ Check whether job is alive
@@ -123,17 +120,8 @@ class PBSScheduler(AbstractClusterScheduler):
             # join lists
             command_list = self.connect_to_resource + ['qstat', str(process_id)]
             command_string = ' '.join(command_list)
-
-            process = subprocess.Popen(command_string,
-                                       stdin=subprocess.PIPE,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.STDOUT,
-                                       shell=True,
-                                       universal_newlines=True)
-
-            output, std_err = process.communicate()
-            process.stdin.close()
-            output2 = output.split()
+            stdout, stderr, p = super run_subprocess(command_string)
+            output2 = stdout.split()
             # second to last entry is (should be )the job status
             status = output2[-2]
         except:
@@ -157,16 +145,8 @@ class PBSScheduler(AbstractClusterScheduler):
                 # try to kill the job.
                 command_list = self.connect_to_resource + ['qdel', str(process_id)]
                 command_string = ' '.join(command_list)
-                process = subprocess.Popen(command_string,
-                                           stdin=subprocess.PIPE,
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.STDOUT,
-                                           shell=True,
-                                           universal_newlines=True)
-
-                output, std_err = process.communicate()
-                process.stdin.close()
-                print(output)
+                stdout, stderr, p = super run_subprocess(command_string)
+                print(stdout)
                 sys.stderr.write("Killed job %d.\n" % (process_id))
             except:
                 sys.stderr.write("Failed to kill job %d.\n" % (process_id))

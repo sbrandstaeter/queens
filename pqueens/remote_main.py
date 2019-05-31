@@ -2,17 +2,13 @@
 import argparse
 import os
 from pqueens.derivers.driver import Driver
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 def main(args):
-## Parse options from ssh command
-   args = args.replace('\\', '\"') # TODO this is not nice but works (find better solution in the futer)
-   args = json.loads(args) # Change json format to a dictionary format
-   job_id = args['job_id']
-   batch = args['batch']
+    parser = argparse.ArgumentParser()
+    parser.add_argument("job_id", help="specify the job_id so that correct simulation settings can be loaded from the DB", type=int)
+    parser.add_argument("batch", help="specify the batch number of the simulation",type=int)
+    args =  parser.parse_args()
+    job_id = args.job_id
+    batch = args.batch
 
 ## Check if all necessary temp files are available
 # --> compare with paths in json file
@@ -26,7 +22,7 @@ def main(args):
 ## Create Driver and Scheduler object from input JSON temp file
 #TODO: Somehow a database object needs to be passed to driver --> Check how this is done in scheduler scheduler = Scheduler.from_config_create_scheduler(options) # creates driver_obj as well
 ## Run the simulations via object methods
-    driver_obj = Driver.from_config_create_driver(config, job_id, batch)
+    driver_obj = Driver.from_config_create_driver(config, job_id, batch) #TODO: Check if there is a better way than creating the object everytime 
     driver_obj.main_run(job_id,batch) #TODO what about slurm cmd?
 ## Clean-up and delete all temp files
     os.remove('temp.json')

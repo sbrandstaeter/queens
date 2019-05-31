@@ -1,8 +1,8 @@
 import sys
 import subprocess
-from pqueens.schedulers.cluster_scheduler import AbstractClusterScheduler
+from .schedulers.scheduler import Scheduler
 
-class SlurmScheduler(AbstractClusterScheduler):
+class SlurmScheduler(Scheduler):
     """ Minimal interface to SLURM queing system to submit and query jobs
 
     This class provides a basic interface to the Slurm job queing system to submit
@@ -13,12 +13,9 @@ class SlurmScheduler(AbstractClusterScheduler):
     This scheduler is written specifically for the LNM Bruteforce cluster but can be used
     as an example for other Slurm based systems
 
-    Attributes:
-        connect_to_resource (list): list containing commands to
-                                    connect to resource
     """
 
-    def __init__(self, scheduler_name, num_procs_per_node, num_nodes, walltime, user_mail, connect_to_resource, output):
+    def __init__(self, scheduler_name, connect_to_ressource, base_settings):
         """
         Args:
             scheduler_name (string):    Name of Scheduler
@@ -26,22 +23,15 @@ class SlurmScheduler(AbstractClusterScheduler):
             num_nodes (int):            Number of nodes
             walltime (string):          Wall time in hours
             user_mail (string):         Email adress of user
-            connect_to_resource (list): list containing commands to
-                                        connect to resource
             output (boolean):           Flag for slurm output
         """
-        super(SlurmScheduler, self).__init__()
+        super(SlurmScheduler, self).__init__(base_settings)
         # TODO: Does the latter trigger the abstact cluster scheduler??
         self.name = scheduler_name
-        self.num_procs_per_node = num_procs_per_node
-        self.num_nodes = num_nodes
-        self.walltime = walltime
-        self.user_mail = user_mail
-        self.connect_to_resource = connect_to_resource
-        self.output = output
+        self.connect_to_ressource
 
     @classmethod
-    def from_config_create_scheduler(cls, scheduler_name, config):
+    def from_config_create_scheduler(cls, config, base_settings, scheduler_name=None):
         """ Create Slurm scheduler from config dictionary
 
         Args:
@@ -52,15 +42,10 @@ class SlurmScheduler(AbstractClusterScheduler):
             scheduler:              instance of SlurmScheduler
         """
         options = config[scheduler_name]
-        num_procs_per_node = options['num_procs_per_node']
-        num_nodes = options['num_nodes']
-        walltime = options['walltime']
-        user_mail = options['email']
-        connect_to_resource = options["connect_to_resource"]
-        output = options["slurm_output"]
+        connect_to_ressource = options['connect_to_ressource']
+        return cls(scheduler_name, connect_to_ressource, base_settings)
 
-        return cls(scheduler_name, num_procs_per_node, num_nodes, walltime, user_mail, connect_to_resource, output)
-
+###### auxiliary methods #################################################
     def output_regexp(self): # TODO Check what this does exactly
         return r'(^\d+)'
 
@@ -78,36 +63,8 @@ class SlurmScheduler(AbstractClusterScheduler):
         regex=output.split()
         return regex[-1]
 
-    def submit_command(self, job_name):
-        """ Get submit command for Slurm type scheduler
-
-            The function actually prepends the commands necessary to connect to
-            the resource to enable remote job submission
-        Args:
-            job_name (string): name of job to submit
-
-        Returns:
-            list: Submission command(s)
-        """
-        # pre assemble some strings
-        proc_info = '--nodes={} --ntasks={}'.format(self.num_nodes, self.num_procs_per_node)
-        walltime_info = '--time={}'.format(self.walltime)
-        mail_info = '--mail-user={}'.format(self.user_mail)
-        job_info = '--job-name={}'.format(job_name)
-
-
-        if self.output.lower()=="true" or self.output=="":
-            command_list = self.connect_to_resource  \
-                          + [r'sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
-        elif self.output.lower()=="false":
-            command_list = self.connect_to_resource  \
-                          + [r'sbatch --mail-type=ALL --output=/dev/null --error=/dev/null', mail_info, job_info, proc_info, walltime_info]
-        else:
-            raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
-
-        return command_list
-
-    def alive(self, process_id):
+########### Children methods that need to be implemented #######################
+def alive(self, process_id):
         """ Check whether job is alive
 
         The function checks if job is alive. If it is not i.e., the job is
@@ -123,19 +80,10 @@ class SlurmScheduler(AbstractClusterScheduler):
         alive = False
         try:
             # join lists
-            command_list = self.connect_to_resource + ['squeue --job', str(process_id)]
+            command_list = [self.connect_to_ressource,'squeue --job', str(process_id)]
             command_string = ' '.join(command_list)
-
-            process = subprocess.Popen(command_string,
-                                       stdin=subprocess.PIPE,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.STDOUT,
-                                       shell=True,
-                                       universal_newlines=True)
-
-            output, std_err = process.communicate()
-            process.stdin.close()
-            output2 = output.split()
+            stdout, stderr, p = super run_subprocess(command_string)
+            output2 = stdout.split()
             # second to last entry is (should be )the job status
             status = output2[-4] #TODO: Check if that still holds
             print('This is a test output')
@@ -161,16 +109,8 @@ class SlurmScheduler(AbstractClusterScheduler):
                 # try to kill the job.
                 command_list = self.connect_to_resource + ['scancel', str(process_id)]
                 command_string = ' '.join(command_list)
-                process = subprocess.Popen(command_string,
-                                           stdin=subprocess.PIPE,
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.STDOUT,
-                                           shell=True,
-                                           universal_newlines=True)
-
-                output, std_err = process.communicate()
-                process.stdin.close()
-                print(output)
+                stdout, stderr, p = super run_subprocess(command_string)
+               print(stdout)
                 sys.stderr.write("Killed job %d.\n" % (process_id))
             except:
                 sys.stderr.write("Failed to kill job %d.\n" % (process_id))
@@ -178,3 +118,34 @@ class SlurmScheduler(AbstractClusterScheduler):
             return False
         else:
             return True
+
+    def submit(self, job_id, batch):
+        """ Function to submit new job to scheduling software on a given resource
+
+
+        Args:
+            job_id (int):               Id of job to submit
+            experiment_name (string):   Name of experiment
+            batch (string):             Batch number of job
+            experiment_dir (string):    Directory of experiment
+            database_address (string):  Address of database to connect to
+            driver_options (dict):      Options for driver
+
+        Returns:
+            int: proccess id of job
+
+        """
+        remote_args_list = '--job_id={} --batch={}'.format(job_id, batch) #TODO finalize args
+        remote_args = ' '.join(remote_args_list)
+        singularity = #TODO: Check how to switch to singularity env / container
+        cmdlist_remote_main = [self.connect_to_ressource, singularity, './remote_main.py', remote_args]
+        cmd_remote_main = ' '.join(cmdlist_remote_main)
+        stdout, stderr, p = super run_subprocess(cmd_remote_main)
+
+        # get the process id from text output
+        match = self.get_process_id_from_output(stdout)
+        try:
+            return int(match)
+        except:
+            sys.stderr.write(output)
+            return None

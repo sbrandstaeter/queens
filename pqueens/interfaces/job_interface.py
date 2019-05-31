@@ -168,11 +168,8 @@ class JobInterface(Interface):
                 time.sleep(1)
 
             # Submit the job to the appropriate resource
-            process_id = resource.attempt_dispatch(self.experiment_name,
-                                                   self.batch_number,
-                                                   new_job,
-                                                   self.db_address,
-                                                   self.output_dir)
+            process_id = resource.attempt_dispatch(self.batch_number,
+                                                   new_job)
             num_tries += 1
 
         return process_id
