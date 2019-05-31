@@ -4,6 +4,7 @@ Test-module for tune_cale_covariance of mcmc_utils module
 @author: Sebastian Brandstaeter
 """
 
+import numpy as np
 import pytest
 
 from pqueens.utils.mcmc_utils import tune_scale_covariance
@@ -36,3 +37,18 @@ def test_tune_scale_covariance(accept_rate_and_scale_covariance):
     expected_scale = accept_rate_and_scale_covariance[1]
     current_scale = 1.0
     assert tune_scale_covariance(current_scale, accept_rate) == expected_scale
+
+
+def test_tune_scale_covariance_multiple_chains():
+    """
+    Test the tuning of proposal covariance in MCMC methods with multiple chains.
+
+    We assume here to have 7 parallel chains, that correspond to all
+    possible tuning factors.
+    """
+
+    accept_rate = np.array([[1e-4, 1e-2, 1e-1, 4e-1, 6e-1, 8e-1, 9.9e-1]]).T
+    expected_scale = np.array([[0.1, 0.5, 0.9, 1.0, 1.1, 2.0, 10.0]]).T
+
+    current_scale = np.ones((7,1))
+    assert np.allclose(tune_scale_covariance(current_scale, accept_rate), expected_scale)

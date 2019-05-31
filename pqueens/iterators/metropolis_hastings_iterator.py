@@ -10,6 +10,8 @@ References:
 
 """
 
+import arviz as az
+import matplotlib.pyplot as plt
 import numpy as np
 
 from pqueens.iterators.iterator import Iterator
@@ -31,17 +33,22 @@ class MetropolisHastingsIterator(Iterator):
     algorithm.
 
     Attributes:
+        as_mcmc_kernel (bool): indicates whether the iterator is used
+                               as an MCMC kernel for a SMC iterator or
+                               as the main iterator itself
         accepted (int): number of accepted proposals
         log_likelihood (np.array): log of pdf of likelihood at samples
         log_posterior (np.array): log of pdf of posterior at samples
         log_prior (np.array): log of pdf of prior at samples
         num_burn_in (int): Number of burn-in samples
-        num_samples (int): Total number of samples
-                           (initial + burn-in + chain)
+        num_chains (int): Number of idependent chains
+        num_samples (int): Number of samples per chain
+        tot_num_samples (int): Total number of samples per chain, i.e.,
+                               (initial + burn-in + chain)
         proposal_distribution (scipy.stats.rv_continuous): Proposal distribution
                                                            giving zero-mean deviates
         result_description (dict):  Description of desired results
-        samples (numpy.array): Array with all samples
+        chains (numpy.array): Array with all samples
         scale_covariance (float): Scale of covariance matrix
                                   of gaussian proposal distribution
         seed (int): Seed for random number generator
@@ -51,14 +58,29 @@ class MetropolisHastingsIterator(Iterator):
 
     """
 
-    def __init__(self, global_settings, model, num_burn_in, num_samples,
-                 proposal_distribution, result_description, scale_covariance,
-                 seed, tune, tune_intervall):
+    def __init__(self,
+                 as_mcmc_kernel,
+                 global_settings,
+                 model,
+                 num_burn_in,
+                 num_chains,
+                 num_samples,
+                 proposal_distribution,
+                 result_description,
+                 scale_covariance,
+                 seed,
+                 tune,
+                 tune_interval):
         super().__init__(model, global_settings)
+
+        self.num_chains = num_chains
         self.num_burn_in = num_burn_in
         self.num_samples = num_samples
+
         self.proposal_distribution = proposal_distribution
+
         self.result_description = result_description
+        self.as_mcmc_kernel = as_mcmc_kernel
 
         # check agreement of dimensions of proposal distribution and
         # parameter space
@@ -67,19 +89,24 @@ class MetropolisHastingsIterator(Iterator):
             raise ValueError("Dimensions of proposal distribution"
                              "and parameter space do not agree.")
 
-        tot_num_samples = self.num_samples+self.num_burn_in+1
-        self.samples = np.zeros((tot_num_samples, num_variables))
+        self.tot_num_samples = self.num_samples+self.num_burn_in+1
+        self.chains = np.zeros((self.tot_num_samples, self.num_chains, num_variables))
+        self.log_likelihood = np.zeros((self.tot_num_samples, self.num_chains, 1))
+        self.log_prior = np.zeros((self.tot_num_samples, self.num_chains, 1))
+        self.log_posterior = np.zeros((self.tot_num_samples, self.num_chains, 1))
+
         self.tune = tune
-        self.tune_interval = tune_intervall
-        self.scale_covariance = scale_covariance
+        self.tune_interval = tune_interval
+
+        self.scale_covariance = np.ones((self.num_chains, 1)) *scale_covariance
+
         self.seed = seed
 
-        self.accepted = 0
-        self.accepted_interval = 0
+        self.accepted = np.zeros((self.num_chains, 1))
+        self.accepted_interval = np.zeros((self.num_chains, 1))
 
-        self.log_likelihood = np.zeros(tot_num_samples)
-        self.log_prior = np.zeros(tot_num_samples)
-        self.log_posterior = np.zeros(tot_num_samples)
+        self.gamma = 1.
+
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None,
@@ -122,41 +149,55 @@ class MetropolisHastingsIterator(Iterator):
         tune = method_options.get('tune', False)
         tune_interval = method_options.get('tune_interval', 100)
 
-        return cls(global_settings=global_settings,
+        num_chains = method_options.get('num_chains', 1)
+
+        as_mcmc_kernel = method_options.get('as_mcmc_kernel', False)
+
+        return cls(as_mcmc_kernel=as_mcmc_kernel,
+                   global_settings=global_settings,
                    model=model,
                    num_burn_in=method_options['num_burn_in'],
+                   num_chains=num_chains,
                    num_samples=method_options['num_samples'],
                    proposal_distribution=proposal_distribution,
                    result_description=result_description,
                    scale_covariance=method_options['scale_covariance'],
                    seed=method_options['seed'],
                    tune=tune,
-                   tune_intervall=tune_interval)
+                   tune_interval=tune_interval)
 
     def eval_model(self):
-        """ Evaluate model at current sample. """
+        """ Evaluate model at current samples of chains. """
         result_dict = self.model.evaluate()
         return result_dict
 
-    def eval_log_prior(self, sample):
+    def eval_log_prior(self, chains):
         """
-        Evaluate natural logarithm of prior at sample.
+        Evaluate natural logarithm of prior at samples of chains.
 
         Note: we assume a multiplicative split of prior pdf
         """
 
-        log_prior = 0.
-        i = 0
-        for _, variable in self.model.variables[0].variables.items():
-            log_prior += variable['distribution'].logpdf(sample[i])
-            i += 1
+        log_prior = np.zeros((self.num_chains,1))
+        for i in range(chains.shape[0]):
+            j = 0
+            for _, variable in self.model.variables[i].variables.items():
+                log_prior[i] += variable['distribution'].logpdf(chains[i, j])
+                j += 1
+
+        # we could do the following only if the variables all have the same distribution.
+        # they should have but your never know...
+        # j = 0
+        # for _, variable in self.model.variables[0].variables.items():
+        #     log_prior += np.atleast_2d(variable['distribution'].logpdf(chains[:, j])).T
+        #     j += 1
 
         return log_prior
 
-    def eval_log_likelihood(self, sample):
-        """ Evaluate natural logarithm of likelihood at sample. """
+    def eval_log_likelihood(self, chains):
+        """ Evaluate natural logarithm of likelihood at samples of chains. """
 
-        self.model.update_model_from_sample(sample)
+        self.model.update_model_from_sample_batch(chains)
         log_likelihood = self.eval_model()['mean']
 
         return log_likelihood
@@ -167,19 +208,20 @@ class MetropolisHastingsIterator(Iterator):
         # tune covariance of proposal
         if not step_id % self.tune_interval and self.tune:
             accept_rate_interval = self.accepted_interval / self.tune_interval
-            print(f"Current acceptance rate: {accept_rate_interval}.")
+            if not self.as_mcmc_kernel:
+                print(f"Current acceptance rate: {accept_rate_interval}.")
             self.scale_covariance = mcmc_utils.tune_scale_covariance(self.scale_covariance,
                                                                      accept_rate_interval)
-            self.accepted_interval = 0
+            self.accepted_interval = np.zeros((self.num_chains, 1))
 
-        cur_sample = self.samples[step_id-1]
-        delta_proposal = self.proposal_distribution.draw() * self.scale_covariance
+        cur_sample = self.chains[step_id - 1]
+        delta_proposal = self.proposal_distribution.draw(num_draws=self.num_chains) * self.scale_covariance
         proposal = cur_sample + delta_proposal
 
         log_likelihood_prop = self.eval_log_likelihood(proposal)
         log_prior_prop = self.eval_log_prior(proposal)
 
-        log_posterior_prop = log_likelihood_prop + log_prior_prop
+        log_posterior_prop = log_likelihood_prop * self.gamma + log_prior_prop
         log_accept_prob = log_posterior_prop - self.log_posterior[step_id-1]
 
         new_sample, accepted = mcmc_utils.mh_select(log_accept_prob, cur_sample, proposal)
@@ -187,30 +229,38 @@ class MetropolisHastingsIterator(Iterator):
         self.accepted += accepted
         self.accepted_interval += accepted
 
-        self.samples[step_id] = new_sample
-        if accepted:
-            self.log_likelihood[step_id] = log_likelihood_prop
-            self.log_prior[step_id] = log_prior_prop
-            self.log_posterior[step_id] = log_posterior_prop
-        else:
-            self.log_likelihood[step_id] = self.log_likelihood[step_id-1]
-            self.log_prior[step_id] = self.log_prior[step_id-1]
-            self.log_posterior[step_id] = self.log_posterior[step_id-1]
+        self.chains[step_id] = new_sample
 
-    def initialize_run(self):
+        self.log_likelihood[step_id] = np.where(accepted, log_likelihood_prop, self.log_likelihood[step_id-1])
+        self.log_prior[step_id] = np.where(accepted, log_prior_prop, self.log_prior[step_id-1])
+        self.log_posterior[step_id] = np.where(accepted, log_posterior_prop, self.log_posterior[step_id-1])
+
+    def initialize_run(self, initial_sample=None, initial_log_like=None, initial_log_prior=None, gamma=1.0):
         """ Draw initial sample. """
 
-        print("Initialize Metropolis-Hastings run.")
-        np.random.seed(self.seed)
+        if not self.as_mcmc_kernel:
+            print("Initialize Metropolis-Hastings run.")
 
-        # draw initial sample from prior distribution
-        self.samples[0] = np.array([variable['distribution'].rvs(size=1)
-                                    for model_variable in self.model.variables
-                                    for variable_name, variable
-                                    in model_variable.variables.items()]).T
-        self.log_likelihood[0] = self.eval_log_likelihood(self.samples[0])
-        self.log_prior[0] = self.eval_log_prior(self.samples[0])
-        self.log_posterior[0] = self.log_likelihood[0] + self.log_prior[0]
+        # TODO: check conditions (either all are None or none is None)
+        if initial_sample is None or initial_log_like is None or initial_log_prior is None:
+            np.random.seed(self.seed)
+
+            # draw initial sample from prior distribution
+            initial_sample = np.array([variable['distribution'].rvs(size=self.num_chains)
+                                        for model_variable in self.model.variables
+                                        for variable_name, variable
+                                        in model_variable.variables.items()]).T
+            initial_log_like = self.eval_log_likelihood(initial_sample)
+            initial_log_prior = self.eval_log_prior(initial_sample)
+
+        self.gamma = gamma
+
+        self.chains[0] = initial_sample
+        self.log_likelihood[0] = initial_log_like
+        self.log_prior[0] = initial_log_prior
+
+        self.log_posterior[0] = self.log_likelihood[0] * self.gamma + self.log_prior[0]
+
 
     def core_run(self):
         """
@@ -219,8 +269,8 @@ class MetropolisHastingsIterator(Iterator):
         1.) Burn-in phase
         2.) Sampling phase
         """
-
-        print('Welcome to Metropolis-Hastings core run.')
+        if not self.as_mcmc_kernel:
+            print('Metropolis-Hastings core run.')
 
         # Burn-in phase
         for i in range(1, self.num_burn_in + 1):
@@ -230,7 +280,7 @@ class MetropolisHastingsIterator(Iterator):
             burn_in_accept_rate = self.accepted / self.num_burn_in
             print("Acceptance rate during burn in: {0}".format(burn_in_accept_rate))
         # reset number of accepted samples
-        self.accepted = 0
+        self.accepted = np.zeros((self.num_chains, 1))
         self.accepted_interval = 0
 
         # Sampling phase
@@ -240,18 +290,24 @@ class MetropolisHastingsIterator(Iterator):
     def post_run(self):
         """ Analyze the resulting chain. """
 
-        initial_sample = self.samples[0]
-        chain_burn_in = self.samples[1 : self.num_burn_in + 1]
-        chain = self.samples[self.num_burn_in + 1:self.num_samples + self.num_burn_in + 1]
+        if self.as_mcmc_kernel:
+            # the iterator is used as MCMC kernel for the Sequential Monte Carlo iterator
+            return [self.chains[-1],
+                    self.log_likelihood[-1],
+                    self.log_prior[-1],
+                    self.log_posterior[-1]]
+        elif self.result_description:
+            initial_samples= self.chains[0]
+            chain_burn_in = self.chains[1: self.num_burn_in + 1]
+            chain_core = self.chains[self.num_burn_in + 1:self.num_samples + self.num_burn_in + 1]
 
-        accept_rate = self.accepted / self.num_samples
+            accept_rate = self.accepted / self.num_samples
 
-        if self.result_description:
             # process output takes a dict as input with key 'mean'
-            results = process_ouputs({'mean': chain,
+            results = process_ouputs({'mean': chain_core,
                                       'accept_rate': accept_rate,
                                       'chain_burn_in': chain_burn_in,
-                                      'initial_sample': initial_sample,
+                                      'initial_sample': initial_samples,
                                       'log_likelihood' : self.log_likelihood,
                                       'log_prior' : self.log_prior,
                                       'log_posterior' : self.log_posterior
@@ -262,10 +318,26 @@ class MetropolisHastingsIterator(Iterator):
                               self.global_settings["output_dir"],
                               self.global_settings["experiment_name"])
 
-            print("Acceptance rate: {}".format(accept_rate))
-            print(f"Covariance of proposal: {self.scale_covariance * self.proposal_distribution.covariance}")
-            print("Size of outputs {}".format(chain.shape))
-            print("\tmean±std: {}±{}".format(results.get('mean', None),
-                                             np.sqrt(results.get('var', None))))
-            print("\tvar: {}".format(results.get('var', None)))
-            print("\tcov: {}".format(results.get('cov', np.array(None)).tolist()))
+            print("Size of outputs {}".format(chain_core.shape))
+            for i in range(self.num_chains):
+                print("#############################################")
+                print(f"Chain {i+1}")
+                print(f"\tAcceptance rate: {accept_rate[i]}")
+                print(f"\tCovariance of proposal : {(self.scale_covariance[i] * self.proposal_distribution.covariance).tolist()}")
+                print("\tmean±std: {}±{}".format(results.get('mean', np.array([np.nan]*self.num_chains))[i],
+                                                 np.sqrt(results.get('var', np.array([np.nan]*self.num_chains))[i])))
+                print("\tvar: {}".format(results.get('var', np.array([np.nan]*self.num_chains))[i]))
+                print("\tcov: {}".format(results.get('cov', np.array([np.nan]*self.num_chains))[i].tolist()))
+
+            data_dict = { variable_name : np.swapaxes(chain_core[:,:,i], 1, 0) for model_variable in self.model.variables for i, (variable_name, variable) in enumerate(model_variable.variables.items())}
+            inference_data = az.convert_to_inference_data(data_dict)
+
+            rhat = az.rhat(inference_data)
+            print(rhat)
+            ess = az.ess(inference_data, relative=True)
+            print(ess)
+            az.plot_trace(inference_data)
+            plt.savefig(f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}_trace.png")
+            az.plot_autocorr(inference_data)
+            plt.savefig(f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}_autocorr.png")
+            plt.close("all")
