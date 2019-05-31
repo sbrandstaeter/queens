@@ -6,7 +6,8 @@ from pqueens.models.model import Model
 from .iterator import Iterator
 from pqueens.utils.process_outputs import write_results
 import matplotlib as mpl
-mpl.use('TkAgg')
+if not mpl.get_backend().lower() == 'agg':
+        mpl.use('TkAgg')
 from matplotlib import pyplot as plt
 
 
