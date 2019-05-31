@@ -77,6 +77,8 @@ class MetropolisHastingsIterator(Iterator):
         self.accepted = 0
         self.accepted_interval = 0
 
+        self.gamma = 1.
+
         self.log_likelihood = np.zeros(tot_num_samples)
         self.log_prior = np.zeros(tot_num_samples)
         self.log_posterior = np.zeros(tot_num_samples)
@@ -167,7 +169,8 @@ class MetropolisHastingsIterator(Iterator):
         # tune covariance of proposal
         if not step_id % self.tune_interval and self.tune:
             accept_rate_interval = self.accepted_interval / self.tune_interval
-            print(f"Current acceptance rate: {accept_rate_interval}.")
+            # TODO: decide if main iterator or not (i.e., kernel)
+            #print(f"Current acceptance rate: {accept_rate_interval}.")
             self.scale_covariance = mcmc_utils.tune_scale_covariance(self.scale_covariance,
                                                                      accept_rate_interval)
             self.accepted_interval = 0
@@ -179,7 +182,7 @@ class MetropolisHastingsIterator(Iterator):
         log_likelihood_prop = self.eval_log_likelihood(proposal)
         log_prior_prop = self.eval_log_prior(proposal)
 
-        log_posterior_prop = log_likelihood_prop + log_prior_prop
+        log_posterior_prop = log_likelihood_prop * self.gamma + log_prior_prop
         log_accept_prob = log_posterior_prop - self.log_posterior[step_id-1]
 
         new_sample, accepted = mcmc_utils.mh_select(log_accept_prob, cur_sample, proposal)
@@ -197,20 +200,32 @@ class MetropolisHastingsIterator(Iterator):
             self.log_prior[step_id] = self.log_prior[step_id-1]
             self.log_posterior[step_id] = self.log_posterior[step_id-1]
 
-    def initialize_run(self):
+    def initialize_run(self, initial_sample=None, initial_log_like=None, initial_log_prior=None, gamma=1.0):
         """ Draw initial sample. """
 
-        print("Initialize Metropolis-Hastings run.")
-        np.random.seed(self.seed)
+        # TODO: decide if main iterator or not
+        #print("Initialize Metropolis-Hastings run.")
 
-        # draw initial sample from prior distribution
-        self.samples[0] = np.array([variable['distribution'].rvs(size=1)
-                                    for model_variable in self.model.variables
-                                    for variable_name, variable
-                                    in model_variable.variables.items()]).T
-        self.log_likelihood[0] = self.eval_log_likelihood(self.samples[0])
-        self.log_prior[0] = self.eval_log_prior(self.samples[0])
-        self.log_posterior[0] = self.log_likelihood[0] + self.log_prior[0]
+        # TODO: check conditions (either all are None or none is None)
+        if initial_sample is None or initial_log_like is None or initial_log_prior is None:
+            np.random.seed(self.seed)
+
+            # draw initial sample from prior distribution
+            initial_sample = np.array([variable['distribution'].rvs(size=1)
+                                        for model_variable in self.model.variables
+                                        for variable_name, variable
+                                        in model_variable.variables.items()]).T
+            initial_log_like = self.eval_log_likelihood(initial_sample)
+            initial_log_prior = self.eval_log_prior(initial_sample)
+
+        self.gamma = gamma
+
+        self.samples[0] = initial_sample
+        self.log_likelihood[0] = initial_log_like
+        self.log_prior[0] = initial_log_prior
+
+        self.log_posterior[0] = self.log_likelihood[0] * self.gamma + self.log_prior[0]
+
 
     def core_run(self):
         """
@@ -219,8 +234,8 @@ class MetropolisHastingsIterator(Iterator):
         1.) Burn-in phase
         2.) Sampling phase
         """
-
-        print('Welcome to Metropolis-Hastings core run.')
+        # TODO: decide if main iterator or not
+        #print('Welcome to Metropolis-Hastings core run.')
 
         # Burn-in phase
         for i in range(1, self.num_burn_in + 1):
@@ -240,32 +255,40 @@ class MetropolisHastingsIterator(Iterator):
     def post_run(self):
         """ Analyze the resulting chain. """
 
-        initial_sample = self.samples[0]
-        chain_burn_in = self.samples[1 : self.num_burn_in + 1]
-        chain = self.samples[self.num_burn_in + 1:self.num_samples + self.num_burn_in + 1]
-
-        accept_rate = self.accepted / self.num_samples
-
         if self.result_description:
-            # process output takes a dict as input with key 'mean'
-            results = process_ouputs({'mean': chain,
-                                      'accept_rate': accept_rate,
-                                      'chain_burn_in': chain_burn_in,
-                                      'initial_sample': initial_sample,
-                                      'log_likelihood' : self.log_likelihood,
-                                      'log_prior' : self.log_prior,
-                                      'log_posterior' : self.log_posterior
-                                     },
-                                     self.result_description)
-            if self.result_description["write_results"]:
-                write_results(results,
-                              self.global_settings["output_dir"],
-                              self.global_settings["experiment_name"])
+            as_mcmc_kernel = self.result_description.get('as_mcmc_kernel', False)
+            if as_mcmc_kernel:
+                # the iterator is used as MCMC kernel for the Sequential Monte Carlo iterator
+                return [self.samples[-1],
+                        self.log_likelihood[-1],
+                        self.log_prior[-1],
+                        self.log_posterior[-1]]
+            else:
+                initial_sample = self.samples[0]
+                chain_burn_in = self.samples[1 : self.num_burn_in + 1]
+                chain = self.samples[self.num_burn_in + 1:self.num_samples + self.num_burn_in + 1]
 
-            print("Acceptance rate: {}".format(accept_rate))
-            print(f"Covariance of proposal: {self.scale_covariance * self.proposal_distribution.covariance}")
-            print("Size of outputs {}".format(chain.shape))
-            print("\tmean±std: {}±{}".format(results.get('mean', None),
-                                             np.sqrt(results.get('var', None))))
-            print("\tvar: {}".format(results.get('var', None)))
-            print("\tcov: {}".format(results.get('cov', np.array(None)).tolist()))
+                accept_rate = self.accepted / self.num_samples
+
+                # process output takes a dict as input with key 'mean'
+                results = process_ouputs({'mean': chain,
+                                          'accept_rate': accept_rate,
+                                          'chain_burn_in': chain_burn_in,
+                                          'initial_sample': initial_sample,
+                                          'log_likelihood' : self.log_likelihood,
+                                          'log_prior' : self.log_prior,
+                                          'log_posterior' : self.log_posterior
+                                         },
+                                         self.result_description)
+                if self.result_description["write_results"]:
+                    write_results(results,
+                                  self.global_settings["output_dir"],
+                                  self.global_settings["experiment_name"])
+
+                print("Acceptance rate: {}".format(accept_rate))
+                print(f"Covariance of proposal: {self.scale_covariance * self.proposal_distribution.covariance}")
+                print("Size of outputs {}".format(chain.shape))
+                print("\tmean±std: {}±{}".format(results.get('mean', None),
+                                                 np.sqrt(results.get('var', None))))
+                print("\tvar: {}".format(results.get('var', None)))
+                print("\tcov: {}".format(results.get('cov', np.array(None)).tolist()))
