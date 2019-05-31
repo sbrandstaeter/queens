@@ -1,4 +1,4 @@
-from .drivers import Driver
+from pqueens.drivers.driver import Driver
 
 #### some comments that will be deleted later #####
 # so far driver options are assambled in cluster_scheduler file which seems to be wrong
@@ -17,12 +17,12 @@ class Baci_driver_native(Driver):
         Returns:
             float: result
     """
-    def __init__(self, base_settings)
+    def __init__(self, base_settings):
         super(Baci_driver_native, self).__init__(base_settings)
 
 
     @classmethod
-    def from_config_create_driver(cls, config, base_settings)
+    def from_config_create_driver(cls, config, base_settings):
         """ Create Driver from input file
 
         Args:
@@ -32,7 +32,7 @@ class Baci_driver_native(Driver):
 
         """
 
-    return cls(base_settings)
+        return cls(base_settings)
 
     def setup_mpi(self): # TODO this is not needed atm
         pass

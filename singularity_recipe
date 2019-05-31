@@ -1,0 +1,31 @@
+BootStrap: docker
+From: continuumio/miniconda3
+
+%help
+This is a singulariy container containing CentOs7 and Python 3.6 as well as necessary QUEENS dependencies to run the latter on a HPC cluster. Central elements are a copy of the Drivers class and the main_remote.py file.
+
+%files
+  pqueens/drivers
+  pqueens/database/mongodb.py
+  pqueens/utils
+  requirements_remote.txt
+  setup_remote.py
+  README.md
+
+
+%labels
+  Maintainer Jonas Nitzler
+  Date 31.05.2019
+
+%post
+  export PATH=/opt/conda/bin:${PATH}
+  conda update -y conda
+  conda create -n QUEENS python=3.6
+  . activate QUEENS
+  pip install -r requirements_remote.txt
+  python setup_remote.py develop
+  conda update --all
+
+%runscript
+  exec python pqueens/remote_main.py $@
+

@@ -1,11 +1,18 @@
 # Imports
 import argparse
 import os
-from pqueens.derivers.driver import Driver
+from pqueens.drivers.driver import Driver
+import sys
+from collections import OrderedDict
+try:
+    import simplejson as json
+except ImportError:
+    import json
+
 def main(args):
     parser = argparse.ArgumentParser()
-    parser.add_argument("job_id", help="specify the job_id so that correct simulation settings can be loaded from the DB", type=int)
-    parser.add_argument("batch", help="specify the batch number of the simulation",type=int)
+    parser.add_argument("--job_id", help="specify the job_id so that correct simulation settings can be loaded from the DB", type=int)
+    parser.add_argument("--batch", help="specify the batch number of the simulation",type=int)
     args =  parser.parse_args()
     job_id = args.job_id
     batch = args.batch

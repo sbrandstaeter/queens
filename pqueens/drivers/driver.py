@@ -6,7 +6,7 @@ import subprocess
 import time
 import importlib.util
 
-class Driver(metaclass=abc.ABCMeta)
+class Driver(metaclass=abc.ABCMeta):
     """ Base class for Drivers
 
     This Driver class is the base class for drivers that actually execute a job on
@@ -51,98 +51,76 @@ class Driver(metaclass=abc.ABCMeta)
             driver: Driver object
 
         """
-        from .drivers import Ansys_driver_native
-        from .drivers import Baci_driver_bruteforce
-        from .drivers import Baci_driver_docker #TODO: Check if this can be deleted toghether with gen_driver -> seems like needed only for tests? Check with JB
-        from .drivers import Baci_driver_native
-        from .drivers import Baci_driver_kaiser #TODO: Rename this driver file
-        from .drivers import Fenics_driver_native #TODO: Rename this driver file and check it
-        from .drivers import Fenics_driver_bruteforce
-        from .drivers import Python_driver
+        from pqueens.drivers.baci_driver_bruteforce import Baci_driver_bruteforce
+        from pqueens.drivers.baci_driver_native import Baci_driver_native
 
-        driver_dict = {'ansys_native': Ansys_driver_native,
-                       'baci_bruteforce': Baci_driver_bruteforce,
-                       'baci_docker': Baci_driver_docker,
-                       'baci_native': Baci_driver_native, # TODO: not necessary..
-                       'baci_kaiser': Baci_driver_kaiser,
-                       'fenics_native': Fenics_driver_native,
-                       'fenics_bruteforce': Fenics_driver_bruteforce}
-
-        if driver_type is None:
-            driver_version = config['driver']['driver_type']
-        else:
-            driver_version = config['driver'][driver_type]
+        driver_dict = {'baci_bruteforce': Baci_driver_bruteforce,
+                       'baci_native': Baci_driver_native}
+        driver_version = config['driver']['driver_type']
         driver_class = driver_dict[driver_version]
-        if scheduler_obj: #TODO: check if this can be deleted!
-            self.mpi_config = {'num_procs' = scheduler_obj.num_procs_per_node}
+###### create base settings #####################
+        driver_options = config['driver']['driver_params']
+        first = list(config['resources'])[0]
+        scheduler_name = config['resources'][first]['scheduler']
+        scheduler_options = config[scheduler_name]
+        base_settings = {}
+        base_settings['experiment_name']= driver_options['experiment_dir']
+        base_settings['job_id']= job_id
+        base_settings['input_file']=None
+        base_settings['output_file']=None
+        base_settings['job']= None
+        base_settings['batch']=batch
+        base_settings['executable']=driver_options['path_to_executable']
+        base_settings['databank']=MongoDB(database_address=config['database']['address'])
+        base_settings['result']=None
+        base_settings['postprocessor']=driver_options['path_to_postprocessor']
+        base_settings['post_options']=driver_options['post_process_options']
+        base_settings['postpostprocessor']=driver_options['post_post_script']
+### here comes some case / if statement dependent on the scheduler type
+        if scheduler_options['scheduler_type'] == 'slurm':
+            # read necessary variables from config
+            num_nodes = scheduler_options['num_nodes']
+            num_procs_per_node = scheduler_options['num_procs_per_node']
+            walltime = scheduler_options['walltime']
+            user_mail = scheduler_options['email']
+            output = scheduler_options['slurm_output']
+            # pre assemble some strings
+            proc_info = '--nodes={} --ntasks={}'.format(num_nodes, num_procs_per_node)
+            walltime_info = '--time={}'.format(walltime)
+            mail_info = '--mail-user={}'.format(user_mail)
+            job_info = '--job-name=queens_{}_{}'.format(base_settings['experiment_name'], base_settings['job_id'])
 
- ###### create base settings #####################
-            driver_options = config['driver']['driver_options']
-            scheduler_name = config['resources']['scheduler']
-            scheduler_options = config[scheduler_name]
-            base_settings['experiment_name']= driver_options['experiment_dir']
-            base_settings['job_id']= job_id
-            base_settings['input_file']=None
-            base_settings['output_file']=None
-            base_settings['job']= None
-            base_settings['batch']=batch
-            base_settings['executable']=driver_options['path_to_executable']
-            base_settings['databank']=MongoDB(database_address=driver_options['database_address'])
-            base_settings['result']=None
-            base_settings['postprocessor']=driver_options['path_to_postprocessor']
-            base_settings['post_options']=driver_options['post_process_options']
-            base_settings['postpostprocessor']=driver_options['post_post_script']
-    ### here comes some case / if statement dependent on the scheduler type
-            if scheduler_options['scheduler_type'] == 'slurm':
-                # read necessary variables from config
-                num_nodes = scheduler_options['num_nodes']
-                num_procs_per_node = scheduler_options['num_procs_per_node']
-                walltime = scheduler_options['walltime']
-                user_mail = scheduler_options['email']
-                output = scheduler_options['slurm_output']
-                # pre assemble some strings
-                proc_info = '--nodes={} --ntasks={}'.format(num_nodes, num_procs_per_node)
-                walltime_info = '--time={}'.format(walltime)
-                mail_info = '--mail-user={}'.format(user_mail)
-                job_info = '--job-name=queens_{}_{}'.format(base_settings['experiment_name'], base_settings['job_id'])
-
-                if output.lower()=="true" or output=="":
-                    command_list = [r'sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
-                elif output.lower()=="false":
-                    command_list = [r'sbatch --mail-type=ALL --output=/dev/null --error=/dev/null', mail_info, job_info, proc_info, walltime_info]
-                else:
-                    raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
-                scheduler_cmd = ' '.join(command_list)
-
-            elif scheduler_options['scheduler_type'] == 'pbs':
-                # read necessary variables from config
-                num_nodes = scheduler_options['num_nodes']
-                num_procs_per_node = scheduler_options['num_procs_per_node']
-                walltime = scheduler_options['walltime']
-                user_mail = scheduler_options['email']
-                queue = scheduler_options['queue']
-                # pre assemble some strings
-                proc_info = 'nodes={}:ppn={}'.format(num_nodes, num_procs_per_node)
-                walltime_info = 'walltime={}'.format(walltime)
-                job_info = 'queens_{}_{}'.format(base_settings['experiment_name'], base_settings['job_id'])
-                command_list = ['qsub', '-M', user_mail, '-m abe', '-N', job_info, '-l', proc_info, '-l', walltime_info, '-q', queue]
-                scheduler_cmd = ' '.join(command_list)
-
-            elif scheduler_options['scheduler_type'] == 'local':
-                scheduler_cmd = None #TODO maybe we need to change this
+            if output.lower()=="true" or output=="":
+                command_list = [r'sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
+            elif output.lower()=="false":
+                command_list = [r'sbatch --mail-type=ALL --output=/dev/null --error=/dev/null', mail_info, job_info, proc_info, walltime_info]
             else:
-                raise ValueError('Driver cannot find a valid scheduler type in JSON file!')
+                raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
+            scheduler_cmd = ' '.join(command_list)
 
+        elif scheduler_options['scheduler_type'] == 'pbs':
+            # read necessary variables from config
+            num_nodes = scheduler_options['num_nodes']
+            num_procs_per_node = scheduler_options['num_procs_per_node']
+            walltime = scheduler_options['walltime']
+            user_mail = scheduler_options['email']
+            queue = scheduler_options['queue']
+            # pre assemble some strings
+            proc_info = 'nodes={}:ppn={}'.format(num_nodes, num_procs_per_node)
+            walltime_info = 'walltime={}'.format(walltime)
+            job_info = 'queens_{}_{}'.format(base_settings['experiment_name'], base_settings['job_id'])
+            command_list = ['qsub', '-M', user_mail, '-m abe', '-N', job_info, '-l', proc_info, '-l', walltime_info, '-q', queue]
+            scheduler_cmd = ' '.join(command_list)
 
-            base_settings['scheduler_cmd']=scheduler_cmd
-
-            driver = driver_class.from_config_create_driver(config, base_settings)
+        elif scheduler_options['scheduler_type'] == 'local':
+            scheduler_cmd = None #TODO maybe we need to change this
         else:
+            raise ValueError('Driver cannot find a valid scheduler type in JSON file!')
 
-           sys.stderr.write("No driver <driver_type> is given in JSON file! Please specify a <driver_type>")
-           # driver_version = config[driver_name]['driver_name']
-           # driver_class = driver_dict[driver_version]
-           # driver = driver_class.from_config_create_driver(config, driver_name, database, base_settings) # check arguments -> should be args of childclass
+
+        base_settings['scheduler_cmd']=scheduler_cmd
+
+        driver = driver_class.from_config_create_driver(config, base_settings)
 
         return driver
 
@@ -168,7 +146,7 @@ class Driver(metaclass=abc.ABCMeta)
         self.do_postprocessing()
         self.do_postpostprocessing() # can be passed in child class
 
-    def run_subprocess(command_string, my_env = None)
+    def run_subprocess(command_string, my_env = None):
         """ Method to run command_string outside of Python """
         if (my_env is None) and ('my_env' in mpi_config):
             p = subprocess.Popen(command_string,
@@ -258,9 +236,9 @@ class Driver(metaclass=abc.ABCMeta)
         """ Change status of job to compleded in database """
 
         if self.result is None:
-            #TODO: errormsg
+            raise RuntimeError("No result!")
         else:
-            self.job['result'] = self.result #TODO: Throw error for result = None
+            self.job['result'] = self.result
             self.job['status'] = 'complete'
             self.job['end time'] = time.time()
             self.database.save(self.job, self.experiment_name, 'jobs', self.batch, {'id' : self.job_id})

@@ -137,8 +137,7 @@ def alive(self, process_id):
         """
         remote_args_list = '--job_id={} --batch={}'.format(job_id, batch) #TODO finalize args
         remote_args = ' '.join(remote_args_list)
-        singularity = #TODO: Check how to switch to singularity env / container
-        cmdlist_remote_main = [self.connect_to_ressource, singularity, './remote_main.py', remote_args]
+        cmdlist_remote_main = [self.connect_to_ressource, './driver.simg', remote_args]
         cmd_remote_main = ' '.join(cmdlist_remote_main)
         stdout, stderr, p = super run_subprocess(cmd_remote_main)
 

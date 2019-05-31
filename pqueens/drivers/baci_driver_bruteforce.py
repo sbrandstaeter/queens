@@ -3,7 +3,7 @@ import json
 import sys
 import importlib.util
 
-from .drivers.driver import Driver
+from pqueens.drivers.driver import Driver
 
 
 class Baci_driver_bruteforce(Driver):
@@ -13,11 +13,11 @@ class Baci_driver_bruteforce(Driver):
 
     Returns:
     """
-    def __init__(self, base_settings)
+    def __init__(self, base_settings):
         super(Baci_driver_bruteforce, self).__init__(base_settings)
 
     @classmethod
-    def from_config_create_driver(cls, config, base_settings)
+    def from_config_create_driver(cls, config, base_settings):
         """ Create Driver from JSON input file
 
         Args:
@@ -25,12 +25,11 @@ class Baci_driver_bruteforce(Driver):
         Returns:
             driver: Baci_driver_bruteforce object
         """
-        num_procs = config[] #TODO args!
         return cls(base_settings)
 
 
     def setup_mpi(self):
-    """ setup MPI environment
+        """ setup MPI environment
 
             Args:
                 num_procs (int): Number of processors to use
