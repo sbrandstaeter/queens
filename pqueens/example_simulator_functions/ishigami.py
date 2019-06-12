@@ -4,7 +4,7 @@ def ishigami(x1, x2, x3, p1=None, p2=None):
     """ Three dimensional benchmark function
 
     Three dimensional benchmark function from [2] used for UQ because it
-    exhibits it exhibit strong nonlinearity and nonmonotonicity.
+    exhibits strong nonlinearity and nonmonotonicity.
     It also has a peculiar dependence on x3, as described [5]).
     The values of a and b used in [1] and [3] are: p_1 = a = 7
     and p_2 = b = 0.1. In [5] the values a = 7 and b = 0.05 are used.
