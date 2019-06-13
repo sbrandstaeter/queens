@@ -17,6 +17,7 @@ import numpy as np
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils import mcmc_utils
+from pqueens.utils import smc_utils
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 
@@ -69,6 +70,7 @@ class MetropolisHastingsIterator(Iterator):
                  result_description,
                  scale_covariance,
                  seed,
+                 temper_type,
                  tune,
                  tune_interval):
         super().__init__(model, global_settings)
@@ -81,6 +83,18 @@ class MetropolisHastingsIterator(Iterator):
 
         self.result_description = result_description
         self.as_mcmc_kernel = as_mcmc_kernel
+
+        if not self.as_mcmc_kernel and temper_type != 'bayes':
+            raise ValueError("Plain MH can not handle tempering.\n"
+                             "Tempering may only be used in conjuntion with SMC. ")
+        # actually this is not completely true: it the generic
+        # tempering type might be useful to generate samples from
+        # generic distributions that are not interpreted as posteriors
+        # in the sense of Bayes rule.
+        # To do so one would need to set temper_type = 'generic'
+        # and fix tempering_parameter = gamma = 1.0
+
+        self.temper = smc_utils.temper_factory(temper_type)
 
         # check agreement of dimensions of proposal distribution and
         # parameter space
@@ -109,8 +123,11 @@ class MetropolisHastingsIterator(Iterator):
 
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None,
-                                    model=None):
+    def from_config_create_iterator(cls,
+                                    config,
+                                    iterator_name=None,
+                                    model=None,
+                                    temper_type='bayes'):
         """
         Create Metropolis-Hastings iterator from problem description
 
@@ -163,6 +180,7 @@ class MetropolisHastingsIterator(Iterator):
                    result_description=result_description,
                    scale_covariance=method_options['scale_covariance'],
                    seed=method_options['seed'],
+                   temper_type=temper_type,
                    tune=tune,
                    tune_interval=tune_interval)
 
@@ -184,13 +202,6 @@ class MetropolisHastingsIterator(Iterator):
             for _, variable in self.model.variables[i].variables.items():
                 log_prior[i] += variable['distribution'].logpdf(chains[i, j])
                 j += 1
-
-        # we could do the following only if the variables all have the same distribution.
-        # they should have but your never know...
-        # j = 0
-        # for _, variable in self.model.variables[0].variables.items():
-        #     log_prior += np.atleast_2d(variable['distribution'].logpdf(chains[:, j])).T
-        #     j += 1
 
         return log_prior
 
@@ -221,7 +232,7 @@ class MetropolisHastingsIterator(Iterator):
         log_likelihood_prop = self.eval_log_likelihood(proposal)
         log_prior_prop = self.eval_log_prior(proposal)
 
-        log_posterior_prop = log_likelihood_prop * self.gamma + log_prior_prop
+        log_posterior_prop = self.temper(log_prior_prop, log_likelihood_prop, self.gamma)
         log_accept_prob = log_posterior_prop - self.log_posterior[step_id-1]
 
         new_sample, accepted = mcmc_utils.mh_select(log_accept_prob, cur_sample, proposal)
@@ -235,7 +246,7 @@ class MetropolisHastingsIterator(Iterator):
         self.log_prior[step_id] = np.where(accepted, log_prior_prop, self.log_prior[step_id-1])
         self.log_posterior[step_id] = np.where(accepted, log_posterior_prop, self.log_posterior[step_id-1])
 
-    def initialize_run(self, initial_sample=None, initial_log_like=None, initial_log_prior=None, gamma=1.0):
+    def initialize_run(self, initial_sample=None, initial_log_like=None, initial_log_prior=None, gamma=1.0, scale_covariance=1.0):
         """ Draw initial sample. """
 
         if not self.as_mcmc_kernel:
@@ -252,14 +263,16 @@ class MetropolisHastingsIterator(Iterator):
                                         in model_variable.variables.items()]).T
             initial_log_like = self.eval_log_likelihood(initial_sample)
             initial_log_prior = self.eval_log_prior(initial_sample)
+            scale_covariance = self.scale_covariance
 
         self.gamma = gamma
+        self.scale_covariance = scale_covariance
 
         self.chains[0] = initial_sample
         self.log_likelihood[0] = initial_log_like
         self.log_prior[0] = initial_log_prior
 
-        self.log_posterior[0] = self.log_likelihood[0] * self.gamma + self.log_prior[0]
+        self.log_posterior[0] = self.temper(self.log_prior[0], self.log_likelihood[0], self.gamma)
 
 
     def core_run(self):
@@ -290,12 +303,14 @@ class MetropolisHastingsIterator(Iterator):
     def post_run(self):
         """ Analyze the resulting chain. """
 
+        avg_accept_rate = np.sum(self.accepted) / (self.num_samples * self.num_chains)
         if self.as_mcmc_kernel:
             # the iterator is used as MCMC kernel for the Sequential Monte Carlo iterator
             return [self.chains[-1],
                     self.log_likelihood[-1],
                     self.log_prior[-1],
-                    self.log_posterior[-1]]
+                    self.log_posterior[-1],
+                    avg_accept_rate]
         elif self.result_description:
             initial_samples= self.chains[0]
             chain_burn_in = self.chains[1: self.num_burn_in + 1]

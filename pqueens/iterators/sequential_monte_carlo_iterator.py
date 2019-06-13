@@ -24,6 +24,7 @@ import scipy
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from pqueens.models.model import Model
+from pqueens.utils import smc_utils
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 
@@ -66,7 +67,8 @@ class SequentialMonteCarloIterator(Iterator):
                  model,
                  num_particles,
                  result_description,
-                 seed):
+                 seed,
+                 temper_type):
         super().__init__(model, global_settings)
         self.result_description = result_description
         self.seed = seed
@@ -97,9 +99,13 @@ class SequentialMonteCarloIterator(Iterator):
         self.ess_cur = 0.
         self.ess_old = 0.
 
-        # blending parameter (linked to counter/ time index)
+        self.temper = smc_utils.temper_factory(temper_type)
+
+        # tempering parameter (linked to counter/ time index)
         self.gamma_cur = 0.
         self.gammas = list()
+
+        self.scale_prop_cov = 1.
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None,
@@ -133,7 +139,7 @@ class SequentialMonteCarloIterator(Iterator):
         # check sanity of MCMC kernel config
         kernel_options = config.get('MCMC_Kernel', None)
         if kernel_options is None:
-            raise ValueError("You need to specify an MCMC Kernel.")
+            raise ValueError("You need to specify a MCMC Kernel.")
         if kernel_options['method_options'].get('as_mcmc_kernel', None) is None:
             raise ValueError("MH iterator needs to be specified as MCMC Kernel.")
         if not (kernel_options['method_options'].get('num_chains', 1) == method_options['num_particles']):
@@ -141,16 +147,20 @@ class SequentialMonteCarloIterator(Iterator):
                           " setting num_chains to num_particles.")
             config['MCMC_Kernel']['method_options']['num_chains'] = method_options['num_particles']
 
+        temper_type = method_options['temper_type']
+
         mcmc_kernel = MetropolisHastingsIterator.from_config_create_iterator(config,
                                                                              iterator_name='MCMC_Kernel',
-                                                                             model=model)
+                                                                             model=model,
+                                                                             temper_type=temper_type)
 
         return cls(global_settings=global_settings,
                    mcmc_kernel=mcmc_kernel,
                    model=model,
                    num_particles=method_options['num_particles'],
                    result_description=result_description,
-                   seed=method_options['seed'])
+                   seed=method_options['seed'],
+                   temper_type=temper_type)
 
     def eval_model(self):
         """ Evaluate model at current sample. """
@@ -208,7 +218,9 @@ class SequentialMonteCarloIterator(Iterator):
 
     def calc_new_weights(self, gamma_new, gamma_old):
 
-        weights_new = self.weights * np.exp( (gamma_new - gamma_old) * self.log_likelihood)
+        weights_new = self.weights * np.exp(
+                self.temper(self.log_prior, self.log_likelihood, gamma_new) -
+                self.temper(self.log_prior, self.log_likelihood, gamma_old) )
         return weights_new
 
     def calc_ess(self, weights):
@@ -326,9 +338,14 @@ class SequentialMonteCarloIterator(Iterator):
             print(f"step {step} gamma: {self.gamma_cur:.5} ESS: {self.ess_cur:.5}")
 
             # Rejuvenate
-            self.mcmc_kernel.initialize_run(self.particles, self.log_likelihood, self.log_prior, self.gamma_cur)
+            self.mcmc_kernel.initialize_run(self.particles, self.log_likelihood, self.log_prior, self.gamma_cur, self.scale_prop_cov)
             self.mcmc_kernel.core_run()
-            self.particles, self.log_likelihood, self.log_prior, self.log_posterior = self.mcmc_kernel.post_run()
+            self.particles, self.log_likelihood, self.log_prior, self.log_posterior, avg_accept_rate = self.mcmc_kernel.post_run()
+
+            if avg_accept_rate < 0.3:
+                self.scale_prop_cov *= 0.8
+            elif avg_accept_rate > 0.7:
+                self.scale_prop_cov *= 1.2
 
             self.draw_trace(step)
 
@@ -358,6 +375,7 @@ class SequentialMonteCarloIterator(Iterator):
             mean = np.sum(np.multiply(np.squeeze(normalized_weights), self.particles.T).T, axis=0)
             var = np.sum(np.multiply(np.squeeze(normalized_weights), np.power(self.particles - mean, 2).T).T, axis=0)
             std = np.sqrt(var)
+
             print("\tESS: {}".format(self.ess_cur))
             print(f"\tIS mean±std: {mean}±{std}")
 
