@@ -24,7 +24,7 @@ class Model(metaclass=abc.ABCMeta):
         responses (list):               Set of responses corresponding to variables
     """
 
-    def __init__(self, name, uncertain_parameters):
+    def __init__(self, name=None, uncertain_parameters=None):
         """ Init model object
 
         Args:
@@ -56,7 +56,8 @@ class Model(metaclass=abc.ABCMeta):
         model_dict = {'simulation_model': SimulationModel,
                       'datafit_surrogate_model': DataFitSurrogateModel,
                       'datafit_surrogate_model_mf': MFDataFitSurrogateModel,
-                      'multi_fidelity_model' : MultifidelityModel}
+                      'multi_fidelity_model' : MultifidelityModel,
+                      'bmfmc_model' : BMFMCModel}
 
         model_options = config[model_name]
         model_class = model_dict[model_options["type"]]

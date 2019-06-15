@@ -20,7 +20,7 @@ class Iterator(metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, model, global_settings):
+    def __init__(self, model=None, global_settings=None): #TODO model should be deleted here
         self.model = model
         self.global_settings = global_settings
 
