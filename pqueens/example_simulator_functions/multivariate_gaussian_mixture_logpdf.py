@@ -3,7 +3,8 @@ Weighted mixture of 2 multivariate Gaussian distributions.
 """
 
 import numpy as np
-import scipy.stats
+
+from pqueens.utils import mcmc_utils
 
 dim = 4
 
@@ -16,8 +17,8 @@ cov = (std ** 2) * np.eye(dim)
 weight1 = 0.1
 weight2 = (1 - weight1)
 
-gaussian1 = scipy.stats.multivariate_normal(mean=mean1, cov=cov)
-gaussian2 = scipy.stats.multivariate_normal(mean=mean2, cov=cov)
+gaussian1 = mcmc_utils.NormalProposal(mean=mean1, covariance=cov)
+gaussian2 = mcmc_utils.NormalProposal(mean=mean2, covariance=cov)
 
 def gaussian_mixture_logpdf(x1, x2, x3, x4):
     """ Multivariate Gaussian Mixture likelihood model

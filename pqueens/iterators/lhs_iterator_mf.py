@@ -3,7 +3,7 @@ from pyDOE import lhs
 from .iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.models.multifidelity_model import MultifidelityModel
-from .scale_samples import scale_samples
+from pqueens.utils.scale_samples import scale_samples
 
 # TODO add test cases for mf LHS iterator
 class MF_LHSIterator(Iterator):

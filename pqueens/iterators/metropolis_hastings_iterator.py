@@ -158,7 +158,15 @@ class MetropolisHastingsIterator(Iterator):
         name_proposal_distribution = method_options['proposal_distribution']
         proposal_options = config.get(name_proposal_distribution, None)
         if proposal_options is not None:
-            proposal_distribution = mcmc_utils.create_proposal_distribution(proposal_options)
+            distribution_type =  proposal_options['type']
+            # translate proposal_options to distribution_options of random_variables
+            distribution_options = {'distribution': distribution_type,
+                                    'distribution_parameter': list([np.squeeze(proposal_options['mean']),
+                                                                    np.squeeze(proposal_options['cov'])
+                                                                    ]
+                                                                   )
+                                    }
+            proposal_distribution = mcmc_utils.create_proposal_distribution(distribution_options)
         else:
             raise ValueError(f'Could not find proposal distribution'
                              f' "{name_proposal_distribution}" in input file.')
@@ -246,29 +254,29 @@ class MetropolisHastingsIterator(Iterator):
         self.log_prior[step_id] = np.where(accepted, log_prior_prop, self.log_prior[step_id-1])
         self.log_posterior[step_id] = np.where(accepted, log_posterior_prop, self.log_posterior[step_id-1])
 
-    def initialize_run(self, initial_sample=None, initial_log_like=None, initial_log_prior=None, gamma=1.0, scale_covariance=1.0):
+    def initialize_run(self, initial_samples=None, initial_log_like=None, initial_log_prior=None, gamma=1.0, scale_covariance=1.0):
         """ Draw initial sample. """
 
         if not self.as_mcmc_kernel:
             print("Initialize Metropolis-Hastings run.")
 
         # TODO: check conditions (either all are None or none is None)
-        if initial_sample is None or initial_log_like is None or initial_log_prior is None:
+        if initial_samples is None or initial_log_like is None or initial_log_prior is None:
             np.random.seed(self.seed)
 
             # draw initial sample from prior distribution
-            initial_sample = np.array([variable['distribution'].rvs(size=self.num_chains)
-                                        for model_variable in self.model.variables
-                                        for variable_name, variable
-                                        in model_variable.variables.items()]).T
-            initial_log_like = self.eval_log_likelihood(initial_sample)
-            initial_log_prior = self.eval_log_prior(initial_sample)
+            initial_samples = np.atleast_2d([variable['distribution'].draw(num_draws=self.num_chains)
+                                             for model_variable in self.model.variables
+                                             for variable_name, variable
+                                             in model_variable.variables.items()])
+            initial_log_like = self.eval_log_likelihood(initial_samples)
+            initial_log_prior = self.eval_log_prior(initial_samples)
             scale_covariance = self.scale_covariance
 
         self.gamma = gamma
         self.scale_covariance = scale_covariance
 
-        self.chains[0] = initial_sample
+        self.chains[0] = initial_samples
         self.log_likelihood[0] = initial_log_like
         self.log_prior[0] = initial_log_prior
 
@@ -343,6 +351,7 @@ class MetropolisHastingsIterator(Iterator):
                                                  np.sqrt(results.get('var', np.array([np.nan]*self.num_chains))[i])))
                 print("\tvar: {}".format(results.get('var', np.array([np.nan]*self.num_chains))[i]))
                 print("\tcov: {}".format(results.get('cov', np.array([np.nan]*self.num_chains))[i].tolist()))
+            print("#############################################")
 
             data_dict = { variable_name : np.swapaxes(chain_core[:,:,i], 1, 0) for model_variable in self.model.variables for i, (variable_name, variable) in enumerate(model_variable.variables.items())}
             inference_data = az.convert_to_inference_data(data_dict)

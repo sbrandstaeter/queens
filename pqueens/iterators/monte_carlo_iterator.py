@@ -4,7 +4,7 @@ from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 from pqueens.randomfields.univariate_field_generator_factory import UniVarRandomFieldGeneratorFactory
-from pqueens.utils.input_to_random_variable import get_distribution_object
+from pqueens.utils import mcmc_utils
 from pqueens.utils.input_to_random_variable import get_random_samples
 
 
@@ -104,7 +104,7 @@ class MonteCarloIterator(Iterator):
                 print("rf corrstruct {}".format(rf.get("corrstruct")))
                 # create appropriate random field generator
                 my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                    get_distribution_object(rf),
+                    mcmc_utils.create_proposal_distribution(rf),
                     rf.get("dimension"),
                     rf.get("corrstruct"),
                     rf.get("corr_length"),

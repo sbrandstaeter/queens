@@ -117,6 +117,7 @@ class Model(metaclass=abc.ABCMeta):
 
         for i in range(num_data_vectors):
             self.variables[i].update_variables_from_vector(data[i, :])
+
     def convert_array_to_model_variables(self, data):
         """ Convert input data to model variables
 

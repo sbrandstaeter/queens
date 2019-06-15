@@ -1,4 +1,4 @@
-from pqueens.utils.input_to_random_variable import get_distribution_object
+from pqueens.utils import mcmc_utils
 import numpy as np
 
 class Variables(object):
@@ -32,7 +32,7 @@ class Variables(object):
             self.variables[key]['size'] = my_size
             self.variables[key]['value'] = values[i:i+my_size]
             self.variables[key]['type'] = data['type']
-            self.variables[key]['distribution'] = get_distribution_object(data)
+            self.variables[key]['distribution'] = mcmc_utils.create_proposal_distribution(data)
             self.variables[key]['active'] = active[i]
             i += 1
 

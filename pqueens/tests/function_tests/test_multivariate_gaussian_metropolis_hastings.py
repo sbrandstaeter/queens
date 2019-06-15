@@ -14,10 +14,10 @@ def test_multivariate_gaussian_metropolis_hastings(tmpdir):
         results = pickle.load(handle)
 
     # note that the analytical solution would be:
-    # posterior mean: [0.29378531 - 1.97175141]
+    # posterior mean: [0.29378531 -1.97175141]
     # posterior cov: [[0.42937853 0.00282486] [0.00282486 0.00988701]]
     # however, we only have a very inaccurate approximation here:
 
-    np.testing.assert_allclose(results['mean'], np.array([[+0.7240107551260684, -2.045891088599629]]))
-    np.testing.assert_allclose(results['cov'], np.array([[[+0.30698538649168755, -0.02705999107555727],
-                                                         [-0.02705999107555727, +0.00401636572538941]]]))
+    np.testing.assert_allclose(results['mean'], np.array([[-0.6617825437718209, -0.8987041259572249]]))
+    np.testing.assert_allclose(results['cov'], np.array([[[0.4530521248041719, -0.10537928263612602],
+                                                          [-0.10537928263612602, 0.037124714876106704]]]))

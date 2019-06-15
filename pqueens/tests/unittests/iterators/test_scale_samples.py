@@ -5,7 +5,7 @@ Created on November 20th  2017
 '''
 import unittest
 import numpy as np
-from pqueens.iterators.scale_samples import scale_samples
+from pqueens.utils.scale_samples import scale_samples
 
 class TestScaleSamples(unittest.TestCase):
     def setUp(self):
@@ -18,15 +18,15 @@ class TestScaleSamples(unittest.TestCase):
             self.samples[:, i] = np.random.uniform(0, 1, self.num_samples)
 
         first_distribution = {}
-        first_distribution['distribution'] = 'uniform'
+        first_distribution['distribution'] = "uniform"
         first_distribution['distribution_parameter'] = [-3.14159265359, 3.14159265359]
 
         second_distribution = {}
-        second_distribution['distribution'] = 'normal'
-        second_distribution['distribution_parameter'] = [0, 2]
+        second_distribution['distribution'] = "normal"
+        second_distribution['distribution_parameter'] = [0, 4]
 
         third_distribution = {}
-        third_distribution['distribution'] = 'lognormal'
+        third_distribution['distribution'] = "lognormal"
         third_distribution['distribution_parameter'] = [1, 2]
 
 
@@ -45,15 +45,15 @@ class TestScaleSamples(unittest.TestCase):
         # setup some other distribution dicts with unadmissible distribution
         # parameters
         wrong_uniform_distribution = {}
-        wrong_uniform_distribution['distribution'] = 'uniform'
+        wrong_uniform_distribution['distribution'] = "uniform"
         wrong_uniform_distribution['distribution_parameter'] = [0, -2]
 
         wrong_normal_distribution = {}
-        wrong_normal_distribution['distribution'] = 'normal'
-        wrong_normal_distribution['distribution_parameter'] = [0, -2]
+        wrong_normal_distribution['distribution'] = "normal"
+        wrong_normal_distribution['distribution_parameter'] = [0, -4]
 
         wrong_lognormal_distribution = {}
-        wrong_lognormal_distribution['distribution'] = 'lognormal'
+        wrong_lognormal_distribution['distribution'] = "lognormal"
         wrong_lognormal_distribution['distribution_parameter'] = [0, -2]
 
 

@@ -198,7 +198,7 @@ class SequentialMonteCarloIterator(Iterator):
 
         # draw initial particles from prior distribution
         for i in range(self.num_particles):
-            self.particles[i] = np.array([variable['distribution'].rvs(size=1)
+            self.particles[i] = np.array([variable['distribution'].draw(num_draws=1)
                                         for model_variable in self.model.variables
                                         for variable_name, variable
                                         in model_variable.variables.items()]).T

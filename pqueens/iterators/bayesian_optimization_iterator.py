@@ -58,8 +58,11 @@ class BayesOptIterator(Iterator):
 
 
         gpflow_params = []
-        # TODO what happens for non-uniform input??
         for param_name, param_info in random_variables.items():
+            # TODO: what happens for non-uniform input??
+            #  Note: if generalized, beware the parametrization of normals
+            if param_info['distribution'] != 'uniform':
+                raise ValueError('Currently, LHS Sampling only supports uniform input.')
             gpflow_params.append(ContinuousParameter(param_name,
                                                      param_info["distribution_parameter"][0],
                                                      param_info["distribution_parameter"][1]))
