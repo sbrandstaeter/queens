@@ -9,7 +9,6 @@ from .scale_samples import scale_samples
 from pqueens.database import mongodb as db
 from pqueens.iterators.data_iterator import DataIterator
 import os
-
 class BmfmcIterator(Iterator):
     """ Basic BMFMC Iterator to enable selective sampling for the hifi-lofi
         model (the basis was a standard LHCIterator). Additionally the BMFMC
@@ -27,7 +26,7 @@ class BmfmcIterator(Iterator):
         outputs (np.array):   Array with all model outputs
 
     """
-    def __init__(self, lf_data_iterators, hf_data_iterators, result_description, experiment_dir):
+    def __init__(self, lf_data_iterators, hf_data_iterator, result_description, experiment_dir):
 
         super(BmfmcIterator, self).__init__() # Input prescribed by iterator.py
         self.model = None
@@ -68,8 +67,9 @@ class BmfmcIterator(Iterator):
         lf_data_paths = method_options["path_to_lf_data"] # necessary to substract that name from name list of all models for evaluation
 
         hf_data_path = method_options["path_to_hf_data"]
-
-        lf_data_iterators = DataIterator(lf_data_paths, None, None) #TODO modify data iterator so that a list of iterator objects can be returned if a list of paths is given
+        lf_data_iterators = []
+        for _,path in enumerate(lf_data_paths):
+            lf_data_iterators.append(DataIterator(path, None, None))
         hf_data_iterator = DataIterator(hf_data_path, None, None)
 
         return cls(lf_data_iterators, hf_data_iterator, result_description, experiment_dir)
@@ -130,9 +130,9 @@ class BmfmcIterator(Iterator):
 
                 # write new pickle file for subsequent analysis with matching data
                 with open(path_to_train_data,'wb') as handle: #TODO: give better name according to experiment and choose better location
-                pickle.dump([self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out],handle,protocol=pickle.HIGHEST_PROTOCOL) #TODO: check if list is right format here
+                    pickle.dump([self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out],handle,protocol=pickle.HIGHEST_PROTOCOL) #TODO: check if list is right format here
         # CREATE the underlying model
-         bmfmc_model = BMFMCModel.from_config_create_model(config, self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out) # TODO: HERE we actualluy define the BMFMC_model and bypass the input arg
+        bmfmc_model = BMFMCModel.from_config_create_model(config, self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out) # TODO: HERE we actualluy define the BMFMC_model and bypass the input arg
 
 ####### TODO: This needs still to be implemented to run HF directly from this iterator for initial desing
         """ Run Analysis on all models """

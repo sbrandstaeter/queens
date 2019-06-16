@@ -16,7 +16,7 @@ class BmfmcInterface(Interface):
 
     """
 
-    def __init__(self, interface_name, approximation_config, variables):
+    def __init__(self, approximation_config, variables=None):
         """ Create interface
 
         Args:
@@ -25,35 +25,12 @@ class BmfmcInterface(Interface):
             variables (dict):            Dictionary with variables
 
         """
-        self.name = interface_name
-        self.variables = variables
+        self.variables = variables # TODO: This is acutally not used I think!
         self.approximation_config = approximation_config
         self.approximation = None
         self.approx_init = False
 
-    @classmethod
-    def from_config_create_interface(cls, interface_name, config):
-        """ Create interface from config dictionary
 
-        Args:
-            interface_name (str):   Name of interface
-            config (dict):          Dictionary containing problem description
-
-        Returns:
-            interface:              Instance of ApproximationInterface
-        """
-        interface_options = config[interface_name]
-        approximation_name = interface_options["approximation"]
-        approximation_config = config[approximation_name]
-        parameters = config['parameters']
-
-        # initialize object
-        return cls(interface_name, approximation_config, parameters)
-
-
-# TODO: Samples are chosen by iterator but can now be python tuples for
-# implicit functions rather than plain x_vec data (For now it stays a x--> y
-# mapping for the first trials)
     def map(self, samples):
         """ Mapping function which calls the regression approximation
         Prediction with the trained regression function / surrogate
@@ -74,17 +51,9 @@ class BmfmcInterface(Interface):
         # get inputs as array and reshape
         num_active_vars = samples[0].get_number_of_active_variables()
         inputs = np.reshape(np.array(inputs), (-1, num_active_vars), order='F')
-        output = self.approximation.predict_f(inputs)
-        # TODO: output was changed to contain now mean and variance of
-        # predictive distribution. For more multi-fidelity models those values
-        # become vectors/ for implicit curves the model should be changed to
-        # return the conditional (gaussian) distributions / for now only y mean
-        # and variance are predicted as still explicit formulation
-        return output
+        mean, var = self.approximation.predict(inputs) # we chose an option with the additional likelihood noise already added to the predictive variance (integration over all possible models already done)
+        return mean, var
 
-# This function is called in the model class and Xtrain/Ytrain are there called
-# via iterator.samples and iterator.db --> Define Points for regression in
-# iterator
     def build_approximation(self, Xtrain, Ytrain):
         """ Build and train underlying regression model
 
@@ -92,9 +61,8 @@ class BmfmcInterface(Interface):
             Xtrain (np.array):  Training inputs
             Ytrain (np.array):  Training outputs
         """
-        # TODO: Check if this syntax still holds for more dimensions or implicit
-        # unsupervised learning!
         self.approximation = RegressionApproximation.from_options(self.approximation_config, Xtrain, Ytrain)
+
         self.approximation.train()
         self.approx_init = True
 

@@ -1,9 +1,10 @@
 import numpy as np
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.data_iterator import DataIterator
-from pqueens.interfaces.interface import Interface
+from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from . model import Model
 from . simulation_model import SimulationModel
+import scipy.stats as st
 
 class BMFMCModel(Model):
     """ Bayesian Multi-fidelity class
@@ -12,7 +13,7 @@ class BMFMCModel(Model):
 
     """
 
-    def __init__(self, interface, train_in, lfs_train_out, hf_train_out, lf_mc_in, lfs_mc_out, subordinate_model,
+    def __init__(self, approximation_settings,train_in, lfs_train_out, hf_train_out, lf_mc_in, lfs_mc_out, subordinate_model,
                  subordinate_iterator, eval_fit, error_measures, active_learning, features_config):
         """ Initialize data fit surrogate model
 
@@ -29,18 +30,31 @@ class BMFMCModel(Model):
             error_measures (list):          List of error measures to compute
 
         """
-        self.interface = interface
+        self.interface = None # gets initialized after feature space is build
+        self.approximation_settings = approximation_settings
         self.subordinate_model = subordinate_model # this is important for active learning
         self.subordinate_iterator = subordinate_iterator # this is the initial design pickle file (active learning is implemented in model)
         self.eval_fit = eval_fit
         self.error_measures = error_measures
         self.train_in = train_in
         self.hf_train_out = hf_train_out
-        self.lfs_train_out = lfs_train_out
+        self.lfs_train_out = lfs_train_out #TODO in general check for column or row data format
         self.lf_mc_in = lf_mc_in
         self.lfs_mc_out = lfs_mc_out
         self.active_learning_flag = active_learning
         self.features_config = features_config
+        self.features_test = None
+        self.features_train = None
+        self.manifold_train = lfs_train_out # This is just an initialization
+        self.manifold_test = lfs_mc_out
+        self.f_mean_pred = None
+        self.yhf_var_pred = None
+        self.support_pyhf = None
+        self.pyhf_mean_vec = None
+        self.pyhf_var_vec = None
+        self.uncertain_parameters=None # This will be set in feature space method-> dict to know which variables are used in regression model
+
+        super(BMFMCModel, self).__init(name='bmfmc_model',uncertain_parameters=None, data_flag=True) # Super call seems necessary to have access to parent class methods but we set parameters to None first and override in feature space method
         #model parameters can be accessed over self.variables as renamed like this in parent class
 
     @classmethod
@@ -61,22 +75,22 @@ class BMFMCModel(Model):
         error_measures = options["error_measures"]
         active_learning = config['method']['method_options']['active_learning']
 ############## Active learning #############################
-        if config['method']['method_options']['active_learning'] == "True":
+        if active_learning == "True":
             # TODO: iterator to iterate on joint density (below is just old stuff)
             result_description = None
             global_settings = config.get("global_settings", None)
             subordinate_iterator = DataIterator(path_to_data, result_description, global_settings)
             # TODO: create subordinate model for active learning
             subordinate_model_name = model_options["subordinate_model"]
-            subordinate_model = SimulationModel.from_config_create_model(subordinate_model_name,
+            subordinate_model = SimulationModel.from_config_create_model(subordinate_model_name)
         else:
             subordinate_model = None
 ############# End: Active learning ################################
-        # create interface for the bmfmc model (not the job interface for active learning)
-        interface = Interface.from_config_create_interface('bmfmc_interface', config)
+
+        approximation_settings = config["joint_density_approx"]["approx_settings"]
         features_config = config["joint_density_approx"]["features_config"]
 
-        return cls(interface, train_in, lfs_train_out, hf_train_out, lf_mc_in, lfs_mc_out, subordinate_model,
+        return cls(approximation_settings,train_in, lfs_train_out, hf_train_out, lf_mc_in, lfs_mc_out, subordinate_model,
                    subordinate_iterator, eval_fit, error_measures, active_learning, features_config)
 
     #TODO: This needs to be checked--> what should be evaluated surrogate or hf marginal statistics...
@@ -89,26 +103,23 @@ class BMFMCModel(Model):
         if not self.interface.is_initiliazed():
             self.build_approximation()
 
-        # variables are basically all LF MC runs (not GP LF training points) that need to be made available below
-        # run trained model on all LF points and possible features at x to get mean and variane of GP on these points
-        joint_mean_vec, joint_var_vec = self.interface.map(self.variables) #TODO variables need to be changed to LF MC
+        self.f_mean_pred, self.yhf_var_pred = self.interface.map(self.manifold_test) #TODO the variables (here) manifold must probably an object from the variable class!
         # run methods for marginal statistics with above results as input
-        pyhf_mean_vec = self.compute_pyhf_mean(self.variables,joint_mean_vec,joint_var_vec)
-        pyhf_var_vec = self.compute_pyhf_var(self.variables,joint_mean_vec,joint_var_vec)
-        # save results in appropriate data format as the "response"
-        self.response = #TODO
-        return self.response
+        self.compute_pyhf_statistics()
+
+        return self.f_mean_pred, self.yhf_var_pred # TODO for now we return the hf output and its variacne and return the densities later
 
     def build_approximation(self):
         """ Build underlying approximation """
-
+        self.create_features()
         #TODO implement proper active learning with subiterator below
-         if self.active_learning == "True":
+        if self.active_learning == "True":
             self.subordinate_iterator.run()
 
         # train regression model on the data
-         self.interface.build_approximation(self.initial_samples, self.initial_output) #TODO: Change in /outputs to appropriate training inputs of jount model !!! --> with features?
+        self.interface.build_approximation(self.manifold_train, self.hf_train_out) #TODO: Change in /outputs to appropriate training inputs of jount model !!! --> with features?
 
+        # TODO below might be wrong error measure
         if self.eval_fit == "kfold":
             error_measures = self.eval_surrogate_accuracy_cv(X=X, Y=Y, k_fold=5,
                                                              measures=self.error_measures)
@@ -187,16 +198,75 @@ class BMFMCModel(Model):
             raise NotImplementedError("Desired error measure is unknown!")
         return error
 
-    def compute_pyhf_mean(variables,joint_mean_vec,joint_var_vec):
-        pass
+    def compute_pyhf_statistics(self):
+        yhf_min = np.min(self.hf_train_out)
+        yhf_max = np.max(self.hf_train_out)
+        self.support_pyhf = np.linspace(0.5*yhf_min,1.5*yhf_max,300)
 
-    def compute_pyhf_var(variables,joint_mean_vec,joint_var_vec):
-        pass
+        #### pyhf mean prediction ######
+        pyhf_mean_vec = np.zeros(self.support_pyhf.shape)
+        for (mean,var) in zip(self.f_mean_pred, self.yhf_var_pred):
+            pyhf_mean_vec = pyhf_mean_vec + st.norm.pdf(self.support_pyhf,mean,np.sqrt(var))
+        self.pyhf_mean_vec = 1/self.f_mean_pred.size * pyhf_mean_vec
+        #### pyhf var prediction
+        pyhf_squared = np.zeros(self.support_pyhf.shape)
+        support_grid = np.meshgrid(self.support_pyhf,self.support_pyhf)
+        for (mean1, var1,inp1) in zip(self.f_mean_pred,self.yhf_var_pred,self.manifold_test):
+            for (mean2, var2,inp2) in zip(self.f_mean_pred,self.yhf_var_pred,self.manifold_test):
+                f_covariance = (inp1,inp2) #TODO get GP posterior covariance fun
+                mean_vec = np.vstack([mean1,mean2])
+                sigma_mat = np.array([[var1,f_covariance],[f_covariance, var2]])
+                pyhf_squared = pyhf_squared + st.multivariate_normal.pdf(support_grid,mean_vec,sigma_mat)
+        pyhf_squared_var = np.diag(pyhf_squared)
+        self.pyhf_var_vec = 1/self.f_mean_pred.size**2*pyhf_squared_var -(self.pyhf_mean_vec)**2
+
+
 
     def create_features(self):
         # load some configs --> stopping criteria / max, min dimensions, input vars ...
+        if self.features_config["method"] == "manual":
+            idx_vec = features_config["settings"]
+            self.features_train = self.lfs_train_out[:,idx_vec]
+            self.features_test = self.lfs_mc_out[:,idx_vec]
+            self.manifold_train = np.hstack([self.lfs_train_out, self.features_train])
+            self.manifold_test = np.hstack([self.lfs_mc_out, self.features_test])
+        elif self.features_config["method"] == "deep":
+            self.features_train, self.features_test = self.deep_learning()
+            self.manifold_train = np.hstack([self.lfs_train_out, self.features_train])
+            self.manifold_test = np.hstack([self.lfs_mc_out, self.features_test])
+        elif self.features_config["method"] == "none":
+            pass
+        else:
+            raise ValueError('Feature space method is specified in input file is unknown!')
         # take the lf mc input and output and learn deep feature dimensions
         # add some kind of error check to stop adding features
         # Add feature dim value to training data set so that numeric value of feature dim corresponds to num value of LF/HF
-        pass
+######### Set the variables for the regression after feature space in now known #################
+        self.uncertain_parameters = {} #TODO some kind of dict to know which variables are used
+        num_lfs = self.lfs_train_out.shape[1] # TODO check if this is correct
+        # set the random variable for the LFs first
+        for counter, value in enumerate(self.manifold_test.T): # iteratre over all lfs
+            if counter < num_lfs-1:
+                key = "LF{}".format(counter)
+            else:
+                key = "".format(counter-num_lfs-1)
 
+            #self.uncertain_parameters["random_variables"][key]['size'] = my_size
+            self.uncertain_parameters["random_variables"][key]['value'] = value # we assume only 1 column per dim
+            #self.uncertain_parameters["random_variables"][key]['type'] = float
+            #self.uncertain_parameters["random_variables"][key]['distribution'] = None  #TODO check
+
+        # Append random variables for the feature dimensions (random fields are not necessary so far)
+
+        Model.variables = [Variables.from_data_vector_create(self.uncertain_paramerters,self.manifold_test)] #TODO check if data format of manifold_test is correct
+
+
+
+########## create interfafjafkce for the bmfmc model (not the job interface for active learning) #########
+        self.interface = BMFMCInterface(self.approximation_settings)
+######### interface end ##############################################
+
+    def deep_learning(self):
+        # check for method settings to choose right calculation
+        # train deep learning with lf mc data
+        return features

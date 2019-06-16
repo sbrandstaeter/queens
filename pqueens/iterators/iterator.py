@@ -42,17 +42,18 @@ class Iterator(metaclass=abc.ABCMeta):
         from .data_iterator import DataIterator
         from .lhs_iterator import LHSIterator
         from .lhs_iterator_mf import MF_LHSIterator
-        from .metropolis_hastings_iterator import MetropolisHastingsIterator
+        #from .metropolis_hastings_iterator import MetropolisHastingsIterator
         from .monte_carlo_iterator import MonteCarloIterator
         from .morris_salib_wrapper_iterator import MorrisSALibIterator
         from pqueens.iterators.optimization_iterator import OptimizationIterator
         from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
+        from .bmfmc_iterator import BmfmcIterator
 
         method_dict = {'bayesian_optimization': BayesOptIterator,
                        'lhs': LHSIterator,
                        'lhs_mf': MF_LHSIterator,
-                       'metropolis_hastings' : MetropolisHastingsIterator,
+                       #'metropolis_hastings' : MetropolisHastingsIterator,
                        'monte_carlo': MonteCarloIterator,
                        'optimization' : OptimizationIterator,
                        'read_data_from_file': DataIterator,

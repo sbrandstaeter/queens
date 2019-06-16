@@ -1,11 +1,11 @@
 {
-  "experiment-name" : "bmfmc_fsi",
+  "experiment_name" : "bmfmc_fsi",
   "database"  :{
     "address"   : "localhost:27017",
     "drop_existing" : "True"
   },
   "method": {
-    "method_name": "bmfmc_iterator",
+    "method_name": "bmfmc",
     "method_options" :{
       "path_to_lf_data" : ["/home/nitzler/workspace/PYHTON_Tests/LF_combined_cleaned.pickle"],
       "path_to_hf_data" : "/home/nitzler/workspace/PYTHON_Tests/HF_cleaned.pickle",
@@ -17,18 +17,16 @@
         "plot_results" : false
       }
     },
-  "joint_density_approx": { #TODO we skip the explicit call of the approx interface and declare this directly in file
+  "joint_density_approx": {
     "type" : "gp_approximation_gpy",
-    "ard" : "True",
-    "length_scale" : 1,
-    "variance" : 1,
+    "approx_settings":{
+      "ard" : "True",
+      "length_scale" : 1,
+      "variance" : 1},
     "error_measures": ["LOOCV"],
-    "eval_fit" : "",
-    "features_config" : ""
+    "eval_fit" : "None",
+    "features_config" : "None"
     }
   }
  }
-
- Add
- "global_settings"
 

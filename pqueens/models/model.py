@@ -24,7 +24,7 @@ class Model(metaclass=abc.ABCMeta):
         responses (list):               Set of responses corresponding to variables
     """
 
-    def __init__(self, name=None, uncertain_parameters=None):
+    def __init__(self, name=None, uncertain_parameters=None, data_flag=None):
         """ Init model object
 
         Args:
@@ -34,7 +34,11 @@ class Model(metaclass=abc.ABCMeta):
         """
         self.name = name
         self.uncertain_parameters = uncertain_parameters
-        self.variables = [Variables.from_uncertain_parameters_create(uncertain_parameters)]
+        if data_flag is not None:
+            self.variables = None # use None as a placeholder and set variables from data in children class later
+        else:
+            self.variables = [Variables.from_uncertain_parameters_create(uncertain_parameters)]
+
         self.response = [None]
 
     @classmethod
