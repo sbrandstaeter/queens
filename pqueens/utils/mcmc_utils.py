@@ -162,7 +162,7 @@ class NormalProposal(ProposalDistribution):
             # safety checks
             if size_dim_1 != size_dim_2:
                 raise ValueError("Covariance matrix is not quadratic.")
-            if not (covariance.T == covariance).all():
+            if not np.allclose(covariance.T, covariance):
                 raise ValueError("Covariance matrix is not symmetric.")
             dimension = size_dim_1
         else:

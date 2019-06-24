@@ -84,17 +84,32 @@ class MetropolisHastingsIterator(Iterator):
         self.result_description = result_description
         self.as_mcmc_kernel = as_mcmc_kernel
 
-        if not self.as_mcmc_kernel and temper_type != 'bayes':
-            raise ValueError("Plain MH can not handle tempering.\n"
-                             "Tempering may only be used in conjuntion with SMC. ")
-        # actually this is not completely true: it the generic
-        # tempering type might be useful to generate samples from
-        # generic distributions that are not interpreted as posteriors
-        # in the sense of Bayes rule.
-        # To do so one would need to set temper_type = 'generic'
-        # and fix tempering_parameter = gamma = 1.0
+        if not self.as_mcmc_kernel:
+            # actually this is not completely true: it the generic
+            # tempering type might be useful to generate samples from
+            # generic distributions that are not interpreted as posteriors
+            # in the sense of Bayes rule.
+            # To do so one would need to set temper_type = 'generic'
+            # and fix tempering_parameter = gamma = 1.0
+            if temper_type != 'bayes':
+                raise ValueError("Plain MH can not handle tempering.\n"
+                                 "Tempering may only be used in conjunction with SMC. ")
+
+            self.tune = tune
+            # TODO change back to a scalar value.
+            #  Otherwise the diagnostics tools might not make sense
+            self.scale_covariance = np.ones((self.num_chains, 1)) * scale_covariance
+
+        else:
+            # scaling and tuning of proposal distribution is done within SMC
+            self.tune = False
+            self.scale_covariance = 1.0
 
         self.temper = smc_utils.temper_factory(temper_type)
+        # fixed within MH, adapted by SMC if needed
+        self.gamma = 1.
+
+        self.tune_interval = tune_interval
 
         # check agreement of dimensions of proposal distribution and
         # parameter space
@@ -103,23 +118,16 @@ class MetropolisHastingsIterator(Iterator):
             raise ValueError("Dimensions of proposal distribution"
                              "and parameter space do not agree.")
 
-        self.tot_num_samples = self.num_samples+self.num_burn_in+1
+        self.tot_num_samples = self.num_samples + self.num_burn_in + 1
         self.chains = np.zeros((self.tot_num_samples, self.num_chains, num_variables))
         self.log_likelihood = np.zeros((self.tot_num_samples, self.num_chains, 1))
         self.log_prior = np.zeros((self.tot_num_samples, self.num_chains, 1))
         self.log_posterior = np.zeros((self.tot_num_samples, self.num_chains, 1))
 
-        self.tune = tune
-        self.tune_interval = tune_interval
-
-        self.scale_covariance = np.ones((self.num_chains, 1)) *scale_covariance
-
         self.seed = seed
 
         self.accepted = np.zeros((self.num_chains, 1))
         self.accepted_interval = np.zeros((self.num_chains, 1))
-
-        self.gamma = 1.
 
 
     @classmethod
@@ -234,6 +242,7 @@ class MetropolisHastingsIterator(Iterator):
             self.accepted_interval = np.zeros((self.num_chains, 1))
 
         cur_sample = self.chains[step_id - 1]
+        # the scaling only holds for random walks
         delta_proposal = self.proposal_distribution.draw(num_draws=self.num_chains) * self.scale_covariance
         proposal = cur_sample + delta_proposal
 
@@ -254,7 +263,7 @@ class MetropolisHastingsIterator(Iterator):
         self.log_prior[step_id] = np.where(accepted, log_prior_prop, self.log_prior[step_id-1])
         self.log_posterior[step_id] = np.where(accepted, log_posterior_prop, self.log_posterior[step_id-1])
 
-    def initialize_run(self, initial_samples=None, initial_log_like=None, initial_log_prior=None, gamma=1.0, scale_covariance=1.0):
+    def initialize_run(self, initial_samples=None, initial_log_like=None, initial_log_prior=None, gamma=1.0, cov_mat=None):
         """ Draw initial sample. """
 
         if not self.as_mcmc_kernel:
@@ -274,10 +283,12 @@ class MetropolisHastingsIterator(Iterator):
                 initial_samples = initial_samples.T
             initial_log_like = self.eval_log_likelihood(initial_samples)
             initial_log_prior = self.eval_log_prior(initial_samples)
-            scale_covariance = self.scale_covariance
+        else:
+            # create random walk normal proposal
+            mean = np.zeros(cov_mat.shape[0])
+            self.proposal_distribution = mcmc_utils.NormalProposal(mean=mean, covariance=cov_mat)
 
         self.gamma = gamma
-        self.scale_covariance = scale_covariance
 
         self.chains[0] = initial_samples
         self.log_likelihood[0] = initial_log_like

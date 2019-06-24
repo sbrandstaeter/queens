@@ -12,7 +12,11 @@ References:
      identification of spatially-varying model parameters’,
      Journal of Computational Physics, 228(17), pp. 6184–6211.
      doi: 10.1016/j.jcp.2009.05.016.
-
+[3]: Minson, S. E., Simons, M. and Beck, J. L. (2013)
+    ‘Bayesian inversion for finite fault earthquake source models
+     I-theory and algorithm’,
+     Geophysical Journal International, 194(3), pp. 1701–1726.
+     doi: 10.1093/gji/ggt180.
 """
 import warnings
 
@@ -311,6 +315,7 @@ class SequentialMonteCarloIterator(Iterator):
 
         #counter
         step = 0
+        avg_accept_rate = 1.
         while self.gamma_cur < 1:
             step += 1
 
@@ -337,17 +342,30 @@ class SequentialMonteCarloIterator(Iterator):
 
             print(f"step {step} gamma: {self.gamma_cur:.5} ESS: {self.ess_cur:.5}")
 
+            #estimate current covariance matrix
+            cov_mat = np.cov(self.particles, ddof=0,  aweights=np.squeeze(self.weights), rowvar=False)
+
+            # scale covariance based on average acceptance rate of last rejuvenation step
+            # values of a an b are taken from [3] p.1706
+            a = 1. / 9.
+            b = 8. / 9.
+            self.scale_prop_cov =  a + b * avg_accept_rate
+            cov_mat *= self.scale_prop_cov ** 2
+
             # Rejuvenate
-            self.mcmc_kernel.initialize_run(self.particles, self.log_likelihood, self.log_prior, self.gamma_cur, self.scale_prop_cov)
+            self.mcmc_kernel.initialize_run(self.particles,
+                                            self.log_likelihood,
+                                            self.log_prior,
+                                            self.gamma_cur,
+                                            cov_mat)
             self.mcmc_kernel.core_run()
             self.particles, self.log_likelihood, self.log_prior, self.log_posterior, avg_accept_rate = self.mcmc_kernel.post_run()
 
-            if avg_accept_rate < 0.3:
-                self.scale_prop_cov *= 0.8
-            elif avg_accept_rate > 0.7:
-                self.scale_prop_cov *= 1.2
 
-            self.draw_trace(step)
+
+            # plot the trace every 10th iteration
+            if not step % 10:
+                self.draw_trace(step)
 
     def post_run(self):
         """ Analyze the resulting importance sample. """
