@@ -199,8 +199,8 @@ class NormalProposal(ProposalDistribution):
             return scipy.stats.multivariate_normal.cdf(x, mean=self.mean, cov=self.covariance)
 
     def draw(self, num_draws=1):
-        uncorrelated_vector = np.random.randn(self.dimension, num_draws)
-        return np.squeeze(np.dot(self.low_chol, uncorrelated_vector)).T
+        uncorrelated_vector = np.random.randn(self.dimension, num_draws).reshape((self.dimension, num_draws)).reshape((self.dimension, num_draws))
+        return (np.reshape(self.mean, (self.dimension, 1)) + (np.dot(self.low_chol, uncorrelated_vector))).T
 
     def logpdf(self, x):
         y = x - self.mean

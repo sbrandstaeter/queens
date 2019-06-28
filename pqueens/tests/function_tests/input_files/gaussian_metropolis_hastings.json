@@ -39,7 +39,7 @@
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
-        "distribution_parameter" : [2.0,1.0]
+        "distribution_parameter" : [2.0, 1.0]
       }
     }
   }

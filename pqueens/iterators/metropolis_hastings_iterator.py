@@ -265,10 +265,13 @@ class MetropolisHastingsIterator(Iterator):
             np.random.seed(self.seed)
 
             # draw initial sample from prior distribution
-            initial_samples = np.atleast_2d([variable['distribution'].draw(num_draws=self.num_chains)
+            # TODO this is super ugly! unify with get_random_samples and add as method to Variables class?
+            initial_samples = np.atleast_2d([np.squeeze(variable['distribution'].draw(num_draws=self.num_chains))
                                              for model_variable in self.model.variables
                                              for variable_name, variable
                                              in model_variable.variables.items()])
+            if self.num_chains != 1:
+                initial_samples = initial_samples.T
             initial_log_like = self.eval_log_likelihood(initial_samples)
             initial_log_prior = self.eval_log_prior(initial_samples)
             scale_covariance = self.scale_covariance

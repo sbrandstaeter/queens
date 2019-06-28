@@ -131,14 +131,21 @@ def invalid_nonsymmetric_covariance_matrix():
                      [0.2, 2.0]])
 
 
+@pytest.fixture(scope='module',
+                params=[1, 4])
+def num_draws(request):
+    """ number of samples to draw from distribution. """
+    return request.param
+
 @pytest.fixture(scope='module')
-def uncorrelated_vector():
+def uncorrelated_vector(num_draws):
     """
     A vector of uncorrelated samples from standard normal distribution.
 
     as expected by a call to a Gaussian random number generator
     """
-    return np.array([1.0, 2.0, 3.0])
+    vec = [[1.0], [2.0], [3.0]]
+    return np.tile(vec, num_draws)
 
 
 ########################### LOGNORMAL ##################################
@@ -335,14 +342,17 @@ def test_cdf_NormalProposal_univariate(valid_mean_value, univariate_normal):
 
     np.testing.assert_allclose(univariate_normal.cdf(sample_pos), ref_sol)
 
-def test_draw_NormalProposal_univariate(univariate_normal, valid_var_value, mocker):
+def test_draw_NormalProposal_univariate(univariate_normal,
+                                        valid_mean_value,
+                                        valid_var_value,
+                                        num_draws,
+                                        mocker):
     """ Test the draw method of normal distribution. """
 
-    standard_normal_sample = np.asarray(0.1)
+    standard_normal_sample = np.array([[0.1]] * num_draws)
     mocker.patch('numpy.random.randn', return_value=standard_normal_sample)
-    normal_sample = np.sqrt(valid_var_value) * standard_normal_sample
-    univariate_draw = univariate_normal.draw()
-
+    normal_sample = valid_mean_value + np.sqrt(valid_var_value) * standard_normal_sample
+    univariate_draw = univariate_normal.draw(num_draws=num_draws)
 
     np.testing.assert_allclose(univariate_draw, normal_sample)
 
@@ -407,14 +417,17 @@ def test_init_NormalProposal_multivariate(multivariate_normal,
     np.testing.assert_allclose(multivariate_normal.low_chol, valid_lower_cholesky)
 
 def test_draw_NormalProposal_multivariate(multivariate_normal,
+                                          valid_mean_vector,
                                           valid_lower_cholesky,
                                           uncorrelated_vector,
+                                          num_draws,
                                           mocker):
     """ Test the draw method of normal proposal distribution. """
 
     mocker.patch('numpy.random.randn', return_value=uncorrelated_vector)
-    correlated_vector = np.dot(valid_lower_cholesky, uncorrelated_vector)
-    multivariate_draw = multivariate_normal.draw()
+    correlated_vector = (valid_mean_vector.reshape(valid_mean_vector.shape[0], 1) +
+                         np.dot(valid_lower_cholesky, uncorrelated_vector)).T
+    multivariate_draw = multivariate_normal.draw(num_draws=num_draws)
 
     np.testing.assert_allclose(multivariate_draw, correlated_vector)
 

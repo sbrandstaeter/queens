@@ -94,7 +94,12 @@ class MonteCarloIterator(Iterator):
         # loop over random variables to generate samples
         i = 0
         for _, rv in random_variables.items():
-            self.samples[:, i] = get_random_samples(rv, self.num_samples)
+            rv_size = rv['size']
+            if rv_size != 1:
+                raise RuntimeError("Multidimensional random variables are not supported yet.")
+            # TODO once the above restriction is loosened take care of the indexing!
+            #  and the squeeze
+            self.samples[:, i] = np.squeeze(get_random_samples(rv, self.num_samples))
             i += 1
 
         # loop over random fields to generate samples

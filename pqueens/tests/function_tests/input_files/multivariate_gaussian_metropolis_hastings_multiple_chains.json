@@ -7,7 +7,7 @@
     "method_name": "metropolis_hastings",
     "method_options" : {
       "seed" : 42,
-      "num_chains" : 2,
+      "num_chains" : 3,
       "num_samples" : 10,
       "num_burn_in" : 5,
       "scale_covariance" : 1.0,
