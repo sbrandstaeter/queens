@@ -179,12 +179,12 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         x=loc[:,dim].reshape(-1,1)
         helper=(np.ones((len(x),1)))
 
-        temp1 =1./(np.sqrt((self.corr_length**2 *
-                   (np.kron((self.w_n[:,dim]),helper))**2+1) *
-                   self.largest_length/2+self.corr_length))
-        temp2 = self.corr_length*np.kron((self.w_n[:,dim]),helper) * \
-               np.cos(np.kron((self.w_n[:,dim]),x)) \
-               + np.sin(np.kron((self.w_n[:,dim]),x))
+        kron1 = np.kron((self.w_n[:,dim]),helper)
+        kron2 = np.kron((self.w_n[:,dim]),x)
+
+        temp1 =1. / (np.sqrt((self.corr_length**2 * (kron1)**2+1) * self.largest_length / 2 +
+                           self.corr_length))
+        temp2 = self.corr_length* kron1 * np.cos(kron2) + np.sin(kron2)
 
 
         return temp1*temp2
