@@ -76,7 +76,6 @@ class MetropolisHastingsIterator(Iterator):
         super().__init__(model, global_settings)
 
         self.num_chains = num_chains
-        self.num_burn_in = num_burn_in
         self.num_samples = num_samples
 
         self.proposal_distribution = proposal_distribution
@@ -100,10 +99,16 @@ class MetropolisHastingsIterator(Iterator):
             #  Otherwise the diagnostics tools might not make sense
             self.scale_covariance = np.ones((self.num_chains, 1)) * scale_covariance
 
+            self.num_burn_in = num_burn_in
         else:
             # scaling and tuning of proposal distribution is done within SMC
             self.tune = False
             self.scale_covariance = 1.0
+            self.num_burn_in = 0
+
+            if not isinstance(self.proposal_distribution, mcmc_utils.NormalProposal):
+               raise RuntimeError("Currently only Normal proposals are supported as MCMC Kernel.")
+
 
         self.temper = smc_utils.temper_factory(temper_type)
         # fixed within MH, adapted by SMC if needed
@@ -164,13 +169,13 @@ class MetropolisHastingsIterator(Iterator):
 
         # initialize proposal distribution
         name_proposal_distribution = method_options['proposal_distribution']
-        proposal_options = config.get(name_proposal_distribution, None)
-        if proposal_options is not None:
-            distribution_type =  proposal_options['type']
+        prop_opts = config.get(name_proposal_distribution, None)
+        if prop_opts is not None:
+            distribution_type =  prop_opts['type']
             # translate proposal_options to distribution_options of random_variables
             distribution_options = {'distribution': distribution_type,
-                                    'distribution_parameter': list([np.squeeze(proposal_options['mean']),
-                                                                    np.squeeze(proposal_options['cov'])
+                                    'distribution_parameter': list([np.squeeze(prop_opts['mean']),
+                                                                    np.squeeze(prop_opts['cov'])
                                                                     ]
                                                                    )
                                     }
@@ -181,20 +186,23 @@ class MetropolisHastingsIterator(Iterator):
 
         tune = method_options.get('tune', False)
         tune_interval = method_options.get('tune_interval', 100)
+        scale_cov = method_options.get('scale_covariance', 1.0)
 
         num_chains = method_options.get('num_chains', 1)
+
+        num_burn_in =  method_options.get('num_burn_in', 0)
 
         as_mcmc_kernel = method_options.get('as_mcmc_kernel', False)
 
         return cls(as_mcmc_kernel=as_mcmc_kernel,
                    global_settings=global_settings,
                    model=model,
-                   num_burn_in=method_options['num_burn_in'],
+                   num_burn_in=num_burn_in,
                    num_chains=num_chains,
                    num_samples=method_options['num_samples'],
                    proposal_distribution=proposal_distribution,
                    result_description=result_description,
-                   scale_covariance=method_options['scale_covariance'],
+                   scale_covariance=scale_cov,
                    seed=method_options['seed'],
                    temper_type=temper_type,
                    tune=tune,
@@ -269,8 +277,6 @@ class MetropolisHastingsIterator(Iterator):
         if not self.as_mcmc_kernel:
             print("Initialize Metropolis-Hastings run.")
 
-        # TODO: check conditions (either all are None or none is None)
-        if initial_samples is None or initial_log_like is None or initial_log_prior is None:
             np.random.seed(self.seed)
 
             # draw initial sample from prior distribution

@@ -1,0 +1,52 @@
+{
+  "experiment_name" : "xxx",
+  "database"  :{
+    "address"   : "localhost:27017"
+  },
+  "method": {
+    "method_name": "smc",
+    "method_options" : {
+      "seed" : 42,
+      "num_particles" : 10,
+      "model" : "model",
+      "temper_type" : "bayes",
+      "result_description" : {
+          "write_results" : true,
+          "plot_results" : false,
+          "cov" : false
+      }
+    }
+  },
+  "MCMC_Kernel": {
+    "method_name": "metropolis-hastings",
+    "method_options" : {
+      "as_mcmc_kernel" : true,
+      "num_samples" : 3,
+      "proposal_distribution" : "normal_proposal"
+    }
+  },
+  "model" : {
+    "type" : "simulation_model",
+    "interface" : "interface",
+    "parameters" : "parameters"
+  },
+  "normal_proposal" : {
+    "type" : "normal",
+    "mean" : 0.0,
+    "cov": 1.0
+  },
+  "interface" : {
+    "type" : "direct_python_interface",
+    "main_file" : "gaussian_logpdf.py"
+  },
+  "parameters" : {
+    "random_variables" : {
+      "x" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "normal",
+        "distribution_parameter" : [2.0, 1.0]
+      }
+    }
+  }
+}

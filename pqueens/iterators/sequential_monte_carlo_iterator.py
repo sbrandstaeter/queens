@@ -144,12 +144,20 @@ class SequentialMonteCarloIterator(Iterator):
         kernel_options = config.get('MCMC_Kernel', None)
         if kernel_options is None:
             raise ValueError("You need to specify a MCMC Kernel.")
-        if kernel_options['method_options'].get('as_mcmc_kernel', None) is None:
+        if (('as_mcmc_kernel' not in kernel_options['method_options'])
+            or
+            (not kernel_options['method_options']['as_mcmc_kernel'] is True)):
             raise ValueError("MH iterator needs to be specified as MCMC Kernel.")
         if not (kernel_options['method_options'].get('num_chains', 1) == method_options['num_particles']):
             warnings.warn("Number of chains in the kernel has to be equal to number of particles:"
                           " setting num_chains to num_particles.")
             config['MCMC_Kernel']['method_options']['num_chains'] = method_options['num_particles']
+
+        #ensure that the seeds are identical
+        kernel_seed = kernel_options['method_options'].get('seed', None)
+        smc_seed = method_options['seed']
+        if kernel_seed != smc_seed:
+            kernel_options['method_options']['seed'] = smc_seed
 
         temper_type = method_options['temper_type']
 
@@ -163,7 +171,7 @@ class SequentialMonteCarloIterator(Iterator):
                    model=model,
                    num_particles=method_options['num_particles'],
                    result_description=result_description,
-                   seed=method_options['seed'],
+                   seed=smc_seed,
                    temper_type=temper_type)
 
     def eval_model(self):
@@ -343,7 +351,7 @@ class SequentialMonteCarloIterator(Iterator):
             print(f"step {step} gamma: {self.gamma_cur:.5} ESS: {self.ess_cur:.5}")
 
             #estimate current covariance matrix
-            cov_mat = np.cov(self.particles, ddof=0,  aweights=np.squeeze(self.weights), rowvar=False)
+            cov_mat = np.atleast_2d(np.cov(self.particles, ddof=0,  aweights=np.squeeze(self.weights), rowvar=False))
 
             # scale covariance based on average acceptance rate of last rejuvenation step
             # values of a an b are taken from [3] p.1706
