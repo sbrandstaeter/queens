@@ -2,6 +2,7 @@ import numpy as np
 from sklearn.model_selection import KFold
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from .interface import Interface
+import pdb
 
 class BmfmcInterface(Interface):
     """ Class for grouping output of several simulators with identical input to
@@ -43,15 +44,16 @@ class BmfmcInterface(Interface):
         """
         if not self.approx_init:
             raise RuntimeError("Approximation has not been properly initialized, cannot continue!")
-        inputs = []
-        for variables in samples:
-            params = variables.get_active_variables()
-            inputs.append(list(params.values()))
+        #inputs = []
+        #for variables in samples:
+         #   params = variables.get_active_variables()
+         #   inputs.append(list(params.values()))
 
         # get inputs as array and reshape
-        num_active_vars = samples[0].get_number_of_active_variables()
-        inputs = np.reshape(np.array(inputs), (-1, num_active_vars), order='F')
-        mean, var = self.approximation.predict(inputs) # we chose an option with the additional likelihood noise already added to the predictive variance (integration over all possible models already done)
+        #num_active_vars = samples[0].get_number_of_active_variables()
+        #inputs = np.reshape(np.array(inputs), (-1, num_active_vars), order='F')
+        mean = self.approximation.predict_y(samples.T)['mean'] # we chose an option with the additional likelihood noise already added to the predictive variance (integration over all possible models already done)
+        var = self.approximation.predict_y(samples.T)['variance']
         return mean, var
 
     def build_approximation(self, Xtrain, Ytrain):

@@ -1,7 +1,8 @@
 import numpy as np
 import GPy
 from . regression_approximation import RegressionApproximation
-
+from IPython.display import display
+import pdb
 class GPGPyRegression(RegressionApproximation):
     """ Class for creating GP based regression model based on GPy
 
@@ -44,21 +45,19 @@ class GPGPyRegression(RegressionApproximation):
         # input dimension
         input_dim = self.X.shape[1]
         # simple GP Model
-        k = GPy.kern.RBF(input_dim, ARD=False)
-
-        self.m = GPy.models.GPRegression(self.X, self.y,
-                                         kernel=k,
-                                         normalizer=True)
+        k = GPy.kern.RBF(input_dim, variance=1.,lengthscale=1.,ARD=False)
+        self.m = GPy.models.GPRegression(self.X, self.y,kernel=k,normalizer=True)
 
     def train(self):
         """ Train the GP by maximizing the likelihood """
 
+        self.m[".*Gaussian_noise"].constrain_positive()
         self.m[".*Gaussian_noise"] = self.m.Y.var()*0.01
         self.m[".*Gaussian_noise"].fix()
         self.m.optimize(max_iters=500)
         self.m[".*Gaussian_noise"].unfix()
-        self.m[".*Gaussian_noise"].constrain_positive()
         self.m.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
+        display(self.m)
 
     def predict(self, Xnew):
         """ Compute latent function at Xnew
@@ -71,13 +70,33 @@ class GPGPyRegression(RegressionApproximation):
              posterior samples of latent function at Xnew
         """
         output = {}
-        mean, variance = self.predict_f(Xnew)
+        mean, variance = self.predict_f(Xnew[:,:,None])
         output['mean'] = mean
         output['variance'] = variance
         if self.num_posterior_samples is not None:
             output['post_samples'] = self.predict_f_samples(Xnew, self.num_posterior_samples)
 
         return output
+
+    def predict_y(self, Xnew):
+        """ Compute latent function at Xnew
+
+        Args:
+            Xnew (np.array): Inputs at which to evaluate latent function f
+
+        Returns:
+            dict: Dictionary with mean, variance, and possibly
+             posterior samples of latent function at Xnew
+        """
+        output = {}
+        mean, variance = self.m.predict(Xnew)
+        output['mean'] = mean
+        output['variance'] = variance# + self.m.posterior.Gaussian_noise.variance[0]
+        if self.num_posterior_samples is not None:
+            output['post_samples'] = self.predict_f_samples(Xnew, self.num_posterior_samples)
+
+        return output
+
 
     def predict_f(self, Xnew):
         """ Compute the mean and variance of the latent function at Xnew

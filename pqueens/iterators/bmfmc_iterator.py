@@ -9,6 +9,13 @@ from .scale_samples import scale_samples
 from pqueens.database import mongodb as db
 from pqueens.iterators.data_iterator import DataIterator
 import os
+import pandas as pd
+from random import randint
+import pickle
+import matplotlib.pyplot as plt
+import seaborn as sns
+import pdb
+
 class BmfmcIterator(Iterator):
     """ Basic BMFMC Iterator to enable selective sampling for the hifi-lofi
         model (the basis was a standard LHCIterator). Additionally the BMFMC
@@ -26,9 +33,9 @@ class BmfmcIterator(Iterator):
         outputs (np.array):   Array with all model outputs
 
     """
-    def __init__(self, lf_data_iterators, hf_data_iterator, result_description, experiment_dir):
+    def __init__(self, config,lf_data_iterators, hf_data_iterator, result_description, experiment_dir, initial_design,global_settings):
 
-        super(BmfmcIterator, self).__init__() # Input prescribed by iterator.py
+        super(BmfmcIterator, self).__init__(None,global_settings) # Input prescribed by iterator.py
         self.model = None
         self.result_description = result_description
         self.lf_data_iterators = lf_data_iterators
@@ -38,9 +45,11 @@ class BmfmcIterator(Iterator):
         self.hf_train_out = None
         self.lfs_train_out = None
         self.lf_mc_in = None
+        self.hf_mc = None
         self.lfs_mc_out = None
         self.output = None # this is still important and will prob be the marginal pdf of the hf / its statistics
-
+        self.initial_design = initial_design
+        self.config = config # This is needed to construct the model on runtime
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None): #TODO: the model arg here seems an old relict. we bypass it here
         """ Create LHS iterator from problem description
@@ -55,12 +64,8 @@ class BmfmcIterator(Iterator):
 
         """
         # Initialize Iterator and model
-        if iterator_name is None:
-            method_options = config["method"]["method_options"]
-            print("Method options {}".format(method_options))
-        else:
-            method_options = config[iterator_name]["method_options"]
-        result_description = method_options.get("result_description", None)
+        method_options = config["method"]["method_options"]
+        result_description = method_options["result_description"]
         experiment_dir = config["method"]["method_options"]["experiment_dir"]
 
         # Create the data iterator from config file
@@ -71,16 +76,17 @@ class BmfmcIterator(Iterator):
         for _,path in enumerate(lf_data_paths):
             lf_data_iterators.append(DataIterator(path, None, None))
         hf_data_iterator = DataIterator(hf_data_path, None, None)
+        initial_design = config["method"]["initial_design"]
+        global_settings = config.get('global_settings', None)
 
-        return cls(lf_data_iterators, hf_data_iterator, result_description, experiment_dir)
+        return cls(config,lf_data_iterators, hf_data_iterator, result_description, experiment_dir, initial_design,global_settings)
 
     def core_run(self):
         """ Generate simulation runs for lofis and hifis that cover the output
             space based on one p(y) distribution of one lofi """
-        # extract one input matrix(each input is a vector and we collect several inputs)
-        self.lf_mc_in = self.lf_data_iterators[0].read_pickle_file()[0] # here we assume that data is cleaned up and all lfs have the same inputs x
-        # collect the output values of the LF MC data into one array
-        self.lfs_mc_out = [lf_data_iterator.read_pickle_file()[1] for lf_data_iterator,_ in enumerate(self.lf_data_iterators)] # list of lf data with another list or dictionary per lf containing x_vec and y(_vec)
+        self.lf_mc_in = self.lf_data_iterators[0].read_pickle_file()[0] # here we assume that all lfs have the same input vector
+        lfs_mc_out = [lf_data_iterator.read_pickle_file()[1][:,0] for _,lf_data_iterator in enumerate(self.lf_data_iterators)] # list of lf data with another list or dictionary per lf containing x_vec and y(_vec) CAREFUL: we only take the first column and omit vectorial outputs --> this should be changed!
+        self.lfs_mc_out = np.atleast_2d(np.vstack(lfs_mc_out)).T
 
 ####### HERE create the HF initial design runs if not already done ##############################
         if self.hf_data_iterator == None:
@@ -119,29 +125,64 @@ class BmfmcIterator(Iterator):
            # check if training data file already exists if not write it
             path_to_train_data = os.path.join(self.experiment_dir,'hf_lf_train.pickle')
             exists = os.path.isfile(path_to_train_data)
+            exists = None #TODO delete! this is just to not write the file
             if exists:
                 with open(path_to_train_data,'rb') as handle: #TODO: give better name according to experiment and choose better location
                     self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out = pickle.load(handle) #TODO --> Change this according to design below!!
             else:
-                self.train_in, self.hf_train_out = self.hf_data_iterator.read_pickle()
+######## TODO: THIS IS A WORKAROUND ! we calculate a subset of the mc data for the hf training -> this is usually not the case so the subset selection should be deleted!
+                self.train_in, self.hf_train_out = self.hf_data_iterator.read_pickle_file()
+                self.hf_train_out = self.hf_train_out[:,0] #TODO here we neglect the vectorial output --> this should be changed in the future
+                self.hf_mc = self.hf_train_out
                 # find the touples of lf and hf data that match
-                bolean_vec = np.isin(lf_mc_in, self.train_in) # TODO: probably we need to change the shapes
-                self.lfs_train_out = self.lfs_mc_out[:][boolean_vec, :] #TODO Check if the list works out here with : or if we need to iterate
+            ##### workaround starts here #####
+                if self.initial_design['method'] == 'random':
+                    n_bins = self.initial_design["num_bins"]
+                    n_points = self.initial_design["num_HF_eval"]
+                    ylf_min = np.amin(self.lfs_mc_out)
+                    ylf_max = np.amax(self.lfs_mc_out)
+                    break_points = np.linspace(ylf_min, ylf_max, n_bins+1)
+                    bin_vec = pd.cut(self.lfs_mc_out[:,0], bins=break_points, labels=False, include_lowest=True, retbins=True) #TODO check dim of lfs_mc_out for multiple lfs
+                    # Some initialization
+                    self.lfs_train_out = np.empty((0,self.lfs_mc_out.shape[1])) #TODO check if this is right
+                    dummy_hf = self.hf_train_out #TODO delete later
+                    self.hf_train_out = np.array([]).reshape(0,1) #TODO: Later delete as HF MC is normally not available
+                    self.train_in = np.array([]).reshape(0,self.lf_mc_in.shape[1])
+                    # Go through all bins and select randomly select points from them (also several per bin!)
+                    for bin_n in range(n_bins):
+                        # array of booleans
+                        y_in_bin_bool = [bin_vec[0]==bin_n]
+                        # definine bin data
+                        bin_data_in = self.lf_mc_in[y_in_bin_bool]
+                        bin_data_lfs = self.lfs_mc_out[y_in_bin_bool]
+                        bin_data_hf = dummy_hf[y_in_bin_bool].reshape(-1,1) #TODO: later delete as HF MC is normally not available
+                        #randomly select points in bins
+                        rnd_select = [randint(0, bin_data_lfs.shape[0]-1) for p in range(n_points//n_bins)]
+                        # Check if points in bin
+                        if len(rnd_select) !=0:
+                            #define the training data by appending the training vector
+                            self.train_in = np.vstack([self.train_in,bin_data_in[rnd_select,:]])
+                            self.lfs_train_out = np.vstack((self.lfs_train_out,bin_data_lfs[rnd_select,:]))
+                            self.hf_train_out = np.vstack([self.hf_train_out,bin_data_hf[rnd_select,:]]) #TODO later delete as HF MC data is normally not available
+
+            #### workaround end #############
+                else: pass #TODO this needs to be changed to an keyword error check
 
                 # write new pickle file for subsequent analysis with matching data
                 with open(path_to_train_data,'wb') as handle: #TODO: give better name according to experiment and choose better location
                     pickle.dump([self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out],handle,protocol=pickle.HIGHEST_PROTOCOL) #TODO: check if list is right format here
         # CREATE the underlying model
-        bmfmc_model = BMFMCModel.from_config_create_model(config, self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out) # TODO: HERE we actualluy define the BMFMC_model and bypass the input arg
+        self.model = BMFMCModel.from_config_create_model(self.config, self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out,hf_mc=self.hf_mc) # TODO: HERE we actualluy define the BMFMC_model and bypass the input arg
 
 ####### TODO: This needs still to be implemented to run HF directly from this iterator for initial desing
         """ Run Analysis on all models """
         # here the set of new input variables will be passed to all lofis/hifi--> previous list_iterator not necessary!
-#        self.model.update_model_from_sample_batch(self.samples)
+ #       self.model.update_model_from_sample_batch(self.samples)
 
         # here all models will be evaluated (multifidelity  model will be evaluated)
         # output matrix has the form:[ ylofi1, ylofi2, ..., yhifi ]
- #       self.output = self.eval_model
+
+        self.output = self.eval_model()
          # What about the already calculated points?
          #TODO some active learning here
 
@@ -156,13 +197,83 @@ class BmfmcIterator(Iterator):
 
     def post_run(self):
         """ Analyze the results """
-        if self.result_description is not None:
-            results = process_ouputs(self.output, self.result_description)
-            write_results(results,
-                              self.global_settings["output_dir"],
-                              self.global_settings["experiment_name"])
-        #else:
-        #print("Size of inputs {}".format(self.samples.shape))
-        #print("Inputs {}".format(self.samples))
-        print("Size of outputs {}".format(self.output['mean'].shape))
-        print("Outputs {}".format(self.output['mean']))
+        print(self.output)
+        if self.result_description['plot_results']==True:
+
+            #plt.rc('text', usetex=True)
+            plt.rcParams["mathtext.fontset"] = "cm"
+            plt.rcParams.update({'font.size':23})
+
+            fig, ax = plt.subplots()
+           # plot the bmfmc var
+            ax.plot(self.output['pyhf_support'],np.sqrt(self.output['pyhf_var']),linewidth=0.5,color='lightgreen',alpha=0.4)#,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+            # plot the bmfmc approx mean
+            ax.plot(self.output['pyhf_support'],self.output['pyhf_mean'],color='xkcd:green',linewidth=1.5,label=r'$\mathbb{E}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+            # plot the MC reference of HF
+            ax.plot(self.output['pyhf_mc_support'],self.output['pyhf_mc'],color='k',alpha=0.8,label=r'$\mathrm{p}\left(y_{\mathrm{HF}}\right) \ \mathrm{MC \ reference}$')
+            if self.lfs_mc_out.shape[1]<2:
+                # plot the MC of LF
+                ax.plot(self.output['pylf_mc_support'],self.output['pylf_mc'],color='r',alpha=0.7,label=r'$\mathrm{p}\left(y_{\mathrm{LF}}\right)$')
+
+            ax.set_xlabel(r'$y$')#,usetex=True)
+            ax.set_ylabel(r'$\mathrm{p}(y)$')
+            ax.grid(which='major',linestyle='-')
+            ax.grid(which='minor',linestyle='--',alpha=0.5)
+            ax.minorticks_on()
+            ax.legend()
+            fig.set_size_inches(15,15)
+###########################
+            if self.output['manifold_test'].shape[1]<2:
+                fig2, ax2 = plt.subplots()
+                # plot the current dataset
+                # plot the MC of LF
+                ax2.plot(self.output['manifold_test'][:,0],self.output['f_mean'],linestyle='',marker='.',color='k',alpha=1,label=r'$m_{\mathrm{GP}}$')
+                ax2.plot(self.output['manifold_test'][:,0],self.output['f_mean']+np.sqrt(self.output['y_var']),linestyle='',marker='.',color='grey',alpha=0.5,label=r'$\mathbb{SD}_{\mathrm{GP}}$')
+                ax2.plot(self.output['manifold_test'][:,0],self.output['f_mean']-np.sqrt(self.output['y_var']),linestyle='',marker='.',color='grey',alpha=0.5)
+                ax2.plot(self.lfs_train_out,self.hf_train_out,linestyle='',marker='x',color='r',alpha=1,label=r'Training data')
+                ax2.plot(self.lfs_mc_out[:,0],self.hf_mc,linestyle='',markersize=2,marker='.',color='grey',alpha=0.7,label=r'Reference MC data')
+
+                ax2.plot(self.hf_mc,self.hf_mc,linestyle='-',marker='',color='g',alpha=0.7,label=r'Identity')
+                ax2.set_xlabel(r'$y_{\mathrm{LF}}$')#,usetex=True)
+                ax2.set_ylabel(r'$y_{\mathrm{HF}}$')
+                ax2.grid(which='major',linestyle='-')
+                ax2.grid(which='minor',linestyle='--',alpha=0.5)
+                ax2.minorticks_on()
+                ax2.legend()
+                fig2.set_size_inches(15,15)
+    #
+        ####### plot input-output scatter plot matrices ########################
+#            dataset = pd.DataFrame({'$y_{\mathrm{HF}}$': self.hf_mc,'E-modulus': self.lf_mc_in[:,0], 'U-field 1': self.lf_mc_in[:,1],'U-field 2': self.lf_mc_in[:,2],'U-field 3': self.lf_mc_in[:,3],'U-field 4': self.lf_mc_in[:,4],'U-field 5': self.lf_mc_in[:,5],'U-field 6': self.lf_mc_in[:,6],'U-field 7': self.lf_mc_in[:,7],'U-field 8': self.lf_mc_in[:,8],'U-field 9': self.lf_mc_in[:,9]})
+#            sns.set()
+#            ma = sns.PairGrid(dataset)
+#            ma = ma.map_upper(plt.scatter,s=0.1)
+#            ma = ma.map_lower(sns.kdeplot, cmap="Blues_d")
+#            ma = ma.map_diag(sns.kdeplot,lw=2,legend=False)
+#
+#            dataset = pd.DataFrame({'$y_{\mathrm{HF}}$': self.hf_mc,'latent 1': self.output['manifold_test'][:,1], 'latent 2': self.output['manifold_test'][:,2]})
+#            sns.set()
+#            ma = sns.PairGrid(dataset)
+#            ma = ma.map_upper(plt.scatter,s=0.1)
+#            ma = ma.map_lower(sns.kdeplot, cmap="Blues_d")
+#            ma = ma.map_diag(sns.kdeplot,lw=2,legend=False)
+#
+            plt.show()
+
+
+
+
+        if self.result_description['write_results']==True:
+                pass
+
+
+
+        #if self.result_description is not None:
+        #    results = process_ouputs(self.output, self.result_description)
+        #    write_results(results,
+        #                      self.global_settings["output_dir"],
+        #                      self.global_settings["experiment_name"])
+        ##else:
+        ##print("Size of inputs {}".format(self.samples.shape))
+        ##print("Inputs {}".format(self.samples))
+        #print("Size of outputs {}".format(self.output['mean'].shape))
+        #print("Outputs {}".format(self.output['mean']))

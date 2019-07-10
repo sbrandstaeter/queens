@@ -89,7 +89,7 @@ class DataIterator(Iterator):
 
         data = pickle.load(open(self.path_to_data, "rb"))
 
-        samples = data["input_data"]
-        output = data["raw_output_data"]
+        samples = data["input"] #TODO think about an unified format/key, before: "input_data"
+        output = data["output"] #TODO think about an unified format/key, before: "raw_output_data"
 
         return samples, output
