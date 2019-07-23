@@ -15,7 +15,7 @@ class SlurmScheduler(Scheduler):
 
     """
 
-    def __init__(self, scheduler_name, connect_to_ressource, base_settings):
+    def __init__(self, scheduler_name, base_settings):
         """
         Args:
             scheduler_name (string):    Name of Scheduler
@@ -26,9 +26,8 @@ class SlurmScheduler(Scheduler):
             output (boolean):           Flag for slurm output
         """
         super(SlurmScheduler, self).__init__(base_settings)
-        # TODO: Does the latter trigger the abstact cluster scheduler??
         self.name = scheduler_name
-        self.connect_to_ressource
+        self.connect_to_ressource = base_settings['connect']
 
     @classmethod
     def from_config_create_scheduler(cls, config, base_settings, scheduler_name=None):
@@ -41,12 +40,10 @@ class SlurmScheduler(Scheduler):
         Returns:
             scheduler:              instance of SlurmScheduler
         """
-        options = config[scheduler_name]
-        connect_to_ressource = options['connect_to_ressource']
-        return cls(scheduler_name, connect_to_ressource, base_settings)
+        return cls(scheduler_name, base_settings)
 
 ###### auxiliary methods #################################################
-    def output_regexp(self): # TODO Check what this does exactly
+    def output_regexp(self):
         return r'(^\d+)'
 
     def get_process_id_from_output(self, output):
@@ -66,7 +63,6 @@ class SlurmScheduler(Scheduler):
 ########### Children methods that need to be implemented #######################
 def alive(self, process_id):
         """ Check whether job is alive
-
         The function checks if job is alive. If it is not i.e., the job is
         either on hold or suspended the fuction will attempt to kill it
 
@@ -82,7 +78,7 @@ def alive(self, process_id):
             # join lists
             command_list = [self.connect_to_ressource,'squeue --job', str(process_id)]
             command_string = ' '.join(command_list)
-            stdout, stderr, p = super run_subprocess(command_string)
+            stdout, stderr, p = super().run_subprocess(command_string)
             output2 = stdout.split()
             # second to last entry is (should be )the job status
             status = output2[-4] #TODO: Check if that still holds
@@ -109,7 +105,7 @@ def alive(self, process_id):
                 # try to kill the job.
                 command_list = self.connect_to_resource + ['scancel', str(process_id)]
                 command_string = ' '.join(command_list)
-                stdout, stderr, p = super run_subprocess(command_string)
+                stdout, stderr, p = super().run_subprocess(command_string)
                print(stdout)
                 sys.stderr.write("Killed job %d.\n" % (process_id))
             except:
@@ -118,33 +114,3 @@ def alive(self, process_id):
             return False
         else:
             return True
-
-    def submit(self, job_id, batch):
-        """ Function to submit new job to scheduling software on a given resource
-
-
-        Args:
-            job_id (int):               Id of job to submit
-            experiment_name (string):   Name of experiment
-            batch (string):             Batch number of job
-            experiment_dir (string):    Directory of experiment
-            database_address (string):  Address of database to connect to
-            driver_options (dict):      Options for driver
-
-        Returns:
-            int: proccess id of job
-
-        """
-        remote_args_list = '--job_id={} --batch={}'.format(job_id, batch) #TODO finalize args
-        remote_args = ' '.join(remote_args_list)
-        cmdlist_remote_main = [self.connect_to_ressource, './driver.simg', remote_args]
-        cmd_remote_main = ' '.join(cmdlist_remote_main)
-        stdout, stderr, p = super run_subprocess(cmd_remote_main)
-
-        # get the process id from text output
-        match = self.get_process_id_from_output(stdout)
-        try:
-            return int(match)
-        except:
-            sys.stderr.write(output)
-            return None

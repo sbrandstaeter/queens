@@ -33,7 +33,7 @@ class PBSScheduler(Scheduler):
         """
         super(PBSScheduler, self).__init__(base_settings)
         self.name = scheduler_name
-        self.connect_to_resource = connect_to_resource
+        self.connect_to_resource = base_settings["connect"]
 
     @classmethod
     def from_config_create_scheduler(cls, config, base_setings,scheduler_name=None):
@@ -46,8 +46,6 @@ class PBSScheduler(Scheduler):
         Returns:
             scheduler:              instance of PBSScheduler
         """
-        options = config[scheduler_name]
-        connect_to_resource = options["connect_to_resource"]
         return cls(scheduler_name, connect_to_resource, base_settings)
 
 ########### auxiliary methods #################################################
@@ -70,38 +68,6 @@ class PBSScheduler(Scheduler):
         return re.search(regex, output)
 
 ######## children methods that need to be implemented
-
-    def submit(self, job_id, batch):
-        """ Function to submit new job to scheduling software on a given resource
-
-
-        Args:
-            job_id (int):               Id of job to submit
-            experiment_name (string):   Name of experiment
-            batch (string):             Batch number of job
-            experiment_dir (string):    Directory of experiment
-            database_address (string):  Address of database to connect to
-            driver_options (dict):      Options for driver
-
-        Returns:
-            int: proccess id of job
-
-        """
-        remote_args_list = '--job_id={} --batch={}'.format(job_id, batch) #TODO finalize args
-        remote_args = ' '.join(remote_args_list)
-        singularity = #TODO: Check how to switch to singularity env / container
-        cmdlist_remote_main = [self.connect_to_ressource, singularity, './remote_main.py', remote_args]
-        cmd_remote_main = ' '.join(cmdlist_remote_main)
-        stdout, stderr, p = super run_subprocess(cmd_remote_main)
-
-        # get the process id from text output
-        match = self.get_process_id_from_output(stdout)
-        try:
-            return int(match)
-        except:
-            sys.stderr.write(output)
-            return None
-
     def alive(self, process_id): # TODO: This methods needs to be checked as might not be called properly
         """ Check whether job is alive
 

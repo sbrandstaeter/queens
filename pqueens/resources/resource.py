@@ -54,6 +54,8 @@ def resource_factory(resource_name, exp_name, config):
 
     # create scheduler from config
     scheduler = Scheduler.from_config_create_scheduler(scheduler_name, config)
+    # Create/update singulariy image in case of cluster job
+    scheduler.pre_run()
 
     return Resource(resource_name, exp_name, scheduler, max_concurrent,
                     max_finished_jobs)
