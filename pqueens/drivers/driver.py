@@ -1,6 +1,7 @@
 import abc
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.injector import inject
+from pqueens.post_post import Post_post
 import sys
 import subprocess
 import time
@@ -75,7 +76,7 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['result']=None
         base_settings['postprocessor']=driver_options['path_to_postprocessor']
         base_settings['post_options']=driver_options['post_process_options']
-        base_settings['postpostprocessor']=driver_options['post_post_script']
+        base_settings['postpostprocessor']= Post_post.from_config_create_post_post(config)
 ### here comes some case / if statement dependent on the scheduler type
         if scheduler_options['scheduler_type'] == 'slurm':
             # read necessary variables from config
@@ -256,8 +257,6 @@ class Driver(metaclass=abc.ABCMeta):
         """ Run script to extract results from monitor file
 
         Args:
-            post_post_script (string): name of script to run
-            baci_output_file (string): name of file to use
 
         Returns:
             float: actual simulation result
@@ -265,20 +264,14 @@ class Driver(metaclass=abc.ABCMeta):
         """ Assemble post processing command """
 
         result = None
-        if self.postpostprocessor != None:
-            spec = importlib.util.spec_from_file_location("module.name", self.postpostprocessor)
-            post_post_proc = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(post_post_proc)
-            result, error = post_post_proc.run(baci_output)
-        else:
-            raise RuntimeError("You need to provide post_post_script")
+        result, error = self.postpostprocessor.read_post_files(self.output_file)
 
         # cleanup of unnecessary data after QoI got extracted and flag is set in config
         if self.post_options["delete_field_data"].lower()=="true":
             # Delete every ouput file exept the .mon file
-            # --> use baci_output to get path to current folder
+            # --> use self.output to get path to current folder
             # --> start subprocess to delete files with linux commands
-            command_string = "cd "+ baci_output + "&& ls | grep -v *.mon | xargs rm" # This is the actual linux commmand
+            command_string = "cd "+ self.output_file + "&& ls | grep -v --include=*.{mon,csv} | xargs rm" # TODO check if this works for several extentions
             _ = self.run_subprocess(command_string)
 
         # Put files that were not compliant with the requirements from the
@@ -286,7 +279,7 @@ class Driver(metaclass=abc.ABCMeta):
         # of those files
         if error !="":
             result = None
-            command_string = "cd "+ baci_output + "&& cd ../.. && mkdir -p postpost_error && cd " + baci_ouput + "&& cd .. && mv *.dat ../postpost_error/" # This is the actual linux commmand
+            command_string = "cd "+ self.output_file + "&& cd ../.. && mkdir -p postpost_error && cd " + baci_ouput + "&& cd .. && mv *.dat ../postpost_error/" # This is the actual linux commmand
             _ = self.run_subprocess(command_string)
 
         self.result = result

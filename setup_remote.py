@@ -18,6 +18,7 @@ setup(
     keywords = "Gaussian Processes, Uncertainty Quantification",
     packages=['pqueens',
               'pqueens.database',
+              'pqueens.post_post',
               'pqueens.drivers',
               'pqueens.utils'],
     # for now do not add third party packages here but install them manually Using
