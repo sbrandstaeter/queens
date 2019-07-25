@@ -6,3 +6,4 @@ pymongo
 # making fancy plots
 matplotlib
 plotly
+pandas

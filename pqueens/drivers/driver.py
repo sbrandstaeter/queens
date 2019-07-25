@@ -1,11 +1,12 @@
 import abc
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.injector import inject
-from pqueens.post_post import Post_post
+from pqueens.post_post.post_post import Post_post
 import sys
 import subprocess
 import time
 import importlib.util
+import os
 
 class Driver(metaclass=abc.ABCMeta):
     """ Base class for Drivers
@@ -185,7 +186,7 @@ class Driver(metaclass=abc.ABCMeta):
         dest_dir = str(self.experiment_dir) + '/' + \
                   str(self.job_id)
 
-        prefix = str(self.experiment_name) + '_' + \
+        prefix = str(self.experiment_dir) + '_' + \
                  str(self.job_id)
 
         # Depending on the input file, directories will be created locally or on a cluster
@@ -194,11 +195,11 @@ class Driver(metaclass=abc.ABCMeta):
             os.makedirs(output_directory)
 
         # create input file name
-        self.input_file = dest_dir + '/' + str(self.experiment_name) + \
+        self.input_file = dest_dir + '/' + str(self.experiment_dir) + \
                           '_' + str(self.job_id) + '.dat'
 
         # create output file name
-        self.output_file =  output_directory + '/' + str(self.experiment_name) + \
+        self.output_file =  output_directory + '/' + str(self.experiment_dir) + \
                           '_' + str(self.job_id)
 
 
@@ -211,13 +212,13 @@ class Driver(metaclass=abc.ABCMeta):
 
         """
         # Create database object and load the already initiated job entry
-        self.job = self.database.load(self.experiment_name, self.batch, 'jobs', {'id' : self.job_id})
+        self.job = self.database.load(self.experiment_dir, self.batch, 'jobs', {'id' : self.job_id})
 
         # start settings for job
         self.job['start time'] = time.time()
 
         # save the job with the new start time
-        self.database.save(self.job, self.experiment_name, 'jobs', self.batch,
+        self.database.save(self.job, self.experiment_dir, 'jobs', self.batch,
                 {'id' : self.job_id})
 
         sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
@@ -242,7 +243,7 @@ class Driver(metaclass=abc.ABCMeta):
             self.job['result'] = self.result
             self.job['status'] = 'complete'
             self.job['end time'] = time.time()
-            self.database.save(self.job, self.experiment_name, 'jobs', self.batch, {'id' : self.job_id})
+            self.database.save(self.job, self.experiment_dir, 'jobs', self.batch, {'id' : self.job_id})
 
 
     def do_postprocessing(self):

@@ -1,7 +1,7 @@
 import sys
 import subprocess
 import re
-from .schedulers.scheduler import Scheduler
+from .scheduler import Scheduler
 
 class PBSScheduler(Scheduler):
     """ Minimal interface to Torque queing system to submit and query jobs
@@ -86,7 +86,7 @@ class PBSScheduler(Scheduler):
             # join lists
             command_list = self.connect_to_resource + ['qstat', str(process_id)]
             command_string = ' '.join(command_list)
-            stdout, stderr, p = super run_subprocess(command_string)
+            stdout, stderr, p = super().run_subprocess(command_string)
             output2 = stdout.split()
             # second to last entry is (should be )the job status
             status = output2[-2]
@@ -111,7 +111,7 @@ class PBSScheduler(Scheduler):
                 # try to kill the job.
                 command_list = self.connect_to_resource + ['qdel', str(process_id)]
                 command_string = ' '.join(command_list)
-                stdout, stderr, p = super run_subprocess(command_string)
+                stdout, stderr, p = super().run_subprocess(command_string)
                 print(stdout)
                 sys.stderr.write("Killed job %d.\n" % (process_id))
             except:

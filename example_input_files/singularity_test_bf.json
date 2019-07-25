@@ -1,5 +1,5 @@
 {
-  "experiment_name" : "ee_invaaa",
+  "experiment_name" : "singu_ee_invaaa",
   "database"  :{
     "address"   : "129.187.58.13:27017",
     "drop_existing" : "True"
@@ -43,10 +43,9 @@
       "post_post"             : {
         "type": "sensitivity",
         "target_step": 15,
-        "prefix": "mon",
-        "usecols": (1,3),
-        "skiprows": 4
-      },
+        "subfix": "mon",
+        "usecols": [1,3],
+        "skiprows": 4},
       "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/elementary_effects_demo",
       "delete_field_data" : "False"
     }
@@ -64,7 +63,7 @@
     "num_nodes" : 1,
     "walltime" : "120:00:00",
     "email" : "nitzler@lnm.mw.tum.de",
-    "connect_to_resource" : ["ssh", "-T", "nitzler@bruteforce"],
+    "connect_to_resource" : "nitzler@bruteforce",
     "slurm_output" : "True"
   },
   "parameters" : {

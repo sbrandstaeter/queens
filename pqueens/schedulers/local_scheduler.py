@@ -4,7 +4,7 @@ import subprocess
 import sys
 import pathlib
 
-from .schedulers.scheduler import Scheduler
+from .scheduler import Scheduler
 
 class LocalScheduler(Scheduler):
     """ Scheduler which submits jobs to the local machine via a shell command"""

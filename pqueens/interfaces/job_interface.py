@@ -6,7 +6,7 @@ from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
-from pqueens.drivers import Driver
+from pqueens.drivers.driver import Driver
 
 class JobInterface(Interface):
     """

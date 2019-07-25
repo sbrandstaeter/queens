@@ -20,7 +20,7 @@ setup(
               'pqueens.database',
               'pqueens.post_post',
               'pqueens.drivers',
-              'pqueens.utils'],
+              'pqueens.utils'])
     # for now do not add third party packages here but install them manually Using
     # anaconda beforehand (we get some weird errors otherwise)
     #install_requires=[
@@ -28,5 +28,3 @@ setup(
     #      'scipy',
     #      'matplotlib'
     #  ],
-    long_description=read('README.md'),
-)

@@ -29,8 +29,8 @@ def main(args):
 ## Create Driver and Scheduler object from input JSON temp file
 #TODO: Somehow a database object needs to be passed to driver --> Check how this is done in scheduler scheduler = Scheduler.from_config_create_scheduler(options) # creates driver_obj as well
 ## Run the simulations via object methods
-    driver_obj = Driver.from_config_create_driver(config, job_id, batch) #TODO: Check if there is a better way than creating the object everytime 
-    driver_obj.main_run(job_id,batch) #TODO what about slurm cmd?
+    driver_obj = Driver.from_config_create_driver(config, job_id, batch) #TODO: Check if there is a better way than creating the object everytime
+    driver_obj.main_run() #TODO what about slurm cmd?
 ## Clean-up and delete all temp files
     os.remove('temp.json')
 

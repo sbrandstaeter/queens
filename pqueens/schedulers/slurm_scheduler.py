@@ -1,6 +1,6 @@
 import sys
 import subprocess
-from .schedulers.scheduler import Scheduler
+from .scheduler import Scheduler
 
 class SlurmScheduler(Scheduler):
     """ Minimal interface to SLURM queing system to submit and query jobs
@@ -61,7 +61,7 @@ class SlurmScheduler(Scheduler):
         return regex[-1]
 
 ########### Children methods that need to be implemented #######################
-def alive(self, process_id):
+    def alive(self,process_id):
         """ Check whether job is alive
         The function checks if job is alive. If it is not i.e., the job is
         either on hold or suspended the fuction will attempt to kill it
@@ -106,7 +106,7 @@ def alive(self, process_id):
                 command_list = self.connect_to_resource + ['scancel', str(process_id)]
                 command_string = ' '.join(command_list)
                 stdout, stderr, p = super().run_subprocess(command_string)
-               print(stdout)
+                print(stdout)
                 sys.stderr.write("Killed job %d.\n" % (process_id))
             except:
                 sys.stderr.write("Failed to kill job %d.\n" % (process_id))

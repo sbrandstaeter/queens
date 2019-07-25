@@ -8,12 +8,12 @@ class Post_post(metaclass=abc.ABCMeta):
 
     def __init__(self, base_settings):
 
-    self.target_step = base_settings['target_step']
-    self.subfix = base_settings['subfix']
-    self.usecols = base_settings['usecols']
-    self.skiprows = base_settings['skiprows']
-    self.error = False
-    self.num_post = base_settings['num_post']
+        self.target_step = base_settings['target_step']
+        self.subfix = base_settings['subfix']
+        self.usecols = base_settings['usecols']
+        self.skiprows = base_settings['skiprows']
+        self.error = False
+        self.num_post = base_settings['num_post']
 
     @classmethod
     def from_config_create_post_post(cls, config):
@@ -30,6 +30,7 @@ class Post_post(metaclass=abc.ABCMeta):
         post_post_options = config['driver']['driver_params']['post_post']
 
 #### create base settings ##################
+        base_settings={}
         base_settings['target_step'] = post_post_options['target_step']
         base_settings['subfix'] = post_post_options['subfix']
         base_settings['usecols'] = post_post_options['usecols']
