@@ -4,13 +4,14 @@ import hashlib
 import os
 import subprocess
 import pdb
+from pqueens.drivers.driver import Driver
 
 class Scheduler(metaclass=abc.ABCMeta):
     """ Base class for schedulers """
 
     def __init__(self, base_settings):
         self.remote_flag = base_settings['remote_flag']
-        self.json_input = base_settings['json_input']
+        self.config = base_settings['config']
         self.path_to_singularity = base_settings['singularity_path']
         self.connect_to_resource = base_settings['connect']
 
@@ -47,14 +48,16 @@ class Scheduler(metaclass=abc.ABCMeta):
         base_settings={} # initialize empty dictionary
         if scheduler_options["scheduler_type"]=='local':
             base_settings['remote_flag'] = False
+            base_settings['singularity_path'] = None
+            base_settings['connect'] = None
         elif scheduler_options["scheduler_type"]=='pbs' or scheduler_options["scheduler_type"]=='slurm':
             base_settings['remote_flag'] = True
+            base_settings['singularity_path'] = config['driver']['driver_params']['path_to_singularity']
+            base_settings['connect'] = config[scheduler_name]['connect_to_resource']
         else:
             raise RuntimeError("Slurm type was not specified correctly! Choose either 'local', 'pbs' or 'slurm'!")
 
-        base_settings['json_input'] = config['input_file']
-        base_settings['singularity_path'] = config['driver']['driver_params']['path_to_singularity']
-        base_settings['connect'] = config[scheduler_name]['connect_to_resource']
+        base_settings['config'] = config
 ########### end base settings ####################################################
 
         scheduler = scheduler_class.from_config_create_scheduler(config, base_settings, scheduler_name=None)
@@ -70,7 +73,7 @@ class Scheduler(metaclass=abc.ABCMeta):
 
 ########## Auxiliary high-level methods #############################################
     def copy_temp_json(self):
-        command_list = ["scp", self.json_input, self.connect_to_resource+':'+self.path_to_singularity + '/temp.json']
+        command_list = ["scp", self.config['input_file'], self.connect_to_resource+':'+self.path_to_singularity + '/temp.json']
         command_string = ' '.join(command_list)
         stdout,stderr,_ = self.run_subprocess(command_string)
         if stderr:
@@ -259,22 +262,25 @@ class Scheduler(metaclass=abc.ABCMeta):
             int: proccess id of job
 
         """
-        remote_args = '--job_id={} --batch={}'.format(job_id, batch)
-        cmdlist_remote_main = ['ssh',self.connect_to_ressource, "." + self.path_to_singularity + "/driver.simg", remote_args]
-        cmd_remote_main = ' '.join(cmdlist_remote_main)
-        stdout, stderr, p = self.run_subprocess(cmd_remote_main)
+        if self.remote_flag:
+            remote_args = '--job_id={} --batch={}'.format(job_id, batch)
+            cmdlist_remote_main = ['ssh',self.connect_to_ressource, "." + self.path_to_singularity + "/driver.simg", remote_args]
+            cmd_remote_main = ' '.join(cmdlist_remote_main)
+            stdout, stderr, p = self.run_subprocess(cmd_remote_main)
+            match = self.get_process_id_from_output(stdout)
+            try:
+                return int(match)
+            except:
+                sys.stderr.write(stdout)
+                return None
 
-        if stderr:
-            raise RuntimeError("The file 'remote_main' in remote singularity image could not be executed properly!")
-            print(stderr)
-
-        # get the process id from text output
-        match = self.get_process_id_from_output(stdout)
-        try:
-            return int(match)
-        except:
-            sys.stderr.write(output)
-            return None
+            if stderr:
+                raise RuntimeError("The file 'remote_main' in remote singularity image could not be executed properly!")
+                print(stderr)
+        else:
+            driver_obj = Driver.from_config_create_driver(self.config,job_id, batch)
+            driver_obj.main_run()
+            return driver_obj.pid
 
 ######### Children methods that need to be implemented / abstractmethods ######################
     @abc.abstractmethod # how to check this is dependent on cluster / env

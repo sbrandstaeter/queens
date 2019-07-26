@@ -19,7 +19,7 @@ class Baci_driver_native(Driver):
     """
     def __init__(self, base_settings):
         super(Baci_driver_native, self).__init__(base_settings)
-
+        self.mpi_config={}
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings):
@@ -31,8 +31,8 @@ class Baci_driver_native(Driver):
             driver: Baci_driver_native object
 
         """
-
         return cls(base_settings)
 
     def setup_mpi(self): # TODO this is not needed atm
-        pass
+        self.mpi_config['mpi_run']=''
+        self.mpi_config['flags']=''

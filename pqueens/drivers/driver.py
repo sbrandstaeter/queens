@@ -7,6 +7,7 @@ import subprocess
 import time
 import importlib.util
 import os
+import pdb
 
 class Driver(metaclass=abc.ABCMeta):
     """ Base class for Drivers
@@ -23,9 +24,11 @@ class Driver(metaclass=abc.ABCMeta):
 
     def __init__(self, base_settings): # database object passed by scheduler, scheduler has it from
         # add base class driver stuff here
-        self.experiment_dir = base_settings['experiment_name']
+        self.experiment_dir = base_settings['experiment_dir']
+        self.experiment_name = base_settings['experiment_name']
         self.job_id = base_settings['job_id']
         self.input_file = base_settings['input_file']
+        self.template = base_settings['template']
         self.output_file = base_settings['output_file']
         self.job = base_settings['job']
         self.batch = base_settings['batch']
@@ -35,9 +38,10 @@ class Driver(metaclass=abc.ABCMeta):
         self.postprocessor = base_settings['postprocessor']
         self.post_options = base_settings['post_options']
         self.postpostprocessor = base_settings['postpostprocessor']
-        self.mpi_config = None # config mpi for each machine (command itself is organized via scheduler)
+        self.mpi_config = {} # config mpi for each machine (command itself is organized via scheduler)
         # add scheduler specific attributes to minimize communication
         self.scheduler_cmd = base_settings['scheduler_cmd']
+        self.pid=None
 
     @classmethod
     def from_config_create_driver(cls, config, job_id, batch):
@@ -66,9 +70,10 @@ class Driver(metaclass=abc.ABCMeta):
         scheduler_name = config['resources'][first]['scheduler']
         scheduler_options = config[scheduler_name]
         base_settings = {}
-        base_settings['experiment_name']= driver_options['experiment_dir']
+        base_settings['experiment_dir']= driver_options['experiment_dir']
         base_settings['job_id']= job_id
         base_settings['input_file']=None
+        base_settings['template']=driver_options['input_template']
         base_settings['output_file']=None
         base_settings['job']= None
         base_settings['batch']=batch
@@ -78,6 +83,7 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['postprocessor']=driver_options['path_to_postprocessor']
         base_settings['post_options']=driver_options['post_process_options']
         base_settings['postpostprocessor']= Post_post.from_config_create_post_post(config)
+        base_settings['experiment_name'] =config['global_settings']['experiment_name']
 ### here comes some case / if statement dependent on the scheduler type
         if scheduler_options['scheduler_type'] == 'slurm':
             # read necessary variables from config
@@ -115,7 +121,7 @@ class Driver(metaclass=abc.ABCMeta):
             scheduler_cmd = ' '.join(command_list)
 
         elif scheduler_options['scheduler_type'] == 'local':
-            scheduler_cmd = None #TODO maybe we need to change this
+            scheduler_cmd = ''
         else:
             raise ValueError('Driver cannot find a valid scheduler type in JSON file!')
 
@@ -143,37 +149,26 @@ class Driver(metaclass=abc.ABCMeta):
 
     def finish_and_clean(self):
         """ Finish and clean the resources and environment """
-
-        self.finish_job()
         self.do_postprocessing()
-        self.do_postpostprocessing() # can be passed in child class
+        self.do_postpostprocessing()
+        self.finish_job()
 
-    def run_subprocess(command_string, my_env = None):
+
+    def run_subprocess(self,command_string, my_env = None):
         """ Method to run command_string outside of Python """
-        if (my_env is None) and ('my_env' in mpi_config):
-            p = subprocess.Popen(command_string,
-                             env = self.mpi_config['my_env'],
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             shell=True,
-                             universal_newlines=True)
-        else:
-            p = subprocess.Popen(command_string,
-                             env = my_env,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             shell=True,
-                             universal_newlines=True)
+        p = subprocess.Popen(command_string,
+                         stdin=subprocess.PIPE,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.PIPE,
+                         shell=True,
+                         universal_newlines=True)
 
         stdout, stderr = p.communicate()
-        print(stderr)
-        print(stdout)
-        return stdout
+        process_id = p.pid
+        return stdout, process_id
 ##### Base class methods ##################################################
 
-    def setup_dirs_and_files(self):
+    def setup_dirs_and_files(self): #TODO: Dat is hard coded! Change this!
         """ Setup directory structure
 
             Args:
@@ -195,11 +190,11 @@ class Driver(metaclass=abc.ABCMeta):
             os.makedirs(output_directory)
 
         # create input file name
-        self.input_file = dest_dir + '/' + str(self.experiment_dir) + \
-                          '_' + str(self.job_id) + '.dat'
+        self.input_file = dest_dir + '/' + str(self.experiment_name) + \
+                          '_' + str(self.job_id) + '.dat' #TODO change hard coding of .dat
 
         # create output file name
-        self.output_file =  output_directory + '/' + str(self.experiment_dir) + \
+        self.output_file =  output_directory + '/' + str(self.experiment_name) + \
                           '_' + str(self.job_id)
 
 
@@ -212,11 +207,11 @@ class Driver(metaclass=abc.ABCMeta):
 
         """
         # Create database object and load the already initiated job entry
-        self.job = self.database.load(self.experiment_dir, self.batch, 'jobs', {'id' : self.job_id})
+        self.job = self.database.load(self.experiment_name, self.batch, 'jobs', {'id': self.job_id})
 
         # start settings for job
-        self.job['start time'] = time.time()
-
+        start_time = time.time()
+        self.job['start time'] = start_time
         # save the job with the new start time
         self.database.save(self.job, self.experiment_dir, 'jobs', self.batch,
                 {'id' : self.job_id})
@@ -224,6 +219,8 @@ class Driver(metaclass=abc.ABCMeta):
         sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
                          % (start_time-self.job['submit time']))
 
+        # create actual input file with parsed parameters
+        inject(self.job['params'],self.template,self.input_file)
 
     def run_job(self):
         """ Actual method to run the job on computing machine
@@ -231,10 +228,10 @@ class Driver(metaclass=abc.ABCMeta):
         """
         # assemble run command
         command_list = [self.scheduler_cmd, self.mpi_config['mpi_run'], self.mpi_config['flags'], self.executable, self.input_file, self.output_file]
-        command_string = ' '.join(command_list)
-        _ = self.run_subprocess(command_string)
+        command_string = ' '.join(filter(None,command_list))
+        _,self.pid = self.run_subprocess(command_string)
 
-    def finsih_job(self):
+    def finish_job(self):
         """ Change status of job to compleded in database """
 
         if self.result is None:
@@ -243,18 +240,21 @@ class Driver(metaclass=abc.ABCMeta):
             self.job['result'] = self.result
             self.job['status'] = 'complete'
             self.job['end time'] = time.time()
-            self.database.save(self.job, self.experiment_dir, 'jobs', self.batch, {'id' : self.job_id})
+            self.database.save(self.job, self.experiment_name, 'jobs', str(self.batch), {'id' : self.job_id})
 
 
     def do_postprocessing(self):
         #TODO: Check if this is abstract enough --> --file could be troublesome
+        target_file_base_name = os.path.dirname(self.output_file)
         output_file_opt = '--file=' + self.output_file
-        postprocessing_list = [self.mpi_config['mpi_run'], '-np 1', self.postprocessor, output_file_opt, self.post_options]
-        postprocess_command = ' '.join(postprocessing_list)
-        _ = self.run_subprocess(postprocess_command)
+        for num,option in enumerate(self.post_options):
+            target_file_opt = '--output=' + target_file_base_name + "/QoI_" + str(num+1)
+            postprocessing_list = [self.mpi_config['mpi_run'], self.postprocessor, output_file_opt, option, target_file_opt]
+            postprocess_command = ' '.join(filter(None,postprocessing_list))
+            _,_ = self.run_subprocess(postprocess_command)
 
 
-    def do_postpostprocessing(self):
+    def do_postpostprocessing(self): #TODO: file extentions are hard coded we need to change that!
         """ Run script to extract results from monitor file
 
         Args:
@@ -268,20 +268,20 @@ class Driver(metaclass=abc.ABCMeta):
         result, error = self.postpostprocessor.read_post_files(self.output_file)
 
         # cleanup of unnecessary data after QoI got extracted and flag is set in config
-        if self.post_options["delete_field_data"].lower()=="true":
+        if self.postpostprocessor.delete_field_data.lower()=="true":
             # Delete every ouput file exept the .mon file
             # --> use self.output to get path to current folder
             # --> start subprocess to delete files with linux commands
             command_string = "cd "+ self.output_file + "&& ls | grep -v --include=*.{mon,csv} | xargs rm" # TODO check if this works for several extentions
-            _ = self.run_subprocess(command_string)
+            _,_ = self.run_subprocess(command_string)
 
         # Put files that were not compliant with the requirements from the
         # postpost_processing scripts in a special folder and do not pass on result
         # of those files
-        if error !="":
+        if error == 'true':
             result = None
-            command_string = "cd "+ self.output_file + "&& cd ../.. && mkdir -p postpost_error && cd " + baci_ouput + "&& cd .. && mv *.dat ../postpost_error/" # This is the actual linux commmand
-            _ = self.run_subprocess(command_string)
+            command_string = "cd "+ self.output_file + "&& cd ../.. && mkdir -p postpost_error && cd " + self.output_file + "&& cd .. && mv *.dat ../postpost_error/" # This is the actual linux commmand
+            _,_ = self.run_subprocess(command_string)
 
         self.result = result
         sys.stderr.write("Got result %s\n" % (self.result))

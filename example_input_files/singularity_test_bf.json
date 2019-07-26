@@ -41,7 +41,6 @@
       "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
       "post_process_options"  : ["--field=structure --node=26 --start=1"],
       "post_post"             : {
-        "type": "sensitivity",
         "target_step": 15,
         "subfix": "mon",
         "usecols": [1,3],

@@ -1,4 +1,3 @@
-
 import os
 import subprocess
 import sys
@@ -44,9 +43,3 @@ class LocalScheduler(Scheduler):
             return False
         else:
             return True
-
-    def submit(self, job_id, batch):
-        """ Submit job by calling corresponding Driver method
-        """
-        driver_obj = Driver.from_config_create_driver(config, job_id, batch)
-        driver_obj.main_run() # This is the only mehtod necessary: rest will be taken care of in the driver

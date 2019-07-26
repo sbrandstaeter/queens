@@ -7,6 +7,7 @@ from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
 from pqueens.drivers.driver import Driver
+import pdb
 
 class JobInterface(Interface):
     """
@@ -113,7 +114,7 @@ class JobInterface(Interface):
                 for resource_name, resource in self.resources.items():
                     if resource.accepting_jobs(jobs):
 
-                        new_job = self.create_new_job(variables, resource_name)
+                        new_job = self.create_new_job(variables, resource_name) #TODO wrong number!
 
                         # Submit the job to the appropriate resource
                         process_id = self.attempt_dispatch(resource, new_job)
@@ -126,11 +127,9 @@ class JobInterface(Interface):
                         # Set the status of the job appropriately (successfully submitted or not)
                         if process_id is None:
                             new_job['status'] = 'broken'
-                            self.save_job(new_job)
                         else:
                             new_job['status'] = 'pending'
                             new_job['proc_id'] = process_id
-                            self.save_job(new_job)
 
                         processed_suggestion = True
                         jobs = self.load_jobs()
@@ -143,6 +142,7 @@ class JobInterface(Interface):
 
         while not self.all_jobs_finished():
             time.sleep(self.polling_time)
+
 
         # get sample and response data
         return self.get_output_data()

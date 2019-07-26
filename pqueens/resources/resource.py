@@ -7,6 +7,7 @@ from operator import add
 from functools import reduce
 import numpy as np
 import sys
+import pdb
 
 # TODO refactor this method into a class method
 
@@ -146,7 +147,7 @@ class Resource(object):
 
         """
         if jobs:
-            return filter(lambda job: job['resource']==self.name, jobs)
+            return [job for job in jobs if job['resource'] == self.name]#filter(lambda job: job['resource']==self.name, jobs)
         else:
             return jobs
 
@@ -162,8 +163,8 @@ class Resource(object):
         """
         jobs = self.filter_my_jobs(jobs)
         if jobs:
-            pending_jobs = map(lambda x: x['status'] in ['pending', 'new'], jobs)
-            return reduce(add, pending_jobs, 0)
+            pending_jobs = [job['status'] for job in jobs].count('pending')
+            return pending_jobs
         else:
             return 0
 
@@ -179,8 +180,8 @@ class Resource(object):
         """
         jobs = self.filter_my_jobs(jobs)
         if jobs:
-            failed_jobs = map(lambda x: x['status'] in ['failed'], jobs)
-            return reduce(add, failed_jobs, 0)
+            failed_jobs = [job['status'] for job in jobs].count('failed')#map(lambda x: x['status'] in ['failed'], jobs)
+            return failed_jobs#reduce(add, failed_jobs, 0)
         else:
             return 0
 
@@ -197,8 +198,8 @@ class Resource(object):
         """
         jobs = self.filter_my_jobs(jobs)
         if jobs:
-            completed_jobs = map(lambda x: x['status'] == 'complete', jobs)
-            return reduce(add, completed_jobs, 0)
+            completed_jobs = [job['status'] for job in jobs].count('complete')#map(lambda x: x['status'] == 'complete', jobs)
+            return completed_jobs#reduce(add, completed_jobs, 0)
         else:
             return 0
 
@@ -258,7 +259,6 @@ class Resource(object):
             raise Exception("This job does not belong to me!")
 
         process_id = self.scheduler.submit(job['id'], batch)
-
         if process_id is not None:
             sys.stderr.write('Submitted job %d with %s '
                              '(process id: %d).\n' %
