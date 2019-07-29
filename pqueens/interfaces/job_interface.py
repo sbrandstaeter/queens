@@ -143,7 +143,8 @@ class JobInterface(Interface):
         while not self.all_jobs_finished():
             time.sleep(self.polling_time)
 
-
+        for _,resource in self.resources.items():
+            resource.scheduler.post_run() # This will close all previous opened ports for databank communication
         # get sample and response data
         return self.get_output_data()
 

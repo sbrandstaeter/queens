@@ -42,9 +42,10 @@ class Driver(metaclass=abc.ABCMeta):
         # add scheduler specific attributes to minimize communication
         self.scheduler_cmd = base_settings['scheduler_cmd']
         self.pid=None
+        self.port=None
 
     @classmethod
-    def from_config_create_driver(cls, config, job_id, batch):
+    def from_config_create_driver(cls, config, job_id, batch, port=None):
         """ Create driver from problem description
 
         Args:
@@ -59,9 +60,11 @@ class Driver(metaclass=abc.ABCMeta):
         """
         from pqueens.drivers.baci_driver_bruteforce import Baci_driver_bruteforce
         from pqueens.drivers.baci_driver_native import Baci_driver_native
+        from pqueens.drivers.baci_driver_schmarrn import Baci_driver_schmarrn
 
         driver_dict = {'baci_bruteforce': Baci_driver_bruteforce,
-                       'baci_native': Baci_driver_native}
+                       'baci_native': Baci_driver_native,
+                       'baci_schmarrn': Baci_driver_schmarrn}
         driver_version = config['driver']['driver_type']
         driver_class = driver_dict[driver_version]
 ###### create base settings #####################
@@ -70,6 +73,7 @@ class Driver(metaclass=abc.ABCMeta):
         scheduler_name = config['resources'][first]['scheduler']
         scheduler_options = config[scheduler_name]
         base_settings = {}
+        base_settings['port'] = port
         base_settings['experiment_dir']= driver_options['experiment_dir']
         base_settings['job_id']= job_id
         base_settings['input_file']=None

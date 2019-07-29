@@ -6,15 +6,15 @@ import importlib.util
 from pqueens.drivers.driver import Driver
 
 
-class Baci_driver_bruteforce(Driver):
-    """ Driver to run BACI on the HPC cluster bruteforce (via Slurm)
+class Baci_driver_schmarrn(Driver):
+    """ Driver to run BACI on the HPC cluster schmarrn (via PBS/Torque)
 
     Args:
 
     Returns:
     """
     def __init__(self, base_settings):
-        super(Baci_driver_bruteforce, self).__init__(base_settings)
+        super(Baci_driver_schmarrn, self).__init__(base_settings)
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings):
@@ -23,10 +23,9 @@ class Baci_driver_bruteforce(Driver):
         Args:
 
         Returns:
-            driver: Baci_driver_bruteforce object
+            driver: Baci_driver_schmarrn object
         """
         return cls(base_settings)
-
 
     def setup_mpi(self):
         """ setup MPI environment
@@ -37,16 +36,16 @@ class Baci_driver_bruteforce(Driver):
             Returns:
                 str, str: MPI runcommand, MPI flags
         """
-        srcdir = os.environ["SLURM_SUBMIT_DIR"]
+        srcdir = os.environ["PBS_O_WORKDIR"]
         os.chdir(srcdir)
         address ='10.10.0.1:'+ self.port
         self.database(database_address=address)# TODO we assume that 10.10.0.1 is always the master node for slurm
-        mpi_run = '/cluster/mpi/intel/openmpi/1.10.1/bin/mpirun'
-        mpi_home = '/cluster/mpi/intel/openmpi/1.10.1'
+        mpi_run = '/opt/openmpi/1.6.2/gcc48/bin/mpirun'
+        mpi_home = '/opt/openmpi/1.6.2/gcc48'
 
         os.environ["MPI_HOME"] = mpi_home
         os.environ["MPI_RUN"] = mpi_run
-        os.environ["LD_LIBRARY_PATH"] += "/cluster/mpi/intel/openmpi/1.10.1'/lib"
+        os.environ["LD_LIBRARY_PATH"] = mpi_home #TODO seemed to be empty thats we just add mpi_home here, nothing to append; might change lateron
 
         # Add non-standard shared library paths
         my_env = os.environ.copy()
@@ -62,7 +61,7 @@ class Baci_driver_bruteforce(Driver):
         self.mpi_conig['flags'] = mpi_flags
 
         # determine number of processors from nodefile
-        slurm_nodefile = os.environ["SLURM_JOB_NODELIST"]
-        command_list = ['cat', slurm_nodefile, '|', 'wc', '-l']
+        pbs_nodefile = os.environ["PBS_NODEFILE"]
+        command_list = ['cat', pbs_nodefile, '|', 'wc', '-l']
         command_string = ' '.join(command_list)
         self.mpi_config['nodelist_procs'] = int(self.run_subprocess(command_string))

@@ -14,6 +14,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.config = base_settings['config']
         self.path_to_singularity = base_settings['singularity_path']
         self.connect_to_resource = base_settings['connect']
+        self.address_localhost = base_settings['address_localhost']
+        self.port = None
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name=None):
@@ -58,6 +60,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             raise RuntimeError("Slurm type was not specified correctly! Choose either 'local', 'pbs' or 'slurm'!")
 
         base_settings['config'] = config
+        base_settings['address_localhost'] = config['global_settings']['address_localhost'] #TODO this needs to be changed in json inputs
 ########### end base settings ####################################################
 
         scheduler = scheduler_class.from_config_create_scheduler(config, base_settings, scheduler_name=None)
@@ -66,12 +69,42 @@ class Scheduler(metaclass=abc.ABCMeta):
 #### basic init function is called in resource.py after creation of scheduler object
     def pre_run(self):
         if self.remote_flag:
+            self.establish_port_forwarding_local() #TODO this is work in progress!
+            self.establish_port_forwarding_remote() #TODO this is work in progress!
             self.prepare_singularity_files()
             self.copy_temp_json()
         else:
             pass
 
+    def post_run(self): # will actually be called in job_interface
+        if self.remote_flag:
+            self.close_remote_port()
+        else:
+            pass
+
+
+
 ########## Auxiliary high-level methods #############################################
+    def establish_port_forwarding_remote(self):
+        # Check for free port on the remote
+        command_string = self.connect + r' for port in $(seq 1030 48000); do echo -ne "\035" | telnet 127.0.0.1 $port > /dev/null 2>&1; [ $? -eq 1 ] && echo "$port" && break; done'
+        self.port, stderr,_ = self.run_subprocess(command_string)
+        # establish the port forwarding
+        command_list=[self.connect,'ssh -fN -g -L',port+':localhost:27017',self.address_localhost]
+        command_string = ' '.join(command_list)
+        _,stderr,_ = self.run_subprocess(command_string)
+
+    def establish_port_forwarding_local(self):
+        remote_address=self.connect_to_resource[-1] # TODO Careful here we do not need the user just the address!
+        command_list = ['ssh -fN -L 9001:'+ remote_address + ':22',self.address_localhost]
+        command_string = ' '.join(command_list)
+        _,stderr,_ = self.run_subprocess(command_string)
+
+
+    def close_remote_port(self):
+        command_string = self.connect + r' kill $(lsof -t -i:' + self.port + ')'
+        _,stderr,_ = self.run_subprocess(command_string)
+
     def copy_temp_json(self):
         command_list = ["scp", self.config['input_file'], self.connect_to_resource+':'+self.path_to_singularity + '/temp.json']
         command_string = ' '.join(command_list)
