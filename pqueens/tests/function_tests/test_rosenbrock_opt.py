@@ -1,3 +1,9 @@
+"""
+Test suite for integration tests of optimization iterator
+
+based on the Rosenbrock test function
+"""
+
 import pickle
 
 import numpy as np
@@ -11,7 +17,9 @@ from pqueens.utils import injector
                         'CG',
                         'BFGS',
                         'L-BFGS-B',
-                        'TNC'])
+                        'TNC'
+                        ]
+                )
 def algorithm(request):
 
     return request.param

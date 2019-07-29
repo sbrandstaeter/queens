@@ -1,5 +1,5 @@
 {
-  "experiment_name" : "ResRosenbrockLSQ",
+  "experiment_name" : "ParabulaResLSQ",
   "database"  :{
     "address"   : "localhost:27017"
   },
@@ -8,12 +8,12 @@
     "method_options" : {
       "model" : "model",
       "algorithm" : "LSQ",
-      "initial_guess" : [-3.0, -4.0],
+      "initial_guess" : [0.75],
       "result_description" : {
           "write_results" : true
       },
-      "bounds": [[-Infinity, -Infinity],
-                 [Infinity, Infinity]]
+      "bounds": [[-Infinity],
+                 [Infinity]]
     }
   },
   "model" : {
@@ -23,15 +23,11 @@
   },
   "interface" : {
     "type" : "direct_python_interface",
-    "main_file" : "rosenbrock_residual.py"
+    "main_file" : "parabula_residual.py"
   },
   "parameters" : {
     "random_variables" : {
       "x1" : {
-        "type" : "FLOAT",
-        "size" : 1
-      },
-      "x2" : {
         "type" : "FLOAT",
         "size" : 1
       }

@@ -182,6 +182,14 @@ class OptimizationIterator(Iterator):
         f_perturbed = np.delete(f_batch, 0, 0) # delete the first entry
 
         J = fd_jacobian(f0, f_perturbed, delta_positions, use_one_sided, method=self.jac_method)
+        # sanity checks:
+        # in the case of LSQ the number of residuals needs to be greater or equal to the number of parameters to be fitted
+        if self.algorithm == 'LSQ' and J.ndim == 2:
+            num_res, num_par = J.shape
+            if num_res < num_par:
+                raise ValueError(f"Number of residuals (={num_res}) has to be greater or equal to"
+                                 f" number of parameters (={num_par})."
+                                 f" You have {num_res}<{num_par}.")
         return J
 
     def initialize_run(self):
