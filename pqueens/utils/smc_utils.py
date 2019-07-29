@@ -3,13 +3,17 @@ collection of utility functions and classes for Sequential Monte Carlo
 (SMC) algorithms.
 """
 
+import numpy as np
+
 def temper_logpdf_bayes(log_prior, log_like, tempering_parameter=1.0):
     """
     Bayesian tempering function.
 
     It phases from the prior to the posterior = like * prior.
     """
-    return tempering_parameter * log_like + log_prior
+    # the nan_to_num is necessary for the case when tempering_parameter = 0.0 and logpdf=-inf
+    # this would normally return nan but we want it to be 0
+    return tempering_parameter * np.nan_to_num(log_like) + log_prior
 
 def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
     """
@@ -17,7 +21,9 @@ def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
 
     It phases from one distribution to another.
     """
-    return tempering_parameter * logpdf1 + logpdf0 * (1.0 - tempering_parameter)
+    # the nan_to_num is necessary for the case when tempering_parameter = 0.0 and logpdf=-inf
+    # this would normally return nan but we want it to be 0
+    return tempering_parameter * np.nan_to_num(logpdf1) + logpdf0 * (1.0 - tempering_parameter)
 
 
 def temper_factory(temper_type):

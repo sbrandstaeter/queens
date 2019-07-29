@@ -382,8 +382,11 @@ class SequentialMonteCarloIterator(Iterator):
 
         particles_resampled, weights_resampled, log_likelihood_resampled, log_prior_resampled = self.resample()
         if self.result_description:
-            # process output takes a dict as input with key 'mean'
-            results = process_ouputs({'mean': particles_resampled,
+            # TODO
+            # interpret the resampled particles as a single markov chain -> in accordance with the
+            # Metropolis Hastings iterator add a dimension to the numpy array
+            # this enables the calculation of the covariance matrix
+            results = process_ouputs({'mean': particles_resampled[:,np.newaxis,:],
                                       'particles' : self.particles,
                                       'weights': normalized_weights,
                                       'log_likelihood' : self.log_likelihood,
