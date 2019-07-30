@@ -1,4 +1,3 @@
-
 import os
 from setuptools import setup
 
@@ -36,4 +35,6 @@ setup(
     #      'matplotlib'
     #  ],
     long_description=read('README.md'),
+    setup_requires='pytest-runner',
+    tests_require='pytest',
 )
