@@ -201,4 +201,10 @@ def fd_jacobian(f0, f_perturbed, dx, use_one_sided, method):
 
     J_transposed = df / dx
 
-    return np.squeeze(J_transposed.T)
+    # shape[1] of transposed Jacobian corresponds to the dimension of the objective function.
+    # If it is equal to one (i.e., we deal with a scalar objective function),
+    # the respective optimization algorithms expect a 1d array (vector).
+    # You may think of the gradient as a degenerated Jacobian in the 1d case.
+    if J_transposed.shape[1] == 1:
+        J_transposed = np.squeeze(J_transposed)
+    return J_transposed.T

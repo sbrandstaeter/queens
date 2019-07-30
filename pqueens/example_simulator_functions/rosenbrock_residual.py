@@ -1,6 +1,6 @@
 import numpy as np
 
-def residual_rosenbrock(x1, x2):
+def rosenbrock_residual(x1, x2):
     """
     Residuals of Rosenbrock banana function
 
@@ -28,4 +28,4 @@ def main(job_id, params):
         ndarray: Vector of residuals of the Rosenbrock function at the
                  positions specified in the params dict
     """
-    return residual_rosenbrock(params['x1'], params['x2'])
+    return rosenbrock_residual(params['x1'], params['x2'])
