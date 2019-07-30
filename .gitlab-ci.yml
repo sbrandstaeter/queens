@@ -3,6 +3,7 @@ image: continuumio/anaconda3
 
 full_test_and_build_suite:
   script:
+  - export PATH="/opt/conda/bin:$PATH"
   - conda update conda && conda update python
   - apt-get update -y
   - apt-get install gcc -y
