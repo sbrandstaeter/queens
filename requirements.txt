@@ -26,10 +26,14 @@ matplotlib
 seaborn
 plotly
 # testing framework
-pytest
+pytest>=3.0.0
+pytest-pep8
+pytest-cov
 pytest-mock
 # create mock objects for unit testing
 mock
 # for code coverage purposes
 codecov
 coverage
+
+
