@@ -26,8 +26,6 @@ class SlurmScheduler(Scheduler):
             output (boolean):           Flag for slurm output
         """
         super(SlurmScheduler, self).__init__(base_settings)
-        self.name = scheduler_name
-        self.connect_to_ressource = base_settings['connect']
 
     @classmethod
     def from_config_create_scheduler(cls, config, base_settings, scheduler_name=None):
@@ -76,7 +74,7 @@ class SlurmScheduler(Scheduler):
         alive = False
         try:
             # join lists
-            command_list = [self.connect_to_ressource,'squeue --job', str(process_id)]
+            command_list = [self.connect_to_resource,'squeue --job', str(process_id)]
             command_string = ' '.join(command_list)
             stdout, stderr, p = super().run_subprocess(command_string)
             output2 = stdout.split()

@@ -14,7 +14,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.config = base_settings['config']
         self.path_to_singularity = base_settings['singularity_path']
         self.connect_to_resource = base_settings['connect']
-        self.address_localhost = base_settings['address_localhost']
         self.port = None
 
     @classmethod
@@ -60,7 +59,6 @@ class Scheduler(metaclass=abc.ABCMeta):
             raise RuntimeError("Slurm type was not specified correctly! Choose either 'local', 'pbs' or 'slurm'!")
 
         base_settings['config'] = config
-        base_settings['address_localhost'] = config['global_settings']['address_localhost'] #TODO this needs to be changed in json inputs
 ########### end base settings ####################################################
 
         scheduler = scheduler_class.from_config_create_scheduler(config, base_settings, scheduler_name=None)
@@ -69,8 +67,12 @@ class Scheduler(metaclass=abc.ABCMeta):
 #### basic init function is called in resource.py after creation of scheduler object
     def pre_run(self):
         if self.remote_flag:
-            self.establish_port_forwarding_local() #TODO this is work in progress!
-            self.establish_port_forwarding_remote() #TODO this is work in progress!
+            hostname,_,_ = self.run_subprocess('hostname')
+            username,_,_ = self.run_subprocess('whoami')
+            address_localhost = username.rstrip() + r'@' + hostname.rstrip()
+
+            self.establish_port_forwarding_local(address_localhost) #TODO this is work in progress!
+            self.establish_port_forwarding_remote(address_localhost) #TODO this is work in progress!
             self.prepare_singularity_files()
             self.copy_temp_json()
         else:
@@ -83,26 +85,44 @@ class Scheduler(metaclass=abc.ABCMeta):
             pass
 
 
-
 ########## Auxiliary high-level methods #############################################
-    def establish_port_forwarding_remote(self):
+    def establish_port_forwarding_remote(self, address_localhost):
         # Check for free port on the remote
-        command_string = self.connect + r' for port in $(seq 1030 48000); do echo -ne "\035" | telnet 127.0.0.1 $port > /dev/null 2>&1; [ $? -eq 1 ] && echo "$port" && break; done'
-        self.port, stderr,_ = self.run_subprocess(command_string)
+        command_list = ['ssh', self.connect_to_resource, '\'for port in $(seq 1030 48000); do echo -ne "035" | telnet 127.0.0.1 $port > /dev/null 2>&1; [ $? -eq 1 ] && echo "$port" && break; done\'']
+        command_string = ' '.join(command_list)
+        #ssh_proc = subprocess.Popen(command_list, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        #stat = ssh_proc.poll()
+        #while stat == None:
+        #    stat = ssh_proc.poll()
+
+        port, stderr,_ = self.run_subprocess(command_string)
+        self.port = port.rstrip()
         # establish the port forwarding
-        command_list=[self.connect,'ssh -fN -g -L',port+':localhost:27017',self.address_localhost]
-        command_string = ' '.join(command_list)
-        _,stderr,_ = self.run_subprocess(command_string)
+        pdb.set_trace()
+        #command_list=['ssh',self.connect_to_resource,'\'ssh -fN -g -L',self.port+':localhost:27017',address_localhost,'\'']# old version
+        remote_name = self.connect_to_resource.split('@')[1]
+        command_list = ['ssh', '-f','-N', '-R', self.port + r':'+ remote_name + r':27017', address_localhost] #TODO Check if that works
+        #command_string = ' '.join(command_list)
+#        _,stderr,_ = self.run_subprocess(command_string)
+        ssh_proc = subprocess.Popen(command_list, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        stat = ssh_proc.poll()
+        while stat == None:
+            stat = ssh_proc.poll()
 
-    def establish_port_forwarding_local(self):
-        remote_address=self.connect_to_resource[-1] # TODO Careful here we do not need the user just the address!
-        command_list = ['ssh -fN -L 9001:'+ remote_address + ':22',self.address_localhost]
-        command_string = ' '.join(command_list)
-        _,stderr,_ = self.run_subprocess(command_string)
-
+    def establish_port_forwarding_local(self, address_localhost):
+        # TODO this is not so easy! port forwarding does not cover communication!
+        # see--> https://stackoverflow.com/questions/4975251/python-subprocess-popen-and-ssh-port-forwarding-in-the-background
+        remote_address=self.connect_to_resource.split(r'@')[1] # TODO Careful here we do not need the user just the address!
+        command_list = ['ssh', '-f', '-N', '-L', r'9001:'+ remote_address + r':22',address_localhost]
+        ssh_proc = subprocess.Popen(command_list, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        stat = ssh_proc.poll()
+        while stat == None:
+            stat = ssh_proc.poll()
+        #TODO Think of some kind of error catching here; so far it works but error might be cryptical
 
     def close_remote_port(self):
-        command_string = self.connect + r' kill $(lsof -t -i:' + self.port + ')'
+        pdb.set_trace()
+        command_string = self.connect_to_resource + r' "kill $(lsof -t -i:' + self.port + ')"'
         _,stderr,_ = self.run_subprocess(command_string)
 
     def copy_temp_json(self):
@@ -245,7 +265,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             elif 'Y' in stdout:
             # Check remote hashfile
                 print("Remote singularity image found! Checking state...")
-                command_list = ['ssh',self.connect_to_ressource, 'cat',self.path_to_singularity+"/hashfile.txt"]
+                command_list = ['ssh',self.connect_to_resource, 'cat',self.path_to_singularity+"/hashfile.txt"]
                 command_string = ' '.join(command_list)
                 stdout,stderr,_ = self.run_subprocess(command_string)
                 if stdout != ''.join(hashlist):
@@ -297,7 +317,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
         if self.remote_flag:
             remote_args = '--job_id={} --batch={}'.format(job_id, batch)
-            cmdlist_remote_main = ['ssh',self.connect_to_ressource, "." + self.path_to_singularity + "/driver.simg", remote_args]
+            cmdlist_remote_main = ['ssh',self.connect_to_resource, "." + self.path_to_singularity + "/driver.simg", remote_args]
             cmd_remote_main = ' '.join(cmdlist_remote_main)
             stdout, stderr, p = self.run_subprocess(cmd_remote_main)
             match = self.get_process_id_from_output(stdout)

@@ -1,7 +1,7 @@
 {
   "experiment_name" : "ee_invaaa",
   "database"  :{
-    "address"   : "129.187.58.13:27017",
+    "address"   : "nitzler@129.187.58.13",
     "drop_existing" : "True"
   },
   "method": {
@@ -40,9 +40,13 @@
       "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
       "post_process_options"  : ["--field=structure --node=26 --start=1"],
       "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/elementary_effects_demo",
-      "post_post_script"      : "/home/nitzler/workspace/QUEENS_Rep/queens/trials/post_post_script_EE.py",
-      "driver_file" : "/home/nitzler/workspace/QUEENS_Rep/queens/pqueens/drivers/baci_driver_bruteforce.py",
-      "delete_field_data" : "False"
+      "post_post"      : {
+        "delete_field_data" :  "False",
+        "taget_time": 5.0e-01,
+        "time_tol": 0.01e-01,
+        "subfix": "mon",
+        "usecol": [1,3],
+        "skiprows": 4}
     }
   },
   "resources" : {

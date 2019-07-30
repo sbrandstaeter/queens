@@ -1,7 +1,7 @@
 {
   "experiment_name" : "singu_ee_invaaa",
   "database"  :{
-    "address"   : "129.187.58.13:27017",
+    "address"   : "nitzler@129.187.58.13",
     "drop_existing" : "True"
   },
   "method": {
@@ -62,7 +62,7 @@
     "num_nodes" : 1,
     "walltime" : "120:00:00",
     "email" : "nitzler@lnm.mw.tum.de",
-    "connect_to_resource" : "nitzler@bruteforce",
+    "connect_to_resource" : "nitzler@bruteforce.lnm.mw.tum.de",
     "slurm_output" : "True"
   },
   "parameters" : {
