@@ -59,6 +59,8 @@ class OptimizationIterator(Iterator):
         if self.algorithm in ['CG', 'BFGS', 'L-BFGS-B', 'TNC', 'SLSQP', 'LSQ']:
             self.eval_jacobian = True
 
+        self.verbose_output = False
+
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None,
                                     model=None):
@@ -211,7 +213,7 @@ class OptimizationIterator(Iterator):
                                                          jac=self.jacobian,
                                                          bounds=self.bounds,
                                                          max_nfev=self.max_feval,
-                                                         verbose=1)
+                                                         verbose=int(self.verbose_output))
         # minimization with bounds using Jacobian
         elif self.algorithm in {'L-BFGS-B', 'TNC'}:
             self.solution = scipy.optimize.minimize(self.objective_function,
@@ -220,7 +222,7 @@ class OptimizationIterator(Iterator):
                                                     jac=self.jacobian,
                                                     bounds=self.bounds,
                                                     options={'maxiter' : int(1e4),
-                                                             'disp' : True})
+                                                             'disp' : self.verbose_output})
         # Constrained Optimimization BY Linear Approximation:
         # minimization with constraints without Jacobian
         elif self.algorithm in {'COBYLA'}:
@@ -228,7 +230,7 @@ class OptimizationIterator(Iterator):
                                                     self.initial_guess,
                                                     method=self.algorithm,
                                                     constraints=self.cons,
-                                                    options={'disp' : True})
+                                                    options={'disp' : self.verbose_output})
         # Sequential Least SQuares Programming:
         # minimization with bounds and constraints using Jacobian
         elif self.algorithm in {'SLSQP'}:
@@ -238,20 +240,20 @@ class OptimizationIterator(Iterator):
                                                     jac=self.jacobian,
                                                     bounds=self.bounds,
                                                     constraints=self.cons,
-                                                    options={'disp' : True})
+                                                    options={'disp' : self.verbose_output})
         # minimization (unconstrained, unbounded) without Jacobian
         elif self.algorithm in {'NELDER-MEAD', 'POWELL'}:
             self.solution = scipy.optimize.minimize(self.objective_function,
                                                     self.initial_guess,
                                                     method=self.algorithm,
-                                                    options={'disp' : True})
+                                                    options={'disp' : self.verbose_output})
         # minimization (unconstrained, unbounded) using Jacobian
         elif self.algorithm in {'CG', 'BFGS'}:
             self.solution = scipy.optimize.minimize(self.objective_function,
                                                     self.initial_guess,
                                                     method=self.algorithm,
                                                     jac=self.jacobian,
-                                                    options={'disp' : True})
+                                                    options={'disp' : self.verbose_output})
         end = time.time()
         print(f"Optimization took {end-start} seconds.")
 
