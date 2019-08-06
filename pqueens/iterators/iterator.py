@@ -38,7 +38,6 @@ class Iterator(metaclass=abc.ABCMeta):
             iterator: Iterator object
 
         """
-        from .bayesian_optimization_iterator import BayesOptIterator
         from .data_iterator import DataIterator
         from .lhs_iterator import LHSIterator
         from .lhs_iterator_mf import MF_LHSIterator
@@ -49,8 +48,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
 
-        method_dict = {'bayesian_optimization': BayesOptIterator,
-                       'lhs': LHSIterator,
+        method_dict = {'lhs': LHSIterator,
                        'lhs_mf': MF_LHSIterator,
                        'metropolis_hastings' : MetropolisHastingsIterator,
                        'monte_carlo': MonteCarloIterator,
