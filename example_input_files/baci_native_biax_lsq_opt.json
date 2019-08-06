@@ -1,36 +1,27 @@
 {
-  "experiment_name" : "xxx",
+  "experiment_name" : "OptimizeBiaxLSQ",
   "database"  :{
     "address"   : "localhost:27017",
     "drop_existing" : true
   },
   "method": {
-    "method_name": "metropolis_hastings",
+    "method_name": "optimization",
     "method_options" :{
-      "seed" : 42,
-      "num_samples" : 10,
-      "num_burn_in" : 5,
-      "scale_covariance" : 1.0,
       "model" : "model",
-      "proposal_distribution" : "normal",
+      "algorithm" : "LSQ",
+      "initial_guess" : [1.0],
       "result_description" : {
-          "write_results" : true,
-          "plot_results" : false,
-          "cov" : true
-      }
+          "write_results" : true
+      },
+      "bounds": [[0], [Infinity]]
     }
   },
   "model" : {
     "type" : "simulation_model",
-    "interface" : "interface_1",
+    "interface" : "interface",
     "parameters" : "parameters"
   },
-  "normal" : {
-    "type" : "normal",
-    "mean" : 0.0,
-    "cov" : 1.0
-  },
-  "interface_1" : {
+  "interface" : {
     "type" : "job_interface",
     "resources": "resources",
     "driver" : "driver"
@@ -43,7 +34,7 @@
       "path_to_postprocessor" : "/home/brandstaeter/workspace/build_release_master/post_drt_monitor",
       "post_process_options"  : ["--field=structure  --node=1320 --start=1",
                                  "--field=structure  --node=201 --start=1"],
-      "post_post_script"      : "/home/brandstaeter/workspace/queens/trials/post_post_script_biax_bo.py",
+      "post_post_script"      : "/home/brandstaeter/workspace/queens/trials/post_post_script_biax_lsq.py",
       "experiment_dir"        : "/home/brandstaeter/coding/queens_dev/metropolis_hastings/output/"
     }
   },
@@ -58,9 +49,7 @@
     "random_variables" : {
       "mue" : {
         "type" : "FLOAT",
-        "size" : 1,
-        "distribution" : "uniform",
-        "distribution_parameter" : [0.05, 1.6]
+        "size" : 1
       }
     }
   },

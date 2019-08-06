@@ -102,4 +102,4 @@ def run(path_to_monitor_files):
     return residuals
 
 if __name__ == '__main__':
-   run('/home/brandstaeter/coding/queens/develop_mh/output/experiments/OptimizeBiaxLSQ_1')
+   run('/home/brandstaeter/coding/queens_dev/metropolis_hastings/output/OptimizeBiaxLSQ_1')
