@@ -27,8 +27,6 @@ pytest-cov
 pytest-mock
 # create mock objects for unit testing
 mock
-# for code coverage purposes
-codecov
-coverage
+
 
 
