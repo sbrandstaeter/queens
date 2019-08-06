@@ -114,7 +114,6 @@ Note that if you want to connect to the database from a cluster, you will also n
 - Schmarrn: 129.187.58.24
 - Bruteforce (master node global IP): 129.187.58.13
 - Bruteforce (master node local IP): 10.10.0.1
-- Jonas B. Laptop: 129.187.58.120
 
 [↑ Contents](#contents)
 
@@ -200,19 +199,16 @@ before the make command.
 [↑ Contents](#contents)
 
 ## Run the test suite
-QUEENS has a couple of unit and regression test. To run the test suite type:  
-`pytest pqueens/tests`  
+QUEENS has a couple of unit and regression test.
+The testing strategy is more closely described in [TESTING.md](TESTING.md) 
+To run the test suite type:  
+`python setup.py test`
 
 The above potentially gives many deprecation warnings of external packages (like tensorflow).
 If you are sure you did not cause a deprecation warning yourself, you can ignore them by running  
 `pytest pqueens/tests -W ignore::DeprecationWarning`  
 For more info see the [pytest documentation](https://docs.pytest.org/en/latest/warnings.html).
 
-In order to get a detailed report showing code coverage etc., the test have to be run using the coverage tool. This is triggered by running the using:  
-`coverage run -m pytest pqueens/tests`  
-
-To view the created report, run:  
-`coverage report -m`  
 
 [↑ Contents](#contents)
 
