@@ -7,7 +7,7 @@ full_test_and_build_suite:
   - conda update conda && conda update python
   - apt-get update -y
   - apt-get install gcc -y
-  - conda create --name pqueens -y python=3.6
+  - conda create --name pqueens -y python=3.7
   - source activate pqueens
   - pip install --upgrade setuptools
   - pip install --upgrade pip
