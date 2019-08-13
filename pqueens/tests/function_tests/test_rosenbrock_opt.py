@@ -3,7 +3,7 @@ Test suite for integration tests of optimization iterator
 
 based on the Rosenbrock test function
 """
-
+import os
 import pickle
 
 import numpy as np
@@ -25,10 +25,10 @@ def algorithm(request):
     return request.param
 
 
-def test_rosenbrock_opt(tmpdir, algorithm):
+def test_rosenbrock_opt(inputdir, tmpdir, algorithm):
     """ Test different solution algorithms in optimization iterator. """
 
-    template =  'pqueens/tests/function_tests/input_files/rosenbrock_opt_template.json'
+    template =  os.path.join(inputdir, 'rosenbrock_opt_template.json')
     input_file = str(tmpdir) + 'rosenbrock_opt.json'
 
     algorithm_dict = {'algorithm' : algorithm}

@@ -1,11 +1,14 @@
-# from pqueens.main import main
-# import pytest
+# import os
 # import pickle
+#
+# import pytest
+#
+# from pqueens.main import main
 # TODO fix these test, because as of now these test produce platform dependent
 # resutls
-# def test_ishigami_morris_salib(tmpdir):
+# def test_ishigami_morris_salib(inputdir, tmpdir):
 #     """ Test case for salib based morris iterator """
-#     arguments = ['--input=pqueens/tests/function_tests/input_files/ishigami_morris_salib.json',
+#     arguments = ['--input=' + os.path.join(inputdir, 'ishigami_morris_salib.json'),
 #                  '--output='+str(tmpdir)]
 #
 #     main(arguments)

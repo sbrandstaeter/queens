@@ -1,10 +1,13 @@
-from pqueens.main import main
-import pytest
+import os
 import pickle
 
-def test_gaussian_metropolis_hastings(tmpdir):
+import pytest
+
+from pqueens.main import main
+
+def test_gaussian_metropolis_hastings(inputdir, tmpdir):
     """ Test case for metropolis hastings iterator """
-    arguments = ['--input=pqueens/tests/function_tests/input_files/gaussian_metropolis_hastings.json',
+    arguments = ['--input=' + os.path.join(inputdir, 'gaussian_metropolis_hastings.json'),
                  '--output='+str(tmpdir)]
 
     main(arguments)
