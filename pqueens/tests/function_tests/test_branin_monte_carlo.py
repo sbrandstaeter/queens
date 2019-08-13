@@ -1,10 +1,13 @@
-from pqueens.main import main
-import pytest
+import os
 import pickle
 
-def test_branin_monte_carlo(tmpdir):
+import pytest
+
+from pqueens.main import main
+
+def test_branin_monte_carlo(inputdir, tmpdir):
     """ Test case for monte carlo iterator """
-    arguments = ['--input=pqueens/tests/function_tests/input_files/branin_monte_carlo.json',
+    arguments = ['--input=' + os.path.join(inputdir, 'branin_monte_carlo.json'),
                  '--output='+str(tmpdir)]
 
     main(arguments)

@@ -1,10 +1,13 @@
-from pqueens.main import main
-import pytest
+import os
 import pickle
 
-def test_branin_gp_surrogate(tmpdir):
+import pytest
+
+from pqueens.main import main
+
+def test_branin_gp_surrogate(inputdir, tmpdir):
     """ Test case for GP based surrogate model """
-    arguments = ['--input=pqueens/tests/function_tests/input_files/branin_gp_surrogate.json',
+    arguments = ['--input=' + os.path.join(inputdir, 'branin_gp_surrogate.json'),
                  '--output='+str(tmpdir)]
 
     main(arguments)

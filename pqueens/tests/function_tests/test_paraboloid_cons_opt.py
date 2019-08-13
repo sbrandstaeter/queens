@@ -1,3 +1,4 @@
+import os
 import pickle
 
 import numpy as np
@@ -13,14 +14,14 @@ def algorithm(request):
     return request.param
 
 
-def test_paraboloid_cons_opt(tmpdir, algorithm):
+def test_paraboloid_cons_opt(inputdir, tmpdir, algorithm):
     """ Test different solution algorithms in optimization iterator.
 
         COBYLA: constained but unbounded
         SLSQP:  constrained and bounded
     """
 
-    template =  'pqueens/tests/function_tests/input_files/paraboloid_opt_template.json'
+    template =  os.path.join(inputdir, 'paraboloid_opt_template.json')
     input_file = str(tmpdir) + 'paraboloid_opt.json'
 
     algorithm_dict = {'algorithm' : algorithm}
