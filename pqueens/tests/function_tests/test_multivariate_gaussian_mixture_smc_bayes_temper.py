@@ -1,3 +1,4 @@
+import os
 import pickle
 
 import numpy as np
@@ -6,10 +7,10 @@ import pytest
 from pqueens.main import main
 
 
-def test_multivariate_gaussian_mixture_smc_bayes_temper(tmpdir):
+def test_multivariate_gaussian_mixture_smc_bayes_temper(inputdir, tmpdir):
     """ Test SMC with a multivariate Gaussian mixture (multimodal). """
     arguments = [
-        '--input=pqueens/tests/function_tests/input_files/multivariate_gaussian_mixture_smc_bayes_temper.json',
+        '--input=' + os.path.join(inputdir, 'multivariate_gaussian_mixture_smc_bayes_temper.json'),
         '--output=' + str(tmpdir),
     ]
 

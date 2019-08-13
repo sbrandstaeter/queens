@@ -1,3 +1,4 @@
+import os
 import pickle
 
 import pytest
@@ -5,10 +6,10 @@ import pytest
 from pqueens.main import main
 
 
-def test_gaussian_smc(tmpdir):
+def test_gaussian_smc(inputdir, tmpdir):
     """ Test Sequential Monte Carlo with univariate Gaussian. """
     arguments = [
-        '--input=pqueens/tests/function_tests/input_files/gaussian_smc.json',
+        '--input=' + os.path.join(inputdir, 'gaussian_smc.json'),
         '--output=' + str(tmpdir),
     ]
 

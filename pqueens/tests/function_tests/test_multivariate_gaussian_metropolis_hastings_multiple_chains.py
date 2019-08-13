@@ -1,11 +1,14 @@
-import numpy as np
-from pqueens.main import main
-import pytest
+import os
 import pickle
 
-def test_multivariate_gaussian_metropolis_hastings_multiple_chains(tmpdir):
+import numpy as np
+import pytest
+
+from pqueens.main import main
+
+def test_multivariate_gaussian_metropolis_hastings(inputdir, tmpdir):
     """ Test case for metropolis hastings iterator """
-    arguments = ['--input=pqueens/tests/function_tests/input_files/multivariate_gaussian_metropolis_hastings_multiple_chains.json',
+    arguments = ['--input=' + os.path.join(inputdir, 'multivariate_gaussian_metropolis_hastings_multiple_chains.json'),
                  '--output='+str(tmpdir)]
     main(arguments)
     result_file = str(tmpdir)+'/'+'xxx.pickle'
