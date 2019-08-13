@@ -22,7 +22,7 @@ seaborn
 plotly
 # testing framework
 pytest>=3.0.0
-pytest-pep8
+pytest-codestyle
 pytest-cov
 pytest-mock
 # create mock objects for unit testing
