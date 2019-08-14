@@ -71,7 +71,7 @@ def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
     if math.isclose(tempering_parameter, 1.0):
         return logpdf1
 
-    return tempering_parameter * logpdf1 + logpdf0 * (1.0 - tempering_parameter)
+    return (1.0 - tempering_parameter) * logpdf0 + tempering_parameter * logpdf1
 
 
 def temper_factory(temper_type):
@@ -90,3 +90,10 @@ def temper_factory(temper_type):
     raise ValueError(
         f"Unknown type of tempering function: {temper_type}.\nValid choices are {valid_types}."
     )
+
+
+def calc_ess(weights):
+    """ Calculate Effective Sample Size from current weights. """
+
+    ess = np.sum(weights) ** 2 / (np.sum(np.power(weights, 2)))
+    return ess

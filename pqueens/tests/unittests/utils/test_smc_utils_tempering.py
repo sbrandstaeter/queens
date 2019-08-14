@@ -23,19 +23,19 @@ def temper_keyword_and_temper_type(request):
     return request.param
 
 
-@pytest.fixture(scope='module', params=[0.0, 1e-3, 0.1, 0.9, 1.0])
+@pytest.fixture(scope='module', params=[0.0, 1e-4, 0.9, 1.0])
 def temper_parameter(request):
     """ Return a valid temper parameter. """
     return request.param
 
 
-@pytest.fixture(scope='module', params=[-np.inf, -1e3, -0.1, 0.0, 1.0, 1e3])
+@pytest.fixture(scope='module', params=[-np.inf, -1e8, 0.0, 1e10])
 def logpdf0(request):
     """ Return a valid logpdf. """
     return request.param
 
 
-@pytest.fixture(scope='module', params=[-np.inf, -1e3, -0.1, 0.0, 1.0, 1e3])
+@pytest.fixture(scope='module', params=[-np.inf, -1e8, 0.0, 1e10])
 def logpdf1(request):
     """ Return a valid logpdf. """
     return request.param

@@ -17,6 +17,12 @@ References:
      I-theory and algorithm’,
      Geophysical Journal International, 194(3), pp. 1701–1726.
      doi: 10.1093/gji/ggt180.
+[4]: Del Moral, P., Doucet, A. and Jasra, A. (2006)
+     ‘Sequential Monte Carlo samplers’,
+     Journal of the Royal Statistical Society.
+     Series B: Statistical Methodology.
+     Blackwell Publishing Ltd, 68(3), pp. 411–436.
+     doi: 10.1111/j.1467-9868.2006.00553.x.
 """
 import warnings
 
@@ -37,34 +43,35 @@ class SequentialMonteCarloIterator(Iterator):
     """
     Iterator based on Sequential Monte Carlo algorithm
 
-    The Metropolis-Hastings algorithm can be considered the benchmark
-    Markov Chain Monte Carlo (MCMC) algorithm. It may be used to sample
-    from complex, intractable probability distributions from which
-    direct sampling is difficult or impossible.
-    The implemented version is a random walk Metropolis-Hastings
-    algorithm.
+    The Sequential Monte Carlo algorithm is a very general algorithm for
+    sampling from complex, intractable probability distributions from
+    which direct sampling is difficult or impossible.
+    The implemented version is based on [1, 2, 3, 4].
 
     Attributes:
+        a (float): parameter for the scaling of the covariance matrix of the proposal distribution
+                   of the MCMC kernel
         accepted (int): number of accepted proposals
-        log_likelihood (np.array): log of pdf of likelihood at samples
-        log_posterior (np.array): log of pdf of posterior at samples
-        log_prior (np.array): log of pdf of prior at samples
-        num_burn_in (int): Number of burn-in samples
-        num_samples (int): Total number of samples
-                           (initial + burn-in + chain)
-        proposal_distribution (scipy.stats.rv_continuous): Proposal distribution
-                                                           giving zero-mean deviates
-        plot_trace_every (int): print the current tace every print_trace_every-th iteration
-                                 default: 0 (do not print the trace)
+        b (float): parameter for the scaling of the covariance matrix of the proposal distribution
+                   of the MCMC kernel
+        ess (list): list storing the values of the effective sample size
+        ess_cur (float): current effective sample size
+        gamma_cur (float): current tempering parameter (sometimes called (reciprocal) temperature)
+        gammas (list): list to store values of the tempering parameter
+        log_likelihood (ndarray): log of pdf of likelihood at particles
+        log_posterior (ndarray): log of pdf of posterior at particles
+        log_prior (ndarray): log of pdf of prior at particles
+        num_particles (int): Number of particles
+        num_variables (int): Number of primary variables
+        mcmc_kernel (MetropolisHastingsIterator): forward kernel for the rejuvenation steps
+        particles (ndarray): array with holding the current particles
+        proposal_distribution (): Proposal distribution giving zero-mean deviates
+        plot_trace_every (int): print the current tace every plot_trace_every-th iteration
+                                default: 0 (do not print the trace)
         result_description (dict):  Description of desired results
-        samples (numpy.array): Array with all samples
-        scale_covariance (float): Scale of covariance matrix
-                                  of gaussian proposal distribution
         seed (int): Seed for random number generator
-        tune (bool): Tune the scale of covariance
-        tune_interval (int): Tune the scale of the covariance every
-                             tune_interval-th step
-
+        temper (function): tempering function that defines the transition to the goal distribution
+        weights (ndarray): array holding the current weights
     """
 
     def __init__(
@@ -79,7 +86,7 @@ class SequentialMonteCarloIterator(Iterator):
         temper_type,
     ):
         super().__init__(model, global_settings)
-        self.print_trace_every = plot_trace_every
+        self.plot_trace_every = plot_trace_every
         self.result_description = result_description
         self.seed = seed
 
@@ -109,7 +116,6 @@ class SequentialMonteCarloIterator(Iterator):
 
         self.ess = list()
         self.ess_cur = 0.0
-        self.ess_old = 0.0
 
         self.temper = smc_utils.temper_factory(temper_type)
 
@@ -117,7 +123,10 @@ class SequentialMonteCarloIterator(Iterator):
         self.gamma_cur = 0.0
         self.gammas = list()
 
-        self.scale_prop_cov = 1.0
+        # parameters for the scaling of the covariance matrix
+        # values of a an b are taken from [3] p.1706
+        self.a = 1.0 / 9.0
+        self.b = 8.0 / 9.0
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
@@ -247,10 +256,18 @@ class SequentialMonteCarloIterator(Iterator):
         self.gamma_cur = 0.0
         self.gammas.append(self.gamma_cur)
 
-        if self.print_trace_every:
+        if self.plot_trace_every:
             self.draw_trace(0)
 
     def calc_new_weights(self, gamma_new, gamma_old):
+        """
+        Calculate the weights at new gamma value.
+
+        This is a core equation of the SMC algorithm. See for example
+        - Eq.(22) with Eq.(14) in [1]
+        - Table 1: (2) in [2]
+        - Eq.(31) with Eq.(11) in [4]
+        """
 
         weights_new = self.weights * np.exp(
             self.temper(self.log_prior, self.log_likelihood, gamma_new)
@@ -258,19 +275,11 @@ class SequentialMonteCarloIterator(Iterator):
         )
         return weights_new
 
-    def calc_ess(self, weights):
-
-        ess = np.sum(weights) ** 2 / (np.sum(np.power(weights, 2)))
-        return ess
-
     def calc_new_ess(self, gamma_new, gamma_old):
-        """
-        Calculate predicted Effective Sample Size at gamma_new
-
-        """
+        """ Calculate predicted Effective Sample Size at gamma_new. """
 
         weights_new = self.calc_new_weights(gamma_new, gamma_old)
-        ess = self.calc_ess(weights_new)
+        ess = smc_utils.calc_ess(weights_new)
         return ess
 
     def calc_new_gamma(self, gamma_cur):
@@ -307,14 +316,14 @@ class SequentialMonteCarloIterator(Iterator):
 
         Based on the current weights, calculate the corresponding ESS.
         Store the new ESS value.
-        In the case of resampling, the weights have been reset in the
-        current time step and therefore also the ess has to be reset.
+        In case of resampling, the weights have been reset in the
+        current time step and therefore also the ESS has to be reset.
 
         :param resampled: (bool) indicated whether current weights
                                  are base on a resampling step
         :return: None
         """
-        self.ess_cur = self.calc_ess(self.weights)
+        self.ess_cur = smc_utils.calc_ess(self.weights)
 
         if resampled:
             self.ess[-1] = self.ess_cur
@@ -322,13 +331,24 @@ class SequentialMonteCarloIterator(Iterator):
             self.ess.append(self.ess_cur)
 
     def update_gamma(self, gamma_new):
+        """ Update the current gamma value and store old value. """
+
         self.gamma_cur = gamma_new
         self.gammas.append(self.gamma_cur)
 
     def update_weights(self, weights_new):
+        """ Update the weights to their new values. """
+
         self.weights = weights_new
 
     def resample(self):
+        """
+        Resample particle distribution based on their weights.
+
+        Resampling reduces the variance of the particle approximation by
+        eliminating particles with small weights and duplicating
+        particles with large weights (see 2.2.1 in [2]).
+        """
         normalized_weights = self.weights / np.sum(self.weights)
 
         # draw from multinomial distribution to decide
@@ -349,15 +369,14 @@ class SequentialMonteCarloIterator(Iterator):
         )
 
     def core_run(self):
-        """
-        Core run of Sequential Monte Carlo iterator
-        """
+        """ Core run of Sequential Monte Carlo iterator. """
 
         print('Welcome to SMC core run.')
 
         # counter
         step = 0
-        avg_accept_rate = 1.0
+        # average accept rate of MCMC kernel
+        avg_accept = 1.0
         while self.gamma_cur < 1:
             step += 1
 
@@ -371,13 +390,13 @@ class SequentialMonteCarloIterator(Iterator):
             # Resample
             if self.ess_cur <= 0.5 * self.num_particles:
                 print("Resampling...")
-                particles_resampled, weights_resampled, log_likelihood_resampled, log_prior_resampled = (
+                particles_resampled, weights_resampled, log_like_resampled, log_prior_resampled = (
                     self.resample()
                 )
 
                 # update algorithm parameters
                 self.particles = particles_resampled
-                self.log_likelihood = log_likelihood_resampled
+                self.log_likelihood = log_like_resampled
                 self.log_prior = log_prior_resampled
                 self.log_posterior = self.log_likelihood + self.log_prior
                 self.update_weights(weights_resampled)
@@ -392,23 +411,20 @@ class SequentialMonteCarloIterator(Iterator):
             )
 
             # scale covariance based on average acceptance rate of last rejuvenation step
-            # values of a an b are taken from [3] p.1706
-            a = 1.0 / 9.0
-            b = 8.0 / 9.0
-            self.scale_prop_cov = a + b * avg_accept_rate
-            cov_mat *= self.scale_prop_cov ** 2
+            scale_prop_cov = self.a + self.b * avg_accept
+            cov_mat *= scale_prop_cov ** 2
 
             # Rejuvenate
             self.mcmc_kernel.initialize_run(
                 self.particles, self.log_likelihood, self.log_prior, self.gamma_cur, cov_mat
             )
             self.mcmc_kernel.core_run()
-            self.particles, self.log_likelihood, self.log_prior, self.log_posterior, avg_accept_rate = (
+            self.particles, self.log_likelihood, self.log_prior, self.log_posterior, avg_accept = (
                 self.mcmc_kernel.post_run()
             )
 
             # plot the trace every plot_trace_every-th iteration
-            if self.print_trace_every and not step % self.print_trace_every:
+            if self.plot_trace_every and not step % self.plot_trace_every:
                 self.draw_trace(step)
 
     def post_run(self):
@@ -416,9 +432,7 @@ class SequentialMonteCarloIterator(Iterator):
 
         normalized_weights = self.weights / np.sum(self.weights)
 
-        particles_resampled, weights_resampled, log_likelihood_resampled, log_prior_resampled = (
-            self.resample()
-        )
+        particles_resampled, _, _, _ = self.resample()
         if self.result_description:
             # TODO
             # interpret the resampled particles as a single markov chain -> in accordance with the
@@ -473,9 +487,7 @@ class SequentialMonteCarloIterator(Iterator):
         :return: None
         """
 
-        particles_resampled, weights_resampled, log_likelihood_resampled, log_prior_resampled = (
-            self.resample()
-        )
+        particles_resampled, _, _, _ = self.resample()
         data_dict = {
             variable_name: particles_resampled[:, i]
             for model_variable in self.model.variables
@@ -484,6 +496,7 @@ class SequentialMonteCarloIterator(Iterator):
         inference_data = az.convert_to_inference_data(data_dict)
         az.plot_trace(inference_data)
         plt.savefig(
-            f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}_trace_{step}.png"
+            f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}"
+            + f"_trace_{step}.png"
         )
         plt.close("all")
