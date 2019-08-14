@@ -32,7 +32,7 @@ For the installation on a cluster, copy the Anaconda-executable to the desired d
 1. [Install](http://docs.anaconda.com/anaconda/install/linux/) the latest version of [Anaconda](https://www.anaconda.com/) with Python 3.x.
  *Anaconda* is an open-source Python distribution containing many popular data science Python packages. It includes a powerful package and virtual environment manager program called *conda*. 
 1. After setting up Anaconda on your machine, create a new, dedicated QUEENS development environment via  
-`conda create -n <name_of_new_environment> python=3.7`
+`conda create -n <name_of_new_environment> python=3.7.3`
 1. You need to activate the newly created environment via  
 `conda activate <name_of_new_environment>`
 1. All required third party libraries can then be simply installed in the environment by running:  
