@@ -44,20 +44,20 @@ sigma_act_m = 30e3  # p.84 Kimmich2016
 eta_m = 0.178  # p.84 Kimmich2016
 
 # homeostatic smooth muscle stress (value from Christian's Matlab Code)
-sigma_h_m = 6.704629134124602e+03
+sigma_h_m = 6.704629134124602e03
 
 # circumferential stress of elastin in initial configuration (value from Christian's Matlab Code)
-sigma_cir_e = 1.088014923234574e+05
+sigma_cir_e = 1.088014923234574e05
 
 # prestretch compared to natural configuration
-G_e = 1.34   # elastin
-G_m = 1.1    # smooth muscle
+G_e = 1.34  # elastin
+G_m = 1.1  # smooth muscle
 G_c = 1.062  # collagen
 
 # elastic modulus (values taken from Christian's Matlab Code)
-C_e = 0.325386455353085e+06  # elastin
-C_m = 0.168358396929622e+06  # smooth muscle
-C_c = 5.258871332154771e+06  # collagen
+C_e = 0.325386455353085e06  # elastin
+C_m = 0.168358396929622e06  # smooth muscle
+C_c = 5.258871332154771e06  # collagen
 
 # derived variables
 # vector of mass fractions
@@ -77,12 +77,14 @@ R = 1.25e-2
 
 # derived constants
 K1 = M_m * C_m + M_c * C_c
-K2 = -2* (M_e * sigma_cir_e + M_m * sigma_h_m) + M_e * C_e
-K3 = 2*M_c
+K2 = -2 * (M_e * sigma_cir_e + M_m * sigma_h_m) + M_e * C_e
+K3 = 2 * M_c
 K4 = K1 + K2
 
+
 def homeostatic_smooth_muscle_stress(sigma_h_c):
-    """Return homeostatic stress of elastin.
+    """
+    Return homeostatic stress of elastin.
 
     We use a linear correlation between homeostatic stress of collagen
     elastin.
@@ -91,8 +93,9 @@ def homeostatic_smooth_muscle_stress(sigma_h_c):
     return sigma_h_m
 
 
-def stab_margin(tau, k_sigma, sigma_h_c):
-    """Return stability margin.
+def stab_margin(tau, k_sigma, sigma_h_c, C=C):
+    """
+    Return stability margin.
 
     see eq. (79) in [1]
     """
@@ -103,47 +106,60 @@ def stab_margin(tau, k_sigma, sigma_h_c):
     M_dot_sigma_cir = M.dot(sigma_cir)
     M_C = M * C
 
-    # stability margin: formula (79)  Cyron & Humphrey 2014
-    m_gnr = (tau * k_sigma * np.sum(M_C[1:]) - 2 * M_dot_sigma_cir + M_C[0]) / \
-        (tau * (np.sum(M_C) - 2 * M_dot_sigma_cir))
+    # stability margin as in eq. (79) in [1]
+    m_gnr = (tau * k_sigma * np.sum(M_C[1:]) - 2 * M_dot_sigma_cir + M_C[0]) / (
+        tau * (np.sum(M_C) - 2 * M_dot_sigma_cir)
+    )
     return m_gnr
 
 
 def den_stab_margin(sigma_h_c):
+    """
+    Return the denominator of the stability margin.
+
+    see denominator in eq. (79) in [1]
+    """
     denominator = K4 - K3 * sigma_h_c
     return denominator
 
 
 def numerator_stab_margin(tau, k_sigma, sigma_h_c):
-    numerator = K1*tau*k_sigma - K3 * sigma_h_c + K2
+    """
+    Return the numerator of the stability margin.
+
+    see numerator in eq. (79) in [1]
+    """
+    numerator = K1 * tau * k_sigma - K3 * sigma_h_c + K2
     return numerator
 
+
 def numerator_stab_margin_is_zero(tau, sigma_h_c):
-    k_sigma =  (K3 * sigma_h_c - K2) / (K1 * tau )
+    """ Return k_sigma if the numerator of stability margin is zero. """
+    k_sigma = (K3 * sigma_h_c - K2) / (K1 * tau)
     return k_sigma
 
 
 def delta_radius(t, tau, k_sigma, sigma_h_c, dR0, t0):
-    """Return delta of radius at time t.
+    """
+    Return delta of radius at time t.
 
     see eq. (3) with (78) + (79) in [1]
     """
 
     m_gnr = stab_margin(tau, k_sigma, sigma_h_c)
-    dr = (1 + (tau * m_gnr - 1) * np.exp(-m_gnr * (t + t0))) * \
-        dR0 / (tau * m_gnr)
+    dr = (1 + (tau * m_gnr - 1) * np.exp(-m_gnr * (t + t0))) * dR0 / (tau * m_gnr)
     return np.squeeze(dr)
 
 
 def radius(tau, k_sigma, t, sigma_h_c, dR0, t0):
-    """Return current radius at time t.
-    """
+    """ Return current radius at time t. """
     r = R + delta_radius(t, tau, k_sigma, sigma_h_c, dR0, t0)
     return np.squeeze(r)
 
 
 def main(job_id, params):
-    """ Interface to GnR model
+    """
+    Interface to GnR model.
 
     Args:
         job_id (int):   ID of job
@@ -154,9 +170,11 @@ def main(job_id, params):
                         specified in input dict
     """
 
-    return delta_radius(params['t'],
-                        params['tau'],
-                        params['k_sigma'],
-                        params['sigma_h_c'],
-                        params['dR0'],
-                        params['t0'])
+    return delta_radius(
+        params['t'],
+        params['tau'],
+        params['k_sigma'],
+        params['sigma_h_c'],
+        params['dR0'],
+        params['t0'],
+    )
