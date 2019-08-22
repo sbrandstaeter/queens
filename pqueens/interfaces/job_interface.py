@@ -77,7 +77,6 @@ class JobInterface(Interface):
         experiment_name = config['global_settings']['experiment_name']
 
         #sys.stderr.write('Using database at %s.\n' % db_address)
-
         db = MongoDB(database_address=db_address, drop_existing_db=drop_existing)
 
         polling_time = config.get('polling-time', 5)
@@ -164,7 +163,7 @@ class JobInterface(Interface):
         process_id = None
         num_tries = 0
 
-        while process_id is None and num_tries < 10:
+        while process_id is None and num_tries < 5:
             if num_tries > 0:
                 time.sleep(1)
 

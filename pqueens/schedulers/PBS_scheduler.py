@@ -36,7 +36,7 @@ class PBSScheduler(Scheduler):
         self.connect_to_resource = base_settings["connect"]
 
     @classmethod
-    def from_config_create_scheduler(cls, config, base_setings,scheduler_name=None):
+    def from_config_create_scheduler(cls, config, base_settings,scheduler_name=None):
         """ Create PBS scheduler from config dictionary
 
         Args:
@@ -46,7 +46,28 @@ class PBSScheduler(Scheduler):
         Returns:
             scheduler:              instance of PBSScheduler
         """
-        return cls(scheduler_name, connect_to_resource, base_settings)
+        scheduler_options = base_settings['options']
+        # read necessary variables from config
+        num_procs_solve = scheduler_options['num_procs_solve']
+        num_procs_post = scheduler_options['num_procs_post']
+        num_tasks = num_procs_solve + num_procs_post
+        walltime = scheduler_options['walltime']
+        if scheduler_options['scheduler_output'].lower()=='true' or scheduler_options['scheduler_output']=="":
+            output = ""
+        elif scheduler_options['scheduler_output'].lower()=='false':
+            output = '--output=/dev/null --error=/dev/null'
+        else:
+            raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
+
+        # pre assemble some strings as base_settings
+        base_settings['output'] = output
+        base_settings['tasks_info'] = 'procs={}'.format(num_tasks)
+        base_settings['walltime_info'] = 'walltime={}'.format(walltime)
+        base_settings['job_flag'] = '-N ' #real name will be assembled later
+        base_settings['scheduler_start'] = 'qsub'
+        base_settings['command_line_opt'] = '-b y'# binary file instead of job script
+
+        return cls(scheduler_name, base_settings)
 
 ########### auxiliary methods #################################################
 

@@ -32,3 +32,5 @@ mock
 # for code coverage purposes
 codecov
 coverage
+# make ascii-art prints
+pyfiglet #check if that if enough, original command: conda install -c conda-forge pyfiglet

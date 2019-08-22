@@ -1,5 +1,8 @@
-BootStrap: docker
-From: continuumio/miniconda3
+BootStrap: yum #docker
+#From: continuumio/miniconda3
+OSVersion: 7
+MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/$basearch/
+Include: yum wget tar
 
 %help
 This is a singulariy container containing CentOs7 and Python 3.6 as well as necessary QUEENS dependencies to run the latter on a HPC cluster. Central elements are a copy of the Drivers class and the main_remote.py file.
@@ -18,15 +21,40 @@ This is a singulariy container containing CentOs7 and Python 3.6 as well as nece
   Maintainer Jonas Nitzler
   Date 24.07.2019
 
-%post
-  export PATH=/opt/conda/bin:${PATH}
-  conda update -y conda
-  conda create -n QUEENS python=3.6
-  . activate QUEENS
-  cd /
-  pip install -r requirements_remote.txt
-  python setup_remote.py develop
-  conda update --all
+%environment
+  HOST_PATH='/usr/local/anaconda/bin:/usr/local/go/bin:/home/nitzler/programs/anaconda/anaconda3/bin:/home/nitzler/programs/anaconda/anaconda3/condabin:/home/nitzler/Programs/Anaconda/anaconda3/bin:/opt/xcat/bin:/opt/xcat/sbin:/opt/xcat/share/xcat/tools:/usr/local/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/cluster/intel//debugger_2016/gdb/intel64_mic/bin:/cluster/intel//compilers_and_libraries_2016.1.150/linux//bin/intel64:/cluster/intel//compilers_and_libraries_2016.1.150/linux//mpirt/bin/intel64_lin:/cluster/mpi/intel/openmpi/1.10.1//bin:/home/nitzler/go/bin:/home/nitzler/.local/bin:/home/nitzler/bin'
+  HOST_LD_LIBRARY_PATH='/cluster/intel//compilers_and_libraries_2016.1.150/linux///mkl/lib/intel64:/cluster/intel//compilers_and_libraries_2016.1.150/linux///compiler/lib/intel64:/cluster/intel//compilers_and_libraries_2016.1.150/linux///daal/../compiler/lib/intel64_lin:/cluster/intel//compilers_and_libraries_2016.1.150/linux///daal/lib/intel64_lin:/cluster/intel//compilers_and_libraries_2016.1.150/linux///daal/../tbb/lib/intel64_lin/gcc4.4:/cluster/intel//compilers_and_libraries_2016.1.150/linux///ipp/lib/intel64:/cluster/intel//compilers_and_libraries_2016.1.150/linux///mpirt/lib/intel64_lin:/cluster/intel//compilers_and_libraries_2016.1.150/linux///tbb/lib/intel64/gcc4.4:/cluster/intel//debugger_2016/libipt/intel64/lib:/cluster/mpi/intel/openmpi/1.10.1//lib'
 
+  export HOST_PATH HOST_LD_LIBRARY_PATH SINGULARITY_BIND
+
+%post
+#  #Install gcc compile
+#  yum -y groupinstall "Development Tools"
+#  # Install OpenMPI (currently we need to match the cluster version-->hard coded! Make this flexible for the future)
+#  cd /tmp
+#  wget 'https://www.open-mpi.org/software/ompi/v1.10/downloads/openmpi-1.10.1.tar.gz' -O openmpi-1.10.1.tar.gz # hard coded
+#  tar -xzf openmpi-1.10.1.tar.gz -C openmpi-1.10.1
+#  mkdir -p /tmp/openmpi-1.10.1/build
+#  cd /tmp/openmpi-1.10.1/build
+#  ../configure --prefix=/usr/local
+#  make
+#  make install
+
+  # Install miniconda 3
+  if [ ! -d /usr/local/anaconda ]; then
+    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+      -O ~/anaconda.sh && \
+    bash ~/anaconda.sh -b -p /usr/local/anaconda && \
+    rm ~/anaconda.sh
+  fi
+  # set anaconda path
+  export PATH="/usr/local/anaconda/bin:$PATH"
+  conda update -y conda
+  conda create -y -n QUEENS python=3.6
+  /usr/local/anaconda/envs/QUEENS/bin/pip install numpy pymongo matplotlib plotly pandas
+  cd /
+  /usr/local/anaconda/envs/QUEENS/bin/python setup_remote.py develop
+  echo 'export PATH=$PATH:$HOST_PATH' >> $SINGULARITY_ENVIRONMENT
+  echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOST_LD_LIBRARY_PATH' >> $SINGULARITY_ENVIRONMENT
 %runscript
-  exec python pqueens/remote_main.py $@
+  exec /usr/local/anaconda/envs/QUEENS/bin/python /pqueens/remote_main.py $@

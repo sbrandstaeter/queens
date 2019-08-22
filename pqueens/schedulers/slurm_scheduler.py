@@ -1,6 +1,7 @@
 import sys
 import subprocess
 from .scheduler import Scheduler
+import pdb
 
 class SlurmScheduler(Scheduler):
     """ Minimal interface to SLURM queing system to submit and query jobs
@@ -38,6 +39,25 @@ class SlurmScheduler(Scheduler):
         Returns:
             scheduler:              instance of SlurmScheduler
         """
+        scheduler_options = base_settings['options']
+        # read necessary variables from config
+        num_procs = scheduler_options['num_procs']
+        walltime = scheduler_options['walltime']
+        if scheduler_options['scheduler_output'].lower()=='true' or scheduler_options['scheduler_output']=="":
+            output = ""
+        elif scheduler_options['scheduler_output'].lower()=='false':
+            output = '--output=/dev/null --error=/dev/null'
+        else:
+            raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
+
+        # pre assemble some strings as base_settings
+        base_settings['output'] = output
+        base_settings['tasks_info'] = '--ntasks={}'.format(num_procs)
+        base_settings['walltime_info'] = '--time={}'.format(walltime)
+        base_settings['job_flag'] = '--job-name=' #real name will be assembled later
+        base_settings['scheduler_start'] = 'sbatch'
+        base_settings['command_line_opt'] = '--wrap'
+
         return cls(scheduler_name, base_settings)
 
 ###### auxiliary methods #################################################

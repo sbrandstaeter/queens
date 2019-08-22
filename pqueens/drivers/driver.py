@@ -7,8 +7,6 @@ import subprocess
 import time
 import importlib.util
 import os
-import pdb
-
 class Driver(metaclass=abc.ABCMeta):
     """ Base class for Drivers
 
@@ -22,8 +20,7 @@ class Driver(metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, base_settings): # database object passed by scheduler, scheduler has it from
-        # add base class driver stuff here
+    def __init__(self, base_settings):
         self.experiment_dir = base_settings['experiment_dir']
         self.experiment_name = base_settings['experiment_name']
         self.job_id = base_settings['job_id']
@@ -33,19 +30,18 @@ class Driver(metaclass=abc.ABCMeta):
         self.job = base_settings['job']
         self.batch = base_settings['batch']
         self.executable = base_settings['executable']
-        self.database = base_settings['databank']
         self.result = base_settings['result']
         self.postprocessor = base_settings['postprocessor']
         self.post_options = base_settings['post_options']
         self.postpostprocessor = base_settings['postpostprocessor']
-        self.mpi_config = {} # config mpi for each machine (command itself is organized via scheduler)
-        # add scheduler specific attributes to minimize communication
-        self.scheduler_cmd = base_settings['scheduler_cmd']
+        self.mpi_flags = {} # config mpi for each machine (build on runtime)
         self.pid=None
-        self.port=None
+        self.port=base_settings['port']
+        self.num_procs = base_settings['num_procs']
+        self.num_procs_post = base_settings['num_procs_post']
 
     @classmethod
-    def from_config_create_driver(cls, config, job_id, batch, port=None):
+    def from_config_create_driver(cls, config, job_id, batch, port):
         """ Create driver from problem description
 
         Args:
@@ -71,9 +67,9 @@ class Driver(metaclass=abc.ABCMeta):
         driver_options = config['driver']['driver_params']
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
-        scheduler_options = config[scheduler_name]
         base_settings = {}
-        base_settings['port'] = port
+        base_settings['num_procs'] = config[scheduler_name]['num_procs']
+        base_settings['num_procs_post'] = config[scheduler_name]['num_procs_post']
         base_settings['experiment_dir']= driver_options['experiment_dir']
         base_settings['job_id']= job_id
         base_settings['input_file']=None
@@ -82,56 +78,14 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['job']= None
         base_settings['batch']=batch
         base_settings['executable']=driver_options['path_to_executable']
-        base_settings['databank']=MongoDB(database_address=config['database']['address'])
+        #address = '10.10.0.1:' + str(port) #TODO !!
+        #base_settings['databank']=MongoDB(database_address=address)#config['database']['address'])
         base_settings['result']=None
+        base_settings['port']=port
         base_settings['postprocessor']=driver_options['path_to_postprocessor']
         base_settings['post_options']=driver_options['post_process_options']
         base_settings['postpostprocessor']= Post_post.from_config_create_post_post(config)
-        base_settings['experiment_name'] =config['global_settings']['experiment_name']
-### here comes some case / if statement dependent on the scheduler type
-        if scheduler_options['scheduler_type'] == 'slurm':
-            # read necessary variables from config
-            num_nodes = scheduler_options['num_nodes']
-            num_procs_per_node = scheduler_options['num_procs_per_node']
-            walltime = scheduler_options['walltime']
-            user_mail = scheduler_options['email']
-            output = scheduler_options['slurm_output']
-            # pre assemble some strings
-            proc_info = '--nodes={} --ntasks={}'.format(num_nodes, num_procs_per_node)
-            walltime_info = '--time={}'.format(walltime)
-            mail_info = '--mail-user={}'.format(user_mail)
-            job_info = '--job-name=queens_{}_{}'.format(base_settings['experiment_name'], base_settings['job_id'])
-
-            if output.lower()=="true" or output=="":
-                command_list = [r'sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
-            elif output.lower()=="false":
-                command_list = [r'sbatch --mail-type=ALL --output=/dev/null --error=/dev/null', mail_info, job_info, proc_info, walltime_info]
-            else:
-                raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
-            scheduler_cmd = ' '.join(command_list)
-
-        elif scheduler_options['scheduler_type'] == 'pbs':
-            # read necessary variables from config
-            num_nodes = scheduler_options['num_nodes']
-            num_procs_per_node = scheduler_options['num_procs_per_node']
-            walltime = scheduler_options['walltime']
-            user_mail = scheduler_options['email']
-            queue = scheduler_options['queue']
-            # pre assemble some strings
-            proc_info = 'nodes={}:ppn={}'.format(num_nodes, num_procs_per_node)
-            walltime_info = 'walltime={}'.format(walltime)
-            job_info = 'queens_{}_{}'.format(base_settings['experiment_name'], base_settings['job_id'])
-            command_list = ['qsub', '-M', user_mail, '-m abe', '-N', job_info, '-l', proc_info, '-l', walltime_info, '-q', queue]
-            scheduler_cmd = ' '.join(command_list)
-
-        elif scheduler_options['scheduler_type'] == 'local':
-            scheduler_cmd = ''
-        else:
-            raise ValueError('Driver cannot find a valid scheduler type in JSON file!')
-
-
-        base_settings['scheduler_cmd']=scheduler_cmd
-
+        base_settings['experiment_name'] =config['experiment_name']
         driver = driver_class.from_config_create_driver(config, base_settings)
 
         return driver
@@ -147,9 +101,7 @@ class Driver(metaclass=abc.ABCMeta):
 
     def prepare_environment(self):
         """ Prepare the environment for computing """
-
         self.setup_dirs_and_files()
-        self.setup_mpi()
 
     def finish_and_clean(self):
         """ Finish and clean the resources and environment """
@@ -169,7 +121,7 @@ class Driver(metaclass=abc.ABCMeta):
 
         stdout, stderr = p.communicate()
         process_id = p.pid
-        return stdout, process_id
+        return stdout,stderr,process_id
 ##### Base class methods ##################################################
 
     def setup_dirs_and_files(self): #TODO: Dat is hard coded! Change this!
@@ -226,14 +178,18 @@ class Driver(metaclass=abc.ABCMeta):
         # create actual input file with parsed parameters
         inject(self.job['params'],self.template,self.input_file)
 
-    def run_job(self):
+    def run_job(self): #TODO run this via ssh outside of image? maybe ssh in cluster again???
         """ Actual method to run the job on computing machine
             using run_subprocess method from base class
         """
         # assemble run command
-        command_list = [self.scheduler_cmd, self.mpi_config['mpi_run'], self.mpi_config['flags'], self.executable, self.input_file, self.output_file]
+        self.setup_mpi(self.num_procs)
+        command_list = ['mpirun', '-np', str(self.num_procs), self.mpi_flags, self.executable, self.input_file, self.output_file]
         command_string = ' '.join(filter(None,command_list))
-        _,self.pid = self.run_subprocess(command_string)
+        stdout,stderr,self.pid = self.run_subprocess(command_string)
+        print(self.pid)
+        if stderr !="":
+            raise RuntimeError(stderr+stdout)
 
     def finish_job(self):
         """ Change status of job to compleded in database """
@@ -249,13 +205,14 @@ class Driver(metaclass=abc.ABCMeta):
 
     def do_postprocessing(self):
         #TODO: Check if this is abstract enough --> --file could be troublesome
+        self.setup_mpi(self.num_procs_post)
         target_file_base_name = os.path.dirname(self.output_file)
         output_file_opt = '--file=' + self.output_file
         for num,option in enumerate(self.post_options):
             target_file_opt = '--output=' + target_file_base_name + "/QoI_" + str(num+1)
-            postprocessing_list = [self.mpi_config['mpi_run'], self.postprocessor, output_file_opt, option, target_file_opt]
+            postprocessing_list = ['mpirun', '-np', str(self.num_procs_post), self.mpi_flags, self.postprocessor, output_file_opt, option, target_file_opt] #TODO: number of procs for drt_monitor must be one but we should provide an options to control the procs for other post_processors
             postprocess_command = ' '.join(filter(None,postprocessing_list))
-            _,_ = self.run_subprocess(postprocess_command)
+            _,stderr,_ = self.run_subprocess(postprocess_command)
 
 
     def do_postpostprocessing(self): #TODO: file extentions are hard coded we need to change that!
@@ -267,17 +224,15 @@ class Driver(metaclass=abc.ABCMeta):
             float: actual simulation result
         """
         """ Assemble post processing command """
-
         result = None
         result, error = self.postpostprocessor.read_post_files(self.output_file)
-
         # cleanup of unnecessary data after QoI got extracted and flag is set in config
         if self.postpostprocessor.delete_field_data.lower()=="true":
             # Delete every ouput file exept the .mon file
             # --> use self.output to get path to current folder
             # --> start subprocess to delete files with linux commands
             command_string = "cd "+ self.output_file + "&& ls | grep -v --include=*.{mon,csv} | xargs rm" # TODO check if this works for several extentions
-            _,_ = self.run_subprocess(command_string)
+            _,stderr,_ = self.run_subprocess(command_string) #TODO catch posbl. errors
 
         # Put files that were not compliant with the requirements from the
         # postpost_processing scripts in a special folder and do not pass on result
@@ -285,7 +240,7 @@ class Driver(metaclass=abc.ABCMeta):
         if error == 'true':
             result = None
             command_string = "cd "+ self.output_file + "&& cd ../.. && mkdir -p postpost_error && cd " + self.output_file + "&& cd .. && mv *.dat ../postpost_error/" # This is the actual linux commmand
-            _,_ = self.run_subprocess(command_string)
+            _,stderr,_ = self.run_subprocess(command_string)
 
         self.result = result
         sys.stderr.write("Got result %s\n" % (self.result))
@@ -293,6 +248,6 @@ class Driver(metaclass=abc.ABCMeta):
 ##### Children methods that need to be implemented #########################
 
     @abc.abstractmethod
-    def setup_mpi(self):
+    def setup_mpi(self,ntasks):
         """ Configure and set up the environment for multi_threats """
         pass

@@ -2,7 +2,6 @@ import abc
 import numpy as np
 import pandas as pd
 import os.path
-import pdb
 
 class Post_post(metaclass=abc.ABCMeta):
     """ Base class for post_post routines """
