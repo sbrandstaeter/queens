@@ -4,11 +4,7 @@ import hashlib
 import os
 import subprocess
 from pqueens.drivers.driver import Driver
-from packaging import version
 import sys
-from queue import Queue, Empty
-from threading import Thread
-import pdb
 
 class Scheduler(metaclass=abc.ABCMeta):
     """ Base class for schedulers """
@@ -89,16 +85,36 @@ class Scheduler(metaclass=abc.ABCMeta):
             username,_,_ = self.run_subprocess('whoami')
             address_localhost = username.rstrip() + r'@' + hostname.rstrip()
 
-            self.establish_port_forwarding_local(address_localhost) #TODO this is work in progress!
-            self.establish_port_forwarding_remote(address_localhost) #TODO this is work in progress!
+            self.establish_port_forwarding_local(address_localhost)
+            self.establish_port_forwarding_remote(address_localhost)
             self.prepare_singularity_files()
             self.copy_temp_json()
+
             ### Check if SINGULARITY_BIND exists and if not write it to .bashrc file
             command_list =['ssh', self.connect_to_resource,'\'echo $SINGULARITY_BIND\'']
             command_string = ' '.join(command_list)
             stdout,stderr,_ = self.run_subprocess(command_string)
             if stdout =="\n":
-                command_list =['ssh',self.connect_to_resource,"\"echo 'export SINGULARITY_BIND=/lnm:/lnm,/cluster:/cluster,/bin:/bin,/etc:/etc/,/lib:/lib,/lib64:/lib64' >> ~/.bashrc && source ~/.bashrc\""
+                command_list =['ssh',self.connect_to_resource,"\"echo 'export SINGULARITY_BIND=" + self.cluster_bind + "\' >> ~/.bashrc && source ~/.bashrc\""
+]
+                command_string = ' '.join(command_list)
+                stdout,stderr,_ = self.run_subprocess(command_string)
+            ### Create a Singularity PATH variable that is equal to the host PATH
+            command_list =['ssh', self.connect_to_resource,'\'echo $SINGULARITYENV_APPEND_PATH\'']
+            command_string = ' '.join(command_list)
+            stdout,stderr,_ = self.run_subprocess(command_string)
+            if stdout =="\n":
+                command_list =['ssh',self.connect_to_resource,"\"echo 'export SINGULARITYENV_APPEND_PATH=\$PATH' >> ~/.bashrc && source ~/.bashrc\""
+]
+                command_string = ' '.join(command_list)
+                stdout,stderr,_ = self.run_subprocess(command_string)
+
+            ### Create a Singulartity LD_LIBRARY_PATH variable that is equal to the host LD_LIBRARY_PATH
+            command_list =['ssh', self.connect_to_resource,'\'echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH\'']
+            command_string = ' '.join(command_list)
+            stdout,stderr,_ = self.run_subprocess(command_string)
+            if stdout =="\n":
+                command_list =['ssh',self.connect_to_resource,"\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=\$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc\""
 ]
                 command_string = ' '.join(command_list)
                 stdout,stderr,_ = self.run_subprocess(command_string)

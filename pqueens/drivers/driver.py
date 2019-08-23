@@ -78,8 +78,6 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['job']= None
         base_settings['batch']=batch
         base_settings['executable']=driver_options['path_to_executable']
-        #address = '10.10.0.1:' + str(port) #TODO !!
-        #base_settings['databank']=MongoDB(database_address=address)#config['database']['address'])
         base_settings['result']=None
         base_settings['port']=port
         base_settings['postprocessor']=driver_options['path_to_postprocessor']
