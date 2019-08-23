@@ -38,23 +38,25 @@ class Iterator(metaclass=abc.ABCMeta):
             iterator: Iterator object
 
         """
-        from .monte_carlo_iterator import MonteCarloIterator
-        from .morris_salib_wrapper_iterator import MorrisSALibIterator
-        from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
-        from .saltelli_iterator import SaltelliIterator
-        from .bayesian_optimization_iterator import BayesOptIterator
+        from .data_iterator import DataIterator
         from .lhs_iterator import LHSIterator
         from .lhs_iterator_mf import MF_LHSIterator
-        from .data_iterator import DataIterator
+        from .metropolis_hastings_iterator import MetropolisHastingsIterator
+        from .monte_carlo_iterator import MonteCarloIterator
+        from .morris_salib_wrapper_iterator import MorrisSALibIterator
+        from pqueens.iterators.optimization_iterator import OptimizationIterator
+        from .saltelli_iterator import SaltelliIterator
+        from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
 
-        method_dict = {'monte_carlo': MonteCarloIterator,
-                       'lhs': LHSIterator,
+        method_dict = {'lhs': LHSIterator,
                        'lhs_mf': MF_LHSIterator,
+                       'metropolis_hastings' : MetropolisHastingsIterator,
+                       'monte_carlo': MonteCarloIterator,
+                       'optimization' : OptimizationIterator,
+                       'read_data_from_file': DataIterator,
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli': SaltelliIterator,
-                       'sa_saltelli_salib': SaltelliSALibIterator,
-                       'bayesian_optimization': BayesOptIterator,
-                       'read_data_from_file': DataIterator}
+                       'sa_saltelli_salib': SaltelliSALibIterator}
 
         if iterator_name is None:
             method_name = config['method']['method_name']

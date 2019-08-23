@@ -1,19 +1,15 @@
 {
-    "experiment_name" : "xxx",
+    "experiment_name" : "gardner_test",
     "database"  :{
-      "address"   : "localhost:27017"
+      "address"   : "localhost:27017",
+      "drop_existing" : true
     },
     "method": {
-      "method_name": "bayesian_optimization",
+      "method_name": "monte_carlo",
       "method_options" :{
         "seed" : 42,
-        "model" : "model",
-        "num_iter" : 10,
-        "use_ard" : "True",
-        "num_initial_samples" : 10,
-        "result_description" : {
-            "write_results" : true
-        }
+        "num_samples" : 5,
+        "model" : "model"
       }
     },
     "model" : {
@@ -23,25 +19,25 @@
     },
     "interface" : {
       "type" : "direct_python_interface",
-      "main_file" : "branin_hifi.py"
+      "main_file" : "/Users/jonasbiehler/temp/queens/pqueens/example_simulator_functions/gardner2014a.py"
     },
     "parameters" : {
       "random_variables" : {
         "x1" : {
             "type" : "FLOAT",
             "size" : 1,
-            "min"  : -5,
-            "max"  : 10,
+            "min"  : 0,
+            "max"  : 6,
             "distribution" : "uniform",
-            "distribution_parameter" : [-5,10]
+            "distribution_parameter" : [0,6]
         },
         "x2" : {
             "type" : "FLOAT",
             "size" : 1,
             "min"  : 0,
-            "max"  : 15,
+            "max"  : 6,
             "distribution" : "uniform",
-            "distribution_parameter" : [0,15]
+            "distribution_parameter" : [0,6]
         }
       }
     }

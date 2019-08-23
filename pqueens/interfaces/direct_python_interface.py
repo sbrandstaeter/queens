@@ -1,6 +1,10 @@
 import os
 import importlib.util
+from multiprocessing import Pool
+import sys
+
 import numpy as np
+
 from .interface import Interface
 
 
@@ -21,7 +25,7 @@ class DirectPythonInterface(Interface):
 
     """
 
-    def __init__(self, interface_name, function_file, variables):
+    def __init__(self, interface_name, function_file, variables, num_workers=1):
         """ Create interface
 
         Args:
@@ -46,12 +50,25 @@ class DirectPythonInterface(Interface):
             spec = importlib.util.spec_from_file_location("my_function", abs_function_file)
             my_function = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(my_function)
+            # we want to be able to import the my_function module
+            # by name later:
+            sys.modules["my_function"] = my_function
         except FileNotFoundError:
             print('Did not find file locally, trying absolute path')
             raise FileNotFoundError("Could not import specified python function "
                                     "file! Fix your config file!")
 
         self.function = my_function
+
+        # pool needs to be created AFTER my_function module is imported
+        # and added to sys.module
+        if num_workers > 1:
+            print(f"Activating parallel evaluation of samples with {num_workers} workers.\n")
+            pool = Pool(processes=num_workers)
+        else:
+            pool = None
+
+        self.pool = pool
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -69,23 +86,45 @@ class DirectPythonInterface(Interface):
         function_file = interface_options["main_file"]
         parameters = config['parameters']
 
+        num_workers = interface_options.get('num_workers', 1)
         # instantiate object
-        return cls(interface_name, function_file, parameters)
+        return cls(interface_name, function_file, parameters, num_workers)
 
     def map(self, samples):
         """ Mapping function which orchestrates call to simulator function
 
         Args:
-            samples (list):         list of variables objects
+            samples (list):         list of Variables objects
 
         Returns:
-            np.array,np.array       two arrays containing the inputs from the
-                                    suggester, as well as the corresponding outputs
+            dict: dictionary with
+                  key:     value:
+                  'mean' | ndarray shape:(samples size, shape_of_response)
         """
         output = {}
         mean_values = []
-        for variables in samples:
-            params = variables.get_active_variables()
-            mean_values.append(self.function.main(1, params))
-        output['mean'] = np.reshape(np.array(mean_values), (-1, 1))
+        job_id = 1
+        if self.pool is None:
+            for variables in samples:
+                params = variables.get_active_variables()
+                mean_value = np.squeeze(self.function.main(job_id, params))
+                if not mean_value.shape:
+                    mean_value = np.expand_dims(mean_value, axis=0)
+                mean_values.append(mean_value)
+        else:
+            params_list = []
+            for variables in samples:
+                params_list.append((job_id, variables.get_active_variables()))
+
+            mean_values = self.pool.starmap(self.function.main, params_list)
+
+            for idx, mean_value in enumerate(mean_values):
+                mean_value = np.squeeze(mean_value)
+                if not mean_value.shape:
+                    mean_value = np.expand_dims(mean_value, axis=0)
+                mean_values[idx] = mean_value
+
+
+        output['mean'] = np.array(mean_values)
+
         return output

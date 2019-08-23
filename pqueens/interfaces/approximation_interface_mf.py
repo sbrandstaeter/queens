@@ -67,7 +67,8 @@ class ApproximationInterfaceMF(Interface):
                                     level prediction
 
         Returns:
-            np.array:               Array with results correspoding to samples
+            dict: Dictionary with mean, variance, and possibly
+                  posterior samples ('post_samples') at samples
         """
         if not self.approx_init:
             raise RuntimeError("Approximation has not been properly initialzed, cannot continue!")

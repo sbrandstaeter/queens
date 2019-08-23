@@ -67,13 +67,13 @@ class GPGPyRegression(RegressionApproximation):
             Xnew (np.array): Inputs at which to evaluate latent function f
 
         Returns:
-            dict: Dictionary with mean, variance, and posibly posterior samples
-                  of latent function at Xnew
+            dict: Dictionary with mean, variance, and possibly
+             posterior samples of latent function at Xnew
         """
         output = {}
         mean, variance = self.predict_f(Xnew)
-        output['mean'] = np.reshape(np.array(mean), (-1, 1))
-        output['variance'] = np.reshape(np.array(variance), (-1, 1))
+        output['mean'] = mean
+        output['variance'] = variance
         if self.num_posterior_samples is not None:
             output['post_samples'] = self.predict_f_samples(Xnew, self.num_posterior_samples)
 
