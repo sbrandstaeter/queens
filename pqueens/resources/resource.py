@@ -7,6 +7,7 @@ from operator import add
 from functools import reduce
 import numpy as np
 import sys
+import pdb
 
 # TODO refactor this method into a class method
 
@@ -53,7 +54,9 @@ def resource_factory(resource_name, exp_name, config):
     scheduler_name = resource_options['scheduler']
 
     # create scheduler from config
-    scheduler = Scheduler.from_config_create_scheduler(scheduler_name, config)
+    scheduler = Scheduler.from_config_create_scheduler(scheduler_name=scheduler_name, config=config)
+    # Create/update singulariy image in case of cluster job
+    scheduler.pre_run()
 
     return Resource(resource_name, exp_name, scheduler, max_concurrent,
                     max_finished_jobs)
@@ -144,7 +147,7 @@ class Resource(object):
 
         """
         if jobs:
-            return filter(lambda job: job['resource']==self.name, jobs)
+            return [job for job in jobs if job['resource'] == self.name]#filter(lambda job: job['resource']==self.name, jobs)
         else:
             return jobs
 
@@ -160,8 +163,8 @@ class Resource(object):
         """
         jobs = self.filter_my_jobs(jobs)
         if jobs:
-            pending_jobs = map(lambda x: x['status'] in ['pending', 'new'], jobs)
-            return reduce(add, pending_jobs, 0)
+            pending_jobs = [job['status'] for job in jobs].count('pending')
+            return pending_jobs
         else:
             return 0
 
@@ -177,8 +180,8 @@ class Resource(object):
         """
         jobs = self.filter_my_jobs(jobs)
         if jobs:
-            failed_jobs = map(lambda x: x['status'] in ['failed'], jobs)
-            return reduce(add, failed_jobs, 0)
+            failed_jobs = [job['status'] for job in jobs].count('failed')#map(lambda x: x['status'] in ['failed'], jobs)
+            return failed_jobs#reduce(add, failed_jobs, 0)
         else:
             return 0
 
@@ -195,8 +198,8 @@ class Resource(object):
         """
         jobs = self.filter_my_jobs(jobs)
         if jobs:
-            completed_jobs = map(lambda x: x['status'] == 'complete', jobs)
-            return reduce(add, completed_jobs, 0)
+            completed_jobs = [job['status'] for job in jobs].count('complete')#map(lambda x: x['status'] == 'complete', jobs)
+            return completed_jobs#reduce(add, completed_jobs, 0)
         else:
             return 0
 
@@ -242,15 +245,12 @@ class Resource(object):
 
         return self.scheduler.alive(job['proc_id'])
 
-    def attempt_dispatch(self, experiment_name, batch, job, db_address, expt_dir):
+    def attempt_dispatch(self, batch, job):
         """ Submit a new job using the scheduler of the resource
 
         Args:
-            experiment_name (str):  Name of experiment
             batch (string):         Batch number of job
             job (dict):             Job to submit
-            db_address (str):       Adress of database to store job info in
-            expt_dir  (str):        Directory associated with experiment
 
         Returns:
             int:       Process ID of job
@@ -258,9 +258,7 @@ class Resource(object):
         if job['resource'] != self.name:
             raise Exception("This job does not belong to me!")
 
-        process_id = self.scheduler.submit(job['id'], experiment_name, batch,
-                                           expt_dir, db_address, job['driver_params'])
-
+        process_id = self.scheduler.submit(job['id'], batch)
         if process_id is not None:
             sys.stderr.write('Submitted job %d with %s '
                              '(process id: %d).\n' %

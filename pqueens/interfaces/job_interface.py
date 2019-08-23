@@ -5,6 +5,8 @@ from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
+from pqueens.drivers.driver import Driver
+import pdb
 
 class JobInterface(Interface):
     """
@@ -23,14 +25,12 @@ class JobInterface(Interface):
         db (mongodb):               mongodb to store results and job info
         polling_time (int):         how frequently do we check if jobs are done
         output_dir (string):        directory to write output to
-        driver_type (string):       what kind of simulation driver are we using
-        driver_params (dict):       parameters for simulatio driver
         parameters (dict):          dictionary with parameters
 
     """
 
     def __init__(self, interface_name, resources, experiment_name, db_address,
-                 db, polling_time, output_dir, driver_type, driver_params, parameters):
+                 db, polling_time, output_dir, parameters):
         """ Create JobInterface
 
         Args:
@@ -41,8 +41,6 @@ class JobInterface(Interface):
             db (mongodb):               mongodb to store results and job info
             polling_time (int):         how frequently do we check if jobs are done
             output_dir (string):        directory to write output to
-            driver_type (string):       what kind of simulation driver are we using
-            driver_params (dict):       parameters for simulatio driver
             variables (dict):           dictionary with parameters
         """
         self.name = interface_name
@@ -52,8 +50,6 @@ class JobInterface(Interface):
         self.db = db
         self.polling_time = polling_time
         self.output_dir = output_dir
-        self.driver_type = driver_type
-        self.driver_params = driver_params
         self.parameters = parameters
         self.batch_number = 1
 
@@ -80,29 +76,24 @@ class JobInterface(Interface):
         experiment_name = config['global_settings']['experiment_name']
 
         #sys.stderr.write('Using database at %s.\n' % db_address)
-
         db = MongoDB(database_address=db_address, drop_existing_db=drop_existing)
 
         polling_time = config.get('polling-time', 5)
 
-        output_dir = config['driver']['driver_params']["experiment_dir"]
-
-        driver_type = config['driver']['driver_type']
-
-        driver_params = config['driver']['driver_params']
+        output_dir = config['driver']['driver_params']["experiment_dir"] #TODO: This is not nice -> should be solved solemny over Driver class
 
         parameters = config['parameters']
 
         # instanciate object
         return cls(interface_name, resources, experiment_name, db_address, db,
-                   polling_time, output_dir, driver_type, driver_params, parameters)
+                   polling_time, output_dir, parameters)
 
 
     def map(self, samples):
         """
         Mapping function which orchestrates call to external simulation software
 
-        Second vairiant which takes the input samples as argument
+        Second variant which takes the input samples as argument
 
         Args:
             samples (list):         list of variables objects
@@ -121,7 +112,7 @@ class JobInterface(Interface):
                 for resource_name, resource in self.resources.items():
                     if resource.accepting_jobs(jobs):
 
-                        new_job = self.create_new_job(variables, resource_name)
+                        new_job = self.create_new_job(variables, resource_name) #TODO wrong number!
 
                         # Submit the job to the appropriate resource
                         process_id = self.attempt_dispatch(resource, new_job)
@@ -134,11 +125,9 @@ class JobInterface(Interface):
                         # Set the status of the job appropriately (successfully submitted or not)
                         if process_id is None:
                             new_job['status'] = 'broken'
-                            self.save_job(new_job)
                         else:
                             new_job['status'] = 'pending'
                             new_job['proc_id'] = process_id
-                            self.save_job(new_job)
 
                         processed_suggestion = True
                         jobs = self.load_jobs()
@@ -152,6 +141,8 @@ class JobInterface(Interface):
         while not self.all_jobs_finished():
             time.sleep(self.polling_time)
 
+        for _,resource in self.resources.items():
+            resource.scheduler.post_run() # This will close all previous opened ports for databank communication
         # get sample and response data
         return self.get_output_data()
 
@@ -171,16 +162,13 @@ class JobInterface(Interface):
         process_id = None
         num_tries = 0
 
-        while process_id is None and num_tries < 10:
+        while process_id is None and num_tries < 5:
             if num_tries > 0:
                 time.sleep(1)
 
             # Submit the job to the appropriate resource
-            process_id = resource.attempt_dispatch(self.experiment_name,
-                                                   self.batch_number,
-                                                   new_job,
-                                                   self.db_address,
-                                                   self.output_dir)
+            process_id = resource.attempt_dispatch(self.batch_number,
+                                                   new_job)
             num_tries += 1
 
         return process_id
@@ -228,8 +216,6 @@ class JobInterface(Interface):
             'expt_dir'     : self.output_dir,
             'expt_name'    : self.experiment_name,
             'resource'     : resource_name,
-            'driver_type'  : self.driver_type,
-            'driver_params': self.driver_params,
             'status'       : 'new',
             'submit time'  : time.time(),
             'start time'   : None,
