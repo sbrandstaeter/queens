@@ -12,19 +12,11 @@ def read(fname):
 setup(
     name = "pqueens",
     version = "0.1",
-    author = "Jonas Biehler",
-    author_email = "biehler@adco-engineering-gw.de",
+    author = "Jonas Nitzler",
+    author_email = "nitzler@lnm.mw.tum.de",
     description = ("A package for Uncertainty Quantification and Bayesian optimization"),
     keywords = "Gaussian Processes, Uncertainty Quantification",
     packages=['pqueens',
               'pqueens.database',
-              'pqueens.post_post',
               'pqueens.drivers',
               'pqueens.utils'])
-    # for now do not add third party packages here but install them manually Using
-    # anaconda beforehand (we get some weird errors otherwise)
-    #install_requires=[
-    #      'numpy',
-    #      'scipy',
-    #      'matplotlib'
-    #  ],

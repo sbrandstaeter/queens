@@ -5,6 +5,7 @@ import os
 import subprocess
 from pqueens.drivers.driver import Driver
 import sys
+import pdb
 
 class Scheduler(metaclass=abc.ABCMeta):
     """ Base class for schedulers """
@@ -85,39 +86,13 @@ class Scheduler(metaclass=abc.ABCMeta):
             username,_,_ = self.run_subprocess('whoami')
             address_localhost = username.rstrip() + r'@' + hostname.rstrip()
 
+            #self.kill_user_ssh_remote(username)
             self.establish_port_forwarding_local(address_localhost)
             self.establish_port_forwarding_remote(address_localhost)
             self.prepare_singularity_files()
             self.copy_temp_json()
-
-            ### Check if SINGULARITY_BIND exists and if not write it to .bashrc file
-            command_list =['ssh', self.connect_to_resource,'\'echo $SINGULARITY_BIND\'']
-            command_string = ' '.join(command_list)
-            stdout,stderr,_ = self.run_subprocess(command_string)
-            if stdout =="\n":
-                command_list =['ssh',self.connect_to_resource,"\"echo 'export SINGULARITY_BIND=" + self.cluster_bind + "\' >> ~/.bashrc && source ~/.bashrc\""
-]
-                command_string = ' '.join(command_list)
-                stdout,stderr,_ = self.run_subprocess(command_string)
-            ### Create a Singularity PATH variable that is equal to the host PATH
-            command_list =['ssh', self.connect_to_resource,'\'echo $SINGULARITYENV_APPEND_PATH\'']
-            command_string = ' '.join(command_list)
-            stdout,stderr,_ = self.run_subprocess(command_string)
-            if stdout =="\n":
-                command_list =['ssh',self.connect_to_resource,"\"echo 'export SINGULARITYENV_APPEND_PATH=\$PATH' >> ~/.bashrc && source ~/.bashrc\""
-]
-                command_string = ' '.join(command_list)
-                stdout,stderr,_ = self.run_subprocess(command_string)
-
-            ### Create a Singulartity LD_LIBRARY_PATH variable that is equal to the host LD_LIBRARY_PATH
-            command_list =['ssh', self.connect_to_resource,'\'echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH\'']
-            command_string = ' '.join(command_list)
-            stdout,stderr,_ = self.run_subprocess(command_string)
-            if stdout =="\n":
-                command_list =['ssh',self.connect_to_resource,"\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=\$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc\""
-]
-                command_string = ' '.join(command_list)
-                stdout,stderr,_ = self.run_subprocess(command_string)
+            self.copy_post_post()
+            self.check_singularity_system_vars()
 
         else:
             pass
@@ -130,6 +105,43 @@ class Scheduler(metaclass=abc.ABCMeta):
 
 
 ########## Auxiliary high-level methods #############################################
+    def kill_user_ssh_remote(self,username):
+        command_list = ['ssh', self.connect_to_resource,'\'killall -u', username, 'ssh\'']
+        command_string = ' '.join(command_list)
+        stdout,stderr,_ = self.run_subprocess(command_string)
+
+
+    def check_singularity_system_vars(self):
+        ### Check if SINGULARITY_BIND exists and if not write it to .bashrc file
+        command_list =['ssh', self.connect_to_resource,'\'echo $SINGULARITY_BIND\'']
+        command_string = ' '.join(command_list)
+        stdout,stderr,_ = self.run_subprocess(command_string)
+        if stdout =="\n":
+            command_list =['ssh',self.connect_to_resource,"\"echo 'export SINGULARITY_BIND=" + self.cluster_bind + "\' >> ~/.bashrc && source ~/.bashrc\""
+]
+            command_string = ' '.join(command_list)
+            stdout,stderr,_ = self.run_subprocess(command_string)
+        ### Create a Singularity PATH variable that is equal to the host PATH
+        command_list =['ssh', self.connect_to_resource,'\'echo $SINGULARITYENV_APPEND_PATH\'']
+        command_string = ' '.join(command_list)
+        stdout,stderr,_ = self.run_subprocess(command_string)
+        if stdout =="\n":
+            command_list =['ssh',self.connect_to_resource,"\"echo 'export SINGULARITYENV_APPEND_PATH=\$PATH' >> ~/.bashrc && source ~/.bashrc\""
+]
+            command_string = ' '.join(command_list)
+            stdout,stderr,_ = self.run_subprocess(command_string)
+
+        ### Create a Singulartity LD_LIBRARY_PATH variable that is equal to the host LD_LIBRARY_PATH
+        command_list =['ssh', self.connect_to_resource,'\'echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH\'']
+        command_string = ' '.join(command_list)
+        stdout,stderr,_ = self.run_subprocess(command_string)
+        if stdout =="\n":
+            command_list =['ssh',self.connect_to_resource,"\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=\$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc\""
+]
+            command_string = ' '.join(command_list)
+            stdout,stderr,_ = self.run_subprocess(command_string)
+
+
     def establish_port_forwarding_remote(self, address_localhost):
         self.port = 2030 # just a start value to check for next open port
         port_fail=1
@@ -142,9 +154,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         print('Remote port-forwarding sucessfully established for port %s' % (self.port))
 
     def establish_port_forwarding_local(self, address_localhost):
-        # TODO this is not so easy! port forwarding does not cover communication!
         # see--> https://stackoverflow.com/questions/4975251/python-subprocess-popen-and-ssh-port-forwarding-in-the-background
-        remote_address=self.connect_to_resource.split(r'@')[1] # TODO Careful here we do not need the user just the address!
+        remote_address=self.connect_to_resource.split(r'@')[1]
         command_list = ['ssh', '-f', '-N', '-L', r'9001:'+ remote_address + r':22',address_localhost]
         ssh_proc = subprocess.Popen(command_list, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stat = ssh_proc.poll()
@@ -161,8 +172,16 @@ class Scheduler(metaclass=abc.ABCMeta):
         command_string = ' '.join(command_list)
         stdout,stderr,_ = self.run_subprocess(command_string)
         if stderr:
-            raise RuntimeError("Error! Was not able to copy local json input file to remote! Abort...")
+            raise RuntimeError("Error! Was not able to copy post_post class to remote! Abort...")
 
+    def copy_post_post(self):
+        abs_dirpath_current_file = os.path.dirname(os.path.abspath(__file__))
+        abs_path_post_post = os.path.join(abs_dirpath_current_file,'../post_post')
+        command_list = ["scp -r", abs_path_post_post, self.connect_to_resource+':'+self.path_to_singularity + '/post_post']
+        command_string = ' '.join(command_list)
+        stdout,stderr,_ = self.run_subprocess(command_string)
+        if stderr:
+            raise RuntimeError("Error! Was not able to copy local json input file to remote! Abort...")
 
     def create_singularity_image(self):
         """ Add current environment to predesigned singularity container for cluster applications """
@@ -205,13 +224,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         with open(abs_path,'rb') as inputfile:
             data = inputfile.read()
             hasher.update(data)
-        hashlist.append(hasher.hexdigest())
-        # hash requirements_remote
-        rel_path='../../requirements_remote.txt'
-        abs_path = os.path.join(script_dir,rel_path)
-        with open(abs_path,'rb') as inputfile:
-                data = inputfile.read()
-                hasher.update(data)
         hashlist.append(hasher.hexdigest())
         # hash setup_remote
         rel_path='../../setup_remote.py'

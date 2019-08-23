@@ -64,5 +64,4 @@ class Post_post(metaclass=abc.ABCMeta):
             post_out = np.append(post_out, QoI) # select only row with timestep equal to target time step
             if not post_out: # timestep reached? <=> variable is empty?
                 self.error = True
-
         return post_out, self.error

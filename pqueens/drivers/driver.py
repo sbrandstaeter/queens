@@ -1,11 +1,9 @@
 import abc
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.injector import inject
-from pqueens.post_post.post_post import Post_post
 import sys
 import subprocess
 import time
-import importlib.util
 import os
 class Driver(metaclass=abc.ABCMeta):
     """ Base class for Drivers
@@ -41,7 +39,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.num_procs_post = base_settings['num_procs_post']
 
     @classmethod
-    def from_config_create_driver(cls, config, job_id, batch, port):
+    def from_config_create_driver(cls, config, job_id, batch, port, abs_path=None):
         """ Create driver from problem description
 
         Args:
@@ -57,6 +55,20 @@ class Driver(metaclass=abc.ABCMeta):
         from pqueens.drivers.baci_driver_bruteforce import Baci_driver_bruteforce
         from pqueens.drivers.baci_driver_native import Baci_driver_native
         from pqueens.drivers.baci_driver_schmarrn import Baci_driver_schmarrn
+        if abs_path== None:
+            from pqueens.post_post.post_post import Post_post
+        else:
+            print(abs_path)
+            import importlib.util
+            spec = importlib.util.spec_from_file_location("post_post", abs_path)
+            post_post = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(post_post)
+            try:
+                from post_post.post_post import Post_post
+            except:
+                print('fail')
+                raise ImportError('Could not import the post_post module!')
+
 
         driver_dict = {'baci_bruteforce': Baci_driver_bruteforce,
                        'baci_native': Baci_driver_native,
@@ -155,7 +167,6 @@ class Driver(metaclass=abc.ABCMeta):
     def init_job(self):
         """ Initialize job in database
 
-
             Returns:
                 dict: Dictionary with job information
 
@@ -176,7 +187,7 @@ class Driver(metaclass=abc.ABCMeta):
         # create actual input file with parsed parameters
         inject(self.job['params'],self.template,self.input_file)
 
-    def run_job(self): #TODO run this via ssh outside of image? maybe ssh in cluster again???
+    def run_job(self):
         """ Actual method to run the job on computing machine
             using run_subprocess method from base class
         """
@@ -185,7 +196,6 @@ class Driver(metaclass=abc.ABCMeta):
         command_list = ['mpirun', '-np', str(self.num_procs), self.mpi_flags, self.executable, self.input_file, self.output_file]
         command_string = ' '.join(filter(None,command_list))
         stdout,stderr,self.pid = self.run_subprocess(command_string)
-        print(self.pid)
         if stderr !="":
             raise RuntimeError(stderr+stdout)
 

@@ -1,9 +1,0 @@
-###### use requirements without version fixed specifier where possible ######
-numpy>=1.16.2
-# for database interfacing
-pymongo
-# for design of experiments
-# making fancy plots
-matplotlib
-plotly
-pandas
