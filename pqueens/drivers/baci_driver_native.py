@@ -8,7 +8,7 @@ from pqueens.drivers.driver import Driver
 # here rather than reading the command: build driver from config (copy partly the stuff done in the scheduler!
 # this should be here!
 # so far the DB was not used in local baci driver --> this should be changed!
-class Baci_driver_native(Driver):
+class BaciDriverNative(Driver):
     """ Driver to run BACI natively on workstation
 
         Args:
@@ -18,7 +18,7 @@ class Baci_driver_native(Driver):
             float: result
     """
     def __init__(self, base_settings):
-        super(Baci_driver_native, self).__init__(base_settings)
+        super(BaciDriverNative, self).__init__(base_settings)
         self.mpi_config={}
 
     @classmethod
@@ -28,7 +28,7 @@ class Baci_driver_native(Driver):
         Args:
             base_settings: Driver specifications declared in base class (need to be passed through child class and back to __init__ of base class
         Returns:
-            driver: Baci_driver_native object
+            driver: BaciDriverNative object
 
         """
         return cls(base_settings)
