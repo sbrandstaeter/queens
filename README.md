@@ -2,10 +2,6 @@
 
 This repository contains the code of the QUEENS framework.
 
-[![build status](https://gitlab.lrz.de/jbi/queens/badges/master/build.svg)](https://gitlab.lrz.de/jbi/queens/commits/master)
-
-[![coverage report](https://gitlab.lrz.de/jbi/queens/badges/master/coverage.svg)](https://codecov.io/bitbucket/jbi35/pqueens/commit/6c9c94b0e6e8f6c2b5aad07b34e69c72a4d1edce)
-
 ## Contents
 
 1. [Dependencies](#dependencies)
@@ -34,9 +30,9 @@ For the installation on a cluster, copy the Anaconda-executable to the desired d
 1. You can then clone this repository to your local machine with  
 `git clone git@gitlab.lrz.de:jbi/queens.git <target-directory>`  
 1. [Install](http://docs.anaconda.com/anaconda/install/linux/) the latest version of [Anaconda](https://www.anaconda.com/) with Python 3.x.
- *Anaconda* is an open-source Python distribution containing many popular data science Python packages. It includes a powerful package and virtual environment manager program called *conda*. Note that the latest version of Anaconda currently uses Python 3.7, QUEENS however uses Python 3.6. This is not a problem, since this is exactly what conda is made for: we are going to create a dedicated Python 3.6 conda environment in the next step.
+ *Anaconda* is an open-source Python distribution containing many popular data science Python packages. It includes a powerful package and virtual environment manager program called *conda*. 
 1. After setting up Anaconda on your machine, create a new, dedicated QUEENS development environment via  
-`conda create -n <name_of_new_environment> python=3.6`
+`conda create -n <name_of_new_environment> python=3.7`
 1. You need to activate the newly created environment via  
 `conda activate <name_of_new_environment>`
 1. All required third party libraries can then be simply installed in the environment by running:  
@@ -118,7 +114,6 @@ Note that if you want to connect to the database from a cluster, you will also n
 - Schmarrn: 129.187.58.24
 - Bruteforce (master node global IP): 129.187.58.13
 - Bruteforce (master node local IP): 10.10.0.1
-- Jonas B. Laptop: 129.187.58.120
 
 [↑ Contents](#contents)
 
@@ -204,19 +199,16 @@ before the make command.
 [↑ Contents](#contents)
 
 ## Run the test suite
-QUEENS has a couple of unit and regression test. To run the test suite type:  
-`pytest pqueens/tests`  
+QUEENS has a couple of unit and regression test.
+The testing strategy is more closely described in [TESTING.md](TESTING.md) 
+To run the test suite type:  
+`python setup.py test`
 
 The above potentially gives many deprecation warnings of external packages (like tensorflow).
 If you are sure you did not cause a deprecation warning yourself, you can ignore them by running  
 `pytest pqueens/tests -W ignore::DeprecationWarning`  
 For more info see the [pytest documentation](https://docs.pytest.org/en/latest/warnings.html).
 
-In order to get a detailed report showing code coverage etc., the test have to be run using the coverage tool. This is triggered by running the using:  
-`coverage run -m pytest pqueens/tests`  
-
-To view the created report, run:  
-`coverage report -m`  
 
 [↑ Contents](#contents)
 
@@ -240,7 +232,7 @@ Next, you have to register the runner with your gitlab repo as described
 
 ## Anaconda tips and tricks
 1. Create new anaconda environment  
-`conda create -n <name_of_new_environment> python=3.6`
+`conda create -n <name_of_new_environment> python=3.7`
 2. List all packages linked into an anaconda environment  
 `conda list -n <your_environment_name`
 3. Activate environment  

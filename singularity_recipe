@@ -1,0 +1,38 @@
+BootStrap: yum
+OSVersion: 7
+MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/$basearch/
+Include: yum wget tar
+
+%help
+This is a singulariy container containing CentOS7 and Python 3.7 as well as necessary QUEENS dependencies (Python packages) to run the latter on a HPC cluster. Central elements are a copy of the Drivers class and the main_remote.py file. This container version uses the MPI environment and 3rd library packages of the host! Therefore it assumes that a working executable (e.g. BACI) is already available on the cluster. The advantage of this layout is that that we are always up-to-date with the cluster infrastructure and just mount important directories and copy system variables at runtime.
+
+%files
+  ../pqueens /
+  ../pqueens/drivers /
+  ../pqueens/database /
+  ../pqueens/utils /
+  ../setup_remote.py /
+  ../pqueens/remote_main.py /
+
+%labels
+  Maintainer Jonas Nitzler
+  Date 23.08.2019
+
+%post
+  # Install miniconda 3
+  if [ ! -d /usr/local/anaconda ]; then
+    wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
+      -O ~/anaconda.sh && \
+    bash ~/anaconda.sh -b -p /usr/local/anaconda && \
+    rm ~/anaconda.sh
+  fi
+  # set anaconda path
+  export PATH="/usr/local/anaconda/bin:$PATH"
+  conda update -y conda
+  conda create -y -n QUEENS python=3.7
+  /usr/local/anaconda/envs/QUEENS/bin/pip install numpy pymongo matplotlib plotly pandas
+  cd /
+  /usr/local/anaconda/envs/QUEENS/bin/python setup_remote.py develop
+
+%runscript
+  exec /usr/local/anaconda/envs/QUEENS/bin/python /pqueens/remote_main.py $@

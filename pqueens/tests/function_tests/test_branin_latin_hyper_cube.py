@@ -1,10 +1,13 @@
-from pqueens.main import main
-import pytest
+import os
 import pickle
 
-def test_branin_latin_hyper_cube(tmpdir):
+import pytest
+
+from pqueens.main import main
+
+def test_branin_latin_hyper_cube(inputdir, tmpdir):
     """ Test case for latin hyper cube iterator """
-    arguments = ['--input=pqueens/tests/function_tests/input_files/branin_latin_hyper_cube.json',
+    arguments = ['--input=' + os.path.join(inputdir, 'branin_latin_hyper_cube.json'),
                  '--output='+str(tmpdir)]
 
     main(arguments)
