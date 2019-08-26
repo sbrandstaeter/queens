@@ -1,0 +1,76 @@
+{
+  "experiment_name" : "xxx",
+  "database"  :{
+    "address"   : "localhost:27017"
+  },
+  "method": {
+    "method_name": "smc",
+    "method_options" : {
+      "seed" : 42,
+      "num_particles" : 15,
+      "model" : "model",
+      "temper_type" : "bayes",
+      "plot_trace_every" : 0,
+      "result_description" : {
+          "write_results" : true,
+          "plot_results" : false,
+          "cov" : true
+      }
+    }
+  },
+  "MCMC_Kernel": {
+    "method_name": "metropolis-hastings",
+    "method_options" : {
+      "as_mcmc_kernel" : true,
+      "num_chains" : 15,
+      "num_samples" : 2,
+      "proposal_distribution" : "normal_proposal"
+    }
+  },
+  "model" : {
+    "type" : "simulation_model",
+    "interface" : "interface",
+    "parameters" : "parameters"
+  },
+  "normal_proposal" : {
+    "type" : "normal",
+    "mean" : [0.0, 0.0, 0.0, 0.0],
+    "cov" : [[0.001, 0.00, 0.00, 0.00],
+             [0.00, 0.001, 0.00, 0.00],
+             [0.00, 0.00, 0.001, 0.00],
+             [0.00, 0.00, 0.00, 0.001]]
+  },
+  "interface" : {
+    "type" : "direct_python_interface",
+    "num_workers" : 1,
+    "main_file" : "multivariate_gaussian_mixture_logpdf.py"
+  },
+  "parameters" : {
+    "random_variables" : {
+      "x1" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "uniform",
+        "distribution_parameter" : [-2.0,2.0]
+      },
+      "x2" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "uniform",
+        "distribution_parameter" : [-2.0,2.0]
+      },
+      "x3" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "uniform",
+        "distribution_parameter" : [-2.0,2.0]
+      },
+      "x4" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "uniform",
+        "distribution_parameter" : [-2.0,2.0]
+      }
+    }
+  }
+}

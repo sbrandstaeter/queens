@@ -1,5 +1,9 @@
-import scipy.stats
+from pqueens.utils.mcmc_utils import NormalProposal
 
+mean = 0.0
+covariance = 1.0
+
+standard_normal = NormalProposal(mean=mean, covariance=covariance)
 def gaussian_logpdf(x):
     """ 1D Gaussian likelihood model
 
@@ -20,11 +24,7 @@ def gaussian_logpdf(x):
 
         [1] https://en.wikipedia.org/wiki/Normal_distribution
     """
-    mean = 0.0
-    covariance = 1.0
-
-    y = scipy.stats.norm.logpdf(x, loc = mean, scale = covariance)
-
+    y = standard_normal.logpdf(x)
     return y
 
 

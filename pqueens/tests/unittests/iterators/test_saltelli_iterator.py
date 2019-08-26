@@ -128,7 +128,7 @@ class TestSASaltelliBorehole(unittest.TestCase):
         uncertain_parameter1["type"] = "FLOAT"
         uncertain_parameter1["size"] = 1
         uncertain_parameter1["distribution"] = "normal"
-        uncertain_parameter1["distribution_parameter"] = [0.1, 0.0161812]
+        uncertain_parameter1["distribution_parameter"] = [0.1, 0.0002618312334]
 
         #| r   ~ Lognormal(7.71,1.0056)
         uncertain_parameter2 = {}

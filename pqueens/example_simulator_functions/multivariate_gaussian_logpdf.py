@@ -1,7 +1,19 @@
 import numpy as np
-import scipy.stats
 
-def gaussian_logpdf(x1,x2):
+from pqueens.utils import mcmc_utils
+
+dim = 2
+
+meas_data = [0.0, 0.0]
+cov = [[1.0, 0.5],
+       [0.5, 1.0]]
+
+A = np.eye(dim, dim)
+b = np.zeros(dim)
+
+
+gauss_like = mcmc_utils.NormalProposal(mean=meas_data, covariance=cov)
+def gaussian_logpdf(x1, x2):
     """ 2D Gaussian likelihood model
 
     Used as a basic test function for MCMC methods.
@@ -22,18 +34,12 @@ def gaussian_logpdf(x1,x2):
 
         [1] https://en.wikipedia.org/wiki/Multivariate_normal_distribution
     """
-    meas_data = [0.0, 0.0]
-    covariance = [[1.0, 0.5],
-                  [0.5, 1.0]]
 
     x = np.array([x1, x2])
-    A = np.eye(x.shape[0], x.shape[0])
-    b = np.zeros(x.shape)
 
     model_data = np.dot(A, x) + b
 
-    y = scipy.stats.multivariate_normal.logpdf(meas_data, mean=model_data, cov=covariance)
-
+    y = gauss_like.logpdf(model_data)
     return y
 
 

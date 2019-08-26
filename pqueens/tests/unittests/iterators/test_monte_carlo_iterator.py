@@ -24,7 +24,7 @@ class TestMCIterator(unittest.TestCase):
         uncertain_parameter2["type"] = "FLOAT"
         uncertain_parameter2["size"] = 1
         uncertain_parameter2["distribution"] = "normal"
-        uncertain_parameter2["distribution_parameter"] = [0, 2]
+        uncertain_parameter2["distribution_parameter"] = [0, 4]
 
         uncertain_parameter3 = {}
         uncertain_parameter3["type"] = "FLOAT"

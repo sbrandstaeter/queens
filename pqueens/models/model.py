@@ -97,13 +97,26 @@ class Model(metaclass=abc.ABCMeta):
             data (np.array): 2d array with variable values
 
         """
-        temp_variable = deepcopy(self.variables[0])
-        self.variables = []
-        for i in range(data.shape[0]):
-            data_vector = data[i, :]
-            temp_variable.update_variables_from_vector(data_vector)
-            new_var = deepcopy(temp_variable)
-            self.variables.append(new_var)
+        #temp_variable = deepcopy(self.variables[0])
+        #self.variables = []
+        #for i in range(data.shape[0]):
+        #    data_vector = data[i, :]
+        #    temp_variable.update_variables_from_vector(data_vector)
+        #    new_var = deepcopy(temp_variable)
+        #    self.variables.append(new_var)
+
+        num_variables = len(self.variables)
+        num_data_vectors = data.shape[0]
+
+        if num_variables > num_data_vectors:
+            del self.variables[num_data_vectors:]
+
+        elif num_variables < num_data_vectors:
+            for i in range(num_variables, num_data_vectors):
+                self.variables.append(Variables.from_uncertain_parameters_create(self.uncertain_parameters))
+
+        for i in range(num_data_vectors):
+            self.variables[i].update_variables_from_vector(data[i, :])
 
     def convert_array_to_model_variables(self, data):
         """ Convert input data to model variables

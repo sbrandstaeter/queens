@@ -47,6 +47,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from pqueens.iterators.optimization_iterator import OptimizationIterator
         from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
+        from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 
         method_dict = {'lhs': LHSIterator,
                        'lhs_mf': MF_LHSIterator,
@@ -56,7 +57,8 @@ class Iterator(metaclass=abc.ABCMeta):
                        'read_data_from_file': DataIterator,
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli': SaltelliIterator,
-                       'sa_saltelli_salib': SaltelliSALibIterator}
+                       'sa_saltelli_salib': SaltelliSALibIterator,
+                       'smc' : SequentialMonteCarloIterator}
 
         if iterator_name is None:
             method_name = config['method']['method_name']
