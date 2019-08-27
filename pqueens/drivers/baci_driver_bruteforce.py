@@ -28,6 +28,7 @@ class BaciDriverBruteforce(Driver):
         Returns:
             driver: BaciDriverBruteforce object
         """
+        base_settings['experiment_name'] =config['experiment_name']
         return cls(base_settings)
 
 

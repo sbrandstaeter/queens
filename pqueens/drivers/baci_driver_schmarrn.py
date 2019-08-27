@@ -31,7 +31,9 @@ class BaciDriverSchmarrn(Driver): #TODO needs to be adjusted!!!
         Returns:
             driver: BaciDriverSchmarrn object
         """
+        base_settings['experiment_name'] =config['experiment_name']
         return cls(base_settings)
+
 
     def setup_mpi(self,ntasks):
         """ setup MPI environment
