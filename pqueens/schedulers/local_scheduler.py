@@ -23,6 +23,17 @@ class LocalScheduler(Scheduler):
         Returns:
             scheduler:              Instance of LocalScheduler
         """
+        # pre assemble some strings as base_settings
+        base_settings['output'] = None
+        base_settings['tasks_info'] = None
+        base_settings['walltime_info'] = None
+        base_settings['job_flag'] = None
+        base_settings['scheduler_start'] = None
+        base_settings['command_line_opt'] = None
+        base_settings['cluster_bind'] = None
+
+
+
         return cls(base_settings,scheduler_name)
 
 

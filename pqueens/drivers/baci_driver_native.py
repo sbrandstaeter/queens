@@ -1,13 +1,6 @@
 from pqueens.drivers.driver import Driver
+from pqueens.database.mongodb import MongoDB
 
-#### some comments that will be deleted later #####
-# so far driver options are assambled in cluster_scheduler file which seems to be wrong
-# ssh command is fully designed and then executed the driver file with the main function reading the argument specified in the ssh command after the script name (sys.args[1]) -> similar to argsparser!
-
-#----
-# here rather than reading the command: build driver from config (copy partly the stuff done in the scheduler!
-# this should be here!
-# so far the DB was not used in local baci driver --> this should be changed!
 class Baci_driver_native(Driver):
     """ Driver to run BACI natively on workstation
 
@@ -20,6 +13,10 @@ class Baci_driver_native(Driver):
     def __init__(self, base_settings):
         super(Baci_driver_native, self).__init__(base_settings)
         self.mpi_config={}
+        address ='localhost:27017'
+        self.database = MongoDB(database_address=address)
+
+
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings):
@@ -31,8 +28,8 @@ class Baci_driver_native(Driver):
             driver: Baci_driver_native object
 
         """
+        base_settings['experiment_name']=config['global_settings']['experiment_name']
         return cls(base_settings)
 
-    def setup_mpi(self): # TODO this is not needed atm
-        self.mpi_config['mpi_run']=''
-        self.mpi_config['flags']=''
+    def setup_mpi(self,num_procs): # TODO this is not needed atm
+        pass
