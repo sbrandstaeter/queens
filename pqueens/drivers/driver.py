@@ -39,7 +39,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.num_procs_post = base_settings['num_procs_post']
 
     @classmethod
-    def from_config_create_driver(cls, config, job_id, batch, port, abs_path=None):
+    def from_config_create_driver(cls, config, job_id, batch, port=None, abs_path=None):
         """ Create driver from problem description
 
         Args:
@@ -95,7 +95,6 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['postprocessor']=driver_options['path_to_postprocessor']
         base_settings['post_options']=driver_options['post_process_options']
         base_settings['postpostprocessor']= Post_post.from_config_create_post_post(config)
-        base_settings['experiment_name'] =config['experiment_name']
         driver = driver_class.from_config_create_driver(config, base_settings)
 
         return driver
