@@ -22,3 +22,7 @@ dist/
 journal/
 pqueens.egg-info
 .pytest_cache/
+
+# singularity images
+driver.simg
+hashfile.txt
