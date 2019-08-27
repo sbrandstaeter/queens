@@ -7,10 +7,16 @@ import argparse
 import unittest
 import mock
 
-from pqueens.drivers.gen_driver_local import launch
-from pqueens.drivers.gen_driver_local import parse_args
-from pqueens.drivers.gen_driver_local import main as driver_main
+from pqueens.drivers.driver import Driver
 
+def launch(*args, **kwargs):
+    return None
+
+def parse_args(*args, **kwargs):
+    return None
+
+def driver_main(*args, **kwargs):
+    return None
 
 class TestGenDriverLocal(unittest.TestCase):
     # create mock for Database, specifically for load and save functions

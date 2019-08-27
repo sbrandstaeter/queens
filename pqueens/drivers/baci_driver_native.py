@@ -1,7 +1,7 @@
 from pqueens.drivers.driver import Driver
 from pqueens.database.mongodb import MongoDB
 
-class Baci_driver_native(Driver):
+class BaciDriverNative(Driver):
     """ Driver to run BACI natively on workstation
 
         Args:
@@ -11,7 +11,7 @@ class Baci_driver_native(Driver):
             float: result
     """
     def __init__(self, base_settings):
-        super(Baci_driver_native, self).__init__(base_settings)
+        super(BaciDriverNative, self).__init__(base_settings)
         self.mpi_config={}
         address ='localhost:27017'
         self.database = MongoDB(database_address=address)
@@ -25,7 +25,7 @@ class Baci_driver_native(Driver):
         Args:
             base_settings: Driver specifications declared in base class (need to be passed through child class and back to __init__ of base class
         Returns:
-            driver: Baci_driver_native object
+            driver: BaciDriverNative object
 
         """
         base_settings['experiment_name']=config['global_settings']['experiment_name']
