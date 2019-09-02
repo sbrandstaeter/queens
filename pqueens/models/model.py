@@ -57,6 +57,7 @@ class Model(metaclass=abc.ABCMeta):
         from .data_fit_surrogate_model import DataFitSurrogateModel
         from .data_fit_surrogate_model_mf import MFDataFitSurrogateModel
         from .multifidelity_model import MultifidelityModel
+        from .bmfmc_model import BMFMCModel
         model_dict = {'simulation_model': SimulationModel,
                       'datafit_surrogate_model': DataFitSurrogateModel,
                       'datafit_surrogate_model_mf': MFDataFitSurrogateModel,

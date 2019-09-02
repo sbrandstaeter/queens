@@ -59,8 +59,8 @@ class Iterator(metaclass=abc.ABCMeta):
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli': SaltelliIterator,
                        'sa_saltelli_salib': SaltelliSALibIterator,
-                       'smc' : SequentialMonteCarloIterator}
-                       'bmfmc' : BmfmcIterator,
+                       'smc' : SequentialMonteCarloIterator,
+                       'bmfmc' : BmfmcIterator}
 
         if iterator_name is None:
             method_name = config['method']['method_name']

@@ -1,0 +1,83 @@
+{
+  "experiment_name" : "MC_cylinder",
+  "database"  :{
+    "address"   : "localhost:27017",
+    "drop_existing" : "True"
+  },
+  "method": {
+    "method_name": "monte_carlo",
+    "method_options" :{
+      "seed" : 1,
+      "num_samples" : 5000,
+      "model" : "model",
+      "result_description" : {
+          "write_results" : true,
+          "plot_results" : false
+      }
+    }
+  },
+  "model" : {
+    "type" : "simulation_model",
+    "interface" : "interface",
+    "parameters" : "parameters"
+  },
+  "interface" : {
+    "type" : "job_interface",
+    "resources" : "resources",
+    "driver" : "driver"
+  },
+  "driver" :{
+    "driver_type"           : "dg_navier_stokes",
+    "driver_params"         :{
+      "input_template"        : "/home/nitzler/workspace/navierstokes/applications/incompressible_navier_stokes_test_cases/flow_past_cylinder.json",
+      "path_to_executable"    : "/home/nitzler/workspace/navierstokes/applications/incompressible_navier_stokes/",
+      "path_to_postprocessor" : "None",
+      "experiment_dir"        : "/home/nitzler/workspace/navierstokes/applications/output/demo",
+      "post_post"         : {
+        "type" : "time_series",
+        "file_name" : ["lift"],
+        "time_discretization": 150,
+        "delete_field_data" : "False",
+        "target_time": [4,7],
+        "time_tol": 0.02e-01,
+        "usecols": [1,3],
+        "skiprows":1}
+    }
+  },
+  "resources" : {
+    "local_machine" : {
+      "scheduler"         : "local_scheduler",
+      "max-concurrent"    : 1000,
+      "max-finished-jobs" : 1000
+    }
+  },
+  "local_scheduler" : {
+    "scheduler_type" : "local",
+    "num_procs_per_node" : 1,
+    "num_nodes" : 2,
+    "walltime" : "120:00:00",
+    "meta_output" : "True"
+  },
+  "parameters" : {
+    "random_variables" :{
+    "lateral_position" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 0.8E6,
+      "max"  : 1.2E6
+      },
+    "diameter" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 0.6E6,
+      "max"  : 0.9E6
+      },
+      "viscosity" : {
+      "type" : "FLOAT",
+      "size" : 1,
+      "min"  : 0.45,
+      "max"  : 0.49
+      }
+    }
+      }
+}
