@@ -33,7 +33,7 @@ class BmfmcIterator(Iterator):
         outputs (np.array):   Array with all model outputs
 
     """
-    def __init__(self, config,lf_data_iterators, hf_data_iterator, result_description, experiment_dir, initial_design,global_settings):
+    def __init__(self, config,lf_data_iterators, hf_data_iterator, result_description, experiment_dir, initial_design, predictive_var,BMFMC_reference,global_settings):
 
         super(BmfmcIterator, self).__init__(None,global_settings) # Input prescribed by iterator.py
         self.model = None
@@ -49,7 +49,10 @@ class BmfmcIterator(Iterator):
         self.lfs_mc_out = None
         self.output = None # this is still important and will prob be the marginal pdf of the hf / its statistics
         self.initial_design = initial_design
+        self.predictive_var=predictive_var
         self.config = config # This is needed to construct the model on runtime
+        self.BMFMC_reference = BMFMC_reference
+
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None): #TODO: the model arg here seems an old relict. we bypass it here
         """ Create LHS iterator from problem description
@@ -65,8 +68,10 @@ class BmfmcIterator(Iterator):
         """
         # Initialize Iterator and model
         method_options = config["method"]["method_options"]
+        BMFMC_reference = method_options["BMFMC_reference"]
         result_description = method_options["result_description"]
-        experiment_dir = config["method"]["method_options"]["experiment_dir"]
+        experiment_dir = method_options["experiment_dir"]
+        predictive_var = method_options["predictive_var"]
 
         # Create the data iterator from config file
         lf_data_paths = method_options["path_to_lf_data"] # necessary to substract that name from name list of all models for evaluation
@@ -79,7 +84,7 @@ class BmfmcIterator(Iterator):
         initial_design = config["method"]["initial_design"]
         global_settings = config.get('global_settings', None)
 
-        return cls(config,lf_data_iterators, hf_data_iterator, result_description, experiment_dir, initial_design,global_settings)
+        return cls(config,lf_data_iterators, hf_data_iterator, result_description, experiment_dir, initial_design, predictive_var,BMFMC_reference,global_settings)
 
     def core_run(self):
         """ Generate simulation runs for lofis and hifis that cover the output
@@ -153,9 +158,9 @@ class BmfmcIterator(Iterator):
                         # array of booleans
                         y_in_bin_bool = [bin_vec[0]==bin_n]
                         # definine bin data
-                        bin_data_in = self.lf_mc_in[y_in_bin_bool]
-                        bin_data_lfs = self.lfs_mc_out[y_in_bin_bool]
-                        bin_data_hf = dummy_hf[y_in_bin_bool].reshape(-1,1) #TODO: later delete as HF MC is normally not available
+                        bin_data_in = self.lf_mc_in[tuple(y_in_bin_bool)]
+                        bin_data_lfs = self.lfs_mc_out[tuple(y_in_bin_bool)]
+                        bin_data_hf = dummy_hf[tuple(y_in_bin_bool)].reshape(-1,1) #TODO: later delete as HF MC is normally not available
                         #randomly select points in bins
                         rnd_select = [randint(0, bin_data_lfs.shape[0]-1) for p in range(n_points//n_bins)]
                         # Check if points in bin
@@ -200,15 +205,25 @@ class BmfmcIterator(Iterator):
         print(self.output)
         if self.result_description['plot_results']==True:
 
-            #plt.rc('text', usetex=True)
+            # plt.rc('text', usetex=True)
             plt.rcParams["mathtext.fontset"] = "cm"
             plt.rcParams.update({'font.size':23})
 
             fig, ax = plt.subplots()
-           # plot the bmfmc var
-            ax.plot(self.output['pyhf_support'],np.sqrt(self.output['pyhf_var']),linewidth=0.5,color='lightgreen',alpha=0.4)#,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+            ax.set(xlim=(0.02,0.07), ylim=(0,120))
+            # plot the bmfmc var
+            if self.predictive_var == "True":
+               ax.plot(self.output['pyhf_support'],np.sqrt(self.output['pyhf_var']),linewidth=0.5,color='lightgreen',alpha=0.4)#,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
             # plot the bmfmc approx mean
             ax.plot(self.output['pyhf_support'],self.output['pyhf_mean'],color='xkcd:green',linewidth=1.5,label=r'$\mathbb{E}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+            #### plot the reference solution for classical BMFMC###
+            if self.BMFMC_reference == "True":
+                # plot the bmfmc var
+                if self.predictive_var =="True":
+                   ax.plot(self.output['pyhf_support'],np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.5,color='magenta',alpha=0.4)#,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+                # plot the bmfmc approx mean
+                ax.plot(self.output['pyhf_support'],self.output['pyhf_mean_BMFMC'],color='xkcd:magenta',linewidth=1.5,label=r'$\mathbb{E}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]-BMFMC$')
+
             # plot the MC reference of HF
             ax.plot(self.output['pyhf_mc_support'],self.output['pyhf_mc'],color='k',alpha=0.8,label=r'$\mathrm{p}\left(y_{\mathrm{HF}}\right) \ \mathrm{MC \ reference}$')
             if self.lfs_mc_out.shape[1]<2:
@@ -230,6 +245,7 @@ class BmfmcIterator(Iterator):
                 ax2.plot(self.output['manifold_test'][:,0],self.output['f_mean'],linestyle='',marker='.',color='k',alpha=1,label=r'$m_{\mathrm{GP}}$')
                 ax2.plot(self.output['manifold_test'][:,0],self.output['f_mean']+np.sqrt(self.output['y_var']),linestyle='',marker='.',color='grey',alpha=0.5,label=r'$\mathbb{SD}_{\mathrm{GP}}$')
                 ax2.plot(self.output['manifold_test'][:,0],self.output['f_mean']-np.sqrt(self.output['y_var']),linestyle='',marker='.',color='grey',alpha=0.5)
+                ax2.plot(self.output['manifold_test'][:,0],self.output['sample_mat'],linestyle='',marker='.',color='red',alpha=0.2)
                 ax2.plot(self.lfs_train_out,self.hf_train_out,linestyle='',marker='x',color='r',alpha=1,label=r'Training data')
                 ax2.plot(self.lfs_mc_out[:,0],self.hf_mc,linestyle='',markersize=2,marker='.',color='grey',alpha=0.7,label=r'Reference MC data')
 
@@ -241,6 +257,15 @@ class BmfmcIterator(Iterator):
                 ax2.minorticks_on()
                 ax2.legend()
                 fig2.set_size_inches(15,15)
+
+            if self.output['manifold_test'].shape[1]==2:
+                fig3 =plt.figure()
+                ax3 = fig3.add_subplot(111,projection='3d')
+                ax3.scatter(self.output['manifold_test'][:,0,None],self.output['manifold_test'][:,1,None],self.hf_mc[:,None],s=3,c='k')
+                ax3.set_xlabel(r'$y_{\mathrm{LF}}$')#,usetex=True)
+                ax3.set_ylabel(r'$\gamma$')
+                ax3.set_zlabel(r'$y_{\mathrm{HF}}$')
+
     #
         ####### plot input-output scatter plot matrices ########################
 #            dataset = pd.DataFrame({'$y_{\mathrm{HF}}$': self.hf_mc,'E-modulus': self.lf_mc_in[:,0], 'U-field 1': self.lf_mc_in[:,1],'U-field 2': self.lf_mc_in[:,2],'U-field 3': self.lf_mc_in[:,3],'U-field 4': self.lf_mc_in[:,4],'U-field 5': self.lf_mc_in[:,5],'U-field 6': self.lf_mc_in[:,6],'U-field 7': self.lf_mc_in[:,7],'U-field 8': self.lf_mc_in[:,8],'U-field 9': self.lf_mc_in[:,9]})

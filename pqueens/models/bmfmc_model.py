@@ -8,7 +8,15 @@ from . simulation_model import SimulationModel
 import scipy.stats as st
 from pqueens.variables.variables import Variables
 import pandas as pd
+from sklearn.preprocessing import StandardScaler
 from sklearn.cross_decomposition import PLSRegression as PLS
+from sklearn.decomposition import KernelPCA
+from sklearn.decomposition import PCA
+from sklearn.decomposition import SparsePCA
+import multiprocessing
+from joblib import Parallel, delayed
+
+
 import pdb
 class BMFMCModel(Model):
     """ Bayesian Multi-fidelity class
@@ -18,7 +26,7 @@ class BMFMCModel(Model):
     """
 
     def __init__(self, approximation_settings,train_in, lfs_train_out, hf_train_out, lf_mc_in, lfs_mc_out, subordinate_model,
-                 subordinate_iterator, eval_fit, error_measures, active_learning, features_config, predictive_var, hf_mc=None):
+                 subordinate_iterator, eval_fit, error_measures, active_learning, features_config, predictive_var, hf_mc=None, BMFMC_reference=False):
         """ Initialize data fit surrogate model
 
         Args:
@@ -63,6 +71,8 @@ class BMFMCModel(Model):
         self.pyhf_mc_support = None
         self.pylf_mc=None
         self.pylf_mc_support = None
+        self.BMFMC_reference = BMFMC_reference
+        self.sample_mat=None
         super(BMFMCModel, self).__init__(name='bmfmc_model',uncertain_parameters=None, data_flag=True) # Super call seems necessary to have access to parent class methods but we set parameters to None first and override in feature space method
         #model parameters can be accessed over self.variables as renamed like this in parent class
 
@@ -81,6 +91,7 @@ class BMFMCModel(Model):
         # get options
         options = config["method"]['joint_density_approx'] #TODO not needed access direclty
         eval_fit = options["eval_fit"]
+        BMFMC_reference = config["method"]["method_options"]["BMFMC_reference"]
         error_measures = options["error_measures"]
         active_learning = config['method']['method_options']['active_learning']
         predictive_var = config['method']['method_options']['predictive_var']
@@ -101,7 +112,7 @@ class BMFMCModel(Model):
         approximation_settings = config["method"]["joint_density_approx"]["approx_settings"]
         features_config = config["method"]["joint_density_approx"]["features_config"]
 
-        return cls(approximation_settings,train_in, lfs_train_out, hf_train_out, lf_mc_in, lfs_mc_out, subordinate_model, subordinate_iterator, eval_fit, error_measures, active_learning, features_config,predictive_var,hf_mc)
+        return cls(approximation_settings,train_in, lfs_train_out, hf_train_out, lf_mc_in, lfs_mc_out, subordinate_model, subordinate_iterator, eval_fit, error_measures, active_learning, features_config,predictive_var,hf_mc, BMFMC_reference)
 
     #TODO: This needs to be checked--> what should be evaluated surrogate or hf marginal statistics...
     def evaluate(self):
@@ -110,26 +121,42 @@ class BMFMCModel(Model):
         Returns:
             np.array: Results correspoding to current set of variables
         """
-        if self.interface == None:
-            self.build_approximation()
+        #if self.interface == None:
+        # standard BMFMC for reference
+        self.interface = BmfmcInterface(self.approximation_settings)
+        pyhf_mean_BMFMC = None
+        pyhf_var_BMFMC = None
+
+        if self.BMFMC_reference=="True":
+            self.build_approximation(approx_case="False")
+            self.f_mean_pred, self.yhf_var_pred = self.interface.map(self.lfs_mc_out.T)
+            self.compute_pyhf_statistics()
+            self.compute_pymc_reference()
+            pyhf_mean_BMFMC = self.pyhf_mean_vec
+            pyhf_var_BMFMC = self.pyhf_var_vec
+
+        # Manifold over feature space
+        self.build_approximation(approx_case="True")
         self.f_mean_pred, self.yhf_var_pred = self.interface.map(self.manifold_test.T) #TODO the variables (here) manifold must probably an object from the variable class!
         # run methods for marginal statistics with above results as input
-        self.yhf_var_pred = self.yhf_var_pred + 0.00001*self.f_mean_pred
         self.compute_pyhf_statistics()
         self.compute_pymc_reference()
-        output = {'manifold_test':self.manifold_test,'f_mean':self.f_mean_pred,'y_var':self.yhf_var_pred,'pyhf_support':self.support_pyhf,'pyhf_mean':self.pyhf_mean_vec,'pyhf_var':self.pyhf_var_vec,'pylf_mc':self.pylf_mc,'pyhf_mc':self.pyhf_mc,'pyhf_mc_support':self.pyhf_mc_support,'pylf_mc_support':self.pylf_mc_support}
+        output = {'sample_mat':self.sample_mat,'manifold_test':self.manifold_test,'f_mean':self.f_mean_pred,'y_var':self.yhf_var_pred,'pyhf_support':self.support_pyhf,'pyhf_mean':self.pyhf_mean_vec,'pyhf_var':self.pyhf_var_vec,'pyhf_mean_BMFMC':pyhf_mean_BMFMC,'pyhf_var_BMFMC':pyhf_var_BMFMC,'pylf_mc':self.pylf_mc,'pyhf_mc':self.pyhf_mc,'pyhf_mc_support':self.pyhf_mc_support,'pylf_mc_support':self.pylf_mc_support}
 
         return output # TODO for now we return the hf output and its variacne and return the densities later
 
-    def build_approximation(self):
+    def build_approximation(self,approx_case=True):
         """ Build underlying approximation """
-        self.create_features()
         #TODO implement proper active learning with subiterator below
         if self.active_learning == "True":
             self.subordinate_iterator.run()
 
         # train regression model on the data
-        self.interface.build_approximation(self.manifold_train, self.hf_train_out) #TODO: Change in /outputs to appropriate training inputs of jount model !!! --> with features?
+        if approx_case=="True":
+            self.create_features()
+            self.interface.build_approximation(self.manifold_train, self.hf_train_out)
+        else:
+            self.interface.build_approximation(self.lfs_train_out, self.hf_train_out)
 
         # TODO below might be wrong error measure
         if self.eval_fit == "kfold":
@@ -219,20 +246,31 @@ class BMFMCModel(Model):
         pyhf_mean_vec = np.zeros(self.support_pyhf.shape)
         for mean,var in zip(self.f_mean_pred, self.yhf_var_pred):
             std = np.sqrt(var)
-            pyhf_mean_vec = pyhf_mean_vec + st.norm.pdf(self.support_pyhf,mean,std)
+            pyhf_mean_vec = pyhf_mean_vec + st.norm.pdf(self.support_pyhf,loc=mean,scale=std)
         self.pyhf_mean_vec = 1/self.f_mean_pred.size * pyhf_mean_vec
         #### pyhf var prediction
+        num_samples = 50
+        sample_mat = self.interface.approximation.m.posterior_samples_f(self.manifold_test,full_cov=True,size=num_samples)
+        self.sample_mat = np.squeeze(sample_mat)
         if self.predictive_var == "True":
            #sampling to run posterior statistics
-            num_samples = 150
-            nugget =3e-4
-            sample_mat = self.interface.approximation.m.posterior_samples_f(self.manifold_test,size=num_samples)
+            nugget = 0#3e-4
+
             pyhf_var_vec = np.zeros([num_dis,num_samples])
-            for sample_it, sample_vec in enumerate(sample_mat.T):
+            for sample_it, sample_vec in enumerate(self.sample_mat.T):
                 for mean,var in zip(sample_vec.T,self.yhf_var_pred):
                     std=np.sqrt(var)
-                    pyhf_var_vec[:,sample_it] = pyhf_var_vec[:,sample_it] + st.norm.pdf(self.support_pyhf,mean,std)
-            self.pyhf_var_vec = (1/self.f_mean_pred.size * pyhf_var_vec)**2 #Just because the plot takes the root of former implementation
+                    pyhf_var_vec[:,sample_it] = pyhf_var_vec[:,sample_it] + st.norm.pdf(self.support_pyhf,loc=mean,scale=std)
+#            def process(self,sample_it,sample_vec,pyhf_var_vec):
+#                for mean,var in zip(sample_vec.T,self.yhf_var_pred):
+#                    std=np.sqrt(var)
+#                    out = pyhf_var_vec[:,sample_it] + st.norm.pdf(self.support_pyhf,loc=mean,scale=std)
+#                    return out
+#
+#            num_cores = multiprocessing.cpu_count()
+#            sample_mat=self.sample_mat.T
+#            pyhf_var_vec = Parallel(n_jobs=num_cores)(delayed(process)(self,sample_it,sample_vec,pyhf_var_vec) for (sample_it,sample_vec) in enumerate(sample_mat))
+            self.pyhf_var_vec = (1/sample_mat.shape[0]*pyhf_var_vec)**2 #Just because the plot takes the root of former implementation
 
 #            # calculate full posterior covariance matrix for testing points
 #            _, k_post = self.interface.approximation.m.predict_noiseless(self.manifold_test,full_cov=True)
@@ -287,6 +325,18 @@ class BMFMCModel(Model):
             self.features_train, self.features_test = self.pls()
             self.manifold_train = np.hstack([self.lfs_train_out, self.features_train])
             self.manifold_test = np.hstack([self.lfs_mc_out, self.features_test])
+        elif self.features_config == "pca":
+            self.features_train, self.features_test = self.pca()
+            self.manifold_train = np.hstack([self.lfs_train_out, self.features_train])
+            self.manifold_test = np.hstack([self.lfs_mc_out, self.features_test])
+        elif self.features_config == "sparse_pca":
+            self.features_train, self.features_test = self.sparse_pca()
+            self.manifold_train = np.hstack([self.lfs_train_out, self.features_train])
+            self.manifold_test = np.hstack([self.lfs_mc_out, self.features_test])
+        elif self.features_config == "kernel_pca":
+            self.features_train, self.features_test = self.kernel_pca()
+            self.manifold_train = np.hstack([self.lfs_train_out, self.features_train])
+            self.manifold_test = np.hstack([self.lfs_mc_out, self.features_test])
 
         elif self.features_config == "None":
             pass
@@ -316,20 +366,57 @@ class BMFMCModel(Model):
 
         Model.variables = [Variables(self.uncertain_parameters)] #TODO check if data format of manifold_test is correct
 
-########## create interfafjafkce for the bmfmc model (not the job interface for active learning) #########
-        self.interface = BmfmcInterface(self.approximation_settings)
 ######### interface end ##############################################
     def pls(self):
         # preprocessing
         #TODO
         # start the partial-least squares
-        pls = PLS(n_components=2)
+        pls = PLS(n_components=1)
         # test features
         pls.fit(self.lf_mc_in, self.lfs_mc_out[:,0])
         features_test = pls.transform(self.lf_mc_in)
         #train features
         features_train = pls.transform(self.train_in)
         return features_train, features_test
+
+    def pca(self):
+        # Standardizing the features
+        x_standardized = StandardScaler().fit_transform(np.vstack((self.lf_mc_in,self.train_in)))
+        x_standardized_test = x_standardized[0:self.lf_mc_in.shape[0],:]
+        x_standardized_train = x_standardized[self.lf_mc_in.shape[0]:,:]
+        pca_model = PCA(n_components=1)
+        pca_model.fit(x_standardized)
+        features_test = pca_model.transform(x_standardized_test)
+        features_train = pca_model.transform(x_standardized_train)
+
+        return features_train, features_test
+
+
+    def sparse_pca(self):
+        x_standardized = StandardScaler().fit_transform(np.vstack((self.lf_mc_in,self.train_in)))
+        x_standardized_test = x_standardized[0:self.lf_mc_in.shape[0],:]
+        x_standardized_train = x_standardized[self.lf_mc_in.shape[0]:,:]
+        pca_model = SparsePCA(n_components=1, n_jobs=4,normalize_components=True)
+        pca_model.fit(x_standardized)
+        features_test = pca_model.transform(x_standardized_test)
+        features_train = pca_model.transform(x_standardized_train)
+
+        return features_train, features_test
+
+
+    def kernel_pca(self):
+        # Standardizing the features
+        x_standardized = StandardScaler().fit_transform(np.vstack((self.lf_mc_in,self.train_in)))
+        x_standardized_test = x_standardized[0:self.lf_mc_in.shape[0],:]
+        x_standardized_train = x_standardized[self.lf_mc_in.shape[0]:,:]
+        pca_model = KernelPCA(n_components=1, kernel='rbf', n_jobs=4)
+        pca_model.fit(x_standardized)
+        features_test = pca_model.transform(x_standardized_test)
+        features_train = pca_model.transform(x_standardized_train)
+
+        return features_train, features_test
+
+
 
     def deep_learning(self):
         # check for method settings to choose right calculation

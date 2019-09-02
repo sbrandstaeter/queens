@@ -41,7 +41,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from .data_iterator import DataIterator
         from .lhs_iterator import LHSIterator
         from .lhs_iterator_mf import MF_LHSIterator
-        #from .metropolis_hastings_iterator import MetropolisHastingsIterator
+        from .metropolis_hastings_iterator import MetropolisHastingsIterator
         from .monte_carlo_iterator import MonteCarloIterator
         from .morris_salib_wrapper_iterator import MorrisSALibIterator
         from pqueens.iterators.optimization_iterator import OptimizationIterator
@@ -51,14 +51,13 @@ class Iterator(metaclass=abc.ABCMeta):
 
         method_dict = {'lhs': LHSIterator,
                        'lhs_mf': MF_LHSIterator,
-                       #'metropolis_hastings' : MetropolisHastingsIterator,
+                       'metropolis_hastings' : MetropolisHastingsIterator,
                        'monte_carlo': MonteCarloIterator,
                        'optimization' : OptimizationIterator,
                        'read_data_from_file': DataIterator,
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli' : SaltelliIterator,
                        'sa_saltelli_salib' : SaltelliSALibIterator,
-                       'bayesian_optimization' : BayesOptIterator,
                        'bmfmc' : BmfmcIterator,
                        'read_data_from_file' : DataIterator}
         if iterator_name is None:

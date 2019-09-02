@@ -45,18 +45,20 @@ class GPGPyRegression(RegressionApproximation):
         # input dimension
         input_dim = self.X.shape[1]
         # simple GP Model
-        k = GPy.kern.RBF(input_dim, variance=1.,lengthscale=1.,ARD=False)
+
+        dy = abs(max(self.y)-min(self.y)) # proper initialization of length scale
+        k = GPy.kern.RBF(input_dim, variance=1.,lengthscale=0.25*dy,ARD=False)
         self.m = GPy.models.GPRegression(self.X, self.y,kernel=k,normalizer=True)
 
     def train(self):
         """ Train the GP by maximizing the likelihood """
 
-        self.m[".*Gaussian_noise"].constrain_positive()
-        self.m[".*Gaussian_noise"] = self.m.Y.var()*0.01
-        self.m[".*Gaussian_noise"].fix()
-        self.m.optimize(max_iters=500)
-        self.m[".*Gaussian_noise"].unfix()
-        self.m.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
+        #self.m[".*Gaussian_noise"].constrain_positive()
+        #self.m[".*Gaussian_noise"] = self.m.Y.var()*0.01
+        #self.m[".*Gaussian_noise"].fix()
+        self.m.optimize()#max_iters=500)
+        #self.m[".*Gaussian_noise"].unfix()
+        #self.m.optimize_restarts(30, max_iters=1000)
         display(self.m)
 
     def predict(self, Xnew):
