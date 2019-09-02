@@ -1,4 +1,4 @@
-from pqueens.drivers.baci_driver_native import baci_driver_native
+from pqueens.drivers.baci_driver_native import BaciDriverNative
 
 def test_gen_functionality_baci_driver_native(baci_job, baci_input_file, baci_output_file,
                            baci_cmd, baci_post_cmds, mocker):
@@ -8,7 +8,7 @@ def test_gen_functionality_baci_driver_native(baci_job, baci_input_file, baci_ou
     mock_run_post_processing = mocker.patch('pqueens.drivers.baci_driver_native.run_post_processing')
     mock_run_baci = mocker.patch('pqueens.drivers.baci_driver_native.run_baci')
 
-    baci_driver_native(baci_job)
+    BaciDriverNative(baci_job)
 
     mock_inject.assert_called_with(baci_job['params'],
                                    baci_job['driver_params']['input_template'],

@@ -6,15 +6,24 @@ In short
 for more control over the test you can run pytest directly
 `pytest`
 
-verbose output
+Note that per default the options defined in  `setup.cfg` under 
+`[tool:pytest]` will be added.
+
+##### Some useful options are:  
+For verbose output type:  
 `pytest -ra -v`
 
-also test for PEP8 compatibility
-`pytest --pep8`
+To test for codestyle (PEP8) compatibility type:  
+`pytest --codestyle`
 
-generate a coverage report with `pytest --cov-report=html --cov` for a static site that can be found in the `htmlcov` folder or `pytest --cov-report=term --cov` for output directly to the shell.
+You can generate a coverage report with  
+`pytest --cov-report=html --cov`   
+for a static site that can be found in the `htmlcov` folder.  
+Use  
+`pytest --cov-report=term --cov`  
+for output directly to the shell.
 
-run tests against the installed package
+To run tests against the installed package type
 `pytest --pyargs model_creator`
 
 ## Tools for testing ##

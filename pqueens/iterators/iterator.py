@@ -48,6 +48,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .bmfmc_iterator import BmfmcIterator
+        from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 
         method_dict = {'lhs': LHSIterator,
                        'lhs_mf': MF_LHSIterator,
@@ -56,10 +57,11 @@ class Iterator(metaclass=abc.ABCMeta):
                        'optimization' : OptimizationIterator,
                        'read_data_from_file': DataIterator,
                        'sa_morris_salib': MorrisSALibIterator,
-                       'sa_saltelli' : SaltelliIterator,
-                       'sa_saltelli_salib' : SaltelliSALibIterator,
+                       'sa_saltelli': SaltelliIterator,
+                       'sa_saltelli_salib': SaltelliSALibIterator,
+                       'smc' : SequentialMonteCarloIterator}
                        'bmfmc' : BmfmcIterator,
-                       'read_data_from_file' : DataIterator}
+
         if iterator_name is None:
             method_name = config['method']['method_name']
             iterator_class = method_dict[method_name]

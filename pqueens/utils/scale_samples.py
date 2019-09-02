@@ -1,6 +1,7 @@
+import warnings
+
 import numpy as np
 import scipy.stats
-import warnings
 
 def scale_samples(samples, distribution_info):
     """ Scale samples that are in [0,1] range to other distributions
@@ -55,6 +56,10 @@ def scale_samples(samples, distribution_info):
             if b2 <= 0:
                 raise ValueError('''Normal distribution: sigma must be > 0''')
             else:
+                # in queens normal distributions are parameterized with mean and var
+                # in salib normal distributions are parameterized via mean and std
+                # -> we need to reparamteterize normal distributions
+                b2 = np.sqrt(b2)
                 scaled_samples[:, i] = scipy.stats.norm.ppf(
                     samples[:, i], loc=b1, scale=b2)
 

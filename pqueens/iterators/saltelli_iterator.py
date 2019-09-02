@@ -5,7 +5,7 @@ import numpy as np
 from pqueens.models.model import Model
 from .iterator import Iterator
 from . import sobol_sequence
-from .scale_samples import scale_samples
+from pqueens.utils.scale_samples import scale_samples
 from pqueens.utils.process_outputs import write_results
 
 

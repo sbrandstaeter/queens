@@ -1,4 +1,4 @@
-from pqueens.utils.input_to_random_variable import get_distribution_object
+from pqueens.utils import mcmc_utils
 import numpy as np
 
 class Variables(object):
@@ -48,7 +48,7 @@ class Variables(object):
                 self.variables[key]['value'] = values[i:i+my_size]
                 self.variables[key]['type'] = data['type']
                 self.variables[key]['active'] = active[i]
-                i += 1
+                i += my_size
 
     @classmethod
     def from_uncertain_parameters_create(cls, uncertain_parameters):
@@ -141,11 +141,13 @@ class Variables(object):
         Args:
             new_variable_data (dict): data to update the variables with
         """
-        for key, _ in self.variables.items():
-            self.variables[key]['size'] = new_variable_data[key]['size']
-            self.variables[key]['value'] = new_variable_data[key]['value']
-            self.variables[key]['active'] = new_variable_data[key]['active']
-            self.variables[key]['type'] = new_variable_data[key]['type']
+        # TODO: add support for updating the distribution
+        for key, data in self.variables.items():
+            data['size'] = new_variable_data[key]['size']
+            data['value'] = new_variable_data[key]['value']
+            data['active'] = new_variable_data[key]['active']
+            data['type'] = new_variable_data[key]['type']
+            data['distribution'] = mcmc_utils.create_proposal_distribution(new_variable_data[key])
 
     def update_variables_from_vector(self, data_vector):
         """ Update variable values from vector

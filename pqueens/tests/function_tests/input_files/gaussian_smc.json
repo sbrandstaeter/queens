@@ -4,19 +4,27 @@
     "address"   : "localhost:27017"
   },
   "method": {
-    "method_name": "metropolis_hastings",
+    "method_name": "smc",
     "method_options" : {
       "seed" : 42,
-      "num_samples" : 10,
-      "num_burn_in" : 5,
-      "scale_covariance" : 1.0,
+      "num_particles" : 10,
       "model" : "model",
-      "proposal_distribution" : "normal_proposal",
+      "temper_type" : "bayes",
+      "plot_trace_every" : 0,
       "result_description" : {
           "write_results" : true,
-          "plot_results" : false,
-          "cov" : true
+          "plot_results" : true,
+          "cov" : false
       }
+    }
+  },
+  "MCMC_Kernel": {
+    "method_name": "metropolis-hastings",
+    "method_options" : {
+      "as_mcmc_kernel" : true,
+      "num_chains" : 10,
+      "num_samples" : 3,
+      "proposal_distribution" : "normal_proposal"
     }
   },
   "model" : {
@@ -27,7 +35,7 @@
   "normal_proposal" : {
     "type" : "normal",
     "mean" : 0.0,
-    "cov" : 1.0
+    "cov": 1.0
   },
   "interface" : {
     "type" : "direct_python_interface",

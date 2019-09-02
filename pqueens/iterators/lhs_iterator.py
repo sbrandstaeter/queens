@@ -4,7 +4,7 @@ from .iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
-from .scale_samples import scale_samples
+from pqueens.utils.scale_samples import scale_samples
 
 class LHSIterator(Iterator):
     """ Basic LHS Iterator to enable Latin Hypercube sampling

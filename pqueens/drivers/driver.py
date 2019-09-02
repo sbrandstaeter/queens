@@ -5,6 +5,8 @@ import sys
 import subprocess
 import time
 import os
+
+
 class Driver(metaclass=abc.ABCMeta):
     """ Base class for Drivers
 
@@ -39,7 +41,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.num_procs_post = base_settings['num_procs_post']
 
     @classmethod
-    def from_config_create_driver(cls, config, job_id, batch, port, abs_path=None):
+    def from_config_create_driver(cls, config, job_id, batch, port=None, abs_path=None):
         """ Create driver from problem description
 
         Args:
@@ -52,10 +54,10 @@ class Driver(metaclass=abc.ABCMeta):
             driver: Driver object
 
         """
-        from pqueens.drivers.baci_driver_bruteforce import Baci_driver_bruteforce
-        from pqueens.drivers.baci_driver_native import Baci_driver_native
-        from pqueens.drivers.baci_driver_schmarrn import Baci_driver_schmarrn
-        if abs_path== None:
+        from pqueens.drivers.baci_driver_bruteforce import BaciDriverBruteforce
+        from pqueens.drivers.baci_driver_native import BaciDriverNative
+        from pqueens.drivers.baci_driver_schmarrn import BaciDriverSchmarrn
+        if abs_path is None:
             from pqueens.post_post.post_post import Post_post
         else:
             print(abs_path)
@@ -70,9 +72,9 @@ class Driver(metaclass=abc.ABCMeta):
                 raise ImportError('Could not import the post_post module!')
 
 
-        driver_dict = {'baci_bruteforce': Baci_driver_bruteforce,
-                       'baci_native': Baci_driver_native,
-                       'baci_schmarrn': Baci_driver_schmarrn}
+        driver_dict = {'baci_bruteforce': BaciDriverBruteforce,
+                       'baci_native': BaciDriverNative,
+                       'baci_schmarrn': BaciDriverSchmarrn}
         driver_version = config['driver']['driver_type']
         driver_class = driver_dict[driver_version]
 ###### create base settings #####################
@@ -82,9 +84,9 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings = {}
         base_settings['num_procs'] = config[scheduler_name]['num_procs']
         base_settings['num_procs_post'] = config[scheduler_name]['num_procs_post']
-        base_settings['experiment_dir']= driver_options['experiment_dir']
-        base_settings['job_id']= job_id
-        base_settings['input_file']=None
+        base_settings['experiment_dir'] = driver_options['experiment_dir']
+        base_settings['job_id'] = job_id
+        base_settings['input_file'] =None
         base_settings['template']=driver_options['input_template']
         base_settings['output_file']=None
         base_settings['job']= None
@@ -95,7 +97,6 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['postprocessor']=driver_options['path_to_postprocessor']
         base_settings['post_options']=driver_options['post_process_options']
         base_settings['postpostprocessor']= Post_post.from_config_create_post_post(config)
-        base_settings['experiment_name'] =config['experiment_name']
         driver = driver_class.from_config_create_driver(config, base_settings)
 
         return driver
@@ -118,7 +119,6 @@ class Driver(metaclass=abc.ABCMeta):
         self.do_postprocessing()
         self.do_postpostprocessing()
         self.finish_job()
-
 
     def run_subprocess(self,command_string, my_env = None):
         """ Method to run command_string outside of Python """

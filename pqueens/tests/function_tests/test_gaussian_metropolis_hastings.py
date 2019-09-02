@@ -14,5 +14,11 @@ def test_gaussian_metropolis_hastings(inputdir, tmpdir):
     result_file = str(tmpdir)+'/'+'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
+
+    # note that the analytical solution would be:
+    # posterior mean: [1.]
+    # posterior var: [0.5]
+    # posterior std: [0.70710678]
+    # however, we only have a very inaccurate approximation here:
     assert results['mean'] == pytest.approx(1.046641592648936)
     assert results['var'] == pytest.approx(0.3190199514534667)

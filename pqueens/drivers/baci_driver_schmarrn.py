@@ -7,7 +7,7 @@ from pqueens.drivers.driver import Driver
 from pqueens.database.mongodb import MongoDB
 
 
-class Baci_driver_schmarrn(Driver): #TODO needs to be adjusted!!!
+class BaciDriverSchmarrn(Driver): #TODO needs to be adjusted!!!
     """ Driver to run BACI on the HPC cluster schmarrn (via PBS/Torque)
 
     Args:
@@ -15,7 +15,7 @@ class Baci_driver_schmarrn(Driver): #TODO needs to be adjusted!!!
     Returns:
     """
     def __init__(self, base_settings):
-        super(Baci_driver_schmarrn, self).__init__(base_settings)
+        super(BaciDriverSchmarrn, self).__init__(base_settings)
 
         self.port = base_settings['port']
         self.num_procs = base_settings['num_procs']
@@ -29,9 +29,11 @@ class Baci_driver_schmarrn(Driver): #TODO needs to be adjusted!!!
         Args:
 
         Returns:
-            driver: Baci_driver_schmarrn object
+            driver: BaciDriverSchmarrn object
         """
+        base_settings['experiment_name'] =config['experiment_name']
         return cls(base_settings)
+
 
     def setup_mpi(self,ntasks):
         """ setup MPI environment
