@@ -11,6 +11,10 @@ class PP_BACI_QoI(Post_post):
 
         super(PP_BACI_QoI, self).__init__(base_settings)
 
+        self.num_post = base_settings['num_post']
+        self.subfix = base_settings['subfix']
+        self.time_tol = base_settings['time_tol']
+
     @classmethod
     def from_config_create_post_post(cls, config, base_settings):
         """ Create post_post routine from problem description
@@ -21,6 +25,10 @@ class PP_BACI_QoI(Post_post):
         Returns:
             post_post: post_post object
         """
+        post_post_options = base_settings['options']
+        base_settings['subfix'] = post_post_options['subfix']
+        base_settings['num_post'] = len(config['driver']['driver_params']['post_process_options'])
+        base_settings['time_tol'] = post_post_options['time_tol']
         return cls(base_settings)
 
     def read_post_files(self, output_file): # output file given by driver

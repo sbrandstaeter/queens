@@ -2,47 +2,36 @@
 
 import os
 from pqueens.drivers.driver import Driver
+from pqueens.utils.injector import inject
 
 
-class BaciDriverBruteforce(Driver):
-    """ Driver to run BACI on the HPC cluster bruteforce (via Slurm)
+class NavierStokesNative(Driver):
+    """ Driver to run BACI natively on workstation
 
-    Args:
+        Args:
+            job (dict): Dict containing all information to run the simulation
 
-    Returns:
+        Returns:
+            float: result
     """
     def __init__(self, base_settings):
-        super(BaciDriverBruteforce, self).__init__(base_settings)
+        super(NavierStokesNative, self).__init__(base_settings)
+        self.mpi_config = {}
+        self.output_navierstokes = None  # Wil be assigned on runtime
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings):
-        """ Create Driver from JSON input file
+        """ Create Driver from input file
 
         Args:
-
         Returns:
-            driver: Baci_driver_bruteforce object
-        """
+            driver: BaciDriverNative object
 
-        port = base_settings['port']
-        base_settings['address'] = '10.10.0.1:' + str(port)
-        # TODO change to linux command to find master node
+        """
+        base_settings['address'] = 'localhost:27017'
         return cls(base_settings)
 
-    def setup_mpi(self, ntasks):
-        """ setup MPI environment
-
-            Args:
-                num_procs (int): Number of processors to use
-
-            Returns:
-                str, str: MPI runcommand, MPI flags
-        """
-        if ntasks % 16 == 0:
-            self.mpi_flags = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
-        else:
-            self.mpi_flags = "--mca btl openib,sm,self"
-
+# ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def setup_dirs_and_files(self):
         """ Setup directory structure
 
@@ -56,13 +45,14 @@ class BaciDriverBruteforce(Driver):
         dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
 
         # Depending on the input file, directories will be created locally or on a cluster
-        output_directory = os.path.join(dest_dir, 'output')
+        output_directory = os.path.join(dest_dir, 'output', 'vtu')
+        self.output_navierstokes = os.path.join(dest_dir, 'output/')
         if not os.path.isdir(output_directory):
             os.makedirs(output_directory)
 
         # create input file name
         self.input_file = dest_dir + '/' + str(self.experiment_name) +\
-                                     '_' + str(self.job_id) + '.dat'
+                                     '_' + str(self.job_id) + '.json'
 
         # create output file name
         self.output_file = output_directory + '/' + str(self.experiment_name) +\
@@ -72,13 +62,19 @@ class BaciDriverBruteforce(Driver):
         """ Actual method to run the job on computing machine
             using run_subprocess method from base class
         """
+        # write output directory in input file (this is a special case
+        # for the navierstokes solver)
+        inject({"output_dir": self.output_navierstokes}, self.input_file, self.input_file)
+
         # assemble run command
         self.setup_mpi(self.num_procs)
         command_list = ['mpirun', '-np', str(self.num_procs), self.mpi_flags, self.executable,
-                        self.input_file, self.output_file]
+                        self.input_file]
 
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
-
         if stderr != "":
             raise RuntimeError(stderr+stdout)
+
+    def setup_mpi(self, num_procs):  # TODO this is not needed atm
+        pass

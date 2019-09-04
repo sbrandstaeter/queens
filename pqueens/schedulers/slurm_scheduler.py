@@ -1,7 +1,8 @@
+""" Here should be a docstring """
+
 import sys
-import subprocess
 from .scheduler import Scheduler
-import pdb
+
 
 class SlurmScheduler(Scheduler):
     """ Minimal interface to SLURM queing system to submit and query jobs
@@ -43,9 +44,9 @@ class SlurmScheduler(Scheduler):
         # read necessary variables from config
         num_procs = scheduler_options['num_procs']
         walltime = scheduler_options['walltime']
-        if scheduler_options['scheduler_output'].lower()=='true' or scheduler_options['scheduler_output']=="":
+        if scheduler_options['scheduler_output'].lower() == 'true' or scheduler_options['scheduler_output'] == "":
             output = ""
-        elif scheduler_options['scheduler_output'].lower()=='false':
+        elif scheduler_options['scheduler_output'].lower() == 'false':
             output = '--output=/dev/null --error=/dev/null'
         else:
             raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
@@ -54,14 +55,15 @@ class SlurmScheduler(Scheduler):
         base_settings['output'] = output
         base_settings['tasks_info'] = '--ntasks={}'.format(num_procs)
         base_settings['walltime_info'] = '--time={}'.format(walltime)
-        base_settings['job_flag'] = '--job-name=' #real name will be assembled later
+        base_settings['job_flag'] = '--job-name='  # real name will be assembled later
         base_settings['scheduler_start'] = 'sbatch'
         base_settings['command_line_opt'] = '--wrap'
 
         return cls(scheduler_name, base_settings)
 
-###### auxiliary methods #################################################
+# ----------------------------- AUXILIARY METHODS -----------------------------
     def output_regexp(self):
+        """ docstring """
         return r'(^\d+)'
 
     def get_process_id_from_output(self, output):
@@ -75,11 +77,11 @@ class SlurmScheduler(Scheduler):
         Returns:
             match object: with regular expression matching process id
         """
-        regex=output.split()
+        regex = output.split()
         return regex[-1]
 
-########### Children methods that need to be implemented #######################
-    def alive(self,process_id):
+# ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
+    def alive(self, process_id):
         """ Check whether job is alive
         The function checks if job is alive. If it is not i.e., the job is
         either on hold or suspended the fuction will attempt to kill it
@@ -94,14 +96,14 @@ class SlurmScheduler(Scheduler):
         alive = False
         try:
             # join lists
-            command_list = [self.connect_to_resource,'squeue --job', str(process_id)]
+            command_list = [self.connect_to_resource, 'squeue --job', str(process_id)]
             command_string = ' '.join(command_list)
-            stdout, stderr, p = super().run_subprocess(command_string)
+            stdout, _, p = super().run_subprocess(command_string)
             output2 = stdout.split()
             # second to last entry is (should be )the job status
-            status = output2[-4] #TODO: Check if that still holds
+            status = output2[-4]  # TODO: Check if that still holds
             print('This is a test output')
-        except:
+        except ValueError:
             # job not found
             status = -1
             sys.stderr.write("EXC: %s\n" % str(sys.exc_info()[0]))
@@ -126,7 +128,7 @@ class SlurmScheduler(Scheduler):
                 stdout, stderr, p = super().run_subprocess(command_string)
                 print(stdout)
                 sys.stderr.write("Killed job %d.\n" % (process_id))
-            except:
+            except ValueError:
                 sys.stderr.write("Failed to kill job %d.\n" % (process_id))
 
             return False

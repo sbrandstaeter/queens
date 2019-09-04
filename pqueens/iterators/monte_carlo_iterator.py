@@ -1,11 +1,13 @@
+""" There should be some docstring """
+
 import numpy as np
-from .iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 from pqueens.randomfields.univariate_field_generator_factory import UniVarRandomFieldGeneratorFactory
 from pqueens.utils import mcmc_utils
 from pqueens.utils.input_to_random_variable import get_random_samples
+from .iterator import Iterator
 
 
 class MonteCarloIterator(Iterator):
@@ -146,7 +148,7 @@ class MonteCarloIterator(Iterator):
                 write_results(results,
                               self.global_settings["output_dir"],
                               self.global_settings["experiment_name"])
-        #else:
+        # else:
         print("Size of inputs {}".format(self.samples.shape))
         print("Inputs {}".format(self.samples))
         print("Size of outputs {}".format(self.output['mean'].shape))

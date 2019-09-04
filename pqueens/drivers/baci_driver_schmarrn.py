@@ -1,13 +1,10 @@
+""" This should be a docstring """
+
 import os
-import json
-import sys
-import importlib.util
-
 from pqueens.drivers.driver import Driver
-from pqueens.database.mongodb import MongoDB
 
 
-class BaciDriverSchmarrn(Driver): #TODO needs to be adjusted!!!
+class BaciDriverSchmarrn(Driver):
     """ Driver to run BACI on the HPC cluster schmarrn (via PBS/Torque)
 
     Args:
@@ -17,10 +14,7 @@ class BaciDriverSchmarrn(Driver): #TODO needs to be adjusted!!!
     def __init__(self, base_settings):
         super(BaciDriverSchmarrn, self).__init__(base_settings)
 
-        self.port = base_settings['port']
         self.num_procs = base_settings['num_procs']
-        address ='10.10.0.1:'+ str(self.port) #TODO change to linux command to find master node
-        self.database = MongoDB(database_address=address)# TODO we assume that 10.10.0.1 is always the master node for slurm
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings):
@@ -31,11 +25,12 @@ class BaciDriverSchmarrn(Driver): #TODO needs to be adjusted!!!
         Returns:
             driver: BaciDriverSchmarrn object
         """
-        base_settings['experiment_name'] =config['experiment_name']
+        port = base_settings['port']
+        base_settings['address'] = '10.10.0.1:' + str(port)
         return cls(base_settings)
 
-
-    def setup_mpi(self,ntasks):
+# ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
+    def setup_mpi(self, ntasks):
         """ setup MPI environment
 
             Args:
@@ -44,32 +39,47 @@ class BaciDriverSchmarrn(Driver): #TODO needs to be adjusted!!!
             Returns:
                 str, str: MPI runcommand, MPI flags
         """
-#        srcdir = os.environ["PBS_O_WORKDIR"]
-#        os.chdir(srcdir)
-#        address ='10.10.0.1:'+ self.port
-#        self.database(database_address=address)# TODO we assume that 10.10.0.1 is always the master node for slurm
-#        mpi_run = '/opt/openmpi/1.6.2/gcc48/bin/mpirun'
-#        mpi_home = '/opt/openmpi/1.6.2/gcc48'
-#
-#        os.environ["MPI_HOME"] = mpi_home
-#        os.environ["MPI_RUN"] = mpi_run
-#        os.environ["LD_LIBRARY_PATH"] = mpi_home #TODO seemed to be empty thats we just add mpi_home here, nothing to append; might change lateron
-#
-#        # Add non-standard shared library paths
-#        my_env = os.environ.copy()
-        # determine 'optimal' flags for the problem size
-        #num_procs = self.mpi_config['num_procs']
-        if ntasks%16 == 0:
+        if ntasks % 16 == 0:
             self.mpi_flags = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
         else:
             self.mpi_flags = "--mca btl openib,sm,self"
 
-#        self.mpi_config['mpi_run'] = mpi_run
-#        self.mpi_config['my_env'] = my_env
-#        self.mpi_conig['flags'] = mpi_flags
-#
-#        # determine number of processors from nodefile
-#        pbs_nodefile = os.environ["PBS_NODEFILE"]
-#        command_list = ['cat', pbs_nodefile, '|', 'wc', '-l']
-#        command_string = ' '.join(command_list)
-#        self.mpi_config['nodelist_procs'] = int(self.run_subprocess(command_string))
+    def setup_dirs_and_files(self):
+        """ Setup directory structure
+
+            Args:
+                driver_options (dict): Options dictionary
+
+            Returns:
+                str, str, str: simualtion prefix, name of input file, name of output file
+        """
+        # base directories
+        dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
+
+        # Depending on the input file, directories will be created locally or on a cluster
+        output_directory = os.path.join(dest_dir, 'output')
+        if not os.path.isdir(output_directory):
+            os.makedirs(output_directory)
+
+        # create input file name
+        self.input_file = dest_dir + '/' + str(self.experiment_name) +\
+                                     '_' + str(self.job_id) + '.dat'
+
+        # create output file name
+        self.output_file = output_directory + '/' + str(self.experiment_name) +\
+                                              '_' + str(self.job_id)
+
+    def run_job(self):
+        """ Actual method to run the job on computing machine
+            using run_subprocess method from base class
+        """
+        # assemble run command
+        self.setup_mpi(self.num_procs)
+        command_list = ['mpirun', '-np', str(self.num_procs), self.mpi_flags, self.executable,
+                        self.input_file, self.output_file]
+
+        command_string = ' '.join(filter(None, command_list))
+        stdout, stderr, self.pid = self.run_subprocess(command_string)
+
+        if stderr != "":
+            raise RuntimeError(stderr+stdout)

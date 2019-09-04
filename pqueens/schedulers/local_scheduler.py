@@ -1,14 +1,13 @@
-import os
-import subprocess
-import sys
-import pathlib
+""" There should be a docstring """
 
+import os
 from .scheduler import Scheduler
+
 
 class LocalScheduler(Scheduler):
     """ Scheduler which submits jobs to the local machine via a shell command"""
 
-    def __init__(self, base_settings,scheduler_name):
+    def __init__(self, base_settings, scheduler_name):
         self.name = scheduler_name
         super(LocalScheduler, self).__init__(base_settings)
 
@@ -32,13 +31,10 @@ class LocalScheduler(Scheduler):
         base_settings['command_line_opt'] = None
         base_settings['cluster_bind'] = None
 
+        return cls(base_settings, scheduler_name)
 
-
-        return cls(base_settings,scheduler_name)
-
-
-######### abstract-methods that must be implemented #######################
-    def alive(self, process_id): # TODO: ok for now (gets called in resources)
+# ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
+    def alive(self, process_id):  # TODO: ok for now (gets called in resources)
         """ Check whether or not job is still running
 
         Args:
@@ -54,3 +50,7 @@ class LocalScheduler(Scheduler):
             return False
         else:
             return True
+
+    def get_process_id_from_output(self, output):
+        """ docstring """
+        pass
