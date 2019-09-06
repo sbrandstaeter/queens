@@ -1,8 +1,6 @@
 """ This is a docstring """
 
-import pdb
 import abc
-import sys
 import subprocess
 import time
 import os
@@ -89,7 +87,7 @@ class Driver(metaclass=abc.ABCMeta):
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
         base_settings = {}
-        base_settings['experiment_name'] = config['global_settings']['experiment_name']
+        base_settings['experiment_name'] = config['experiment_name']
         base_settings['num_procs'] = config[scheduler_name]['num_procs']
         if 'num_procs_post' in config[scheduler_name]:
             base_settings['num_procs_post'] = config[scheduler_name]['num_procs_post']
@@ -163,8 +161,8 @@ class Driver(metaclass=abc.ABCMeta):
         self.database.save(self.job, self.experiment_dir, 'jobs', self.batch,
                            {'id': self.job_id})
 
-        sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
-                         % (start_time-self.job['submit time']))
+        # sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
+        #                 % (start_time-self.job['submit time']))
 
         # create actual input file with parsed parameters
         inject(self.job['params'], self.template, self.input_file)
@@ -173,7 +171,10 @@ class Driver(metaclass=abc.ABCMeta):
         """ Change status of job to compleded in database """
 
         if self.result is None:
-            raise RuntimeError("No result!")
+            self.job['result'] = None  # TODO: maybe we should better use a pandas format here
+            self.job['status'] = 'failed'
+            self.job['end time'] = time.time()
+            self.database.save(self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id})
         else:
             self.job['result'] = self.result
             self.job['status'] = 'complete'
@@ -208,28 +209,30 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             float: actual simulation result
             Assemble post processing command """
-        result = None
-        result, error = self.postpostprocessor.read_post_files(self.output_file)
-        # cleanup of unnecessary data after QoI got extracted and flag is set in config
-        if self.postpostprocessor.delete_field_data.lower() == "true":
-            # Delete every ouput file exept the .mon file
-            # --> use self.output to get path to current folder
-            # --> start subprocess to delete files with linux commands
-            command_string = "cd " + self.output_file + "&& ls | grep -v --include=*.{mon,csv} | xargs rm"
-            # TODO check if this works for several extentions
-            _, stderr, _ = self.run_subprocess(command_string)  # TODO catch pos. errors
 
-        # Put files that were not compliant with the requirements from the
-        # postpost_processing scripts in a special folder and do not pass on result
-        # of those files
-        if error == 'true':
+        if self.job['status'] != "failed":
             result = None
-            command_string = "cd " + self.output_file + "&& cd ../.. && mkdir -p postpost_error &&\
-                              cd " + self.output_file + "&& cd .. && mv *.dat ../postpost_error/"
-            _, stderr, _ = self.run_subprocess(command_string)
+            result, error = self.postpostprocessor.read_post_files(self.output_file)
+            # cleanup of unnecessary data after QoI got extracted and flag is set in config
+            if self.postpostprocessor.delete_field_data.lower() == "true":
+                # Delete every ouput file exept the .mon file
+                # --> use self.output to get path to current folder
+                # --> start subprocess to delete files with linux commands
+                command_string = "cd " + self.output_file + "&& ls | grep -v --include=*.{mon,csv} | xargs rm"
+                # TODO check if this works for several extentions
+                _, stderr, _ = self.run_subprocess(command_string)  # TODO catch pos. errors
 
-        self.result = result
-        sys.stderr.write("Got result %s\n" % (self.result))
+            # Put files that were not compliant with the requirements from the
+            # postpost_processing scripts in a special folder and do not pass on result
+            # of those files
+            if error is True:
+                result = None  # TODO this needs some work
+                #command_string = "cd " + self.output_file + "&& cd ../.. && mkdir -p postpost_error &&\
+                                 # cd " + self.output_file + "&& cd .. && mv *.dat ../postpost_error/"
+                #_, stderr, _ = self.run_subprocess(command_string)
+
+            self.result = result
+            # sys.stderr.write("Got result %s\n" % (self.result))
 
 # ------ Children methods that need to be implemented -------------------- #
     @abc.abstractmethod

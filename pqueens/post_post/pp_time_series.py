@@ -2,6 +2,7 @@
 
 import os.path
 import pandas as pd
+import numpy as np
 from pqueens.post_post.post_post import Post_post
 
 
@@ -31,9 +32,19 @@ class PP_time_series(Post_post):
         # loop over several post files if list of post processors given
         output_dir = os.path.dirname(output_file).strip('vtu')
         path = output_dir + self.file
-        post_data = pd.read_csv(path, usecols=self.usecols, sep='\s+', skiprows=self.skiprows)
-        post_out = post_data[(post_data.iloc[:, 0] >= 4) & (post_data.iloc[:, 0] <= 7)].to_numpy()
-        post_out = post_out.copy(order='C')
+        try:
+            post_data = pd.read_csv(path, usecols=self.usecols, sep='\s+', skiprows=self.skiprows)
+            post_out = post_data[(post_data.iloc[:, 0] >= 4) & (post_data.iloc[:, 0] <= 7)].to_numpy()
+            post_out = post_out.copy(order='C')
+    # ------------- TODO THIS IS JUST A WORKAROUND TO EXTRACT ONE QOI -------------
+            post_out = np.max(post_out[:, 1])
+    # ------------------------------- END WORKAROUND ------------------------------
+            if not post_out.any():  # timestep reached? <=> variable is empty?
+                self.error = True
+        except RuntimeError:
+            self.error = True
+            post_out = None
+
         if not post_out.any():  # timestep reached? <=> variable is empty?
             self.error = True
         return post_out, self.error

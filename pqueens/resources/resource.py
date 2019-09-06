@@ -1,14 +1,11 @@
+""" There should be a docstring """
 
-#from pqueens.schedulers.scheduler_factory import SchedulerFactory
-from pqueens.schedulers.scheduler import Scheduler
-#import importlib
-from operator import add
-from functools import reduce
-import numpy as np
 import sys
-import pdb
+import numpy as np
+from pqueens.schedulers.scheduler import Scheduler
 
 # TODO refactor this method into a class method
+
 
 def parse_resources_from_configuration(config):
     """ Parse the configuration dictionary
@@ -31,6 +28,7 @@ def parse_resources_from_configuration(config):
     # no specified resources
     else:
         raise Exception("Resources are not properly specified")
+
 
 def resource_factory(resource_name, exp_name, config):
     """ Create a resource object
@@ -60,6 +58,7 @@ def resource_factory(resource_name, exp_name, config):
     return Resource(resource_name, exp_name, scheduler, max_concurrent,
                     max_finished_jobs)
 
+
 def print_resources_status(resources, jobs):
     """ Print out whats going on on the resources
     Args:
@@ -76,22 +75,24 @@ def print_resources_status(resources, jobs):
     total_pending = 0
     total_complete = 0
     total_failed = 0
-    #for resource in resources:
+
+    # for resource in resources:
     for _, resource in resources.items():
-        p = resource.num_pending(jobs)
-        c = resource.num_complete(jobs)
-        f = resource.num_failed(jobs)
-        total_pending += p
-        total_complete += c
-        total_failed += f
+        pending = resource.num_pending(jobs)
+        complete = resource.num_complete(jobs)
+        failed = resource.num_failed(jobs)
+        total_pending += pending
+        total_complete += complete
+        total_failed += failed
         sys.stderr.write("%s%-12.12s  %-9d  %-10d  %-9d\n" % (indentation,
                                                               resource.name,
-                                                              p, c, f))
+                                                              pending, complete, failed))
     sys.stderr.write("%s%-12.12s  %-9d  %-10d  %-9d\n" % (indentation, '*TOTAL*',
                                                           total_pending,
                                                           total_complete,
                                                           total_failed))
     sys.stderr.write('\n')
+
 
 class Resource(object):
     """class which manages computing resources
@@ -133,7 +134,6 @@ class Resource(object):
             sys.stderr.write("Warning: resource %s has no tasks assigned "
                              " to it" % self.name)
 
-
     def filter_my_jobs(self, jobs):
         """ Take a list of jobs and filter those that are on this resource
 
@@ -145,9 +145,9 @@ class Resource(object):
 
         """
         if jobs:
-            return [job for job in jobs if job['resource'] == self.name]#filter(lambda job: job['resource']==self.name, jobs)
-        else:
-            return jobs
+            return [job for job in jobs if job['resource'] == self.name]
+            # filter(lambda job: job['resource']==self.name, jobs)
+        return jobs
 
     def num_pending(self, jobs):
         """ Take a list of jobs and filter those that are either pending or new
@@ -163,8 +163,7 @@ class Resource(object):
         if jobs:
             pending_jobs = [job['status'] for job in jobs].count('pending')
             return pending_jobs
-        else:
-            return 0
+        return 0
 
     def num_failed(self, jobs):
         """ Take a list of jobs and filter those that have failed
@@ -178,11 +177,11 @@ class Resource(object):
         """
         jobs = self.filter_my_jobs(jobs)
         if jobs:
-            failed_jobs = [job['status'] for job in jobs].count('failed')#map(lambda x: x['status'] in ['failed'], jobs)
-            return failed_jobs#reduce(add, failed_jobs, 0)
+            failed_jobs = [job['status'] for job in jobs].count('failed')
+            # map(lambda x: x['status'] in ['failed'], jobs)
+            return failed_jobs  # reduce(add, failed_jobs, 0)
         else:
             return 0
-
 
     def num_complete(self, jobs):
         """ Take a list of jobs and filter those that are complete
@@ -196,8 +195,9 @@ class Resource(object):
         """
         jobs = self.filter_my_jobs(jobs)
         if jobs:
-            completed_jobs = [job['status'] for job in jobs].count('complete')#map(lambda x: x['status'] == 'complete', jobs)
-            return completed_jobs#reduce(add, completed_jobs, 0)
+            completed_jobs = [job['status'] for job in jobs].count('complete')
+            # map(lambda x: x['status'] == 'complete', jobs)
+            return completed_jobs  # reduce(add, completed_jobs, 0)
         else:
             return 0
 
@@ -228,7 +228,7 @@ class Resource(object):
         sys.stderr.write("%-12s: %5d pending %5d complete\n" %
                          (self.name, self.num_pending(jobs), self.num_complete(jobs)))
 
-    def is_job_alive(self, job):
+    def is_job_alive(self, job):  # TODO this method does not seem to be called
         """ Query if a particular job is alive?
 
         Args:

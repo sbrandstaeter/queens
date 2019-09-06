@@ -1,3 +1,5 @@
+""" There should be a docstring """
+
 import abc
 
 # TODO add iterator name to attributes
@@ -20,7 +22,7 @@ class Iterator(metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, model=None, global_settings=None): #TODO model should be deleted here
+    def __init__(self, model=None, global_settings=None):  # TODO model should be deleted here
         self.model = model
         self.global_settings = global_settings
 
@@ -52,15 +54,15 @@ class Iterator(metaclass=abc.ABCMeta):
 
         method_dict = {'lhs': LHSIterator,
                        'lhs_mf': MF_LHSIterator,
-                       'metropolis_hastings' : MetropolisHastingsIterator,
+                       'metropolis_hastings': MetropolisHastingsIterator,
                        'monte_carlo': MonteCarloIterator,
-                       'optimization' : OptimizationIterator,
+                       'optimization': OptimizationIterator,
                        'read_data_from_file': DataIterator,
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli': SaltelliIterator,
                        'sa_saltelli_salib': SaltelliSALibIterator,
-                       'smc' : SequentialMonteCarloIterator,
-                       'bmfmc' : BmfmcIterator}
+                       'smc': SequentialMonteCarloIterator,
+                       'bmfmc': BmfmcIterator}
 
         if iterator_name is None:
             method_name = config['method']['method_name']

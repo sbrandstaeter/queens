@@ -1,12 +1,12 @@
 """ This should be a module docstring """
 
+import pdb
 import abc
 import os
 import os.path
 import hashlib
 import subprocess
 import sys
-from pqueens.drivers.driver import Driver
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -167,7 +167,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             stat = ssh_proc.poll()
         # TODO Think of some kind of error catching here; so far it works but error might be cryptical
 
-    def close_remote_port(self):
+    def close_remote_port(self):  # TODO: Check if this might interfer with the current framework
         """ docs """
         command_string = 'ssh ' + self.connect_to_resource + ' "kill $(lsof -t -i:' + str(self.port) + ')"'
         _, stderr, _ = self.run_subprocess(command_string)
@@ -394,9 +394,33 @@ class Scheduler(metaclass=abc.ABCMeta):
             if stderr:
                 raise RuntimeError("The file 'remote_main' in remote singularity image could not be executed properly!")
         else:
-            driver_obj = Driver.from_config_create_driver(self.config, job_id, batch)
-            driver_obj.main_run()
-            return driver_obj.pid
+            local_path_json = self.config['input_file']
+            remote_args = '--job_id={} --batch={} --port={} --path_json={}'.format(job_id,
+                                                                                   batch,
+                                                                                   '000',
+                                                                                   local_path_json)
+            script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+            rel_path = '../../driver.simg'
+            local_singularity_path = os.path.join(script_dir, rel_path)
+
+            cmdlist_remote_main = ['/usr/bin/singularity run', local_singularity_path, remote_args]
+            cmd_remote_main = ' '.join(cmdlist_remote_main)
+            # stdout, stderr, _ = self.run_subprocess(cmd_remote_main)
+            pid = subprocess.Popen(cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).pid
+
+            return pid
+#            match = self.get_process_id_from_output(stdout)
+#            try:
+#                return int(match)
+#
+#            except ValueError:
+#                sys.stderr.write(stdout)
+#                return None
+#
+
+            #  driver_obj = Driver.from_config_create_driver(self.config, job_id, batch)
+            #  driver_obj.main_run()
+            #  return driver_obj.pid
 
 # ------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED / ABSTRACTMETHODS ------
     @abc.abstractmethod  # how to check this is dependent on cluster / env

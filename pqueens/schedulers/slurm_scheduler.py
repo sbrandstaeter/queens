@@ -102,7 +102,6 @@ class SlurmScheduler(Scheduler):
             output2 = stdout.split()
             # second to last entry is (should be )the job status
             status = output2[-4]  # TODO: Check if that still holds
-            print('This is a test output')
         except ValueError:
             # job not found
             status = -1

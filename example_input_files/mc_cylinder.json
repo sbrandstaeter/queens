@@ -8,11 +8,11 @@
     "method_name": "monte_carlo",
     "method_options" :{
       "seed" : 1,
-      "num_samples" : 5,
+      "num_samples" : 10,
       "model" : "model",
       "result_description" : {
           "write_results" : true,
-          "plot_results" : false
+          "plot_results" : true
       }
     }
   },
@@ -46,8 +46,8 @@
   "resources" : {
     "local_machine" : {
       "scheduler"         : "local_scheduler",
-      "max-concurrent"    : 1000,
-      "max-finished-jobs" : 1000
+      "max-concurrent"    : 10,
+      "max-finished-jobs" : 10000
     }
   },
   "local_scheduler" : {
@@ -62,19 +62,19 @@
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
-        "distribution_parameter" : [0.2,1e-04]
+        "distribution_parameter" : [0.2,5e-04]
        },
       "diameter" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
-        "distribution_parameter" : [0.1,0.0001]
+        "distribution_parameter" : [0.1,1e-4]
          },
         "viscosity" : {
         "type" : "FLOAT",
         "size" : 1,
         "distribution" : "normal",
-        "distribution_parameter" : [1e-03,1e-09]
+        "distribution_parameter" : [1e-03,1e-07]
         }
     }
       }

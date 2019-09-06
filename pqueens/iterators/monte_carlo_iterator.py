@@ -1,6 +1,8 @@
 """ There should be some docstring """
 
+import pdb
 import numpy as np
+import matplotlib.pyplot as plt
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
@@ -153,3 +155,25 @@ class MonteCarloIterator(Iterator):
         print("Inputs {}".format(self.samples))
         print("Size of outputs {}".format(self.output['mean'].shape))
         print("Outputs {}".format(self.output['mean']))
+
+# ------------------------------ WIP PLOT OPTIONS -----------------------------
+        if self.result_description['plot_results'] is True:
+            # Check for dimensionality of the results
+            plt.rcParams["mathtext.fontset"] = "cm"
+            plt.rcParams.update({'font.size': 23})
+            fig, ax = plt.subplots()
+
+            if results['raw_output_data']['mean'][0].shape[0] > 1:
+                for ele in results['raw_output_data']['mean']:
+                    ax.plot(ele[:, 0], ele[:, 1])
+
+                ax.set_xlabel(r't [s]')
+                ax.set_ylabel(r'$C_L(t)$')
+                plt.show()
+            else:
+                data = results['raw_output_data']['mean']
+                ax.hist(data, bins=200)
+                ax.set_xlabel(r'Count [-]')
+                ax.set_xlabel(r'$C_L(t)$')
+                pdb.set_trace()
+                plt.show()
