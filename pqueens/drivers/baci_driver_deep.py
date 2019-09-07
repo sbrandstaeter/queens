@@ -1,18 +1,18 @@
-from pqueens.database.mongodb import MongoDB
 from pqueens.drivers.driver import Driver
+from pqueens.database.mongodb import MongoDB
 
 
-class BaciDriverBruteforce(Driver):
-    """ Driver to run BACI on the HPC cluster bruteforce (via Slurm)
+class BaciDriverDeep(Driver):
+    """ Driver to run BACI on the HPC cluster schmarrn (via PBS/Torque)
 
     Args:
 
     Returns:
     """
     def __init__(self, base_settings):
-        super(BaciDriverBruteforce, self).__init__(base_settings)
-        port = base_settings['port']
-        address = '10.10.0.1:' + str(port)  # TODO change to linux command to find master node
+        super(BaciDriverDeep, self).__init__(base_settings)
+        self.port = base_settings['port']
+        address = '129.187.58.20:' + str(self.port)  # TODO change to linux command to find master node
         self.database = MongoDB(database_address=address)
 
     @classmethod
@@ -22,7 +22,7 @@ class BaciDriverBruteforce(Driver):
         Args:
 
         Returns:
-            driver: BaciDriverBruteforce object
+            driver: BaciDriverDeep object
         """
         base_settings['experiment_name'] = config['experiment_name']
         return cls(base_settings)

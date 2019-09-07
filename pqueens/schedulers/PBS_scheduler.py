@@ -1,7 +1,7 @@
 import sys
-import subprocess
-import re
+import os
 from .scheduler import Scheduler
+
 
 class PBSScheduler(Scheduler):
     """ Minimal interface to Torque queing system to submit and query jobs
@@ -32,11 +32,9 @@ class PBSScheduler(Scheduler):
                                         connect to resaurce
         """
         super(PBSScheduler, self).__init__(base_settings)
-        self.name = scheduler_name
-        self.connect_to_resource = base_settings["connect"]
 
     @classmethod
-    def from_config_create_scheduler(cls, config, base_settings,scheduler_name=None):
+    def from_config_create_scheduler(cls, config, base_settings, scheduler_name=None):
         """ Create PBS scheduler from config dictionary
 
         Args:
@@ -48,28 +46,31 @@ class PBSScheduler(Scheduler):
         """
         scheduler_options = base_settings['options']
         # read necessary variables from config
-        num_procs_solve = scheduler_options['num_procs_solve']
-        num_procs_post = scheduler_options['num_procs_post']
-        num_tasks = num_procs_solve + num_procs_post
+        num_procs = scheduler_options['num_procs']
         walltime = scheduler_options['walltime']
-        if scheduler_options['scheduler_output'].lower()=='true' or scheduler_options['scheduler_output']=="":
+        if scheduler_options['scheduler_output'].lower() == 'true' or scheduler_options['scheduler_output'] == "":
             output = ""
-        elif scheduler_options['scheduler_output'].lower()=='false':
+        elif scheduler_options['scheduler_output'].lower() == 'false':
             output = '--output=/dev/null --error=/dev/null'
         else:
             raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
 
         # pre assemble some strings as base_settings
-        base_settings['output'] = output
-        base_settings['tasks_info'] = 'procs={}'.format(num_tasks)
-        base_settings['walltime_info'] = 'walltime={}'.format(walltime)
-        base_settings['job_flag'] = '-N ' #real name will be assembled later
+        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+        rel_path = '../utils/jobscript_pbs_queens.sh'
+        abs_path = os.path.join(script_dir, rel_path)
+
+        base_settings['scheduler_template'] = abs_path
         base_settings['scheduler_start'] = 'qsub'
-        base_settings['command_line_opt'] = '-b y'# binary file instead of job script
+        base_settings['scheduler_options'] = {}
+        base_settings['scheduler_options']['output'] = output
+        base_settings['scheduler_options']['ntasks'] = num_procs
+        base_settings['scheduler_options']['walltime'] = walltime
+        base_settings['scheduler_options']['job_name'] = None
 
         return cls(scheduler_name, base_settings)
 
-########### auxiliary methods #################################################
+# ----------------------------- AUXILIARY METHODS -----------------------------
 
     def output_regexp(self):
         return r'(^\d+)'
@@ -85,11 +86,11 @@ class PBSScheduler(Scheduler):
         Returns:
             match object: with regular expression matching process id
         """
-        regex = r'(^\d+)'
-        return re.search(regex, output)
 
-######## children methods that need to be implemented
-    def alive(self, process_id): # TODO: This methods needs to be checked as might not be called properly
+        return output.split('.')[0]
+
+# ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
+    def alive(self, process_id):  # TODO: This methods needs to be checked as might not be called properly
         """ Check whether job is alive
 
         The function checks if job is alive. If it is not i.e., the job is
@@ -111,7 +112,7 @@ class PBSScheduler(Scheduler):
             output2 = stdout.split()
             # second to last entry is (should be )the job status
             status = output2[-2]
-        except:
+        except ValueError:
             # job not found
             status = -1
             sys.stderr.write("EXC: %s\n" % str(sys.exc_info()[0]))
@@ -133,7 +134,6 @@ class PBSScheduler(Scheduler):
                 command_list = self.connect_to_resource + ['qdel', str(process_id)]
                 command_string = ' '.join(command_list)
                 stdout, stderr, p = super().run_subprocess(command_string)
-                print(stdout)
                 sys.stderr.write("Killed job %d.\n" % (process_id))
             except:
                 sys.stderr.write("Failed to kill job %d.\n" % (process_id))
