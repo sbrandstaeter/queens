@@ -1,6 +1,7 @@
 from pqueens.drivers.driver import Driver
 from pqueens.database.mongodb import MongoDB
 
+
 class BaciDriverNative(Driver):
     """ Driver to run BACI natively on workstation
 
@@ -12,24 +13,34 @@ class BaciDriverNative(Driver):
     """
     def __init__(self, base_settings):
         super(BaciDriverNative, self).__init__(base_settings)
-        self.mpi_config={}
-        address ='localhost:27017'
+        self.mpi_config = {}
+        address = 'localhost:27017'
         self.database = MongoDB(database_address=address)
-
-
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings):
         """ Create Driver from input file
 
         Args:
-            base_settings: Driver specifications declared in base class (need to be passed through child class and back to __init__ of base class
+            base_settings: Driver specifications declared in base class
+            (need to be passed through child class and back to __init__ of base class
         Returns:
             driver: BaciDriverNative object
-
         """
-        base_settings['experiment_name']=config['global_settings']['experiment_name']
+        base_settings['experiment_name'] = config['global_settings']['experiment_name']
         return cls(base_settings)
 
-    def setup_mpi(self,num_procs): # TODO this is not needed atm
+    def setup_mpi(self, num_procs):  # TODO this is not needed atm
         pass
+
+    def run_job(self):
+        """ Actual method to run the job on computing machine
+            using run_subprocess method from base class
+        """
+        # assemble run command
+        command_list = [self.executable, self.input_file, self.output_file]  # This is already within pbs
+        # Here we call directly the executable inside the container not the jobscript!
+        command_string = ' '.join(filter(None, command_list))
+        stdout, stderr, self.pid = self.run_subprocess(command_string)
+        if stderr != "":
+            raise RuntimeError(stderr+stdout)

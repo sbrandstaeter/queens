@@ -216,7 +216,7 @@ class JobInterface(Interface):
             'expt_dir'     : self.output_dir,
             'expt_name'    : self.experiment_name,
             'resource'     : resource_name,
-            'status'       : 'new',
+            'status'       : 'pending',  #'new',
             'submit time'  : time.time(),
             'start time'   : None,
             'end time'     : None

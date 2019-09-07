@@ -14,11 +14,14 @@ def main(args):
     parser.add_argument("--batch", help="specify the batch number of the simulation",type=int)
     parser.add_argument("--port", help="port number chosen for port-forwarding",type=str)
     parser.add_argument("--path_json", help="system path to temporary json file", type=str)
+    parser.add_argument("--post", help="option for postprocessing", type=str)
+
     args =  parser.parse_args()
     job_id = args.job_id
     batch = args.batch
     port = args.port
     path_json = args.path_json
+    post = args.post
 
     try:
         abs_path=os.path.join(path_json,'temp.json')
@@ -31,7 +34,10 @@ def main(args):
 
 ## Run the simulations via object methods
     driver_obj = Driver.from_config_create_driver(config, job_id, batch, port, path_to_post_post_file)
+
     driver_obj.main_run()
+    if post == 'true':
+        driver_obj.finish_and_clean()
 
 ######## Helper functions ##############################
 
