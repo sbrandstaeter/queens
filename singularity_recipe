@@ -32,6 +32,7 @@ This is a singulariy container containing CentOS7 and Python 3.7 as well as nece
   conda create -y -n QUEENS python=3.7
   /usr/local/anaconda/envs/QUEENS/bin/pip install numpy pymongo matplotlib plotly pandas
   cd /
+  mkdir scratch
   /usr/local/anaconda/envs/QUEENS/bin/python setup_remote.py develop
 
 %runscript

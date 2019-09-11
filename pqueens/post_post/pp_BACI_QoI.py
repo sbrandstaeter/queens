@@ -1,8 +1,11 @@
-import abc
+""" There should be a docstring """
+
+import glob
+import os
 import numpy as np
 import pandas as pd
-import os.path
-from pqueens.post_post.post_post import Post_post
+from .post_post import Post_post
+
 
 class PP_BACI_QoI(Post_post):
     """ Base class for post_post routines """
@@ -10,10 +13,10 @@ class PP_BACI_QoI(Post_post):
     def __init__(self, base_settings):
 
         super(PP_BACI_QoI, self).__init__(base_settings)
-
         self.num_post = base_settings['num_post']
-        self.subfix = base_settings['subfix']
         self.time_tol = base_settings['time_tol']
+        self.target_time = base_settings['target_time']
+        self.skiprows = base_settings['skiprows']
 
     @classmethod
     def from_config_create_post_post(cls, config, base_settings):
@@ -26,30 +29,60 @@ class PP_BACI_QoI(Post_post):
             post_post: post_post object
         """
         post_post_options = base_settings['options']
-        base_settings['subfix'] = post_post_options['subfix']
         base_settings['num_post'] = len(config['driver']['driver_params']['post_process_options'])
+        base_settings['target_time'] = post_post_options['target_time']
         base_settings['time_tol'] = post_post_options['time_tol']
+        base_settings['skiprows'] = post_post_options['skiprows']
         return cls(base_settings)
 
-    def read_post_files(self, output_file): # output file given by driver
-    # loop over several post files if list of post processors given
-        output_dir = os.path.dirname(output_file)
+# ------------------------ COMPULSORY CHILDREN METHODS ------------------------
+    def read_post_files(self):
+        """ Loop over several post files of interest """
+
+        prefix_expr = self.file_prefix + '*'
+        files_of_interest = os.path.join(self.output_dir, prefix_expr)
+        post_files_list = glob.glob(files_of_interest)
         post_out = []
 
-        for num in range(self.num_post):
-            # different read methods depending on subfix
-            if self.subfix=='mon':
-                path = output_dir + r'/QoI_' + str(num+1) + r'.mon'
-                post_data = np.loadtxt(path, usecols=self.usecols, skiprows=self.skiprows)
-            elif self.subfix=='csv':
-                path =output_dir + r'/QoI_' + str(num+1) + r'.csv'
-                post_data = pd.read_csv(path, usecols=self.usecols, skiprows=self.skiprows)
-            else:
-                raise RuntimeError("Subfix of post processed file is unknown!")
+        for filename in post_files_list:
+            try:
+                post_data = pd.read_csv(filename, sep=r'\s+', usecols=self.usecols, skiprows=self.skiprows)
+                identifier = abs(post_data.iloc[:, 0] - self.target_time) < self.time_tol
+                quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
+                #print('QoI: %s' %quantity_of_interest)
+                post_out = np.append(post_out, quantity_of_interest)
+                # select only row with timestep equal to target time step
+                if not post_out:  # timestep reached? <=> variable is empty?
+                    self.error = True
+                    self.result = None
+                    break
+            except IOError:
+                self.error = True  # TODO in the future specify which error type
+                self.result = None
+                break
+        self.error = False
+        self.result = post_out
 
-            QoI_identifier = abs(post_data[:,0]-self.target_time) < self.time_tol
-            QoI = post_data[QoI_identifier][0,1]
-            post_out = np.append(post_out, QoI) # select only row with timestep equal to target time step
-            if not post_out: # timestep reached? <=> variable is empty?
-                self.error = True
-        return post_out, self.error
+    def delete_field_data(self):
+        """ Delete every output file except files with given prefix """
+
+        inverse_prefix_expr = r"[!" + self.file_prefix + r"]*"
+        files_of_interest = os.path.join(self.output_dir, inverse_prefix_expr)
+        post_file_list = glob.glob(files_of_interest)
+        for filename in post_file_list:
+            command_string = "rm " + filename
+            # "cd " + self.output_file + "&& ls | grep -v --include=*.{mon,csv} | xargs rm"
+            _, _, _ = self.run_subprocess(command_string)
+
+    def error_handling(self):
+        # TODO  ### Error Types ###
+            # No QoI file
+            # Time/Time step not reached
+            # Unexpected values
+
+        # Organized failed files
+        input_file_extention = 'dat'
+        if self.error is True:
+            command_string = "cd " + self.output_dir + "&& cd ../.. && mkdir -p postpost_error && cd " \
+                             + self.output_dir + r"&& cd .. && mv *." + input_file_extention + r" ../postpost_error/"
+            _, _, _ = self.run_subprocess(command_string)

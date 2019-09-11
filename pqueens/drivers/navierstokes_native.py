@@ -1,9 +1,6 @@
 """ This should be a docstring """
 
-import pdb
-import time
 import os
-import subprocess
 from pqueens.drivers.driver import Driver
 from pqueens.utils.injector import inject
 
@@ -20,10 +17,10 @@ class NavierStokesNative(Driver):
     def __init__(self, base_settings):
         super(NavierStokesNative, self).__init__(base_settings)
         self.mpi_config = {}
-        self.output_navierstokes = None  # Wil be assigned on runtime
+        self.output_navierstokes = None  # Will be assigned on runtime
 
     @classmethod
-    def from_config_create_driver(cls, config, base_settings):
+    def from_config_create_driver(cls, config, base_settings, workdir=None):
         """ Create Driver from input file
 
         Args:
@@ -45,7 +42,7 @@ class NavierStokesNative(Driver):
                 str, str, str: simualtion prefix, name of input file, name of output file
         """
         # base directories
-        dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
+        dest_dir = os.path.join(self.experiment_dir, str(self.job_id))
 
         # Depending on the input file, directories will be created locally or on a cluster
         output_directory = os.path.join(dest_dir, 'output', 'vtu')
@@ -77,9 +74,9 @@ class NavierStokesNative(Driver):
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
 
-        if stderr:  # TODO probably this is important
-            self.result = None
-            self.job['status'] = 'failed'
+#        if stderr != "":  # TODO probably this is important
+#            self.result = None
+#            self.job['status'] = 'failed'
 
     def setup_mpi(self, num_procs):  # TODO this is not needed atm
         pass

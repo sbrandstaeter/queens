@@ -1,6 +1,5 @@
 """ There should be a docstring """
 
-import pdb
 import os
 import sys
 from .scheduler import Scheduler
@@ -32,6 +31,7 @@ class LocalScheduler(Scheduler):
         base_settings['scheduler_start'] = None
         base_settings['command_line_opt'] = None
         base_settings['cluster_bind'] = None
+        base_settings['scheduler_options'] = None
 
         return cls(base_settings, scheduler_name)
 
@@ -46,7 +46,6 @@ class LocalScheduler(Scheduler):
             bool: indicator if job is still alive
         """
         alive = False
-        pdb.set_trace()
         command_list = ['ps h -p', str(process_id)]
         command_string = ' '.join(command_list)
         stdout, _, p = super().run_subprocess(command_string)
@@ -70,6 +69,6 @@ class LocalScheduler(Scheduler):
         else:
             return True
 
-    def get_process_id_from_output(self, output):
+    def get_process_id_from_output(self):
         """ docstring """
         pass

@@ -35,7 +35,7 @@
       "experiment_dir"        : "/home/nitzler/workspace/navierstokes/applications/output/demo",
       "post_post"         : {
         "type" : "time_series",
-        "file_name" : "lift",
+        "file_prefix" : "lift",
         "time_discretization": 150,
         "delete_field_data" : "False",
         "target_time": [4,7],

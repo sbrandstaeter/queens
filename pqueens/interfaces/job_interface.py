@@ -1,4 +1,3 @@
-import pdb
 import time
 import numpy as np
 from pqueens.interfaces.interface import Interface
@@ -135,11 +134,11 @@ class JobInterface(Interface):
                         time.sleep(self.polling_time)
                         jobs = self.load_jobs()
 
-        while not self.all_jobs_finished():  # TODO: was somehow stuck in here
+        while not self.all_jobs_finished():
             time.sleep(self.polling_time)
 
-#        for _, resource in self.resources.items():
-#            resource.scheduler.post_run()  # This will close all previous opened ports for databank communication
+        for _, resource in self.resources.items():
+            resource.scheduler.post_run()  # This will close all previous opened ports for databank communication
         # get sample and response data
         return self.get_output_data()
 

@@ -1,6 +1,7 @@
 """ Here should be a docstring """
 
 import sys
+import os
 from .scheduler import Scheduler
 
 
@@ -52,20 +53,24 @@ class SlurmScheduler(Scheduler):
             raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
 
         # pre assemble some strings as base_settings
-        base_settings['output'] = output
-        base_settings['tasks_info'] = '--ntasks={}'.format(num_procs)
-        base_settings['walltime_info'] = '--time={}'.format(walltime)
-        base_settings['job_flag'] = '--job-name='  # real name will be assembled later
+        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+        rel_path = '../utils/jobscript_slurm_queens.sh'
+        abs_path = os.path.join(script_dir, rel_path)
+
+        base_settings['scheduler_template'] = abs_path
         base_settings['scheduler_start'] = 'sbatch'
-        base_settings['command_line_opt'] = '--wrap'
+        base_settings['scheduler_options']['output'] = output
+        base_settings['scheduler_options']['ntasks'] = num_procs
+        base_settings['scheduler_options']['walltime'] = walltime
+        base_settings['scheduler_options']['job_name'] = None  # real name will be assembled later
 
         return cls(scheduler_name, base_settings)
 
-# ----------------------------- AUXILIARY METHODS -----------------------------
     def output_regexp(self):
         """ docstring """
         return r'(^\d+)'
 
+# ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     def get_process_id_from_output(self, output):
         """ Helper function to retrieve process id
 
@@ -80,7 +85,6 @@ class SlurmScheduler(Scheduler):
         regex = output.split()
         return regex[-1]
 
-# ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def alive(self, process_id):
         """ Check whether job is alive
         The function checks if job is alive. If it is not i.e., the job is

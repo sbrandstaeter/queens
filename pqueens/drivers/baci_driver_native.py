@@ -4,6 +4,7 @@ import os
 from pqueens.drivers.driver import Driver
 
 
+
 class BaciDriverNative(Driver):
     """ Driver to run BACI natively on workstation
 
@@ -18,13 +19,12 @@ class BaciDriverNative(Driver):
         self.mpi_config = {}
 
     @classmethod
-    def from_config_create_driver(cls, config, base_settings):
+    def from_config_create_driver(cls, config, base_settings, workdir=None):
         """ Create Driver from input file
 
         Args:
         Returns:
             driver: BaciDriverNative object
-
         """
         base_settings['address'] = 'localhost:27017'
         return cls(base_settings)
@@ -55,20 +55,17 @@ class BaciDriverNative(Driver):
         self.output_file = output_directory + '/' + str(self.experiment_name) +\
                                               '_' + str(self.job_id)
 
+    def setup_mpi(self, num_procs):  # TODO this is not needed atm
+        pass
+
     def run_job(self):
         """ Actual method to run the job on computing machine
             using run_subprocess method from base class
         """
         # assemble run command
-        self.setup_mpi(self.num_procs)
-        command_list = ['mpirun', '-np', str(self.num_procs), self.mpi_flags, self.executable,
-                        self.input_file, self.output_file]
-
+        command_list = [self.executable, self.input_file, self.output_file]  # This is already within pbs
+        # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
-        stdout, stderr, self.pid = self.run_subprocess(command_string)
-
-        if stderr != "":
-            raise RuntimeError(stderr+stdout)
-
-    def setup_mpi(self, num_procs):  # TODO this is not needed atm
-        pass
+        _, stderr, self.pid = self.run_subprocess(command_string)
+         #if stderr != "":  # TODO take care of that!
+         #   self.result = None  # This is necessary to detect failed jobs

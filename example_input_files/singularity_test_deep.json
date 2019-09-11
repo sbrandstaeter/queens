@@ -33,39 +33,38 @@
     "driver" : "driver"
   },
   "driver" :{
-    "driver_type"           : "baci_bruteforce",
+    "driver_type"           : "baci_deep",
     "driver_params"         :{
       "path_to_singularity"   : "/home/nitzler/workspace/BACI_Rep/input",
       "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/invaaa_ee.dat",
       "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
       "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
       "post_process_options"  : ["--field=structure --node=26 --start=1"],
-      "job_scheduler_file"    : "/home/nitzler/templates/epicjobfile.sh",
-      "cluster_bind"          : "/lnm:/lnm,/cluster:/cluster,/bin:/bin,/etc:/etc/,/lib:/lib,/lib64:/lib64",
+      "cluster_bind"          : "/scratch:/scratch,/opt:/opt,/lnm:/lnm,/bin:/bin,/etc:/etc/,/lib:/lib,/lib64:/lib64",
       "post_post"             : {
         "target_time": 5e-1,
         "time_tol": 1e-2,
-        "subfix": "mon",
+        "file_prefix": "QoI",
         "usecols": [1,3],
         "skiprows": 4,
-        "delete_field_data" : "False"
+        "delete_field_data" : false
       },
       "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/elementary_effects_demo"
     }
   },
   "resources" : {
     "bruteforce" : {
-      "scheduler"         : "bruteforce_scheduler",
-      "max-concurrent"    : 1000,
+      "scheduler"         : "scheduler",
+      "max-concurrent"    : 20,
       "max-finished-jobs" : 1000
     }
   },
-  "bruteforce_scheduler" : {
-    "scheduler_type" : "slurm",
+  "scheduler" : {
+    "scheduler_type" : "pbs",
     "num_procs" : 1,
     "num_procs_post": 1,
     "walltime" : "120:00:00",
-    "connect_to_resource" : "nitzler@bruteforce.lnm.mw.tum.de",
+    "connect_to_resource" : "nitzler@deep.lnm.mw.tum.de",
     "scheduler_output" : "True"
   },
   "parameters" : {

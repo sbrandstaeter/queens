@@ -68,6 +68,7 @@ class BaciDriverSchmarrn(Driver):
         # create output file name
         self.output_file = output_directory + '/' + str(self.experiment_name) +\
                                               '_' + str(self.job_id)
+        self.output_scratch = self.experiment_name + '_' + str(self.job_id)
 
     def run_job(self):
         """ Actual method to run the job on computing machine
@@ -82,4 +83,5 @@ class BaciDriverSchmarrn(Driver):
         stdout, stderr, self.pid = self.run_subprocess(command_string)
 
         if stderr != "":
-            raise RuntimeError(stderr+stdout)
+            self.result = None  # This is necessary to detect failed jobs
+            self.job['status'] = 'failed'

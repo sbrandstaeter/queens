@@ -1,12 +1,11 @@
 """ This should be a module docstring """
-
-import pdb
 import abc
 import os
 import os.path
 import hashlib
 import subprocess
 import sys
+from pqueens.utils.injector import inject
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -21,13 +20,12 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.job_id = None
         # base settings form child
         self.experiment_name = base_settings['experiment_name']
-        self.output = base_settings['output']
-        self.task_info = base_settings['tasks_info']
-        self.walltime_info = base_settings['walltime_info']
-        self.job_flag = base_settings['job_flag']
+        self.experiment_dir = base_settings['experiment_dir']
         self.scheduler_start = base_settings['scheduler_start']
-        self.command_line_opt = base_settings['command_line_opt']
         self.cluster_bind = base_settings['cluster_bind']
+        self.submission_script_template = base_settings['scheduler_template']
+        self.submission_script_path = None  # will be assigned on runtime
+        self.scheduler_options = base_settings['scheduler_options']
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name=None):
@@ -59,14 +57,16 @@ class Scheduler(metaclass=abc.ABCMeta):
         scheduler_class = scheduler_dict[scheduler_options["scheduler_type"]]
 
 # ---------------------------- CREATE BASE SETTINGS ---------------------------
-
         base_settings = {}  # initialize empty dictionary
         base_settings['options'] = scheduler_options
         base_settings['experiment_name'] = config['global_settings']['experiment_name']
+        driver_options = config['driver']['driver_params']
+        base_settings['experiment_dir'] = driver_options['experiment_dir']
         if scheduler_options["scheduler_type"] == 'local':
             base_settings['remote_flag'] = False
             base_settings['singularity_path'] = None
             base_settings['connect'] = None
+            base_settings['scheduler_template'] = None
         elif scheduler_options["scheduler_type"] == 'pbs' or scheduler_options["scheduler_type"] == 'slurm':
             base_settings['remote_flag'] = True
             base_settings['singularity_path'] = config['driver']['driver_params']['path_to_singularity']
@@ -84,11 +84,11 @@ class Scheduler(metaclass=abc.ABCMeta):
     def pre_run(self):
         """ This should be a docstring """
         if self.remote_flag:
-            hostname, _, _ = self.run_subprocess('hostname')
+            hostname, _, _ = self.run_subprocess('hostname -i')
             username, _, _ = self.run_subprocess('whoami')
             address_localhost = username.rstrip() + r'@' + hostname.rstrip()
 
-            # self.kill_user_ssh_remote(username)
+            # self.kill_user_ssh_remote(username) TODO: think about this option
             self.establish_port_forwarding_local(address_localhost)
             self.establish_port_forwarding_remote(address_localhost)
             self.prepare_singularity_files()
@@ -120,8 +120,9 @@ class Scheduler(metaclass=abc.ABCMeta):
         command_string = ' '.join(command_list)
         stdout, stderr, _ = self.run_subprocess(command_string)
         if stdout == "\n":
-            command_list = ['ssh', self.connect_to_resource, "\"echo 'export SINGULARITY_BIND="
-                            + self.cluster_bind + "\' >> ~/.bashrc && source ~/.bashrc\""]
+            command_list = ['ssh', self.connect_to_resource,
+                            "\"echo 'export SINGULARITY_BIND=" + self.cluster_bind
+                            + "\' >> ~/.bashrc && source ~/.bashrc\""]
             command_string = ' '.join(command_list)
             stdout, stderr, _ = self.run_subprocess(command_string)
         # Create a Singularity PATH variable that is equal to the host PATH
@@ -185,12 +186,18 @@ class Scheduler(metaclass=abc.ABCMeta):
         """ docstring """
         abs_dirpath_current_file = os.path.dirname(os.path.abspath(__file__))
         abs_path_post_post = os.path.join(abs_dirpath_current_file, '../post_post')
+        # delete old files
+        command_list = ["ssh", self.connect_to_resource, '\'rm -r', self.path_to_singularity + '/post_post\'']
+        command_string = ' '.join(command_list)
+        _, _, _ = self.run_subprocess(command_string)
+
+        # copy new files
         command_list = ["scp -r", abs_path_post_post,
                         self.connect_to_resource + ':' + self.path_to_singularity + '/post_post']
         command_string = ' '.join(command_list)
         stdout, stderr, _ = self.run_subprocess(command_string)
         if stderr:
-            raise RuntimeError("Error! Was not able to copy local json input file to remote! Abort...")
+            raise RuntimeError("Error! Was not able to copy post_post directory to remote! Abort...")
 
     def create_singularity_image(self):
         """ Add current environment to predesigned singularity container for cluster applications """
@@ -308,7 +315,7 @@ class Scheduler(metaclass=abc.ABCMeta):
 
             # check existence singularity on remote
             command_list = ['ssh -T', self.connect_to_resource, 'test -f',
-                            self.path_to_singularity + "/driver.simg && echo 'Y' || echo 'N'"]  # TODO Check if correct
+                            self.path_to_singularity + "/driver.simg && echo 'Y' || echo 'N'"]
             command_string = ' '.join(command_list)
             stdout, stderr, _ = self.run_subprocess(command_string)
             if 'N' in stdout:
@@ -352,7 +359,7 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         stdout, stderr = process.communicate()
         process.poll()
-        return stdout, stderr, process  # TODO if poll and return p is helpful
+        return stdout, stderr, process
 
     def submit(self, job_id, batch):
         """ Function to submit new job to scheduling software on a given resource
@@ -371,22 +378,21 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         """
         if self.remote_flag:
-            remote_args = '--job_id={} --batch={} --port={} --path_json={}'.format(job_id,
-                                                                                   batch,
-                                                                                   self.port,
-                                                                                   self.path_to_singularity)
-            scheduler_list = [self.scheduler_start, self.job_flag + 'queens_{}_{}'.format(self.experiment_name, job_id),
-                              self.output, self.task_info, self.walltime_info, self.command_line_opt]
-            scheduler_cmd = ' '.join(scheduler_list)
+            self.scheduler_options['INPUT'] = '--job_id={} --batch={} --port={} --path_json={}'.format(job_id, batch, self.port, self.path_to_singularity)
+            self.scheduler_options['EXE'] = self.path_to_singularity + '/driver.simg'
+            self.scheduler_options['job_name'] = '{}_{}'.format(self.experiment_name, job_id)
+
+            # Parse data to job_scheduler_template
+            self.create_submission_script(job_id)
+
+            # submit the job with job_script.sh
             cmdlist_remote_main = ['ssh', self.connect_to_resource,
-                                   '"' + scheduler_cmd, '\'' + self.path_to_singularity + '/driver.simg',
-                                   remote_args + '\'"']  # TODO check if this is the correct way to call singularity
+                                   '"' + self.scheduler_start, self.submission_script_path + '"']
             cmd_remote_main = ' '.join(cmdlist_remote_main)
             stdout, stderr, _ = self.run_subprocess(cmd_remote_main)
             match = self.get_process_id_from_output(stdout)
             try:
                 return int(match)
-
             except ValueError:
                 sys.stderr.write(stdout)
                 return None
@@ -402,25 +408,31 @@ class Scheduler(metaclass=abc.ABCMeta):
             script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
             rel_path = '../../driver.simg'
             local_singularity_path = os.path.join(script_dir, rel_path)
-
             cmdlist_remote_main = ['/usr/bin/singularity run', local_singularity_path, remote_args]
             cmd_remote_main = ' '.join(cmdlist_remote_main)
             # stdout, stderr, _ = self.run_subprocess(cmd_remote_main)
-            pid = subprocess.Popen(cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE).pid
-
+            process = subprocess.Popen(cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            pid = process.pid
             return pid
-#            match = self.get_process_id_from_output(stdout)
-#            try:
-#                return int(match)
-#
-#            except ValueError:
-#                sys.stderr.write(stdout)
-#                return None
-#
 
-            #  driver_obj = Driver.from_config_create_driver(self.config, job_id, batch)
-            #  driver_obj.main_run()
-            #  return driver_obj.pid
+    def create_submission_script(self, job_id):
+        dest_dir = str(self.experiment_dir) + '/' + \
+                   str(job_id) + "/output"
+        self.scheduler_options['DESTDIR'] = dest_dir
+        self.submission_script_path = str(self.experiment_dir) + '/jobfile.sh'
+
+        # local dummy path
+        local_dummy_path = os.path.join(os.path.dirname(__file__), 'dummy_jobfile')
+        # create actual submission file with parsed parameters
+        inject(self.scheduler_options, self.submission_script_template, local_dummy_path)
+        # copy submission script to cluster on specified location
+        command_list = ['scp', local_dummy_path, self.connect_to_resource + ':' + self.submission_script_path]
+        command_string = ' '.join(command_list)
+        stdout, stderr, p = self.run_subprocess(command_string)
+        # delete local dummy jobfile
+        command_list = ['rm', local_dummy_path]
+        command_string = ' '.join(command_list)
+        stdout, stderr, p = self.run_subprocess(command_string)
 
 # ------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED / ABSTRACTMETHODS ------
     @abc.abstractmethod  # how to check this is dependent on cluster / env
@@ -430,5 +442,9 @@ class Scheduler(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_process_id_from_output(self, output):
-        """ docstring """
         pass
+
+    @abc.abstractmethod  # how to check this is dependent on cluster / env
+    def alive(self, process_id):
+        pass
+

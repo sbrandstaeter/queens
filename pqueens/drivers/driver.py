@@ -1,12 +1,12 @@
-""" This is a docstring """
+""" There should be a docstring """
 
+import sys
 import abc
 import subprocess
 import time
 import os
 from pqueens.utils.injector import inject
 from pqueens.database.mongodb import MongoDB
-
 
 class Driver(metaclass=abc.ABCMeta):
 
@@ -25,6 +25,9 @@ class Driver(metaclass=abc.ABCMeta):
     def __init__(self, base_settings):
         self.template = base_settings['template']
         self.database = MongoDB(database_address=base_settings['address'])
+        self.output_file = base_settings['output_file']
+        self.file_prefix = base_settings['file_prefix']
+        self.output_scratch = base_settings['output_scratch']
         self.job = base_settings['job']
         self.job_id = base_settings['job_id']
         self.batch = base_settings['batch']
@@ -41,10 +44,9 @@ class Driver(metaclass=abc.ABCMeta):
         self.experiment_name = base_settings['experiment_name']
         self.experiment_dir = base_settings['experiment_dir']
         self.input_file = None
-        self.output_file = None  # will be assigned below
 
     @classmethod
-    def from_config_create_driver(cls, config, job_id, batch, port=None, abs_path=None):
+    def from_config_create_driver(cls, config, job_id, batch, port=None, abs_path=None, workdir=None):
         """ Create driver from problem description
 
         Args:
@@ -61,9 +63,10 @@ class Driver(metaclass=abc.ABCMeta):
         from pqueens.drivers.baci_driver_native import BaciDriverNative
         from pqueens.drivers.baci_driver_schmarrn import BaciDriverSchmarrn
         from pqueens.drivers.navierstokes_native import NavierStokesNative
-
+        from pqueens.drivers.baci_driver_deep import BaciDriverDeep
         if abs_path is None:
             from pqueens.post_post.post_post import Post_post
+            # FIXME singularity doesnt load post_post form path but rather uses image module
         else:
             import importlib.util
             spec = importlib.util.spec_from_file_location("post_post", abs_path)
@@ -77,25 +80,29 @@ class Driver(metaclass=abc.ABCMeta):
         driver_dict = {'baci_bruteforce': BaciDriverBruteforce,
                        'baci_native': BaciDriverNative,
                        'baci_schmarrn': BaciDriverSchmarrn,
-                       'navierstokes_native': NavierStokesNative}
-
+                       'navierstokes_native': NavierStokesNative,
+                       'baci_deep': BaciDriverDeep}
         driver_version = config['driver']['driver_type']
         driver_class = driver_dict[driver_version]
 
-        # ------- create base settings ------------------ #
+# ---------------------------- CREATE BASE SETTINGS ---------------------------
         driver_options = config['driver']['driver_params']
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
         base_settings = {}
         base_settings['experiment_name'] = config['experiment_name']
         base_settings['num_procs'] = config[scheduler_name]['num_procs']
+        base_settings['file_prefix'] = driver_options['post_post']['file_prefix']
         if 'num_procs_post' in config[scheduler_name]:
             base_settings['num_procs_post'] = config[scheduler_name]['num_procs_post']
         else:
             base_settings['num_procs_post'] = 1
         base_settings['experiment_dir'] = driver_options['experiment_dir']
         base_settings['job_id'] = job_id
+        base_settings['input_file'] = None
         base_settings['template'] = driver_options['input_template']
+        base_settings['output_file'] = None
+        base_settings['output_scratch'] = None
         base_settings['job'] = None
         base_settings['batch'] = batch
         base_settings['executable'] = driver_options['path_to_executable']
@@ -107,7 +114,7 @@ class Driver(metaclass=abc.ABCMeta):
         else:
             base_settings['post_options'] = None
         base_settings['postpostprocessor'] = Post_post.from_config_create_post_post(config)
-        driver = driver_class.from_config_create_driver(config, base_settings)
+        driver = driver_class.from_config_create_driver(config, base_settings, workdir)
 
         return driver
 
@@ -116,9 +123,9 @@ class Driver(metaclass=abc.ABCMeta):
         self.prepare_environment()
         self.init_job()
         self.run_job()
-        self.finish_and_clean()
+        # self.finish_and_clean() # we take this out of the main run and call in explicitly in remote_main
 
-# ------ Auxiliary high-level methods -------------------- #
+# ------------------------ AUXILIARY HIGH-LEVEL METHODS -----------------------
     def prepare_environment(self):
         """ Prepare the environment for computing """
         self.setup_dirs_and_files()
@@ -158,8 +165,7 @@ class Driver(metaclass=abc.ABCMeta):
         start_time = time.time()
         self.job['start time'] = start_time
         # save the job with the new start time
-        self.database.save(self.job, self.experiment_dir, 'jobs', self.batch,
-                           {'id': self.job_id})
+        self.database.save(self.job, self.experiment_dir, 'jobs', self.batch, {'id': self.job_id})
 
         # sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
         #                 % (start_time-self.job['submit time']))
@@ -168,7 +174,7 @@ class Driver(metaclass=abc.ABCMeta):
         inject(self.job['params'], self.template, self.input_file)
 
     def finish_job(self):
-        """ Change status of job to compleded in database """
+        """ Change status of job to completed in database """
 
         if self.result is None:
             self.job['result'] = None  # TODO: maybe we should better use a pandas format here
@@ -182,26 +188,28 @@ class Driver(metaclass=abc.ABCMeta):
             self.database.save(self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id})
 
     def do_postprocessing(self):
+        # TODO maybe move to child-class due to specific form (e.g. .dat)
         """ This should be a docstring """
-        # TODO: Check if this is abstract enough --> --file could be troublesome
-        self.setup_mpi(self.num_procs_post)
+        # create input file name
+        dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
+        output_directory = os.path.join(dest_dir, 'output')
+        self.input_file = dest_dir + '/' + str(self.experiment_name) + \
+                                     '_' + str(self.job_id) + '.dat'
+
+        # create output file name
+        self.output_file = output_directory + '/' + str(self.experiment_name) + \
+                                              '_' + str(self.job_id)
+        self.output_scratch = self.experiment_name + '_' + str(self.job_id)
+
         target_file_base_name = os.path.dirname(self.output_file)
         output_file_opt = '--file=' + self.output_file
         for num, option in enumerate(self.post_options):
-            target_file_opt = '--output=' + target_file_base_name + "/QoI_" + str(num+1)
-            postprocessing_list = ['mpirun', '-np',
-                                   str(self.num_procs_post),
-                                   self.mpi_flags,
-                                   self.postprocessor,
-                                   output_file_opt,
-                                   option,
-                                   target_file_opt]
-            # TODO: number of procs for drt_monitor must be one but we should provide an options
-            # to control the procs for other post_processors
+            target_file_opt = '--output=' + target_file_base_name + "/" + self.file_prefix + "_" + str(num+1)
+            postprocessing_list = [self.postprocessor, output_file_opt, option, target_file_opt]
             postprocess_command = ' '.join(filter(None, postprocessing_list))
-            _, stderr, _ = self.run_subprocess(postprocess_command)
+            _, _, _ = self.run_subprocess(postprocess_command)
 
-    def do_postpostprocessing(self):  # TODO: file extentions are hard coded we need to change that!
+    def do_postpostprocessing(self):
         """ Run script to extract results from monitor file
 
         Args:
@@ -209,32 +217,15 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             float: actual simulation result
             Assemble post processing command """
-
+        dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
+        output_directory = os.path.join(dest_dir, 'output')
         if self.job['status'] != "failed":
-            result = None
-            result, error = self.postpostprocessor.read_post_files(self.output_file)
-            # cleanup of unnecessary data after QoI got extracted and flag is set in config
-            if self.postpostprocessor.delete_field_data.lower() == "true":
-                # Delete every ouput file exept the .mon file
-                # --> use self.output to get path to current folder
-                # --> start subprocess to delete files with linux commands
-                command_string = "cd " + self.output_file + "&& ls | grep -v --include=*.{mon,csv} | xargs rm"
-                # TODO check if this works for several extentions
-                _, stderr, _ = self.run_subprocess(command_string)  # TODO catch pos. errors
+        # this is a security duplicate in case post_post did not catch an error
+            self.result = None
+            self.result = self.postpostprocessor.postpost_main(output_directory)
+            sys.stderr.write("Got result %s\n" % (self.result))
 
-            # Put files that were not compliant with the requirements from the
-            # postpost_processing scripts in a special folder and do not pass on result
-            # of those files
-            if error is True:
-                result = None  # TODO this needs some work
-                #command_string = "cd " + self.output_file + "&& cd ../.. && mkdir -p postpost_error &&\
-                                 # cd " + self.output_file + "&& cd .. && mv *.dat ../postpost_error/"
-                #_, stderr, _ = self.run_subprocess(command_string)
-
-            self.result = result
-            # sys.stderr.write("Got result %s\n" % (self.result))
-
-# ------ Children methods that need to be implemented -------------------- #
+# ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod
     def setup_dirs_and_files(self):
         """ this should be a docstring """
