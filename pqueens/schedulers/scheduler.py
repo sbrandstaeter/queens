@@ -1,4 +1,5 @@
 """ This should be a module docstring """
+import pdb
 import abc
 import os
 import os.path
@@ -390,6 +391,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                                    '"' + self.scheduler_start, self.submission_script_path + '"']
             cmd_remote_main = ' '.join(cmdlist_remote_main)
             stdout, stderr, _ = self.run_subprocess(cmd_remote_main)
+            pdb.set_trace()
             match = self.get_process_id_from_output(stdout)
             try:
                 return int(match)

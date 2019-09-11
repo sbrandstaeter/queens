@@ -1,6 +1,7 @@
 """ There should be a docstring """
 
 import glob
+from io import StringIO
 import os
 import numpy as np
 import pandas as pd
@@ -39,17 +40,17 @@ class PP_BACI_QoI(Post_post):
     def read_post_files(self):
         """ Loop over several post files of interest """
 
-        prefix_expr = self.file_prefix + '*'
+        prefix_expr = '*' + self.file_prefix + '*'
         files_of_interest = os.path.join(self.output_dir, prefix_expr)
         post_files_list = glob.glob(files_of_interest)
         post_out = []
 
         for filename in post_files_list:
             try:
-                post_data = pd.read_csv(filename, sep=r'\s+', usecols=self.usecols, skiprows=self.skiprows)
+                post_data = pd.read_csv(filename, sep=r',|\s+', usecols=self.usecols,
+                                        skiprows=self.skiprows, engine='python')
                 identifier = abs(post_data.iloc[:, 0] - self.target_time) < self.time_tol
                 quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
-                #print('QoI: %s' %quantity_of_interest)
                 post_out = np.append(post_out, quantity_of_interest)
                 # select only row with timestep equal to target time step
                 if not post_out:  # timestep reached? <=> variable is empty?
@@ -66,7 +67,7 @@ class PP_BACI_QoI(Post_post):
     def delete_field_data(self):
         """ Delete every output file except files with given prefix """
 
-        inverse_prefix_expr = r"[!" + self.file_prefix + r"]*"
+        inverse_prefix_expr = r"*[!" + self.file_prefix + r"]*"
         files_of_interest = os.path.join(self.output_dir, inverse_prefix_expr)
         post_file_list = glob.glob(files_of_interest)
         for filename in post_file_list:
