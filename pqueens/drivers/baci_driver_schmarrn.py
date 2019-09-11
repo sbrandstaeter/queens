@@ -4,15 +4,17 @@ import os
 from pqueens.drivers.driver import Driver
 
 
-class BaciDriverBruteforce(Driver):
-    """ Driver to run BACI on the HPC cluster bruteforce (via Slurm)
+class BaciDriverSchmarrn(Driver):
+    """ Driver to run BACI on the HPC cluster schmarrn (via PBS/Torque)
 
     Args:
 
     Returns:
     """
     def __init__(self, base_settings):
-        super(BaciDriverBruteforce, self).__init__(base_settings)
+        super(BaciDriverSchmarrn, self).__init__(base_settings)
+
+        self.num_procs = base_settings['num_procs']
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings):
@@ -21,13 +23,13 @@ class BaciDriverBruteforce(Driver):
         Args:
 
         Returns:
-            driver: Baci_driver_bruteforce object
+            driver: BaciDriverSchmarrn object
         """
-        base_settings['address'] = '10.10.0.1:' + str(base_settings['port'])
-        # TODO change to linux command to find master node
-        base_settings['experiment_name'] = config['experiment_name']
+        port = base_settings['port']
+        base_settings['address'] = '10.10.0.1:' + str(port)
         return cls(base_settings)
 
+# ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def setup_mpi(self, ntasks):
         """ setup MPI environment
 
@@ -73,10 +75,13 @@ class BaciDriverBruteforce(Driver):
             using run_subprocess method from base class
         """
         # assemble run command
-        command_list = [self.executable, self.input_file, self.output_scratch]  # This is already within pbs
-        # Here we call directly the executable inside the container not the jobscript!
+        self.setup_mpi(self.num_procs)
+        command_list = ['mpirun', '-np', str(self.num_procs), self.mpi_flags, self.executable,
+                        self.input_file, self.output_file]
+
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
+
         if stderr != "":
             self.result = None  # This is necessary to detect failed jobs
             self.job['status'] = 'failed'

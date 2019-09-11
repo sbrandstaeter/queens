@@ -16,9 +16,10 @@
 #  Specify your paths                    #
 #                                        #
 ##########################################
+WORKDIR=/scratch/PBS_$PBS_JOBID
 DESTDIR={DESTDIR}  # Output directory for simulation
 EXE={EXE}  # triggers mainrun of singularity image
-INPUT={INPUT}  # for singularity just the args flags for the image that specify the run
+INPUT='{INPUT} --workdir='$WORKDIR  # for singularity just the args flags for the image that specify the run
 OUTPUTPREFIX=''
 ##########################################
 #                                        #
@@ -41,7 +42,6 @@ DoPostprocess=false                      #
 # be specified please use --help         #
 POSTOPTIONS='--filter="ensight"'         #
 ##########################################
-
 
 #################################################################
 # BEGIN ############### DO NOT TOUCH ME #########################

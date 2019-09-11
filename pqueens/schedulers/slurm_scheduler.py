@@ -1,3 +1,5 @@
+""" Here should be a docstring """
+
 import sys
 import os
 from .scheduler import Scheduler
@@ -56,9 +58,7 @@ class SlurmScheduler(Scheduler):
         abs_path = os.path.join(script_dir, rel_path)
 
         base_settings['scheduler_template'] = abs_path
-
         base_settings['scheduler_start'] = 'sbatch'
-
         base_settings['scheduler_options']['output'] = output
         base_settings['scheduler_options']['ntasks'] = num_procs
         base_settings['scheduler_options']['walltime'] = walltime
@@ -66,10 +66,11 @@ class SlurmScheduler(Scheduler):
 
         return cls(scheduler_name, base_settings)
 
-# ----------------------------- AUXILIARY METHODS -----------------------------
     def output_regexp(self):
+        """ docstring """
         return r'(^\d+)'
 
+# ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     def get_process_id_from_output(self, output):
         """ Helper function to retrieve process id
 
@@ -84,7 +85,6 @@ class SlurmScheduler(Scheduler):
         regex = output.split()
         return regex[-1]
 
-# ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     def alive(self, process_id):
         """ Check whether job is alive
         The function checks if job is alive. If it is not i.e., the job is
@@ -102,7 +102,7 @@ class SlurmScheduler(Scheduler):
             # join lists
             command_list = [self.connect_to_resource, 'squeue --job', str(process_id)]
             command_string = ' '.join(command_list)
-            stdout, stderr, p = super().run_subprocess(command_string)
+            stdout, _, p = super().run_subprocess(command_string)
             output2 = stdout.split()
             # second to last entry is (should be )the job status
             status = output2[-4]  # TODO: Check if that still holds

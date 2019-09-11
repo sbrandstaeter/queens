@@ -1,11 +1,15 @@
+""" There should be some docstring """
+
+import pdb
 import numpy as np
-from .iterator import Iterator
+import matplotlib.pyplot as plt
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 from pqueens.randomfields.univariate_field_generator_factory import UniVarRandomFieldGeneratorFactory
 from pqueens.utils import mcmc_utils
 from pqueens.utils.input_to_random_variable import get_random_samples
+from .iterator import Iterator
 
 
 class MonteCarloIterator(Iterator):
@@ -146,8 +150,30 @@ class MonteCarloIterator(Iterator):
                 write_results(results,
                               self.global_settings["output_dir"],
                               self.global_settings["experiment_name"])
-        #else:
+        # else:
         print("Size of inputs {}".format(self.samples.shape))
         print("Inputs {}".format(self.samples))
         print("Size of outputs {}".format(self.output['mean'].shape))
         print("Outputs {}".format(self.output['mean']))
+
+# ------------------------------ WIP PLOT OPTIONS -----------------------------
+        if self.result_description['plot_results'] is True:
+            # Check for dimensionality of the results
+            plt.rcParams["mathtext.fontset"] = "cm"
+            plt.rcParams.update({'font.size': 23})
+            fig, ax = plt.subplots()
+
+            if results['raw_output_data']['mean'][0].shape[0] > 1:
+                for ele in results['raw_output_data']['mean']:
+                    ax.plot(ele[:, 0], ele[:, 1])
+
+                ax.set_xlabel(r't [s]')
+                ax.set_ylabel(r'$C_L(t)$')
+                plt.show()
+            else:
+                data = results['raw_output_data']['mean']
+                ax.hist(data, bins=200)
+                ax.set_xlabel(r'Count [-]')
+                ax.set_xlabel(r'$C_L(t)$')
+                pdb.set_trace()
+                plt.show()

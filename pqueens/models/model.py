@@ -24,7 +24,7 @@ class Model(metaclass=abc.ABCMeta):
         responses (list):               Set of responses corresponding to variables
     """
 
-    def __init__(self, name, uncertain_parameters):
+    def __init__(self, name=None, uncertain_parameters=None, data_flag=None):
         """ Init model object
 
         Args:
@@ -34,7 +34,11 @@ class Model(metaclass=abc.ABCMeta):
         """
         self.name = name
         self.uncertain_parameters = uncertain_parameters
-        self.variables = [Variables.from_uncertain_parameters_create(uncertain_parameters)]
+        if data_flag is not None:
+            self.variables = None # use None as a placeholder and set variables from data in children class later
+        else:
+            self.variables = [Variables.from_uncertain_parameters_create(uncertain_parameters)]
+
         self.response = [None]
 
     @classmethod
@@ -53,11 +57,12 @@ class Model(metaclass=abc.ABCMeta):
         from .data_fit_surrogate_model import DataFitSurrogateModel
         from .data_fit_surrogate_model_mf import MFDataFitSurrogateModel
         from .multifidelity_model import MultifidelityModel
-
+        from .bmfmc_model import BMFMCModel
         model_dict = {'simulation_model': SimulationModel,
                       'datafit_surrogate_model': DataFitSurrogateModel,
                       'datafit_surrogate_model_mf': MFDataFitSurrogateModel,
-                      'multi_fidelity_model' : MultifidelityModel}
+                      'multi_fidelity_model' : MultifidelityModel,
+                      'bmfmc_model' : BMFMCModel}
 
         model_options = config[model_name]
         model_class = model_dict[model_options["type"]]

@@ -1,3 +1,4 @@
+import os
 from pqueens.drivers.driver import Driver
 from pqueens.database.mongodb import MongoDB
 
@@ -9,14 +10,12 @@ class BaciDriverDeep(Driver):
 
     Returns:
     """
-    def __init__(self, base_settings):
+    def __init__(self, base_settings, workdir):
         super(BaciDriverDeep, self).__init__(base_settings)
-        self.port = base_settings['port']
-        address = '129.187.58.20:' + str(self.port)  # TODO change to linux command to find master node
-        self.database = MongoDB(database_address=address)
+        self.workdir = workdir
 
     @classmethod
-    def from_config_create_driver(cls, config, base_settings):
+    def from_config_create_driver(cls, config, base_settings, workdir):
         """ Create Driver from JSON input file
 
         Args:
@@ -24,31 +23,52 @@ class BaciDriverDeep(Driver):
         Returns:
             driver: BaciDriverDeep object
         """
+        base_settings['address'] = '129.187.58.20:' + str(base_settings['port'])
         base_settings['experiment_name'] = config['experiment_name']
-        return cls(base_settings)
+        return cls(base_settings, workdir)
 
     def setup_mpi(self, ntasks):
-        """ setup MPI environment
+        pass
+
+    def setup_dirs_and_files(self):
+        """ Setup directory structure
 
             Args:
-                num_procs (int): Number of processors to use
+                driver_options (dict): Options dictionary
 
             Returns:
-                str, str: MPI runcommand, MPI flags
+                str, str, str: simualtion prefix, name of input file, name of output file
         """
-        if ntasks % 16 == 0:
-            self.mpi_flags = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
-        else:
-            self.mpi_flags = "--mca btl openib,sm,self"
+        # base directories
+        dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
+
+        # Depending on the input file, directories will be created locally or on a cluster
+        output_directory = os.path.join(dest_dir, 'output')
+        if not os.path.isdir(output_directory):
+            os.makedirs(output_directory)
+
+        # create input file name
+        self.input_file = dest_dir + '/' + str(self.experiment_name) + \
+                                     '_' + str(self.job_id) + '.dat'  # TODO change hard coding of .dat
+
+        # create output file name
+        self.output_file = output_directory + '/' + str(self.experiment_name) + \
+                                              '_' + str(self.job_id)
+        self.output_scratch = self.experiment_name + '_' + str(self.job_id)
+
 
     def run_job(self):
         """ Actual method to run the job on computing machine
             using run_subprocess method from base class
         """
         # assemble run command
-        command_list = [self.executable, self.input_file, self.output_scratch]  # This is already within pbs
+        command_list = ['cd', self.workdir, r'&&', self.executable, self.input_file, self.output_scratch]
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
-        if stderr != "":
-            raise RuntimeError(stderr+stdout)
+        print(stdout)
+        print(stderr)
+        #print('This is the error: %s' %stderr)
+        #if stderr:
+         #   self.result = None  # This is necessary to detect failed jobs
+         #   self.job['status'] = 'failed'

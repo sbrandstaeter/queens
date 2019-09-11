@@ -1,7 +1,8 @@
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
+from sklearn.model_selection import KFold #LeaveOneOut
 import numpy as np
-
+import pdb
 # TODO remove file, outdated implementation
 
 def estimate_bandwidth_for_kde(samples,min_samples,max_samples):
@@ -15,17 +16,18 @@ def estimate_bandwidth_for_kde(samples,min_samples,max_samples):
         float: estimate for optimal kernel_bandwidth
     """
     kernel_bandwidth = 0
-    kernel_bandwidth_upper_bound = (max_samples-min_samples)/2.0
-    kernel_bandwidth_lower_bound = (max_samples-min_samples)/20.0
+    kernel_bandwidth_upper_bound = (max_samples-min_samples)/1.0
+    kernel_bandwidth_lower_bound = (max_samples-min_samples)/40.0
 
      # do 20-fold cross-validation
-    grid = GridSearchCV(KernelDensity(),{'bandwidth': \
+    grid = GridSearchCV(KernelDensity(kernel='gaussian'),{'bandwidth': \
         np.linspace(kernel_bandwidth_lower_bound,
                     kernel_bandwidth_upper_bound,
-                    40)},cv=20)
+                    20)},cv=15,return_train_score=False)
 
     grid.fit(samples.reshape(-1,1))
     kernel_bandwidth = grid.best_params_['bandwidth']
+    print('bandwidth = %s' % kernel_bandwidth)
 
     return kernel_bandwidth
 
@@ -43,9 +45,16 @@ def estimate_pdf(samples,kernel_bandwidth,support_points=None):
         min_samples = np.amin(samples)
         max_samples = np.amax(samples)
         support_points =  np.linspace(min_samples, max_samples, 100)
+        support_points = np.meshgrid(*[support_points[:,None]]*samples.shape[1])
+        points = support_points[0].reshape(-1,1)
+        if len(points.shape) > 1:
+            for col in range(1,samples.shape[1]):
+                 points = np.hstack((points, support_points[col].reshape(-1,1))) # reshape matrix to vector with all combinations
 
+    #samples= [sam.T for sam in samples.T]
+    #samples = np.meshgrid(*samples)
     kde = KernelDensity(kernel='gaussian', bandwidth = \
-        kernel_bandwidth).fit(samples.reshape(-1,1))
+        kernel_bandwidth).fit(samples)
 
-    y_density = np.exp(kde.score_samples(support_points.reshape(-1, 1)))
-    return y_density, support_points
+    y_density = np.exp(kde.score_samples(points))
+    return y_density, points

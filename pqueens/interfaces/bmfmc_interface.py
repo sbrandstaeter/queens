@@ -2,28 +2,22 @@ import numpy as np
 from sklearn.model_selection import KFold
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from .interface import Interface
+import pdb
 
-
-class ApproximationInterface(Interface):
-    """ Class for mapping input variables to responses using an approximation
-
-        The ApproximationInterface uses a so-called regression approximation,
-        which just another name for a regression model that is used in this context
-        to avoid confusion and not having to call everthing a model.
-
-        For now this interface holds only one approximation object. In the future,
-        this could be extendend to multiple objects
+class BmfmcInterface(Interface):
+    """ Class for grouping output of several simulators with identical input to
+        one python touple. This is basically a version of the
+        approximation_interface class that allows for vectorized mapping and
+        implicit function relationships.
 
     Attributes:
-        name (string):                 Name of interface
-        variables (dict):              Dictionary with variables
-        approximation_config (dict):   Config options for approximation
-        approximation (regression_approximation):   Approximation object
-        approx_init (bool):            Flag wether or not approximation has been
-                                       initialized
+        name (string):                  name of interface
+        variables (dict):               dictionary with variables
+        function (function object):     adress of database to use
+
     """
 
-    def __init__(self, interface_name, approximation_config, variables):
+    def __init__(self, approximation_config, variables=None):
         """ Create interface
 
         Args:
@@ -32,54 +26,35 @@ class ApproximationInterface(Interface):
             variables (dict):            Dictionary with variables
 
         """
-        self.name = interface_name
-        self.variables = variables
+        self.variables = variables # TODO: This is acutally not used I think!
         self.approximation_config = approximation_config
         self.approximation = None
         self.approx_init = False
 
-    @classmethod
-    def from_config_create_interface(cls, interface_name, config):
-        """ Create interface from config dictionary
-
-        Args:
-            interface_name (str):   Name of interface
-            config (dict):          Dictionary containing problem description
-
-        Returns:
-            interface:              Instance of ApproximationInterface
-        """
-        interface_options = config[interface_name]
-        approximation_name = interface_options["approximation"]
-        approximation_config = config[approximation_name]
-        parameters = config['parameters']
-
-        # initialize object
-        return cls(interface_name, approximation_config, parameters)
 
     def map(self, samples):
         """ Mapping function which calls the regression approximation
-            Prediction with the regression model
+        Prediction with the trained regression function / surrogate
 
         Args:
-            samples (list):         list of variables objects
+            samples (list):         list of high and low fidelity models
 
         Returns:
             dict:               Dict with results correspoding to samples
         """
         if not self.approx_init:
             raise RuntimeError("Approximation has not been properly initialized, cannot continue!")
-
-        inputs = []
-        for variables in samples:
-            params = variables.get_active_variables()
-            inputs.append(list(params.values()))
+        #inputs = []
+        #for variables in samples:
+         #   params = variables.get_active_variables()
+         #   inputs.append(list(params.values()))
 
         # get inputs as array and reshape
-        num_active_vars = samples[0].get_number_of_active_variables()
-        inputs = np.reshape(np.array(inputs), (-1, num_active_vars), order='F')
-        output = self.approximation.predict(inputs)
-        return output
+        #num_active_vars = samples[0].get_number_of_active_variables()
+        #inputs = np.reshape(np.array(inputs), (-1, num_active_vars), order='F')
+        mean = self.approximation.predict_y(samples.T)['mean'] # we chose an option with the additional likelihood noise already added to the predictive variance (integration over all possible models already done)
+        var = self.approximation.predict_y(samples.T)['variance']
+        return mean, var
 
     def build_approximation(self, Xtrain, Ytrain):
         """ Build and train underlying regression model
@@ -88,8 +63,8 @@ class ApproximationInterface(Interface):
             Xtrain (np.array):  Training inputs
             Ytrain (np.array):  Training outputs
         """
-        self.approximation = RegressionApproximation.from_options(self.approximation_config,
-                                                                  Xtrain, Ytrain)
+        self.approximation = RegressionApproximation.from_options(self.approximation_config, Xtrain, Ytrain)
+
         self.approximation.train()
         self.approx_init = True
 
@@ -97,6 +72,7 @@ class ApproximationInterface(Interface):
         """ Is the approximation properly initialzed """
         return self.approx_init
 
+######## TODO: Check if below is really needed ##################
     def cross_validate(self, X, Y, folds):
         """ Cross validation function which calls the regression approximation
 

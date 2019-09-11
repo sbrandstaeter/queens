@@ -47,8 +47,7 @@ class DataFitSurrogateModel(Model):
             config (dict):       Dictionary containing problem description
 
         Returns:
-            data_fit_surrogate_model:   Instance of DataFitSurrogateModel
-
+            data_fit_surrogate_model:   Instance of DataFitSurrogateModel 
         """
         # get options
         model_options = config[model_name]

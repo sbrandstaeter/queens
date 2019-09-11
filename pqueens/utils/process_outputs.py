@@ -54,6 +54,8 @@ def do_processing(output_data, output_description):
 
     # result interval
     result_interval = output_description.get('result_interval', None)
+    # TODO: we get an error below!
+    output_data["mean"]=output_data["mean"].astype(np.float)
     if result_interval is None:
         # estimate interval from results
         result_interval = estimate_result_interval(output_data)
@@ -135,7 +137,9 @@ def estimate_result_interval(output_data):
 
     """
     samples = output_data["mean"]
+    print(samples)
     min_data = np.amin(samples)
+    print(min_data)
     max_data = np.amax(samples)
 
     interval_length = max_data - min_data

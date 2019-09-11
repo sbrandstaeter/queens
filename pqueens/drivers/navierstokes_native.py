@@ -2,10 +2,10 @@
 
 import os
 from pqueens.drivers.driver import Driver
+from pqueens.utils.injector import inject
 
 
-
-class BaciDriverNative(Driver):
+class NavierStokesNative(Driver):
     """ Driver to run BACI natively on workstation
 
         Args:
@@ -15,8 +15,9 @@ class BaciDriverNative(Driver):
             float: result
     """
     def __init__(self, base_settings):
-        super(BaciDriverNative, self).__init__(base_settings)
+        super(NavierStokesNative, self).__init__(base_settings)
         self.mpi_config = {}
+        self.output_navierstokes = None  # Will be assigned on runtime
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings, workdir=None):
@@ -25,6 +26,7 @@ class BaciDriverNative(Driver):
         Args:
         Returns:
             driver: BaciDriverNative object
+
         """
         base_settings['address'] = 'localhost:27017'
         return cls(base_settings)
@@ -40,32 +42,41 @@ class BaciDriverNative(Driver):
                 str, str, str: simualtion prefix, name of input file, name of output file
         """
         # base directories
-        dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
+        dest_dir = os.path.join(self.experiment_dir, str(self.job_id))
 
         # Depending on the input file, directories will be created locally or on a cluster
-        output_directory = os.path.join(dest_dir, 'output')
+        output_directory = os.path.join(dest_dir, 'output', 'vtu')
+        self.output_navierstokes = os.path.join(dest_dir, 'output/')
         if not os.path.isdir(output_directory):
             os.makedirs(output_directory)
 
         # create input file name
         self.input_file = dest_dir + '/' + str(self.experiment_name) +\
-                                     '_' + str(self.job_id) + '.dat'
+                                     '_' + str(self.job_id) + '.json'
 
         # create output file name
         self.output_file = output_directory + '/' + str(self.experiment_name) +\
                                               '_' + str(self.job_id)
 
-    def setup_mpi(self, num_procs):  # TODO this is not needed atm
-        pass
-
     def run_job(self):
         """ Actual method to run the job on computing machine
             using run_subprocess method from base class
         """
+        # write output directory in input file (this is a special case
+        # for the navierstokes solver)
+        inject({"output_dir": self.output_navierstokes}, self.input_file, self.input_file)
+
         # assemble run command
-        command_list = [self.executable, self.input_file, self.output_file]  # This is already within pbs
-        # Here we call directly the executable inside the container not the jobscript!
+        self.setup_mpi(self.num_procs)
+        command_list = [self.executable,
+                        self.input_file]
+
         command_string = ' '.join(filter(None, command_list))
-        _, stderr, self.pid = self.run_subprocess(command_string)
-         #if stderr != "":  # TODO take care of that!
-         #   self.result = None  # This is necessary to detect failed jobs
+        stdout, stderr, self.pid = self.run_subprocess(command_string)
+
+#        if stderr != "":  # TODO probably this is important
+#            self.result = None
+#            self.job['status'] = 'failed'
+
+    def setup_mpi(self, num_procs):  # TODO this is not needed atm
+        pass

@@ -44,7 +44,7 @@
         "delete_field_data" : "False",
         "target_time": 5e-1,
         "time_tol": 1e-2,
-        "subfix": "mon",
+        "file_prefix": "QoI",
         "usecols": [1,3],
         "skiprows":4}
     }
@@ -52,7 +52,7 @@
   "resources" : {
     "local_machine" : {
       "scheduler"         : "local_scheduler",
-      "max-concurrent"    : 1000,
+      "max-concurrent"    : 10,
       "max-finished-jobs" : 1000
     }
   },

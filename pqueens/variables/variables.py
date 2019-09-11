@@ -15,7 +15,7 @@ class Variables(object):
     Attributes:
         variables (dict):  dictionary containing the data
     """
-    def __init__(self, uncertain_parameters, values, active):
+    def __init__(self, uncertain_parameters, values=None, active=None):
         """ Initialize variable object
 
         Args:
@@ -24,17 +24,21 @@ class Variables(object):
             active (list):               list with flag whether or not variable
                                          is active
         """
-        self.variables = {}
+        self.variables = {} # TODO Check ifwe need here: <uncertain_parameters> instead of <{}>
         i = 0
         for key, data in uncertain_parameters["random_variables"].items():
+            #TODO Check if the following lines are necessary in other scenarios
             self.variables[key] = {}
-            my_size = data['size']
-            self.variables[key]['size'] = my_size
-            self.variables[key]['value'] = values[i:i+my_size]
-            self.variables[key]['type'] = data['type']
-            self.variables[key]['distribution'] = mcmc_utils.create_proposal_distribution(data)
-            self.variables[key]['active'] = active[i]
-            i += my_size
+            if data['size']: # TODO workaround to make BMFMC work
+                my_size = data['size']
+                self.variables[key]['size'] = my_size
+                self.variables[key]['value'] = values[i:i+my_size]
+                self.variables[key]['type'] = data['type']
+                self.variables[key]['distribution'] = mcmc_utils.create_proposal_distribution(data)#get_distribution_object(data)
+                self.variables[key]['active'] = active[i]
+                i += my_size
+            else:
+                self.variables['random_variables'][key].update({'active':True})
 
         if uncertain_parameters.get("random_fields") is not None:
             for key, data in uncertain_parameters["random_fields"].items():

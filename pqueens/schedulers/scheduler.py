@@ -1,11 +1,11 @@
+""" This should be a module docstring """
 import abc
+import os
 import os.path
 import hashlib
-import os
 import subprocess
-from pqueens.drivers.driver import Driver
-from pqueens.utils.injector import inject
 import sys
+from pqueens.utils.injector import inject
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -81,10 +81,10 @@ class Scheduler(metaclass=abc.ABCMeta):
         scheduler = scheduler_class.from_config_create_scheduler(config, base_settings, scheduler_name=None)
         return scheduler
 
-# basic init function is called in resource.py after creation of scheduler object
     def pre_run(self):
+        """ This should be a docstring """
         if self.remote_flag:
-            hostname, _, _ = self.run_subprocess('hostname')
+            hostname, _, _ = self.run_subprocess('hostname -i')
             username, _, _ = self.run_subprocess('whoami')
             address_localhost = username.rstrip() + r'@' + hostname.rstrip()
 
@@ -100,18 +100,21 @@ class Scheduler(metaclass=abc.ABCMeta):
             pass
 
     def post_run(self):  # will actually be called in job_interface
+        """ This should be a docstring """
         if self.remote_flag:
             self.close_remote_port()
         else:
             pass
 
-# ------------------------ AUXILIARY HIGH-LEVEL METHODS -----------------------
-    def kill_user_ssh_remote(self, username):  # TODO Currently not in use
+# ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
+    def kill_user_ssh_remote(self, username):
+        """ Docstring """
         command_list = ['ssh', self.connect_to_resource, '\'killall -u', username, 'ssh\'']
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = self.run_subprocess(command_string)
+        _, _, _ = self.run_subprocess(command_string)
 
     def check_singularity_system_vars(self):
+        """Docstring"""
         # Check if SINGULARITY_BIND exists and if not write it to .bashrc file
         command_list = ['ssh', self.connect_to_resource, '\'echo $SINGULARITY_BIND\'']
         command_string = ' '.join(command_list)
@@ -127,7 +130,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         command_string = ' '.join(command_list)
         stdout, stderr, _ = self.run_subprocess(command_string)
         if stdout == "\n":
-            command_list = ['ssh', self.connect_to_resource, "\"echo 'export SINGULARITYENV_APPEND_PATH=\$PATH' >> ~/.bashrc && source ~/.bashrc\""]
+            command_list = ['ssh', self.connect_to_resource,
+                            "\"echo 'export SINGULARITYENV_APPEND_PATH=\$PATH' >> ~/.bashrc && source ~/.bashrc\""] # noqa
             command_string = ' '.join(command_list)
             stdout, stderr, _ = self.run_subprocess(command_string)
 
@@ -137,53 +141,63 @@ class Scheduler(metaclass=abc.ABCMeta):
         stdout, stderr, _ = self.run_subprocess(command_string)
         if stdout == "\n":
             command_list = ['ssh', self.connect_to_resource,
-                            "\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=\$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc\""]
+                            "\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=\$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc\""] # noqa
             command_string = ' '.join(command_list)
             stdout, stderr, _ = self.run_subprocess(command_string)
 
     def establish_port_forwarding_remote(self, address_localhost):
+        """ docstring """
         self.port = 2030  # just a start value to check for next open port
         port_fail = 1
 
         while port_fail != "":
             self.port += 1
-            command_list = ['ssh', '-t', '-t', self.connect_to_resource,
-                            '\'ssh', '-fN', '-g', '-L', str(self.port) + r':' + 'localhost' + r':27017',
-                            address_localhost+'\'']
+            command_list = ['ssh', '-t', '-t', self.connect_to_resource, '\'ssh', '-fN', '-g', '-L',
+                            str(self.port) + r':' + 'localhost' + r':27017', address_localhost+'\'']
             command_string = ' '.join(command_list)
             port_fail = os.popen(command_string).read()
         print('Remote port-forwarding sucessfully established for port %s' % (self.port))
 
     def establish_port_forwarding_local(self, address_localhost):
+        """ docstring """
         remote_address = self.connect_to_resource.split(r'@')[1]
         command_list = ['ssh', '-f', '-N', '-L', r'9001:' + remote_address + r':22', address_localhost]
         ssh_proc = subprocess.Popen(command_list, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stat = ssh_proc.poll()
-        while stat == None:
+        while stat is None:
             stat = ssh_proc.poll()
         # TODO Think of some kind of error catching here; so far it works but error might be cryptical
 
-    def close_remote_port(self):
+    def close_remote_port(self):  # TODO: Check if this might interfer with the current framework
+        """ docs """
         command_string = 'ssh ' + self.connect_to_resource + ' "kill $(lsof -t -i:' + str(self.port) + ')"'
         _, stderr, _ = self.run_subprocess(command_string)
 
     def copy_temp_json(self):
+        """ docstrig """
         command_list = ["scp", self.config['input_file'],
-                        self.connect_to_resource + ':'+self.path_to_singularity + '/temp.json']
+                        self.connect_to_resource + ':' + self.path_to_singularity + '/temp.json']
         command_string = ' '.join(command_list)
         stdout, stderr, _ = self.run_subprocess(command_string)
         if stderr:
             raise RuntimeError("Error! Was not able to copy post_post class to remote! Abort...")
 
     def copy_post_post(self):
+        """ docstring """
         abs_dirpath_current_file = os.path.dirname(os.path.abspath(__file__))
         abs_path_post_post = os.path.join(abs_dirpath_current_file, '../post_post')
+        # delete old files
+        command_list = ["ssh", self.connect_to_resource, '\'rm -r', self.path_to_singularity + '/post_post\'']
+        command_string = ' '.join(command_list)
+        _, _, _ = self.run_subprocess(command_string)
+
+        # copy new files
         command_list = ["scp -r", abs_path_post_post,
                         self.connect_to_resource + ':' + self.path_to_singularity + '/post_post']
         command_string = ' '.join(command_list)
         stdout, stderr, _ = self.run_subprocess(command_string)
         if stderr:
-            raise RuntimeError("Error! Was not able to copy local json input file to remote! Abort...")
+            raise RuntimeError("Error! Was not able to copy post_post directory to remote! Abort...")
 
     def create_singularity_image(self):
         """ Add current environment to predesigned singularity container for cluster applications """
@@ -200,6 +214,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         _, stderr, _ = self.run_subprocess(command_string)
 
     def hash_files(self, mode=None):
+        """ docstring """
         hashlist = []
         hasher = hashlib.md5()
         # hash all drivers
@@ -213,6 +228,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                 data = inputfile.read()
                 hasher.update(data)
             hashlist.append(hasher.hexdigest())
+
         # hash mongodb
         rel_path = "../database/mongodb.py"
         abs_path = os.path.join(script_dir, rel_path)
@@ -220,6 +236,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             data = inputfile.read()
             hasher.update(data)
         hashlist.append(hasher.hexdigest())
+
         # hash utils
         rel_path = '../utils/injector.py'
         abs_path = os.path.join(script_dir, rel_path)
@@ -227,6 +244,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             data = inputfile.read()
             hasher.update(data)
         hashlist.append(hasher.hexdigest())
+
         # hash setup_remote
         rel_path = '../../setup_remote.py'
         abs_path = os.path.join(script_dir, rel_path)
@@ -234,6 +252,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             data = inputfile.read()
             hasher.update(data)
         hashlist.append(hasher.hexdigest())
+
         # hash remote_main
         rel_path = '../remote_main.py'
         abs_path = os.path.join(script_dir, rel_path)
@@ -241,6 +260,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             data = inputfile.read()
             hasher.update(data)
         hashlist.append(hasher.hexdigest())
+
         # hash postpost files
         rel_path = '../post_post/post_post.py'
         abs_path = os.path.join(script_dir, rel_path)
@@ -252,13 +272,14 @@ class Scheduler(metaclass=abc.ABCMeta):
         if mode is not None:
             rel_path = '../../hashfile.txt'
             abs_path = os.path.join(script_dir, rel_path)
-            with open(abs_path, 'w') as f:
+            with open(abs_path, 'w') as myfile:
                 for item in hashlist:
-                    f.write("%s" % item)
+                    myfile.write("%s" % item)
         else:
             return hashlist
 
     def prepare_singularity_files(self):
+        """ docstring """
         # check existence local
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
         rel_path = '../../driver.simg'
@@ -327,19 +348,18 @@ class Scheduler(metaclass=abc.ABCMeta):
                 raise RuntimeError("Error! Was not able to copy local singulariy image to remote! Abort...")
             print('All singularity images ok! Starting simulation on cluster...')
 
-
     def run_subprocess(self, command_string):
         """ Method to run command_string outside of Python """
-        p = subprocess.Popen(command_string,
-                             stdin=subprocess.PIPE,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             shell=True,
-                             universal_newlines=True)
+        process = subprocess.Popen(command_string,
+                                   stdin=subprocess.PIPE,
+                                   stdout=subprocess.PIPE,
+                                   stderr=subprocess.PIPE,
+                                   shell=True,
+                                   universal_newlines=True)
 
-        stdout, stderr = p.communicate()
-        p.poll()
-        return stdout, stderr, p
+        stdout, stderr = process.communicate()
+        process.poll()
+        return stdout, stderr, process
 
     def submit(self, job_id, batch):
         """ Function to submit new job to scheduling software on a given resource
@@ -358,11 +378,9 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         """
         if self.remote_flag:
-
-            self.scheduler_options['INPUT'] = '\'--job_id={} --batch={} --port={} --path_json={}\''\
-                                              .format(job_id, batch, self.port, self.path_to_singularity)
+            self.scheduler_options['INPUT'] = '--job_id={} --batch={} --port={} --path_json={}'.format(job_id, batch, self.port, self.path_to_singularity)
             self.scheduler_options['EXE'] = self.path_to_singularity + '/driver.simg'
-            self.scheduler_options['job_name'] = 'queens_{}_{}'.format(self.experiment_name, job_id)
+            self.scheduler_options['job_name'] = '{}_{}'.format(self.experiment_name, job_id)
 
             # Parse data to job_scheduler_template
             self.create_submission_script(job_id)
@@ -371,7 +389,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             cmdlist_remote_main = ['ssh', self.connect_to_resource,
                                    '"' + self.scheduler_start, self.submission_script_path + '"']
             cmd_remote_main = ' '.join(cmdlist_remote_main)
-            stdout, stderr, p = self.run_subprocess(cmd_remote_main)
+            stdout, stderr, _ = self.run_subprocess(cmd_remote_main)
             match = self.get_process_id_from_output(stdout)
             try:
                 return int(match)
@@ -381,12 +399,21 @@ class Scheduler(metaclass=abc.ABCMeta):
 
             if stderr:
                 raise RuntimeError("The file 'remote_main' in remote singularity image could not be executed properly!")
-                print(stderr)
         else:
-            driver_obj = Driver.from_config_create_driver(self.config, job_id, batch)
-            driver_obj.main_run()
-            driver_obj.finish_and_clean()
-            return driver_obj.pid
+            local_path_json = self.config['input_file']
+            remote_args = '--job_id={} --batch={} --port={} --path_json={}'.format(job_id,
+                                                                                   batch,
+                                                                                   '000',
+                                                                                   local_path_json)
+            script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+            rel_path = '../../driver.simg'
+            local_singularity_path = os.path.join(script_dir, rel_path)
+            cmdlist_remote_main = ['/usr/bin/singularity run', local_singularity_path, remote_args]
+            cmd_remote_main = ' '.join(cmdlist_remote_main)
+            # stdout, stderr, _ = self.run_subprocess(cmd_remote_main)
+            process = subprocess.Popen(cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            pid = process.pid
+            return pid
 
     def create_submission_script(self, job_id):
         dest_dir = str(self.experiment_dir) + '/' + \
@@ -410,4 +437,14 @@ class Scheduler(metaclass=abc.ABCMeta):
 # ------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED / ABSTRACTMETHODS ------
     @abc.abstractmethod  # how to check this is dependent on cluster / env
     def alive(self, process_id):
+        """ docstring """
         pass
+
+    @abc.abstractmethod
+    def get_process_id_from_output(self, output):
+        pass
+
+    @abc.abstractmethod  # how to check this is dependent on cluster / env
+    def alive(self, process_id):
+        pass
+

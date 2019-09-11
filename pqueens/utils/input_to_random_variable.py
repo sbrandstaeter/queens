@@ -1,6 +1,9 @@
+""" There should be some docstring """
+
 from pqueens.utils.mcmc_utils import create_proposal_distribution
 
 # TODO write tests
+
 
 def get_random_samples(description, num_samples):
     """
