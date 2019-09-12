@@ -363,7 +363,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             print("_______________________________________________________________________________")
             self.create_singularity_image()
             print("Local singularity image written sucessfully!")
-            if remote_flag:
+            if self.remote_flag:
                 print("Updating now remote image from local image...")
                 print("(This might take a couple of seconds, but needs only to be done once)")
                 rel_path = "../../driver.simg"
