@@ -8,7 +8,7 @@
     "method_name": "monte_carlo",
     "method_options" :{
       "seed" : 1,
-      "num_samples" : 10,
+      "num_samples" : 100,
       "model" : "model",
       "result_description" : {
           "write_results" : true,
@@ -32,6 +32,7 @@
       "input_template"        : "/home/nitzler/workspace/navierstokes/applications/incompressible_navier_stokes_test_cases/flow_past_cylinder_template.json",
       "path_to_executable"    : "/home/nitzler/workspace/navierstokes/applications/incompressible_navier_stokes",
       "path_to_postprocessor" : "",
+      "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64",
       "experiment_dir"        : "/home/nitzler/workspace/navierstokes/applications/output/demo",
       "post_post"         : {
         "type" : "time_series",

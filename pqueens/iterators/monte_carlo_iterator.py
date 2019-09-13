@@ -175,5 +175,4 @@ class MonteCarloIterator(Iterator):
                 ax.hist(data, bins=200)
                 ax.set_xlabel(r'Count [-]')
                 ax.set_xlabel(r'$C_L(t)$')
-                pdb.set_trace()
                 plt.show()

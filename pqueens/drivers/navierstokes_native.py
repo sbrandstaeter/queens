@@ -70,7 +70,6 @@ class NavierStokesNative(Driver):
         self.setup_mpi(self.num_procs)
         command_list = [self.executable,
                         self.input_file]
-
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
 

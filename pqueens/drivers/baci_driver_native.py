@@ -4,7 +4,6 @@ import os
 from pqueens.drivers.driver import Driver
 
 
-
 class BaciDriverNative(Driver):
     """ Driver to run BACI natively on workstation
 

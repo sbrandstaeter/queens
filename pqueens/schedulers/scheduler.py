@@ -1,6 +1,7 @@
 """ This should be a module docstring """
 
 import abc
+import pdb
 import os
 import os.path
 import hashlib
@@ -68,6 +69,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             base_settings['singularity_path'] = None
             base_settings['connect'] = None
             base_settings['scheduler_template'] = None
+            base_settings['cluster_bind'] = config['driver']['driver_params']['cluster_bind']
         elif scheduler_options["scheduler_type"] == 'pbs' or scheduler_options["scheduler_type"] == 'slurm':
             base_settings['remote_flag'] = True
             base_settings['singularity_path'] = config['driver']['driver_params']['path_to_singularity']
@@ -116,14 +118,20 @@ class Scheduler(metaclass=abc.ABCMeta):
         # Check if SINGULARITY_BIND exists and if not write it to .bashrc file
         if self.remote_flag:
             command_list = ['ssh', self.connect_to_resource, '\'echo $SINGULARITY_BIND\'']
-            command_string = ' '.join(command_list)
-            stdout, stderr, _ = self.run_subprocess(command_string)
-            if stdout == "\n":
+        else:
+            command_list = ['echo $SINGULARITY_BIND']
+        command_string = ' '.join(command_list)
+        stdout, stderr, _ = self.run_subprocess(command_string)
+        if stdout == "\n":
+            if self.remote_flag:
                 command_list = ['ssh', self.connect_to_resource,
                                 "\"echo 'export SINGULARITY_BIND=" + self.cluster_bind
                                 + "\' >> ~/.bashrc && source ~/.bashrc\""]
-                command_string = ' '.join(command_list)
-                stdout, stderr, _ = self.run_subprocess(command_string)
+            else:
+                pdb.set_trace()
+                command_list = ["echo 'export SINGULARITY_BIND=" + self.cluster_bind + "\' >> ~/.bashrc && source ~/.bashrc"]
+        command_string = ' '.join(command_list)
+        stdout, stderr, _ = self.run_subprocess(command_string)
 
         # Create a Singularity PATH variable that is equal to the host PATH
         if self.remote_flag:
@@ -135,9 +143,9 @@ class Scheduler(metaclass=abc.ABCMeta):
         if stdout == "\n":
             if self.remote_flag:
                 command_list = ['ssh', self.connect_to_resource,
-                                "\"echo 'export SINGULARITYENV_APPEND_PATH=\$PATH' >> ~/.bashrc && source ~/.bashrc\""] # noqa
+                                "\"echo 'export SINGULARITYENV_APPEND_PATH=$PATH' >> ~/.bashrc && source ~/.bashrc\""] # noqa
             else:
-                command_list = ["echo 'export SINGULARITYENV_APPEND_PATH=\$PATH' >> ~/.bashrc && source ~/.bashrc"] # noqa
+                command_list = ["echo 'export SINGULARITYENV_APPEND_PATH=$PATH' >> ~/.bashrc && source ~/.bashrc"] # noqa
             command_string = ' '.join(command_list)
             stdout, stderr, _ = self.run_subprocess(command_string)
 
@@ -151,9 +159,9 @@ class Scheduler(metaclass=abc.ABCMeta):
         if stdout == "\n":
             if self.remote_flag:
                 command_list = ['ssh', self.connect_to_resource,
-                                "\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=\$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc\""] # noqa
+                                "\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc\""] # noqa
             else:
-                command_list = ["echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=\$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc"] # noqa
+                command_list = ["echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc"] # noqa
             command_string = ' '.join(command_list)
             stdout, stderr, _ = self.run_subprocess(command_string)
 
@@ -323,15 +331,16 @@ class Scheduler(metaclass=abc.ABCMeta):
                 _, _, _ = self.run_subprocess(command_string)
                 self.create_singularity_image()
                 print("Local singularity image written sucessfully!")
-                print("Updating remote image from local image...")
-                print("(This might take a couple of seconds, but needs only to be done once)")
-                rel_path = "../../driver.simg"
-                abs_path = os.path.join(script_dir, rel_path)
-                command_list = ["scp", abs_path, self.connect_to_resource + ':' + self.path_to_singularity]
-                command_string = ' '.join(command_list)
-                stdout, stderr, _ = self.run_subprocess(command_string)
-                if stderr:
-                    raise RuntimeError("Error! Was not able to copy local singulariy image to remote! Abort...")
+                if self.remote_flag:
+                    print("Updating remote image from local image...")
+                    print("(This might take a couple of seconds, but needs only to be done once)")
+                    rel_path = "../../driver.simg"
+                    abs_path = os.path.join(script_dir, rel_path)
+                    command_list = ["scp", abs_path, self.connect_to_resource + ':' + self.path_to_singularity]
+                    command_string = ' '.join(command_list)
+                    stdout, stderr, _ = self.run_subprocess(command_string)
+                    if stderr:
+                        raise RuntimeError("Error! Was not able to copy local singulariy image to remote! Abort...")
 
             # check existence singularity on remote
             if self.remote_flag:
@@ -474,4 +483,3 @@ class Scheduler(metaclass=abc.ABCMeta):
     @abc.abstractmethod  # how to check this is dependent on cluster / env
     def alive(self, process_id):
         pass
-

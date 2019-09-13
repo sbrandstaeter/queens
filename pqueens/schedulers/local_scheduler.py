@@ -30,7 +30,6 @@ class LocalScheduler(Scheduler):
         base_settings['job_flag'] = None
         base_settings['scheduler_start'] = None
         base_settings['command_line_opt'] = None
-        base_settings['cluster_bind'] = None
         base_settings['scheduler_options'] = None
 
         return cls(base_settings, scheduler_name)

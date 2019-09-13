@@ -1,6 +1,5 @@
 import os
 from pqueens.drivers.driver import Driver
-from pqueens.database.mongodb import MongoDB
 
 
 class BaciDriverDeep(Driver):
@@ -55,7 +54,6 @@ class BaciDriverDeep(Driver):
         self.output_file = output_directory + '/' + str(self.experiment_name) + \
                                               '_' + str(self.job_id)
         self.output_scratch = self.experiment_name + '_' + str(self.job_id)
-
 
     def run_job(self):
         """ Actual method to run the job on computing machine

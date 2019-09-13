@@ -1,4 +1,3 @@
-import sys
 import os
 import subprocess
 import importlib.util
@@ -40,7 +39,7 @@ def ansys_driver_native(job):
     ansys_output = {}
     ansys_output["output"] = ansys_output_file
     inject(ansys_output, ansys_input_file, ansys_input_file)
-    
+
     # get ansys run and post process command
     ansys_cmd = [driver_params['path_to_executable'],
                  "-b -g -p aa_t_a -dir ",
