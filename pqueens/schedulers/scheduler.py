@@ -1,7 +1,6 @@
 """ This should be a module docstring """
 
 import abc
-import pdb
 import os
 import os.path
 import hashlib
@@ -128,7 +127,6 @@ class Scheduler(metaclass=abc.ABCMeta):
                                 "\"echo 'export SINGULARITY_BIND=" + self.cluster_bind
                                 + "\' >> ~/.bashrc && source ~/.bashrc\""]
             else:
-                pdb.set_trace()
                 command_list = ["echo 'export SINGULARITY_BIND=" + self.cluster_bind + "\' >> ~/.bashrc && source ~/.bashrc"]
         command_string = ' '.join(command_list)
         stdout, stderr, _ = self.run_subprocess(command_string)
@@ -231,15 +229,14 @@ class Scheduler(metaclass=abc.ABCMeta):
         abs_path2 = os.path.join(script_dir, rel_path2)
         command_list = ["sudo /usr/bin/singularity build", abs_path1, abs_path2]
         command_string = ' '.join(command_list)
-        _, _, _ = self.run_subprocess(command_string)
+        _, stderr, _ = self.run_subprocess(command_string)
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
         rel_path = '../../driver.simg'
         abs_path = os.path.join(script_dir, rel_path)
         if not os.path.isfile(abs_path):
-            raise RuntimeError('''
-                  Build of local singularity image failed!
-                  This could have several reasons but make sure to run QUEENS from the base
-                  directory containing the main.py file to set the proper relatives paths!''')
+            raise RuntimeError('''Build of local singularity image failed!
+              This could have several reasons but make sure to run QUEENS from the base
+              directory containing the main.py file to set the proper relatives paths!''')
 
     def hash_files(self, mode=None):
         """ docstring """

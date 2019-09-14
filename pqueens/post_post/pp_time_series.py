@@ -50,6 +50,7 @@ class PP_time_series(Post_post):
     # ------------------------------- END WORKAROUND ------------------------------
             if not post_out.any():  # timestep reached? <=> variable is empty?
                 self.error = True
+                self.result = None
         except RuntimeError:
             self.error = True
             self.result = None

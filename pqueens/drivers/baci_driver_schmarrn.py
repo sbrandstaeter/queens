@@ -1,5 +1,6 @@
 """ This should be a docstring """
 
+import re
 import os
 from pqueens.drivers.driver import Driver
 
@@ -82,6 +83,9 @@ class BaciDriverSchmarrn(Driver):
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
 
-        if stderr != "":
-            self.result = None  # This is necessary to detect failed jobs
-            self.job['status'] = 'failed'
+        if stderr:  # TODO this will not work atm but a similar version should be tetsted for Schmarrn
+            if re.fullmatch(r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n', stderr):
+                pass
+            else:
+                self.result = None  # This is necessary to detect failed jobs
+                self.job['status'] = 'failed'
