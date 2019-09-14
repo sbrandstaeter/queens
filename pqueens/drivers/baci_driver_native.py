@@ -4,7 +4,6 @@ import os
 from pqueens.drivers.driver import Driver
 
 
-
 class BaciDriverNative(Driver):
     """ Driver to run BACI natively on workstation
 
@@ -67,5 +66,6 @@ class BaciDriverNative(Driver):
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
         _, stderr, self.pid = self.run_subprocess(command_string)
-         #if stderr != "":  # TODO take care of that!
-         #   self.result = None  # This is necessary to detect failed jobs
+        if stderr:
+            self.result = None  # This is necessary to detect failed jobs
+            self.job['status'] = 'failed'

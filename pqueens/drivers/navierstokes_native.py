@@ -1,6 +1,7 @@
 """ This should be a docstring """
 
 import os
+import pdb
 from pqueens.drivers.driver import Driver
 from pqueens.utils.injector import inject
 
@@ -70,13 +71,12 @@ class NavierStokesNative(Driver):
         self.setup_mpi(self.num_procs)
         command_list = [self.executable,
                         self.input_file]
-
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
 
-#        if stderr != "":  # TODO probably this is important
-#            self.result = None
-#            self.job['status'] = 'failed'
+        if stderr:
+            self.result = None
+            self.job['status'] = 'failed'
 
     def setup_mpi(self, num_procs):  # TODO this is not needed atm
         pass

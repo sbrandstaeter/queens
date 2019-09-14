@@ -1,6 +1,6 @@
 import os
+import re
 from pqueens.drivers.driver import Driver
-from pqueens.database.mongodb import MongoDB
 
 
 class BaciDriverDeep(Driver):
@@ -56,7 +56,6 @@ class BaciDriverDeep(Driver):
                                               '_' + str(self.job_id)
         self.output_scratch = self.experiment_name + '_' + str(self.job_id)
 
-
     def run_job(self):
         """ Actual method to run the job on computing machine
             using run_subprocess method from base class
@@ -65,10 +64,10 @@ class BaciDriverDeep(Driver):
         command_list = ['cd', self.workdir, r'&&', self.executable, self.input_file, self.output_scratch]
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
-        stdout, stderr, self.pid = self.run_subprocess(command_string)
-        print(stdout)
-        print(stderr)
-        #print('This is the error: %s' %stderr)
-        #if stderr:
-         #   self.result = None  # This is necessary to detect failed jobs
-         #   self.job['status'] = 'failed'
+        _, stderr, self.pid = self.run_subprocess(command_string)
+        if stderr:
+            if re.fullmatch(r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n', stderr):
+                pass
+            else:
+                self.result = None  # This is necessary to detect failed jobs
+                self.job['status'] = 'failed'

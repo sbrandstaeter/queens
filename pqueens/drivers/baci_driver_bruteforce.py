@@ -1,5 +1,6 @@
 """ This should be a docstring """
 
+import re
 import os
 from pqueens.drivers.driver import Driver
 
@@ -77,6 +78,11 @@ class BaciDriverBruteforce(Driver):
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
-        if stderr != "":
-            self.result = None  # This is necessary to detect failed jobs
-            self.job['status'] = 'failed'
+
+        if stderr:  # TODO this will not work yet for bruteforce
+                    # but a similar solution should be tested and implemented for bruteforce
+            if re.fullmatch(r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n', stderr):
+                pass
+            else:
+                self.result = None  # This is necessary to detect failed jobs
+                self.job['status'] = 'failed'
