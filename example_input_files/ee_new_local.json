@@ -38,11 +38,12 @@
       "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/invaaa_ee.dat",
       "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
       "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
+      "no_singularity"        : false,
       "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
       "post_process_options"  : ["--field=structure --node=26 --start=1"],
       "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/elementary_effects_demo",
       "post_post"         : {
-        "delete_field_data" : "False",
+        "delete_field_data" : false,
         "target_time": 5e-1,
         "time_tol": 1e-2,
         "file_prefix": "QoI",
@@ -53,7 +54,7 @@
   "resources" : {
     "local_machine" : {
       "scheduler"         : "local_scheduler",
-      "max-concurrent"    : 10,
+      "max-concurrent"    : 20,
       "max-finished-jobs" : 1000
     }
   },
