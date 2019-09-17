@@ -70,16 +70,17 @@ class Scheduler(metaclass=abc.ABCMeta):
         base_settings['experiment_name'] = config['global_settings']['experiment_name']
         driver_options = config['driver']['driver_params']
         base_settings['experiment_dir'] = driver_options['experiment_dir']
+        if config['driver']['driver_params'].get('no_singularity'):
+            base_settings['no_singularity'] = True
+        else:
+            base_settings['no_singularity'] = False
+
         if scheduler_options["scheduler_type"] == 'local':
             base_settings['remote_flag'] = False
             base_settings['singularity_path'] = None
             base_settings['connect'] = None
             base_settings['scheduler_template'] = None
             base_settings['cluster_bind'] = config['driver']['driver_params']['cluster_bind']
-            if config['driver']['driver_params'].get('no_singularity'):
-                base_settings['no_singularity'] = True
-            else:
-                base_settings['no_singularity'] = False
         elif scheduler_options["scheduler_type"] == 'pbs' or scheduler_options["scheduler_type"] == 'slurm':
             base_settings['remote_flag'] = True
             base_settings['singularity_path'] = config['driver']['driver_params']['path_to_singularity']
