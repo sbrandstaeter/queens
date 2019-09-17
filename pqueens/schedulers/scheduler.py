@@ -107,8 +107,10 @@ class Scheduler(metaclass=abc.ABCMeta):
             self.establish_port_forwarding_remote(address_localhost)
             self.copy_temp_json()
             self.copy_post_post()
-        self.check_singularity_system_vars()
-        self.prepare_singularity_files()
+
+        if not self.no_singularity:
+            self.check_singularity_system_vars()
+            self.prepare_singularity_files()
 
     def post_run(self):  # will actually be called in job_interface
         """ This should be a docstring """
