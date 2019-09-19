@@ -1,0 +1,6 @@
+# PEP-518 build system config
+
+# Tools section
+[tool.black]
+line-length = 99
+skip-string-normalization = true

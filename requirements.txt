@@ -22,13 +22,14 @@ seaborn
 plotly
 # testing framework
 pytest>=3.0.0
-pytest-pep8
+pytest-codestyle
 pytest-cov
 pytest-mock
 # create mock objects for unit testing
 mock
 # linting, check code-style (PEP8)
 pylint
-
-
-
+# make ascii-art prints
+pyfiglet
+# code formatter
+black
