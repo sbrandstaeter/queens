@@ -1,5 +1,5 @@
 """
-Test-module for tune_cale_covariance of mcmc_utils module
+Test-module for tune_scale_covariance of mcmc_utils module
 
 @author: Sebastian Brandstaeter
 """
@@ -9,17 +9,18 @@ import pytest
 
 from pqueens.utils.mcmc_utils import tune_scale_covariance
 
+
 @pytest.fixture(
-        scope='module',
-        params=[
-            (1e-4, 0.1),
-            (1e-2, 0.5),
-            (1e-1, 0.9),
-            (4e-1, 1.0),
-            (6e-1, 1.1),
-            (8e-1, 2.0),
-            (9.9e-1, 10.0)
-        ]
+    scope='module',
+    params=[
+        (1e-4, 0.1),
+        (1e-2, 0.5),
+        (1e-1, 0.9),
+        (4e-1, 1.0),
+        (6e-1, 1.1),
+        (8e-1, 2.0),
+        (9.9e-1, 10.0),
+    ],
 )
 def accept_rate_and_scale_covariance(request):
     """
@@ -50,5 +51,5 @@ def test_tune_scale_covariance_multiple_chains():
     accept_rate = np.array([[1e-4, 1e-2, 1e-1, 4e-1, 6e-1, 8e-1, 9.9e-1]]).T
     expected_scale = np.array([[0.1, 0.5, 0.9, 1.0, 1.1, 2.0, 10.0]]).T
 
-    current_scale = np.ones((7,1))
+    current_scale = np.ones((7, 1))
     assert np.allclose(tune_scale_covariance(current_scale, accept_rate), expected_scale)

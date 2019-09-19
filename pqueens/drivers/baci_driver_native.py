@@ -1,12 +1,11 @@
-import sys
-import os
-import subprocess
-import importlib.util
-from pqueens.utils.injector import inject
+""" This should be a docstring """
 
-def baci_driver_native(job):
-    """
-        Driver to run BACI natively on host machine
+import os
+from pqueens.drivers.driver import Driver
+
+
+class BaciDriverNative(Driver):
+    """ Driver to run BACI natively on workstation
 
         Args:
             job (dict): Dict containing all information to run the simulation
@@ -14,101 +13,59 @@ def baci_driver_native(job):
         Returns:
             float: result
     """
+    def __init__(self, base_settings):
+        super(BaciDriverNative, self).__init__(base_settings)
+        self.mpi_config = {}
 
-    sys.stderr.write("Running BACI job.\n")
+    @classmethod
+    def from_config_create_driver(cls, config, base_settings, workdir=None):
+        """ Create Driver from input file
 
-    # Add directory to the system path.
-    sys.path.append(os.path.realpath(job['expt_dir']))
+        Args:
+        Returns:
+            driver: BaciDriverNative object
+        """
+        base_settings['address'] = 'localhost:27017'
+        return cls(base_settings)
 
-    # Change into the directory.
-    os.chdir(job['expt_dir'])
-    sys.stderr.write("Changed into dir %s\n" % (os.getcwd()))
+# ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
+    def setup_dirs_and_files(self):
+        """ Setup directory structure
 
-    # get params dict
-    params = job['params']
-    driver_params = job['driver_params']
+            Args:
+                driver_options (dict): Options dictionary
 
-    # assemble input file name
-    baci_input_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id']) + '.dat'
-    baci_output_file = job['expt_dir'] + '/'+ job['expt_name'] + '_' + str(job['id'])
+            Returns:
+                str, str, str: simualtion prefix, name of input file, name of output file
+        """
+        # base directories
+        dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
 
-    sys.stderr.write("baci_input_file %s\n" % baci_input_file)
+        # Depending on the input file, directories will be created locally or on a cluster
+        output_directory = os.path.join(dest_dir, 'output')
+        if not os.path.isdir(output_directory):
+            os.makedirs(output_directory)
 
-    # create input file using injector
-    inject(params, driver_params['input_template'], baci_input_file)
+        # create input file name
+        self.input_file = dest_dir + '/' + str(self.experiment_name) +\
+                                     '_' + str(self.job_id) + '.dat'
 
-    # assemble baci run command
-    baci_cmd = driver_params['path_to_executable'] + ' ' + baci_input_file + ' ' + baci_output_file
+        # create output file name
+        self.output_file = output_directory + '/' + str(self.experiment_name) +\
+                                              '_' + str(self.job_id)
 
-    # run BACI
-    temp_out = run_baci(baci_cmd)
-    print("Communicate run baci")
-    print(temp_out)
+    def setup_mpi(self, num_procs):  # TODO this is not needed atm
+        pass
 
-    # Post-process BACI run
-    for i, post_process_option in enumerate(driver_params['post_process_options']):
-        post_cmd = driver_params['path_to_postprocessor'] + ' ' + post_process_option + ' --file='+baci_output_file + ' --output='+baci_output_file+'_'+str(i+1)
-        temp_out = run_post_processing(post_cmd)
-        print("Communicate post-processing")
-        print(temp_out)
-
-    # Call post post-processing script
-    result = run_post_post_processing(driver_params['post_post_script'],
-                                      baci_output_file)
-
-    return result
-
-
-def run_baci(baci_cmd):
-    """ Run BACI via subprocess
-
-    Args:
-        baci_cmd (string):       Command to run BACI
-
-    Returns:
-        string: terminal output
-    """
-    p = subprocess.Popen(baci_cmd,
-                         shell=True)
-    temp_out = p.communicate()
-
-    return temp_out
-
-
-def run_post_processing(post_cmd):
-    """ Run BACI post processor via subprocess
-
-    Args:
-        post_cmd (string):       Command to run post processing
-
-    Returns:
-        string: terminal output
-    """
-
-    p = subprocess.Popen(post_cmd,
-                         shell=True)
-    temp_out = p.communicate()
-
-    return temp_out
-
-
-def run_post_post_processing(post_post_script, baci_output_file):
-    """ Run script to extract results from monitor file
-
-    Args:
-        post_post_script (string): name of script to run
-        baci_output_file (string): name of file to use
-
-    Returns:
-        float: actual simulation result
-    """
-    # call post post process script to extract result from monitor file
-    spec = importlib.util.spec_from_file_location("module.name", post_post_script)
-    post_post_proc = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(post_post_proc)
-    result = post_post_proc.run(baci_output_file)
-
-    sys.stderr.write("Got result %s\n" % (result))
-
-    return result
-
+    def run_job(self):
+        """ Actual method to run the job on computing machine
+            using run_subprocess method from base class
+        """
+        # assemble run command
+        command_list = [self.executable, self.input_file, self.output_file]  # This is already within pbs
+        # Here we call directly the executable inside the container not the jobscript!
+        command_string = ' '.join(filter(None, command_list))
+        _, stderr, self.pid = self.run_subprocess(command_string)
+        if stderr:
+            self.result = None  # This is necessary to detect failed jobs
+            self.job['status'] = 'failed'

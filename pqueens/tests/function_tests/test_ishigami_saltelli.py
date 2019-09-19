@@ -1,10 +1,13 @@
-from pqueens.main import main
-import pytest
+import os
 import pickle
 
-def test_ishigami_saltelli_salib(tmpdir):
+import pytest
+
+from pqueens.main import main
+
+def test_ishigami_saltelli_salib(inputdir, tmpdir):
     """ Test case for salib based saltelli iterator """
-    arguments = ['--input=pqueens/tests/function_tests/input_files/ishigami_saltelli.json',
+    arguments = ['--input=' + os.path.join(inputdir, 'ishigami_saltelli.json'),
                  '--output='+str(tmpdir)]
 
     main(arguments)

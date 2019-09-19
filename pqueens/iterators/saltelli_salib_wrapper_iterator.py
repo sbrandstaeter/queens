@@ -103,6 +103,13 @@ class SaltelliSALibIterator(Iterator):
             self.parameter_names.append(key)
             max_temp = value["distribution_parameter"][1]
             min_temp = value["distribution_parameter"][0]
+
+            # in queens normal distributions are parameterized with mean and var
+            # in salib normal distributions are parameterized via mean and std
+            # -> we need to reparamteterize normal distributions
+            if value['distribution'] in ['normal']:
+                max_temp = np.sqrt(max_temp)
+
             bounds.append([min_temp, max_temp])
             dist = self.__get_sa_lib_distribution_name(value["distribution"])
             dists.append(dist)

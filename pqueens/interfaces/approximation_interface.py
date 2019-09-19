@@ -59,6 +59,7 @@ class ApproximationInterface(Interface):
 
     def map(self, samples):
         """ Mapping function which calls the regression approximation
+            Prediction with the regression model
 
         Args:
             samples (list):         list of variables objects

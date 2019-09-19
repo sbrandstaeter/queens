@@ -23,7 +23,7 @@ class TestDataFitSurrogateModel(unittest.TestCase):
                                                                "min"  : 1000000,
                                                                "max"  : 5000000,
                                                                "distribution" : "normal",
-                                                               "distribution_parameter" : [400000, 10000]}}
+                                                               "distribution_parameter" : [400000, 100000000]}}
                                                   },
                             }
 

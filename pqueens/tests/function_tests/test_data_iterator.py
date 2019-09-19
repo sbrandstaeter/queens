@@ -1,13 +1,14 @@
+import os
 import pickle
-from pqueens.main import main
-import pytest
+
 import numpy as np
+import pytest
 
+from pqueens.main import main
 
-
-def test_branin_data_iterator(tmpdir, mocker):
+def test_branin_data_iterator(inputdir, tmpdir, mocker):
     """ Test case for data iterator """
-    arguments = ['--input=pqueens/tests/function_tests/input_files/branin_data_iterator.json',
+    arguments = ['--input=' + os.path.join(inputdir, 'branin_data_iterator.json'),
                  '--output='+str(tmpdir)]
 
     output = {}

@@ -1,0 +1,82 @@
+{
+  "experiment_name" : "MC_cylinder",
+  "database"  :{
+    "address"   : "localhost:27017",
+    "drop_existing" : "True"
+  },
+  "method": {
+    "method_name": "monte_carlo",
+    "method_options" :{
+      "seed" : 1,
+      "num_samples" : 300,
+      "model" : "model",
+      "result_description" : {
+          "write_results" : true,
+          "plot_results" : true
+      }
+    }
+  },
+  "model" : {
+    "type" : "simulation_model",
+    "interface" : "interface",
+    "parameters" : "parameters"
+  },
+  "interface" : {
+    "type" : "job_interface",
+    "resources" : "resources",
+    "driver" : "driver"
+  },
+  "driver" :{
+    "driver_type"           : "navierstokes_native",
+    "driver_params"         :{
+      "input_template"        : "/home/nitzler/workspace/navierstokes/applications/incompressible_navier_stokes_test_cases/flow_past_cylinder_template.json",
+      "path_to_executable"    : "/home/nitzler/workspace/navierstokes/applications/incompressible_navier_stokes",
+      "path_to_postprocessor" : "",
+      "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
+      "experiment_dir"        : "/home/nitzler/workspace/navierstokes/applications/output/demo",
+      "post_post"         : {
+        "type" : "time_series",
+        "file_prefix" : "lift",
+        "time_discretization": 150,
+        "delete_field_data" : "False",
+        "target_time": [4,7],
+        "usecols": [0,1],
+        "skiprows":1}
+    }
+  },
+  "resources" : {
+    "local_machine" : {
+      "scheduler"         : "local_scheduler",
+      "max-concurrent"    : 10,
+      "max-finished-jobs" : 10000
+    }
+  },
+  "local_scheduler" : {
+    "scheduler_type" : "local",
+    "num_procs" : 1,
+    "walltime" : "120:00:00",
+    "meta_output" : "True"
+  },
+  "parameters" : {
+    "random_variables" :{
+      "lateral_position" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "normal",
+        "distribution_parameter" : [0.2,5e-04]
+       },
+      "diameter" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "normal",
+        "distribution_parameter" : [0.1,1e-4]
+         },
+        "viscosity" : {
+        "type" : "FLOAT",
+        "size" : 1,
+        "distribution" : "normal",
+        "distribution_parameter" : [1e-03,1e-07]
+        }
+    }
+      }
+}

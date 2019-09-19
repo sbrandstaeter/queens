@@ -3,6 +3,7 @@
 import sys
 import argparse
 import os
+import pyfiglet
 from collections import OrderedDict
 try:
     import simplejson as json
@@ -15,6 +16,28 @@ from pqueens.iterators.iterator import Iterator
 
 def main(args):
     """ Run analysis """
+
+    crown= """
+                                *
+                              * | *
+                             * \|/ *
+                        * * * \|O|/ * * *
+                         \o\o\o|O|o/o/o/
+                         (<><><>O<><><>)
+                          '==========='
+    """
+    print(crown)
+    result = pyfiglet.figlet_format("QUEENS", font = "banner3-D" )
+    print(result)
+    result ="""
+ A general purpose framework for Uncertainty Quantification,
+ Physics-Informed Machine Learning,
+ Bayesian Optimization, Inverse Problems and Simulation Analytics
+"""
+    print(result)
+    print("")
+    print("Starting Analysis...")
+    print("")
     options = get_options(args)
 
     # build iterator

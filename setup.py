@@ -17,6 +17,7 @@ setup(
     keywords = "Gaussian Processes, Uncertainty Quantification",
     packages=['pqueens',
               'pqueens.database',
+              'pqueens.post_post',
               'pqueens.randomfields',
               'pqueens.drivers',
               'pqueens.interfaces',
