@@ -63,6 +63,34 @@ within the activated environment.
 ### Setup of MongoDB
 QUEENS writes results into a MongoDB database, therefore QUEENS needs to have write access to a MongoDB databases. However, MongoDB does not necessarily have to run on the same machine as QUEENS. In certain situations, it makes sense to have the database running on a different computer and connect to the database via port-forwarding.
 
+### Configure Git
+
+A Git version >= 2.9 is required. <!-- We need at least this version to be able to configure the path to the git-hooks as outlined below. -->
+Consult the official [Git documentation](www.git-scm.org) to obtain a more recent Git installation if necessary.
+
+1. Set your username to your full name, i.e., first name followed by last name,
+and your email address to your institute email address with the following commands:
+
+    ```bash
+    git config --global user.name "<Firstname> <Lastname>"
+    git config --global user.email <instituteEmailAddress>
+    ```
+
+1. Set a default text editor that will be used whenever you need to write a message in Git. To set `kwrite` as your default text editor, type:
+
+    ```bash
+    git config --global core.editor kwrite
+    ```
+
+    > **Note:** Another popular choice is `vim`.
+
+1. Set path to our common set of `git-hooks`. After [cloning the repository](#clone-the-repository) into the directory `<someBaseDir>/<sourceDir>`, run
+
+    ```bash
+    cd <someBaseDir>/<sourceDir>
+    git config core.hooksPath ./utilities/code_checks/
+    ```
+
 [↑ Contents](#contents)
 
 ####  Installation of MongoDB
