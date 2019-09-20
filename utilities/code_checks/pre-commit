@@ -1,0 +1,58 @@
+#!/bin/bash
+
+#####################################################
+########## DESCRIPTION ##############################
+#####################################################
+
+# This pre - commit hook will be executed by Git before every new commit
+# In the version at hand, clang-format will only write out non-compliant files to the shell output and will not perfom any formatting automatically
+# In the case that the script detects files that are not compliant with the current QUEENS PEP8 style guidlines (checked by `Black` code formatter), the commit will be rejected (script exits 1)
+
+# The commit will be accepted if the script exits with 0
+
+# Author:    Jonas Nitzler
+# Date:      20.09.2019
+# Version:   1.4 (Adopted from BACI)
+
+if pip list | grep -F black
+then
+  # set the field separator to new line
+  IFS=$'\n'
+
+  for line in $(git diff --cached --name-only --diff-filter=ACMR)
+  do
+    # check if the file is a c or cpp file
+    if [[ $line == *.py ]]
+    then
+      # Check if clang would format the file
+      if [[  $(diff -u <(black --check --quiet $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
+      then
+        uncompliant_files+="$(pwd)/${line}\n"
+      fi
+    fi
+  done
+
+  if [ ! -z "$uncompliant_files" ]
+  then
+    printf "\n"
+    printf "The following file(s) are not compliant with QUEENS's PEP8 coding style:\n"
+    printf "\n"
+    echo "########################################################################"
+    printf "$uncompliant_files"
+    echo "########################################################################"
+    printf "\n"
+    echo "--> Please run Black code formatter manually for those files using:"
+    echo "black <path/to/file>"
+    printf "\n"
+    echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
+    printf "\n"
+    exit 1
+  fi
+
+else
+  echo "ERROR: Black code formatter was not found! This commit will be rejected!"
+  echo "Make sure you are operating within an appropriate Python environment!"
+  exit 1
+fi
+
+exit 0
