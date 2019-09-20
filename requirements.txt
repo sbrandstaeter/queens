@@ -27,5 +27,9 @@ pytest-cov
 pytest-mock
 # create mock objects for unit testing
 mock
+# linting, check code-style (PEP8)
+pylint
 # make ascii-art prints
-pyfiglet #check if that if enough, original command: conda install -c conda-forge pyfiglet
+pyfiglet
+# code formatter
+black
