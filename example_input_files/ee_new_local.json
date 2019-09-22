@@ -38,7 +38,6 @@
       "input_template"        : "/home/nitzler/workspace/BACI_Rep/input/invaaa_ee.dat",
       "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
       "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
-      "no_singularity"        : false,
       "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
       "post_process_options"  : ["--field=structure --node=26 --start=1"],
       "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/elementary_effects_demo",

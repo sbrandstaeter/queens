@@ -14,6 +14,7 @@ import pickle
 import matplotlib.pyplot as plt
 import seaborn as sns
 import pdb
+import matplotlib.animation as animation
 
 class BmfmcIterator(Iterator):
     """ Basic BMFMC Iterator to enable selective sampling for the hifi-lofi
@@ -258,12 +259,48 @@ class BmfmcIterator(Iterator):
                 fig2.set_size_inches(15,15)
 
             if self.output['manifold_test'].shape[1]==2:
-                fig3 =plt.figure()
+                fig3 =plt.figure(figsize=(10,10))
                 ax3 = fig3.add_subplot(111,projection='3d')
-                ax3.scatter(self.output['manifold_test'][:,0,None],self.output['manifold_test'][:,1,None],self.hf_mc[:,None],s=3,c='k')
+                self.output['manifold_test'][:,0,None] = (self.output['manifold_test'][:,0,None] - min(self.output['manifold_test'][:,0,None]))/\
+                                                         (max(self.output['manifold_test'][:,0,None]) - min(self.output['manifold_test'][:,0,None]))\
+
+                self.output['manifold_test'][:,1,None] = (self.output['manifold_test'][:,1,None] - min(self.output['manifold_test'][:,1,None]))/\
+                                                         (max(self.output['manifold_test'][:,1,None]) - min(self.output['manifold_test'][:,1,None]))\
+
+                self.hf_mc[:,None] = (self.hf_mc[:,None] - min(self.hf_mc[:,None]))/\
+                                                         (max(self.hf_mc[:,None]) - min(self.hf_mc[:,None]))\
+
+
+                ax3.scatter(self.output['manifold_test'][:,0,None],self.output['manifold_test'][:,1,None],self.hf_mc[:,None],s=3,c='darkgreen', alpha=0.6)
                 ax3.set_xlabel(r'$y_{\mathrm{LF}}$')#,usetex=True)
                 ax3.set_ylabel(r'$\gamma$')
                 ax3.set_zlabel(r'$y_{\mathrm{HF}}$')
+                ax3.set_xlim3d(0, 1)
+                ax3.set_ylim3d(0, 1)
+                ax3.set_zlim3d(0, 1)
+
+#                # Animate
+#                def init():
+#                    ax3.scatter(self.output['manifold_test'][:,0,None],self.output['manifold_test'][:,1,None],self.hf_mc[:,None],s=3,c='darkgreen', alpha=0.6)
+#                    ax3.set_xlabel(r'$y_{\mathrm{LF}}$')#,usetex=True)
+#                    ax3.set_ylabel(r'$\gamma$')
+#                    ax3.set_zlabel(r'$y_{\mathrm{HF}}$')
+#                    ax3.set_xlim3d(0, 1)
+#                    ax3.set_ylim3d(0, 1)
+#                    ax3.set_zlim3d(0, 1)
+#
+#                    return ()
+#
+#                def animate(i):
+#                    ax3.view_init(elev=10., azim=i)
+#                    return ()
+#
+#                anim = animation.FuncAnimation(fig3, animate, init_func=init,
+#                                               frames=360, interval=20, blit=True)
+#                # Save
+#                anim.save('basic_animation.mp4', fps=30, dpi=300, extra_args=['-vcodec', 'libx264'])
+
+
 
     #
         ####### plot input-output scatter plot matrices ########################

@@ -1,4 +1,5 @@
 import time
+import pdb
 import numpy as np
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
@@ -201,7 +202,6 @@ class JobInterface(Interface):
         Returns:
             job: new job
         """
-
         print("Created new job")
         jobs = self.load_jobs()
         job_id = len(jobs) + 1
@@ -219,7 +219,6 @@ class JobInterface(Interface):
         }
 
         self.save_job(job)
-
         return job
 
     def tired(self, resource):

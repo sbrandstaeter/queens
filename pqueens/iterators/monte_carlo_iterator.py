@@ -70,7 +70,6 @@ class MonteCarloIterator(Iterator):
     def pre_run(self):
         """ Generate samples for subsequent MC analysis and update model """
         np.random.seed(self.seed)
-
         parameters = self.model.get_parameter()
         num_inputs = 0
         # get random Variables
@@ -85,16 +84,23 @@ class MonteCarloIterator(Iterator):
 
         num_eval_locations = []
 
-        if random_fields is not None:
+        if random_fields is not None: # TODO JN: This block seems redundant to me
             for _, rf in random_fields.items():
-                dim = rf["dimension"]
-                eval_locations_list = rf.get("eval_locations", None)
+                if "dimension" in rf:
+                    dim = rf["dimension"]
+                else:
+                    dim = None
+
+                if "evel_locations" in rf:
+                    eval_locations_list = rf.get("eval_locations", None)
+                else:
+                    eval_locations_list = None
                 eval_locations = np.array(eval_locations_list).reshape(-1, dim)
                 temp = eval_locations.shape[0]
                 num_eval_locations.append(temp)
                 num_inputs += temp
 
-        self.samples = np.zeros((self.num_samples, num_inputs))
+        self.samples = np.zeros((self.num_samples, num_inputs), dtype=np.ndarray)
         # loop over random variables to generate samples
         i = 0
         for _, rv in random_variables.items():
@@ -110,34 +116,51 @@ class MonteCarloIterator(Iterator):
         field_num = 0
         if random_fields is not None:
             for _, rf in random_fields.items():
-                print("rf corrstruct {}".format(rf.get("corrstruct")))
+                # print("rf corrstruct {}".format(rf.get("corrstruct")))
                 # create appropriate random field generator
-                my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                    mcmc_utils.create_proposal_distribution(rf),
-                    rf.get("dimension"),
-                    rf.get("corrstruct"),
-                    rf.get("corr_length"),
-                    rf.get("energy_frac"),
-                    np.array(rf.get("field_bbox")),
-                    rf.get("num_terms_per_dim"),
-                    rf.get("total_terms"))
 
-                dim = rf["dimension"]
+                random_field_opt = {}
+                if rf.get("corrstruct") == "non_stationary_squared_exp":
+                    random_field_opt['rel_std'] = rf['rel_std']
+                    random_field_opt['mean_fun'] = rf['mean_fun']
+                    random_field_opt['mean_fun_params'] = rf['mean_fun_params']
+                    random_field_opt['num_points'] = rf['num_points']
+                    random_field_opt['corrstruct'] = rf.get("corrstruct")
+                    random_field_opt['corr_length'] = rf.get("corr_length")
+                    random_field_opt['num_samples'] = self.num_samples
+                else:
+                    random_field_opt['dimension'] = rf.get("dimension")
+                    random_field_opt['corrstruct'] = rf.get("corrstruct")
+                    random_field_opt['corr_length'] = rf.get("corr_length")
+                    random_field_opt['energy_frac'] = rf.get("energy_frac")
+                    random_field_opt['field_bbox'] = np.array(rf.get("field_bbox"))
+                    random_field_opt['num_terms_per_dim'] = rf.get("num_terms_per_dim")
+                    random_field_opt['total_terms'] = rf.get("total_terms")
+
+                my_field_generator = UniVarRandomFieldGeneratorFactory.\
+                    create_new_random_field_generator(mcmc_utils.create_proposal_distribution(rf), random_field_opt)
+
                 eval_locations_list = rf.get("eval_locations", None)
                 eval_locations = np.array(eval_locations_list).reshape(-1, dim)
-                my_stoch_dim = my_field_generator.get_stoch_dim()
 
-                my_vals = np.zeros((self.num_samples, eval_locations.shape[0]))
-                for i in range(self.num_samples):
-                    xi = np.random.randn(my_stoch_dim, 1)
-                    my_vals[i, :] = my_field_generator.evaluate_field_at_location(eval_locations, xi)
+                if random_field_opt['corrstruct'] != 'non_stationary_squared_exp':
+                    my_stoch_dim = my_field_generator.get_stoch_dim()
+                    my_vals = np.zeros((self.num_samples, eval_locations.shape[0]))
 
-                self.samples[:, num_rv+field_num:num_rv+field_num+len(eval_locations)] = my_vals
+                    for i in range(self.num_samples):
+                        xi = np.random.randn(my_stoch_dim, 1)
+                        my_vals[i, :] = my_field_generator.evaluate_field_at_location(eval_locations, xi)
+                    self.samples[:, num_rv+field_num:num_rv+field_num+len(eval_locations)] = my_vals
+                else:
+                    my_field_generator.main_run()
+                    my_vals = my_field_generator.realizations
+                    for num in range(my_vals.shape[0]):
+                        self.samples[num, -1] = my_vals[num, :]   # np.hstack((self.samples, my_vals))
+
                 field_num += 1
 
     def core_run(self):
         """  Run Monte Carlo Analysis on model """
-
         self.model.update_model_from_sample_batch(self.samples)
 
         self.output = self.eval_model()
@@ -172,7 +195,7 @@ class MonteCarloIterator(Iterator):
                 plt.show()
             else:
                 data = results['raw_output_data']['mean']
-                ax.hist(data, bins=200)
+                ax.hist(data, bins=50)
                 ax.set_xlabel(r'Count [-]')
                 ax.set_xlabel(r'$C_L(t)$')
                 plt.show()

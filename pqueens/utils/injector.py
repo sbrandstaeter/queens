@@ -1,4 +1,3 @@
-
 def inject(params, file_template, output_file):
     """ Injector function to insert parameters into file templates
 
@@ -11,6 +10,8 @@ def inject(params, file_template, output_file):
     with open(file_template, encoding='utf-8') as f:
         my_file = f.read()
     for name, value in params.items():
+        if type(value).__name__ == 'ndarray':
+            value = value[0]
         my_file = my_file.replace('{{{}}}'.format(name), str(value))
 
     with open(output_file, mode='w', encoding='utf-8') as f:
