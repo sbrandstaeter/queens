@@ -44,11 +44,21 @@ class GPGPyRegression(RegressionApproximation):
 
         # input dimension
         input_dim = self.X.shape[1]
-        # simple GP Model
 
-        dy = abs(max(self.y)-min(self.y)) # proper initialization of length scale
-        k = GPy.kern.RBF(input_dim, variance=1.,lengthscale=0.25*dy,ARD=False)
-        self.m = GPy.models.GPRegression(self.X, self.y,kernel=k,normalizer=True)
+        # simple GP Model
+        dx = np.max(self.X) - np.min(self.X)  # proper initialization of length scale
+        dy = np.max(self.y) - np.min(self.y)  # proper initialization of variance
+        k1 = GPy.kern.RBF(input_dim=1, variance=0.1*dy, lengthscale=0.25*dx, ARD=False, active_dims=[0])
+        if input_dim == 2:
+            k2 = GPy.kern.RBF(input_dim=1, variance=0.1*dy, lengthscale=0.25*dx, ARD=False, active_dims=[1])
+            k = k1 + k2
+        elif input_dim ==3:
+            k2 = GPy.kern.RBF(input_dim=1, variance=0.1*dy, lengthscale=0.25*dx, ARD=False, active_dims=[1])
+            k3 = GPy.kern.RBF(input_dim=1, variance=0.1*dy, lengthscale=0.25*dx, ARD=False, active_dims=[2])
+            k = k1 * k2 * k3
+        elif input_dim == 1:
+            k = k1
+        self.m = GPy.models.GPRegression(self.X, self.y, kernel=k, normalizer=True)
 
     def train(self):
         """ Train the GP by maximizing the likelihood """
@@ -56,9 +66,9 @@ class GPGPyRegression(RegressionApproximation):
         #self.m[".*Gaussian_noise"].constrain_positive()
         #self.m[".*Gaussian_noise"] = self.m.Y.var()*0.01
         #self.m[".*Gaussian_noise"].fix()
-        self.m.optimize()#max_iters=500)
+        self.m.optimize(messages=True)#max_iters=500)
         #self.m[".*Gaussian_noise"].unfix()
-        #self.m.optimize_restarts(30, max_iters=1000)
+        self.m.optimize_restarts(num_restarts=10, max_iters=1000, max_f_eval=1000)
         display(self.m)
 
     def predict(self, Xnew):
@@ -129,5 +139,3 @@ class GPGPyRegression(RegressionApproximation):
         if post_samples.shape[1] != 1:
             raise Exception("GPGPyRegression can not deal with multioutput GPs")
         return np.reshape(post_samples, (Xnew.shape[0], num_samples))
-
-

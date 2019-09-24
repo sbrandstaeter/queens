@@ -3,18 +3,14 @@ from pqueens.models.bmfmc_model import BMFMCModel
 from scipy.spatial.distance import pdist, squareform
 import pandas as pd
 from .iterator import Iterator
-from pqueens.utils.process_outputs import process_ouputs
-from pqueens.utils.process_outputs import write_results
-from pqueens.database import mongodb as db
 from pqueens.iterators.data_iterator import DataIterator
 import os
-import pandas as pd
 from random import randint
 import pickle
 import matplotlib.pyplot as plt
-import seaborn as sns
 import pdb
 import matplotlib.animation as animation
+
 
 class BmfmcIterator(Iterator):
     """ Basic BMFMC Iterator to enable selective sampling for the hifi-lofi
@@ -54,7 +50,7 @@ class BmfmcIterator(Iterator):
         self.BMFMC_reference = BMFMC_reference
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None): #TODO: the model arg here seems an old relict. we bypass it here
+    def from_config_create_iterator(cls, config, iterator_name=None):
         """ Create LHS iterator from problem description
 
         Args:
@@ -74,11 +70,10 @@ class BmfmcIterator(Iterator):
         predictive_var = method_options["predictive_var"]
 
         # Create the data iterator from config file
-        lf_data_paths = method_options["path_to_lf_data"] # necessary to substract that name from name list of all models for evaluation
-
+        lf_data_paths = method_options["path_to_lf_data"]  # necessary to substract that name from name list of all models for evaluation
         hf_data_path = method_options["path_to_hf_data"]
         lf_data_iterators = []
-        for _,path in enumerate(lf_data_paths):
+        for _, path in enumerate(lf_data_paths):
             lf_data_iterators.append(DataIterator(path, None, None))
         hf_data_iterator = DataIterator(hf_data_path, None, None)
         initial_design = config["method"]["initial_design"]
@@ -87,17 +82,17 @@ class BmfmcIterator(Iterator):
         return cls(config,lf_data_iterators, hf_data_iterator, result_description, experiment_dir, initial_design, predictive_var,BMFMC_reference,global_settings)
 
     def core_run(self):
-        """ Generate simulation runs for lofis and hifis that cover the output
-            space based on one p(y) distribution of one lofi """
+        """
+        Generate simulation runs for lofis and hifis that cover the output
+        space based on one p(y) distribution of one lofi
+        """
         self.lf_mc_in = self.lf_data_iterators[0].read_pickle_file()[0] # here we assume that all lfs have the same input vector
         lfs_mc_out = [lf_data_iterator.read_pickle_file()[1][:,0] for _,lf_data_iterator in enumerate(self.lf_data_iterators)] # list of lf data with another list or dictionary per lf containing x_vec and y(_vec) CAREFUL: we only take the first column and omit vectorial outputs --> this should be changed!
         self.lfs_mc_out = np.atleast_2d(np.vstack(lfs_mc_out)).T
 
-####### HERE create the HF initial design runs if not already done ##############################
-        if self.hf_data_iterator == None:
-#################################################
-###### TODO: This needs still to be done!!!!!!!##
-#################################################
+# ----------- CREATE THE HF INITIAL DESIGN RUNS IF NOT ALREADY DONE -----------
+        if self.hf_data_iterator is None:
+            # TODO: This needs still to be done!!
             minval = mc_y.min()
             maxval = mc_y.max()
             n_bins = self.num_samples//2
@@ -125,7 +120,7 @@ class BmfmcIterator(Iterator):
 
            # self.samples = mapping_points_x
             self.mc_map_output = mapping_points_y
-######### HERE just load HF data if already there, find the LF data that belongs to it and write a new pickle file
+#  LOAD HF DATA IF ALREADY THERE, FIND THE LF DATA THAT BELONGS TO IT AND WRITE A NEW PICKLE FILE
         else:
            # check if training data file already exists if not write it
             path_to_train_data = os.path.join(self.experiment_dir,'hf_lf_train.pickle')
@@ -141,6 +136,7 @@ class BmfmcIterator(Iterator):
                 self.hf_mc = self.hf_train_out
                 # find the touples of lf and hf data that match
             ##### workaround starts here #####
+            # TODO this should not be selected from bins but from a grid in the latent space!
                 if self.initial_design['method'] == 'random':
                     n_bins = self.initial_design["num_bins"]
                     n_points = self.initial_design["num_HF_eval"]
@@ -202,82 +198,113 @@ class BmfmcIterator(Iterator):
 
     def post_run(self):
         """ Analyze the results """
-        print(self.output)
-        if self.result_description['plot_results']==True:
 
-            # plt.rc('text', usetex=True)
+        if self.result_description['plot_results'] is True:
             plt.rcParams["mathtext.fontset"] = "cm"
             plt.rcParams.update({'font.size':23})
-
             fig, ax = plt.subplots()
-            ax.set(xlim=(0.02,0.07), ylim=(0,120))
+
+            min_x = 0.5 * min([min(self.output['pyhf_support']), min(self.output['pylf_mc_support'])])
+            max_x =  max([max(self.output['pyhf_support']), max(self.output['pylf_mc_support'])])
+            min_y = 0
+            max_y = 1.3*max(self.output['pyhf_mc'])
+            ax.set(xlim=(min_x, max_x), ylim=(min_y, max_y))
+
             # plot the bmfmc var
-            if self.predictive_var == "True":
-               ax.plot(self.output['pyhf_support'],np.sqrt(self.output['pyhf_var']),linewidth=0.5,color='lightgreen',alpha=0.4)#,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+            if self.predictive_var is True:
+                ax.plot(self.output['pyhf_support'], np.sqrt(self.output['pyhf_var']),
+                        linewidth=0.5, color='lightgreen', alpha=0.4)
+                # ,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+
             # plot the bmfmc approx mean
-            ax.plot(self.output['pyhf_support'],self.output['pyhf_mean'],color='xkcd:green',linewidth=1.5,label=r'$\mathbb{E}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
-            #### plot the reference solution for classical BMFMC###
-            if self.BMFMC_reference == "True":
+            ax.plot(self.output['pyhf_support'], self.output['pyhf_mean'], color='xkcd:green',
+                    linewidth=1.5,
+                    label=r'$\mathbb{E}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+
+            # plot the reference solution for classic BMFMC
+            if self.BMFMC_reference is True:
                 # plot the bmfmc var
-                if self.predictive_var =="True":
-                   ax.plot(self.output['pyhf_support'],np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.5,color='magenta',alpha=0.4)#,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+                if self.predictive_var is True:
+                    ax.plot(self.output['pyhf_support'], np.sqrt(self.output['pyhf_var_BMFMC']),
+                            linewidth=0.5, color='magenta', alpha=0.4)
+                    # ,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+
                 # plot the bmfmc approx mean
-                ax.plot(self.output['pyhf_support'],self.output['pyhf_mean_BMFMC'],color='xkcd:magenta',linewidth=1.5,label=r'$\mathbb{E}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]-BMFMC$')
+                ax.plot(self.output['pyhf_support'], self.output['pyhf_mean_BMFMC'],
+                        color='xkcd:magenta', linewidth=1.5,
+                        label=r'$\mathbb{E}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]-BMFMC$')
 
             # plot the MC reference of HF
-            ax.plot(self.output['pyhf_mc_support'],self.output['pyhf_mc'],color='k',alpha=0.8,label=r'$\mathrm{p}\left(y_{\mathrm{HF}}\right) \ \mathrm{MC \ reference}$')
-            if self.lfs_mc_out.shape[1]<2:
-                # plot the MC of LF
-                ax.plot(self.output['pylf_mc_support'],self.output['pylf_mc'],color='r',alpha=0.7,label=r'$\mathrm{p}\left(y_{\mathrm{LF}}\right)$')
+            ax.plot(self.output['pyhf_mc_support'], self.output['pyhf_mc'], color='k',
+                    alpha=0.8, label=r'$\mathrm{p}\left(y_{\mathrm{HF}}\right) \ \mathrm{MC \ reference}$')
 
-            ax.set_xlabel(r'$y$')#,usetex=True)
+            if self.lfs_mc_out.shape[1] < 2: # plot the MC of LF
+                ax.plot(self.output['pylf_mc_support'], self.output['pylf_mc'],
+                        color='r', alpha=0.7, label=r'$\mathrm{p}\left(y_{\mathrm{LF}}\right)$')
+
+            ax.set_xlabel(r'$y$')  # ,usetex=True)
             ax.set_ylabel(r'$\mathrm{p}(y)$')
-            ax.grid(which='major',linestyle='-')
-            ax.grid(which='minor',linestyle='--',alpha=0.5)
+            ax.grid(which='major', linestyle='-')
+            ax.grid(which='minor', linestyle='--', alpha=0.5)
             ax.minorticks_on()
             ax.legend()
-            fig.set_size_inches(15,15)
-###########################
-            if self.output['manifold_test'].shape[1]<2:
-                fig2, ax2 = plt.subplots()
-                # plot the current dataset
-                # plot the MC of LF
-                ax2.plot(self.output['manifold_test'][:,0],self.output['f_mean'],linestyle='',marker='.',color='k',alpha=1,label=r'$m_{\mathrm{GP}}$')
-                ax2.plot(self.output['manifold_test'][:,0],self.output['f_mean']+np.sqrt(self.output['y_var']),linestyle='',marker='.',color='grey',alpha=0.5,label=r'$\mathbb{SD}_{\mathrm{GP}}$')
-                ax2.plot(self.output['manifold_test'][:,0],self.output['f_mean']-np.sqrt(self.output['y_var']),linestyle='',marker='.',color='grey',alpha=0.5)
-                ax2.plot(self.output['manifold_test'][:,0],self.output['sample_mat'],linestyle='',marker='.',color='red',alpha=0.2)
-                ax2.plot(self.lfs_train_out,self.hf_train_out,linestyle='',marker='x',color='r',alpha=1,label=r'Training data')
-                ax2.plot(self.lfs_mc_out[:,0],self.hf_mc,linestyle='',markersize=2,marker='.',color='grey',alpha=0.7,label=r'Reference MC data')
+            fig.set_size_inches(15, 15)
 
-                ax2.plot(self.hf_mc,self.hf_mc,linestyle='-',marker='',color='g',alpha=0.7,label=r'Identity')
-                ax2.set_xlabel(r'$y_{\mathrm{LF}}$')#,usetex=True)
+# ---------------------- OPTIONAL PLOT OF LATENT MANIFOLD ---------------------
+            if self.output['manifold_test'].shape[1] < 2:
+                fig2, ax2 = plt.subplots()
+                ax2.plot(self.output['manifold_test'][:, 0], self.output['f_mean'],
+                         linestyle='', marker='.', color='k', alpha=1, label=r'$m_{\mathrm{GP}}$')
+                ax2.plot(self.output['manifold_test'][:, 0], self.output['f_mean'] + np.sqrt(self.output['y_var']),
+                         linestyle='', marker='.', color='grey', alpha=0.5, label=r'$\mathbb{SD}_{\mathrm{GP}}$')
+                ax2.plot(self.output['manifold_test'][:, 0], self.output['f_mean'] - np.sqrt(self.output['y_var']),
+                         linestyle='', marker='.', color='grey', alpha=0.5)
+#                ax2.plot(self.output['manifold_test'][:, 0], self.output['sample_mat'], linestyle='',
+#                         marker='.', color='red', alpha=0.2)
+                ax2.plot(self.lfs_train_out, self.hf_train_out, linestyle='', marker='x',
+                         color='r', alpha=1, label=r'Training data')
+                ax2.plot(self.lfs_mc_out[:, 0], self.hf_mc, linestyle='', markersize=2, marker='.',
+                         color='grey', alpha=0.7, label=r'Reference MC data')
+
+                ax2.plot(self.hf_mc, self.hf_mc, linestyle='-', marker='', color='g', alpha=0.7,
+                         label=r'Identity')
+                ax2.set_xlabel(r'$y_{\mathrm{LF}}$')  # ,usetex=True)
                 ax2.set_ylabel(r'$y_{\mathrm{HF}}$')
-                ax2.grid(which='major',linestyle='-')
-                ax2.grid(which='minor',linestyle='--',alpha=0.5)
+                ax2.grid(which='major', linestyle='-')
+                ax2.grid(which='minor', linestyle='--', alpha=0.5)
                 ax2.minorticks_on()
                 ax2.legend()
-                fig2.set_size_inches(15,15)
+                fig2.set_size_inches(15, 15)
 
-            if self.output['manifold_test'].shape[1]==2:
-                fig3 =plt.figure(figsize=(10,10))
-                ax3 = fig3.add_subplot(111,projection='3d')
-                self.output['manifold_test'][:,0,None] = (self.output['manifold_test'][:,0,None] - min(self.output['manifold_test'][:,0,None]))/\
-                                                         (max(self.output['manifold_test'][:,0,None]) - min(self.output['manifold_test'][:,0,None]))\
+            if self.output['manifold_test'].shape[1] == 2:
+                fig3 = plt.figure(figsize=(10, 10))
+                ax3 = fig3.add_subplot(111, projection='3d')
 
-                self.output['manifold_test'][:,1,None] = (self.output['manifold_test'][:,1,None] - min(self.output['manifold_test'][:,1,None]))/\
-                                                         (max(self.output['manifold_test'][:,1,None]) - min(self.output['manifold_test'][:,1,None]))\
+#                # Normalization of output quantities
+#                self.output['manifold_test'][:, 0, None] = (self.output['manifold_test'][:, 0, None]
+#                                                            - min(self.output['manifold_test'][:, 0, None])) /\
+#                                                           (max(self.output['manifold_test'][:, 0, None])
+#                                                            - min(self.output['manifold_test'][:, 0, None]))
+#
+#                self.output['manifold_test'][:, 1, None] = (self.output['manifold_test'][:, 1, None]
+#                                                            - min(self.output['manifold_test'][:, 1, None])) /\
+#                                                           (max(self.output['manifold_test'][:, 1, None])
+#                                                            - min(self.output['manifold_test'][:, 1, None]))\
+#
+#                self.hf_mc[:, None] = (self.hf_mc[:, None] - min(self.hf_mc[:, None])) /\
+#                                      (max(self.hf_mc[:, None]) - min(self.hf_mc[:, None]))
 
-                self.hf_mc[:,None] = (self.hf_mc[:,None] - min(self.hf_mc[:,None]))/\
-                                                         (max(self.hf_mc[:,None]) - min(self.hf_mc[:,None]))\
-
-
-                ax3.scatter(self.output['manifold_test'][:,0,None],self.output['manifold_test'][:,1,None],self.hf_mc[:,None],s=3,c='darkgreen', alpha=0.6)
-                ax3.set_xlabel(r'$y_{\mathrm{LF}}$')#,usetex=True)
+                ax3.scatter(self.output['manifold_test'][:, 0, None], self.output['manifold_test'][:, 1, None],
+                            self.hf_mc[:, None], s=5, c='darkgreen', alpha=0.6)
+                ax3.set_xlabel(r'$y_{\mathrm{LF}}$')  # ,usetex=True)
                 ax3.set_ylabel(r'$\gamma$')
                 ax3.set_zlabel(r'$y_{\mathrm{HF}}$')
-                ax3.set_xlim3d(0, 1)
-                ax3.set_ylim3d(0, 1)
-                ax3.set_zlim3d(0, 1)
+
+                minx = np.min(self.output['manifold_test'])
+                maxx = np.max(self.output['manifold_test'])
+                ax3.set_xlim3d(minx, maxx)
+                ax3.set_ylim3d(minx, maxx)
+                ax3.set_zlim3d(minx, maxx)
 
 #                # Animate
 #                def init():
@@ -298,43 +325,9 @@ class BmfmcIterator(Iterator):
 #                anim = animation.FuncAnimation(fig3, animate, init_func=init,
 #                                               frames=360, interval=20, blit=True)
 #                # Save
-#                anim.save('basic_animation.mp4', fps=30, dpi=300, extra_args=['-vcodec', 'libx264'])
-
-
-
-    #
-        ####### plot input-output scatter plot matrices ########################
-#            dataset = pd.DataFrame({'$y_{\mathrm{HF}}$': self.hf_mc,'E-modulus': self.lf_mc_in[:,0], 'U-field 1': self.lf_mc_in[:,1],'U-field 2': self.lf_mc_in[:,2],'U-field 3': self.lf_mc_in[:,3],'U-field 4': self.lf_mc_in[:,4],'U-field 5': self.lf_mc_in[:,5],'U-field 6': self.lf_mc_in[:,6],'U-field 7': self.lf_mc_in[:,7],'U-field 8': self.lf_mc_in[:,8],'U-field 9': self.lf_mc_in[:,9]})
-#            sns.set()
-#            ma = sns.PairGrid(dataset)
-#            ma = ma.map_upper(plt.scatter,s=0.1)
-#            ma = ma.map_lower(sns.kdeplot, cmap="Blues_d")
-#            ma = ma.map_diag(sns.kdeplot,lw=2,legend=False)
-#
-#            dataset = pd.DataFrame({'$y_{\mathrm{HF}}$': self.hf_mc,'latent 1': self.output['manifold_test'][:,1], 'latent 2': self.output['manifold_test'][:,2]})
-#            sns.set()
-#            ma = sns.PairGrid(dataset)
-#            ma = ma.map_upper(plt.scatter,s=0.1)
-#            ma = ma.map_lower(sns.kdeplot, cmap="Blues_d")
-#            ma = ma.map_diag(sns.kdeplot,lw=2,legend=False)
+#                anim.save('cylinder_split_input.mp4', fps=30, dpi=300, extra_args=['-vcodec', 'libx264'])
 #
             plt.show()
 
-
-
-
-        if self.result_description['write_results']==True:
-                pass
-
-
-
-        #if self.result_description is not None:
-        #    results = process_ouputs(self.output, self.result_description)
-        #    write_results(results,
-        #                      self.global_settings["output_dir"],
-        #                      self.global_settings["experiment_name"])
-        ##else:
-        ##print("Size of inputs {}".format(self.samples.shape))
-        ##print("Inputs {}".format(self.samples))
-        #print("Size of outputs {}".format(self.output['mean'].shape))
-        #print("Outputs {}".format(self.output['mean']))
+        if self.result_description['write_results'] is True:
+            pass
