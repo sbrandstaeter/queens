@@ -21,17 +21,24 @@ then
 
   for line in $(git diff --cached --name-only --diff-filter=ACMR)
   do
-    # check if the file is a c or cpp file
+    # check if the file is a py file
     if [[ $line == *.py ]]
     then
-      # Check if clang would format the file
-      if [[  $(diff -u <(black --check --quiet $(pwd)/${line}) <(cat $(pwd)/${line})) ]]
+      # Check if black would format the file
+      black --check --quiet $(pwd)/${line}
+      # get the current exit code (of black)
+      # 0: file does not need to be reformatted
+      # 1: file need to be reformatted
+      # 123: internal black error
+      # (see black --help)
+      exit_code=$?
+      if [ $exit_code -ne 0 ]
       then
         uncompliant_files+="$(pwd)/${line}\n"
       fi
     fi
   done
-
+  echo $uncompliant_files
   if [ ! -z "$uncompliant_files" ]
   then
     printf "\n"
