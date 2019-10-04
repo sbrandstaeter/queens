@@ -38,6 +38,8 @@ class BMFMCModel(Model):
         predictive_var,
         hf_mc=None,
         BMFMC_reference=False,
+        eigenfunc=False,
+        eigenfunc_train=False
     ):
         """ Initialize data fit surrogate model
 
@@ -93,6 +95,9 @@ class BMFMCModel(Model):
         self.pylf_mc_support = None
         self.BMFMC_reference = BMFMC_reference
         self.sample_mat = None
+        self.eigenfunc = eigenfunc
+        self.eigenfunc_train = eigenfunc_train
+        self.f_mean_train = None
         super(BMFMCModel, self).__init__(
             name="bmfmc_model", uncertain_parameters=None, data_flag=True
         )  # Super call seems necessary to have access to parent class methods but we set parameters to None first and override in feature space method
@@ -108,6 +113,8 @@ class BMFMCModel(Model):
         lf_mc_in,
         lfs_mc_out,
         hf_mc=None,
+        eigenfunc=None,
+        eigenfunc_train=None
     ):
         """  Create data fit surrogate model from problem description
 
@@ -159,6 +166,8 @@ class BMFMCModel(Model):
             predictive_var,
             hf_mc,
             BMFMC_reference,
+            eigenfunc,
+            eigenfunc_train
         )
 
     def evaluate(self):
@@ -175,6 +184,7 @@ class BMFMCModel(Model):
         if self.BMFMC_reference is True:
             self.build_approximation(approx_case=False)
             self.f_mean_pred, self.yhf_var_pred = self.interface.map(self.lfs_mc_out.T)
+            self.f_mean_train,_ = self.interface.map(self.lfs_train_out.T)
             self.compute_pyhf_statistics()
             self.compute_pymc_reference()
             pyhf_mean_BMFMC = self.pyhf_mean_vec
@@ -299,7 +309,7 @@ class BMFMCModel(Model):
     def compute_pyhf_statistics(self):
         y_min = 0.8 * np.min(self.lfs_train_out)
         y_max = 1.3 * np.max(self.lfs_train_out)
-        num_dis = 400
+        num_dis = 500
         self.support_pyhf = np.linspace(y_min, y_max, num_dis)
 # ---------------------------- PYHF MEAN PREDICTION ---------------------------
         pyhf_mean_vec = np.zeros(self.support_pyhf.shape)
@@ -307,7 +317,7 @@ class BMFMCModel(Model):
         #            std = np.sqrt(var)
         #            pyhf_mean_vec = pyhf_mean_vec + st.norm.pdf(self.support_pyhf,loc=mean,scale=std)
         std = np.sqrt(self.yhf_var_pred)
-        pdf_mat = st.norm.pdf(self.support_pyhf, loc=self.f_mean_pred, scale=std*0.7)
+        pdf_mat = st.norm.pdf(self.support_pyhf, loc=self.f_mean_pred, scale=std*0.4)
         pyhf_mean_vec = np.sum(pdf_mat, axis=0)
         self.pyhf_mean_vec = 1 / self.f_mean_pred.size * pyhf_mean_vec
 # ---------------------------- PYHF VAR PREDICTION ----------------------------
@@ -464,31 +474,59 @@ class BMFMCModel(Model):
         """ Principal component analysis on a data matrix"""
 
         # Standardizing the features
-        x_standardized = StandardScaler().fit_transform(
-            np.vstack((self.lf_mc_in, self.train_in))
-        )
+        x_vec = np.vstack((self.lf_mc_in, self.train_in))
+        random_fields_test = self.lf_mc_in[:, 3:]
+        random_fields_train = self.train_in[:, 3:]
 
         # PCA makes only sense on correlated data set -> seperate correlated and uncorrelated variables
         # TODO this split is hard coded!
-        x_uncorr = x_standardized[:, 0:2]
-        x_corr = x_standardized[:, 2:-1]
+        x_uncorr = x_vec[:, 0:3]  # TODO this seems to make problems
+#        x_corr = x_standardized[:, 2:-1]
 
         x_uncorr_test = x_uncorr[0:self.lf_mc_in.shape[0], :]
-        x_corr_test = x_corr[0:self.lf_mc_in.shape[0], :]
+#        x_corr_test = x_corr[0:self.lf_mc_in.shape[0], :]
 
         x_uncorr_train = x_uncorr[self.lf_mc_in.shape[0]:, :]
-        x_corr_train = x_corr[self.lf_mc_in.shape[0]:, :]
+#        x_corr_train = x_corr[self.lf_mc_in.shape[0]:, :]
 
-        pca_model = PCA(n_components=2) #KernelPCA(n_components=2, kernel="rbf", gamma=10, n_jobs=2)
+#        pca_model = PCA(n_components=1) #KernelPCA(n_components=2, kernel="rbf", gamma=10, n_jobs=2)
                     # SparsePCA(n_components=3, n_jobs=4, normalize_components=True)
-        x_trans = pca_model.fit_transform(x_corr)
+#        x_trans = pca_model.fit_transform(x_corr)
+
+# ------------------------- TAKE CARE OF RANDOM FIELDS ------------------------
+        x_vec = np.linspace(0, 1, 200, endpoint=True)
+        mean_fun = 4 * 0.2 * (-(x_vec - 0.5)**2 + 0.25)
+        normalized_train = random_fields_train - mean_fun
+        normalized_test = random_fields_test - mean_fun
+
+        num_trunc = 10
+        self.eigenfunc = self.eigenfunc[:,0:num_trunc]
+        coef_train = np.dot(self.eigenfunc.T, normalized_train.T)
+        coef_test = np.dot(self.eigenfunc.T, normalized_test.T)
+
+
+#        approx = (np.dot(coef_train.T, self.eigenfunc.T) + mean_fun).T
+#        import matplotlib.pyplot as plt
+#        plt.plot(approx)
+#        plt.show()
+
+
+#        coef_test = np.linalg.lstsq(proj_test.T, random_fields_test, rcond=None)[0]
+#        coef_train = np.linalg.lstsq(proj_train.T, random_fields_train, rcond=None)[0]
+
         # stack together uncorrelated vars and pca of corr vars
-        features_test = np.hstack((x_uncorr_test, x_trans[0:self.lf_mc_in.shape[0],:]))
-        features_train = np.hstack((x_uncorr_train, x_trans[self.lf_mc_in.shape[0]:,:]))
+        X_test = np.hstack((x_uncorr_test, coef_test.T))
+        X_train = np.hstack((x_uncorr_train, coef_train.T))
+        scaler = StandardScaler()
+        features_test = scaler.fit_transform(X_test)
+        features_train = scaler.transform(X_train)
+
+#        features_test = np.hstack((x_uncorr_test, x_trans[0:self.lf_mc_in.shape[0],:]))
+#        features_train = np.hstack((x_uncorr_train, x_trans[self.lf_mc_in.shape[0]:,:]))
         return features_train, features_test
 
     def sparse_pca(self):
-        """ Perfom sparce version of principal component analysis on dataset"""
+        """ Perfom sparse version of principal component analysis on dataset """
 
         x_standardized = StandardScaler().fit_transform(
             np.vstack((self.lf_mc_in, self.train_in))
@@ -505,24 +543,20 @@ class BMFMCModel(Model):
 
     def pca_joint_space(self):
         """ Eigendecomposition of joint input/output space """
+        num_features = 1
 
-        num_features = 2
-        #        x_standardized = StandardScaler().fit_transform(np.vstack((self.lf_mc_in, self.train_in)))
-        #        x_standardized_test = x_standardized[0:self.lf_mc_in.shape[0], :]
-        #        x_standardized_train = x_standardized[self.lf_mc_in.shape[0]:, :]
+        x_standardized_train, x_standardized_test = self.pca()
+        x_standardized = np.vstack((x_standardized_test, x_standardized_train))
 
-        # HERE PCA of x-data!
-        x_train_red, x_test_red = self.pca()
-        x_standardized = StandardScaler().fit_transform(np.vstack((x_test_red, x_train_red)))
-        x_standardized_test = x_standardized[0:x_test_red.shape[0], :]
-        x_standardized_train = x_standardized[x_test_red.shape[0]:, :]
+        pdb.set_trace()
+        y_standardized = StandardScaler().fit_transform((np.vstack((self.lfs_mc_out, self.lfs_train_out))-np.vstack((self.hf_mc[:,None],self.hf_train_out)))**2)
+        y_standardized = StandardScaler().fit_transform(self.hf_train_out)
 
-        y_standardized = StandardScaler().fit_transform(np.vstack((self.lfs_mc_out, self.lfs_train_out)))
-        # y_standardized_test = y_standardized[0:self.lfs_mc_out.shape[0], :]  # TODO we should return those to other
-        # y_standardized_train = y_standardized[self.lfs_mc_out.shape[0]:, :]  # otherwise Regression has wrong scale!!
 
-        inner_proj = np.dot(x_standardized.T, y_standardized)  # TODO careful here
-        joint_cov = np.outer(inner_proj, inner_proj.T)
+        # Joint space projection
+        inner_proj_left = np.dot(x_standardized_train.T, y_standardized)
+        inner_proj_right = np.dot(y_standardized.T, x_standardized_train)
+        joint_cov = np.dot(inner_proj_left, inner_proj_right)
 
         # eigendecomp
         lamb, v = np.linalg.eig(joint_cov)
@@ -534,15 +568,13 @@ class BMFMCModel(Model):
         v = v[:, idx]
 
         # projection on latent features
-        train_iter = np.empty((x_standardized_train.shape[0], 0))
-        test_iter = np.empty((x_standardized_test.shape[0], 0))
-        for num in range(num_features):
-            test_iter = np.hstack(
-                (test_iter, np.atleast_2d(np.dot(x_standardized_test, v[:, num])).T)
-            )
-            train_iter = np.hstack(
-                (train_iter, np.atleast_2d(np.dot(x_standardized_train, v[:, num])).T)
-            )
+        test_iter = np.atleast_2d(np.dot(x_standardized_test, v[:, 0:num_features]))
+        train_iter = np.atleast_2d(np.dot(x_standardized_train, v[:, 0:num_features]))
+
+        #test_iter = y_standardized[0: self.lf_mc_in.shape[0], :]
+        #train_iter = y_standardized[self.lf_mc_in.shape[0]:, :]
+
+
         # Rescale the features to y_lf data
         min_ylf = np.min(self.lfs_mc_out)
         max_ylf = np.max(self.lfs_mc_out)

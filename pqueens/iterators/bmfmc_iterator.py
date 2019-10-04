@@ -43,6 +43,7 @@ class BmfmcIterator(Iterator):
         self.lf_mc_in = None
         self.hf_mc = None
         self.lfs_mc_out = None
+        self.eigenfunc = None
         self.output = None # this is still important and will prob be the marginal pdf of the hf / its statistics
         self.initial_design = initial_design
         self.predictive_var=predictive_var
@@ -87,6 +88,7 @@ class BmfmcIterator(Iterator):
         space based on one p(y) distribution of one lofi
         """
         self.lf_mc_in = self.lf_data_iterators[0].read_pickle_file()[0] # here we assume that all lfs have the same input vector
+        self.eigenfunc = self.lf_data_iterators[0].read_pickle_file()[-1]
         lfs_mc_out = [lf_data_iterator.read_pickle_file()[1][:,0] for _,lf_data_iterator in enumerate(self.lf_data_iterators)] # list of lf data with another list or dictionary per lf containing x_vec and y(_vec) CAREFUL: we only take the first column and omit vectorial outputs --> this should be changed!
         self.lfs_mc_out = np.atleast_2d(np.vstack(lfs_mc_out)).T
 
@@ -131,7 +133,7 @@ class BmfmcIterator(Iterator):
                     self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out = pickle.load(handle) #TODO --> Change this according to design below!!
             else:
 ######## TODO: THIS IS A WORKAROUND ! we calculate a subset of the mc data for the hf training -> this is usually not the case so the subset selection should be deleted!
-                self.train_in, self.hf_train_out = self.hf_data_iterator.read_pickle_file()
+                self.train_in, self.hf_train_out,_ = self.hf_data_iterator.read_pickle_file()
                 self.hf_train_out = self.hf_train_out[:,0] #TODO here we neglect the vectorial output --> this should be changed in the future
                 self.hf_mc = self.hf_train_out
                 # find the touples of lf and hf data that match
@@ -149,6 +151,7 @@ class BmfmcIterator(Iterator):
                     dummy_hf = self.hf_train_out #TODO delete later
                     self.hf_train_out = np.array([]).reshape(0,1) #TODO: Later delete as HF MC is normally not available
                     self.train_in = np.array([]).reshape(0,self.lf_mc_in.shape[1])
+                    self.eigenfunc_train = np.array([]).reshape(0,self.eigenfunc.shape[1])
                     # Go through all bins and select randomly select points from them (also several per bin!)
                     for bin_n in range(n_bins):
                         # array of booleans
@@ -173,7 +176,7 @@ class BmfmcIterator(Iterator):
                 with open(path_to_train_data,'wb') as handle: #TODO: give better name according to experiment and choose better location
                     pickle.dump([self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out],handle,protocol=pickle.HIGHEST_PROTOCOL) #TODO: check if list is right format here
         # CREATE the underlying model
-        self.model = BMFMCModel.from_config_create_model(self.config, self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out,hf_mc=self.hf_mc) # TODO: HERE we actualluy define the BMFMC_model and bypass the input arg
+        self.model = BMFMCModel.from_config_create_model(self.config, self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out,hf_mc=self.hf_mc, eigenfunc=self.eigenfunc) # TODO: HERE we actualluy define the BMFMC_model and bypass the input arg
 
 ####### TODO: This needs still to be implemented to run HF directly from this iterator for initial desing
         """ Run Analysis on all models """

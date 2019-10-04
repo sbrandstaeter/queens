@@ -7,7 +7,7 @@
   "method": {
     "method_name": "bmfmc",
     "method_options" :{
-      "path_to_lf_data" : ["/home/nitzler/workspace/PYTHON_Tests/LF_cylinder_cleaned.pickle"],
+      "path_to_lf_data" : ["/home/nitzler/workspace/PYTHON_Tests/LF_cylinder_cleaned_kle.pickle"],
       "path_to_hf_data" : "/home/nitzler/workspace/PYTHON_Tests/HF_cylinder_cleaned.pickle",
       "experiment_dir" : "/home/nitzler/workspace/PYTHON_Tests",
       "active_learning" : false,
@@ -30,8 +30,8 @@
     "features_config" : "pca_joint_space"
     },
    "initial_design":{
-     "num_HF_eval" : 100,
-     "num_bins" : 30,
+     "num_HF_eval" : 200,
+     "num_bins" : 20,
      "method": "random"
    }
   }

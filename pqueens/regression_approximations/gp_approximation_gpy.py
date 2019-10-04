@@ -52,10 +52,10 @@ class GPGPyRegression(RegressionApproximation):
         if input_dim == 2:
             k2 = GPy.kern.RBF(input_dim=1, variance=0.1*dy, lengthscale=0.25*dx, ARD=False, active_dims=[1])
             k = k1 + k2
-        elif input_dim ==3:
+        elif input_dim == 3:
             k2 = GPy.kern.RBF(input_dim=1, variance=0.1*dy, lengthscale=0.25*dx, ARD=False, active_dims=[1])
             k3 = GPy.kern.RBF(input_dim=1, variance=0.1*dy, lengthscale=0.25*dx, ARD=False, active_dims=[2])
-            k = k1 * k2 * k3
+            k = k1 + k2 + k3
         elif input_dim == 1:
             k = k1
         self.m = GPy.models.GPRegression(self.X, self.y, kernel=k, normalizer=True)

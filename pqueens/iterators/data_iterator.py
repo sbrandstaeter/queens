@@ -59,7 +59,7 @@ class DataIterator(Iterator):
     def core_run(self):
         """  Read data from file """
 
-        self.samples, self.output = self.read_pickle_file()
+        self.samples, self.output, self.eigenfunc = self.read_pickle_file()
 
     def post_run(self):
         """ Analyze the results """
@@ -89,7 +89,8 @@ class DataIterator(Iterator):
 
         data = pickle.load(open(self.path_to_data, "rb"))
 
-        samples = data["input"] #TODO think about an unified format/key, before: "input_data"
-        output = data["output"] #TODO think about an unified format/key, before: "raw_output_data"
+        samples = data["input"]  # TODO think about an unified format/key, before: "input_data"
+        output = data["output"]  # TODO think about an unified format/key, before: "raw_output_data"
+        eigenfunc = data.get('eigenfunc')
 
-        return samples, output
+        return samples, output, eigenfunc
