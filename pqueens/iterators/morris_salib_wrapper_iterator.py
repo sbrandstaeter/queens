@@ -230,7 +230,7 @@ class MorrisSALibIterator(Iterator):
 
         results = {}
         results["parameter_names"] = self.parameter_names
-        results["sensitivity_incides"] = self.si
+        results["sensitivity_indices"] = self.si
         return results
 
     def print_results(self, results):
@@ -245,20 +245,20 @@ class MorrisSALibIterator(Iterator):
         for j in range(self.num_params):
             print(
                 "{0!s:30} {1!s:10} {2!s:10} {3!s:15} {4!s:10}".format(
-                    results['sensitivity_incides']['names'][j],
-                    results['sensitivity_incides']['mu_star'][j],
-                    results['sensitivity_incides']['mu'][j],
-                    results['sensitivity_incides']['mu_star_conf'][j],
-                    results['sensitivity_incides']['sigma'][j],
+                    results['sensitivity_indices']['names'][j],
+                    results['sensitivity_indices']['mu_star'][j],
+                    results['sensitivity_indices']['mu'][j],
+                    results['sensitivity_indices']['mu_star_conf'][j],
+                    results['sensitivity_indices']['sigma'][j],
                 )
             )
 
     def plot_results(self, results):
         fig, ax = plt.subplots()
         ax.bar(
-            results['sensitivity_incides']['names'],
-            results['sensitivity_incides']['mu_star'],
-            yerr=results['sensitivity_incides']['sigma'],
+            results['sensitivity_indices']['names'],
+            results['sensitivity_indices']['mu_star'],
+            yerr=results['sensitivity_indices']['sigma'],
             align='center',
             alpha=0.6,
             ecolor='black',

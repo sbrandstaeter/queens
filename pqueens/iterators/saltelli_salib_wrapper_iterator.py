@@ -28,7 +28,7 @@ class SaltelliSALibIterator(Iterator):
         salib_problem (dict):               Problem definition for SALib
         num_params (int):                   Number of parameters
         parameter_names (list):             List with parameter names
-        sensitivity_incides (dict):         Dictionary with sensitivity indices
+        sensitivity_indices (dict):         Dictionary with sensitivity indices
     """
 
     def __init__(
@@ -66,7 +66,7 @@ class SaltelliSALibIterator(Iterator):
         self.salib_problem = None
         self.num_params = None
         self.parameter_names = []
-        self.sensitivity_incides = None
+        self.sensitivity_indices = None
 
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
@@ -152,7 +152,7 @@ class SaltelliSALibIterator(Iterator):
         self.output = self.eval_model()
 
         # do actual sensitivity analysis
-        self.sensitivity_incides = sobol.analyze(
+        self.sensitivity_indices = sobol.analyze(
             self.salib_problem,
             np.reshape(self.output['mean'], (-1)),
             calc_second_order=self.calc_second_order,
@@ -179,7 +179,7 @@ class SaltelliSALibIterator(Iterator):
     def print_results(self, results):
         """ Function to print results """
 
-        S = results["sensitivity_incides"]
+        S = results["sensitivity_indices"]
         parameter_names = results["parameter_names"]
         title = 'Parameter'
         print('%s   S1       S1_conf    ST    ST_conf' % title)
@@ -232,7 +232,7 @@ class SaltelliSALibIterator(Iterator):
 
         results = {}
         results["parameter_names"] = self.parameter_names
-        results["sensitivity_incides"] = self.sensitivity_incides
+        results["sensitivity_indices"] = self.sensitivity_indices
         results["second_order"] = self.calc_second_order
 
         return results
@@ -243,7 +243,7 @@ class SaltelliSALibIterator(Iterator):
             Args:
                 results   (dict):    Dictionary with results
         """
-        bars = go.Bar(x=results["parameter_names"], y=results["sensitivity_incides"]["S1"])
+        bars = go.Bar(x=results["parameter_names"], y=results["sensitivity_indices"]["S1"])
         data = [bars]
 
         layout = dict(

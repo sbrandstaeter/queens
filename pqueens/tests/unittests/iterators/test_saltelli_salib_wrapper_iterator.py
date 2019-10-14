@@ -94,7 +94,7 @@ class TestSASaltelliSALib(unittest.TestCase):
             the number of parameters """
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
-        si = self.my_iterator.sensitivity_incides
+        si = self.my_iterator.sensitivity_indices
         # self.my_iterator._SaltelliSALibIterator__print_results()
         # print("si {}".format(si))
 
@@ -547,7 +547,7 @@ class TestSASaltelliBorehole(unittest.TestCase):
             the number of parameters """
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
-        si = self.my_iterator.sensitivity_incides
+        si = self.my_iterator.sensitivity_indices
         # self.my_iterator._SaltelliSALibIterator__print_results()
         # print("si {}".format(si))
 

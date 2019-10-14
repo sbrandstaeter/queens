@@ -41,7 +41,7 @@ class SaltelliIterator(Iterator):
         output (dict):                  Dict with all model outputs
         num_params (int):               Number of uncertain model parameters
         parameter_names (list):         List of parameter names
-        sensitivity_incides (dict):     Dictionary holdin sensitivity incides
+        sensitivity_indices (dict):     Dictionary holdin sensitivity indices
     """
 
     def __init__(
@@ -151,7 +151,7 @@ class SaltelliIterator(Iterator):
             temp["distribution_parameter"] = rv["distribution_parameter"]
             distribution_info.append(temp)
 
-        self.sensitivity_incides = self.create_si_dict()
+        self.sensitivity_indices = self.create_si_dict()
 
         # How many values of the Sobol sequence to skip
         skip_values = 1000
@@ -272,7 +272,7 @@ class SaltelliIterator(Iterator):
         r = np.random.randint(N, size=(N, self.num_bootstrap_samples))
         Z = norm.ppf(0.5 + self.confidence_level / 2)
 
-        S = self.sensitivity_incides
+        S = self.sensitivity_indices
 
         for j in range(self.num_params):
             S['S1'][j] = self.first_order(A, AB[:, j], B)
@@ -289,7 +289,7 @@ class SaltelliIterator(Iterator):
                         A[r], AB[r, j], AB[r, k], BA[r, j], B[r]
                     ).std(ddof=1)
 
-        self.sensitivity_incides = S
+        self.sensitivity_indices = S
 
     def first_order(self, A, AB, B):
         """ Compute first order indices, normalized by sample variance
@@ -378,7 +378,7 @@ class SaltelliIterator(Iterator):
         """ Function to print results """
 
         # get shorter name
-        S = results["sensitivity_incides"]
+        S = results["sensitivity_indices"]
         parameter_names = results["parameter_names"]
         title = 'Parameter'
         print('%s   S1       S1_conf    ST    ST_conf' % title)
@@ -409,7 +409,7 @@ class SaltelliIterator(Iterator):
 
         results = {}
         results["parameter_names"] = self.parameter_names
-        results["sensitivity_incides"] = self.sensitivity_incides
+        results["sensitivity_indices"] = self.sensitivity_indices
         results["second_order"] = self.calc_second_order
 
         return results
