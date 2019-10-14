@@ -6,10 +6,10 @@ from pqueens.models.model import Model
 from .iterator import Iterator
 from pqueens.utils.process_outputs import write_results
 import matplotlib as mpl
-if not mpl.get_backend().lower() == 'agg':
-        mpl.use('TkAgg')
-from matplotlib import pyplot as plt
 
+if not mpl.get_backend().lower() == 'agg':
+    mpl.use('TkAgg')
+from matplotlib import pyplot as plt
 
 
 class MorrisSALibIterator(Iterator):
@@ -52,10 +52,20 @@ class MorrisSALibIterator(Iterator):
 
 """
 
-    def __init__(self, model, num_trajectories, local_optimization,
-                 num_optimal_trajectories, grid_jump, num_levels, seed,
-                 confidence_level, num_bootstrap_samples, result_description,
-                 global_settings):
+    def __init__(
+        self,
+        model,
+        num_trajectories,
+        local_optimization,
+        num_optimal_trajectories,
+        grid_jump,
+        num_levels,
+        seed,
+        confidence_level,
+        num_bootstrap_samples,
+        result_description,
+        global_settings,
+    ):
         """ Initialize MorrisSALibIterator
 
         Args:
@@ -103,8 +113,6 @@ class MorrisSALibIterator(Iterator):
         self.salib_problem = {}
         self.si = {}
 
-
-
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
         """ Create MorrisSALibIterator iterator from problem description
@@ -126,16 +134,19 @@ class MorrisSALibIterator(Iterator):
         if not "num_traj_chosen" in method_options:
             method_options["num_traj_chosen"] = None
 
-        return cls(model, method_options["num_trajectories"],
-                   method_options["local_optimization"],
-                   method_options["num_optimal_trajectories"],
-                   method_options["grid_jump"],
-                   method_options["number_of_levels"],
-                   method_options["seed"],
-                   method_options["confidence_level"],
-                   method_options["num_bootstrap_samples"],
-                   method_options.get("result_description", None),
-                   config["global_settings"])
+        return cls(
+            model,
+            method_options["num_trajectories"],
+            method_options["local_optimization"],
+            method_options["num_optimal_trajectories"],
+            method_options["grid_jump"],
+            method_options["number_of_levels"],
+            method_options["seed"],
+            method_options["confidence_level"],
+            method_options["num_bootstrap_samples"],
+            method_options.get("result_description", None),
+            config["global_settings"],
+        )
 
     def eval_model(self):
         """ Evaluate the model """
@@ -162,21 +173,25 @@ class MorrisSALibIterator(Iterator):
             self.num_params += 1
 
         if parameter_info.get("random_fields", None) is not None:
-            raise RuntimeError("LHS Sampling is currentyl not implemented in conjunction with random fields.")
-
+            raise RuntimeError(
+                "LHS Sampling is currentyl not implemented in conjunction with random fields."
+            )
 
         self.salib_problem = {
-            'num_vars' : self.num_params,
-            'names'    : self.parameter_names,
-            'bounds'   : bounds,
-            'groups'   : None,
-            }
+            'num_vars': self.num_params,
+            'names': self.parameter_names,
+            'bounds': bounds,
+            'groups': None,
+        }
 
-        self.samples = morris.sample(self.salib_problem,
-                                     self.num_trajectories,
-                                     num_levels=self.num_levels,
-                                     optimal_trajectories=self.num_optimal_trajectories,
-                                     local_optimization=self.local_optimization)
+        self.samples = morris.sample(
+            self.salib_problem,
+            self.num_trajectories,
+            num_levels=self.num_levels,
+            optimal_trajectories=self.num_optimal_trajectories,
+            local_optimization=self.local_optimization,
+        )
+
     def core_run(self):
         """ Run Analysis on model """
 
@@ -184,28 +199,31 @@ class MorrisSALibIterator(Iterator):
 
         self.output = self.eval_model()
 
-        self.si = morris_analyzer.analyze(self.salib_problem,
-                                          self.samples,
-                                          np.reshape(self.output['mean'], (-1)),
-                                          num_resamples=self.num_bootstrap_samples,
-                                          conf_level=self.confidence_level,
-                                          print_to_console=False,
-                                          num_levels=self.num_levels)
-
+        self.si = morris_analyzer.analyze(
+            self.salib_problem,
+            self.samples,
+            np.reshape(self.output['mean'], (-1)),
+            num_resamples=self.num_bootstrap_samples,
+            conf_level=self.confidence_level,
+            print_to_console=False,
+            num_levels=self.num_levels,
+        )
 
     def post_run(self):
         """ Analyze the results """
         results = self.process_results()
         if self.result_description is not None:
             if self.result_description["write_results"] is True:
-                write_results(results, self.global_settings["output_dir"],
-                              self.global_settings["experiment_name"])
+                write_results(
+                    results,
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
+                )
                 self.print_results(results)
                 if self.result_description["plot_results"] is True:
                     self.plot_results(results)
             else:
                 self.print_results(results)
-
 
     def process_results(self):
         """ Write all results to self contained dictionary """
@@ -215,31 +233,39 @@ class MorrisSALibIterator(Iterator):
         results["sensitivity_incides"] = self.si
         return results
 
-
     def print_results(self, results):
         """ Print results to screen """
 
-        print("{0:<30} {1:>10} {2:>10} {3:>15} {4:>10}".format(
-            "Parameter",
-            "Mu_Star",
-            "Mu",
-            "Mu_Star_Conf",
-            "Sigma"))
+        print(
+            "{0:<30} {1:>10} {2:>10} {3:>15} {4:>10}".format(
+                "Parameter", "Mu_Star", "Mu", "Mu_Star_Conf", "Sigma"
+            )
+        )
 
         for j in range(self.num_params):
-            print("{0!s:30} {1!s:10} {2!s:10} {3!s:15} {4!s:10}".format(
-                results['sensitivity_incides']['names'][j],
-                results['sensitivity_incides']['mu_star'][j],
-                results['sensitivity_incides']['mu'][j],
-                results['sensitivity_incides']['mu_star_conf'][j],
-                results['sensitivity_incides']['sigma'][j]))
+            print(
+                "{0!s:30} {1!s:10} {2!s:10} {3!s:15} {4!s:10}".format(
+                    results['sensitivity_incides']['names'][j],
+                    results['sensitivity_incides']['mu_star'][j],
+                    results['sensitivity_incides']['mu'][j],
+                    results['sensitivity_incides']['mu_star_conf'][j],
+                    results['sensitivity_incides']['sigma'][j],
+                )
+            )
 
     def plot_results(self, results):
         fig, ax = plt.subplots()
-        ax.bar(results['sensitivity_incides']['names'],results['sensitivity_incides']['mu_star'], yerr=results['sensitivity_incides']['sigma'],align='center',alpha=0.6,ecolor='black',capsize=10)
+        ax.bar(
+            results['sensitivity_incides']['names'],
+            results['sensitivity_incides']['mu_star'],
+            yerr=results['sensitivity_incides']['sigma'],
+            align='center',
+            alpha=0.6,
+            ecolor='black',
+            capsize=10,
+        )
         ax.set_xlabel('Factors')
         ax.set_ylabel('$\mu^*_i$ (blue bars) and $\sigma_i$ (black confidence intervals)')
         ax.set_title('Elementary Effects Analysis')
         ax.yaxis.grid(True)
         plt.show()
-

@@ -5,17 +5,20 @@ import pytest
 
 from pqueens.main import main
 
+
 def test_ishigami_saltelli_salib(inputdir, tmpdir):
     """ Test case for salib based saltelli iterator """
-    arguments = ['--input=' + os.path.join(inputdir, 'ishigami_saltelli.json'),
-                 '--output='+str(tmpdir)]
+    arguments = [
+        '--input=' + os.path.join(inputdir, 'ishigami_saltelli.json'),
+        '--output=' + str(tmpdir),
+    ]
 
     main(arguments)
-    result_file = str(tmpdir)+'/'+'xxx.pickle'
+    result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    #rint(results)
+    # rint(results)
 
     assert results["sensitivity_incides"]['S1'][0] == pytest.approx(-0.20343406)
     assert results["sensitivity_incides"]['S1'][1] == pytest.approx(0.83832789)

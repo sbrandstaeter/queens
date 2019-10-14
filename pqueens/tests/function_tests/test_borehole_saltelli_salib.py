@@ -5,18 +5,21 @@ import pytest
 
 from pqueens.main import main
 
+
 def test_borehole_saltelli(inputdir, tmpdir):
     """ Test case for SA_lib saltelli iterator """
-    arguments = ['--input=' + os.path.join(inputdir, 'borehole_salib_saltelli.json'),
-                 '--output='+str(tmpdir)]
+    arguments = [
+        '--input=' + os.path.join(inputdir, 'borehole_salib_saltelli.json'),
+        '--output=' + str(tmpdir),
+    ]
 
     main(arguments)
-    result_file = str(tmpdir)+'/'+'xxx.pickle'
+    result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
-    #print("results {}".format(results))
-    #print("Parameter Names {}".format(results["parameter_names"]))
-    #print("sensitivity_incides][S1] {}".format(results["sensitivity_incides"]["S1"]))
+    # print("results {}".format(results))
+    # print("Parameter Names {}".format(results["parameter_names"]))
+    # print("sensitivity_incides][S1] {}".format(results["sensitivity_incides"]["S1"]))
 
     assert results["sensitivity_incides"]["S1"][0] == pytest.approx(8.24597209e-01)
     assert results["sensitivity_incides"]["S1"][1] == pytest.approx(6.09543158e-05)

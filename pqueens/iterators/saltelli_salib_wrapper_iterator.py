@@ -10,6 +10,7 @@ import plotly.graph_objs as go
 
 # TODO deal with non-uniform input distribution
 
+
 class SaltelliSALibIterator(Iterator):
     """ Saltelli SALib iterator
 
@@ -29,9 +30,18 @@ class SaltelliSALibIterator(Iterator):
         parameter_names (list):             List with parameter names
         sensitivity_incides (dict):         Dictionary with sensitivity indices
     """
-    def __init__(self, model, seed, num_samples, calc_second_order,
-                 num_bootstrap_samples, confidence_level, result_description,
-                 global_settings):
+
+    def __init__(
+        self,
+        model,
+        seed,
+        num_samples,
+        calc_second_order,
+        num_bootstrap_samples,
+        confidence_level,
+        result_description,
+        global_settings,
+    ):
         """ Initialize Saltelli SALib iterator object
 
         Args:
@@ -58,7 +68,6 @@ class SaltelliSALibIterator(Iterator):
         self.parameter_names = []
         self.sensitivity_incides = None
 
-
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
         """ Create Saltelli SALib iterator from problem description
@@ -77,13 +86,16 @@ class SaltelliSALibIterator(Iterator):
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)
 
-        return cls(model, method_options["seed"],
-                   method_options["num_samples"],
-                   method_options["calc_second_order"],
-                   method_options["num_bootstrap_samples"],
-                   method_options["confidence_level"],
-                   method_options.get("result_description", None),
-                   config["global_settings"])
+        return cls(
+            model,
+            method_options["seed"],
+            method_options["num_samples"],
+            method_options["calc_second_order"],
+            method_options["num_bootstrap_samples"],
+            method_options["confidence_level"],
+            method_options.get("result_description", None),
+            config["global_settings"],
+        )
 
     def eval_model(self):
         """ Evaluate the model """
@@ -117,17 +129,17 @@ class SaltelliSALibIterator(Iterator):
 
         random_fields = parameter_info.get("random_fields", None)
         if random_fields is not None:
-            raise RuntimeError("The SaltelliIterator does not work in conjunction with random fields.")
-
+            raise RuntimeError(
+                "The SaltelliIterator does not work in conjunction with random fields."
+            )
 
         self.salib_problem = {
-            'num_vars' : self.num_params,
-            'names'    : self.parameter_names,
-            'bounds'   : bounds,
-            'dists'    : dists
+            'num_vars': self.num_params,
+            'names': self.parameter_names,
+            'bounds': bounds,
+            'dists': dists,
         }
-        self.samples = saltelli.sample(self.salib_problem, self.num_samples,
-                                       self.calc_second_order)
+        self.samples = saltelli.sample(self.salib_problem, self.num_samples, self.calc_second_order)
 
     def get_all_samples(self):
         """ Return all samples """
@@ -140,25 +152,29 @@ class SaltelliSALibIterator(Iterator):
         self.output = self.eval_model()
 
         # do actual sensitivity analysis
-        self.sensitivity_incides = sobol.analyze(self.salib_problem,
-                                                 np.reshape(self.output['mean'], (-1)),
-                                                 calc_second_order=self.calc_second_order,
-                                                 num_resamples=self.num_bootstrap_samples,
-                                                 conf_level=self.confidence_level,
-                                                 print_to_console=False)
+        self.sensitivity_incides = sobol.analyze(
+            self.salib_problem,
+            np.reshape(self.output['mean'], (-1)),
+            calc_second_order=self.calc_second_order,
+            num_resamples=self.num_bootstrap_samples,
+            conf_level=self.confidence_level,
+            print_to_console=False,
+        )
 
     def post_run(self):
         """ Analyze the results """
         results = self.process_results()
         if self.result_description is not None:
             if self.result_description["write_results"] is True:
-                write_results(results, self.global_settings["output_dir"],
-                              self.global_settings["experiment_name"])
+                write_results(
+                    results,
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
+                )
             else:
                 self.print_results(results)
             if self.result_description["plot_results"] is True:
                 self.plot_results(results)
-
 
     def print_results(self, results):
         """ Function to print results """
@@ -169,16 +185,25 @@ class SaltelliSALibIterator(Iterator):
         print('%s   S1       S1_conf    ST    ST_conf' % title)
         j = 0
         for name in parameter_names:
-            print('%s %f %f %f %f' % (name + '       ', S['S1'][j], S['S1_conf'][j],
-                                      S['ST'][j], S['ST_conf'][j]))
-            j = j+1
+            print(
+                '%s %f %f %f %f'
+                % (name + '       ', S['S1'][j], S['S1_conf'][j], S['ST'][j], S['ST_conf'][j])
+            )
+            j = j + 1
 
         if results["second_order"]:
             print('\n%s_1 %s_2    S2      S2_conf' % (title, title))
             for j in range(self.num_params):
                 for k in range(j + 1, self.num_params):
-                    print("%s %s %f %f" % (parameter_names[j] + '            ', parameter_names[k] + '      ',
-                                           S['S2'][j, k], S['S2_conf'][j, k]))
+                    print(
+                        "%s %s %f %f"
+                        % (
+                            parameter_names[j] + '            ',
+                            parameter_names[k] + '      ',
+                            S['S2'][j, k],
+                            S['S2_conf'][j, k],
+                        )
+                    )
 
     def __get_sa_lib_distribution_name(self, distribution_name):
         """ Convert QUEENS distribution name to SALib distribution name
@@ -199,8 +224,7 @@ class SaltelliSALibIterator(Iterator):
             sa_lib_distribution_name = 'lognorm'
         else:
             valid_dists = ['uniform', 'normal', 'lognormal']
-            raise ValueError('Distributions: choose one of %s' %
-                             ", ".join(valid_dists))
+            raise ValueError('Distributions: choose one of %s' % ", ".join(valid_dists))
         return sa_lib_distribution_name
 
     def process_results(self):
@@ -219,16 +243,14 @@ class SaltelliSALibIterator(Iterator):
             Args:
                 results   (dict):    Dictionary with results
         """
-        bars = go.Bar(
-            x=results["parameter_names"],
-            y=results["sensitivity_incides"]["S1"]
-            )
+        bars = go.Bar(x=results["parameter_names"], y=results["sensitivity_incides"]["S1"])
         data = [bars]
 
-        layout = dict(title='First-Order Sensitivity Indices',
-                      xaxis=dict(title='Parameter'),
-                      yaxis=dict(title='Main Effect'),
-                     )
+        layout = dict(
+            title='First-Order Sensitivity Indices',
+            xaxis=dict(title='Parameter'),
+            yaxis=dict(title='Main Effect'),
+        )
 
         fig = go.Figure(data=data, layout=layout)
         plotly.offline.plot(fig, filename='bar_chart.html', auto_open=True)
