@@ -33,3 +33,5 @@ pylint
 pyfiglet
 # code formatter
 black
+# a smart progress meter for loops
+tqdm

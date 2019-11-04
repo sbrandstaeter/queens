@@ -4,6 +4,7 @@ from multiprocessing import Pool
 import sys
 
 import numpy as np
+from tqdm import tqdm
 
 from .interface import Interface
 
@@ -106,7 +107,7 @@ class DirectPythonInterface(Interface):
         mean_values = []
         job_id = 1
         if self.pool is None:
-            for variables in samples:
+            for variables in tqdm(samples):
                 params = variables.get_active_variables()
                 mean_value = np.squeeze(self.function.main(job_id, params))
                 if not mean_value.shape:
