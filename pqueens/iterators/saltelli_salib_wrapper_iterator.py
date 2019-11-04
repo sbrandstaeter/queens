@@ -1,16 +1,18 @@
-import numpy as np
-from SALib.sample import saltelli
-from SALib.analyze import sobol
-from pqueens.models.model import Model
-from .iterator import Iterator
+import os
 import random
-from pqueens.utils.process_outputs import write_results
+
+import numpy as np
+import pandas as pd
 import plotly
 import plotly.graph_objs as go
+from SALib.sample import saltelli
+from SALib.analyze import sobol
+
+from .iterator import Iterator
+from pqueens.models.model import Model
+from pqueens.utils.process_outputs import write_results
 
 # TODO deal with non-uniform input distribution
-
-
 class SaltelliSALibIterator(Iterator):
     """ Saltelli SALib iterator
 
@@ -139,6 +141,7 @@ class SaltelliSALibIterator(Iterator):
             'bounds': bounds,
             'dists': dists,
         }
+        print("Draw samples...")
         self.samples = saltelli.sample(self.salib_problem, self.num_samples, self.calc_second_order)
 
     def get_all_samples(self):
@@ -148,10 +151,12 @@ class SaltelliSALibIterator(Iterator):
     def core_run(self):
         """ Run Analysis on model """
 
+        print("Evaluate model...")
         self.model.update_model_from_sample_batch(self.samples)
         self.output = self.eval_model()
 
         # do actual sensitivity analysis
+        print("Calculate Sensitivity Indices...")
         self.sensitivity_indices = sobol.analyze(
             self.salib_problem,
             np.reshape(self.output['mean'], (-1)),
@@ -165,45 +170,68 @@ class SaltelliSALibIterator(Iterator):
         """ Analyze the results """
         results = self.process_results()
         if self.result_description is not None:
+            self.print_results(results)
             if self.result_description["write_results"] is True:
                 write_results(
                     results,
                     self.global_settings["output_dir"],
                     self.global_settings["experiment_name"],
                 )
-            else:
-                self.print_results(results)
             if self.result_description["plot_results"] is True:
                 self.plot_results(results)
 
     def print_results(self, results):
         """ Function to print results """
-
         S = results["sensitivity_indices"]
-        parameter_names = results["parameter_names"]
-        title = 'Parameter'
-        print('%s   S1       S1_conf    ST    ST_conf' % title)
-        j = 0
-        for name in parameter_names:
-            print(
-                '%s %f %f %f %f'
-                % (name + '       ', S['S1'][j], S['S1_conf'][j], S['ST'][j], S['ST_conf'][j])
-            )
-            j = j + 1
 
-        if results["second_order"]:
-            print('\n%s_1 %s_2    S2      S2_conf' % (title, title))
+        parameter_names = results["parameter_names"]
+
+        additivity = np.sum(S["S1"])
+        higher_interactions = 1 - additivity
+        str_second_order_interactions = ''
+        if self.calc_second_order:
+            S2 = S["S2"]
+            S2_conf = S["S2_conf"]
+
             for j in range(self.num_params):
+                S2[j, j] = S["S1"][j]
                 for k in range(j + 1, self.num_params):
-                    print(
-                        "%s %s %f %f"
-                        % (
-                            parameter_names[j] + '            ',
-                            parameter_names[k] + '      ',
-                            S['S2'][j, k],
-                            S['S2_conf'][j, k],
-                        )
-                    )
+                    S2[k, j] = S2[j, k]
+                    S2_conf[k, j] = S2_conf[j, k]
+
+            S2_df = pd.DataFrame(S2, columns=parameter_names, index=parameter_names)
+            S2_conf_df = pd.DataFrame(S2_conf, columns=parameter_names, index=parameter_names)
+
+            # we extract the upper triangular matrix which includes the diagonal entries
+            # therefore we have to subtract the trace
+            second_order_interactions = np.sum(np.triu(S2, k=1))
+            higher_interactions = higher_interactions - second_order_interactions
+            str_second_order_interactions = f'S_ij = {second_order_interactions}'
+            str_higher_order_interactions = f'1 - S_i - S_ij = {higher_interactions}'
+        else:
+            str_higher_order_interactions = f'1 - S_i = {higher_interactions}'
+
+        S_df = pd.DataFrame(
+            {key: value for (key, value) in S.items() if key not in ["S2", "S2_conf"]},
+            index=parameter_names,
+        )
+
+        print("Main and Total Effects:")
+        print(S_df)
+        if self.calc_second_order:
+            print("\nSecond Order Indices (diagonal entries are main effects):")
+            print(S2_df)
+            print("\nConfidence Second Order Indices:")
+            print(S2_conf_df)
+
+        print("\n")
+        print("Additivity, sum of main effects (for independent variables):")
+        print(f'S_i = {additivity}')
+        if self.calc_second_order:
+            print("Sum of second order interactions:")
+            print(str_second_order_interactions)
+        print("Higher order interactions:")
+        print(str_higher_order_interactions)
 
     def __get_sa_lib_distribution_name(self, distribution_name):
         """ Convert QUEENS distribution name to SALib distribution name
@@ -235,6 +263,9 @@ class SaltelliSALibIterator(Iterator):
         results["sensitivity_indices"] = self.sensitivity_indices
         results["second_order"] = self.calc_second_order
 
+        results["samples"] = self.samples
+        results["output"] = self.output
+
         return results
 
     def plot_results(self, results):
@@ -243,7 +274,18 @@ class SaltelliSALibIterator(Iterator):
             Args:
                 results   (dict):    Dictionary with results
         """
-        bars = go.Bar(x=results["parameter_names"], y=results["sensitivity_indices"]["S1"])
+        experiment_name = self.global_settings["experiment_name"]
+
+        # Plot first-order indices also called main effect
+        chart_name = experiment_name + '_S1.html'
+        chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
+        bars = go.Bar(
+            x=results["parameter_names"],
+            y=results["sensitivity_indices"]["S1"],
+            error_y=dict(
+                type='data', array=results["sensitivity_indices"]["S1_conf"], visible=True
+            ),
+        )
         data = [bars]
 
         layout = dict(
@@ -253,4 +295,53 @@ class SaltelliSALibIterator(Iterator):
         )
 
         fig = go.Figure(data=data, layout=layout)
-        plotly.offline.plot(fig, filename='bar_chart.html', auto_open=True)
+        plotly.offline.plot(fig, filename=chart_path, auto_open=True)
+
+        # Plot total indices also called total effect
+        chart_name = experiment_name + '_ST.html'
+        chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
+        bars = go.Bar(
+            x=results["parameter_names"],
+            y=results["sensitivity_indices"]["ST"],
+            error_y=dict(
+                type='data', array=results["sensitivity_indices"]["ST_conf"], visible=True
+            ),
+        )
+        data = [bars]
+
+        layout = dict(
+            title='Total Sensitivity Indices',
+            xaxis=dict(title='Parameter'),
+            yaxis=dict(title='Total Effect'),
+        )
+
+        fig = go.Figure(data=data, layout=layout)
+        plotly.offline.plot(fig, filename=chart_path, auto_open=True)
+
+        # Plot second order indices (if applicable)
+        if self.calc_second_order:
+            S2 = results["sensitivity_indices"]["S2"]
+            S2 = S2[np.triu_indices(self.num_params, k=1)]
+
+            S2_conf = results["sensitivity_indices"]["S2_conf"]
+            S2_conf = S2_conf[np.triu_indices(self.num_params, k=1)]
+
+            # build list of names of second-order indices
+            names = []
+            for i in range(1, self.num_params + 1):
+                for j in range(i + 1, self.num_params + 1):
+                    names.append(f"S{i}{j}")
+
+            chart_name = experiment_name + '_S2.html'
+            chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
+            bars = go.Bar(x=names, y=S2, error_y=dict(type='data', array=S2_conf, visible=True))
+            data = [bars]
+
+            layout = dict(
+                title='Second Order Sensitivity Indices',
+                xaxis=dict(title='Parameter'),
+                yaxis=dict(title='Second Order Effects'),
+            )
+
+            fig = go.Figure(data=data, layout=layout)
+            plotly.offline.plot(fig, filename=chart_path, auto_open=True)
