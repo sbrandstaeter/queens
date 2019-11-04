@@ -56,11 +56,14 @@ sigma_cir_e = 1.088014923234574e05
 G_e = 1.34  # elastin
 G_m = 1.1  # smooth muscle
 G_c = 1.062  # collagen
+# G_c = 1.060697162749238753320924e+00 # collagen BACI value
 
+# NOTE: G and C codepend via other material parameters (see Christian's Matlab Code)
 # elastic modulus (values taken from Christian's Matlab Code)
 C_e = 0.325386455353085e06  # elastin
 C_m = 0.168358396929622e06  # smooth muscle
-C_c = 5.258871332154771e06  # collagen
+C_c = 5.391358494528612e06  # collagen (corresponds to G_c = 1.062)
+# C_c = 5.258871332154771e06  # collagen (corresponds to G_c=1.060697162...)
 
 # derived variables
 # vector of mass fractions
@@ -96,7 +99,7 @@ def homeostatic_smooth_muscle_stress(sigma_h_c):
     return sigma_h_m
 
 
-def stab_margin(tau, k_sigma, sigma_h_c, C=C):
+def stab_margin(tau, k_sigma, sigma_h_c, C=C, M=M, sigma_cir_e=sigma_cir_e, sigma_h_m=sigma_h_m):
     """
     Return stability margin.
 
