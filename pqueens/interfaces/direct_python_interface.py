@@ -55,8 +55,9 @@ class DirectPythonInterface(Interface):
             sys.modules["my_function"] = my_function
         except FileNotFoundError:
             print('Did not find file locally, trying absolute path')
-            raise FileNotFoundError("Could not import specified python function "
-                                    "file! Fix your config file!")
+            raise FileNotFoundError(
+                "Could not import specified python function " "file! Fix your config file!"
+            )
 
         self.function = my_function
 
@@ -123,7 +124,6 @@ class DirectPythonInterface(Interface):
                 if not mean_value.shape:
                     mean_value = np.expand_dims(mean_value, axis=0)
                 mean_values[idx] = mean_value
-
 
         output['mean'] = np.array(mean_values)
 
