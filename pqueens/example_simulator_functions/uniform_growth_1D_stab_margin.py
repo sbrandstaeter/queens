@@ -3,6 +3,7 @@ import numpy as np
 import pqueens.example_simulator_functions.uniform_growth_1D
 import pqueens.example_simulator_functions.uniform_growth_1D_lsq
 
+TAU = pqueens.example_simulator_functions.uniform_growth_1D_lsq.tau
 K_SIGMA = pqueens.example_simulator_functions.uniform_growth_1D_lsq.k_sigma
 SIGMA_H_C = pqueens.example_simulator_functions.uniform_growth_1D_lsq.sigma_h_c
 
@@ -38,7 +39,8 @@ def main(job_id, params):
         float:          Value of GnR model at parameters
                         specified in input dict
     """
-
+    if 'tau' not in params:
+        params['tau'] = TAU
     if 'k_sigma' not in params:
         params['k_sigma'] = K_SIGMA
     if 'sigma_h_c' not in params:
@@ -80,3 +82,8 @@ def main(job_id, params):
     )
 
     return stab_margin
+
+
+if __name__ == "__main__":
+    empty_dict = dict()
+    print(main(0, empty_dict))
