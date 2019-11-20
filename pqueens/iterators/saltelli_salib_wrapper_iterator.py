@@ -170,13 +170,13 @@ class SaltelliSALibIterator(Iterator):
         """ Analyze the results """
         results = self.process_results()
         if self.result_description is not None:
-            self.print_results(results)
             if self.result_description["write_results"] is True:
                 write_results(
                     results,
                     self.global_settings["output_dir"],
                     self.global_settings["experiment_name"],
                 )
+            self.print_results(results)
             if self.result_description["plot_results"] is True:
                 self.plot_results(results)
 
