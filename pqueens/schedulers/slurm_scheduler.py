@@ -64,6 +64,7 @@ class SlurmScheduler(Scheduler):
 
         base_settings['scheduler_template'] = abs_path
         base_settings['scheduler_start'] = 'sbatch'
+        base_settings['scheduler_options'] = {}
         base_settings['scheduler_options']['output'] = output
         base_settings['scheduler_options']['ntasks'] = num_procs
         base_settings['scheduler_options']['walltime'] = walltime
