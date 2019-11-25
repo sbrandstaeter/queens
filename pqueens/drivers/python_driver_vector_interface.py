@@ -2,6 +2,7 @@ import sys
 import os
 import numpy as np
 
+
 def python_driver_vector_interface(job):
     """
         Driver to call a python function specified in the job dict
@@ -40,7 +41,7 @@ def python_driver_vector_interface(job):
     if main_file[-3:] == '.py':
         main_file = main_file[:-3]
     sys.stderr.write('Importing %s.py\n' % main_file)
-    module  = __import__(main_file)
+    module = __import__(main_file)
     sys.stderr.write('Running %s.main()\n' % main_file)
     result = module.main(job['id'], params)
 

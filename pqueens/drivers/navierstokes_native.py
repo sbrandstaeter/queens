@@ -15,6 +15,7 @@ class NavierStokesNative(Driver):
         Returns:
             float: result
     """
+
     def __init__(self, base_settings):
         super(NavierStokesNative, self).__init__(base_settings)
         self.mpi_config = {}
@@ -32,7 +33,7 @@ class NavierStokesNative(Driver):
         base_settings['address'] = 'localhost:27017'
         return cls(base_settings)
 
-# ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
+    # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def setup_dirs_and_files(self):
         """ Setup directory structure
 
@@ -52,12 +53,14 @@ class NavierStokesNative(Driver):
             os.makedirs(output_directory)
 
         # create input file name
-        self.input_file = dest_dir + '/' + str(self.experiment_name) +\
-                                     '_' + str(self.job_id) + '.json'
+        self.input_file = (
+            dest_dir + '/' + str(self.experiment_name) + '_' + str(self.job_id) + '.json'
+        )
 
         # create output file name
-        self.output_file = output_directory + '/' + str(self.experiment_name) +\
-                                              '_' + str(self.job_id)
+        self.output_file = (
+            output_directory + '/' + str(self.experiment_name) + '_' + str(self.job_id)
+        )
 
     def run_job(self):
         """ Actual method to run the job on computing machine
@@ -69,8 +72,7 @@ class NavierStokesNative(Driver):
 
         # assemble run command
         self.setup_mpi(self.num_procs)
-        command_list = [self.executable,
-                        self.input_file]
+        command_list = [self.executable, self.input_file]
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
 

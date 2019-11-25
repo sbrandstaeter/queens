@@ -47,7 +47,9 @@ class Driver(metaclass=abc.ABCMeta):
         self.input_file = None
 
     @classmethod
-    def from_config_create_driver(cls, config, job_id, batch, port=None, abs_path=None, workdir=None):
+    def from_config_create_driver(
+        cls, config, job_id, batch, port=None, abs_path=None, workdir=None
+    ):
         """ Create driver from problem description
 
         Args:
@@ -65,11 +67,14 @@ class Driver(metaclass=abc.ABCMeta):
         from pqueens.drivers.baci_driver_schmarrn import BaciDriverSchmarrn
         from pqueens.drivers.navierstokes_native import NavierStokesNative
         from pqueens.drivers.baci_driver_deep import BaciDriverDeep
+
         if abs_path is None:
             from pqueens.post_post.post_post import Post_post
+
             # FIXME singularity doesnt load post_post form path but rather uses image module
         else:
             import importlib.util
+
             spec = importlib.util.spec_from_file_location("post_post", abs_path)
             post_post = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(post_post)
@@ -78,15 +83,17 @@ class Driver(metaclass=abc.ABCMeta):
             except ImportError:
                 raise ImportError('Could not import the post_post module!')
 
-        driver_dict = {'baci_bruteforce': BaciDriverBruteforce,
-                       'baci_native': BaciDriverNative,
-                       'baci_schmarrn': BaciDriverSchmarrn,
-                       'navierstokes_native': NavierStokesNative,
-                       'baci_deep': BaciDriverDeep}
+        driver_dict = {
+            'baci_bruteforce': BaciDriverBruteforce,
+            'baci_native': BaciDriverNative,
+            'baci_schmarrn': BaciDriverSchmarrn,
+            'navierstokes_native': NavierStokesNative,
+            'baci_deep': BaciDriverDeep,
+        }
         driver_version = config['driver']['driver_type']
         driver_class = driver_dict[driver_version]
 
-# ---------------------------- CREATE BASE SETTINGS ---------------------------
+        # ---------------------------- CREATE BASE SETTINGS ---------------------------
         driver_options = config['driver']['driver_params']
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
@@ -126,7 +133,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.run_job()
         # self.finish_and_clean() # we take this out of the main run and call in explicitly in remote_main
 
-# ------------------------ AUXILIARY HIGH-LEVEL METHODS -----------------------
+    # ------------------------ AUXILIARY HIGH-LEVEL METHODS -----------------------
     def prepare_environment(self):
         """ Prepare the environment for computing """
         self.setup_dirs_and_files()
@@ -140,18 +147,20 @@ class Driver(metaclass=abc.ABCMeta):
 
     def run_subprocess(self, command_string):
         """ Method to run command_string outside of Python """
-        process = subprocess.Popen(command_string,
-                                   stdin=subprocess.PIPE,
-                                   stdout=subprocess.PIPE,
-                                   stderr=subprocess.PIPE,
-                                   shell=True,
-                                   universal_newlines=True)
+        process = subprocess.Popen(
+            command_string,
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            shell=True,
+            universal_newlines=True,
+        )
 
         stdout, stderr = process.communicate()
         process_id = process.pid
         return stdout, stderr, process_id
 
-# ------ Base class methods ------------------------------------------------ #
+    # ------ Base class methods ------------------------------------------------ #
     def init_job(self):
         """ Initialize job in database
 
@@ -181,12 +190,16 @@ class Driver(metaclass=abc.ABCMeta):
             self.job['result'] = None  # TODO: maybe we should better use a pandas format here
             self.job['status'] = 'failed'
             self.job['end time'] = time.time()
-            self.database.save(self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id})
+            self.database.save(
+                self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id}
+            )
         else:
             self.job['result'] = self.result
             self.job['status'] = 'complete'
             self.job['end time'] = time.time()
-            self.database.save(self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id})
+            self.database.save(
+                self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id}
+            )
 
     def do_postprocessing(self):
         # TODO maybe move to child-class due to specific form (e.g. .dat)
@@ -194,18 +207,22 @@ class Driver(metaclass=abc.ABCMeta):
         # create input file name
         dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
         output_directory = os.path.join(dest_dir, 'output')
-        self.input_file = dest_dir + '/' + str(self.experiment_name) + \
-                                     '_' + str(self.job_id) + '.dat'
+        self.input_file = (
+            dest_dir + '/' + str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
+        )
 
         # create output file name
-        self.output_file = output_directory + '/' + str(self.experiment_name) + \
-                                              '_' + str(self.job_id)
+        self.output_file = (
+            output_directory + '/' + str(self.experiment_name) + '_' + str(self.job_id)
+        )
         self.output_scratch = self.experiment_name + '_' + str(self.job_id)
 
         target_file_base_name = os.path.dirname(self.output_file)
         output_file_opt = '--file=' + self.output_file
         for num, option in enumerate(self.post_options):
-            target_file_opt = '--output=' + target_file_base_name + "/" + self.file_prefix + "_" + str(num+1)
+            target_file_opt = (
+                '--output=' + target_file_base_name + "/" + self.file_prefix + "_" + str(num + 1)
+            )
             postprocessing_list = [self.postprocessor, output_file_opt, option, target_file_opt]
             postprocess_command = ' '.join(filter(None, postprocessing_list))
             _, _, _ = self.run_subprocess(postprocess_command)
@@ -226,7 +243,7 @@ class Driver(metaclass=abc.ABCMeta):
             self.result = self.postpostprocessor.postpost_main(output_directory)
             sys.stderr.write("Got result %s\n" % (self.result))
 
-# ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
+    # ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod
     def setup_dirs_and_files(self):
         """ this should be a docstring """

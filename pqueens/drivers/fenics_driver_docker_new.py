@@ -3,6 +3,7 @@ import os
 from pqueens.utils.injector import inject
 import docker
 
+
 def fenics_driver_docker(job):
     """
         Driver to run FENICS simulation inside Docker container
@@ -31,7 +32,7 @@ def fenics_driver_docker(job):
 
     # assemble input file name
     fenics_input_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id']) + '.py'
-    fenics_output_file = job['expt_dir'] + '/'+ job['expt_name'] + '_' + str(job['id']) + '.out'
+    fenics_output_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id']) + '.out'
 
     sys.stderr.write("fenics_input_file %s\n" % fenics_input_file)
 
@@ -39,17 +40,23 @@ def fenics_driver_docker(job):
     inject(params, driver_params['input_template'], fenics_input_file)
 
     # get fenics run and post process command
-    fenics_cmd = fenics_input_file + ' --output_file='+fenics_output_file
+    fenics_cmd = fenics_input_file + ' --output_file=' + fenics_output_file
 
     #  setup volume map
-    volume_map = {job['expt_dir']: {'bind': job['expt_dir'], 'mode': 'rw'},
-                  'instant-cache' : {'bind' : '/home/fenics/.instant', 'mode': 'rw'}}
+    volume_map = {
+        job['expt_dir']: {'bind': job['expt_dir'], 'mode': 'rw'},
+        'instant-cache': {'bind': '/home/fenics/.instant', 'mode': 'rw'},
+    }
 
     # run fenics in docker container
-    temp_out = client.containers.run(driver_params['docker_container'],
-                                     fenics_cmd, entrypoint='python3',
-                                     stdout=True, stderr=True, volumes=volume_map)
-
+    temp_out = client.containers.run(
+        driver_params['docker_container'],
+        fenics_cmd,
+        entrypoint='python3',
+        stdout=True,
+        stderr=True,
+        volumes=volume_map,
+    )
 
     print(temp_out)
 

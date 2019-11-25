@@ -12,6 +12,7 @@ class BaciDriverSchmarrn(Driver):
 
     Returns:
     """
+
     def __init__(self, base_settings):
         super(BaciDriverSchmarrn, self).__init__(base_settings)
 
@@ -30,7 +31,7 @@ class BaciDriverSchmarrn(Driver):
         base_settings['address'] = '10.10.0.1:' + str(port)
         return cls(base_settings)
 
-# ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
+    # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def setup_mpi(self, ntasks):
         """ setup MPI environment
 
@@ -63,12 +64,14 @@ class BaciDriverSchmarrn(Driver):
             os.makedirs(output_directory)
 
         # create input file name
-        self.input_file = dest_dir + '/' + str(self.experiment_name) +\
-                                     '_' + str(self.job_id) + '.dat'
+        self.input_file = (
+            dest_dir + '/' + str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
+        )
 
         # create output file name
-        self.output_file = output_directory + '/' + str(self.experiment_name) +\
-                                              '_' + str(self.job_id)
+        self.output_file = (
+            output_directory + '/' + str(self.experiment_name) + '_' + str(self.job_id)
+        )
         self.output_scratch = self.experiment_name + '_' + str(self.job_id)
 
     def run_job(self):
@@ -77,14 +80,26 @@ class BaciDriverSchmarrn(Driver):
         """
         # assemble run command
         self.setup_mpi(self.num_procs)
-        command_list = ['mpirun', '-np', str(self.num_procs), self.mpi_flags, self.executable,
-                        self.input_file, self.output_file]
+        command_list = [
+            'mpirun',
+            '-np',
+            str(self.num_procs),
+            self.mpi_flags,
+            self.executable,
+            self.input_file,
+            self.output_file,
+        ]
 
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
 
-        if stderr:  # TODO this will not work atm but a similar version should be tetsted for Schmarrn
-            if re.fullmatch(r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n', stderr):
+        if (
+            stderr
+        ):  # TODO this will not work atm but a similar version should be tetsted for Schmarrn
+            if re.fullmatch(
+                r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n',
+                stderr,
+            ):
                 pass
             else:
                 self.result = None  # This is necessary to detect failed jobs
