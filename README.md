@@ -47,7 +47,12 @@ Installation instructions are provided [here](http://pandoc.org/installing.html)
 
 **Update packages:**<br />
 To update Python packages in your conda environment, type:  
-`conda update --all`
+`conda update --all`  
+this will update all conda managed packages.  
+Type:  
+`conda activate <name_of_QUEENS_environment>`  
+`pip install --upgrade -r <your-path-to-QUEENS>/requirements.txt`  
+to update the pip managed packages in your environment.
 
 **Use conda environments in Jupyter notebooks:**<br />
 To get your conda environments into your Jupyter kernel, run:  
