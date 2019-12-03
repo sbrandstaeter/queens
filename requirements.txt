@@ -33,3 +33,5 @@ pylint
 pyfiglet
 # code formatter
 black
+# Python for ANSYS
+pyansys

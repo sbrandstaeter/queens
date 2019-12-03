@@ -5,18 +5,19 @@ from io import StringIO
 import os
 import numpy as np
 import pandas as pd
+import pyansys
 from .post_post import Post_post
 
 
-class PP_BACI_QoI(Post_post):
+class PP_ANSYS_QoI(Post_post):
     """ Base class for post_post routines """
 
     def __init__(self, base_settings):
 
-        super(PP_BACI_QoI, self).__init__(base_settings)
-        self.num_post = base_settings['num_post']
-        self.time_tol = base_settings['time_tol']
-        self.target_time = base_settings['target_time']
+        super(PP_ANSYS_QoI, self).__init__(base_settings)
+        # self.num_post = base_settings['num_post']
+        # self.time_tol = base_settings['time_tol']
+        # self.target_time = base_settings['target_time']
         self.skiprows = base_settings['skiprows']
 
     @classmethod
@@ -30,9 +31,9 @@ class PP_BACI_QoI(Post_post):
             post_post: post_post object
         """
         post_post_options = base_settings['options']
-        base_settings['num_post'] = len(config['driver']['driver_params']['post_process_options'])
-        base_settings['target_time'] = post_post_options['target_time']
-        base_settings['time_tol'] = post_post_options['time_tol']
+        # base_settings['num_post'] = len(config['driver']['driver_params']['post_process_options'])
+        # base_settings['target_time'] = post_post_options['target_time']
+        # base_settings['time_tol'] = post_post_options['time_tol']
         base_settings['skiprows'] = post_post_options['skiprows']
         return cls(base_settings)
 
@@ -47,15 +48,9 @@ class PP_BACI_QoI(Post_post):
 
         for filename in post_files_list:
             try:
-                post_data = pd.read_csv(
-                    filename,
-                    sep=r',|\s+',
-                    usecols=self.usecols,
-                    skiprows=self.skiprows,
-                    engine='python',
-                )
-                identifier = abs(post_data.iloc[:, 0] - self.target_time) < self.time_tol
-                quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
+                post_data = pyansys.read_binary(filename)
+                nnum, qoi_array = post_data.nodal_solution(self.skiprows)
+                quantity_of_interest = qoi_array[self.usecols[0], self.usecols[1]]
                 post_out = np.append(post_out, quantity_of_interest)
                 # select only row with timestep equal to target time step
                 if not post_out:  # timestep reached? <=> variable is empty?
