@@ -23,7 +23,7 @@ class MongoDB(object):
         """
         #try:
         self.client = pymongo.MongoClient(host=[database_address],
-                                          serverSelectionTimeoutMS=100)
+                                          serverSelectionTimeoutMS=10000)
         if drop_existing_db:
             self.client.drop_database(database_name)
         self.db = self.client[database_name]
