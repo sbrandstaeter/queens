@@ -1,5 +1,3 @@
-""" There should be a docstring """
-
 import glob
 from io import StringIO
 import os
@@ -9,11 +7,23 @@ from pqueens.post_post.post_post import PostPost
 
 
 class PostPostBACI(PostPost):
-    """ Base class for post_post routines """
+    """ Class for post-post-processing BACI output
+    
+    TODO complete docstring 
+        Attributes:
+            num_post ():
+            time_tol ():
+            target_time ():
+            skiprows ():
+
+    """
 
     def __init__(self, num_post, time_tol, target_time, skiprows,
                  usecols, delete_data_flag, file_prefix):
-        """ Init PPBACIQoI object
+        """ Init object
+
+
+        TODO complete docstring 
 
         Args:
             num_post ():
@@ -38,10 +48,11 @@ class PostPostBACI(PostPost):
         """ Create post_post routine from problem description
 
         Args:
-            config: input json file with problem description
+            config (dict): input json file with problem description
+            base_settings (dict): TODO what is this?? why are there two dicts?
 
         Returns:
-            post_post: post_post object
+            post_post: PostPostBACI object
         """
         post_post_options = base_settings['options']
 
@@ -58,7 +69,7 @@ class PostPostBACI(PostPost):
 
     # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
     def read_post_files(self):
-        """ Loop over several post files of interest """
+        """ Loop over post files in given output directory """
 
         prefix_expr = '*' + self.file_prefix + '*'
         files_of_interest = os.path.join(self.output_dir, prefix_expr)
@@ -78,6 +89,7 @@ class PostPostBACI(PostPost):
                 quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
                 post_out = np.append(post_out, quantity_of_interest)
                 # select only row with timestep equal to target time step
+                # TODO add documentation what does this do? Why is it done this way?
                 if not post_out:  # timestep reached? <=> variable is empty?
                     self.error = True
                     self.result = None

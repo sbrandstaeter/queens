@@ -39,7 +39,7 @@ class PostPost(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_post_post(cls, config):
-        """ Create post_post routine from problem description
+        """ Create PostPost object from problem description
 
         Args:
             config (dict): input json file with problem description
@@ -53,17 +53,26 @@ class PostPost(metaclass=abc.ABCMeta):
         from .post_post_deal import PostPostDEAL
 
         post_post_dict = {
-            'ansys_qoi': PostPostANSYS,
-            'baci_qoi': PostPostBACI,
-            'time_series': PostPostDEAL,
+            'ansys': PostPostANSYS,
+            'baci': PostPostBACI,
+            'deal': PostPostDEAL,
         }
 
         # determine which object to create
+        # TODO this is not a reliable approach? What if we have multiple drivers?
+        # However, this cannot be fixed by itself here, but we need to 
+        # cleanup the whole input parameter handling to fix this.
         post_post_options = config['driver']['driver_params']['post_post']
-        if post_post_options['file_prefix'] == 'rst':
-            post_post_version = 'ansys_qoi'
+
+        if post_post_options['post_post_approach_sel'] == 'ansys':
+            post_post_version = 'ansys'
+        elif post_post_options['post_post_approach_sel'] == 'baci':
+            post_post_version = 'baci'
+        elif post_post_options['post_post_approach_sel'] == 'deal':
+            post_post_version = 'deal'
         else:
-            post_post_version = 'baci_qoi'  # set baci analysis as default
+            raise RuntimeError("post_post_approach_sel not set, fix your input file")
+
         post_post_class = post_post_dict[post_post_version]
 
         # ---------------------------- CREATE BASE SETTINGS ---------------------------
@@ -73,11 +82,15 @@ class PostPost(metaclass=abc.ABCMeta):
         base_settings['usecols'] = post_post_options['usecols']
         base_settings['delete_field_data'] = post_post_options['delete_field_data']
 
-        # ----------------------------- END BASE SETTINGS -----------------------------
+        # TODO remove "base_settings" and reintroduce name"
         post_post = post_post_class.from_config_create_post_post(config, base_settings)
         return post_post
 
     def error_handling(self):
+        """ TODO Complete docstring 
+
+            What does this function do
+        """
         # TODO  ### Error Types ###
         # No QoI file
         # Time/Time step not reached
@@ -85,6 +98,8 @@ class PostPost(metaclass=abc.ABCMeta):
 
         # Organized failed files
         input_file_extention = 'dat'
+        # TODO add documentation what happens here?
+        # Make this platform independent 
         if self.error is True:
             command_string = (
                 "cd "
@@ -108,6 +123,7 @@ class PostPost(metaclass=abc.ABCMeta):
 
     def postpost_main(self, output_dir):
         """ This should be a docstring """
+        # TODO add meaningful docsctring 
         self.output_dir = output_dir
         self.read_post_files()
         self.error_handling()  # mark failed simulation and set results approp.

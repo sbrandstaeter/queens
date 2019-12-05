@@ -10,9 +10,25 @@ from pqueens.post_post.post_post import PostPost
 
 
 class PostPostANSYS(PostPost):
-    """ Base class for post_post routines """
+    """ Class for processing ANSYS file
+
+        Attributes:
+            skiprows ():
+
+
+    """
 
     def __init__(self, skiprows, usecols, delete_data_flag, file_prefix):
+        """ Init PostPost-object
+
+        TODO complete docstring
+            Args:
+                skiprows ():
+                usecols ():
+                delete_data_flag ():
+                file_prefix ():
+
+        """
 
         super(PostPostANSYS, self).__init__(usecols, delete_data_flag, file_prefix)
 
@@ -36,9 +52,8 @@ class PostPostANSYS(PostPost):
 
         return cls(skiprows, usecols, delete_data_flag, file_prefix)
 
-    # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
     def read_post_files(self):
-        """ Loop over several post files of interest """
+        """ Loop over all post file in given directory """
 
         prefix_expr = '*' + self.file_prefix + '*'
         files_of_interest = os.path.join(self.output_dir, prefix_expr)
@@ -52,6 +67,7 @@ class PostPostANSYS(PostPost):
                 quantity_of_interest = qoi_array[self.usecols[0], self.usecols[1]]
                 post_out = np.append(post_out, quantity_of_interest)
                 # select only row with timestep equal to target time step
+                # TODO add documentation what does this do? Why is it done this way?
                 if not post_out:  # timestep reached? <=> variable is empty?
                     self.error = True
                     self.result = None

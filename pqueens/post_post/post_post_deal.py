@@ -11,6 +11,16 @@ class PostPostDEAL(PostPost):
     """ Base class for post_post routines """
 
     def __init__(self, skiprows, usecols, delete_data_flag, file_prefix):
+        """ Init Object
+        TODO complete this
+            Args:
+                skiprows ():
+                usecols ():
+                delete_data_flag ():
+                file_prefix ():
+
+
+        """
         super(PostPostDEAL, self).__init__(usecols, delete_data_flag, file_prefix)
 
         self.skiprows = skiprows
@@ -21,6 +31,7 @@ class PostPostDEAL(PostPost):
 
         Args:
             config: input json file with problem description
+            base_settings (): ???? TODO complete this
 
         Returns:
             post_post: post_post object
@@ -33,7 +44,9 @@ class PostPostDEAL(PostPost):
 
         return cls(skiprows, usecols, delete_data_flag, file_prefix)
 
-    def read_post_files(self):  # output file given by driver
+    def read_post_files(self):
+        """ Loop over post files in given output directory """
+
         prefix_expr = '*' + self.file_prefix + '*'
         files_of_interest = os.path.join(self.output_dir, prefix_expr)
         post_files_list = glob.glob(files_of_interest)
