@@ -5,10 +5,10 @@ from io import StringIO
 import os
 import numpy as np
 import pandas as pd
-from pqueens.post_post.post_post import Post_post
+from pqueens.post_post.post_post import PostPost
 
 
-class PP_BACI_QoI(Post_post):
+class PostPostBACI(PostPost):
     """ Base class for post_post routines """
 
     def __init__(self, num_post, time_tol, target_time, skiprows,
@@ -26,7 +26,7 @@ class PP_BACI_QoI(Post_post):
 
         """
 
-        super(PP_BACI_QoI, self).__init__(usecols, delete_data_flag, file_prefix)
+        super(PostPostBACI, self).__init__(usecols, delete_data_flag, file_prefix)
 
         self.num_post = num_post
         self.time_tol = time_tol

@@ -4,14 +4,14 @@ import glob
 import os.path
 import pandas as pd
 import numpy as np
-from pqueens.post_post.post_post import Post_post
+from pqueens.post_post.post_post import PostPost
 
 
-class PP_time_series(Post_post):
+class PostPostDEAL(PostPost):
     """ Base class for post_post routines """
 
     def __init__(self, skiprows, usecols, delete_data_flag, file_prefix):
-        super(PP_time_series, self).__init__(usecols, delete_data_flag, file_prefix)
+        super(PostPostDEAL, self).__init__(usecols, delete_data_flag, file_prefix)
 
         self.skiprows = skiprows
 

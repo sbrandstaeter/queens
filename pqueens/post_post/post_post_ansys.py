@@ -6,15 +6,15 @@ import os
 import numpy as np
 import pandas as pd
 import pyansys
-from pqueens.post_post.post_post import Post_post
+from pqueens.post_post.post_post import PostPost
 
 
-class PP_ANSYS_QoI(Post_post):
+class PostPostANSYS(PostPost):
     """ Base class for post_post routines """
 
     def __init__(self, skiprows, usecols, delete_data_flag, file_prefix):
 
-        super(PP_ANSYS_QoI, self).__init__(usecols, delete_data_flag, file_prefix)
+        super(PostPostANSYS, self).__init__(usecols, delete_data_flag, file_prefix)
 
         self.skiprows = skiprows
 
@@ -26,7 +26,7 @@ class PP_ANSYS_QoI(Post_post):
             config: input json file with problem description
 
         Returns:
-            post_post: PP_ANSYS_QoI object
+            post_post: PostPostANSYS object
         """
         post_post_options = base_settings['options']
         skiprows = post_post_options['skiprows']

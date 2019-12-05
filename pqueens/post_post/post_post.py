@@ -6,8 +6,8 @@ import os
 import glob
 
 
-class Post_post(metaclass=abc.ABCMeta):
-    """ Base class for post_post routines
+class PostPost(metaclass=abc.ABCMeta):
+    """ Base class for post post processing
 
         Attributes:
             usecols ():
@@ -48,14 +48,14 @@ class Post_post(metaclass=abc.ABCMeta):
             post_post: post_post object
         """
 
-        from .pp_ANSYS_QoI import PP_ANSYS_QoI
-        from .pp_BACI_QoI import PP_BACI_QoI
-        from .pp_time_series import PP_time_series
+        from .pp_ANSYS_QoI import PostPostANSYS
+        from .pp_BACI_QoI import PostPostBACI
+        from .pp_time_series import PostPostDEAL
 
         post_post_dict = {
             'ansys_qoi': PP_ANSYS_QoI,
             'baci_qoi': PP_BACI_QoI,
-            'time_series': PP_time_series,
+            'time_series': PostPostDEAL,
         }
 
         # determine which object to create
