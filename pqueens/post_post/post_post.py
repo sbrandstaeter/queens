@@ -7,13 +7,33 @@ import glob
 
 
 class Post_post(metaclass=abc.ABCMeta):
-    """ Base class for post_post routines """
+    """ Base class for post_post routines
 
-    def __init__(self, base_settings):
-        self.usecols = base_settings['usecols']
+        Attributes:
+            usecols ():
+            delete_data_flag ():
+            file_prefix ():
+            error ():
+            output_dir ():
+            result ():
+
+    """
+
+    def __init__(self, usecols, delete_data_flag, file_prefix):
+        """ Init post post class
+
+            Args:
+                usecols (list):
+                delete_data_flag ():
+                file_prefix ():
+
+        """
+
+        self.usecols = usecols
+        self.delete_data_flag = delete_data_flag
+        self.file_prefix = file_prefix
+
         self.error = False
-        self.delete_data_flag = base_settings['delete_field_data']
-        self.file_prefix = base_settings['file_prefix']
         self.output_dir = None
         self.result = None
 
@@ -22,7 +42,7 @@ class Post_post(metaclass=abc.ABCMeta):
         """ Create post_post routine from problem description
 
         Args:
-            config: input json file with problem description
+            config (dict): input json file with problem description
 
         Returns:
             post_post: post_post object

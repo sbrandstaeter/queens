@@ -6,19 +6,17 @@ import os
 import numpy as np
 import pandas as pd
 import pyansys
-from .post_post import Post_post
+from pqueens.post_post.post_post import Post_post
 
 
 class PP_ANSYS_QoI(Post_post):
     """ Base class for post_post routines """
 
-    def __init__(self, base_settings):
+    def __init__(self, skiprows, usecols, delete_data_flag, file_prefix):
 
-        super(PP_ANSYS_QoI, self).__init__(base_settings)
-        # self.num_post = base_settings['num_post']
-        # self.time_tol = base_settings['time_tol']
-        # self.target_time = base_settings['target_time']
-        self.skiprows = base_settings['skiprows']
+        super(PP_ANSYS_QoI, self).__init__(usecols, delete_data_flag, file_prefix)
+
+        self.skiprows = skiprows
 
     @classmethod
     def from_config_create_post_post(cls, config, base_settings):
@@ -28,14 +26,15 @@ class PP_ANSYS_QoI(Post_post):
             config: input json file with problem description
 
         Returns:
-            post_post: post_post object
+            post_post: PP_ANSYS_QoI object
         """
         post_post_options = base_settings['options']
-        # base_settings['num_post'] = len(config['driver']['driver_params']['post_process_options'])
-        # base_settings['target_time'] = post_post_options['target_time']
-        # base_settings['time_tol'] = post_post_options['time_tol']
-        base_settings['skiprows'] = post_post_options['skiprows']
-        return cls(base_settings)
+        skiprows = post_post_options['skiprows']
+        usecols = post_post_options['usecols']
+        delete_data_flag = post_post_options['delete_field_data']
+        file_prefix = post_post_options['file_prefix']
+
+        return cls(skiprows, usecols, delete_data_flag, file_prefix)
 
     # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
     def read_post_files(self):
