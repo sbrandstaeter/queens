@@ -48,13 +48,13 @@ class PostPost(metaclass=abc.ABCMeta):
             post_post: post_post object
         """
 
-        from .pp_ANSYS_QoI import PostPostANSYS
-        from .pp_BACI_QoI import PostPostBACI
-        from .pp_time_series import PostPostDEAL
+        from .post_post_ansys import PostPostANSYS
+        from .post_post_baci import PostPostBACI
+        from .post_post_deal import PostPostDEAL
 
         post_post_dict = {
-            'ansys_qoi': PP_ANSYS_QoI,
-            'baci_qoi': PP_BACI_QoI,
+            'ansys_qoi': PostPostANSYS,
+            'baci_qoi': PostPostBACI,
             'time_series': PostPostDEAL,
         }
 
