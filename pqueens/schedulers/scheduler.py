@@ -500,7 +500,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         )
 
         stdout, stderr = process.communicate()
-        process.poll()
         return stdout, stderr, process
 
     def submit(self, job_id, batch):
