@@ -1,10 +1,10 @@
-
 # standard imports
-import sys
 import argparse
+from collections import OrderedDict
 import os
 import pyfiglet
-from collections import OrderedDict
+import sys
+
 try:
     import simplejson as json
 except ImportError:
@@ -17,7 +17,7 @@ from pqueens.iterators.iterator import Iterator
 def main(args):
     """ Run analysis """
 
-    crown= """
+    crown = """
                                 *
                               * | *
                              * \|/ *
@@ -27,9 +27,9 @@ def main(args):
                           '==========='
     """
     print(crown)
-    result = pyfiglet.figlet_format("QUEENS", font = "banner3-D" )
+    result = pyfiglet.figlet_format("QUEENS", font="banner3-D")
     print(result)
-    result ="""
+    result = """
  A general purpose framework for Uncertainty Quantification,
  Physics-Informed Machine Learning,
  Bayesian Optimization, Inverse Problems and Simulation Analytics
@@ -51,12 +51,11 @@ def get_options(args):
     """ Parse options from command line and input file """
 
     parser = argparse.ArgumentParser(description="QUEENS")
-    parser.add_argument('--input', type=str, default='input.json',
-                        help='Input file in .json format.')
-    parser.add_argument('--output_dir', type=str,
-                        help='Output directory to write resutls to.')
-    parser.add_argument('--debug', type=str, default='no',
-                        help='debug mode yes/no')
+    parser.add_argument(
+        '--input', type=str, default='input.json', help='Input file in .json format.'
+    )
+    parser.add_argument('--output_dir', type=str, help='Output directory to write resutls to.')
+    parser.add_argument('--debug', type=str, default='no', help='debug mode yes/no')
 
     args = parser.parse_args(args)
 
@@ -79,8 +78,7 @@ def get_options(args):
     elif args.debug == 'no':
         debug = False
     else:
-        print('Warning input flag not set correctly not showing debug'
-              ' information')
+        print('Warning input flag not set correctly not showing debug' ' information')
         debug = False
 
     options["debug"] = debug
