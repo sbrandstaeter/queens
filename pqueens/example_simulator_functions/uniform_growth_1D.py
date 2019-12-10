@@ -23,8 +23,14 @@ import numpy as np
 NaN = np.nan
 
 # List of fixed model parameters
+# initial radius
+R = 1.25e-2
 # initial thickness of aorta wall
 H = 1.104761e-3
+
+# mean blood pressure in Pascal (see [1] Section 6.2 p.219)
+mmhg_to_pa = 101325 / 760  # see wikipedia article Torr=mmHg
+mean_pressure = 93 * mmhg_to_pa
 
 # mass fractions
 phi_e = 0.293  # elastin
@@ -79,8 +85,6 @@ M = np.array([M_e, M_m, M_c])
 G_ = np.array([lam_pre_el_cir, lam_pre_sm, lam_pre_co])
 # vector of elastic modulus
 C = np.array([C_e, C_m, C_c])
-# initial radius
-R = 1.25e-2
 
 # sanity checks
 # sum of mass fractions of all components should be equal to one
