@@ -4,6 +4,7 @@ from collections import OrderedDict
 import os
 import pyfiglet
 import sys
+import time
 
 try:
     import simplejson as json
@@ -16,7 +17,6 @@ from pqueens.iterators.iterator import Iterator
 
 def main(args):
     """ Run analysis """
-
     crown = """
                                 *
                               * | *
@@ -35,16 +35,33 @@ def main(args):
  Bayesian Optimization, Inverse Problems and Simulation Analytics
 """
     print(result)
-    print("")
-    print("Starting Analysis...")
-    print("")
+
+    # read input
+    start_time_input = time.time()
     options = get_options(args)
 
     # build iterator
     my_iterator = Iterator.from_config_create_iterator(options)
 
+    end_time_input = time.time()
+
+    print("")
+    print(f"Time for INPUT: {end_time_input-start_time_input} s")
+    print("")
+
+    start_time_calc = time.time()
+
+    print("")
+    print("Starting Analysis...")
+    print("")
+
     # perform analysis
     my_iterator.run()
+
+    end_time_calc = time.time()
+    print("")
+    print(f"Time for CALCULATION: {end_time_calc-start_time_calc} s")
+    print("")
 
 
 def get_options(args):
