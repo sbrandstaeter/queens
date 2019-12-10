@@ -129,7 +129,7 @@ class Scheduler(metaclass=abc.ABCMeta):
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
     def kill_user_ssh_remote(self, username):
         """ Docstring """
-        command_list = ['ssh', self.connect_to_resource, '\'killall -u', username, 'ssh\'']
+        command_list = ['ssh', self.connect_to_resource, 'killall -u', username, 'ssh\'']
         command_string = ' '.join(command_list)
         _, _, _ = self.run_subprocess(command_string)
 
@@ -535,8 +535,12 @@ class Scheduler(metaclass=abc.ABCMeta):
             cmdlist_remote_main = [
                 'ssh',
                 self.connect_to_resource,
-                '"' + self.scheduler_start,
-                self.submission_script_path + '"',
+                '"cd',
+                self.experiment_dir,
+                ';',
+                self.scheduler_start,
+                self.submission_script_path,
+                '"',
             ]
             cmd_remote_main = ' '.join(cmdlist_remote_main)
             stdout, stderr, _ = self.run_subprocess(cmd_remote_main)
