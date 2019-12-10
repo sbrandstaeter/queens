@@ -174,8 +174,6 @@ class Driver(metaclass=abc.ABCMeta):
         # start settings for job
         start_time = time.time()
         self.job['start time'] = start_time
-        # save the job with the new start time
-        self.database.save(self.job, self.experiment_dir, 'jobs', self.batch, {'id': self.job_id})
 
         # sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
         #                 % (start_time-self.job['submit time']))
