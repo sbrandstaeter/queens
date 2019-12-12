@@ -70,7 +70,7 @@ class Driver(metaclass=abc.ABCMeta):
         from pqueens.drivers.baci_driver_deep import BaciDriverDeep
 
         if abs_path is None:
-            from pqueens.post_post.post_post import Post_post
+            from pqueens.post_post.post_post import PostPost
 
             # FIXME singularity doesnt load post_post form path but rather uses image module
         else:
