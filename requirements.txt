@@ -35,3 +35,4 @@ pyfiglet
 black
 # Python for ANSYS
 pyansys
+joblib
