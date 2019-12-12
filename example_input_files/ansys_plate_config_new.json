@@ -1,25 +1,26 @@
 {
     "experiment_name" : "ansys_plate_example",
- 		"database"  :{
-    	"address"   : "localhost:27017",
+ 		"database" :{
+    	"address" : "localhost:27017",
       "drop_existing" : "True"
     },
 		"driver" :{
-      "driver_type"           : "ansys_native",
-      "driver_params"         :{
-        "input_template"        : "/home/biehler/adco/projects/05_queens/queens/trials/ansys_plate_template.inp",
-        "path_to_executable"    : "/lnm/programs64/ansys_inc/v140/ansys/bin/ansys140",
-         "experiment_dir"       : "/home/biehler/adco/projects/03_ansys_interface/trial_2",
-         "post_post": {
-            "post_post_approach_sel" : "ansys",
-            "delete_field_data" : false,
-            "target_time": 5.0,
-            "time_tol": 1e-2,
-            "file_prefix": "rst",
-            "usecols": [21,1],
-            "skiprows":0
-          },
-		    },
+      "driver_type" : "ansys_native",
+      "driver_params" : {
+        "input_template" : "/home/biehler/adco/projects/05_queens/queens/trials/ansys_plate_template.inp",
+        "path_to_executable" : "/lnm/programs64/ansys_inc/v140/ansys/bin/ansys140",
+        "experiment_dir" : "/home/biehler/adco/projects/03_ansys_interface/trial_2",
+        "no_singularity" : true,
+				"post_post": {
+          "post_post_approach_sel" : "ansys",
+          "delete_field_data" : false,
+          "target_time": 5.0,
+          "time_tol": 1e-2,
+          "file_prefix": "rst",
+          "usecols": [21,1],
+          "skiprows":0
+        }
+		  }
     },
 		"model" : {
     "type" : "simulation_model",
@@ -39,7 +40,8 @@
       }
     },
 		"local_scheduler" : {
-			"scheduler_type" : "local"
+			"scheduler_type" : "local",
+      "num_procs" : 1,
 		},
     "method" : {
 			"method_name" : "lhs",
