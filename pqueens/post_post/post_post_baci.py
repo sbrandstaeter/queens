@@ -8,31 +8,27 @@ from pqueens.post_post.post_post import PostPost
 
 class PostPostBACI(PostPost):
     """ Class for post-post-processing BACI output
-    
-    TODO complete docstring 
+
         Attributes:
-            num_post ():
-            time_tol ():
-            target_time ():
-            skiprows ():
+            num_post (int):         TODO what is this? Where is this needed?
+            time_tol (float):       Tolerance if desired time can not be matched exactly
+            target_time (float):    Time at which to evaluate QoI
+            skiprows (int):         Number of header rows to skip
 
     """
 
     def __init__(self, num_post, time_tol, target_time, skiprows,
                  usecols, delete_data_flag, file_prefix):
-        """ Init object
-
-
-        TODO complete docstring 
+        """ Init PostPost object
 
         Args:
-            num_post ():
-            time_tol ():
-            target_time ():
-            skiprows ():
-            usecols ():
-            delete_data_flag ():
-            file_prefix ():
+            num_post (int):           TODO what is this? Where is this needed?
+            time_tol (float):         Tolerance if desired time can not be matched exactly
+            target_time (float):      Time at which to evaluate QoI
+            skiprows (int):           Number of header rows to skip
+            usecols (list):           Index of columns to use in result file
+            delete_data_flag (bool):  Delete files after processing
+            file_prefix (str):        Prefix of result files
 
         """
 
@@ -55,7 +51,7 @@ class PostPostBACI(PostPost):
             post_post: PostPostBACI object
         """
         post_post_options = base_settings['options']
-
+        # TODO what is this? Where is this needed?
         num_post = len(config['driver']['driver_params']['post_process_options'])
         time_tol = post_post_options['time_tol']
         target_time = post_post_options['target_time']
@@ -67,7 +63,6 @@ class PostPostBACI(PostPost):
         return cls(num_post, time_tol, target_time, skiprows,
                    usecols, delete_data_flag, file_prefix)
 
-    # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
     def read_post_files(self):
         """ Loop over post files in given output directory """
 
@@ -88,14 +83,13 @@ class PostPostBACI(PostPost):
                 identifier = abs(post_data.iloc[:, 0] - self.target_time) < self.time_tol
                 quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
                 post_out = np.append(post_out, quantity_of_interest)
-                # select only row with timestep equal to target time step
-                # TODO add documentation what does this do? Why is it done this way?
-                if not post_out:  # timestep reached? <=> variable is empty?
+                # very simple error check
+                if not post_out:
                     self.error = True
                     self.result = None
                     break
             except IOError:
-                self.error = True  # TODO in the future specify which error type
+                self.error = True
                 self.result = None
                 break
         self.error = False

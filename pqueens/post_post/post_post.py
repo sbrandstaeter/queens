@@ -10,11 +10,11 @@ class PostPost(metaclass=abc.ABCMeta):
     """ Base class for post post processing
 
         Attributes:
-            usecols ():
-            delete_data_flag ():
-            file_prefix ():
+            usecols (list):           Index of columns to use in result file
+            delete_data_flag (bool):  Delete files after processing
+            file_prefix ():           Prefix of result files
             error ():
-            output_dir ():
+            output_dir (str):         Path to result files
             result ():
 
     """
@@ -23,9 +23,9 @@ class PostPost(metaclass=abc.ABCMeta):
         """ Init post post class
 
             Args:
-                usecols (list):
-                delete_data_flag ():
-                file_prefix ():
+                usecols (list):          Index of columns to use in result file
+                delete_data_flag (bool): Delete files after processing
+                file_prefix (str):       Prefix of result files
 
         """
 
@@ -87,9 +87,9 @@ class PostPost(metaclass=abc.ABCMeta):
         return post_post
 
     def error_handling(self):
-        """ TODO Complete docstring 
+        """ Mark failed simulation and set results appropriately
 
-            What does this function do
+            What does this function do?? This is super unclear
         """
         # TODO  ### Error Types ###
         # No QoI file
@@ -99,7 +99,7 @@ class PostPost(metaclass=abc.ABCMeta):
         # Organized failed files
         input_file_extention = 'dat'
         # TODO add documentation what happens here?
-        # Make this platform independent 
+        # TODO Make this platform independent
         if self.error is True:
             command_string = (
                 "cd "
@@ -113,7 +113,7 @@ class PostPost(metaclass=abc.ABCMeta):
             _, _, _ = self.run_subprocess(command_string)
 
     def delete_field_data(self):
-        """ Delete every output file except files with given prefix """
+        """ Delete output files except files with given prefix """
 
         inverse_prefix_expr = r"*[!" + self.file_prefix + r"]*"
         files_of_interest = os.path.join(self.output_dir, inverse_prefix_expr)
@@ -122,24 +122,40 @@ class PostPost(metaclass=abc.ABCMeta):
             os.remove(filename)
 
     def postpost_main(self, output_dir):
-        """ This should be a docstring """
-        # TODO add meaningful docsctring 
+        """ Method that coordinates post post processing
+
+            Args:
+                output_dir (str): Path to output directory
+
+            Returns:
+                , result of post_post
+                # TODO determine type
+        """
+
         self.output_dir = output_dir
         self.read_post_files()
-        self.error_handling()  # mark failed simulation and set results approp.
-        if self.delete_data_flag:  # TODO check if json input is interpreated as boolean
+        # mark failed simulation and set results appropriately
+        self.error_handling()
+        # TODO check if json input is interpreated as boolean
+        if self.delete_data_flag:
             self.delete_field_data()
+
         return self.result
 
-    # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
     @abc.abstractmethod
     def read_post_files(self):
-        """ This should be a docstring """
+        """ This method has to be implemented by all child classes """
         pass
 
-    # ----------------------------- AUXILARY FUNCTION -----------------------------
     def run_subprocess(self, command_string):
-        """ Method to run command_string outside of Python """
+        """ Method to run command_string outside of Python
+
+            Args:
+                command_string (str): Command to be executed
+
+            Returns:
+                str, str: stdout and std error
+        """
         process = subprocess.Popen(
             command_string,
             stdin=subprocess.PIPE,

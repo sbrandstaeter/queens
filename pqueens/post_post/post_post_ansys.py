@@ -1,5 +1,3 @@
-""" There should be a docstring """
-
 import glob
 from io import StringIO
 import os
@@ -13,24 +11,25 @@ class PostPostANSYS(PostPost):
     """ Class for processing ANSYS file
 
         Attributes:
-            skiprows ():
+            skiprows (int):  Number of rows to skip in result file
 
 
     """
 
     def __init__(self, skiprows, usecols, delete_data_flag, file_prefix):
-        """ Init PostPost-object
+        """ Init PostPost object
 
         TODO complete docstring
             Args:
-                skiprows ():
-                usecols ():
-                delete_data_flag ():
-                file_prefix ():
+                skiprows (int):           Number of rows to skip in result file
+                usecols (list):           Index of columns to use in result file
+                delete_data_flag (bool):  Delete files after processing
+                file_prefix (str):        Prefix of result files
 
         """
 
-        super(PostPostANSYS, self).__init__(usecols, delete_data_flag, file_prefix)
+        super(PostPostANSYS, self).__init__(usecols, delete_data_flag,
+                                            file_prefix)
 
         self.skiprows = skiprows
 
@@ -53,7 +52,7 @@ class PostPostANSYS(PostPost):
         return cls(skiprows, usecols, delete_data_flag, file_prefix)
 
     def read_post_files(self):
-        """ Loop over all post file in given directory """
+        """ Loop over all post file in given directory and extract results """
 
         prefix_expr = '*' + self.file_prefix + '*'
         files_of_interest = os.path.join(self.output_dir, prefix_expr)
@@ -66,14 +65,13 @@ class PostPostANSYS(PostPost):
                 nnum, qoi_array = post_data.nodal_solution(self.skiprows)
                 quantity_of_interest = qoi_array[self.usecols[0], self.usecols[1]]
                 post_out = np.append(post_out, quantity_of_interest)
-                # select only row with timestep equal to target time step
-                # TODO add documentation what does this do? Why is it done this way?
-                if not post_out:  # timestep reached? <=> variable is empty?
+                # very simple error check
+                if not post_out:
                     self.error = True
                     self.result = None
                     break
             except IOError:
-                self.error = True  # TODO in the future specify which error type
+                self.error = True
                 self.result = None
                 break
         self.error = False
