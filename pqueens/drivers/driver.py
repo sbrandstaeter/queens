@@ -118,12 +118,12 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['executable'] = driver_options['path_to_executable']
         base_settings['result'] = None
         base_settings['port'] = port
-        base_settings['postprocessor'] = driver_options['path_to_postprocessor']
-        if base_settings['postprocessor']:
+        base_settings['postprocessor'] = driver_options.get('path_to_postprocessor', None)
+        if base_settings['postprocessor'] is not None:
             base_settings['post_options'] = driver_options['post_process_options']
         else:
             base_settings['post_options'] = None
-        base_settings['postpostprocessor'] = Post_post.from_config_create_post_post(config)
+        base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(config)
         driver = driver_class.from_config_create_driver(config, base_settings, workdir)
 
         return driver

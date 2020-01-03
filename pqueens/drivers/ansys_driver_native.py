@@ -47,7 +47,8 @@ class AnsysDriverNative(Driver):
         # If the standard ANSYS executable is supposed to be used, the hyphen
         # must not be forgot at the end of the input, though:
         # "\"main_executable\"-".
-        self.main_executable, self.custom_executable = self.executable.split('-')
+        #self.main_executable, self.custom_executable = self.executable.split('-')
+        self.main_executable = self.executable
 
         # base directories
         dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
@@ -74,33 +75,34 @@ class AnsysDriverNative(Driver):
         """
         # assemble run command
         # old Linux run command
-        # command_list = [
-        #    self.main_executable,
-        #    "-b -g -p aa_t_a -dir ",
-        #    self.output_directory,
-        #    "-i ",
-        #    self.input_file,
-        #    "-j ",
-        #    str(self.experiment_name) + '_' + str(self.job_id),
-        #    "-s read -l en-us -t -d X11 > ",
-        #    self.output_file
-        # ]
-        # new Windows run command for standard or customized (if present) ANSYS executable
         command_list = [
-            self.main_executable,
-            "-p ansys -smp -np 1 -lch -dir",
-            self.output_directory,
-            "-j",
-            str(self.experiment_name) + '_' + str(self.job_id),
-            "-s read -l en-us -b -i",
-            self.input_file,
-            "-o",
-            self.output_file,
-            "-custom",
-            self.custom_executable,
+           self.main_executable,
+           "-b -g -p aa_t_a -dir ",
+           self.output_directory,
+           "-i ",
+           self.input_file,
+           "-j ",
+           str(self.experiment_name) + '_' + str(self.job_id),
+           "-s read -l en-us -t -d X11 > ",
+           self.output_file
         ]
+        # new Windows run command for standard or customized (if present) ANSYS executable
+        #command_list = [
+        #    self.main_executable,
+        #    "-p ansys -smp -np 1 -lch -dir",
+        #    self.output_directory,
+        #    "-j",
+        #    str(self.experiment_name) + '_' + str(self.job_id),
+        #    "-s read -l en-us -b -i",
+        #    self.input_file,
+        #    "-o",
+        #    self.output_file,
+        #    "-custom",
+        #    self.custom_executable,
+        #]
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
+        #command_string = ' '.join(command_list)
         _, stderr, self.pid = self.run_subprocess(command_string)
         if stderr:
             self.result = None  # This is necessary to detect failed jobs
