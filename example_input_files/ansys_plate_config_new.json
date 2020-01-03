@@ -41,7 +41,7 @@
     },
 		"local_scheduler" : {
 			"scheduler_type" : "local",
-      "num_procs" : 1,
+      "num_procs" : 1
 		},
     "method" : {
 			"method_name" : "lhs",
