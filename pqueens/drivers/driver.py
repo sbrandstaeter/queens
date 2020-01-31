@@ -123,6 +123,9 @@ class Driver(metaclass=abc.ABCMeta):
             base_settings['post_options'] = driver_options['post_process_options']
         else:
             base_settings['post_options'] = None
+
+        # TODO "hiding" a complete object in the base settings dict is unbelieveably ugly
+        # and should be fixed ASAP
         base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(config)
         driver = driver_class.from_config_create_driver(config, base_settings, workdir)
 
