@@ -246,15 +246,14 @@ class Driver(metaclass=abc.ABCMeta):
             self.result = self.postpostprocessor.postpost_main(output_directory)
             sys.stderr.write("Got result %s\n" % (self.result))
 
+    def setup_mpi(self, ntasks):
+        """ Configure and set up the environment for multi_threats """
+        pass
+
     # ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod
     def setup_dirs_and_files(self):
         """ this should be a docstring """
-        pass
-
-    @abc.abstractmethod
-    def setup_mpi(self, ntasks):
-        """ Configure and set up the environment for multi_threats """
         pass
 
     @abc.abstractmethod
