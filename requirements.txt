@@ -28,4 +28,6 @@ pytest-mock
 # create mock objects for unit testing
 mock
 # make ascii-art prints
-pyfiglet #check if that if enough, original command: conda install -c conda-forge pyfiglet
+pyfiglet
+# space filling subsets
+diversipy

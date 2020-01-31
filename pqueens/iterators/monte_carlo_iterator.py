@@ -1,6 +1,5 @@
 """ There should be some docstring """
 
-import pdb
 import numpy as np
 import matplotlib.pyplot as plt
 from pqueens.models.model import Model

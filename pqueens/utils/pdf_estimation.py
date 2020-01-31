@@ -42,9 +42,9 @@ def estimate_pdf(samples,kernel_bandwidth,support_points=None):
         np.array,np.array:          pdf_estimate at support points
     """
     if support_points is None:
-        min_samples = np.amin(samples)
-        max_samples = np.amax(samples)
-        support_points =  np.linspace(min_samples, max_samples, 100)
+        min_samples = -0.5 # np.amin(samples)  #DG: -0.5  #fsi:0.02
+        max_samples = 2.0 #np.amax(samples)   #fsi: 0.07
+        support_points =  np.linspace(min_samples, max_samples, 500)
         support_points = np.meshgrid(*[support_points[:,None]]*samples.shape[1])
         points = support_points[0].reshape(-1,1)
         if len(points.shape) > 1:
