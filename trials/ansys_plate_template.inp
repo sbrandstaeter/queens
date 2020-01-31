@@ -83,7 +83,7 @@ plesol,u,sum
 prnsol
 
 *get,uzmiddle,node,2,u,z
-*cfopen,{output},out,,
+*cfopen,output,out,,
 
 descrition='zdispnode2'
 
