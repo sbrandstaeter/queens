@@ -7,13 +7,13 @@
   "method": {
     "method_name": "bmfmc",
     "method_options" :{
-      "path_to_lf_data" : ["/home/nitzler/workspace/PYTHON_Tests/LF_relaxed_cleaned.pickle"],
+      "path_to_lf_data" : ["/home/nitzler/workspace/PYTHON_Tests/LF_combined_cleaned.pickle"],
       "path_to_hf_data" : "/home/nitzler/workspace/PYTHON_Tests/HF_cleaned.pickle",
       "experiment_dir" : "/home/nitzler/workspace/PYTHON_Tests",
       "active_learning" : "False",
       "model": "joint_density_approx",
-      "predictive_var": "False",
-      "BMFMC_reference": "False",
+      "predictive_var": true,
+      "BMFMC_reference": false,
       "result_description" : {
         "write_results" : true,
         "plot_results" : true
@@ -27,12 +27,12 @@
       "variance" : 1},
     "error_measures": ["LOOCV"],
     "eval_fit" : "None",
-    "features_config" : "pls"
+    "features_config" : "pca_joint_space"
     },
    "initial_design":{
-     "num_HF_eval" : 40,
+     "num_HF_eval" : 150,
      "num_bins" : 20,
-     "method": "random"
+     "method": "diverse_subset"
    }
   }
  }

@@ -1,5 +1,5 @@
 {
-  "experiment_name" : "MC_cylinder",
+  "experiment_name" : "MC_cylinder_LF",
   "database"  :{
     "address"   : "localhost:27017",
     "drop_existing" : "True"
@@ -34,7 +34,7 @@
       "path_to_postprocessor" : "",
       "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
       "no_singularity"        : false,
-      "experiment_dir"        : "/home/nitzler/workspace/navierstokes/applications/output/demo_hf",
+      "experiment_dir"        : "/home/nitzler/workspace/navierstokes/applications/output/demo_lf",
       "post_post"         : {
         "type" : "time_series",
         "file_prefix" : "lift",
@@ -89,7 +89,7 @@
           "corr_length": 0.08,
           "rel_std": 0.1,
           "mean_fun": "inflow_parabola",
-          "mean_fun_params": [0.2],
+          "mean_fun_params": [1.5],
           "num_points" : 200
       }
       }

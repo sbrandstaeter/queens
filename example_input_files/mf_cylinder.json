@@ -13,7 +13,7 @@
       "active_learning" : false,
       "model": "joint_density_approx",
       "predictive_var": false,
-      "BMFMC_reference": true,
+      "BMFMC_reference": false,
       "result_description" : {
         "write_results" : true,
         "plot_results" : true
@@ -27,10 +27,10 @@
       "variance" : 0.1},
     "error_measures": ["LOOCV"],
     "eval_fit" : "None",
-    "features_config" : "pca_joint_space"
+    "features_config" : "None"
     },
    "initial_design":{
-     "num_HF_eval" : 200,
+     "num_HF_eval" : 50,
      "num_bins" : 20,
      "method": "random"
    }
