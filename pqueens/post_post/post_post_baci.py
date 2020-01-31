@@ -10,19 +10,17 @@ class PostPostBACI(PostPost):
     """ Class for post-post-processing BACI output
 
         Attributes:
-            num_post (int):         TODO what is this? Where is this needed?
             time_tol (float):       Tolerance if desired time can not be matched exactly
             target_time (float):    Time at which to evaluate QoI
             skiprows (int):         Number of header rows to skip
 
     """
 
-    def __init__(self, num_post, time_tol, target_time, skiprows,
+    def __init__(self, time_tol, target_time, skiprows,
                  usecols, delete_data_flag, file_prefix):
         """ Init PostPost object
 
         Args:
-            num_post (int):           TODO what is this? Where is this needed?
             time_tol (float):         Tolerance if desired time can not be matched exactly
             target_time (float):      Time at which to evaluate QoI
             skiprows (int):           Number of header rows to skip
@@ -32,27 +30,23 @@ class PostPostBACI(PostPost):
 
         """
 
-        super(PostPostBACI, self).__init__(usecols, delete_data_flag, file_prefix)
-
-        self.num_post = num_post
+        super(PostPostBACI, self).__init__(delete_data_flag, file_prefix)
+        self.usecols = usecols
         self.time_tol = time_tol
         self.target_time = target_time
         self.skiprows = skiprows
 
     @classmethod
-    def from_config_create_post_post(cls, config, base_settings):
+    def from_config_create_post_post(cls, options):
         """ Create post_post routine from problem description
 
         Args:
-            config (dict): input json file with problem description
-            base_settings (dict): TODO what is this?? why are there two dicts?
+            options (dict): input options
 
         Returns:
             post_post: PostPostBACI object
         """
-        post_post_options = base_settings['options']
-        # TODO what is this? Where is this needed?
-        num_post = len(config['driver']['driver_params']['post_process_options'])
+        post_post_options = options['options']
         time_tol = post_post_options['time_tol']
         target_time = post_post_options['target_time']
         skiprows = post_post_options['skiprows']
@@ -60,7 +54,7 @@ class PostPostBACI(PostPost):
         delete_data_flag = post_post_options['delete_field_data']
         file_prefix = post_post_options['file_prefix']
 
-        return cls(num_post, time_tol, target_time, skiprows,
+        return cls(time_tol, target_time, skiprows,
                    usecols, delete_data_flag, file_prefix)
 
     def read_post_files(self):

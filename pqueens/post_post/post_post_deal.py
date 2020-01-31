@@ -12,31 +12,30 @@ class PostPostDEAL(PostPost):
 
     def __init__(self, skiprows, usecols, delete_data_flag, file_prefix):
         """ Init Object
-        TODO complete this
+        
             Args:
-                skiprows ():
-                usecols ():
-                delete_data_flag ():
-                file_prefix ():
-
+                skiprows (int):              Number of header rows to skip
+                usecols (int):               Index of columns to use in result file
+                delete_data_flag (bool):     Delete files after processing
+                file_prefix (str):           Prefix of result file
 
         """
-        super(PostPostDEAL, self).__init__(usecols, delete_data_flag, file_prefix)
+        super(PostPostDEAL, self).__init__(delete_data_flag, file_prefix)
 
+        self.usecols = usecols
         self.skiprows = skiprows
 
     @classmethod
-    def from_config_create_post_post(cls, config, base_settings):
+    def from_config_create_post_post(cls, options):
         """ Create post_post routine from problem description
 
         Args:
-            config: input json file with problem description
-            base_settings (): ???? TODO complete this
+            options (dict): input options
 
         Returns:
             post_post: post_post object
         """
-        post_post_options = base_settings['options']
+        post_post_options = options['options']
         skiprows = post_post_options['skiprows']
         usecols = post_post_options['usecols']
         delete_data_flag = post_post_options['delete_field_data']
@@ -50,11 +49,13 @@ class PostPostDEAL(PostPost):
         prefix_expr = '*' + self.file_prefix + '*'
         files_of_interest = os.path.join(self.output_dir, prefix_expr)
         post_files_list = glob.glob(files_of_interest)
-        path = post_files_list[0]  # TODO this is not general but only for navier stokes solver
+        # TODO this is not general but only for navier stokes solver
+        path = post_files_list[0]
         post_out = []
 
         try:
-            post_data = pd.read_csv(path, usecols=self.usecols, sep=r'\s+', skiprows=self.skiprows)
+            post_data = pd.read_csv(path, usecols=self.usecols,
+                                    sep=r'\s+', skiprows=self.skiprows)
             post_out = post_data[
                 (post_data.iloc[:, 0] >= 4) & (post_data.iloc[:, 0] <= 7)
             ].to_numpy()

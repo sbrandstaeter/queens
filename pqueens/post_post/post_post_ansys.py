@@ -16,40 +16,35 @@ class PostPostANSYS(PostPost):
 
     """
 
-    def __init__(self, skiprows, usecols, delete_data_flag, file_prefix):
+    def __init__(self, usecols, delete_data_flag, file_prefix):
         """ Init PostPost object
 
-        TODO complete docstring
             Args:
-                skiprows (int):           Number of rows to skip in result file
-                usecols (list):           Index of columns to use in result file
+                usecols (list):           Index of columns to use in results
                 delete_data_flag (bool):  Delete files after processing
                 file_prefix (str):        Prefix of result files
 
         """
-
-        super(PostPostANSYS, self).__init__(usecols, delete_data_flag,
+        self.usecols = usecols
+        super(PostPostANSYS, self).__init__(delete_data_flag,
                                             file_prefix)
 
-        self.skiprows = skiprows
-
     @classmethod
-    def from_config_create_post_post(cls, config, base_settings):
+    def from_config_create_post_post(cls, options):
         """ Create post_post routine from problem description
 
         Args:
-            config: input json file with problem description
+            options (dict): input options
 
         Returns:
             post_post: PostPostANSYS object
         """
-        post_post_options = base_settings['options']
-        skiprows = post_post_options['skiprows']
+        post_post_options = options['options']
         usecols = post_post_options['usecols']
         delete_data_flag = post_post_options['delete_field_data']
         file_prefix = post_post_options['file_prefix']
 
-        return cls(skiprows, usecols, delete_data_flag, file_prefix)
+        return cls(usecols, delete_data_flag, file_prefix)
 
     def read_post_files(self):
         """ Loop over all post file in given directory and extract results """
@@ -63,7 +58,8 @@ class PostPostANSYS(PostPost):
             try:
                 post_data = pyansys.read_binary(filename)
                 nnum, qoi_array = post_data.nodal_solution(0)
-                quantity_of_interest = qoi_array[self.usecols[0], self.usecols[1]]
+                quantity_of_interest = qoi_array[self.usecols[0],
+                                                 self.usecols[1]]
                 post_out = np.append(post_out, quantity_of_interest)
                 # very simple error check
                 if not post_out:

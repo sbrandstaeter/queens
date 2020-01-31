@@ -10,7 +10,6 @@ class PostPost(metaclass=abc.ABCMeta):
     """ Base class for post post processing
 
         Attributes:
-            usecols (list):           Index of columns to use in result file
             delete_data_flag (bool):  Delete files after processing
             file_prefix ():           Prefix of result files
             error ():
@@ -19,17 +18,15 @@ class PostPost(metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, usecols, delete_data_flag, file_prefix):
+    def __init__(self, delete_data_flag, file_prefix):
         """ Init post post class
 
             Args:
-                usecols (list):          Index of columns to use in result file
                 delete_data_flag (bool): Delete files after processing
                 file_prefix (str):       Prefix of result files
 
         """
 
-        self.usecols = usecols
         self.delete_data_flag = delete_data_flag
         self.file_prefix = file_prefix
 
@@ -78,12 +75,11 @@ class PostPost(metaclass=abc.ABCMeta):
         # ---------------------------- CREATE BASE SETTINGS ---------------------------
         base_settings = {}
         base_settings['options'] = post_post_options
-        base_settings['file_prefix'] = post_post_options['file_prefix']
-        base_settings['usecols'] = post_post_options['usecols']
-        base_settings['delete_field_data'] = post_post_options['delete_field_data']
+        #base_settings['file_prefix'] = post_post_options['file_prefix']
+        #base_settings['usecols'] = post_post_options['usecols']
+        #base_settings['delete_field_data'] = post_post_options['delete_field_data']
 
-        # TODO remove "base_settings" and reintroduce name"
-        post_post = post_post_class.from_config_create_post_post(config, base_settings)
+        post_post = post_post_class.from_config_create_post_post(base_settings)
         return post_post
 
     def error_handling(self):
@@ -128,7 +124,7 @@ class PostPost(metaclass=abc.ABCMeta):
                 output_dir (str): Path to output directory
 
             Returns:
-                , result of post_post
+                result of post_post
                 # TODO determine type
         """
 

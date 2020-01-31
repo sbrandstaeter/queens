@@ -25,25 +25,22 @@ class PostPostGeneric(PostPost):
             file_prefix (str):        Prefix of result files
 
         """
-        # TODO pass empty list for now 
-        super(PostPostGeneric, self).__init__([], delete_data_flag, file_prefix)
+        super(PostPostGeneric, self).__init__(delete_data_flag, file_prefix)
 
         self.use_col = use_col
         self.use_row = use_row
 
-
     @classmethod
-    def from_config_create_post_post(cls, config, base_settings):
+    def from_config_create_post_post(cls, options):
         """ Create post_post routine from problem description
 
         Args:
-            config (dict): input json file with problem description
-            base_settings (dict): TODO what is this?? why are there two dicts?
+            options (dict): input options
 
         Returns:
             post_post: PostPostGeneric object
         """
-        post_post_options = base_settings['options']
+        post_post_options = options['options']
 
         use_col = post_post_options['use_col']
         use_row = post_post_options['use_row']
