@@ -62,7 +62,7 @@ class PostPostANSYS(PostPost):
         for filename in post_files_list:
             try:
                 post_data = pyansys.read_binary(filename)
-                nnum, qoi_array = post_data.nodal_solution(self.skiprows)
+                nnum, qoi_array = post_data.nodal_solution(0)
                 quantity_of_interest = qoi_array[self.usecols[0], self.usecols[1]]
                 post_out = np.append(post_out, quantity_of_interest)
                 # very simple error check
