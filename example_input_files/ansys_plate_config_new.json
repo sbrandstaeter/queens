@@ -17,7 +17,7 @@
           "target_time": 5.0,
           "time_tol": 1e-2,
           "file_prefix": "rst",
-          "usecols": [21,1],
+          "usecols": [1000,2],
           "skiprows":0
         }
 		  }
