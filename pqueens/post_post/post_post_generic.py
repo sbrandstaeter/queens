@@ -15,10 +15,12 @@ class PostPostGeneric(PostPost):
 
     """
 
-    def __init__(self, use_col, use_row, delete_data_flag, file_prefix):
+    def __init__(self, skip_rows, use_col, use_row, delete_data_flag,
+                 file_prefix):
         """ Init PostPost object
 
         Args:
+            skip_rows (int):          Number of header rows to skip
             use_col (int):            Index of row to extract
             use_row (int):            Index of column to extract
             delete_data_flag (bool):  Delete files after processing
@@ -27,6 +29,7 @@ class PostPostGeneric(PostPost):
         """
         super(PostPostGeneric, self).__init__(delete_data_flag, file_prefix)
 
+        self.skip_rows = skip_rows
         self.use_col = use_col
         self.use_row = use_row
 
@@ -44,10 +47,12 @@ class PostPostGeneric(PostPost):
 
         use_col = post_post_options['use_col']
         use_row = post_post_options['use_row']
+        skip_rows = post_post_options['skiprows']
         delete_data_flag = post_post_options['delete_field_data']
         file_prefix = post_post_options['file_prefix']
 
-        return cls(use_col, use_row, delete_data_flag, file_prefix)
+        return cls(skip_rows, use_col, use_row,
+                   delete_data_flag, file_prefix)
 
     def read_post_files(self):
         """ Loop over post files in given output directory """
@@ -62,12 +67,11 @@ class PostPostGeneric(PostPost):
                 post_data = pd.read_csv(
                     filename,
                     sep=r',|\s+',
-                    usecols=self.use_col,
-                    skiprows=0,
+                    usecols=[self.use_col],
+                    skiprows=self.skip_rows,
                     engine='python',
                 )
-                identifier = abs(post_data.iloc[:, 0] - self.target_time) < self.time_tol
-                quantity_of_interest = post_data.loc[self.use_col]
+                quantity_of_interest = post_data.loc[self.use_row]
                 post_out = np.append(post_out, quantity_of_interest)
                 # very simple error check
                 if not post_out:
