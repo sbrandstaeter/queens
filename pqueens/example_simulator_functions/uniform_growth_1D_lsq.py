@@ -1,39 +1,41 @@
 import numpy as np
 
-from pqueens.example_simulator_functions.uniform_growth_1D import delta_radius
+import pqueens.example_simulator_functions.uniform_growth_1D as uniform_growth_1D
 
 days_to_seconds = 1  # 86400
 years_to_days = 365.25
 years_to_seconds = years_to_days * days_to_seconds
 
 # real parameter values
-tau = 100 * days_to_seconds
+TAU = 100 * days_to_seconds
 # k_sigma = 0.001107733872774 / days_to_seconds
-k_sigma = 4.933441e-04 / days_to_seconds
-sigma_h_c = 200000
-dR0 = 0.002418963148596
-t0 = 2 * years_to_seconds
+K_SIGMA = 4.933441e-04 / days_to_seconds
+SIGMA_H_C = 200000
+DR0 = 0.002418963148596
+T0 = 2 * years_to_seconds
 
 
-t_end = 3000 * days_to_seconds
+T_END = 3000 * days_to_seconds
 
-num_meas = 8
+NUM_MEAS = 8
 
 # t_meas = np.linspace(-t0, t_end, num_meas)
-t_meas = np.linspace(0.0, t_end, num_meas)
+T_MEAS = np.linspace(0.0, T_END, NUM_MEAS)
 # t_meas = [0, 730, 1460, 2190]
-dr_meas = delta_radius(t_meas, tau, k_sigma, sigma_h_c, dR0, t0)
+M_GNR = uniform_growth_1D.stab_margin(TAU, K_SIGMA, SIGMA_H_C)
+DR_MEAS = uniform_growth_1D.delta_radius(T_MEAS, TAU, M_GNR, DR0, T0)
 
-rng_state = np.random.get_state()
-seed = 24
-np.random.seed(seed)
-std_noise = 1.0e-3  # 1.0e-2
-noise = np.random.normal(0, std_noise, num_meas)
+RNG_STATE = np.random.get_state()
+SEED = 24
+np.random.seed(SEED)
+STD_NOISE = 1.0e-3  # 1.0e-2
+NOISE = np.random.normal(0, STD_NOISE, NUM_MEAS)
 
-np.random.set_state(rng_state)
+np.random.set_state(RNG_STATE)
 
-dr_meas = dr_meas + noise
+DR_MEAS = DR_MEAS + NOISE
 
+import pqueens.example_simulator_functions.uniform_growth_1D_stab_margin as uniform_growth_1D_stab_margin
 
 def main(job_id, params):
     """ Interface to least squares of GnR model
@@ -52,10 +54,21 @@ def main(job_id, params):
                         specified in input dict
     """
 
-    dr_sim = delta_radius(
-        t_meas, params['tau'], params['k_sigma'], params['sigma_h_c'], params['dR0'], params['t0']
-    )
+    tau = params.get("tau", TAU)
+    # make sure that tau for m_gnr and for delta_radius is equal
+    params["tau"] = tau
+    dR0 = params.get("dR0", DR0)
+    t0 = params.get("t0", T0)
 
-    residuals = dr_meas - dr_sim
+    m_gnr = uniform_growth_1D_stab_margin.main(job_id, params)
+    dr_sim = uniform_growth_1D.delta_radius(t=T_MEAS, tau=tau, m_gnr=m_gnr, dR0=dR0, t0=t0)
 
-    return residuals
+    residuals = DR_MEAS - dr_sim
+
+    return np.square(residuals).sum()
+
+
+if __name__ == "__main__":
+    # test with default parameters
+    empty_dict = dict()
+    print(main(0, empty_dict))

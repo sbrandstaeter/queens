@@ -1,18 +1,21 @@
-import pqueens.example_simulator_functions.uniform_growth_1D_stab_margin as uniform_growth_1D_stab_margin
+import numpy as np
+
 import pqueens.example_simulator_functions.uniform_growth_1D as uniform_growth_1D
 import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
+import pqueens.example_simulator_functions.uniform_growth_1D_stab_margin_primary_params as uniform_growth_1D_stab_margin_primary_params
 
+# import real parameter values and measurements
 TAU = uniform_growth_1D_lsq.TAU
-DRO = uniform_growth_1D_lsq.DR0
+DR0 = uniform_growth_1D_lsq.DR0
 T0 = uniform_growth_1D_lsq.T0
 
-# point of time to evaluate the delta in radius
-t = uniform_growth_1D_lsq.T_END
+T_MEAS = uniform_growth_1D_lsq.T_MEAS
+# TODO: calculate measurements based on primary parameters
+DR_MEAS = uniform_growth_1D_lsq.DR_MEAS
 
 
 def main(job_id, params):
-    """
-    Interface to displacement of radius of GnR model.
+    """ Interface to least squares of GnR model
 
     UNITS:
     - length [m]
@@ -31,15 +34,18 @@ def main(job_id, params):
     tau = params.get("tau", TAU)
     # make sure that tau for m_gnr and for delta_radius is equal
     params["tau"] = tau
-    dR0 = params.get("dR0", DRO)
+    dR0 = params.get("dR0", DR0)
     t0 = params.get("t0", T0)
-    m_gnr = uniform_growth_1D_stab_margin.main(job_id, params)
 
+    m_gnr = uniform_growth_1D_stab_margin_primary_params.main(job_id, params)
+    dr_sim = uniform_growth_1D.delta_radius(t=T_MEAS, tau=tau, m_gnr=m_gnr, dR0=dR0, t0=t0)
 
-    dR = uniform_growth_1D.delta_radius( t, tau, m_gnr, dR0, t0 )
+    residuals = DR_MEAS - dr_sim
 
-    return dR
+    return np.square(residuals).sum()
+
 
 if __name__ == "__main__":
+    # test with default parameters
     empty_dict = dict()
     print(main(0, empty_dict))

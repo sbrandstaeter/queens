@@ -24,7 +24,7 @@ NaN = np.nan
 
 # List of fixed model parameters
 # initial radius
-R = 1.25e-2
+R0 = 1.25e-2
 # initial thickness of aorta wall
 H = 1.104761e-3
 
@@ -66,15 +66,15 @@ sigma_cir_e = 1.088014923234574e05
 lam_pre_el_cir = 1.34  # elastin circumferential
 lam_pre_el_ax = 1.25  # elastin axial
 lam_pre_sm = 1.1  # smooth muscle
-lam_pre_co = 1.062  # collagen
-# lam_pre_co = 1.060697162749238753320924e+00 # collagen BACI value
+# lam_pre_co = 1.062  # collagen
+lam_pre_co = 1.060697162749238753320924e00  # collagen BACI value
 
 # NOTE: G and C codepend via other material parameters (see Christian's Matlab Code)
 # elastic modulus (values taken from Christian's Matlab Code)
 C_e = 0.325386455353085e06  # elastin
 C_m = 0.168358396929622e06  # smooth muscle
-C_c = 5.391358494528612e06  # collagen (corresponds to lam_pre_co = 1.062)
-# C_c = 5.258871332154771e06  # collagen (corresponds to lam_pre_co=1.060697162...)
+# C_c = 5.391358494528612e06  # collagen (corresponds to lam_pre_co = 1.062)
+C_c = 5.258871332154771e06  # collagen (corresponds to lam_pre_co=1.060697162...)
 
 # derived variables
 # vector of mass fractions
@@ -171,21 +171,23 @@ def numerator_stab_margin_is_zero(tau, sigma_h_c):
     return k_sigma
 
 
-def delta_radius(t, tau, k_sigma, sigma_h_c, dR0, t0):
+def delta_radius(t, tau, m_gnr, dR0, t0):
     """
-    Return delta of radius at time t.
+    Return engineering strain of radius de_r at time t.
 
     see eq. (3) with (78) + (79) in [1]
     """
 
-    m_gnr = stab_margin(tau, k_sigma, sigma_h_c)
-    dr = (1 + (tau * m_gnr - 1) * np.exp(-m_gnr * (t + t0))) * dR0 / (tau * m_gnr)
-    return np.squeeze(dr)
+    de_r = (1 + (tau * m_gnr - 1) * np.exp(-m_gnr * (t + t0))) * dR0 / (tau * m_gnr)
+    return np.squeeze(de_r)
 
 
 def radius(tau, k_sigma, t, sigma_h_c, dR0, t0):
     """ Return current radius at time t. """
-    r = R + delta_radius(t, tau, k_sigma, sigma_h_c, dR0, t0)
+    m_gnr = stab_margin(
+        tau, k_sigma, sigma_h_c, C=C, M=M, sigma_cir_e=sigma_cir_e, sigma_h_m=sigma_h_m
+    )
+    r = R0 * (1 + delta_radius(t, tau, m_gnr, dR0, t0))
     return np.squeeze(r)
 
 

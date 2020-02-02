@@ -3,8 +3,8 @@ import numpy as np
 import pqueens.example_simulator_functions.uniform_growth_1D as uniform_growth_1D
 import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
 
-TAU = uniform_growth_1D_lsq.tau
-K_SIGMA = uniform_growth_1D_lsq.k_sigma
+TAU = uniform_growth_1D_lsq.TAU
+K_SIGMA = uniform_growth_1D_lsq.K_SIGMA
 
 K1_CO = uniform_growth_1D.k1_co
 K2_CO = uniform_growth_1D.k2_co

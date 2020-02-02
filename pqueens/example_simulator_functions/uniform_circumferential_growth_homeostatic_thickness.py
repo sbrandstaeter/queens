@@ -19,7 +19,7 @@ PHI_m = uniform_growth_1D.phi_m
 PHI_c = uniform_growth_1D.phi_c
 
 RHO = uniform_growth_1D.rho
-R = uniform_growth_1D.R
+R = uniform_growth_1D.R0
 MEAN_PRESSURE = uniform_growth_1D.mean_pressure
 
 

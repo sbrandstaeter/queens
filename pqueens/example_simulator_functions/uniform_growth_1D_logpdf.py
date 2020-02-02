@@ -21,14 +21,14 @@ def main(job_id, params):
     """
 
     if 'k_sigma' not in params:
-        params['k_sigma'] = pqueens.example_simulator_functions.uniform_growth_1D_lsq.k_sigma
+        params['k_sigma'] = pqueens.example_simulator_functions.uniform_growth_1D_lsq.K_SIGMA
     if 'sigma_h_c' not in params:
-        params['sigma_h_c'] = pqueens.example_simulator_functions.uniform_growth_1D_lsq.sigma_h_c
+        params['sigma_h_c'] = pqueens.example_simulator_functions.uniform_growth_1D_lsq.SIGMA_H_C
     if 'dR0' not in params:
-        params['dR0'] = pqueens.example_simulator_functions.uniform_growth_1D_lsq.dR0
+        params['dR0'] = pqueens.example_simulator_functions.uniform_growth_1D_lsq.DR0
     if 't0' not in params:
-        params['t0'] = pqueens.example_simulator_functions.uniform_growth_1D_lsq.t0
-    std_likelihood = pqueens.example_simulator_functions.uniform_growth_1D_lsq.std_noise
+        params['t0'] = pqueens.example_simulator_functions.uniform_growth_1D_lsq.T0
+    std_likelihood = pqueens.example_simulator_functions.uniform_growth_1D_lsq.STD_NOISE
 
     residuals = pqueens.example_simulator_functions.uniform_growth_1D_lsq.main(job_id, params)
 
