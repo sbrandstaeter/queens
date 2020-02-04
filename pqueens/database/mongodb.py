@@ -1,9 +1,9 @@
-
 import pymongo
 from pymongo.errors import ServerSelectionTimeoutError
 from pqueens.utils.compression import compress_nested_container, decompress_nested_container
 
 COMPRESS_TYPE = 'compressed array'
+
 
 class MongoDB(object):
     """ MongoDB based database to store data of computer experiments
@@ -13,27 +13,35 @@ class MongoDB(object):
         db (string):                    database
         myId (int):                     connection id
     """
-    def __init__(self, database_address='localhost:27017',
-                 database_name='pqueens', drop_existing_db=False):
+
+    def __init__(
+        self, database_address='localhost:27017', database_name='pqueens', drop_existing_db=False
+    ):
         """
         Args:
             database_address (string): adress of database to connect to
             database_name (string):    name of database
             drop_existing_db (bool):   drop existing db if it exists
         """
-        #try:
-        self.client = pymongo.MongoClient(host=[database_address],
-                                          serverSelectionTimeoutMS=100)
+        # try:
+        self.client = pymongo.MongoClient(host=[database_address], serverSelectionTimeoutMS=100)
         if drop_existing_db:
             self.client.drop_database(database_name)
         self.db = self.client[database_name]
 
-        self.client.server_info() # Forces a call and raises
-        # ServerSelectionTimeoutError exception:
+        attempt = 0
+        while attempt < 10:
+            try:
+                self.client.server_info()  # Forces a call
+                break
+            except pymongo.errors.ServerSelectionTimeoutError:
+                if attempt == 9:
+                    self.client.server_info()
+                else:
+                    print('ServerSelectionTimeoutError in mongodb.py')
+            attempt += 1
 
-
-    def save(self, save_doc, experiment_name, experiment_field, batch,
-             field_filters=None):
+    def save(self, save_doc, experiment_name, experiment_field, batch, field_filters=None):
         """ Save a document to the database.
 
         Any numpy arrays in the document are compressed so that they can be
@@ -62,14 +70,25 @@ class MongoDB(object):
         upsert = False
 
         if len(dbdocs) > 1:
-            raise Exception('Ambiguous save attempted. Field filters returned '
-                            'more than one document.')
+            raise Exception(
+                'Ambiguous save attempted. Field filters returned more than one document.'
+            )
         elif len(dbdocs) == 1:
             dbdoc = dbdocs[0]
         else:
             upsert = True
 
-        result = dbcollection.replace_one(field_filters, save_doc, upsert=upsert)
+        attempt = 0
+        while attempt < 10:
+            try:
+                result = dbcollection.replace_one(field_filters, save_doc, upsert=upsert)
+                break
+            except pymongo.errors.DuplicateKeyError:
+                if attempt == 9:
+                    result = dbcollection.replace_one(field_filters, save_doc, upsert=upsert)
+                else:
+                    print('Exception pymongo.errors.DuplicateKeyError occurred')
+            attempt += 1
 
         return result.acknowledged
 
