@@ -1,8 +1,10 @@
 import numpy as np
 import GPy
-from . regression_approximation import RegressionApproximation
+from .regression_approximation import RegressionApproximation
 from IPython.display import display
 import pdb
+
+
 class GPGPyRegression(RegressionApproximation):
     """ Class for creating GP based regression model based on GPy
 
@@ -16,6 +18,7 @@ class GPGPyRegression(RegressionApproximation):
         m (Gpy.model):              GPy based Gaussian process model
 
     """
+
     @classmethod
     def from_options(cls, approx_options, x_train, y_train):
         """ Create approxiamtion from options dictionary
@@ -46,20 +49,19 @@ class GPGPyRegression(RegressionApproximation):
         input_dim = self.X.shape[1]
         # simple GP Model
 
-        dy = abs(max(self.y)-min(self.y)) # proper initialization of length scale
-        k = GPy.kern.RBF(input_dim, variance=1.,lengthscale=0.25*dy,ARD=False)
-        self.m = GPy.models.GPRegression(self.X, self.y,kernel=k,normalizer=True)
+        dy = abs(max(self.y) - min(self.y))  # proper initialization of length scale
+        k = GPy.kern.RBF(input_dim, variance=1.0, lengthscale=0.25 * dy, ARD=False)
+        self.m = GPy.models.GPRegression(self.X, self.y, kernel=k, normalizer=True)
 
     def train(self):
         """ Train the GP by maximizing the likelihood """
 
-        #self.m[".*Gaussian_noise"].constrain_positive()
-        #self.m[".*Gaussian_noise"] = self.m.Y.var()*0.01
-        #self.m[".*Gaussian_noise"].fix()
-        self.m.optimize()#max_iters=500)
-        #self.m[".*Gaussian_noise"].unfix()
-        #self.m.optimize_restarts(30, max_iters=1000)
-        display(self.m)
+        # self.m[".*Gaussian_noise"] = self.m.Y.var()*0.01
+        # self.m[".*Gaussian_noise"].fix()
+        self.m.optimize(max_iters=1000)
+        # self.m[".*Gaussian_noise"].unfix()
+        # self.m[".*Gaussian_noise"].constrain_positive()
+        # self.m.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
 
     def predict(self, Xnew):
         """ Compute latent function at Xnew
@@ -72,7 +74,8 @@ class GPGPyRegression(RegressionApproximation):
              posterior samples of latent function at Xnew
         """
         output = {}
-        mean, variance = self.predict_f(Xnew[:,:,None])
+        Xnew = np.atleast_2d(Xnew).T  # make 1 d vector to column vector 2D
+        mean, variance = self.predict_f(Xnew)
         output['mean'] = mean
         output['variance'] = variance
         if self.num_posterior_samples is not None:
@@ -93,12 +96,11 @@ class GPGPyRegression(RegressionApproximation):
         output = {}
         mean, variance = self.m.predict(Xnew)
         output['mean'] = mean
-        output['variance'] = variance# + self.m.posterior.Gaussian_noise.variance[0]
+        output['variance'] = variance  # + self.m.posterior.Gaussian_noise.variance[0]
         if self.num_posterior_samples is not None:
             output['post_samples'] = self.predict_f_samples(Xnew, self.num_posterior_samples)
 
         return output
-
 
     def predict_f(self, Xnew):
         """ Compute the mean and variance of the latent function at Xnew
@@ -110,7 +112,6 @@ class GPGPyRegression(RegressionApproximation):
             np.array, np.array: mean and varaince of latent function at Xnew
         """
         return self.m.predict_noiseless(Xnew, full_cov=False)
-
 
     def predict_f_samples(self, Xnew, num_samples):
         """ Produce samples from the posterior latent funtion Xnew
@@ -129,5 +130,3 @@ class GPGPyRegression(RegressionApproximation):
         if post_samples.shape[1] != 1:
             raise Exception("GPGPyRegression can not deal with multioutput GPs")
         return np.reshape(post_samples, (Xnew.shape[0], num_samples))
-
-
