@@ -68,7 +68,9 @@ class Scheduler(metaclass=abc.ABCMeta):
         base_settings['experiment_name'] = config['global_settings']['experiment_name']
         driver_options = config['driver']['driver_params']
         base_settings['experiment_dir'] = driver_options['experiment_dir']
-        if config['driver']['driver_params'].get('no_singularity'):
+        if config['driver']['driver_params'].get(
+            'no_singularity', True
+        ):  # make no singularity the default
             base_settings['no_singularity'] = True
         else:
             base_settings['no_singularity'] = False
@@ -78,7 +80,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             base_settings['singularity_path'] = None
             base_settings['connect'] = None
             base_settings['scheduler_template'] = None
-            base_settings['cluster_bind'] = config['driver']['driver_params']['cluster_bind']
+            base_settings['cluster_bind'] = config['driver']['driver_params'].get('cluster_bind')
         elif (
             scheduler_options["scheduler_type"] == 'pbs'
             or scheduler_options["scheduler_type"] == 'slurm'
