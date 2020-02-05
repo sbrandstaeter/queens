@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # A commit-msg git hook for QUEENS based on this project:
-# (The design was taken adopted from BACI)
+# (The design was adopted from BACI)
 #
 # git-good-commit(1) - Git hook to help you write good commit messages.
 # Released under the MIT License.
