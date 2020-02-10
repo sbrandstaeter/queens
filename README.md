@@ -117,7 +117,11 @@ QUEENS writes results into a [MongoDB database](https://www.mongodb.com/), there
 We strongly recommend the use of MongoDB version 3.4 as this is proven to work in the current framework.
 
 - Installation instructions if you are running **macOS** can be found [here](https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.181134695.1149150790.1494232459-1730069423.1494232449)
-- Installation instructions for LNM workstations running **CentOS 7** can be found [here](https://www.digitalocean.com/community/tutorials/how-to-install-mongodb-on-centos-7).  The Repository file for other MongoDB versions can be found in the official [MongoDB documentation](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/).
+- Installation instructions for LNM workstations running **CentOS 7** can be done directly from the **CentOS 7**
+by running:
+    ```
+    sudo yum install mongodb-org
+    ```
 - Installation instructions for LNM workstations running **Fedora 22** can be found [here](https://blog.bensoer.com/install-mongodb-3-0-on-fedora-22/)
 
 [↑ Contents](#contents)
@@ -208,9 +212,14 @@ add so called rules to `firewalld` in order to connect to the database.
     - Bruteforce (master node global IP): 129.187.58.13
     - Deep (master node global IP): 129.187.58.20
     
-1. Finally, to apply the changes run: 
+1. To apply the changes run: 
     ```
     sudo firewall-cmd --reload
+    ```
+1. To enable passwordless access onto the localhost itself you need to copy the `ssh-key` of the localhost to the
+   `authorized_keys` files by typing:
+    ```
+    cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
     ```
   
 [↑ Contents](#contents)
@@ -236,7 +245,7 @@ QUEENS has a couple of unit and regression test.
 The testing strategy is more closely described in [TESTING.md](TESTING.md) 
 To run the test suite type:
 ```bash  
-python setup.py test -W ignore::DeprecationWarning
+pytest pqueens/tests -W ignore::DeprecationWarning
 ```
 For more info see the [pytest documentation](https://docs.pytest.org/en/latest/warnings.html).
 
