@@ -4,7 +4,7 @@ MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/$basearc
 Include: yum wget tar
 
 %help
-This is a singulariy container containing CentOS7 and Python 3.7 as well as necessary QUEENS dependencies (Python packages) to run the latter on a HPC cluster. Central elements are a copy of the Drivers class and the main_remote.py file. This container version uses the MPI environment and 3rd library packages of the host! Therefore it assumes that a working executable (e.g. BACI) is already available on the cluster. The advantage of this layout is that that we are always up-to-date with the cluster infrastructure and just mount important directories and copy system variables at runtime.
+This is a singularity container containing CentOS7 and Python 3.7 as well as necessary QUEENS dependencies (Python packages) to run the latter on a HPC cluster. Central elements are a copy of the Drivers class and the main_remote.py file. This container version uses the MPI environment and 3rd library packages of the host! Therefore it assumes that a working executable (e.g. BACI) is already available on the cluster. The advantage of this layout is that that we are always up-to-date with the cluster infrastructure and just mount important directories and copy system variables at runtime.
 
 %files
   ../pqueens /
@@ -35,6 +35,12 @@ This is a singulariy container containing CentOS7 and Python 3.7 as well as nece
   cd /
   mkdir scratch
   /usr/local/anaconda/envs/QUEENS/bin/python setup_remote.py develop
+  chmod -R +xr /pqueens
+  chmod -R +xr /pqueens/drivers
+  chmod -R +xr /pqueens/database
+  chmod -R +xr /pqueens/utils
+  chmod -R +xr /setup_remote.py
+  chmod -R +xr /pqueens/remote_main.py
 
 %runscript
   exec /usr/local/anaconda/envs/QUEENS/bin/python /pqueens/remote_main.py $@
