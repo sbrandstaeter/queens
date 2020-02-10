@@ -9,8 +9,11 @@ from collections import OrderedDict
 import os
 import os.path
 import hashlib
+import random
 import subprocess
 import sys
+import time
+from pprint import pprint
 from pqueens.utils.injector import inject
 from pqueens.drivers.driver import Driver
 
@@ -105,38 +108,118 @@ class Scheduler(metaclass=abc.ABCMeta):
         return scheduler
 
     def pre_run(self):
-        """ This should be a docstring """
+        """
+        A wrapper method that sets-up the scheduling configuration for local
+        and remote computing, such as automated port-forwarding, necessary addresses
+        or singularity settings
+
+        Returns:
+            None
+        """
         if self.remote_flag:
             hostname, _, _ = self.run_subprocess('hostname -i')
             username, _, _ = self.run_subprocess('whoami')
             address_localhost = username.rstrip() + r'@' + hostname.rstrip()
 
-            # self.kill_user_ssh_remote(username) TODO: think about this option
+            self.kill_previous_queens_ssh_remote(username)
             self.establish_port_forwarding_local(address_localhost)
             self.establish_port_forwarding_remote(address_localhost)
             self.copy_temp_json()
             self.copy_post_post()
 
-        if not self.no_singularity:
             self.check_singularity_system_vars()
             self.prepare_singularity_files()
+        else:
+            if not self.no_singularity:
+                self.check_singularity_system_vars()
+                self.prepare_singularity_files()
 
     def post_run(self):  # will actually be called in job_interface
-        """ This should be a docstring """
+        """
+        A finishing method for the scheduler module that takes care of closing
+        utilized ports and connections.
+        Returns:
+            None
+        """
         if self.remote_flag:
             self.close_remote_port()
+            print('All port-forwardings were closed again.')
         else:
             pass
 
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
-    def kill_user_ssh_remote(self, username):
-        """ Docstring """
-        command_list = ['ssh', self.connect_to_resource, 'killall -u', username, 'ssh\'']
+    def kill_previous_queens_ssh_remote(self, username):
+        """
+        Kill existing ssh-port-forwardings on the remote that were caused by previous QUEENS simulations
+        that either crashed or are still in place due to other reasons. This method will avoid that a
+        user opens too many unnecessary ports on the remote and blocks them for other users.
+        Args:
+            username (string): Username of person logged in on remote machine
+        Returns:
+            None
+        """
+        # find active queens ssh ports on remote
+        command_list = [
+            'ssh',
+            self.connect_to_resource,
+            '\'ps -aux | grep ssh | grep',
+            username.rstrip(),
+            '| grep :localhost:27017\'',
+        ]
+
         command_string = ' '.join(command_list)
-        _, _, _ = self.run_subprocess(command_string)
+        active_ssh, _, _ = self.run_subprocess(command_string)
+
+        # skip entries that contain "grep" as this is the current command
+        try:
+            active_ssh = [line for line in active_ssh.splitlines() if not 'grep' in line]
+        except IndexError:
+            pass
+
+        if active_ssh:
+            # print the queens related open ports
+            print('The following QUEENS sessions are still occupying ports on the remote:')
+            print('----------------------------------------------------------------------')
+            pprint(active_ssh, width=150)
+            print('----------------------------------------------------------------------')
+            print('')
+            print('Do you want to close these connections (recommended)?')
+            while True:
+                try:
+                    answer = input('Please type "y" or "n" >> ')
+                except SyntaxError:
+                    answer = None
+
+                if answer.lower() == 'y':
+                    ssh_ids = [line.split()[1] for line in active_ssh]
+                    for ssh_id in ssh_ids:
+                        command_list = ['ssh', self.connect_to_resource, '\'kill -9', ssh_id + '\'']
+                        command_string = ' '.join(command_list)
+                        std, err, _ = self.run_subprocess(command_string)
+                    print('Old QUEENS port-forwardings were successfully terminated!')
+                    break
+                elif answer.lower() == 'n':
+                    break
+                elif answer is None:
+                    print('You gave an empty input! Only "y" or "n" are valid inputs! Try again!')
+                else:
+                    print(
+                        'The input "%s" is not an appropriate choice! Only "y" or "n" are valid inputs!'
+                        % answer
+                    )
+                    print('Try again!')
+        else:
+            pass
 
     def check_singularity_system_vars(self):
-        """Docstring"""
+        """
+        Check and establish necessary system variables for the singularity image.
+        Examples are directory bindings such that certain directories of the host can be
+        accessed on runtime within the singularity image. Other system variables include
+        path and environment variables
+        Returns:
+            None
+        """
         # Check if SINGULARITY_BIND exists and if not write it to .bashrc file
         if self.remote_flag:
             command_list = ['ssh', self.connect_to_resource, '\'echo $SINGULARITY_BIND\'']
@@ -209,12 +292,17 @@ class Scheduler(metaclass=abc.ABCMeta):
             stdout, stderr, _ = self.run_subprocess(command_string)
 
     def establish_port_forwarding_remote(self, address_localhost):
-        """ docstring """
-        self.port = 2030  # just a start value to check for next open port
+        """
+        Automated port-forwarding from localhost to remote machine to forward data to the database
+        on localhost's port 27017 and a designated port on the master node of the remote machine
+        Args:
+            address_localhost (str): IP-address of localhost
+        Returns:
+            None
+        """
         port_fail = 1
-
         while port_fail != "":
-            self.port += 1
+            self.port = random.randrange(2030, 20000, 1)
             command_list = [
                 'ssh',
                 '-t',
@@ -229,10 +317,18 @@ class Scheduler(metaclass=abc.ABCMeta):
             ]
             command_string = ' '.join(command_list)
             port_fail = os.popen(command_string).read()
-        print('Remote port-forwarding sucessfully established for port %s' % (self.port))
+            time.sleep(0.1)
+        print('Remote port-forwarding successfully established for port %s' % (self.port))
 
     def establish_port_forwarding_local(self, address_localhost):
-        """ docstring """
+        """
+        Establish a port-forwarding for localhost's port 9001 to the remote's ssh-port 22
+        for passwordless communication with the remote machine over ssh
+        Args:
+            address_localhost (str): IP-address of the localhost
+        Returns:
+            None
+        """
         remote_address = self.connect_to_resource.split(r'@')[1]
         command_list = [
             'ssh',
@@ -250,15 +346,47 @@ class Scheduler(metaclass=abc.ABCMeta):
             stat = ssh_proc.poll()
         # TODO Think of some kind of error catching here; so far it works but error might be cryptical
 
-    def close_remote_port(self):  # TODO: Check if this might interfer with the current framework
-        """ docs """
-        command_string = (
-            'ssh ' + self.connect_to_resource + ' "kill $(lsof -t -i:' + str(self.port) + ')"'
-        )
-        _, stderr, _ = self.run_subprocess(command_string)
+    def close_remote_port(self):
+        """
+        Closes the ports that were used in the current QUEENS simulation for remote computing.
+        Returns:
+            None
+        """
+        # get the process id of open port
+        username, _, _ = self.run_subprocess('whoami')
+        command_list = [
+            'ssh',
+            self.connect_to_resource,
+            '\'ps -aux | grep ssh | grep',
+            username.rstrip(),
+            '| grep',
+            str(self.port) + ':localhost:27017\'',
+        ]
+        command_string = ' '.join(command_list)
+        active_ssh, stderr, _ = self.run_subprocess(command_string)
+
+        # skip entries that contain "grep" as this is the current command
+        try:
+            active_ssh_ids = [
+                line.split()[1] for line in active_ssh.splitlines() if not 'grep' in line
+            ]
+        except IndexError:
+            pass
+
+        if active_ssh_ids != '':
+            for ssh_id in active_ssh_ids:
+                command_list = ['ssh', self.connect_to_resource, '\'kill -9', ssh_id + '\'']
+                command_string = ' '.join(command_list)
+                std, err, _ = self.run_subprocess(command_string)
+            print('Active QUEENS port-forwardings were closed successfully!')
 
     def copy_temp_json(self):
-        """ docstrig """
+        """
+        Copies a (temporary) JSON input-file on a remote to execute some parts of QUEENS within
+        the singularity image on the remote, given the input configurations.
+        Returns:
+            None
+        """
         command_list = [
             "scp",
             self.config['input_file'],
@@ -270,7 +398,13 @@ class Scheduler(metaclass=abc.ABCMeta):
             raise RuntimeError("Error! Was not able to copy post_post class to remote! Abort...")
 
     def copy_post_post(self):
-        """ docstring """
+        """
+        Copy an instance of the post-post module to the remote and load it dynamically during runtime.
+        This enables fast changes in post-post scripts without the need to rebuild the singularity
+        image.
+        Returns:
+            None
+        """
         abs_dirpath_current_file = os.path.dirname(os.path.abspath(__file__))
         abs_path_post_post = os.path.join(abs_dirpath_current_file, '../post_post')
         # delete old files
@@ -297,10 +431,21 @@ class Scheduler(metaclass=abc.ABCMeta):
             )
 
     def create_singularity_image(self):
-        """ Add current environment to predesigned singularity container for cluster applications """
+        """
+        Add current QUEENS setup to pre-designed singularity image for cluster applications
+        Returns:
+             None
+        """
         # create hash for files in image
         self.hash_files('hashing')
         # create the actual image
+        command_string = '/usr/bin/singularity --version'
+        stdout, stderr, _ = self.run_subprocess(command_string)
+        if stderr:
+            raise RuntimeError(
+                f'Singularity could not be executed! The error message was: {stderr}'
+            )
+
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
         rel_path1 = '../../driver.simg'
         rel_path2 = '../../singularity_recipe'
@@ -308,19 +453,34 @@ class Scheduler(metaclass=abc.ABCMeta):
         abs_path2 = os.path.join(script_dir, rel_path2)
         command_list = ["sudo /usr/bin/singularity build", abs_path1, abs_path2]
         command_string = ' '.join(command_list)
-        _, stderr, _ = self.run_subprocess(command_string)
+        stdout, stderr, _ = self.run_subprocess(command_string)
+
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
         rel_path = '../../driver.simg'
         abs_path = os.path.join(script_dir, rel_path)
         if not os.path.isfile(abs_path):
-            raise RuntimeError(
-                '''Build of local singularity image failed!
-              This could have several reasons but make sure to run QUEENS from the base
-              directory containing the main.py file to set the proper relatives paths!'''
+            print('Build of local singularity image failed!')
+            print(
+                'This could have several reasons but make sure to run QUEENS from the base directory'
             )
+            print('containing the main.py file to set the proper relatives paths!')
+            print(
+                '-----------------------------------------------------------------------------------'
+            )
+            print(f'The returned error message was: {stderr}, {stdout}')
+            raise RuntimeError
 
     def hash_files(self, mode=None):
-        """ docstring """
+        """
+        Hash all files that are used in the singularity image anc check if some files were changed.
+        This is important to keep the singularity image always up to date with the code base
+        Args:
+            mode (str): (Arbitrary) string that determines whether files are checked for a hash or
+                        a new has is generated. When mode is set, a new hashfile is written out.
+        Returns:
+            None
+
+        """
         hashlist = []
         hasher = hashlib.md5()
         # hash all drivers
@@ -387,7 +547,14 @@ class Scheduler(metaclass=abc.ABCMeta):
             return hashlist
 
     def prepare_singularity_files(self):
-        """ docstring """
+        """
+        Checks if local and remote singularity images are existent and compares a hash-file
+        to the current hash of the files to determine if the singularity image is up to date.
+        The method furthermore triggers the build of a new singularity image if necessary.
+        Returns:
+            None
+        """
+
         # check existence local
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
         rel_path = '../../driver.simg'
@@ -412,7 +579,9 @@ class Scheduler(metaclass=abc.ABCMeta):
                 command_string = ' '.join(command_list)
                 _, _, _ = self.run_subprocess(command_string)
                 self.create_singularity_image()
-                print("Local singularity image written sucessfully!")
+                print("Local singularity image written successfully!")
+
+                # Update remote image
                 if self.remote_flag:
                     print("Updating remote image from local image...")
                     print("(This might take a couple of seconds, but needs only to be done once)")
@@ -427,7 +596,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                     stdout, stderr, _ = self.run_subprocess(command_string)
                     if stderr:
                         raise RuntimeError(
-                            "Error! Was not able to copy local singulariy image to remote! Abort..."
+                            "Error! Was not able to copy local singularity image to remote! Abort..."
                         )
 
             # check existence singularity on remote
@@ -443,7 +612,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                 if 'N' in stdout:
                     # Update remote image
                     print(
-                        "Remote singularity image is not existend! Updating remote image from local image..."
+                        "Remote singularity image is not existent! Updating remote image from local image..."
                     )
                     print("(This might take a couple of seconds, but needs only to be done once)")
                     rel_path = "../../driver.simg"
@@ -457,12 +626,12 @@ class Scheduler(metaclass=abc.ABCMeta):
                     stdout, stderr, _ = self.run_subprocess(command_string)
                     if stderr:
                         raise RuntimeError(
-                            "Error! Was not able to copy local singulariy image to remote! Abort..."
+                            "Error! Was not able to copy local singularity image to remote! Abort..."
                         )
                     print('All singularity images ok! Starting simulation on cluster...')
 
         else:
-            # local image was not even existend --> create local and remote image
+            # local image was not even existent --> create local and remote image
             print("No local singularity image found! Building new image...")
             print("(This will take 3 min or so, but needs only to be done once)")
             print("_______________________________________________________________________________")
@@ -471,7 +640,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             print("to set the correct relative paths for the image; otherwise abort!")
             print("_______________________________________________________________________________")
             self.create_singularity_image()
-            print("Local singularity image written sucessfully!")
+            print("Local singularity image written successfully!")
             if self.remote_flag:
                 print("Updating now remote image from local image...")
                 print("(This might take a couple of seconds, but needs only to be done once)")
@@ -486,12 +655,21 @@ class Scheduler(metaclass=abc.ABCMeta):
                 stdout, stderr, _ = self.run_subprocess(command_string)
                 if stderr:
                     raise RuntimeError(
-                        "Error! Was not able to copy local singulariy image to remote! Abort..."
+                        "Error! Was not able to copy local singularity image to remote! Abort..."
                     )
                 print('All singularity images ok! Starting simulation on cluster...')
 
     def run_subprocess(self, command_string):
-        """ Method to run command_string outside of Python """
+        """
+        Run a system command outside of the Python script anc check for errors and
+        stdout-return
+        Args:
+            command_string (str): Command string that should be run outside of Python
+        Returns:
+            stdout (str): Standard-out of the command
+            stderr (str): Potential error message caused by the command
+            process (obj): An process object that can be used for further analysis
+        """
         process = subprocess.Popen(
             command_string,
             stdin=subprocess.PIPE,
@@ -500,24 +678,22 @@ class Scheduler(metaclass=abc.ABCMeta):
             shell=True,
             universal_newlines=True,
         )
-
         stdout, stderr = process.communicate()
         return stdout, stderr, process
 
     def submit(self, job_id, batch):
         """ Function to submit new job to scheduling software on a given resource
 
-
         Args:
             job_id (int):               Id of job to submit
-            experiment_name (string):   Name of experiment
-            batch (string):             Batch number of job
-            experiment_dir (string):    Directory of experiment
-            database_address (string):  Address of database to connect to
+            experiment_name (str):   Name of experiment
+            batch (str):             Batch number of job
+            experiment_dir (str):    Directory of experiment
+            database_address (str):  Address of database to connect to
             driver_options (dict):      Options for driver
 
         Returns:
-            int: proccess id of job
+            int: process id of job
 
         """
         if self.remote_flag:
@@ -527,7 +703,9 @@ class Scheduler(metaclass=abc.ABCMeta):
                 job_id, batch, self.port, self.path_to_singularity
             )
             self.scheduler_options['EXE'] = self.path_to_singularity + '/driver.simg'
-            self.scheduler_options['job_name'] = '{}_{}'.format(self.experiment_name, job_id)
+            self.scheduler_options['job_name'] = '{}_{}_{}'.format(
+                self.experiment_name, 'queens', job_id
+            )
 
             # Parse data to job_scheduler_template
             self.create_submission_script(job_id)
@@ -588,6 +766,14 @@ class Scheduler(metaclass=abc.ABCMeta):
                 return pid
 
     def create_submission_script(self, job_id):
+        """
+        Create a jobscript for the simulation on a remote based on a job-script template
+        that should be used on the remote system.
+        Args:
+            job_id (int): Internal QUEENS job-ID that is used to enumerate the simulations
+        Returns:
+            None
+        """
         dest_dir = str(self.experiment_dir) + '/' + str(job_id) + "/output"
         self.scheduler_options['DESTDIR'] = dest_dir
         self.submission_script_path = str(self.experiment_dir) + '/jobfile.sh'
@@ -612,7 +798,6 @@ class Scheduler(metaclass=abc.ABCMeta):
     # ------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED / ABSTRACTMETHODS ------
     @abc.abstractmethod  # how to check this is dependent on cluster / env
     def alive(self, process_id):
-        """ docstring """
         pass
 
     @abc.abstractmethod
