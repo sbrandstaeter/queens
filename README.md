@@ -278,14 +278,3 @@ The steps are as follows:
 `conda list -n <your_environment_name`
 3. Activate environment  
 `source activate <your_environment_name>`
-
-[↑ Contents](#contents)
-### Kill open ssh-ports of crashed simulations
-In case *QUEENS* simulations did not finish appropriately or crashed, a port forwarding between the localhost and the
-remote might be still in place. Too many open ports will slow down *QUEENS* simulations and also other cluster users!
-Please check how many open `ssh-sessions` you are currently using and run:
-```bash
-killall ssh
-```
-on the localhost **and** the remote to close down *all* port-forwarding ssh-sessions.
->`Attention!` The previous command will shut down all your ssh-sessions, also the ones that are not used by QUEENS!
