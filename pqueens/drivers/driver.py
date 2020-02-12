@@ -64,7 +64,6 @@ class Driver(metaclass=abc.ABCMeta):
         """
         from pqueens.drivers.baci_driver_bruteforce import BaciDriverBruteforce
         from pqueens.drivers.baci_driver_native import BaciDriverNative
-        from pqueens.drivers.baci_driver_schmarrn import BaciDriverSchmarrn
         from pqueens.drivers.navierstokes_native import NavierStokesNative
         from pqueens.drivers.baci_driver_deep import BaciDriverDeep
 
@@ -86,7 +85,6 @@ class Driver(metaclass=abc.ABCMeta):
         driver_dict = {
             'baci_bruteforce': BaciDriverBruteforce,
             'baci_native': BaciDriverNative,
-            'baci_schmarrn': BaciDriverSchmarrn,
             'navierstokes_native': NavierStokesNative,
             'baci_deep': BaciDriverDeep,
         }

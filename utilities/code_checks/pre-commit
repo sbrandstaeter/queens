@@ -11,8 +11,8 @@
 # The commit will be accepted if the script exits with 0
 
 # Author:    Jonas Nitzler
-# Date:      20.09.2019
-# Version:   1.4 (Adopted from BACI)
+# Date:      05.02.2020
+# Version:   1.5 (Adopted from BACI)
 
 if pip list | grep -F black
 then
