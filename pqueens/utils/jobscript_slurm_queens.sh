@@ -73,4 +73,5 @@ echo "Job finished with exit code $? at: `date`"
 
 # ------- FINISH AND CLEAN SINGULARITY JOB (DONE ON MASTER/LOGIN NODE!) -------
 wait
-$EXE $INPUT $WORKDIR '--post=true'
+# cd back into home since pwd does not exist anymore
+$MPI_RUN $MPIFLAGS -np 1 $EXE $INPUT $WORKDIR '--post=true'
