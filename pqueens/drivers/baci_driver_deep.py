@@ -10,6 +10,7 @@ class BaciDriverDeep(Driver):
 
     Returns:
     """
+
     def __init__(self, base_settings, workdir):
         super(BaciDriverDeep, self).__init__(base_settings)
         self.workdir = workdir
@@ -48,12 +49,14 @@ class BaciDriverDeep(Driver):
             os.makedirs(output_directory)
 
         # create input file name
-        self.input_file = dest_dir + '/' + str(self.experiment_name) + \
-                                     '_' + str(self.job_id) + '.dat'  # TODO change hard coding of .dat
+        self.input_file = (
+            dest_dir + '/' + str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
+        )  # TODO change hard coding of .dat
 
         # create output file name
-        self.output_file = output_directory + '/' + str(self.experiment_name) + \
-                                              '_' + str(self.job_id)
+        self.output_file = (
+            output_directory + '/' + str(self.experiment_name) + '_' + str(self.job_id)
+        )
         self.output_scratch = self.experiment_name + '_' + str(self.job_id)
 
     def run_job(self):
@@ -61,12 +64,22 @@ class BaciDriverDeep(Driver):
             using run_subprocess method from base class
         """
         # assemble run command
-        command_list = ['cd', self.workdir, r'&&', self.executable, self.input_file, self.output_scratch]
+        command_list = [
+            'cd',
+            self.workdir,
+            r'&&',
+            self.executable,
+            self.input_file,
+            self.output_scratch,
+        ]
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
         _, stderr, self.pid = self.run_subprocess(command_string)
         if stderr:
-            if re.fullmatch(r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n', stderr):
+            if re.fullmatch(
+                r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n',
+                stderr,
+            ):
                 pass
             else:
                 self.result = None  # This is necessary to detect failed jobs

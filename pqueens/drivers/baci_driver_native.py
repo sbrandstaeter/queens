@@ -13,6 +13,7 @@ class BaciDriverNative(Driver):
         Returns:
             float: result
     """
+
     def __init__(self, base_settings):
         super(BaciDriverNative, self).__init__(base_settings)
         self.mpi_config = {}
@@ -28,7 +29,7 @@ class BaciDriverNative(Driver):
         base_settings['address'] = 'localhost:27017'
         return cls(base_settings)
 
-# ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
+    # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def setup_dirs_and_files(self):
         """ Setup directory structure
 
@@ -47,12 +48,14 @@ class BaciDriverNative(Driver):
             os.makedirs(output_directory)
 
         # create input file name
-        self.input_file = dest_dir + '/' + str(self.experiment_name) +\
-                                     '_' + str(self.job_id) + '.dat'
+        self.input_file = (
+            dest_dir + '/' + str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
+        )
 
         # create output file name
-        self.output_file = output_directory + '/' + str(self.experiment_name) +\
-                                              '_' + str(self.job_id)
+        self.output_file = (
+            output_directory + '/' + str(self.experiment_name) + '_' + str(self.job_id)
+        )
 
     def setup_mpi(self, num_procs):  # TODO this is not needed atm
         pass
@@ -62,7 +65,11 @@ class BaciDriverNative(Driver):
             using run_subprocess method from base class
         """
         # assemble run command
-        command_list = [self.executable, self.input_file, self.output_file]  # This is already within pbs
+        command_list = [
+            self.executable,
+            self.input_file,
+            self.output_file,
+        ]  # This is already within pbs
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
         _, stderr, self.pid = self.run_subprocess(command_string)

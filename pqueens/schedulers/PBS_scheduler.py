@@ -48,12 +48,17 @@ class PBSScheduler(Scheduler):
         # read necessary variables from config
         num_procs = scheduler_options['num_procs']
         walltime = scheduler_options['walltime']
-        if scheduler_options['scheduler_output'].lower() == 'true' or scheduler_options['scheduler_output'] == "":
+        if (
+            scheduler_options['scheduler_output'].lower() == 'true'
+            or scheduler_options['scheduler_output'] == ""
+        ):
             output = ""
         elif scheduler_options['scheduler_output'].lower() == 'false':
             output = '--output=/dev/null --error=/dev/null'
         else:
-            raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
+            raise RuntimeError(
+                r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter"
+            )
 
         # pre assemble some strings as base_settings
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
@@ -70,7 +75,7 @@ class PBSScheduler(Scheduler):
 
         return cls(scheduler_name, base_settings)
 
-# ----------------------------- AUXILIARY METHODS -----------------------------
+    # ----------------------------- AUXILIARY METHODS -----------------------------
 
     def output_regexp(self):
         return r'(^\d+)'
@@ -89,8 +94,10 @@ class PBSScheduler(Scheduler):
 
         return output.split('.')[0]
 
-# ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
-    def alive(self, process_id):  # TODO: This methods needs to be checked as might not be called properly
+    # ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
+    def alive(
+        self, process_id
+    ):  # TODO: This methods needs to be checked as might not be called properly
         """ Check whether job is alive
 
         The function checks if job is alive. If it is not i.e., the job is

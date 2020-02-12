@@ -34,7 +34,7 @@ class LocalScheduler(Scheduler):
 
         return cls(base_settings, scheduler_name)
 
-# ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
+    # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def alive(self, process_id):  # TODO: ok for now (gets called in resources)
         """ Check whether or not job is still running
 

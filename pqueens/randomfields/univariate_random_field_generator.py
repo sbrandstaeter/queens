@@ -27,6 +27,7 @@ class UnivariateRandomFieldSimulator(object):
             needed to generate samples
 
     """
+
     def __init__(self, marginal_distribution):
         """
         Args:
@@ -60,14 +61,12 @@ class UnivariateRandomFieldSimulator(object):
         self.act_energy_frac = None
         self.stoch_dim = None
 
-         # check whether we have a normal or lognormal distributon
-         # TODO: Before the subsequent call was: marginal_distribution.dist.name
-                # The latter caused an error in the current config and was hence changed. 
-                # Check this issue before pushing to master!
-        if (marginal_distribution.name != 'norm' and
-            marginal_distribution.name != 'lognorm'):
-            raise RuntimeError('Error: marginal_distribution must be either '
-                               'Normal or Lognormal')
+        # check whether we have a normal or lognormal distributon
+        if (
+            marginal_distribution.dist.name != 'norm'
+            and marginal_distribution.dist.name != 'lognorm'
+        ):
+            raise RuntimeError('Error: marginal_distribution must be either ' 'Normal or Lognormal')
         self.prob_dist = marginal_distribution
 
     def gen_sample_gauss_field(self, x, xi):

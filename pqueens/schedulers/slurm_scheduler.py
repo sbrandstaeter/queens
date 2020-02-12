@@ -45,12 +45,17 @@ class SlurmScheduler(Scheduler):
         # read necessary variables from config
         num_procs = scheduler_options['num_procs']
         walltime = scheduler_options['walltime']
-        if scheduler_options['scheduler_output'].lower() == 'true' or scheduler_options['scheduler_output'] == "":
+        if (
+            scheduler_options['scheduler_output'].lower() == 'true'
+            or scheduler_options['scheduler_output'] == ""
+        ):
             output = ""
         elif scheduler_options['scheduler_output'].lower() == 'false':
             output = '--output=/dev/null --error=/dev/null'
         else:
-            raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
+            raise RuntimeError(
+                r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter"
+            )
 
         # pre assemble some strings as base_settings
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
@@ -59,6 +64,7 @@ class SlurmScheduler(Scheduler):
 
         base_settings['scheduler_template'] = abs_path
         base_settings['scheduler_start'] = 'sbatch'
+        base_settings['scheduler_options'] = {}
         base_settings['scheduler_options']['output'] = output
         base_settings['scheduler_options']['ntasks'] = num_procs
         base_settings['scheduler_options']['walltime'] = walltime
@@ -70,7 +76,7 @@ class SlurmScheduler(Scheduler):
         """ docstring """
         return r'(^\d+)'
 
-# ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
+    # ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     def get_process_id_from_output(self, output):
         """ Helper function to retrieve process id
 

@@ -31,7 +31,7 @@ class GPGPyRegression(RegressionApproximation):
         Returns:
             gp_approximation_gpy: approximation object
         """
-        num_posterior_samples = approx_options.get("num_posterior_samples", None)
+        num_posterior_samples = approx_options.get('num_posterior_samples', None)
         return cls(x_train, y_train, num_posterior_samples)
 
     def __init__(self, X, y, num_posterior_samples):
@@ -49,128 +49,64 @@ class GPGPyRegression(RegressionApproximation):
         input_dim = self.X.shape[1]
 
         # simple GP Model
-        dx = np.max(self.X) - np.min(self.X)  # proper initialization of length scale
-        dy = np.max(self.y) - np.min(self.y)  # proper initialization of variance
+        dx = abs(np.max(self.X) - np.min(self.X))  # proper initialization of length scale
+        dy = abs(np.max(self.y) - np.min(self.y))  # proper initialization of variance
         k1 = GPy.kern.RBF(
-            input_dim=1,
-            variance=0.1 * dy,
-            lengthscale=0.25 * dx,
-            ARD=False,
-            active_dims=[0],
+            input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[0]
         )
         if input_dim == 2:
             k2 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[1],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[1]
             )
             k = k1 + k2
         elif input_dim == 3:
             k2 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[1],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[1]
             )
             k3 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[2],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[2]
             )
             k = k1 + k2 + k3
         elif input_dim == 4:
             k2 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[1],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[1]
             )
             k3 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[2],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[2]
             )
             k4 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[3],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[3]
             )
             k = k1 + k2 + k3 + k4
         elif input_dim == 5:
             k2 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[1],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[1]
             )
             k3 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[2],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[2]
             )
             k4 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[3],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[3]
             )
             k5 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[4],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[4]
             )
             k = k1 + k2 + k3 + k4 + k5
         elif input_dim == 6:
             k2 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[1],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[1]
             )
             k3 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[2],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[2]
             )
             k4 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[3],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[3]
             )
             k5 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[4],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[4]
             )
             k6 = GPy.kern.RBF(
-                input_dim=1,
-                variance=0.1 * dy,
-                lengthscale=0.25 * dx,
-                ARD=False,
-                active_dims=[5],
+                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[5]
             )
             k = k1 + k2 + k3 + k4 + k5 + k6
 
@@ -181,11 +117,11 @@ class GPGPyRegression(RegressionApproximation):
     def train(self):
         """ Train the GP by maximizing the likelihood """
 
-        # self.m[".*Gaussian_noise"].constrain_positive()
         # self.m[".*Gaussian_noise"] = self.m.Y.var()*0.01
         # self.m[".*Gaussian_noise"].fix()
-        self.m.optimize(messages=True)  # max_iters=500)
+        self.m.optimize(max_iters=1000, messages=True)
         # self.m[".*Gaussian_noise"].unfix()
+        # self.m[".*Gaussian_noise"].constrain_positive()
         self.m.optimize_restarts(num_restarts=10, max_iters=1000, max_f_eval=1000)
         display(self.m)
 
@@ -200,13 +136,12 @@ class GPGPyRegression(RegressionApproximation):
              posterior samples of latent function at Xnew
         """
         output = {}
-        mean, variance = self.predict(Xnew[:, :, None])
-        output["mean"] = mean
-        output["variance"] = variance
+        Xnew = np.atleast_2d(Xnew).T  # make 1 d vector to column vector 2D
+        mean, variance = self.predict_f(Xnew)
+        output['mean'] = mean
+        output['variance'] = variance
         if self.num_posterior_samples is not None:
-            output["post_samples"] = self.predict_f_samples(
-                Xnew, self.num_posterior_samples
-            )
+            output['post_samples'] = self.predict_f_samples(Xnew, self.num_posterior_samples)
 
         return output
 
@@ -225,9 +160,7 @@ class GPGPyRegression(RegressionApproximation):
         output["mean"] = mean
         output["variance"] = variance
         if self.num_posterior_samples is not None:
-            output["post_samples"] = self.predict_f_samples(
-                Xnew, self.num_posterior_samples
-            )
+            output["post_samples"] = self.predict_f_samples(Xnew, self.num_posterior_samples)
 
         return output
 
