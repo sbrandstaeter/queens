@@ -1,11 +1,17 @@
+""" There should be some docstring """
+
+import pdb
 import numpy as np
-from .iterator import Iterator
+import matplotlib.pyplot as plt
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
-from pqueens.randomfields.univariate_field_generator_factory import UniVarRandomFieldGeneratorFactory
-from pqueens.utils.input_to_random_variable import get_distribution_object
+from pqueens.randomfields.univariate_field_generator_factory import (
+    UniVarRandomFieldGeneratorFactory,
+)
+from pqueens.utils import mcmc_utils
 from pqueens.utils.input_to_random_variable import get_random_samples
+from .iterator import Iterator
 
 
 class MonteCarloIterator(Iterator):
@@ -19,6 +25,7 @@ class MonteCarloIterator(Iterator):
         samples (np.array):         Array with all samples
         outputs (np.array):         Array with all model outputs
     """
+
     def __init__(self, model, seed, num_samples, result_description, global_settings):
         super(MonteCarloIterator, self).__init__(model, global_settings)
         self.seed = seed
@@ -53,11 +60,13 @@ class MonteCarloIterator(Iterator):
         result_description = method_options.get('result_description', None)
         global_settings = config.get('global_settings', None)
 
-        return cls(model,
-                   method_options['seed'],
-                   method_options['num_samples'],
-                   result_description,
-                   global_settings)
+        return cls(
+            model,
+            method_options['seed'],
+            method_options['num_samples'],
+            result_description,
+            global_settings,
+        )
 
     def eval_model(self):
         """ Evaluate the model """
@@ -94,7 +103,12 @@ class MonteCarloIterator(Iterator):
         # loop over random variables to generate samples
         i = 0
         for _, rv in random_variables.items():
-            self.samples[:, i] = get_random_samples(rv, self.num_samples)
+            rv_size = rv['size']
+            if rv_size != 1:
+                raise RuntimeError("Multidimensional random variables are not supported yet.")
+            # TODO once the above restriction is loosened take care of the indexing!
+            #  and the squeeze
+            self.samples[:, i] = np.squeeze(get_random_samples(rv, self.num_samples))
             i += 1
 
         # loop over random fields to generate samples
@@ -104,14 +118,15 @@ class MonteCarloIterator(Iterator):
                 print("rf corrstruct {}".format(rf.get("corrstruct")))
                 # create appropriate random field generator
                 my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                    get_distribution_object(rf),
+                    mcmc_utils.create_proposal_distribution(rf),
                     rf.get("dimension"),
                     rf.get("corrstruct"),
                     rf.get("corr_length"),
                     rf.get("energy_frac"),
                     np.array(rf.get("field_bbox")),
                     rf.get("num_terms_per_dim"),
-                    rf.get("total_terms"))
+                    rf.get("total_terms"),
+                )
 
                 dim = rf["dimension"]
                 eval_locations_list = rf.get("eval_locations", None)
@@ -121,9 +136,13 @@ class MonteCarloIterator(Iterator):
                 my_vals = np.zeros((self.num_samples, eval_locations.shape[0]))
                 for i in range(self.num_samples):
                     xi = np.random.randn(my_stoch_dim, 1)
-                    my_vals[i, :] = my_field_generator.evaluate_field_at_location(eval_locations, xi)
+                    my_vals[i, :] = my_field_generator.evaluate_field_at_location(
+                        eval_locations, xi
+                    )
 
-                self.samples[:, num_rv+field_num:num_rv+field_num+len(eval_locations)] = my_vals
+                self.samples[
+                    :, num_rv + field_num : num_rv + field_num + len(eval_locations)
+                ] = my_vals
                 field_num += 1
 
     def core_run(self):
@@ -138,10 +157,33 @@ class MonteCarloIterator(Iterator):
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description, self.samples)
             if self.result_description["write_results"] is True:
-                write_results(results,
-                              self.global_settings["output_dir"],
-                              self.global_settings["experiment_name"])
-        #else:
+                write_results(
+                    results,
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
+                )
+
+                # ------------------------------ WIP PLOT OPTIONS -----------------------------
+                if self.result_description['plot_results'] is True:
+                    # Check for dimensionality of the results
+                    plt.rcParams["mathtext.fontset"] = "cm"
+                    plt.rcParams.update({'font.size': 23})
+                    fig, ax = plt.subplots()
+
+                    if results['raw_output_data']['mean'][0].shape[0] > 1:
+                        for ele in results['raw_output_data']['mean']:
+                            ax.plot(ele[:, 0], ele[:, 1])
+
+                        ax.set_xlabel(r't [s]')
+                        ax.set_ylabel(r'$C_L(t)$')
+                        plt.show()
+                    else:
+                        data = results['raw_output_data']['mean']
+                        ax.hist(data, bins=200)
+                        ax.set_xlabel(r'Count [-]')
+                        ax.set_xlabel(r'$C_L(t)$')
+                        plt.show()
+        # else:
         print("Size of inputs {}".format(self.samples.shape))
         print("Inputs {}".format(self.samples))
         print("Size of outputs {}".format(self.output['mean'].shape))

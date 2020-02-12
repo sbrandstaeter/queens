@@ -1,8 +1,11 @@
-import sys
-import subprocess
-from pqueens.schedulers.cluster_scheduler import AbstractClusterScheduler
+""" Here should be a docstring """
 
-class SlurmScheduler(AbstractClusterScheduler):
+import sys
+import os
+from .scheduler import Scheduler
+
+
+class SlurmScheduler(Scheduler):
     """ Minimal interface to SLURM queing system to submit and query jobs
 
     This class provides a basic interface to the Slurm job queing system to submit
@@ -13,12 +16,9 @@ class SlurmScheduler(AbstractClusterScheduler):
     This scheduler is written specifically for the LNM Bruteforce cluster but can be used
     as an example for other Slurm based systems
 
-    Attributes:
-        connect_to_resource (list): list containing commands to
-                                    connect to resource
     """
 
-    def __init__(self, scheduler_name, num_procs_per_node, num_nodes, walltime, user_mail, connect_to_resource, output):
+    def __init__(self, scheduler_name, base_settings):
         """
         Args:
             scheduler_name (string):    Name of Scheduler
@@ -26,21 +26,12 @@ class SlurmScheduler(AbstractClusterScheduler):
             num_nodes (int):            Number of nodes
             walltime (string):          Wall time in hours
             user_mail (string):         Email adress of user
-            connect_to_resource (list): list containing commands to
-                                        connect to resource
             output (boolean):           Flag for slurm output
         """
-        super(SlurmScheduler, self).__init__()
-        self.name = scheduler_name
-        self.num_procs_per_node = num_procs_per_node
-        self.num_nodes = num_nodes
-        self.walltime = walltime
-        self.user_mail = user_mail
-        self.connect_to_resource = connect_to_resource
-        self.output = output
+        super(SlurmScheduler, self).__init__(base_settings)
 
     @classmethod
-    def from_config_create_scheduler(cls, scheduler_name, config):
+    def from_config_create_scheduler(cls, config, base_settings, scheduler_name=None):
         """ Create Slurm scheduler from config dictionary
 
         Args:
@@ -50,19 +41,42 @@ class SlurmScheduler(AbstractClusterScheduler):
         Returns:
             scheduler:              instance of SlurmScheduler
         """
-        options = config[scheduler_name]
-        num_procs_per_node = options['num_procs_per_node']
-        num_nodes = options['num_nodes']
-        walltime = options['walltime']
-        user_mail = options['email']
-        connect_to_resource = options["connect_to_resource"]
-        output = options["slurm_output"]
+        scheduler_options = base_settings['options']
+        # read necessary variables from config
+        num_procs = scheduler_options['num_procs']
+        walltime = scheduler_options['walltime']
+        if (
+            scheduler_options['scheduler_output'].lower() == 'true'
+            or scheduler_options['scheduler_output'] == ""
+        ):
+            output = ""
+        elif scheduler_options['scheduler_output'].lower() == 'false':
+            output = '--output=/dev/null --error=/dev/null'
+        else:
+            raise RuntimeError(
+                r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter"
+            )
 
-        return cls(scheduler_name, num_procs_per_node, num_nodes, walltime, user_mail, connect_to_resource, output)
+        # pre assemble some strings as base_settings
+        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+        rel_path = '../utils/jobscript_slurm_queens.sh'
+        abs_path = os.path.join(script_dir, rel_path)
 
-    def output_regexp(self): # TODO Check what this does exactly
+        base_settings['scheduler_template'] = abs_path
+        base_settings['scheduler_start'] = 'sbatch'
+        base_settings['scheduler_options'] = {}
+        base_settings['scheduler_options']['output'] = output
+        base_settings['scheduler_options']['ntasks'] = num_procs
+        base_settings['scheduler_options']['walltime'] = walltime
+        base_settings['scheduler_options']['job_name'] = None  # real name will be assembled later
+
+        return cls(scheduler_name, base_settings)
+
+    def output_regexp(self):
+        """ docstring """
         return r'(^\d+)'
 
+    # ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     def get_process_id_from_output(self, output):
         """ Helper function to retrieve process id
 
@@ -74,41 +88,11 @@ class SlurmScheduler(AbstractClusterScheduler):
         Returns:
             match object: with regular expression matching process id
         """
-        regex=output.split()
+        regex = output.split()
         return regex[-1]
-
-    def submit_command(self, job_name):
-        """ Get submit command for Slurm type scheduler
-
-            The function actually prepends the commands necessary to connect to
-            the resource to enable remote job submission
-        Args:
-            job_name (string): name of job to submit
-
-        Returns:
-            list: Submission command(s)
-        """
-        # pre assemble some strings
-        proc_info = '--nodes={} --ntasks={}'.format(self.num_nodes, self.num_procs_per_node)
-        walltime_info = '--time={}'.format(self.walltime)
-        mail_info = '--mail-user={}'.format(self.user_mail)
-        job_info = '--job-name={}'.format(job_name)
-
-
-        if self.output.lower()=="true" or self.output=="":
-            command_list = self.connect_to_resource  \
-                          + [r'sbatch --mail-type=ALL', mail_info, job_info, proc_info, walltime_info]
-        elif self.output.lower()=="false":
-            command_list = self.connect_to_resource  \
-                          + [r'sbatch --mail-type=ALL --output=/dev/null --error=/dev/null', mail_info, job_info, proc_info, walltime_info]
-        else:
-            raise RuntimeError(r"The Scheduler requires a 'True' or 'False' value for the slurm_output parameter")
-
-        return command_list
 
     def alive(self, process_id):
         """ Check whether job is alive
-
         The function checks if job is alive. If it is not i.e., the job is
         either on hold or suspended the fuction will attempt to kill it
 
@@ -122,23 +106,13 @@ class SlurmScheduler(AbstractClusterScheduler):
         alive = False
         try:
             # join lists
-            command_list = self.connect_to_resource + ['squeue --job', str(process_id)]
+            command_list = [self.connect_to_resource, 'squeue --job', str(process_id)]
             command_string = ' '.join(command_list)
-
-            process = subprocess.Popen(command_string,
-                                       stdin=subprocess.PIPE,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.STDOUT,
-                                       shell=True,
-                                       universal_newlines=True)
-
-            output, std_err = process.communicate()
-            process.stdin.close()
-            output2 = output.split()
+            stdout, _, p = super().run_subprocess(command_string)
+            output2 = stdout.split()
             # second to last entry is (should be )the job status
-            status = output2[-4] #TODO: Check if that still holds
-            print('This is a test output')
-        except:
+            status = output2[-4]  # TODO: Check if that still holds
+        except ValueError:
             # job not found
             status = -1
             sys.stderr.write("EXC: %s\n" % str(sys.exc_info()[0]))
@@ -160,18 +134,10 @@ class SlurmScheduler(AbstractClusterScheduler):
                 # try to kill the job.
                 command_list = self.connect_to_resource + ['scancel', str(process_id)]
                 command_string = ' '.join(command_list)
-                process = subprocess.Popen(command_string,
-                                           stdin=subprocess.PIPE,
-                                           stdout=subprocess.PIPE,
-                                           stderr=subprocess.STDOUT,
-                                           shell=True,
-                                           universal_newlines=True)
-
-                output, std_err = process.communicate()
-                process.stdin.close()
-                print(output)
+                stdout, stderr, p = super().run_subprocess(command_string)
+                print(stdout)
                 sys.stderr.write("Killed job %d.\n" % (process_id))
-            except:
+            except ValueError:
                 sys.stderr.write("Failed to kill job %d.\n" % (process_id))
 
             return False

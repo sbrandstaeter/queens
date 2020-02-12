@@ -1,4 +1,3 @@
-
 import os
 from setuptools import setup
 
@@ -18,6 +17,7 @@ setup(
     keywords = "Gaussian Processes, Uncertainty Quantification",
     packages=['pqueens',
               'pqueens.database',
+              'pqueens.post_post',
               'pqueens.randomfields',
               'pqueens.drivers',
               'pqueens.interfaces',
@@ -36,4 +36,6 @@ setup(
     #      'matplotlib'
     #  ],
     long_description=read('README.md'),
+    setup_requires='pytest-runner',
+    tests_require='pytest',
 )

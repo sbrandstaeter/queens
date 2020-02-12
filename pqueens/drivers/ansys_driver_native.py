@@ -1,8 +1,8 @@
-import sys
 import os
 import subprocess
 import importlib.util
 from pqueens.utils.injector import inject
+
 
 def ansys_driver_native(job):
     """
@@ -30,7 +30,7 @@ def ansys_driver_native(job):
 
     # assemble input file name
     ansys_input_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id']) + '.inp'
-    ansys_output_file = job['expt_dir'] + '/'+ job['expt_name'] + '_' + str(job['id'])
+    ansys_output_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id'])
 
     sys.stderr.write("ansys_input_file %s\n" % ansys_input_file)
 
@@ -40,15 +40,19 @@ def ansys_driver_native(job):
     ansys_output = {}
     ansys_output["output"] = ansys_output_file
     inject(ansys_output, ansys_input_file, ansys_input_file)
-    
+
     # get ansys run and post process command
-    ansys_cmd = [driver_params['path_to_executable'],
-                 "-b -g -p aa_t_a -dir ",
-                 job['expt_dir'],
-                 "-i ", ansys_input_file,
-                 "-j ", job['expt_name']+"_"+str(job["id"]),
-                 "-s read -l en-us -t -d X11 > ",
-                 ansys_output_file]
+    ansys_cmd = [
+        driver_params['path_to_executable'],
+        "-b -g -p aa_t_a -dir ",
+        job['expt_dir'],
+        "-i ",
+        ansys_input_file,
+        "-j ",
+        job['expt_name'] + "_" + str(job["id"]),
+        "-s read -l en-us -t -d X11 > ",
+        ansys_output_file,
+    ]
 
     # run ansys
     p = subprocess.Popen(ansys_cmd)
@@ -61,7 +65,7 @@ def ansys_driver_native(job):
     spec = importlib.util.spec_from_file_location("module.name", driver_params['post_post_script'])
     post_post_proc = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(post_post_proc)
-    result = post_post_proc.run(ansys_output_file+'.out')
+    result = post_post_proc.run(ansys_output_file + '.out')
 
     sys.stderr.write("Got result %s\n" % (result))
 

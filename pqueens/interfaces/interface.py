@@ -27,11 +27,15 @@ class Interface(metaclass=abc.ABCMeta):
         import pqueens.interfaces.direct_python_interface
         import pqueens.interfaces.approximation_interface
         import pqueens.interfaces.approximation_interface_mf
+        import pqueens.interfaces.bmfmc_interface
 
         interface_dict = {'job_interface': pqueens.interfaces.job_interface.JobInterface,
                           'direct_python_interface': pqueens.interfaces.direct_python_interface.DirectPythonInterface,
                           'approximation_interface': pqueens.interfaces.approximation_interface.ApproximationInterface,
-                          'approximation_interface_mf': pqueens.interfaces.approximation_interface_mf.ApproximationInterfaceMF }
+                          'approximation_interface_mf':
+                          pqueens.interfaces.approximation_interface_mf.ApproximationInterfaceMF,
+                          'bmfmc_interface':
+                          pqueens.interfaces.bmfmc_interface.BmfmcInterface}
 
 
         interface_options = config[interface_name]

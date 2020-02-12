@@ -1,14 +1,20 @@
-from pqueens.main import main
-import pytest
+import os
 import pickle
 
-def test_branin_gp_surrogate(tmpdir):
+import pytest
+
+from pqueens.main import main
+
+
+def test_branin_gp_surrogate(inputdir, tmpdir):
     """ Test case for GP based surrogate model """
-    arguments = ['--input=pqueens/tests/function_tests/input_files/branin_gp_surrogate.json',
-                 '--output='+str(tmpdir)]
+    arguments = [
+        '--input=' + os.path.join(inputdir, 'branin_gp_surrogate.json'),
+        '--output=' + str(tmpdir),
+    ]
 
     main(arguments)
-    result_file = str(tmpdir)+'/'+'xxx.pickle'
+    result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
-    assert results["pdf_estimate"]["mean"][1] == pytest.approx(8.860833411995653e-05, abs=0.5e-6)
+    assert results["pdf_estimate"]["mean"][1] == pytest.approx(0.0, abs=0.5e-6)

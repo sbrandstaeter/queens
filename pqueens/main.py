@@ -1,9 +1,11 @@
-
 # standard imports
-import sys
 import argparse
-import os
 from collections import OrderedDict
+import os
+import pyfiglet
+import sys
+import time
+
 try:
     import simplejson as json
 except ImportError:
@@ -15,25 +17,62 @@ from pqueens.iterators.iterator import Iterator
 
 def main(args):
     """ Run analysis """
+    crown = """
+                                *
+                              * | *
+                             * \|/ *
+                        * * * \|O|/ * * *
+                         \o\o\o|O|o/o/o/
+                         (<><><>O<><><>)
+                          '==========='
+    """
+    print(crown)
+    result = pyfiglet.figlet_format("QUEENS", font="banner3-D")
+    print(result)
+    result = """
+ A general purpose framework for Uncertainty Quantification,
+ Physics-Informed Machine Learning,
+ Bayesian Optimization, Inverse Problems and Simulation Analytics
+"""
+    print(result)
+
+    # read input
+    start_time_input = time.time()
     options = get_options(args)
 
     # build iterator
     my_iterator = Iterator.from_config_create_iterator(options)
 
+    end_time_input = time.time()
+
+    print("")
+    print(f"Time for INPUT: {end_time_input-start_time_input} s")
+    print("")
+
+    start_time_calc = time.time()
+
+    print("")
+    print("Starting Analysis...")
+    print("")
+
     # perform analysis
     my_iterator.run()
+
+    end_time_calc = time.time()
+    print("")
+    print(f"Time for CALCULATION: {end_time_calc-start_time_calc} s")
+    print("")
 
 
 def get_options(args):
     """ Parse options from command line and input file """
 
     parser = argparse.ArgumentParser(description="QUEENS")
-    parser.add_argument('--input', type=str, default='input.json',
-                        help='Input file in .json format.')
-    parser.add_argument('--output_dir', type=str,
-                        help='Output directory to write resutls to.')
-    parser.add_argument('--debug', type=str, default='no',
-                        help='debug mode yes/no')
+    parser.add_argument(
+        '--input', type=str, default='input.json', help='Input file in .json format.'
+    )
+    parser.add_argument('--output_dir', type=str, help='Output directory to write resutls to.')
+    parser.add_argument('--debug', type=str, default='no', help='debug mode yes/no')
 
     args = parser.parse_args(args)
 
@@ -56,8 +95,7 @@ def get_options(args):
     elif args.debug == 'no':
         debug = False
     else:
-        print('Warning input flag not set correctly not showing debug'
-              ' information')
+        print('Warning input flag not set correctly not showing debug' ' information')
         debug = False
 
     options["debug"] = debug

@@ -1,3 +1,5 @@
+""" There should be a docstring """
+
 import abc
 
 # TODO add iterator name to attributes
@@ -20,7 +22,7 @@ class Iterator(metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, model, global_settings):
+    def __init__(self, model=None, global_settings=None):  # TODO model should be deleted here
         self.model = model
         self.global_settings = global_settings
 
@@ -38,7 +40,6 @@ class Iterator(metaclass=abc.ABCMeta):
             iterator: Iterator object
 
         """
-        from .bayesian_optimization_iterator import BayesOptIterator
         from .data_iterator import DataIterator
         from .lhs_iterator import LHSIterator
         from .lhs_iterator_mf import MF_LHSIterator
@@ -48,17 +49,20 @@ class Iterator(metaclass=abc.ABCMeta):
         from pqueens.iterators.optimization_iterator import OptimizationIterator
         from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
+        from .bmfmc_iterator import BmfmcIterator
+        from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 
-        method_dict = {'bayesian_optimization': BayesOptIterator,
-                       'lhs': LHSIterator,
+        method_dict = {'lhs': LHSIterator,
                        'lhs_mf': MF_LHSIterator,
-                       'metropolis_hastings' : MetropolisHastingsIterator,
+                       'metropolis_hastings': MetropolisHastingsIterator,
                        'monte_carlo': MonteCarloIterator,
-                       'optimization' : OptimizationIterator,
+                       'optimization': OptimizationIterator,
                        'read_data_from_file': DataIterator,
                        'sa_morris_salib': MorrisSALibIterator,
                        'sa_saltelli': SaltelliIterator,
-                       'sa_saltelli_salib': SaltelliSALibIterator}
+                       'sa_saltelli_salib': SaltelliSALibIterator,
+                       'smc': SequentialMonteCarloIterator,
+                       'bmfmc': BmfmcIterator}
 
         if iterator_name is None:
             method_name = config['method']['method_name']

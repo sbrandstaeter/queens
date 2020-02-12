@@ -42,14 +42,13 @@ class MultifidelityModel(Model):
                                             'aggregated_model',
                                             'bypass_lofi']
 
-
         self.__active_lf_model_ind = None
         self.__active_hf_model_ind = None
         self.response_mode = None
 
         #self.__active_lf_model_ind = 0
         #self.__active_hf_model_ind = 1
-        #self.response_mode = 'bypass_lofi'
+        # self.response_mode = 'bypass_lofi'
 
     @classmethod
     def from_config_create_model(cls, model_name, config):

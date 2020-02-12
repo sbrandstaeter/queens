@@ -21,13 +21,9 @@
     "interface" : "interface",
     "parameters" : "parameters"
   },
-  "normal_proposal" : {
-    "type" : "normal",
-    "proposal_covariance" : 1.0
-  },
   "interface" : {
     "type" : "direct_python_interface",
-    "main_file" : "residual_rosenbrock.py"
+    "main_file" : "rosenbrock_residual.py"
   },
   "parameters" : {
     "random_variables" : {
