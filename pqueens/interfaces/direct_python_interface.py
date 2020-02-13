@@ -4,6 +4,7 @@ from multiprocessing import Pool
 import sys
 
 import numpy as np
+from tqdm import tqdm
 
 from .interface import Interface
 
@@ -55,8 +56,9 @@ class DirectPythonInterface(Interface):
             sys.modules["my_function"] = my_function
         except FileNotFoundError:
             print('Did not find file locally, trying absolute path')
-            raise FileNotFoundError("Could not import specified python function "
-                                    "file! Fix your config file!")
+            raise FileNotFoundError(
+                "Could not import specified python function " "file! Fix your config file!"
+            )
 
         self.function = my_function
 
@@ -105,7 +107,7 @@ class DirectPythonInterface(Interface):
         mean_values = []
         job_id = 1
         if self.pool is None:
-            for variables in samples:
+            for variables in tqdm(samples):
                 params = variables.get_active_variables()
                 mean_value = np.squeeze(self.function.main(job_id, params))
                 if not mean_value.shape:
@@ -123,7 +125,6 @@ class DirectPythonInterface(Interface):
                 if not mean_value.shape:
                     mean_value = np.expand_dims(mean_value, axis=0)
                 mean_values[idx] = mean_value
-
 
         output['mean'] = np.array(mean_values)
 
