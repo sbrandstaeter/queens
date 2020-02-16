@@ -155,9 +155,9 @@ class NormalProposal(ProposalDistribution):
         mean = np.array(mean)
         covariance = np.array(covariance)
 
-        if covariance.size is 1:
+        if covariance.size == 1:
             dimension = 1
-        elif covariance.ndim is 2:
+        elif covariance.ndim == 2:
             size_dim_1, size_dim_2 = covariance.shape
             # safety checks
             if size_dim_1 != size_dim_2:
