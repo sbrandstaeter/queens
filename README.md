@@ -81,7 +81,7 @@ user profile under the section `User settings - SSH keys`
  [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) 
  with many popular data science Python packages.
 1. After setting up Anaconda on your machine, create a new, dedicated QUEENS development environment via  
-`conda create -n <name_of_new_environment> python=3.7`
+`conda create -n <name_of_new_environment> python=3.8`
 1. You need to activate the newly created environment via  
 `conda activate <name_of_new_environment>`
 1. All required third party libraries can then be simply installed in the environment by running:  
@@ -273,7 +273,7 @@ The steps are as follows:
 [↑ Contents](#contents)
 ### Anaconda tips and tricks
 1. Create new anaconda environment  
-`conda create -n <name_of_new_environment> python=3.7`
+`conda create -n <name_of_new_environment> python=3.8`
 2. List all packages linked into an anaconda environment  
 `conda list -n <your_environment_name`
 3. Activate environment  
