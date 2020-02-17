@@ -47,7 +47,7 @@ full_test_suite:
     #inheret global cache settings
     <<: *global_cache
   script:
-  - pytest -n4
+  - pytest -n4 --cov-report=html
 
 services:
   - name: mongo:3.4
