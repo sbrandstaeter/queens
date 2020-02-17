@@ -75,7 +75,7 @@ pages:
   # disable cache on this job since we do not need conda env here
   cache: {}
   dependencies:
-    - full_test_suite
+    - full_test_suite_master
   before_script:
     - mkdir public
   script:
