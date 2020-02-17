@@ -171,7 +171,7 @@ def test_init_Uniform(uniform_distr, a, b):
     mean_ref = scipy.stats.uniform.mean(loc=a, scale=width)
     var_ref = scipy.stats.uniform.var(loc=a, scale=width)
 
-    assert uniform_distr.dimension is 1
+    assert uniform_distr.dimension == 1
     np.testing.assert_allclose(uniform_distr.mean, mean_ref)
     np.testing.assert_allclose(uniform_distr.covariance, var_ref)
     np.testing.assert_allclose(uniform_distr.a, a)
@@ -242,7 +242,7 @@ def test_init_LogNormal(lognormal_distr, valid_mean_value, valid_var_value):
     mean_ref = scipy.stats.lognorm.mean(s=sigma, scale=np.exp(valid_mean_value))
     var_ref = scipy.stats.lognorm.var(s=sigma, scale=np.exp(valid_mean_value))
 
-    assert lognormal_distr.dimension is 1
+    assert lognormal_distr.dimension == 1
     np.testing.assert_allclose(lognormal_distr.mu, valid_mean_value)
     np.testing.assert_allclose(lognormal_distr.sigma, sigma)
     np.testing.assert_allclose(lognormal_distr.mean, mean_ref)
@@ -328,7 +328,7 @@ def test_init_NormalProposal_univariate(univariate_normal, valid_mean_value, val
     # cholesky decomposition of a scalar is root of scalar
     lower_cholesky = np.atleast_2d(np.sqrt(valid_var_value))
 
-    assert univariate_normal.dimension is 1
+    assert univariate_normal.dimension == 1
     np.testing.assert_allclose(univariate_normal.mean, valid_mean_value)
     np.testing.assert_allclose(univariate_normal.covariance, valid_var_value)
     np.testing.assert_allclose(univariate_normal.low_chol, lower_cholesky)

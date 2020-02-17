@@ -112,7 +112,7 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
             raise RuntimeError('Number of random phase angles does not match '
                                'stochastic dimension of the field!')
 
-        if len(loc[0,:]) is not 3:
+        if len(loc[0,:]) != 3:
             raise RuntimeError('Location vector must have three dimensions!')
 
         # use KLE expansion to compute random field values

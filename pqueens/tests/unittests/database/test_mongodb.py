@@ -107,7 +107,7 @@ def test_write_multiple_entries(dummy_job, experiment_name, batch_id_2, job_id):
     jobs = db.load(experiment_name, batch_id_2, 'jobs')
     if isinstance(jobs, dict):
         jobs = [jobs]
-    assert len(jobs) is 2
+    assert len(jobs) == 2
 
     # should cause problems
     with pytest.raises(Exception):
