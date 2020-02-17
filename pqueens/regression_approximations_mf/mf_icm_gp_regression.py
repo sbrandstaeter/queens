@@ -51,31 +51,29 @@ class MF_ICM_GP_Regression(object):
         # check that X_lofi and X_hifi have the same dimension
         dim_x = Xtrain[0].shape[1]
         if dim_x is not Xtrain[1].shape[1]:
-            raise Exception("Dimension of low fidelity inputs and high fidelity inputs must be the same")
+            raise Exception(
+                "Dimension of low fidelity inputs and high fidelity inputs must be the same"
+            )
 
         self.Xtrain = Xtrain
         self.ytrain = ytrain
         self.num_fidelity_levels = num_fidelity_levels
         self.num_posterior_samples = num_posterior_samples
 
-
         # define icm multi output kernel
-        icm = GPy.util.multioutput.ICM(input_dim=dim_x,
-                                       num_outputs=self.num_fidelity_levels,
-                                       kernel=GPy.kern.RBF(dim_x))
+        icm = GPy.util.multioutput.ICM(
+            input_dim=dim_x, num_outputs=self.num_fidelity_levels, kernel=GPy.kern.RBF(dim_x)
+        )
 
-
-        self.m = GPy.models.GPCoregionalizedRegression(self.Xtrain,
-                                                       self.ytrain,
-                                                       kernel=icm)
+        self.m = GPy.models.GPCoregionalizedRegression(self.Xtrain, self.ytrain, kernel=icm)
 
     def train(self):
         """ Train the GP by maximizing the likelihood """
 
         # #For this kernel, B.kappa encodes the variance now.
-        self.m['.*rbf.var'].constrain_fixed(1.)
+        self.m['.*rbf.var'].constrain_fixed(1.0)
 
-        self.m[".*Gaussian_noise"] = self.m.Y.var()*0.01
+        self.m[".*Gaussian_noise"] = self.m.Y.var() * 0.01
         self.m[".*Gaussian_noise"].fix()
 
         self.m.optimize(max_iters=500)
@@ -104,7 +102,6 @@ class MF_ICM_GP_Regression(object):
         print("output type {}".format(type(output)))
         return output
 
-
     def predict_f(self, Xnew, level=None):
         """ Compute the mean and variance of the latent function at Xnew
 
@@ -124,11 +121,14 @@ class MF_ICM_GP_Regression(object):
             level = self.num_fidelity_levels
 
         if level > self.num_fidelity_levels:
-            raise Exception("Cannot access level {} since number of levels is {}"\
-            .format(self.num_fidelity_levels, level))
+            raise Exception(
+                "Cannot access level {} since number of levels is {}".format(
+                    self.num_fidelity_levels, level
+                )
+            )
 
         # add level dimension to input
-        my_samples = np.hstack([Xnew, level-1 * np.ones((Xnew.shape[0], 1))])
+        my_samples = np.hstack([Xnew, level - 1 * np.ones((Xnew.shape[0], 1))])
 
         my_mean, my_var = self.m.predict_noiseless(my_samples)
         # TODO check what happens to the noise
@@ -151,9 +151,12 @@ class MF_ICM_GP_Regression(object):
             level = self.num_fidelity_levels
 
         if level > self.num_fidelity_levels:
-            raise Exception("Cannot access level {} since number of levels is {}"\
-            .format(self.num_fidelity_levels, level))
+            raise Exception(
+                "Cannot access level {} since number of levels is {}".format(
+                    self.num_fidelity_levels, level
+                )
+            )
 
-        my_samples = np.hstack([Xnew, level-1 * np.ones((Xnew.shape[0], 1))])
+        my_samples = np.hstack([Xnew, level - 1 * np.ones((Xnew.shape[0], 1))])
 
         return self.m.posterior_samples_f(my_samples, num_samples)

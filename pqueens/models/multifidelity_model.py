@@ -1,7 +1,8 @@
 import numpy as np
 from pqueens.interfaces.interface import Interface
-from . model import Model
-from . simulation_model import SimulationModel
+from .model import Model
+from .simulation_model import SimulationModel
+
 
 class MultifidelityModel(Model):
     """ Multi-fidelity model class
@@ -21,9 +22,7 @@ class MultifidelityModel(Model):
         active_hf_model_ind (int):         Index of current low-fidelity model
     """
 
-
-    def __init__(self, model_name, model_parameters, model_sequence,
-                 eval_cost_per_level):
+    def __init__(self, model_name, model_parameters, model_sequence, eval_cost_per_level):
         """ Initialize multi-fidelity model
 
         Args:
@@ -38,16 +37,14 @@ class MultifidelityModel(Model):
         self.eval_cost_per_level = eval_cost_per_level
         self.num_levels = len(model_sequence)
         self.__model_sequence = model_sequence
-        self.__admissible_response_modes = ['uncorrected_lofi',
-                                            'aggregated_model',
-                                            'bypass_lofi']
+        self.__admissible_response_modes = ['uncorrected_lofi', 'aggregated_model', 'bypass_lofi']
 
         self.__active_lf_model_ind = None
         self.__active_hf_model_ind = None
         self.response_mode = None
 
-        #self.__active_lf_model_ind = 0
-        #self.__active_hf_model_ind = 1
+        # self.__active_lf_model_ind = 0
+        # self.__active_hf_model_ind = 1
         # self.response_mode = 'bypass_lofi'
 
     @classmethod
@@ -75,12 +72,13 @@ class MultifidelityModel(Model):
             sub_model_options = config[sub_model_name]
             sub_interface_name = sub_model_options["interface"]
             if sub_model_options["type"] != 'simulation_model':
-                raise ValueError('Multifidelity models can only have simulation models as sub models')
+                raise ValueError(
+                    'Multifidelity models can only have simulation models as sub models'
+                )
             # TODO check for same parameters
             sub_interface = Interface.from_config_create_interface(sub_interface_name, config)
             sub_model_parameters = config[parameters]
             sub_models.append(SimulationModel(sub_model_name, sub_interface, sub_model_parameters))
-
 
         return cls(model_name, model_parameters, sub_models, model_evaluation_cost)
 

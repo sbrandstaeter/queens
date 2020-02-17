@@ -1,70 +1,83 @@
 import numpy as np
 from pqueens.randomfields.random_field_gen_KLE import RandomFieldGenKLE
 
+
 class RandomFieldGenKLE2D(RandomFieldGenKLE):
     """Generator for 2d random fields based on KLE expansion
 
     """
 
-    def __init__(self, marginal_distribution, corr_length, energy_frac,
-                 field_bbox, dimension, num_ex_term_per_dim, num_terms):
+    def __init__(
+        self,
+        marginal_distribution,
+        corr_length,
+        energy_frac,
+        field_bbox,
+        dimension,
+        num_ex_term_per_dim,
+        num_terms,
+    ):
 
         # call superclass constructor first
-        super().__init__(marginal_distribution,corr_length,energy_frac,
-                         field_bbox,dimension,num_ex_term_per_dim,num_terms)
+        super().__init__(
+            marginal_distribution,
+            corr_length,
+            energy_frac,
+            field_bbox,
+            dimension,
+            num_ex_term_per_dim,
+            num_terms,
+        )
 
-
-        w_n=np.zeros((self.m,self.spatial_dim))
+        w_n = np.zeros((self.m, self.spatial_dim))
         # Compute roots of characteristic function for each dimension
         for i in range(self.spatial_dim):
-            w_n[:,i] = self.compute_roots_of_characteristic_equation().ravel()
-
+            w_n[:, i] = self.compute_roots_of_characteristic_equation().ravel()
 
         # compute factors of denominator
-        fac1=self.corr_length**2*w_n[:,0]**2+1
-        fac2=self.corr_length**2*w_n[:,1]**2+1
+        fac1 = self.corr_length ** 2 * w_n[:, 0] ** 2 + 1
+        fac2 = self.corr_length ** 2 * w_n[:, 1] ** 2 + 1
 
-        #compute eigenvalues and store in vector
-        lambdas_array=4*self.corr_length**2 / (np.kron(fac1,fac2))
-        lambdas_vec=lambdas_array.reshape(-1,1)
+        # compute eigenvalues and store in vector
+        lambdas_array = 4 * self.corr_length ** 2 / (np.kron(fac1, fac2))
+        lambdas_vec = lambdas_array.reshape(-1, 1)
 
         # in order to sort the eigenvalues we need to store the corresponding
         # root indeces to access them later when computing the eigenfunctions
         # build up index vector for indexing
-        index_dim=np.arange(0,self.m)
-        index_dim1_h=np.tile(index_dim,(self.m,1))
-        index_dim1=index_dim1_h.reshape((-1,1),order='F')
-        index_dim2=np.tile((index_dim),(1,self.m)).T
-        my_w_index=np.hstack((index_dim1, index_dim2))
+        index_dim = np.arange(0, self.m)
+        index_dim1_h = np.tile(index_dim, (self.m, 1))
+        index_dim1 = index_dim1_h.reshape((-1, 1), order='F')
+        index_dim2 = np.tile((index_dim), (1, self.m)).T
+        my_w_index = np.hstack((index_dim1, index_dim2))
 
         # store eigenvalues together with indices
-        lambdas_vec=np.hstack((lambdas_vec,my_w_index))
+        lambdas_vec = np.hstack((lambdas_vec, my_w_index))
 
         # sort in ascending order
-        lamda_sorted=lambdas_vec[lambdas_vec[:,0].argsort(),]
+        lamda_sorted = lambdas_vec[lambdas_vec[:, 0].argsort(),]
         # create view with reverse order
         lamda_sorted = lamda_sorted[::-1]
 
-
         # truncate and store in class variables
-        self.lambda_n=lamda_sorted[0:self.trunc_thres,:]
-        my_index_1 = np.array(lamda_sorted[0:self.trunc_thres,2]).astype(int)
-        my_index_0 = np.array(lamda_sorted[0:self.trunc_thres,1]).astype(int)
+        self.lambda_n = lamda_sorted[0 : self.trunc_thres, :]
+        my_index_1 = np.array(lamda_sorted[0 : self.trunc_thres, 2]).astype(int)
+        my_index_0 = np.array(lamda_sorted[0 : self.trunc_thres, 1]).astype(int)
 
-        self.w_n = np.zeros((self.trunc_thres,2))
-        self.w_n[:,1]=w_n[my_index_1,1]
-        self.w_n[:,0]=w_n[my_index_0,0]
+        self.w_n = np.zeros((self.trunc_thres, 2))
+        self.w_n[:, 1] = w_n[my_index_1, 1]
+        self.w_n[:, 0] = w_n[my_index_0, 0]
         #
-        retained_energy=np.sum(self.lambda_n[:,0]) / \
-                        (self.largest_length**self.spatial_dim)
+        retained_energy = np.sum(self.lambda_n[:, 0]) / (self.largest_length ** self.spatial_dim)
 
-        if (retained_energy < self.des_energy_frac):
-            raise RuntimeError('Energy fraction retained by KLE expansion is '
-                               ' only {}, not {}'.format(retained_energy,
-                                                         self.des_energy_frac))
-        self.act_energy_frac=retained_energy
+        if retained_energy < self.des_energy_frac:
+            raise RuntimeError(
+                'Energy fraction retained by KLE expansion is '
+                ' only {}, not {}'.format(retained_energy, self.des_energy_frac)
+            )
+        self.act_energy_frac = retained_energy
 
-    def gen_sample_gauss_field(self,loc,phase_angles):
+    def gen_sample_gauss_field(self, loc, phase_angles):
         """ Generate sample of standard Gaussian field
 
         Compute realization of standard Gaussian field based on passed phase
@@ -78,16 +91,19 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
         Returns:
             np.array: values of the random field realization at loc
         """
-        if(len(phase_angles) != self.stoch_dim):
-            raise RuntimeError('Number of random phase angles does not match '
-                               'stochastic dimension of the field!')
+        if len(phase_angles) != self.stoch_dim:
+            raise RuntimeError(
+                'Number of random phase angles does not match ' 'stochastic dimension of the field!'
+            )
 
         if len(loc[0,:]) != 2:
             raise RuntimeError('Location vector must have one dimensions!')
 
         # use KLE expansion to compute random field values
-        coeff=np.array(np.sqrt(self.lambda_n[:,0])*np.transpose(phase_angles))
-        values=np.dot(self.compute_eigen_function_vec(loc,0) *
-                      self.compute_eigen_function_vec(loc,1), coeff.T)
+        coeff = np.array(np.sqrt(self.lambda_n[:, 0]) * np.transpose(phase_angles))
+        values = np.dot(
+            self.compute_eigen_function_vec(loc, 0) * self.compute_eigen_function_vec(loc, 1),
+            coeff.T,
+        )
 
         return values

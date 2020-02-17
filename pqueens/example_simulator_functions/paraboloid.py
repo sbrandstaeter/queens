@@ -11,9 +11,10 @@ def paraboloid(x1, x2):
         float: Value of function
     """
 
-    a = 1.
+    a = 1.0
     b = 2.5
-    return (x1 - a)**2 + (x2 - b)**2
+    return (x1 - a) ** 2 + (x2 - b) ** 2
+
 
 def main(job_id, params):
     """ Interface to Paraboloid function

@@ -18,6 +18,7 @@ def dummy_job():
 
     return dummy_job
 
+
 @pytest.fixture(scope='module')
 def experiment_name():
     return 'simple_test'
@@ -58,23 +59,23 @@ def test_connection_fails():
 def test_dropping():
     # check if we can connect to mongodb and clear preexisting db
     try:
-        db = MongoDB(database_address="localhost:27017",drop_existing_db=True)
+        db = MongoDB(database_address="localhost:27017", drop_existing_db=True)
     except:
         # if local host fails try to use alias if db is in docker container
-        db = MongoDB(database_address="mongodb:27017",drop_existing_db=True)
+        db = MongoDB(database_address="mongodb:27017", drop_existing_db=True)
 
     assert isinstance(db, MongoDB)
 
 
 def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
     try:
-        db = MongoDB(database_address="localhost:27017",drop_existing_db=True)
+        db = MongoDB(database_address="localhost:27017", drop_existing_db=True)
     except:
         # if local host fails try to use alias if db is in docker container
-        db = MongoDB(database_address="mongodb:27017",drop_existing_db=True)
+        db = MongoDB(database_address="mongodb:27017", drop_existing_db=True)
 
     # save some dummy data
-    db.save(dummy_job, experiment_name, 'jobs', batch_id_1, {'id' : job_id})
+    db.save(dummy_job, experiment_name, 'jobs', batch_id_1, {'id': job_id})
     db.save(dummy_job, experiment_name, 'jobs', batch_id_1)
 
     # try to retrieve it
@@ -83,7 +84,7 @@ def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
         jobs = [jobs]
 
     test = jobs[0]['dummy_field1']
-    assert test ==  'garbage'
+    assert test == 'garbage'
 
     # remove dummy data
     db.remove(experiment_name, 'jobs', batch_id_1)
@@ -95,14 +96,14 @@ def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
 def test_write_multiple_entries(dummy_job, experiment_name, batch_id_2, job_id):
 
     try:
-        db = MongoDB(database_address="localhost:27017",drop_existing_db=True)
+        db = MongoDB(database_address="localhost:27017", drop_existing_db=True)
     except:
         # if local host fails try to use alias if db is in docker container
-        db = MongoDB(database_address="mongodb:27017",drop_existing_db=True)
+        db = MongoDB(database_address="mongodb:27017", drop_existing_db=True)
 
     # save some dummy data
     db.save(dummy_job, experiment_name, 'jobs', batch_id_2)
-    db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {'id' : job_id})
+    db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {'id': job_id})
 
     jobs = db.load(experiment_name, batch_id_2, 'jobs')
     if isinstance(jobs, dict):

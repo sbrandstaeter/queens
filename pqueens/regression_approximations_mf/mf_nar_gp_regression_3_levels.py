@@ -56,7 +56,7 @@ class MF_NAR_GP_Regression_3_Levels(object):
 
         # check that X_lofi and X_hifi have the same dimension
         dim_x = Xtrain[0].shape[1]
-        if dim_x is not Xtrain[1].shape[1] or not  Xtrain[2].shape[1]:
+        if dim_x is not Xtrain[1].shape[1] or not Xtrain[2].shape[1]:
             raise Exception("Dimension of inputs must be the same across levels")
         self.num_fidelity_levels = 3
 
@@ -76,11 +76,13 @@ class MF_NAR_GP_Regression_3_Levels(object):
         X_medfi_flat_set = set(Xtrain[1].flat)
         X_lofi_flat_set = set(Xtrain[0].flat)
 
-        if not X_hifi_flat_set.issubset(X_medfi_flat_set) or not X_medfi_flat_set.issubset(X_lofi_flat_set):
+        if not X_hifi_flat_set.issubset(X_medfi_flat_set) or not X_medfi_flat_set.issubset(
+            X_lofi_flat_set
+        ):
             raise Exception("Input sets must be nested")
 
         self.active_dimensions = np.arange(0, self.input_dimension)
-        #active_dimensions = np.arange(0,dim)
+        # active_dimensions = np.arange(0,dim)
 
         self.active_dimensions = np.arange(0, 2)
 
@@ -94,9 +96,8 @@ class MF_NAR_GP_Regression_3_Levels(object):
         # train gp on low fidelity data
         k1 = GPy.kern.RBF(self.input_dimension, ARD=True)
 
-        self.m1 = GPy.models.GPRegression(X=self.X_lofi, Y=self.y_lofi,
-                                          kernel=k1, normalizer=True)
-        self.m1[".*Gaussian_noise"] = self.m1.Y.var()*0.01
+        self.m1 = GPy.models.GPRegression(X=self.X_lofi, Y=self.y_lofi, kernel=k1, normalizer=True)
+        self.m1[".*Gaussian_noise"] = self.m1.Y.var() * 0.01
         self.m1[".*Gaussian_noise"].fix()
         self.m1.optimize(max_iters=500)
         self.m1[".*Gaussian_noise"].unfix()
@@ -108,21 +109,18 @@ class MF_NAR_GP_Regression_3_Levels(object):
         # train gp on medium fidelity data
         XX = np.hstack((self.X_medfi, mu1))
 
-        k2 = GPy.kern.RBF(1, active_dims=[self.input_dimension]) \
-             * GPy.kern.RBF(self.input_dimension,
-                            active_dims=self.active_dimensions, ARD=True) \
-             + GPy.kern.RBF(self.input_dimension,
-                            active_dims=self.active_dimensions, ARD=True)
+        k2 = GPy.kern.RBF(1, active_dims=[self.input_dimension]) * GPy.kern.RBF(
+            self.input_dimension, active_dims=self.active_dimensions, ARD=True
+        ) + GPy.kern.RBF(self.input_dimension, active_dims=self.active_dimensions, ARD=True)
 
         self.m2 = GPy.models.GPRegression(X=XX, Y=self.y_medfi, kernel=k2, normalizer=True)
 
-        self.m2[".*Gaussian_noise"] = self.m2.Y.var()*0.01
+        self.m2[".*Gaussian_noise"] = self.m2.Y.var() * 0.01
         self.m2[".*Gaussian_noise"].fix()
         self.m2.optimize(max_iters=500)
         self.m2[".*Gaussian_noise"].unfix()
         self.m2[".*Gaussian_noise"].constrain_positive()
         self.m2.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
-
 
         # Prepare for level 3: sample f_1 at X3
         nsamples = self.num_posterior_samples
@@ -144,23 +142,21 @@ class MF_NAR_GP_Regression_3_Levels(object):
         mu2 = mu2[:, None]
         v3 = np.abs(v2[:, None])
 
-
         # train gp on high fidelity data
         XX = np.hstack((self.X_hifi, mu2))
 
-        k3 = GPy.kern.RBF(1, active_dims=[self.input_dimension]) \
-            * GPy.kern.RBF(self.input_dimension, active_dims=self.active_dimensions, ARD=True) \
-            + GPy.kern.RBF(self.input_dimension, active_dims=self.active_dimensions, ARD=True)
+        k3 = GPy.kern.RBF(1, active_dims=[self.input_dimension]) * GPy.kern.RBF(
+            self.input_dimension, active_dims=self.active_dimensions, ARD=True
+        ) + GPy.kern.RBF(self.input_dimension, active_dims=self.active_dimensions, ARD=True)
 
         self.m3 = GPy.models.GPRegression(X=XX, Y=self.y_hifi, kernel=k3, normalizer=True)
 
-        self.m3[".*Gaussian_noise"] = self.m3.Y.var()*0.01
+        self.m3[".*Gaussian_noise"] = self.m3.Y.var() * 0.01
         self.m3[".*Gaussian_noise"].fix()
         self.m3.optimize(max_iters=500)
         self.m3[".*Gaussian_noise"].unfix()
         self.m3[".*Gaussian_noise"].constrain_positive()
-        self.m3.optimize_restarts(30, optimizer="bfgs",  max_iters=1000)
-
+        self.m3.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
 
     def predict(self, x_test):
         """ Compute latent function at x_test
@@ -200,14 +196,11 @@ class MF_NAR_GP_Regression_3_Levels(object):
         # compute mean and full covariance matrix
         mu1, C1 = self.m1.predict(x_test, full_cov=True)
         # generate nsample samples at x
-        Z = np.random.multivariate_normal(mu1.flatten(),C1,
-                                          self.num_posterior_samples)
-
-
+        Z = np.random.multivariate_normal(mu1.flatten(), C1, self.num_posterior_samples)
 
         # push samples through f_2 and f_3
-        tmp_m = np.zeros((self.num_posterior_samples**2, num_test_points))
-        tmp_v = np.zeros((self.num_posterior_samples**2, num_test_points))
+        tmp_m = np.zeros((self.num_posterior_samples ** 2, num_test_points))
+        tmp_v = np.zeros((self.num_posterior_samples ** 2, num_test_points))
         cnt = 0
 
         for i in range(0, self.num_posterior_samples):
@@ -236,12 +229,10 @@ class MF_NAR_GP_Regression_3_Levels(object):
         # var = np.mean(tmp_v, axis=0)[:, None]+ np.var(tmp_m, axis=0)[:, None]
         # var_x_test = np.abs(var)
 
-        #return mu1, var_x_test
+        # return mu1, var_x_test
         return mean_x_test.reshape((-1, 1)), var_x_test.reshape((-1, 1))
 
-        #return mean_x_test, var_x_test
-
-
+        # return mean_x_test, var_x_test
 
     def predict_f_samples(self, Xnew, num_samples):
         """ Produce samples from the posterior latent funtion Xnew

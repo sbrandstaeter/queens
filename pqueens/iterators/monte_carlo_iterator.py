@@ -117,6 +117,7 @@ class MonteCarloIterator(Iterator):
             for _, rf in random_fields.items():
                 print("rf corrstruct {}".format(rf.get("corrstruct")))
                 # create appropriate random field generator
+                # pylint: disable=line-too-long
                 my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                     mcmc_utils.create_proposal_distribution(rf),
                     rf.get("dimension"),
@@ -127,6 +128,7 @@ class MonteCarloIterator(Iterator):
                     rf.get("num_terms_per_dim"),
                     rf.get("total_terms"),
                 )
+                # pylint: enable=line-too-long
 
                 dim = rf["dimension"]
                 eval_locations_list = rf.get("eval_locations", None)

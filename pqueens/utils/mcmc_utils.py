@@ -40,13 +40,13 @@ class ProposalDistribution:
         """
         pass
 
-
     @abc.abstractmethod
     def ppf(self, x):
         """
         Evaluate the ppf, i.e. the inverse of the cdf.
         """
         pass
+
 
 class Uniform(ProposalDistribution):
     """
@@ -62,15 +62,15 @@ class Uniform(ProposalDistribution):
 
         self.a = a
         self.b = b
-        self.width = b -a
+        self.width = b - a
 
-        mean = (self.a + self.b) / 2.
-        cov = self.width ** 2 / 12.
+        mean = (self.a + self.b) / 2.0
+        cov = self.width ** 2 / 12.0
 
         dim = 1
-        super(Uniform,self).__init__(mean=mean, covariance=cov, dimension=dim)
+        super(Uniform, self).__init__(mean=mean, covariance=cov, dimension=dim)
 
-        self.pdf_const = 1. / self.width
+        self.pdf_const = 1.0 / self.width
         self.logpdf_const = np.log(self.pdf_const)
 
     def cdf(self, x):
@@ -108,6 +108,7 @@ class LogNormal(ProposalDistribution):
     mu and sigma are the parameters (mean and standard deviation) of the
     underlying normal distribution.
     """
+
     def __init__(self, mu, sigma):
 
         # sanity checks:
@@ -119,16 +120,16 @@ class LogNormal(ProposalDistribution):
 
         self.distr = scipy.stats.lognorm(scale=np.exp(self.mu), s=self.sigma)
 
-        mean = np.exp( self.mu + self.sigma ** 2 / 2.)
-        cov = (np.exp(self.sigma ** 2) - 1)  * np.exp(2 * self.mu + self.sigma ** 2)
+        mean = np.exp(self.mu + self.sigma ** 2 / 2.0)
+        cov = (np.exp(self.sigma ** 2) - 1) * np.exp(2 * self.mu + self.sigma ** 2)
 
         dim = 1
-        super(LogNormal,self).__init__(mean, cov, dim)
+        super(LogNormal, self).__init__(mean, cov, dim)
 
-        self.K1 = 1. / (self.sigma * np.sqrt(2 * np.pi))
+        self.K1 = 1.0 / (self.sigma * np.sqrt(2 * np.pi))
         self.log_K1 = np.log(self.K1)
 
-        self.K2 = 1. / (2. * self.sigma ** 2)
+        self.K2 = 1.0 / (2.0 * self.sigma ** 2)
 
     def cdf(self, x):
         return scipy.stats.lognorm.cdf(x, s=self.sigma, scale=np.exp(self.mu))
@@ -137,10 +138,10 @@ class LogNormal(ProposalDistribution):
         return np.random.lognormal(mean=self.mu, sigma=self.sigma, size=num_draws)
 
     def logpdf(self, x):
-        return - self.K2 * (np.log(x) - self.mu) ** 2 + self.log_K1 - np.log(x)
+        return -self.K2 * (np.log(x) - self.mu) ** 2 + self.log_K1 - np.log(x)
 
     def pdf(self, x):
-        return self.K1 * np.exp(- self.K2 * (np.log(x) - self.mu) ** 2) / x
+        return self.K1 * np.exp(-self.K2 * (np.log(x) - self.mu) ** 2) / x
 
     def ppf(self, q):
         return scipy.stats.lognorm.ppf(q, s=self.sigma, scale=np.exp(self.mu))
@@ -180,7 +181,7 @@ class NormalProposal(ProposalDistribution):
         self.low_chol = scipy.linalg.cholesky(covariance, lower=True)
         # precision matrix Q and determinant of cov matrix
         if self.dimension == 1:
-            self.Q = 1. / self.covariance
+            self.Q = 1.0 / self.covariance
             self.det_cov = self.covariance
             self.std = np.sqrt(self.covariance)
         else:
@@ -188,7 +189,7 @@ class NormalProposal(ProposalDistribution):
             self.det_cov = np.linalg.det(self.covariance)
             self.std = np.NaN
         # constant needed for pdf
-        self.K1 = 1. / (np.sqrt((2. * np.pi) ** self.dimension * self.det_cov))
+        self.K1 = 1.0 / (np.sqrt((2.0 * np.pi) ** self.dimension * self.det_cov))
         # constant needed for pdf
         self.log_K1 = np.log(self.K1)
 
@@ -199,8 +200,15 @@ class NormalProposal(ProposalDistribution):
             return scipy.stats.multivariate_normal.cdf(x, mean=self.mean, cov=self.covariance)
 
     def draw(self, num_draws=1):
-        uncorrelated_vector = np.random.randn(self.dimension, num_draws).reshape((self.dimension, num_draws)).reshape((self.dimension, num_draws))
-        return (np.reshape(self.mean, (self.dimension, 1)) + (np.dot(self.low_chol, uncorrelated_vector))).T
+        uncorrelated_vector = (
+            np.random.randn(self.dimension, num_draws)
+            .reshape((self.dimension, num_draws))
+            .reshape((self.dimension, num_draws))
+        )
+        return (
+            np.reshape(self.mean, (self.dimension, 1))
+            + (np.dot(self.low_chol, uncorrelated_vector))
+        ).T
 
     def logpdf(self, x):
         y = x - self.mean
@@ -211,11 +219,14 @@ class NormalProposal(ProposalDistribution):
         if self.dimension == 1:
             return scipy.stats.norm.ppf(q, loc=self.mean, scale=self.std)
         else:
-            raise RuntimeError("ppf for multivariate gaussians is not supported.\n"
-                               "It is not uniquely defined, since cdf is not uniquely defined! ")
+            raise RuntimeError(
+                "ppf for multivariate gaussians is not supported.\n"
+                "It is not uniquely defined, since cdf is not uniquely defined! "
+            )
+
     def pdf(self, x):
         y = x - self.mean
-        pdf = self.K1 * np.exp(- 0.5 * np.dot(np.dot(y, self.Q), y))
+        pdf = self.K1 * np.exp(-0.5 * np.dot(np.dot(y, self.Q), y))
         return pdf
 
 
@@ -234,9 +245,11 @@ def create_proposal_distribution(distribution_options):
         distribution = None
     else:
         # TODO: what if we have  a distribution with more than two shape parameters
-        shape_parameter_1, shape_parameter_2 = distribution_options.get('distribution_parameter', list())
-        #shape_parameter_1 = np.squeeze(np.asarray(distribution_options['proposal_mean']))
-        #shape_parameter_2 = np.squeeze(np.asarray(distribution_options['proposal_covariance']))
+        shape_parameter_1, shape_parameter_2 = distribution_options.get(
+            'distribution_parameter', list()
+        )
+        # shape_parameter_1 = np.squeeze(np.asarray(distribution_options['proposal_mean']))
+        # shape_parameter_2 = np.squeeze(np.asarray(distribution_options['proposal_covariance']))
         if distribution_type == 'normal':
             distribution = NormalProposal(mean=shape_parameter_1, covariance=shape_parameter_2)
         elif distribution_type == 'uniform':
@@ -245,9 +258,11 @@ def create_proposal_distribution(distribution_options):
             distribution = LogNormal(mu=shape_parameter_1, sigma=shape_parameter_2)
         else:
             supported_proposal_types = {'normal', 'lognormal', 'uniform'}
-            raise ValueError("Requested distribution type not supported: {0}.\n"
-                             "Supported types of proposal distribution:  {1}. "
-                             "".format(distribution_type, supported_proposal_types))
+            raise ValueError(
+                "Requested distribution type not supported: {0}.\n"
+                "Supported types of proposal distribution:  {1}. "
+                "".format(distribution_type, supported_proposal_types)
+            )
     return distribution
 
 
@@ -255,11 +270,14 @@ def mh_select(log_acceptance_probability, current_sample, proposed_sample):
     """Do Metropolis Hastings selection"""
 
     isfinite = np.isfinite(log_acceptance_probability)
-    accept = np.log(np.random.uniform(size=log_acceptance_probability.shape)) < log_acceptance_probability
+    accept = (
+        np.log(np.random.uniform(size=log_acceptance_probability.shape))
+        < log_acceptance_probability
+    )
 
     bool_idx = isfinite * accept
 
-    selected_samples =  np.where(bool_idx, proposed_sample, current_sample)
+    selected_samples = np.where(bool_idx, proposed_sample, current_sample)
 
     return selected_samples, bool_idx
 
@@ -287,10 +305,18 @@ def tune_scale_covariance(scale_covariance, accept_rate):
     """
 
     scale_covariance = np.where(accept_rate < 0.001, scale_covariance * 0.1, scale_covariance)
-    scale_covariance = np.where((accept_rate >= 0.001) * (accept_rate < 0.05), scale_covariance * 0.5, scale_covariance)
-    scale_covariance = np.where((accept_rate >= 0.05) * (accept_rate < 0.2), scale_covariance * 0.9, scale_covariance)
-    scale_covariance = np.where((accept_rate > 0.5) * (accept_rate <= 0.75), scale_covariance * 1.1, scale_covariance)
-    scale_covariance = np.where((accept_rate > 0.75) * (accept_rate <= 0.95), scale_covariance * 2.0, scale_covariance)
+    scale_covariance = np.where(
+        (accept_rate >= 0.001) * (accept_rate < 0.05), scale_covariance * 0.5, scale_covariance
+    )
+    scale_covariance = np.where(
+        (accept_rate >= 0.05) * (accept_rate < 0.2), scale_covariance * 0.9, scale_covariance
+    )
+    scale_covariance = np.where(
+        (accept_rate > 0.5) * (accept_rate <= 0.75), scale_covariance * 1.1, scale_covariance
+    )
+    scale_covariance = np.where(
+        (accept_rate > 0.75) * (accept_rate <= 0.95), scale_covariance * 2.0, scale_covariance
+    )
     scale_covariance = np.where((accept_rate > 0.95), scale_covariance * 10.0, scale_covariance)
 
     return scale_covariance

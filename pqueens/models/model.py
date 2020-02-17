@@ -35,7 +35,9 @@ class Model(metaclass=abc.ABCMeta):
         self.name = name
         self.uncertain_parameters = uncertain_parameters
         if data_flag is not None:
-            self.variables = None # use None as a placeholder and set variables from data in children class later
+            self.variables = (
+                None
+            )  # use None as a placeholder and set variables from data in children class later
         else:
             self.variables = [Variables.from_uncertain_parameters_create(uncertain_parameters)]
 
@@ -58,16 +60,18 @@ class Model(metaclass=abc.ABCMeta):
         from .data_fit_surrogate_model_mf import MFDataFitSurrogateModel
         from .multifidelity_model import MultifidelityModel
         from .bmfmc_model import BMFMCModel
-        model_dict = {'simulation_model': SimulationModel,
-                      'datafit_surrogate_model': DataFitSurrogateModel,
-                      'datafit_surrogate_model_mf': MFDataFitSurrogateModel,
-                      'multi_fidelity_model' : MultifidelityModel,
-                      'bmfmc_model' : BMFMCModel}
+
+        model_dict = {
+            'simulation_model': SimulationModel,
+            'datafit_surrogate_model': DataFitSurrogateModel,
+            'datafit_surrogate_model_mf': MFDataFitSurrogateModel,
+            'multi_fidelity_model': MultifidelityModel,
+            'bmfmc_model': BMFMCModel,
+        }
 
         model_options = config[model_name]
         model_class = model_dict[model_options["type"]]
         return model_class.from_config_create_model(model_name, config)
-
 
     @abc.abstractmethod
     def evaluate(self):
@@ -102,9 +106,9 @@ class Model(metaclass=abc.ABCMeta):
             data (np.array): 2d array with variable values
 
         """
-        #temp_variable = deepcopy(self.variables[0])
-        #self.variables = []
-        #for i in range(data.shape[0]):
+        # temp_variable = deepcopy(self.variables[0])
+        # self.variables = []
+        # for i in range(data.shape[0]):
         #    data_vector = data[i, :]
         #    temp_variable.update_variables_from_vector(data_vector)
         #    new_var = deepcopy(temp_variable)
@@ -118,7 +122,9 @@ class Model(metaclass=abc.ABCMeta):
 
         elif num_variables < num_data_vectors:
             for i in range(num_variables, num_data_vectors):
-                self.variables.append(Variables.from_uncertain_parameters_create(self.uncertain_parameters))
+                self.variables.append(
+                    Variables.from_uncertain_parameters_create(self.uncertain_parameters)
+                )
 
         for i in range(num_data_vectors):
             self.variables[i].update_variables_from_vector(data[i, :])

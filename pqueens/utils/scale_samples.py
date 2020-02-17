@@ -3,6 +3,7 @@ import warnings
 import numpy as np
 import scipy.stats
 
+
 def scale_samples(samples, distribution_info):
     """ Scale samples that are in [0,1] range to other distributions
 
@@ -29,8 +30,10 @@ def scale_samples(samples, distribution_info):
     """
 
     if samples.shape[1] != len(distribution_info):
-        raise ValueError("Number of provided distributions must match number of \
-            number of parameters ")
+        raise ValueError(
+            "Number of provided distributions must match number of \
+            number of parameters "
+        )
 
     # initializing array for scaled values
     scaled_samples = np.zeros_like(samples)
@@ -41,14 +44,17 @@ def scale_samples(samples, distribution_info):
         b1 = distribution_info[i]['distribution_parameter'][0]
         b2 = distribution_info[i]['distribution_parameter'][1]
         if 'min' in distribution_info[i] or 'max' in distribution_info[i]:
-            warnings.warn("Bounds of parameters are ignored when using \
-                scale_samples")
-
+            warnings.warn(
+                "Bounds of parameters are ignored when using \
+                scale_samples"
+            )
 
         if distribution_info[i]['distribution'] == 'uniform':
             if b1 >= b2:
-                raise ValueError('''Uniform distribution: lower bound
-                    must be less than upper bound''')
+                raise ValueError(
+                    '''Uniform distribution: lower bound
+                    must be less than upper bound'''
+                )
             else:
                 scaled_samples[:, i] = samples[:, i] * (b2 - b1) + b1
 
@@ -60,20 +66,16 @@ def scale_samples(samples, distribution_info):
                 # in salib normal distributions are parameterized via mean and std
                 # -> we need to reparamteterize normal distributions
                 b2 = np.sqrt(b2)
-                scaled_samples[:, i] = scipy.stats.norm.ppf(
-                    samples[:, i], loc=b1, scale=b2)
+                scaled_samples[:, i] = scipy.stats.norm.ppf(samples[:, i], loc=b1, scale=b2)
 
         elif distribution_info[i]['distribution'] == 'lognormal':
             if b2 <= 0:
-                raise ValueError(
-                    '''Lognormal distribution: scale must be > 0''')
+                raise ValueError('''Lognormal distribution: scale must be > 0''')
             else:
-                scaled_samples[:, i] = np.exp(
-                    scipy.stats.norm.ppf(samples[:, i], loc=b1, scale=b2))
+                scaled_samples[:, i] = np.exp(scipy.stats.norm.ppf(samples[:, i], loc=b1, scale=b2))
 
         else:
             valid_distributions = ['uniform', 'normal', 'lognormal']
-            raise ValueError('Distributions: choose one of %s' %
-                             ", ".join(valid_distributions))
+            raise ValueError('Distributions: choose one of %s' % ", ".join(valid_distributions))
 
     return scaled_samples

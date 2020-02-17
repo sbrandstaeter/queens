@@ -23,7 +23,7 @@ def gaussian_logpdf(x1, x2, x3, x4):
 
     The log likelihood is defined as (see [1]):
 
-    :math:`f({x}) = -\\frac{1}{2}(x-\\mu)^T\\Sigma^{-1}(x-\\mu) - \\log(\\sqrt((2 \\pi)^k |\\Sigma|)`
+    :math:`f({x}) = -\\frac{1}{2}(x-\\mu)^T\\Sigma^{-1}(x-\\mu)-\\log(\\sqrt((2 \\pi)^k |\\Sigma|)`
 
     Args:
         x1 (float):

@@ -6,6 +6,7 @@ from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 from pqueens.utils.scale_samples import scale_samples
 
+
 class LHSIterator(Iterator):
     """ Basic LHS Iterator to enable Latin Hypercube sampling
 
@@ -19,8 +20,10 @@ class LHSIterator(Iterator):
         outputs (np.array):   Array with all model outputs
 
     """
-    def __init__(self, model, seed, num_samples, num_iterations,
-                 result_description, global_settings):
+
+    def __init__(
+        self, model, seed, num_samples, num_iterations, result_description, global_settings
+    ):
         super(LHSIterator, self).__init__(model, global_settings)
         self.seed = seed
         self.num_samples = num_samples
@@ -54,12 +57,14 @@ class LHSIterator(Iterator):
         result_description = method_options.get("result_description", None)
         global_settings = config.get("global_settings", None)
 
-
-        return cls(model, method_options["seed"],
-                   method_options["num_samples"],
-                   method_options.get("num_iterations", 10),
-                   result_description,
-                   global_settings)
+        return cls(
+            model,
+            method_options["seed"],
+            method_options["num_samples"],
+            method_options.get("num_iterations", 10),
+            result_description,
+            global_settings,
+        )
 
     def eval_model(self):
         """ Evaluate the model """
@@ -80,7 +85,9 @@ class LHSIterator(Iterator):
         # get random fields
         random_fields = parameters.get("random_fields", None)
         if random_fields is not None:
-            raise RuntimeError("LHS Sampling is currentyl not implemented in conjunction with random fields.")
+            raise RuntimeError(
+                "LHS Sampling is currently not implemented in conjunction with random fields."
+            )
 
         # loop over random variables to generate samples
         distribution_info = []
@@ -92,11 +99,11 @@ class LHSIterator(Iterator):
             distribution_info.append(temp)
 
         # create latin hyper cube samples in unit hyper cube
-        hypercube_samples = lhs(num_inputs, self.num_samples,
-                                'maximin', iterations=self.num_iterations)
+        hypercube_samples = lhs(
+            num_inputs, self.num_samples, 'maximin', iterations=self.num_iterations
+        )
         # scale and transform samples according to the inverse cdf
         self.samples = scale_samples(hypercube_samples, distribution_info)
-
 
     def core_run(self):
         """ Run LHS Analysis on model """
@@ -105,16 +112,17 @@ class LHSIterator(Iterator):
 
         self.output = self.eval_model()
 
-
     def post_run(self):
         """ Analyze the results """
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description)
             if self.result_description["write_results"] is True:
-                write_results(results,
-                              self.global_settings["output_dir"],
-                              self.global_settings["experiment_name"])
-        #else:
+                write_results(
+                    results,
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
+                )
+        # else:
         print("Size of inputs {}".format(self.samples.shape))
         print("Inputs {}".format(self.samples))
         print("Size of outputs {}".format(self.output['mean'].shape))

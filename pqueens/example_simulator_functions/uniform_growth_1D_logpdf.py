@@ -2,6 +2,7 @@ import numpy as np
 
 import pqueens.example_simulator_functions.uniform_growth_1D_lsq
 
+
 def main(job_id, params):
     """ Interface to log of Gaussian likelihood of GnR model
 
@@ -29,10 +30,9 @@ def main(job_id, params):
         params['t0'] = pqueens.example_simulator_functions.uniform_growth_1D_lsq.t0
     std_likelihood = pqueens.example_simulator_functions.uniform_growth_1D_lsq.std_noise
 
-
     residuals = pqueens.example_simulator_functions.uniform_growth_1D_lsq.main(job_id, params)
 
-    K1 = 2*np.square(std_likelihood)
-    log_likelihood = -1 / K1 * np.square(residuals).sum() - 0.5*np.log(np.pi*K1)
+    K1 = 2 * np.square(std_likelihood)
+    log_likelihood = -1 / K1 * np.square(residuals).sum() - 0.5 * np.log(np.pi * K1)
 
     return log_likelihood

@@ -8,6 +8,7 @@ from pqueens.utils.plot_outputs import plot_icdf
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
+
 def process_ouputs(output_data, output_description, input_data=None):
     """ Process output from QUEENS models
 
@@ -32,6 +33,7 @@ def process_ouputs(output_data, output_description, input_data=None):
 
     return processed_results
 
+
 def do_processing(output_data, output_description):
     """ Do actual processing of output
 
@@ -46,7 +48,10 @@ def do_processing(output_data, output_description):
     bayesian = output_description.get('bayesian', False)
     # check if we have the data to support this
     if "post_samples" not in output_data and bayesian is True:
-        warnings.warn("Warning: Output data does not contain posterior samples. Not computing confidence intervals")
+        warnings.warn(
+            "Warning: Output data does not contain posterior samples. "
+            "Not computing confidence intervals"
+        )
         bayesian = False
 
     # do we want plotting
@@ -55,7 +60,7 @@ def do_processing(output_data, output_description):
     # result interval
     result_interval = output_description.get('result_interval', None)
     # TODO: we get an error below!
-    output_data["mean"]=output_data["mean"].astype(np.float)
+    output_data["mean"] = output_data["mean"].astype(np.float)
     if result_interval is None:
         # estimate interval from results
         result_interval = estimate_result_interval(output_data)
@@ -108,6 +113,7 @@ def do_processing(output_data, output_description):
 
     return processed_results
 
+
 def write_results(processed_results, path_to_file, file_name):
     """ Write results to pickle file
 
@@ -143,10 +149,11 @@ def estimate_result_interval(output_data):
     max_data = np.amax(samples)
 
     interval_length = max_data - min_data
-    my_min = min_data - interval_length/6
-    my_max = max_data + interval_length/6
+    my_min = min_data - interval_length / 6
+    my_max = max_data + interval_length / 6
 
     return [my_min, my_max]
+
 
 def estimate_mean(output_data):
     """ Estimate mean based on standard unbiased estimator
@@ -161,6 +168,7 @@ def estimate_mean(output_data):
     samples = output_data["mean"]
     return np.mean(samples, axis=0)
 
+
 def estimate_var(output_data):
     """ Estimate variance based on standard unbiased estimator
 
@@ -173,6 +181,7 @@ def estimate_var(output_data):
     """
     samples = output_data["mean"]
     return np.var(samples, ddof=1, axis=0)
+
 
 def estimate_cov(output_data):
     """ Estimate covariance based on standard unbiased estimator
@@ -191,8 +200,9 @@ def estimate_cov(output_data):
 
     cov = np.zeros((samples.shape[1], samples.shape[2], samples.shape[2]))
     for i in range(samples.shape[1]):
-        cov[i] = np.cov(samples[:,i,:], rowvar=row_variable)
+        cov[i] = np.cov(samples[:, i, :], rowvar=row_variable)
     return cov
+
 
 def estimate_cdf(output_data, support_points, bayesian):
     """ Compute estimate of CDF based on provided sampling data
@@ -243,6 +253,7 @@ def estimate_cdf(output_data, support_points, bayesian):
 
     return cdf
 
+
 def estimate_icdf(output_data, bayesian):
     """ Compute estimate of inverse CDF based on provided sampling data
 
@@ -254,7 +265,7 @@ def estimate_icdf(output_data, bayesian):
         icdf:                        Dictionary with icdf estimates
 
     """
-    my_percentiles = 100*np.linspace(0+1/1000, 1-1/1000, 999)
+    my_percentiles = 100 * np.linspace(0 + 1 / 1000, 1 - 1 / 1000, 999)
     icdf = {}
     icdf["x"] = my_percentiles
     if bayesian is False:
@@ -269,7 +280,6 @@ def estimate_icdf(output_data, bayesian):
         icdf_values = np.zeros((len(my_percentiles), num_realizations))
         for i, point in enumerate(my_percentiles):
             icdf_values[i, :] = np.percentile(raw_data, point, axis=0)
-
 
         icdf["post_samples"] = icdf_values
         # now we compute mean, median cumulative distribution function
@@ -296,6 +306,7 @@ def estimate_failprob(output_data, failure_thesholds, bayesian):
     """
     raise NotImplementedError
 
+
 def estimate_pdf(output_data, support_points, bayesian):
     """ Compute estimate of PDF based on provided sampling data
 
@@ -321,9 +332,7 @@ def estimate_pdf(output_data, support_points, bayesian):
         max_samples = np.amax(support_points)
         mean_samples = output_data["mean"]
         # estimate kernel bandwidth only once
-        bandwidth = estimate_bandwidth_for_kde(mean_samples,
-                                               min_samples,
-                                               max_samples)
+        bandwidth = estimate_bandwidth_for_kde(mean_samples, min_samples, max_samples)
         raw_data = output_data["post_samples"]
         num_realizations = raw_data.shape[1]
         pdf_values = np.zeros((num_realizations, len(support_points)))
@@ -340,6 +349,7 @@ def estimate_pdf(output_data, support_points, bayesian):
 
     return pdf
 
+
 def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
     """ Estimate optimal bandwidth for kde of pdf
 
@@ -351,21 +361,23 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
         float: estimate for optimal kernel_bandwidth
     """
     kernel_bandwidth = 0
-    kernel_bandwidth_upper_bound = (max_samples-min_samples)/2.0
-    kernel_bandwidth_lower_bound = (max_samples-min_samples)/20.0
+    kernel_bandwidth_upper_bound = (max_samples - min_samples) / 2.0
+    kernel_bandwidth_lower_bound = (max_samples - min_samples) / 20.0
 
     # do 20-fold cross validaton unless we have fewer samples
     num_cv = min(samples.shape[0], 20)
     # cross-validation
-    grid = GridSearchCV(KernelDensity(), {'bandwidth': \
-        np.linspace(kernel_bandwidth_lower_bound,
-                    kernel_bandwidth_upper_bound,
-                    40)}, cv=num_cv)
+    grid = GridSearchCV(
+        KernelDensity(),
+        {'bandwidth': np.linspace(kernel_bandwidth_lower_bound, kernel_bandwidth_upper_bound, 40)},
+        cv=num_cv,
+    )
 
     grid.fit(samples.reshape(-1, 1))
     kernel_bandwidth = grid.best_params_['bandwidth']
 
     return kernel_bandwidth
+
 
 def perform_kde(samples, kernel_bandwidth, support_points):
     """ Estimate pdf using kernel density estimation
@@ -378,8 +390,7 @@ def perform_kde(samples, kernel_bandwidth, support_points):
         np.array:                   pdf_estimate at support points
     """
 
-    kde = KernelDensity(kernel='gaussian', bandwidth=\
-        kernel_bandwidth).fit(samples.reshape(-1, 1))
+    kde = KernelDensity(kernel='gaussian', bandwidth=kernel_bandwidth).fit(samples.reshape(-1, 1))
 
     y_density = np.exp(kde.score_samples(support_points.reshape(-1, 1)))
     return y_density

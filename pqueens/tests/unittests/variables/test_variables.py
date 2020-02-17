@@ -11,6 +11,7 @@ from pqueens.variables.variables import Variables
 
 # TODO this testing moduel is incomplete -> test all functionality of variables
 
+
 @pytest.fixture(scope='module')
 def data_vector():
     """ Possible data vector compatible with uncertain_parameters. """
@@ -18,10 +19,10 @@ def data_vector():
     # total size is sum of size values of uncertain_parameters
     data_vector = np.zeros(4)
 
-    data_vector[0] = 1.
-    data_vector[1] = 2.
-    data_vector[2] = 3.
-    data_vector[3] = 4.
+    data_vector[0] = 1.0
+    data_vector[1] = 2.0
+    data_vector[2] = 3.0
+    data_vector[3] = 4.0
 
     return data_vector
 
@@ -91,9 +92,11 @@ def test_get_active_variables(variable, data_vector):
     """
     Test get_active_variables.
     """
-    expected_active_variables_dict =  {'x1': data_vector[0],
-                                       'x2': data_vector[1:3],
-                                       'x3': data_vector[3]}
+    expected_active_variables_dict = {
+        'x1': data_vector[0],
+        'x2': data_vector[1:3],
+        'x3': data_vector[3],
+    }
 
     active_variables = variable.get_active_variables()
 
@@ -119,5 +122,3 @@ def test_update_variables_from_vector(uncertain_parameters, data_vector, active)
     new_returned_vector = variable_i.get_active_variables_vector()
 
     np.testing.assert_allclose(new_vector, new_returned_vector)
-
-

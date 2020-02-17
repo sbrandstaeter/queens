@@ -8,7 +8,8 @@ def park91a_lofi(x1, x2, x3, x4):
     a computer model. For the purpose of multi-fidelity simulation, [3]
     defined a corresponding lower fidelity function, which is  defined as
 
-    :math:`f_{lofi}({\\bf x})= [1 + \\frac{\sin(x_1)}{10} ] f_{hifi}({\\bf x}) - 2x_1 + x_2^2 + x_3^2 + 0.5`
+    :math:`f_{lofi}({\\bf x})=
+    [1 + \\frac{\sin(x_1)}{10} ] f_{hifi}({\\bf x}) - 2x_1 + x_2^2 + x_3^2 + 0.5`
 
     The high-fidelity version is defiend as is implemented in park91a_hifi
 
