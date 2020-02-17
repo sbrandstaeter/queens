@@ -723,17 +723,18 @@ class Scheduler(metaclass=abc.ABCMeta):
             ]
             cmd_remote_main = ' '.join(cmdlist_remote_main)
             stdout, stderr, _ = self.run_subprocess(cmd_remote_main)
+            if stderr:
+                raise RuntimeError(
+                    "\nThe file 'remote_main' in remote singularity image "
+                    "could not be executed properly!"
+                    f"\nStderr from remote:\n{stderr}"
+                )
             match = self.get_process_id_from_output(stdout)
             try:
                 return int(match)
             except ValueError:
                 sys.stderr.write(stdout)
                 return None
-
-            if stderr:
-                raise RuntimeError(
-                    "The file 'remote_main' in remote singularity image could not be executed properly!"
-                )
         else:
             if self.no_singularity:
                 with open(self.config['input_file'], 'r') as myfile:
