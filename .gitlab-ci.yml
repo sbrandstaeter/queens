@@ -33,7 +33,6 @@ codechecks:
     policy: push
   script:
     - pylint --output-format=parseable pqueens | tee track_pylint.txt
-  after_script:
     - mkdir conda_env_cache
     - cp -r /opt/conda/envs/pqueens conda_env_cache/pqueens
   artifacts:
