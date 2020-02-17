@@ -9,9 +9,10 @@ def rosenbrock(x1, x2):
         float: Value of Rosenbrock function
     """
 
-    a = 1. - x1
-    b = x2 - x1*x1
-    return a*a + b*b*100.
+    a = 1.0 - x1
+    b = x2 - x1 * x1
+    return a * a + b * b * 100.0
+
 
 def main(job_id, params):
     """ Interface to Rosenbrock Banana function

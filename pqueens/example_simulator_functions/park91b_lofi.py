@@ -1,6 +1,7 @@
 import numpy as np
 from pqueens.example_simulator_functions.park91b_hifi import park91b_hifi
 
+
 def park91b_lofi(x1, x2, x3, x4):
     """Low-fidelity version of Park91b benchmark function
 
@@ -30,8 +31,9 @@ def park91b_lofi(x1, x2, x3, x4):
     """
 
     yh = park91b_hifi(x1, x2, x3, x4)
-    y = 1.2*yh - 1
+    y = 1.2 * yh - 1
     return y
+
 
 def main(job_id, params):
     """ Interface to Park91b test fuction
@@ -43,4 +45,4 @@ def main(job_id, params):
     Returns:
         float: Value of the function at parameter specified in input dict
     """
-    return park91b_lofi(params['x1'],params['x2'],params['x3'],params['x4'])
+    return park91b_lofi(params['x1'], params['x2'], params['x3'], params['x4'])

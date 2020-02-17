@@ -8,6 +8,7 @@ import mock
 from pqueens.interfaces.approximation_interface import ApproximationInterface
 from pqueens.interfaces.interface import Interface
 
+
 class TestApproximationInterface(unittest.TestCase):
     def setUp(self):
 
@@ -22,12 +23,13 @@ class TestApproximationInterface(unittest.TestCase):
         uncertain_parameters['x2'] = uncertain_parameter
         uncertain_parameters['x3'] = uncertain_parameter
 
-
-        #self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
+        # self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
         self.config = {}
-        self.config['test_interface'] = {'type':'approximation_interface',
-                                         'approximation': 'dummy_approximation',
-                                         'main_file':'pqueens/example_simulator_functions/ishigami.py'}
+        self.config['test_interface'] = {
+            'type': 'approximation_interface',
+            'approximation': 'dummy_approximation',
+            'main_file': 'pqueens/example_simulator_functions/ishigami.py',
+        }
 
         self.config['parameters'] = uncertain_parameters
         self.config['dummy_approximation'] = 'some_stuff'

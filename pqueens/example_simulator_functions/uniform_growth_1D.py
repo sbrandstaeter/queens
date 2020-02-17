@@ -5,7 +5,10 @@ see Chapter 6.2 of [1].
 In particular equations (78) + (80) with (79)
 
 References:
-    [1]: Cyron, C. J. and Humphrey, J. D. (2014) ‘Vascular homeostasis and the concept of mechanobiological stability’, International Journal of Engineering Science, 85, pp. 203–223. doi: 10.1016/j.ijengsci.2014.08.003.
+    [1]: Cyron, C. J. and Humphrey, J. D. (2014)
+    ‘Vascular homeostasis and the concept of mechanobiological stability’,
+    International Journal of Engineering Science, 85, pp. 203–223.
+    doi: 10.1016/j.ijengsci.2014.08.003.
 
 """
 

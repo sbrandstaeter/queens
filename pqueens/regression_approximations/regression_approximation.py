@@ -1,5 +1,6 @@
 import abc
 
+
 class RegressionApproximation(metaclass=abc.ABCMeta):
     """ Base class for regression approximations
 
@@ -22,6 +23,7 @@ class RegressionApproximation(metaclass=abc.ABCMeta):
 
         """
         from .gp_approximation_gpy import GPGPyRegression
+
         approx_dict = {'gp_approximation_gpy': GPGPyRegression}
 
         approximation_class = approx_dict[approx_options["type"]]

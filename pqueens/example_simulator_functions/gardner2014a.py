@@ -32,8 +32,8 @@ def gardner2014a(x1, x2):
             Inequality Constraints." In ICML, pp. 937-945. 2014
     """
 
-    y = np.cos(2*x1)*np.cos(x2) + np.sin(x1)
-    c = np.cos(x1)*np.cos(x2) - np.sin(x1)*np.sin(x2)
+    y = np.cos(2 * x1) * np.cos(x2) + np.sin(x1)
+    c = np.cos(x1) * np.cos(x2) - np.sin(x1) * np.sin(x2)
 
     return y, c
 
@@ -45,6 +45,7 @@ def main(job_id, params):
         job_id (int):  ID of job
         params (dict): Dictionary with parameters
     Returns:
-        float, float: Value of gardner2014a function and constraint at parameters specified in input dict
+        float, float: Value of gardner2014a function and constraint
+                      at parameters specified in input dict
     """
     return gardner2014a(params['x1'], params['x2'])

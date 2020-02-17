@@ -1,20 +1,68 @@
-image: continuumio/anaconda3
+image: continuumio/miniconda3:latest
 
+stages:
+  - build
+  - codechecks
+  - tests
 
-full_test_and_build_suite:
-  script:
+# global/ default before_script can be overriden
+before_script:
   - export PATH="/opt/conda/bin:$PATH"
-  - conda update conda && conda update python
-  - apt-get update -y
-  - apt-get install gcc -y
-  - conda create --name pqueens -y python=3.8
+  - cp -r conda_env_cache/pqueens /opt/conda/envs/pqueens
   - source activate pqueens
-  - pip install --upgrade setuptools
-  - pip install --upgrade pip
-  - pip install numpy
-  - pip install -r requirements.txt
-  - python setup.py test
 
+# define global cache that can be inhereted by jobs
+cache: &global_cache
+  # share the cache across the same branch
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - conda_env_cache/pqueens
+  policy: pull
+
+build_suite:
+  stage: build
+  # override global before_script
+  before_script:
+    - export PATH="/opt/conda/bin:$PATH"
+  cache:
+    #inheret global cache settings
+    <<: *global_cache
+    #override global policy
+    policy: push
+  script:
+    - conda update conda && conda update python
+    - apt-get update -y
+    - apt-get install gcc -y
+    - conda create --name pqueens -y python=3.7
+    - source activate pqueens
+    - pip install --upgrade setuptools
+    - pip install --upgrade pip
+    - pip install numpy
+    - pip install -r requirements.txt
+    - mkdir conda_env_cache
+    - cp -r /opt/conda/envs/pqueens conda_env_cache/pqueens
+
+codechecks:
+  stage: codechecks
+  cache:
+    #inheret global cache settings
+    <<: *global_cache
+  script:
+    - pylint --output-format=parseable pqueens | tee track_pylint.txt
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_JOB_ID"
+    paths:
+      - track_pylint.txt
+    when: on_failure
+    expire_in: 4 weeks
+
+full_test_suite:
+  stage: tests
+  cache:
+    #inheret global cache settings
+    <<: *global_cache
+  script:
+  - python setup.py test
 
 services:
   - name: mongo:3.4

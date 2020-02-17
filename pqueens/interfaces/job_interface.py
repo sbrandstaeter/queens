@@ -27,8 +27,17 @@ class JobInterface(Interface):
 
     """
 
-    def __init__(self, interface_name, resources, experiment_name, db_address,
-                 db, polling_time, output_dir, parameters):
+    def __init__(
+        self,
+        interface_name,
+        resources,
+        experiment_name,
+        db_address,
+        db,
+        polling_time,
+        output_dir,
+        parameters,
+    ):
         """ Create JobInterface
 
         Args:
@@ -84,8 +93,16 @@ class JobInterface(Interface):
         parameters = config['parameters']
 
         # instanciate object
-        return cls(interface_name, resources, experiment_name, db_address, db,
-                   polling_time, output_dir, parameters)
+        return cls(
+            interface_name,
+            resources,
+            experiment_name,
+            db_address,
+            db,
+            polling_time,
+            output_dir,
+            parameters,
+        )
 
     def map(self, samples):
         """
@@ -109,7 +126,8 @@ class JobInterface(Interface):
                 # loop over all available resources
                 for resource_name, resource in self.resources.items():
                     if resource.accepting_jobs(jobs):
-                        new_job = self.create_new_job(variables, resource_name)  # TODO wrong number!
+                        # TODO wrong number!
+                        new_job = self.create_new_job(variables, resource_name)
 
                         # Submit the job to the appropriate resource
                         process_id = self.attempt_dispatch(resource, new_job)
@@ -138,7 +156,8 @@ class JobInterface(Interface):
             time.sleep(self.polling_time)
 
         for _, resource in self.resources.items():
-            resource.scheduler.post_run()  # This will close all previous opened ports for databank communication
+            # This will close all previous opened ports for databank communication
+            resource.scheduler.post_run()
         # get sample and response data
         return self.get_output_data()
 
@@ -163,8 +182,7 @@ class JobInterface(Interface):
                 time.sleep(0.5)
 
             # Submit the job to the appropriate resource
-            process_id = resource.attempt_dispatch(self.batch_number,
-                                                   new_job)
+            process_id = resource.attempt_dispatch(self.batch_number, new_job)
             num_tries += 1
 
         return process_id
@@ -207,15 +225,15 @@ class JobInterface(Interface):
         job_id = len(jobs) + 1
 
         job = {
-            'id':            job_id,
-            'params':        variables.get_active_variables(),
-            'expt_dir':      self.output_dir,
-            'expt_name':     self.experiment_name,
-            'resource':      resource_name,
-            'status':        'pending',  # TODO: before: 'new'
-            'submit time':   time.time(),
-            'start time':    None,
-            'end time':      None
+            'id': job_id,
+            'params': variables.get_active_variables(),
+            'expt_dir': self.output_dir,
+            'expt_name': self.experiment_name,
+            'resource': resource_name,
+            'status': 'pending',  # TODO: before: 'new'
+            'submit time': time.time(),
+            'start time': None,
+            'end time': None,
         }
 
         self.save_job(job)
@@ -247,7 +265,11 @@ class JobInterface(Interface):
         jobs = self.load_jobs()
         print_resources_status(self.resources, jobs)
         for job in jobs:
-            if job['status'] != 'complete' and job['status'] != 'failed' and job['status'] != 'broken':
+            if (
+                job['status'] != 'complete'
+                and job['status'] != 'failed'
+                and job['status'] != 'broken'
+            ):
                 return False
         return True
 
