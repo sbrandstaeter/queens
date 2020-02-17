@@ -63,8 +63,8 @@ pages:
   dependencies:
     - full_test_suite
   before_script:
-  script:
     - mkdir public
+  script:
     - mv html_coverage_report public/coverage_report
   artifacts:
       # store the public path in artifact
