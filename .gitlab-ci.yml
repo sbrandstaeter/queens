@@ -47,7 +47,7 @@ full_test_suite:
     #inheret global cache settings
     <<: *global_cache
   script:
-  - python setup.py test
+  - pytest
 
 services:
   - name: mongo:3.4
