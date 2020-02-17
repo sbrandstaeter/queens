@@ -25,6 +25,7 @@ codechecks:
     - conda create --name pqueens -y python=3.8
     - source activate pqueens
     - pip install -r requirements.txt
+    - python setup.py develop
   cache:
     #inheret global cache settings
     <<: *global_cache
