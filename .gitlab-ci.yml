@@ -33,7 +33,6 @@ codechecks:
     policy: push
   script:
     - pylint --output-format=parseable pqueens | tee track_pylint.txt
-  after_script:
     - mkdir conda_env_cache
     - cp -r /opt/conda/envs/pqueens conda_env_cache/pqueens
   artifacts:
@@ -49,7 +48,7 @@ full_test_suite_master:
     #inheret global cache settings
     <<: *global_cache
   script:
-    - pytest --cov-report=html
+    - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
   artifacts:
     name: coverage_report
     paths:
