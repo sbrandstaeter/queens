@@ -62,7 +62,7 @@ pages:
   cache: {}
   dependencies:
     - full_test_suite
-  before_script: {}
+  before_script:
   script:
     - mkdir public
     - mv html_coverage_report public/coverage_report
