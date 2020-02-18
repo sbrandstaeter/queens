@@ -13,6 +13,7 @@ gpy
 # for sensitivity analysis
 SALib>=1.3.3
 # for documentation
+pandoc
 sphinx
 nbsphinx
 jupyter
