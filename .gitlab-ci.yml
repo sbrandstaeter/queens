@@ -43,6 +43,7 @@ full_test_suite_master:
     - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
     - sphinx-apidoc -o doc/source pqueens -f -M
     - cd doc
+    - apt-get install pandoc -y
     # "make html" triggers:
     - sphinx-build -b html -d build/doctrees   source build/html
   artifacts:
