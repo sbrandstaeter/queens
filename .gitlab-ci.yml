@@ -21,7 +21,7 @@ default:
 codechecks:
   stage: codechecks
   script:
-    - pylint --output-format=parseable pqueens | tee track_pylint.txt
+    - pylint -j 4 --output-format=parseable pqueens | tee track_pylint.txt
   artifacts:
     name: "$CI_JOB_NAME-$CI_JOB_ID"
     paths:
