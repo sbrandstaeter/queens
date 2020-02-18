@@ -1,40 +1,27 @@
-image: continuumio/miniconda3:latest
-
 stages:
   - codechecks
   - tests
   - pages
 
-# global/ default before_script can be overriden
-before_script:
-  - cp -r conda_env_cache/pqueens /opt/conda/envs/pqueens
-  - source activate pqueens
+default:
+  image: continuumio/miniconda3:latest
 
-# define global cache that can be inhereted by jobs
-cache: &global_cache
-  # share the cache across the same branch
-  key: ${CI_COMMIT_REF_SLUG}
-  paths:
-    - conda_env_cache/pqueens
-  policy: pull
+  services:
+    - name: mongo:3.4
+      alias: mongodb
 
-codechecks:
-  stage: codechecks
+  # global/ default before_script can be overriden
   before_script:
     - export PIP_CACHE_DIR="/opt/cache/pip"
     - conda create --name pqueens -y python=3.8
     - source activate pqueens
     - pip install -r requirements.txt
     - python setup.py develop
-  cache:
-    #inheret global cache settings
-    <<: *global_cache
-    #override global policy
-    policy: push
+
+codechecks:
+  stage: codechecks
   script:
-    - pylint --output-format=parseable pqueens | tee track_pylint.txt
-    - mkdir conda_env_cache
-    - cp -r /opt/conda/envs/pqueens conda_env_cache/pqueens
+    - pylint -j 4 --output-format=parseable pqueens | tee track_pylint.txt
   artifacts:
     name: "$CI_JOB_NAME-$CI_JOB_ID"
     paths:
@@ -42,11 +29,16 @@ codechecks:
     when: on_failure
     expire_in: 4 weeks
 
+full_test_suite_develop:
+  stage: tests
+  script:
+  - pytest -n4
+  except:
+    refs:
+      - master
+
 full_test_suite_master:
   stage: tests
-  cache:
-    #inheret global cache settings
-    <<: *global_cache
   script:
     - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
   artifacts:
@@ -59,21 +51,9 @@ full_test_suite_master:
     refs:
       - master
 
-full_test_suite_develop:
-  stage: tests
-  cache:
-    #inheret global cache settings
-    <<: *global_cache
-  script:
-  - pytest -n4
-  except:
-    refs:
-      - master
-
 pages:
   stage: pages
   # disable cache on this job since we do not need conda env here
-  cache: {}
   dependencies:
     - full_test_suite_master
   before_script:
@@ -90,6 +70,3 @@ pages:
       refs:
           - master
 
-services:
-  - name: mongo:3.4
-    alias: mongodb
