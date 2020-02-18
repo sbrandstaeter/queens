@@ -22,6 +22,11 @@ codechecks:
   stage: codechecks
   script:
     - pylint -j 4 --output-format=parseable pqueens | tee track_pylint.txt
+    - sphinx-apidoc -o doc/source pqueens -f -M
+    - cd doc
+    - apt-get install pandoc -y
+    # "make html" triggers:
+    - sphinx-build -b html -d build/doctrees   source build/html
   artifacts:
     name: "$CI_JOB_NAME-$CI_JOB_ID"
     paths:
@@ -41,10 +46,6 @@ full_test_suite_master:
   stage: tests
   script:
     - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
-    - sphinx-apidoc -o doc/source pqueens -f -M
-    - cd doc
-    # "make html" triggers:
-    - sphinx-build -b html -d build/doctrees   source build/html
   artifacts:
     name: coverage_report
     paths:
