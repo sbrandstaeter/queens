@@ -90,7 +90,6 @@ class MultiVariateRandomFieldGenerator(object):
                     total_terms=total_terms,
                 )
             )
-            # TypeError: create_new_random_field_generator() takes 2 positional arguments but 8 were given
 
             temp = temp + self.my_univ_rfs[i].stoch_dim
 

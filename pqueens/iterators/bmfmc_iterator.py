@@ -59,7 +59,7 @@ class BmfmcIterator(Iterator):
         self.hf_mc = None
         self.lfs_mc_out = None
         self.eigenfunc = None
-        self.output = None  # this is still important and will prob be the marginal pdf of the hf / its statistics
+        self.output = None
         self.initial_design = initial_design
         self.predictive_var = predictive_var
         self.config = config  # This is needed to construct the model on runtime
@@ -128,7 +128,7 @@ class BmfmcIterator(Iterator):
         ]
         self.lfs_mc_out = np.atleast_2d(np.vstack(lfs_mc_out)).T
 
-        #  CREATE HF DATA --> CURRENTLY WE SELECT FROM HF MC DATA SET AND DO NOT TRIGGER ACTUAL SIMUALTIONS HERE
+        #  CREATE HF DATA --> CURRENTLY WE SELECT FROM HF MC DATA SET
         # -----------------  HENCE METHOD BELOW IS CURRENTLY NOT USED -----------------
         if self.hf_data_iterator is None:  #  TODO: This needs still to be done and is a placeholder
             minval = mc_y.min()
@@ -163,7 +163,8 @@ class BmfmcIterator(Iterator):
             # self.samples = mapping_points_x
             self.mc_map_output = mapping_points_y
         else:
-            #   THIS IS THE APPROACH CURRENTLY USED -> SELECT HF TRAINING DATA FROM MC DATA -> CAREFUL: WORKAROUND!
+            # THIS IS THE APPROACH CURRENTLY USED ->
+            # SELECT HF TRAINING DATA FROM MC DATA -> CAREFUL: WORKAROUND!
             # check if training data file already exists if not write it
             path_to_train_data = os.path.join(self.experiment_dir, 'hf_lf_train.pickle')
             exists = os.path.isfile(path_to_train_data)
@@ -171,8 +172,8 @@ class BmfmcIterator(Iterator):
             if exists:
                 with open(
                     path_to_train_data, 'rb'
-                ) as handle:  # TODO: give better name according to experiment and choose better location
-                    # pylint: disable=line-too-long
+                ) as handle:  # TODO: give better name according to
+                    # experiment and choose better location
                     (
                         self.train_in,
                         self.lfs_train_out,
@@ -181,12 +182,13 @@ class BmfmcIterator(Iterator):
                         self.lfs_mc_out,
                     ) = pickle.load(
                         handle
-                    )  # TODO --> Change this according to design below!!# pylint: enable=line-too-long
+                    )  # TODO --> Change this according to design below!!
             else:
                 self.train_in, self.hf_train_out, _ = self.hf_data_iterator.read_pickle_file()
                 self.hf_train_out = self.hf_train_out[
                     :, 0
-                ]  # TODO here we neglect the vectorial output --> this should be changed in the future
+                ]  # TODO here we neglect the vectorial output
+                # --> this should be changed in the future
                 self.hf_mc = self.hf_train_out
 
                 # -------------------------- RANDOM FROM BINS METHOD --------------------------
@@ -251,7 +253,8 @@ class BmfmcIterator(Iterator):
                     normalized_test = random_fields_test  # FSI
 
                     # coef_test = np.dot(self.eigenfunc.T, normalized_test.T).T # DG
-                    # design =  np.hstack((self.lf_mc_in[:,0:3],coef_test[:,0:5])) # self.lfs_mc_out[:])) # DG
+                    # design =  np.hstack((self.lf_mc_in[:,0:3],coef_test[:,0:5]))
+                    # self.lfs_mc_out[:])) # DG
                     design = np.hstack((self.lf_mc_in[:, 0:1], self.lfs_mc_out[:]))  # FSI
 
                     design = StandardScaler().fit_transform(design)
@@ -279,7 +282,8 @@ class BmfmcIterator(Iterator):
                 # ------ WRITE NEW PICKLE FILE FOR SUBSEQUENT ANALYSIS WITH MATCHING DATA -----
                 with open(
                     path_to_train_data, 'wb'
-                ) as handle:  # TODO: give better name according to experiment and choose better location
+                ) as handle:  # TODO: give better name according to experiment
+                    # and choose better location
                     pickle.dump(
                         [
                             self.train_in,
@@ -346,10 +350,16 @@ class BmfmcIterator(Iterator):
 
             #  --------------------- PLOT THE BMFMC POSTERIOR PDF VARIANCE ---------------------
             if self.predictive_var is True:
-                # ax.plot(self.output['pyhf_support'],self.output['pyhf_mean']+np.sqrt(self.output['pyhf_var']),
-                #        linewidth=0.8, color='green', alpha=0.8, label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
-                # ax.plot(self.output['pyhf_support'],self.output['pyhf_mean']-np.sqrt(self.output['pyhf_var']),
-                #        linewidth=0.8, color='green', alpha=0.8, label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+                # ax.plot(self.output['pyhf_support'],self.output['pyhf_mean']
+                #        +np.sqrt(self.output['pyhf_var']),
+                #        linewidth=0.8, color='green', alpha=0.8,
+                #        label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|
+                #        f^*,\mathcal{D}\right)\right]$')
+                # ax.plot(self.output['pyhf_support'],self.output['pyhf_mean']-
+                # np.sqrt(self.output['pyhf_var']),
+                #        linewidth=0.8, color='green', alpha=0.8,
+                #        label=r'$\mathbb{SD}
+                #        \left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
                 ub = self.output['pyhf_mean'] + 2 * np.sqrt(self.output['pyhf_var'])
                 lb = self.output['pyhf_mean'] - 2 * np.sqrt(self.output['pyhf_var'])
                 ax.fill_between(
@@ -360,7 +370,8 @@ class BmfmcIterator(Iterator):
                     facecolor='lightgrey',
                     alpha=0.5,
                     interpolate=True,
-                    label=r'$\pm2\cdot\mathbb{SD}_{f^*}\left[p\left(y_{\mathrm{HF}}^*|f^*,\mathcal{D}_f\right)\right]$',
+                    label=r'$\pm2\cdot\mathbb{SD}_{f^*}\left[p\left(y_{\mathrm{HF}}^*'
+                    r'|f^*,\mathcal{D}_f\right)\right]$',
                 )
 
             # --------------------- PLOT THE BMFMC POSTERIOR PDF MEAN ---------------------
@@ -369,16 +380,26 @@ class BmfmcIterator(Iterator):
                 self.output['pyhf_mean'],
                 color='xkcd:green',
                 linewidth=3,
-                label=r'$\mathrm{\mathbb{E}}_{f^*}\left[p\left(y^*_{\mathrm{HF}}|f^*,\mathcal{D}_f\right)\right]$',
+                label=r'$\mathrm{\mathbb{E}}_{f^*}\left[p\left(y^*_{\mathrm{HF}}|'
+                r'f^*,\mathcal{D}_f\right)\right]$',
             )
 
             # --------------- PLOT THE REFERENCE SOLUTION FOR CLASSIC BMFMC ---------------
             if self.BMFMC_reference is True:
                 # plot the bmfmc var
                 if self.predictive_var is True:
-                    # ax.plot(self.output['pyhf_support'], self.output['pyhf_mean_BMFMC']+np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.8, color='magenta', alpha=0.8,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
-                    # ax.plot(self.output['pyhf_support'], self.output['pyhf_mean_BMFMC']-np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.8, color='magenta', alpha=0.8,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
-                    #                    ax.plot(self.output['pyhf_support'], np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.8, color='magenta', alpha=0.8,label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+                    # ax.plot(self.output['pyhf_support'], self.output['pyhf_mean_BMFMC']+
+                    # np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.8, color='magenta',
+                    # alpha=0.8,label=r'$\mathbb{SD}\left[\mathrm{p}
+                    # \left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+                    # ax.plot(self.output['pyhf_support'], self.output['pyhf_mean_BMFMC']-
+                    # np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.8, color='magenta',
+                    # alpha=0.8,label=r'$\mathbb{SD}\left[\mathrm{p}
+                    # \left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
+                    #      ax.plot(self.output['pyhf_support'],
+                    #      np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.8, color='magenta',
+                    #      alpha=0.8,label=r'$\mathbb{SD}\left[\mathrm{p}
+                    #      \left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
                     ub = self.output['pyhf_mean_BMFMC'] + 2 * np.sqrt(self.output['pyhf_var_BMFMC'])
                     lb = self.output['pyhf_mean_BMFMC'] - 2 * np.sqrt(self.output['pyhf_var_BMFMC'])
                     ax.fill_between(
@@ -389,7 +410,8 @@ class BmfmcIterator(Iterator):
                         facecolor='lightgrey',
                         alpha=0.5,
                         interpolate=True,
-                    )  # label=r'$\pm2\cdot\mathbb{SD}_{f^*}\left[p\left(y_{\mathrm{HF}}^*|f^*,\mathcal{D}_f\right)\right]$')
+                    )  # label=r'$\pm2\cdot\mathbb{SD}_{f^*}\left[p\left(y_{\mathrm{HF}}^*
+                    # |f^*,\mathcal{D}_f\right)\right]$')
 
                 # plot the bmfmc approx mean
                 ax.plot(
@@ -399,7 +421,8 @@ class BmfmcIterator(Iterator):
                     linewidth=1.5,
                     linestyle='--',
                     alpha=1,
-                    label=r'$\mathrm{\mathbb{E}}_{f^*}\left[p\left(y^*_{\mathrm{HF}}|f^*,\mathcal{D}_f\right)\right],\ (\mathrm{no\ features})$',
+                    label=r'$\mathrm{\mathbb{E}}_{f^*}\left[p\left(y^*_{\mathrm{HF}}'
+                    r'|f^*,\mathcal{D}_f\right)\right],\ (\mathrm{no\ features})$',
                 )
 
             # ------------------------ PLOT THE MC REFERENCE OF HF ------------------------
@@ -432,7 +455,8 @@ class BmfmcIterator(Iterator):
             ax.set_xlim(-0.5, 2.0)  # DG: 0.02,0.08
             ax.set_ylim(0, 1.6)  # max DG: 150
             fig.set_size_inches(15, 15)
-            #            plt.savefig('/home/nitzler/Documents/Vorlagen/pdfs_cylinder_50_nof_random.eps', format='eps', dpi=300)
+            # plt.savefig('/home/nitzler/Documents/Vorlagen/pdfs_cylinder_50_nof_random.eps',
+            # format='eps', dpi=300)
 
             # ---------------------- OPTIONAL PLOT OF LATENT MANIFOLD ---------------------
             if self.output['manifold_test'].shape[1] < 2:
@@ -445,7 +469,8 @@ class BmfmcIterator(Iterator):
                     marker='.',
                     color='grey',
                     alpha=0.5,
-                    label=r'$\mathcal{D}_{\mathrm{ref}}=\{Y_{\mathrm{LF}}^*,Y_{\mathrm{HF}}^*\}$, (Reference)',
+                    label=r'$\mathcal{D}_{\mathrm{ref}}='
+                    r'\{Y_{\mathrm{LF}}^*,Y_{\mathrm{HF}}^*\}$, (Reference)',
                 )
 
                 ax2.plot(
@@ -464,7 +489,8 @@ class BmfmcIterator(Iterator):
                     color='darkblue',
                     linewidth=2,
                     linestyle='--',
-                    label=r'$\mathrm{m}_{\mathcal{D}_f}(y_{\mathrm{LF}})\pm \sqrt{\mathrm{v}_{\mathcal{D}_f}(y_{\mathrm{LF}})}$, (Confidence)',
+                    label=r'$\mathrm{m}_{\mathcal{D}_f}(y_{\mathrm{LF}})\pm \sqrt{\mathrm{v}_'
+                    r'{\mathcal{D}_f}(y_{\mathrm{LF}})}$, (Confidence)',
                 )
 
                 ax2.plot(
@@ -477,8 +503,9 @@ class BmfmcIterator(Iterator):
                     linestyle='--',
                 )
 
-                #                ax2.plot(self.output['manifold_test'][:, 0], self.output['sample_mat'], linestyle='',
-                #                         marker='.', color='red', alpha=0.2)
+                #  ax2.plot(self.output['manifold_test'][:, 0],
+                #  self.output['sample_mat'], linestyle='',
+                #          marker='.', color='red', alpha=0.2)
                 ax2.plot(
                     self.lfs_train_out,
                     self.hf_train_out,
@@ -508,25 +535,27 @@ class BmfmcIterator(Iterator):
                 ax2.minorticks_on()
                 ax2.legend()
                 fig2.set_size_inches(15, 15)
-            #                plt.savefig('/home/nitzler/Documents/Vorlagen/ylf_yhf_LF2.eps', format='png', dpi=300)
+            # plt.savefig('/home/nitzler/Documents/Vorlagen/ylf_yhf_LF2.eps', format='png', dpi=300)
 
             if self.output['manifold_test'].shape[1] == 2:
                 fig3 = plt.figure(figsize=(10, 10))
                 ax3 = fig3.add_subplot(111, projection='3d')
 
-                #                # Normalization of output quantities
-                #                self.output['manifold_test'][:, 0, None] = (self.output['manifold_test'][:, 0, None]
-                #                                                            - min(self.output['manifold_test'][:, 0, None])) /\
-                #                                                           (max(self.output['manifold_test'][:, 0, None])
-                #                                                            - min(self.output['manifold_test'][:, 0, None]))
+                #  # Normalization of output quantities
+                #  self.output['manifold_test'][:, 0, None] =
+                #  (self.output['manifold_test'][:, 0, None]
+                #               - min(self.output['manifold_test'][:, 0, None])) /\
+                #              (max(self.output['manifold_test'][:, 0, None])
+                #               - min(self.output['manifold_test'][:, 0, None]))
                 #
-                #                self.output['manifold_test'][:, 1, None] = (self.output['manifold_test'][:, 1, None]
-                #                                                            - min(self.output['manifold_test'][:, 1, None])) /\
-                #                                                           (max(self.output['manifold_test'][:, 1, None])
-                #                                                            - min(self.output['manifold_test'][:, 1, None]))\
+                #     self.output['manifold_test'][:, 1, None] =
+                #     (self.output['manifold_test'][:, 1, None]
+                #          - min(self.output['manifold_test'][:, 1, None])) /\
+                #         (max(self.output['manifold_test'][:, 1, None])
+                #          - min(self.output['manifold_test'][:, 1, None]))\
                 #
-                #                self.hf_mc[:, None] = (self.hf_mc[:, None] - min(self.hf_mc[:, None])) /\
-                #                                      (max(self.hf_mc[:, None]) - min(self.hf_mc[:, None]))
+                #     self.hf_mc[:, None] = (self.hf_mc[:, None] - min(self.hf_mc[:, None])) /\
+                #                           (max(self.hf_mc[:, None]) - min(self.hf_mc[:, None]))
                 ax3.plot_trisurf(
                     self.output['manifold_test'][:, 0],
                     self.output['manifold_test'][:, 1],
@@ -547,12 +576,15 @@ class BmfmcIterator(Iterator):
                     label='$\mathcal{D}_{\mathrm{MC}}$, (Reference)',
                 )
 
-                #                ax3.scatter(self.output['manifold_test'][:, 0, None]*0, self.output['manifold_test'][:, 1, None],
-                #                            self.hf_mc[:, None], s=10, alpha=0.05,c=self.hf_mc, cmap='jet')
-                #                ax3.scatter(self.output['manifold_test'][:, 0, None], self.output['manifold_test'][:, 1, None]*0,
-                #                            self.hf_mc[:, None], s=10, alpha=0.05,c=self.hf_mc, cmap='jet')
-                #                ax3.scatter(self.output['manifold_test'][:, 0, None], self.output['manifold_test'][:, 1, None],
-                #                            self.hf_mc[:, None]*0, s=10, alpha=0.05,c=self.hf_mc, cmap='jet')
+                #  ax3.scatter(self.output['manifold_test'][:, 0, None]*0,
+                #  self.output['manifold_test'][:, 1, None],
+                #              self.hf_mc[:, None], s=10, alpha=0.05,c=self.hf_mc, cmap='jet')
+                #  ax3.scatter(self.output['manifold_test'][:, 0, None],
+                #  self.output['manifold_test'][:, 1, None]*0,
+                #              self.hf_mc[:, None], s=10, alpha=0.05,c=self.hf_mc, cmap='jet')
+                #  ax3.scatter(self.output['manifold_test'][:, 0, None],
+                #  self.output['manifold_test'][:, 1, None],
+                #              self.hf_mc[:, None]*0, s=10, alpha=0.05,c=self.hf_mc, cmap='jet')
 
                 ax3.scatter(
                     self.output['manifold_train'][:, 0, None],
@@ -564,10 +596,12 @@ class BmfmcIterator(Iterator):
                     alpha=1,
                     label='$\mathcal{D}$, (Training)',
                 )
-                #                ax3.scatter(self.output['manifold_train'][:, 0, None], self.output['manifold_train'][:,1,None],
-                #                            self.hf_train_out[:, None]*0, marker='x',s=70, c='r', alpha=1)
-                #                ax3.scatter(self.output['manifold_test'][:, 0, None], self.output['manifold_test'][:,1,None],
-                #                            self.output['f_mean'][:, None], s=10, c='red', alpha=1)
+                # ax3.scatter(self.output['manifold_train'][:, 0, None],
+                # self.output['manifold_train'][:,1,None],
+                #             self.hf_train_out[:, None]*0, marker='x',s=70, c='r', alpha=1)
+                # ax3.scatter(self.output['manifold_test'][:, 0, None],
+                # self.output['manifold_test'][:,1,None],
+                #             self.output['f_mean'][:, None], s=10, c='red', alpha=1)
 
                 ax3.set_xlabel(r'$\mathrm{y}_{\mathrm{LF}}$')  # ,usetex=True)
                 ax3.set_ylabel(r'$\gamma$')
@@ -584,26 +618,29 @@ class BmfmcIterator(Iterator):
                 ax3.set_zticks(np.arange(0, 0.5, step=0.5))
                 ax3.legend()
 
-            #                # Animate
-            #                def init():
-            #                    ax3.scatter(self.output['manifold_test'][:,0,None],self.output['manifold_test'][:,1,None],self.hf_mc[:,None],s=3,c='darkgreen', alpha=0.6)
-            #                    ax3.set_xlabel(r'$y_{\mathrm{LF}}$')#,usetex=True)
-            #                    ax3.set_ylabel(r'$\gamma$')
-            #                    ax3.set_zlabel(r'$y_{\mathrm{HF}}$')
-            #                    ax3.set_xlim3d(0, 1)
-            #                    ax3.set_ylim3d(0, 1)
-            #                    ax3.set_zlim3d(0, 1)
+            #  # Animate
+            #  def init():
+            #      ax3.scatter(self.output['manifold_test'][:,0,None],
+            #      self.output['manifold_test'][:,1,None],self.hf_mc[:,None],s=3,c='darkgreen',
+            #      alpha=0.6)
+            #      ax3.set_xlabel(r'$y_{\mathrm{LF}}$')#,usetex=True)
+            #      ax3.set_ylabel(r'$\gamma$')
+            #      ax3.set_zlabel(r'$y_{\mathrm{HF}}$')
+            #      ax3.set_xlim3d(0, 1)
+            #      ax3.set_ylim3d(0, 1)
+            #      ax3.set_zlim3d(0, 1)
             #
-            #                    return ()
+            #      return ()
             #
-            #                def animate(i):
-            #                    ax3.view_init(elev=10., azim=i)
-            #                    return ()
+            #  def animate(i):
+            #      ax3.view_init(elev=10., azim=i)
+            #      return ()
             #
-            #                anim = animation.FuncAnimation(fig3, animate, init_func=init,
-            #                                               frames=360, interval=20, blit=True)
-            #                # Save
-            #                anim.save('cylinder_split_input.mp4', fps=30, dpi=300, extra_args=['-vcodec', 'libx264'])
+            #  anim = animation.FuncAnimation(fig3, animate, init_func=init,
+            #                                 frames=360, interval=20, blit=True)
+            #  # Save
+            #  anim.save('cylinder_split_input.mp4', fps=30, dpi=300,
+            #  extra_args=['-vcodec', 'libx264'])
             #
             plt.show()
 
@@ -613,46 +650,53 @@ class BmfmcIterator(Iterator):
         from scipy.stats import entropy as ep
 
 
-#        entropy = ep(self.output['pyhf_mc'],self.output['pyhf_mean'])
-#        entropy_mc = ep(self.output['pyhf_mc'],self.output['pyhf_mc_low'])
-#        # append a file
-#        with open('cylinder_KLD_new50.txt','a') as myfile:
-#            myfile.write('%s\n' % entropy)
+#  entropy = ep(self.output['pyhf_mc'],self.output['pyhf_mean'])
+#  entropy_mc = ep(self.output['pyhf_mc'],self.output['pyhf_mc_low'])
+#  # append a file
+#  with open('cylinder_KLD_new50.txt','a') as myfile:
+#      myfile.write('%s\n' % entropy)
 #
-#        import pandas as pd
-#        entropy0 = (pd.read_csv('entropy_random0_fsi.txt', sep=' ',header=None).iloc[:].to_numpy())
-#        entropy1 = (pd.read_csv('entropy_random1_fsi.txt', sep=' ',header=None).iloc[:].to_numpy())
-#        entropy2 = (pd.read_csv('entropy_random2_fsi.txt', sep=' ',header=None).iloc[:].to_numpy())
-#        entropy3 = (pd.read_csv('entropy_random3_fsi.txt', sep=' ',header=None).iloc[:].to_numpy())
-#        entropy_fill2 = (pd.read_csv('cylinder_KLD_new50.txt', sep=' ',header=None).iloc[:].to_numpy()[:])
-#        entropy_fill = (pd.read_csv('cylinder_KLD_new.txt', sep=' ',header=None).iloc[:].to_numpy()[:])
-#        int_var = (pd.read_csv('cylinder_int_var.txt', sep=' ',header=None).iloc[:].to_numpy())
+#  import pandas as pd
+#  entropy0 = (pd.read_csv('entropy_random0_fsi.txt', sep=' ',header=None).iloc[:].to_numpy())
+#  entropy1 = (pd.read_csv('entropy_random1_fsi.txt', sep=' ',header=None).iloc[:].to_numpy())
+#  entropy2 = (pd.read_csv('entropy_random2_fsi.txt', sep=' ',header=None).iloc[:].to_numpy())
+#  entropy3 = (pd.read_csv('entropy_random3_fsi.txt', sep=' ',header=None).iloc[:].to_numpy())
+#  entropy_fill2 = (pd.read_csv('cylinder_KLD_new50.txt', sep=' ',
+#  header=None).iloc[:].to_numpy()[:])
+#  entropy_fill = (pd.read_csv('cylinder_KLD_new.txt', sep=' ',header=None).iloc[:].to_numpy()[:])
+#  int_var = (pd.read_csv('cylinder_int_var.txt', sep=' ',header=None).iloc[:].to_numpy())
 #
-#        entropy = (np.hstack((entropy0,entropy1,entropy2, entropy3)))
+#  entropy = (np.hstack((entropy0,entropy1,entropy2, entropy3)))
 #
-#        mean = np.mean(entropy,axis=0)
-#        error = np.std(entropy,axis=0)
+#  mean = np.mean(entropy,axis=0)
+#  error = np.std(entropy,axis=0)
 #
-#        plt.rcParams["mathtext.fontset"] = "cm"
-#        plt.rcParams.update({'font.size':28})
+#  plt.rcParams["mathtext.fontset"] = "cm"
+#  plt.rcParams.update({'font.size':28})
 #
-#        fig,ax1 = plt.subplots()
-#        import pandas as pd
-#        count = np.arange(0,4)
-#        count2 = np.arange(0,6)
-#        width = 0.25
+#  fig,ax1 = plt.subplots()
+#  import pandas as pd
+#  count = np.arange(0,4)
+#  count2 = np.arange(0,6)
+#  width = 0.25
 
-#        full=ax1.bar(count2-width/2,entropy_fill[:,0],width, alpha=0.5,color='slategrey', label='Diverse subset, $(\mathbf{n}=50)$',edgecolor='white')
-#        data = [entropy0[:,0], entropy1[:,0], entropy2[:,0], entropy3[:,0]]
-#        boxes = ax1.boxplot(data, positions=count-width, manage_ticks=False, patch_artist=True, widths=(0.25, 0.25, 0.25, 0.25), showfliers=False )
-#        for box in boxes['boxes']:
-#            box.set( facecolor=r'blue')
+#  full=ax1.bar(count2-width/2,entropy_fill[:,0],width, alpha=0.5,color='slategrey',
+#  label='Diverse subset, $(\mathbf{n}=50)$',edgecolor='white')
+#  data = [entropy0[:,0], entropy1[:,0], entropy2[:,0], entropy3[:,0]]
+#  boxes = ax1.boxplot(data, positions=count-width, manage_ticks=False,
+#  patch_artist=True, widths=(0.25, 0.25, 0.25, 0.25), showfliers=False )
+#  for box in boxes['boxes']:
+#      box.set( facecolor=r'blue')
 
 
-# ax1.bar(count,mean,-width,yerr=error,alpha=0.5,ecolor='black',capsize=10, color='b', label='Random in bins, ($\mathbf{n}=200$)',edgecolor='white')
-#        semi_full=ax1.bar(count2+width/2,entropy_fill2[:,0],width, alpha=0.5,color='seagreen', label='Diverse subset, $(\mathbf{n}=30)$',edgecolor='white')
+# ax1.bar(count,mean,-width,yerr=error,alpha=0.5,ecolor='black',capsize=10, color='b',
+# label='Random in bins, ($\mathbf{n}=200$)',edgecolor='white')
+#        semi_full=ax1.bar(count2+width/2,entropy_fill2[:,0],width, alpha=0.5,color='seagreen',
+#        label='Diverse subset, $(\mathbf{n}=30)$',edgecolor='white')
 #        ax1.set_xlabel(r'Number of features')
-#        ax1.set_ylabel(r'$\mathrm{D}_{\mathrm{KL}}\left[p\left(y_{\mathrm{HF}}\right)||\mathrm{\mathbb{E}}_{f^*}\left[p\left(y_{\mathrm{HF}}^*|f^*,\mathcal{D}_f\right)\right]\right]$')
+#        ax1.set_ylabel(r'$\mathrm{D}_{\mathrm{KL}}\left[p\left(y_{\mathrm{HF}}\right)||
+#        \mathrm{\mathbb{E}}_{f^*}
+#        \left[p\left(y_{\mathrm{HF}}^*|f^*,\mathcal{D}_f\right)\right]\right]$')
 #        ax1.xaxis.set_ticks(np.arange(0, 6, 1))
 ##
 #        ax1.grid(which='major', linestyle='-')
@@ -673,12 +717,15 @@ class BmfmcIterator(Iterator):
 #        print(entropy_mc)
 #        ax1.set_yscale('log')
 #        ax1.set_ylim((0,1.0))
-#        ax1.legend([full[0],semi_full[0]],['Diverse subset, $\mathrm{n}_{\mathrm{train}}=150$','Diverse subset, $\mathrm{n}_{\mathrm{train}}=50$'],loc='upper left')
+#        ax1.legend([full[0],semi_full[0]],['Diverse subset, $\mathrm{n}_{\mathrm{train}}=150$',
+#        'Diverse subset, $\mathrm{n}_{\mathrm{train}}=50$'],loc='upper left')
 #
 #        fig.set_size_inches(15, 15)
-#        plt.savefig('/home/nitzler/Documents/Vorlagen/kld_reduction_cylinder.eps', format='eps', dpi=300)
+#        plt.savefig('/home/nitzler/Documents/Vorlagen/kld_reduction_cylinder.eps',
+#        format='eps', dpi=300)
 
-#   integ=ax1.bar(count2,int_var[:,0],width, alpha=0.5,color='seagreen', label='Diverse subset, $(\mathbf{n}=30)$',edgecolor='white')
+#   integ=ax1.bar(count2,int_var[:,0],width, alpha=0.5,color='seagreen',
+#   label='Diverse subset, $(\mathbf{n}=30)$',edgecolor='white')
 #    ax1.set_xlabel(r'Number of features')
 #     ax1.set_ylabel(r'$IV$')
 #      ax1.set_ylim((0,0.0015))

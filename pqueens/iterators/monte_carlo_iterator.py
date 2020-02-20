@@ -131,11 +131,11 @@ class MonteCarloIterator(Iterator):
                     random_field_opt['field_bbox'] = np.array(rf.get("field_bbox"))
                     random_field_opt['num_terms_per_dim'] = rf.get("num_terms_per_dim")
                     random_field_opt['total_terms'] = rf.get("total_terms")
-
+                # pylint: disable=line-too-long
                 my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                     mcmc_utils.create_proposal_distribution(rf), random_field_opt
                 )
-
+                # pylint: enable=line-too-long
                 eval_locations_list = rf.get("eval_locations", None)
                 eval_locations = np.array(eval_locations_list).reshape(
                     -1, random_field_opt['dimension']

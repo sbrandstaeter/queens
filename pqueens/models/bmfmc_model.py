@@ -58,7 +58,7 @@ class BMFMCModel(Model):
         self.interface = None  # gets initialized after feature space is build
         self.approximation_settings = approximation_settings
         self.subordinate_model = subordinate_model  # this is important for active learning
-        self.subordinate_iterator = subordinate_iterator  # this is the initial design pickle file (active learning is implemented in model)
+        self.subordinate_iterator = subordinate_iterator  # this is the initial design pickle file
         self.eval_fit = eval_fit
         self.error_measures = error_measures
         self.train_in = train_in
@@ -78,7 +78,7 @@ class BMFMCModel(Model):
         self.support_pyhf = None
         self.pyhf_mean_vec = None
         self.pyhf_var_vec = None
-        self.uncertain_parameters = None  # This will be set in feature space method-> dict to know which variables are used in regression model
+        self.uncertain_parameters = None  # This will be set in feature space method
         self.predictive_var = predictive_var
         self.pyhf_mc = None
         self.pyhf_mc_low = None
@@ -92,8 +92,7 @@ class BMFMCModel(Model):
         self.f_mean_train = None
         super(BMFMCModel, self).__init__(
             name="bmfmc_model", uncertain_parameters=None, data_flag=True
-        )  # Super call seems necessary to have access to parent class methods but we set parameters to None first and override in feature space method
-        # model parameters can be accessed over self.variables as renamed like this in parent class
+        )
 
     @classmethod
     def from_config_create_model(
@@ -208,7 +207,8 @@ class BMFMCModel(Model):
             "manifold_train": self.manifold_train,
         }
 
-        return output  # TODO for now we return the hf output and its variacne and return the densities later
+        return output  # TODO for now we return the hf output and its variacne
+        # and return the densities later
 
     def build_approximation(self, approx_case=True):
         """ Build underlying approximation """
@@ -315,7 +315,8 @@ class BMFMCModel(Model):
         pyhf_mean_vec = np.zeros(self.support_pyhf.shape)
         #        for mean,var in zip(self.f_mean_pred, self.yhf_var_pred):
         #            std = np.sqrt(var)
-        #            pyhf_mean_vec = pyhf_mean_vec + st.norm.pdf(self.support_pyhf,loc=mean,scale=std)
+        #            pyhf_mean_vec = pyhf_mean_vec +
+        #            st.norm.pdf(self.support_pyhf,loc=mean,scale=std)
         std = np.sqrt(self.yhf_var_pred)  # *0.65
         pdf_mat = st.norm.pdf(self.support_pyhf, loc=self.f_mean_pred, scale=std)
         pyhf_mean_vec = np.sum(pdf_mat, axis=0)
@@ -347,12 +348,13 @@ class BMFMCModel(Model):
                 for num2, (mean2, var2) in enumerate(
                     zip(f_mean_pred[num1 + 1 :], yhf_var_pred[num1 + 1 :])
                 ):
-                    #                for num2, (mean2, var2) in enumerate(zip(f_mean_pred,yhf_var_pred)):
+                    #    for num2, (mean2, var2) in enumerate(zip(f_mean_pred,yhf_var_pred)):
                     num2 = num1 + num2
                     covariance = k_post[num1, num2]
                     mean_vec = np.array([mean1, mean2])
                     sigma_mat = np.array([(var1, covariance), (covariance, var2)])
-                    #                    yhf_pdf_grid += st.multivariate_normal.pdf(points,mean=mean_vec.squeeze(),cov=sigma_mat)
+                    #  yhf_pdf_grid += st.multivariate_normal.pdf(points,
+                    #  mean=mean_vec.squeeze(),cov=sigma_mat)
                     diff = points - mean_vec.T
                     det_sigma = var1 * var2 - covariance ** 2
                     if det_sigma < 0:
@@ -500,7 +502,8 @@ class BMFMCModel(Model):
         random_fields_test = self.lf_mc_in[:, 3:]  # DG
         random_fields_train = self.train_in[:, 3:]  # DG
 
-        # PCA makes only sense on correlated data set -> seperate correlated and uncorrelated variables
+        # PCA makes only sense on correlated data set ->
+        # seperate correlated and uncorrelated variables
         # TODO this split is hard coded!
         #        x_uncorr = x_vec[:, 0, None]  # FSI
         x_uncorr = x_vec[:, 0:3]  # DG
@@ -508,7 +511,8 @@ class BMFMCModel(Model):
         x_uncorr_test = x_uncorr[0 : self.lf_mc_in.shape[0], :]
         x_uncorr_train = x_uncorr[self.lf_mc_in.shape[0] :, :]
 
-        #        pca_model = PCA(n_components=1) #KernelPCA(n_components=2, kernel="rbf", gamma=10, n_jobs=2)
+        # pca_model = PCA(n_components=1) #KernelPCA(n_components=2,
+        # kernel="rbf", gamma=10, n_jobs=2)
         # SparsePCA(n_components=3, n_jobs=4, normalize_components=True)
         #        x_trans = pca_model.fit_transform(x_corr)
 
@@ -569,7 +573,8 @@ class BMFMCModel(Model):
         #        ax1.set_ylabel(r'$u_{x}$')
         #        fig.set_size_inches(15, 15)
         ##        plt.show()
-        #        plt.savefig('/home/nitzler/Documents/Vorlagen/KleExample.eps', format='eps', dpi=300)
+        #        plt.savefig('/home/nitzler/Documents/Vorlagen/KleExample.eps',
+        #        format='eps', dpi=300)
         #
         #        breakpoint()
         #        coef_test = np.linalg.lstsq(proj_test.T, random_fields_test, rcond=None)[0]
@@ -622,30 +627,32 @@ class BMFMCModel(Model):
 
             fig, ax1 = plt.subplots()
 
-            # y_standardized = StandardScaler().fit_transform((self.hf_train_out-self.f_mean_train)**2)
+            # y_standardized = StandardScaler().
+            # fit_transform((self.hf_train_out-self.f_mean_train)**2)
             y_standardized2 = StandardScaler().fit_transform(self.lfs_mc_out)
             #            y_standardized3 = StandardScaler().fit_transform(self.lfs_mc_out)
             # y_standardized4 = StandardScaler().fit_transform(self.hf_train_out)
-            # y_standardized5 = StandardScaler().fit_transform((self.hf_mc[:,None]-self.f_mean_pred)**2)
+            # y_standardized5 = StandardScaler().\
+            # fit_transform((self.hf_mc[:,None]-self.f_mean_pred)**2)
             # y_standardized6 = StandardScaler().fit_transform((self.hf_mc[:,None]))
             # Joint space projection
-            # inner_proj = np.abs(StandardScaler().fit_transform(np.dot(x_iter_train.T, y_standardized)))
+            # inner_proj = np.abs(StandardScaler().\
+            # fit_transform(np.dot(x_iter_train.T, y_standardized)))
             inner_proj2 = np.abs(
                 StandardScaler().fit_transform(np.dot(x_iter_test.T, y_standardized2))
             )
-            # inner_proj3 = np.abs(StandardScaler().fit_transform(np.dot(x_iter_test.T, y_standardized3)))
-            # inner_proj4 = np.abs(StandardScaler().fit_transform(np.dot(x_iter_train.T, y_standardized4)))
-            # inner_proj5 = np.abs(StandardScaler().fit_transform(np.dot(x_iter_test.T, y_standardized5)))
-            # inner_proj6 = np.abs(StandardScaler().fit_transform(np.dot(x_iter_test.T, y_standardized6)))
+            # inner_proj3 = np.abs(StandardScaler().\
+            # fit_transform(np.dot(x_iter_test.T, y_standardized3)))
+            # inner_proj4 = np.abs(StandardScaler().\
+            # fit_transform(np.dot(x_iter_train.T, y_standardized4)))
+            # inner_proj5 = np.abs(StandardScaler().\
+            # fit_transform(np.dot(x_iter_test.T, y_standardized5)))
+            # inner_proj6 = np.abs(StandardScaler().\
+            # fit_transform(np.dot(x_iter_test.T, y_standardized6)))
 
             score = inner_proj2[:, 0]
             score[idx_max] = 0
 
-            # ax1.bar(ele-width,inner_proj5[:,0]/np.max(inner_proj5),width,label=r'$\mathbf{t}_{\mathrm{se, ref.}}=\mathrm{n}_{\mathrm{se, ref.}}\cdot\mathrm{x}^{*T}\cdot\left(\mathbf{m}(\mathrm{y}_{\mathrm{LF}}^*)-\mathrm{y}_{\mathrm{HF}}^*\right)^2$, (MC-ref.)',color='grey', alpha=0.5)
-            # iax1.bar(ele,inner_proj[:,0]/np.max(inner_proj),width,label=r'$\mathbf{t}_{\mathrm{se, train}}=\mathrm{n}_{\mathrm{se, train}}\cdot\mathrm{X}^{T}\cdot\left(\mathbf{m}(\mathrm{Y}_{\mathrm{LF}})-\mathrm{Y}_{\mathrm{HF}}\right)^2$, (Train)',color='b', alpha=0.2)
-            # ax1.bar(ele+width,score/np.max(score) ,width,label=r'$\mathbf{t}_{\mathrm{score}}=\mathrm{n}_{\mathrm{score}}\cdot\left(\mathbf{t}_{\mathrm{se, train}}+\mathrm{x}^{*T} \cdot \mathrm{y}_{\mathrm{LF}}^*\right)$, (Score)', color='g')
-            #            ax1.bar(ele-width, inner_proj[:,0],width,label='yhf-m', color='b')
-            #            plt.plot(inner_proj2,label='ylf-m')
             ax1.bar(ele + width, inner_proj2[:, 0], width, label='ylf', color='g')
             #            ax1.bar(ele,inner_proj4[:,0],width,label='yhf')
             # ax1.bar(ele-width,inner_proj6[:,0],width,label='yhf_full')
@@ -663,9 +670,9 @@ class BMFMCModel(Model):
             path = '/home/nitzler/Documents/Vorlagen/inner_projection_{}.png'.format(counter)
             plt.savefig(path, format='png', dpi=300)
 
-            #            plt.scatter(self.f_mean_pred, self.hf_mc[:,None]-self.f_mean_pred, label='hferr')
-            #            plt.legend()
-            #            plt.show()
+            #   plt.scatter(self.f_mean_pred, self.hf_mc[:,None]-self.f_mean_pred, label='hferr')
+            #   plt.legend()
+            #   plt.show()
             select_bool = inner_proj == np.max(
                 inner_proj
             )  # alternatively test the error projection of LF
@@ -683,8 +690,8 @@ class BMFMCModel(Model):
             #        v = v[:, idx]
 
             # select the input
-            #            test_iter = np.atleast_2d(x_iter_test[:,select_bool.squeeze()])#v[0:num_features]))
-            #            train_iter = np.atleast_2d(x_iter_train[:,select_bool.squeeze()])# v[0:num_features]))
+            # test_iter = np.atleast_2d(x_iter_test[:,select_bool.squeeze()])#v[0:num_features]))
+            # train_iter = np.atleast_2d(x_iter_train[:,select_bool.squeeze()])# v[0:num_features]))
 
             test_iter = np.dot(x_iter_test, select_bool)  # v[0:num_features]))
             train_iter = np.dot(
@@ -713,41 +720,6 @@ class BMFMCModel(Model):
             self.interface.build_approximation(self.manifold_train, self.hf_train_out)
             self.f_mean_pred, self.yhf_var_pred = self.interface.map(self.manifold_test.T)
             self.f_mean_train, _ = self.interface.map(self.manifold_train.T)
-
-            # noise = np.hstack((noise, self.interface.approximation.m.Gaussian_noise.variance[:]))
-
-    #        with open('gaussian_noise_rnd_fsi.txt','a') as myfile:
-    #            for ele in noise:
-    #                myfile.write('%s ' % ele)
-    #            myfile.write('\n')
-    # calculate decrease in gaussian noise level for regression model
-    #        plt.rcParams["mathtext.fontset"] = "cm"
-    #        plt.rcParams.update({'font.size':23})
-    #
-    #        fig,ax1 = plt.subplots()
-    #        import pandas as pd
-    #        count = np.arange(0,4)
-    #        data = pd.read_csv('gaussian_noise_rnd_fsi.txt', sep=' ').to_numpy()[:,0:-1]
-    #        mean = np.mean(data, axis=0)
-    #        error =np.std(data, axis=0)
-    #        width = 0.35
-    #        ax1.bar(count,mean,width, yerr=error, alpha=0.5,color='b',ecolor='black',capsize=10, align='edge', label='Random in bins, $(\mathbf{n}=50)$')
-    #        ax1.bar(count, noise,-width, color='g',alpha=0.5, align='edge',label='Diverse subset, ($\mathbf{n}=50$)')
-    #        ax1.set_xlabel(r'Number of features')
-    #        ax1.set_ylabel(r'Gaussian noise variance $\sigma_{\mathrm{n}}^2$')
-    #        ax1.set_xticks(np.arange(0,4))
-    #
-    #        ax1.grid(which='major', linestyle='-')
-    #        ax1.grid(which='minor', linestyle='--', alpha=0.5)
-    #        ax1.minorticks_on()
-    #        ax1.legend()
-    #
-    #        fig.set_size_inches(15, 15)
-    #        plt.savefig('/home/nitzler/Documents/Vorlagen/noise_reduction_fsi.eps', format='eps', dpi=300)
-    #
-    #        plt.show()
-    # length_scales = self.interface.approximation.m.rbf.lengthscale[:]
-    # variance = self.interface.approximation.m.rbf.variance[:]
 
     def kernel_pca(self):
         # Standardizing the features

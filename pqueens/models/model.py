@@ -35,7 +35,7 @@ class Model(metaclass=abc.ABCMeta):
         self.name = name
         self.uncertain_parameters = uncertain_parameters
         if data_flag is not None:
-            self.variables = None  # use None as a placeholder and set variables from data in children class later
+            self.variables = None
         else:
             self.variables = [Variables.from_uncertain_parameters_create(uncertain_parameters)]
 
