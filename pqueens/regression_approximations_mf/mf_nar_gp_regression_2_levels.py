@@ -54,7 +54,9 @@ class MF_NAR_GP_Regression_2_Levels(object):
         # check that X_lofi and X_hifi have the same dimension
         dim_x = Xtrain[0].shape[1]
         if dim_x is not Xtrain[1].shape[1]:
-            raise Exception("Dimension of low fidelity inputs and high fidelity inputs must be the same")
+            raise Exception(
+                "Dimension of low fidelity inputs and high fidelity inputs must be the same"
+            )
         self.num_fidelity_levels = 2
 
         self.X_lofi = Xtrain[0]
@@ -79,10 +81,9 @@ class MF_NAR_GP_Regression_2_Levels(object):
     def train(self):
         # train gp on low fidelity data
         k1 = GPy.kern.RBF(self.input_dimension, ARD=True)
-        self.m1 = GPy.models.GPRegression(X=self.X_lofi, Y=self.y_lofi,
-                                          kernel=k1, normalizer=True)
+        self.m1 = GPy.models.GPRegression(X=self.X_lofi, Y=self.y_lofi, kernel=k1, normalizer=True)
 
-        self.m1[".*Gaussian_noise"] = self.m1.Y.var()*0.01
+        self.m1[".*Gaussian_noise"] = self.m1.Y.var() * 0.01
         self.m1[".*Gaussian_noise"].fix()
         self.m1.optimize(max_iters=500)
         self.m1[".*Gaussian_noise"].unfix()
@@ -94,16 +95,13 @@ class MF_NAR_GP_Regression_2_Levels(object):
         # train gp on high fidelity data
         XX = np.hstack((self.X_hifi, mu1))
 
-        k2 = GPy.kern.RBF(1, active_dims=[self.input_dimension]) \
-             * GPy.kern.RBF(self.input_dimension,
-                            active_dims=self.active_dimensions, ARD=True) \
-             + GPy.kern.RBF(self.input_dimension,
-                            active_dims=self.active_dimensions, ARD=True)
+        k2 = GPy.kern.RBF(1, active_dims=[self.input_dimension]) * GPy.kern.RBF(
+            self.input_dimension, active_dims=self.active_dimensions, ARD=True
+        ) + GPy.kern.RBF(self.input_dimension, active_dims=self.active_dimensions, ARD=True)
 
-        self.m2 = GPy.models.GPRegression(X=XX, Y=self.y_hifi,
-                                          kernel=k2, normalizer=True)
+        self.m2 = GPy.models.GPRegression(X=XX, Y=self.y_hifi, kernel=k2, normalizer=True)
 
-        self.m2[".*Gaussian_noise"] = self.m2.Y.var()*0.01
+        self.m2[".*Gaussian_noise"] = self.m2.Y.var() * 0.01
         self.m2[".*Gaussian_noise"].fix()
         self.m2.optimize(max_iters=500)
         self.m2[".*Gaussian_noise"].unfix()
@@ -129,7 +127,6 @@ class MF_NAR_GP_Regression_2_Levels(object):
 
         return output
 
-
     def predict_f(self, x_test):
         """ Compute the mean and variance of the latent function at x_test
 
@@ -148,8 +145,7 @@ class MF_NAR_GP_Regression_2_Levels(object):
         # compute mean and full covariance matrix
         mu1, C1 = self.m1.predict(x_test, full_cov=True)
         # generate nsample samples at x
-        Z = np.random.multivariate_normal(mu1.flatten(),C1,
-                                          self.num_posterior_samples)
+        Z = np.random.multivariate_normal(mu1.flatten(), C1, self.num_posterior_samples)
 
         # push samples through level 2
         tmp_m = np.zeros((self.num_posterior_samples, num_test_points))
@@ -163,7 +159,7 @@ class MF_NAR_GP_Regression_2_Levels(object):
         # get posterior mean and variance
         # TODO check this, this is not so clear to me
         mean_x_test = np.mean(tmp_m, axis=0)[:, None]
-        var = np.mean(tmp_v, axis=0)[:, None]+ np.var(tmp_m, axis=0)[:, None]
+        var = np.mean(tmp_v, axis=0)[:, None] + np.var(tmp_m, axis=0)[:, None]
         var_x_test = np.abs(var)
 
         return mean_x_test.reshape((-1, 1)), var_x_test.reshape((-1, 1))
@@ -188,23 +184,18 @@ class MF_NAR_GP_Regression_2_Levels(object):
         mu1, C1 = self.m1.predict(my_mc_samples, full_cov=True)
 
         # generate num_posterior_samples samples of level 1 at my_mc_samples
-        Z = np.random.multivariate_normal(mu1.flatten(),
-                                          C1, num_realizations_l1)
+        Z = np.random.multivariate_normal(mu1.flatten(), C1, num_realizations_l1)
 
         # init array to store samples
-        my_samples = np.zeros((num_realizations_l1,
-                               num_realizations_l2,
-                               num_input_samples))
+        my_samples = np.zeros((num_realizations_l1, num_realizations_l2, num_input_samples))
 
         # loop over all samples of f1
         for i in range(0, num_realizations_l1):
-            mu2, C2 = self.m2.predict(np.hstack((my_mc_samples,
-                                                 Z[i, :][:, None])),
-                                      full_cov=True)
+            mu2, C2 = self.m2.predict(np.hstack((my_mc_samples, Z[i, :][:, None])), full_cov=True)
 
             # generate num_realizations_l2 of f2 based on f1(i)
-            my_samples[i, :, :] = \
-                np.random.multivariate_normal(mu2.flatten(),
-                                              C2, num_realizations_l2)
+            my_samples[i, :, :] = np.random.multivariate_normal(
+                mu2.flatten(), C2, num_realizations_l2
+            )
 
         return my_samples

@@ -72,7 +72,12 @@ class BaciDriverNative(Driver):
         ]  # This is already within pbs
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
-        _, stderr, self.pid = self.run_subprocess(command_string)
+        stdout, stderr, self.pid = self.run_subprocess(command_string)
+        # print the standard output of the subprocess to file (for debugging)
+        with open(self.output_file + "_subprocess_stdout.txt", "w") as text_file:
+            print(stdout, file=text_file)
+        with open(self.output_file + "_subprocess_stderr.txt", "w") as text_file:
+            print(stderr, file=text_file)
         if stderr:
             self.result = None  # This is necessary to detect failed jobs
             self.job['status'] = 'failed'

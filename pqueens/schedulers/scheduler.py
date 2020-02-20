@@ -150,9 +150,12 @@ class Scheduler(metaclass=abc.ABCMeta):
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
     def kill_previous_queens_ssh_remote(self, username):
         """
-        Kill existing ssh-port-forwardings on the remote that were caused by previous QUEENS simulations
-        that either crashed or are still in place due to other reasons. This method will avoid that a
-        user opens too many unnecessary ports on the remote and blocks them for other users.
+        Kill existing ssh-port-forwardings on the remote
+        that were caused by previous QUEENS simulations
+        that either crashed or are still in place due to other reasons.
+        This method will avoid that a user opens too many unnecessary ports on the remote
+        and blocks them for other users.
+
         Args:
             username (string): Username of person logged in on remote machine
         Returns:
@@ -204,8 +207,8 @@ class Scheduler(metaclass=abc.ABCMeta):
                     print('You gave an empty input! Only "y" or "n" are valid inputs! Try again!')
                 else:
                     print(
-                        'The input "%s" is not an appropriate choice! Only "y" or "n" are valid inputs!'
-                        % answer
+                        f'The input "{answer}" is not an appropriate choice! '
+                        f'Only "y" or "n" are valid inputs!'
                     )
                     print('Try again!')
         else:
@@ -257,11 +260,15 @@ class Scheduler(metaclass=abc.ABCMeta):
                 command_list = [
                     'ssh',
                     self.connect_to_resource,
+                    # pylint: disable=line-too-long
                     "\"echo 'export SINGULARITYENV_APPEND_PATH=$PATH' >> ~/.bashrc && source ~/.bashrc\"",
+                    # pylint: enable=line-too-long
                 ]  # noqa
             else:
                 command_list = [
+                    # pylint: disable=line-too-long
                     "echo 'export SINGULARITYENV_APPEND_PATH=$PATH' >> ~/.bashrc && source ~/.bashrc"
+                    # pylint: enable=line-too-long
                 ]  # noqa
             command_string = ' '.join(command_list)
             stdout, stderr, _ = self.run_subprocess(command_string)
@@ -282,11 +289,15 @@ class Scheduler(metaclass=abc.ABCMeta):
                 command_list = [
                     'ssh',
                     self.connect_to_resource,
+                    # pylint: disable=line-too-long
                     "\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc\"",
+                    # pylint: enable=line-too-long
                 ]  # noqa
             else:
                 command_list = [
+                    # pylint: disable=line-too-long
                     "echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> ~/.bashrc && source ~/.bashrc"
+                    # pylint: enable=line-too-long
                 ]  # noqa
             command_string = ' '.join(command_list)
             stdout, stderr, _ = self.run_subprocess(command_string)
@@ -344,7 +355,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         stat = ssh_proc.poll()
         while stat is None:
             stat = ssh_proc.poll()
-        # TODO Think of some kind of error catching here; so far it works but error might be cryptical
+        # TODO Think of some kind of error catching here;
+        #  so far it works but error might be cryptical
 
     def close_remote_port(self):
         """
@@ -399,7 +411,8 @@ class Scheduler(metaclass=abc.ABCMeta):
 
     def copy_post_post(self):
         """
-        Copy an instance of the post-post module to the remote and load it dynamically during runtime.
+        Copy an instance of the post-post module to the remote and
+        load it dynamically during runtime.
         This enables fast changes in post-post scripts without the need to rebuild the singularity
         image.
         Returns:
@@ -461,11 +474,12 @@ class Scheduler(metaclass=abc.ABCMeta):
         if not os.path.isfile(abs_path):
             print('Build of local singularity image failed!')
             print(
-                'This could have several reasons but make sure to run QUEENS from the base directory'
+                'This could have several reasons but '
+                'make sure to run QUEENS from the base directory'
             )
             print('containing the main.py file to set the proper relatives paths!')
             print(
-                '-----------------------------------------------------------------------------------'
+                '----------------------------------------------------------------------------------'
             )
             print(f'The returned error message was: {stderr}, {stdout}')
             raise RuntimeError
@@ -569,7 +583,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             # Write local singularity image and remote image
             if old_data != ''.join(hashlist):
                 print(
-                    "Local singularity image is not up-to-date with QUEENS! Writing new local image..."
+                    "Local singularity image is not up-to-date with QUEENS! "
+                    "Writing new local image..."
                 )
                 print("(This will take 3 min or so, but needs only to be done once)")
                 # deleting old image
@@ -596,7 +611,8 @@ class Scheduler(metaclass=abc.ABCMeta):
                     stdout, stderr, _ = self.run_subprocess(command_string)
                     if stderr:
                         raise RuntimeError(
-                            "Error! Was not able to copy local singularity image to remote! Abort..."
+                            "Error! Was not able to copy local singularity image to remote! "
+                            "Abort..."
                         )
 
             # check existence singularity on remote
@@ -612,7 +628,8 @@ class Scheduler(metaclass=abc.ABCMeta):
                 if 'N' in stdout:
                     # Update remote image
                     print(
-                        "Remote singularity image is not existent! Updating remote image from local image..."
+                        "Remote singularity image is not existent! "
+                        "Updating remote image from local image..."
                     )
                     print("(This might take a couple of seconds, but needs only to be done once)")
                     rel_path = "../../driver.simg"
@@ -626,7 +643,8 @@ class Scheduler(metaclass=abc.ABCMeta):
                     stdout, stderr, _ = self.run_subprocess(command_string)
                     if stderr:
                         raise RuntimeError(
-                            "Error! Was not able to copy local singularity image to remote! Abort..."
+                            "Error! Was not able to copy local singularity image to remote! "
+                            "Abort..."
                         )
                     print('All singularity images ok! Starting simulation on cluster...')
 
@@ -723,17 +741,18 @@ class Scheduler(metaclass=abc.ABCMeta):
             ]
             cmd_remote_main = ' '.join(cmdlist_remote_main)
             stdout, stderr, _ = self.run_subprocess(cmd_remote_main)
+            if stderr:
+                raise RuntimeError(
+                    "\nThe file 'remote_main' in remote singularity image "
+                    "could not be executed properly!"
+                    f"\nStderr from remote:\n{stderr}"
+                )
             match = self.get_process_id_from_output(stdout)
             try:
                 return int(match)
             except ValueError:
                 sys.stderr.write(stdout)
                 return None
-
-            if stderr:
-                raise RuntimeError(
-                    "The file 'remote_main' in remote singularity image could not be executed properly!"
-                )
         else:
             if self.no_singularity:
                 with open(self.config['input_file'], 'r') as myfile:

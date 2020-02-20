@@ -1,5 +1,6 @@
 import abc
 
+
 class Interface(metaclass=abc.ABCMeta):
     """
     Interface class to map input variables to simulation outputs
@@ -29,20 +30,20 @@ class Interface(metaclass=abc.ABCMeta):
         import pqueens.interfaces.approximation_interface_mf
         import pqueens.interfaces.bmfmc_interface
 
-        interface_dict = {'job_interface': pqueens.interfaces.job_interface.JobInterface,
-                          'direct_python_interface': pqueens.interfaces.direct_python_interface.DirectPythonInterface,
-                          'approximation_interface': pqueens.interfaces.approximation_interface.ApproximationInterface,
-                          'approximation_interface_mf':
-                          pqueens.interfaces.approximation_interface_mf.ApproximationInterfaceMF,
-                          'bmfmc_interface':
-                          pqueens.interfaces.bmfmc_interface.BmfmcInterface}
-
+        # pylint: disable=line-too-long
+        interface_dict = {
+            'job_interface': pqueens.interfaces.job_interface.JobInterface,
+            'direct_python_interface': pqueens.interfaces.direct_python_interface.DirectPythonInterface,
+            'approximation_interface': pqueens.interfaces.approximation_interface.ApproximationInterface,
+            'approximation_interface_mf': pqueens.interfaces.approximation_interface_mf.ApproximationInterfaceMF,
+            'bmfmc_interface': pqueens.interfaces.bmfmc_interface.BmfmcInterface,
+        }
+        # pylint: enable=line-too-long
 
         interface_options = config[interface_name]
         # determine which object to create
         interface_class = interface_dict[interface_options["type"]]
-        return interface_class.from_config_create_interface(interface_name,
-                                                            config)
+        return interface_class.from_config_create_interface(interface_name, config)
 
     @abc.abstractmethod
     def map(self, samples):

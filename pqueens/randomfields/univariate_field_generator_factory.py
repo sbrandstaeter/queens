@@ -90,7 +90,6 @@ class UniVarRandomFieldGeneratorFactory(object):
                     'Spatial dimension must be either 1,2, or 3,'
                     ' not {}'.format(spatial_dimension)
                 )
-
         else:
             raise RuntimeError(
                 'Autocorrelation structure has to be either'

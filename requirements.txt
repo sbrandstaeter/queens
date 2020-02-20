@@ -25,6 +25,8 @@ pytest>=3.0.0
 pytest-codestyle
 pytest-cov
 pytest-mock
+# for running tests in parallel
+pytest-xdist
 # create mock objects for unit testing
 mock
 # linting, check code-style (PEP8)
@@ -33,5 +35,7 @@ pylint
 pyfiglet
 # code formatter
 black
+# a smart progress meter for loops
+tqdm
 # space filling subsets
 diversipy

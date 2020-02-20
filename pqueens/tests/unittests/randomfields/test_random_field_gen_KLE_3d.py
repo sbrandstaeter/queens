@@ -43,6 +43,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         self.seed = 42
 
         self.my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            # pylint: enable=line-too-long
             marg_pdf=self.marginal_pdf,
             spatial_dimension=self.dimension,
             corrstruct=self.corrstruct,
@@ -179,6 +180,25 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         ref_corr_at_dist_100_1 = 0.006476671345
         ref_corr_at_dist_100_2 = 0.0994126929964
         ref_corr_at_dist_100_3 = 0.0425402198459
+
+        self.assertAlmostEqual(
+            act_corr_at_dist_10_1[0, 1],
+            ref_corr_at_dist_10_1,
+            9,
+            'Correlation for distance 10 is not correct.',
+        )
+        self.assertAlmostEqual(
+            act_corr_at_dist_10_2[0, 1],
+            ref_corr_at_dist_10_2,
+            9,
+            'Correlation for distance 10 is not correct.',
+        )
+        self.assertAlmostEqual(
+            act_corr_at_dist_10_3[0, 1],
+            ref_corr_at_dist_10_3,
+            9,
+            'Correlation for distance 10 is not correct.',
+        )
 
         self.assertAlmostEqual(
             act_corr_at_dist_10_1[0, 1],

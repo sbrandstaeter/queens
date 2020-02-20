@@ -1,6 +1,7 @@
 import numpy as np
 from pqueens.example_simulator_functions.park91a_hifi import park91a_hifi
 
+
 def park91a_lofi(x1, x2, x3, x4):
     """ Low-fidelity Park91a function
 
@@ -8,7 +9,8 @@ def park91a_lofi(x1, x2, x3, x4):
     a computer model. For the purpose of multi-fidelity simulation, [3]
     defined a corresponding lower fidelity function, which is  defined as
 
-    :math:`f_{lofi}({\\bf x})= [1 + \\frac{\sin(x_1)}{10} ] f_{hifi}({\\bf x}) - 2x_1 + x_2^2 + x_3^2 + 0.5`
+    :math:`f_{lofi}({\\bf x})=
+    [1 + \\frac{\sin(x_1)}{10} ] f_{hifi}({\\bf x}) - 2x_1 + x_2^2 + x_3^2 + 0.5`
 
     The high-fidelity version is defiend as is implemented in park91a_hifi
 
@@ -36,10 +38,11 @@ def park91a_lofi(x1, x2, x3, x4):
 
     """
     yh = park91a_hifi(x1, x2, x3, x4)
-    term1 = (1+np.sin(x1)/10) * yh
-    term2 = -2*x1 + x2**2 + x3**2
+    term1 = (1 + np.sin(x1) / 10) * yh
+    term2 = -2 * x1 + x2 ** 2 + x3 ** 2
     y = term1 + term2 + 0.5
     return y
+
 
 def main(job_id, params):
     """ Interface to Park91a test fuction
@@ -51,4 +54,4 @@ def main(job_id, params):
     Returns:
         float: Value of the function at parameter specified in input dict
     """
-    return park91a_lofi(params['x1'],params['x2'],params['x3'],params['x4'])
+    return park91a_lofi(params['x1'], params['x2'], params['x3'], params['x4'])

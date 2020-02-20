@@ -7,6 +7,7 @@ import unittest
 import numpy as np
 from pqueens.utils.scale_samples import scale_samples
 
+
 class TestScaleSamples(unittest.TestCase):
     def setUp(self):
         np.random.seed(5)
@@ -29,18 +30,16 @@ class TestScaleSamples(unittest.TestCase):
         third_distribution['distribution'] = "lognormal"
         third_distribution['distribution_parameter'] = [1, 2]
 
+        self.distribution_info_to_small = [first_distribution, second_distribution]
 
-        self.distribution_info_to_small = [first_distribution,
-                                           second_distribution]
+        self.distribution_info = [first_distribution, second_distribution, third_distribution]
 
-        self.distribution_info = [first_distribution,
-                                  second_distribution,
-                                  third_distribution]
-
-        self.distribution_info_to_big = [first_distribution,
-                                         second_distribution,
-                                         third_distribution,
-                                         third_distribution]
+        self.distribution_info_to_big = [
+            first_distribution,
+            second_distribution,
+            third_distribution,
+            third_distribution,
+        ]
 
         # setup some other distribution dicts with unadmissible distribution
         # parameters
@@ -56,24 +55,26 @@ class TestScaleSamples(unittest.TestCase):
         wrong_lognormal_distribution['distribution'] = "lognormal"
         wrong_lognormal_distribution['distribution_parameter'] = [0, -2]
 
-
         self.wrong_uniform_distribution_list = [wrong_uniform_distribution] * 3
         self.wrong_normal_distribution_list = [wrong_normal_distribution] * 3
         self.wrong_lognormal_distribution_list = [wrong_lognormal_distribution] * 3
 
-
     def test_correct_sample_scaling(self):
         """ Test if scaling works correctly """
 
-        ref_vals = np.array([[-1.74676842, 0.56773409,   0.16526491],
-                             [2.32937978,   1.450873,     9.74825854],
-                             [-1.84273789,   0.09236692,   2.02323682],
-                             [2.63020991,  -1.06725001,   0.36682998],
-                             [-0.07281465,  -1.77264987,  28.48404597]])
+        ref_vals = np.array(
+            [
+                [-1.74676842, 0.56773409, 0.16526491],
+                [2.32937978, 1.450873, 9.74825854],
+                [-1.84273789, 0.09236692, 2.02323682],
+                [2.63020991, -1.06725001, 0.36682998],
+                [-0.07281465, -1.77264987, 28.48404597],
+            ]
+        )
 
         scaled_samples = scale_samples(self.samples, self.distribution_info)
-        #print("shape scale_samples: {}".format(scaled_samples))
-        np.testing.assert_allclose(scaled_samples,ref_vals, 1e-07, 1e-07)
+        # print("shape scale_samples: {}".format(scaled_samples))
+        np.testing.assert_allclose(scaled_samples, ref_vals, 1e-07, 1e-07)
 
     def test_wrong_distribution_parameters(self):
         """ Test if scale samples trows error if we pass unadmissible distribution
@@ -85,7 +86,6 @@ class TestScaleSamples(unittest.TestCase):
             scale_samples(self.samples, self.wrong_normal_distribution_list)
         with self.assertRaises(ValueError):
             scale_samples(self.samples, self.wrong_lognormal_distribution_list)
-
 
     def test_non_matching_inputs(self):
         """ Test if we get error when the number os distributions doas not match

@@ -129,7 +129,8 @@ class Driver(metaclass=abc.ABCMeta):
         self.prepare_environment()
         self.init_job()
         self.run_job()
-        # self.finish_and_clean() # we take this out of the main run and call in explicitly in remote_main
+        # we take this out of the main run and call in explicitly in remote_main
+        # self.finish_and_clean()
 
     # ------------------------ AUXILIARY HIGH-LEVEL METHODS -----------------------
     def prepare_environment(self):

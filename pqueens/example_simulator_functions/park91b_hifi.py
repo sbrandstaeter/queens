@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def park91b_hifi(x1, x2, x3, x4):
     """High-fidelity version of Park91b benchmark function
 
@@ -29,12 +30,13 @@ def park91b_hifi(x1, x2, x3, x4):
             http://doi.org/10.1080/00401706.2012.723572
     """
 
-    term1 = (2/3) * np.exp(x1+x2)
+    term1 = (2 / 3) * np.exp(x1 + x2)
     term2 = -x4 * np.sin(x3)
     term3 = x3
 
     y = term1 + term2 + term3
     return y
+
 
 def main(job_id, params):
     """ Interface to Park91b test fuction
@@ -46,4 +48,4 @@ def main(job_id, params):
     Returns:
         float: Value of the function at parameter specified in input dict
     """
-    return park91b_hifi(params['x1'],params['x2'],params['x3'],params['x4'])
+    return park91b_hifi(params['x1'], params['x2'], params['x3'], params['x4'])

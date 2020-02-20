@@ -1,4 +1,3 @@
-
 from pqueens.randomfields.univariate_random_field_generator import UnivariateRandomFieldSimulator
 import numpy as np
 
@@ -24,8 +23,16 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
 
     """
 
-    def __init__(self,marginal_distribution,corr_length,energy_frac,field_bbox,
-                 dimension,num_ex_term_per_dim,num_terms):
+    def __init__(
+        self,
+        marginal_distribution,
+        corr_length,
+        energy_frac,
+        field_bbox,
+        dimension,
+        num_ex_term_per_dim,
+        num_terms,
+    ):
         """
 
         Args:
@@ -40,51 +47,55 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
                                     (so far only isotropic fields)
 
         """
-        self.m                =None
-        self.trunc_thres      =None
-        self.kb               =None
-        self.largest_length   =None
-        self.corr_length      =None
+        self.m = None
+        self.trunc_thres = None
+        self.kb = None
+        self.largest_length = None
+        self.corr_length = None
 
         # call superclass  first
         super().__init__(marginal_distribution)
 
         # sanity checks are done in factory
-        self.spatial_dim=dimension
+        self.spatial_dim = dimension
 
-        san_check_bbox=field_bbox.shape
-        if san_check_bbox[0] is not self.spatial_dim*2:
-            raise ValueError('field bounding box must be size {} and not {}'.format(self.spatial_dim*2,san_check_bbox[0]))
+        san_check_bbox = field_bbox.shape
+        if san_check_bbox[0] is not self.spatial_dim * 2:
+            raise ValueError(
+                'field bounding box must be size {} and not {}'.format(
+                    self.spatial_dim * 2, san_check_bbox[0]
+                )
+            )
 
-        self.bounding_box=field_bbox
+        self.bounding_box = field_bbox
 
         # compute largest length and size of random field for now.
         # reshape bounding box so that each dimension is in new row
-        bbox = np.reshape(self.bounding_box, (self.spatial_dim,2))
+        bbox = np.reshape(self.bounding_box, (self.spatial_dim, 2))
 
         # compute the maximum
         self.largest_length = bbox.max(0).max(0)
 
-        if energy_frac<0 or energy_frac>1 :
+        if energy_frac < 0 or energy_frac > 1:
             raise ValueError('energy fraction must be between 0 and 1.')
 
-        self.des_energy_frac=energy_frac
-        self.m=num_ex_term_per_dim
-        self.trunc_thres=num_terms
+        self.des_energy_frac = energy_frac
+        self.m = num_ex_term_per_dim
+        self.trunc_thres = num_terms
 
-        if(corr_length<=0):
+        if corr_length <= 0:
             raise ValueError('Error: correlation length must be positive')
 
-        if(corr_length>0.35*self.largest_length):
-            raise ValueError('correlation length must smaller than '
-                               '0.35*largest dimension, please increase size '
-                               'of bounding box.')
+        if corr_length > 0.35 * self.largest_length:
+            raise ValueError(
+                'correlation length must smaller than '
+                '0.35*largest dimension, please increase size '
+                'of bounding box.'
+            )
 
-        self.corr_length=corr_length
+        self.corr_length = corr_length
 
-
-
-    def compute_expansion_coefficient(self,k,length_of_field,corr_length):
+    def compute_expansion_coefficient(self, k, length_of_field, corr_length):
         """ Compute expansion coeffiecients of Fourier series.
 
         Args:
@@ -96,10 +107,13 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
             float: expansion coeffiecient
 
         """
-        if k==0:
-            coeff=corr_length*np.sqrt(np.pi)/(2*length_of_field)
+        if k == 0:
+            coeff = corr_length * np.sqrt(np.pi) / (2 * length_of_field)
         else:
-            coeff=(corr_length * np.sqrt(np.pi) / (length_of_field) *
-                  np.exp(-((k * np.pi * corr_length) ** 2 /
-                  (4 * length_of_field ** 2))))
+            coeff = (
+                corr_length
+                * np.sqrt(np.pi)
+                / (length_of_field)
+                * np.exp(-((k * np.pi * corr_length) ** 2 / (4 * length_of_field ** 2)))
+            )
         return coeff

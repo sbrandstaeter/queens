@@ -36,7 +36,7 @@ class PP_BACI_QoI(Post_post):
         base_settings['skiprows'] = post_post_options['skiprows']
         return cls(base_settings)
 
-# ------------------------ COMPULSORY CHILDREN METHODS ------------------------
+    # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
     def read_post_files(self):
         """ Loop over several post files of interest """
 
@@ -47,8 +47,13 @@ class PP_BACI_QoI(Post_post):
 
         for filename in post_files_list:
             try:
-                post_data = pd.read_csv(filename, sep=r',|\s+', usecols=self.usecols,
-                                        skiprows=self.skiprows, engine='python')
+                post_data = pd.read_csv(
+                    filename,
+                    sep=r',|\s+',
+                    usecols=self.usecols,
+                    skiprows=self.skiprows,
+                    engine='python',
+                )
                 identifier = abs(post_data.iloc[:, 0] - self.target_time) < self.time_tol
                 quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
                 post_out = np.append(post_out, quantity_of_interest)
@@ -77,13 +82,20 @@ class PP_BACI_QoI(Post_post):
 
     def error_handling(self):
         # TODO  ### Error Types ###
-            # No QoI file
-            # Time/Time step not reached
-            # Unexpected values
+        # No QoI file
+        # Time/Time step not reached
+        # Unexpected values
 
         # Organized failed files
         input_file_extention = 'dat'
         if self.error is True:
-            command_string = "cd " + self.output_dir + "&& cd ../.. && mkdir -p postpost_error && cd " \
-                             + self.output_dir + r"&& cd .. && mv *." + input_file_extention + r" ../postpost_error/"
+            command_string = (
+                "cd "
+                + self.output_dir
+                + "&& cd ../.. && mkdir -p postpost_error && cd "
+                + self.output_dir
+                + r"&& cd .. && mv *."
+                + input_file_extention
+                + r" ../postpost_error/"
+            )
             _, _, _ = self.run_subprocess(command_string)

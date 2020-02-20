@@ -42,7 +42,9 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         )
         self.seed = 42
 
+        # pylint: disable:line-too-long
         self.my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+            # pylint: enable:line-too-long
             marg_pdf=self.marginal_pdf,
             spatial_dimension=self.dimension,
             corrstruct=self.corrstruct,

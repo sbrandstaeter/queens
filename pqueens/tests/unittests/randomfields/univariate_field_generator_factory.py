@@ -95,7 +95,8 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
         self.loc = [0, 10, 25, 100]
         self.seed = 42
 
-    # raise RuntimeError('field bounding box must be size {} and not {}'.format(self.spatial_dim*2,san_check_bbox[0]))
+    # raise RuntimeError('field bounding box must be size {} and not {}'.format(
+    # self.spatial_dim*2,san_check_bbox[0]))
     def test_construction_boundingbox_dimension(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -178,7 +179,8 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
         self.loc = [0, 10, 25, 100]
         self.seed = 42
 
-    # raise RuntimeError('field bounding box must be size {} and not {}'.format(self.spatial_dim*2,san_check_bbox[0]))
+    # raise RuntimeError('field bounding box must be size {} and not {}'.format(
+    # self.spatial_dim*2,san_check_bbox[0]))
     def test_construction_boundingbox_dimension(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(

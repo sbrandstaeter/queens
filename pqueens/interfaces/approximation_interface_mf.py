@@ -1,8 +1,11 @@
 import numpy as np
-from pqueens.regression_approximations_mf.regression_approximation_mf import RegressionApproximationMF
+from pqueens.regression_approximations_mf.regression_approximation_mf import (
+    RegressionApproximationMF,
+)
 from .interface import Interface
 
 # TODO add tests
+
 
 class ApproximationInterfaceMF(Interface):
     """ Class for mapping input variables to responses using a MF approximation
@@ -91,8 +94,9 @@ class ApproximationInterfaceMF(Interface):
             Xtrain (list):      List of arrays of Training inputs
             Ytrain (list):      List of arrays of Training outputs
         """
-        self.approximation = RegressionApproximationMF.from_options(self.approximation_config,
-                                                                    Xtrain, Ytrain)
+        self.approximation = RegressionApproximationMF.from_options(
+            self.approximation_config, Xtrain, Ytrain
+        )
         self.approximation.train()
         self.approx_init = True
 

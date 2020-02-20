@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def parabula_residual(x1):
     """
     Residual formulation of a parabula
@@ -14,6 +15,7 @@ def parabula_residual(x1):
     res1 = 10.0 * x1 - 3.0
 
     return np.array([res1])
+
 
 def main(job_id, params):
     """ Interface to Residuals of Rosenbrock banana function

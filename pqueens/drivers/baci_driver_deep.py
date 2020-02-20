@@ -77,7 +77,9 @@ class BaciDriverDeep(Driver):
         _, stderr, self.pid = self.run_subprocess(command_string)
         if stderr:
             if re.fullmatch(
+                # pylint: disable=line-too-long
                 r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n',
+                # pylint: enable=line-too-long
                 stderr,
             ):
                 pass
