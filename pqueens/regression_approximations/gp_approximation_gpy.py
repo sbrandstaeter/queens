@@ -122,7 +122,7 @@ class GPGPyRegression(RegressionApproximation):
         self.m.optimize(max_iters=1000, messages=True)
         # self.m[".*Gaussian_noise"].unfix()
         # self.m[".*Gaussian_noise"].constrain_positive()
-        self.m.optimize_restarts(num_restarts=10, max_iters=1000, max_f_eval=1000)
+        # self.m.optimize_restarts(num_restarts=10, max_iters=1000)
         display(self.m)
 
     def predict(self, Xnew):

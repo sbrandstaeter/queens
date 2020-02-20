@@ -14,10 +14,12 @@ class DataIterator(Iterator):
         result_description (dict):  Description of desired results
 
     """
+
     def __init__(self, path_to_data, result_description, global_settings):
         super(DataIterator, self).__init__(None, global_settings)
         self.samples = None
         self.output = None
+        self.eigenfunc = None  # TODO this is an intermediate solution--> see Issue #45
         self.path_to_data = path_to_data
         self.result_description = result_description
 
@@ -45,9 +47,7 @@ class DataIterator(Iterator):
         result_description = method_options.get("result_description", None)
         global_settings = config.get("global_settings", None)
 
-        return cls(path_to_data,
-                   result_description,
-                   global_settings)
+        return cls(path_to_data, result_description, global_settings)
 
     def eval_model(self):
         """ Evaluate the model """
@@ -58,17 +58,24 @@ class DataIterator(Iterator):
 
     def core_run(self):
         """  Read data from file """
-
-        self.samples, self.output, self.eigenfunc = self.read_pickle_file()
+        # TODO: We should return a more general data structure in the future
+        # TODO: including I/O and meta data; for now catch it with a try statement
+        # TODO: see Issue #45;
+        try:
+            self.samples, self.output, self.eigenfunc = self.read_pickle_file()
+        except ValueError:
+            self.samples, self.output = self.read_pickle_file()
 
     def post_run(self):
         """ Analyze the results """
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description)
             if self.result_description["write_results"] is True:
-                write_results(results,
-                              self.global_settings["output_dir"],
-                              self.global_settings["experiment_name"])
+                write_results(
+                    results,
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
+                )
         # else:
         print("Size of inputs {}".format(self.samples.shape))
         print("Inputs {}".format(self.samples))
