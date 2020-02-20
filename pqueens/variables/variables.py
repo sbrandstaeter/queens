@@ -1,6 +1,6 @@
 from pqueens.utils import mcmc_utils
 import numpy as np
-import pdb
+
 
 class Variables(object):
     """ Class for storing variables
@@ -16,6 +16,7 @@ class Variables(object):
     Attributes:
         variables (dict):  dictionary containing the data
     """
+
     def __init__(self, uncertain_parameters, values=None, active=None):
         """ Initialize variable object
 
@@ -25,22 +26,22 @@ class Variables(object):
             active (list):               list with flag whether or not variable
                                          is active
         """
-        self.variables = {} # TODO Check ifwe need here: <uncertain_parameters> instead of <{}>
+        self.variables = {}  # TODO Check if we need here: <uncertain_parameters> instead of <{}>
         i = 0
         for key, data in uncertain_parameters["random_variables"].items():
-            #TODO Check if the following lines are necessary in other scenarios
+            # TODO Check if the following lines are necessary in other scenarios
             self.variables[key] = {}
-            if data.get('size'): # TODO workaround to make BMFMC work
+            if data['size']:  # TODO workaround to make BMFMC work
                 my_size = data['size']
                 self.variables[key]['size'] = my_size
-                self.variables[key]['value'] = values[i:i+my_size]
+                self.variables[key]['value'] = values[i : i + my_size]
                 self.variables[key]['type'] = data['type']
                 self.variables[key]['distribution'] = mcmc_utils.create_proposal_distribution(data)
                 self.variables[key]['active'] = active[i]
                 i += my_size
             else:
-                self.variables = uncertain_parameters
-                self.variables['random_variables'][key].update({'active':True})
+                # self.variables = uncertain_parameters
+                self.variables['random_variables'][key].update({'active': True})
 
         if uncertain_parameters.get("random_fields") is not None:
             for key, data in uncertain_parameters["random_fields"].items():
@@ -50,7 +51,7 @@ class Variables(object):
                 eval_locations = np.array(eval_locations_list).reshape(-1, dim)
                 my_size = eval_locations.shape[0]
                 self.variables[key]['size'] = my_size
-                self.variables[key]['value'] = values[i]  # TODO values[i:i+my_size]
+                self.variables[key]['value'] = values[i : i + my_size]
                 self.variables[key]['type'] = data['type']
                 self.variables[key]['active'] = active[i]
                 i += my_size
@@ -87,9 +88,10 @@ class Variables(object):
         Returns:
             variables: Instance of variables object
         """
+
         values = data_vector.tolist()
         # TODO fix this
-        active = [True]*len(values)
+        active = [True] * len(values)
 
         return cls(uncertain_parameters, values, active)
 
@@ -137,7 +139,6 @@ class Variables(object):
             num_active_vars += 1
         return num_active_vars
 
-
     def update_variables(self, new_variable_data):
         """ Update variable data
 
@@ -161,7 +162,9 @@ class Variables(object):
         i = 0
         for key, _ in self.variables.items():
             my_size = self.variables[key]['size']
-            self.variables[key]['value'] = np.hstack(data_vector[i:i+my_size])  # np.squeeze(data_vector[i:i+my_size]) # TODO here is a problem!
+            self.variables[key]['value'] = np.squeeze(
+                data_vector[i : i + my_size]
+            )  # TODO here might be is a problem!
             i += my_size
         if i != len(data_vector):
             raise IndexError('The passed vector is to long!')

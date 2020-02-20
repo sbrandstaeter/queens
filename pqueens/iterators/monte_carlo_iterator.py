@@ -89,23 +89,14 @@ class MonteCarloIterator(Iterator):
 
         num_eval_locations = []
 
-        if random_fields is not None:  # TODO JN: This block seems redundant to me
+        if random_fields is not None:
             for _, rf in random_fields.items():
-                if "dimension" in rf:
-                    dim = rf["dimension"]
-                else:
-                    dim = None
-
-                if "evel_locations" in rf:
-                    eval_locations_list = rf.get("eval_locations", None)
-                else:
-                    eval_locations_list = None
                 eval_locations = np.array(eval_locations_list).reshape(-1, dim)
                 temp = eval_locations.shape[0]
                 num_eval_locations.append(temp)
                 num_inputs += temp
 
-        self.samples = np.zeros((self.num_samples, num_inputs), dtype=np.ndarray)
+        self.samples = np.zeros((self.num_samples, num_inputs))
         # loop over random variables to generate samples
         i = 0
         for _, rv in random_variables.items():
@@ -125,18 +116,17 @@ class MonteCarloIterator(Iterator):
                 # create appropriate random field generator
 
                 random_field_opt = {}
+                random_field_opt['corrstruct'] = rf.get("corrstruct")
+                random_field_opt['corr_length'] = rf.get("corr_length")
                 if rf.get("corrstruct") == "non_stationary_squared_exp":
                     random_field_opt['rel_std'] = rf['rel_std']
                     random_field_opt['mean_fun'] = rf['mean_fun']
                     random_field_opt['mean_fun_params'] = rf['mean_fun_params']
                     random_field_opt['num_points'] = rf['num_points']
-                    random_field_opt['corrstruct'] = rf.get("corrstruct")
-                    random_field_opt['corr_length'] = rf.get("corr_length")
                     random_field_opt['num_samples'] = self.num_samples
                 else:
+                    random_field_opt['evel_locations'] = rf.get('eval_location')
                     random_field_opt['dimension'] = rf.get("dimension")
-                    random_field_opt['corrstruct'] = rf.get("corrstruct")
-                    random_field_opt['corr_length'] = rf.get("corr_length")
                     random_field_opt['energy_frac'] = rf.get("energy_frac")
                     random_field_opt['field_bbox'] = np.array(rf.get("field_bbox"))
                     random_field_opt['num_terms_per_dim'] = rf.get("num_terms_per_dim")
@@ -147,7 +137,9 @@ class MonteCarloIterator(Iterator):
                 )
 
                 eval_locations_list = rf.get("eval_locations", None)
-                eval_locations = np.array(eval_locations_list).reshape(-1, dim)
+                eval_locations = np.array(eval_locations_list).reshape(
+                    -1, random_field_opt['dimension']
+                )
 
                 if random_field_opt['corrstruct'] != 'non_stationary_squared_exp':
                     my_stoch_dim = my_field_generator.get_stoch_dim()
@@ -205,7 +197,7 @@ class MonteCarloIterator(Iterator):
                         plt.show()
                     else:
                         data = results['raw_output_data']['mean']
-                        ax.hist(data, bins=50)
+                        ax.hist(data, bins=200)
                         ax.set_xlabel(r'Count [-]')
                         ax.set_xlabel(r'$C_L(t)$')
                         plt.show()

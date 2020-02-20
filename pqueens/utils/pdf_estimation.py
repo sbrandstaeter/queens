@@ -3,8 +3,6 @@ from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import KFold
 import numpy as np
 
-# TODO remove file, outdated implementation
-
 
 def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
     """ Estimate optimal bandwidth for kde of pdf
@@ -52,7 +50,7 @@ def estimate_pdf(samples, kernel_bandwidth, support_points=None):
     if support_points is None:
         min_samples = np.amin(samples)  # DG: -0.5, #fsi:0.02
         max_samples = np.amax(samples)  # DG:2.0, #fsi:0.07
-        support_points = np.linspace(min_samples, max_samples, 200)
+        support_points = np.linspace(min_samples, max_samples, 100)
         support_points = np.meshgrid(*[support_points[:, None]] * samples.shape[1])
         points = support_points[0].reshape(-1, 1)
         if len(points.shape) > 1:
