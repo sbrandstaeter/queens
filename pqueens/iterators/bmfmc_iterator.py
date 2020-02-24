@@ -80,10 +80,10 @@ class BmfmcIterator(Iterator):
         """
         # Initialize Iterator and model
         method_options = config["method"]["method_options"]
-        BMFMC_reference = method_options["BMFMC_reference"]
+        BMFMC_reference = method_options["no_features_comparison_bool"]
         result_description = method_options["result_description"]
         experiment_dir = method_options["experiment_dir"]
-        predictive_var = method_options["predictive_var"]
+        predictive_var = method_options["predictive_var_bool"]
 
         # Create the data iterator from config file
         lf_data_paths = method_options[
@@ -204,7 +204,7 @@ class BmfmcIterator(Iterator):
                         labels=False,
                         include_lowest=True,
                         retbins=True,
-                    )  # TODO check dim of lfs_mc_out for multiple lfs
+                    )  # TODO check dim of Y_LFs_mc for multiple lfs
                     # Some initialization
                     self.lfs_train_out = np.empty(
                         (0, self.lfs_mc_out.shape[1])
@@ -246,15 +246,15 @@ class BmfmcIterator(Iterator):
                 # --------------------------- DIVERSE SUBSET METHOD ---------------------------
                 elif self.initial_design['method'] == 'diverse_subset':
                     n_points = self.initial_design["num_HF_eval"]
-                    # random_fields_test = self.lf_mc_in[:, 3:] # DG
+                    # random_fields_test = self.X_mc[:, 3:] # DG
                     random_fields_test = self.lf_mc_in[:, 1:]  # FSI
                     x_vec = np.linspace(0, 1, 200, endpoint=True)
                     mean_fun = 4 * 1.5 * (-((x_vec - 0.5) ** 2) + 0.25)
                     normalized_test = random_fields_test  # FSI
 
-                    # coef_test = np.dot(self.eigenfunc.T, normalized_test.T).T # DG
-                    # design =  np.hstack((self.lf_mc_in[:,0:3],coef_test[:,0:5]))
-                    # self.lfs_mc_out[:])) # DG
+                    # coef_test = np.dot(self.eigenfunc_random_fields.T, normalized_test.T).T # DG
+                    # design =  np.hstack((self.X_mc[:,0:3],coef_test[:,0:5]))
+                    # self.Y_LFs_mc[:])) # DG
                     design = np.hstack((self.lf_mc_in[:, 0:1], self.lfs_mc_out[:]))  # FSI
 
                     design = StandardScaler().fit_transform(design)
@@ -304,8 +304,8 @@ class BmfmcIterator(Iterator):
             self.hf_train_out,
             self.lf_mc_in,
             self.lfs_mc_out,
-            hf_mc=self.hf_mc,
-            eigenfunc=self.eigenfunc,
+            Y_HF_mc=self.hf_mc,
+            eigenfunc_random_fields=self.eigenfunc,
         )
 
         # TODO: This needs still to be implemented to run HF directly from this iterator
@@ -344,7 +344,7 @@ class BmfmcIterator(Iterator):
                 0.1  # max([max(self.output['pyhf_support']), max(self.output['pylf_mc_support'])])
             )
             min_y = 0
-            max_y = 1.1 * max(self.output['pyhf_mc'])
+            max_y = 1.1 * max(self.output['p_yhf_mc'])
             #            ax.set(xlim=(min_x, max_x), ylim=(min_y, max_y))
             ax.set(xlim=(-0.5, 2), ylim=(min_y, max_y))
 
@@ -428,7 +428,7 @@ class BmfmcIterator(Iterator):
             # ------------------------ PLOT THE MC REFERENCE OF HF ------------------------
             ax.plot(
                 self.output['pyhf_mc_support'],
-                self.output['pyhf_mc'],
+                self.output['p_yhf_mc'],
                 color='black',
                 linestyle='-.',
                 linewidth=3,
@@ -439,7 +439,7 @@ class BmfmcIterator(Iterator):
             if self.lfs_mc_out.shape[1] < 2:
                 ax.plot(
                     self.output['pylf_mc_support'],
-                    self.output['pylf_mc'],
+                    self.output['p_ylf_mc'],
                     linewidth=1.5,
                     color='r',
                     alpha=0.8,
@@ -459,7 +459,7 @@ class BmfmcIterator(Iterator):
             # format='eps', dpi=300)
 
             # ---------------------- OPTIONAL PLOT OF LATENT MANIFOLD ---------------------
-            if self.output['manifold_test'].shape[1] < 2:
+            if self.output['Z_mc'].shape[1] < 2:
                 fig2, ax2 = plt.subplots()
                 ax2.plot(
                     self.lfs_mc_out[:, 0],
@@ -474,17 +474,17 @@ class BmfmcIterator(Iterator):
                 )
 
                 ax2.plot(
-                    np.sort(self.output['manifold_test'][:, 0]),
-                    self.output['f_mean'][np.argsort(self.output['manifold_test'][:, 0])],
+                    np.sort(self.output['Z_mc'][:, 0]),
+                    self.output['f_mean'][np.argsort(self.output['Z_mc'][:, 0])],
                     color='darkblue',
                     linewidth=3,
                     label=r'$\mathrm{m}_{\mathcal{D}_f}(y_{\mathrm{LF}})$, (Posterior mean)',
                 )
 
                 ax2.plot(
-                    np.sort(self.output['manifold_test'][:, 0]),
+                    np.sort(self.output['Z_mc'][:, 0]),
                     np.add(self.output['f_mean'], np.sqrt(self.output['y_var']))[
-                        np.argsort(self.output['manifold_test'][:, 0])
+                        np.argsort(self.output['Z_mc'][:, 0])
                     ],
                     color='darkblue',
                     linewidth=2,
@@ -494,16 +494,16 @@ class BmfmcIterator(Iterator):
                 )
 
                 ax2.plot(
-                    np.sort(self.output['manifold_test'][:, 0]),
+                    np.sort(self.output['Z_mc'][:, 0]),
                     np.add(self.output['f_mean'], -np.sqrt(self.output['y_var']))[
-                        np.argsort(self.output['manifold_test'][:, 0])
+                        np.argsort(self.output['Z_mc'][:, 0])
                     ],
                     color='darkblue',
                     linewidth=2,
                     linestyle='--',
                 )
 
-                #  ax2.plot(self.output['manifold_test'][:, 0],
+                #  ax2.plot(self.output['Z_mc'][:, 0],
                 #  self.output['sample_mat'], linestyle='',
                 #          marker='.', color='red', alpha=0.2)
                 ax2.plot(
@@ -537,36 +537,36 @@ class BmfmcIterator(Iterator):
                 fig2.set_size_inches(15, 15)
             # plt.savefig('/home/nitzler/Documents/Vorlagen/ylf_yhf_LF2.eps', format='png', dpi=300)
 
-            if self.output['manifold_test'].shape[1] == 2:
+            if self.output['Z_mc'].shape[1] == 2:
                 fig3 = plt.figure(figsize=(10, 10))
                 ax3 = fig3.add_subplot(111, projection='3d')
 
                 #  # Normalization of output quantities
-                #  self.output['manifold_test'][:, 0, None] =
-                #  (self.output['manifold_test'][:, 0, None]
-                #               - min(self.output['manifold_test'][:, 0, None])) /\
-                #              (max(self.output['manifold_test'][:, 0, None])
-                #               - min(self.output['manifold_test'][:, 0, None]))
+                #  self.output['Z_mc'][:, 0, None] =
+                #  (self.output['Z_mc'][:, 0, None]
+                #               - min(self.output['Z_mc'][:, 0, None])) /\
+                #              (max(self.output['Z_mc'][:, 0, None])
+                #               - min(self.output['Z_mc'][:, 0, None]))
                 #
-                #     self.output['manifold_test'][:, 1, None] =
-                #     (self.output['manifold_test'][:, 1, None]
-                #          - min(self.output['manifold_test'][:, 1, None])) /\
-                #         (max(self.output['manifold_test'][:, 1, None])
-                #          - min(self.output['manifold_test'][:, 1, None]))\
+                #     self.output['Z_mc'][:, 1, None] =
+                #     (self.output['Z_mc'][:, 1, None]
+                #          - min(self.output['Z_mc'][:, 1, None])) /\
+                #         (max(self.output['Z_mc'][:, 1, None])
+                #          - min(self.output['Z_mc'][:, 1, None]))\
                 #
-                #     self.hf_mc[:, None] = (self.hf_mc[:, None] - min(self.hf_mc[:, None])) /\
-                #                           (max(self.hf_mc[:, None]) - min(self.hf_mc[:, None]))
+                #    self.Y_HF_mc[:, None] = (self.Y_HF_mc[:, None] - min(self.Y_HF_mc[:, None])) /\
+                #                          (max(self.Y_HF_mc[:, None]) - min(self.Y_HF_mc[:, None]))
                 ax3.plot_trisurf(
-                    self.output['manifold_test'][:, 0],
-                    self.output['manifold_test'][:, 1],
+                    self.output['Z_mc'][:, 0],
+                    self.output['Z_mc'][:, 1],
                     self.output['f_mean'][:, 0],
                     shade=True,
                     cmap='jet',
                     alpha=0.50,
                 )  # , label='$\mathrm{m}_{\mathbf{f}^*}$')
                 ax3.scatter(
-                    self.output['manifold_test'][:, 0, None],
-                    self.output['manifold_test'][:, 1, None],
+                    self.output['Z_mc'][:, 0, None],
+                    self.output['Z_mc'][:, 1, None],
                     self.hf_mc[:, None],
                     s=4,
                     alpha=0.7,
@@ -576,19 +576,19 @@ class BmfmcIterator(Iterator):
                     label='$\mathcal{D}_{\mathrm{MC}}$, (Reference)',
                 )
 
-                #  ax3.scatter(self.output['manifold_test'][:, 0, None]*0,
-                #  self.output['manifold_test'][:, 1, None],
-                #              self.hf_mc[:, None], s=10, alpha=0.05,c=self.hf_mc, cmap='jet')
-                #  ax3.scatter(self.output['manifold_test'][:, 0, None],
-                #  self.output['manifold_test'][:, 1, None]*0,
-                #              self.hf_mc[:, None], s=10, alpha=0.05,c=self.hf_mc, cmap='jet')
-                #  ax3.scatter(self.output['manifold_test'][:, 0, None],
-                #  self.output['manifold_test'][:, 1, None],
-                #              self.hf_mc[:, None]*0, s=10, alpha=0.05,c=self.hf_mc, cmap='jet')
+                #  ax3.scatter(self.output['Z_mc'][:, 0, None]*0,
+                #  self.output['Z_mc'][:, 1, None],
+                #              self.Y_HF_mc[:, None], s=10, alpha=0.05,c=self.Y_HF_mc, cmap='jet')
+                #  ax3.scatter(self.output['Z_mc'][:, 0, None],
+                #  self.output['Z_mc'][:, 1, None]*0,
+                #              self.Y_HF_mc[:, None], s=10, alpha=0.05,c=self.Y_HF_mc, cmap='jet')
+                #  ax3.scatter(self.output['Z_mc'][:, 0, None],
+                #  self.output['Z_mc'][:, 1, None],
+                #              self.Y_HF_mc[:, None]*0, s=10, alpha=0.05,c=self.Y_HF_mc, cmap='jet')
 
                 ax3.scatter(
-                    self.output['manifold_train'][:, 0, None],
-                    self.output['manifold_train'][:, 1, None],
+                    self.output['Z_train'][:, 0, None],
+                    self.output['Z_train'][:, 1, None],
                     self.hf_train_out[:, None],
                     marker='x',
                     s=70,
@@ -596,19 +596,19 @@ class BmfmcIterator(Iterator):
                     alpha=1,
                     label='$\mathcal{D}$, (Training)',
                 )
-                # ax3.scatter(self.output['manifold_train'][:, 0, None],
-                # self.output['manifold_train'][:,1,None],
-                #             self.hf_train_out[:, None]*0, marker='x',s=70, c='r', alpha=1)
-                # ax3.scatter(self.output['manifold_test'][:, 0, None],
-                # self.output['manifold_test'][:,1,None],
+                # ax3.scatter(self.output['Z_train'][:, 0, None],
+                # self.output['Z_train'][:,1,None],
+                #             self.Y_HF_train[:, None]*0, marker='x',s=70, c='r', alpha=1)
+                # ax3.scatter(self.output['Z_mc'][:, 0, None],
+                # self.output['Z_mc'][:,1,None],
                 #             self.output['f_mean'][:, None], s=10, c='red', alpha=1)
 
                 ax3.set_xlabel(r'$\mathrm{y}_{\mathrm{LF}}$')  # ,usetex=True)
                 ax3.set_ylabel(r'$\gamma$')
                 ax3.set_zlabel(r'$\mathrm{y}_{\mathrm{HF}}$')
 
-                minx = np.min(self.output['manifold_test'])
-                maxx = np.max(self.output['manifold_test'])
+                minx = np.min(self.output['Z_mc'])
+                maxx = np.max(self.output['Z_mc'])
                 ax3.set_xlim3d(minx, maxx)
                 ax3.set_ylim3d(minx, maxx)
                 ax3.set_zlim3d(minx, maxx)
@@ -620,8 +620,8 @@ class BmfmcIterator(Iterator):
 
             #  # Animate
             #  def init():
-            #      ax3.scatter(self.output['manifold_test'][:,0,None],
-            #      self.output['manifold_test'][:,1,None],self.hf_mc[:,None],s=3,c='darkgreen',
+            #      ax3.scatter(self.output['Z_mc'][:,0,None],
+            #      self.output['Z_mc'][:,1,None],self.Y_HF_mc[:,None],s=3,c='darkgreen',
             #      alpha=0.6)
             #      ax3.set_xlabel(r'$y_{\mathrm{LF}}$')#,usetex=True)
             #      ax3.set_ylabel(r'$\gamma$')
@@ -650,8 +650,8 @@ class BmfmcIterator(Iterator):
         from scipy.stats import entropy as ep
 
 
-#  entropy = ep(self.output['pyhf_mc'],self.output['pyhf_mean'])
-#  entropy_mc = ep(self.output['pyhf_mc'],self.output['pyhf_mc_low'])
+#  entropy = ep(self.output['p_yhf_mc'],self.output['pyhf_mean'])
+#  entropy_mc = ep(self.output['p_yhf_mc'],self.output['p_yhf_LF_mc'])
 #  # append a file
 #  with open('cylinder_KLD_new50.txt','a') as myfile:
 #      myfile.write('%s\n' % entropy)
