@@ -31,7 +31,7 @@ class Variables(object):
         for key, data in uncertain_parameters["random_variables"].items():
             # TODO Check if the following lines are necessary in other scenarios
             self.variables[key] = {}
-            if data['size']:  # TODO workaround to make BMFMC work
+            if data.get('size'):  # TODO workaround to make BMFMC work
                 my_size = data['size']
                 self.variables[key]['size'] = my_size
                 self.variables[key]['value'] = values[i : i + my_size]
@@ -40,7 +40,7 @@ class Variables(object):
                 self.variables[key]['active'] = active[i]
                 i += my_size
             else:
-                # self.variables = uncertain_parameters
+                self.variables = uncertain_parameters
                 self.variables['random_variables'][key].update({'active': True})
 
         if uncertain_parameters.get("random_fields") is not None:

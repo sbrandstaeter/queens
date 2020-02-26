@@ -7,8 +7,6 @@
   "method": {
     "method_name": "bmfmc",
     "method_options" :{
-      "path_to_lf_data" : ["/home/nitzler/workspace/PYTHON_Tests/LF_cylinder_cleaned_kle.pickle"],
-      "path_to_hf_data" : "/home/nitzler/workspace/PYTHON_Tests/HF_cylinder_cleaned.pickle",
       "experiment_dir" : "/home/nitzler/workspace/PYTHON_Tests",
       "active_learning" : false,
       "model": "joint_density_approx",
@@ -22,6 +20,8 @@
       }
     },
   "joint_density_approx": {
+  "path_to_lf_data" : ["/home/nitzler/workspace/PYTHON_Tests/LF_cylinder_cleaned_kle.pickle"],
+  "path_to_hf_data" : "/home/nitzler/workspace/PYTHON_Tests/HF_cylinder_cleaned.pickle",
     "approx_settings":{
       "type" : "gp_approximation_gpy",
       "ard" : "False",
@@ -32,9 +32,9 @@
     "features_config" : "None"
     },
    "initial_design":{
-     "num_HF_eval" : 50,
+     "num_HF_eval" : 250,
      "num_bins" : 20,
-     "method": "random"
+     "method": "diverse_subset"
    }
   }
  }
