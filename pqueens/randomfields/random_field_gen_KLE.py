@@ -2,6 +2,7 @@ import scipy
 import numpy as np
 from pqueens.randomfields.univariate_random_field_generator import UnivariateRandomFieldSimulator
 
+
 class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
     """ Karhuenen Loeve  based random field generator
 
@@ -27,11 +28,20 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         lambda_n (np.array):     eigenvalues of Fredholm equation
 
     """
+
     EPS = 0.000000001
     """tolerance for root finding """
 
-    def __init__(self,marginal_distribution,corr_length,energy_frac,field_bbox,
-                 dimension,num_ex_term_per_dim,num_terms):
+    def __init__(
+        self,
+        marginal_distribution,
+        corr_length,
+        energy_frac,
+        field_bbox,
+        dimension,
+        num_ex_term_per_dim,
+        num_terms,
+    ):
 
         self.m = None
         self.trunc_thres = None
@@ -44,45 +54,47 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         super().__init__(marginal_distribution)
 
         # sanity checks are done in factory
-        self.spatial_dim=dimension
+        self.spatial_dim = dimension
 
-        san_check_bbox=field_bbox.shape
-        if san_check_bbox[0] is not self.spatial_dim*2:
-            raise ValueError('field bounding box must be size {} and not {}'
-                              .format(self.spatial_dim*2,san_check_bbox[0]))
+        san_check_bbox = field_bbox.shape
+        if san_check_bbox[0] is not self.spatial_dim * 2:
+            raise ValueError(
+                'field bounding box must be size {} and not {}'.format(
+                    self.spatial_dim * 2, san_check_bbox[0]
+                )
+            )
 
-        self.bounding_box=field_bbox
+        self.bounding_box = field_bbox
 
         # compute largest length and size of random field for now.
         # reshape bounding box so that each dimension is in new row
-        bbox = np.reshape(self.bounding_box, (self.spatial_dim,2))
+        bbox = np.reshape(self.bounding_box, (self.spatial_dim, 2))
 
         # compute the maximum
         self.largest_length = bbox.max(0).max(0)
 
-        if energy_frac<0 or energy_frac>1 :
+        if energy_frac < 0 or energy_frac > 1:
             raise ValueError('energy fraction must be between 0 and 1.')
 
-        self.des_energy_frac=energy_frac
+        self.des_energy_frac = energy_frac
 
-        if(corr_length<=0):
+        if corr_length <= 0:
             raise ValueError('Correlation length must be positive')
 
-        self.corr_length=corr_length
+        self.corr_length = corr_length
 
         # based on the number of terms per dimension, we can have only
         # num_ex_term_per_dim^dim terms in total
-        if (num_ex_term_per_dim**self.spatial_dim < num_terms):
-            raise ValueError('Number of terms in KLE expansion is too large. '
-                             'Decrease number of terms or increase number of '
-                             'terms per dimension')
+        if num_ex_term_per_dim ** self.spatial_dim < num_terms:
+            raise ValueError(
+                'Number of terms in KLE expansion is too large. '
+                'Decrease number of terms or increase number of '
+                'terms per dimension'
+            )
 
-
-        self.m=num_ex_term_per_dim
-        self.trunc_thres=num_terms
-        self.stoch_dim=num_terms
-
-
+        self.m = num_ex_term_per_dim
+        self.trunc_thres = num_terms
+        self.stoch_dim = num_terms
 
     def compute_roots_of_characteristic_equation(self):
         """Compute roots of characteristic equation
@@ -95,10 +107,10 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
         """
 
-        w_n =np.zeros((self.m,1))
-        index=0
+        w_n = np.zeros((self.m, 1))
+        index = 0
 
-        #compute w_n we need to compute the positive roots of equation (11) from [1]
+        # compute w_n we need to compute the positive roots of equation (11) from [1]
 
         # we need to find the positive roots w_n of the following characteristic
         # function (which is implemented in compute_w )
@@ -113,45 +125,44 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         # check for root before the first pole of the tan function only
         # if the root of the first part lies before the root of the
         # second part.
-        if (1/self.corr_length <np.pi/(self.largest_length*2)):
-            w_n[index] = scipy.optimize.brentq(self.compute_w,
-                                                (1/self.corr_length) +
-                                                 self.EPS,np.pi /
-                                                 (2*self.largest_length) -
-                                                self.EPS)
-            index = index+1
-
+        if 1 / self.corr_length < np.pi / (self.largest_length * 2):
+            w_n[index] = scipy.optimize.brentq(
+                self.compute_w,
+                (1 / self.corr_length) + self.EPS,
+                np.pi / (2 * self.largest_length) - self.EPS,
+            )
+            index = index + 1
 
         # we need odd n only but want a total of m roots hence
         # subtract 1 from m because we have one addtional root through
         # additional pole from first part of characteristic equation
-        for n in range(1, ((self.m-1)*2), 2):
+        for n in range(1, ((self.m - 1) * 2), 2):
             # check if root of first part lies in currrent considered interval
-            if(n*np.pi/(self.largest_length*2) < (1/self.corr_length) and \
-               (n+2)*np.pi/(2*self.largest_length) > (1/self.corr_length) ):
-                w_n[index] = scipy.optimize.brentq(self.compute_w,n*np.pi /
-                                                   (2*self.largest_length) +
-                                                    self.EPS,(1/self.corr_length) -
-                                                    self.EPS)
-                index=index+1
-                w_n[index] = scipy.optimize.brentq(self.compute_w,
-                                                   (1/self.corr_length) +
-                                                   self.EPS,(n+2) * np.pi /
-                                                   (2*self.largest_length)
-                                                   -self.EPS)
-                index=index+1
+            if n * np.pi / (self.largest_length * 2) < (1 / self.corr_length) and (
+                n + 2
+            ) * np.pi / (2 * self.largest_length) > (1 / self.corr_length):
+                w_n[index] = scipy.optimize.brentq(
+                    self.compute_w,
+                    n * np.pi / (2 * self.largest_length) + self.EPS,
+                    (1 / self.corr_length) - self.EPS,
+                )
+                index = index + 1
+                w_n[index] = scipy.optimize.brentq(
+                    self.compute_w,
+                    (1 / self.corr_length) + self.EPS,
+                    (n + 2) * np.pi / (2 * self.largest_length) - self.EPS,
+                )
+                index = index + 1
             else:
-                w_n[index]= scipy.optimize.brentq(self.compute_w,
-                                                  n*np.pi / (2*self.largest_length) +
-                                                  self.EPS,
-                                                  (n+2) * np.pi /
-                                                  (2*self.largest_length) -
-                                                  self.EPS)
-                index=index+1
+                w_n[index] = scipy.optimize.brentq(
+                    self.compute_w,
+                    n * np.pi / (2 * self.largest_length) + self.EPS,
+                    (n + 2) * np.pi / (2 * self.largest_length) - self.EPS,
+                )
+                index = index + 1
         return w_n
 
-
-    def  compute_w(self,w):
+    def compute_w(self, w):
         """ Compute characteristic function
         For details see (12) in [#f1]_.
 
@@ -162,10 +173,11 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
             double: value of characteristic function at w
 
         """
-        return 2*self.corr_length*w/(self.corr_length**2*w**2-1) - \
-               np.tan(w*self.largest_length)
+        return 2 * self.corr_length * w / (self.corr_length ** 2 * w ** 2 - 1) - np.tan(
+            w * self.largest_length
+        )
 
-    def  compute_eigen_function_vec(self,loc,dim):
+    def compute_eigen_function_vec(self, loc, dim):
         """ Compute eigenfunctions of Fredholm equation
 
         Arguments:
@@ -176,15 +188,18 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
             np.array: values of the eigenfunctions at the locations loc
 
         """
-        x=loc[:,dim].reshape(-1,1)
-        helper=(np.ones((len(x),1)))
+        x = loc[:, dim].reshape(-1, 1)
+        helper = np.ones((len(x), 1))
 
-        temp1 =1./(np.sqrt((self.corr_length**2 *
-                   (np.kron((self.w_n[:,dim]),helper))**2+1) *
-                   self.largest_length/2+self.corr_length))
-        temp2 = self.corr_length*np.kron((self.w_n[:,dim]),helper) * \
-               np.cos(np.kron((self.w_n[:,dim]),x)) \
-               + np.sin(np.kron((self.w_n[:,dim]),x))
+        kron1 = np.kron((self.w_n[:, dim]), helper)
+        kron2 = np.kron((self.w_n[:, dim]), x)
 
+        temp1 = 1.0 / (
+            np.sqrt(
+                (self.corr_length ** 2 * (kron1) ** 2 + 1) * self.largest_length / 2
+                + self.corr_length
+            )
+        )
+        temp2 = self.corr_length * kron1 * np.cos(kron2) + np.sin(kron2)
 
-        return temp1*temp2
+        return temp1 * temp2

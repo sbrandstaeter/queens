@@ -3,7 +3,10 @@ import sys
 import numpy as np
 import scipy
 
-from  pqueens.randomfields.univariate_field_generator_factory import UniVarRandomFieldGeneratorFactory
+from pqueens.randomfields.univariate_field_generator_factory import (
+    UniVarRandomFieldGeneratorFactory,
+)
+
 
 class MultiVariateRandomFieldGenerator(object):
     """ Generator of samples of multivariate cross-correlated random fields
@@ -29,9 +32,19 @@ class MultiVariateRandomFieldGenerator(object):
 
     """
 
-    def __init__(self,marginal_distributions, num_fields, crosscorr,
-                 spatial_dimension, corr_struct, corr_length,energy_frac,
-                 field_bbox, num_terms_per_dim, total_terms):
+    def __init__(
+        self,
+        marginal_distributions,
+        num_fields,
+        crosscorr,
+        spatial_dimension,
+        corr_struct,
+        corr_length,
+        energy_frac,
+        field_bbox,
+        num_terms_per_dim,
+        total_terms,
+    ):
         """
         Args:
             marginal_distributions (list): probability distributions of
@@ -52,34 +65,35 @@ class MultiVariateRandomFieldGenerator(object):
 
         """
         # do some sanity checks
-        if (num_fields == len(crosscorr[:,0]) and
-            num_fields == len(crosscorr[0,:])):
+        if num_fields == len(crosscorr[:, 0]) and num_fields == len(crosscorr[0, :]):
             self.var_dim = num_fields
         else:
-            raise RuntimeError('Size of cross-correlation matrix must '
-                               'match number of fields')
+            raise RuntimeError('Size of cross-correlation matrix must ' 'match number of fields')
 
-        if(num_fields != len(marginal_distributions)):
-            raise RuntimeError('Number of input distributions does not '
-                               ' match number of univariate fields')
+        if num_fields != len(marginal_distributions):
+            raise RuntimeError(
+                'Number of input distributions does not ' ' match number of univariate fields'
+            )
 
-        temp=0
-        self.my_univ_rfs =[]
-        for i in range (self.var_dim):
-            self.my_univ_rfs.append(UniVarRandomFieldGeneratorFactory.\
-                                   create_new_random_field_generator(
-                                   marginal_distributions[i],
-                                   spatial_dimension,
-                                   corr_struct,
-                                   corr_length,
-                                   energy_frac,
-                                   field_bbox,
-                                   num_terms_per_dim,
-                                   total_terms))
+        temp = 0
+        self.my_univ_rfs = []
+        for i in range(self.var_dim):
+            self.my_univ_rfs.append(
+                UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+                    marginal_distributions[i],
+                    spatial_dimension,
+                    corr_struct,
+                    corr_length,
+                    energy_frac,
+                    field_bbox,
+                    num_terms_per_dim,
+                    total_terms,
+                )
+            )
 
-            temp = temp+self.my_univ_rfs[i].stoch_dim
+            temp = temp + self.my_univ_rfs[i].stoch_dim
 
-        self.stoch_dim=temp
+        self.stoch_dim = temp
 
         # calculate pre_factor_ matrix to obtain block correlated random
         # phase angles/amplitude according to Vorechovsky 2008
@@ -90,22 +104,20 @@ class MultiVariateRandomFieldGenerator(object):
 
         # eigenvalue decomposition of cross-correlation matrix
         lambda_c, phi_c = np.linalg.eig(crosscorr)
-    
+
         # use dimension of first field for now
-        temp=np.diag(np.ones((self.my_univ_rfs[0].stoch_dim,)))
-        phi_d=np.kron(phi_c,temp)
+        temp = np.diag(np.ones((self.my_univ_rfs[0].stoch_dim,)))
+        phi_d = np.kron(phi_c, temp)
 
-        lamdba_c3 =[]
+        lamdba_c3 = []
         for i in range(len(lambda_c)):
-            lamdba_c3.append(lambda_c[i]*temp)
-
+            lamdba_c3.append(lambda_c[i] * temp)
 
         # make sparse at some point
-        lambda_d=scipy.linalg.block_diag(*lamdba_c3)
+        lambda_d = scipy.linalg.block_diag(*lamdba_c3)
 
-        #self.pre_factor=sparse(phi_d*(lambda_d**(1/2)))
-        self.pre_factor=np.dot(phi_d,(lambda_d**(1/2)))
-
+        # self.pre_factor=sparse(phi_d*(lambda_d**(1/2)))
+        self.pre_factor = np.dot(phi_d, (lambda_d ** (1 / 2)))
 
     def get_stoch_dim(self):
         """ Return stochastic dimension of multi-variate field
@@ -114,10 +126,9 @@ class MultiVariateRandomFieldGenerator(object):
             (int): stochastic dimension
 
         """
-        return (self.stoch_dim)
+        return self.stoch_dim
 
-
-    def evaluate_field_at_location(self,x, xi):
+    def evaluate_field_at_location(self, x, xi):
         """ Generate realization of random field at evaluate it at location
         Args:
             x (np.array):  locations at which to evaluate random field
@@ -129,13 +140,12 @@ class MultiVariateRandomFieldGenerator(object):
                         locations
 
         """
-        new_vals=np.zeros((x.shape[0],self.var_dim))
-        helper = np.dot(self.pre_factor,xi)
+        new_vals = np.zeros((x.shape[0], self.var_dim))
+        helper = np.dot(self.pre_factor, xi)
         np.set_printoptions(threshold=sys.maxsize)
 
-        my_xi=helper.reshape(-1,self.var_dim,order='F')
+        my_xi = helper.reshape(-1, self.var_dim, order='F')
 
-        for i in range (self.var_dim):
-            new_vals[:,i]=self.my_univ_rfs[i]. \
-                          evaluate_field_at_location(x, my_xi[:,i])
+        for i in range(self.var_dim):
+            new_vals[:, i] = self.my_univ_rfs[i].evaluate_field_at_location(x, my_xi[:, i])
         return new_vals

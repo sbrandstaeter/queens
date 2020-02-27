@@ -1,10 +1,8 @@
-BootStrap: yum
-OSVersion: 7
-MirrorURL: http://mirror.centos.org/centos-%{OSVERSION}/%{OSVERSION}/os/$basearch/
-Include: yum wget tar
+BootStrap: docker
+From: centos:7
 
 %help
-This is a singulariy container containing CentOS7 and Python 3.7 as well as necessary QUEENS dependencies (Python packages) to run the latter on a HPC cluster. Central elements are a copy of the Drivers class and the main_remote.py file. This container version uses the MPI environment and 3rd library packages of the host! Therefore it assumes that a working executable (e.g. BACI) is already available on the cluster. The advantage of this layout is that that we are always up-to-date with the cluster infrastructure and just mount important directories and copy system variables at runtime.
+This is a singularity container containing CentOS7 and Python 3.8 as well as necessary QUEENS dependencies (Python packages) to run the latter on a HPC cluster. Central elements are a copy of the Drivers class and the main_remote.py file. This container version uses the MPI environment and 3rd library packages of the host! Therefore it assumes that a working executable (e.g. BACI) is already available on the cluster. The advantage of this layout is that that we are always up-to-date with the cluster infrastructure and just mount important directories and copy system variables at runtime.
 
 %files
   ../pqueens /
@@ -19,7 +17,7 @@ This is a singulariy container containing CentOS7 and Python 3.7 as well as nece
   Date 23.08.2019
 
 %post
-  ln -s /usr/share/zoneinfo/Europe/Berlin /etc/localtime
+  yum install -y wget
   # Install miniconda 3
   if [ ! -d /usr/local/anaconda ]; then
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
@@ -30,11 +28,17 @@ This is a singulariy container containing CentOS7 and Python 3.7 as well as nece
   # set anaconda path
   export PATH="/usr/local/anaconda/bin:$PATH"
   conda update -y conda
-  conda create -y -n QUEENS python=3.7
+  conda create -y -n QUEENS python=3.8
   /usr/local/anaconda/envs/QUEENS/bin/pip install numpy pymongo matplotlib plotly pandas
   cd /
   mkdir scratch
   /usr/local/anaconda/envs/QUEENS/bin/python setup_remote.py develop
+  chmod -R +xr /pqueens
+  chmod -R +xr /pqueens/drivers
+  chmod -R +xr /pqueens/database
+  chmod -R +xr /pqueens/utils
+  chmod -R +xr /setup_remote.py
+  chmod -R +xr /pqueens/remote_main.py
 
 %runscript
   exec /usr/local/anaconda/envs/QUEENS/bin/python /pqueens/remote_main.py $@

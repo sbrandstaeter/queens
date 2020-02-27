@@ -25,6 +25,8 @@ pytest>=3.0.0
 pytest-codestyle
 pytest-cov
 pytest-mock
+# for running tests in parallel
+pytest-xdist
 # create mock objects for unit testing
 mock
 # linting, check code-style (PEP8)
@@ -36,3 +38,5 @@ black
 # Python for ANSYS
 pyansys
 joblib
+# a smart progress meter for loops
+tqdm

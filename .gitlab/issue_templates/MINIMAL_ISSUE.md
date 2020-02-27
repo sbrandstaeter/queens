@@ -4,7 +4,7 @@ Tell us what you think should happen, how you think things should work, what you
 -->
 
 
-## Thinks to Do / Solution Strategy
+## Things to Do / Solution Strategy
 <!---
 Tell us what needs to happen.  If necessary, give us a task list along the lines of:
 - [ ] First do this.

@@ -4,6 +4,8 @@ mean = 0.0
 covariance = 1.0
 
 standard_normal = NormalProposal(mean=mean, covariance=covariance)
+
+
 def gaussian_logpdf(x):
     """ 1D Gaussian likelihood model
 

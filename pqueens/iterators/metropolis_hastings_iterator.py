@@ -369,9 +369,7 @@ class MetropolisHastingsIterator(Iterator):
         if self.result_description:
             initial_samples = self.chains[0]
             chain_burn_in = self.chains[1 : self.num_burn_in + 1]
-            chain_core = self.chains[
-                self.num_burn_in + 1 : self.num_samples + self.num_burn_in + 1
-            ]
+            chain_core = self.chains[self.num_burn_in + 1 : self.num_samples + self.num_burn_in + 1]
 
             accept_rate = self.accepted / self.num_samples
 

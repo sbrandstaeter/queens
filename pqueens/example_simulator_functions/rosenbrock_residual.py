@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def rosenbrock_residual(x1, x2):
     """
     Residuals of Rosenbrock banana function
@@ -16,6 +17,7 @@ def rosenbrock_residual(x1, x2):
     res2 = 1.0 - x1
 
     return np.array([res1, res2])
+
 
 def main(job_id, params):
     """ Interface to Residuals of Rosenbrock banana function

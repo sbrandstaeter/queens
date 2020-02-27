@@ -65,7 +65,6 @@ class Driver(metaclass=abc.ABCMeta):
         from pqueens.drivers.ansys_driver_native import AnsysDriverNative
         from pqueens.drivers.baci_driver_bruteforce import BaciDriverBruteforce
         from pqueens.drivers.baci_driver_native import BaciDriverNative
-        from pqueens.drivers.baci_driver_schmarrn import BaciDriverSchmarrn
         from pqueens.drivers.navierstokes_native import NavierStokesNative
         from pqueens.drivers.baci_driver_deep import BaciDriverDeep
 
@@ -88,7 +87,6 @@ class Driver(metaclass=abc.ABCMeta):
             'ansys_native': AnsysDriverNative,
             'baci_bruteforce': BaciDriverBruteforce,
             'baci_native': BaciDriverNative,
-            'baci_schmarrn': BaciDriverSchmarrn,
             'navierstokes_native': NavierStokesNative,
             'baci_deep': BaciDriverDeep,
         }
@@ -136,7 +134,8 @@ class Driver(metaclass=abc.ABCMeta):
         self.prepare_environment()
         self.init_job()
         self.run_job()
-        # self.finish_and_clean() # we take this out of the main run and call in explicitly in remote_main
+        # we take this out of the main run and call in explicitly in remote_main
+        # self.finish_and_clean()
 
     # ------------------------ AUXILIARY HIGH-LEVEL METHODS -----------------------
     def prepare_environment(self):
@@ -179,8 +178,6 @@ class Driver(metaclass=abc.ABCMeta):
         # start settings for job
         start_time = time.time()
         self.job['start time'] = start_time
-        # save the job with the new start time
-        self.database.save(self.job, self.experiment_dir, 'jobs', self.batch, {'id': self.job_id})
 
         # sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
         #                 % (start_time-self.job['submit time']))

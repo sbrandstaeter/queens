@@ -94,7 +94,7 @@ def test_update_model_from_sample(data_vector, model):
 
     model.update_model_from_sample(data_vector)
 
-    assert len(model.variables) is 1
+    assert len(model.variables) == 1
     np.testing.assert_allclose(model.variables[0].variables['x1']['value'], data_vector[0])
     np.testing.assert_allclose(model.variables[0].variables['x2']['value'], data_vector[1:])
 
@@ -103,7 +103,7 @@ def test_update_model_from_sample_batch(data_batch, model):
     """ Test if model variables can be updated from multiple ndarrays. """
     model.update_model_from_sample_batch(data_batch)
 
-    assert len(model.variables) is 2
+    assert len(model.variables) == 2
 
     for i, variables in enumerate(model.variables):
         np.testing.assert_allclose(variables.variables['x1']['value'], data_batch[i, 0])
@@ -115,7 +115,7 @@ def test_convert_array_to_model_variables(data_batch, model):
 
     variables = model.convert_array_to_model_variables(data_batch)
 
-    assert len(variables) is 2
+    assert len(variables) == 2
 
     for i, variable in enumerate(variables):
         np.testing.assert_allclose(variable.variables['x1']['value'], data_batch[i, 0])
