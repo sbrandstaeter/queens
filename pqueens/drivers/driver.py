@@ -25,6 +25,7 @@ class Driver(metaclass=abc.ABCMeta):
 
     def __init__(self, base_settings):
         self.template = base_settings['template']
+        # TODO MongoDB object should be passed to init not created within
         self.database = MongoDB(database_address=base_settings['address'])
         self.output_file = base_settings['output_file']
         self.file_prefix = base_settings['file_prefix']
