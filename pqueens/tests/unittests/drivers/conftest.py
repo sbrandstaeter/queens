@@ -88,6 +88,27 @@ def baci_post_cmds(baci_job, baci_output_file):
     return post_cmds
 
 
+@pytest.fixture(scope='function')
+def ansys_job():
+    """ Generic job dictionary for testing ANSYS driver"""
+
+    #baci_dir = tmpdir_factory.mktemp('baci_dir')
+
+    driver_params = {}
+    driver_params['input_template'] = str(
+        tmpdir_factory.mktemp('template_dir').join('template.dat')
+    )
+    driver_params['path_to_executable'] = str(baci_dir.join('baci_release'))
+    driver_params['path_to_postprocessor'] = str(baci_dir.join('post_processor'))
+    driver_params['post_process_options'] = ['post_process_options_1', 'post_process_options_2']
+    driver_params['post_post_script'] = str(
+        tmpdir_factory.mktemp('post_post_dir').join('post_post_script.py')
+    )
+
+    job['driver_params'] = driver_params
+
+    return job
+
 ########################################################################
 #########################   DOCKER   ###################################
 ########################################################################

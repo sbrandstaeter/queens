@@ -8,49 +8,38 @@ class AnsysDriverNative(Driver):
     """ Driver to run ANSYS natively on workstation
 
         Attributes:
-            mpi_config (dict): TODO unclear what this is needed for 
+            custom_executable (str): Optional custom executable for ANSYS
 
     """
 
-    def __init__(self, base_settings):
+    def __init__(self, custom_executable, ansys_version,  base_settings):
         # TODO dunder init should not be called with dict 
         super(AnsysDriverNative, self).__init__(base_settings)
-        #self.mpi_config = {}
+        self.custom_executable = custom_executable
+        self.ansys_version = ansys_version
 
     @classmethod
-    def from_config_create_driver(cls, config, base_settings, workdir=None):
+    def from_config_create_driver(cls, config, base_settings):
         """ Create Driver from input file
 
         Args:
             config (dict):          Input options
             base_settings (dict):   Second dict with input options TODO should probably be removed
-            workdir (str):          Probably not used TODO remove 
 
         Returns:
             driver: AnsysDriverNative object
         """
+        # TODO this needs to be fixed
         base_settings['address'] = 'localhost:27017'
-        return cls(base_settings)
+        # TODO this is superbad, but the only solution currently
+        driver_setting = config["driver"]["driver_params"]
+
+        custom_exec = driver_setting.get('custom_executable', None)
+        ansys_version = driver_setting.get('ansys_version', None)
+        return cls(base_settings, custom_exec, ansys_version)
 
     def setup_dirs_and_files(self):
-        """ Setup directory structure
-
-            Args:
-                driver_options (dict): Options dictionary
-
-            Returns:
-                str, str, str: simualtion prefix, name of input file, name of output file
-        """
-        # TODO this really necesarry? Why dont we have a seperate input parameter for this?
-        # split ANSYS excecutable into main and custom executable (if present)
-        # Note that, in the JSON file section "path_to_executable", the main and
-        # customized executable have to be input as follows:
-        # "\"main_executable\"-\"custom_executable\"" (i.e., both excecutables
-        # within quotation marks and separated by a hyphen)
-        # If the standard ANSYS executable is supposed to be used, the hyphen
-        # must not be forgot at the end of the input, though:
-        # "\"main_executable\"-".
-        # self.main_executable, self.custom_executable = self.executable.split('-')
+        """ Setup directory structure """
         self.main_executable = self.executable
 
         # base directories
@@ -73,25 +62,22 @@ class AnsysDriverNative(Driver):
             using run_subprocess method from base class
         """
         # assemble run command
-        command_string = self.assemble_command_string(ansys_variant='v15_linux')
+        command_string = self.assemble_command_string()
 
         _, stderr, self.pid = self.run_subprocess(command_string)
         if stderr:
             self.result = None  # This is necessary to detect failed jobs
             self.job['status'] = 'failed'
 
-    def assemble_command_string(self, ansys_variant):
+    def assemble_command_string(self):
         """  Assemble command list
-
-            Args:
-                ansys_variant (str): Set ANSYS version and OS
 
             Returns:
                 list: command list to execute ANSYS
 
         """
         command_list = []
-        if ansys_variant == 'v15_linux':
+        if self.ansys_version == 'v15':
             command_list = [
                 self.main_executable,
                 "-b -g -p aa_t_a -dir ",
@@ -103,7 +89,7 @@ class AnsysDriverNative(Driver):
                 "-s read -l en-us -t -d X11 > ",
                 self.output_file
             ]
-        elif ansys_variant == 'v19_windows':
+        elif ansys_version == 'v19':
             command_list = [
                 self.main_executable,
                 "-p ansys -smp -np 1 -lch -dir",
@@ -114,10 +100,11 @@ class AnsysDriverNative(Driver):
                 self.input_file,
                 "-o",
                 self.output_file,
-                "-custom",
-                self.custom_executable,
             ]
+            if self.custom_executable is not None:
+                command_list.append("-custom")
+                command_list.append(self.custom_executable)
         else:
-            raise RuntimeError("Unknown ANSYS Varaint, fix your config file")
+            raise RuntimeError("Unknown ANSYS Version, fix your config file")
 
         return ' '.join(filter(None, command_list))
