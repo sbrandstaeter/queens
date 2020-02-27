@@ -10,6 +10,7 @@
         "input_template" : "/home/biehler/adco/projects/05_queens/queens/trials/ansys_plate_template.inp",
         "path_to_executable" : "/lnm/programs64/ansys_inc/v140/ansys/bin/ansys140",
         "experiment_dir" : "/home/biehler/adco/projects/03_ansys_interface/trial_2",
+        "ansys_version" :"v15",
         "no_singularity" : true,
 				"post_post": {
           "post_post_approach_sel" : "ansys",
