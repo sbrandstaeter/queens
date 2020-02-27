@@ -1,6 +1,7 @@
 """ Fixtures needed for testing the Driver classes. """
 import pytest
-
+from pqueens.drivers.ansys_driver_native import AnsysDriverNative
+from pqueens.database.mongodb import MongoDB
 
 @pytest.fixture(scope='session')
 def job(tmpdir_factory):
@@ -89,25 +90,16 @@ def baci_post_cmds(baci_job, baci_output_file):
 
 
 @pytest.fixture(scope='function')
-def ansys_job():
-    """ Generic job dictionary for testing ANSYS driver"""
-
-    #baci_dir = tmpdir_factory.mktemp('baci_dir')
-
-    driver_params = {}
-    driver_params['input_template'] = str(
-        tmpdir_factory.mktemp('template_dir').join('template.dat')
-    )
-    driver_params['path_to_executable'] = str(baci_dir.join('baci_release'))
-    driver_params['path_to_postprocessor'] = str(baci_dir.join('post_processor'))
-    driver_params['post_process_options'] = ['post_process_options_1', 'post_process_options_2']
-    driver_params['post_post_script'] = str(
-        tmpdir_factory.mktemp('post_post_dir').join('post_post_script.py')
-    )
-
-    job['driver_params'] = driver_params
-
-    return job
+def ansys_driver(driver_base_settings, mocker):
+    """ Generic ANSYS driver"""
+    # TODO this is super ugly. creation of DB needs te be moved out of
+    # driver init to resolve this
+    mocker.patch('pqueens.database.mongodb.MongoDB.__init__', return_value=None)
+    driver_base_settings['address'] = 'localhost:27017'
+    driver_base_settings['file_prefix'] = 'rst'
+    driver_base_settings['output_scratch'] = 'rst'
+    my_driver = AnsysDriverNative(None, 'v15',  driver_base_settings)
+    return my_driver
 
 ########################################################################
 #########################   DOCKER   ###################################
