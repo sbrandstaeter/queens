@@ -36,7 +36,7 @@ pyfiglet
 # code formatter
 black
 # Python for ANSYS
-pyansys
-joblib
+#pyansys
+#joblib
 # a smart progress meter for loops
 tqdm
