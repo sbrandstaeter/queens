@@ -256,49 +256,81 @@ class BMFMCModel(Model):
         )
 
     def evaluate(self):
-        """ Evaluate model with current set of variables
+        """
+        Construct the probabilistic mapping between HF model and LF features and evaluate the
+        BMFMC routine. This evaluation consists of two steps.:
+            #. Evaluate the probabilistic mapping for LF Monte Carlo Points and the LF training
+               points
+            #. Use the previous result to actually evaluate the BMFMC posterior statistics
 
         Returns:
-            np.array: Results corresponding to current set of variables
+            output (dict): Dictionary containing the core results and some additional quantities:
+                           *  Z_mc: LF-features Monte-Carlo data
+                           *  m_f_mc: posterior mean values of probabilistic mapping (f) for LF
+                                      Monte-Carlo inputs (Y_LF_mc or Z_mc)
+                           *  var_f_mc: posterior variance of probabilistic mapping (f) for LF
+                                        Monte-Carlo inputs (Y_LF_mc or Z_mc)
+                           *  y_pdf_support: PDF support used in this analysis
+                           *  p_yhf_mean: Posterior mean prediction of HF output pdf
+                           *  p_yhf_var: Posterior variance prediction of HF output pdf
+                           *  p_yhf_mean_BMFMC: Reference without features, posterior mean
+                                                prediction of HF output pdf
+                           *  p_yhf_var_BMMFMC: Reference without features, posterior variance
+                                                prediction of HF output pdf
+                           *  p_ylf_mc: For illustration purpose, output pdf of LF model
+                           *  p_yhf_mc: For benchmarking, output pdf of HF model based on kde
+                                        estimate for full Monte-Carlo simulation on HF model
+                           *  Z_train: LF feature vector for training of the probabilistic mapping
         """
         self.interface = BmfmcInterface(self.settings_probab_mapping)
-        pyhf_mean_BMFMC = None
-        pyhf_var_BMFMC = None
+        p_yhf_mean_BMFMC = None
+        p_yhf_var_BMFMC = None
 
-        # ------------------------------- STANDARD BMFMC ------------------------------
+        if self.Y_HF_mc:
+            self.compute_pymc_reference()
+
+        # ------------------ STANDARD BMFMC (no additional features) for comparison ----------------
         if self.no_features_comparison_bool is True:
+
+            # construct the probabilistic mapping between y_HF and y_LF
             self.build_approximation(approx_case=False)
+
+            # Evaluate probabilistic mapping for LF points
             self.m_f_mc, self.var_f_mc = self.interface.map(self.Y_LFs_mc.T)
             self.f_mean_train, _ = self.interface.map(self.Y_LFs_train.T)
-            self.compute_pymc_reference()
-            self.compute_pyhf_statistics()
-            pyhf_mean_BMFMC = self.p_yhf_mean
-            pyhf_var_BMFMC = self.p_yhf_var
 
-        # ------------------------ MANIFOLD OVER FEATURE SPACE ------------------------
+            # actual 'evaluation' of BMFMC routine
+            self.compute_pyhf_statistics()
+            p_yhf_mean_BMFMC = self.p_yhf_mean  # this is just for comparison so no class attribute
+            p_yhf_var_BMFMC = self.p_yhf_var  # this is just for comparison so no class attribute
+
+        # ------------------- Generalized BMFMC with features --------------------------------------
+        # construct the probabilistic mapping between y_HF and LF features z_LF
         self.build_approximation(approx_case=True)
+
+        # Evaluate probabilistic mapping for certain Z-points
         self.m_f_mc, self.var_f_mc = self.interface.map(self.Z_mc.T)
         self.f_mean_train, _ = self.interface.map(self.Z_train.T)
         # TODO the variables (here) manifold must probably an object from the variable class!
 
-        self.compute_pymc_reference()
+        # actual 'evaluation' of generalized BMFMC routine
         self.compute_pyhf_statistics()
+
+        # gather and return the output
         output = {
             "Z_mc": self.Z_mc,
-            "f_mean": self.m_f_mc,
-            "y_var": self.var_f_mc,
-            "pyhf_support": self.y_pdf_support,
-            "pyhf_mean": self.p_yhf_mean,
-            "pyhf_var": self.p_yhf_var,
-            "pyhf_mean_BMFMC": pyhf_mean_BMFMC,
-            "pyhf_var_BMFMC": pyhf_var_BMFMC,
+            "m_f_mc": self.m_f_mc,
+            "var_f_mc": self.var_f_mc,
+            "y_pdf_support": self.y_pdf_support,
+            "p_yhf_mean": self.p_yhf_mean,
+            "p_yhf_var": self.p_yhf_var,
+            "p_yhf_mean_BMFMC": p_yhf_mean_BMFMC,
+            "p_yhf_var_BMFMC": p_yhf_var_BMFMC,
             "p_ylf_mc": self.p_ylf_mc,
             "p_yhf_mc": self.p_yhf_mc,
             "Z_train": self.Z_train,
         }
-
-        return output  # TODO for now we return the hf output and its variacne
-        # and return the densities later
+        return output
 
     def load_sampling_data(self):
         # --------------------- load LF sampling data with data iterators --------------

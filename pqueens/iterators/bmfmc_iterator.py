@@ -4,6 +4,7 @@ from random import randint
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from diversipy import *
+import pandas as pd
 
 
 class BmfmcIterator(Iterator):
@@ -209,23 +210,22 @@ class BmfmcIterator(Iterator):
             max_y = 1.1 * max(self.output['p_yhf_mc'])
             #            ax.set(xlim=(min_x, max_x), ylim=(min_y, max_y))
             ax.set(xlim=(-0.5, 2), ylim=(min_y, max_y))
-
             #  --------------------- PLOT THE BMFMC POSTERIOR PDF VARIANCE ---------------------
             if self.predictive_var is True:
-                # ax.plot(self.output['pyhf_support'],self.output['pyhf_mean']
-                #        +np.sqrt(self.output['pyhf_var']),
+                # ax.plot(self.output['y_pdf_support'],self.output['p_yhf_mean']
+                #        +np.sqrt(self.output['p_yhf_var']),
                 #        linewidth=0.8, color='green', alpha=0.8,
                 #        label=r'$\mathbb{SD}\left[\mathrm{p}\left(y_{\mathrm{HF}}|
                 #        f^*,\mathcal{D}\right)\right]$')
-                # ax.plot(self.output['pyhf_support'],self.output['pyhf_mean']-
-                # np.sqrt(self.output['pyhf_var']),
+                # ax.plot(self.output['y_pdf_support'],self.output['p_yhf_mean']-
+                # np.sqrt(self.output['p_yhf_var']),
                 #        linewidth=0.8, color='green', alpha=0.8,
                 #        label=r'$\mathbb{SD}
                 #        \left[\mathrm{p}\left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
-                ub = self.output['pyhf_mean'] + 2 * np.sqrt(self.output['pyhf_var'])
-                lb = self.output['pyhf_mean'] - 2 * np.sqrt(self.output['pyhf_var'])
+                ub = self.output['p_yhf_mean'] + 2 * np.sqrt(self.output['p_yhf_var'])
+                lb = self.output['p_yhf_mean'] - 2 * np.sqrt(self.output['p_yhf_var'])
                 ax.fill_between(
-                    self.output['pyhf_support'],
+                    self.output['y_pdf_support'],
                     ub,
                     lb,
                     where=ub > lb,
@@ -238,8 +238,8 @@ class BmfmcIterator(Iterator):
 
             # --------------------- PLOT THE BMFMC POSTERIOR PDF MEAN ---------------------
             ax.plot(
-                self.output['pyhf_support'],
-                self.output['pyhf_mean'],
+                self.output['y_pdf_support'],
+                self.output['p_yhf_mean'],
                 color='xkcd:green',
                 linewidth=3,
                 label=r'$\mathrm{\mathbb{E}}_{f^*}\left[p\left(y^*_{\mathrm{HF}}|'
@@ -250,22 +250,26 @@ class BmfmcIterator(Iterator):
             if self.BMFMC_reference is True:
                 # plot the bmfmc var
                 if self.predictive_var is True:
-                    # ax.plot(self.output['pyhf_support'], self.output['pyhf_mean_BMFMC']+
-                    # np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.8, color='magenta',
+                    # ax.plot(self.output['y_pdf_support'], self.output['p_yhf_mean_BMFMC']+
+                    # np.sqrt(self.output['p_yhf_var_BMFMC']),linewidth=0.8, color='magenta',
                     # alpha=0.8,label=r'$\mathbb{SD}\left[\mathrm{p}
                     # \left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
-                    # ax.plot(self.output['pyhf_support'], self.output['pyhf_mean_BMFMC']-
-                    # np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.8, color='magenta',
+                    # ax.plot(self.output['y_pdf_support'], self.output['p_yhf_mean_BMFMC']-
+                    # np.sqrt(self.output['p_yhf_var_BMFMC']),linewidth=0.8, color='magenta',
                     # alpha=0.8,label=r'$\mathbb{SD}\left[\mathrm{p}
                     # \left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
-                    #      ax.plot(self.output['pyhf_support'],
-                    #      np.sqrt(self.output['pyhf_var_BMFMC']),linewidth=0.8, color='magenta',
+                    #      ax.plot(self.output['y_pdf_support'],
+                    #      np.sqrt(self.output['p_yhf_var_BMFMC']),linewidth=0.8, color='magenta',
                     #      alpha=0.8,label=r'$\mathbb{SD}\left[\mathrm{p}
                     #      \left(y_{\mathrm{HF}}|f^*,\mathcal{D}\right)\right]$')
-                    ub = self.output['pyhf_mean_BMFMC'] + 2 * np.sqrt(self.output['pyhf_var_BMFMC'])
-                    lb = self.output['pyhf_mean_BMFMC'] - 2 * np.sqrt(self.output['pyhf_var_BMFMC'])
+                    ub = self.output['p_yhf_mean_BMFMC'] + 2 * np.sqrt(
+                        self.output['p_yhf_var_BMFMC']
+                    )
+                    lb = self.output['p_yhf_mean_BMFMC'] - 2 * np.sqrt(
+                        self.output['p_yhf_var_BMFMC']
+                    )
                     ax.fill_between(
-                        self.output['pyhf_support'],
+                        self.output['y_pdf_support'],
                         ub,
                         lb,
                         where=ub > lb,
@@ -277,8 +281,8 @@ class BmfmcIterator(Iterator):
 
                 # plot the bmfmc approx mean
                 ax.plot(
-                    self.output['pyhf_support'],
-                    self.output['pyhf_mean_BMFMC'],
+                    self.output['y_pdf_support'],
+                    self.output['p_yhf_mean_BMFMC'],
                     color='xkcd:green',
                     linewidth=1.5,
                     linestyle='--',
@@ -337,7 +341,7 @@ class BmfmcIterator(Iterator):
 
                 ax2.plot(
                     np.sort(self.output['Z_mc'][:, 0]),
-                    self.output['f_mean'][np.argsort(self.output['Z_mc'][:, 0])],
+                    self.output['m_f_mc'][np.argsort(self.output['Z_mc'][:, 0])],
                     color='darkblue',
                     linewidth=3,
                     label=r'$\mathrm{m}_{\mathcal{D}_f}(y_{\mathrm{LF}})$, (Posterior mean)',
@@ -345,7 +349,7 @@ class BmfmcIterator(Iterator):
 
                 ax2.plot(
                     np.sort(self.output['Z_mc'][:, 0]),
-                    np.add(self.output['f_mean'], np.sqrt(self.output['y_var']))[
+                    np.add(self.output['m_f_mc'], np.sqrt(self.output['var_f_mc']))[
                         np.argsort(self.output['Z_mc'][:, 0])
                     ],
                     color='darkblue',
@@ -357,7 +361,7 @@ class BmfmcIterator(Iterator):
 
                 ax2.plot(
                     np.sort(self.output['Z_mc'][:, 0]),
-                    np.add(self.output['f_mean'], -np.sqrt(self.output['y_var']))[
+                    np.add(self.output['m_f_mc'], -np.sqrt(self.output['var_f_mc']))[
                         np.argsort(self.output['Z_mc'][:, 0])
                     ],
                     color='darkblue',
@@ -421,7 +425,7 @@ class BmfmcIterator(Iterator):
                 ax3.plot_trisurf(
                     self.output['Z_mc'][:, 0],
                     self.output['Z_mc'][:, 1],
-                    self.output['f_mean'][:, 0],
+                    self.output['m_f_mc'][:, 0],
                     shade=True,
                     cmap='jet',
                     alpha=0.50,
@@ -463,7 +467,7 @@ class BmfmcIterator(Iterator):
                 #             self.Y_HF_train[:, None]*0, marker='x',s=70, c='r', alpha=1)
                 # ax3.scatter(self.output['Z_mc'][:, 0, None],
                 # self.output['Z_mc'][:,1,None],
-                #             self.output['f_mean'][:, None], s=10, c='red', alpha=1)
+                #             self.output['m_f_mc'][:, None], s=10, c='red', alpha=1)
 
                 ax3.set_xlabel(r'$\mathrm{y}_{\mathrm{LF}}$')  # ,usetex=True)
                 ax3.set_ylabel(r'$\gamma$')
@@ -512,7 +516,7 @@ class BmfmcIterator(Iterator):
         from scipy.stats import entropy as ep
 
 
-#  entropy = ep(self.output['p_yhf_mc'],self.output['pyhf_mean'])
+#  entropy = ep(self.output['p_yhf_mc'],self.output['p_yhf_mean'])
 #  entropy_mc = ep(self.output['p_yhf_mc'],self.output['p_yhf_LF_mc'])
 #  # append a file
 #  with open('cylinder_KLD_new50.txt','a') as myfile:
