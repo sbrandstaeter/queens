@@ -25,6 +25,7 @@ class Driver(metaclass=abc.ABCMeta):
 
     def __init__(self, base_settings):
         self.template = base_settings['template']
+        # TODO MongoDB object should be passed to init not created within
         self.database = MongoDB(database_address=base_settings['address'])
         self.output_file = base_settings['output_file']
         self.file_prefix = base_settings['file_prefix']
@@ -62,13 +63,14 @@ class Driver(metaclass=abc.ABCMeta):
             driver: Driver object
 
         """
+        from pqueens.drivers.ansys_driver_native import AnsysDriverNative
         from pqueens.drivers.baci_driver_bruteforce import BaciDriverBruteforce
         from pqueens.drivers.baci_driver_native import BaciDriverNative
         from pqueens.drivers.navierstokes_native import NavierStokesNative
         from pqueens.drivers.baci_driver_deep import BaciDriverDeep
 
         if abs_path is None:
-            from pqueens.post_post.post_post import Post_post
+            from pqueens.post_post.post_post import PostPost
 
             # FIXME singularity doesnt load post_post form path but rather uses image module
         else:
@@ -83,6 +85,7 @@ class Driver(metaclass=abc.ABCMeta):
                 raise ImportError('Could not import the post_post module!')
 
         driver_dict = {
+            'ansys_native': AnsysDriverNative,
             'baci_bruteforce': BaciDriverBruteforce,
             'baci_native': BaciDriverNative,
             'navierstokes_native': NavierStokesNative,
@@ -114,12 +117,15 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['executable'] = driver_options['path_to_executable']
         base_settings['result'] = None
         base_settings['port'] = port
-        base_settings['postprocessor'] = driver_options['path_to_postprocessor']
-        if base_settings['postprocessor']:
+        base_settings['postprocessor'] = driver_options.get('path_to_postprocessor', None)
+        if base_settings['postprocessor'] is not None:
             base_settings['post_options'] = driver_options['post_process_options']
         else:
             base_settings['post_options'] = None
-        base_settings['postpostprocessor'] = Post_post.from_config_create_post_post(config)
+
+        # TODO "hiding" a complete object in the base settings dict is unbelieveably ugly
+        # and should be fixed ASAP
+        base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(config)
         driver = driver_class.from_config_create_driver(config, base_settings, workdir)
 
         return driver
@@ -202,24 +208,22 @@ class Driver(metaclass=abc.ABCMeta):
         # TODO maybe move to child-class due to specific form (e.g. .dat)
         """ This should be a docstring """
         # create input file name
-        dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
+        dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
         output_directory = os.path.join(dest_dir, 'output')
-        self.input_file = (
-            dest_dir + '/' + str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
-        )
+        input_file_name = str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
+        self.input_file = os.path.join(dest_dir, input_file_name)
 
         # create output file name
-        self.output_file = (
-            output_directory + '/' + str(self.experiment_name) + '_' + str(self.job_id)
-        )
+        output_file_name = str(self.experiment_name) + '_' + str(self.job_id)
+        self.output_file = os.path.join(output_directory, output_file_name)
         self.output_scratch = self.experiment_name + '_' + str(self.job_id)
 
         target_file_base_name = os.path.dirname(self.output_file)
         output_file_opt = '--file=' + self.output_file
         for num, option in enumerate(self.post_options):
-            target_file_opt = (
-                '--output=' + target_file_base_name + "/" + self.file_prefix + "_" + str(num + 1)
-            )
+            target_file_opt_1 = '--output=' + target_file_base_name
+            target_file_opt_2 = self.file_prefix + "_" + str(num + 1)
+            target_file_opt = os.path.join(target_file_opt_1, target_file_opt_2)
             postprocessing_list = [self.postprocessor, output_file_opt, option, target_file_opt]
             postprocess_command = ' '.join(filter(None, postprocessing_list))
             _, _, _ = self.run_subprocess(postprocess_command)
@@ -232,7 +236,7 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             float: actual simulation result
             Assemble post processing command """
-        dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
+        dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
         output_directory = os.path.join(dest_dir, 'output')
         if self.job['status'] != "failed":
             # this is a security duplicate in case post_post did not catch an error
@@ -240,15 +244,14 @@ class Driver(metaclass=abc.ABCMeta):
             self.result = self.postpostprocessor.postpost_main(output_directory)
             sys.stderr.write("Got result %s\n" % (self.result))
 
+    def setup_mpi(self, ntasks):
+        """ Configure and set up the environment for multi_threats """
+        pass
+
     # ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod
     def setup_dirs_and_files(self):
         """ this should be a docstring """
-        pass
-
-    @abc.abstractmethod
-    def setup_mpi(self, ntasks):
-        """ Configure and set up the environment for multi_threats """
         pass
 
     @abc.abstractmethod
