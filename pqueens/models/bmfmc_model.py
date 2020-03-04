@@ -333,6 +333,13 @@ class BMFMCModel(Model):
         return output
 
     def load_sampling_data(self):
+        """
+        Load the low-fidelity sampling data from a pickle file into QUEENS.
+        Check if high-fidelity benchmark data is available and load this as well.
+
+        Returns:
+            None
+        """
         # --------------------- load LF sampling data with data iterators --------------
         self.X_mc = self.lf_data_iterators[0].read_pickle_file()[0]
         # here we assume that all lfs have the same input vector
@@ -365,6 +372,15 @@ class BMFMCModel(Model):
             )
 
     def get_hf_training_data(self):
+        """
+        Given the low-fidelity sampling data and the optimal training input :math:`X`, either
+        simulate the high-fidelity response for :math:`X` or load the corresponding high-fidelity
+        response from the high-fidelity benchmark data provided by a pickle file.
+
+        Returns:
+            None
+
+        """
 
         # check if training simulation input was correctly calculated in iterator
         if self.X_train is None:
@@ -393,14 +409,25 @@ class BMFMCModel(Model):
             )
 
     def build_approximation(self, approx_case=True):
-        """ Build underlying approximation """
+        """
+        Construct the probabilistic surrogate / mapping based on the provided training-data and
+        optimize the hyper-parameters by maximizing the data's evidence or its lower bound (ELBO).
+
+        Args:
+            approx_case (bool):  Boolean that switches input features :math:`\\boldsymbol{\gamma}`
+                                 off if set to `False`. If not specified or set to `True`
+                                 informative input features will be used in the BMFMC framework.
+
+        Returns:
+            None
+        """
 
         # get the HF output data (from file or by starting a simulation, dependent on config)
         self.get_hf_training_data()
 
         # ----- train regression model on the data ----------------------------------------
         if approx_case is True:
-            self.create_features()
+            self.set_feature_strategy()
             self.interface.build_approximation(self.Z_train, self.Y_HF_train)
         else:
             self.interface.build_approximation(self.Y_LFs_train, self.Y_HF_train)
@@ -422,17 +449,19 @@ class BMFMCModel(Model):
             )
 
     def eval_surrogate_accuracy_cv(self, Z, Y_HF, k_fold, measures):
-        """ Compute k-fold cross-validation error for probabilistic mapping
-
-            Args:
-                Z (np.array):       Low-fidelity features input-array
-                Y_HF (np.array):    High-fidelity output-array
-                k_fold (int):       Split dataset in k_fold subsets for cross-validation
-                measures (list):    List with desired error metrics
-
-            Returns:
-                dict: Dictionary with error metrics and corresponding error values
         """
+        Compute k-fold cross-validation error for probabilistic mapping
+
+        Args:
+            Z (np.array):       Low-fidelity features input-array
+            Y_HF (np.array):    High-fidelity output-array
+            k_fold (int):       Split dataset in k_fold subsets for cross-validation
+            measures (list):    List with desired error metrics
+
+        Returns:
+            dict: Dictionary with error metrics and corresponding error values
+        """
+
         if not self.interface.is_initiliazed():
             raise RuntimeError("Cannot compute accuracy an uninitialized model")
 
@@ -443,6 +472,14 @@ class BMFMCModel(Model):
         return error_info
 
     def compute_pyhf_statistics(self):
+        """
+        Calculate the high-fidelity output density prediction `p_yhf_mean` and its credible bounds
+        `p_yhf_var` on the support `y_pdf_support` according to equation (14) and (15) in [1].
+
+        Returns:
+            None
+        """
+
         # ---------------------------- PYHF MEAN PREDICTION ---------------------------
         std = np.sqrt(self.var_f_mc)  # *0.65
         pdf_mat = st.norm.pdf(self.y_pdf_support, loc=self.m_f_mc, scale=std)
@@ -505,6 +542,14 @@ class BMFMCModel(Model):
             self.p_yhf_var = None
 
     def compute_pymc_reference(self):
+        """
+         Given a high-fidelity Monte-Carlo benchmark dataset, compute the reference kernel
+         density estimate for the quantity of interest and optimize the bandwith of the kde.
+
+        Returns:
+            None
+
+        """
         bw = 23  # TODO change that as hard coded -> should be optimized
 
         bandwidth_hfmc = (np.amax(self.Y_HF_mc) - np.amin(self.Y_HF_mc)) / bw
@@ -520,32 +565,23 @@ class BMFMCModel(Model):
                 support_points=np.atleast_2d(self.y_pdf_support),
             )  # TODO: make this also work for several lfs
 
-    def create_features(self):
-        # load some configs --> stopping criteria / max, min dimensions, input vars ...
+    def set_feature_strategy(self):
+        """
+        Depending on the method specified in the input file, set the strategy that will be used to
+        calculate the low-fidelity features :math:`Z_{\\text{LF}}`.
+
+        Returns:
+            None
+
+        """
         if self.features_config == "manual":
-            idx_vec = 0  # features_config["settings"] #TODO should be changed to input file
+            idx_vec = 0  # TODO should be changed to input file
             self.features_train = self.X_train[:, idx_vec, None]
             self.features_mc = self.X_mc[:, idx_vec, None]
             self.Z_train = np.hstack([self.Y_LFs_train, self.features_train])
             self.Z_mc = np.hstack([self.Y_LFs_mc, self.features_mc])
-        elif self.features_config == "pls":
-            self.features_train, self.features_mc = self.pls()
-            self.Z_train = np.hstack([self.Y_LFs_train, self.features_train])
-            self.Z_mc = np.hstack([self.Y_LFs_mc, self.features_mc])
-        elif self.features_config == "pca":
-            self.features_train, self.features_mc = self.pca()
-            self.Z_train = np.hstack([self.Y_LFs_train, self.features_train])
-            self.Z_mc = np.hstack([self.Y_LFs_mc, self.features_mc])
-        elif self.features_config == "sparse_pca":
-            self.features_train, self.features_mc = self.sparse_pca()
-            self.Z_train = np.hstack([self.Y_LFs_train, self.features_train])
-            self.Z_mc = np.hstack([self.Y_LFs_mc, self.features_mc])
-        elif self.features_config == "kernel_pca":
-            self.features_train, self.features_mc = self.kernel_pca()
-            self.Z_train = np.hstack([self.Y_LFs_train, self.features_train])
-            self.Z_mc = np.hstack([self.Y_LFs_mc, self.features_mc])
         elif self.features_config == "pca_joint_space":
-            self.pca_joint_space()
+            self.calculate_z_lf()
         elif self.features_config == "None":
             self.Z_train = self.Y_LFs_train
             self.Z_mc = self.Y_LFs_mc
@@ -556,148 +592,20 @@ class BMFMCModel(Model):
         #  multi-fidelity mapping
         update_model_variables(self.Y_LFs_train, self.Z_mc)
 
-    def pls(self):
-        # start the partial-least squares
-        pls = PLS(n_components=1)
-        # test features
-        # scaler = StandardScaler()
-        in_normalized = self.X_mc  # scaler.fit_transform(self.X_mc)
-        out_normalized = self.Y_LFs_mc  # scaler.fit_transform(self.Y_LFs_mc[:, 0,None])
-        pls.fit(in_normalized, out_normalized)
+    def calculate_z_lf(self):
+        """
+        Given the low-fidelity sampling data, calculate the low-fidelity features
+        :math:`z_{\\text{LF}}` based on equation (19) and (20) in [1]. The informative input
+        features :math:`\\boldsymbol{\\gamma}` are calculated so that
+        they would maximize the Pearson correlation coefficient between :math:`\\gamma_i^*` and
+        :math:`Y_{\\text{LF}}^*`. Afterwards :math:`z_{\\text{LF}}` is composed by
+        :math:`y_{\\text{LF}}` and :math:`\\boldsymbol{\\gamma_{\\text{LF}}`
 
-        lf_min = np.min(self.Y_LFs_mc)
-        lf_max = np.max(self.Y_LFs_mc)
-        features_test = pls.transform(self.X_mc)
-        features_train = pls.transform(self.X_train)
+        Returns:
+            None
 
-        ft_min = np.min(features_test)
-        ft_max = np.max(features_test)
-
-        features_test = ((features_test - ft_min) / (ft_max - ft_min)) * (lf_max - lf_min) + lf_min
-        features_train = ((features_train - ft_min) / (ft_max - ft_min)) * (
-            lf_max - lf_min
-        ) + lf_min
-
-        return features_train, features_test
-
-    def pca(self):
-        """ Principal component analysis on a data matrix"""
-
-        # Standardizing the features
-        x_vec = np.vstack((self.X_mc, self.X_train))
-
-        #        random_fields_test = self.X_mc[:, 1:]  # FSI
-        #        random_fields_train = self.X_train[:, 1:] # FSI
-        random_fields_test = self.X_mc[:, 3:]  # DG
-        random_fields_train = self.X_train[:, 3:]  # DG
-
-        # PCA makes only sense on correlated data set ->
-        # seperate correlated and uncorrelated variables
-        # TODO this split is hard coded!
-        #        x_uncorr = x_vec[:, 0, None]  # FSI
-        x_uncorr = x_vec[:, 0:3]  # DG
-
-        x_uncorr_test = x_uncorr[0 : self.X_mc.shape[0], :]
-        x_uncorr_train = x_uncorr[self.X_mc.shape[0] :, :]
-
-        # pca_model = PCA(n_components=1) #KernelPCA(n_components=2,
-        # kernel="rbf", gamma=10, n_jobs=2)
-        # SparsePCA(n_components=3, n_jobs=4, normalize_components=True)
-        #        x_trans = pca_model.fit_transform(x_corr)
-
-        # ------------------------- TAKE CARE OF RANDOM FIELDS (DG)  ------------------------
-        x_vec = np.linspace(0, 1, 200, endpoint=True)
-        mean_fun = 4 * 1.5 * (-((x_vec - 0.5) ** 2) + 0.25)
-        normalized_train = random_fields_train - mean_fun
-        normalized_test = random_fields_test - mean_fun
-
-        num_trunc = 10  # -1  # 6
-        #      pls = PLS(n_components = num_trunc)
-        #      pls.fit(random_fields_test,self.Y_LFs_mc)
-        # coef_train = pls.transform(random_fields_train).T#
-        coef_train = np.dot(self.eigenfunc_random_fields.T, normalized_train.T)[0:num_trunc, :]
-        # coef_train = np.linalg.solve(self.eigenfunc_random_fields.T,
-        # normalized_train.T)[0:num_trunc,:]
-        # coef_test = pls.transform(random_fields_test).T#
-        coef_test = np.dot(self.eigenfunc_random_fields.T, normalized_test.T)[0:num_trunc, :]
-        # coef_test = np.linalg.solve(self.eigenfunc_random_fields.T,
-        # normalized_test.T)[0:num_trunc,:]
-
-        self.eigenfunc_random_fields = self.eigenfunc_random_fields[:, 0:num_trunc]
-
-        # approx = (np.dot(coef_train.T[0:3, :], self.eigenfunc_random_fields.T) + mean_fun).T
-        # approx = (np.dot(pls.x_weights_, coef_train))
-        # ----------------------- END TAKE CARE OF RANDOM FIELDS (DG)  ----------------------
-
-        ## ---------------------------- RANDOM FIELD FOR FSI ---------------------------
-        #        coef_train = random_fields_train.T
-        #        coef_test = random_fields_test.T
-        ## -------------------------- END RANDOM FIELD FOR FSI -------------------------
-        #        breakpoint
-        #        import matplotlib.pyplot as plt
-        #        plt.rcParams["mathtext.fontset"] = "cm"
-        #        plt.rcParams.update({'font.size':28})
-        #
-        #        fig,ax1 = plt.subplots()
-        #
-        #        ax1.plot(x_dim,mean_fun, linestyle='-', color='grey', alpha=0.5)
-        #
-        #        ax1.plot(x_dim,approx[:,0], linestyle='--', color='b')
-        #        ax1.plot(x_dim,random_fields_train[0].T, color='b')
-        #
-        #        ax1.plot(x_dim,approx[:,1], linestyle='--', color='r')
-        #        ax1.plot(x_dim,random_fields_train[1].T, color='r')
-        #
-        #
-        #        ax1.plot(x_dim,approx[:,2], linestyle='--', color='g')
-        #        ax1.plot(x_dim,random_fields_train[2].T, color='g')
-        #
-        #        ax1.grid(which='major', linestyle='-')
-        #        ax1.grid(which='minor', linestyle='--', alpha=0.5)
-        #        ax1.set_ylim(0,2)
-        #        ax1.set_xlim(0,0.41)
-        #
-        #        ax1.minorticks_on()
-        #
-        #        ax1.set_xlabel(r'$y$')
-        #        ax1.set_ylabel(r'$u_{x}$')
-        #        fig.set_size_inches(15, 15)
-        ##        plt.show()
-        #        plt.savefig('/home/nitzler/Documents/Vorlagen/KleExample.eps',
-        #        format='eps', dpi=300)
-        #
-        #        breakpoint()
-        #        coef_test = np.linalg.lstsq(proj_test.T, random_fields_test, rcond=None)[0]
-        #        coef_train = np.linalg.lstsq(proj_train.T, random_fields_train, rcond=None)[0]
-
-        # stack together uncorrelated vars and pca of corr vars
-        X_test = np.hstack((x_uncorr_test, coef_test.T))
-        X_train = np.hstack((x_uncorr_train, coef_train.T))
-
-        scaler = StandardScaler()
-        features_test = scaler.fit_transform(X_test)
-        features_train = scaler.transform(X_train)
-
-        return features_train, features_test
-
-    def sparse_pca(self):
-        """ Perform sparse version of principal component analysis on dataset """
-
-        x_standardized = StandardScaler().fit_transform(np.vstack((self.X_mc, self.X_train)))
-        x_standardized_test = x_standardized[0 : self.X_mc.shape[0], :]
-
-        x_standardized_train = x_standardized[self.X_mc.shape[0] :, :]
-        pca_model = SparsePCA(n_components=1, n_jobs=4, normalize_components=True)
-        pca_model.fit(x_standardized)
-        features_test = pca_model.transform(x_standardized_test)
-        features_train = pca_model.transform(x_standardized_train)
-
-        return features_train, features_test
-
-    def pca_joint_space(self):
-        """ Eigendecomposition of joint input/output space """
-
-        num_features = 1
+        """
+        num_features = 1  # TODO this config needs to be pulled out to the input file!
 
         x_standardized_train, x_standardized_test = self.pca()
         x_iter_train = x_standardized_train
@@ -808,15 +716,68 @@ class BMFMCModel(Model):
             self.m_f_mc, self.var_f_mc = self.interface.map(self.Z_mc.T)
             self.f_mean_train, _ = self.interface.map(self.Z_train.T)
 
-    def kernel_pca(self):
+    def pca(self):
+        # TODO Depreciated method that is currently just used to organize some stuff and will be
+        #  replaced in the future
+
         # Standardizing the features
-        x_standardized = StandardScaler().fit_transform(np.vstack((self.X_mc, self.X_train)))
-        x_standardized_test = x_standardized[0 : self.X_mc.shape[0], :]
-        x_standardized_train = x_standardized[self.X_mc.shape[0] :, :]
-        pca_model = KernelPCA(n_components=1, kernel="rbf", n_jobs=4)
-        pca_model.fit(x_standardized)
-        features_test = pca_model.transform(x_standardized_test)
-        features_train = pca_model.transform(x_standardized_train)
+        x_vec = np.vstack((self.X_mc, self.X_train))
+
+        #        random_fields_test = self.X_mc[:, 1:]  # FSI
+        #        random_fields_train = self.X_train[:, 1:] # FSI
+        random_fields_test = self.X_mc[:, 3:]  # DG
+        random_fields_train = self.X_train[:, 3:]  # DG
+
+        # PCA makes only sense on correlated data set ->
+        # seperate correlated and uncorrelated variables
+        # TODO this split is hard coded!
+        #        x_uncorr = x_vec[:, 0, None]  # FSI
+        x_uncorr = x_vec[:, 0:3]  # DG
+
+        x_uncorr_test = x_uncorr[0 : self.X_mc.shape[0], :]
+        x_uncorr_train = x_uncorr[self.X_mc.shape[0] :, :]
+
+        # pca_model = PCA(n_components=1) #KernelPCA(n_components=2,
+        # kernel="rbf", gamma=10, n_jobs=2)
+        # SparsePCA(n_components=3, n_jobs=4, normalize_components=True)
+        #        x_trans = pca_model.fit_transform(x_corr)
+
+        # ------------------------- TAKE CARE OF RANDOM FIELDS (DG)  ------------------------
+        x_vec = np.linspace(0, 1, 200, endpoint=True)
+        mean_fun = 4 * 1.5 * (-((x_vec - 0.5) ** 2) + 0.25)
+        normalized_train = random_fields_train - mean_fun
+        normalized_test = random_fields_test - mean_fun
+
+        num_trunc = 10  # -1  # 6
+        #      pls = PLS(n_components = num_trunc)
+        #      pls.fit(random_fields_test,self.Y_LFs_mc)
+        # coef_train = pls.transform(random_fields_train).T#
+        coef_train = np.dot(self.eigenfunc_random_fields.T, normalized_train.T)[0:num_trunc, :]
+        # coef_train = np.linalg.solve(self.eigenfunc_random_fields.T,
+        # normalized_train.T)[0:num_trunc,:]
+        # coef_test = pls.transform(random_fields_test).T#
+        coef_test = np.dot(self.eigenfunc_random_fields.T, normalized_test.T)[0:num_trunc, :]
+        # coef_test = np.linalg.solve(self.eigenfunc_random_fields.T,
+        # normalized_test.T)[0:num_trunc,:]
+
+        self.eigenfunc_random_fields = self.eigenfunc_random_fields[:, 0:num_trunc]
+
+        # approx = (np.dot(coef_train.T[0:3, :], self.eigenfunc_random_fields.T) + mean_fun).T
+        # approx = (np.dot(pls.x_weights_, coef_train))
+        # ----------------------- END TAKE CARE OF RANDOM FIELDS (DG)  ----------------------
+
+        ## ---------------------------- RANDOM FIELD FOR FSI ---------------------------
+        #        coef_train = random_fields_train.T
+        #        coef_test = random_fields_test.T
+        ## -------------------------- END RANDOM FIELD FOR FSI -------------------------
+
+        # stack together uncorrelated vars and pca of corr vars
+        X_test = np.hstack((x_uncorr_test, coef_test.T))
+        X_train = np.hstack((x_uncorr_train, coef_train.T))
+
+        scaler = StandardScaler()
+        features_test = scaler.fit_transform(X_test)
+        features_train = scaler.transform(X_train)
 
         return features_train, features_test
 
@@ -870,6 +831,19 @@ def compute_error_measures(y_act, y_pred, measures):
 
 
 def update_model_variables(Y_LFs_train, Z_mc):
+    """
+    Intermediate solution: Update the QUEENS variable object with the previous calculated
+    low-fidelity features :math:`Z_{\\text{LF}}`
+
+    Args:
+        Y_LFs_train (np.array): Low-fidelity outputs :math:`Y_{\\text{LF}}` for training input
+                                :math:`X`.
+        Z_mc (np.array): Low-fidelity feature matrix :math:`Z_{\\text{LF}}^{*}` corresponding to
+        sampling input :math:`X^{*}`
+
+    Returns:
+        None
+    """
     # TODO this is an intermediate solution while the variable class has not been changed to a
     #  more flexible version
 

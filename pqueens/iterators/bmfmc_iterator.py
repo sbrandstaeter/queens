@@ -158,7 +158,7 @@ class BmfmcIterator(Iterator):
             # TODO handling of random fields is hard coded
             #  --> change this according to issue #87
 
-            # TODO this repeats code form model.create_features and should be changed
+            # TODO this repeats code form model.set_feature_strategy and should be changed
             x_vec = np.linspace(0, 1, 200, endpoint=True)  # DG
             mean_fun = 4 * 1.5 * (-((x_vec - 0.5) ** 2) + 0.25)  # DG
             normalized_test = self.model.X_mc[:, 3:] - mean_fun  # DG
