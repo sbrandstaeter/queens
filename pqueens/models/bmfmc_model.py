@@ -7,9 +7,6 @@ from .simulation_model import SimulationModel
 import scipy.stats as st
 from pqueens.variables.variables import Variables
 from sklearn.preprocessing import StandardScaler
-from sklearn.cross_decomposition import PLSRegression as PLS
-from sklearn.decomposition import KernelPCA
-from sklearn.decomposition import SparsePCA
 import matplotlib.pyplot as plt
 
 

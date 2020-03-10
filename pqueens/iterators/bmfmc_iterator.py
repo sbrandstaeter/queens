@@ -7,13 +7,48 @@ from diversipy import *
 import pandas as pd
 
 
-class BmfmcIterator(Iterator):
-    """ Basic BMFMC Iterator to enable selective sampling for the hifi-lofi
-        model (the basis was a standard LHCIterator). Additionally the BMFMC
-        Iterator contains the subiterator data_iterator to make use of already
-        performed MC samples on the lo-fi models
+class BMFMCIterator(Iterator):
+    """
+    Iterator for the (generalized) Bayesian multi-fidelity Monte-Carlo method. The iterator
+    fulfills the following tasks:
+
+    1.  Load the low-fidelity Monte Carlo data
+    2.  Based on low-fidelity data, calculate optimal X_train to evaluate the high-fidelity model
+    3.  Based on X_train return the corresponding Y_LFs_train
+    4.  Initialize the BMFMC_model (this is not the high-fidelity model but the probabilistic
+        mapping) with X_train and Y_LFs_train. Note that the BMFMC_model itself triggers the
+        computation of the high-fidelity training data Y_HF_train.
+    5.  Trigger the evaluation of the BMFMC_model. Here evaluation refers to computing the
+        posterior statistics of the high-fidelity model. This is implemented in the BMFMC_model
+        itself.
 
     Attributes:
+
+        model (obj): Instance of the BMFMCModel
+        result_description (dict): Dictionary containing settings for plotting and saving data/
+                                   results
+        experiment_dir (str): Path to the experiment directory where simulations are stored
+        X_train (np.array): Corresponding input for the simulations that are used to train the
+                            probabilistic mapping
+        Y_HF_train (np.array): Outputs of the high-fidelity model that correspond to the training
+                               inputs X_train such that :math:`Y_{HF}=y_{HF}(X)`
+        Y_LFs_train (np.array): Outputs of the low-fidelity models that correspond to the training
+                                inputs X_train
+        eigenfunc_random_fields_train (np.array):
+        output (dict):
+        initial_design (dict): Dictionary containing settings for the selection strategy/initial
+                               design of training points for the probabilistic mapping
+        predictive_var (bool): Boolean flag that triggers the computation of the posterior variance
+                               :math:`\\mathbb{V}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` if
+                               set to True. (default value: False)
+        BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
+                                features :math:`\\boldsymbol{\\gamma}` for comparison if set to
+                                True (default
+                                value: False)
+
+    Returns:
+
+       BMFMCIterator (obj): Instance of the BMFMCIterator
 
     """
 
@@ -28,7 +63,7 @@ class BmfmcIterator(Iterator):
         global_settings,
     ):
 
-        super(BmfmcIterator, self).__init__(
+        super(BMFMCIterator, self).__init__(
             None, global_settings
         )  # Input prescribed by iterator.py
         self.model = model
@@ -53,7 +88,7 @@ class BmfmcIterator(Iterator):
             model (model): model to use
 
         Returns:
-            iterator: BmfmcIterator object
+            iterator: BMFMCIterator object
 
         """
         # Initialize Iterator and model
