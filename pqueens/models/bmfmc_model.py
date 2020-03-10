@@ -286,7 +286,7 @@ class BMFMCModel(Model):
         p_yhf_mean_BMFMC = None
         p_yhf_var_BMFMC = None
 
-        if self.Y_HF_mc:
+        if np.any(self.Y_HF_mc):
             self.compute_pymc_reference()
 
         # ------------------ STANDARD BMFMC (no additional features) for comparison ----------------
