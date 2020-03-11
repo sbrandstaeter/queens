@@ -80,15 +80,16 @@ class BMFMCIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """ Create LHS iterator from problem description
+        """
+        Create LHS iterator from problem description in input file
 
         Args:
             config (dict): Dictionary with QUEENS problem description
             iterator_name (str): Name of iterator to identify right section in options dict
-            model (model): model to use
+            model (obj): Instance of model class
 
         Returns:
-            iterator: BMFMCIterator object
+            iterator (obj): BMFMCIterator object
 
         """
         # Initialize Iterator and model
@@ -118,8 +119,21 @@ class BMFMCIterator(Iterator):
 
     def core_run(self):
         """
-        Generate simulation runs for LF and HF that cover the output
-        space based on one p(y) distribution of one lofi
+        Main run of the BMFMCIterator that covers the following points:
+
+        1.  Reading the sampling data from the low-fidelity model in QUEENS
+        2.  Based on LF data, determine optimal X_train for which the high-fidelity model should
+            be evaluated :math:`Y_{HF}=y_{HF}(X)`
+        3.  Update the BMFMCModel with the partial training data set of X_train, Y_LF_train (
+            Y_HF_train is determined in the BMFMCModel)
+        4.  Evaluate the BMFMCModel which means that the posterior statistics
+            :math:`\\mathbb{E}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` and
+            :math:`\\mathbb{V}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` are computed based
+            on the BMFMC algorithm which is implemented in the BMFMCModel
+
+        Returns:
+            None
+
         """
         # -------- Load MC data from model -----------------------
         self.model.load_sampling_data()
@@ -127,7 +141,7 @@ class BMFMCIterator(Iterator):
         # ---- determine optimal input points for which HF should be simulated -------
         self.calculate_optimal_X_train()
 
-        # update the bmfmc model variables xtrain somehow
+        # update the Bmfmc model variables
         # TODO: normally done by model.update_model_from_sample_batch() !
         self.model.X_train = self.X_train
         self.model.Y_LFs_train = self.Y_LFs_train
@@ -136,7 +150,25 @@ class BMFMCIterator(Iterator):
         self.output = self.eval_model()
 
     def calculate_optimal_X_train(self):
+        """
+        Based on the low-fidelity sampling data, calculate the optimal model inputs X_train on
+        which the high-fidelity model should be evaluated to construct the training data set for
+        BMFMC. This selection is performed based on the following method options:
 
+        1. **random**: Divides the :math:`y_{LF}` data set in bins and selects training
+                       candidates random from each bin until :math:`n_{train}` is reached
+        2. **diverse subset**: Determine the most important input features :math:`\\gamma_i`
+                               (this information is provided by the BMFMCModel) and find a space
+                               filling subset (diverse subset) given the LF sampling data with
+                               respect to the most important features :math:`\\gamma_i`. The
+                               number of features to be considered can be set in the input file.
+                               **Remark**: An optimization routine for the optimal number of
+                               features to be considered will be added in the future
+
+        Returns:
+            None
+
+        """
         design_method = self.initial_design.get('method')
         n_bins = self.initial_design.get("num_bins")
         n_points = self.initial_design.get("num_HF_eval")
@@ -187,7 +219,6 @@ class BMFMCIterator(Iterator):
                     self.Y_LFs_train = np.vstack(
                         (self.Y_LFs_train, bin_data_Y_LFs_mc[rnd_select, :])
                     )
-
         # --------------------------- DIVERSE SUBSET METHOD ---------------------------
         elif design_method == 'diverse_subset':
             # TODO handling of random fields is hard coded
@@ -224,15 +255,33 @@ class BMFMCIterator(Iterator):
             )
 
     def eval_model(self):
-        """ Evaluate the model """
+        """
+        Evaluate the BMFMCModel which means that the posterior statistics
+             :math:`\\mathbb{E}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` and
+             :math:`\\mathbb{V}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` are computed based
+             on the BMFMC algorithm which is implemented in the BMFMCModel
+
+        Returns:
+            None
+
+        """
         return self.model.evaluate()
 
     def active_learning(self):
+        """
+        Not implemented yet
+        """
         pass
 
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
     def post_run(self):
-        """ Analyze the results """
+        """
+        Saving and plotting of the results. The latter will be moved to a separate module in the
+        future.
+
+        Returns:
+            None
+        """
 
         if self.result_description['plot_results'] is True:
             plt.rcParams["mathtext.fontset"] = "cm"
