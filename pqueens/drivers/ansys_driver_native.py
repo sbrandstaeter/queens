@@ -1,72 +1,110 @@
+""" This should be a docstring """
+
 import os
-import subprocess
-import importlib.util
-from pqueens.utils.injector import inject
+from pqueens.drivers.driver import Driver
 
 
-def ansys_driver_native(job):
+class AnsysDriverNative(Driver):
+    """ Driver to run ANSYS natively on workstation
+
+        Attributes:
+            custom_executable (str): Optional custom executable for ANSYS
+
     """
-        Driver to run ANSYS natively on host machine
+
+    def __init__(self, custom_executable, ansys_version,  base_settings):
+        # TODO dunder init should not be called with dict 
+        super(AnsysDriverNative, self).__init__(base_settings)
+        self.custom_executable = custom_executable
+        self.ansys_version = ansys_version
+
+    @classmethod
+    def from_config_create_driver(cls, config, base_settings):
+        """ Create Driver from input file
 
         Args:
-            job (dict): Dict containing all information to run the simulation
+            config (dict):          Input options
+            base_settings (dict):   Second dict with input options TODO should probably be removed
 
         Returns:
-            float: result
-    """
+            driver: AnsysDriverNative object
+        """
+        # TODO this needs to be fixed
+        base_settings['address'] = 'localhost:27017'
+        # TODO this is superbad, but the only solution currently
+        driver_setting = config["driver"]["driver_params"]
 
-    sys.stderr.write("Running ANSYS job.\n")
+        custom_exec = driver_setting.get('custom_executable', None)
+        ansys_version = driver_setting.get('ansys_version', None)
+        return cls(base_settings, custom_exec, ansys_version)
 
-    # Add directory to the system path.
-    sys.path.append(os.path.realpath(job['expt_dir']))
+    def setup_dirs_and_files(self):
+        """ Setup directory structure """
+        self.main_executable = self.executable
 
-    # Change into the directory.
-    os.chdir(job['expt_dir'])
-    sys.stderr.write("Changed into dir %s\n" % (os.getcwd()))
+        # base directories
+        dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
 
-    # get params dict
-    params = job['params']
-    driver_params = job['driver_params']
+        self.output_directory = os.path.join(dest_dir, "output")
+        if not os.path.isdir(self.output_directory):
+            os.makedirs(self.output_directory)
 
-    # assemble input file name
-    ansys_input_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id']) + '.inp'
-    ansys_output_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id'])
+        # create input file name
+        input_string = str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
+        self.input_file = os.path.join(dest_dir, input_string)
 
-    sys.stderr.write("ansys_input_file %s\n" % ansys_input_file)
+        # create output file name
+        output_string = str(self.experiment_name) + '_' + str(self.job_id) + '.out'
+        self.output_file = os.path.join(self.output_directory, output_string)
 
-    # create input file using injector
-    inject(params, driver_params['input_template'], ansys_input_file)
-    # second injection to set output file
-    ansys_output = {}
-    ansys_output["output"] = ansys_output_file
-    inject(ansys_output, ansys_input_file, ansys_input_file)
+    def run_job(self):
+        """ Actual method to run the job on computing machine
+            using run_subprocess method from base class
+        """
+        # assemble run command
+        command_string = self.assemble_command_string()
 
-    # get ansys run and post process command
-    ansys_cmd = [
-        driver_params['path_to_executable'],
-        "-b -g -p aa_t_a -dir ",
-        job['expt_dir'],
-        "-i ",
-        ansys_input_file,
-        "-j ",
-        job['expt_name'] + "_" + str(job["id"]),
-        "-s read -l en-us -t -d X11 > ",
-        ansys_output_file,
-    ]
+        _, stderr, self.pid = self.run_subprocess(command_string)
+        if stderr:
+            self.result = None  # This is necessary to detect failed jobs
+            self.job['status'] = 'failed'
 
-    # run ansys
-    p = subprocess.Popen(ansys_cmd)
-    temp_out = p.communicate()
-    print(temp_out)
+    def assemble_command_string(self):
+        """  Assemble command list
 
-    result = None
+            Returns:
+                list: command list to execute ANSYS
 
-    # call post post process script to extract result from monitor file
-    spec = importlib.util.spec_from_file_location("module.name", driver_params['post_post_script'])
-    post_post_proc = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(post_post_proc)
-    result = post_post_proc.run(ansys_output_file + '.out')
+        """
+        command_list = []
+        if self.ansys_version == 'v15':
+            command_list = [
+                self.main_executable,
+                "-b -g -p aa_t_a -dir ",
+                self.output_directory,
+                "-i ",
+                self.input_file,
+                "-j ",
+                str(self.experiment_name) + '_' + str(self.job_id),
+                "-s read -l en-us -t -d X11 > ",
+                self.output_file
+            ]
+        elif ansys_version == 'v19':
+            command_list = [
+                self.main_executable,
+                "-p ansys -smp -np 1 -lch -dir",
+                self.output_directory,
+                "-j",
+                str(self.experiment_name) + '_' + str(self.job_id),
+                "-s read -l en-us -b -i",
+                self.input_file,
+                "-o",
+                self.output_file,
+            ]
+            if self.custom_executable is not None:
+                command_list.append("-custom")
+                command_list.append(self.custom_executable)
+        else:
+            raise RuntimeError("Unknown ANSYS Version, fix your config file")
 
-    sys.stderr.write("Got result %s\n" % (result))
-
-    return result
+        return ' '.join(filter(None, command_list))

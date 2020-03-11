@@ -1,0 +1,72 @@
+{
+    "experiment_name" : "ansys_plate_example",
+ 		"database" :{
+    	"address" : "localhost:27017",
+      "drop_existing" : "True"
+    },
+		"driver" :{
+      "driver_type" : "ansys_native",
+      "driver_params" : {
+        "input_template" : "/home/biehler/adco/projects/05_queens/queens/trials/ansys_plate_template.inp",
+        "path_to_executable" : "/lnm/programs64/ansys_inc/v140/ansys/bin/ansys140",
+        "experiment_dir" : "/home/biehler/adco/projects/03_ansys_interface/trial_2",
+        "ansys_version" :"v15",
+        "no_singularity" : true,
+				"post_post": {
+          "post_post_approach_sel" : "ansys",
+          "delete_field_data" : false,
+          "target_time": 5.0,
+          "time_tol": 1e-2,
+          "file_prefix": "rst",
+          "usecols": [1000,2],
+          "skiprows":0
+        }
+		  }
+    },
+		"model" : {
+    "type" : "simulation_model",
+    "interface" : "interface",
+    "parameters" : "parameters"
+  	},
+  	"interface" : {
+    	"type" : "job_interface",
+    	"resources": "resources",
+    	"driver" : "driver"
+  	},
+    "resources" : {
+      "my-machine" : {
+        "scheduler"         : "local_scheduler",
+        "max-concurrent"    : 5,
+        "max-finished-jobs" : 100
+      }
+    },
+		"local_scheduler" : {
+			"scheduler_type" : "local",
+      "num_procs" : 1
+		},
+    "method" : {
+			"method_name" : "lhs",
+      "method_options" : {
+      "seed" : 42,
+      "num_samples" : 5,
+      "num_iterations" : 10,
+			"model" : "model"
+			}
+    },
+		"parameters" : {
+			"random_variables" : {	
+        "young" : {
+          "type" : "FLOAT",
+          "size" : 1,
+          "distribution" : "uniform",
+          "distribution_parameter" : [4000,10000]
+        },
+        "load" : {
+          "type" : "FLOAT",
+          "size" : 1,
+          "distribution" : "uniform",
+          "distribution_parameter" : [1,4]
+        }
+			}
+    }
+}
