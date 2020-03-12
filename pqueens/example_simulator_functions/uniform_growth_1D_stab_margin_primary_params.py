@@ -6,24 +6,24 @@ import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_grow
 TAU = uniform_growth_1D_lsq.TAU
 K_SIGMA = uniform_growth_1D_lsq.K_SIGMA
 
-K1_CO = uniform_growth_1D.k1_co
-K2_CO = uniform_growth_1D.k2_co
-LAM_PRE_CO = uniform_growth_1D.lam_pre_co
+K1_CO = uniform_growth_1D.K1_CO
+K2_CO = uniform_growth_1D.K2_CO
+LAM_PRE_CO = uniform_growth_1D.LAM_PRE_CO
 
-K1_SM = uniform_growth_1D.k1_sm
-K2_SM = uniform_growth_1D.k2_sm
-LAM_PRE_SM = uniform_growth_1D.lam_pre_sm
+K1_SM = uniform_growth_1D.K1_SM
+K2_SM = uniform_growth_1D.K2_SM
+LAM_PRE_SM = uniform_growth_1D.LAM_PRE_SM
 
-MU_EL = uniform_growth_1D.mu_el
-LAM_PRE_EL_CIR = uniform_growth_1D.lam_pre_el_cir
-LAM_PRE_EL_AX = uniform_growth_1D.lam_pre_el_ax
+MU_EL = uniform_growth_1D.MU_EL
+LAM_PRE_EL_CIR = uniform_growth_1D.LAM_PRE_EL_CIR
+LAM_PRE_EL_AX = uniform_growth_1D.LAM_PRE_EL_AX
 
-PHI_e = uniform_growth_1D.phi_e
-PHI_m = uniform_growth_1D.phi_m
-PHI_c = uniform_growth_1D.phi_c
+PHI_e = uniform_growth_1D.PHI_EL
+PHI_m = uniform_growth_1D.PHI_SM
+PHI_c = uniform_growth_1D.PHI_CO
 
 H = uniform_growth_1D.H
-RHO = uniform_growth_1D.rho
+RHO = uniform_growth_1D.RHO
 
 
 def main(job_id, params):
