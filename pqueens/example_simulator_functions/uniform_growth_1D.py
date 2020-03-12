@@ -102,6 +102,34 @@ G_ = np.array([LAM_PRE_EL_CIR, LAM_PRE_SM, LAM_PRE_CO])
 C = np.array([C_EL, C_SM, C_CO])
 
 
+def fung_cauchy_stress(lambda_e, k1, k2, rho=1.0):
+    lam_e_sqrd = lambda_e ** 2
+    lam_e_sqrd_one = lam_e_sqrd - 1
+    return 2 * rho * k1 * lam_e_sqrd * lam_e_sqrd_one * np.exp(k2 * lam_e_sqrd_one ** 2)
+
+
+def fung_elastic_modulus(lambda_e, k1, k2, rho=1.0):
+    lam_e_sqrd = lambda_e ** 2
+    lam_e_sqrd_one = lam_e_sqrd - 1
+    lam_e_sqrd_one_sqrd = lam_e_sqrd_one ** 2
+    return (
+        2
+        * k1
+        * rho
+        * lam_e_sqrd
+        * (lam_e_sqrd_one + (3 * lam_e_sqrd - 1 + 4 * k2 * lam_e_sqrd * lam_e_sqrd_one_sqrd))
+        * np.exp(k2 * lam_e_sqrd_one ** 2)
+    )
+
+
+def neo_hooke_cauchy_stress_cir(lambda_phi, lambda_r, mu, rho=1.0):
+    return rho * mu * lambda_phi ** 2 * (1 - 1 / (lambda_phi ** 4 * lambda_r ** 2))
+
+
+def neo_hooke_elastic_modulus_cir(lambda_phi, lambda_r, mu, rho=1.0):
+    return 2 * rho * mu * lambda_phi ** 2 * (1 + 1 / (lambda_phi ** 4 * lambda_r ** 2))
+
+
 class UniformCircumferentialGrowthParams:
     """ Collection of a full set of parameters for the Uniform Circumferential Growth Model.
 
@@ -212,45 +240,6 @@ class UniformCircumferentialGrowthParams:
             self.H = kwargs.get("H", H)
 
 
-# sanity checks
-# sum of mass fractions of all components should be equal to one
-# np.sum(Phi)
-
-# derived constants
-K1 = M_m * C_SM + M_c * C_CO
-K2 = -2 * (M_e * SIGMA_CIR_EL + M_m * sigma_h_m) + M_e * C_EL
-K3 = 2 * M_c
-K4 = K1 + K2
-
-
-def fung_cauchy_stress(lambda_e, k1, k2, rho=1.0):
-    lam_e_sqrd = lambda_e ** 2
-    lam_e_sqrd_one = lam_e_sqrd - 1
-    return 2 * rho * k1 * lam_e_sqrd * lam_e_sqrd_one * np.exp(k2 * lam_e_sqrd_one ** 2)
-
-
-def fung_elastic_modulus(lambda_e, k1, k2, rho=1.0):
-    lam_e_sqrd = lambda_e ** 2
-    lam_e_sqrd_one = lam_e_sqrd - 1
-    lam_e_sqrd_one_sqrd = lam_e_sqrd_one ** 2
-    return (
-        2
-        * k1
-        * rho
-        * lam_e_sqrd
-        * (lam_e_sqrd_one + (3 * lam_e_sqrd - 1 + 4 * k2 * lam_e_sqrd * lam_e_sqrd_one_sqrd))
-        * np.exp(k2 * lam_e_sqrd_one ** 2)
-    )
-
-
-def neo_hooke_cauchy_stress_cir(lambda_phi, lambda_r, mu, rho=1.0):
-    return rho * mu * lambda_phi ** 2 * (1 - 1 / (lambda_phi ** 4 * lambda_r ** 2))
-
-
-def neo_hooke_elastic_modulus_cir(lambda_phi, lambda_r, mu, rho=1.0):
-    return 2 * rho * mu * lambda_phi ** 2 * (1 + 1 / (lambda_phi ** 4 * lambda_r ** 2))
-
-
 def stab_margin(tau, k_sigma, sigma_h_c, C=C, M=M, sigma_cir_e=SIGMA_CIR_EL, sigma_h_m=sigma_h_m):
     """
     Return stability margin.
@@ -269,32 +258,6 @@ def stab_margin(tau, k_sigma, sigma_h_c, C=C, M=M, sigma_cir_e=SIGMA_CIR_EL, sig
         tau * (np.sum(M_C) - 2 * M_dot_sigma_cir)
     )
     return m_gnr
-
-
-def den_stab_margin(sigma_h_c):
-    """
-    Return the denominator of the stability margin.
-
-    see denominator in eq. (79) in [1]
-    """
-    denominator = K4 - K3 * sigma_h_c
-    return denominator
-
-
-def numerator_stab_margin(tau, k_sigma, sigma_h_c):
-    """
-    Return the numerator of the stability margin.
-
-    see numerator in eq. (79) in [1]
-    """
-    numerator = K1 * tau * k_sigma - K3 * sigma_h_c + K2
-    return numerator
-
-
-def numerator_stab_margin_is_zero(tau, sigma_h_c):
-    """ Return k_sigma if the numerator of stability margin is zero. """
-    k_sigma = (K3 * sigma_h_c - K2) / (K1 * tau)
-    return k_sigma
 
 
 def delta_radius(t, tau, m_gnr, dR0, t0):
