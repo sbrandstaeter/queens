@@ -1,6 +1,9 @@
 import numpy as np
 
-import pqueens.example_simulator_functions.uniform_growth_1D as uniform_growth_1D
+# pylint: disable=line-too-long
+import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uniform_growth_1D
+
+# pylint: enable=line-too-long
 
 days_to_seconds = 1  # 86400
 years_to_days = 365.25
@@ -36,6 +39,7 @@ np.random.set_state(RNG_STATE)
 DR_MEAS = DR_MEAS + NOISE
 
 import pqueens.example_simulator_functions.uniform_growth_1D_stab_margin as uniform_growth_1D_stab_margin
+
 
 def main(job_id, params):
     """ Interface to least squares of GnR model

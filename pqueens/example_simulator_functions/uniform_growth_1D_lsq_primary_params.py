@@ -1,8 +1,11 @@
 import numpy as np
 
-import pqueens.example_simulator_functions.uniform_growth_1D as uniform_growth_1D
+# pylint: disable=line-too-long
+import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uniform_growth_1D
 import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
 import pqueens.example_simulator_functions.uniform_growth_1D_stab_margin_primary_params as uniform_growth_1D_stab_margin_primary_params
+
+# pylint: enable=line-too-long
 
 # import real parameter values and measurements
 TAU = uniform_growth_1D_lsq.TAU

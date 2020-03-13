@@ -1,6 +1,9 @@
+# pylint: disable=line-too-long
 import pqueens.example_simulator_functions.uniform_growth_1D_stab_margin_primary_params as uniform_growth_1D_stab_margin_primary_params
-import pqueens.example_simulator_functions.uniform_growth_1D as uniform_growth_1D
+import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uniform_growth_1D
 import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
+
+# pylint: enable=line-too-long
 
 TAU = uniform_growth_1D_lsq.TAU
 DRO = uniform_growth_1D_lsq.DR0

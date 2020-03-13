@@ -1,6 +1,9 @@
+# pylint: disable=line-too-long
 import pqueens.example_simulator_functions.uniform_growth_1D_stab_margin as uniform_growth_1D_stab_margin
-import pqueens.example_simulator_functions.uniform_growth_1D as uniform_growth_1D
+import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uniform_growth_1D
 import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
+
+# pylint: enable=line-too-long
 
 TAU = uniform_growth_1D_lsq.TAU
 DRO = uniform_growth_1D_lsq.DR0
@@ -35,10 +38,10 @@ def main(job_id, params):
     t0 = params.get("t0", T0)
     m_gnr = uniform_growth_1D_stab_margin.main(job_id, params)
 
-
-    dR = uniform_growth_1D.delta_radius( t, tau, m_gnr, dR0, t0 )
+    dR = uniform_growth_1D.delta_radius(t, tau, m_gnr, dR0, t0)
 
     return dR
+
 
 if __name__ == "__main__":
     empty_dict = dict()
