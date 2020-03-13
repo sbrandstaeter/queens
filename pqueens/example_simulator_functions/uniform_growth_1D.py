@@ -34,7 +34,7 @@ years_to_days = 365.25
 T0 = 2 * years_to_days
 
 # initial damage (engineering strain at t=t0)
-DR0 = 0.002418963148596
+DE_R0 = 0.002418963148596
 
 # mean blood pressure in Pascal (see [1] Section 6.2 p.219)
 mmhg_to_pa = 101325 / 760  # see wikipedia article Torr=mmHg
@@ -148,7 +148,7 @@ class UniformCircumferentialGrowthParams:
         self.t0 = kwargs.get("t0", T0)
 
         # initial damage (engineering strain at t=t0)
-        self.dr0 = kwargs.get("dr0", DR0)
+        self.de_r0 = kwargs.get("de_r0", DE_R0)
 
         # mass fractions
         self.phi_el = kwargs.get("phi_el", PHI_EL)  # elastin
@@ -161,7 +161,7 @@ class UniformCircumferentialGrowthParams:
         # half life of collagen
         self.tau = kwargs.get("tau", TAU)
         # growth parameter of collagen
-        self.k_sigma = kwargs.get("k_sigma", KSIGMA)
+        self.k_sigma = kwargs.get("k_sigma", K_SIGMA)
 
         # material parameters of collagen
         self.k1_co = kwargs.get("k1_co", K1_CO)  # Fung parameter 1 collagen
@@ -198,9 +198,15 @@ class UniformCircumferentialGrowthParams:
 
             # NOTE: prestretch G and elastic modulus C codepend via other material parameters
             # elastic modulus
-            self.C_co = kwargs.get("C_co", C_CO)  # collagen
-            self.C_el = kwargs.get("C_el", C_EL)  # elastin
-            self.C_sm = kwargs.get("C_sm", C_SM)  # smooth muscle
+            self.C_co = fung_elastic_modulus(
+                self.lam_pre_co, k1=self.k1_co, k2=self.k2_co, rho=self.rho
+            )  # collagen
+            self.C_sm = fung_elastic_modulus(
+                self.lam_pre_sm, k1=self.k1_sm, k2=self.k2_sm, rho=self.rho
+            )  # smooth muscle
+            self.C_el = neo_hooke_elastic_modulus_cir(
+                self.lam_pre_el_cir, self.lam_pre_el_ax, self.mu_el, rho=self.rho
+            )  # elastin
         else:
             # homeostatic collagen stress
             self.sigma_h_co = kwargs.get("sigma_h_co", SIGMA_H_CO)
@@ -216,14 +222,8 @@ class UniformCircumferentialGrowthParams:
             self.C_sm = kwargs.get("C_sm", C_SM)  # smooth muscle
 
         # derived variables
-        # material density per unit area
-        self.M_e = self.phi_el * self.rho * self.H  # elastin
-        self.M_m = self.phi_sm * self.rho * self.H  # smooth muscle
-        self.M_c = self.phi_co * self.rho * self.H  # collagen
         # vector of mass fractions
         self.Phi = np.array([self.phi_el, self.phi_sm, self.phi_co])
-        # vector of material densities per unit surface area
-        self.M = np.array([self.M_e, self.M_m, self.M_c])
         # vector of prestretches
         self.G = np.array([self.lam_pre_el_cir, self.lam_pre_sm, self.lam_pre_co])
         # vector of homeostatic (circumferential) stresses
@@ -238,46 +238,66 @@ class UniformCircumferentialGrowthParams:
             self.H = self.mean_pressure * self.R0 / (self.Phi.dot(self.Sigma_cir))
         else:
             self.H = kwargs.get("H", H)
+        # material density per unit area
+        self.M_e = self.phi_el * self.rho * self.H  # elastin
+        self.M_m = self.phi_sm * self.rho * self.H  # smooth muscle
+        self.M_c = self.phi_co * self.rho * self.H  # collagen
+        # vector of material densities per unit surface area
+        self.M = np.array([self.M_e, self.M_m, self.M_c])
+
+        self.m_gnr = self.stab_margin()
+
+    def stab_margin(self):
+        """
+        Return stability margin.
+
+        see eq. (79) in [1]
+        """
+
+        # derived variables
+        M_dot_sigma_cir = self.M.dot(self.Sigma_cir)
+        M_C = self.M * self.C
+
+        # stability margin as in eq. (79) in [1]
+        m_gnr = (self.tau * self.k_sigma * np.sum(M_C[1:]) - 2 * M_dot_sigma_cir + M_C[0]) / (
+            self.tau * (np.sum(M_C) - 2 * M_dot_sigma_cir)
+        )
+        return m_gnr
 
 
-def stab_margin(tau, k_sigma, sigma_h_c, C=C, M=M, sigma_cir_e=SIGMA_CIR_EL, sigma_h_m=sigma_h_m):
-    """
-    Return stability margin.
+class UniformCircumferentialGrowthAndRemodelling:
+    def __init__(self, primary=True, homeostatic=True, **kwargs):
+        self.params = UniformCircumferentialGrowthParams(
+            primary=primary, homeostatic=homeostatic, **kwargs
+        )
 
-    see eq. (79) in [1]
-    """
-    # circumferential stress in initial configuration
-    sigma_cir = np.array([sigma_cir_e, sigma_h_m, sigma_h_c])
+    def delta_radius(self, t):
+        """
+        Return engineering strain of radius de_r at time t.
 
-    # derived variables
-    M_dot_sigma_cir = M.dot(sigma_cir)
-    M_C = M * C
+        see eq. (3) with (78) + (79) in [1]
+        """
 
-    # stability margin as in eq. (79) in [1]
-    m_gnr = (tau * k_sigma * np.sum(M_C[1:]) - 2 * M_dot_sigma_cir + M_C[0]) / (
-        tau * (np.sum(M_C) - 2 * M_dot_sigma_cir)
-    )
-    return m_gnr
+        de_r = (
+            (
+                1
+                + (self.params.tau * self.params.m_gnr - 1)
+                * np.exp(-self.params.m_gnr * (t + self.params.t0))
+            )
+            * self.params.de_r0
+            / (self.params.tau * self.params.m_gnr)
+        )
+        return np.squeeze(de_r)
 
-
-def delta_radius(t, tau, m_gnr, dR0, t0):
-    """
-    Return engineering strain of radius de_r at time t.
-
-    see eq. (3) with (78) + (79) in [1]
-    """
-
-    de_r = (1 + (tau * m_gnr - 1) * np.exp(-m_gnr * (t + t0))) * dR0 / (tau * m_gnr)
-    return np.squeeze(de_r)
-
-
-def radius(tau, k_sigma, t, sigma_h_c, dR0, t0):
-    """ Return current radius at time t. """
-    m_gnr = stab_margin(
-        tau, k_sigma, sigma_h_c, C=C, M=M, sigma_cir_e=SIGMA_CIR_EL, sigma_h_m=sigma_h_m
-    )
-    r = R0 * (1 + delta_radius(t, tau, m_gnr, dR0, t0))
-    return np.squeeze(r)
+    def radius(self, t):
+        """ Return current radius at time t. """
+        r = R0 * (
+            1
+            + self.delta_radius(
+                t, self.params.tau, self.params.m_gnr, self.params.de_r0, self.params.t0
+            )
+        )
+        return np.squeeze(r)
 
 
 def main(job_id, params):
@@ -292,18 +312,14 @@ def main(job_id, params):
         float:          Value of GnR model at parameters
                         specified in input dict
     """
-
-    return delta_radius(
-        params['t'],
-        params['tau'],
-        params['k_sigma'],
-        params['sigma_h_c'],
-        params['dR0'],
-        params['t0'],
+    uniform_circumferential_growth_and_remodelling = UniformCircumferentialGrowthAndRemodelling(
+        primary=True, homeostatic=True, **params
     )
+    return uniform_circumferential_growth_and_remodelling.delta_radius(params['t'])
 
 
 if __name__ == "__main__":
+    myparams = UniformCircumferentialGrowthParams()
     sigma_h_co = fung_cauchy_stress(LAM_PRE_CO, K1_CO, K2_CO, RHO)
     print(f"prestress collagen={sigma_h_co}")
     C_co = fung_elastic_modulus(LAM_PRE_CO, K1_CO, K2_CO, RHO)
