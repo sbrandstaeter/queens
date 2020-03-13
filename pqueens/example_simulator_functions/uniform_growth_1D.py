@@ -30,7 +30,7 @@ R0 = 1.25e-2
 H = 1.104761e-3
 
 years_to_days = 365.25
-# time of initial damage (in the past: T0 > 0)
+# time of initial damage (in the past: t0 > 0)
 T0 = 2 * years_to_days
 
 # initial damage (engineering strain at t=t0)
@@ -130,21 +130,68 @@ def neo_hooke_elastic_modulus_cir(lambda_phi, lambda_r, mu, rho=1.0):
     return 2 * rho * mu * lambda_phi ** 2 * (1 + 1 / (lambda_phi ** 4 * lambda_r ** 2))
 
 
-class UniformCircumferentialGrowthParams:
-    """ Collection of a full set of parameters for the Uniform Circumferential Growth Model.
+class UniformCircumferentialGrowthAndRemodellingParams:
+    """ Collection of a full parameter set for UniformCircumferentialGrowthAndRemodelling Model.
+
+     Units of the parameters should be:
+     - length [m]
+     - mass [kg]
+     - stress [Pa]
+     - time [d]
 
     Attributes:
-
+        R0 (double): initial radius
+        mean_pressure (double): mean blood pressure in Pascal (see [1] Section 6.2 p.219)
+        t0 (double): time of initial damage (in the past: t0 > 0)
+        de_r0 (double): initial damage (engineering strain at t=t0)
+        phi_el (double: mass fraction elastin
+        phi_sm (double: mass fraction smooth muscle
+        phi_co (double: mass fraction collagen
+        rho (double): density
+        tau (double): half life of collagen
+        k_sigma (double): growth parameter of collagen
+        k1_co (double): Fung material parameter 1 collagen
+        k2_co (double): Fung material parameter 2 collagen
+        k1_sm (double): Fung material parameter 1 smooth muscle
+        k2_sm (double): Fung material parameter 2 smooth muscle
+        mu_el (double): 3D Neo-Hooke shear material parameter of elastin matrix
+        lam_pre_co (double): prestretch compared to natural configuration collagen
+        lam_pre_sm (double): prestretch compared to natural configuration smooth muscle
+        lam_pre_cir_el (double): prestretch compared to natural config elastin circumferential
+        lam_pre_ax_el (double): prestretch compared to natural configuration elastin axial
+        sigma_h_co (double): homeostatic collagen stress
+        sigma_h_sm (double): homeostatic smooth muscle stress
+        sigma_cir_el (double): circumferential stress of elastin in initial configuration
+        C_co (double): elastic modulus collagen
+        C_el (double): elastic modulus elastin
+        C_sm (double): elastic modulus smooth muscle
+        Phi (ndarray): vector of mass fractions
+        G (ndarray): vector of prestretches
+        Sigma_cir (ndarray): vector of homeostatic (circumferential) stresses
+        C (ndarray): vector of elastic moduli
+        H (double): initial thickness of aorta wall
+        M_e (double): material density per unit area elastin
+        M_m (double): material density per unit area smooth muscle
+        M_c (double): material density per unit area collagen
+        M (ndarray): vector of material densities per unit surface area
+        m_gnr (double): stability margin
     """
 
     def __init__(self, primary=True, homeostatic=True, **kwargs):
+        """
+
+        Args:
+            primary:
+            homeostatic:
+            **kwargs:
+        """
         # initial radius
         self.R0 = kwargs.get("R0", R0)
 
         # mean blood pressure in Pascal (see [1] Section 6.2 p.219)
         self.mean_pressure = kwargs.get("mean_pressure", MEAN_PRESSURE)
 
-        # time of initial damage (in the past: T0 > 0)
+        # time of initial damage (in the past: t0 > 0)
         self.t0 = kwargs.get("t0", T0)
 
         # initial damage (engineering strain at t=t0)
@@ -177,10 +224,10 @@ class UniformCircumferentialGrowthParams:
         # prestretch compared to natural configuration
         self.lam_pre_co = kwargs.get("lam_pre_co", LAM_PRE_CO)  # collagen
         self.lam_pre_sm = kwargs.get("lam_pre_sm", LAM_PRE_SM)  # smooth muscle
-        self.lam_pre_el_cir = kwargs.get(
+        self.lam_pre_cir_el = kwargs.get(
             "lam_pre_el_cir", LAM_PRE_EL_CIR
         )  # elastin circumferential
-        self.lam_pre_el_ax = kwargs.get("lam_pre_el_ax", LAM_PRE_EL_AX)  # elastin axial
+        self.lam_pre_ax_el = kwargs.get("lam_pre_el_ax", LAM_PRE_EL_AX)  # elastin axial
 
         if primary:
             # homeostatic collagen stress
@@ -193,20 +240,23 @@ class UniformCircumferentialGrowthParams:
             )
             # circumferential stress of elastin in initial configuration
             self.sigma_cir_el = neo_hooke_cauchy_stress_cir(
-                self.lam_pre_el_cir, self.lam_pre_el_ax, self.mu_el, rho=self.rho
+                self.lam_pre_cir_el, self.lam_pre_ax_el, self.mu_el, rho=self.rho
             )
 
             # NOTE: prestretch G and elastic modulus C codepend via other material parameters
             # elastic modulus
+            # collagen
             self.C_co = fung_elastic_modulus(
                 self.lam_pre_co, k1=self.k1_co, k2=self.k2_co, rho=self.rho
-            )  # collagen
+            )
+            # smooth muscle
             self.C_sm = fung_elastic_modulus(
                 self.lam_pre_sm, k1=self.k1_sm, k2=self.k2_sm, rho=self.rho
-            )  # smooth muscle
+            )
+            # elastin
             self.C_el = neo_hooke_elastic_modulus_cir(
-                self.lam_pre_el_cir, self.lam_pre_el_ax, self.mu_el, rho=self.rho
-            )  # elastin
+                self.lam_pre_cir_el, self.lam_pre_ax_el, self.mu_el, rho=self.rho
+            )
         else:
             # homeostatic collagen stress
             self.sigma_h_co = kwargs.get("sigma_h_co", SIGMA_H_CO)
@@ -225,7 +275,7 @@ class UniformCircumferentialGrowthParams:
         # vector of mass fractions
         self.Phi = np.array([self.phi_el, self.phi_sm, self.phi_co])
         # vector of prestretches
-        self.G = np.array([self.lam_pre_el_cir, self.lam_pre_sm, self.lam_pre_co])
+        self.G = np.array([self.lam_pre_cir_el, self.lam_pre_sm, self.lam_pre_co])
         # vector of homeostatic (circumferential) stresses
         # i.e. circumferential stres in initial configuration
         # note that we consider only one collagen fiber family
@@ -245,6 +295,7 @@ class UniformCircumferentialGrowthParams:
         # vector of material densities per unit surface area
         self.M = np.array([self.M_e, self.M_m, self.M_c])
 
+        # stability margin
         self.m_gnr = self.stab_margin()
 
     def stab_margin(self):
@@ -266,8 +317,25 @@ class UniformCircumferentialGrowthParams:
 
 
 class UniformCircumferentialGrowthAndRemodelling:
+    """
+    Uniform circumferential growth and remodelling of a homogeneous vessel.
+
+    see Chapter 6.2 of [1].
+    In particular equations (78) + (80) with (79)
+
+    References:
+        [1]: Cyron, C. J. and Humphrey, J. D. (2014)
+        ‘Vascular homeostasis and the concept of mechanobiological stability’,
+        International Journal of Engineering Science, 85, pp. 203–223.
+        doi: 10.1016/j.ijengsci.2014.08.003.
+
+    Attributes:
+        params (UniformCircumferentialGrowthAndRemodellingParams): collection of all parameters of
+        the model
+    """
+
     def __init__(self, primary=True, homeostatic=True, **kwargs):
-        self.params = UniformCircumferentialGrowthParams(
+        self.params = UniformCircumferentialGrowthAndRemodellingParams(
             primary=primary, homeostatic=homeostatic, **kwargs
         )
 
@@ -319,16 +387,17 @@ def main(job_id, params):
 
 
 if __name__ == "__main__":
-    myparams = UniformCircumferentialGrowthParams()
-    sigma_h_co = fung_cauchy_stress(LAM_PRE_CO, K1_CO, K2_CO, RHO)
-    print(f"prestress collagen={sigma_h_co}")
-    C_co = fung_elastic_modulus(LAM_PRE_CO, K1_CO, K2_CO, RHO)
-    print(f"elastic modulus collagen={C_co}")
-    sigma_h_sm = fung_cauchy_stress(LAM_PRE_SM, K1_SM, K2_SM, RHO)
-    print(f"prestress smooth muscle={sigma_h_sm}")
-    C_sm = fung_elastic_modulus(LAM_PRE_SM, K1_SM, K2_SM, RHO)
-    print(f"elastic modulus smooth muscle={C_sm}")
-    sigma_h_el_cir = neo_hooke_cauchy_stress_cir(LAM_PRE_EL_CIR, LAM_PRE_EL_AX, MU_EL, RHO)
-    print(f"prestress elastin={sigma_h_el_cir}")
-    C_el = neo_hooke_elastic_modulus_cir(LAM_PRE_EL_CIR, LAM_PRE_EL_AX, MU_EL, RHO)
-    print(f"elastic modulus elastin={C_el}")
+    gnr_primary_params = UniformCircumferentialGrowthAndRemodellingParams(primary=True)
+    print(f"prestress collagen={gnr_primary_params.sigma_h_co }")
+    print(f"elastic modulus collagen={gnr_primary_params.C_co}")
+    print(f"prestress smooth muscle={gnr_primary_params.sigma_h_sm}")
+    print(f"elastic modulus smooth muscle={gnr_primary_params.C_sm}")
+    print(f"prestress elastin={gnr_primary_params.sigma_cir_el}")
+    print(f"elastic modulus elastin={gnr_primary_params.C_el}")
+    gnr_params = UniformCircumferentialGrowthAndRemodellingParams(primary=False)
+    print(f"prestress collagen={gnr_params.sigma_h_co }")
+    print(f"elastic modulus collagen={gnr_params.C_co}")
+    print(f"prestress smooth muscle={gnr_params.sigma_h_sm}")
+    print(f"elastic modulus smooth muscle={gnr_params.C_sm}")
+    print(f"prestress elastin={gnr_params.sigma_cir_el}")
+    print(f"elastic modulus elastin={gnr_params.C_el}")
