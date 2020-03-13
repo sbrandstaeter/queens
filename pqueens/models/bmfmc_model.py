@@ -478,7 +478,7 @@ class BMFMCModel(Model):
         """
 
         # ---------------------------- PYHF MEAN PREDICTION ---------------------------
-        std = np.sqrt(self.var_f_mc)  # *0.65
+        std = np.sqrt(self.var_f_mc)
         pdf_mat = st.norm.pdf(self.y_pdf_support, loc=self.m_f_mc, scale=std)
         pyhf_mean_vec = np.sum(pdf_mat, axis=0)
         self.p_yhf_mean = 1 / self.m_f_mc.size * pyhf_mean_vec
