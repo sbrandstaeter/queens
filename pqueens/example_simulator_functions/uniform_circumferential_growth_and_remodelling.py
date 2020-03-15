@@ -26,8 +26,6 @@ NaN = np.nan
 # List of fixed model parameters
 # initial radius
 R0 = 1.25e-2
-# initial thickness of aorta wall
-H = 1.104761e-3
 
 years_to_days = 365.25
 # time of initial damage (in the past: t0 > 0)
@@ -74,8 +72,8 @@ SIGMA_H_SM = 6.704629134124602e03
 SIGMA_CIR_EL = 1.088014923234574e05
 
 # prestretch compared to natural configuration
-LAM_PRE_EL_CIR = 1.34  # elastin circumferential
-LAM_PRE_EL_AX = 1.25  # elastin axial
+LAM_PRE_CIR_EL = 1.34  # elastin circumferential
+LAM_PRE_AX_EL = 1.25  # elastin axial
 LAM_PRE_SM = 1.1  # smooth muscle
 # lam_pre_co = 1.062  # collagen
 LAM_PRE_CO = 1.060697162749238753320924e00  # collagen BACI value
@@ -88,18 +86,23 @@ C_SM = 0.168358396929622e06  # smooth muscle
 C_CO = 5.258871332154771e06  # collagen (corresponds to lam_pre_co=1.060697162...)
 
 # derived variables
-# material density per unit area
-M_e = PHI_EL * RHO * H  # elastin
-M_m = PHI_SM * RHO * H  # smooth muscle
-M_c = PHI_CO * RHO * H  # collagen
 # vector of mass fractions
 PHI = np.array([PHI_EL, PHI_SM, PHI_CO])
-# vector of material densities per unit surface area
-M = np.array([M_e, M_m, M_c])
 # vector of prestretches
-G = np.array([LAM_PRE_EL_CIR, LAM_PRE_SM, LAM_PRE_CO])
+G = np.array([LAM_PRE_CIR_EL, LAM_PRE_SM, LAM_PRE_CO])
+# vector of homeostatic (circumferential) stresses
+SIGMA_CIR = np.array([SIGMA_CIR_EL, SIGMA_H_SM, SIGMA_H_CO])
 # vector of elastic modulus
 C = np.array([C_EL, C_SM, C_CO])
+# initial, homeostatic thickness of wall based on Laplace Law
+# value from Christian's Matlab Code: 1.104761e-3
+H = MEAN_PRESSURE * R0 / (PHI.dot(SIGMA_CIR))
+# material density per unit area
+M_EL = PHI_EL * RHO * H  # elastin
+M_SM = PHI_SM * RHO * H  # smooth muscle
+M_CO = PHI_CO * RHO * H  # collagen
+# vector of material densities per unit surface area
+M = np.array([M_EL, M_SM, M_CO])
 
 
 def fung_cauchy_stress(lambda_e, k1, k2, rho=1.0):
@@ -145,15 +148,14 @@ class UniformCircumferentialGrowthAndRemodellingParams:
         C_el (double): elastic modulus elastin
         C_sm (double): elastic modulus smooth muscle
         G (ndarray): vector of prestretches
-        h (double): initial thickness of aorta wall
         M (ndarray): vector of material densities per unit surface area
-        M_c (double): material density per unit area collagen
-        M_e (double): material density per unit area elastin
-        M_m (double): material density per unit area smooth muscle
+        M_co (double): material density per unit area collagen
+        M_el (double): material density per unit area elastin
+        M_sm (double): material density per unit area smooth muscle
         Phi (ndarray): vector of mass fractions
-        r0 (double): initial radius
         Sigma_cir (ndarray): vector of homeostatic (circumferential) stresses
         de_r0 (double): initial damage (engineering strain at t=t0)
+        h (double): initial, homeostaic thickness of wall
         k1_co (double): Fung material parameter 1 collagen
         k1_sm (double): Fung material parameter 1 smooth muscle
         k2_co (double): Fung material parameter 2 collagen
@@ -169,6 +171,7 @@ class UniformCircumferentialGrowthAndRemodellingParams:
         phi_co (double: mass fraction collagen
         phi_el (double: mass fraction elastin
         phi_sm (double: mass fraction smooth muscle
+        r0 (double): initial radius
         rho (double): density
         sigma_cir_el (double): circumferential stress of elastin in initial configuration
         sigma_h_co (double): homeostatic collagen stress
@@ -177,12 +180,11 @@ class UniformCircumferentialGrowthAndRemodellingParams:
         tau (double): half life of collagen
     """
 
-    def __init__(self, primary=True, homeostatic=True, **kwargs):
+    def __init__(self, primary=True, **kwargs):
         """
 
         Args:
             primary:
-            homeostatic:
             **kwargs:
         """
         # initial radius
@@ -226,9 +228,9 @@ class UniformCircumferentialGrowthAndRemodellingParams:
             self.lam_pre_co = kwargs.get("lam_pre_co", LAM_PRE_CO)  # collagen
             self.lam_pre_sm = kwargs.get("lam_pre_sm", LAM_PRE_SM)  # smooth muscle
             self.lam_pre_cir_el = kwargs.get(
-                "lam_pre_el_cir", LAM_PRE_EL_CIR
+                "lam_pre_el_cir", LAM_PRE_CIR_EL
             )  # elastin circumferential
-            self.lam_pre_ax_el = kwargs.get("lam_pre_el_ax", LAM_PRE_EL_AX)  # elastin axial
+            self.lam_pre_ax_el = kwargs.get("lam_pre_el_ax", LAM_PRE_AX_EL)  # elastin axial
 
             # homeostatic collagen stress
             self.sigma_h_co = fung_cauchy_stress(
@@ -282,21 +284,21 @@ class UniformCircumferentialGrowthAndRemodellingParams:
         self.Sigma_cir = np.array([self.sigma_cir_el, self.sigma_h_sm, self.sigma_h_co])
         # vector of elastic modulus
         self.C = np.array([self.C_el, self.C_sm, self.C_co])
-        # initial thickness of aorta wall
-        if homeostatic:
-            # Laplace Law
-            self.h = self.mean_pressure * self.r0 / (self.Phi.dot(self.Sigma_cir))
-        else:
-            self.h = kwargs.get("h", H)
+        # initial, homeostatic thickness of aorta wall
+        self.h = self.homeostatic_thickness()
         # material density per unit area
-        self.M_e = self.phi_el * self.rho * self.h  # elastin
-        self.M_m = self.phi_sm * self.rho * self.h  # smooth muscle
-        self.M_c = self.phi_co * self.rho * self.h  # collagen
+        self.M_el = self.phi_el * self.rho * self.h  # elastin
+        self.M_sm = self.phi_sm * self.rho * self.h  # smooth muscle
+        self.M_co = self.phi_co * self.rho * self.h  # collagen
         # vector of material densities per unit surface area
-        self.M = np.array([self.M_e, self.M_m, self.M_c])
+        self.M = np.array([self.M_el, self.M_sm, self.M_co])
 
         # stability margin
         self.m_gnr = self.stab_margin()
+
+    def homeostatic_thickness(self):
+        """Return initial, homeostatic thickness of wall based on Laplace Law. """
+        return self.mean_pressure * self.r0 / (self.Phi.dot(self.Sigma_cir))
 
     def stab_margin(self):
         """
@@ -334,10 +336,8 @@ class UniformCircumferentialGrowthAndRemodelling:
         the model
     """
 
-    def __init__(self, primary=True, homeostatic=True, **kwargs):
-        self.params = UniformCircumferentialGrowthAndRemodellingParams(
-            primary=primary, homeostatic=homeostatic, **kwargs
-        )
+    def __init__(self, primary=True, **kwargs):
+        self.params = UniformCircumferentialGrowthAndRemodellingParams(primary=primary, **kwargs)
 
     def delta_radius(self, t):
         """
@@ -404,7 +404,6 @@ if __name__ == "__main__":
 
     params = dict()
     params["primary"] = True
-    params["homeostatic"] = True
     params["t"] = np.array([0.0, 365.0, 500.0])
 
     print(main(0, params))
