@@ -1,11 +1,11 @@
 # pylint: disable=line-too-long
 import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uni_cir_gnr
-import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling_radial_displacement_lsq as uniform_growth_1D_lsq
+import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling_radial_displacement_lsq as uni_cir_gnr_lsq
 
 # pylint: enable=line-too-long
 
 # default point of time to evaluate the delta in radius
-T = uniform_growth_1D_lsq.T_END
+T = uni_cir_gnr_lsq.T_END
 
 
 def main(job_id, params):

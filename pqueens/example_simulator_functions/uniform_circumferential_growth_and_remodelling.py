@@ -369,5 +369,5 @@ class UniformCircumferentialGrowthAndRemodelling:
 
     def radius(self, t):
         """ Return current radius at time t. """
-        r = self.params.r0 * (1 + self.de_r(t))
+        r = self.dr(t) + self.params.r0
         return np.squeeze(r)
