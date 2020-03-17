@@ -296,7 +296,7 @@ class UniformCircumferentialGrowthAndRemodellingParams:
         # warn about unused kwargs:
         for key, value in kwargs.items():
             raise Warning(
-                f'Keyword argument "{key}" with given value "{value}" unused during parameter initiation.'
+                f'Keyword argument "{key}" with value "{value}" unused during parameter initiation.'
             )
 
     def homeostatic_thickness(self):
