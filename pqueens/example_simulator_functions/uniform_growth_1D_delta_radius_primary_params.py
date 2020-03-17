@@ -1,15 +1,10 @@
 # pylint: disable=line-too-long
-import pqueens.example_simulator_functions.uniform_growth_1D_stab_margin_primary_params as uniform_growth_1D_stab_margin_primary_params
-import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uniform_growth_1D
-import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
+import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uni_cir_gnr
 
 # pylint: enable=line-too-long
+import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
 
-TAU = uniform_growth_1D_lsq.TAU
-DRO = uniform_growth_1D_lsq.DR0
-T0 = uniform_growth_1D_lsq.T0
-
-# point of time to evaluate the delta in radius
+# default point of time to evaluate the delta in radius
 T = uniform_growth_1D_lsq.T_END
 
 
@@ -34,17 +29,9 @@ def main(job_id, params):
     # current time to evaluate growth at
     t = params.get("t", T)
 
-    tau = params.get("tau", TAU)
-    # make sure that tau for m_gnr and for delta_radius is equal
-    params["tau"] = tau
-    dR0 = params.get("dR0", DRO)
-    # time of perturbation, i.e. initiation of growth
-    t0 = params.get("t0", T0)
-
-    # stability margin
-    m_gnr = uniform_growth_1D_stab_margin_primary_params.main(job_id, params)
-
-    de_r = uniform_growth_1D.delta_radius(t, tau, m_gnr, dR0, t0)
+    de_r = uni_cir_gnr.UniformCircumferentialGrowthAndRemodelling(
+        primary=True, **params
+    ).delta_radius(t)
 
     return de_r
 

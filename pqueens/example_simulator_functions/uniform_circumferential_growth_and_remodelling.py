@@ -20,19 +20,17 @@ import numpy as np
 # - stress [Pa]
 # - time [d]
 
-# NaN for uninitialized parameters
-NaN = np.nan
-
 # List of fixed model parameters
 # initial radius
 R0 = 1.25e-2
 
 years_to_days = 365.25
 # time of initial damage (in the past: t0 > 0)
-T0 = 2 * years_to_days
+T0 = 0.0
 
 # initial damage (engineering strain at t=t0)
-DE_R0 = 0.002418963148596
+# DE_R0 = 0.002418963148596 # (value corresponds to lambda_pre_co = 1.062)
+DE_R0 = 0.002477004816501293
 
 # mean blood pressure in Pascal (see [1] Section 6.2 p.219)
 mmhg_to_pa = 101325 / 760  # see wikipedia article Torr=mmHg
@@ -62,21 +60,20 @@ K2_SM = 11.4  # Fung parameter 2 smooth muscle
 # material parameters of elastin matrix
 MU_EL = 72  # (3D) Neo-Hooke shear parameter
 
-# homeostatic collagen stress
-SIGMA_H_CO = 200000
-
-# homeostatic smooth muscle stress (value from Christian's Matlab Code)
-SIGMA_H_SM = 6.704629134124602e03
-
-# circumferential stress of elastin in initial configuration (value from Christian's Matlab Code)
-SIGMA_CIR_EL = 1.088014923234574e05
-
 # prestretch compared to natural configuration
 LAM_PRE_CIR_EL = 1.34  # elastin circumferential
 LAM_PRE_AX_EL = 1.25  # elastin axial
 LAM_PRE_SM = 1.1  # smooth muscle
 # lam_pre_co = 1.062  # collagen
 LAM_PRE_CO = 1.060697162749238753320924e00  # collagen BACI value
+
+
+# homeostatic collagen stress
+SIGMA_H_CO = 200000
+# homeostatic smooth muscle stress (value from Christian's Matlab Code)
+SIGMA_H_SM = 6.704629134124602e03
+# circumferential stress of elastin in initial configuration (value from Christian's Matlab Code)
+SIGMA_CIR_EL = 1.088014923234574e05
 
 # NOTE: G and C codepend via other material parameters (see Christian's Matlab Code)
 # elastic modulus (values taken from Christian's Matlab Code)
@@ -188,49 +185,49 @@ class UniformCircumferentialGrowthAndRemodellingParams:
             **kwargs:
         """
         # initial radius
-        self.r0 = kwargs.get("r0", R0)
+        self.r0 = kwargs.pop("r0", R0)
 
         # mean blood pressure in Pascal (see [1] Section 6.2 p.219)
-        self.mean_pressure = kwargs.get("mean_pressure", MEAN_PRESSURE)
+        self.mean_pressure = kwargs.pop("mean_pressure", MEAN_PRESSURE)
 
         # time of initial damage (in the past: t0 > 0)
-        self.t0 = kwargs.get("t0", T0)
+        self.t0 = kwargs.pop("t0", T0)
 
         # initial damage (engineering strain at t=t0)
-        self.de_r0 = kwargs.get("de_r0", DE_R0)
+        self.de_r0 = kwargs.pop("de_r0", DE_R0)
 
         # mass fractions
-        self.phi_el = kwargs.get("phi_el", PHI_EL)  # elastin
-        self.phi_sm = kwargs.get("phi_sm", PHI_SM)  # smooth muscle
-        self.phi_co = kwargs.get("phi_co", PHI_CO)  # collagen
+        self.phi_el = kwargs.pop("phi_el", PHI_EL)  # elastin
+        self.phi_sm = kwargs.pop("phi_sm", PHI_SM)  # smooth muscle
+        self.phi_co = kwargs.pop("phi_co", PHI_CO)  # collagen
 
         # density
-        self.rho = kwargs.get("rho", RHO)
+        self.rho = kwargs.pop("rho", RHO)
 
         # half life of collagen
-        self.tau = kwargs.get("tau", TAU)
+        self.tau = kwargs.pop("tau", TAU)
         # growth parameter of collagen
-        self.k_sigma = kwargs.get("k_sigma", K_SIGMA)
+        self.k_sigma = kwargs.pop("k_sigma", K_SIGMA)
 
         if primary:
             # material parameters of collagen
-            self.k1_co = kwargs.get("k1_co", K1_CO)  # Fung parameter 1 collagen
-            self.k2_co = kwargs.get("k2_co", K2_CO)  # Fung parameter 2 collagen
+            self.k1_co = kwargs.pop("k1_co", K1_CO)  # Fung parameter 1 collagen
+            self.k2_co = kwargs.pop("k2_co", K2_CO)  # Fung parameter 2 collagen
 
             # material parameters of smooth muscle
-            self.k1_sm = kwargs.get("k1_sm", K1_SM)  # Fung parameter 1 smooth muscle
-            self.k2_sm = kwargs.get("k2_sm", K2_SM)  # Fung parameter 2 smooth muscle
+            self.k1_sm = kwargs.pop("k1_sm", K1_SM)  # Fung parameter 1 smooth muscle
+            self.k2_sm = kwargs.pop("k2_sm", K2_SM)  # Fung parameter 2 smooth muscle
 
             # material parameters of elastin matrix
-            self.mu_el = kwargs.get("mu_el", MU_EL)  # (3D) Neo-Hooke shear parameter
+            self.mu_el = kwargs.pop("mu_el", MU_EL)  # (3D) Neo-Hooke shear parameter
 
             # prestretch compared to natural configuration
-            self.lam_pre_co = kwargs.get("lam_pre_co", LAM_PRE_CO)  # collagen
-            self.lam_pre_sm = kwargs.get("lam_pre_sm", LAM_PRE_SM)  # smooth muscle
-            self.lam_pre_cir_el = kwargs.get(
-                "lam_pre_el_cir", LAM_PRE_CIR_EL
+            self.lam_pre_co = kwargs.pop("lam_pre_co", LAM_PRE_CO)  # collagen
+            self.lam_pre_sm = kwargs.pop("lam_pre_sm", LAM_PRE_SM)  # smooth muscle
+            self.lam_pre_cir_el = kwargs.pop(
+                "lam_pre_cir_el", LAM_PRE_CIR_EL
             )  # elastin circumferential
-            self.lam_pre_ax_el = kwargs.get("lam_pre_el_ax", LAM_PRE_AX_EL)  # elastin axial
+            self.lam_pre_ax_el = kwargs.pop("lam_pre_ax_el", LAM_PRE_AX_EL)  # elastin axial
 
             # homeostatic collagen stress
             self.sigma_h_co = fung_cauchy_stress(
@@ -263,17 +260,17 @@ class UniformCircumferentialGrowthAndRemodellingParams:
             self.G = np.array([self.lam_pre_cir_el, self.lam_pre_sm, self.lam_pre_co])
         else:
             # homeostatic collagen stress
-            self.sigma_h_co = kwargs.get("sigma_h_co", SIGMA_H_CO)
+            self.sigma_h_co = kwargs.pop("sigma_h_co", SIGMA_H_CO)
             # homeostatic smooth muscle stress
-            self.sigma_h_sm = kwargs.get("sigma_h_sm", SIGMA_H_SM)
+            self.sigma_h_sm = kwargs.pop("sigma_h_sm", SIGMA_H_SM)
             # circumferential stress of elastin in initial configuration
-            self.sigma_cir_el = kwargs.get("simga_cir_el", SIGMA_CIR_EL)
+            self.sigma_cir_el = kwargs.pop("sigma_cir_el", SIGMA_CIR_EL)
 
             # NOTE: prestretch G and elastic modulus C codepend via other material parameters
             # elastic modulus
-            self.C_co = kwargs.get("C_co", C_CO)  # collagen
-            self.C_el = kwargs.get("C_el", C_EL)  # elastin
-            self.C_sm = kwargs.get("C_sm", C_SM)  # smooth muscle
+            self.C_co = kwargs.pop("C_co", C_CO)  # collagen
+            self.C_el = kwargs.pop("C_el", C_EL)  # elastin
+            self.C_sm = kwargs.pop("C_sm", C_SM)  # smooth muscle
 
         # derived variables
         # vector of mass fractions
@@ -295,6 +292,12 @@ class UniformCircumferentialGrowthAndRemodellingParams:
 
         # stability margin
         self.m_gnr = self.stab_margin()
+
+        # warn about unused kwargs:
+        for key, value in kwargs.items():
+            raise Warning(
+                f'Keyword argument "{key}" with given value "{value}" unused during parameter initiation.'
+            )
 
     def homeostatic_thickness(self):
         """Return initial, homeostatic thickness of wall based on Laplace Law. """
@@ -359,12 +362,7 @@ class UniformCircumferentialGrowthAndRemodelling:
 
     def radius(self, t):
         """ Return current radius at time t. """
-        r = self.params.r0 * (
-            1
-            + self.delta_radius(
-                t, self.params.tau, self.params.m_gnr, self.params.de_r0, self.params.t0
-            )
-        )
+        r = self.params.r0 * (1 + self.delta_radius(t))
         return np.squeeze(r)
 
 
@@ -380,10 +378,11 @@ def main(job_id, params):
         float:          Value of GnR model at parameters
                         specified in input dict
     """
+    t = params.pop("t")
     uniform_circumferential_growth_and_remodelling = UniformCircumferentialGrowthAndRemodelling(
         **params
     )
-    return uniform_circumferential_growth_and_remodelling.delta_radius(params['t'])
+    return uniform_circumferential_growth_and_remodelling.delta_radius(t)
 
 
 if __name__ == "__main__":

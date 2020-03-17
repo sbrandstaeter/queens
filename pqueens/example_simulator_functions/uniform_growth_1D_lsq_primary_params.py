@@ -1,20 +1,22 @@
 import numpy as np
 
 # pylint: disable=line-too-long
-import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uniform_growth_1D
-import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
-import pqueens.example_simulator_functions.uniform_growth_1D_stab_margin_primary_params as uniform_growth_1D_stab_margin_primary_params
+import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uni_cir_gnr
 
 # pylint: enable=line-too-long
+import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
+
 
 # import real parameter values and measurements
-TAU = uniform_growth_1D_lsq.TAU
-DR0 = uniform_growth_1D_lsq.DR0
 T0 = uniform_growth_1D_lsq.T0
+PARAMS = {"t0": T0}
 
 T_MEAS = uniform_growth_1D_lsq.T_MEAS
-# TODO: calculate measurements based on primary parameters
-DR_MEAS = uniform_growth_1D_lsq.DR_MEAS
+DE_MEAS = uni_cir_gnr.UniformCircumferentialGrowthAndRemodelling(
+    primary=True, **PARAMS
+).delta_radius(t=T_MEAS)
+
+DE_MEAS = DE_MEAS + uniform_growth_1D_lsq.NOISE
 
 
 def main(job_id, params):
@@ -34,16 +36,13 @@ def main(job_id, params):
                         specified in input dict
     """
 
-    tau = params.get("tau", TAU)
-    # make sure that tau for m_gnr and for delta_radius is equal
-    params["tau"] = tau
-    dR0 = params.get("dR0", DR0)
+    # make sure the default t0 value is set correctly
     t0 = params.get("t0", T0)
-
-    m_gnr = uniform_growth_1D_stab_margin_primary_params.main(job_id, params)
-    dr_sim = uniform_growth_1D.delta_radius(t=T_MEAS, tau=tau, m_gnr=m_gnr, dR0=dR0, t0=t0)
-
-    residuals = DR_MEAS - dr_sim
+    params["t0"] = t0
+    de_sim = uni_cir_gnr.UniformCircumferentialGrowthAndRemodelling(
+        primary=True, **params
+    ).delta_radius(t=T_MEAS)
+    residuals = DE_MEAS - de_sim
 
     return np.square(residuals).sum()
 

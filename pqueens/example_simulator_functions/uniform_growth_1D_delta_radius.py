@@ -1,21 +1,16 @@
 # pylint: disable=line-too-long
-import pqueens.example_simulator_functions.uniform_growth_1D_stab_margin as uniform_growth_1D_stab_margin
-import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uniform_growth_1D
-import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
+import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uni_cir_gnr
 
 # pylint: enable=line-too-long
+import pqueens.example_simulator_functions.uniform_growth_1D_lsq as uniform_growth_1D_lsq
 
-TAU = uniform_growth_1D_lsq.TAU
-DRO = uniform_growth_1D_lsq.DR0
-T0 = uniform_growth_1D_lsq.T0
-
-# point of time to evaluate the delta in radius
-t = uniform_growth_1D_lsq.T_END
+# default point of time to evaluate the delta in radius
+T = uniform_growth_1D_lsq.T_END
 
 
 def main(job_id, params):
     """
-    Interface to displacement of radius of GnR model.
+    Interface to engineering strain of radius of GnR model parameterized with primary parameters.
 
     UNITS:
     - length [m]
@@ -31,16 +26,14 @@ def main(job_id, params):
                         specified in input dict
     """
 
-    tau = params.get("tau", TAU)
-    # make sure that tau for m_gnr and for delta_radius is equal
-    params["tau"] = tau
-    dR0 = params.get("dR0", DRO)
-    t0 = params.get("t0", T0)
-    m_gnr = uniform_growth_1D_stab_margin.main(job_id, params)
+    # current time to evaluate growth at
+    t = params.get("t", T)
 
-    dR = uniform_growth_1D.delta_radius(t, tau, m_gnr, dR0, t0)
+    de_r = uni_cir_gnr.UniformCircumferentialGrowthAndRemodelling(
+        primary=False, **params
+    ).delta_radius(t)
 
-    return dR
+    return de_r
 
 
 if __name__ == "__main__":

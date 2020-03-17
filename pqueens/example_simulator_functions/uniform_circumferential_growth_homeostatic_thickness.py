@@ -14,8 +14,8 @@ K2_SM = uniform_growth_1D.K2_SM
 LAM_PRE_SM = uniform_growth_1D.LAM_PRE_SM
 
 MU_EL = uniform_growth_1D.MU_EL
-LAM_PRE_EL_CIR = uniform_growth_1D.LAM_PRE_EL_CIR
-LAM_PRE_EL_AX = uniform_growth_1D.LAM_PRE_EL_AX
+LAM_PRE_EL_CIR = uniform_growth_1D.LAM_PRE_CIR_EL
+LAM_PRE_EL_AX = uniform_growth_1D.LAM_PRE_AX_EL
 
 PHI_e = uniform_growth_1D.PHI_EL
 PHI_m = uniform_growth_1D.PHI_SM
