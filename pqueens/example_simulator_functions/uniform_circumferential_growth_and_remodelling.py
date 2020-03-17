@@ -342,7 +342,7 @@ class UniformCircumferentialGrowthAndRemodelling:
     def __init__(self, primary=True, **kwargs):
         self.params = UniformCircumferentialGrowthAndRemodellingParams(primary=primary, **kwargs)
 
-    def delta_radius(self, t):
+    def de_r(self, t):
         """
         Return engineering strain of radius de_r at time t.
 
@@ -360,52 +360,14 @@ class UniformCircumferentialGrowthAndRemodelling:
         )
         return np.squeeze(de_r)
 
+    def dr(self, t):
+        """
+        Return radial displacement dr at time t.
+        """
+
+        return self.de_r(t) * self.params.r0
+
     def radius(self, t):
         """ Return current radius at time t. """
-        r = self.params.r0 * (1 + self.delta_radius(t))
+        r = self.params.r0 * (1 + self.de_r(t))
         return np.squeeze(r)
-
-
-def main(job_id, params):
-    """
-    Interface to GnR model.
-
-    Args:
-        job_id (int):   ID of job
-        params (dict):  Dictionary with parameters
-
-    Returns:
-        float:          Value of GnR model at parameters
-                        specified in input dict
-    """
-    t = params.pop("t")
-    uniform_circumferential_growth_and_remodelling = UniformCircumferentialGrowthAndRemodelling(
-        **params
-    )
-    return uniform_circumferential_growth_and_remodelling.delta_radius(t)
-
-
-if __name__ == "__main__":
-    gnr_primary_params = UniformCircumferentialGrowthAndRemodellingParams(primary=True)
-    print(f"prestress collagen={gnr_primary_params.sigma_h_co }")
-    print(f"elastic modulus collagen={gnr_primary_params.C_co}")
-    print(f"prestress smooth muscle={gnr_primary_params.sigma_h_sm}")
-    print(f"elastic modulus smooth muscle={gnr_primary_params.C_sm}")
-    print(f"prestress elastin={gnr_primary_params.sigma_cir_el}")
-    print(f"elastic modulus elastin={gnr_primary_params.C_el}")
-    gnr_params = UniformCircumferentialGrowthAndRemodellingParams(primary=False)
-    print(f"prestress collagen={gnr_params.sigma_h_co }")
-    print(f"elastic modulus collagen={gnr_params.C_co}")
-    print(f"prestress smooth muscle={gnr_params.sigma_h_sm}")
-    print(f"elastic modulus smooth muscle={gnr_params.C_sm}")
-    print(f"prestress elastin={gnr_params.sigma_cir_el}")
-    print(f"elastic modulus elastin={gnr_params.C_el}")
-
-    params = dict()
-    params["primary"] = True
-    params["t"] = np.array([0.0, 365.0, 500.0])
-
-    print(main(0, params))
-
-    params["primary"] = False
-    print(main(0, params))

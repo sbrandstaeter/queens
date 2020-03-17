@@ -17,10 +17,10 @@ NUM_MEAS = 8
 
 # t_meas = np.linspace(-t0, t_end, num_meas)
 T_MEAS = np.linspace(0.0, T_END, NUM_MEAS)
-DE_MEAS = uni_cir_gnr.UniformCircumferentialGrowthAndRemodelling(
-    primary=False, **PARAMS
-).delta_radius(t=T_MEAS)
+GNR_MODEL = uni_cir_gnr.UniformCircumferentialGrowthAndRemodelling(primary=True, **PARAMS)
+DR_MEAS = GNR_MODEL.dr(t=T_MEAS)
 
+# create random noise
 RNG_STATE = np.random.get_state()
 SEED = 24
 np.random.seed(SEED)
@@ -29,7 +29,8 @@ NOISE = np.random.normal(0, STD_NOISE, NUM_MEAS)
 
 np.random.set_state(RNG_STATE)
 
-DE_MEAS = DE_MEAS + NOISE
+# add random noise on pseudo measurements
+DR_MEAS = DR_MEAS + NOISE
 
 
 def main(job_id, params):
@@ -48,18 +49,14 @@ def main(job_id, params):
         float:          Value of GnR model at parameters
                         specified in input dict
     """
+
     # make sure the default t0 value is set correctly
     t0 = params.get("t0", T0)
     params["t0"] = t0
-    de_sim = uni_cir_gnr.UniformCircumferentialGrowthAndRemodelling(
-        primary=False, **params
-    ).delta_radius(t=T_MEAS)
-    residuals = DE_MEAS - de_sim
+    gnr_model = uni_cir_gnr.UniformCircumferentialGrowthAndRemodelling(primary=True, **params)
+
+    dr_sim = gnr_model.dr(t=T_MEAS)
+
+    residuals = DR_MEAS - dr_sim
 
     return np.square(residuals).sum()
-
-
-if __name__ == "__main__":
-    # test with default parameters
-    empty_dict = dict()
-    print(main(0, empty_dict))

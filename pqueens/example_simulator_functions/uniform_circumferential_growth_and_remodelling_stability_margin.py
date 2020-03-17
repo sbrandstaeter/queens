@@ -26,8 +26,3 @@ def main(job_id, params):
     return uni_cir_gnr.UniformCircumferentialGrowthAndRemodellingParams(
         primary=True, **params
     ).m_gnr
-
-
-if __name__ == "__main__":
-    empty_dict = dict()
-    print(main(0, empty_dict))
