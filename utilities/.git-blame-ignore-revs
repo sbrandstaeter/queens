@@ -27,3 +27,5 @@ acf40939b96f70de40d24aa3b5679ea79c323a35
 cc3631dad3d788a1827a7e979261f9d4238da5db
 # Black formatter and fix line-too-long errors
 73384977138f849267aa8c979993665992469086
+# unify line separators to LF (unix and macOS)
+15ca4c0c36e83bd4ad0634981a095b53997c2285
