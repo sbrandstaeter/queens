@@ -6,7 +6,6 @@ def sobol(x1, x2, x3, x4, x5, x6, x7, x8, a=None):
 
     """
 
-
     if a is None:
         a = [0, 1, 4.5, 9, 99, 99, 99, 99]
 
@@ -19,6 +18,7 @@ def sobol(x1, x2, x3, x4, x5, x6, x7, x8, a=None):
 
     return output
 
+
 def main(job_id, params):
     """ Interface to eight-dimensional Sobol G function
 
@@ -30,5 +30,13 @@ def main(job_id, params):
         float:          Value of eight dimensional sobol G function at parameters
                         specified in input dict
     """
-    return sobol(params['x1'], params['x2'], params['x3'], params['x4'],
-                 params['x5'], params['x6'], params['x7'], params['x8'])
+    return sobol(
+        params['x1'],
+        params['x2'],
+        params['x3'],
+        params['x4'],
+        params['x5'],
+        params['x6'],
+        params['x7'],
+        params['x8'],
+    )
