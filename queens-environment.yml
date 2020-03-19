@@ -4,7 +4,7 @@ channels:
   - conda-forge
 dependencies:
 ###### use requirements without version fixed specifier where possible ######
-  - python
+  - python==3.7
   - numpy>=1.16.2
   - scipy>=1.2.1
   - scikit-learn
