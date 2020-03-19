@@ -1,0 +1,48 @@
+name: queens 
+channels:
+  - defaults
+  - conda-forge
+dependencies:
+###### use requirements without version fixed specifier where possible ######
+  - python
+  - numpy>=1.16.2
+  - scipy>=1.2.1
+  - scikit-learn
+  - arviz
+# for database interfacing
+  - pymongo
+# for design of experiments
+  - pyDOE
+# for Gaussian Processes
+  - gpy
+# for documentation
+  - sphinx
+  - nbsphinx
+  - jupyter
+# making fancy plots
+  - matplotlib
+  - seaborn
+  - plotly
+# testing framework
+  - pytest>=3.0.0
+  - pytest-codestyle
+  - pytest-cov
+  - pytest-mock
+# for running tests in parallel
+  - pytest-xdist
+# create mock objects for unit testing
+  - mock
+# linting, check code  -style (PEP8)
+  - pylint
+# make ascii  -art prints
+  - pyfiglet
+# code formatter
+  - black
+# a smart progress meter for loops
+  - tqdm
+# it's recommended to list pip explicitly
+  - pip
+  - pip:
+# for sensitivity analysis
+    - SALib>=1.3.3
+    - docker
