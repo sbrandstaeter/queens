@@ -242,7 +242,7 @@ class Driver(metaclass=abc.ABCMeta):
             # this is a security duplicate in case post_post did not catch an error
             self.result = None
             self.result = self.postpostprocessor.postpost_main(output_directory)
-            sys.stderr.write("Got result %s\n" % (self.result))
+            sys.stdout.write("Got result %s\n" % (self.result))
 
     # ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod
