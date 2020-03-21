@@ -114,9 +114,7 @@ class DirectPythonInterface(Interface):
                     mean_value = np.expand_dims(mean_value, axis=0)
                 mean_values.append(mean_value)
         else:
-            params_list = []
-            for variables in samples:
-                params_list.append((job_id, variables.get_active_variables()))
+            params_list = [(job_id, variables.get_active_variables()) for variables in samples]
 
             mean_values = self.pool.starmap(self.function.main, params_list)
 
