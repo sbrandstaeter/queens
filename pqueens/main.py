@@ -2,16 +2,15 @@
 import argparse
 from collections import OrderedDict
 import os
-import pathlib
+import pyfiglet
 import sys
 import time
-
-import pyfiglet
 
 try:
     import simplejson as json
 except ImportError:
     import json
+
 # queens imports
 from pqueens.iterators.iterator import Iterator
 
@@ -106,27 +105,8 @@ def get_options(args):
     # iterators facilitating input output stuff
     global_settings = {}
     global_settings["output_dir"] = output_dir
-    experiment_basename = options.get("experiment_basename", None)
-    experiment_name = options.get("experiment_name", None)
-    if experiment_basename and experiment_name:
-        raise ValueError(
-            "You have supplied both an \"experiment_name\" "
-            "and an \"experiment_basename\".\n "
-            "This is ambiguous, supply only one of them."
-        )
-    elif not (experiment_basename or experiment_name):
-        raise ValueError(
-            "You need to supply either an \"experiment_name\" " "or an \"experiment_basename\"."
-        )
-    if experiment_basename:
-        cur_idx = 0
-        out_file = pathlib.Path(output_dir, experiment_basename + f"_{cur_idx}.h5")
-        while out_file.is_file():
-            cur_idx += 1
-            out_file = out_file.with_name(experiment_basename + f"_{cur_idx}.h5")
-        experiment_name = out_file.stem
+    global_settings["experiment_name"] = options["experiment_name"]
 
-    global_settings["experiment_name"] = experiment_name
     # remove experiment_name field from options dict
     options["global_settings"] = global_settings
     # remove experiment_name field from options dict make copy first
