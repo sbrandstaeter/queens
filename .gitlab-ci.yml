@@ -13,9 +13,8 @@ default:
   # global/ default before_script can be overriden
   before_script:
     - export PIP_CACHE_DIR="/opt/cache/pip"
-    - conda create --name pqueens -y python=3.7
-    - source activate pqueens
-    - pip install -r requirements.txt
+    - conda env create -f queens-environment.yml -n queens
+    - source activate queens
     - python setup.py develop
 
 codechecks:
