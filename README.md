@@ -78,12 +78,14 @@ user profile under the section `User settings - SSH keys`
 1. [Install](http://docs.anaconda.com/anaconda/install/linux/) the latest version of 
 [Anaconda](https://www.anaconda.com/) with Python 3.x.
  *Anaconda* is an open-source Python distribution and provides a
- [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) with many popular data science Python packages. 1. After setting up Anaconda on your machine, create a new, dedicated QUEENS development environment via  
-`conda create -n <name_of_new_environment> python=3.7`
+ [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) with many popular data science Python packages. 
+1. After setting up Anaconda on your machine, create a new, dedicated QUEENS development environment via  
+`conda env create -f  <your-path-to-QUEENS>/queens-environment.yml`  
+ All required third party libraries will be installed.  
+ optional: for a custom name add
+ `--name <your-custom-queens-env-name>`
 1. You need to activate the newly created environment via  
-`conda activate <name_of_new_environment>`
-1. All required third party libraries can then be simply installed in the environment by running:  
-`pip install --upgrade -r <your-path-to-QUEENS>/requirements.txt`
+`conda activate queens`
 1. Now, QUEENS can be installed in the environment using:  
 `python <your-path-to-QUEENS>/setup.py develop`  
 If you encounter any problems try using the --user flag.
@@ -91,7 +93,7 @@ If you encounter any problems try using the --user flag.
 
 **Update your Python packages from time to time using (with active conda QUEENS environment):**<br />
 ```bash
-conda update --all && pip install --upgrade -r <your-path-to-QUEENS>/requirements.txt 
+conda update --all && pip install --upgrade
 ```  
 
 **Update Python version of your conda environment:**<br />
@@ -101,7 +103,7 @@ cd <your-path-to-QUEENS>
 conda activate <your-QUEENS-env>
 conda update python 
 conda update --all 
-pip install --upgrade -r requirements.txt 
+pip install --upgrade
 python setup.py develop
 ```  
 
