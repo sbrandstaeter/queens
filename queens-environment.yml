@@ -40,9 +40,13 @@ dependencies:
   - black
 # a smart progress meter for loops
   - tqdm
+# visualization toolkit that can manage mesh data
+  - vtk
 # it's recommended to list pip explicitly
   - pip
   - pip:
 # for sensitivity analysis
     - SALib>=1.3.3
     - docker
+# Pythonic interface to ANSYS binary files
+    - pyansys
