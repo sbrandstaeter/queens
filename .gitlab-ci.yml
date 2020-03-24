@@ -13,6 +13,7 @@ default:
   # global/ default before_script can be overriden
   before_script:
     - export PIP_CACHE_DIR="/opt/cache/pip"
+    - apt-get install gcc -y
     - conda env create -f queens-environment.yml -n queens
     - source activate queens
     - python setup.py develop
