@@ -80,7 +80,7 @@ class Driver(metaclass=abc.ABCMeta):
             post_post = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(post_post)
             try:
-                from post_post.post_post import Post_post
+                from post_post.post_post import PostPost
             except ImportError:
                 raise ImportError('Could not import the post_post module!')
 
