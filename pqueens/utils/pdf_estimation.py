@@ -20,9 +20,6 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
     # do 30-fold cross-validation and use all cores available to speed-up the process
     # we use the epanechinkov kernel as it is bounded in contrast to the gaussian kernel
     # we use a log grid to emphasize the smaller bandwidth values
-    import time
-
-    s = time.time()
     grid = GridSearchCV(
         KernelDensity(kernel='epanechnikov'),
         {'bandwidth': np.logspace(kernel_bandwidth_lower_bound, kernel_bandwidth_upper_bound, 40)},
@@ -31,8 +28,6 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
     )
 
     grid.fit(samples.reshape(-1, 1))
-    e = time.time()
-    print(e - s)
     kernel_bandwidth = grid.best_params_['bandwidth']
     print('bandwidth = %s' % kernel_bandwidth)
 
