@@ -14,6 +14,7 @@
       "BMFMC_reference": false,
       "y_pdf_support_min": -0.5,
       "y_pdf_support_max": 2.0,
+      "num_features": 2,
       "result_description" : {
         "write_results" : true,
         "plot_results" : true

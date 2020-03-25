@@ -112,6 +112,7 @@ class BMFMCModel(Model):
                             :math:`\\mathcal{D}_{LF}` is used in the algorithm
         no_features_comparison_bool (bool): If flag is true, the result will be compared to a
                                             prediction that used no LF input features
+        num_features (int): Number of informative features of the input :math:`\\boldsymbol{z}_{LF}`
         eigenfunc_random_fields (np.array): Matrix containing the discretized eigenfunctions of a
                                             underlying random field. Note: This is an intermediate
                                             solution and should be moved to the variables module!
@@ -142,6 +143,7 @@ class BMFMCModel(Model):
         features_config,
         predictive_var_bool,
         y_pdf_support,
+        num_features,
         subordinate_model=None,
         no_features_comparison_bool=False,
         lf_data_iterators=None,
@@ -161,6 +163,7 @@ class BMFMCModel(Model):
         self.Y_HF_mc = None
         self.active_learning = active_learning
         self.features_config = features_config
+        self.num_features = num_features
         self.features_mc = None
         self.features_train = None
         self.Z_train = None
@@ -218,6 +221,7 @@ class BMFMCModel(Model):
         method_options = config["method"]["method_options"]
         no_features_comparison_bool = method_options["BMFMC_reference"]
         active_learning = method_options["active_learning"]
+        num_features = method_options["num_features"]
         predictive_var_bool = method_options["predictive_var"]
         y_pdf_support_max = method_options["y_pdf_support_max"]
         y_pdf_support_min = method_options["y_pdf_support_min"]
@@ -246,6 +250,7 @@ class BMFMCModel(Model):
             features_config,
             predictive_var_bool,
             y_pdf_support,
+            num_features,
             lf_data_iterators=lf_data_iterators,
             hf_data_iterator=hf_data_iterator,
             subordinate_model=subordinate_model,
@@ -602,7 +607,7 @@ class BMFMCModel(Model):
             None
 
         """
-        num_features = 1  # TODO this config needs to be pulled out to the input file!
+        self.num_features = 1  # TODO this config needs to be pulled out to the input file!
 
         x_standardized_train, x_standardized_test = self.pca()
         x_iter_train = x_standardized_train
@@ -611,7 +616,7 @@ class BMFMCModel(Model):
         self.features_mc = np.empty((x_iter_test.shape[0], 0))
 
         idx_max = []
-        for counter in range(num_features):
+        for counter in range(self.num_features):
             ele = np.arange(1, x_iter_train.shape[1] + 1)
             width = 0.25
             plt.rcParams["mathtext.fontset"] = "cm"
