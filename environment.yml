@@ -42,8 +42,6 @@ dependencies:
   - tqdm
 # visualization toolkit that can manage mesh data
   - vtk
-# for space filling subsets
-  - diversipy
 # it's recommended to list pip explicitly
   - pip
   - pip:
@@ -52,4 +50,6 @@ dependencies:
     - docker
 # Pythonic interface to ANSYS binary files
     - pyansys
+# for space filling subsets
+    - diversipy
 
