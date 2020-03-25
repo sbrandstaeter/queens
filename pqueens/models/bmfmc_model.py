@@ -293,7 +293,6 @@ class BMFMCModel(Model):
 
         # ------------------ STANDARD BMFMC (no additional features) for comparison ----------------
         if self.no_features_comparison_bool is True:
-
             # construct the probabilistic mapping between y_HF and y_LF
             self.build_approximation(approx_case=False)
 
@@ -383,7 +382,6 @@ class BMFMCModel(Model):
             None
 
         """
-
         # check if training simulation input was correctly calculated in iterator
         if self.X_train is None:
             raise ValueError(
@@ -398,10 +396,11 @@ class BMFMCModel(Model):
                 np.where(np.all(self.X_mc == self.X_train[i, :], axis=1))[0][0]
                 for i, _ in enumerate(self.X_train[:, 0])
             ]
-            # TODO we might need another [0] to access the array and need to do this iteratively
+
             self.Y_HF_train = np.atleast_2d(
                 np.asarray([self.Y_HF_mc[index] for index in index_rows])
             ).T
+
         else:
             raise NotImplementedError(
                 "Currently the Monte-Carlo benchmark data for the "
@@ -416,7 +415,7 @@ class BMFMCModel(Model):
         optimize the hyper-parameters by maximizing the data's evidence or its lower bound (ELBO).
 
         Args:
-            approx_case (bool):  Boolean that switches input features :math:`\\boldsymbol{\gamma}`
+            approx_case (bool):  Boolean that switches input features :math:`\\boldsymbol{\\gamma}`
                                  off if set to `False`. If not specified or set to `True`
                                  informative input features will be used in the BMFMC framework.
 
@@ -465,7 +464,7 @@ class BMFMCModel(Model):
         """
 
         if not self.interface.is_initiliazed():
-            raise RuntimeError("Cannot compute accuracy an uninitialized model")
+            raise RuntimeError("Cannot compute accuracy of an uninitialized model")
 
         response_cv = self.interface.cross_validate(Z, Y_HF, k_fold)
         y_pred = np.reshape(np.array(response_cv), (-1, 1))
@@ -501,7 +500,7 @@ class BMFMCModel(Model):
             # Define support structure for computation
             points = np.vstack((self.y_pdf_support, self.y_pdf_support)).T
 
-            # Define the outer loop (addition of all mutlivariate normal distributions
+            # Define the outer loop (addition of all multivariate normal distributions
             yhf_pdf_grid = np.zeros((points.shape[0],))
             i = 1
             for num1, (mean1, var1) in enumerate(zip(f_mean_pred, yhf_var_pred)):
@@ -552,9 +551,11 @@ class BMFMCModel(Model):
             None
 
         """
-        bw = 23  # TODO change that as hard coded -> should be optimized
-
-        bandwidth_hfmc = (np.amax(self.Y_HF_mc) - np.amin(self.Y_HF_mc)) / bw
+        # optimize the bandwidth for the kde
+        bandwidth_hfmc = est.estimate_bandwidth_for_kde(
+            self.Y_HF_mc, np.amin(self.Y_HF_mc), np.amax(self.Y_HF_mc)
+        )
+        # perform kde with the optimized bandwidth
         self.p_yhf_mc, _ = est.estimate_pdf(
             np.atleast_2d(self.Y_HF_mc),
             bandwidth_hfmc,
