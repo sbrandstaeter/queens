@@ -119,11 +119,7 @@ class Variables(object):
         Returns:
             np.array: vector with values of all active variables
         """
-        active_var_vals = []
-        for _, data in self.variables.items():
-            if data['active'] is not True:
-                continue
-            active_var_vals.append(data['value'])
+        active_var_vals = [data["value"] for _, data in self.variables.items() if data["active"]]
         return np.hstack(active_var_vals)
 
     def get_number_of_active_variables(self):
