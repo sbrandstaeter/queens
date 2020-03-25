@@ -74,38 +74,48 @@ user profile under the section `User settings - SSH keys`
 [↑ Contents](#contents)
 ### Clone the QUEENS repository and install QUEENS
 1. You can then clone this repository to your local machine with  
-`git clone git@gitlab.lrz.de:jbi/queens.git <target-directory>`  
+    ```bash
+    git clone git@gitlab.lrz.de:jbi/queens.git <target-directory>
+    ```
 1. [Install](http://docs.anaconda.com/anaconda/install/linux/) the latest version of 
 [Anaconda](https://www.anaconda.com/) with Python 3.x.
  *Anaconda* is an open-source Python distribution and provides a
  [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) with many popular data science Python packages. 
 1. After setting up Anaconda on your machine, create a new, dedicated QUEENS development environment via  
-`conda env create -f  <your-path-to-QUEENS>/queens-environment.yml`  
  All required third party libraries will be installed.  
- optional: for a custom name add
- `--name <your-custom-queens-env-name>`
+    ```bash
+    cd <your-path-to-QUEENS>
+    conda env create  
+    ```
+     advanced: for a custom environment name  
+    `conda env create -f  <your-path-to-QUEENS>/environment.yml --name <your-custom-queens-env-name>`
 1. You need to activate the newly created environment via  
-`conda activate queens`
+    ```bash
+    conda activate queens
+    ```
 1. Now, QUEENS can be installed in the environment using:  
-`python <your-path-to-QUEENS>/setup.py develop`  
+    ```bash
+    python <your-path-to-QUEENS>/setup.py develop
+    ```
 If you encounter any problems try using the --user flag.
 
 
-**Update your Python packages from time to time using (with active conda QUEENS environment):**<br />
+**Update your Python packages from time to time using:**<br />
+The easy (default) way:
 ```bash
-conda update --all && pip install --upgrade
+cd <your-path-to-QUEENS> 
+conda env update
+```
+The advanced way:
+```bash
+conda env update --verbose --name <your-custom-queens-env-name> -f <your-path-to-QUEENS>/environment.yml 
 ```  
 
 **Update Python version of your conda environment:**<br />
-Note: `conda update --all` updates all packages but not Python itself.  
-```bash
-cd <your-path-to-QUEENS>
-conda activate <your-QUEENS-env>
-conda update python 
-conda update --all 
-pip install --upgrade
-python setup.py develop
-```  
+To keep in sync with the latest Python version recommended with QUEENS, keep in sync with the latest
+changes on the  `master` branch and follow the normal update procedure described above.
+This will keep your `environment.yml` up to date and with it your environment.
+
 
 **Use conda environments in Jupyter notebooks:**<br />
 To get your conda environments into your Jupyter kernel, run:  
