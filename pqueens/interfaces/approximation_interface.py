@@ -88,13 +88,14 @@ class ApproximationInterface(Interface):
             Xtrain (np.array):  Training inputs
             Ytrain (np.array):  Training outputs
         """
-        self.approximation = RegressionApproximation.from_options(self.approximation_config,
-                                                                  Xtrain, Ytrain)
+        self.approximation = RegressionApproximation.from_options(
+            self.approximation_config, Xtrain, Ytrain
+        )
         self.approximation.train()
         self.approx_init = True
 
     def is_initiliazed(self):
-        """ Is the approximation properly initialzed """
+        """ Is the approximation properly initialized """
         return self.approx_init
 
     def cross_validate(self, X, Y, folds):
@@ -111,15 +112,15 @@ class ApproximationInterface(Interface):
         # init output array
         outputs = np.zeros_like(Y, dtype=float)
         # set random_state=None, shuffle=False)
-        # TODO check out random ness feature
+        # TODO check out randomness feature
         kf = KFold(n_splits=folds)
         kf.get_n_splits(X)
 
         for train_index, test_index in kf.split(X):
-            approximation = RegressionApproximation.from_options(self.approximation_config,
-                                                                 X[train_index],
-                                                                 Y[train_index])
+            approximation = RegressionApproximation.from_options(
+                self.approximation_config, X[train_index], Y[train_index]
+            )
             approximation.train()
-            outputs[test_index], _ = approximation.predict_f(X[test_index])
+            outputs[test_index] = approximation.predict_f(X[test_index].T)['mean']
 
         return outputs

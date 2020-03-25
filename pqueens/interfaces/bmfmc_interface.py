@@ -27,7 +27,7 @@ class BmfmcInterface(Interface):
         self.probabilistic_mapping_config = probabilistic_mapping_config
         self.probabilistic_mapping_obj = None
 
-    def map(self, Z_LF):
+    def map(self, Z_LF, support='y', full_cov=False):
         """
         Calls the probabilistic mapping and predicts the mean and variance
         for the high-fidelity model, given the inputs Z_LF
@@ -51,8 +51,10 @@ class BmfmcInterface(Interface):
                 "The probabilistic mapping has not been properly initialized, " "cannot continue!"
             )
 
-        mean_Y_HF_given_Z_LF = self.probabilistic_mapping_obj.predict_y(Z_LF.T)['mean']
-        var_Y_HF_given_Z_LF = self.probabilistic_mapping_obj.predict_y(Z_LF.T)['variance']
+        mean_Y_HF_given_Z_LF = self.probabilistic_mapping_obj.predict(
+            Z_LF.T, support=support, full_cov=full_cov
+        )['mean']
+        var_Y_HF_given_Z_LF = self.probabilistic_mapping_obj.predict(Z_LF.T)['variance']
         return mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF
 
     def build_approximation(self, Z_LF_train, Y_HF_train):

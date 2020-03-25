@@ -21,7 +21,7 @@ class GPGPyRegression(RegressionApproximation):
 
     @classmethod
     def from_options(cls, approx_options, x_train, y_train):
-        """ Create approxiamtion from options dictionary
+        """ Create approximation from options dictionary
 
         Args:
             approx_options (dict): Dictionary with approximation options
@@ -125,55 +125,73 @@ class GPGPyRegression(RegressionApproximation):
         # self.m.optimize_restarts(num_restarts=10, max_iters=1000)
         display(self.m)
 
-    def predict(self, Xnew):
-        """ Compute latent function at Xnew
+    def predict(self, Xnew, support='y', full_cov=False):
+        """
+        Predict the posterior distribution at Xnew with respect to the data 'y' or the latent
+        function 'f'.
 
         Args:
             Xnew (np.array): Inputs at which to evaluate latent function f
+            support (str): Probabilistic support of random process (default: 'y'). Possible options
+                           are 'y' or 'f'. Here, 'f' means the latent function so that the posterior
+                           variance of the GP is calculated with respect to f. In contrast 'y'
+                           refers to the data itself so that the posterior variance is computed
+                           with respect to 'y' (f is integrated out) leading to an extra addition
+                           of noise in the posterior variance)
+            full_cov (bool): Boolean that specifies whether the entire posterior covariance matrix
+                             should be returned or only the posterior variance
 
         Returns:
-            dict: Dictionary with mean, variance, and possibly
-             posterior samples of latent function at Xnew
+            output (dict): Dictionary with mean, variance, and possibly
+                           posterior samples at Xnew
         """
-        output = {}
         Xnew = np.atleast_2d(Xnew).T  # make 1 d vector to column vector 2D
-        mean, variance = self.predict_f(Xnew)
-        output['mean'] = mean
-        output['variance'] = variance
-        if self.num_posterior_samples is not None:
-            output['post_samples'] = self.predict_f_samples(Xnew, self.num_posterior_samples)
-
+        if support == 'y':
+            output = self.predict_y(Xnew, full_cov=full_cov)
+        elif support == 'f':
+            output = self.predict_f(Xnew, full_cov=full_cov)
+        else:
+            raise NotImplementedError(
+                f"You choose support={support} but the only valid options " f"are 'y' or 'f'"
+            )
         return output
 
-    def predict_y(self, Xnew):
-        """ Compute latent function at Xnew
+    def predict_y(self, Xnew, full_cov=False):
+        """
+        Compute the posterior distribution at Xnew with respect to the data 'y'
 
         Args:
             Xnew (np.array): Inputs at which to evaluate latent function f
 
         Returns:
-            dict: Dictionary with mean, variance, and possibly
-             posterior samples of latent function at Xnew
+            output (dict): Dictionary with mean, variance, and possibly
+                           posterior samples of latent function at Xnew
         """
+        Xnew = np.atleast_2d(Xnew).T  # make 1 d vector to column vector 2D
         output = {}
-        mean, variance = self.m.predict(Xnew)
-        output["mean"] = mean
-        output["variance"] = variance
+        output["mean"], output["variance"] = self.m.predict(Xnew, full_cov=full_cov)
         if self.num_posterior_samples is not None:
             output["post_samples"] = self.predict_f_samples(Xnew, self.num_posterior_samples)
 
         return output
 
-    def predict_f(self, Xnew):
-        """ Compute the mean and variance of the latent function at Xnew
+    def predict_f(self, Xnew, full_cov=False):
+        """
+        Compute the mean and variance of the latent function at Xnew
 
         Args:
             Xnew (np.array): Inputs at which to evaluate latent function f
 
         Returns:
-            np.array, np.array: mean and varaince of latent function at Xnew
+            np.array, np.array: mean and variance of latent function at Xnew
         """
-        return self.m.predict_noiseless(Xnew, full_cov=False)
+        Xnew = np.atleast_2d(Xnew).T  # make 1 d vector to column vector 2D
+        output = {}
+        output["mean"], output["variance"] = self.m.predict_noiseless(Xnew, full_cov=full_cov)
+        if self.num_posterior_samples is not None:
+            output["post_samples"] = self.predict_f_samples(Xnew, self.num_posterior_samples)
+
+        return output
 
     def predict_f_samples(self, Xnew, num_samples):
         """ Produce samples from the posterior latent funtion Xnew

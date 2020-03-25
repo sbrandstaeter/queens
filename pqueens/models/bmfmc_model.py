@@ -489,7 +489,7 @@ class BMFMCModel(Model):
         # ---------------------------- PYHF VAR PREDICTION ----------------------------
         if self.predictive_var_bool:
             # calculate full posterior covariance matrix for testing points
-            _, k_post = self.interface.approximation.m.predict_noiseless(self.Z_mc, full_cov=True)
+            _, k_post = self.interface.map(self.Z_mc, support='f', full_cov=True)
 
             # TODO this is a quickfix!
             spacing = 1
