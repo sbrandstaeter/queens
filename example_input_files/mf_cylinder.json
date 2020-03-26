@@ -24,7 +24,7 @@
   "path_to_hf_data" : "/home/nitzler/workspace/PYTHON_Tests/HF_cylinder_cleaned.pickle",
     "approx_settings":{
       "type" : "gp_approximation_gpy",
-      "features_config" : "pca_joint_space",
+      "features_config" : "opt_features",
       "num_features": 2
     },
     "error_measures": ["LOOCV"],

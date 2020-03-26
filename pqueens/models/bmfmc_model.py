@@ -47,7 +47,17 @@ class BMFMCModel(Model):
 
         interface (obj): Interface object
         settings_probab_mapping (dict): Settings/configurations for the probabilistic mapping model
-                                        between HF and LF models, respectively input features
+                                        between HF and LF models, respectively input features.
+                                        This includes:
+
+                                        - *types*: `gp_approximation_gpy`
+                                        - *features_config*: `opt_features`, `no_features` or
+                                                             `man_features`
+                                        - *num_features*: for `opt_features`, number of features
+                                                          to be used
+                                        - *X_cols*: for `man_features`, columns of X-matrix that
+                                                    should be used as an informative feature
+
         subordinate_model (obj): HF (simulation) model to run simulations that yield the HF
                                     training set :math:`\\mathcal{D}_{HF}=\\{Z, Y_{HF}\\}` or HF
                                     model to perform active learning (in to order to extend training
@@ -110,7 +120,6 @@ class BMFMCModel(Model):
                             :math:`\\mathcal{D}_{LF}` is used in the algorithm
         no_features_comparison_bool (bool): If flag is true, the result will be compared to a
                                             prediction that used no LF input features
-        num_features (int): Number of informative features of the input :math:`\\boldsymbol{z}_{LF}`
         eigenfunc_random_fields (np.array): Matrix containing the discretized eigenfunctions of a
                                             underlying random field. Note: This is an intermediate
                                             solution and should be moved to the variables module!
@@ -567,13 +576,13 @@ class BMFMCModel(Model):
             None
 
         """
-        if self.settings_probab_mapping['features_config'] == "manual":
-            idx_vec = 0  # TODO should be changed to input file
-            self.features_train = self.X_train[:, idx_vec, None]
-            self.features_mc = self.X_mc[:, idx_vec, None]
+        if self.settings_probab_mapping['features_config'] == "man_features":
+            idx_vec = self.settings_probab_mapping['X_cols']
+            self.features_train = np.atleast_2d(self.X_train[:, idx_vec])
+            self.features_mc = np.atleast_2d(self.X_mc[:, idx_vec])
             self.Z_train = np.hstack([self.Y_LFs_train, self.features_train])
             self.Z_mc = np.hstack([self.Y_LFs_mc, self.features_mc])
-        elif self.settings_probab_mapping['features_config'] == "pca_joint_space":
+        elif self.settings_probab_mapping['features_config'] == "opt_features":
             if self.settings_probab_mapping['num_features'] < 1:
                 raise ValueError(
                     f'You specified {self.settings_probab_mapping["num_features"]} features, '
@@ -581,7 +590,7 @@ class BMFMCModel(Model):
                     f'invalid value! Please only specify integer values greater than zero! Abort...'
                 )
             self.calculate_z_lf()
-        elif self.settings_probab_mapping['features_config'] == "None":
+        elif self.settings_probab_mapping['features_config'] == "no_features":
             self.Z_train = self.Y_LFs_train
             self.Z_mc = self.Y_LFs_mc
         else:
