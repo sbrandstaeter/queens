@@ -24,13 +24,11 @@
   "path_to_hf_data" : "/home/nitzler/workspace/PYTHON_Tests/HF_cylinder_cleaned.pickle",
     "approx_settings":{
       "type" : "gp_approximation_gpy",
-      "ard" : "False",
-      "length_scale" : 0.2,
-      "variance" : 0.1},
+      "features_config" : "pca_joint_space",
+      "num_features": 2
+    },
     "error_measures": ["LOOCV"],
-    "eval_fit" : "None",
-    "features_config" : "pca_joint_space",
-    "num_features": 1
+    "eval_fit" : "None"
     },
    "initial_design":{
      "num_HF_eval" : 250,

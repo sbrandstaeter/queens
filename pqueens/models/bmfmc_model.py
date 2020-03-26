@@ -78,8 +78,6 @@ class BMFMCModel(Model):
                             :math:`Y_{HF}^*=y_{HF}(X^*)`.
         active_learning (bool): Flag that triggers active learning on the HF model (not
                                 implemented yet)
-        features_config (str): String that defines how low-fidelity input features
-                               :math:`\\boldsymbol{\\gamma}`should be calculated
         features_mc (np.array): Matrix of low-fidelity informative features
                                 :math:`\\boldsymbol{\\Gamma}^*` corresponding to Monte-Carlo
                                 input :math:`X^*`
@@ -140,10 +138,8 @@ class BMFMCModel(Model):
         eval_fit,
         error_measures,
         active_learning,
-        features_config,
         predictive_var_bool,
         y_pdf_support,
-        num_features,
         subordinate_model=None,
         no_features_comparison_bool=False,
         lf_data_iterators=None,
@@ -162,8 +158,6 @@ class BMFMCModel(Model):
         self.Y_LFs_mc = None
         self.Y_HF_mc = None
         self.active_learning = active_learning
-        self.features_config = features_config
-        self.num_features = num_features
         self.features_mc = None
         self.features_train = None
         self.Z_train = None
@@ -213,7 +207,6 @@ class BMFMCModel(Model):
         eval_fit = model_options["eval_fit"]
         error_measures = model_options["error_measures"]
         settings_probab_mapping = model_options["approx_settings"]
-        features_config = model_options["features_config"]
         lf_data_paths = model_options.get("path_to_lf_data")
         hf_data_path = model_options.get("path_to_hf_data")
 
@@ -227,7 +220,6 @@ class BMFMCModel(Model):
         y_pdf_support_min = method_options["y_pdf_support_min"]
 
         y_pdf_support = np.linspace(y_pdf_support_min, y_pdf_support_max, 200)
-        num_features = config["method"][model_name].get("num_features")
         # ------------------------------ ACTIVE LEARNING ------------------------------
         if active_learning is True:  # TODO also if yhf is not computed yet not only for a.l.
             # TODO: create subordinate model for active learning
@@ -247,10 +239,8 @@ class BMFMCModel(Model):
             eval_fit,
             error_measures,
             active_learning,
-            features_config,
             predictive_var_bool,
             y_pdf_support,
-            num_features,
             lf_data_iterators=lf_data_iterators,
             hf_data_iterator=hf_data_iterator,
             subordinate_model=subordinate_model,
@@ -577,20 +567,21 @@ class BMFMCModel(Model):
             None
 
         """
-        if self.features_config == "manual":
+        if self.settings_probab_mapping['features_config'] == "manual":
             idx_vec = 0  # TODO should be changed to input file
             self.features_train = self.X_train[:, idx_vec, None]
             self.features_mc = self.X_mc[:, idx_vec, None]
             self.Z_train = np.hstack([self.Y_LFs_train, self.features_train])
             self.Z_mc = np.hstack([self.Y_LFs_mc, self.features_mc])
-        elif self.features_config == "pca_joint_space":
-            if self.num_features < 1:
+        elif self.settings_probab_mapping['features_config'] == "pca_joint_space":
+            if self.settings_probab_mapping['num_features'] < 1:
                 raise ValueError(
-                    f'You specified {self.num_features} features, which is an '
+                    f'You specified {self.settings_probab_mapping["num_features"]} features, '
+                    'which is an '
                     f'invalid value! Please only specify integer values greater than zero! Abort...'
                 )
             self.calculate_z_lf()
-        elif self.features_config == "None":
+        elif self.settings_probab_mapping['features_config'] == "None":
             self.Z_train = self.Y_LFs_train
             self.Z_mc = self.Y_LFs_mc
         else:
@@ -620,7 +611,7 @@ class BMFMCModel(Model):
         self.features_mc = np.empty((x_iter_test.shape[0], 0))
 
         idx_max = []
-        for counter in range(self.num_features):
+        for counter in range(self.settings_probab_mapping['num_features']):
             ele = np.arange(1, x_iter_train.shape[1] + 1)
             width = 0.25
             plt.rcParams["mathtext.fontset"] = "cm"
