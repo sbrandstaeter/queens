@@ -628,38 +628,17 @@ class BMFMCModel(Model):
 
             fig, ax1 = plt.subplots()
 
-            # y_standardized = StandardScaler().
-            # fit_transform((self.Y_HF_train-self.f_mean_train)**2)
             y_standardized2 = StandardScaler().fit_transform(self.Y_LFs_mc)
-            #            y_standardized3 = StandardScaler().fit_transform(self.Y_LFs_mc)
-            # y_standardized4 = StandardScaler().fit_transform(self.Y_HF_train)
-            # y_standardized5 = StandardScaler().\
-            # fit_transform((self.Y_HF_mc[:,None]-self.m_f_mc)**2)
-            # y_standardized6 = StandardScaler().fit_transform((self.Y_HF_mc[:,None]))
-            # Joint space projection
-            # inner_proj = np.abs(StandardScaler().\
-            # fit_transform(np.dot(x_iter_train.T, y_standardized)))
             inner_proj2 = np.abs(
                 StandardScaler().fit_transform(np.dot(x_iter_test.T, y_standardized2))
             )
-            # inner_proj3 = np.abs(StandardScaler().\
-            # fit_transform(np.dot(x_iter_test.T, y_standardized3)))
-            # inner_proj4 = np.abs(StandardScaler().\
-            # fit_transform(np.dot(x_iter_train.T, y_standardized4)))
-            # inner_proj5 = np.abs(StandardScaler().\
-            # fit_transform(np.dot(x_iter_test.T, y_standardized5)))
-            # inner_proj6 = np.abs(StandardScaler().\
-            # fit_transform(np.dot(x_iter_test.T, y_standardized6)))
 
             score = inner_proj2[:, 0]
             score[idx_max] = 0
 
             ax1.bar(ele + width, inner_proj2[:, 0], width, label='ylf', color='g')
-            #            ax1.bar(ele,inner_proj4[:,0],width,label='yhf')
-            # ax1.bar(ele-width,inner_proj6[:,0],width,label='yhf_full')
-            #
             inner_proj = inner_proj2
-            # plt.plot(inner_proj, label='comb')
+
             ax1.grid(which='major', linestyle='-')
             ax1.grid(which='minor', linestyle='--', alpha=0.5)
             ax1.minorticks_on()
@@ -671,28 +650,11 @@ class BMFMCModel(Model):
             path = '/home/nitzler/Documents/Vorlagen/inner_projection_{}.png'.format(counter)
             plt.savefig(path, format='png', dpi=300)
 
-            #   plt.scatter(self.m_f_mc, self.Y_HF_mc[:,None]-self.m_f_mc, label='hferr')
-            #   plt.legend()
-            #   plt.show()
             select_bool = inner_proj == np.max(
                 inner_proj
             )  # alternatively test the error projection of LF
-            #            select_bool = inner_proj
+
             idx_max.append(np.argmax(inner_proj))
-
-            #        # eigendecomp
-            #        lamb, v = np.linalg.eig(joint_cov)
-            #        lamb = lamb.real
-            #        v = v.real
-            #
-            #        # sort eigenvectors accoring to their eigenvalues
-            #        idx = lamb.argsort()[::-1]
-            #        lamb = lamb[idx]
-            #        v = v[:, idx]
-
-            # select the input
-            # test_iter = np.atleast_2d(x_iter_test[:,select_bool.squeeze()])#v[0:num_features]))
-            # train_iter = np.atleast_2d(x_iter_train[:,select_bool.squeeze()])# v[0:num_features]))
 
             test_iter = np.dot(x_iter_test, select_bool)  # v[0:num_features]))
             train_iter = np.dot(
@@ -709,10 +671,6 @@ class BMFMCModel(Model):
             )
             self.features_train = np.hstack((self.features_train, features_train))
             self.features_mc = np.hstack((self.features_mc, features_test))
-
-            # update available inputs
-            # x_iter_train = x_iter_train[:, np.logical_not(select_bool).squeeze()]
-            # x_iter_test = x_iter_test[:, np.logical_not(select_bool).squeeze()]
 
             self.Z_train = np.hstack([self.Y_LFs_train, self.features_train])
             self.Z_mc = np.hstack([self.Y_LFs_mc, self.features_mc])

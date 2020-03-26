@@ -1,6 +1,5 @@
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
-from sklearn.model_selection import KFold
 import numpy as np
 
 
