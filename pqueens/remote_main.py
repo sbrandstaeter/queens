@@ -56,9 +56,10 @@ def main(args):
             config, job_id, batch, port, path_to_post_post_file, workdir
         )
         # Run the singularity image in two steps
-        driver_obj.main_run()
         if post == 'true':
             driver_obj.finish_and_clean()
+        else:
+            driver_obj.main_run()
 
 
 # ------------------------------ HELPER FUNCTIONS -----------------------------
