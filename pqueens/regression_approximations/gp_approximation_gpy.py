@@ -49,80 +49,31 @@ class GPGPyRegression(RegressionApproximation):
         input_dim = self.X.shape[1]
 
         # simple GP Model
-        dx = abs(np.max(self.X) - np.min(self.X))  # proper initialization of length scale
-        dy = abs(np.max(self.y) - np.min(self.y))  # proper initialization of variance
-        k1 = GPy.kern.RBF(
-            input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[0]
-        )
-        if input_dim == 2:
-            k2 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[1]
-            )
-            k = k1 + k2
-        elif input_dim == 3:
-            k2 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[1]
-            )
-            k3 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[2]
-            )
-            k = k1 + k2 + k3
-        elif input_dim == 4:
-            k2 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[1]
-            )
-            k3 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[2]
-            )
-            k4 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[3]
-            )
-            k = k1 + k2 + k3 + k4
-        elif input_dim == 5:
-            k2 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[1]
-            )
-            k3 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[2]
-            )
-            k4 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[3]
-            )
-            k5 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[4]
-            )
-            k = k1 + k2 + k3 + k4 + k5
-        elif input_dim == 6:
-            k2 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[1]
-            )
-            k3 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[2]
-            )
-            k4 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[3]
-            )
-            k5 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[4]
-            )
-            k6 = GPy.kern.RBF(
-                input_dim=1, variance=0.1 * dy, lengthscale=0.25 * dx, ARD=False, active_dims=[5]
-            )
-            k = k1 + k2 + k3 + k4 + k5 + k6
+        lengthscale_0 = 0.1 * abs(np.max(self.X) - np.min(self.X))  # proper initialization of
+        # length scale
+        variance_0 = abs(np.max(self.y) - np.min(self.y))  # proper initialization of variance
 
-        elif input_dim == 1:
-            k = k1
+        k_list = [
+            GPy.kern.RBF(
+                input_dim=1,
+                variance=variance_0,
+                lengthscale=lengthscale_0,
+                ARD=False,
+                active_dims=[dim],
+            )
+            for dim in range(input_dim)
+        ]
+
+        k = k_list[0]
+        if len(k_list) > 1:
+            for k_ele in k_list[1:-1]:
+                k += k_ele
+
         self.m = GPy.models.GPRegression(self.X, self.y, kernel=k, normalizer=True)
 
     def train(self):
         """ Train the GP by maximizing the likelihood """
-
-        # self.m[".*Gaussian_noise"] = self.m.Y.var()*0.01
-        # self.m[".*Gaussian_noise"].fix()
-        self.m.optimize(max_iters=1000, messages=True)
-        # self.m[".*Gaussian_noise"].unfix()
-        # self.m[".*Gaussian_noise"].constrain_positive()
-        # self.m.optimize_restarts(num_restarts=10, max_iters=1000)
+        self.m.optimize_restarts(num_restarts=5, max_iters=1000, messages=True)
         display(self.m)
 
     def predict(self, Xnew, support='y', full_cov=False):

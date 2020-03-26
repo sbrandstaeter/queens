@@ -14,7 +14,6 @@
       "BMFMC_reference": false,
       "y_pdf_support_min": -0.5,
       "y_pdf_support_max": 2.0,
-      "num_features": 2,
       "result_description" : {
         "write_results" : true,
         "plot_results" : true
@@ -30,7 +29,8 @@
       "variance" : 0.1},
     "error_measures": ["LOOCV"],
     "eval_fit" : "None",
-    "features_config" : "None"
+    "features_config" : "pca_joint_space",
+    "num_features": 1
     },
    "initial_design":{
      "num_HF_eval" : 250,

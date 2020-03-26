@@ -70,7 +70,6 @@ class BMFMCIterator(Iterator):
         self.result_description = result_description
         self.experiment_dir = experiment_dir
         self.X_train = None
-        self.Y_HF_train = None
         self.Y_LFs_train = None
         self.eigenfunc_random_fields_train = None
         self.output = None
@@ -517,7 +516,7 @@ class BMFMCIterator(Iterator):
                 ax3.scatter(
                     self.output['Z_mc'][:, 0, None],
                     self.output['Z_mc'][:, 1, None],
-                    self.hf_mc[:, None],
+                    self.model.Y_HF_mc[:, None],
                     s=4,
                     alpha=0.7,
                     c='k',
@@ -539,7 +538,7 @@ class BMFMCIterator(Iterator):
                 ax3.scatter(
                     self.output['Z_train'][:, 0, None],
                     self.output['Z_train'][:, 1, None],
-                    self.Y_HF_train[:, None],
+                    self.model.Y_HF_train[:, None],
                     marker='x',
                     s=70,
                     c='r',

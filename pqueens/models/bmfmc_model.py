@@ -221,13 +221,13 @@ class BMFMCModel(Model):
         method_options = config["method"]["method_options"]
         no_features_comparison_bool = method_options["BMFMC_reference"]
         active_learning = method_options["active_learning"]
-        num_features = method_options["num_features"]
+        model_name = method_options["model"]
         predictive_var_bool = method_options["predictive_var"]
         y_pdf_support_max = method_options["y_pdf_support_max"]
         y_pdf_support_min = method_options["y_pdf_support_min"]
 
         y_pdf_support = np.linspace(y_pdf_support_min, y_pdf_support_max, 200)
-
+        num_features = config["method"][model_name].get("num_features")
         # ------------------------------ ACTIVE LEARNING ------------------------------
         if active_learning is True:  # TODO also if yhf is not computed yet not only for a.l.
             # TODO: create subordinate model for active learning
@@ -584,6 +584,11 @@ class BMFMCModel(Model):
             self.Z_train = np.hstack([self.Y_LFs_train, self.features_train])
             self.Z_mc = np.hstack([self.Y_LFs_mc, self.features_mc])
         elif self.features_config == "pca_joint_space":
+            if self.num_features < 1:
+                raise ValueError(
+                    f'You specified {self.num_features} features, which is an '
+                    f'invalid value! Please only specify integer values greater than zero! Abort...'
+                )
             self.calculate_z_lf()
         elif self.features_config == "None":
             self.Z_train = self.Y_LFs_train
@@ -608,8 +613,6 @@ class BMFMCModel(Model):
             None
 
         """
-        self.num_features = 1  # TODO this config needs to be pulled out to the input file!
-
         x_standardized_train, x_standardized_test = self.pca()
         x_iter_train = x_standardized_train
         x_iter_test = x_standardized_test
