@@ -5,7 +5,6 @@ from sklearn.preprocessing import StandardScaler
 from diversipy import *
 import pandas as pd
 import pqueens.visualization.bmfmc_visualization as qvis
-import os
 
 
 class BMFMCIterator(Iterator):
@@ -35,8 +34,38 @@ class BMFMCIterator(Iterator):
                                inputs X_train such that :math:`Y_{HF}=y_{HF}(X)`
         Y_LFs_train (np.array): Outputs of the low-fidelity models that correspond to the training
                                 inputs X_train
-        eigenfunc_random_fields_train (np.array):
-        output (dict):
+        eigenfunc_random_fields_train (np.array): (Intermediate solution) Array containing
+                                                  eigenfunctions of involved random fields,
+                                                  such that 99 % of their variance is covered.
+                                                  Eigenfunctions are only required for
+                                                  determination of informative features where only
+                                                  the first few eigenfunctions are involved so
+                                                  that we have very relaxed demands on the
+                                                  accuracy of the field reconstruction.
+        output (dict): Dictionary containing the output quantities:
+
+                       *  "Z_mc": Corresponding Monte-Carlo point in LF informative feature space
+                       *  "m_f_mc": Corresponding Monte-Carlo points of posterior mean of the
+                                    probabilistic mapping
+                       *  "var_f_mc": Corresponding Monte-Carlo posterior variance samples of the
+                                      probabilistic mapping
+                       *  "y_pdf_support": Support vector for QoI output distribution
+                       *  "p_yhf_mean": Vector containing mean function of HF output posterior
+                                        distribution
+                       *  "p_yhf_var": Vector containing posterior variance function of HF output
+                                       distribution
+                       *  "p_yhf_mean_BMFMC": Vector containing mean function of HF output posterior
+                                              distribution calculated without informative features
+                                              :math:`\\boldsymbol{\\gamma}`
+                       *  "p_yhf_var_BMFMC": Vector containing posterior variance function of HF
+                                             output distribution calculated without informative
+                                             features :math:`\\boldsymbol{\\gamma}`
+                       *  "p_ylf_mc": Vector with low-fidelity output distribution (kde from MC
+                                      data)
+                       *  "p_yhf_mc": Vector with reference HF output distribution (kde from MC
+                                      reference data)
+                       *  "Z_train": Corresponding training data in LF feature space
+
         initial_design (dict): Dictionary containing settings for the selection strategy/initial
                                design of training points for the probabilistic mapping
         predictive_var (bool): Boolean flag that triggers the computation of the posterior variance
@@ -106,6 +135,9 @@ class BMFMCIterator(Iterator):
         if model is None:
             model_name = method_options["model"]
             model = BMFMCModel.from_config_create_model(model_name, config)
+
+        # ---------------------- CREATE VISUALIZATION BORG ----------------------------
+        qvis.from_config_create(config)
 
         return cls(
             model,
@@ -283,34 +315,11 @@ class BMFMCIterator(Iterator):
             None
         """
         if self.result_description['plot_results'] is True:
-            # init the plotting
-            qvis.plot_init()
-
-            # specify some settings for saving figures
-            plot_dir = self.result_description['plotting_options']['plotting_dir']
-            plot_names = self.result_description['plotting_options']['plot_names']
-            save_bools = self.result_description['plotting_options']['save_bool']
-            animation_bool = self.result_description['plotting_options']['animation_bool']
-            path_pdfs = os.path.join(plot_dir, plot_names[0])
-            path_manif = os.path.join(plot_dir, plot_names[1])
-            saving_config_pdf = {"saving_bool": save_bools[0], "path": path_pdfs}
-            saving_config_manifold = {"saving_bool": save_bools[1], "path": path_manif}
 
             # plot the figures
-            qvis.plot_pdfs(
-                self.output,
-                posterior_variance=self.predictive_var,
-                no_features_ref=self.BMFMC_reference,
-                saving_config=saving_config_pdf,
-            )
-
-            qvis.plot_manifold(
-                self.output,
-                self.model.Y_LFs_mc,
-                self.model.Y_HF_mc,
-                self.model.Y_HF_train,
-                saving_config=saving_config_manifold,
-                animation=animation_bool,
+            qvis.bmfmc_visualization_instance.plot_pdfs(self.output)
+            qvis.bmfmc_visualization_instance.plot_manifold(
+                self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train,
             )
 
         if self.result_description['write_results'] is True:

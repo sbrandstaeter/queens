@@ -7,7 +7,7 @@ from .simulation_model import SimulationModel
 import scipy.stats as st
 from pqueens.variables.variables import Variables
 from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
+import pqueens.visualization.bmfmc_visualization as qvis
 
 
 class BMFMCModel(Model):
@@ -621,13 +621,6 @@ class BMFMCModel(Model):
 
         idx_max = []
         for counter in range(self.settings_probab_mapping['num_features']):
-            ele = np.arange(1, x_iter_train.shape[1] + 1)
-            width = 0.25
-            plt.rcParams["mathtext.fontset"] = "cm"
-            plt.rcParams.update({'font.size': 23})
-
-            fig, ax1 = plt.subplots()
-
             y_standardized2 = StandardScaler().fit_transform(self.Y_LFs_mc)
             inner_proj2 = np.abs(
                 StandardScaler().fit_transform(np.dot(x_iter_test.T, y_standardized2))
@@ -636,19 +629,12 @@ class BMFMCModel(Model):
             score = inner_proj2[:, 0]
             score[idx_max] = 0
 
-            ax1.bar(ele + width, inner_proj2[:, 0], width, label='ylf', color='g')
             inner_proj = inner_proj2
 
-            ax1.grid(which='major', linestyle='-')
-            ax1.grid(which='minor', linestyle='--', alpha=0.5)
-            ax1.minorticks_on()
-            ax1.set_xlabel('Feature')
-            ax1.set_ylabel(r'Projection $\mathbf{t}$')
-            ax1.set_xticks(ele)
-            plt.legend()
-            fig.set_size_inches(15, 15)
-            path = '/home/nitzler/Documents/Vorlagen/inner_projection_{}.png'.format(counter)
-            plt.savefig(path, format='png', dpi=300)
+            # --------- plotting stuff -----------------------------------------
+            ele = np.arange(1, x_iter_train.shape[1] + 1)
+            qvis.bmfmc_visualization_instance.plot_feature_ranking(ele, inner_proj2, counter)
+            # ------------------------------------------------------------------
 
             select_bool = inner_proj == np.max(
                 inner_proj
@@ -656,10 +642,8 @@ class BMFMCModel(Model):
 
             idx_max.append(np.argmax(inner_proj))
 
-            test_iter = np.dot(x_iter_test, select_bool)  # v[0:num_features]))
-            train_iter = np.dot(
-                x_iter_train, select_bool
-            )  # v[0:num_features]))            # Rescale the features to y_lf data
+            test_iter = np.dot(x_iter_test, select_bool)
+            train_iter = np.dot(x_iter_train, select_bool)  # Rescale the features to y_lf data
             min_ylf = np.min(self.Y_LFs_mc)
             max_ylf = np.max(self.Y_LFs_mc)
 

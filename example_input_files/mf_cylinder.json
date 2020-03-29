@@ -19,8 +19,8 @@
         "plot_results" : true,
         "plotting_options": {
           "plotting_dir": "/home/nitzler/Documents/Vorlagen",
-          "plot_names": ["pdfs.eps","manifold.eps"],
-          "save_bool": [false, false],
+          "plot_names": ["pdfs.eps","manifold.eps", "ranking.eps"],
+          "save_bool": [false, false, false],
           "animation_bool": false
         }
       }
