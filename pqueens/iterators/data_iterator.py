@@ -96,8 +96,4 @@ class DataIterator(Iterator):
 
         data = pickle.load(open(self.path_to_data, "rb"))
 
-        samples = data["input"]  # TODO think about an unified format/key, before: "input_data"
-        output = data["output"]  # TODO think about an unified format/key, before: "raw_output_data"
-        eigenfunc = data.get('eigenfunc')
-
-        return samples, output, eigenfunc
+        return data

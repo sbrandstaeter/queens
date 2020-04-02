@@ -16,8 +16,8 @@
       "y_pdf_support_max": 2.0,
       "result_description" : {
         "write_results" : true,
-        "plot_results" : true,
         "plotting_options": {
+          "plot_booleans": [true, false, false],
           "plotting_dir": "/home/nitzler/Documents/Vorlagen",
           "plot_names": ["pdfs.eps","manifold.eps", "ranking.eps"],
           "save_bool": [false, false, false],

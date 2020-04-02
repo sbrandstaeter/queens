@@ -2,7 +2,6 @@ import numpy as np
 import GPy
 from .regression_approximation import RegressionApproximation
 from IPython.display import display
-import pdb
 
 
 class GPGPyRegression(RegressionApproximation):
@@ -96,7 +95,6 @@ class GPGPyRegression(RegressionApproximation):
             output (dict): Dictionary with mean, variance, and possibly
                            posterior samples at Xnew
         """
-        Xnew = np.atleast_2d(Xnew).T  # make 1 d vector to column vector 2D
         if support == 'y':
             output = self.predict_y(Xnew, full_cov=full_cov)
         elif support == 'f':
@@ -145,7 +143,7 @@ class GPGPyRegression(RegressionApproximation):
         return output
 
     def predict_f_samples(self, Xnew, num_samples):
-        """ Produce samples from the posterior latent funtion Xnew
+        """ Produce samples from the posterior latent function Xnew
 
             Args:
                 Xnew (np.array):    Inputs at which to evaluate latent function f

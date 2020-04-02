@@ -47,7 +47,7 @@ class BMFMCIterator(Iterator):
                        *  "Z_mc": Corresponding Monte-Carlo point in LF informative feature space
                        *  "m_f_mc": Corresponding Monte-Carlo points of posterior mean of the
                                     probabilistic mapping
-                       *  "var_f_mc": Corresponding Monte-Carlo posterior variance samples of the
+                       *  "var_y_mc": Corresponding Monte-Carlo posterior variance samples of the
                                       probabilistic mapping
                        *  "y_pdf_support": Support vector for QoI output distribution
                        *  "p_yhf_mean": Vector containing mean function of HF output posterior
@@ -202,11 +202,11 @@ class BMFMCIterator(Iterator):
 
         """
         design_method = self.initial_design.get('method')
-        n_bins = self.initial_design.get("num_bins")
         n_points = self.initial_design.get("num_HF_eval")
 
         # -------------------------- RANDOM FROM BINS METHOD --------------------------
         if design_method == 'random':
+            n_bins = self.initial_design.get("num_bins")
             ylf_min = np.amin(self.model.Y_LFs_mc)
             ylf_max = np.amax(self.model.Y_LFs_mc)
             break_points = np.linspace(ylf_min, ylf_max, n_bins + 1)
@@ -251,22 +251,15 @@ class BMFMCIterator(Iterator):
                     self.Y_LFs_train = np.vstack(
                         (self.Y_LFs_train, bin_data_Y_LFs_mc[rnd_select, :])
                     )
+
+            # return training indices to the BMFMC model
+            self.model.training_indices = np.array(rnd_select)
         # --------------------------- DIVERSE SUBSET METHOD ---------------------------
         elif design_method == 'diverse_subset':
-            # TODO handling of random fields is hard coded
-            #  --> change this according to issue #87
-
-            # TODO this repeats code form model.set_feature_strategy and should be changed
-            x_vec = np.linspace(0, 1, 200, endpoint=True)  # DG
-            mean_fun = 4 * 1.5 * (-((x_vec - 0.5) ** 2) + 0.25)  # DG
-            normalized_test = self.model.X_mc[:, 3:] - mean_fun  # DG
-            coef_test = np.dot(self.model.eigenfunc_random_fields.T, normalized_test.T).T  # DG
-            design = np.hstack((self.model.X_mc[:, 0:3], coef_test[:, 0:2]))  # DG
-
-            # design = np.hstack((self.model.X_mc[:, 0:1], self.model.Y_LFs_mc[:]))  # FSI
-
             # ------- calculate space filling subset ----------------------------------
-            design = StandardScaler().fit_transform(design)
+            # call bmfmc_model method to calculate the extended gammas
+            self.model.calculate_extended_gammas()
+            design = self.model.gammas_ext_mc
             prelim_subset = psa_select(design, n_points, selection_target='max_dist_from_boundary')
 
             # return training data for outputs and corresponding inputs
@@ -275,6 +268,9 @@ class BMFMCIterator(Iterator):
                     np.all((design[:, None, :] == prelim_subset[None, :, :]), axis=-1).nonzero()
                 ).T.tolist()
             )[:, 0]
+
+            # set the training data and indices in the BMFMC model and iterator
+            self.model.training_indices = index
             self.X_train = self.model.X_mc[index, :]
             self.Y_LFs_train = self.model.Y_LFs_mc[index, :]
 
@@ -314,13 +310,11 @@ class BMFMCIterator(Iterator):
         Returns:
             None
         """
-        if self.result_description['plot_results'] is True:
-
-            # plot the figures
-            qvis.bmfmc_visualization_instance.plot_pdfs(self.output)
-            qvis.bmfmc_visualization_instance.plot_manifold(
-                self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train,
-            )
+        # plot the figures
+        qvis.bmfmc_visualization_instance.plot_pdfs(self.output)
+        qvis.bmfmc_visualization_instance.plot_manifold(
+            self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train,
+        )
 
         if self.result_description['write_results'] is True:
             pass

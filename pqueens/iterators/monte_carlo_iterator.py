@@ -91,6 +91,8 @@ class MonteCarloIterator(Iterator):
 
         if random_fields is not None:
             for _, rf in random_fields.items():
+                dim = rf["dimension"]
+                eval_locations_list = rf.get("eval_locations", None)
                 eval_locations = np.array(eval_locations_list).reshape(-1, dim)
                 temp = eval_locations.shape[0]
                 num_eval_locations.append(temp)

@@ -51,10 +51,9 @@ class BmfmcInterface(Interface):
                 "The probabilistic mapping has not been properly initialized, " "cannot continue!"
             )
 
-        mean_Y_HF_given_Z_LF = self.probabilistic_mapping_obj.predict(
-            Z_LF.T, support=support, full_cov=full_cov
-        )['mean']
-        var_Y_HF_given_Z_LF = self.probabilistic_mapping_obj.predict(Z_LF.T)['variance']
+        output = self.probabilistic_mapping_obj.predict(Z_LF, support=support, full_cov=full_cov)
+        mean_Y_HF_given_Z_LF = output["mean"]
+        var_Y_HF_given_Z_LF = output["variance"]
         return mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF
 
     def build_approximation(self, Z_LF_train, Y_HF_train):

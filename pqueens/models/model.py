@@ -30,7 +30,7 @@ class Model(metaclass=abc.ABCMeta):
         Args:
             name (string):                  Name of model
             uncertain_parameters (dict):    Dictionary with description of uncertain
-                                            parameters
+                                            parameters (from input file)
         """
         self.name = name
         self.uncertain_parameters = uncertain_parameters

@@ -40,11 +40,13 @@ class BMFMCVisualization(object):
     methods that can be used anywhere in QUEENS.
 
     Attributes:
-       paths (list):
-       save_bools (list):
-       animation_bool (bool):
-       predictive_var (bool):
-       no_features_ref (bool):
+       paths (list): List with paths to save the plots.
+       save_bools (list): List with booleans to save plots.
+       animation_bool (bool): Flag for animation of 3D plots.
+       predictive_var (bool): Flag for predictive variance plots.
+       no_features_ref (bool): Flag for BMFMC-reference without informative features plot.
+       plot_booleans (list): List of booleans for determining whether individual plots should be
+                             plotted or not.
 
     Returns:
         BMFMCVisualization (obj): Instance of the BMFMCVisualization Class
@@ -54,12 +56,15 @@ class BMFMCVisualization(object):
     plt.rcParams["mathtext.fontset"] = "cm"
     plt.rcParams.update({'font.size': 28})
 
-    def __init__(self, paths, save_bools, animation_bool, predictive_var, no_features_ref):
+    def __init__(
+        self, paths, save_bools, animation_bool, predictive_var, no_features_ref, plot_booleans
+    ):
         self.paths = paths
         self.save_bools = save_bools
         self.animation_bool = animation_bool
         self.predictive_var = predictive_var
         self.no_features_ref = no_features_ref
+        self.plot_booleans = plot_booleans
 
     @classmethod
     def from_config_create(cls, config):
@@ -83,7 +88,10 @@ class BMFMCVisualization(object):
         animation_bool = plotting_options.get("save_bool")
         predictive_var = method_options.get("predictive_var")
         no_features_ref = method_options.get("BMFMC_reference")
-        return cls(paths, save_bools, animation_bool, predictive_var, no_features_ref)
+        plot_booleans = plotting_options.get("plot_booleans")
+        return cls(
+            paths, save_bools, animation_bool, predictive_var, no_features_ref, plot_booleans
+        )
 
     def plot_pdfs(self, output):
         """
@@ -98,68 +106,68 @@ class BMFMCVisualization(object):
             Plots of model output distribution
 
         """
+        if self.plot_booleans[0]:
+            fig, ax = plt.subplots()
 
-        fig, ax = plt.subplots()
+            min_x = min(output['y_pdf_support'])
+            max_x = max(output['y_pdf_support'])
+            min_y = 0
+            max_y = 1.1 * max(output['p_yhf_mc'])
+            ax.set(xlim=(min_x, max_x), ylim=(min_y, max_y))
 
-        min_x = min(output['y_pdf_support'])
-        max_x = max(output['y_pdf_support'])
-        min_y = 0
-        max_y = 1.1 * max(output['p_yhf_mc'])
-        ax.set(xlim=(min_x, max_x), ylim=(min_y, max_y))
+            # --------------------- PLOT THE BMFMC POSTERIOR PDF MEAN ---------------------
+            ax.plot(
+                output['y_pdf_support'],
+                output['p_yhf_mean'],
+                color='xkcd:green',
+                linewidth=3,
+                label=r'$\mathrm{\mathbb{E}}_{f^*}\left[p\left(y^*_{\mathrm{HF}}|'
+                r'f^*,\mathcal{D}_f\right)\right]$',
+            )
 
-        # --------------------- PLOT THE BMFMC POSTERIOR PDF MEAN ---------------------
-        ax.plot(
-            output['y_pdf_support'],
-            output['p_yhf_mean'],
-            color='xkcd:green',
-            linewidth=3,
-            label=r'$\mathrm{\mathbb{E}}_{f^*}\left[p\left(y^*_{\mathrm{HF}}|'
-            r'f^*,\mathcal{D}_f\right)\right]$',
-        )
+            # ------------ plot the MC of first LF -------------------------------------------
+            # Attention: we plot only the first p_ylf here, even if several LFs were used!
+            ax.plot(
+                output['y_pdf_support'],
+                output['p_ylf_mc'],
+                linewidth=1.5,
+                color='r',
+                alpha=0.8,
+                label=r'$p\left(y_{\mathrm{LF}}\right)$',
+            )
 
-        # ------------ plot the MC of first LF -------------------------------------------
-        # Attention: we plot only the first p_ylf here, even if several LFs were used!
-        ax.plot(
-            output['y_pdf_support'],
-            output['p_ylf_mc'],
-            linewidth=1.5,
-            color='r',
-            alpha=0.8,
-            label=r'$p\left(y_{\mathrm{LF}}\right)$',
-        )
+            # ------------------------ PLOT THE MC REFERENCE OF HF ------------------------
+            ax.plot(
+                output['y_pdf_support'],
+                output['p_yhf_mc'],
+                color='black',
+                linestyle='-.',
+                linewidth=3,
+                alpha=1,
+                label=r'$p\left(y_{\mathrm{HF}}\right),\ (\mathrm{MC-ref.})$',
+            )
 
-        # ------------------------ PLOT THE MC REFERENCE OF HF ------------------------
-        ax.plot(
-            output['y_pdf_support'],
-            output['p_yhf_mc'],
-            color='black',
-            linestyle='-.',
-            linewidth=3,
-            alpha=1,
-            label=r'$p\left(y_{\mathrm{HF}}\right),\ (\mathrm{MC-ref.})$',
-        )
+            # --------- Plot the posterior variance -----------------------------------------
+            if self.predictive_var is True:
+                _plot_pdf_var(output)
 
-        # --------- Plot the posterior variance -----------------------------------------
-        if self.predictive_var is True:
-            _plot_pdf_var(output)
+            # ---- plot the BMFMC reference without features
+            if self.no_features_ref is True:
+                _plot_pdf_no_features(output, posterior_variance=self.predictive_var)
 
-        # ---- plot the BMFMC reference without features
-        if self.no_features_ref is True:
-            _plot_pdf_no_features(output, posterior_variance=self.predictive_var)
+            # ---- some further settings for the axes ---------------------------------------
+            ax.set_xlabel(r'$y$')
+            ax.set_ylabel(r'$p(y)$')
+            ax.grid(which='major', linestyle='-')
+            ax.grid(which='minor', linestyle='--', alpha=0.5)
+            ax.minorticks_on()
+            ax.legend(loc='upper right')
+            fig.set_size_inches(15, 15)
 
-        # ---- some further settings for the axes ---------------------------------------
-        ax.set_xlabel(r'$y$')
-        ax.set_ylabel(r'$p(y)$')
-        ax.grid(which='major', linestyle='-')
-        ax.grid(which='minor', linestyle='--', alpha=0.5)
-        ax.minorticks_on()
-        ax.legend(loc='upper right')
-        fig.set_size_inches(15, 15)
+            if self.save_bools[0] is not None:  # TODO: probably change that list to a dictionary
+                _save_plot(self.save_bools[0], self.paths[0])
 
-        if self.save_bools[0] is not None:  # TODO: probably change that list to a dictionary
-            _save_plot(self.save_bools[0], self.paths[0])
-
-        plt.show()
+            plt.show()
 
     def plot_manifold(self, output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
         """
@@ -178,17 +186,18 @@ class BMFMCVisualization(object):
             Plots of the probabilistic manifold
 
         """
-        manifold_plotter = _get_manifold_plotter(output)
-        if manifold_plotter is not None:
-            manifold_plotter(output, Y_LFs_mc, Y_HF_mc, Y_HF_train)
+        if self.plot_booleans[1]:
+            manifold_plotter = _get_manifold_plotter(output)
+            if manifold_plotter is not None:
+                manifold_plotter(output, Y_LFs_mc, Y_HF_mc, Y_HF_train)
 
-        if self.animation_bool is True:
-            _animate_3d(output, Y_HF_mc, self.paths[1])
+            if self.animation_bool is True:
+                _animate_3d(output, Y_HF_mc, self.paths[1])
 
-        if self.save_bools[1] is not None:
-            _save_plot(self.save_bools[1], self.paths[1])
+            if self.save_bools[1] is not None:
+                _save_plot(self.save_bools[1], self.paths[1])
 
-        plt.show()
+            plt.show()
 
     def plot_feature_ranking(self, dim_counter, ranking, iteration):
         """
@@ -211,25 +220,26 @@ class BMFMCVisualization(object):
             input :math:`\\gamma_i`
 
         """
-        fig, ax = plt.subplots()
-        width = 0.25
-        ax.bar(dim_counter + width, ranking[:, 0], width, label='ylf', color='g')
-        ax.grid(which='major', linestyle='-')
-        ax.grid(which='minor', linestyle='--', alpha=0.5)
-        ax.minorticks_on()
-        ax.set_xlabel('Feature')
-        ax.set_ylabel(r'Projection $\mathbf{t}$')
-        ax.set_xticks(dim_counter)
-        plt.legend()
-        fig.set_size_inches(15, 15)
+        if self.plot_booleans[2]:
+            fig, ax = plt.subplots()
+            width = 0.25
+            ax.bar(dim_counter + width, ranking[:, 0], width, label='ylf', color='g')
+            ax.grid(which='major', linestyle='-')
+            ax.grid(which='minor', linestyle='--', alpha=0.5)
+            ax.minorticks_on()
+            ax.set_xlabel('Feature')
+            ax.set_ylabel(r'Projection $\mathbf{t}$')
+            ax.set_xticks(dim_counter)
+            plt.legend()
+            fig.set_size_inches(15, 15)
 
-        name_split = self.paths[2].split('.')
-        path = name_split[0] + f'_{iteration}.' + name_split[1]
+            name_split = self.paths[2].split('.')
+            path = name_split[0] + f'_{iteration}.' + name_split[1]
 
-        if self.save_bools[2] is not None:
-            _save_plot(self.save_bools[2], path)
+            if self.save_bools[2] is not None:
+                _save_plot(self.save_bools[2], path)
 
-        plt.show()
+            plt.show()
 
 
 # ------ helper functions ----------------------------------------------------------
@@ -352,7 +362,7 @@ def _2d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
 
     ax2.plot(
         np.sort(output['Z_mc'][:, 0]),
-        np.add(output['m_f_mc'], np.sqrt(output['var_f_mc']))[np.argsort(output['Z_mc'][:, 0])],
+        np.add(output['m_f_mc'], np.sqrt(output['var_y_mc']))[np.argsort(output['Z_mc'][:, 0])],
         color='darkblue',
         linewidth=2,
         linestyle='--',
@@ -362,7 +372,7 @@ def _2d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
 
     ax2.plot(
         np.sort(output['Z_mc'][:, 0]),
-        np.add(output['m_f_mc'], -np.sqrt(output['var_f_mc']))[np.argsort(output['Z_mc'][:, 0])],
+        np.add(output['m_f_mc'], -np.sqrt(output['var_y_mc']))[np.argsort(output['Z_mc'][:, 0])],
         color='darkblue',
         linewidth=2,
         linestyle='--',
