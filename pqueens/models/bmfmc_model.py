@@ -805,8 +805,8 @@ class BMFMCModel(Model):
 def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
     """
     Project the high-dimensional samples of the random field on the truncated bases to yield the
-    projection coefficients of the series expansion that serve as a new reduced representation of the
-    random fields/
+    projection coefficients of the series expansion that serve as a new reduced representation of
+    the random fields/
 
     Args:
         truncated_basis_dict (dic): Dictionary containing random field samples and truncated bases
