@@ -40,9 +40,11 @@ def main(args):
             raise FileNotFoundError("temp.json did not load properly.")
 
         driver_obj = Driver.from_config_create_driver(config, job_id, batch)
-        # Run the singularity image in just one step
-        driver_obj.main_run()
-        driver_obj.finish_and_clean()
+        # Run the singularity image in two steps
+        if post == 'true':
+            driver_obj.finish_and_clean()
+        else:
+            driver_obj.main_run()
     else:
         try:
             abs_path = os.path.join(path_json, 'temp.json')

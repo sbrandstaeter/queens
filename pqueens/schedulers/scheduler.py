@@ -761,8 +761,20 @@ class Scheduler(metaclass=abc.ABCMeta):
                 process = subprocess.Popen(
                     cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
                 )
-                pid = process.pid
-                return pid
+                    # PostPost run
+                    cmdlist_remote_main = [
+                        '/usr/bin/singularity run',
+                        local_singularity_path,
+                        remote_args,
+                        '--post=true'
+                    ]
+                    cmd_remote_main = ' '.join(cmdlist_remote_main)
+                    # stdout, stderr, _ = run_subprocess(cmd_remote_main)
+                    process = subprocess.Popen(
+                        cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+                    )
+                    pid = process.pid
+                    return pid
 
     def create_submission_script(self, job_id):
         """
