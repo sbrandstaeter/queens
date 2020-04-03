@@ -31,20 +31,6 @@ class BaciDriverBruteforce(Driver):
         base_settings['experiment_name'] = config['experiment_name']
         return cls(base_settings, workdir)
 
-    def setup_mpi(self, ntasks):
-        """ setup MPI environment
-
-            Args:
-                num_procs (int): Number of processors to use
-
-            Returns:
-                str, str: MPI runcommand, MPI flags
-        """
-        if ntasks % 16 == 0:
-            self.mpi_flags = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
-        else:
-            self.mpi_flags = "--mca btl openib,sm,self"
-
     def setup_dirs_and_files(self):
         """ Setup directory structure
 

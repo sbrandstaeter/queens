@@ -76,34 +76,6 @@ def get_num_nodes():
     return int(procs)
 
 
-# def setup_mpi(num_procs):
-#    """ setup MPI environment
-#
-#        Args:
-#            num_procs (int): Number of processors to use
-#
-#        Returns:
-#            str, str: MPI runcommand, MPI flags
-#    """
-#    mpi_run = '/opt/openmpi/1.6.2/gcc48/bin/mpirun'
-#    mpi_home = '/opt/openmpi/1.6.2/gcc48'
-#
-#    os.environ["MPI_HOME"] = mpi_home
-#    os.environ["MPI_RUN"] = mpi_run
-#
-#    # Add non-standard shared library paths
-#    # "LD_LIBRARY_PATH" seems to be also empty, so simply set it to MPI_HOME
-#    # eventually this should changed to mereyl append the MPI_HOME path
-#    os.environ["LD_LIBRARY_PATH"] = mpi_home
-#
-#    # determine 'optimal' flags for the problem size
-#    if num_procs%16 == 0:
-#        mpi_flags = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
-#    else:
-#        mpi_flags = "--mca btl openib,sm,self"
-#
-#    return mpi_run, mpi_flags
-#
 def setup_dirs_and_files(driver_options):
     """ Setup directory structure
 
@@ -241,7 +213,6 @@ def get_runcommand_string(driver_options, fenics_input_file, fenics_output):
             str: Complete command to execute FENICS
     """
     procs = get_num_nodes()
-    # mpir_run, mpi_flags = setup_mpi(procs)
     executable = driver_options['path_to_executable']
 
     # note that we directly write the output to the home folder and do not create
