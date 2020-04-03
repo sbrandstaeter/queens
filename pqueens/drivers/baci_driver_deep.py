@@ -28,9 +28,6 @@ class BaciDriverDeep(Driver):
         base_settings['experiment_name'] = config['experiment_name']
         return cls(base_settings, workdir)
 
-    def setup_mpi(self, ntasks):
-        pass
-
     def setup_dirs_and_files(self):
         """ Setup directory structure
 

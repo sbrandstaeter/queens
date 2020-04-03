@@ -57,9 +57,6 @@ class BaciDriverNative(Driver):
             output_directory + '/' + str(self.experiment_name) + '_' + str(self.job_id)
         )
 
-    def setup_mpi(self, num_procs):  # TODO this is not needed atm
-        pass
-
     def run_job(self):
         """ Actual method to run the job on computing machine
             using run_subprocess method from base class

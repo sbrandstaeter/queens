@@ -71,7 +71,6 @@ class NavierStokesNative(Driver):
         inject({"output_dir": self.output_navierstokes}, self.input_file, self.input_file)
 
         # assemble run command
-        self.setup_mpi(self.num_procs)
         command_list = [self.executable, self.input_file]
         command_string = ' '.join(filter(None, command_list))
         stdout, stderr, self.pid = self.run_subprocess(command_string)
@@ -79,6 +78,3 @@ class NavierStokesNative(Driver):
         if stderr:
             self.result = None
             self.job['status'] = 'failed'
-
-    def setup_mpi(self, num_procs):  # TODO this is not needed atm
-        pass
