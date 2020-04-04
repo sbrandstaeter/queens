@@ -1,9 +1,10 @@
-'''
-Created on June 20th 2017
-@author: jbi
-
-'''
+"""
+Test module for example simulator functions.
+"""
+import numpy as np
+import pytest
 import unittest
+
 import pqueens.example_simulator_functions.agawal as agawal
 import pqueens.example_simulator_functions.branin_hifi as branin_hifi
 import pqueens.example_simulator_functions.branin_medfi as branin_medfi
@@ -28,7 +29,7 @@ import pqueens.example_simulator_functions.currin88_lofi as currin88_lofi
 import pqueens.example_simulator_functions.borehole_hifi as borehole_hifi
 import pqueens.example_simulator_functions.borehole_lofi as borehole_lofi
 
-import pqueens.example_simulator_functions.sobol_8dim as sobol_8dim
+import pqueens.example_simulator_functions.sobol as sobol
 
 
 class TestAgawal(unittest.TestCase):
@@ -276,3 +277,239 @@ class TestSobol8Dim(unittest.TestCase):
         desired_result = 1.4119532907954928
 
         self.assertAlmostEqual(actual_result, desired_result, places=8, msg=None, delta=None)
+
+
+@pytest.fixture(scope="module")
+def parameters_sobol_8dim():
+    """ Possible parameters for 8 dimensional Sobol G function. """
+    A = np.array([0, 1, 4.5, 9, 99, 99, 99, 99])
+    ALPHA = np.array([1] * A.shape[0])
+    DELTA = np.array([0] * A.shape[0])
+
+    return dict(a=A, alpha=ALPHA, delta=DELTA)
+
+
+@pytest.fixture(scope="module")
+def input_sobol_8dim():
+    """ Possible input vector for 8 dimensional Sobol G function. """
+    input_vector = {
+        'x1': 0.1,
+        'x2': 0.23,
+        'x3': 0.4,
+        'x4': 0.6,
+        'x5': 0.1,
+        'x6': 0.25,
+        'x7': 0.98,
+        'x8': 0.7,
+    }
+    return input_vector
+
+
+@pytest.fixture(scope="module")
+def input_sobol_10dim():
+    """ Possible input vector for 10 dimensional Sobol G function. """
+    input_vector = {
+        'x1': 0.1,
+        'x2': 0.23,
+        'x3': 0.4,
+        'x4': 0.6,
+        'x5': 0.1,
+        'x6': 0.25,
+        'x7': 0.98,
+        'x8': 0.7,
+        'x9': 0.33,
+        'x10': 0.8,
+    }
+    return input_vector
+
+
+def test_sobol_8dim(parameters_sobol_8dim, input_sobol_8dim):
+    """ Test 8 dimensional Sobol G function. """
+    expected_result = 1.4119532907954928
+
+    a = parameters_sobol_8dim["a"]
+    alpha = parameters_sobol_8dim["alpha"]
+    delta = parameters_sobol_8dim["delta"]
+    result = sobol.sobol(a=a, alpha=alpha, delta=delta, **input_sobol_8dim)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_sobol_8dim_first_order_variance(parameters_sobol_8dim):
+    """ Test first order variance of 8 dimensional Sobol G function. """
+    expected_result = np.array(
+        [
+            0.3333333333333333,
+            0.08333333333333333,
+            0.011019283746556472,
+            0.003333333333333333,
+            3.333333333333333e-05,
+            3.333333333333333e-05,
+            3.333333333333333e-05,
+            3.333333333333333e-05,
+        ]
+    )
+    a = parameters_sobol_8dim["a"]
+    alpha = parameters_sobol_8dim["alpha"]
+    result = sobol.first_effect_variance(a=a, alpha=alpha)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_sobol_8dim_variance():
+    """ Test variance of 8 dimensional Sobol G function. """
+    expected_result = 0.4654244319022063
+
+    Vi = np.array(
+        [
+            0.3333333333333333,
+            0.08333333333333333,
+            0.011019283746556472,
+            0.003333333333333333,
+            3.333333333333333e-05,
+            3.333333333333333e-05,
+            3.333333333333333e-05,
+            3.333333333333333e-05,
+        ]
+    )
+    result = sobol.variance(Vi=Vi)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_sobol_8dim_first_order_indices(parameters_sobol_8dim):
+    """ Test first order indices of 8 dimensional Sobol G function. """
+    expected_result = np.array(
+        [
+            0.7161921688790338,
+            0.17904804221975845,
+            0.0236757741778193,
+            0.007161921688790339,
+            7.161921688790338e-05,
+            7.161921688790338e-05,
+            7.161921688790338e-05,
+            7.161921688790338e-05,
+        ]
+    )
+    a = parameters_sobol_8dim["a"]
+    alpha = parameters_sobol_8dim["alpha"]
+
+    result = sobol.first_order_indices(a=a, alpha=alpha)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_sobol_8dim_total_order_indices(parameters_sobol_8dim):
+    """ Test total order indices of 8 dimensional Sobol G function. """
+    expected_result = np.array(
+        [
+            0.7871441266592755,
+            0.24219819281823862,
+            0.03431691015408285,
+            0.01046038706523954,
+            0.00010494905191950606,
+            0.00010494905191950606,
+            0.00010494905191950606,
+            0.00010494905191950606,
+        ]
+    )
+    a = parameters_sobol_8dim["a"]
+    alpha = parameters_sobol_8dim["alpha"]
+
+    result = sobol.total_order_indices(a=a, alpha=alpha)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_sobol_default_10dim(input_sobol_10dim):
+    """ Test 10 dimensional Sobol G function. """
+    expected_result = 0.27670926062343376
+    result = sobol.sobol(**input_sobol_10dim)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_sobol_default_10dim_first_order_variance():
+    """ Test first order variance of 10 dimensional Sobol G function. """
+    expected_result = np.array(
+        [
+            0.8,
+            0.6611570247933883,
+            0.5555555555555556,
+            0.47337278106508873,
+            0.4081632653061225,
+            0.24691358024691357,
+            0.2,
+            0.08888888888888889,
+            0.05,
+            0.032,
+        ]
+    )
+    result = sobol.first_effect_variance()
+
+    assert np.allclose(result, expected_result)
+
+
+def test_sobol_default_10dim_variance():
+    """ Test variance of 10 dimensional Sobol G function. """
+    expected_result = 16.037447681001517
+
+    Vi = np.array(
+        [
+            0.8,
+            0.6611570247933883,
+            0.5555555555555556,
+            0.47337278106508873,
+            0.4081632653061225,
+            0.24691358024691357,
+            0.2,
+            0.08888888888888889,
+            0.05,
+            0.032,
+        ]
+    )
+    result = sobol.variance(Vi=Vi)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_sobol_10dim_first_order_indices():
+    """ Test first order indices of 10 dimensional Sobol G function. """
+    expected_result = np.array(
+        [
+            0.049883249249673696,
+            0.0412258258261766,
+            0.0346411453122734,
+            0.029516715532351294,
+            0.0254506373722825,
+            0.01539606458323262,
+            0.012470812312418424,
+            0.0055425832499637435,
+            0.003117703078104606,
+            0.0019953299699869476,
+        ]
+    )
+    result = sobol.first_order_indices()
+
+    assert np.allclose(result, expected_result)
+
+
+def test_sobol_default_10dim_total_order_indices():
+    """ Test total order indices of 10 dimensional Sobol G function. """
+    expected_result = np.array(
+        [
+            0.4721573606942631,
+            0.42282748718889235,
+            0.37941216484360435,
+            0.3413185739958529,
+            0.30792871349625867,
+            0.2103671409033846,
+            0.1770590102603487,
+            0.086722780535681,
+            0.05058828864581391,
+            0.03294121121122766,
+        ]
+    )
+    result = sobol.total_order_indices()
+
+    assert np.allclose(result, expected_result)
