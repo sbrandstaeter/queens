@@ -27,7 +27,8 @@ setup(
               'pqueens.resources',
               'pqueens.schedulers',
               'pqueens.variables',
-              'pqueens.utils'],
+              'pqueens.utils',
+              'pqueens.visualization'],
     # for now do not add third party packages here but install them manually Using
     # anaconda beforehand (we get some weird errors otherwise)
     #install_requires=[
