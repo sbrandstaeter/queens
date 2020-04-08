@@ -43,6 +43,7 @@ class TestJobInterface(unittest.TestCase):
         self.config['driver']['driver_type'] = 'local'
         self.config['driver']['driver_params'] = {}
         self.config['driver']['driver_params']['experiment_dir'] = 'dummy_dir'
+        self.config['driver']['driver_params']['restart_from_finished_simulation'] = False
 
         self.config['resources'] = {}
         self.config['resources'] = dummy_resource
