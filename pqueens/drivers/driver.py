@@ -236,6 +236,9 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             float: actual simulation result
             Assemble post processing command """
+        # Load the already initiated job entry
+        self.job = self.database.load(self.experiment_name, self.batch, 'jobs', {'id': self.job_id})
+
         dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
         output_directory = os.path.join(dest_dir, 'output')
         if self.job['status'] != "failed":

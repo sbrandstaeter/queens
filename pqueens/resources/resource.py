@@ -243,12 +243,13 @@ class Resource(object):
 
         return self.scheduler.alive(job['proc_id'])
 
-    def attempt_dispatch(self, batch, job):
+    def attempt_dispatch(self, batch, job, restart_flag):
         """ Submit a new job using the scheduler of the resource
 
         Args:
             batch (string):         Batch number of job
             job (dict):             Job to submit
+            restart_flag (boolean):
 
         Returns:
             int:       Process ID of job
@@ -256,11 +257,16 @@ class Resource(object):
         if job['resource'] != self.name:
             raise Exception("This job does not belong to me!")
 
-        process_id = self.scheduler.submit(job['id'], batch)
+        process_id = self.scheduler.submit(job['id'], batch, restart_flag)
         if process_id is not None:
-            sys.stderr.write('Submitted job %d with %s '
-                             '(process id: %d).\n' %
-                             (job['id'], self.scheduler_class, process_id))
+            if process_id != 0:
+                sys.stderr.write('Submitted job %d with %s '
+                                 '(process id: %d).\n' %
+                                 (job['id'], self.scheduler_class, process_id))
+            elif process_id == 0:
+                sys.stderr.write(
+                    'Checked job %d for restart and loaded results into database.\n' % job['id']
+                )
         else:
             sys.stderr.write('Failed to submit job %d.\n' % job['id'])
 
