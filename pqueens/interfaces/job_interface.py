@@ -59,6 +59,7 @@ class JobInterface(Interface):
         self.output_dir = output_dir
         self.parameters = parameters
         self.batch_number = 1
+        self.num_pending = None
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -263,14 +264,23 @@ class JobInterface(Interface):
                   or failed
         """
         jobs = self.load_jobs()
-        print_resources_status(self.resources, jobs)
+        num_pending = 0
         for job in jobs:
             if (
                 job['status'] != 'complete'
                 and job['status'] != 'failed'
                 and job['status'] != 'broken'
             ):
-                return False
+                num_pending = num_pending + 1
+
+        if (num_pending == self.num_pending) or (self.num_pending is None):
+            pass
+        else:
+            self.num_pending = num_pending
+            print_resources_status(self.resources, jobs)
+
+        if num_pending != 0:
+            return False
         return True
 
     def get_output_data(self):
