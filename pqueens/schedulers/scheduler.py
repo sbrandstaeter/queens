@@ -16,6 +16,7 @@ import time
 from pprint import pprint
 from pqueens.utils.injector import inject
 from pqueens.drivers.driver import Driver
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -117,8 +118,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             None
         """
         if self.remote_flag:
-            hostname, _, _ = self.run_subprocess('hostname -i')
-            username, _, _ = self.run_subprocess('whoami')
+            hostname, _, _ = run_subprocess('hostname -i')
+            username, _, _ = run_subprocess('whoami')
             address_localhost = username.rstrip() + r'@' + hostname.rstrip()
 
             self.kill_previous_queens_ssh_remote(username)
@@ -171,7 +172,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         ]
 
         command_string = ' '.join(command_list)
-        active_ssh, _, _ = self.run_subprocess(command_string)
+        active_ssh, _, _ = run_subprocess(command_string)
 
         # skip entries that contain "grep" as this is the current command
         try:
@@ -198,7 +199,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                     for ssh_id in ssh_ids:
                         command_list = ['ssh', self.connect_to_resource, '\'kill -9', ssh_id + '\'']
                         command_string = ' '.join(command_list)
-                        std, err, _ = self.run_subprocess(command_string)
+                        std, err, _ = run_subprocess(command_string)
                     print('Old QUEENS port-forwardings were successfully terminated!')
                     break
                 elif answer.lower() == 'n':
@@ -229,7 +230,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         else:
             command_list = ['echo $SINGULARITY_BIND']
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = self.run_subprocess(command_string)
+        stdout, stderr, _ = run_subprocess(command_string)
         if stdout == "\n":
             if self.remote_flag:
                 command_list = [
@@ -246,7 +247,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                     + "\' >> ~/.bashrc && source ~/.bashrc"
                 ]
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = self.run_subprocess(command_string)
+        stdout, stderr, _ = run_subprocess(command_string)
 
         # Create a Singularity PATH variable that is equal to the host PATH
         if self.remote_flag:
@@ -254,7 +255,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         else:
             command_list = ['echo $SINGULARITYENV_APPEND_PATH']
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = self.run_subprocess(command_string)
+        stdout, stderr, _ = run_subprocess(command_string)
         if stdout == "\n":
             if self.remote_flag:
                 command_list = [
@@ -271,7 +272,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                     # pylint: enable=line-too-long
                 ]  # noqa
             command_string = ' '.join(command_list)
-            stdout, stderr, _ = self.run_subprocess(command_string)
+            stdout, stderr, _ = run_subprocess(command_string)
 
         # Create a Singulartity LD_LIBRARY_PATH variable that is equal to the host LD_LIBRARY_PATH
         if self.remote_flag:
@@ -283,7 +284,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         else:
             command_list = ['echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH']
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = self.run_subprocess(command_string)
+        stdout, stderr, _ = run_subprocess(command_string)
         if stdout == "\n":
             if self.remote_flag:
                 command_list = [
@@ -300,7 +301,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                     # pylint: enable=line-too-long
                 ]  # noqa
             command_string = ' '.join(command_list)
-            stdout, stderr, _ = self.run_subprocess(command_string)
+            stdout, stderr, _ = run_subprocess(command_string)
 
     def establish_port_forwarding_remote(self, address_localhost):
         """
@@ -365,7 +366,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             None
         """
         # get the process id of open port
-        username, _, _ = self.run_subprocess('whoami')
+        username, _, _ = run_subprocess('whoami')
         command_list = [
             'ssh',
             self.connect_to_resource,
@@ -375,7 +376,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             str(self.port) + ':localhost:27017\'',
         ]
         command_string = ' '.join(command_list)
-        active_ssh, stderr, _ = self.run_subprocess(command_string)
+        active_ssh, stderr, _ = run_subprocess(command_string)
 
         # skip entries that contain "grep" as this is the current command
         try:
@@ -389,7 +390,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             for ssh_id in active_ssh_ids:
                 command_list = ['ssh', self.connect_to_resource, '\'kill -9', ssh_id + '\'']
                 command_string = ' '.join(command_list)
-                std, err, _ = self.run_subprocess(command_string)
+                std, err, _ = run_subprocess(command_string)
             print('Active QUEENS port-forwardings were closed successfully!')
 
     def copy_temp_json(self):
@@ -405,7 +406,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             self.connect_to_resource + ':' + self.path_to_singularity + '/temp.json',
         ]
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = self.run_subprocess(command_string)
+        stdout, stderr, _ = run_subprocess(command_string)
         if stderr:
             raise RuntimeError("Error! Was not able to copy post_post class to remote! Abort...")
 
@@ -428,7 +429,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             self.path_to_singularity + '/post_post\'',
         ]
         command_string = ' '.join(command_list)
-        _, _, _ = self.run_subprocess(command_string)
+        _, _, _ = run_subprocess(command_string)
 
         # copy new files
         command_list = [
@@ -437,7 +438,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             self.connect_to_resource + ':' + self.path_to_singularity + '/post_post',
         ]
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = self.run_subprocess(command_string)
+        stdout, stderr, _ = run_subprocess(command_string)
         if stderr:
             raise RuntimeError(
                 "Error! Was not able to copy post_post directory to remote! Abort..."
@@ -453,7 +454,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.hash_files('hashing')
         # create the actual image
         command_string = '/usr/bin/singularity --version'
-        stdout, stderr, _ = self.run_subprocess(command_string)
+        stdout, stderr, _ = run_subprocess(command_string)
         if stderr:
             raise RuntimeError(
                 f'Singularity could not be executed! The error message was: {stderr}'
@@ -466,7 +467,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         abs_path2 = os.path.join(script_dir, rel_path2)
         command_list = ["sudo /usr/bin/singularity build", abs_path1, abs_path2]
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = self.run_subprocess(command_string)
+        stdout, stderr, _ = run_subprocess(command_string)
 
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
         rel_path = '../../driver.simg'
@@ -608,7 +609,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                         self.connect_to_resource + ':' + self.path_to_singularity,
                     ]
                     command_string = ' '.join(command_list)
-                    stdout, stderr, _ = self.run_subprocess(command_string)
+                    stdout, stderr, _ = run_subprocess(command_string)
                     if stderr:
                         raise RuntimeError(
                             "Error! Was not able to copy local singularity image to remote! "
@@ -624,7 +625,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                     self.path_to_singularity + "/driver.simg && echo 'Y' || echo 'N'",
                 ]
                 command_string = ' '.join(command_list)
-                stdout, stderr, _ = self.run_subprocess(command_string)
+                stdout, stderr, _ = run_subprocess(command_string)
                 if 'N' in stdout:
                     # Update remote image
                     print(
@@ -670,42 +671,21 @@ class Scheduler(metaclass=abc.ABCMeta):
                     self.connect_to_resource + ':' + self.path_to_singularity,
                 ]
                 command_string = ' '.join(command_list)
-                stdout, stderr, _ = self.run_subprocess(command_string)
+                stdout, stderr, _ = run_subprocess(command_string)
                 if stderr:
                     raise RuntimeError(
                         "Error! Was not able to copy local singularity image to remote! Abort..."
                     )
                 print('All singularity images ok! Starting simulation on cluster...')
 
-    def run_subprocess(self, command_string):
-        """
-        Run a system command outside of the Python script anc check for errors and
-        stdout-return
-        Args:
-            command_string (str): Command string that should be run outside of Python
-        Returns:
-            stdout (str): Standard-out of the command
-            stderr (str): Potential error message caused by the command
-            process (obj): An process object that can be used for further analysis
-        """
-        process = subprocess.Popen(
-            command_string,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-            universal_newlines=True,
-        )
-        stdout, stderr = process.communicate()
-        return stdout, stderr, process
-
-    def submit(self, job_id, batch):
+    def submit(self, job_id, batch, restart_flag):
         """ Function to submit new job to scheduling software on a given resource
 
         Args:
             job_id (int):               Id of job to submit
             experiment_name (str):   Name of experiment
             batch (str):             Batch number of job
+            restart_flag (boolean):
             experiment_dir (str):    Directory of experiment
             database_address (str):  Address of database to connect to
             driver_options (dict):      Options for driver
@@ -808,11 +788,11 @@ class Scheduler(metaclass=abc.ABCMeta):
             self.connect_to_resource + ':' + self.submission_script_path,
         ]
         command_string = ' '.join(command_list)
-        stdout, stderr, p = self.run_subprocess(command_string)
+        stdout, stderr, p = run_subprocess(command_string)
         # delete local dummy jobfile
         command_list = ['rm', local_dummy_path]
         command_string = ' '.join(command_list)
-        stdout, stderr, p = self.run_subprocess(command_string)
+        stdout, stderr, p = run_subprocess(command_string)
 
     # ------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED / ABSTRACTMETHODS ------
     @abc.abstractmethod  # how to check this is dependent on cluster / env
