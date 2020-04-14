@@ -49,12 +49,14 @@ class PostPost(metaclass=abc.ABCMeta):
         from .post_post_baci import PostPostBACI
         from .post_post_deal import PostPostDEAL
         from .post_post_generic import PostPostGeneric
+        from .post_post_baci_shape import PostPostBACIShape
 
         post_post_dict = {
             'ansys': PostPostANSYS,
             'baci': PostPostBACI,
             'deal': PostPostDEAL,
-            'generic': PostPostGeneric
+            'generic': PostPostGeneric,
+            'baci_shape': PostPostBACIShape
         }
 
         # determine which object to create
@@ -71,6 +73,8 @@ class PostPost(metaclass=abc.ABCMeta):
             post_post_version = 'deal'
         elif post_post_options['post_post_approach_sel'] == 'generic':
             post_post_version = 'generic'
+        elif post_post_options['post_post_approach_sel'] == 'baci_shape':
+            post_post_version = 'baci_shape'
         else:
             raise RuntimeError("post_post_approach_sel not set, fix your input file")
 
