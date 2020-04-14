@@ -41,10 +41,11 @@ class OptimizationIterator(Iterator):
         global_settings,
         initial_guess,
         jac_method,
+        jac_rel_step,
         max_feval,
         model,
         result_description,
-        verbose_output,
+        verbose_output
     ):
         super().__init__(model, global_settings)
 
@@ -53,7 +54,7 @@ class OptimizationIterator(Iterator):
         self.cons = constraints
         self.initial_guess = initial_guess
         self.jac_method = jac_method
-        self.jac_rel_step = None
+        self.jac_rel_step = jac_rel_step
         self.max_feval = max_feval
         self.result_description = result_description
 
@@ -114,6 +115,7 @@ class OptimizationIterator(Iterator):
         algorithm = algorithm.upper()
 
         jac_method = method_options.get('jac_method', '2-point')
+        jac_rel_step = method_options.get('jac_rel_step', None)
 
         verbose_output = method_options.get('verbose_output', False)
 
@@ -125,10 +127,11 @@ class OptimizationIterator(Iterator):
             global_settings=global_settings,
             initial_guess=initial_guess,
             jac_method=jac_method,
+            jac_rel_step=jac_rel_step,
             max_feval=max_feval,
             model=model,
             result_description=result_description,
-            verbose_output=verbose_output,
+            verbose_output=verbose_output
         )
 
     def eval_model(self):

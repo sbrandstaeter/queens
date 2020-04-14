@@ -1,0 +1,80 @@
+{
+  "experiment_name" : "OptimizeBiofilmLSQ",
+  "database"  :{
+    "address"   : "localhost:27017",
+    "drop_existing" : true
+},
+  "method": {
+    "method_name": "optimization",
+    "method_options" :{
+      "model" : "model",
+      "jac_method":"2-point",
+      "jac_rel_step":1e-5,
+      "max_feval":2,
+      "algorithm" : "LSQ",
+      "initial_guess" : [1500 , 0.4],
+      "result_description" : {
+          "write_results" : true,
+          "plot_results" : true
+          },
+      "bounds": [[0       , -0.5],
+                 [Infinity, 1.0 ]]
+    }
+  },
+  "model" : {
+    "type" : "simulation_model",
+    "interface" : "interface",
+    "parameters" : "parameters"
+  },
+  "interface" : {
+    "type" : "job_interface",
+    "resources": "resources",
+    "driver" : "driver"
+  },
+  "driver" :{
+    "driver_type"           : "baci_native",
+    "driver_params"         :{
+      "input_template"        : "/home/willmann/sim/queens/test_contour/invana_levenbergmarquardt_tri_fsi_contour_template.dat",
+      "path_to_executable"    : "/home/willmann/baci/gitlab/build/baci-release",
+      "path_to_postprocessor" : "/home/willmann/baci/gitlab/build/post_drt_ensight",
+      "post_process_options"  : null,
+      "no_singularity"        : true,
+      "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
+      "experiment_dir"        : "/home/willmann/sim/queens/test_contour/",
+      "post_post"             : {
+        "post_post_approach_sel" : "baci_shape",
+        "path_to_ref_data" : "/home/willmann/sim/queens/test_contour/invana_levenbergmarquardt_tri_fsi_contour_E2000_nue03_p.monitor",
+        "delete_field_data" : false,
+        "target_time": 8,
+        "time_tol": 1e-2,
+        "file_prefix": "xx",
+        "case_type": "2d_full",
+        "visualization": false
+        }
+    }
+  },
+  "resources" : {
+    "my-machine" : {
+      "scheduler"         : "scheduler",
+      "max-concurrent"    : 3,
+      "max-finished-jobs" : 10
+    }
+  },
+  "parameters" : {
+    "random_variables" : {
+      "E" : {
+        "type" : "FLOAT",
+        "size" : 1
+      },
+      "nue" : {
+        "type" : "FLOAT",
+        "size" : 1
+      }
+    }
+  },
+  "scheduler" : {
+    "scheduler_type" : "local",
+    "num_procs" : 1
+  }
+}
+

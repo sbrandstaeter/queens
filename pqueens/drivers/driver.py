@@ -145,7 +145,7 @@ class Driver(metaclass=abc.ABCMeta):
 
     def finish_and_clean(self):
         """ Finish and clean the resources and environment """
-        if self.post_options:
+        if self.postprocessor:
             self.do_postprocessing()
         self.do_postpostprocessing()
         self.finish_job()
@@ -220,11 +220,18 @@ class Driver(metaclass=abc.ABCMeta):
 
         target_file_base_name = os.path.dirname(self.output_file)
         output_file_opt = '--file=' + self.output_file
-        for num, option in enumerate(self.post_options):
-            target_file_opt_1 = '--output=' + target_file_base_name
-            target_file_opt_2 = self.file_prefix + "_" + str(num + 1)
-            target_file_opt = os.path.join(target_file_opt_1, target_file_opt_2)
-            postprocessing_list = [self.postprocessor, output_file_opt, option, target_file_opt]
+
+        if self.post_options:
+            for num, option in enumerate(self.post_options):
+                target_file_opt_1 = '--output=' + target_file_base_name
+                target_file_opt_2 = self.file_prefix + "_" + str(num + 1)
+                target_file_opt = os.path.join(target_file_opt_1, target_file_opt_2)
+                postprocessing_list = [self.postprocessor, output_file_opt, option, target_file_opt]
+                postprocess_command = ' '.join(filter(None, postprocessing_list))
+                _, _, _ = self.run_subprocess(postprocess_command)
+        else:
+            target_file_opt = os.path.join('--output=' + target_file_base_name, self.file_prefix)
+            postprocessing_list = [self.postprocessor, output_file_opt, target_file_opt]
             postprocess_command = ' '.join(filter(None, postprocessing_list))
             _, _, _ = self.run_subprocess(postprocess_command)
 
