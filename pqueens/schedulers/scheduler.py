@@ -102,12 +102,9 @@ class Scheduler(metaclass=abc.ABCMeta):
                 "Slurm type was not specified correctly! Choose either 'local', 'pbs' or 'slurm'!"
             )
 
-        if 'restart_from_finished_simulation' in driver_options:
-            base_settings['restart_from_finished_simulation'] = driver_options[
-                'restart_from_finished_simulation'
-            ]
-        else:
-            base_settings['restart_from_finished_simulation'] = False
+        base_settings['restart_from_finished_simulation'] = driver_options.get(
+            'restart_from_finished_simulation', False
+        )
 
         base_settings['polling_time'] = config.get('polling-time', 1)
 
@@ -693,155 +690,50 @@ class Scheduler(metaclass=abc.ABCMeta):
         """ Function to submit new job to scheduling software on a given resource
 
         Args:
-            job_id (int):               Id of job to submit
-            experiment_name (str):   Name of experiment
-            batch (str):             Batch number of job
-            restart_flag (boolean):
-            experiment_dir (str):    Directory of experiment
-            database_address (str):  Address of database to connect to
-            driver_options (dict):      Options for driver
+            job_id (int):            ID of job to submit
+            batch (int):             Batch number of job
+            restart_flag (bool):     true if restart is performed
 
         Returns:
-            int: process id of job
+            pid (int):               process id of job
 
         """
 
+        submitter = self.get_submitter(restart_flag)
+        pid = submitter(job_id, batch)
+
+        return pid
+
+    def get_submitter(self, restart_flag):
+        """Get function for submission of job.
+
+        Which function should be used depends on whether or not restart is performed, on the
+        computing resource and whether or not singularity is used.
+
+        Args:
+            restart_flag (bool):     true if restart is performed
+
+        Returns:
+            function object:         function for submission of job
+
+        """
         if restart_flag:
             if self.remote_flag:
-                self.scheduler_options['EXE'] = self.path_to_singularity + '/driver.simg'
-                self.scheduler_options[
-                    'INPUT'
-                ] = '--job_id={} --batch={} --port={} --path_json={}'.format(
-                    job_id, batch, self.port, self.path_to_singularity
-                )
-                command_list = [
-                    'singularity run',
-                    self.scheduler_options['EXE'],
-                    self.scheduler_options['INPUT'],
-                    '--post=true',
-                ]
-                self.submission_script_path = ' '.join(command_list)
-                cmdlist_remote_main = [
-                    'ssh',
-                    self.connect_to_resource,
-                    '"cd',
-                    self.experiment_dir,
-                    ';',
-                    self.submission_script_path,
-                    '"',
-                ]
-                cmd_remote_main = ' '.join(cmdlist_remote_main)
-                stdout, stderr, _ = run_subprocess(cmd_remote_main)
+                return self._restart_remote
             else:
                 if self.no_singularity:
-                    with open(self.config['input_file'], 'r') as myfile:
-                        config = json.load(myfile, object_pairs_hook=OrderedDict)
-
-                    driver_obj = Driver.from_config_create_driver(config, job_id, batch)
-                    driver_obj.finish_and_clean()
+                    return self._restart_local
                 else:
-                    local_path_json = self.config['input_file']
-                    remote_args = '--job_id={} --batch={} --port={} --path_json={}'.format(
-                        job_id, batch, '000', local_path_json
-                    )
-                    script_dir = os.path.dirname(__file__)
-                    rel_path = '../../driver.simg'
-                    local_singularity_path = os.path.join(script_dir, rel_path)
-                    cmdlist_remote_main = [
-                        '/usr/bin/singularity run',
-                        local_singularity_path,
-                        remote_args,
-                        '--post=true',
-                    ]
-                    cmd_remote_main = ' '.join(cmdlist_remote_main)
-                    subprocess.Popen(
-                        cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                    )
-            return 0
+                    return self._restart_local_singularity
 
         else:
             if self.remote_flag:
-                self.scheduler_options[
-                    'INPUT'
-                ] = '--job_id={} --batch={} --port={} --path_json={}'.format(
-                    job_id, batch, self.port, self.path_to_singularity
-                )
-                self.scheduler_options['EXE'] = self.path_to_singularity + '/driver.simg'
-                self.scheduler_options['job_name'] = '{}_{}_{}'.format(
-                    self.experiment_name, 'queens', job_id
-                )
-
-                # Parse data to job_scheduler_template
-                self.create_submission_script(job_id)
-
-                # submit the job with job_script.sh
-                cmdlist_remote_main = [
-                    'ssh',
-                    self.connect_to_resource,
-                    '"cd',
-                    self.experiment_dir,
-                    ';',
-                    self.scheduler_start,
-                    self.submission_script_path,
-                    '"',
-                ]
-                cmd_remote_main = ' '.join(cmdlist_remote_main)
-                stdout, stderr, _ = run_subprocess(cmd_remote_main)
-                if stderr:
-                    raise RuntimeError(
-                        "\nThe file 'remote_main' in remote singularity image "
-                        "could not be executed properly!"
-                        f"\nStderr from remote:\n{stderr}"
-                    )
-                match = self.get_process_id_from_output(stdout)
-                try:
-                    return int(match)
-                except ValueError:
-                    sys.stderr.write(stdout)
-                    return None
+                return self._submit_remote
             else:
                 if self.no_singularity:
-                    with open(self.config['input_file'], 'r') as myfile:
-                        config = json.load(myfile, object_pairs_hook=OrderedDict)
-
-                    driver_obj = Driver.from_config_create_driver(config, job_id, batch)
-                    # Run the singularity image in just one step
-                    driver_obj.main_run()
-                    driver_obj.finish_and_clean()
-                    return driver_obj.pid
+                    return self._submit_local
                 else:
-                    local_path_json = self.config['input_file']
-                    remote_args = '--job_id={} --batch={} --port={} --path_json={}'.format(
-                        job_id, batch, '000', local_path_json
-                    )
-                    script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-                    rel_path = '../../driver.simg'
-                    local_singularity_path = os.path.join(script_dir, rel_path)
-                    cmdlist_remote_main = [
-                        '/usr/bin/singularity run',
-                        local_singularity_path,
-                        remote_args,
-                    ]
-                    cmd_remote_main = ' '.join(cmdlist_remote_main)
-                    # stdout, stderr, _ = run_subprocess(cmd_remote_main)
-                    subprocess.Popen(
-                        cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                    )
-                    time.sleep(self.polling_time)
-                    # PostPost run
-                    cmdlist_remote_main = [
-                        '/usr/bin/singularity run',
-                        local_singularity_path,
-                        remote_args,
-                        '--post=true',
-                    ]
-                    cmd_remote_main = ' '.join(cmdlist_remote_main)
-                    # stdout, stderr, _ = run_subprocess(cmd_remote_main)
-                    process = subprocess.Popen(
-                        cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-                    )
-                    pid = process.pid
-                    return pid
+                    return self._submit_local_singularity
 
     def create_submission_script(self, job_id):
         """
@@ -885,3 +777,200 @@ class Scheduler(metaclass=abc.ABCMeta):
     @abc.abstractmethod  # how to check this is dependent on cluster / env
     def alive(self, process_id):
         pass
+
+    # ------------- private helper methods ----------------#
+    def _submit_remote(self, job_id, batch):
+        """Submit job on remote with singularity.
+
+        Args:
+            job_id (int):    ID of job to submit
+            batch (str):     Batch number of job
+
+        Returns:
+            int:            process ID
+
+        """
+        self.scheduler_options['INPUT'] = '--job_id={} --batch={} --port={} --path_json={}'.format(
+            job_id, batch, self.port, self.path_to_singularity
+        )
+        self.scheduler_options['EXE'] = self.path_to_singularity + '/driver.simg'
+        self.scheduler_options['job_name'] = '{}_{}_{}'.format(
+            self.experiment_name, 'queens', job_id
+        )
+
+        # Parse data to job_scheduler_template
+        self.create_submission_script(job_id)
+
+        # submit the job with job_script.sh
+        cmdlist_remote_main = [
+            'ssh',
+            self.connect_to_resource,
+            '"cd',
+            self.experiment_dir,
+            ';',
+            self.scheduler_start,
+            self.submission_script_path,
+            '"',
+        ]
+        cmd_remote_main = ' '.join(cmdlist_remote_main)
+        stdout, stderr, _ = run_subprocess(cmd_remote_main)
+        if stderr:
+            raise RuntimeError(
+                "\nThe file 'remote_main' in remote singularity image "
+                "could not be executed properly!"
+                f"\nStderr from remote:\n{stderr}"
+            )
+        match = self.get_process_id_from_output(stdout)
+
+        try:
+            return int(match)
+        except ValueError:
+            sys.stderr.write(stdout)
+            return None
+
+    def _submit_local(self, job_id, batch):
+        """Submit job locally without singularity.
+
+        Args:
+            job_id (int):    ID of job to submit
+            batch (str):     Batch number of job
+
+        Returns:
+            int:            process ID
+        """
+        with open(self.config['input_file'], 'r') as myfile:
+            config = json.load(myfile, object_pairs_hook=OrderedDict)
+
+        driver_obj = Driver.from_config_create_driver(config, job_id, batch)
+        # Run the singularity image in just one step
+        driver_obj.main_run()
+        driver_obj.finish_and_clean()
+
+        return driver_obj.pid
+
+    def _submit_local_singularity(self, job_id, batch):
+        """Submit job locally with singualrity.
+
+        Args:
+            job_id (int):    ID of job to submit
+            batch (str):     Batch number of job
+
+        Returns:
+            int:            process ID
+        """
+        local_path_json = self.config['input_file']
+        remote_args = '--job_id={} --batch={} --port={} --path_json={}'.format(
+            job_id, batch, '000', local_path_json
+        )
+        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+        rel_path = '../../driver.simg'
+        local_singularity_path = os.path.join(script_dir, rel_path)
+        cmdlist_remote_main = [
+            '/usr/bin/singularity run',
+            local_singularity_path,
+            remote_args,
+        ]
+        cmd_remote_main = ' '.join(cmdlist_remote_main)
+        # stdout, stderr, _ = run_subprocess(cmd_remote_main)
+        subprocess.Popen(
+            cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        time.sleep(self.polling_time)
+        # PostPost run
+        cmdlist_remote_main = [
+            '/usr/bin/singularity run',
+            local_singularity_path,
+            remote_args,
+            '--post=true',
+        ]
+        cmd_remote_main = ' '.join(cmdlist_remote_main)
+        # stdout, stderr, _ = run_subprocess(cmd_remote_main)
+        process = subprocess.Popen(
+            cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        pid = process.pid
+
+        return pid
+
+    def _restart_remote(self, job_id, batch):
+        """Restart job on remote with singularity.
+
+        Args:
+            job_id (int):    ID of job to submit
+            batch (str):     Batch number of job
+
+        Returns:
+            int:            process ID is 0 for restart
+        """
+        self.scheduler_options['EXE'] = self.path_to_singularity + '/driver.simg'
+        self.scheduler_options['INPUT'] = '--job_id={} --batch={} --port={} --path_json={}'.format(
+            job_id, batch, self.port, self.path_to_singularity
+        )
+        command_list = [
+            'singularity run',
+            self.scheduler_options['EXE'],
+            self.scheduler_options['INPUT'],
+            '--post=true',
+        ]
+        self.submission_script_path = ' '.join(command_list)
+        cmdlist_remote_main = [
+            'ssh',
+            self.connect_to_resource,
+            '"cd',
+            self.experiment_dir,
+            ';',
+            self.submission_script_path,
+            '"',
+        ]
+        cmd_remote_main = ' '.join(cmdlist_remote_main)
+        stdout, stderr, _ = run_subprocess(cmd_remote_main)
+
+        return 0
+
+    def _restart_local(self, job_id, batch):
+        """Restart job locally without singularity.
+
+        Args:
+            job_id (int):    ID of job to submit
+            batch (str):     Batch number of job
+
+        Returns:
+            int:            process ID is 0 for restart
+        """
+        with open(self.config['input_file'], 'r') as myfile:
+            config = json.load(myfile, object_pairs_hook=OrderedDict)
+
+        driver_obj = Driver.from_config_create_driver(config, job_id, batch)
+        driver_obj.finish_and_clean()
+
+        return 0
+
+    def _restart_local_singularity(self, job_id, batch):
+        """Restart job locally with singularity.
+
+        Args:
+            job_id (int):    ID of job to submit
+            batch (str):     Batch number of job
+
+        Returns:
+            int:            process ID is 0 for restart
+        """
+        local_path_json = self.config['input_file']
+        remote_args = '--job_id={} --batch={} --port={} --path_json={}'.format(
+            job_id, batch, '000', local_path_json
+        )
+        script_dir = os.path.dirname(__file__)
+        rel_path = '../../driver.simg'
+        local_singularity_path = os.path.join(script_dir, rel_path)
+        cmdlist_remote_main = [
+            '/usr/bin/singularity run',
+            local_singularity_path,
+            remote_args,
+            '--post=true',
+        ]
+        cmd_remote_main = ' '.join(cmdlist_remote_main)
+        subprocess.Popen(
+            cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+
+        return 0

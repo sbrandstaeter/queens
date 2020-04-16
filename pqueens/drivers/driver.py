@@ -10,7 +10,6 @@ from pqueens.database.mongodb import MongoDB
 
 
 class Driver(metaclass=abc.ABCMeta):
-
     """ Base class for Drivers
 
     This Driver class is the base class for drivers that actually execute a job on
@@ -236,8 +235,12 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             float: actual simulation result
             Assemble post processing command """
-        # Load the already initiated job entry
-        self.job = self.database.load(self.experiment_name, self.batch, 'jobs', {'id': self.job_id})
+
+        if self.job is None:
+            # Load the already initiated job entry
+            self.job = self.database.load(
+                self.experiment_name, self.batch, 'jobs', {'id': self.job_id}
+            )
 
         dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
         output_directory = os.path.join(dest_dir, 'output')

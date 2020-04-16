@@ -18,14 +18,16 @@ class JobInterface(Interface):
         simulation software.
 
     Attributes:
-        name (string):              name of interface
-        resources (dict):           dictionary with resources
-        experiment_name (string):   name of experiment
-        db_adress (string):         adress of database to use
-        db (mongodb):               mongodb to store results and job info
-        polling_time (int):         how frequently do we check if jobs are done
-        output_dir (string):        directory to write output to
-        parameters (dict):          dictionary with parameters
+        interface_name (string):                 name of interface
+        resources (dict):                        dictionary with resources
+        experiment_name (string):                name of experiment
+        db_address (string):                     address of database to use
+        db (mongodb):                            mongodb to store results and job info
+        polling_time (int):                      how frequently do we check if jobs are done
+        output_dir (string):                     directory to write output to
+        restart_from_finished_simulation (bool): true if restart option is chosen
+        parameters (dict):                       dictionary with parameters
+        connect (string):                        connection to computing resource
 
     """
 
@@ -48,11 +50,13 @@ class JobInterface(Interface):
             interface_name (string):    name of interface
             resources (dict):           dictionary with resources
             experiment_name (string):   name of experiment
-            db_adress (string):         adress of database to use
+            db_address (string):         address of database to use
             db (mongodb):               mongodb to store results and job info
             polling_time (int):         how frequently do we check if jobs are done
             output_dir (string):        directory to write output to
-            variables (dict):           dictionary with parameters
+            parameters (dict):          dictionary with parameters
+            restart_from_finished_simulation (bool): true if restart option is chosen
+            connect (string):  connection to computing resource
         """
         self.name = interface_name
         self.resources = resources
@@ -138,44 +142,8 @@ class JobInterface(Interface):
         # Convert samples to pandas DataFrame to use index
         samples = pd.DataFrame(samples, index=range(1, len(samples) + 1))
 
-        if self.restart_from_finished_simulation:
-
-            # Check results in database
-            number_of_results_in_db, jobid_missing_results_in_db = self.check_results_in_db(samples)
-
-            # All job results in database
-            if number_of_results_in_db == samples.size:
-                print(f"All results found in database.")
-                pass
-
-            # Not all job results in database
-            else:
-                # Run jobs with missing results in database
-                if len(jobid_missing_results_in_db) > 0:
-                    self.manage_job_submission(samples, jobid_missing_results_in_db)
-
-                # Find index for block-restart and run jobs
-                jobid_for_block_restart = self.find_block_restart(samples)
-                if jobid_for_block_restart is not None:
-                    range_block_restart = range(jobid_for_block_restart, samples.size + 1)
-                    self.manage_job_submission(samples, range_block_restart)
-
-                # Check if database is complete: all jobs are loaded
-                is_every_job_in_db, jobid_smallest_in_db = self.check_jobs_in_db()
-
-                # Load missing jobs into database and restart single failed jobs
-                if not is_every_job_in_db:
-                    jobid_for_single_restart = self.load_missing_jobs_to_db(
-                        samples, jobid_smallest_in_db
-                    )
-                    # Restart single failed jobs
-                    if len(jobid_for_single_restart) > 0:
-                        self.manage_job_submission(samples, jobid_for_single_restart)
-
-        # No restart performed
-        else:
-            idx_range = range(1, samples.size + 1, 1)
-            self.manage_job_submission(samples, idx_range)
+        job_manager = self.get_job_manager()
+        job_manager(samples)
 
         while not self.all_jobs_finished():
             time.sleep(self.polling_time)
@@ -187,321 +155,18 @@ class JobInterface(Interface):
         # get sample and response data
         return self.get_output_data()
 
-    def check_results_in_db(self, samples):
-        """
-        Check complete results in database
+    def get_job_manager(self):
+        """Decide whether or not restart is performed.
 
         Returns:
-            number_of_results_in_db (int):              number of results in database
-            jobid_missing_results_in_db (ndarray):      job IDs of jobs with missing results
+            function object:    management function which should be used
+
         """
-        jobs = self.load_jobs()
+        if self.restart_from_finished_simulation:
+            return self._manage_restart
 
-        number_of_results_in_db = 0
-        jobid_missing_results_in_db = []
-        for job in jobs:
-            try:
-                if job['result'].size != 0:
-                    number_of_results_in_db += 1
-                else:
-                    jobid_missing_results_in_db = np.append(jobid_missing_results_in_db, job['id'])
-            except (AttributeError, KeyError):
-                jobid_missing_results_in_db = np.append(jobid_missing_results_in_db, job['id'])
-
-        # Restart single failed jobs
-        if len(jobid_missing_results_in_db) == 0:
-            print('>> No single restart detected from database.')
         else:
-            print(
-                f'>> Single restart detected from database for job(s) #',
-                jobid_missing_results_in_db.astype(int),
-                '.',
-                sep='',
-            )
-            jobid_missing_results_in_db = self.get_user_input_for_restart(
-                samples, jobid_missing_results_in_db
-            )
-
-        return number_of_results_in_db, jobid_missing_results_in_db
-
-    @staticmethod
-    def get_user_input_for_restart(samples, jobid_for_restart):
-        """
-        Ask the user to confirm the detected job ID(s) for restarts
-
-        Possible user inputs:
-        y               confirm
-        n               abort
-        int             job ID
-        int int int     several job IDs
-
-        Returns:
-            jobid_for_restart:  ID(s) of the job(s) which the user wants to restart
-        """
-        print('>> Would you like to proceed?')
-        print('>> Alternatively please type the ID of the job from which you want to restart!')
-        print('>> Type "n" to abort.')
-
-        while True:
-            try:
-                answer = input('>> Please type "y", "n" or job ID(s) (int) >> ')
-            except SyntaxError:
-                answer = None
-
-            if answer.lower() == 'y':
-                return jobid_for_restart
-            elif answer.lower() == 'n':
-                return None
-            elif answer is None:
-                print('>> Empty input! Only "y", "n" or job ID(s) (int) are valid inputs!')
-                print('>> Try again!')
-            else:
-                try:
-                    jobid_from_user = int(answer)
-                    if jobid_from_user <= samples.size:
-                        print(f'>> You chose a restart from job {jobid_from_user}.')
-                        jobid_for_restart = jobid_from_user
-                        return jobid_for_restart
-                    else:
-                        print(f'>> Your chosen job ID {jobid_from_user} is out of range.')
-                        print('>> Try again!')
-                except ValueError:
-                    try:
-                        jobid_from_user = np.array([int(jobid) for jobid in answer.split()])
-                        valid_id = True
-                        for jobid in jobid_from_user:
-                            if jobid <= samples.size:
-                                valid_id = True
-                                pass
-                            else:
-                                valid_id = False
-                                print(f'>> Your chosen job ID {jobid} is out of range.')
-                                print('>> Try again!')
-                                break
-                        if valid_id:
-                            print(f'>> You chose a restart of jobs {jobid_from_user}.')
-                            return jobid_from_user
-                    except IndexError:
-                        print(
-                            f'>> The input "{answer}" is not an appropriate choice! '
-                            f'>> Only "y", "n" or a job ID(s) (int) are valid inputs!'
-                        )
-                        print('>> Try again!')
-
-    def check_jobs_in_db(self):
-        """
-        Check jobs in database and find the job with the smallest job ID in the database
-
-        Returns:
-            is_every_job_in_db (boolean):   true if smallest job ID in database is 1
-            jobid_smallest_in_db (int):     smallest job ID in database
-        """
-        jobs = self.load_jobs()
-
-        jobid_smallest_in_db = min([job['id'] for job in jobs])
-        is_every_job_in_db = jobid_smallest_in_db == 1
-
-        return is_every_job_in_db, jobid_smallest_in_db
-
-    def find_block_restart(self, samples):
-        """
-        Find index for block-restart
-
-        Returns:
-            jobid_for_block_restart (int):  index for block-restart of failed jobs
-        """
-        # Find number of subdirectories in output directory
-        if self.connect_to_resource:
-            command_list = [
-                'ssh',
-                self.connect_to_resource,
-                '"cd',
-                self.output_dir,
-                '; ls -l | grep ' '"^d" | wc -l "',
-            ]
-        else:
-            command_list = ['cd', self.output_dir, '; ls -l | grep ' '"^d" | wc -l']
-        command_string = ' '.join(command_list)
-        str_number_of_subdirectories, _, _ = run_subprocess(command_string)
-        number_of_subdirectories = (
-            int(str_number_of_subdirectories) if str_number_of_subdirectories else 0
-        )
-        assert (
-            number_of_subdirectories != 0
-        ), "You chose restart_from_finished simulations, but your output folder is empty. "
-
-        if number_of_subdirectories < samples.size:
-            # Start from (number of subdirectories) + 1
-            jobid_start_search = int(number_of_subdirectories) + 1
-        else:
-            jobid_start_search = samples.size
-
-        jobid_for_block_restart = None
-        jobid_for_restart_found = False
-        # Loop backwards to find first completed job
-        for jobid in range(jobid_start_search, -1, -1):
-            # Loop over all available resources
-            for resource_name, resource in self.resources.items():
-                current_job, process_id = self.get_current_job(
-                    samples, resource, resource_name, jobid
-                )
-
-                assert process_id == 0, "Error: Process ID in find_block_restart must be 0."
-
-                try:
-                    if current_job['result'].size == 0:
-                        # Empty result
-                        pass
-                    else:
-                        # Last finished job -> restart from next job
-                        jobid_for_block_restart = jobid + 1
-                        jobid_for_restart_found = True
-                        break
-                except (KeyError, AttributeError):
-                    # No result
-                    pass
-
-            if jobid_for_restart_found:
-                break
-
-        # If jobid for block-restart out of range -> no restart
-        if jobid_for_block_restart > samples.size:
-            jobid_for_block_restart = None
-
-        # Get user input for block-restart
-        if jobid_for_block_restart is not None:
-            print(f'>> Block-restart detected for job #{jobid_for_block_restart}. ')
-            jobid_for_block_restart = self.get_user_input_for_restart(
-                samples, jobid_for_block_restart
-            )
-            if (not isinstance(jobid_for_block_restart, int)) and (
-                jobid_for_block_restart is not None
-            ):
-                raise AssertionError('Only one job ID allowed for block-restart. ')
-        else:
-            print('>> No block-restart detected.')
-
-        return jobid_for_block_restart
-
-    def load_missing_jobs_to_db(self, samples, jobid_end):
-        """
-        Load missing jobs to database 1, ..., jobid_end
-
-        Args:
-            samples (DataFrame):     list of variables objects
-            jobid_end (int):              index of job where to stop loading results
-        Returns:
-            jobid_for_single_restart:     array with indices of failed jobs and missing results
-        """
-        jobid_for_single_restart = []
-
-        for jobid in range(1, jobid_end):
-            for resource_name, resource in self.resources.items():
-                current_job, process_id = self.get_current_job(
-                    samples, resource, resource_name, jobid
-                )
-
-                assert process_id == 0, "Error: Process ID in load_missing_jobs_to_db must be 0."
-
-                try:
-                    if current_job['result'].size == 0:
-                        # Empty result
-                        jobid_for_single_restart = np.append(jobid_for_single_restart, int(jobid))
-                except (KeyError, AttributeError):
-                    # No result
-                    jobid_for_single_restart = np.append(jobid_for_single_restart, int(jobid))
-
-        # Get user input for restart of single jobs
-        if len(jobid_for_single_restart) == 0:
-            print('>> No restart of single jobs detected.')
-            jobs = self.load_jobs()
-            print_resources_status(self.resources, jobs)
-        else:
-            print(
-                f'>> Single restart detected for job(s) #',
-                jobid_for_single_restart.astype(int),
-                '.',
-                sep='',
-            )
-            jobid_for_single_restart = self.get_user_input_for_restart(
-                samples, jobid_for_single_restart
-            )
-
-        return jobid_for_single_restart
-
-    def manage_job_submission(self, samples, jobid_range):
-        """
-        Iterate over samples and manage submission of jobs
-
-        Args:
-            samples (DataFrame):
-            jobid_range (range):
-        """
-        jobs = self.load_jobs()
-
-        for jobid in jobid_range:
-            processed_suggestion = False
-            while not processed_suggestion:
-                # Loop over all available resources
-                for resource_name, resource in self.resources.items():
-                    if resource.accepting_jobs(jobs):
-                        variables = samples.loc[jobid][0]
-                        try:
-                            current_job = next(job for job in jobs if job['id'] == jobid)
-                        except (StopIteration, IndexError):
-                            current_job = self.create_new_job(variables, resource_name, jobid)
-
-                        current_job['status'] = 'pending'
-                        self.save_job(current_job)
-
-                        # Submit the job to the appropriate resource
-                        restart_flag = False
-                        process_id = self.attempt_dispatch(resource, current_job, restart_flag)
-
-                        # Set the status of the job appropriately (successfully submitted or not)
-                        if process_id is None:
-                            current_job['status'] = 'broken'
-                        else:
-                            current_job['status'] = 'pending'
-                            current_job['proc_id'] = process_id
-
-                        processed_suggestion = True
-                        jobs = self.load_jobs()
-                        print_resources_status(self.resources, jobs)
-
-                    else:
-                        time.sleep(self.polling_time)
-                        jobs = self.load_jobs()
-
-        return
-
-    def get_current_job(self, samples, resource, resource_name, job_id):
-        """
-        Get the current job with ID (job_id) from database or from output directory
-
-        Returns:
-            current job (dict):    current job with ID (job_id)
-            process_id (int):      0 if loaded from database or output directory
-        """
-        variables = samples.loc[job_id][0]
-        jobs = self.load_jobs()
-
-        try:
-            # Job already in database
-            current_job = next(job for job in jobs if job['id'] == job_id)
-            process_id = 0
-        except StopIteration:
-            # Job not in database:
-            # load result from output directory into database
-            current_job = self.create_new_job(variables, resource_name, job_id)
-            restart_flag = True
-            process_id = self.attempt_dispatch(resource, current_job, restart_flag)
-
-            time.sleep(self.polling_time)
-            jobs = self.load_jobs()
-            current_job = next(job for job in jobs if job['id'] == job_id)
-
-        return current_job, process_id
+            return self._manage_jobs
 
     def attempt_dispatch(self, resource, new_job, restart_flag):
         """ Attempt to dispatch job multiple times
@@ -662,3 +327,382 @@ class JobInterface(Interface):
         output['mean'] = np.array(mean_values)
 
         return output
+
+    # -------------private helper methods ---------------- #
+
+    def _manage_restart(self, samples):
+        """Manage different steps of restart.
+
+        First, check if all results are in the database. Then, perform restart for missing results.
+        Next, find and perform block-restart. And finally, load missing jobs into database and
+        perform remaining restarts if necessary.
+
+        Args:
+            samples (DataFrame):     list of variables objects
+        """
+        # Check results in database
+        number_of_results_in_db, jobid_missing_results_in_db = self._check_results_in_db(samples)
+
+        # All job results in database
+        if number_of_results_in_db == samples.size:
+            print(f"All results found in database.")
+
+        # Not all job results in database
+        else:
+            # Run jobs with missing results in database
+            if len(jobid_missing_results_in_db) > 0:
+                self._manage_job_submission(samples, jobid_missing_results_in_db)
+
+            # Find index for block-restart and run jobs
+            jobid_for_block_restart = self._find_block_restart(samples)
+            if jobid_for_block_restart is not None:
+                range_block_restart = range(jobid_for_block_restart, samples.size + 1)
+                self._manage_job_submission(samples, range_block_restart)
+
+            # Check if database is complete: all jobs are loaded
+            is_every_job_in_db, jobid_smallest_in_db = self._check_jobs_in_db()
+
+            # Load missing jobs into database and restart single failed jobs
+            if not is_every_job_in_db:
+                jobid_for_single_restart = self._load_missing_jobs_to_db(
+                    samples, jobid_smallest_in_db
+                )
+                # Restart single failed jobs
+                if len(jobid_for_single_restart) > 0:
+                    self._manage_job_submission(samples, jobid_for_single_restart)
+
+    def _manage_jobs(self, samples):
+        """Manage regular submission of jobs without restart.
+
+        Args:
+            samples (DataFrame):     list of variables objects
+        """
+        idx_range = range(1, samples.size + 1, 1)
+        self._manage_job_submission(samples, idx_range)
+
+    def _check_results_in_db(self, samples):
+        """Check complete results in database.
+
+        Args:
+            samples (DataFrame):     list of variables objects
+
+        Returns:
+            number_of_results_in_db (int):              number of results in database
+            jobid_missing_results_in_db (ndarray):      job IDs of jobs with missing results
+        """
+        jobs = self.load_jobs()
+
+        number_of_results_in_db = 0
+        jobid_missing_results_in_db = []
+        for job in jobs:
+            try:
+                if job['result'].size != 0:
+                    number_of_results_in_db += 1
+                else:
+                    jobid_missing_results_in_db = np.append(jobid_missing_results_in_db, job['id'])
+            except (AttributeError, KeyError):
+                jobid_missing_results_in_db = np.append(jobid_missing_results_in_db, job['id'])
+
+        # Restart single failed jobs
+        if len(jobid_missing_results_in_db) == 0:
+            print('>> No single restart detected from database.')
+        else:
+            print(
+                f'>> Single restart detected from database for job(s) #',
+                jobid_missing_results_in_db.astype(int),
+                '.',
+                sep='',
+            )
+            jobid_missing_results_in_db = self._get_user_input_for_restart(
+                samples, jobid_missing_results_in_db
+            )
+
+        return number_of_results_in_db, jobid_missing_results_in_db
+
+    @staticmethod
+    def _get_user_input_for_restart(samples, jobid_for_restart):
+        """Ask the user to confirm the detected job ID(s) for restarts.
+
+        Examples:
+            Possible user inputs:
+            y               confirm
+            n               abort
+            int             job ID
+            int int int     several job IDs
+
+        Args:
+            samples (DataFrame):     list of variables objects
+            jobid_for_restart (int):    job ID(s) detected for restart
+
+        Returns:
+            jobid_for_restart:  ID(s) of the job(s) which the user wants to restart
+        """
+        print('>> Would you like to proceed?')
+        print('>> Alternatively please type the ID of the job from which you want to restart!')
+        print('>> Type "n" to abort.')
+
+        while True:
+            try:
+                answer = input('>> Please type "y", "n" or job ID(s) (int) >> ')
+            except SyntaxError:
+                answer = None
+
+            if answer.lower() == 'y':
+                return jobid_for_restart
+            elif answer.lower() == 'n':
+                return None
+            elif answer is None:
+                print('>> Empty input! Only "y", "n" or job ID(s) (int) are valid inputs!')
+                print('>> Try again!')
+            else:
+                try:
+                    jobid_from_user = int(answer)
+                    if jobid_from_user <= samples.size:
+                        print(f'>> You chose a restart from job {jobid_from_user}.')
+                        jobid_for_restart = jobid_from_user
+                        return jobid_for_restart
+                    else:
+                        print(f'>> Your chosen job ID {jobid_from_user} is out of range.')
+                        print('>> Try again!')
+                except ValueError:
+                    try:
+                        jobid_from_user = np.array([int(jobid) for jobid in answer.split()])
+                        valid_id = True
+                        for jobid in jobid_from_user:
+                            if jobid <= samples.size:
+                                valid_id = True
+                                pass
+                            else:
+                                valid_id = False
+                                print(f'>> Your chosen job ID {jobid} is out of range.')
+                                print('>> Try again!')
+                                break
+                        if valid_id:
+                            print(f'>> You chose a restart of jobs {jobid_from_user}.')
+                            return jobid_from_user
+                    except IndexError:
+                        print(
+                            f'>> The input "{answer}" is not an appropriate choice! '
+                            f'>> Only "y", "n" or a job ID(s) (int) are valid inputs!'
+                        )
+                        print('>> Try again!')
+
+    def _check_jobs_in_db(self):
+        """Check jobs in database and find the job with the smallest job ID in the database.
+
+        Returns:
+            is_every_job_in_db (boolean):   true if smallest job ID in database is 1
+            jobid_smallest_in_db (int):     smallest job ID in database
+        """
+        jobs = self.load_jobs()
+
+        jobid_smallest_in_db = min([job['id'] for job in jobs])
+        is_every_job_in_db = jobid_smallest_in_db == 1
+
+        return is_every_job_in_db, jobid_smallest_in_db
+
+    def _find_block_restart(self, samples):
+        """Find index for block-restart.
+
+        Args:
+            samples (DataFrame):     list of variables objects
+
+        Returns:
+            jobid_for_block_restart (int):  index for block-restart of failed jobs
+        """
+        # Find number of subdirectories in output directory
+        if self.connect_to_resource:
+            command_list = [
+                'ssh',
+                self.connect_to_resource,
+                '"cd',
+                self.output_dir,
+                '; ls -l | grep ' '"^d" | wc -l "',
+            ]
+        else:
+            command_list = ['cd', self.output_dir, '; ls -l | grep ' '"^d" | wc -l']
+        command_string = ' '.join(command_list)
+        str_number_of_subdirectories, _, _ = run_subprocess(command_string)
+        number_of_subdirectories = (
+            int(str_number_of_subdirectories) if str_number_of_subdirectories else 0
+        )
+        assert (
+            number_of_subdirectories != 0
+        ), "You chose restart_from_finished simulations, but your output folder is empty. "
+
+        if number_of_subdirectories < samples.size:
+            # Start from (number of subdirectories) + 1
+            jobid_start_search = int(number_of_subdirectories) + 1
+        else:
+            jobid_start_search = samples.size
+
+        jobid_for_block_restart = None
+        jobid_for_restart_found = False
+        # Loop backwards to find first completed job
+        for jobid in range(jobid_start_search, -1, -1):
+            # Loop over all available resources
+            for resource_name, resource in self.resources.items():
+                current_job, process_id = self._get_current_job(
+                    samples, resource, resource_name, jobid
+                )
+
+                assert process_id == 0, "Error: Process ID in find_block_restart must be 0."
+
+                try:
+                    if current_job['result'].size == 0:
+                        # Empty result
+                        pass
+                    else:
+                        # Last finished job -> restart from next job
+                        jobid_for_block_restart = jobid + 1
+                        jobid_for_restart_found = True
+                        break
+                except (KeyError, AttributeError):
+                    # No result
+                    pass
+
+            if jobid_for_restart_found:
+                break
+
+        # If jobid for block-restart out of range -> no restart
+        if jobid_for_block_restart > samples.size:
+            jobid_for_block_restart = None
+
+        # Get user input for block-restart
+        if jobid_for_block_restart is not None:
+            print(f'>> Block-restart detected for job #{jobid_for_block_restart}. ')
+            jobid_for_block_restart = self._get_user_input_for_restart(
+                samples, jobid_for_block_restart
+            )
+            if (not isinstance(jobid_for_block_restart, int)) and (
+                jobid_for_block_restart is not None
+            ):
+                raise AssertionError('Only one job ID allowed for block-restart. ')
+        else:
+            print('>> No block-restart detected.')
+
+        return jobid_for_block_restart
+
+    def _load_missing_jobs_to_db(self, samples, jobid_end):
+        """Load missing jobs to database 1, ..., jobid_end.
+
+        Args:
+            samples (DataFrame):     list of variables objects
+            jobid_end (int):              index of job where to stop loading results
+
+        Returns:
+            jobid_for_single_restart:     array with indices of failed jobs and missing results
+        """
+        jobid_for_single_restart = []
+
+        for jobid in range(1, jobid_end):
+            for resource_name, resource in self.resources.items():
+                current_job, process_id = self._get_current_job(
+                    samples, resource, resource_name, jobid
+                )
+
+                assert process_id == 0, "Error: Process ID in load_missing_jobs_to_db must be 0."
+
+                try:
+                    if current_job['result'].size == 0:
+                        # Empty result
+                        jobid_for_single_restart = np.append(jobid_for_single_restart, int(jobid))
+                except (KeyError, AttributeError):
+                    # No result
+                    jobid_for_single_restart = np.append(jobid_for_single_restart, int(jobid))
+
+        # Get user input for restart of single jobs
+        if len(jobid_for_single_restart) == 0:
+            print('>> No restart of single jobs detected.')
+            jobs = self.load_jobs()
+            print_resources_status(self.resources, jobs)
+        else:
+            print(
+                f'>> Single restart detected for job(s) #',
+                jobid_for_single_restart.astype(int),
+                '.',
+                sep='',
+            )
+            jobid_for_single_restart = self._get_user_input_for_restart(
+                samples, jobid_for_single_restart
+            )
+
+        return jobid_for_single_restart
+
+    def _manage_job_submission(self, samples, jobid_range):
+        """Iterate over samples and manage submission of jobs.
+
+        Args:
+            samples (DataFrame):     list of variables objects
+            jobid_range (range):     range of job IDs which are submitted
+        """
+        jobs = self.load_jobs()
+
+        for jobid in jobid_range:
+            processed_suggestion = False
+            while not processed_suggestion:
+                # Loop over all available resources
+                for resource_name, resource in self.resources.items():
+                    if resource.accepting_jobs(jobs):
+                        variables = samples.loc[jobid][0]
+                        try:
+                            current_job = next(job for job in jobs if job['id'] == jobid)
+                        except (StopIteration, IndexError):
+                            current_job = self.create_new_job(variables, resource_name, jobid)
+
+                        current_job['status'] = 'pending'
+                        self.save_job(current_job)
+
+                        # Submit the job to the appropriate resource
+                        restart_flag = False
+                        process_id = self.attempt_dispatch(resource, current_job, restart_flag)
+
+                        # Set the status of the job appropriately (successfully submitted or not)
+                        if process_id is None:
+                            current_job['status'] = 'broken'
+                        else:
+                            current_job['status'] = 'pending'
+                            current_job['proc_id'] = process_id
+
+                        processed_suggestion = True
+                        jobs = self.load_jobs()
+                        print_resources_status(self.resources, jobs)
+
+                    else:
+                        time.sleep(self.polling_time)
+                        jobs = self.load_jobs()
+
+        return
+
+    def _get_current_job(self, samples, resource, resource_name, job_id):
+        """Get the current job with ID (job_id) from database or from output directory.
+
+        Args:
+            samples (DataFrame):     list of variables objects
+            resource (Resource object): computing resource
+            resource_name (str):  name of computing resource
+            job_id (int):      job ID
+
+        Returns:
+            current job (dict):    current job with ID (job_id)
+            process_id (int):      0 if loaded from database or output directory
+        """
+        variables = samples.loc[job_id][0]
+        jobs = self.load_jobs()
+
+        try:
+            # Job already in database
+            current_job = next(job for job in jobs if job['id'] == job_id)
+            process_id = 0
+        except StopIteration:
+            # Job not in database:
+            # load result from output directory into database
+            current_job = self.create_new_job(variables, resource_name, job_id)
+            restart_flag = True
+            process_id = self.attempt_dispatch(resource, current_job, restart_flag)
+
+            time.sleep(self.polling_time)
+            jobs = self.load_jobs()
+            current_job = next(job for job in jobs if job['id'] == job_id)
+
+        return current_job, process_id
