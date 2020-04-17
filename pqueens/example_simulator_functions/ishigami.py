@@ -1,6 +1,17 @@
+"""
+Ishigami function is a three dimensional test function for sensitvity analysis and UQ
+
+It is nonlinear and nonmonoton.
+"""
+
 import numpy as np
 
-def ishigami(x1, x2, x3, p1=None, p2=None):
+# default parameter values
+P1 = 7
+P2 = 0.1
+
+
+def ishigami(x1, x2, x3, p1=P1, p2=P2):
     """ Three dimensional benchmark function
 
     Three dimensional benchmark function from [2] used for UQ because it
@@ -47,20 +58,107 @@ def ishigami(x1, x2, x3, p1=None, p2=None):
         [5] Sobol, I. M., & Levitan, Y. L. (1999). On the use of variance
             reducing multipliers in Monte Carlo computations of a global
             sensitivity index. Computer Physics Communications, 117(1), 52-61.
-
     """
 
-    if p1 is None:
-        p1 = 7
-    if p2 is None:
-        p2 = 0.1
-
-
     term1 = np.sin(x1)
-    term2 = p1 * (np.sin(x2))**2
-    term3 = p2 * x3**4 * np.sin(x1)
+    term2 = p1 * (np.sin(x2)) ** 2
+    term3 = p2 * x3 ** 4 * np.sin(x1)
 
     return term1 + term2 + term3
+
+
+def variance(p1=P1, p2=P2):
+    """ Variance of Ishigami test funcion.
+
+    according to (50) in [1].
+
+    [1] Homma, T., & Saltelli, A. (1996). Importance measures in global
+    sensitivity analysis of nonlinear models. Reliability Engineering &
+    System Safety, 52(1), 1–17.
+    https://doi.org/10.1016/0951-8320(96)00002-6
+    Args:
+        p1 (float): Coefficient (optional), with default value 7
+        p2 (float): Coefficient (optional), with default value 0.1
+
+    Returns:
+        float : Value of variance of ishigami function
+    """
+    return 0.125 * p1 ** 2 + 0.2 * p2 * np.pi ** 4 + p2 ** 2 * np.pi ** 8 / 18 + 0.5
+
+
+def first_effect_variance(p1=P1, p2=P2):
+    """ Total variance of Ishigami test funcion.
+
+    according to (50)-(53) in [1].
+
+    [1] Homma, T., & Saltelli, A. (1996). Importance measures in global
+    sensitivity analysis of nonlinear models. Reliability Engineering &
+    System Safety, 52(1), 1–17.
+    https://doi.org/10.1016/0951-8320(96)00002-6
+    Args:
+        p1 (float): Coefficient (optional), with default value 7
+        p2 (float): Coefficient (optional), with default value 0.1
+
+    Returns:
+        float : Value of first effect (conditional) variance of ishigami function
+    """
+    V1 = 0.2 * p2 * np.pi ** 4 + 0.02 * p2 ** 2 * np.pi ** 8 + 0.5
+    V2 = 0.125 * p1 ** 2
+    V3 = 0
+    return np.array([V1, V2, V3])
+
+
+def first_order_indices(p1=P1, p2=P2):
+    """ First order Sobol' indices of Ishigami test funcion.
+
+    according to (50)-(53) in [1].
+
+    [1] Homma, T., & Saltelli, A. (1996). Importance measures in global
+    sensitivity analysis of nonlinear models. Reliability Engineering &
+    System Safety, 52(1), 1–17.
+    https://doi.org/10.1016/0951-8320(96)00002-6
+    Args:
+        p1 (float): Coefficient (optional), with default value 7
+        p2 (float): Coefficient (optional), with default value 0.1
+
+    Returns:
+        float : analytical values of first order Sobol indices of Ishigami function
+    """
+    V = variance(p1=p1, p2=p2)
+    Vi = first_effect_variance(p1=p1, p2=p2)
+    return Vi / V
+
+
+def total_order_indices(p1=P1, p2=P2):
+    """ Total order Sobol' indices of Ishigami test funcion.
+
+    according to (50)-(57) in [1].
+
+    [1] Homma, T., & Saltelli, A. (1996). Importance measures in global
+    sensitivity analysis of nonlinear models. Reliability Engineering &
+    System Safety, 52(1), 1–17.
+    https://doi.org/10.1016/0951-8320(96)00002-6
+    Args:
+        p1 (float): Coefficient (optional), with default value 7
+        p2 (float): Coefficient (optional), with default value 0.1
+
+    Returns:
+        float : analytical values of total order Sobol indices of Ishigami function
+    """
+    V = variance(p1=p1, p2=p2)
+    Vi = first_effect_variance(p1=p1, p2=p2)
+    V1 = Vi[0]
+    V2 = Vi[1]
+    V3 = Vi[2]
+    V12 = 0
+    V13 = p2 ** 2 * np.pi ** 8 * (1.0 / 18.0 - 0.02)
+    V23 = 0
+    V123 = 0
+    VT1 = V1 + V12 + V13 + V123
+    VT2 = V2 + V12 + V23 + V123
+    VT3 = V3 + V13 + V23 + V123
+    return np.array([VT1, VT2, VT3]) / V
+
 
 def main(job_id, params):
     """ Interface to ishigami function

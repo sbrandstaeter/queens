@@ -6,12 +6,22 @@ import pytest
 import unittest
 
 import pqueens.example_simulator_functions.agawal as agawal
-import pqueens.example_simulator_functions.branin_hifi as branin_hifi
-import pqueens.example_simulator_functions.branin_medfi as branin_medfi
-import pqueens.example_simulator_functions.branin_lofi as branin_lofi
 
-import pqueens.example_simulator_functions.perdikaris_1dsin_lofi as perdikaris_1dsin_lofi
-import pqueens.example_simulator_functions.perdikaris_1dsin_hifi as perdikaris_1dsin_hifi
+import pqueens.example_simulator_functions.borehole_hifi as borehole_hifi
+import pqueens.example_simulator_functions.borehole_lofi as borehole_lofi
+
+import pqueens.example_simulator_functions.branin_hifi as branin_hifi
+import pqueens.example_simulator_functions.branin_lofi as branin_lofi
+import pqueens.example_simulator_functions.branin_medfi as branin_medfi
+
+import pqueens.example_simulator_functions.currin88_hifi as currin88_hifi
+import pqueens.example_simulator_functions.currin88_lofi as currin88_lofi
+
+import pqueens.example_simulator_functions.ishigami as ishigami
+
+import pqueens.example_simulator_functions.ma2009 as ma2009
+
+import pqueens.example_simulator_functions.oakley_ohagan2004 as oakley_ohagan2004
 
 import pqueens.example_simulator_functions.park91a_hifi as park91a_hifi
 import pqueens.example_simulator_functions.park91a_lofi as park91a_lofi
@@ -19,15 +29,8 @@ import pqueens.example_simulator_functions.park91a_lofi as park91a_lofi
 import pqueens.example_simulator_functions.park91b_hifi as park91b_hifi
 import pqueens.example_simulator_functions.park91b_lofi as park91b_lofi
 
-import pqueens.example_simulator_functions.oakley_ohagan2004 as oakley_ohagan2004
-
-import pqueens.example_simulator_functions.ma2009 as ma2009
-
-import pqueens.example_simulator_functions.currin88_hifi as currin88_hifi
-import pqueens.example_simulator_functions.currin88_lofi as currin88_lofi
-
-import pqueens.example_simulator_functions.borehole_hifi as borehole_hifi
-import pqueens.example_simulator_functions.borehole_lofi as borehole_lofi
+import pqueens.example_simulator_functions.perdikaris_1dsin_hifi as perdikaris_1dsin_hifi
+import pqueens.example_simulator_functions.perdikaris_1dsin_lofi as perdikaris_1dsin_lofi
 
 import pqueens.example_simulator_functions.sobol as sobol
 
@@ -558,5 +561,99 @@ def test_sobol_default_10dim_total_order_indices():
         ]
     )
     result = sobol.total_order_indices()
+
+    assert np.allclose(result, expected_result)
+
+
+@pytest.fixture(scope="module")
+def parameters_ishigami():
+    """ Possible parameters for Ishigami function. """
+    P1 = 7
+    P2 = 0.1
+
+    return dict(p1=P1, p2=P2)
+
+
+@pytest.fixture(scope="module")
+def input_ishigami():
+    """ Possible input vector for Ishigami function.. """
+    input_vector = {'x1': 0.1, 'x2': 0.23, 'x3': 0.4}
+    return input_vector
+
+
+@pytest.fixture(scope="module")
+def expected_result_ishigami():
+    return 0.4639052488541057
+
+
+def test_ishigami(parameters_ishigami, input_ishigami, expected_result_ishigami):
+    """ Test Ishigami function. """
+    P1 = parameters_ishigami["p1"]
+    P2 = parameters_ishigami["p2"]
+
+    result = ishigami.ishigami(*input_ishigami.values(), p1=P1, p2=P2)
+
+    assert np.allclose(result, expected_result_ishigami)
+
+
+def test_ishigami_default_parameter(input_ishigami, expected_result_ishigami):
+    """ Test Ishigami function with default parameters. """
+    result = ishigami.ishigami(*input_ishigami.values())
+
+    assert np.allclose(result, expected_result_ishigami)
+
+
+def test_ishigami_main_wrapper(input_ishigami, expected_result_ishigami):
+    """ Test Ishigami function main wrapper which uses default parameters. """
+    dummy_job_id = 666
+    result = ishigami.main(dummy_job_id, input_ishigami)
+
+    assert np.allclose(result, expected_result_ishigami)
+
+
+def test_ishigami_variance(parameters_ishigami):
+    """ Test variance of Ishigami function. """
+    P1 = parameters_ishigami["p1"]
+    P2 = parameters_ishigami["p2"]
+
+    expected_result = 13.844587940719254
+
+    result = ishigami.variance(p1=P1, p2=P2)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_ishigami_first_effect_variance(parameters_ishigami):
+    """ Test first effect variance Ishigami function. """
+    P1 = parameters_ishigami["p1"]
+    P2 = parameters_ishigami["p2"]
+
+    expected_result = np.array([4.34588802, 6.125, 0.0])
+
+    result = ishigami.first_effect_variance(p1=P1, p2=P2)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_ishigami_first_order_indices(parameters_ishigami):
+    """ Test first order indices Ishigami function. """
+    P1 = parameters_ishigami["p1"]
+    P2 = parameters_ishigami["p2"]
+
+    expected_result = np.array([0.3139051911478115, 0.4424111447900409, 0.0])
+
+    result = ishigami.first_order_indices(p1=P1, p2=P2)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_ishigami_total_order_indices(parameters_ishigami):
+    """ Test total order variance Ishigami function. """
+    P1 = parameters_ishigami["p1"]
+    P2 = parameters_ishigami["p2"]
+
+    expected_result = np.array([0.5575888552099593, 0.4424111447900409, 0.2436836640621477])
+
+    result = ishigami.total_order_indices(p1=P1, p2=P2)
 
     assert np.allclose(result, expected_result)
