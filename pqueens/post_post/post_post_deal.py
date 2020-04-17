@@ -54,8 +54,7 @@ class PostPostDEAL(PostPost):
         post_out = []
 
         try:
-            post_data = pd.read_csv(path, usecols=self.usecols,
-                                    sep=r'\s+', skiprows=self.skiprows)
+            post_data = pd.read_csv(path, usecols=self.usecols, sep=r'\s+', skiprows=self.skiprows)
             post_out = post_data[
                 (post_data.iloc[:, 0] >= 4) & (post_data.iloc[:, 0] <= 7)
             ].to_numpy()

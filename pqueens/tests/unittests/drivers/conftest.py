@@ -3,6 +3,7 @@ import pytest
 from pqueens.drivers.ansys_driver_native import AnsysDriverNative
 from pqueens.database.mongodb import MongoDB
 
+
 @pytest.fixture(scope='session')
 def job(tmpdir_factory):
     """ Generic job dictionary for testing drivers"""
@@ -98,8 +99,9 @@ def ansys_driver(driver_base_settings, mocker):
     driver_base_settings['address'] = 'localhost:27017'
     driver_base_settings['file_prefix'] = 'rst'
     driver_base_settings['output_scratch'] = 'rst'
-    my_driver = AnsysDriverNative(None, 'v15',  driver_base_settings)
+    my_driver = AnsysDriverNative(None, 'v15', driver_base_settings)
     return my_driver
+
 
 ########################################################################
 #########################   DOCKER   ###################################
@@ -119,6 +121,7 @@ def baci_docker_job(baci_job, tmpdir_factory):
 def docker_volume_map(job):
     volume_map = {job['expt_dir']: {'bind': job['expt_dir'], 'mode': 'rw'}}
     return volume_map
+
 
 ########################################################################
 #########################   DRIVER   ###################################

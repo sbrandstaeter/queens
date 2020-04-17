@@ -17,6 +17,7 @@ from pqueens.post_post.post_post_baci_shape import PostPostBACIShape
 def all_case_types(request):
     return request.param
 
+
 @pytest.fixture()
 def default_ppbacishapeclass(mocker):
     mocker.patch(
@@ -27,6 +28,7 @@ def default_ppbacishapeclass(mocker):
         'dummy_path', 1e01, 1e-03, '3d_full', False, True, 'dummy_prefix'
     )
     return pp
+
 
 @pytest.fixture()
 def vtkUnstructuredGridExample2d():
@@ -91,6 +93,7 @@ def vtkUnstructuredGridExample3d():
 
 
 ############## actual tests
+
 
 def test_init(mocker):
 
@@ -312,6 +315,7 @@ def test_create_mesh_and_intersect_vtk(
         [1.767766952966, 0.0, -0.499999999999], abs=10e-10
     )
 
+
 def test_stretch_vector(default_ppbacishapeclass):
 
     assert default_ppbacishapeclass.stretch_vector([1, 2, 3], [2, 4, 6], 2) == [
@@ -319,12 +323,14 @@ def test_stretch_vector(default_ppbacishapeclass):
         [4, 8, 12],
     ]
 
+
 def test_compute_distance(default_ppbacishapeclass):
 
     assert default_ppbacishapeclass.compute_distance(
         [[2, 4, 6], [1, 2, 3], [3, 6, 9]], [[0, 0, 0], [0.1, 0.2, 0.3]]
     ) == pytest.approx(np.sqrt(14), abs=10e-12)
 
+
 def test_create_UnstructuredGridFromEnsight(default_ppbacishapeclass):
-    #this method is basically vtk functions only. not really testable unless we mock every line
+    # this method is basically vtk functions only. not really testable unless we mock every line
     pass
