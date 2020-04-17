@@ -45,7 +45,7 @@ class OptimizationIterator(Iterator):
         max_feval,
         model,
         result_description,
-        verbose_output
+        verbose_output,
     ):
         super().__init__(model, global_settings)
 
@@ -131,7 +131,7 @@ class OptimizationIterator(Iterator):
             max_feval=max_feval,
             model=model,
             result_description=result_description,
-            verbose_output=verbose_output
+            verbose_output=verbose_output,
         )
 
     def eval_model(self):

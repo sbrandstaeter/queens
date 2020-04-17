@@ -12,8 +12,8 @@ class AnsysDriverNative(Driver):
 
     """
 
-    def __init__(self, custom_executable, ansys_version,  base_settings):
-        # TODO dunder init should not be called with dict 
+    def __init__(self, custom_executable, ansys_version, base_settings):
+        # TODO dunder init should not be called with dict
         super(AnsysDriverNative, self).__init__(base_settings)
         self.custom_executable = custom_executable
         self.ansys_version = ansys_version
@@ -87,7 +87,7 @@ class AnsysDriverNative(Driver):
                 "-j ",
                 str(self.experiment_name) + '_' + str(self.job_id),
                 "-s read -l en-us -t -d X11 > ",
-                self.output_file
+                self.output_file,
             ]
         elif ansys_version == 'v19':
             command_list = [

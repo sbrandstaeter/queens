@@ -46,6 +46,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.experiment_name = base_settings['experiment_name']
         self.experiment_dir = base_settings['experiment_dir']
         self.input_file = None
+        self.input_dic_1 = None
 
     @classmethod
     def from_config_create_driver(
@@ -68,6 +69,7 @@ class Driver(metaclass=abc.ABCMeta):
         from pqueens.drivers.baci_driver_native import BaciDriverNative
         from pqueens.drivers.navierstokes_native import NavierStokesNative
         from pqueens.drivers.baci_driver_deep import BaciDriverDeep
+        from pqueens.drivers.openfoam_driver_docker import OpenFOAMDriverDocker
 
         if abs_path is None:
             from pqueens.post_post.post_post import PostPost
@@ -90,6 +92,7 @@ class Driver(metaclass=abc.ABCMeta):
             'baci_native': BaciDriverNative,
             'navierstokes_native': NavierStokesNative,
             'baci_deep': BaciDriverDeep,
+            'openfoam_docker': OpenFOAMDriverDocker,
         }
         driver_version = config['driver']['driver_type']
         driver_class = driver_dict[driver_version]
@@ -183,8 +186,17 @@ class Driver(metaclass=abc.ABCMeta):
         # sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
         #                 % (start_time-self.job['submit time']))
 
-        # create actual input file with parsed parameters
-        inject(self.job['params'], self.template, self.input_file)
+        # create actual input file or dictionaries with parsed parameters
+        if self.input_dic_1 is None:
+            inject(self.job['params'], self.template, self.input_file)
+        else:
+            # set path to input dictionary No. 1 and inject
+            self.input_file = os.path.join(self.case_dir, self.input_dic_1)
+            inject(self.job['params'], self.input_file, self.input_file)
+
+            # set path to input dictionary No. 2 and inject
+            self.input_file = os.path.join(self.case_dir, self.input_dic_2)
+            inject(self.job['params'], self.input_file, self.input_file)
 
     def finish_job(self):
         """ Change status of job to completed in database """
@@ -250,6 +262,10 @@ class Driver(metaclass=abc.ABCMeta):
             self.result = None
             self.result = self.postpostprocessor.postpost_main(output_directory)
             sys.stderr.write("Got result %s\n" % (self.result))
+
+    def setup_mpi(self, ntasks):
+        """ Configure and set up the environment for multi_threats """
+        pass
 
     # ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod

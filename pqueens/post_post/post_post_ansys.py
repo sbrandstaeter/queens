@@ -26,8 +26,7 @@ class PostPostANSYS(PostPost):
 
         """
         self.usecols = usecols
-        super(PostPostANSYS, self).__init__(delete_data_flag,
-                                            file_prefix)
+        super(PostPostANSYS, self).__init__(delete_data_flag, file_prefix)
 
     @classmethod
     def from_config_create_post_post(cls, options):
@@ -58,8 +57,7 @@ class PostPostANSYS(PostPost):
             try:
                 post_data = pyansys.read_binary(filename)
                 nnum, qoi_array = post_data.nodal_solution(0)
-                quantity_of_interest = qoi_array[self.usecols[0],
-                                                 self.usecols[1]]
+                quantity_of_interest = qoi_array[self.usecols[0], self.usecols[1]]
                 post_out = np.append(post_out, quantity_of_interest)
                 # very simple error check
                 if not post_out:
