@@ -106,6 +106,7 @@ class OptimizationIterator(Iterator):
         constraints = list()
         if constraints_dict:
             for _, value in constraints_dict.items():
+
                 # evaluate string of lambda function into real lambda function
                 value['fun'] = eval(value['fun'])
                 constraints.append(value)

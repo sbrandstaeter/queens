@@ -47,6 +47,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from .monte_carlo_iterator import MonteCarloIterator
         from .morris_salib_wrapper_iterator import MorrisSALibIterator
         from pqueens.iterators.optimization_iterator import OptimizationIterator
+        from pqueens.iterators.baci_lm_iterator import BaciLMIterator
         from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .bmfmc_iterator import BMFMCIterator
