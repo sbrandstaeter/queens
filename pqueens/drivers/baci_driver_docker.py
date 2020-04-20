@@ -1,125 +1,144 @@
-import sys
+""" This should be a docstring """
+
 import os
-import importlib.util
-from pqueens.utils.injector import inject
 import docker
+from pqueens.drivers.driver import Driver
+from pqueens.utils.injector import inject
 
 
-def baci_driver_docker(job):
+class BaciDriverDocker(Driver):
+    """ Driver to run BACI in Docker container
+
+        Attributes:
+            mpi_config (dict): TODO unclear what this is needed for 
+
     """
-        Driver to run BACI simulation inside Docker container
+
+    def __init__(self, base_settings):
+        # TODO dunder init should not be called with dict
+        self.docker_image = base_settings['docker_image']
+        super(BaciDriverDocker, self).__init__(base_settings)
+        # self.mpi_config = {}
+
+    @classmethod
+    def from_config_create_driver(cls, config, base_settings, workdir=None):
+        """ Create Driver from input file
 
         Args:
-            job(dict): Dict containing all information to run the simulation
+            config (dict):          Input options
+            base_settings (dict):   Second dict with input options TODO should probably be removed
+            workdir (str):          Probably not used TODO remove 
 
         Returns:
-            float: result
-    """
+            driver: BaciDriverDocker object
+        """
+        base_settings['address'] = 'localhost:27017'
+        base_settings['docker_image'] = config['driver']['driver_params']['docker_image']
+        return cls(base_settings)
 
-    sys.stderr.write("Running BACI job.\n")
+    def setup_dirs_and_files(self):
+        """ Setup directory structure
 
-    # Add directory to the system path.
-    sys.path.append(os.path.realpath(job['expt_dir']))
+            Args:
+                driver_options (dict): Options dictionary
 
-    # Change into the directory.
-    os.chdir(job['expt_dir'])
-    sys.stderr.write("Changed into dir %s\n" % (os.getcwd()))
+            Returns:
+                str, str, str: Docker container name, case run script, case directory
+        """
+        # extract name of Docker image and potential sudo
+        docker_image_list = self.docker_image.split()
+        self.image_name = docker_image_list[0]
+        if (len(docker_image_list)) == 2:
+            self.sudo = docker_image_list[1]
+        else:
+            self.sudo = ''
 
-    # get params dict
-    params = job['params']
-    driver_params = job['driver_params']
+        # define destination directory
+        dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
 
-    # assemble input file name
-    baci_input_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id']) + '.dat'
-    baci_output_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id'])
+        self.output_directory = os.path.join(dest_dir, "output")
+        if not os.path.isdir(self.output_directory):
+            os.makedirs(self.output_directory)
 
-    sys.stderr.write("baci_input_file %s\n" % baci_input_file)
+        # create input file name
+        input_string = str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
+        self.input_file = os.path.join(dest_dir, input_string)
 
-    # create input file using injector
-    inject(params, driver_params['input_template'], baci_input_file)
+        # create output file name
+        output_string = str(self.experiment_name) + '_' + str(self.job_id)
+        self.output_file = os.path.join(self.output_directory, output_string)
 
-    # assemble baci run command
-    baci_cmd = driver_params['path_to_executable'] + ' ' + baci_input_file + ' ' + baci_output_file
+    def run_job(self):
+        """ Actual method to run the job on computing machine
+            using run_subprocess method from base class
+        """
+        # assemble BACI run command sttring
+        self.baci_run_command_string = self.assemble_baci_run_command_string()
 
-    # assemble volume map for docker container
-    volume_map = {job['expt_dir']: {'bind': job['expt_dir'], 'mode': 'rw'}}
+        # first alternative (used currently):
+        # explicitly assemble run command for Docker container
+        docker_run_command_string = self.assemble_docker_run_command_string()
 
-    # run BACI
-    temp_out = run_baci(driver_params['docker_container'], baci_cmd, volume_map)
-    print("Communicate run baci")
-    print(temp_out)
+        # run BACI in Docker container via subprocess
+        _, stderr, self.pid = self.run_subprocess(docker_run_command_string)
 
-    # Post-process BACI run
-    for i, post_process_option in enumerate(driver_params['post_process_options']):
-        post_cmd = (
-            driver_params['path_to_postprocessor']
-            + ' '
-            + post_process_option
-            + ' --file='
-            + baci_output_file
-            + ' --output='
-            + baci_output_file
-            + '_'
-            + str(i + 1)
-        )
-        temp_out = run_post_processing(driver_params['docker_container'], post_cmd, volume_map)
-        print("Communicate post-processing")
-        print(temp_out)
+        # second alternative (not used currently): use Docker SDK
+        # get Docker client
+        # client = docker.from_env()
 
-    # Call post post-processing script
-    result = run_post_post_processing(driver_params['post_post_script'], baci_output_file)
+        # assemble volume map for docker container
+        # volume_map = {self.experiment_dir: {'bind': self.experiment_dir, 'mode': 'rw'}}
 
-    return result
+        # run BACI in Docker container via SDK
+        # stderr = client.containers.run(self.image_name,
+        #                               self.baci_run_command_string,
+        #                               remove=True,
+        #                               volumes=volume_map,
+        #                               stdout=False,
+        #                               stderr=True)
 
+        # detection of failed jobs
+        if stderr:
+            self.result = None  # This is necessary to detect failed jobs
+            self.job['status'] = 'failed'
 
-def run_baci(container_name, baci_cmd, volume_map):
-    """ Run BACI inside docker container
+    def assemble_baci_run_command_string(self):
+        """  Assemble BACI run command list
 
-    Args:
-        container_name (string): Name of container to run
-        baci_cmd (string):       Command to run BACI
-        volume_map (string):     Define which folders get mapped into container
+            Returns:
+                list: command list to execute BACI
 
-    Returns:
-        string: terminal output
-    """
-    client = docker.from_env()
-    temp_out = client.containers.run(container_name, baci_cmd, volumes=volume_map)
-    return temp_out
+        """
+        # set MPI command
+        mpi_command = '/usr/lib64/openmpi/bin/mpirun -np'
 
+        command_list = [
+            mpi_command,
+            str(self.num_procs),
+            self.executable,
+            self.input_file,
+            self.output_file,
+        ]
 
-def run_post_processing(container_name, post_cmd, volume_map):
-    """ Run post processing inside docker container
+        return ' '.join(filter(None, command_list))
 
-    Args:
-        container_name (string): Name of container to run
-        post_cmd (string):       Command to run post processing
-        volume_map (string):     Define which folders get mapped into container
+    def assemble_docker_run_command_string(self):
+        """  Assemble command list for BACI runin Docker container
 
-    Returns:
-        string: terminal output
-    """
-    client = docker.from_env()
-    temp_out = client.containers.run(container_name, post_cmd, volumes=volume_map)
-    return temp_out
+            Returns:
+                list: command list to execute BACI in Docker container
 
+        """
+        command_list = [
+            self.sudo,
+            " docker run -i --rm -v ",
+            self.experiment_dir,
+            ":",
+            self.experiment_dir,
+            " ",
+            self.image_name,
+            " ",
+            self.baci_run_command_string,
+        ]
 
-def run_post_post_processing(post_post_script, baci_output_file):
-    """ Run script to extract results from monitor file
-
-    Args:
-        post_post_script (string): name of script to run
-        baci_output_file (string): name of file to use
-
-    Returns:
-        float: actual simulation result
-    """
-    # call post post process script to extract result from monitor file
-    spec = importlib.util.spec_from_file_location("module.name", post_post_script)
-    post_post_proc = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(post_post_proc)
-    result = post_post_proc.run(baci_output_file)
-
-    sys.stderr.write("Got result %s\n" % (result))
-
-    return result
+        return ''.join(filter(None, command_list))

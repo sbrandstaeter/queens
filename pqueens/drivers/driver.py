@@ -69,6 +69,7 @@ class Driver(metaclass=abc.ABCMeta):
         from pqueens.drivers.baci_driver_native import BaciDriverNative
         from pqueens.drivers.navierstokes_native import NavierStokesNative
         from pqueens.drivers.baci_driver_deep import BaciDriverDeep
+        from pqueens.drivers.baci_driver_docker import BaciDriverDocker
         from pqueens.drivers.openfoam_driver_docker import OpenFOAMDriverDocker
 
         if abs_path is None:
@@ -92,6 +93,7 @@ class Driver(metaclass=abc.ABCMeta):
             'baci_native': BaciDriverNative,
             'navierstokes_native': NavierStokesNative,
             'baci_deep': BaciDriverDeep,
+            'baci_docker': BaciDriverDocker,
             'openfoam_docker': OpenFOAMDriverDocker,
         }
         driver_version = config['driver']['driver_type']
