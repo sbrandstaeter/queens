@@ -104,26 +104,6 @@ def ansys_driver(driver_base_settings, mocker):
 
 
 ########################################################################
-#########################   DOCKER   ###################################
-########################################################################
-@pytest.fixture(scope='module')
-def baci_docker_job(baci_job, tmpdir_factory):
-    """ Job dictionary for testing BACI docker driver"""
-
-    baci_job['driver_params']['docker_container'] = str(
-        tmpdir_factory.mktemp('docker_container_dir').join('container')
-    )
-
-    return baci_job
-
-
-@pytest.fixture(scope='module')
-def docker_volume_map(job):
-    volume_map = {job['expt_dir']: {'bind': job['expt_dir'], 'mode': 'rw'}}
-    return volume_map
-
-
-########################################################################
 #########################   DRIVER   ###################################
 ########################################################################
 @pytest.fixture(scope='session')
