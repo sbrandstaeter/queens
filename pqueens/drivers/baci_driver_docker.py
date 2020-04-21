@@ -99,7 +99,7 @@ class BaciDriverDocker(Driver):
 
         # detection of failed jobs
         if stderr:
-            self.result = None  # This is necessary to detect failed jobs
+            self.result = None
             self.job['status'] = 'failed'
 
     def assemble_baci_run_command_string(self):

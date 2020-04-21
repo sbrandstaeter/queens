@@ -61,20 +61,39 @@ class BaciDriverNative(Driver):
         """ Actual method to run the job on computing machine
             using run_subprocess method from base class
         """
-        # assemble run command
-        command_list = [
-            self.executable,
-            self.input_file,
-            self.output_file,
-        ]  # This is already within pbs
-        # Here we call directly the executable inside the container not the jobscript!
-        command_string = ' '.join(filter(None, command_list))
+        # assemble run command sttring
+        command_string = self.assemble_command_string()
+
+        # run BACI via subprocess
         stdout, stderr, self.pid = self.run_subprocess(command_string)
+
         # print the standard output of the subprocess to file (for debugging)
         with open(self.output_file + "_subprocess_stdout.txt", "w") as text_file:
             print(stdout, file=text_file)
         with open(self.output_file + "_subprocess_stderr.txt", "w") as text_file:
             print(stderr, file=text_file)
+
+        # detection of failed jobs
         if stderr:
-            self.result = None  # This is necessary to detect failed jobs
+            self.result = None
             self.job['status'] = 'failed'
+
+    def assemble_command_string(self):
+        """  Assemble BACI run command list
+
+            Returns:
+                list: command list to execute BACI
+
+        """
+        # set MPI command
+        mpi_command = 'mpirun -np'
+
+        command_list = [
+            mpi_command,
+            str(self.num_procs),
+            self.executable,
+            self.input_file,
+            self.output_file,
+        ]
+
+        return ' '.join(filter(None, command_list))

@@ -107,7 +107,7 @@ class OpenFOAMDriverDocker(Driver):
 
         # detection of failed jobs
         if stderr:
-            self.result = None  # This is necessary to detect failed jobs
+            self.result = None
             self.job['status'] = 'failed'
 
     def assemble_command_string(self):
