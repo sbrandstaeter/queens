@@ -64,9 +64,12 @@ class AnsysDriverNative(Driver):
         # assemble run command
         command_string = self.assemble_command_string()
 
+        # run ANSYS via subprocess
         _, stderr, self.pid = self.run_subprocess(command_string)
+
+        # detection of failed jobs
         if stderr:
-            self.result = None  # This is necessary to detect failed jobs
+            self.result = None
             self.job['status'] = 'failed'
 
     def assemble_command_string(self):

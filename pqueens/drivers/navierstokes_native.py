@@ -70,11 +70,33 @@ class NavierStokesNative(Driver):
         # for the navierstokes solver)
         inject({"output_dir": self.output_navierstokes}, self.input_file, self.input_file)
 
-        # assemble run command
-        command_list = [self.executable, self.input_file]
-        command_string = ' '.join(filter(None, command_list))
+        # assemble run command sttring
+        command_string = self.assemble_command_string()
+
+        # run BACI via subprocess
         stdout, stderr, self.pid = self.run_subprocess(command_string)
 
+        # detection of failed jobs
         if stderr:
             self.result = None
             self.job['status'] = 'failed'
+
+    def assemble_command_string(self):
+        """  Assemble BACI run command list
+
+            Returns:
+                list: command list to execute BACI
+
+        """
+        # set MPI command
+        mpi_command = 'mpirun -np'
+
+        command_list = [
+            mpi_command,
+            str(self.num_procs),
+            self.executable,
+            self.input_file,
+            self.output_file,
+        ]
+
+        return ' '.join(filter(None, command_list))
