@@ -1,11 +1,15 @@
 import time
 import numpy as np
 import pandas as pd
+import sys
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.run_subprocess import run_subprocess
+
+this = sys.modules[__name__]
+this.restart_flag = None
 
 
 class JobInterface(Interface):
@@ -100,9 +104,9 @@ class JobInterface(Interface):
 
         # TODO: This is not nice -> should be solved solemnly over Driver class
         output_dir = config['driver']['driver_params']["experiment_dir"]
-        restart_from_finished_simulation = config['driver']['driver_params'][
-            'restart_from_finished_simulation'
-        ]
+        restart_from_finished_simulation = config['driver']['driver_params'].get(
+            'restart_from_finished_simulation', False
+        )
 
         # TODO: This is not nice
         connect = list(resources.values())[0].scheduler.connect_to_resource
@@ -130,7 +134,7 @@ class JobInterface(Interface):
         Second variant which takes the input samples as argument
 
         Args:
-            samples (list):         list of variables objects
+            samples (list):         realization/samples of QUEENS simulation input variables
 
         Returns:
             np.array,np.array       two arrays containing the inputs from the
@@ -168,7 +172,7 @@ class JobInterface(Interface):
         else:
             return self._manage_jobs
 
-    def attempt_dispatch(self, resource, new_job, restart_flag):
+    def attempt_dispatch(self, resource, new_job):
         """ Attempt to dispatch job multiple times
 
         Submitting jobs to the queue sometimes fails, hence we try multiple times
@@ -177,7 +181,6 @@ class JobInterface(Interface):
         Args:
             resource (resource object): Resource to submit job to
             new_job (dict):             Dictionary with job
-            restart_flag (boolean):
 
         Returns:
             int: Process ID of submitted job if successfull, None otherwise
@@ -190,7 +193,7 @@ class JobInterface(Interface):
                 time.sleep(0.5)
 
             # Submit the job to the appropriate resource
-            process_id = resource.attempt_dispatch(self.batch_number, new_job, restart_flag)
+            process_id = resource.attempt_dispatch(self.batch_number, new_job)
             num_tries += 1
 
         return process_id
@@ -338,7 +341,7 @@ class JobInterface(Interface):
         perform remaining restarts if necessary.
 
         Args:
-            samples (DataFrame):     list of variables objects
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
         """
         # Check results in database
         number_of_results_in_db, jobid_missing_results_in_db = self._check_results_in_db(samples)
@@ -375,7 +378,7 @@ class JobInterface(Interface):
         """Manage regular submission of jobs without restart.
 
         Args:
-            samples (DataFrame):     list of variables objects
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
         """
         idx_range = range(1, samples.size + 1, 1)
         self._manage_job_submission(samples, idx_range)
@@ -384,7 +387,7 @@ class JobInterface(Interface):
         """Check complete results in database.
 
         Args:
-            samples (DataFrame):     list of variables objects
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
 
         Returns:
             number_of_results_in_db (int):              number of results in database
@@ -395,12 +398,9 @@ class JobInterface(Interface):
         number_of_results_in_db = 0
         jobid_missing_results_in_db = []
         for job in jobs:
-            try:
-                if job['result'].size != 0:
-                    number_of_results_in_db += 1
-                else:
-                    jobid_missing_results_in_db = np.append(jobid_missing_results_in_db, job['id'])
-            except (AttributeError, KeyError):
+            if job.get('result', np.empty(shape=0)).size != 0:
+                number_of_results_in_db += 1
+            else:
                 jobid_missing_results_in_db = np.append(jobid_missing_results_in_db, job['id'])
 
         # Restart single failed jobs
@@ -431,7 +431,7 @@ class JobInterface(Interface):
             int int int     several job IDs
 
         Args:
-            samples (DataFrame):     list of variables objects
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
             jobid_for_restart (int):    job ID(s) detected for restart
 
         Returns:
@@ -505,7 +505,7 @@ class JobInterface(Interface):
         """Find index for block-restart.
 
         Args:
-            samples (DataFrame):     list of variables objects
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
 
         Returns:
             jobid_for_block_restart (int):  index for block-restart of failed jobs
@@ -548,18 +548,11 @@ class JobInterface(Interface):
 
                 assert process_id == 0, "Error: Process ID in find_block_restart must be 0."
 
-                try:
-                    if current_job['result'].size == 0:
-                        # Empty result
-                        pass
-                    else:
-                        # Last finished job -> restart from next job
-                        jobid_for_block_restart = jobid + 1
-                        jobid_for_restart_found = True
-                        break
-                except (KeyError, AttributeError):
-                    # No result
-                    pass
+                if current_job.get('result', np.empty(shape=0)).size != 0:
+                    # Last finished job -> restart from next job
+                    jobid_for_block_restart = jobid + 1
+                    jobid_for_restart_found = True
+                    break
 
             if jobid_for_restart_found:
                 break
@@ -587,8 +580,8 @@ class JobInterface(Interface):
         """Load missing jobs to database 1, ..., jobid_end.
 
         Args:
-            samples (DataFrame):     list of variables objects
-            jobid_end (int):              index of job where to stop loading results
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+            jobid_end (int):         index of job where to stop loading results
 
         Returns:
             jobid_for_single_restart:     array with indices of failed jobs and missing results
@@ -603,11 +596,7 @@ class JobInterface(Interface):
 
                 assert process_id == 0, "Error: Process ID in load_missing_jobs_to_db must be 0."
 
-                try:
-                    if current_job['result'].size == 0:
-                        # Empty result
-                        jobid_for_single_restart = np.append(jobid_for_single_restart, int(jobid))
-                except (KeyError, AttributeError):
+                if current_job.get('result', np.empty(shape=0)).size == 0:
                     # No result
                     jobid_for_single_restart = np.append(jobid_for_single_restart, int(jobid))
 
@@ -633,7 +622,7 @@ class JobInterface(Interface):
         """Iterate over samples and manage submission of jobs.
 
         Args:
-            samples (DataFrame):     list of variables objects
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
             jobid_range (range):     range of job IDs which are submitted
         """
         jobs = self.load_jobs()
@@ -654,8 +643,8 @@ class JobInterface(Interface):
                         self.save_job(current_job)
 
                         # Submit the job to the appropriate resource
-                        restart_flag = False
-                        process_id = self.attempt_dispatch(resource, current_job, restart_flag)
+                        this.restart_flag = False
+                        process_id = self.attempt_dispatch(resource, current_job)
 
                         # Set the status of the job appropriately (successfully submitted or not)
                         if process_id is None:
@@ -678,7 +667,7 @@ class JobInterface(Interface):
         """Get the current job with ID (job_id) from database or from output directory.
 
         Args:
-            samples (DataFrame):     list of variables objects
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
             resource (Resource object): computing resource
             resource_name (str):  name of computing resource
             job_id (int):      job ID
@@ -698,10 +687,9 @@ class JobInterface(Interface):
             # Job not in database:
             # load result from output directory into database
             current_job = self.create_new_job(variables, resource_name, job_id)
-            restart_flag = True
-            process_id = self.attempt_dispatch(resource, current_job, restart_flag)
+            this.restart_flag = True
+            process_id = self.attempt_dispatch(resource, current_job)
 
-            time.sleep(self.polling_time)
             jobs = self.load_jobs()
             current_job = next(job for job in jobs if job['id'] == job_id)
 

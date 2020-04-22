@@ -13,9 +13,11 @@ import random
 import subprocess
 import sys
 import time
+import threading
 from pprint import pprint
 from pqueens.utils.injector import inject
 from pqueens.drivers.driver import Driver
+import pqueens.interfaces.job_interface as job_interface
 from pqueens.utils.run_subprocess import run_subprocess
 
 
@@ -686,38 +688,34 @@ class Scheduler(metaclass=abc.ABCMeta):
                     )
                 print('All singularity images ok! Starting simulation on cluster...')
 
-    def submit(self, job_id, batch, restart_flag):
+    def submit(self, job_id, batch):
         """ Function to submit new job to scheduling software on a given resource
 
         Args:
             job_id (int):            ID of job to submit
             batch (int):             Batch number of job
-            restart_flag (bool):     true if restart is performed
 
         Returns:
             pid (int):               process id of job
 
         """
 
-        submitter = self.get_submitter(restart_flag)
+        submitter = self.get_submitter()
         pid = submitter(job_id, batch)
 
         return pid
 
-    def get_submitter(self, restart_flag):
+    def get_submitter(self):
         """Get function for submission of job.
 
         Which function should be used depends on whether or not restart is performed, on the
         computing resource and whether or not singularity is used.
 
-        Args:
-            restart_flag (bool):     true if restart is performed
-
         Returns:
             function object:         function for submission of job
 
         """
-        if restart_flag:
+        if job_interface.restart_flag:
             if self.remote_flag:
                 return self._restart_remote
             else:
@@ -849,7 +847,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         return driver_obj.pid
 
     def _submit_local_singularity(self, job_id, batch):
-        """Submit job locally with singualrity.
+        """Submit job locally with singularity.
 
         Args:
             job_id (int):    ID of job to submit
@@ -871,11 +869,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             remote_args,
         ]
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        # stdout, stderr, _ = run_subprocess(cmd_remote_main)
-        subprocess.Popen(
-            cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        time.sleep(self.polling_time)
+        stdout, stderr, _ = run_subprocess(cmd_remote_main)
+
         # PostPost run
         cmdlist_remote_main = [
             '/usr/bin/singularity run',
@@ -969,8 +964,6 @@ class Scheduler(metaclass=abc.ABCMeta):
             '--post=true',
         ]
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        subprocess.Popen(
-            cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
+        run_subprocess(cmd_remote_main)
 
         return 0

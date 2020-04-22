@@ -63,7 +63,7 @@ class PostPostBACI(PostPost):
         prefix_expr = '*' + self.file_prefix + '*'
         files_of_interest = os.path.join(self.output_dir, prefix_expr)
         post_files_list = glob.glob(files_of_interest)
-        post_out = []
+        post_out = np.empty(shape=0)
 
         for filename in post_files_list:
             try:
