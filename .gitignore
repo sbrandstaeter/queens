@@ -26,3 +26,6 @@ pqueens.egg-info
 # singularity images
 driver.simg
 hashfile.txt
+
+# ignore egg package files
+.eggs/
