@@ -21,9 +21,7 @@ def parse_resources_from_configuration(config):
         for resource_name, _ in config["resources"].items():
             global_settings = config.get("global_settings")
             exp_name = global_settings.get("experiment_name")
-            resources[resource_name] = resource_factory(resource_name,
-                                                        exp_name,
-                                                        config)
+            resources[resource_name] = resource_factory(resource_name, exp_name, config)
         return resources
     # no specified resources
     else:
@@ -52,11 +50,10 @@ def resource_factory(resource_name, exp_name, config):
 
     # create scheduler from config
     scheduler = Scheduler.from_config_create_scheduler(scheduler_name=scheduler_name, config=config)
-    # Create/update singulariy image in case of cluster job
+    # Create/update singularity image in case of cluster job
     scheduler.pre_run()
 
-    return Resource(resource_name, exp_name, scheduler, max_concurrent,
-                    max_finished_jobs)
+    return Resource(resource_name, exp_name, scheduler, max_concurrent, max_finished_jobs)
 
 
 def print_resources_status(resources, jobs):
@@ -68,7 +65,7 @@ def print_resources_status(resources, jobs):
     """
     sys.stderr.write('\nResources:      ')
     left_indent = 16
-    indentation = ' '*left_indent
+    indentation = ' ' * left_indent
     sys.stderr.write('NAME          PENDING    COMPLETE    FAILED\n')
     sys.stderr.write(indentation)
     sys.stderr.write('----          -------    --------    ------\n')
@@ -84,13 +81,14 @@ def print_resources_status(resources, jobs):
         total_pending += pending
         total_complete += complete
         total_failed += failed
-        sys.stderr.write("%s%-12.12s  %-9d  %-10d  %-9d\n" % (indentation,
-                                                              resource.name,
-                                                              pending, complete, failed))
-    sys.stderr.write("%s%-12.12s  %-9d  %-10d  %-9d\n" % (indentation, '*TOTAL*',
-                                                          total_pending,
-                                                          total_complete,
-                                                          total_failed))
+        sys.stderr.write(
+            "%s%-12.12s  %-9d  %-10d  %-9d\n"
+            % (indentation, resource.name, pending, complete, failed)
+        )
+    sys.stderr.write(
+        "%s%-12.12s  %-9d  %-10d  %-9d\n"
+        % (indentation, '*TOTAL*', total_pending, total_complete, total_failed)
+    )
     sys.stderr.write('\n')
 
 
@@ -125,14 +123,13 @@ class Resource(object):
         """
         self.name = name
         self.scheduler = scheduler
-        self.scheduler_class = type(scheduler).__name__   # stored just for printing
+        self.scheduler_class = type(scheduler).__name__  # stored just for printing
         self.max_concurrent = max_concurrent
         self.max_finished_jobs = max_finished_jobs
         self.exp_name = exp_name
 
         if len(self.exp_name) == 0:
-            sys.stderr.write("Warning: resource %s has no tasks assigned "
-                             " to it" % self.name)
+            sys.stderr.write("Warning: resource %s has no tasks assigned " " to it" % self.name)
 
     def filter_my_jobs(self, jobs):
         """ Take a list of jobs and filter those that are on this resource
@@ -225,8 +222,10 @@ class Resource(object):
         Args:
             jobs (list): List with jobs
         """
-        sys.stderr.write("%-12s: %5d pending %5d complete\n" %
-                         (self.name, self.num_pending(jobs), self.num_complete(jobs)))
+        sys.stderr.write(
+            "%-12s: %5d pending %5d complete\n"
+            % (self.name, self.num_pending(jobs), self.num_complete(jobs))
+        )
 
     def is_job_alive(self, job):  # TODO this method does not seem to be called
         """ Query if a particular job is alive?
@@ -258,9 +257,15 @@ class Resource(object):
 
         process_id = self.scheduler.submit(job['id'], batch)
         if process_id is not None:
-            sys.stderr.write('Submitted job %d with %s '
-                             '(process id: %d).\n' %
-                             (job['id'], self.scheduler_class, process_id))
+            if process_id != 0:
+                sys.stderr.write(
+                    'Submitted job %d with %s '
+                    '(process id: %d).\n' % (job['id'], self.scheduler_class, process_id)
+                )
+            elif process_id == 0:
+                sys.stderr.write(
+                    'Checked job %d for restart and loaded results into database.\n' % job['id']
+                )
         else:
             sys.stderr.write('Failed to submit job %d.\n' % job['id'])
 
