@@ -24,7 +24,7 @@ def main(args):
     parser.add_argument("--post", help="option for postprocessing", type=str)
     parser.add_argument("--workdir", help="working directory", type=str)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     job_id = args.job_id
     batch = args.batch
     port = args.port
@@ -63,4 +63,4 @@ def main(args):
 
 # ------------------------------ HELPER FUNCTIONS -----------------------------
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1]))
+    sys.exit(main(sys.argv[1:]))
