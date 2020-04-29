@@ -17,6 +17,8 @@ import pqueens.example_simulator_functions.branin_medfi as branin_medfi
 import pqueens.example_simulator_functions.currin88_hifi as currin88_hifi
 import pqueens.example_simulator_functions.currin88_lofi as currin88_lofi
 
+import pqueens.example_simulator_functions.gardner2014a as gardner2014a
+
 import pqueens.example_simulator_functions.ishigami as ishigami
 
 import pqueens.example_simulator_functions.ma2009 as ma2009
@@ -258,6 +260,12 @@ class TestBoreholeMultiFidelity(unittest.TestCase):
 
 
 @pytest.fixture(scope="module")
+def dummy_job_id():
+    """ A possible job id for the main wrappers. """
+    return 666
+
+
+@pytest.fixture(scope="module")
 def parameters_sobol_8dim():
     """ Possible parameters for 8 dimensional Sobol G function. """
     A = np.array([0, 1, 4.5, 9, 99, 99, 99, 99])
@@ -470,10 +478,9 @@ def test_sobol_default_10dim(input_sobol_10dim):
     assert np.allclose(result, expected_result)
 
 
-def test_sobol_main_wrapper(input_sobol_10dim):
+def test_sobol_main_wrapper(input_sobol_10dim, dummy_job_id):
     """ Test 10 dimensional Sobol G function called with main wrapper. """
     expected_result = 0.27670926062343376
-    dummy_job_id = 666
     result = sobol.main(dummy_job_id, input_sobol_10dim)
 
     assert np.allclose(result, expected_result)
@@ -603,9 +610,8 @@ def test_ishigami_default_parameter(input_ishigami, expected_result_ishigami):
     assert np.allclose(result, expected_result_ishigami)
 
 
-def test_ishigami_main_wrapper(input_ishigami, expected_result_ishigami):
+def test_ishigami_main_wrapper(input_ishigami, expected_result_ishigami, dummy_job_id):
     """ Test Ishigami function main wrapper which uses default parameters. """
-    dummy_job_id = 666
     result = ishigami.main(dummy_job_id, input_ishigami)
 
     assert np.allclose(result, expected_result_ishigami)
@@ -657,3 +663,35 @@ def test_ishigami_total_order_indices(parameters_ishigami):
     result = ishigami.total_order_indices(p1=P1, p2=P2)
 
     assert np.allclose(result, expected_result)
+
+
+@pytest.fixture(scope="module")
+def input_gardner2014a():
+    """ Possible input vector for gardner2014a function.. """
+    input_vector = {'x1': 1.234, 'x2': 0.666}
+    return input_vector
+
+
+def test_gardner2014a(input_gardner2014a):
+    """ Test Gardner2014a function. """
+
+    expected_y_result = 0.32925795427636007
+    expected_c_result = -0.32328956686350346
+
+    y_result, c_result = gardner2014a.gardner2014a(
+        input_gardner2014a["x1"], input_gardner2014a["x2"]
+    )
+
+    assert np.allclose(y_result, expected_y_result)
+    assert np.allclose(c_result, expected_c_result)
+
+
+def test_gardner2014a_main_wrapper(input_gardner2014a, dummy_job_id):
+    """ Test Gardner2014a function's main wrapper. """
+    expected_y_result = 0.32925795427636007
+    expected_c_result = -0.32328956686350346
+
+    y_result, c_result = gardner2014a.main(dummy_job_id, input_gardner2014a)
+
+    assert np.allclose(y_result, expected_y_result)
+    assert np.allclose(c_result, expected_c_result)
