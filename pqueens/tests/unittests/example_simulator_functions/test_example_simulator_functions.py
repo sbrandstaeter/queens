@@ -254,31 +254,6 @@ class TestBoreholeMultiFidelity(unittest.TestCase):
         )
 
 
-class TestSobol8Dim(unittest.TestCase):
-    def setUp(self):
-        self.params1 = {
-            'x1': 0.1,
-            'x2': 0.23,
-            'x3': 0.4,
-            'x4': 0.6,
-            'x5': 0.1,
-            'x6': 0.25,
-            'x7': 0.98,
-            'x8': 0.7,
-        }
-
-        self.dummy_id = 100
-
-    def test_vals_params(self):
-        actual_result = sobol_8dim.main(self.dummy_id, self.params1)
-
-        # print("actual_result {}".format(actual_result))
-
-        desired_result = 1.4119532907954928
-
-        self.assertAlmostEqual(actual_result, desired_result, places=8, msg=None, delta=None)
-
-
 @pytest.fixture(scope="module")
 def parameters_sobol_8dim():
     """ Possible parameters for 8 dimensional Sobol G function. """
