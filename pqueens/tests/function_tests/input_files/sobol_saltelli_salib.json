@@ -4,7 +4,7 @@
     "address"   : "localhost:27017"
   },
   "method": {
-    "method_name": "sa_saltelli",
+    "method_name": "sa_saltelli_salib",
     "method_options" :{
       "seed" : 42,
       "calc_second_order" : false,
