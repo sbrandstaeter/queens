@@ -258,8 +258,8 @@ class TestBoreholeMultiFidelity(unittest.TestCase):
 def parameters_sobol_8dim():
     """ Possible parameters for 8 dimensional Sobol G function. """
     A = np.array([0, 1, 4.5, 9, 99, 99, 99, 99])
-    ALPHA = np.array([1] * A.shape[0])
-    DELTA = np.array([0] * A.shape[0])
+    ALPHA = np.array([1.0] * A.shape[0])
+    DELTA = np.array([0.0] * A.shape[0])
 
     return dict(a=A, alpha=ALPHA, delta=DELTA)
 
@@ -396,10 +396,82 @@ def test_sobol_8dim_total_order_indices(parameters_sobol_8dim):
     assert np.allclose(result, expected_result)
 
 
+def test_sobol_negative_a_valueerror(parameters_sobol_8dim, input_sobol_8dim):
+    """ Test 10 dimensional Sobol G function raises ValueError with a<0 """
+    # test negative value
+    alpha = parameters_sobol_8dim["alpha"]
+    delta = parameters_sobol_8dim["delta"]
+    with pytest.raises(ValueError):
+        a = parameters_sobol_8dim["a"]
+        a[0] = -1.23
+        result = sobol.sobol(a=a, alpha=alpha, delta=delta, **input_sobol_8dim)
+
+
+def test_sobol_negative_alpha_valueerror(parameters_sobol_8dim, input_sobol_8dim):
+    """ Test 10 dimensional Sobol G function raises ValueError with alpha<=0. """
+    a = parameters_sobol_8dim["a"]
+    delta = parameters_sobol_8dim["delta"]
+    # test negative alpha value
+    with pytest.raises(ValueError):
+        alpha = parameters_sobol_8dim["alpha"]
+        alpha[1] = -1.23
+        result = sobol.sobol(a=a, alpha=alpha, delta=delta, **input_sobol_8dim)
+    with pytest.raises(ValueError):
+        alpha = parameters_sobol_8dim["alpha"]
+        alpha[6] = 0.0
+        result = sobol.sobol(a=a, alpha=alpha, delta=delta, **input_sobol_8dim)
+
+
+def test_sobol_delta_out_of_bound_valueerror(parameters_sobol_8dim, input_sobol_8dim):
+    """ Test 10 dimensional Sobol G function raises ValueError with delta not in 0<=delta<=1.0. """
+    a = parameters_sobol_8dim["a"]
+    alpha = parameters_sobol_8dim["alpha"]
+    # test negative delta value
+    with pytest.raises(ValueError):
+        delta = parameters_sobol_8dim["delta"]
+        delta[1] = -1.23
+        result = sobol.sobol(a=a, alpha=alpha, delta=delta, **input_sobol_8dim)
+    # test delta>1 value
+    with pytest.raises(ValueError):
+        delta = parameters_sobol_8dim["delta"]
+        delta[7] = 4.2
+        result = sobol.sobol(a=a, alpha=alpha, delta=delta, **input_sobol_8dim)
+
+
+def test_sobol_shape_mismatch_valueerror(parameters_sobol_8dim, input_sobol_8dim):
+    """ Test 10 dimensional Sobol G function raises ValueError with delta not in 0<=delta<=1.0. """
+    a = parameters_sobol_8dim["a"]
+    alpha = parameters_sobol_8dim["alpha"]
+    delta = parameters_sobol_8dim["delta"]
+    # test a to small
+    with pytest.raises(ValueError):
+        result = sobol.sobol(a=a[0:6], alpha=alpha, delta=delta, **input_sobol_8dim)
+    # test alpha to small
+    with pytest.raises(ValueError):
+        result = sobol.sobol(a=a, alpha=alpha[0:6], delta=delta, **input_sobol_8dim)
+    # test delta to small
+    with pytest.raises(ValueError):
+        result = sobol.sobol(a=a, alpha=alpha, delta=delta[0:6], **input_sobol_8dim)
+    # test x to small
+    with pytest.raises(ValueError):
+        too_small_input = input_sobol_8dim.copy()
+        too_small_input.pop("x8")
+        result = sobol.sobol(a=a, alpha=alpha, delta=delta, **too_small_input)
+
+
 def test_sobol_default_10dim(input_sobol_10dim):
     """ Test 10 dimensional Sobol G function. """
     expected_result = 0.27670926062343376
     result = sobol.sobol(**input_sobol_10dim)
+
+    assert np.allclose(result, expected_result)
+
+
+def test_sobol_main_wrapper(input_sobol_10dim):
+    """ Test 10 dimensional Sobol G function called with main wrapper. """
+    expected_result = 0.27670926062343376
+    dummy_job_id = 666
+    result = sobol.main(dummy_job_id, input_sobol_10dim)
 
     assert np.allclose(result, expected_result)
 
