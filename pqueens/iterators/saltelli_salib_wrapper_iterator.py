@@ -295,7 +295,7 @@ class SaltelliSALibIterator(Iterator):
         )
 
         fig = go.Figure(data=data, layout=layout)
-        plotly.offline.plot(fig, filename=chart_path, auto_open=True)
+        fig.write_html(chart_path)
 
         # Plot total indices also called total effect
         chart_name = experiment_name + '_ST.html'
@@ -316,7 +316,7 @@ class SaltelliSALibIterator(Iterator):
         )
 
         fig = go.Figure(data=data, layout=layout)
-        plotly.offline.plot(fig, filename=chart_path, auto_open=True)
+        fig.write_html(chart_path)
 
         # Plot second order indices (if applicable)
         if self.calc_second_order:
@@ -344,4 +344,4 @@ class SaltelliSALibIterator(Iterator):
             )
 
             fig = go.Figure(data=data, layout=layout)
-            plotly.offline.plot(fig, filename=chart_path, auto_open=True)
+            fig.write_html(chart_path)
