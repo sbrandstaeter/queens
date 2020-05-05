@@ -28,7 +28,6 @@ class PostPostBACIShape(PostPost):
 
         super(PostPostBACIShape, self).__init__(delete_field_data, file_prefix)
         self.path_ref_data = path_ref_data
-        self.target_time = target_time
         self.time_tol = time_tol
         self.case_type = case_type
         self.visualizationon = visualization
