@@ -7,7 +7,6 @@ from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils.fd_jacobian import fd_jacobian
 
-
 class BaciLMIterator(Iterator):
     """
     Iterator for deterministic optimization problems
@@ -324,7 +323,7 @@ class BaciLMIterator(Iterator):
                 i = 0
                 var_name = [*self.model.variables[0].variables.keys()]
                 for column in xydata:
-                    data[var_name[i]] = xydata[column]
+                    data[var_name[i]] = xydata[column].astype(float)
                     i = i + 1
 
                 if i > 2:
@@ -389,7 +388,7 @@ class BaciLMIterator(Iterator):
 
         """
         Print iteration data to console and optionally to file.
-        Opens file in append mode, so that file is updated frequently
+        Opens file in append mode, so that file is updated frequently.
 
         Args:
         i (int): iteration number
@@ -403,7 +402,7 @@ class BaciLMIterator(Iterator):
         print(
             f"iteration: {i} reg_param: {self.reg_param} current_parameters: {self.param_current}"
         )
-
+        string = np.array2string(param_delta,precision=8)
         # write iteration to file
         if self.result_description:
             if self.result_description["write_results"]:
@@ -419,8 +418,8 @@ class BaciLMIterator(Iterator):
                         'iter': i,
                         'resnorm': resnorm,
                         'gradnorm': gradnorm,
-                        'params': [self.param_current],
-                        'delta_params': [param_delta],
+                        'params': [np.array2string(self.param_current, precision=8)],
+                        'delta_params': [np.array2string(param_delta, precision=8)],
                         'mu': self.reg_param,
                     }
                 )

@@ -25,7 +25,7 @@ def default_ppbacishapeclass(mocker):
         return_value='None',
     )
     pp = pqueens.post_post.post_post_baci_shape.PostPostBACIShape(
-        'dummy_path', 1e01, 1e-03, '3d_full', False, True, 'dummy_prefix'
+        'dummy_path', 1e-03, '3d_full', False, True, 'dummy_prefix'
     )
     return pp
 
@@ -98,7 +98,6 @@ def vtkUnstructuredGridExample3d():
 def test_init(mocker):
 
     path_ref_data = 'dummypath'
-    target_time = 1e01
     time_tol = 1e-03
     case_type = 'dummycase'
     visualization = False
@@ -114,7 +113,6 @@ def test_init(mocker):
 
     my_postpost = PostPostBACIShape(
         path_ref_data,
-        target_time,
         time_tol,
         case_type,
         visualization,
@@ -125,7 +123,6 @@ def test_init(mocker):
     mp.assert_called_once_with(delete_field_data, file_prefix)
 
     assert my_postpost.path_ref_data == path_ref_data
-    assert my_postpost.target_time == target_time
     assert my_postpost.time_tol == time_tol
     assert my_postpost.case_type == case_type
     assert my_postpost.visualizationon == visualization
@@ -139,7 +136,6 @@ def test_from_config_create_post_post(mocker):
 
     mypostpostoptions = {
         'path_to_ref_data': 'dummypath',
-        'target_time': 1e01,
         'time_tol': 1e-03,
         'case_type': 'dummycase',
         'visualization': False,
@@ -150,7 +146,7 @@ def test_from_config_create_post_post(mocker):
 
     PostPostBACIShape.from_config_create_post_post(myoptions)
     mp.assert_called_once_with(
-        'dummypath', 1e01, 1e-03, 'dummycase', False, False, 'dummyprefix',
+        'dummypath', 1e-03, 'dummycase', False, False, 'dummyprefix',
     )
 
 
@@ -161,7 +157,7 @@ def test_read_post_files(mocker, all_case_types):
         return_value='None',
     )
     pp = pqueens.post_post.post_post_baci_shape.PostPostBACIShape(
-        'dummy_path', 1e01, 1e-03, all_case_types, False, True, 'dummy_prefix'
+        'dummy_path', 1e-03, all_case_types, False, True, 'dummy_prefix'
     )
     pp.output_dir = 'None'
     mocker.patch('glob.glob', return_value=['None'])
@@ -176,7 +172,7 @@ def test_read_post_files(mocker, all_case_types):
 
     with pytest.raises(ValueError):
         ppErr = pqueens.post_post.post_post_baci_shape.PostPostBACIShape(
-            'dummy_path', 1e01, 1e-03, 'norealcase', False, True, 'dummy_prefix'
+            'dummy_path', 1e-03, 'norealcase', False, True, 'dummy_prefix'
         )
         ppErr.output_dir = 'None'
         ppErr.read_post_files()
@@ -239,7 +235,7 @@ steps 2 npoints 4
     mp = mocker.patch('builtins.open', mocker.mock_open(read_data=monitor_string),)
 
     pp = pqueens.post_post.post_post_baci_shape.PostPostBACIShape(
-        'dummy_path', 1e01, 1e-03, '3d_full', False, True, 'dummy_prefix'
+        'dummy_path', 1e-03, '3d_full', False, True, 'dummy_prefix'
     )
 
     mp.assert_called_once()

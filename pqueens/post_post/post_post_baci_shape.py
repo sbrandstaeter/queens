@@ -18,7 +18,6 @@ class PostPostBACIShape(PostPost):
     def __init__(
         self,
         path_ref_data,
-        target_time,
         time_tol,
         case_type,
         visualization,
@@ -48,7 +47,6 @@ class PostPostBACIShape(PostPost):
         """
         post_post_options = base_settings['options']
         path_ref_data = post_post_options['path_to_ref_data']
-        target_time = post_post_options['target_time']
         time_tol = post_post_options['time_tol']
         case_type = post_post_options['case_type']
         visualization = post_post_options['visualization']
@@ -56,7 +54,6 @@ class PostPostBACIShape(PostPost):
         delete_field_data = post_post_options['delete_field_data']
         return cls(
             path_ref_data,
-            target_time,
             time_tol,
             case_type,
             visualization,
