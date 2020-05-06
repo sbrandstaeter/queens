@@ -1,5 +1,9 @@
-from pqueens.utils import mcmc_utils
+"""
+Variables module provides a data container for random variables and their realizations
+"""
 import numpy as np
+
+from pqueens.utils import mcmc_utils
 
 
 class Variables(object):

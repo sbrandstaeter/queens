@@ -1,16 +1,14 @@
-""" This should be a docstring """
-
 import os
 import docker
 from pqueens.drivers.driver import Driver
-from pqueens.utils.injector import inject
 
 
 class BaciDriverDocker(Driver):
-    """ Driver to run BACI in Docker container
+    """
+    Driver to run BACI in Docker container
 
-        Attributes:
-            mpi_config (dict): TODO unclear what this is needed for 
+    Attributes:
+        docker_image (str): Path to the docker image
 
     """
 
@@ -18,19 +16,18 @@ class BaciDriverDocker(Driver):
         # TODO dunder init should not be called with dict
         self.docker_image = base_settings['docker_image']
         super(BaciDriverDocker, self).__init__(base_settings)
-        # self.mpi_config = {}
 
     @classmethod
-    def from_config_create_driver(cls, config, base_settings, workdir=None):
+    def from_config_create_driver(cls, config, base_settings):
         """ Create Driver from input file
 
         Args:
             config (dict):          Input options
             base_settings (dict):   Second dict with input options TODO should probably be removed
-            workdir (str):          Probably not used TODO remove 
 
         Returns:
-            driver: BaciDriverDocker object
+            driver (obj): BaciDriverDocker object
+
         """
         base_settings['address'] = 'localhost:27017'
         base_settings['docker_image'] = config['driver']['driver_params']['docker_image']
@@ -43,7 +40,8 @@ class BaciDriverDocker(Driver):
                 driver_options (dict): Options dictionary
 
             Returns:
-                str, str, str: Docker container name, case run script, case directory
+                None
+
         """
         # extract name of Docker image and potential sudo
         docker_image_list = self.docker_image.split()
@@ -78,6 +76,7 @@ class BaciDriverDocker(Driver):
         # first alternative (used currently):
         # explicitly assemble run command for Docker container
         docker_run_command_string = self.assemble_docker_run_command_string()
+
 
         # run BACI in Docker container via subprocess
         _, stderr, self.pid = self.run_subprocess(docker_run_command_string)

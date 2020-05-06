@@ -1,5 +1,3 @@
-""" There should be a docstring """
-
 import sys
 import abc
 import subprocess
@@ -10,20 +8,50 @@ from pqueens.database.mongodb import MongoDB
 
 
 class Driver(metaclass=abc.ABCMeta):
-    """ Base class for Drivers
+    """
+    Base class for Drivers
 
     This Driver class is the base class for drivers that actually execute a job on
     a computing resource. It is supposed to unify the interface of drivers and
-    fully integrate them in QUEENS to enable testing. Furthermore, an abstract
-    driver class will give rise to the usage of singularity containers for HPC
-    applications.
+    fully integrate them in QUEENS to enable testing.
 
     Attributes:
+        simulation_input_template (str): Path to the simulation input file template where
+                                         parameters will be parsed
+        database (obj): data base object
+        output_file (str): Path / name for output files of postprocessor that contain the QoI
+                           for the QUEENS analysis
+        file_prefix (str): Unique string sequence that is part of the simulation output
+                           name and identifies the unprocessed simulation output (that might
+                           need to be post-processed).
+        output_scratch (str): Path to output base directory that contains the simulation output and
+                              postprocessed files
+        job (dict): Dictionary containing description of current job to be simulated
+        job_id (int): Job ID given in database in range [1, n_jobs]
+        batch (int): Job batch number (in case several batch jobs were performed)
+        executable (str): Path to the executable that should be used in the QUEENS simulation
+        result (np.array): Result of the QUEENS analysis
+        postprocessor (str): Path to external postprocessor for the (binary) simulation results
+        post_options (lst): List containing settings/options for the external postprocessor
+        postpostprocessor (obj): Instance of the PostPost class
+        pid (int): Unique process ID for subprocess
+        port (int): Port that is used for data forwarding on remote systems
+        num_procs (int): Number of MPI-ranks (processors) that should be used for the external
+                         main simulation
+        num_procs_post (int): Number of MPI-ranks (processors) that should be used for
+                              external postprocessing of the simulation data
+        experiment_name (str): Name of the current QUEENS analysis. This name is used to
+                                construct the naming for the associated directories and files.
+        experiment_dir (str): Path to the experiment directory
+        input_file (str): Path to current input file for the external simulator
+
+    Returns:
+        driver_obj (obj): Instance of the driver class
 
     """
 
     def __init__(self, base_settings):
-        self.template = base_settings['template']
+        self.simulation_input_template = base_settings['simulation_input_template']
         # TODO MongoDB object should be passed to init not created within
         self.database = MongoDB(database_address=base_settings['address'])
         self.output_file = base_settings['output_file']
@@ -37,7 +65,6 @@ class Driver(metaclass=abc.ABCMeta):
         self.postprocessor = base_settings['postprocessor']
         self.post_options = base_settings['post_options']
         self.postpostprocessor = base_settings['postpostprocessor']
-        self.mpi_flags = {}  # config mpi for each machine (build on runtime)
         self.pid = None
         self.port = base_settings['port']
         self.num_procs = base_settings['num_procs']
@@ -51,13 +78,17 @@ class Driver(metaclass=abc.ABCMeta):
     def from_config_create_driver(
         cls, config, job_id, batch, port=None, abs_path=None, workdir=None
     ):
-        """ Create driver from problem description
+        """
+        Create driver from problem description
 
         Args:
             config (dict):      Dictionary with QUEENS problem description
-            driver_type (str):  Name of driver to identify right section in options
-                                dict (optional)
-            database (database):database to use (optional)
+            job_id (int): Job ID given in database in range [1, n_jobs]
+            port (int): Port that is used for data forwarding on remote systems
+            abs_path (str): Absolute path of postpost-module on the remote (this is depreciated
+                            and will be changed, soon)
+            batch (int):  Job batch number (in case several batch jobs were performed)
+            workdir (str): Path to the working directory for QUEENS on the remote host
 
         Returns:
             driver: Driver object
@@ -113,7 +144,7 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['experiment_dir'] = driver_options['experiment_dir']
         base_settings['job_id'] = job_id
         base_settings['input_file'] = None
-        base_settings['template'] = driver_options['input_template']
+        base_settings['simulation_input_template'] = driver_options.get('input_template')
         base_settings['output_file'] = None
         base_settings['output_scratch'] = None
         base_settings['job'] = None
@@ -135,27 +166,56 @@ class Driver(metaclass=abc.ABCMeta):
         return driver
 
     def main_run(self):
-        """ Actual main method of the driver """
+        """
+        Actual main method of the driver that initializes and runs the executable
+
+        Returns:
+            None
+
+        """
         self.prepare_environment()
         self.init_job()
         self.run_job()
         # we take this out of the main run and call in explicitly in remote_main
-        # self.finish_and_clean()
 
     # ------------------------ AUXILIARY HIGH-LEVEL METHODS -----------------------
     def prepare_environment(self):
-        """ Prepare the environment for computing """
+        """
+        Prepare the environment for computing by setting up necessary directories and files.
+
+        Returns:
+            None
+
+        """
         self.setup_dirs_and_files()
 
     def finish_and_clean(self):
-        """ Finish and clean the resources and environment """
+        """
+        Get quantities of interest from postprocessed files and clean up all temporary files.
+        General clean-ups like closing ports and saving data.
+
+        Returns:
+            None
+
+        """
         if self.postprocessor:
             self.do_postprocessing()
         self.do_postpostprocessing()
         self.finish_job()
 
     def run_subprocess(self, command_string):
-        """ Method to run command_string outside of Python """
+        """
+        Method to run command_string outside of Python
+
+        Args:
+            command_string (str): Command that should be run externally
+
+        Returns:
+            stdout (str): Output of the external subprocess
+            stderr (str): Potential errors of the external process
+            process_id (str): Process ID of the external process
+
+        """
         process = subprocess.Popen(
             command_string,
             stdin=subprocess.PIPE,
@@ -171,10 +231,11 @@ class Driver(metaclass=abc.ABCMeta):
 
     # ------ Base class methods ------------------------------------------------ #
     def init_job(self):
-        """ Initialize job in database
+        """
+        Initialize job in database
 
-            Returns:
-                dict: Dictionary with job information
+        Returns:
+            None
 
         """
         # Create database object and load the already initiated job entry
@@ -184,12 +245,9 @@ class Driver(metaclass=abc.ABCMeta):
         start_time = time.time()
         self.job['start time'] = start_time
 
-        # sys.stderr.write("Job launching after %0.2f seconds in submission.\n"
-        #                 % (start_time-self.job['submit time']))
-
         # create actual input file or dictionaries with parsed parameters
         if self.input_dic_1 is None:
-            inject(self.job['params'], self.template, self.input_file)
+            inject(self.job['params'], self.simulation_input_template, self.input_file)
         else:
             # set path to input dictionary No. 1 and inject
             self.input_file = os.path.join(self.case_dir, self.input_dic_1)
@@ -200,7 +258,13 @@ class Driver(metaclass=abc.ABCMeta):
             inject(self.job['params'], self.input_file, self.input_file)
 
     def finish_job(self):
-        """ Change status of job to completed in database """
+        """
+        Change status of job to completed in database
+
+        Returns:
+            None
+
+        """
 
         if self.result is None:
             self.job['result'] = None  # TODO: maybe we should better use a pandas format here
@@ -218,8 +282,16 @@ class Driver(metaclass=abc.ABCMeta):
             )
 
     def do_postprocessing(self):
+        """
+        Trigger an (external) executable that postprocesses (binary) simulation files
+
+        Returns:
+            None
+
+        """
         # TODO maybe move to child-class due to specific form (e.g. .dat)
-        """ This should be a docstring """
+        # TODO the definition of output file and scratch seems redunant as this is already
+        # defined in the child class;
         # create input file name
         dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
         output_directory = os.path.join(dest_dir, 'output')
@@ -249,20 +321,20 @@ class Driver(metaclass=abc.ABCMeta):
             _, _, _ = self.run_subprocess(postprocess_command)
 
     def do_postpostprocessing(self):
-        """ Run script to extract results from monitor file
-
-        Args:
+        """
+        Extracts necessary information from postprocessed simulation file and saves it to
+        the database
 
         Returns:
-            float: actual simulation result
-            Assemble post processing command """
+            None
+
+        """
 
         if self.job is None:
             # Load the already initiated job entry
             self.job = self.database.load(
                 self.experiment_name, self.batch, 'jobs', {'id': self.job_id}
             )
-
         dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
         output_directory = os.path.join(dest_dir, 'output')
         if self.job['status'] != "failed":
@@ -278,12 +350,22 @@ class Driver(metaclass=abc.ABCMeta):
     # ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod
     def setup_dirs_and_files(self):
-        """ this should be a docstring """
+        """
+        Abstract method for setting up a certain directory and file structure that is necessary
+        for deployed driver
+
+        Returns:
+            None
+        """
         pass
 
     @abc.abstractmethod
     def run_job(self):
-        """ Actual method to run the job on computing machine
-            using run_subprocess method from base class
+        """
+        Abstract method to run the job on computing machine
+
+        Returns:
+            None
+
         """
         pass

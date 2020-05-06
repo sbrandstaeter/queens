@@ -1,8 +1,15 @@
+"""
+Estimation of the probability density function based on samples from the distribution.
+
+It uses the kernel density estimation (kde) algorithm.
+"""
+
+import pdb
+
+import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 from sklearn.model_selection import KFold  # LeaveOneOut
-import numpy as np
-import pdb
 
 
 # TODO remove file, outdated implementation

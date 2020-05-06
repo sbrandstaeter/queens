@@ -6,40 +6,35 @@ from .scheduler import Scheduler
 
 
 class SlurmScheduler(Scheduler):
-    """ Minimal interface to SLURM queing system to submit and query jobs
+    """
+    Interface to SLURM based queuing systems to submit and query jobs.
 
-    This class provides a basic interface to the Slurm job queing system to submit
+    This class provides a basic interface to the Slurm job queuing system to submit
     and query jobs to a cluster. This also works if the cluster is a remote
     resource that has to be connected to via ssh. When submitting the job, the
     process id is returned to enable queries about the job status later on.
 
-    This scheduler is written specifically for the LNM Bruteforce cluster but can be used
-    as an example for other Slurm based systems
+    Returns:
+        SlurmScheduler (obj): Instance of the SlurmScheduler Class
 
     """
 
     def __init__(self, scheduler_name, base_settings):
-        """
-        Args:
-            scheduler_name (string):    Name of Scheduler
-            num_procs_per_node (int):   Number of procs per node
-            num_nodes (int):            Number of nodes
-            walltime (string):          Wall time in hours
-            user_mail (string):         Email adress of user
-            output (boolean):           Flag for slurm output
-        """
         super(SlurmScheduler, self).__init__(base_settings)
 
     @classmethod
     def from_config_create_scheduler(cls, config, base_settings, scheduler_name=None):
-        """ Create Slurm scheduler from config dictionary
+        """ Create Slurm-scheduler from problem dictionary
 
         Args:
             scheduler_name (str):   name of scheduler
             config (dict):          dictionary containing problem description
+            base_settings (dict): Dictionary containing some basic setting for parent class
+                                  (depreciated: will be changed soon)
 
         Returns:
-            scheduler:              instance of SlurmScheduler
+            scheduler (obj):              instance of SlurmScheduler
+
         """
         scheduler_options = base_settings['options']
         # read necessary variables from config
@@ -72,35 +67,32 @@ class SlurmScheduler(Scheduler):
 
         return cls(scheduler_name, base_settings)
 
-    def output_regexp(self):
-        """ docstring """
-        return r'(^\d+)'
-
-    # ---------------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED ---------------
     def get_process_id_from_output(self, output):
-        """ Helper function to retrieve process id
+        """
+        Helper function to retrieve job_id information after
+        submitting a job to the job scheduling software
 
-            Helper function to retrieve after submitting a job to the job
-            scheduling software
         Args:
             output (string): Output returned when submitting the job
 
         Returns:
-            match object: with regular expression matching process id
+            match object (str): with regular expression matching process id
+
         """
         regex = output.split()
         return regex[-1]
 
-    def alive(self, process_id):
+    def alive(self, process_id):  # TODO method might me depreciated!
         """ Check whether job is alive
         The function checks if job is alive. If it is not i.e., the job is
-        either on hold or suspended the fuction will attempt to kill it
+        either on hold or suspended the function will attempt to kill it
 
         Args:
             process_id (int): id of process associated with job
 
         Returns:
             bool: is job alive or dead
+
         """
 
         alive = False

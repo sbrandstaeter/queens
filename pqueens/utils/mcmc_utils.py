@@ -1,4 +1,6 @@
-"""collection of utility functions and classes for Markov Chain Monte Carlo algorithms"""
+"""
+Collection of utility functions and classes for Markov Chain Monte Carlo algorithms
+"""
 
 import abc
 import numpy as np

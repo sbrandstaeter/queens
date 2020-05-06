@@ -1,3 +1,7 @@
+"""
+Injector module supplies function to inject parameter values into a template text file.
+"""
+
 
 def inject(params, file_template, output_file):
     """ Injector function to insert parameters into file templates

@@ -1,14 +1,16 @@
-""" This should be a docstring """
-
 import os
 from pqueens.drivers.driver import Driver
 
 
 class AnsysDriverNative(Driver):
-    """ Driver to run ANSYS natively on workstation
+    """
+    Driver to run ANSYS natively on workstation
 
-        Attributes:
-            custom_executable (str): Optional custom executable for ANSYS
+    Attributes:
+        custom_executable (str): Optional custom executable for ANSYS
+
+    Returns:
+        AnsysDriverNative_obj (obj): Instance of the AnsysDriverNative instance
 
     """
 
@@ -20,7 +22,8 @@ class AnsysDriverNative(Driver):
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings):
-        """ Create Driver from input file
+        """
+        Create Driver from input file
 
         Args:
             config (dict):          Input options
@@ -28,6 +31,7 @@ class AnsysDriverNative(Driver):
 
         Returns:
             driver: AnsysDriverNative object
+
         """
         # TODO this needs to be fixed
         base_settings['address'] = 'localhost:27017'
@@ -40,6 +44,7 @@ class AnsysDriverNative(Driver):
 
     def setup_dirs_and_files(self):
         """ Setup directory structure """
+
         self.main_executable = self.executable
 
         # base directories
@@ -73,10 +78,11 @@ class AnsysDriverNative(Driver):
             self.job['status'] = 'failed'
 
     def assemble_command_string(self):
-        """  Assemble command list
+        """
+        Assemble command list
 
-            Returns:
-                list: command list to execute ANSYS
+        Returns:
+            list (lst): command list to execute ANSYS
 
         """
         command_list = []

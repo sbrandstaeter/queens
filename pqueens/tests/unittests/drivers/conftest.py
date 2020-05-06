@@ -23,7 +23,7 @@ def baci_job(job, tmpdir_factory):
     baci_dir = tmpdir_factory.mktemp('baci_dir')
 
     driver_params = {}
-    driver_params['input_template'] = str(
+    driver_params['simulation_input_template'] = str(
         tmpdir_factory.mktemp('template_dir').join('template.dat')
     )
     driver_params['path_to_executable'] = str(baci_dir.join('baci_release'))
@@ -118,7 +118,7 @@ def driver_base_settings(job):
     base_settings['experiment_name'] = job['expt_name']
     base_settings['job_id'] = job['id']
     base_settings['input_file'] = 'input.json'
-    base_settings['template'] = 'template.dat'
+    base_settings['simulation_input_template'] = 'template.dat'
     base_settings['output_file'] = 'experiment.out'
     base_settings['job'] = job
     base_settings['batch'] = 1
