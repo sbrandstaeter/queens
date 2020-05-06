@@ -1,7 +1,14 @@
-""" There should be a docstring """
+"""
+The resource module contains everything that is necessary to manage computing resources.
 
+A computing ressource can be a single machine or a HPC cluster.
+The resource can provide basic status information as well as workload capacity.
+If the workload capacity allows it the computing resource accepts jobs and executes them.
+"""
 import sys
+
 import numpy as np
+
 from pqueens.schedulers.scheduler import Scheduler
 
 # TODO refactor this method into a class method
@@ -93,7 +100,7 @@ def print_resources_status(resources, jobs):
 
 
 class Resource(object):
-    """class which manages computing resources
+    """class which manages a computing resource
 
     Attributes:
         name (string):                The name of the resource
@@ -199,7 +206,7 @@ class Resource(object):
             return 0
 
     def accepting_jobs(self, jobs):
-        """ Is this resource currently accepting new jobs?
+        """ Check if the resource currently is accepting new jobs
 
         Args:
             jobs (list): List with jobs

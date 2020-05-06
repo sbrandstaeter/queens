@@ -1,4 +1,6 @@
-""" There should be some docstring """
+"""
+Convenience module to get samples from a probability distribution.
+"""
 
 from pqueens.utils.mcmc_utils import create_proposal_distribution
 

@@ -1,5 +1,3 @@
-""" This should be a module docstring """
-
 try:
     import simplejson as json
 except ImportError:
@@ -22,7 +20,53 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 
 class Scheduler(metaclass=abc.ABCMeta):
-    """ Base class for schedulers """
+    """
+    Abstact base class for Schedulers in QUEENS. The purpose of a scheduler
+    is twofold: First, it organized the simulations in QUEENS on local or remote computing resources
+    by communication with the OS or the scheduling software installed on the system.
+    Second it establishes the necessary connections via ssh port-forwarding to enable
+    passwordless data-transfer between the database, the localhost and potential remote resources.
+    The communication includes also the management of temporary file copies and the build of a
+    singularity image, called "driver.simg" that enables the usage of QUEENS on remote clusters.
+
+    Args:
+        base_settings (dict): A dictionary containing settings for the base class that are
+                              set in the child classes, which are normally created from a
+                              config file
+
+    Attributes:
+        remote_flag (bool): internal flag that is set to determine whether a setup for remote
+                            computing is necessary or not
+        config (dict): dictionary that contains the configuration specified in the json input-file
+                       for QUEENS
+        path_to_singularity (str): (only for remote computing) path to the singularity image on the
+                                   remote computing resource
+        connect_to_resource (str): (only for remote computing) adress of the remote computing
+                                   resource
+        port (int): (only for remote computing) port number on the remote which is used for
+                    ssh port-forwarding to the database
+        job_id (int): internal job ID in QUEENS (used for database organization)
+        experiment_name (str): name of the QUEENS simulation
+        experiment_dir (str): path to the QUEENS experiment directory
+        scheduler_start (str): scheduler specific run command
+        cluster_bind (str): directories on the computing resource that should be binded to the
+                            singularity image to run the simulation executable from the
+                            singularity image
+        submission_script_template (str): (only for remote computing) jobscript that should be used
+                                          on the remote resource to set up scratch directories
+                                          and specific infrastructure for parallel computing
+        submission_script_path (str): (only for remote computing) path to which the jobscript should
+                                      be copied to on the remote
+        scheduler_options (dict): (only for remote computing) further options on flags to configure
+                                  the scheduling software on the remote
+        no_singularity (bool): (only necessary for local computing) flag to determine whether the
+                               local simulations should use singularity (recommended) or are
+                               scheduled in sequentially without singularity
+
+    Returns:
+        Scheduler (obj): Instance of Scheduler Class
+
+    """
 
     def __init__(self, base_settings):
         self.remote_flag = base_settings['remote_flag']
@@ -48,7 +92,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         """ Create scheduler from problem description
 
         Args:
-            scheduler_name (string): Name of scheduler
+            scheduler_name (str): Name of scheduler
             config (dict): Dictionary with QUEENS problem description
 
         Returns:
@@ -126,6 +170,7 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         Returns:
             None
+
         """
         if self.remote_flag:
             hostname, _, _ = run_subprocess('hostname -i')
@@ -149,8 +194,10 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
         A finishing method for the scheduler module that takes care of closing
         utilized ports and connections.
+
         Returns:
             None
+
         """
         if self.remote_flag:
             self.close_remote_port()
@@ -169,9 +216,12 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         Args:
             username (string): Username of person logged in on remote machine
+
         Returns:
             None
+
         """
+
         # find active queens ssh ports on remote
         command_list = [
             'ssh',
@@ -231,9 +281,12 @@ class Scheduler(metaclass=abc.ABCMeta):
         Examples are directory bindings such that certain directories of the host can be
         accessed on runtime within the singularity image. Other system variables include
         path and environment variables
+
         Returns:
             None
+
         """
+
         # Check if SINGULARITY_BIND exists and if not write it to .bashrc file
         if self.remote_flag:
             command_list = ['ssh', self.connect_to_resource, '\'echo $SINGULARITY_BIND\'']
@@ -317,11 +370,14 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
         Automated port-forwarding from localhost to remote machine to forward data to the database
         on localhost's port 27017 and a designated port on the master node of the remote machine
+
         Args:
             address_localhost (str): IP-address of localhost
+
         Returns:
             None
         """
+
         port_fail = 1
         while port_fail != "":
             self.port = random.randrange(2030, 20000, 1)
@@ -346,10 +402,13 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
         Establish a port-forwarding for localhost's port 9001 to the remote's ssh-port 22
         for passwordless communication with the remote machine over ssh
+
         Args:
             address_localhost (str): IP-address of the localhost
+
         Returns:
             None
+
         """
         remote_address = self.connect_to_resource.split(r'@')[1]
         command_list = [
@@ -372,8 +431,10 @@ class Scheduler(metaclass=abc.ABCMeta):
     def close_remote_port(self):
         """
         Closes the ports that were used in the current QUEENS simulation for remote computing.
+
         Returns:
             None
+
         """
         # get the process id of open port
         username, _, _ = run_subprocess('whoami')
@@ -407,9 +468,12 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
         Copies a (temporary) JSON input-file on a remote to execute some parts of QUEENS within
         the singularity image on the remote, given the input configurations.
+
         Returns:
             None
+
         """
+
         command_list = [
             "scp",
             self.config['input_file'],
@@ -426,9 +490,12 @@ class Scheduler(metaclass=abc.ABCMeta):
         load it dynamically during runtime.
         This enables fast changes in post-post scripts without the need to rebuild the singularity
         image.
+
         Returns:
             None
+
         """
+
         abs_dirpath_current_file = os.path.dirname(os.path.abspath(__file__))
         abs_path_post_post = os.path.join(abs_dirpath_current_file, '../post_post')
         # delete old files
@@ -457,9 +524,12 @@ class Scheduler(metaclass=abc.ABCMeta):
     def create_singularity_image(self):
         """
         Add current QUEENS setup to pre-designed singularity image for cluster applications
+
         Returns:
              None
+
         """
+
         # create hash for files in image
         self.hash_files('hashing')
         # create the actual image
@@ -499,9 +569,11 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
         Hash all files that are used in the singularity image anc check if some files were changed.
         This is important to keep the singularity image always up to date with the code base
+
         Args:
             mode (str): (Arbitrary) string that determines whether files are checked for a hash or
                         a new has is generated. When mode is set, a new hashfile is written out.
+
         Returns:
             None
 
@@ -576,8 +648,10 @@ class Scheduler(metaclass=abc.ABCMeta):
         Checks if local and remote singularity images are existent and compares a hash-file
         to the current hash of the files to determine if the singularity image is up to date.
         The method furthermore triggers the build of a new singularity image if necessary.
+
         Returns:
             None
+
         """
 
         # check existence local
@@ -770,10 +844,6 @@ class Scheduler(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def get_process_id_from_output(self, output):
-        pass
-
-    @abc.abstractmethod  # how to check this is dependent on cluster / env
-    def alive(self, process_id):
         pass
 
     # ------------- private helper methods ----------------#

@@ -1,3 +1,7 @@
+"""
+Scale uniformly [0,1] distributed samples to other distributions.
+"""
+
 import warnings
 
 import numpy as np

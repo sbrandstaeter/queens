@@ -5,13 +5,14 @@ import numpy as np
 
 def python_driver_vector_interface(job):
     """
-        Driver to call a python function specified in the job dict
+    Driver to call a python function specified in the job dict
 
-        Args:
-            job (dict): Dict containing all information to run the function
+    Args:
+        job (dict): Dictionary containing all information to run the function
 
-        Returns:
-            (float): result
+    Returns:
+        result (float): Result of the QUEENS simulation
+
     """
     # Run a Python function
     sys.stderr.write("Running python job.\n")

@@ -1,43 +1,45 @@
-""" This should be a docstring """
-
 import os
 from pqueens.drivers.driver import Driver
 
 
 class BaciDriverNative(Driver):
-    """ Driver to run BACI natively on workstation
+    """
+    Driver to run BACI natively on workstation.
 
-        Args:
-            job (dict): Dict containing all information to run the simulation
+    Returns:
+        BaciDriverNative_obj (obj): Instance of BaciDriverNative class
 
-        Returns:
-            float: result
     """
 
     def __init__(self, base_settings):
         super(BaciDriverNative, self).__init__(base_settings)
-        self.mpi_config = {}
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings, workdir=None):
-        """ Create Driver from input file
+        """
+        Create Driver from input file description
 
         Args:
+            config (dict): Dictionary with input configuration
+            base_settings (dict): Dictionary with base settings of the parent class
+                                  (depreciated: will be removed soon)
+            workdir (str): Path to working directory
+
         Returns:
-            driver: BaciDriverNative object
+            BaciDriverNative_obj (obj): Instance of the BaciDriverNative class
+
         """
         base_settings['address'] = 'localhost:27017'
         return cls(base_settings)
 
     # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def setup_dirs_and_files(self):
-        """ Setup directory structure
+        """
+        Setup directory structure
 
-            Args:
-                driver_options (dict): Options dictionary
+        Returns:
+            None
 
-            Returns:
-                str, str, str: simualtion prefix, name of input file, name of output file
         """
         # base directories
         dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
@@ -58,8 +60,13 @@ class BaciDriverNative(Driver):
         )
 
     def run_job(self):
-        """ Actual method to run the job on computing machine
-            using run_subprocess method from base class
+        """
+        Actual method to run the job on computing machine
+        using run_subprocess method from base class
+
+        Returns:
+            None
+
         """
         # assemble run command sttring
         command_string = self.assemble_command_string()

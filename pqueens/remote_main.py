@@ -1,17 +1,37 @@
+"""
+This file contains the high-level control routine for remote computations.
+
+Remote computation means the evaluation of the forward model in a detached process (from the main
+QUEENS run). The detached process can run on the same machine as the main run or on a different,
+remote machine (e.g., a computing cluster). Additionally, it may also be wrapped in a singularity
+image.
+"""
+
 import argparse
-import os
-import sys
 from collections import OrderedDict
+import os
 
 try:
     import simplejson as json
 except ImportError:
     import json
+import sys
+
 from pqueens.drivers.driver import Driver
 
 
 def main(args):
-    """ This should be a docstring """
+    """
+    Main function for remote forward model evaluation.
+
+    Control routine for the forward model evaluation in an independent, detached process, i.e.,
+    remote.
+    Called twice per model evaluation: once for the pre-processing and solving and once for the
+    post-processing.
+
+    Args:
+        args (list): list of arguments to be parsed
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--job_id",
