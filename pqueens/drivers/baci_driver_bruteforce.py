@@ -1,16 +1,19 @@
-""" This should be a docstring """
-
 import re
 import os
 from pqueens.drivers.driver import Driver
 
 
 class BaciDriverBruteforce(Driver):
-    """ Driver to run BACI on the HPC cluster bruteforce (via Slurm)
+    """
+    Driver to run BACI on the HPC cluster Bruteforce at LNM.
 
-    Args:
+    Attributes:
+        workdir (str): Working directory on the HPC system, where output should be written
+                       This is read in from the input file
 
     Returns:
+        BaciDriverBruteforce_obj (obj): Instance of the BaciDriverBruteforce class
+
     """
 
     def __init__(self, base_settings, workdir):
@@ -19,40 +22,33 @@ class BaciDriverBruteforce(Driver):
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings, workdir):
-        """ Create Driver from JSON input file
+        """
+        Create Driver instance from JSON input file
 
         Args:
+            config (dict): dictionary with input file settings
+            base_settings (dict): dictionary containing settings from parent class (depreciated:
+                                  this will be removed in the future)
+            workdir (str): Path do working directory on the remote host (HPC-cluster)
 
         Returns:
-            driver: Baci_driver_bruteforce object
+            driver(obj): Baci_driver_bruteforce object
+
         """
         base_settings['address'] = '10.10.0.1:' + str(base_settings['port'])
-        # TODO change to linux command to find master node
         base_settings['experiment_name'] = config['experiment_name']
         return cls(base_settings, workdir)
 
-    def setup_mpi(self, ntasks):
-        """ setup MPI environment
-
-            Args:
-                num_procs (int): Number of processors to use
-
-            Returns:
-                str, str: MPI runcommand, MPI flags
-        """
-        if ntasks % 16 == 0:
-            self.mpi_flags = "--mca btl openib,sm,self --mca mpi_paffinity_alone 1"
-        else:
-            self.mpi_flags = "--mca btl openib,sm,self"
-
     def setup_dirs_and_files(self):
-        """ Setup directory structure
+        """
+        Setup directory structure.
 
-            Args:
-                driver_options (dict): Options dictionary
+        Args:
+            driver_options (dict): Options dictionary
 
-            Returns:
-                str, str, str: simualtion prefix, name of input file, name of output file
+        Returns:
+            None
+
         """
         # base directories
         dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
@@ -74,8 +70,13 @@ class BaciDriverBruteforce(Driver):
         self.output_scratch = self.experiment_name + '_' + str(self.job_id)
 
     def run_job(self):
-        """ Actual method to run the job on computing machine
-            using run_subprocess method from base class
+        """
+        Actual method to run the job on computing machine
+        using run_subprocess method from base class
+
+        Returns:
+            None
+
         """
         # assemble run command
         command_list = [

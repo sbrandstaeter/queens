@@ -1,3 +1,6 @@
+"""
+Gradner2014a function is a two dimensional benchmark function for constraint Bayesian optimization.
+"""
 import numpy as np
 
 

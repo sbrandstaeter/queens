@@ -4,11 +4,17 @@ from pqueens.drivers.driver import Driver
 
 
 class BaciDriverDeep(Driver):
-    """ Driver to run BACI on the HPC cluster schmarrn (via PBS/Torque)
+    """
+    Driver to run BACI on the HPC cluster Schmarrn (via PBS/Torque) at LNM.
 
-    Args:
+    Attributes:
+        base_settings (dict): dictionary with settings from the parent class
+                              (depreciated: this will be removed in the future)
+        workdir (path): working directory on the remote (HPC-cluster)
 
     Returns:
+       BaciDriverDeep_obj (obj): Instance of BaciDriverDeep class
+
     """
 
     def __init__(self, base_settings, workdir):
@@ -17,9 +23,14 @@ class BaciDriverDeep(Driver):
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings, workdir):
-        """ Create Driver from JSON input file
+        """
+        Create Driver from JSON input file description
 
         Args:
+            base_settings (dict): dictionary with settings from the parent class
+                                  (depreciated: this will be removed in the future)
+            workdir (path): working directory on the remote (HPC-cluster)
+            config (dict): dictionary containing settings from the input file
 
         Returns:
             driver: BaciDriverDeep object
@@ -28,17 +39,16 @@ class BaciDriverDeep(Driver):
         base_settings['experiment_name'] = config['experiment_name']
         return cls(base_settings, workdir)
 
-    def setup_mpi(self, ntasks):
-        pass
-
     def setup_dirs_and_files(self):
-        """ Setup directory structure
+        """
+        Setup directory structure.
 
-            Args:
-                driver_options (dict): Options dictionary
+        Args:
+            driver_options (dict): Options dictionary
 
-            Returns:
-                str, str, str: simualtion prefix, name of input file, name of output file
+        Returns:
+            None
+
         """
         # base directories
         dest_dir = str(self.experiment_dir) + '/' + str(self.job_id)
@@ -60,8 +70,12 @@ class BaciDriverDeep(Driver):
         self.output_scratch = self.experiment_name + '_' + str(self.job_id)
 
     def run_job(self):
-        """ Actual method to run the job on computing machine
-            using run_subprocess method from base class
+        """
+        Actual method to run the job on computing machine
+        using run_subprocess method from base class
+
+        Returns:
+            None
         """
         # assemble run command
         command_list = [

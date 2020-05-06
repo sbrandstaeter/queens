@@ -1,10 +1,15 @@
 import time
-import pdb
 import numpy as np
+import pandas as pd
+import sys
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
+from pqueens.utils.run_subprocess import run_subprocess
+
+this = sys.modules[__name__]
+this.restart_flag = None
 
 
 class JobInterface(Interface):
@@ -17,14 +22,16 @@ class JobInterface(Interface):
         simulation software.
 
     Attributes:
-        name (string):              name of interface
-        resources (dict):           dictionary with resources
-        experiment_name (string):   name of experiment
-        db_adress (string):         adress of database to use
-        db (mongodb):               mongodb to store results and job info
-        polling_time (int):         how frequently do we check if jobs are done
-        output_dir (string):        directory to write output to
-        parameters (dict):          dictionary with parameters
+        interface_name (string):                 name of interface
+        resources (dict):                        dictionary with resources
+        experiment_name (string):                name of experiment
+        db_address (string):                     address of database to use
+        db (mongodb):                            mongodb to store results and job info
+        polling_time (int):                      how frequently do we check if jobs are done
+        output_dir (string):                     directory to write output to
+        restart_from_finished_simulation (bool): true if restart option is chosen
+        parameters (dict):                       dictionary with parameters
+        connect (string):                        connection to computing resource
 
     """
 
@@ -37,7 +44,9 @@ class JobInterface(Interface):
         db,
         polling_time,
         output_dir,
+        restart_from_finished_simulation,
         parameters,
+        connect,
     ):
         """ Create JobInterface
 
@@ -45,11 +54,13 @@ class JobInterface(Interface):
             interface_name (string):    name of interface
             resources (dict):           dictionary with resources
             experiment_name (string):   name of experiment
-            db_adress (string):         adress of database to use
+            db_address (string):         address of database to use
             db (mongodb):               mongodb to store results and job info
             polling_time (int):         how frequently do we check if jobs are done
             output_dir (string):        directory to write output to
-            variables (dict):           dictionary with parameters
+            parameters (dict):          dictionary with parameters
+            restart_from_finished_simulation (bool): true if restart option is chosen
+            connect (string):  connection to computing resource
         """
         self.name = interface_name
         self.resources = resources
@@ -60,6 +71,9 @@ class JobInterface(Interface):
         self.output_dir = output_dir
         self.parameters = parameters
         self.batch_number = 1
+        self.num_pending = None
+        self.restart_from_finished_simulation = restart_from_finished_simulation
+        self.connect_to_resource = connect
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -88,12 +102,18 @@ class JobInterface(Interface):
 
         polling_time = config.get('polling-time', 1)
 
+        # TODO: This is not nice -> should be solved solemnly over Driver class
         output_dir = config['driver']['driver_params']["experiment_dir"]
-        # TODO: This is not nice -> should be solved solemny over Driver class
+        restart_from_finished_simulation = config['driver']['driver_params'].get(
+            'restart_from_finished_simulation', False
+        )
+
+        # TODO: This is not nice
+        connect = list(resources.values())[0].scheduler.connect_to_resource
 
         parameters = config['parameters']
 
-        # instanciate object
+        # instantiate object
         return cls(
             interface_name,
             resources,
@@ -102,7 +122,9 @@ class JobInterface(Interface):
             db,
             polling_time,
             output_dir,
+            restart_from_finished_simulation,
             parameters,
+            connect,
         )
 
     def map(self, samples):
@@ -112,7 +134,7 @@ class JobInterface(Interface):
         Second variant which takes the input samples as argument
 
         Args:
-            samples (list):         list of variables objects
+            samples (list):         realization/samples of QUEENS simulation input variables
 
         Returns:
             np.array,np.array       two arrays containing the inputs from the
@@ -120,47 +142,35 @@ class JobInterface(Interface):
 
         """
         self.batch_number += 1
-        jobs = self.load_jobs()
-        for variables in samples:
-            processed_suggestion = False
-            while not processed_suggestion:
-                # loop over all available resources
-                for resource_name, resource in self.resources.items():
-                    if resource.accepting_jobs(jobs):
-                        # TODO wrong number!
-                        new_job = self.create_new_job(variables, resource_name)
 
-                        # Submit the job to the appropriate resource
-                        process_id = self.attempt_dispatch(resource, new_job)
-                        # process_id = resource.attempt_dispatch(self.experiment_name,
-                        #                                       self.batch_number,
-                        #                                       new_job,
-                        #                                       self.db_address,
-                        #                                       self.output_dir)
+        # Convert samples to pandas DataFrame to use index
+        samples = pd.DataFrame(samples, index=range(1, len(samples) + 1))
 
-                        # Set the status of the job appropriately (successfully submitted or not)
-                        if process_id is None:
-                            new_job['status'] = 'broken'
-                        else:
-                            new_job['status'] = 'pending'
-                            new_job['proc_id'] = process_id
-
-                        processed_suggestion = True
-                        jobs = self.load_jobs()
-                        print_resources_status(self.resources, jobs)
-
-                    else:
-                        time.sleep(self.polling_time)
-                        jobs = self.load_jobs()
+        job_manager = self.get_job_manager()
+        job_manager(samples)
 
         while not self.all_jobs_finished():
             time.sleep(self.polling_time)
 
         for _, resource in self.resources.items():
-            # This will close all previous opened ports for databank communication
+            # This will close all previous opened ports for database communication
             resource.scheduler.post_run()
+
         # get sample and response data
         return self.get_output_data()
+
+    def get_job_manager(self):
+        """Decide whether or not restart is performed.
+
+        Returns:
+            function object:    management function which should be used
+
+        """
+        if self.restart_from_finished_simulation:
+            return self._manage_restart
+
+        else:
+            return self._manage_jobs
 
     def attempt_dispatch(self, resource, new_job):
         """ Attempt to dispatch job multiple times
@@ -210,19 +220,24 @@ class JobInterface(Interface):
         """
         self.db.save(job, self.experiment_name, 'jobs', str(self.batch_number), {'id': job['id']})
 
-    def create_new_job(self, variables, resource_name):
+    def create_new_job(self, variables, resource_name, new_id=None):
         """ Create new job and save it to database and return it
 
         Args:
             variables (Variables):     variables to run model at
             resource_name (string):     name of resource
+            new_id (int):                  id for job
 
         Returns:
             job: new job
         """
-        print("Created new job")
+
         jobs = self.load_jobs()
-        job_id = len(jobs) + 1
+        if new_id is None:
+            print("Created new job")
+            job_id = len(jobs) + 1
+        else:
+            job_id = int(new_id)
 
         job = {
             'id': job_id,
@@ -230,17 +245,18 @@ class JobInterface(Interface):
             'expt_dir': self.output_dir,
             'expt_name': self.experiment_name,
             'resource': resource_name,
-            'status': 'pending',  # TODO: before: 'new'
+            'status': None,  # TODO: before: 'new'
             'submit time': time.time(),
             'start time': None,
             'end time': None,
         }
 
         self.save_job(job)
+
         return job
 
     def tired(self, resource):
-        """ Quick check wether a resource is fully occupied
+        """ Quick check whether a resource is fully occupied
 
         Args:
             (resource): resource object
@@ -262,21 +278,29 @@ class JobInterface(Interface):
                   or failed
         """
         jobs = self.load_jobs()
-        print_resources_status(self.resources, jobs)
+        num_pending = 0
         for job in jobs:
             if (
                 job['status'] != 'complete'
                 and job['status'] != 'failed'
                 and job['status'] != 'broken'
             ):
-                return False
+                num_pending = num_pending + 1
+
+        if (num_pending == self.num_pending) or (self.num_pending is None):
+            pass
+        else:
+            self.num_pending = num_pending
+            print_resources_status(self.resources, jobs)
+
+        if num_pending != 0:
+            return False
+
+        print_resources_status(self.resources, jobs)
         return True
 
     def get_output_data(self):
         """ Extract output data from database and return it
-
-        Args:
-            num_variables (int): number of input variables
 
         Returns:
             dict: output dictionary; i
@@ -291,8 +315,14 @@ class JobInterface(Interface):
             print("Not all jobs are finished yet, try again later")
         else:
             jobs = self.load_jobs()
-            for job in jobs:
-                mean_value = np.squeeze(job['result'])
+
+            # Sort job IDs in ascending order to match ordering of samples
+            jobids = [job['id'] for job in jobs]
+            jobids.sort()
+
+            for ID in jobids:
+                current_job = next(job for job in jobs if job['id'] == ID)
+                mean_value = np.squeeze(current_job['result'])
                 if not mean_value.shape:
                     mean_value = np.expand_dims(mean_value, axis=0)
                 mean_values.append(mean_value)
@@ -300,3 +330,367 @@ class JobInterface(Interface):
         output['mean'] = np.array(mean_values)
 
         return output
+
+    # -------------private helper methods ---------------- #
+
+    def _manage_restart(self, samples):
+        """Manage different steps of restart.
+
+        First, check if all results are in the database. Then, perform restart for missing results.
+        Next, find and perform block-restart. And finally, load missing jobs into database and
+        perform remaining restarts if necessary.
+
+        Args:
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+        """
+        # Check results in database
+        number_of_results_in_db, jobid_missing_results_in_db = self._check_results_in_db(samples)
+
+        # All job results in database
+        if number_of_results_in_db == samples.size:
+            print(f"All results found in database.")
+
+        # Not all job results in database
+        else:
+            # Run jobs with missing results in database
+            if len(jobid_missing_results_in_db) > 0:
+                self._manage_job_submission(samples, jobid_missing_results_in_db)
+
+            # Find index for block-restart and run jobs
+            jobid_for_block_restart = self._find_block_restart(samples)
+            if jobid_for_block_restart is not None:
+                range_block_restart = range(jobid_for_block_restart, samples.size + 1)
+                self._manage_job_submission(samples, range_block_restart)
+
+            # Check if database is complete: all jobs are loaded
+            is_every_job_in_db, jobid_smallest_in_db = self._check_jobs_in_db()
+
+            # Load missing jobs into database and restart single failed jobs
+            if not is_every_job_in_db:
+                jobid_for_single_restart = self._load_missing_jobs_to_db(
+                    samples, jobid_smallest_in_db
+                )
+                # Restart single failed jobs
+                if len(jobid_for_single_restart) > 0:
+                    self._manage_job_submission(samples, jobid_for_single_restart)
+
+    def _manage_jobs(self, samples):
+        """Manage regular submission of jobs without restart.
+
+        Args:
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+        """
+        idx_range = range(1, samples.size + 1, 1)
+        self._manage_job_submission(samples, idx_range)
+
+    def _check_results_in_db(self, samples):
+        """Check complete results in database.
+
+        Args:
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+
+        Returns:
+            number_of_results_in_db (int):              number of results in database
+            jobid_missing_results_in_db (ndarray):      job IDs of jobs with missing results
+        """
+        jobs = self.load_jobs()
+
+        number_of_results_in_db = 0
+        jobid_missing_results_in_db = []
+        for job in jobs:
+            if job.get('result', np.empty(shape=0)).size != 0:
+                number_of_results_in_db += 1
+            else:
+                jobid_missing_results_in_db = np.append(jobid_missing_results_in_db, job['id'])
+
+        # Restart single failed jobs
+        if len(jobid_missing_results_in_db) == 0:
+            print('>> No single restart detected from database.')
+        else:
+            print(
+                f'>> Single restart detected from database for job(s) #',
+                jobid_missing_results_in_db.astype(int),
+                '.',
+                sep='',
+            )
+            jobid_missing_results_in_db = self._get_user_input_for_restart(
+                samples, jobid_missing_results_in_db
+            )
+
+        return number_of_results_in_db, jobid_missing_results_in_db
+
+    @staticmethod
+    def _get_user_input_for_restart(samples, jobid_for_restart):
+        """Ask the user to confirm the detected job ID(s) for restarts.
+
+        Examples:
+            Possible user inputs:
+            y               confirm
+            n               abort
+            int             job ID
+            int int int     several job IDs
+
+        Args:
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+            jobid_for_restart (int):    job ID(s) detected for restart
+
+        Returns:
+            jobid_for_restart:  ID(s) of the job(s) which the user wants to restart
+        """
+        print('>> Would you like to proceed?')
+        print('>> Alternatively please type the ID of the job from which you want to restart!')
+        print('>> Type "n" to abort.')
+
+        while True:
+            try:
+                answer = input('>> Please type "y", "n" or job ID(s) (int) >> ')
+            except SyntaxError:
+                answer = None
+
+            if answer.lower() == 'y':
+                return jobid_for_restart
+            elif answer.lower() == 'n':
+                return None
+            elif answer is None:
+                print('>> Empty input! Only "y", "n" or job ID(s) (int) are valid inputs!')
+                print('>> Try again!')
+            else:
+                try:
+                    jobid_from_user = int(answer)
+                    if jobid_from_user <= samples.size:
+                        print(f'>> You chose a restart from job {jobid_from_user}.')
+                        jobid_for_restart = jobid_from_user
+                        return jobid_for_restart
+                    else:
+                        print(f'>> Your chosen job ID {jobid_from_user} is out of range.')
+                        print('>> Try again!')
+                except ValueError:
+                    try:
+                        jobid_from_user = np.array([int(jobid) for jobid in answer.split()])
+                        valid_id = True
+                        for jobid in jobid_from_user:
+                            if jobid <= samples.size:
+                                valid_id = True
+                                pass
+                            else:
+                                valid_id = False
+                                print(f'>> Your chosen job ID {jobid} is out of range.')
+                                print('>> Try again!')
+                                break
+                        if valid_id:
+                            print(f'>> You chose a restart of jobs {jobid_from_user}.')
+                            return jobid_from_user
+                    except IndexError:
+                        print(
+                            f'>> The input "{answer}" is not an appropriate choice! '
+                            f'>> Only "y", "n" or a job ID(s) (int) are valid inputs!'
+                        )
+                        print('>> Try again!')
+
+    def _check_jobs_in_db(self):
+        """Check jobs in database and find the job with the smallest job ID in the database.
+
+        Returns:
+            is_every_job_in_db (boolean):   true if smallest job ID in database is 1
+            jobid_smallest_in_db (int):     smallest job ID in database
+        """
+        jobs = self.load_jobs()
+
+        jobid_smallest_in_db = min([job['id'] for job in jobs])
+        is_every_job_in_db = jobid_smallest_in_db == 1
+
+        return is_every_job_in_db, jobid_smallest_in_db
+
+    def _find_block_restart(self, samples):
+        """Find index for block-restart.
+
+        Args:
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+
+        Returns:
+            jobid_for_block_restart (int):  index for block-restart of failed jobs
+        """
+        # Find number of subdirectories in output directory
+        if self.connect_to_resource:
+            command_list = [
+                'ssh',
+                self.connect_to_resource,
+                '"cd',
+                self.output_dir,
+                '; ls -l | grep ' '"^d" | wc -l "',
+            ]
+        else:
+            command_list = ['cd', self.output_dir, '; ls -l | grep ' '"^d" | wc -l']
+        command_string = ' '.join(command_list)
+        str_number_of_subdirectories, _, _ = run_subprocess(command_string)
+        number_of_subdirectories = (
+            int(str_number_of_subdirectories) if str_number_of_subdirectories else 0
+        )
+        assert (
+            number_of_subdirectories != 0
+        ), "You chose restart_from_finished simulations, but your output folder is empty. "
+
+        if number_of_subdirectories < samples.size:
+            # Start from (number of subdirectories) + 1
+            jobid_start_search = int(number_of_subdirectories) + 1
+        else:
+            jobid_start_search = samples.size
+
+        jobid_for_block_restart = None
+        jobid_for_restart_found = False
+        # Loop backwards to find first completed job
+        for jobid in range(jobid_start_search, -1, -1):
+            # Loop over all available resources
+            for resource_name, resource in self.resources.items():
+                current_job, process_id = self._get_current_job(
+                    samples, resource, resource_name, jobid
+                )
+
+                assert process_id == 0, "Error: Process ID in find_block_restart must be 0."
+
+                if current_job.get('result', np.empty(shape=0)).size != 0:
+                    # Last finished job -> restart from next job
+                    jobid_for_block_restart = jobid + 1
+                    jobid_for_restart_found = True
+                    break
+
+            if jobid_for_restart_found:
+                break
+
+        # If jobid for block-restart out of range -> no restart
+        if jobid_for_block_restart > samples.size:
+            jobid_for_block_restart = None
+
+        # Get user input for block-restart
+        if jobid_for_block_restart is not None:
+            print(f'>> Block-restart detected for job #{jobid_for_block_restart}. ')
+            jobid_for_block_restart = self._get_user_input_for_restart(
+                samples, jobid_for_block_restart
+            )
+            if (not isinstance(jobid_for_block_restart, int)) and (
+                jobid_for_block_restart is not None
+            ):
+                raise AssertionError('Only one job ID allowed for block-restart. ')
+        else:
+            print('>> No block-restart detected.')
+
+        return jobid_for_block_restart
+
+    def _load_missing_jobs_to_db(self, samples, jobid_end):
+        """Load missing jobs to database 1, ..., jobid_end.
+
+        Args:
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+            jobid_end (int):         index of job where to stop loading results
+
+        Returns:
+            jobid_for_single_restart:     array with indices of failed jobs and missing results
+        """
+        jobid_for_single_restart = []
+
+        for jobid in range(1, jobid_end):
+            for resource_name, resource in self.resources.items():
+                current_job, process_id = self._get_current_job(
+                    samples, resource, resource_name, jobid
+                )
+
+                assert process_id == 0, "Error: Process ID in load_missing_jobs_to_db must be 0."
+
+                if current_job.get('result', np.empty(shape=0)).size == 0:
+                    # No result
+                    jobid_for_single_restart = np.append(jobid_for_single_restart, int(jobid))
+
+        # Get user input for restart of single jobs
+        if len(jobid_for_single_restart) == 0:
+            print('>> No restart of single jobs detected.')
+            jobs = self.load_jobs()
+            print_resources_status(self.resources, jobs)
+        else:
+            print(
+                f'>> Single restart detected for job(s) #',
+                jobid_for_single_restart.astype(int),
+                '.',
+                sep='',
+            )
+            jobid_for_single_restart = self._get_user_input_for_restart(
+                samples, jobid_for_single_restart
+            )
+
+        return jobid_for_single_restart
+
+    def _manage_job_submission(self, samples, jobid_range):
+        """Iterate over samples and manage submission of jobs.
+
+        Args:
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+            jobid_range (range):     range of job IDs which are submitted
+        """
+        jobs = self.load_jobs()
+
+        for jobid in jobid_range:
+            processed_suggestion = False
+            while not processed_suggestion:
+                # Loop over all available resources
+                for resource_name, resource in self.resources.items():
+                    if resource.accepting_jobs(jobs):
+                        variables = samples.loc[jobid][0]
+                        try:
+                            current_job = next(job for job in jobs if job['id'] == jobid)
+                        except (StopIteration, IndexError):
+                            current_job = self.create_new_job(variables, resource_name, jobid)
+
+                        current_job['status'] = 'pending'
+                        self.save_job(current_job)
+
+                        # Submit the job to the appropriate resource
+                        this.restart_flag = False
+                        process_id = self.attempt_dispatch(resource, current_job)
+
+                        # Set the status of the job appropriately (successfully submitted or not)
+                        if process_id is None:
+                            current_job['status'] = 'broken'
+                        else:
+                            current_job['status'] = 'pending'
+                            current_job['proc_id'] = process_id
+
+                        processed_suggestion = True
+                        jobs = self.load_jobs()
+                        print_resources_status(self.resources, jobs)
+
+                    else:
+                        time.sleep(self.polling_time)
+                        jobs = self.load_jobs()
+
+        return
+
+    def _get_current_job(self, samples, resource, resource_name, job_id):
+        """Get the current job with ID (job_id) from database or from output directory.
+
+        Args:
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+            resource (Resource object): computing resource
+            resource_name (str):  name of computing resource
+            job_id (int):      job ID
+
+        Returns:
+            current job (dict):    current job with ID (job_id)
+            process_id (int):      0 if loaded from database or output directory
+        """
+        variables = samples.loc[job_id][0]
+        jobs = self.load_jobs()
+
+        try:
+            # Job already in database
+            current_job = next(job for job in jobs if job['id'] == job_id)
+            process_id = 0
+        except StopIteration:
+            # Job not in database:
+            # load result from output directory into database
+            current_job = self.create_new_job(variables, resource_name, job_id)
+            this.restart_flag = True
+            process_id = self.attempt_dispatch(resource, current_job)
+
+            jobs = self.load_jobs()
+            current_job = next(job for job in jobs if job['id'] == job_id)
+
+        return current_job, process_id

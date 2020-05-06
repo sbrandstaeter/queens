@@ -200,7 +200,7 @@ def test_set_base_params(base_param_names):
 def test_set_primary_params(primary_param_names):
     """ Test that the default primary parameter set is set correctly. """
 
-    value_goal = 3.14159
+    value_goal = 0.14159
     primary_params, derived_params = primary_param_names
     for param_name in primary_params:
         param_dict = {param_name: value_goal}

@@ -1,26 +1,29 @@
-""" This should be a docstring """
-
 import os
 from pqueens.drivers.driver import Driver
 
 
 class AnsysDriverNative(Driver):
-    """ Driver to run ANSYS natively on workstation
+    """
+    Driver to run ANSYS natively on workstation
 
-        Attributes:
-            custom_executable (str): Optional custom executable for ANSYS
+    Attributes:
+        custom_executable (str): Optional custom executable for ANSYS
+
+    Returns:
+        AnsysDriverNative_obj (obj): Instance of the AnsysDriverNative instance
 
     """
 
-    def __init__(self, custom_executable, ansys_version,  base_settings):
-        # TODO dunder init should not be called with dict 
+    def __init__(self, custom_executable, ansys_version, base_settings):
+        # TODO dunder init should not be called with dict
         super(AnsysDriverNative, self).__init__(base_settings)
         self.custom_executable = custom_executable
         self.ansys_version = ansys_version
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings):
-        """ Create Driver from input file
+        """
+        Create Driver from input file
 
         Args:
             config (dict):          Input options
@@ -28,6 +31,7 @@ class AnsysDriverNative(Driver):
 
         Returns:
             driver: AnsysDriverNative object
+
         """
         # TODO this needs to be fixed
         base_settings['address'] = 'localhost:27017'
@@ -40,6 +44,7 @@ class AnsysDriverNative(Driver):
 
     def setup_dirs_and_files(self):
         """ Setup directory structure """
+
         self.main_executable = self.executable
 
         # base directories
@@ -64,16 +69,20 @@ class AnsysDriverNative(Driver):
         # assemble run command
         command_string = self.assemble_command_string()
 
+        # run ANSYS via subprocess
         _, stderr, self.pid = self.run_subprocess(command_string)
+
+        # detection of failed jobs
         if stderr:
-            self.result = None  # This is necessary to detect failed jobs
+            self.result = None
             self.job['status'] = 'failed'
 
     def assemble_command_string(self):
-        """  Assemble command list
+        """
+        Assemble command list
 
-            Returns:
-                list: command list to execute ANSYS
+        Returns:
+            list (lst): command list to execute ANSYS
 
         """
         command_list = []
@@ -87,7 +96,7 @@ class AnsysDriverNative(Driver):
                 "-j ",
                 str(self.experiment_name) + '_' + str(self.job_id),
                 "-s read -l en-us -t -d X11 > ",
-                self.output_file
+                self.output_file,
             ]
         elif ansys_version == 'v19':
             command_list = [

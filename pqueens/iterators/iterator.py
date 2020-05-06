@@ -94,7 +94,7 @@ class Iterator(metaclass=abc.ABCMeta):
         pass
 
     def post_run(self):
-        """ Optional post-run portion of run, e.g., for doing some post processig """
+        """ Optional post-run portion of run, e.g., for doing some post processing """
         pass
 
     def finalize_run(self):

@@ -1,3 +1,12 @@
+"""
+Estimation of the probability density function based on samples from the distribution.
+
+It uses the kernel density estimation (kde) algorithm.
+"""
+
+import pdb
+
+import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 import numpy as np
@@ -10,10 +19,12 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
         samples (np.array):  samples for which to estimate pdf
         min_samples (float): smallest value
         max_samples (float): largest value
+
     Returns:
         float: estimate for optimal kernel_bandwidth
+
     """
-    kernel_bandwidth_upper_bound = np.log10((max_samples - min_samples) / 2)
+    kernel_bandwidth_upper_bound = np.log10((max_samples - min_samples) / 2.0)
     kernel_bandwidth_lower_bound = np.log10((max_samples - min_samples) / 30.0)
 
     # do 30-fold cross-validation and use all cores available to speed-up the process
@@ -48,8 +59,8 @@ def estimate_pdf(samples, kernel_bandwidth, support_points=None):
 
     # support points given
     if support_points is None:
-        min_samples = np.amin(samples)  # DG: -0.5, #fsi:0.02
-        max_samples = np.amax(samples)  # DG:2.0, #fsi:0.07
+        min_samples = np.amin(samples)
+        max_samples = np.amax(samples)
         support_points = np.linspace(min_samples, max_samples, 100)
         support_points = np.meshgrid(*[support_points[:, None]] * samples.shape[1])
         points = support_points[0].reshape(-1, 1)

@@ -51,11 +51,10 @@ class PostPostDEAL(PostPost):
         post_files_list = glob.glob(files_of_interest)
         # TODO this is not general but only for navier stokes solver
         path = post_files_list[0]
-        post_out = []
+        post_out = np.empty(shape=0)
 
         try:
-            post_data = pd.read_csv(path, usecols=self.usecols,
-                                    sep=r'\s+', skiprows=self.skiprows)
+            post_data = pd.read_csv(path, usecols=self.usecols, sep=r'\s+', skiprows=self.skiprows)
             post_out = post_data[
                 (post_data.iloc[:, 0] >= 4) & (post_data.iloc[:, 0] <= 7)
             ].to_numpy()

@@ -1,22 +1,35 @@
-# standard imports
+"""
+Main module of QUEENS containing the high-level control routine.
+
+Handles input parsing.
+Controls and runs the analysis.
+"""
 import argparse
 from collections import OrderedDict
 import os
-import pyfiglet
 import sys
 import time
+
+import pyfiglet
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-# queens imports
 from pqueens.iterators.iterator import Iterator
 
 
 def main(args):
-    """ Run analysis """
+    """
+    Main function of QUEENS
+
+    controls and runs the analysis.
+
+    Args:
+        args (list): list of arguments to be parsed
+    """
+    # pylint: disable=anomalous-backslash-in-string
     crown = """
                                 *
                               * | *
@@ -26,6 +39,7 @@ def main(args):
                          (<><><>O<><><>)
                           '==========='
     """
+    # pylint: enable=anomalous-backslash-in-string
     print(crown)
     result = pyfiglet.figlet_format("QUEENS", font="banner3-D")
     print(result)
@@ -46,7 +60,7 @@ def main(args):
     end_time_input = time.time()
 
     print("")
-    print(f"Time for INPUT: {end_time_input-start_time_input} s")
+    print(f"Time for INPUT: {end_time_input - start_time_input} s")
     print("")
 
     start_time_calc = time.time()
@@ -60,12 +74,20 @@ def main(args):
 
     end_time_calc = time.time()
     print("")
-    print(f"Time for CALCULATION: {end_time_calc-start_time_calc} s")
+    print(f"Time for CALCULATION: {end_time_calc - start_time_calc} s")
     print("")
 
 
 def get_options(args):
-    """ Parse options from command line and input file """
+    """
+    Parse options from command line and input file.
+
+    Args:
+        args (list): list of arguments to be parsed
+
+    Returns:
+        dict: parsed options in a dictionary
+    """
 
     parser = argparse.ArgumentParser(description="QUEENS")
     parser.add_argument(

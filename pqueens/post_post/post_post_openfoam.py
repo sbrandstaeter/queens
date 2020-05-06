@@ -6,8 +6,8 @@ import pandas as pd
 from pqueens.post_post.post_post import PostPost
 
 
-class PostPostBACI(PostPost):
-    """ Class for post-post-processing BACI output
+class PostPostOpenFOAM(PostPost):
+    """ Class for post-post-processing OpenFOAM output
 
         Attributes:
             time_tol (float):       Tolerance if desired time can not be matched exactly
@@ -29,7 +29,7 @@ class PostPostBACI(PostPost):
 
         """
 
-        super(PostPostBACI, self).__init__(delete_data_flag, file_prefix)
+        super(PostPostOpenFOAM, self).__init__(delete_data_flag, file_prefix)
         self.usecols = usecols
         self.time_tol = time_tol
         self.target_time = target_time
@@ -43,7 +43,7 @@ class PostPostBACI(PostPost):
             options (dict): input options
 
         Returns:
-            post_post: PostPostBACI object
+            post_post: PostPostOpenFOAM object
         """
         post_post_options = options['options']
         time_tol = post_post_options['time_tol']
@@ -56,12 +56,13 @@ class PostPostBACI(PostPost):
         return cls(time_tol, target_time, skiprows, usecols, delete_data_flag, file_prefix)
 
     def read_post_files(self):
-        """ Loop over post files in given output directory """
+        """ Loop over post files in given output directory and extract results """
 
         prefix_expr = '*' + self.file_prefix + '*'
-        files_of_interest = os.path.join(self.output_dir, prefix_expr)
+        time_dir = os.path.join(self.output_dir, str(self.target_time))
+        files_of_interest = os.path.join(time_dir, prefix_expr)
         post_files_list = glob.glob(files_of_interest)
-        post_out = np.empty(shape=0)
+        post_out = []
 
         for filename in post_files_list:
             try:
@@ -72,8 +73,14 @@ class PostPostBACI(PostPost):
                     skiprows=self.skiprows,
                     engine='python',
                 )
-                identifier = abs(post_data.iloc[:, 0] - self.target_time) < self.time_tol
-                quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
+                data_extract = str(post_data.iloc[0, 0])
+                if "(" in data_extract:
+                    final_data_extract = data_extract.replace('(', '')
+                elif ")" in data_extract:
+                    final_data_extract = data_extract.replace(')', '')
+                else:
+                    final_data_extract = data_extract
+                quantity_of_interest = float(final_data_extract)
                 post_out = np.append(post_out, quantity_of_interest)
                 # very simple error check
                 if not post_out:

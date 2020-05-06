@@ -1,12 +1,25 @@
-import numpy as np
+"""
+Collection of utility functions for post-processing.
+"""
+
+import pathlib
 import pickle
 import warnings
+
+import numpy as np
+from sklearn.model_selection import GridSearchCV
+from sklearn.neighbors import KernelDensity
+
+
+import numpy as np
+import pandas as pd
+from sklearn.model_selection import GridSearchCV
+from sklearn.neighbors import KernelDensity
+
 from pqueens.utils.plot_outputs import plot_pdf
 from pqueens.utils.plot_outputs import plot_cdf
 from pqueens.utils.plot_outputs import plot_failprob
 from pqueens.utils.plot_outputs import plot_icdf
-from sklearn.model_selection import GridSearchCV
-from sklearn.neighbors import KernelDensity
 
 
 def process_ouputs(output_data, output_description, input_data=None):
@@ -124,7 +137,7 @@ def write_results(processed_results, path_to_file, file_name):
 
     """
 
-    pickle_file = path_to_file + '/' + file_name + ".pickle"
+    pickle_file = pathlib.Path(path_to_file, file_name + ".pickle")
 
     with open(pickle_file, 'wb') as handle:
         pickle.dump(processed_results, handle, protocol=pickle.HIGHEST_PROTOCOL)

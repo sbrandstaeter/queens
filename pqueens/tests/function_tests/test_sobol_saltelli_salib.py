@@ -7,16 +7,16 @@ import pytest
 from pqueens.main import main
 
 
-def test_sobol_saltelli_2nd_order(inputdir, tmpdir):
+def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
     """
-    Test saltelli iterator with Sobol G function.
+    Test Saltelli SALib iterator with Sobol G function.
 
     Including first, second and total order indices.
     The test should converge to the analytical solution defined in the Sobol G function
     implementaion (see sobol.py).
     """
     arguments = [
-        '--input=' + os.path.join(inputdir, 'sobol_saltelli.json'),
+        '--input=' + os.path.join(inputdir, 'sobol_saltelli_salib.json'),
         '--output=' + str(tmpdir),
     ]
 

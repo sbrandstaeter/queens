@@ -1,32 +1,37 @@
-""" This should be a docstring """
-
 import os
 from pqueens.drivers.driver import Driver
 from pqueens.utils.injector import inject
 
 
 class NavierStokesNative(Driver):
-    """ Driver to run BACI natively on workstation
+    """
+    Driver to run the deal-II navierstokes code natively on workstation
 
-        Args:
-            job (dict): Dict containing all information to run the simulation
+    Args:
+        output_navierstokes (str): Path to the output directory of the Navier Stokes solver
 
-        Returns:
-            float: result
+    Returns:
+        NavierStokesNative_obj (obj): Instance of the NavierStokesNative class
+
     """
 
     def __init__(self, base_settings):
         super(NavierStokesNative, self).__init__(base_settings)
-        self.mpi_config = {}
         self.output_navierstokes = None  # Will be assigned on runtime
 
     @classmethod
     def from_config_create_driver(cls, config, base_settings, workdir=None):
-        """ Create Driver from input file
+        """
+        Create Driver from input file.
 
         Args:
+            config (dict): Dictionary with problem description based on the json input file
+            base_settings (dict): Dictionary with base settings of the parent class (depreciated:
+                                  will be removed in the future)
+            workdir (str): Path to the QUEENS working directory on the localhost
+
         Returns:
-            driver: BaciDriverNative object
+            NavierStokesNative_obj (obj): Instance of the NavierStokesNative class
 
         """
         base_settings['address'] = 'localhost:27017'
@@ -34,13 +39,12 @@ class NavierStokesNative(Driver):
 
     # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def setup_dirs_and_files(self):
-        """ Setup directory structure
+        """
+        Setup directory structure
 
-            Args:
-                driver_options (dict): Options dictionary
+        Returns:
+            None
 
-            Returns:
-                str, str, str: simualtion prefix, name of input file, name of output file
         """
         # base directories
         dest_dir = os.path.join(self.experiment_dir, str(self.job_id))
@@ -76,8 +80,13 @@ class NavierStokesNative(Driver):
                 myfile.write('%s\n' % ele)
 
     def run_job(self):
-        """ Actual method to run the job on computing machine
-            using run_subprocess method from base class
+        """
+        Actual method to run the job on computing machine
+        using run_subprocess method from base class
+
+        Returns:
+            None
+
         """
         # write output directory in input file (this is a special case
         # for the navierstokes solver)
@@ -86,15 +95,33 @@ class NavierStokesNative(Driver):
         absolute_path = os.path.join(base_path, 'flow_past_cylinder_inflow.txt')
         inject({"input_dir": absolute_path}, self.input_file, self.input_file)
 
-        # assemble run command
-        self.setup_mpi(self.num_procs)
-        command_list = [self.executable, self.input_file]
-        command_string = ' '.join(filter(None, command_list))
+        # assemble run command sttring
+        command_string = self.assemble_command_string()
+
+        # run BACI via subprocess
         stdout, stderr, self.pid = self.run_subprocess(command_string)
 
+        # detection of failed jobs
         if stderr:
             self.result = None
             self.job['status'] = 'failed'
 
-    def setup_mpi(self, num_procs):  # TODO this is not needed atm
-        pass
+    def assemble_command_string(self):
+        """  Assemble BACI run command list
+
+            Returns:
+                list: command list to execute BACI
+
+        """
+        # set MPI command
+        mpi_command = 'mpirun -np'
+
+        command_list = [
+            mpi_command,
+            str(self.num_procs),
+            self.executable,
+            self.input_file,
+            self.output_file,
+        ]
+
+        return ' '.join(filter(None, command_list))

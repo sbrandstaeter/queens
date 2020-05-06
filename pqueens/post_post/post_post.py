@@ -49,17 +49,21 @@ class PostPost(metaclass=abc.ABCMeta):
         from .post_post_baci import PostPostBACI
         from .post_post_deal import PostPostDEAL
         from .post_post_generic import PostPostGeneric
+        from .post_post_openfoam import PostPostOpenFOAM
+        from .post_post_baci_shape import PostPostBACIShape
 
         post_post_dict = {
             'ansys': PostPostANSYS,
             'baci': PostPostBACI,
             'deal': PostPostDEAL,
-            'generic': PostPostGeneric
+            'generic': PostPostGeneric,
+            'openfoam': PostPostOpenFOAM,
+            'baci_shape': PostPostBACIShape,
         }
 
         # determine which object to create
         # TODO this is not a reliable approach? What if we have multiple drivers?
-        # However, this cannot be fixed by itself here, but we need to 
+        # However, this cannot be fixed by itself here, but we need to
         # cleanup the whole input parameter handling to fix this.
         post_post_options = config['driver']['driver_params']['post_post']
 
@@ -71,6 +75,10 @@ class PostPost(metaclass=abc.ABCMeta):
             post_post_version = 'deal'
         elif post_post_options['post_post_approach_sel'] == 'generic':
             post_post_version = 'generic'
+        elif post_post_options['post_post_approach_sel'] == 'baci_shape':
+            post_post_version = 'baci_shape'
+        elif post_post_options['post_post_approach_sel'] == 'openfoam':
+            post_post_version = 'openfoam'
         else:
             raise RuntimeError("post_post_approach_sel not set, fix your input file")
 
@@ -79,9 +87,9 @@ class PostPost(metaclass=abc.ABCMeta):
         # ---------------------------- CREATE BASE SETTINGS ---------------------------
         base_settings = {}
         base_settings['options'] = post_post_options
-        #base_settings['file_prefix'] = post_post_options['file_prefix']
-        #base_settings['usecols'] = post_post_options['usecols']
-        #base_settings['delete_field_data'] = post_post_options['delete_field_data']
+        # base_settings['file_prefix'] = post_post_options['file_prefix']
+        # base_settings['usecols'] = post_post_options['usecols']
+        # base_settings['delete_field_data'] = post_post_options['delete_field_data']
 
         post_post = post_post_class.from_config_create_post_post(base_settings)
         return post_post

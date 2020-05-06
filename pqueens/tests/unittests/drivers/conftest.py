@@ -3,6 +3,7 @@ import pytest
 from pqueens.drivers.ansys_driver_native import AnsysDriverNative
 from pqueens.database.mongodb import MongoDB
 
+
 @pytest.fixture(scope='session')
 def job(tmpdir_factory):
     """ Generic job dictionary for testing drivers"""
@@ -22,7 +23,7 @@ def baci_job(job, tmpdir_factory):
     baci_dir = tmpdir_factory.mktemp('baci_dir')
 
     driver_params = {}
-    driver_params['input_template'] = str(
+    driver_params['simulation_input_template'] = str(
         tmpdir_factory.mktemp('template_dir').join('template.dat')
     )
     driver_params['path_to_executable'] = str(baci_dir.join('baci_release'))
@@ -98,27 +99,9 @@ def ansys_driver(driver_base_settings, mocker):
     driver_base_settings['address'] = 'localhost:27017'
     driver_base_settings['file_prefix'] = 'rst'
     driver_base_settings['output_scratch'] = 'rst'
-    my_driver = AnsysDriverNative(None, 'v15',  driver_base_settings)
+    my_driver = AnsysDriverNative(None, 'v15', driver_base_settings)
     return my_driver
 
-########################################################################
-#########################   DOCKER   ###################################
-########################################################################
-@pytest.fixture(scope='module')
-def baci_docker_job(baci_job, tmpdir_factory):
-    """ Job dictionary for testing BACI docker driver"""
-
-    baci_job['driver_params']['docker_container'] = str(
-        tmpdir_factory.mktemp('docker_container_dir').join('container')
-    )
-
-    return baci_job
-
-
-@pytest.fixture(scope='module')
-def docker_volume_map(job):
-    volume_map = {job['expt_dir']: {'bind': job['expt_dir'], 'mode': 'rw'}}
-    return volume_map
 
 ########################################################################
 #########################   DRIVER   ###################################
@@ -135,7 +118,7 @@ def driver_base_settings(job):
     base_settings['experiment_name'] = job['expt_name']
     base_settings['job_id'] = job['id']
     base_settings['input_file'] = 'input.json'
-    base_settings['template'] = 'template.dat'
+    base_settings['simulation_input_template'] = 'template.dat'
     base_settings['output_file'] = 'experiment.out'
     base_settings['job'] = job
     base_settings['batch'] = 1

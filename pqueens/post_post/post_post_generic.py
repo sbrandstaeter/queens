@@ -15,8 +15,7 @@ class PostPostGeneric(PostPost):
 
     """
 
-    def __init__(self, skip_rows, use_col, use_row, delete_data_flag,
-                 file_prefix):
+    def __init__(self, skip_rows, use_col, use_row, delete_data_flag, file_prefix):
         """ Init PostPost object
 
         Args:
@@ -51,8 +50,7 @@ class PostPostGeneric(PostPost):
         delete_data_flag = post_post_options['delete_field_data']
         file_prefix = post_post_options['file_prefix']
 
-        return cls(skip_rows, use_col, use_row,
-                   delete_data_flag, file_prefix)
+        return cls(skip_rows, use_col, use_row, delete_data_flag, file_prefix)
 
     def read_post_files(self):
         """ Loop over post files in given output directory """
@@ -60,7 +58,7 @@ class PostPostGeneric(PostPost):
         prefix_expr = '*' + self.file_prefix + '*'
         files_of_interest = os.path.join(self.output_dir, prefix_expr)
         post_files_list = glob.glob(files_of_interest)
-        post_out = []
+        post_out = np.empty(shape=0)
 
         for filename in post_files_list:
             try:

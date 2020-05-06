@@ -1,11 +1,13 @@
 import random
+
+import matplotlib as mpl
 import numpy as np
 from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
+
 from pqueens.models.model import Model
-from .iterator import Iterator
 from pqueens.utils.process_outputs import write_results
-import matplotlib as mpl
+from .iterator import Iterator
 
 if not mpl.get_backend().lower() == 'agg':
     mpl.use('TkAgg')
@@ -174,7 +176,7 @@ class MorrisSALibIterator(Iterator):
 
         if parameter_info.get("random_fields", None) is not None:
             raise RuntimeError(
-                "LHS Sampling is currentyl not implemented in conjunction with random fields."
+                "Morris screening is currently not implemented in conjunction with random fields."
             )
 
         self.salib_problem = {

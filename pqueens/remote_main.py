@@ -1,17 +1,37 @@
+"""
+This file contains the high-level control routine for remote computations.
+
+Remote computation means the evaluation of the forward model in a detached process (from the main
+QUEENS run). The detached process can run on the same machine as the main run or on a different,
+remote machine (e.g., a computing cluster). Additionally, it may also be wrapped in a singularity
+image.
+"""
+
 import argparse
-import os
-import sys
 from collections import OrderedDict
+import os
 
 try:
     import simplejson as json
 except ImportError:
     import json
+import sys
+
 from pqueens.drivers.driver import Driver
 
 
 def main(args):
-    """ This should be a docstring """
+    """
+    Main function for remote forward model evaluation.
+
+    Control routine for the forward model evaluation in an independent, detached process, i.e.,
+    remote.
+    Called twice per model evaluation: once for the pre-processing and solving and once for the
+    post-processing.
+
+    Args:
+        args (list): list of arguments to be parsed
+    """
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--job_id",
@@ -22,9 +42,9 @@ def main(args):
     parser.add_argument("--port", help="port number chosen for port-forwarding", type=str)
     parser.add_argument("--path_json", help="system path to temporary json file", type=str)
     parser.add_argument("--post", help="option for postprocessing", type=str)
-    parser.add_argument("--workdir", help="option for postprocessing", type=str)
+    parser.add_argument("--workdir", help="working directory", type=str)
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
     job_id = args.job_id
     batch = args.batch
     port = args.port
@@ -40,9 +60,7 @@ def main(args):
             raise FileNotFoundError("temp.json did not load properly.")
 
         driver_obj = Driver.from_config_create_driver(config, job_id, batch)
-        # Run the singularity image in just one step
-        driver_obj.main_run()
-        driver_obj.finish_and_clean()
+
     else:
         try:
             abs_path = os.path.join(path_json, 'temp.json')
@@ -55,12 +73,14 @@ def main(args):
         driver_obj = Driver.from_config_create_driver(
             config, job_id, batch, port, path_to_post_post_file, workdir
         )
-        # Run the singularity image in two steps
+
+    # Run the singularity image in two steps
+    if post == 'true':
+        driver_obj.finish_and_clean()
+    else:
         driver_obj.main_run()
-        if post == 'true':
-            driver_obj.finish_and_clean()
 
 
 # ------------------------------ HELPER FUNCTIONS -----------------------------
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1]))
+    sys.exit(main(sys.argv[1:]))
