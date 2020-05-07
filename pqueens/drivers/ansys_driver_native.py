@@ -40,7 +40,7 @@ class AnsysDriverNative(Driver):
 
         custom_exec = driver_setting.get('custom_executable', None)
         ansys_version = driver_setting.get('ansys_version', None)
-        return cls(base_settings, custom_exec, ansys_version)
+        return cls(custom_exec, ansys_version, base_settings)
 
     def setup_dirs_and_files(self):
         """ Setup directory structure """
@@ -98,7 +98,7 @@ class AnsysDriverNative(Driver):
                 "-s read -l en-us -t -d X11 > ",
                 self.output_file,
             ]
-        elif ansys_version == 'v19':
+        elif self.ansys_version == 'v19':
             command_list = [
                 self.main_executable,
                 "-p ansys -smp -np 1 -lch -dir",
