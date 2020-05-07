@@ -112,12 +112,7 @@ def test_init(mocker):
     )
 
     my_postpost = PostPostBACIShape(
-        path_ref_data,
-        time_tol,
-        case_type,
-        visualization,
-        delete_field_data,
-        file_prefix,
+        path_ref_data, time_tol, case_type, visualization, delete_field_data, file_prefix,
     )
 
     mp.assert_called_once_with(delete_field_data, file_prefix)

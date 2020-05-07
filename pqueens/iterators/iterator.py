@@ -65,6 +65,7 @@ class Iterator(metaclass=abc.ABCMeta):
             'sa_saltelli_salib': SaltelliSALibIterator,
             'smc': SequentialMonteCarloIterator,
             'bmfmc': BMFMCIterator,
+            'baci_lm': BaciLMIterator,
         }
 
         if iterator_name is None:

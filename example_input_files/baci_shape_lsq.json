@@ -45,7 +45,6 @@
         "post_post_approach_sel" : "baci_shape",
         "path_to_ref_data" : "/home/willmann/sim/queens/test_contour/invana_levenbergmarquardt_tri_fsi_contour_E2000_nue03_p.monitor",
         "delete_field_data" : false,
-        "target_time": 8,
         "time_tol": 1e-2,
         "file_prefix": "xx",
         "case_type": "2d_full",

@@ -7,6 +7,7 @@ from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils.fd_jacobian import fd_jacobian
 
+
 class BaciLMIterator(Iterator):
     """
     Iterator for deterministic optimization problems
@@ -44,8 +45,6 @@ class BaciLMIterator(Iterator):
         self.reg_param = init_reg
         self.update_reg = update_reg
         self.tolerance = tolerance
-
-        self.eval_jacobian = False
 
         self.verbose_output = verbose_output
 
@@ -402,7 +401,7 @@ class BaciLMIterator(Iterator):
         print(
             f"iteration: {i} reg_param: {self.reg_param} current_parameters: {self.param_current}"
         )
-        string = np.array2string(param_delta,precision=8)
+        string = np.array2string(param_delta, precision=8)
         # write iteration to file
         if self.result_description:
             if self.result_description["write_results"]:
