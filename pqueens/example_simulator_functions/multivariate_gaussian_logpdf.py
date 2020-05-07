@@ -5,14 +5,15 @@ from pqueens.utils import mcmc_utils
 dim = 2
 
 meas_data = [0.0, 0.0]
-cov = [[1.0, 0.5],
-       [0.5, 1.0]]
+cov = [[1.0, 0.5], [0.5, 1.0]]
 
 A = np.eye(dim, dim)
 b = np.zeros(dim)
 
 
 gauss_like = mcmc_utils.NormalProposal(mean=meas_data, covariance=cov)
+
+
 def gaussian_logpdf(x1, x2):
     """ 2D Gaussian likelihood model
 

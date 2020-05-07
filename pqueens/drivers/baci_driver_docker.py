@@ -77,7 +77,6 @@ class BaciDriverDocker(Driver):
         # explicitly assemble run command for Docker container
         docker_run_command_string = self.assemble_docker_run_command_string()
 
-
         # run BACI in Docker container via subprocess
         _, stderr, self.pid = self.run_subprocess(docker_run_command_string)
 

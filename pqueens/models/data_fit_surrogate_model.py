@@ -1,8 +1,7 @@
 import numpy as np
 from pqueens.iterators.iterator import Iterator
 from pqueens.interfaces.interface import Interface
-from . model import Model
-
+from .model import Model
 
 
 class DataFitSurrogateModel(Model):
@@ -13,8 +12,16 @@ class DataFitSurrogateModel(Model):
 
     """
 
-    def __init__(self, model_name, interface, model_parameters, subordinate_model,
-                 subordinate_iterator, eval_fit, error_measures):
+    def __init__(
+        self,
+        model_name,
+        interface,
+        model_parameters,
+        subordinate_model,
+        subordinate_iterator,
+        eval_fit,
+        error_measures,
+    ):
         """ Initialize data fit surrogate model
 
         Args:
@@ -61,19 +68,25 @@ class DataFitSurrogateModel(Model):
         error_measures = model_options.get("error_measures", None)
 
         # create subordinate model
-        subordinate_model = Model.from_config_create_model(subordinate_model_name,
-                                                           config)
+        subordinate_model = Model.from_config_create_model(subordinate_model_name, config)
 
         # create subordinate iterator
-        subordinate_iterator = Iterator.from_config_create_iterator(config,
-                                                                    subordinate_iterator_name,
-                                                                    subordinate_model)
+        subordinate_iterator = Iterator.from_config_create_iterator(
+            config, subordinate_iterator_name, subordinate_model
+        )
 
         # create interface
         interface = Interface.from_config_create_interface(interface_name, config)
 
-        return cls(model_name, interface, model_parameters, subordinate_model,
-                   subordinate_iterator, eval_fit, error_measures)
+        return cls(
+            model_name,
+            interface,
+            model_parameters,
+            subordinate_model,
+            subordinate_iterator,
+            eval_fit,
+            error_measures,
+        )
 
     def evaluate(self):
         """ Evaluate model with current set of variables
@@ -100,10 +113,11 @@ class DataFitSurrogateModel(Model):
         self.interface.build_approximation(X, Y)
 
         if self.eval_fit == "kfold":
-            error_measures = self.eval_surrogate_accuracy_cv(X=X, Y=Y, k_fold=5,
-                                                             measures=self.error_measures)
+            error_measures = self.eval_surrogate_accuracy_cv(
+                X=X, Y=Y, k_fold=5, measures=self.error_measures
+            )
             for measure, error in error_measures.items():
-                print("Error {} is:{}".format(measure,error))
+                print("Error {} is:{}".format(measure, error))
         # TODO check that final surrogate is on all points
 
         # TODO add proper test for error computation on test set
@@ -117,7 +131,6 @@ class DataFitSurrogateModel(Model):
         #     error_measures = self.eval_surrogate_accuracy(X_test,y_test, self.error_measures)
         #     for measure, error in error_measures.items():
         #         print("Error {} is:{}".format(measure,error))
-
 
     def eval_surrogate_accuracy(self, X_test, y_test, measures):
         """ Evaluate the accuracy of the surrogate model based on test set
@@ -196,11 +209,11 @@ class DataFitSurrogateModel(Model):
         """
         # TODO checkout raises field
         if measure == "sum_squared":
-            error = np.sum((y_act - y_pred)**2)
+            error = np.sum((y_act - y_pred) ** 2)
         elif measure == "mean_squared":
-            error = np.mean((y_act - y_pred)**2)
+            error = np.mean((y_act - y_pred) ** 2)
         elif measure == "root_mean_squared":
-            error = np.sqrt(np.mean((y_act - y_pred)**2))
+            error = np.sqrt(np.mean((y_act - y_pred) ** 2))
         elif measure == "sum_abs":
             error = np.sum(np.abs(y_act - y_pred))
         elif measure == "mean_abs":

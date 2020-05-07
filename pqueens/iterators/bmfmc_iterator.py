@@ -61,9 +61,7 @@ class BmfmcIterator(Iterator):
         self.lf_mc_in = None
         self.hf_mc = None
         self.lfs_mc_out = None
-        self.output = (
-            None
-        )  # this is still important and will prob be the marginal pdf of the hf / its statistics
+        self.output = None
         self.initial_design = initial_design
         self.predictive_var = predictive_var
         self.config = config  # This is needed to construct the model on runtime
@@ -178,7 +176,13 @@ class BmfmcIterator(Iterator):
                 with open(path_to_train_data, 'rb') as handle:
                     # TODO: give better name according to experiment and choose better location
                     # pylint: disable=line-too-long
-                    self.train_in, self.lfs_train_out, self.hf_train_out, self.lf_mc_in, self.lfs_mc_out = pickle.load(
+                    (
+                        self.train_in,
+                        self.lfs_train_out,
+                        self.hf_train_out,
+                        self.lf_mc_in,
+                        self.lfs_mc_out,
+                    ) = pickle.load(
                         handle
                     )  # TODO --> Change this according to design below!!
                     # pylint: enable=line-too-long

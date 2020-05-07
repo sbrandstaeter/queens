@@ -54,9 +54,9 @@ def data_vector():
     # total size is sum of size values of uncertain_parameters
     data_vector = np.zeros(3)
 
-    data_vector[0] = 1.
-    data_vector[1] = 2.
-    data_vector[2] = 3.
+    data_vector[0] = 1.0
+    data_vector[1] = 2.0
+    data_vector[2] = 3.0
 
     return data_vector
 
@@ -77,10 +77,10 @@ def responses():
     """ Possible responses for vector valued model. """
 
     responses = dict()
-    responses['mean'] = np.array([[1., 1.],
-                                  [2., 2.]])
+    responses['mean'] = np.array([[1.0, 1.0], [2.0, 2.0]])
 
     return responses
+
 
 def test_get_parameters(model, model_name, uncertain_parameters):
     """
@@ -145,10 +145,10 @@ def test_check_for_precalculated_response_of_sample_batch_wrong_data(data_batch,
 
     assert precalculated is False
 
+
 def test_check_for_precalculated_response_of_sample_batch_wrong_size(data_batch, model):
     """ Requested batch size does not match current variables size. """
 
     precalculated = model.check_for_precalculated_response_of_sample_batch(data_batch)
 
     assert precalculated is False
-

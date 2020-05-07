@@ -1,6 +1,7 @@
 import numpy as np
 
-def agawal09a(x1,x2,a1=0.5,a2=0.5):
+
+def agawal09a(x1, x2, a1=0.5, a2=0.5):
     """ Compute the Agawal09a function
 
     Two dimensional benchmark funcion for UQ approaches proposed in [1].
@@ -32,11 +33,12 @@ def agawal09a(x1,x2,a1=0.5,a2=0.5):
     """
 
     if x1 > a1 or x2 > a2:
-        y=0
+        y = 0
     else:
-        y=np.sin(np.pi*x1)*np.sin(np.pi*x2)
+        y = np.sin(np.pi * x1) * np.sin(np.pi * x2)
 
     return y
+
 
 def main(job_id, params):
     """ Interface to agawal function
