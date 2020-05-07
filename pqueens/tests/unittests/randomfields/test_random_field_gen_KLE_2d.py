@@ -32,14 +32,14 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
         # pylint: disable=line-too-long
         self.my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
             # pylint: enable=line-too-long
-            self.marginal_pdf,
-            self.dimension,
-            self.corrstruct,
-            self.corr_length,
-            self.energy_frac,
-            self.field_bbox,
-            self.num_terms_per_dim,
-            self.total_terms,
+            marg_pdf=self.marginal_pdf,
+            spatial_dimension=self.dimension,
+            corrstruct=self.corrstruct,
+            corr_length=self.corr_length,
+            energy_frac=self.energy_frac,
+            field_bbox=self.field_bbox,
+            num_terms_per_dim=self.num_terms_per_dim,
+            total_terms=self.total_terms,
         )
 
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
@@ -48,14 +48,14 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
     def test_not_enough_fourier_terms(self):
         with self.assertRaises(RuntimeError):
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                self.marginal_pdf,
-                self.dimension,
-                self.corrstruct,
-                self.corr_length,
-                0.95,
-                self.field_bbox,
-                100,
-                300,
+                marg_pdf=self.marginal_pdf,
+                spatial_dimension=self.dimension,
+                corrstruct=self.corrstruct,
+                corr_length=self.corr_length,
+                energy_frac=0.95,
+                field_bbox=self.field_bbox,
+                num_terms_per_dim=100,
+                total_terms=300,
             )
 
     # # should trigger error because number of phase angles do not match stochastic
@@ -63,28 +63,28 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
     def test_wrong_number_phase_angles(self):
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                self.marginal_pdf,
-                self.dimension,
-                self.corrstruct,
-                self.corr_length,
-                self.energy_frac,
-                self.field_bbox,
-                self.num_terms_per_dim,
-                self.total_terms,
+                marg_pdf=self.marginal_pdf,
+                spatial_dimension=self.dimension,
+                corrstruct=self.corrstruct,
+                corr_length=self.corr_length,
+                energy_frac=self.energy_frac,
+                field_bbox=self.field_bbox,
+                num_terms_per_dim=self.num_terms_per_dim,
+                total_terms=self.total_terms,
             )
             mystuff.gen_sample_gauss_field(self.loc, np.array((4, 4)))
 
     # # should trigger error because dimension of location is wrong
     def test_wrong_number_loc_dimensions(self):
         mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-            self.marginal_pdf,
-            self.dimension,
-            self.corrstruct,
-            self.corr_length,
-            self.energy_frac,
-            self.field_bbox,
-            self.num_terms_per_dim,
-            self.total_terms,
+            marg_pdf=self.marginal_pdf,
+            spatial_dimension=self.dimension,
+            corrstruct=self.corrstruct,
+            corr_length=self.corr_length,
+            energy_frac=self.energy_frac,
+            field_bbox=self.field_bbox,
+            num_terms_per_dim=self.num_terms_per_dim,
+            total_terms=self.total_terms,
         )
         xi = np.random.randn(self.my_stoch_dim, 1)
         with self.assertRaises(RuntimeError):

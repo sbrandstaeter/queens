@@ -34,16 +34,16 @@ class MultiVariateRandomFieldGenerator(object):
 
     def __init__(
         self,
-        marginal_distributions,
-        num_fields,
-        crosscorr,
-        spatial_dimension,
-        corr_struct,
-        corr_length,
-        energy_frac,
-        field_bbox,
-        num_terms_per_dim,
-        total_terms,
+        marginal_distributions=None,
+        num_fields=None,
+        crosscorr=None,
+        spatial_dimension=None,
+        corr_struct=None,
+        corr_length=None,
+        energy_frac=None,
+        field_bbox=None,
+        num_terms_per_dim=None,
+        total_terms=None,
     ):
         """
         Args:
@@ -80,14 +80,14 @@ class MultiVariateRandomFieldGenerator(object):
         for i in range(self.var_dim):
             self.my_univ_rfs.append(
                 UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                    marginal_distributions[i],
-                    spatial_dimension,
-                    corr_struct,
-                    corr_length,
-                    energy_frac,
-                    field_bbox,
-                    num_terms_per_dim,
-                    total_terms,
+                    marg_pdf=marginal_distributions[i],
+                    spatial_dimension=spatial_dimension,
+                    corrstruct=corr_struct,
+                    corr_length=corr_length,
+                    energy_frac=energy_frac,
+                    field_bbox=field_bbox,
+                    num_terms_per_dim=num_terms_per_dim,
+                    total_terms=total_terms,
                 )
             )
 

@@ -5,7 +5,7 @@ class UnivariateRandomFieldSimulator(object):
     """Generator for samples of univariate random fields.
 
     Class for the generation of samples form Gaussian and
-    and non-Gaussian random fields using thranslation process theory
+    and non-Gaussian random fields using translation process theory
 
     Attributes:
         spatial_dim (int): spatial dimension of the field, i.e., 1,2, or 3

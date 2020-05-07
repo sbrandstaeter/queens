@@ -51,3 +51,6 @@ dependencies:
     - docker
 # Pythonic interface to ANSYS binary files
     - pyansys
+# for space filling subsets
+    - diversipy
+

@@ -1,5 +1,4 @@
 import os
-import pdb
 from pqueens.drivers.driver import Driver
 from pqueens.utils.injector import inject
 
@@ -66,6 +65,20 @@ class NavierStokesNative(Driver):
             output_directory + '/' + str(self.experiment_name) + '_' + str(self.job_id)
         )
 
+        self.write_to_file()
+
+    def write_to_file(self):
+        """ This should be a docstring """
+        rand_field_realization = self.database.load(
+            self.experiment_name, self.batch, 'jobs', {'id': self.job_id}
+        )['params']['random_inflow']
+        base_path = os.path.dirname(self.template)
+        absolute_path = os.path.join(base_path, 'flow_past_cylinder_inflow.txt')
+
+        with open(absolute_path, 'w') as myfile:
+            for ele in rand_field_realization:
+                myfile.write('%s\n' % ele)
+
     def run_job(self):
         """
         Actual method to run the job on computing machine
@@ -78,6 +91,9 @@ class NavierStokesNative(Driver):
         # write output directory in input file (this is a special case
         # for the navierstokes solver)
         inject({"output_dir": self.output_navierstokes}, self.input_file, self.input_file)
+        base_path = os.path.dirname(self.template)
+        absolute_path = os.path.join(base_path, 'flow_past_cylinder_inflow.txt')
+        inject({"input_dir": absolute_path}, self.input_file, self.input_file)
 
         # assemble run command sttring
         command_string = self.assemble_command_string()

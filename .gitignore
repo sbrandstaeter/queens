@@ -27,5 +27,8 @@ pqueens.egg-info
 driver.simg
 hashfile.txt
 
+# windows pycharm idea files
+.idea
+
 # ignore egg package files
 .eggs/

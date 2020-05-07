@@ -28,7 +28,7 @@ class TestPDFEstimation(unittest.TestCase):
         min_samples = -3
         max_samples = 3
         bandwidth = estimate_bandwidth_for_kde(self.samples, min_samples, max_samples)
-        np.testing.assert_almost_equal(bandwidth, 0.41265822784810124, 7)
+        np.testing.assert_almost_equal(bandwidth, 0.987693684111131, 7)
 
     def test_density_estimation(self):
         supp_points = np.linspace(-1, 1, 10)

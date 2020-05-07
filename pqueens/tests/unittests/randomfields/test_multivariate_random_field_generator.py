@@ -50,58 +50,58 @@ class TestMultivariateRandomFieldGenerator(unittest.TestCase):
 
     def test_constructor(self):
         my_field_generator = MultiVariateRandomFieldGenerator(
-            self.marginal_pdfs,
-            self.num_fields,
-            self.crosscorr,
-            self.dimension,
-            self.corrstruct,
-            self.corr_length,
-            self.energy_frac,
-            self.field_bbox,
-            self.num_terms_per_dim,
-            self.total_terms,
+            marginal_distributions=self.marginal_pdfs,
+            num_fields=self.num_fields,
+            crosscorr=self.crosscorr,
+            spatial_dimension=self.dimension,
+            corr_struct=self.corrstruct,
+            corr_length=self.corr_length,
+            energy_frac=self.energy_frac,
+            field_bbox=self.field_bbox,
+            num_terms_per_dim=self.num_terms_per_dim,
+            total_terms=self.total_terms,
         )
         my_stoch_dim = my_field_generator.get_stoch_dim()
         self.assertAlmostEqual(my_stoch_dim, 300)
         with self.assertRaises(RuntimeError):
             my_field_generator = MultiVariateRandomFieldGenerator(
-                self.marginal_pdfs,
-                self.num_fields,
-                self.crosscorr_to_big,
-                self.dimension,
-                self.corrstruct,
-                self.corr_length,
-                self.energy_frac,
-                self.field_bbox,
-                self.num_terms_per_dim,
-                self.total_terms,
+                marginal_distributions=self.marginal_pdfs,
+                num_fields=self.num_fields,
+                crosscorr=self.crosscorr_to_big,
+                spatial_dimension=self.dimension,
+                corr_struct=self.corrstruct,
+                corr_length=self.corr_length,
+                energy_frac=self.energy_frac,
+                field_bbox=self.field_bbox,
+                num_terms_per_dim=self.num_terms_per_dim,
+                total_terms=self.total_terms,
             )
         with self.assertRaises(RuntimeError):
             my_field_generator = MultiVariateRandomFieldGenerator(
-                self.marginal_pdfs_to_many,
-                self.num_fields,
-                self.crosscorr,
-                self.dimension,
-                self.corrstruct,
-                self.corr_length,
-                self.energy_frac,
-                self.field_bbox,
-                self.num_terms_per_dim,
-                self.total_terms,
+                marginal_distributions=self.marginal_pdfs_to_many,
+                num_fields=self.num_fields,
+                crosscorr=self.crosscorr,
+                spatial_dimension=self.dimension,
+                corr_struct=self.corrstruct,
+                corr_length=self.corr_length,
+                energy_frac=self.energy_frac,
+                field_bbox=self.field_bbox,
+                num_terms_per_dim=self.num_terms_per_dim,
+                total_terms=self.total_terms,
             )
 
     def test_generator(self):
         my_field_generator = MultiVariateRandomFieldGenerator(
-            self.marginal_pdfs,
-            self.num_fields,
-            self.crosscorr,
-            self.dimension,
-            self.corrstruct,
-            self.corr_length,
-            self.energy_frac,
-            self.field_bbox,
-            self.num_terms_per_dim,
-            self.total_terms,
+            marginal_distributions=self.marginal_pdfs,
+            num_fields=self.num_fields,
+            crosscorr=self.crosscorr,
+            spatial_dimension=self.dimension,
+            corr_struct=self.corrstruct,
+            corr_length=self.corr_length,
+            energy_frac=self.energy_frac,
+            field_bbox=self.field_bbox,
+            num_terms_per_dim=self.num_terms_per_dim,
+            total_terms=self.total_terms,
         )
         my_stoch_dim = my_field_generator.get_stoch_dim()
         np.random.seed(self.seed)
@@ -114,16 +114,16 @@ class TestMultivariateRandomFieldGenerator(unittest.TestCase):
     def test_cross_correlation(self):
 
         my_field_generator = MultiVariateRandomFieldGenerator(
-            self.marginal_pdfs,
-            self.num_fields,
-            self.crosscorr,
-            self.dimension,
-            self.corrstruct,
-            self.corr_length,
-            self.energy_frac,
-            self.field_bbox,
-            self.num_terms_per_dim,
-            self.total_terms,
+            marginal_distributions=self.marginal_pdfs,
+            num_fields=self.num_fields,
+            crosscorr=self.crosscorr,
+            spatial_dimension=self.dimension,
+            corr_struct=self.corrstruct,
+            corr_length=self.corr_length,
+            energy_frac=self.energy_frac,
+            field_bbox=self.field_bbox,
+            num_terms_per_dim=self.num_terms_per_dim,
+            total_terms=self.total_terms,
         )
         my_stoch_dim = my_field_generator.get_stoch_dim()
         np.random.seed(self.seed + 46453)

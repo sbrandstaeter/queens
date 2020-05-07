@@ -49,7 +49,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from pqueens.iterators.optimization_iterator import OptimizationIterator
         from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
-        from .bmfmc_iterator import BmfmcIterator
+        from .bmfmc_iterator import BMFMCIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 
         method_dict = {
@@ -63,7 +63,7 @@ class Iterator(metaclass=abc.ABCMeta):
             'sa_saltelli': SaltelliIterator,
             'sa_saltelli_salib': SaltelliSALibIterator,
             'smc': SequentialMonteCarloIterator,
-            'bmfmc': BmfmcIterator,
+            'bmfmc': BMFMCIterator,
         }
 
         if iterator_name is None:

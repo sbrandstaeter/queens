@@ -19,6 +19,7 @@ class DataIterator(Iterator):
         super(DataIterator, self).__init__(None, global_settings)
         self.samples = None
         self.output = None
+        self.eigenfunc = None  # TODO this is an intermediate solution--> see Issue #45
         self.path_to_data = path_to_data
         self.result_description = result_description
 
@@ -57,8 +58,13 @@ class DataIterator(Iterator):
 
     def core_run(self):
         """  Read data from file """
-
-        self.samples, self.output = self.read_pickle_file()
+        # TODO: We should return a more general data structure in the future
+        # TODO: including I/O and meta data; for now catch it with a try statement
+        # TODO: see Issue #45;
+        try:
+            self.samples, self.output, self.eigenfunc = self.read_pickle_file()
+        except ValueError:
+            self.samples, self.output = self.read_pickle_file()
 
     def post_run(self):
         """ Analyze the results """
@@ -90,7 +96,4 @@ class DataIterator(Iterator):
 
         data = pickle.load(open(self.path_to_data, "rb"))
 
-        samples = data["input"]  # TODO think about an unified format/key, before: "input_data"
-        output = data["output"]  # TODO think about an unified format/key, before: "raw_output_data"
-
-        return samples, output
+        return data

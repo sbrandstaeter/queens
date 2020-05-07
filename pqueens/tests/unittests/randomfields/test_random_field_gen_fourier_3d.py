@@ -45,14 +45,14 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         # pylint: disable:line-too-long
         self.my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
             # pylint: enable:line-too-long
-            self.marginal_pdf,
-            self.dimension,
-            self.corrstruct,
-            self.corr_length,
-            self.energy_frac,
-            self.field_bbox,
-            self.num_terms_per_dim,
-            self.total_terms,
+            marg_pdf=self.marginal_pdf,
+            spatial_dimension=self.dimension,
+            corrstruct=self.corrstruct,
+            corr_length=self.corr_length,
+            energy_frac=self.energy_frac,
+            field_bbox=self.field_bbox,
+            num_terms_per_dim=self.num_terms_per_dim,
+            total_terms=self.total_terms,
         )
 
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
@@ -61,14 +61,14 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
     def test_not_enough_fourier_terms(self):
         with self.assertRaises(RuntimeError):
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                self.marginal_pdf,
-                self.dimension,
-                self.corrstruct,
-                self.corr_length,
-                0.99,
-                self.field_bbox,
-                10,
-                20,
+                marg_pdf=self.marginal_pdf,
+                spatial_dimension=self.dimension,
+                corrstruct=self.corrstruct,
+                corr_length=self.corr_length,
+                energy_frac=0.99,
+                field_bbox=self.field_bbox,
+                num_terms_per_dim=10,
+                total_terms=20,
             )
 
     # should trigger error because number of phase angles do not match stochastic
@@ -76,14 +76,14 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
     def test_wrong_number_phase_angles(self):
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                self.marginal_pdf,
-                self.dimension,
-                self.corrstruct,
-                self.corr_length,
-                self.energy_frac,
-                self.field_bbox,
-                self.num_terms_per_dim,
-                self.total_terms,
+                marg_pdf=self.marginal_pdf,
+                spatial_dimension=self.dimension,
+                corrstruct=self.corrstruct,
+                corr_length=self.corr_length,
+                energy_frac=self.energy_frac,
+                field_bbox=self.field_bbox,
+                num_terms_per_dim=self.num_terms_per_dim,
+                total_terms=self.total_terms,
             )
             mystuff.gen_sample_gauss_field(np.array([[10, 10, 10]]), np.array((4, 4)))
 
@@ -91,14 +91,14 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
     def test_wrong_locatio_dimension(self):
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                self.marginal_pdf,
-                self.dimension,
-                self.corrstruct,
-                self.corr_length,
-                self.energy_frac,
-                self.field_bbox,
-                self.num_terms_per_dim,
-                self.total_terms,
+                marg_pdf=self.marginal_pdf,
+                spatial_dimension=self.dimension,
+                corrstruct=self.corrstruct,
+                corr_length=self.corr_length,
+                energy_frac=self.energy_frac,
+                field_bbox=self.field_bbox,
+                num_terms_per_dim=self.num_terms_per_dim,
+                total_terms=self.total_terms,
             )
             xi = np.random.randn(mystuff.get_stoch_dim(), 1)
             mystuff.gen_sample_gauss_field(np.array([[10, 10]]), xi)

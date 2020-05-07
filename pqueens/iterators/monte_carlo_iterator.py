@@ -1,6 +1,5 @@
 """ There should be some docstring """
 
-import pdb
 import numpy as np
 import matplotlib.pyplot as plt
 from pqueens.models.model import Model
@@ -117,34 +116,53 @@ class MonteCarloIterator(Iterator):
             for _, rf in random_fields.items():
                 print("rf corrstruct {}".format(rf.get("corrstruct")))
                 # create appropriate random field generator
+
+                random_field_opt = {}
+                random_field_opt['corrstruct'] = rf.get("corrstruct")
+                random_field_opt['corr_length'] = rf.get("corr_length")
+                if rf.get("corrstruct") == "non_stationary_squared_exp":
+                    random_field_opt['rel_std'] = rf['rel_std']
+                    random_field_opt['mean_fun'] = rf['mean_fun']
+                    random_field_opt['mean_fun_params'] = rf['mean_fun_params']
+                    random_field_opt['num_points'] = rf['num_points']
+                    random_field_opt['num_samples'] = self.num_samples
+                else:
+                    random_field_opt['evel_locations'] = rf.get('eval_location')
+                    random_field_opt['dimension'] = rf.get("dimension")
+                    random_field_opt['energy_frac'] = rf.get("energy_frac")
+                    random_field_opt['field_bbox'] = np.array(rf.get("field_bbox"))
+                    random_field_opt['num_terms_per_dim'] = rf.get("num_terms_per_dim")
+                    random_field_opt['total_terms'] = rf.get("total_terms")
                 # pylint: disable=line-too-long
                 my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                    mcmc_utils.create_proposal_distribution(rf),
-                    rf.get("dimension"),
-                    rf.get("corrstruct"),
-                    rf.get("corr_length"),
-                    rf.get("energy_frac"),
-                    np.array(rf.get("field_bbox")),
-                    rf.get("num_terms_per_dim"),
-                    rf.get("total_terms"),
+                    mcmc_utils.create_proposal_distribution(rf), random_field_opt
                 )
                 # pylint: enable=line-too-long
-
-                dim = rf["dimension"]
                 eval_locations_list = rf.get("eval_locations", None)
-                eval_locations = np.array(eval_locations_list).reshape(-1, dim)
-                my_stoch_dim = my_field_generator.get_stoch_dim()
+                eval_locations = np.array(eval_locations_list).reshape(
+                    -1, random_field_opt['dimension']
+                )
 
-                my_vals = np.zeros((self.num_samples, eval_locations.shape[0]))
-                for i in range(self.num_samples):
-                    xi = np.random.randn(my_stoch_dim, 1)
-                    my_vals[i, :] = my_field_generator.evaluate_field_at_location(
-                        eval_locations, xi
-                    )
+                if random_field_opt['corrstruct'] != 'non_stationary_squared_exp':
+                    my_stoch_dim = my_field_generator.get_stoch_dim()
+                    my_vals = np.zeros((self.num_samples, eval_locations.shape[0]))
 
-                self.samples[
-                    :, num_rv + field_num : num_rv + field_num + len(eval_locations)
-                ] = my_vals
+                    for i in range(self.num_samples):
+                        xi = np.random.randn(my_stoch_dim, 1)
+                        my_vals[i, :] = my_field_generator.evaluate_field_at_location(
+                            eval_locations, xi
+                        )
+                    self.samples[
+                        :, num_rv + field_num : num_rv + field_num + len(eval_locations)
+                    ] = my_vals
+                else:
+                    my_field_generator.main_run()
+                    my_vals = my_field_generator.realizations
+                    for num in range(my_vals.shape[0]):
+                        self.samples[num, -1] = my_vals[
+                            num, :
+                        ]  # np.hstack((self.samples, my_vals))
+
                 field_num += 1
 
     def core_run(self):
