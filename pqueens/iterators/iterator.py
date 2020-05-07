@@ -52,17 +52,19 @@ class Iterator(metaclass=abc.ABCMeta):
         from .bmfmc_iterator import BmfmcIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 
-        method_dict = {'lhs': LHSIterator,
-                       'lhs_mf': MF_LHSIterator,
-                       'metropolis_hastings': MetropolisHastingsIterator,
-                       'monte_carlo': MonteCarloIterator,
-                       'optimization': OptimizationIterator,
-                       'read_data_from_file': DataIterator,
-                       'sa_morris_salib': MorrisSALibIterator,
-                       'sa_saltelli': SaltelliIterator,
-                       'sa_saltelli_salib': SaltelliSALibIterator,
-                       'smc': SequentialMonteCarloIterator,
-                       'bmfmc': BmfmcIterator}
+        method_dict = {
+            'lhs': LHSIterator,
+            'lhs_mf': MF_LHSIterator,
+            'metropolis_hastings': MetropolisHastingsIterator,
+            'monte_carlo': MonteCarloIterator,
+            'optimization': OptimizationIterator,
+            'read_data_from_file': DataIterator,
+            'sa_morris_salib': MorrisSALibIterator,
+            'sa_saltelli': SaltelliIterator,
+            'sa_saltelli_salib': SaltelliSALibIterator,
+            'smc': SequentialMonteCarloIterator,
+            'bmfmc': BmfmcIterator,
+        }
 
         if iterator_name is None:
             method_name = config['method']['method_name']

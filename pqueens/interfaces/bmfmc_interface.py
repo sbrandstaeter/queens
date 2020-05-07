@@ -52,9 +52,7 @@ class BmfmcInterface(Interface):
         # get inputs as array and reshape
         # num_active_vars = samples[0].get_number_of_active_variables()
         # inputs = np.reshape(np.array(inputs), (-1, num_active_vars), order='F')
-        mean = self.approximation.predict_y(samples.T)[
-            'mean'
-        ]
+        mean = self.approximation.predict_y(samples.T)['mean']
         # we chose an option with the additional likelihood noise already added to
         # the predictive variance (integration over all possible models already done)
         var = self.approximation.predict_y(samples.T)['variance']

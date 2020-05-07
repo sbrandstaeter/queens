@@ -1,5 +1,6 @@
 from pqueens.example_simulator_functions.branin_medfi import branin_medfi
 
+
 def branin_lofi(x1, x2):
     """ Low-fidelity fidelity Branin function
 
@@ -21,9 +22,10 @@ def branin_lofi(x1, x2):
             Proceedings of the Royal Society of London A: Mathematical,
             Physical and Engineering Sciences, 473(2198), pp.20160751–16.
     """
-    y = branin_medfi(1.2*(x1+2.0),1.2*(x2+2.0)) - 3.0*x2 + 1.0
+    y = branin_medfi(1.2 * (x1 + 2.0), 1.2 * (x2 + 2.0)) - 3.0 * x2 + 1.0
 
     return y
+
 
 def main(job_id, params):
     """ Interface to low-fidelity Branin function

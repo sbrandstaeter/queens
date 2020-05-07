@@ -88,8 +88,9 @@ class ApproximationInterface(Interface):
             Xtrain (np.array):  Training inputs
             Ytrain (np.array):  Training outputs
         """
-        self.approximation = RegressionApproximation.from_options(self.approximation_config,
-                                                                  Xtrain, Ytrain)
+        self.approximation = RegressionApproximation.from_options(
+            self.approximation_config, Xtrain, Ytrain
+        )
         self.approximation.train()
         self.approx_init = True
 
@@ -116,9 +117,9 @@ class ApproximationInterface(Interface):
         kf.get_n_splits(X)
 
         for train_index, test_index in kf.split(X):
-            approximation = RegressionApproximation.from_options(self.approximation_config,
-                                                                 X[train_index],
-                                                                 Y[train_index])
+            approximation = RegressionApproximation.from_options(
+                self.approximation_config, X[train_index], Y[train_index]
+            )
             approximation.train()
             outputs[test_index], _ = approximation.predict_f(X[test_index])
 

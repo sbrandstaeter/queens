@@ -63,9 +63,7 @@ class BMFMCModel(Model):
         self.interface = None  # gets initialized after feature space is build
         self.approximation_settings = approximation_settings
         self.subordinate_model = subordinate_model  # this is important for active learning
-        self.subordinate_iterator = (
-            subordinate_iterator
-        )  # this is the initial design pickle file (active learning is implemented in model)
+        self.subordinate_iterator = subordinate_iterator
         self.eval_fit = eval_fit
         self.error_measures = error_measures
         self.train_in = train_in
@@ -204,9 +202,7 @@ class BMFMCModel(Model):
             'pylf_mc_support': self.pylf_mc_support,
         }
 
-        return (
-            output
-        )  # TODO for now we return the hf output and its variacne and return the densities later
+        return output
 
     def build_approximation(self, approx_case=True):
         """ Build underlying approximation """

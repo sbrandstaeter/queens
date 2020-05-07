@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def branin_hifi(x1, x2):
     """ High-fidelity Branin function
 
@@ -21,10 +22,14 @@ def branin_hifi(x1, x2):
             Physical and Engineering Sciences, 473(2198), pp.20160751–16.
     """
 
-    result = (-1.275*x1**2 / np.pi**2 + 5.0*x1/np.pi + x2 - 6.0)**2 + \
-             (10.0 - 5.0/(4.0*np.pi))*np.cos(x1) + 10.0
+    result = (
+        (-1.275 * x1 ** 2 / np.pi ** 2 + 5.0 * x1 / np.pi + x2 - 6.0) ** 2
+        + (10.0 - 5.0 / (4.0 * np.pi)) * np.cos(x1)
+        + 10.0
+    )
 
     return result
+
 
 def main(job_id, params):
     """ Interface to high-fidelity Branin function
@@ -37,5 +42,3 @@ def main(job_id, params):
         float: Value of Branin function at parameters specified in input dict
     """
     return branin_hifi(params['x1'], params['x2'])
-
-

@@ -14,6 +14,7 @@ class DataIterator(Iterator):
         result_description (dict):  Description of desired results
 
     """
+
     def __init__(self, path_to_data, result_description, global_settings):
         super(DataIterator, self).__init__(None, global_settings)
         self.samples = None
@@ -45,9 +46,7 @@ class DataIterator(Iterator):
         result_description = method_options.get("result_description", None)
         global_settings = config.get("global_settings", None)
 
-        return cls(path_to_data,
-                   result_description,
-                   global_settings)
+        return cls(path_to_data, result_description, global_settings)
 
     def eval_model(self):
         """ Evaluate the model """
@@ -66,9 +65,11 @@ class DataIterator(Iterator):
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description)
             if self.result_description["write_results"] is True:
-                write_results(results,
-                              self.global_settings["output_dir"],
-                              self.global_settings["experiment_name"])
+                write_results(
+                    results,
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
+                )
         # else:
         print("Size of inputs {}".format(self.samples.shape))
         print("Inputs {}".format(self.samples))
@@ -89,7 +90,7 @@ class DataIterator(Iterator):
 
         data = pickle.load(open(self.path_to_data, "rb"))
 
-        samples = data["input"] #TODO think about an unified format/key, before: "input_data"
-        output = data["output"] #TODO think about an unified format/key, before: "raw_output_data"
+        samples = data["input"]  # TODO think about an unified format/key, before: "input_data"
+        output = data["output"]  # TODO think about an unified format/key, before: "raw_output_data"
 
         return samples, output

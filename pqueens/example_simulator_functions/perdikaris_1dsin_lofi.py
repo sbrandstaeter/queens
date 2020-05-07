@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def perdikaris_1dsin_lofi(x):
     """ Low-fidelity version of simple 1-d test function
 
@@ -23,8 +24,9 @@ def perdikaris_1dsin_lofi(x):
             Proceedings of the Royal Society of London A: Mathematical,
             Physical and Engineering Sciences,  473(2198), pp.20160751?16.
     """
-    y =  np.sin(8.0*np.pi*x)
+    y = np.sin(8.0 * np.pi * x)
     return y
+
 
 def main(job_id, params):
     """ Interface to Perdikaris test fuction

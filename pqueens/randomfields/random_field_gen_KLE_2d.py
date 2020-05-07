@@ -55,7 +55,9 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
         lambdas_vec = np.hstack((lambdas_vec, my_w_index))
 
         # sort in ascending order
-        lamda_sorted = lambdas_vec[lambdas_vec[:, 0].argsort(),]
+        lamda_sorted = lambdas_vec[
+            lambdas_vec[:, 0].argsort(),
+        ]
         # create view with reverse order
         lamda_sorted = lamda_sorted[::-1]
 
@@ -96,7 +98,7 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
                 'Number of random phase angles does not match ' 'stochastic dimension of the field!'
             )
 
-        if len(loc[0,:]) != 2:
+        if len(loc[0, :]) != 2:
             raise RuntimeError('Location vector must have one dimensions!')
 
         # use KLE expansion to compute random field values

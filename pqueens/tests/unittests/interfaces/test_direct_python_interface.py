@@ -45,7 +45,7 @@ def variables(uncertain_parameters):
     # set values
     data_vector = np.ones(3)
     variables.update_variables_from_vector(data_vector)
-    return  variables
+    return variables
 
 
 @pytest.fixture(scope='module')
@@ -76,8 +76,7 @@ def config(uncertain_parameters):
     """
 
     config = {}
-    config['test_interface'] = {'type':'direct_python_interface',
-                                'main_file':'ishigami.py'}
+    config['test_interface'] = {'type': 'direct_python_interface', 'main_file': 'ishigami.py'}
 
     config['parameters'] = uncertain_parameters
 
@@ -152,8 +151,9 @@ def test_create_from_config_parallel(variables, config_parallel):
     with parallel evaluation of multiple forward calls.
     """
 
-    direct_python_interface_parallel = Interface.from_config_create_interface('test_interface',
-                                                                              config_parallel)
+    direct_python_interface_parallel = Interface.from_config_create_interface(
+        'test_interface', config_parallel
+    )
     # ensure correct types
     assert isinstance(direct_python_interface_parallel.pool, multiprocessing.pool.Pool)
     assert isinstance(direct_python_interface_parallel, DirectPythonInterface)

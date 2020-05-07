@@ -59,23 +59,23 @@ Created on February 6th  2018
 #        }
 
 
-#@mock.patch('pqueens.models.model.Model.from_config_create_model')
-#@mock.patch(
+# @mock.patch('pqueens.models.model.Model.from_config_create_model')
+# @mock.patch(
 #    'pqueens.iterators.bayesian_optimization_iterator.BayesOptIterator.random_fields',
 #    return_value=None,
-#)
-#def test_from_config_function(self, mock_get_parameters, mock_model):
+# )
+# def test_from_config_function(self, mock_get_parameters, mock_model):
 #    BayesOptIterator.from_config_create_iterator(self.dummy_config)
 #    mock_model.assert_called_with("model", self.dummy_config)
 #
 #
-#@mock.patch('pqueens.models.simulation_model.SimulationModel')
-#@mock.patch(
+# @mock.patch('pqueens.models.simulation_model.SimulationModel')
+# @mock.patch(
 #    'pqueens.iterators.bayesian_optimization_iterator.BayesOptIterator.prep_and_eval_model',
 #    side_effect=side_effect,
-#)
-#@mock.patch('pqueens.iterators.bayesian_optimization_iterator.BayesianOptimizer.optimize')
-#def test_core_run(self, mocks, mock2, mock3):
+# )
+# @mock.patch('pqueens.iterators.bayesian_optimization_iterator.BayesianOptimizer.optimize')
+# def test_core_run(self, mocks, mock2, mock3):
 #    mocks.get_parameter.return_value = self.dummy_params
 #    some_settings = {}
 #    some_settings["experiment_name"] = "test"
@@ -93,5 +93,5 @@ Created on February 6th  2018
 #        np.array([[3250], [5500], [1000], [7750], [10000]]), mock2.call_args[0][0]
 #    )
 #
-    # assert the BayesianOptimizer has been called the correctly
-    # TODO assert the BayesianOptimizer has been called the correctly
+# assert the BayesianOptimizer has been called the correctly
+# TODO assert the BayesianOptimizer has been called the correctly

@@ -1,6 +1,7 @@
 import numpy as np
 from pqueens.example_simulator_functions.currin88_hifi import currin88_hifi
 
+
 def currin88_lofi(x1, x2):
     """ low-fidelity version of the Currin88 benchmark function
 
@@ -38,13 +39,13 @@ def currin88_lofi(x1, x2):
             Technometrics, 55(1), 37-46.
     """
 
-    #maxarg = np.maximum(np.zeros((1,len(x2)),dtype = float), x2-1/20)
-    maxarg = np.maximum(np.zeros((1, 1), dtype=float), x2-1/20)
+    # maxarg = np.maximum(np.zeros((1,len(x2)),dtype = float), x2-1/20)
+    maxarg = np.maximum(np.zeros((1, 1), dtype=float), x2 - 1 / 20)
 
-    yh1 = currin88_hifi(x1+1/20, x2+1/20)
-    yh2 = currin88_hifi(x1+1/20, maxarg)
-    yh3 = currin88_hifi(x1-1/20, x2+1/20)
-    yh4 = currin88_hifi(x1-1/20, maxarg)
+    yh1 = currin88_hifi(x1 + 1 / 20, x2 + 1 / 20)
+    yh2 = currin88_hifi(x1 + 1 / 20, maxarg)
+    yh3 = currin88_hifi(x1 - 1 / 20, x2 + 1 / 20)
+    yh4 = currin88_hifi(x1 - 1 / 20, maxarg)
 
     y = (yh1 + yh2 + yh3 + yh4) / 4
     return y

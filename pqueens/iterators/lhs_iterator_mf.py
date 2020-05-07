@@ -24,6 +24,7 @@ class MF_LHSIterator(Iterator):
         outputs (list):       List of dicts with all model outputs
 
     """
+
     def __init__(self, model, seed, num_samples, num_iterations, mode, global_settings):
         super(MF_LHSIterator, self).__init__(model, global_settings)
         if type(self.model) is not MultifidelityModel:
@@ -58,11 +59,14 @@ class MF_LHSIterator(Iterator):
         if model is None:
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)
-        return cls(model, method_options["seed"],
-                   method_options["num_samples"],
-                   method_options["num_iterations"],
-                   method_options["mode"],
-                   config["global_settings"])
+        return cls(
+            model,
+            method_options["seed"],
+            method_options["num_samples"],
+            method_options["num_iterations"],
+            method_options["mode"],
+            config["global_settings"],
+        )
 
     def eval_model(self):
         """ Evaluate the model """
@@ -81,28 +85,24 @@ class MF_LHSIterator(Iterator):
             for i in range(len(self.num_samples)):
                 if i == 0:
                     # create latin hyper cube samples in unit hyper cube
-                    hypercube_samples = lhs(numparams,
-                                            self.num_samples[0],
-                                            'maximin',
-                                            iterations=self.num_iterations)
+                    hypercube_samples = lhs(
+                        numparams, self.num_samples[0], 'maximin', iterations=self.num_iterations
+                    )
                     # scale and transform samples according to the inverse cdf
-                    self.samples.append(scale_samples(hypercube_samples,
-                                                      distribution_info))
+                    self.samples.append(scale_samples(hypercube_samples, distribution_info))
                 else:
-                    self.samples.append(self.select_random_subset(self.samples[i-1],
-                                                                  self.num_samples[i]))
+                    self.samples.append(
+                        self.select_random_subset(self.samples[i - 1], self.num_samples[i])
+                    )
         elif self.mode == "independent":
             for i in range(len(self.num_samples)):
-                hypercube_samples = lhs(numparams,
-                                        self.num_samples[i],
-                                        'maximin',
-                                        iterations=self.num_iterations)
+                hypercube_samples = lhs(
+                    numparams, self.num_samples[i], 'maximin', iterations=self.num_iterations
+                )
                 # scale and transform samples according to the inverse cdf
-                self.samples.append(scale_samples(hypercube_samples,
-                                                  distribution_info))
+                self.samples.append(scale_samples(hypercube_samples, distribution_info))
         else:
             raise ValueError("Mode must be either 'nested' or 'independent' ")
-
 
     def core_run(self):
         """ Run LHS Analysis on model """
