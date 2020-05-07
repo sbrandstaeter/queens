@@ -25,8 +25,9 @@ def perdikaris_1dsin_hifi(x):
             Proceedings of the Royal Society of London A: Mathematical,
             Physical and Engineering Sciences,  473(2198), pp.20160751?16.
     """
-    y = (x - np.sqrt(2))*perdikaris_1dsin_lofi(x)**2
+    y = (x - np.sqrt(2)) * perdikaris_1dsin_lofi(x) ** 2
     return y
+
 
 def main(job_id, params):
     """ Interface to Perdikaris test fuction

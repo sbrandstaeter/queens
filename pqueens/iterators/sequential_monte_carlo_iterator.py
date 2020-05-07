@@ -169,8 +169,7 @@ class SequentialMonteCarloIterator(Iterator):
         ):
             raise ValueError("MH iterator needs to be specified as MCMC Kernel.")
         if not (
-            kernel_options['method_options'].get('num_chains', 1)
-            == method_options['num_particles']
+            kernel_options['method_options'].get('num_chains', 1) == method_options['num_particles']
         ):
             warnings.warn(
                 "Number of chains in the kernel has to be equal to number of particles:"
@@ -390,9 +389,12 @@ class SequentialMonteCarloIterator(Iterator):
             # Resample
             if self.ess_cur <= 0.5 * self.num_particles:
                 print("Resampling...")
-                particles_resampled, weights_resampled, log_like_resampled, log_prior_resampled = (
-                    self.resample()
-                )
+                (
+                    particles_resampled,
+                    weights_resampled,
+                    log_like_resampled,
+                    log_prior_resampled,
+                ) = self.resample()
 
                 # update algorithm parameters
                 self.particles = particles_resampled
@@ -419,9 +421,13 @@ class SequentialMonteCarloIterator(Iterator):
                 self.particles, self.log_likelihood, self.log_prior, self.gamma_cur, cov_mat
             )
             self.mcmc_kernel.core_run()
-            self.particles, self.log_likelihood, self.log_prior, self.log_posterior, avg_accept = (
-                self.mcmc_kernel.post_run()
-            )
+            (
+                self.particles,
+                self.log_likelihood,
+                self.log_prior,
+                self.log_posterior,
+                avg_accept,
+            ) = self.mcmc_kernel.post_run()
 
             # plot the trace every plot_trace_every-th iteration
             if self.plot_trace_every and not step % self.plot_trace_every:
@@ -461,9 +467,7 @@ class SequentialMonteCarloIterator(Iterator):
 
             mean = np.sum(np.multiply(np.squeeze(normalized_weights), self.particles.T).T, axis=0)
             var = np.sum(
-                np.multiply(
-                    np.squeeze(normalized_weights), np.power(self.particles - mean, 2).T
-                ).T,
+                np.multiply(np.squeeze(normalized_weights), np.power(self.particles - mean, 2).T).T,
                 axis=0,
             )
             std = np.sqrt(var)

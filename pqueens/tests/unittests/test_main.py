@@ -9,23 +9,31 @@ import mock
 from pqueens.main import get_options
 from pqueens.main import main as queens_main
 
+
 class TestQUEENSMain(unittest.TestCase):
     def setUp(self):
-        self.options = {"experiment_name" : "my_test",
-                        "method": {"method_name": "monte_carlo",
-                                   "method_options":{"seed" : 42,
-                                                     "num_samples" : 20,
-                                                     "model" : "model"}}}
+        self.options = {
+            "experiment_name": "my_test",
+            "method": {
+                "method_name": "monte_carlo",
+                "method_options": {"seed": 42, "num_samples": 20, "model": "model"},
+            },
+        }
 
-        self.args = ['--input', 'dummy_no_real_file.json',
-                     '--output_dir', '/dummy/path/',
-                     '--debug', 'yes']
+        self.args = [
+            '--input',
+            'dummy_no_real_file.json',
+            '--output_dir',
+            '/dummy/path/',
+            '--debug',
+            'yes',
+        ]
 
     @mock.patch('pqueens.iterators.iterator.Iterator.from_config_create_iterator')
     @mock.patch('pqueens.main.get_options')
     def test_main_function(self, mock_parser, mock_iterator):
         mock_parser.return_value = self.options
-        queens_main({"dummy_stuff":{"stuff"}})
+        queens_main({"dummy_stuff": {"stuff"}})
         mock_iterator.assert_called_with(self.options)
         mock_iterator.return_value.run.assert_called()
 
@@ -44,8 +52,7 @@ class TestQUEENSMain(unittest.TestCase):
     @mock.patch("json.load", return_value={"experiment_name": "entry"})
     @mock.patch("builtins.open", create=True)
     def test_option_parsing_no_proper_output_dir(self, mock_open, mock_json):
-        args = ['--input', '/helper_example_config.json',
-                '--debug', 'yes']
+        args = ['--input', '/helper_example_config.json', '--debug', 'yes']
         with self.assertRaises(Exception):
             get_options(args)
 
@@ -63,6 +70,6 @@ class TestQUEENSMain(unittest.TestCase):
         self.args[-1] = 'no'
         options = get_options(self.args)
         self.assertEqual(options['debug'], False, 'Wrong debug flag')
-        self.args = self.args[:len(self.args)-2]
+        self.args = self.args[: len(self.args) - 2]
         options = get_options(self.args)
         self.assertEqual(options['debug'], False, 'Wrong debug flag')

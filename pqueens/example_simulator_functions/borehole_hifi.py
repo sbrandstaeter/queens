@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def borehole_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
     """ High-fidelity version of Borehole benchmark function
 
@@ -87,14 +88,15 @@ def borehole_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
     for further information, see also http://www.sfu.ca/~ssurjano/borehole.html
     """
 
-    frac1 = 2 * np.pi * Tu * (Hu-Hl)
+    frac1 = 2 * np.pi * Tu * (Hu - Hl)
 
-    frac2a = 2*L*Tu / (np.log(r/rw)*rw**2*Kw)
+    frac2a = 2 * L * Tu / (np.log(r / rw) * rw ** 2 * Kw)
     frac2b = Tu / Tl
-    frac2 = np.log(r/rw) * (1+frac2a+frac2b)
+    frac2 = np.log(r / rw) * (1 + frac2a + frac2b)
 
     y = frac1 / frac2
     return y
+
 
 def main(job_id, params):
     """ Interface to high-fidelity borehole function
@@ -105,5 +107,13 @@ def main(job_id, params):
     Returns:
         float: Value of borehole function at parameters specified in input dict
     """
-    return borehole_hifi(params['rw'], params['r'], params['Tu'], params['Hu'],
-                         params['Tl'],params['Hl'],params['L'],params['Kw'])
+    return borehole_hifi(
+        params['rw'],
+        params['r'],
+        params['Tu'],
+        params['Hu'],
+        params['Tl'],
+        params['Hl'],
+        params['L'],
+        params['Kw'],
+    )

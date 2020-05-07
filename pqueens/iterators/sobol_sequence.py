@@ -10,7 +10,7 @@ from .directions import directions
 if sys.version_info[0] > 2:
     long = int
 
-#==============================================================================
+# ==============================================================================
 # The following code is based on the Sobol sequence generator by Frances
 # Y. Kuo and Stephen Joe. The license terms are provided below.
 #
@@ -44,7 +44,7 @@ if sys.version_info[0] > 2:
 # STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
 # ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-#==============================================================================
+# ==============================================================================
 
 
 def sample(N, D):
@@ -94,7 +94,7 @@ def sample(N, D):
 
 def index_of_least_significant_zero_bit(value):
     index = 1
-    while((value & 1) != 0):
+    while (value & 1) != 0:
         value >>= 1
         index += 1
 

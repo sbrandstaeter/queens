@@ -81,11 +81,9 @@ def compute_step_with_bounds(x0, method, rel_step, bounds):
     h = _compute_absolute_step(rel_step, x0, method)
 
     if method == '2-point':
-        h, use_one_sided = _adjust_scheme_to_bounds(
-                x0, h, 1, '1-sided', lb, ub)
+        h, use_one_sided = _adjust_scheme_to_bounds(x0, h, 1, '1-sided', lb, ub)
     elif method == '3-point':
-        h, use_one_sided = _adjust_scheme_to_bounds(
-                x0, h, 1, '2-sided', lb, ub)
+        h, use_one_sided = _adjust_scheme_to_bounds(x0, h, 1, '2-sided', lb, ub)
 
     return h, use_one_sided
 
@@ -189,7 +187,7 @@ def fd_jacobian(f0, f_perturbed, dx, use_one_sided, method):
 
         df = f1 - f0
     elif method == '3-point':
-        len_f1 = int((num_feval_perturbed)/2)
+        len_f1 = int((num_feval_perturbed) / 2)
         f1 = np.stack(f_perturbed[0:len_f1], axis=0)
         f2 = np.stack(f_perturbed[len_f1:], axis=0)
         df = np.empty(f1.shape)

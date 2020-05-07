@@ -13,7 +13,7 @@
 #
 # TODO Fix these test cases
 # For now these are commented out as the morris sampling leads to different
-# results on different platforms. This in turn resutls in test failures on cauchy 
+# results on different platforms. This in turn resutls in test failures on cauchy
 # class TestSAMorrisIshigami(unittest.TestCase):
 #     def setUp(self):
 #

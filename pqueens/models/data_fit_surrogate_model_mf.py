@@ -1,9 +1,10 @@
 import numpy as np
 from pqueens.iterators.iterator import Iterator
 from pqueens.interfaces.interface import Interface
-from . model import Model
+from .model import Model
 
 # TODO add test
+
 
 class MFDataFitSurrogateModel(Model):
     """ Multi-fidelity Surrogate model class
@@ -15,8 +16,9 @@ class MFDataFitSurrogateModel(Model):
 
     """
 
-    def __init__(self, model_name, interface, model_parameters, subordinate_model,
-                 subordinate_iterator):
+    def __init__(
+        self, model_name, interface, model_parameters, subordinate_model, subordinate_iterator
+    ):
         """ Initialize data fit surrogate model
 
         Args:
@@ -34,7 +36,6 @@ class MFDataFitSurrogateModel(Model):
         self.interface = interface
         self.subordinate_model = subordinate_model
         self.subordinate_iterator = subordinate_iterator
-
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
@@ -58,13 +59,12 @@ class MFDataFitSurrogateModel(Model):
         subordinate_iterator_name = model_options["subordinate_iterator"]
 
         # create subordinate model
-        subordinate_model = Model.from_config_create_model(subordinate_model_name,
-                                                           config)
+        subordinate_model = Model.from_config_create_model(subordinate_model_name, config)
 
         # create subordinate iterator
-        subordinate_iterator = Iterator.from_config_create_iterator(config,
-                                                                    subordinate_iterator_name,
-                                                                    subordinate_model)
+        subordinate_iterator = Iterator.from_config_create_iterator(
+            config, subordinate_iterator_name, subordinate_model
+        )
         # TODO add check if we have a multi-fidelity iterator
 
         # create interface
@@ -72,8 +72,7 @@ class MFDataFitSurrogateModel(Model):
 
         # TODO check that we have a multi-fidelity interface
 
-        return cls(model_name, interface, model_parameters, subordinate_model,
-                   subordinate_iterator)
+        return cls(model_name, interface, model_parameters, subordinate_model, subordinate_iterator)
 
     def evaluate(self):
         """ Evaluate model with current set of variables
@@ -86,8 +85,6 @@ class MFDataFitSurrogateModel(Model):
 
         self.response = self.interface.map(self.variables)
         return self.response
-
-
 
     def build_approximation(self):
         """ Build underlying approximation """
@@ -102,7 +99,6 @@ class MFDataFitSurrogateModel(Model):
 
         # train regression model on the data
         self.interface.build_approximation(X, Y)
-
 
     def compute_error_measures(self, y_act, y_pred, measures):
         """ Compute error measures
@@ -139,11 +135,11 @@ class MFDataFitSurrogateModel(Model):
         """
         # TODO checkout raises field
         if measure == "sum_squared":
-            error = np.sum((y_act - y_pred)**2)
+            error = np.sum((y_act - y_pred) ** 2)
         elif measure == "mean_squared":
-            error = np.mean((y_act - y_pred)**2)
+            error = np.mean((y_act - y_pred) ** 2)
         elif measure == "root_mean_squared":
-            error = np.sqrt(np.mean((y_act - y_pred)**2))
+            error = np.sqrt(np.mean((y_act - y_pred) ** 2))
         elif measure == "sum_abs":
             error = np.sum(np.abs(y_act - y_pred))
         elif measure == "mean_abs":

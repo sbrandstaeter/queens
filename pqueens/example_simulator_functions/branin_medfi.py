@@ -2,7 +2,7 @@ from pqueens.example_simulator_functions.branin_hifi import branin_hifi
 import numpy as np
 
 
-def branin_medfi(x1,x2):
+def branin_medfi(x1, x2):
     """ Medium fidelity Branin function
 
     Compute value of medium-fidelity version of Branin function as described
@@ -22,10 +22,15 @@ def branin_medfi(x1,x2):
             Proceedings of the Royal Society of London A: Mathematical,
             Physical and Engineering Sciences, 473(2198), pp.20160751–16.
     """
-    y =  10.0 * np.sqrt(branin_hifi(x1-2.0,x2-2)) + \
-         2.0*(x1-0.5)-3.0*(3.0*x2-1.0) - 1.0
+    y = (
+        10.0 * np.sqrt(branin_hifi(x1 - 2.0, x2 - 2))
+        + 2.0 * (x1 - 0.5)
+        - 3.0 * (3.0 * x2 - 1.0)
+        - 1.0
+    )
 
     return y
+
 
 def main(job_id, params):
     """ Interface to medium fidelity Branin function
