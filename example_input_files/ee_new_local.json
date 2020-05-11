@@ -42,6 +42,7 @@
       "post_process_options"  : ["--field=structure --node=26 --start=1"],
       "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/elementary_effects_demo",
       "post_post"         : {
+        "post_post_approach_sel": "baci",
         "delete_field_data" : false,
         "target_time": 5e-1,
         "time_tol": 1e-2,
