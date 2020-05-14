@@ -256,6 +256,7 @@ class BaciLMIterator(Iterator):
                 resnorm_o = resnorm
                 gradnorm_o = gradnorm
                 self.lowesterror = resnorm
+                self.param_opt = self.param_current
 
             # save most optimal step in resnorm
             if resnorm < self.lowesterror:
@@ -355,7 +356,6 @@ class BaciLMIterator(Iterator):
                     )
                     + '.html'
                 )
-        pass
 
     def get_positions_raw_2pointperturb(self, x0):
 
@@ -424,4 +424,3 @@ class BaciLMIterator(Iterator):
                 )
                 df.to_csv(f, sep='\t', header=None, mode='a', index=None, float_format='%.6f')
                 f.close()
-        pass
