@@ -15,7 +15,7 @@ def inject(params, file_template, output_file):
     with open(file_template, encoding='utf-8') as f:
         my_file = f.read()
     for name, value in params.items():
-        if type(value).__name__ == 'ndarray':
+        if (type(value).__name__ == 'ndarray') and (value.size > 1):
             value = value[0]
         my_file = my_file.replace('{{{}}}'.format(name), str(value))
 
