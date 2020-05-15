@@ -308,7 +308,7 @@ class BaciLMIterator(Iterator):
 
         print(f"The optimum:\t{self.solution} occured in iteration #{self.iter_opt}.")
         if self.result_description:
-            if self.result_description["plot_results"]:
+            if self.result_description["plot_results"] and self.result_description["write_results"]:
                 data = pd.read_csv(
                     os.path.join(
                         self.global_settings["output_dir"], self.global_settings["experiment_name"]
