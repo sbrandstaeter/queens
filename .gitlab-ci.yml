@@ -13,6 +13,7 @@ default:
   # global/ default before_script can be overriden
   before_script:
     - export PIP_CACHE_DIR="/opt/cache/pip"
+    - apt-get update
     - apt-get install gcc -y
     - apt-get install libgl1-mesa-glx -y
     - apt-get install libxt6
