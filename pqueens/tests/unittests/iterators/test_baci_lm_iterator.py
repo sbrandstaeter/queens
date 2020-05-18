@@ -315,13 +315,12 @@ def test_initialize_run(mocker, fix_true_false_param, default_baci_lm_iterator):
 
     m1 = mocker.patch('builtins.open',)
     m2 = mocker.patch('pandas.core.generic.NDFrame.to_csv')
-    m3 = mocker.patch('typing.IO.close',)
 
     default_baci_lm_iterator.initialize_run()
 
     if fix_true_false_param:
         m1.assert_called_once_with(os.path.join('dummy_output', 'OptimizeLM' + '.csv'), 'w')
-        m2.assert_called_once()
+        m2.assert_called_once_with(m1.return_value.__enter__.return_value, sep='\t', index=None)
 
     else:
         assert not m1.called
@@ -436,14 +435,18 @@ def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
 
     m1 = mocker.patch('builtins.open',)
     m2 = mocker.patch('pandas.core.generic.NDFrame.to_csv')
-    m3 = mocker.patch('typing.IO.close',)
 
     default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
 
     if fix_true_false_param:
         m1.assert_called_once_with(os.path.join('dummy_output', 'OptimizeLM' + '.csv'), 'a')
         m2.assert_called_once_with(
-            m1.return_value, sep='\t', header=None, mode='a', index=None, float_format='%.6f'
+            m1.return_value.__enter__.return_value,
+            sep='\t',
+            header=None,
+            mode='a',
+            index=None,
+            float_format='%.6f',
         )
 
     else:

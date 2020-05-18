@@ -200,15 +200,14 @@ class BaciLMIterator(Iterator):
                 df = pd.DataFrame(
                     columns=['iter', 'resnorm', 'gradnorm', 'params', 'delta_params', 'mu'],
                 )
-                f = open(
+                with open(
                     os.path.join(
                         self.global_settings["output_dir"], self.global_settings["experiment_name"]
                     )
                     + '.csv',
                     'w',
-                )
-                df.to_csv(f, sep='\t', index=None)
-                f.close()
+                ) as f:
+                    df.to_csv(f, sep='\t', index=None)
 
     def core_run(self):
         """
@@ -221,11 +220,9 @@ class BaciLMIterator(Iterator):
             none
         """
 
-        resnorm = float
-        resnorm_o = float
+        resnorm = float('inf')
 
-        gradnorm = float
-        gradnorm_o = float
+        gradnorm = float('inf')
 
         converged = False
 
@@ -405,22 +402,21 @@ class BaciLMIterator(Iterator):
         # write iteration to file
         if self.result_description:
             if self.result_description["write_results"]:
-                f = open(
+                with open(
                     os.path.join(
                         self.global_settings["output_dir"], self.global_settings["experiment_name"]
                     )
                     + '.csv',
                     'a',
-                )
-                df = pd.DataFrame(
-                    {
-                        'iter': i,
-                        'resnorm': resnorm,
-                        'gradnorm': gradnorm,
-                        'params': [np.array2string(self.param_current, precision=8)],
-                        'delta_params': [np.array2string(param_delta, precision=8)],
-                        'mu': self.reg_param,
-                    }
-                )
-                df.to_csv(f, sep='\t', header=None, mode='a', index=None, float_format='%.6f')
-                f.close()
+                ) as f:
+                    df = pd.DataFrame(
+                        {
+                            'iter': i,
+                            'resnorm': resnorm,
+                            'gradnorm': gradnorm,
+                            'params': [np.array2string(self.param_current, precision=8)],
+                            'delta_params': [np.array2string(param_delta, precision=8)],
+                            'mu': self.reg_param,
+                        }
+                    )
+                    df.to_csv(f, sep='\t', header=None, mode='a', index=None, float_format='%.6f')
