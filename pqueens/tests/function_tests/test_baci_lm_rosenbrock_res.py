@@ -20,7 +20,7 @@ def test_baci_lm_rosenbrock_res(inputdir, tmpdir):
     data = pd.read_csv(result_file, sep='\t',)
 
     params = data.get('params').tail(1)
-    dfparams = params.str.extractall('([+-]?\d+\.\d*e?[+-]?\d*)')
+    dfparams = params.str.extractall(r'([+-]?\d+\.\d*e?[+-]?\d*)')
     dfparams = dfparams.astype(float)
     numpyparams = dfparams.to_numpy()
 

@@ -314,7 +314,7 @@ class BaciLMIterator(Iterator):
                     sep='\t',
                 )
                 xydata = data['params']
-                xydata = xydata.str.extractall('([+-]?\d+\.\d*e?[+-]?\d*)')
+                xydata = xydata.str.extractall(r'([+-]?\d+\.\d*e?[+-]?\d*)')
                 xydata = xydata.unstack()
                 data = data.drop(columns='params')
                 i = 0
