@@ -16,19 +16,11 @@ class PostPostBACIShape(PostPost):
     """
 
     def __init__(
-        self,
-        path_ref_data,
-        target_time,
-        time_tol,
-        case_type,
-        visualization,
-        delete_field_data,
-        file_prefix,
+        self, path_ref_data, time_tol, case_type, visualization, delete_field_data, file_prefix,
     ):
 
         super(PostPostBACIShape, self).__init__(delete_field_data, file_prefix)
         self.path_ref_data = path_ref_data
-        self.target_time = target_time
         self.time_tol = time_tol
         self.case_type = case_type
         self.visualizationon = visualization
@@ -49,20 +41,13 @@ class PostPostBACIShape(PostPost):
         """
         post_post_options = base_settings['options']
         path_ref_data = post_post_options['path_to_ref_data']
-        target_time = post_post_options['target_time']
         time_tol = post_post_options['time_tol']
         case_type = post_post_options['case_type']
         visualization = post_post_options['visualization']
         file_prefix = post_post_options['file_prefix']
         delete_field_data = post_post_options['delete_field_data']
         return cls(
-            path_ref_data,
-            target_time,
-            time_tol,
-            case_type,
-            visualization,
-            delete_field_data,
-            file_prefix,
+            path_ref_data, time_tol, case_type, visualization, delete_field_data, file_prefix,
         )
 
     # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
