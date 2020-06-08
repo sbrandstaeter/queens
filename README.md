@@ -186,6 +186,7 @@ machine running QUEENS or the compute cluster. However, the other machines need 
 able to connect to the MongoDB via tcp in order to write data. For that to work
 within the LNM network, all of the machines need to be connected to the internal network.
 
+>Note: If you are experiencing SELinux warnings follow the solution [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/#optional-suppress-ftdc-warnings).
 [↑ Contents](#contents)
 ### Remote computing
 Remote computing is solved via `ssh port forwarding` and `singularity images`. Please make sure you either have an existing
