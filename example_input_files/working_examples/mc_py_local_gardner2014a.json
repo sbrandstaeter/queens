@@ -19,7 +19,7 @@
     },
     "interface" : {
       "type" : "direct_python_interface",
-      "main_file" : "/Users/jonasbiehler/temp/queens/pqueens/example_simulator_functions/gardner2014a.py"
+      "main_file" : "/home/wirthl/queens_workspace/queens/pqueens/example_simulator_functions/gardner2014a.py"
     },
     "parameters" : {
       "random_variables" : {

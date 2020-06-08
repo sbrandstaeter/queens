@@ -1,5 +1,5 @@
 {
-    "experiment-name" : "art_aaa_test3",
+    "experiment_name" : "art_aaa_test3",
     "database"  :{
       "address"   : "localhost:27017",
       "drop_existing" : "True"
@@ -45,21 +45,29 @@
       "scheduler_type" : "local"
     },
     "parameters" : {
-        "youngs" : {
-          "type" : "FLOAT",
-          "size" : 1,
-          "min"  : 1000000,
-          "max"  : 5000000,
-          "distribution" : "normal",
-          "distribution_parameter" : [400000,10000]
+      "random_variables" : {
+        "youngs": {
+          "type": "FLOAT",
+          "size": 1,
+          "min": 1000000,
+          "max": 5000000,
+          "distribution": "normal",
+          "distribution_parameter": [
+            400000,
+            10000
+          ]
         },
-        "beta" : {
-          "type" : "FLOAT",
-          "size" : 1,
-          "min"  : 1500000,
-          "max"  : 5000000,
-          "distribution" : "normal",
-          "distribution_parameter" : [400000,10000]
+        "beta": {
+          "type": "FLOAT",
+          "size": 1,
+          "min": 1500000,
+          "max": 5000000,
+          "distribution": "normal",
+          "distribution_parameter": [
+            400000,
+            10000
+          ]
         }
+      }
     }
 }

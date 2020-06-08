@@ -1,5 +1,5 @@
 {
-  "experiment-name" : "ishigami_morris",
+  "experiment_name" : "ishigami_morris",
   "database"  :{
     "address"   : "localhost:27017"
   },
@@ -24,27 +24,29 @@
   },
   "interface" : {
     "type" : "direct_python_interface",
-    "main_file" : "/Users/jonas/work/adco/queens_code/pqueens/pqueens/example_simulator_functions/ishigami.py"
+    "main_file" : "/home/wirthl/queens_workspace/queens/pqueens/example_simulator_functions/ishigami.py"
   },
   "parameters" :
     {
-      "x1" : {
-        "type" : "FLOAT",
-        "size" : 1,
-        "min"  : -3.14159265359,
-        "max"  : 3.14159265359
-    },
-    "x2" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : -3.14159265359,
-      "max"  : 3.14159265359
-    },
-      "x3" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : -3.14159265359,
-      "max"  : 3.14159265359
-    }
+      "random_variables" : {
+        "x1": {
+          "type": "FLOAT",
+          "size": 1,
+          "min": -3.14159265359,
+          "max": 3.14159265359
+        },
+        "x2": {
+          "type": "FLOAT",
+          "size": 1,
+          "min": -3.14159265359,
+          "max": 3.14159265359
+        },
+        "x3": {
+          "type": "FLOAT",
+          "size": 1,
+          "min": -3.14159265359,
+          "max": 3.14159265359
+        }
+      }
   }
 }
