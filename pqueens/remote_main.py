@@ -61,6 +61,11 @@ def main(args):
 
         driver_obj = Driver.from_config_create_driver(config, job_id, batch)
 
+        # Run the singularity image in two stages waiting for each other but within one
+        # singularity call
+        driver_obj.main_run()
+        driver_obj.finish_and_clean()
+
     else:
         try:
             abs_path = os.path.join(path_json, 'temp.json')
@@ -74,11 +79,12 @@ def main(args):
             config, job_id, batch, port, path_to_post_post_file, workdir
         )
 
-    # Run the singularity image in two steps
-    if post == 'true':
-        driver_obj.finish_and_clean()
-    else:
-        driver_obj.main_run()
+        # Run the singularity image in two steps and two different singularity calls to have more
+        # freedom concerning mpi ranks
+        if post == 'true':
+            driver_obj.finish_and_clean()
+        else:
+            driver_obj.main_run()
 
 
 # ------------------------------ HELPER FUNCTIONS -----------------------------
