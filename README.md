@@ -81,13 +81,14 @@ user profile under the section `User settings - SSH keys`
 [Anaconda](https://www.anaconda.com/) with Python 3.x.
  *Anaconda* is an open-source Python distribution and provides a
  [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) with many popular data science Python packages. 
-1. After setting up Anaconda on your machine, create a new, dedicated QUEENS development environment via  
- All required third party libraries will be installed.  
+1. After setting up Anaconda on your machine, create a new, dedicated QUEENS development environment via
     ```bash
     cd <your-path-to-QUEENS>
     conda env create  
     ```
-     advanced: for a custom environment name  
+    All required third party libraries will be installed.
+    
+    advanced: for a custom environment name  
     `conda env create -f  <your-path-to-QUEENS>/environment.yml --name <your-custom-queens-env-name>`
 1. You need to activate the newly created environment via  
     ```bash
@@ -196,18 +197,14 @@ In CentOs7, singularity can directly be installed from the repository via:
 sudo yum install singularity
 ```
 Connecting via ssh to the compute machine and from the compute machine to the localhost needs to work passwordless. 
-Therefore, we need to copy the respective `id_rsa.pub`-keys on the localhost and the remote, once.
-Firstly, please copy the localhost's `id_rsa.pub` -key to the `authorized_keys` file on the remote, 
-while being logged-in on the localhost, using:
+Therefore, we need to copy the respective `id_rsa.pub`-keys on the localhost and the remote, once. Easiest way to do so should be:
 ```bash
-cat ~/.ssh/id_rsa.pub | ssh <username>@remote 'cat >> ~/.ssh/authorized_keys'  
+ssh-copy-id <username>@machine_you_would_like_to_access_passwordless
 ```
-Secondly, log-in onto the remote machine and then repeat copy the remote's `id_rsa.pub` -key to the `authorized_keys` file 
-on the localhost, using:
-```bash
-cat ~/.ssh/id_rsa.pub | ssh <username>@localmachine 'cat >> ~/.ssh/authorized_keys'  
-```
-In case you do not have a `id_rsa.pub`-key on the remote machine, you can generate the key by running 
+This command automatically checks whether you have already created an `id_rsa.pub`-key and copies it to the `authorized_keys`-file of
+the machine you would like to get passwordless access to.
+
+In case you do not have a `id_rsa.pub`-key on one of the machines, you can generate the key by running 
 the subsequent command on the remote machine:
 ```batch
 ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa
@@ -227,7 +224,7 @@ add so called rules to `firewalld` in order to connect to the database.
     ```
 1. If there is no rule in place which allows you to connect to port 27017, you have to add an exception for the *master-node* of the clusters you want work with:
     ```bash
-    sudo firewall-cmd --zone=work --add-rich-rule 'rule family=ipv4 source address=<IP-address-of-cluster-master-node> port port=27017 protocol=tcp accept' --permanent`        
+    sudo firewall-cmd --zone=work --add-rich-rule 'rule family=ipv4 source address=<IP-address-of-cluster-master-node> port port=27017 protocol=tcp accept' --permanent        
     ```
     Some LNM specific IP addresses are:
     - Schmarrn: 129.187.58.24
