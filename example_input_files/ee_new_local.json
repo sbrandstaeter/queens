@@ -39,6 +39,7 @@
       "path_to_executable"    : "/home/nitzler/workspace/BACI_Rep/Build/baci-release",
       "path_to_postprocessor" : "/home/nitzler/workspace/BACI_Rep/Build/post_drt_monitor",
       "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
+      "no_singularity": false,
       "post_process_options"  : ["--field=structure --node=26 --start=1"],
       "experiment_dir"        : "/home/nitzler/workspace/BACI_Rep/output/elementary_effects_demo",
       "post_post"         : {
@@ -54,7 +55,7 @@
   "resources" : {
     "local_machine" : {
       "scheduler"         : "local_scheduler",
-      "max-concurrent"    : 20,
+      "max-concurrent"    : 4,
       "max-finished-jobs" : 1000
     }
   },
