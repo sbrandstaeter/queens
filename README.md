@@ -213,11 +213,16 @@ To learn more about how ssh-port forwarding works click
 [here](https://chamibuddhika.wordpress.com/2012/03/21/ssh-tunnelling-explained/).
 
 If you have performed the aforementioned step, yet you are still asked for your password, this might be due to the following reasons:
- * permissions of the directory `~/.ssh` have to be 700, so only the user itself is allowed to access the directory and the files in there:
+ * permissions of the directory `~/.ssh` are incorrect. They have to be 700, so only the user itself is allowed to access the directory and the files in there.  
+   To set the permissions correctly, use the following command:
    ```batch
    chmod -R 700 ~/.ssh
    ```
  * write access to the home-directory on the remote machine has to be only allowed for the user.
+   To set the permissions correctly, login to the remote machine and use the following command:
+   ```batch
+   chmod 700 ~
+   ``` 
 
 [↑ Contents](#contents) 
 ### LNM specific issues
