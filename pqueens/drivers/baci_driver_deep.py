@@ -1,5 +1,7 @@
 import os
 import re
+import sys
+
 from pqueens.drivers.driver import Driver
 
 
@@ -88,7 +90,19 @@ class BaciDriverDeep(Driver):
         ]
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
-        _, stderr, self.pid = self.run_subprocess(command_string)
+        # Call BACI
+        stdout, stderr, self.pid = self.run_subprocess(command_string)
+        # Print the stderr of BACI call to pbs error file
+        sys.stderr.write(stderr)
+        # Print the stdout of BACI call to pbs output file
+        sys.stdout.write(stdout)
+        # Print the stderr of BACI to a separate file in the output directory
+        with open(self.output_file + "_BACI_stderr.txt", "a") as text_file:
+            print(stderr, file=text_file)
+        # Print the stdout of BACI to a separate file in the output directory
+        with open(self.output_file + "_BACI_stdout.txt", "a") as text_file:
+            print(stdout, file=text_file)
+
         if stderr:
             if re.fullmatch(
                 # pylint: disable=line-too-long
