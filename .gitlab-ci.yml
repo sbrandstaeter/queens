@@ -31,6 +31,8 @@ codechecks:
       - track_pylint.txt
     when: on_failure
     expire_in: 4 weeks
+  tags:
+    - queens-docker
 
 full_test_suite_develop:
   stage: tests
@@ -39,6 +41,8 @@ full_test_suite_develop:
   except:
     refs:
       - master
+  tags:
+    - queens-docker
 
 full_test_suite_master:
   stage: tests
@@ -59,6 +63,8 @@ full_test_suite_master:
   only:
     refs:
       - master
+  tags:
+    - queens-docker
 
 pages:
   stage: pages
@@ -79,4 +85,6 @@ pages:
   only:
       refs:
           - master
+  tags:
+    - queens-docker
 
