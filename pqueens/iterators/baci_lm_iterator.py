@@ -238,7 +238,8 @@ class BaciLMIterator(Iterator):
                 break
 
             print(
-                f"iteration: {i} reg_param: {self.reg_param} current_parameters: {self.param_current}"
+                f"iteration: {i} reg_param: {self.reg_param} current_parameters: "
+                f"{self.param_current}"
             )
 
             J = self.jacobian(self.param_current)
