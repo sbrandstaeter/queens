@@ -363,7 +363,7 @@ def test_core_run(default_baci_lm_iterator, mocker, fix_update_reg, fix_toleranc
             )
 
 
-def test_post_run(mocker, default_baci_lm_iterator, fix_true_false_param, fix_plotly_fig):
+def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator, fix_plotly_fig):
 
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
@@ -396,22 +396,8 @@ def test_post_run(mocker, default_baci_lm_iterator, fix_true_false_param, fix_pl
             'x2',
         ]
         m4.assert_called_once_with(os.path.join('dummy_output', 'OptimizeLM' + '.html'))
-        default_baci_lm_iterator.model.variables[0].variables['x3'] = {
-            'size': 1,
-            'value': [None],
-            'type': 'FLOAT',
-            'distribution': None,
-            'active': True,
-        }
-        m5 = mocker.patch('builtins.print')
-        m1.return_value = pd.DataFrame(
-            {'params': ['[1.0e3 2.0e-2 3.]', '[1.1 2.1 3.1]'], 'resnorm': [1.2, 2.2]}
-        )
-        default_baci_lm_iterator.post_run()
-        m5.assert_called_with(
-            'write_results for more than 2 parameters not implemented, because we are limited '
-            + 'to 3 dimensions. You have: 3.'
-        )
+        m2.assert_called_once()
+
     else:
         default_baci_lm_iterator.result_description = None
         default_baci_lm_iterator.post_run()
@@ -419,6 +405,80 @@ def test_post_run(mocker, default_baci_lm_iterator, fix_true_false_param, fix_pl
         m2.assert_not_called()
         m3.assert_not_called()
         m4.assert_not_called()
+
+
+def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig):
+
+    default_baci_lm_iterator.solution = np.array([1.1, 2.2])
+    default_baci_lm_iterator.iter_opt = 3
+
+    pdata = pd.DataFrame({'params': ['[1.0e3]', '[1.1]'], 'resnorm': [1.2, 2.2]})
+    mocker.patch('pandas.read_csv', return_value=pdata)
+    mocker.patch('plotly.basedatatypes.BaseFigure.update_traces', return_value=None)
+    m4 = mocker.patch('plotly.basedatatypes.BaseFigure.write_html', return_value=None)
+    m6 = mocker.patch('plotly.express.line', return_value=fix_plotly_fig)
+
+    checkdata = pd.DataFrame({'resnorm': [1.2, 2.2], 'x1': [1000.0, 1.1]})
+    default_baci_lm_iterator.model.variables[0].variables.clear()
+    default_baci_lm_iterator.model.variables[0].variables['x1'] = {
+        'size': 1,
+        'value': [None],
+        'type': 'FLOAT',
+        'distribution': None,
+        'active': True,
+    }
+
+    default_baci_lm_iterator.post_run()
+    callargs = m6.call_args
+    pd.testing.assert_frame_equal(callargs[0][0], checkdata)
+    assert callargs[1]['x'] == 'x1'
+    assert callargs[1]['y'] == 'resnorm'
+    assert callargs[1]['hover_data'] == [
+        'iter',
+        'resnorm',
+        'gradnorm',
+        'delta_params',
+        'mu',
+        'x1',
+    ]
+    m4.assert_called_once_with(os.path.join('dummy_output', 'OptimizeLM' + '.html'))
+    m6.assert_called_once()
+
+
+def test_post_run_3param(mocker, default_baci_lm_iterator):
+    default_baci_lm_iterator.solution = np.array([1.1, 2.2])
+    default_baci_lm_iterator.iter_opt = 3
+
+    mocker.patch('plotly.basedatatypes.BaseFigure.update_traces', return_value=None)
+    m4 = mocker.patch('plotly.basedatatypes.BaseFigure.write_html', return_value=None)
+    pdata = pd.DataFrame({'params': ['[1.0e3 2.0e-2 3.]', '[1.1 2.1 3.1]'], 'resnorm': [1.2, 2.2]})
+    mocker.patch('pandas.read_csv', return_value=pdata)
+    m5 = mocker.patch('builtins.print')
+
+    default_baci_lm_iterator.model.variables[0].variables['x3'] = {
+        'size': 1,
+        'value': [None],
+        'type': 'FLOAT',
+        'distribution': None,
+        'active': True,
+    }
+
+    default_baci_lm_iterator.post_run()
+    m5.assert_called_with(
+        'write_results for more than 2 parameters not implemented, because we are limited '
+        + 'to 3 dimensions. You have: 3. Plotting is skipped.'
+    )
+    m4.assert_not_called()
+
+
+def test_post_run_0param(mocker, default_baci_lm_iterator, fix_plotly_fig):
+    default_baci_lm_iterator.solution = np.array([1.1, 2.2])
+    default_baci_lm_iterator.iter_opt = 3
+
+    pdata = pd.DataFrame({'params': ['', ''], 'resnorm': [1.2, 2.2]})
+    mocker.patch('pandas.read_csv', return_value=pdata)
+    with pytest.raises(ValueError):
+        default_baci_lm_iterator.post_run()
 
 
 def test_get_positions_raw_2pointperturb(default_baci_lm_iterator):

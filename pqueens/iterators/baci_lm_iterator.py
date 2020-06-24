@@ -47,6 +47,7 @@ class BaciLMIterator(Iterator):
         self.tolerance = tolerance
 
         self.verbose_output = verbose_output
+        self.iter_opt = 0
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
@@ -236,6 +237,11 @@ class BaciLMIterator(Iterator):
                 print(f'Maximum number of steps max_feval= {self.max_feval} reached.')
                 break
 
+            print(
+                f"iteration: {i} reg_param: {self.reg_param} current_parameters: "
+                f"{self.param_current}"
+            )
+
             J = self.jacobian(self.param_current)
             r = self.residual(self.param_current)
 
@@ -283,7 +289,7 @@ class BaciLMIterator(Iterator):
                     converged = True
                     break
                 else:
-                    if resnorm < resnorm_o:
+                    if resnorm < resnorm_o and gradnorm < gradnorm_o:
                         self.reg_param = self.reg_param * gradnorm / gradnorm_o
             else:
                 raise ValueError('update_reg unknown')
@@ -302,7 +308,6 @@ class BaciLMIterator(Iterator):
         Returns:
         none
         """
-
         print(f"The optimum:\t{self.solution} occured in iteration #{self.iter_opt}.")
         if self.result_description:
             if self.result_description["plot_results"] and self.result_description["write_results"]:
@@ -327,26 +332,44 @@ class BaciLMIterator(Iterator):
                     print(
                         f'write_results for more than 2 parameters not implemented, '
                         f'because we are limited to 3 dimensions. '
-                        f'You have: {i}.'
+                        f'You have: {i}. Plotting is skipped.'
                     )
-                    pass
+                    return
+                elif i == 2:
+                    fig = px.line_3d(
+                        data,
+                        x=var_name[0],
+                        y=var_name[1],
+                        z='resnorm',
+                        hover_data=[
+                            'iter',
+                            'resnorm',
+                            'gradnorm',
+                            'delta_params',
+                            'mu',
+                            var_name[0],
+                            var_name[1],
+                        ],
+                    )
+                    fig.update_traces(mode='lines+markers', marker=dict(size=2), line=dict(width=4))
+                elif i == 1:
+                    fig = px.line(
+                        data,
+                        x=var_name[0],
+                        y='resnorm',
+                        hover_data=[
+                            'iter',
+                            'resnorm',
+                            'gradnorm',
+                            'delta_params',
+                            'mu',
+                            var_name[0],
+                        ],
+                    )
+                    fig.update_traces(mode='lines+markers', marker=dict(size=7), line=dict(width=3))
+                else:
+                    raise ValueError('You shouldn\'t be here without parameters.')
 
-                fig = px.line_3d(
-                    data,
-                    x=var_name[0],
-                    y=var_name[1],
-                    z='resnorm',
-                    hover_data=[
-                        'iter',
-                        'resnorm',
-                        'gradnorm',
-                        'delta_params',
-                        'mu',
-                        var_name[0],
-                        var_name[1],
-                    ],
-                )
-                fig.update_traces(mode='lines+markers', marker=dict(size=2), line=dict(width=4))
                 fig.write_html(
                     os.path.join(
                         self.global_settings["output_dir"], self.global_settings["experiment_name"]
@@ -395,9 +418,7 @@ class BaciLMIterator(Iterator):
         Returns:
         None
         """
-        print(
-            f"iteration: {i} reg_param: {self.reg_param} current_parameters: {self.param_current}"
-        )
+
         string = np.array2string(param_delta, precision=8)
         # write iteration to file
         if self.result_description:
