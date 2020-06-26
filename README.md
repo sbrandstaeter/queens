@@ -241,6 +241,20 @@ add so called rules to `firewalld` in order to connect to the database.
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
     ```
   
+In case you want to use queens with `bruteforce` at the beginning of the first execution of queens on `bruteforce` your `.bashrc`-file is manipulated. Three lines with:
+```
+export SINGULARITY*
+```
+are added. However, you need to manually modify the line:
+```
+export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=/something/has/been/added/automatically
+```
+and replace the `/something/has/been/added/automatically` by the output of:
+```
+echo $LD_LIBRARY_PATH
+```
+while you are regularly logged in on bruteforce with your account.
+  
 [↑ Contents](#contents)
 ## Building the documentation
 QUEENS uses [SPHINX](https://www.sphinx-doc.org/en/master/) to automatically build a html-documentation from docstring.
