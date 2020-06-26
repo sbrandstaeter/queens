@@ -219,10 +219,11 @@ If you have performed the aforementioned step, yet you are still asked for your 
    chmod -R 700 ~/.ssh
    ```
  * write access to the home-directory on the remote machine has to be only allowed for the user.
-   To set the permissions correctly, login to the remote machine and use the following command:
+   One possible way to set the permissions correctly is logging into the remote machine and using the following command:
    ```batch
    chmod 700 ~
-   ``` 
+   ```  
+   Note that there are other valid choices. Refer to the manual of chmod for details.
 
 [↑ Contents](#contents) 
 ### LNM specific issues
