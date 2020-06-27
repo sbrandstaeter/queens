@@ -199,7 +199,7 @@ sudo yum install singularity
 Connecting via ssh to the compute machine and from the compute machine to the localhost needs to work passwordless. 
 Therefore, we need to copy the respective `id_rsa.pub`-keys on the localhost and the remote, once. Easiest way to do so should be:
 ```bash
-ssh-copy-id <username>@machine_you_would_like_to_access_passwordless
+ssh-copy-id -i ~/.ssh/id_rsa.pub <username>@machine_you_would_like_to_access_passwordless
 ```
 This command automatically checks whether you have already created an `id_rsa.pub`-key and copies it to the `authorized_keys`-file of
 the machine you would like to get passwordless access to.
@@ -211,6 +211,19 @@ ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa
 ```
 To learn more about how ssh-port forwarding works click 
 [here](https://chamibuddhika.wordpress.com/2012/03/21/ssh-tunnelling-explained/).
+
+If you have performed the aforementioned step, yet you are still asked for your password, this might be due to the following reasons:
+ * permissions of the directory `~/.ssh` are incorrect. They have to be 700, so only the user itself is allowed to access the directory and the files in there.  
+   To set the permissions correctly, use the following command:
+   ```batch
+   chmod -R 700 ~/.ssh
+   ```
+ * write access to the home-directory on the remote machine has to be only allowed for the user.
+   One possible way to set the permissions correctly is logging into the remote machine and using the following command:
+   ```batch
+   chmod 700 ~
+   ```  
+   Note that there are other valid choices. Refer to the manual of chmod for details.
 
 [↑ Contents](#contents) 
 ### LNM specific issues
