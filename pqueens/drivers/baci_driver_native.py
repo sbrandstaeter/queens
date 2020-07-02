@@ -1,5 +1,6 @@
 import os
 from pqueens.drivers.driver import Driver
+import logging
 
 
 class BaciDriverNative(Driver):
@@ -68,20 +69,22 @@ class BaciDriverNative(Driver):
             None
 
         """
-        # assemble run command sttring
+        # assemble run command string
+        joblogger = logging.getLogger('pqueens.driver.drivers' + f'{self.job_id}')
+        fh = logging.FileHandler(self.output_file + "_subprocess_stdout.txt", mode='w', delay=False)
+        fh.setLevel(logging.INFO)
+        fh.terminator = ''
+        ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        fh.setFormatter(ff)
+        joblogger.addHandler(fh)
+        joblogger.setLevel(logging.INFO)
+        joblogger.info('joblogger created\n')
         command_string = self.assemble_command_string()
 
-        # run BACI via subprocess
-        stdout, stderr, self.pid = self.run_subprocess(command_string)
-
-        # print the standard output of the subprocess to file (for debugging)
-        with open(self.output_file + "_subprocess_stdout.txt", "w") as text_file:
-            print(stdout, file=text_file)
-        with open(self.output_file + "_subprocess_stderr.txt", "w") as text_file:
-            print(stderr, file=text_file)
+        returncode, self.pid = self.run_subprocess(command_string, terminate_expr='PROC.*ERROR')
 
         # detection of failed jobs
-        if stderr:
+        if returncode:
             self.result = None
             self.job['status'] = 'failed'
 

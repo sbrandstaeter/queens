@@ -3,8 +3,10 @@ import abc
 import subprocess
 import time
 import os
+import logging
 from pqueens.utils.injector import inject
 from pqueens.database.mongodb import MongoDB
+from re import search
 
 
 class Driver(metaclass=abc.ABCMeta):
@@ -203,7 +205,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.do_postpostprocessing()
         self.finish_job()
 
-    def run_subprocess(self, command_string):
+    def run_subprocess(self, command_string, terminate_expr=None):
         """
         Method to run command_string outside of Python
 
@@ -216,6 +218,7 @@ class Driver(metaclass=abc.ABCMeta):
             process_id (str): Process ID of the external process
 
         """
+        joblogger=logging.getLogger('pqueens.driver.drivers'+f'{self.job_id}')
         process = subprocess.Popen(
             command_string,
             stdin=subprocess.PIPE,
@@ -224,10 +227,37 @@ class Driver(metaclass=abc.ABCMeta):
             shell=True,
             universal_newlines=True,
         )
+        joblogger.info('run_subprocess started with:\n')
+        joblogger.info(command_string+'\n')
+        for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
+            if line == '' and process.poll() is not None:
+                joblogger.info('subprocess.Popen-info: stdout is finished and process.poll() '
+                                'not None.\n')
+                stdout, stderr = process.communicate()
+                joblogger.info(stdout+'\n')
+                if stderr:
+                    joblogger.error('error message (if provided) follows:\n')
+                    joblogger.error(stderr)
+                    joblogger.info('\n')
+                break
+            if terminate_expr:
+                if search(terminate_expr, line):
+                    joblogger.warning('run_subprocess detected terminate expression:\n')
+                    joblogger.error(line)
+                    joblogger.warning('running job will be terminated.\n')
+                    time.sleep(2)
+                    if process.poll() is None:
+                        #log terminate command
+                        process.terminate()
+                        time.sleep(2)
+                    continue
+            joblogger.info(line)
 
-        stdout, stderr = process.communicate()
+
+        #stdout, stderr = process.communicate()
         process_id = process.pid
-        return stdout, stderr, process_id
+        process_returncode = process.returncode
+        return process_returncode, process_id
 
     # ------ Base class methods ------------------------------------------------ #
     def init_job(self):
@@ -313,12 +343,12 @@ class Driver(metaclass=abc.ABCMeta):
                 target_file_opt = os.path.join(target_file_opt_1, target_file_opt_2)
                 postprocessing_list = [self.postprocessor, output_file_opt, option, target_file_opt]
                 postprocess_command = ' '.join(filter(None, postprocessing_list))
-                _, _, _ = self.run_subprocess(postprocess_command)
+                _, _ = self.run_subprocess(postprocess_command)
         else:
             target_file_opt = os.path.join('--output=' + target_file_base_name, self.file_prefix)
             postprocessing_list = [self.postprocessor, output_file_opt, target_file_opt]
             postprocess_command = ' '.join(filter(None, postprocessing_list))
-            _, _, _ = self.run_subprocess(postprocess_command)
+            _, _ = self.run_subprocess(postprocess_command)
 
     def do_postpostprocessing(self):
         """
