@@ -72,8 +72,6 @@ pages:
   dependencies:
     - full_test_suite_master
   before_script:
-    - conda env create -n create-badge python=3.7
-    - source activate create-badge
     - pip install anybadge
     - mkdir public
   script:
