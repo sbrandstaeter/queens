@@ -39,6 +39,8 @@ def _get_subprocess(type):
 
     if type == 'simple':
         return _run_subprocess_simple
+    if type == 'read_output':
+        return _run_subprocess_with_output
     elif type == 'term_on_expr':
         return _run_subprocess_terminateexpression
     elif type == 'whitelist':
@@ -73,6 +75,33 @@ def _run_subprocess_simple(command_string, terminate_expr=None, logger=None):
     process_id = process.pid
     process_returncode = process.returncode
     return process_returncode, process_id
+
+
+def _run_subprocess_with_output(command_string, terminate_expr=None, logger=None):
+    """
+        Run a system command outside of the Python script drop errors and
+        stdout-return
+        Args:
+            command_string (str): command, that will be run in subprocess
+        Returns:
+            process_returncode (int): code for success of subprocess
+            process_id (int): unique process id, the subprocess was assigned on computing machine
+            stdout (str): standard output content
+            stderr (str): standard error content
+
+    """
+    process = subprocess.Popen(
+        command_string,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+        universal_newlines=True,
+    )
+    stdout, stderr = process.communicate()
+    process_id = process.pid
+    process_returncode = process.returncode
+    return process_returncode, process_id, stdout, stderr
 
 
 def _run_subprocess_terminateexpression(command_string, terminate_expr=None, logger=None):
@@ -180,6 +209,7 @@ def _run_subprocess_whitelist(command_string, terminate_expr=None, logger=None):
     ):
         process_returncode = 0
     return process_returncode, process_id
+
 
 def _run_subprocess_submit_job(command_string, terminate_expr=None, logger=None):
     """
