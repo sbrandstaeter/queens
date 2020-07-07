@@ -294,7 +294,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             command_list = ['echo $SINGULARITY_BIND']
         command_string = ' '.join(command_list)
         returncode, _ = run_subprocess(command_string)
-        if returncode != 0:
+        if returncode == 0:
             if self.remote_flag:
                 command_list = [
                     'ssh',
@@ -319,7 +319,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             command_list = ['echo $SINGULARITYENV_APPEND_PATH']
         command_string = ' '.join(command_list)
         returncode, _ = run_subprocess(command_string)
-        if returncode != 0:
+        if returncode == 0:
             if self.remote_flag:
                 command_list = [
                     'ssh',
@@ -348,7 +348,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             command_list = ['echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH']
         command_string = ' '.join(command_list)
         returncode, _ = run_subprocess(command_string)
-        if returncode != 0:
+        if returncode == 0:
             if self.remote_flag:
                 command_list = [
                     'ssh',

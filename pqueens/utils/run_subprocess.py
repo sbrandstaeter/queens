@@ -17,7 +17,7 @@ def run_subprocess(command_string, type='simple', loggername=None, expr=None):
         loggername (str): loggername for logging module
         expr (str): regex to search in sdtout on which subprocess will terminate
     Returns:
-        process_returncode (int): code for execusion success of subprocess
+        process_returncode (int): code for execution success of subprocess
         process_id (int): process id that was assigned to process
 
     """
@@ -29,8 +29,7 @@ def run_subprocess(command_string, type='simple', loggername=None, expr=None):
 
 def _get_subprocess(type):
     """
-        Run a system command outside of the Python script and log errors and
-        stdout-return
+        Chose subprocess implementation by type
         Args:
             type (str): Type of run_subprocess
         Returns:
@@ -189,7 +188,7 @@ def _run_subprocess_submit_job(command_string, terminate_expr=None, logger=None)
         Args:
             command_string (str): command, that will be run in subprocess
         Returns:
-            process_returncode (int): always None here. this function does not wait
+            process_returncode (int): always None here. this function does not wait for subprocess.
             process_id (int): unique process id, the subprocess was assigned on computing machine
 
     """
