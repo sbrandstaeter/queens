@@ -1,6 +1,7 @@
 from pqueens.drivers.ansys_driver_native import AnsysDriverNative
 from pqueens.drivers.driver import Driver
 import pqueens
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 def test_init(mocker):
@@ -10,9 +11,7 @@ def test_init(mocker):
 
     mocker.patch('pqueens.drivers.driver.Driver.__init__')
 
-    my_driver = AnsysDriverNative(custom_executable,
-                                  ansys_version,
-                                  base_settings)
+    my_driver = AnsysDriverNative(custom_executable, ansys_version, base_settings)
 
     pqueens.drivers.driver.Driver.__init__.assert_called_once_with(base_settings)
 
@@ -21,8 +20,9 @@ def test_init(mocker):
 
 
 def test_from_config_create_driver(mocker):
-    mocker.patch('pqueens.drivers.ansys_driver_native.'
-                 'AnsysDriverNative.__init__', return_value=None)
+    mocker.patch(
+        'pqueens.drivers.ansys_driver_native.' 'AnsysDriverNative.__init__', return_value=None
+    )
 
     base_settings = {'option': 'option_1'}
     config = {'driver': {}}
@@ -33,14 +33,17 @@ def test_from_config_create_driver(mocker):
 
     AnsysDriverNative.from_config_create_driver(config, base_settings)
     pqueens.drivers.ansys_driver_native.AnsysDriverNative.__init__.assert_called_once_with(
-        'my_custom_anysy', 'v15', base_settings)
+        'my_custom_anysy', 'v15', base_settings
+    )
 
 
 def test_run_job(ansys_driver, mocker):
     mocker.patch.object(ansys_driver, 'assemble_command_string', return_value='stuff')
-    mocker.patch.object(ansys_driver, 'run_subprocess', return_value=['ran', 'dom', 'stuff'])
+    m1 = mocker.patch(
+        'pqueens.drivers.ansys_driver_native.run_subprocess', return_value=['random', 'stuff']
+    )
 
     ansys_driver.run_job()
 
     ansys_driver.assemble_command_string.assert_called_once()
-    ansys_driver.run_subprocess.assert_called_once_with('stuff')
+    m1.assert_called_once_with('stuff')
