@@ -1,6 +1,7 @@
 import os
 import docker
 from pqueens.drivers.driver import Driver
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 class BaciDriverDocker(Driver):
@@ -78,7 +79,7 @@ class BaciDriverDocker(Driver):
         docker_run_command_string = self.assemble_docker_run_command_string()
 
         # run BACI in Docker container via subprocess
-        _, stderr, self.pid = self.run_subprocess(docker_run_command_string)
+        returncode, self.pid = run_subprocess(docker_run_command_string)
 
         # second alternative (not used currently): use Docker SDK
         # get Docker client
@@ -96,7 +97,7 @@ class BaciDriverDocker(Driver):
         #                               stderr=True)
 
         # detection of failed jobs
-        if stderr:
+        if returncode:
             self.result = None
             self.job['status'] = 'failed'
 

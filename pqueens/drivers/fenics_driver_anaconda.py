@@ -18,6 +18,7 @@ import time
 import importlib.util
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.injector import inject
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 def main(args):
@@ -273,16 +274,7 @@ def run(command_string):
         Args:
             command_string (str): Command to execute
     """
-    p = subprocess.Popen(
-        command_string,
-        stdin=subprocess.PIPE,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        shell=True,
-        universal_newlines=True,
-    )
-
-    stdout, stderr = p.communicate()
+    _, _ = run_subprocess(command_string)
 
 
 if __name__ == '__main__':

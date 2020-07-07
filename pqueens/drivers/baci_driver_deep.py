@@ -1,6 +1,6 @@
 import os
-import re
-import sys
+import logging
+from pqueens.utils.run_subprocess import run_subprocess
 
 from pqueens.drivers.driver import Driver
 
@@ -90,27 +90,26 @@ class BaciDriverDeep(Driver):
         ]
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
-        # Call BACI
-        stdout, stderr, self.pid = self.run_subprocess(command_string)
-        # Print the stderr of BACI call to pbs error file
-        sys.stderr.write(stderr)
-        # Print the stdout of BACI call to pbs output file
-        sys.stdout.write(stdout)
-        # Print the stderr of BACI to a separate file in the output directory
-        with open(self.output_file + "_BACI_stderr.txt", "a") as text_file:
-            print(stderr, file=text_file)
-        # Print the stdout of BACI to a separate file in the output directory
-        with open(self.output_file + "_BACI_stdout.txt", "a") as text_file:
-            print(stdout, file=text_file)
 
-        if stderr:
-            if re.fullmatch(
-                # pylint: disable=line-too-long
-                r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n',
-                # pylint: enable=line-too-long
-                stderr,
-            ):
-                pass
-            else:
-                self.result = None  # This is necessary to detect failed jobs
-                self.job['status'] = 'failed'
+        loggername = __name__ + f'{self.job_id}'
+        joblogger = logging.getLogger(loggername)
+        fh = logging.FileHandler(self.output_file + "_BACI_stdout.txt", mode='a', delay=False)
+        fh.setLevel(logging.INFO)
+        fh.terminator = ''
+        efh = logging.FileHandler(self.output_file + "_BACI_stderr.txt", mode='a', delay=False)
+        efh.setLevel(logging.ERROR)
+        efh.terminator = ''
+        ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        fh.setFormatter(ff)
+        efh.setFormatter(ff)
+        joblogger.addHandler(fh)
+        joblogger.addHandler(efh)
+        joblogger.setLevel(logging.INFO)
+
+        # Call BACI
+        returncode, self.pid = run_subprocess(command_string, type='whitelist',
+                                              loggername=joblogger)
+
+        if returncode:
+            self.result = None  # This is necessary to detect failed jobs
+            self.job['status'] = 'failed'

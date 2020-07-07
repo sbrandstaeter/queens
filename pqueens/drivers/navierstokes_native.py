@@ -1,6 +1,7 @@
 import os
 from pqueens.drivers.driver import Driver
 from pqueens.utils.injector import inject
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 class NavierStokesNative(Driver):
@@ -99,10 +100,10 @@ class NavierStokesNative(Driver):
         command_string = self.assemble_command_string()
 
         # run BACI via subprocess
-        stdout, stderr, self.pid = self.run_subprocess(command_string)
+        returncode, self.pid = run_subprocess(command_string)
 
         # detection of failed jobs
-        if stderr:
+        if returncode:
             self.result = None
             self.job['status'] = 'failed'
 

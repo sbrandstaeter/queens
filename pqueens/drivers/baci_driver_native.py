@@ -1,6 +1,7 @@
 import os
 from pqueens.drivers.driver import Driver
 import logging
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 class BaciDriverNative(Driver):
@@ -70,18 +71,27 @@ class BaciDriverNative(Driver):
 
         """
         # assemble run command string
-        joblogger = logging.getLogger('pqueens.driver.drivers' + f'{self.job_id}')
+        loggername = __name__ + f'{self.job_id}'
+        joblogger = logging.getLogger(loggername)
         fh = logging.FileHandler(self.output_file + "_subprocess_stdout.txt", mode='w', delay=False)
         fh.setLevel(logging.INFO)
         fh.terminator = ''
+        efh = logging.FileHandler(
+            self.output_file + "_subprocess_stderr.txt", mode='w', delay=False
+        )
+        efh.setLevel(logging.ERROR)
+        efh.terminator = ''
         ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         fh.setFormatter(ff)
+        efh.setFormatter(ff)
         joblogger.addHandler(fh)
+        joblogger.addHandler(efh)
         joblogger.setLevel(logging.INFO)
-        joblogger.info('joblogger created\n')
         command_string = self.assemble_command_string()
 
-        returncode, self.pid = self.run_subprocess(command_string, terminate_expr='PROC.*ERROR')
+        returncode, self.pid = run_subprocess(
+            command_string, type='term_on_expr', expr='PROC.*ERROR', loggername=loggername
+        )
 
         # detection of failed jobs
         if returncode:
