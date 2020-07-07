@@ -9,14 +9,16 @@ import re
 
 def run_subprocess(command_string, type='simple', loggername=None, expr=None):
     """
-    Run a system command outside of the Python script anc log errors and
+    Run a system command outside of the Python script and log errors and
     stdout-return
     Args:
         command_string (str): Command string that should be run outside of Python
-    Returns:
         type (str): type of run_subprocess from utils
         loggername (str): loggername for logging module
         expr (str): regex to search in sdtout on which subprocess will terminate
+    Returns:
+        process_returncode (int): code for execusion success of subprocess
+        process_id (int): process id that was assigned to process
 
     """
 
@@ -42,6 +44,8 @@ def _get_subprocess(type):
         return _run_subprocess_terminateexpression
     elif type == 'whitelist':
         return _run_subprocess_whitelist
+    elif type == 'submit':
+        return _run_subprocess_submit_job
     else:
         raise ValueError(f'subprocess type {type} not found.')
 
@@ -176,4 +180,29 @@ def _run_subprocess_whitelist(command_string, terminate_expr=None, logger=None):
         stderr,
     ):
         process_returncode = 0
+    return process_returncode, process_id
+
+def _run_subprocess_submit_job(command_string, terminate_expr=None, logger=None):
+    """
+        submit a system command outside of the Python script drop errors and
+        stdout-return
+        Args:
+            command_string (str): command, that will be run in subprocess
+        Returns:
+            process_returncode (int): always None here. this function does not wait
+            process_id (int): unique process id, the subprocess was assigned on computing machine
+
+    """
+
+    process = subprocess.Popen(
+        command_string,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+        universal_newlines=True,
+    )
+
+    process_id = process.pid
+    process_returncode = None
     return process_returncode, process_id

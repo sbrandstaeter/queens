@@ -293,8 +293,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         else:
             command_list = ['echo $SINGULARITY_BIND']
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = run_subprocess(command_string)
-        if stdout == "\n":
+        returncode, _ = run_subprocess(command_string)
+        if returncode != 0:
             if self.remote_flag:
                 command_list = [
                     'ssh',
@@ -310,7 +310,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                     + "\' >> ~/.bashrc && source ~/.bashrc"
                 ]
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = run_subprocess(command_string)
+        _, _ = run_subprocess(command_string)
 
         # Create a Singularity PATH variable that is equal to the host PATH
         if self.remote_flag:
@@ -318,8 +318,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         else:
             command_list = ['echo $SINGULARITYENV_APPEND_PATH']
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = run_subprocess(command_string)
-        if stdout == "\n":
+        returncode, _ = run_subprocess(command_string)
+        if returncode != 0:
             if self.remote_flag:
                 command_list = [
                     'ssh',
@@ -335,7 +335,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                     # pylint: enable=line-too-long
                 ]  # noqa
             command_string = ' '.join(command_list)
-            stdout, stderr, _ = run_subprocess(command_string)
+            _, _ = run_subprocess(command_string)
 
         # Create a Singulartity LD_LIBRARY_PATH variable that is equal to the host LD_LIBRARY_PATH
         if self.remote_flag:
@@ -347,8 +347,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         else:
             command_list = ['echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH']
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = run_subprocess(command_string)
-        if stdout == "\n":
+        returncode, _ = run_subprocess(command_string)
+        if returncode != 0:
             if self.remote_flag:
                 command_list = [
                     'ssh',
@@ -364,7 +364,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                     # pylint: enable=line-too-long
                 ]  # noqa
             command_string = ' '.join(command_list)
-            stdout, stderr, _ = run_subprocess(command_string)
+            _, _ = run_subprocess(command_string)
 
     def establish_port_forwarding_remote(self, address_localhost):
         """
@@ -534,10 +534,10 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.hash_files('hashing')
         # create the actual image
         command_string = '/usr/bin/singularity --version'
-        stdout, stderr, _ = run_subprocess(command_string)
-        if stderr:
+        returncode, _ = run_subprocess(command_string)
+        if returncode:
             raise RuntimeError(
-                f'Singularity could not be executed! The error message was: {stderr}'
+                f'Singularity could not be executed! The error message was: TODOstderr'
             )
 
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
@@ -547,7 +547,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         abs_path2 = os.path.join(script_dir, rel_path2)
         command_list = ["sudo /usr/bin/singularity build", abs_path1, abs_path2]
         command_string = ' '.join(command_list)
-        stdout, stderr, _ = run_subprocess(command_string)
+        _ , _ = run_subprocess(command_string)
 
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
         rel_path = '../../driver.simg'
@@ -562,7 +562,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             print(
                 '----------------------------------------------------------------------------------'
             )
-            print(f'The returned error message was: {stderr}, {stdout}')
+            print(f'The returned error message was: TODOstderr, TODOstdout')
             raise RuntimeError
 
     def hash_files(self, mode=None):
@@ -677,7 +677,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                 abs_path = os.path.join(script_dir, rel_path)
                 command_list = ['rm', abs_path]
                 command_string = ' '.join(command_list)
-                _, _, _ = run_subprocess(command_string)
+                _, _ = run_subprocess(command_string)
                 self.create_singularity_image()
                 print("Local singularity image written successfully!")
 
@@ -881,13 +881,14 @@ class Scheduler(metaclass=abc.ABCMeta):
             '"',
         ]
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        stdout, stderr, _ = run_subprocess(cmd_remote_main)
-        if stderr:
+        returncode, _ = run_subprocess(cmd_remote_main)
+        if returncode:
             raise RuntimeError(
                 "\nThe file 'remote_main' in remote singularity image "
                 "could not be executed properly!"
-                f"\nStderr from remote:\n{stderr}"
+                f"\nStderr from remote:\nTODOstderr"
             )
+        stdout = 'dummy'
         match = self.get_process_id_from_output(stdout)
 
         try:
@@ -940,10 +941,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             remote_args,
         ]
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        process = subprocess.Popen(
-            cmd_remote_main, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        pid = process.pid
+
+        _, pid = run_subprocess(cmd_remote_main, type='submit')
 
         return pid
 
@@ -978,7 +977,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             '"',
         ]
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        stdout, stderr, _ = run_subprocess(cmd_remote_main)
+        _, _ = run_subprocess(cmd_remote_main)
 
         return 0
 
@@ -1024,6 +1023,6 @@ class Scheduler(metaclass=abc.ABCMeta):
             '--post=true',
         ]
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        run_subprocess(cmd_remote_main)
+        _, _ = run_subprocess(cmd_remote_main)
 
         return 0
