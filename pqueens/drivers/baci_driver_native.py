@@ -64,7 +64,7 @@ class BaciDriverNative(Driver):
     def run_job(self):
         """
         Actual method to run the job on computing machine
-        using run_subprocess method from base class
+        using run_subprocess method from utils
 
         Returns:
             None
@@ -90,7 +90,7 @@ class BaciDriverNative(Driver):
         command_string = self.assemble_command_string()
 
         returncode, self.pid = run_subprocess(
-            command_string, type='term_on_expr', expr='PROC.*ERROR', loggername=loggername
+            command_string, type='simulation', terminate_expr='PROC.*ERROR', loggername=loggername
         )
 
         # detection of failed jobs

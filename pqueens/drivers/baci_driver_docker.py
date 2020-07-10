@@ -69,7 +69,7 @@ class BaciDriverDocker(Driver):
 
     def run_job(self):
         """ Actual method to run the job on computing machine
-            using run_subprocess method from base class
+            using run_subprocess method from utils
         """
         # assemble BACI run command sttring
         self.baci_run_command_string = self.assemble_baci_run_command_string()
@@ -79,7 +79,7 @@ class BaciDriverDocker(Driver):
         docker_run_command_string = self.assemble_docker_run_command_string()
 
         # run BACI in Docker container via subprocess
-        returncode, self.pid = run_subprocess(docker_run_command_string)
+        returncode, self.pid, _, _ = run_subprocess(docker_run_command_string)
 
         # second alternative (not used currently): use Docker SDK
         # get Docker client

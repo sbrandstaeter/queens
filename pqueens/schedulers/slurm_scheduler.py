@@ -3,6 +3,7 @@
 import sys
 import os
 from .scheduler import Scheduler
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 class SlurmScheduler(Scheduler):
@@ -100,7 +101,7 @@ class SlurmScheduler(Scheduler):
             # join lists
             command_list = [self.connect_to_resource, 'squeue --job', str(process_id)]
             command_string = ' '.join(command_list)
-            stdout, _, p = super().run_subprocess(command_string)
+            _, p, stdout, _ = run_subprocess(command_string)
             output2 = stdout.split()
             # second to last entry is (should be )the job status
             status = output2[-4]  # TODO: Check if that still holds
@@ -126,7 +127,7 @@ class SlurmScheduler(Scheduler):
                 # try to kill the job.
                 command_list = self.connect_to_resource + ['scancel', str(process_id)]
                 command_string = ' '.join(command_list)
-                stdout, stderr, p = super().run_subprocess(command_string)
+                _, p, stdout, stderr = run_subprocess(command_string)
                 print(stdout)
                 sys.stderr.write("Killed job %d.\n" % (process_id))
             except ValueError:

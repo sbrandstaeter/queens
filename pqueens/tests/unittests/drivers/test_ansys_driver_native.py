@@ -1,7 +1,6 @@
 from pqueens.drivers.ansys_driver_native import AnsysDriverNative
 from pqueens.drivers.driver import Driver
 import pqueens
-from pqueens.utils.run_subprocess import run_subprocess
 
 
 def test_init(mocker):
@@ -40,7 +39,8 @@ def test_from_config_create_driver(mocker):
 def test_run_job(ansys_driver, mocker):
     mocker.patch.object(ansys_driver, 'assemble_command_string', return_value='stuff')
     m1 = mocker.patch(
-        'pqueens.drivers.ansys_driver_native.run_subprocess', return_value=['random', 'stuff']
+        'pqueens.drivers.ansys_driver_native.run_subprocess',
+        return_value=['random', 'stuff', 'out', 'err'],
     )
 
     ansys_driver.run_job()

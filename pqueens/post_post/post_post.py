@@ -118,7 +118,7 @@ class PostPost(metaclass=abc.ABCMeta):
                 + input_file_extention
                 + r" ../postpost_error/"
             )
-            _, _ = run_subprocess(command_string)
+            _, _, _, _ = run_subprocess(command_string)
 
     def delete_field_data(self):
         """ Delete output files except files with given prefix """

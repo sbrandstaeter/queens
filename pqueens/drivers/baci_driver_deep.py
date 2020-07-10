@@ -74,7 +74,7 @@ class BaciDriverDeep(Driver):
     def run_job(self):
         """
         Actual method to run the job on computing machine
-        using run_subprocess method from base class
+        using run_subprocess method from utils
 
         Returns:
             None
@@ -107,8 +107,12 @@ class BaciDriverDeep(Driver):
         joblogger.setLevel(logging.INFO)
 
         # Call BACI
-        returncode, self.pid = run_subprocess(command_string, type='whitelist',
-                                              loggername=joblogger)
+        returncode, self.pid = run_subprocess(
+            command_string,
+            type='whitelist',
+            loggername=joblogger,
+            whitelist_expr=r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n',
+        )
 
         if returncode:
             self.result = None  # This is necessary to detect failed jobs

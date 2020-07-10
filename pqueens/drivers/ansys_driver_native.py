@@ -65,13 +65,13 @@ class AnsysDriverNative(Driver):
 
     def run_job(self):
         """ Actual method to run the job on computing machine
-            using run_subprocess method from base class
+            using run_subprocess method from utils
         """
         # assemble run command
         command_string = self.assemble_command_string()
 
         # run ANSYS via subprocess
-        returncode, self.pid = run_subprocess(command_string)
+        returncode, self.pid, _, _ = run_subprocess(command_string)
 
         # detection of failed jobs
         if returncode:

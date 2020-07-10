@@ -99,7 +99,7 @@ class PostPostBACIShape(PostPost):
         for filename in post_file_list:
             command_string = "rm " + filename
             # "cd " + self.output_file + "&& ls | grep -v --include=*.{mon,csv} | xargs rm"
-            _, _ = run_subprocess(command_string)
+            _, _, _, _ = run_subprocess(command_string)
 
     def error_handling(self):
         # TODO  ### Error Types ###
@@ -119,7 +119,7 @@ class PostPostBACIShape(PostPost):
                 + input_file_extention
                 + r" ../postpost_error/"
             )
-            _, _ = run_subprocess(command_string)
+            _, _, _, _ = run_subprocess(command_string)
 
     def read_monitorfile(self):
         """

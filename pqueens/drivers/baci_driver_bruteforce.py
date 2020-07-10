@@ -105,10 +105,11 @@ class BaciDriverBruteforce(Driver):
         joblogger.addHandler(fh)
         joblogger.addHandler(efh)
         joblogger.setLevel(logging.INFO)
-        command_string = self.assemble_command_string()
-
         returncode, self.pid = run_subprocess(
-            command_string, type='whitelist', loggername=loggername
+            command_string,
+            type='simulation',
+            loggername=loggername,
+            whitelist_expr=r'/bin/sh: line 0: cd: /scratch/SLURM_\d+: No such file or directory\n',
         )
 
         if returncode:

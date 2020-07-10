@@ -274,7 +274,7 @@ def run(command_string):
         Args:
             command_string (str): Command to execute
     """
-    _, _ = run_subprocess(command_string)
+    _, _, _, _ = run_subprocess(command_string)
 
 
 if __name__ == '__main__':

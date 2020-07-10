@@ -289,12 +289,12 @@ class Driver(metaclass=abc.ABCMeta):
                 target_file_opt = os.path.join(target_file_opt_1, target_file_opt_2)
                 postprocessing_list = [self.postprocessor, output_file_opt, option, target_file_opt]
                 postprocess_command = ' '.join(filter(None, postprocessing_list))
-                _, _ = run_subprocess(postprocess_command)
+                _, _, _, _ = run_subprocess(postprocess_command)
         else:
             target_file_opt = os.path.join('--output=' + target_file_base_name, self.file_prefix)
             postprocessing_list = [self.postprocessor, output_file_opt, target_file_opt]
             postprocess_command = ' '.join(filter(None, postprocessing_list))
-            _, _ = run_subprocess(postprocess_command)
+            _, _, _, _ = run_subprocess(postprocess_command)
 
     def do_postpostprocessing(self):
         """
