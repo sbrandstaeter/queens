@@ -111,7 +111,8 @@ class BaciDriverDeep(Driver):
             command_string,
             type='whitelist',
             loggername=joblogger,
-            whitelist_expr=r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n',
+            whitelist_expr=r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: '
+            'No such file or directory\n',
         )
 
         if returncode:

@@ -122,12 +122,13 @@ def _run_subprocess_simulation(command_string, **kwargs):
                 # TODO: fix this hack
                 # For the second call of remote_main.py with the --post=true flag
                 # (see the jobscript_slurm_queens.sh), the workdir does not exist anymore.
-                # Therefore, change directory in command_list ("cd self.workdir") does throw an error.
+                # Therefore, change directory in command_list ("cd self.workdir")
+                # does throw an error.
                 # We catch this error to detect that we are in a postprocessing call of the driver.
 
                 # TODO: fix directory handling on clusters
-                # These checks will set process_returncode to success in case of previously defined error
-                # messages
+                # These checks will set process_returncode to success in case of previously
+                # defined error messages
                 if re.fullmatch(whitelist_expr, stderr):
                     ignore_error = True
 
