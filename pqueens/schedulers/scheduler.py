@@ -843,7 +843,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def get_process_id_from_output(self, output):
+    def get_cluster_job_id(self, output):
         pass
 
     # ------------- private helper methods ----------------#
@@ -888,7 +888,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                 "could not be executed properly!"
                 f"\nStderr from remote:\n{stderr}"
             )
-        match = self.get_process_id_from_output(stdout)
+        match = self.get_cluster_job_id(stdout)
 
         try:
             return int(match)

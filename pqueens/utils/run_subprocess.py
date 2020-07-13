@@ -5,6 +5,7 @@ import subprocess
 import logging
 import time
 import re
+import io
 
 
 def run_subprocess(command_string, **kwargs):
@@ -15,14 +16,14 @@ def run_subprocess(command_string, **kwargs):
         command_string (str): Command string that should be run outside of Python
         type (str): type of run_subprocess from utils
         loggername (str): loggername for logging module
-        expr (str): regex to search in sdtout on which subprocess will terminate
+        terminate_expr (str): regex to search in sdtout on which subprocess will terminate
     Returns:
         process_returncode (int): code for execution success of subprocess
         process_id (int): process id that was assigned to process
 
     """
 
-    type = kwargs.get(type)
+    type = kwargs.get('type')
 
     if not type:
         type = 'simple'
@@ -38,7 +39,8 @@ def _get_subprocess(type):
         Args:
             type (str): Type of run_subprocess
         Returns:
-            function object (obj): type of run_subprocess from utils
+            function object (obj): function object for implementation type of run_subprocess from
+                                    utils
 
     """
 
@@ -54,8 +56,7 @@ def _get_subprocess(type):
 
 def _run_subprocess_simple(command_string, **kwargs):
     """
-        Run a system command outside of the Python script. return stderr and
-        stdout
+        Run a system command outside of the Python script. return stderr and stdout
         Args:
             command_string (str): command, that will be run in subprocess
         Returns:
@@ -82,21 +83,19 @@ def _run_subprocess_simple(command_string, **kwargs):
 def _run_subprocess_simulation(command_string, **kwargs):
     """
         Run a system command outside of the Python script. log errors and stdout-return to
-        initialized logger. Terminate subprocess if regular expression pattern
+        initialized logger during runtime. Terminate subprocess if regular expression pattern
         is found in stdout.
         Args:
             command_string (str): command, that will be run in subprocess
             terminate_expr (str): regular expression to terminate subprocess
-            whitelist_expr (str): regular expression for error to be ignored
             logger (str): logger name to write to. Should be configured previously
         Returns:
             process_returncode (int): code for success of subprocess
             process_id (int): unique process id, the subprocess was assigned on computing machine
 
     """
-    logger = kwargs.get('logger')
+    logger = kwargs.get('loggername')
     terminate_expr = kwargs.get('terminate_expr')
-    whitelist_expr = kwargs.get('whitelist_expr')
 
     joblogger = logging.getLogger(logger)
     process = subprocess.Popen(
@@ -109,50 +108,41 @@ def _run_subprocess_simulation(command_string, **kwargs):
     )
     joblogger.info('run_subprocess started with:\n')
     joblogger.info(command_string + '\n')
-    ignore_error = False
     for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
         if line == '' and process.poll() is not None:
             joblogger.info(
-                'subprocess.Popen-info: stdout is finished and process.poll() not None.\n'
+                'subprocess.Popen() -info: stdout is finished and process.poll() not None.\n'
             )
+            # This line waits for termination and puts together stdout not yet consumed from the
+            # stream by the logger and finally the stderr.
             stdout, stderr = process.communicate()
+            # following line should never really do anything. We want to log all that was
+            # written to stdout even after program was terminated.
             joblogger.info(stdout + '\n')
             if stderr:
-                # whitelist handling with legacy TODO
-                # TODO: fix this hack
-                # For the second call of remote_main.py with the --post=true flag
-                # (see the jobscript_slurm_queens.sh), the workdir does not exist anymore.
-                # Therefore, change directory in command_list ("cd self.workdir")
-                # does throw an error.
-                # We catch this error to detect that we are in a postprocessing call of the driver.
-
-                # TODO: fix directory handling on clusters
-                # These checks will set process_returncode to success in case of previously
-                # defined error messages
-                if re.fullmatch(whitelist_expr, stderr):
-                    ignore_error = True
-
                 joblogger.error('error message (if provided) follows:\n')
-                joblogger.error(stderr)
+                for errline in io.StringIO(stderr):
+                    joblogger.error(errline)
             break
         if terminate_expr:
+            # two seconds in time.sleep(2) are arbitrary. Feel free to tune it to your needs.
             if re.search(terminate_expr, line):
                 joblogger.warning('run_subprocess detected terminate expression:\n')
                 joblogger.error(line)
+                # give program the chance to terminate by itself, because terminate expression
+                # will be found also if program terminates correctly
                 time.sleep(2)
                 if process.poll() is None:
                     # log terminate command
                     joblogger.warning('running job will be terminated by QUEENS.\n')
                     process.terminate()
+                    # wait before communicate call which gathers all the output
                     time.sleep(2)
                 continue
         joblogger.info(line)
 
     process_id = process.pid
     process_returncode = process.returncode
-
-    if ignore_error:
-        process_returncode = 0
 
     return process_returncode, process_id
 
@@ -180,5 +170,7 @@ def _run_subprocess_submit_job(command_string, **kwargs):
     )
 
     process_id = process.pid
+    # to keep the interface for run_subprocess consistent first return value is None (as it would
+    # be, when you just submit the subprocess and not wait)
     process_returncode = None
     return process_returncode, process_id

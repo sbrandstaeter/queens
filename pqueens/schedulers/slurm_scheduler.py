@@ -68,7 +68,7 @@ class SlurmScheduler(Scheduler):
 
         return cls(scheduler_name, base_settings)
 
-    def get_process_id_from_output(self, output):
+    def get_cluster_job_id(self, output):
         """
         Helper function to retrieve job_id information after
         submitting a job to the job scheduling software
@@ -77,7 +77,7 @@ class SlurmScheduler(Scheduler):
             output (string): Output returned when submitting the job
 
         Returns:
-            match object (str): with regular expression matching process id
+            match object (str): with regular expression matching job id
 
         """
         regex = output.split()

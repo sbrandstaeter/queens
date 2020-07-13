@@ -91,12 +91,13 @@ class BaciDriverDeep(Driver):
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
 
+        # configure and initiate logger for baci job
         loggername = __name__ + f'{self.job_id}'
         joblogger = logging.getLogger(loggername)
-        fh = logging.FileHandler(self.output_file + "_BACI_stdout.txt", mode='a', delay=False)
+        fh = logging.FileHandler(self.output_file + "_BACI_stdout.txt", mode='w', delay=False)
         fh.setLevel(logging.INFO)
         fh.terminator = ''
-        efh = logging.FileHandler(self.output_file + "_BACI_stderr.txt", mode='a', delay=False)
+        efh = logging.FileHandler(self.output_file + "_BACI_stderr.txt", mode='w', delay=False)
         efh.setLevel(logging.ERROR)
         efh.terminator = ''
         ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -108,11 +109,7 @@ class BaciDriverDeep(Driver):
 
         # Call BACI
         returncode, self.pid = run_subprocess(
-            command_string,
-            type='whitelist',
-            loggername=joblogger,
-            whitelist_expr=r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: '
-            'No such file or directory\n',
+            command_string, type='simulation', loggername=loggername, terminate_expr='PROC.*ERROR'
         )
 
         if returncode:

@@ -73,7 +73,7 @@ class BaciDriverBruteforce(Driver):
     def run_job(self):
         """
         Actual method to run the job on computing machine
-        using run_subprocess method from base class
+        using run_subprocess method from utils
 
         Returns:
             None
@@ -90,13 +90,14 @@ class BaciDriverBruteforce(Driver):
         ]  # This is already within pbs
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
-        # Call BACI
+
+        # configure and initiate logger for baci job
         loggername = __name__ + f'{self.job_id}'
         joblogger = logging.getLogger(loggername)
-        fh = logging.FileHandler(self.output_file + "_BACI_stdout.txt", mode='a', delay=False)
+        fh = logging.FileHandler(self.output_file + "_BACI_stdout.txt", mode='w', delay=False)
         fh.setLevel(logging.INFO)
         fh.terminator = ''
-        efh = logging.FileHandler(self.output_file + "_BACI_stderr.txt", mode='a', delay=False)
+        efh = logging.FileHandler(self.output_file + "_BACI_stderr.txt", mode='w', delay=False)
         efh.setLevel(logging.ERROR)
         efh.terminator = ''
         ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
@@ -105,11 +106,10 @@ class BaciDriverBruteforce(Driver):
         joblogger.addHandler(fh)
         joblogger.addHandler(efh)
         joblogger.setLevel(logging.INFO)
+
+        # Call BACI
         returncode, self.pid = run_subprocess(
-            command_string,
-            type='simulation',
-            loggername=loggername,
-            whitelist_expr=r'/bin/sh: line 0: cd: /scratch/SLURM_\d+: No such file or directory\n',
+            command_string, type='simulation', terminate_expr='PROC.*ERROR', loggername=loggername
         )
 
         if returncode:

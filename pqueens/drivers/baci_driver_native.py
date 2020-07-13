@@ -70,7 +70,7 @@ class BaciDriverNative(Driver):
             None
 
         """
-        # assemble run command string
+        # configure and set up logger for baci job logging
         loggername = __name__ + f'{self.job_id}'
         joblogger = logging.getLogger(loggername)
         fh = logging.FileHandler(self.output_file + "_subprocess_stdout.txt", mode='w', delay=False)
@@ -87,8 +87,11 @@ class BaciDriverNative(Driver):
         joblogger.addHandler(fh)
         joblogger.addHandler(efh)
         joblogger.setLevel(logging.INFO)
+
+        # assemble run command string
         command_string = self.assemble_command_string()
 
+        # run BACI command_string
         returncode, self.pid = run_subprocess(
             command_string, type='simulation', terminate_expr='PROC.*ERROR', loggername=loggername
         )

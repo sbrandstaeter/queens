@@ -86,7 +86,7 @@ class LocalScheduler(Scheduler):
         else:
             return True
 
-    def get_process_id_from_output(self):
+    def get_cluster_job_id(self):
         """
         Not necessary for local scheduler but mandatory for parent class initialization
 
