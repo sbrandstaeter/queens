@@ -48,7 +48,7 @@ class OpenFOAMDriverDocker(Driver):
             self.sudo = ''
 
         # extract name of input directory and two input dictionaries from input_template string
-        input_dir, self.input_dic_1, self.input_dic_2 = self.template.split()
+        input_dir, self.input_dic_1, self.input_dic_2 = self.simulation_input_template.split()
 
         # define destination directory
         dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
@@ -126,7 +126,7 @@ class OpenFOAMDriverDocker(Driver):
             "' -e QT_X11_NO_MITSHM=1 ",
             "-e QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb ",
             "--workdir='",
-            os.environ['HOME'],
+            self.experiment_dir,
             "' --volume='",
             self.experiment_dir,
             ":",
