@@ -1,5 +1,5 @@
 import random
-
+import os
 import matplotlib as mpl
 import numpy as np
 from SALib.analyze import morris as morris_analyzer
@@ -270,4 +270,7 @@ class MorrisSALibIterator(Iterator):
         ax.set_ylabel('$\mu^*_i$ (blue bars) and $\sigma_i$ (black confidence intervals)')
         ax.set_title('Elementary Effects Analysis')
         ax.yaxis.grid(True)
-        plt.show()
+        plt.show(block=False)
+        figure_file_name = self.global_settings['experiment_name'] + '_result.png'
+        figure_file_path = os.path.join(self.global_settings['output_dir'], figure_file_name)
+        plt.savefig(figure_file_path)
