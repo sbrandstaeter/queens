@@ -54,6 +54,8 @@ class Driver(metaclass=abc.ABCMeta):
         self.simulation_input_template = base_settings['simulation_input_template']
         # TODO MongoDB object should be passed to init not created within
         self.database = MongoDB(database_address=base_settings['address'])
+        self.scheduler_type = base_settings['scheduler_type']
+        self.cluster_script = base_settings['cluster_script']
         self.output_file = base_settings['output_file']
         self.file_prefix = base_settings['file_prefix']
         self.output_scratch = base_settings['output_scratch']
@@ -124,23 +126,35 @@ class Driver(metaclass=abc.ABCMeta):
             'navierstokes_native': NavierStokesNative,
             'baci_deep': BaciDriverDeep,
             'baci_docker': BaciDriverDocker,
+            'baci_docker_task': BaciDriverDocker,
             'openfoam_docker': OpenFOAMDriverDocker,
         }
         driver_version = config['driver']['driver_type']
         driver_class = driver_dict[driver_version]
 
         # ---------------------------- CREATE BASE SETTINGS ---------------------------
-        driver_options = config['driver']['driver_params']
+        base_settings = {}  # initialize empty dictionary
+
+        # general settings
+        base_settings['experiment_name'] = config['experiment_name']
+
+        # scheduler settings
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
-        base_settings = {}
-        base_settings['experiment_name'] = config['experiment_name']
+        base_settings['scheduler_type'] = config[scheduler_name]['scheduler_type']
+        if 'cluster_script' in config[scheduler_name]:
+            base_settings['cluster_script'] = config[scheduler_name]['cluster_script']
+        else:
+            base_settings['cluster_script'] = None
         base_settings['num_procs'] = config[scheduler_name]['num_procs']
-        base_settings['file_prefix'] = driver_options['post_post']['file_prefix']
         if 'num_procs_post' in config[scheduler_name]:
             base_settings['num_procs_post'] = config[scheduler_name]['num_procs_post']
         else:
             base_settings['num_procs_post'] = 1
+
+        # driver settings
+        driver_options = config['driver']['driver_params']
+        base_settings['file_prefix'] = driver_options['post_post']['file_prefix']
         base_settings['experiment_dir'] = driver_options['experiment_dir']
         base_settings['job_id'] = job_id
         base_settings['input_file'] = None
@@ -158,9 +172,12 @@ class Driver(metaclass=abc.ABCMeta):
         else:
             base_settings['post_options'] = None
 
+        # post-post settings
         # TODO "hiding" a complete object in the base settings dict is unbelieveably ugly
         # and should be fixed ASAP
         base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(config)
+
+        # create specific driver
         driver = driver_class.from_config_create_driver(config, base_settings, workdir)
 
         return driver
@@ -269,14 +286,31 @@ class Driver(metaclass=abc.ABCMeta):
         if self.result is None:
             self.job['result'] = None  # TODO: maybe we should better use a pandas format here
             self.job['status'] = 'failed'
-            self.job['end time'] = time.time()
+            if (
+                self.scheduler_type != 'ecs_task'
+                and self.scheduler_type != 'local_pbs'
+                and self.scheduler_type != 'local_slurm'
+            ):
+                self.job['end time'] = time.time()
             self.database.save(
                 self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id}
             )
         else:
             self.job['result'] = self.result
             self.job['status'] = 'complete'
-            self.job['end time'] = time.time()
+            if (
+                self.scheduler_type != 'ecs_task'
+                and self.scheduler_type != 'local_pbs'
+                and self.scheduler_type != 'local_slurm'
+            ):
+                self.job['end time'] = time.time()
+                computing_time = self.job['end time'] - self.job['start time']
+                sys.stdout.write(
+                    'Successfully completed job {:d} (No. of proc.: {:d}, '
+                    'computing time: {:08.2f} s).\n'.format(
+                        self.job_id, self.num_procs, computing_time
+                    )
+                )
             self.database.save(
                 self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id}
             )
@@ -289,36 +323,48 @@ class Driver(metaclass=abc.ABCMeta):
             None
 
         """
-        # TODO maybe move to child-class due to specific form (e.g. .dat)
-        # TODO the definition of output file and scratch seems redunant as this is already
-        # defined in the child class;
-        # create input file name
-        dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
-        output_directory = os.path.join(dest_dir, 'output')
-        input_file_name = str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
-        self.input_file = os.path.join(dest_dir, input_file_name)
+        if (
+            self.scheduler_type != 'ecs_task'
+            and self.scheduler_type != 'local_pbs'
+            and self.scheduler_type != 'local_slurm'
+        ) or (self.post_options is not None):
+            # TODO maybe move to child-class due to specific form (e.g. .dat)
+            # TODO the definition of output file and scratch seems redunant as this is already
+            # defined in the child class;
+            # create input file name
+            dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
+            output_directory = os.path.join(dest_dir, 'output')
+            input_file_name = str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
+            self.input_file = os.path.join(dest_dir, input_file_name)
 
-        # create output file name
-        output_file_name = str(self.experiment_name) + '_' + str(self.job_id)
-        self.output_file = os.path.join(output_directory, output_file_name)
-        self.output_scratch = self.experiment_name + '_' + str(self.job_id)
+            # create output file name
+            output_file_name = str(self.experiment_name) + '_' + str(self.job_id)
+            self.output_file = os.path.join(output_directory, output_file_name)
+            self.output_scratch = self.experiment_name + '_' + str(self.job_id)
 
-        target_file_base_name = os.path.dirname(self.output_file)
-        output_file_opt = '--file=' + self.output_file
+            target_file_base_name = os.path.dirname(self.output_file)
+            output_file_opt = '--file=' + self.output_file
 
-        if self.post_options:
-            for num, option in enumerate(self.post_options):
-                target_file_opt_1 = '--output=' + target_file_base_name
-                target_file_opt_2 = self.file_prefix + "_" + str(num + 1)
-                target_file_opt = os.path.join(target_file_opt_1, target_file_opt_2)
-                postprocessing_list = [self.postprocessor, output_file_opt, option, target_file_opt]
+            if self.post_options:
+                for num, option in enumerate(self.post_options):
+                    target_file_opt_1 = '--output=' + target_file_base_name
+                    target_file_opt_2 = self.file_prefix + "_" + str(num + 1)
+                    target_file_opt = os.path.join(target_file_opt_1, target_file_opt_2)
+                    postprocessing_list = [
+                        self.postprocessor,
+                        output_file_opt,
+                        option,
+                        target_file_opt,
+                    ]
+                    postprocess_command = ' '.join(filter(None, postprocessing_list))
+                    _, _, _ = self.run_subprocess(postprocess_command)
+            else:
+                target_file_opt = os.path.join(
+                    '--output=' + target_file_base_name, self.file_prefix
+                )
+                postprocessing_list = [self.postprocessor, output_file_opt, target_file_opt]
                 postprocess_command = ' '.join(filter(None, postprocessing_list))
                 _, _, _ = self.run_subprocess(postprocess_command)
-        else:
-            target_file_opt = os.path.join('--output=' + target_file_base_name, self.file_prefix)
-            postprocessing_list = [self.postprocessor, output_file_opt, target_file_opt]
-            postprocess_command = ' '.join(filter(None, postprocessing_list))
-            _, _, _ = self.run_subprocess(postprocess_command)
 
     def do_postpostprocessing(self):
         """

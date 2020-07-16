@@ -14,9 +14,11 @@ import time
 import threading
 from pprint import pprint
 from pqueens.utils.injector import inject
+from pqueens.utils.aws_output_string_extractor import aws_extract
+from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.script_generator import generate_submission_script
 from pqueens.drivers.driver import Driver
 import pqueens.interfaces.job_interface as job_interface
-from pqueens.utils.run_subprocess import run_subprocess
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -86,6 +88,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.no_singularity = base_settings['no_singularity']
         self.restart_from_finished_simulation = base_settings['restart_from_finished_simulation']
         self.polling_time = base_settings['polling_time']
+        self.docker_image = base_settings['docker_image']
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name=None):
@@ -103,8 +106,16 @@ class Scheduler(metaclass=abc.ABCMeta):
         from .local_scheduler import LocalScheduler
         from .PBS_scheduler import PBSScheduler
         from .slurm_scheduler import SlurmScheduler
+        from .ecs_task_scheduler import ECSTaskScheduler
 
-        scheduler_dict = {'local': LocalScheduler, 'pbs': PBSScheduler, 'slurm': SlurmScheduler}
+        scheduler_dict = {
+            'local': LocalScheduler,
+            'pbs': PBSScheduler,
+            'local_pbs': PBSScheduler,
+            'slurm': SlurmScheduler,
+            'local_slurm': SlurmScheduler,
+            'ecs_task': ECSTaskScheduler,
+        }
 
         if scheduler_name is not None:
             scheduler_options = config[scheduler_name]
@@ -116,23 +127,24 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         # ---------------------------- CREATE BASE SETTINGS ---------------------------
         base_settings = {}  # initialize empty dictionary
-        base_settings['options'] = scheduler_options
-        base_settings['experiment_name'] = config['global_settings']['experiment_name']
-        driver_options = config['driver']['driver_params']
-        base_settings['experiment_dir'] = driver_options['experiment_dir']
-        if config['driver']['driver_params'].get(
-            'no_singularity', True
-        ):  # make no singularity the default
-            base_settings['no_singularity'] = True
-        else:
-            base_settings['no_singularity'] = False
 
-        if scheduler_options["scheduler_type"] == 'local':
+        # general settings
+        base_settings['experiment_name'] = config['global_settings']['experiment_name']
+        base_settings['polling_time'] = config.get('polling-time', 1)
+
+        # scheduler settings
+        base_settings['options'] = scheduler_options
+        if (
+            scheduler_options["scheduler_type"] == 'local'
+            or scheduler_options["scheduler_type"] == 'local_pbs'
+            or scheduler_options["scheduler_type"] == 'local_slurm'
+            or scheduler_options["scheduler_type"] == 'ecs_task'
+        ):
             base_settings['remote_flag'] = False
             base_settings['singularity_path'] = None
             base_settings['connect'] = None
-            base_settings['scheduler_template'] = None
             base_settings['cluster_bind'] = config['driver']['driver_params'].get('cluster_bind')
+            base_settings['scheduler_template'] = None
         elif (
             scheduler_options["scheduler_type"] == 'pbs'
             or scheduler_options["scheduler_type"] == 'slurm'
@@ -145,18 +157,32 @@ class Scheduler(metaclass=abc.ABCMeta):
             base_settings['cluster_bind'] = config['driver']['driver_params']['cluster_bind']
         else:
             raise RuntimeError(
-                "Slurm type was not specified correctly! Choose either 'local', 'pbs' or 'slurm'!"
+                "Scheduler type was not specified correctly! "
+                "Choose either 'local', 'pbs', 'slurm' or 'ecs_task'!"
             )
 
+        # driver settings
+        driver_options = config['driver']['driver_params']
+        base_settings['experiment_dir'] = driver_options['experiment_dir']
+        # get docker image if present
+        if driver_options.get('docker_image', False):
+            base_settings['docker_image'] = driver_options['docker_image']
+        else:
+            base_settings['docker_image'] = None
+        # make no singularity the default
+        if driver_options.get('no_singularity', True):
+            base_settings['no_singularity'] = True
+        else:
+            base_settings['no_singularity'] = False
         base_settings['restart_from_finished_simulation'] = driver_options.get(
             'restart_from_finished_simulation', False
         )
 
-        base_settings['polling_time'] = config.get('polling-time', 1)
-
+        # config settings
         base_settings['config'] = config
         # ----------------------------- END BASE SETTINGS -----------------------------
 
+        # create specific scheduler
         scheduler = scheduler_class.from_config_create_scheduler(
             config, base_settings, scheduler_name=None
         )
@@ -779,6 +805,26 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         return pid
 
+    def submit_post_post(self, job_id, batch):
+        """ Function to submit new post-post job to scheduling software on a given resource
+
+        Args:
+            job_id (int):            ID of job to submit
+            batch (int):             Batch number of job
+
+       """
+
+        # load JSON input file
+        with open(self.config['input_file'], 'r') as myfile:
+            config = json.load(myfile, object_pairs_hook=OrderedDict)
+
+        # create driver
+        driver_obj = Driver.from_config_create_driver(config, job_id, batch)
+
+        # do post-processing (if required), post-post-processing,
+        # finish and clean job
+        driver_obj.finish_and_clean()
+
     def get_submitter(self):
         """Get function for submission of job.
 
@@ -807,36 +853,6 @@ class Scheduler(metaclass=abc.ABCMeta):
                 else:
                     return self._submit_local_singularity
 
-    def create_submission_script(self, job_id):
-        """
-        Create a jobscript for the simulation on a remote based on a job-script template
-        that should be used on the remote system.
-        Args:
-            job_id (int): Internal QUEENS job-ID that is used to enumerate the simulations
-        Returns:
-            None
-        """
-        dest_dir = str(self.experiment_dir) + '/' + str(job_id) + "/output"
-        self.scheduler_options['DESTDIR'] = dest_dir
-        self.submission_script_path = str(self.experiment_dir) + '/jobfile.sh'
-
-        # local dummy path
-        local_dummy_path = os.path.join(os.path.dirname(__file__), 'dummy_jobfile')
-        # create actual submission file with parsed parameters
-        inject(self.scheduler_options, self.submission_script_template, local_dummy_path)
-        # copy submission script to cluster on specified location
-        command_list = [
-            'scp',
-            local_dummy_path,
-            self.connect_to_resource + ':' + self.submission_script_path,
-        ]
-        command_string = ' '.join(command_list)
-        stdout, stderr, p = run_subprocess(command_string)
-        # delete local dummy jobfile
-        command_list = ['rm', local_dummy_path]
-        command_string = ' '.join(command_list)
-        stdout, stderr, p = run_subprocess(command_string)
-
     # ------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED / ABSTRACTMETHODS ------
     @abc.abstractmethod  # how to check this is dependent on cluster / env
     def alive(self, process_id):
@@ -858,6 +874,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             int:            process ID
 
         """
+        # set data for jobscsript
         self.scheduler_options['INPUT'] = '--job_id={} --batch={} --port={} --path_json={}'.format(
             job_id, batch, self.port, self.path_to_singularity
         )
@@ -865,9 +882,17 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.scheduler_options['job_name'] = '{}_{}_{}'.format(
             self.experiment_name, 'queens', job_id
         )
+        dest_dir = str(self.experiment_dir) + '/' + str(job_id) + "/output"
+        self.scheduler_options['DESTDIR'] = dest_dir
 
-        # Parse data to job_scheduler_template
-        self.create_submission_script(job_id)
+        # generate job script for submission
+        self.submission_script_path = os.path.join(self.experiment_dir, 'jobfile.sh')
+        generate_submission_script(
+            self.scheduler_options,
+            self.submission_script_path,
+            self.submission_script_template,
+            self.connect_to_resource,
+        )
 
         # submit the job with job_script.sh
         cmdlist_remote_main = [
@@ -897,7 +922,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             return None
 
     def _submit_local(self, job_id, batch):
-        """Submit job locally without singularity.
+        """Submit job locally, either natively or with job script or with task script.
 
         Args:
             job_id (int):    ID of job to submit
@@ -905,14 +930,77 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         Returns:
             int:            process ID
+
         """
+
+        # only required for ECS task scheduler:
+        # check whether new task definition is required
+        if type(self).__name__ == 'ECSTaskScheduler':
+            # check image and container path in most recent revision of task
+            # definition 'docker-qstdoutueens', if existent
+            new_task_definition_required = False
+            cmd = 'aws ecs describe-task-definition --task-definition docker-queens'
+            stdout, stderr, _ = run_subprocess(cmd)
+
+            # new task definition required, since definition 'docker-queens' is not existent
+            if stderr:
+                new_task_definition_required = True
+
+            # check image and container path in most recent revision of task
+            # definition 'docker-queens'
+            image_str = aws_extract("image", stdout)
+            container_path_str = aws_extract("containerPath", stdout)
+
+            # new task definition required, since definition 'docker-queens'
+            # is not equal to desired one
+            if image_str != str(self.docker_image) or container_path_str != str(
+                self.experiment_dir
+            ):
+                new_task_definition_required = True
+
+            # submit new task definition
+            if new_task_definition_required:
+                # set data for task definition
+                self.scheduler_options['EXPDIR'] = str(self.experiment_dir)
+                self.scheduler_options['IMAGE'] = str(self.docker_image)
+
+                # Parse data to submission script template
+                self.submission_script_path = os.path.join(self.experiment_dir, 'taskscript.json')
+                generate_submission_script(
+                    self.scheduler_options,
+                    self.submission_script_path,
+                    self.submission_script_template,
+                )
+
+                # change directory
+                os.chdir(self.experiment_dir)
+
+                # register task definition
+                cmdlist = [
+                    "aws ecs register-task-definition --cli-input-json file://",
+                    self.submission_script_path,
+                ]
+                cmd = ''.join(cmdlist)
+
+                _, stderr, _ = run_subprocess(cmd)
+                if stderr:
+                    raise RuntimeError(
+                        "\nThe task definition could not be registered properly!"
+                        f"\nStderr:\n{stderr}"
+                    )
+
+        # load JSON input file
         with open(self.config['input_file'], 'r') as myfile:
             config = json.load(myfile, object_pairs_hook=OrderedDict)
 
+        # create and run driver
         driver_obj = Driver.from_config_create_driver(config, job_id, batch)
-        # Run the singularity image in just one step
         driver_obj.main_run()
-        driver_obj.finish_and_clean()
+
+        # only required for local scheduler: finish-and-clean call
+        # (taken care of by submit_post_post for other schedulers)
+        if type(self).__name__ == 'LocalScheduler':
+            driver_obj.finish_and_clean()
 
         return driver_obj.pid
 
@@ -996,7 +1084,11 @@ class Scheduler(metaclass=abc.ABCMeta):
             config = json.load(myfile, object_pairs_hook=OrderedDict)
 
         driver_obj = Driver.from_config_create_driver(config, job_id, batch)
-        driver_obj.finish_and_clean()
+
+        # only required for local scheduler: finish-and-clean call
+        # (taken care of by submit_post_post for other schedulers)
+        if type(self).__name__ == 'LocalScheduler':
+            driver_obj.finish_and_clean()
 
         return 0
 

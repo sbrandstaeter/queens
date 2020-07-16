@@ -114,6 +114,8 @@ def driver_base_settings(job):
 
     base_settings = dict()
 
+    base_settings['scheduler_type'] = 'local'
+    base_settings['cluster_script'] = None
     base_settings['experiment_dir'] = job['expt_dir']
     base_settings['experiment_name'] = job['expt_name']
     base_settings['job_id'] = job['id']
