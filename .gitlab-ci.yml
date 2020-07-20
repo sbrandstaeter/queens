@@ -21,6 +21,9 @@ stages:
     - source activate queens
     - python setup.py develop
 
+  tags:
+    - queens-docker
+
 .full_test_suite_develop:
   stage: tests
   script:
@@ -61,22 +64,16 @@ codechecks:
       - track_pylint.txt
     when: on_failure
     expire_in: 4 weeks
-  tags:
-    - queens-docker
 
 docker_full_test_suite_develop:
   extends:
   - .docker_settings
   - .full_test_suite_develop
-  tags:
-    - queens-docker
 
 docker_full_test_suite_master:
   extends:
     - .docker_settings
     - .full_test_suite_master
-  tags:
-    - queens-docker
 
 pages:
   extends:
@@ -103,6 +100,4 @@ pages:
   only:
       refs:
           - master
-  tags:
-    - queens-docker
 
