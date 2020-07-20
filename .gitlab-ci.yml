@@ -39,9 +39,6 @@ stages:
   stage: tests
   script:
     - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
-  only:
-    refs:
-      - master
 
 conda_environment:
   extends:
@@ -122,7 +119,4 @@ pages:
       # the content of the below artifact is published on GitLab Pages
       paths:
           - public
-  only:
-      refs:
-          - master
 
