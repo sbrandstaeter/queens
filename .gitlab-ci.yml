@@ -1,16 +1,14 @@
 stages:
+  - conda-environment
   - codechecks
   - tests
   - pages
 
 .docker_settings:
   image: continuumio/miniconda3:latest
-
   services:
     - name: mongo:3.4
       alias: mongodb
-
-  # global/ default before_script can be overriden
   before_script:
     - export PIP_CACHE_DIR="/opt/cache/pip"
     - apt-get update
@@ -20,9 +18,14 @@ stages:
     - conda env create -f environment.yml -n queens
     - source activate queens
     - python setup.py develop
-
   tags:
     - queens-docker
+
+.centos_settings:
+  before_script:
+    - source activate queens
+  tags:
+    - queens-local
 
 .full_test_suite_develop:
   stage: tests
@@ -36,25 +39,25 @@ stages:
   stage: tests
   script:
     - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
-    - sphinx-apidoc -o doc/source pqueens -f -M
-    - cd doc
-    - apt-get install pandoc -y
-    # "make html" triggers:
-    - sphinx-build -b html -d build/doctrees   source build/html
-  artifacts:
-    name: coverage_report
-    paths:
-      - html_coverage_report
-      - doc/build/html
-    when: on_success
-    expire_in: 3 days
   only:
     refs:
       - master
 
+conda_environment:
+  extends:
+    - .centos_settings
+  stage: conda-environment
+  before_script:
+    - conda update -n base conda
+    - conda env remove -n queens
+  script:
+    - conda env create -f environment.yml -n queens
+    - source activate queens
+    - python setup.py develop
+
 codechecks:
   extends:
-    - .docker_settings
+    - .centos_settings
   stage: codechecks
   script:
     - pylint -j 4 --output-format=parseable pqueens | tee track_pylint.txt
@@ -70,18 +73,40 @@ docker_full_test_suite_develop:
   - .docker_settings
   - .full_test_suite_develop
 
+centos_full_test_suite_develop:
+  extends:
+    - .centos_settings
+    - .full_test_suite_develop
+
 docker_full_test_suite_master:
   extends:
     - .docker_settings
     - .full_test_suite_master
 
+centos_full_test_suite_master:
+  extends:
+    - .centos_settings
+    - .full_test_suite_master
+  after_script:
+    - sphinx-apidoc -o doc/source pqueens -f -M
+    - cd doc
+    # "make html" triggers:
+    - sphinx-build -b html -d build/doctrees   source build/html
+  artifacts:
+    name: coverage_report
+    paths:
+      - html_coverage_report
+      - doc/build/html
+    when: on_success
+    expire_in: 3 days
+
 pages:
   extends:
-    - .docker_settings
+    - .centos_settings
   stage: pages
   # disable cache on this job since we do not need conda env here
   dependencies:
-    - docker_full_test_suite_master
+    - centos_full_test_suite_master
   before_script:
     - pip install anybadge
     - mkdir public
