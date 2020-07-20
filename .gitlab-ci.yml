@@ -3,7 +3,7 @@ stages:
   - tests
   - pages
 
-default:
+.docker_settings:
   image: continuumio/miniconda3:latest
 
   services:
@@ -21,30 +21,15 @@ default:
     - source activate queens
     - python setup.py develop
 
-codechecks:
-  stage: codechecks
-  script:
-    - pylint -j 4 --output-format=parseable pqueens | tee track_pylint.txt
-  artifacts:
-    name: "$CI_JOB_NAME-$CI_JOB_ID"
-    paths:
-      - track_pylint.txt
-    when: on_failure
-    expire_in: 4 weeks
-  tags:
-    - queens-docker
-
-full_test_suite_develop:
+.full_test_suite_develop:
   stage: tests
   script:
-  - pytest -n4
+    - pytest -n4
   except:
     refs:
       - master
-  tags:
-    - queens-docker
 
-full_test_suite_master:
+.full_test_suite_master:
   stage: tests
   script:
     - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
@@ -63,14 +48,43 @@ full_test_suite_master:
   only:
     refs:
       - master
+
+codechecks:
+  extends:
+    - .docker_settings
+  stage: codechecks
+  script:
+    - pylint -j 4 --output-format=parseable pqueens | tee track_pylint.txt
+  artifacts:
+    name: "$CI_JOB_NAME-$CI_JOB_ID"
+    paths:
+      - track_pylint.txt
+    when: on_failure
+    expire_in: 4 weeks
+  tags:
+    - queens-docker
+
+docker_full_test_suite_develop:
+  extends:
+  - .docker_settings
+  - .full_test_suite_develop
+  tags:
+    - queens-docker
+
+docker_full_test_suite_master:
+  extends:
+    - .docker_settings
+    - .full_test_suite_master
   tags:
     - queens-docker
 
 pages:
+  extends:
+    - .docker_settings
   stage: pages
   # disable cache on this job since we do not need conda env here
   dependencies:
-    - full_test_suite_master
+    - docker_full_test_suite_master
   before_script:
     - pip install anybadge
     - mkdir public
