@@ -85,6 +85,7 @@ centos_full_test_suite_master:
     - .centos_settings
     - .full_test_suite_master
   after_script:
+    - source activate queens
     - sphinx-apidoc -o doc/source pqueens -f -M
     - cd doc
     # "make html" triggers:
