@@ -82,6 +82,7 @@ centos_full_test_suite_master:
     - cd doc
     # "make html" triggers:
     - sphinx-build -b html -d build/doctrees   source build/html
+    - conda deactivate
     - conda env remove -n queens-$CI_JOB_ID
   artifacts:
     name: coverage_report
