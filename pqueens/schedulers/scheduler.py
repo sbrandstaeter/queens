@@ -940,7 +940,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             '"',
         ]
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        _, _, stderr, stdout = run_subprocess(cmd_remote_main)
+        _, _, stdout, stderr = run_subprocess(cmd_remote_main)
         if stderr:
             raise RuntimeError(
                 "\nThe file 'remote_main' in remote singularity image "
