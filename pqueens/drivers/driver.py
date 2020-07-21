@@ -256,7 +256,12 @@ class Driver(metaclass=abc.ABCMeta):
 
         """
         # Create database object and load the already initiated job entry
-        self.job = self.database.load(self.experiment_name, self.batch, 'jobs', {'id': self.job_id})
+        self.job = self.database.load(
+            self.experiment_name,
+            self.batch,
+            'jobs',
+            {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
+        )
 
         # start settings for job
         start_time = time.time()
@@ -293,7 +298,15 @@ class Driver(metaclass=abc.ABCMeta):
             ):
                 self.job['end time'] = time.time()
             self.database.save(
-                self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id}
+                self.job,
+                self.experiment_name,
+                'jobs',
+                str(self.batch),
+                {
+                    'id': self.job_id,
+                    'expt_dir': self.experiment_dir,
+                    'expt_name': self.experiment_name,
+                },
             )
         else:
             self.job['result'] = self.result
@@ -312,7 +325,15 @@ class Driver(metaclass=abc.ABCMeta):
                     )
                 )
             self.database.save(
-                self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id}
+                self.job,
+                self.experiment_name,
+                'jobs',
+                str(self.batch),
+                {
+                    'id': self.job_id,
+                    'expt_dir': self.experiment_dir,
+                    'expt_name': self.experiment_name,
+                },
             )
 
     def do_postprocessing(self):

@@ -240,7 +240,12 @@ class JobInterface(Interface):
         Returns:
             list : list with all jobs or an empty list
         """
-        jobs = self.db.load(self.experiment_name, str(self.batch_number), 'jobs')
+        jobs = self.db.load(
+            self.experiment_name,
+            str(self.batch_number),
+            'jobs',
+            {'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
+        )
 
         if jobs is None:
             jobs = []
@@ -254,7 +259,13 @@ class JobInterface(Interface):
         Args:
             job (dict): dictionary with job details
         """
-        self.db.save(job, self.experiment_name, 'jobs', str(self.batch_number), {'id': job['id']})
+        self.db.save(
+            job,
+            self.experiment_name,
+            'jobs',
+            str(self.batch_number),
+            {'id': job['id'], 'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
+        )
 
     def create_new_job(self, variables, resource_name, new_id=None):
         """ Create new job and save it to database and return it
@@ -290,6 +301,17 @@ class JobInterface(Interface):
         self.save_job(job)
 
         return job
+
+    def remove_jobs(self):
+        """ Remove jobs from the jobs database
+
+        """
+        self.db.remove(
+            self.experiment_name,
+            'jobs',
+            str(self.batch_number),
+            {'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
+        )
 
     def tired(self, resource):
         """ Quick check whether a resource is fully occupied
@@ -364,6 +386,8 @@ class JobInterface(Interface):
                 mean_values.append(mean_value)
 
         output['mean'] = np.array(mean_values)
+
+        self.remove_jobs()
 
         return output
 

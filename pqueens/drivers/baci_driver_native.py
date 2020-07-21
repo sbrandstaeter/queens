@@ -122,7 +122,15 @@ class BaciDriverNative(Driver):
             self.job['control_file_path'] = self.control_file
             self.job['num_procs'] = self.num_procs
             self.database.save(
-                self.job, self.experiment_name, 'jobs', str(self.batch), {'id': self.job_id}
+                self.job,
+                self.experiment_name,
+                'jobs',
+                str(self.batch),
+                {
+                    'id': self.job_id,
+                    'expt_dir': self.experiment_dir,
+                    'expt_name': self.experiment_name,
+                },
             )
 
         else:
