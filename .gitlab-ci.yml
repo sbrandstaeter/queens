@@ -151,4 +151,6 @@ pages:
           - public
   tags:
     - queens-local
-
+  only:
+    refs:
+      - master
