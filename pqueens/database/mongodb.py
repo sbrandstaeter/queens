@@ -131,4 +131,4 @@ class MongoDB(object):
             field_filters (dict):      filter to find appropriate document(s)
                                        to delete
          """
-        self.db[experiment_name][batch][experiment_field].delete_one(field_filters)
+        self.db[experiment_name][batch][experiment_field].delete_many(field_filters)

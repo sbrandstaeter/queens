@@ -102,19 +102,25 @@ class BaciDriverDocker(Driver):
             #                               stderr=True)
 
         # run BACI in Docker container via subprocess
-        #_, stderr, self.pid = self.run_subprocess(docker_run_command_string)
+        # _, stderr, self.pid = self.run_subprocess(docker_run_command_string)
         stdout, stderr, self.pid = self.run_subprocess(run_command_string)
 
         # save AWS ARN and number of processes to database for task-based run
         if self.docker_version == 'baci_docker_task':
             self.job['aws_arn'] = aws_extract("taskArn", stdout)
             self.job['num_procs'] = self.num_procs
-            self.database.save(self.job,
-                               self.experiment_name,
-                               'jobs',
-                               str(self.batch),
-                               {'id': self.job_id})
-          
+            self.database.save(
+                self.job,
+                self.experiment_name,
+                'jobs',
+                str(self.batch),
+                {
+                    'id': self.job_id,
+                    'expt_dir': self.experiment_dir,
+                    'expt_name': self.experiment_name,
+                },
+            )
+
         # detection of failed jobs
         if stderr:
             self.result = None
@@ -159,6 +165,7 @@ class BaciDriverDocker(Driver):
         ]
 
         return ''.join(filter(None, command_list))
+
     def assemble_docker_run_command_string(self):
         """  Assemble command list for BACI runin Docker container
 
