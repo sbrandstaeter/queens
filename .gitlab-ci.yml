@@ -70,11 +70,6 @@ docker_full_test_suite_develop:
   - .docker_settings
   - .full_test_suite_develop
 
-centos_full_test_suite_develop:
-  extends:
-    - .centos_settings
-    - .full_test_suite_develop
-
 docker_full_test_suite_master:
   extends:
     - .docker_settings
