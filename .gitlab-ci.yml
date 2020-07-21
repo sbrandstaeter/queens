@@ -116,7 +116,6 @@ centos_full_test_suite_master:
     name: coverage_report
     paths:
       - html_coverage_report
-      - doc/build/html
     when: on_success
     expire_in: 3 days
 
