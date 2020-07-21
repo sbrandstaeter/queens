@@ -44,7 +44,7 @@ stages:
   script:
     - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
 
-codechecks:
+pylint:
   extends:
     - .centos_settings
   stage: codechecks
@@ -56,6 +56,22 @@ codechecks:
       - track_pylint.txt
     when: on_failure
     expire_in: 4 weeks
+
+documentation:
+  extends:
+    - .centos_settings
+  stage: codechecks
+  script:
+    - sphinx-apidoc -o doc/source pqueens -f -M
+    - cd doc
+    # "make html" triggers:
+    - sphinx-build -b html -d build/doctrees   source build/html
+  artifacts:
+    name: sphinx-documentation
+    paths:
+      - doc/build/html
+    when: on_success
+    expire_in: 3 days
 
 docker_full_test_suite_develop:
   extends:
@@ -76,14 +92,6 @@ centos_full_test_suite_master:
   extends:
     - .centos_settings
     - .full_test_suite_master
-  after_script:
-    - source activate queens-$CI_JOB_ID
-    - sphinx-apidoc -o doc/source pqueens -f -M
-    - cd doc
-    # "make html" triggers:
-    - sphinx-build -b html -d build/doctrees   source build/html
-    - conda deactivate
-    - conda env remove -n queens-$CI_JOB_ID
   artifacts:
     name: coverage_report
     paths:
@@ -96,6 +104,7 @@ pages:
   stage: pages
   # disable cache on this job since we do not need conda env here
   dependencies:
+    - documentation
     - centos_full_test_suite_master
   before_script:
     # use the base environment for badge creation
