@@ -241,6 +241,15 @@ class Driver(metaclass=abc.ABCMeta):
         start_time = time.time()
         self.job['start time'] = start_time
 
+        # save start time in database to make it accesible for the second post-processing call
+        self.database.save(
+            self.job,
+            self.experiment_name,
+            'jobs',
+            str(self.batch),
+            {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
+        )
+
         # create actual input file or dictionaries with parsed parameters
         if self.input_dic_1 is None:
             inject(self.job['params'], self.simulation_input_template, self.input_file)
