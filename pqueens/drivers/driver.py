@@ -1,7 +1,5 @@
 import abc
-import logging
 import os
-import subprocess
 import sys
 import time
 from pqueens.database.mongodb import MongoDB
