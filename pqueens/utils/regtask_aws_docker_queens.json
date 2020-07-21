@@ -1,0 +1,29 @@
+{
+    "family": "docker-queens", 
+    "containerDefinitions": [
+        {
+            "name": "docker-queens-container", 
+            "image": "{IMAGE}", 
+            "memory": 2500,
+            "entryPoint": ["/bin/bash", "-c"],
+            "command": [], 
+            "mountPoints": [
+                {
+                    "sourceVolume": "queens-volume", 
+                    "containerPath": "{EXPDIR}", 
+                    "readOnly": false
+                }
+            ], 
+            "interactive": true, 
+            "pseudoTerminal": false
+        }
+    ],
+    "volumes": [
+        {
+            "name": "queens-volume",
+            "host": {
+                "sourcePath": "{EXPDIR}"
+            }
+        }
+    ]
+}

@@ -1,12 +1,14 @@
 import time
 import numpy as np
 import pandas as pd
+import os
 import sys
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.aws_output_string_extractor import aws_extract
 
 this = sys.modules[__name__]
 this.restart_flag = None
@@ -47,6 +49,7 @@ class JobInterface(Interface):
         restart_from_finished_simulation,
         parameters,
         connect,
+        scheduler_type,
     ):
         """ Create JobInterface
 
@@ -74,6 +77,7 @@ class JobInterface(Interface):
         self.num_pending = None
         self.restart_from_finished_simulation = restart_from_finished_simulation
         self.connect_to_resource = connect
+        self.scheduler_type = scheduler_type
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -111,6 +115,11 @@ class JobInterface(Interface):
         # TODO: This is not nice
         connect = list(resources.values())[0].scheduler.connect_to_resource
 
+        # TODO: This is definitely not nice, either
+        first = list(config['resources'])[0]
+        scheduler_name = config['resources'][first]['scheduler']
+        scheduler_type = config[scheduler_name]['scheduler_type']
+
         parameters = config['parameters']
 
         # instantiate object
@@ -125,6 +134,7 @@ class JobInterface(Interface):
             restart_from_finished_simulation,
             parameters,
             connect,
+            scheduler_type,
         )
 
     def map(self, samples):
@@ -149,12 +159,38 @@ class JobInterface(Interface):
         job_manager = self.get_job_manager()
         job_manager(samples)
 
-        while not self.all_jobs_finished():
-            time.sleep(self.polling_time)
-
+        # loop over all resources
         for _, resource in self.resources.items():
-            # This will close all previous opened ports for database communication
-            resource.scheduler.post_run()
+            # only for ECS task scheduler and jobscript-based native driver
+            if (
+                self.scheduler_type == 'ecs_task'
+                or self.scheduler_type == 'local_pbs'
+                or self.scheduler_type == 'local_slurm'
+            ):
+                # determine whether task- or jobscript-based scheduler
+                task = False
+                if self.scheduler_type == 'ecs_task':
+                    task = True
+
+                # get range of job IDs
+                jobid_range = range(1, samples.size + 1, 1)
+
+                # check AWS tasks to determine completed jobs
+                while not self.all_jobs_finished():
+                    time.sleep(self.polling_time)
+                    self._check_job_completions(jobid_range, task)
+
+                # submit post-post jobs
+                self._manage_post_post_submission(jobid_range)
+
+            # for all other resources:
+            else:
+                # just wait for all jobs to finish
+                while not self.all_jobs_finished():
+                    time.sleep(self.polling_time)
+
+                # only for remote computation:
+                resource.scheduler.post_run()
 
         # get sample and response data
         return self.get_output_data()
@@ -204,7 +240,12 @@ class JobInterface(Interface):
         Returns:
             list : list with all jobs or an empty list
         """
-        jobs = self.db.load(self.experiment_name, str(self.batch_number), 'jobs')
+        jobs = self.db.load(
+            self.experiment_name,
+            str(self.batch_number),
+            'jobs',
+            {'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
+        )
 
         if jobs is None:
             jobs = []
@@ -218,7 +259,13 @@ class JobInterface(Interface):
         Args:
             job (dict): dictionary with job details
         """
-        self.db.save(job, self.experiment_name, 'jobs', str(self.batch_number), {'id': job['id']})
+        self.db.save(
+            job,
+            self.experiment_name,
+            'jobs',
+            str(self.batch_number),
+            {'id': job['id'], 'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
+        )
 
     def create_new_job(self, variables, resource_name, new_id=None):
         """ Create new job and save it to database and return it
@@ -254,6 +301,17 @@ class JobInterface(Interface):
         self.save_job(job)
 
         return job
+
+    def remove_jobs(self):
+        """ Remove jobs from the jobs database
+
+        """
+        self.db.remove(
+            self.experiment_name,
+            'jobs',
+            str(self.batch_number),
+            {'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
+        )
 
     def tired(self, resource):
         """ Quick check whether a resource is fully occupied
@@ -328,6 +386,8 @@ class JobInterface(Interface):
                 mean_values.append(mean_value)
 
         output['mean'] = np.array(mean_values)
+
+        self.remove_jobs()
 
         return output
 
@@ -501,6 +561,50 @@ class JobInterface(Interface):
 
         return is_every_job_in_db, jobid_smallest_in_db
 
+    def _check_job_completions(self, jobid_range, task):
+        """Check AWS tasks to determine completed jobs.
+        """
+        jobs = self.load_jobs()
+        for check_jobid in jobid_range:
+            try:
+                current_check_job = next(job for job in jobs if job['id'] == check_jobid)
+                if current_check_job['status'] != 'complete':
+                    completed = False
+                    if task:
+                        command_list = [
+                            "aws ecs describe-tasks ",
+                            "--cluster worker-queens-cluster ",
+                            "--tasks ",
+                            current_check_job['aws_arn'],
+                        ]
+                        cmd = ''.join(filter(None, command_list))
+                        stdout, stderr, _ = run_subprocess(cmd)
+                        if stderr:
+                            current_check_job['status'] = 'failed'
+                        status_str = aws_extract("lastStatus", stdout)
+                        if status_str == 'STOPPED':
+                            completed = True
+                    else:
+                        # indicate completion by exixting control file in output directory
+                        completed = os.path.isfile(current_check_job['control_file_path'])
+                    if completed:
+                        current_check_job['status'] = 'complete'
+                        current_check_job['end time'] = time.time()
+                        computing_time = (
+                            current_check_job['end time'] - current_check_job['start time']
+                        )
+                        sys.stdout.write(
+                            'Successfully completed job {:d} (No. of proc.: {:d}, '
+                            'computing time: {:08.2f} s).\n'.format(
+                                current_check_job['id'],
+                                current_check_job['num_procs'],
+                                computing_time,
+                            )
+                        )
+                        self.save_job(current_check_job)
+            except (StopIteration, IndexError):
+                pass
+
     def _find_block_restart(self, samples):
         """Find index for block-restart.
 
@@ -659,7 +763,40 @@ class JobInterface(Interface):
 
                     else:
                         time.sleep(self.polling_time)
+                        # check job completions for ECS task scheduler and
+                        # jobscript-based native driver
+                        for _, resource in self.resources.items():
+                            if (
+                                self.scheduler_type == 'ecs_task'
+                                or self.scheduler_type == 'local_pbs'
+                                or self.scheduler_type == 'local_slurm'
+                            ):
+                                task = False
+                                if self.scheduler_type == 'ecs_task':
+                                    task = True
+                                self._check_job_completions(jobid_range, task)
                         jobs = self.load_jobs()
+
+        return
+
+    def _manage_post_post_submission(self, jobid_range):
+        """Manage submission of post-post processing.
+
+        Args:
+            jobid_range (range):     range of job IDs which are submitted
+        """
+        jobs = self.load_jobs()
+        for jobid in jobid_range:
+            for _, resource in self.resources.items():
+                try:
+                    current_job = next(job for job in jobs if job['id'] == jobid)
+                except (StopIteration, IndexError):
+                    pass
+
+                resource.dispatch_post_post_job(self.batch_number, current_job)
+
+        jobs = self.load_jobs()
+        print_resources_status(self.resources, jobs)
 
         return
 

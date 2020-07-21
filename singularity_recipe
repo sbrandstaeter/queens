@@ -19,6 +19,7 @@ This is a singularity container containing CentOS7 and Python 3.7 as well as nec
 %post
   yum install -y wget
   yum install -y gcc
+  yum install -y gcc-c++
   # Install miniconda 3
   if [ ! -d /usr/local/anaconda ]; then
     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh \
@@ -29,7 +30,7 @@ This is a singularity container containing CentOS7 and Python 3.7 as well as nec
   # set anaconda path
   export PATH="/usr/local/anaconda/bin:$PATH"
   conda update -y conda
-  conda create -y -n QUEENS python=3.7 numpy pymongo matplotlib plotly pandas vtk
+  conda create -y -n QUEENS python=3.7 cython numpy pymongo matplotlib plotly pandas vtk
   /usr/local/anaconda/envs/QUEENS/bin/pip install pyansys docker
   cd /
   mkdir scratch

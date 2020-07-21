@@ -70,12 +70,12 @@ def print_resources_status(resources, jobs):
         jobs (list):        List of jobs
 
     """
-    sys.stderr.write('\nResources:      ')
+    sys.stdout.write('\nResources:      ')
     left_indent = 16
     indentation = ' ' * left_indent
-    sys.stderr.write('NAME          PENDING    COMPLETE    FAILED\n')
-    sys.stderr.write(indentation)
-    sys.stderr.write('----          -------    --------    ------\n')
+    sys.stdout.write('NAME          PENDING    COMPLETE    FAILED\n')
+    sys.stdout.write(indentation)
+    sys.stdout.write('----          -------    --------    ------\n')
     total_pending = 0
     total_complete = 0
     total_failed = 0
@@ -88,15 +88,15 @@ def print_resources_status(resources, jobs):
         total_pending += pending
         total_complete += complete
         total_failed += failed
-        sys.stderr.write(
+        sys.stdout.write(
             "%s%-12.12s  %-9d  %-10d  %-9d\n"
             % (indentation, resource.name, pending, complete, failed)
         )
-    sys.stderr.write(
+    sys.stdout.write(
         "%s%-12.12s  %-9d  %-10d  %-9d\n"
         % (indentation, '*TOTAL*', total_pending, total_complete, total_failed)
     )
-    sys.stderr.write('\n')
+    sys.stdout.write('\n')
 
 
 class Resource(object):
@@ -136,7 +136,7 @@ class Resource(object):
         self.exp_name = exp_name
 
         if len(self.exp_name) == 0:
-            sys.stderr.write("Warning: resource %s has no tasks assigned " " to it" % self.name)
+            sys.stdout.write("Warning: resource %s has no tasks assigned " " to it" % self.name)
 
     def filter_my_jobs(self, jobs):
         """ Take a list of jobs and filter those that are on this resource
@@ -229,7 +229,7 @@ class Resource(object):
         Args:
             jobs (list): List with jobs
         """
-        sys.stderr.write(
+        sys.stdout.write(
             "%-12s: %5d pending %5d complete\n"
             % (self.name, self.num_pending(jobs), self.num_complete(jobs))
         )
@@ -265,15 +265,33 @@ class Resource(object):
         process_id = self.scheduler.submit(job['id'], batch)
         if process_id is not None:
             if process_id != 0:
-                sys.stderr.write(
+                sys.stdout.write(
                     'Submitted job %d with %s '
                     '(process id: %d).\n' % (job['id'], self.scheduler_class, process_id)
                 )
             elif process_id == 0:
-                sys.stderr.write(
+                sys.stdout.write(
                     'Checked job %d for restart and loaded results into database.\n' % job['id']
                 )
         else:
-            sys.stderr.write('Failed to submit job %d.\n' % job['id'])
+            sys.stdout.write('Failed to submit job %d.\n' % job['id'])
 
         return process_id
+
+    def dispatch_post_post_job(self, batch, job):
+        """ Submit a new post-post job using the scheduler of the resource
+
+        Args:
+            batch (string):         Batch number of job
+            job (dict):             Job to submit
+
+        Returns:
+            int:       Process ID of job
+        """
+        if job['resource'] != self.name:
+            raise Exception("This job does not belong to me!")
+
+        self.scheduler.submit_post_post(job['id'], batch)
+        sys.stdout.write(
+            'Submitted post-post job %d with %s \n' % (job['id'], self.scheduler_class)
+        )

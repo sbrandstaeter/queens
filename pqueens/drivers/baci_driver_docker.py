@@ -1,6 +1,9 @@
 import os
 import docker
+import getpass
+import time
 from pqueens.drivers.driver import Driver
+from pqueens.utils.aws_output_string_extractor import aws_extract
 from pqueens.utils.run_subprocess import run_subprocess
 
 
@@ -15,11 +18,12 @@ class BaciDriverDocker(Driver):
 
     def __init__(self, base_settings):
         # TODO dunder init should not be called with dict
+        self.docker_version = base_settings['docker_version']
         self.docker_image = base_settings['docker_image']
         super(BaciDriverDocker, self).__init__(base_settings)
 
     @classmethod
-    def from_config_create_driver(cls, config, base_settings):
+    def from_config_create_driver(cls, config, base_settings, workdir=None):
         """ Create Driver from input file
 
         Args:
@@ -31,6 +35,7 @@ class BaciDriverDocker(Driver):
 
         """
         base_settings['address'] = 'localhost:27017'
+        base_settings['docker_version'] = config['driver']['driver_type']
         base_settings['docker_image'] = config['driver']['driver_params']['docker_image']
         return cls(base_settings)
 
@@ -71,30 +76,50 @@ class BaciDriverDocker(Driver):
         """ Actual method to run the job on computing machine
             using run_subprocess method from utils
         """
-        # assemble BACI run command sttring
+        # assemble BACI run command string
         self.baci_run_command_string = self.assemble_baci_run_command_string()
 
-        # first alternative (used currently):
-        # explicitly assemble run command for Docker container
-        docker_run_command_string = self.assemble_docker_run_command_string()
+        # decide whether task-based run or direct run
+        if self.docker_version == 'baci_docker_task':
+            run_command_string = self.assemble_aws_run_task_command_string()
+        else:
+            # first alternative (used currently):
+            # explicitly assemble run command for Docker container
+            run_command_string = self.assemble_docker_run_command_string()
+
+            # second alternative (not used currently): use Docker SDK
+            # get Docker client
+            # client = docker.from_env()
+
+            # assemble volume map for docker container
+            # volume_map = {self.experiment_dir: {'bind': self.experiment_dir, 'mode': 'rw'}}
+
+            # run BACI in Docker container via SDK
+            # stderr = client.containers.run(self.image_name,
+            #                               self.baci_run_command_string,
+            #                               remove=True,
+            #                               volumes=volume_map,
+            #                               stdout=False,
+            #                               stderr=True)
 
         # run BACI in Docker container via subprocess
-        returncode, self.pid, _, _ = run_subprocess(docker_run_command_string)
+        returncode, self.pid, stdout, stderr = run_subprocess(run_command_string)
 
-        # second alternative (not used currently): use Docker SDK
-        # get Docker client
-        # client = docker.from_env()
-
-        # assemble volume map for docker container
-        # volume_map = {self.experiment_dir: {'bind': self.experiment_dir, 'mode': 'rw'}}
-
-        # run BACI in Docker container via SDK
-        # stderr = client.containers.run(self.image_name,
-        #                               self.baci_run_command_string,
-        #                               remove=True,
-        #                               volumes=volume_map,
-        #                               stdout=False,
-        #                               stderr=True)
+        # save AWS ARN and number of processes to database for task-based run
+        if self.docker_version == 'baci_docker_task':
+            self.job['aws_arn'] = aws_extract("taskArn", stdout)
+            self.job['num_procs'] = self.num_procs
+            self.database.save(
+                self.job,
+                self.experiment_name,
+                'jobs',
+                str(self.batch),
+                {
+                    'id': self.job_id,
+                    'expt_dir': self.experiment_dir,
+                    'expt_name': self.experiment_name,
+                },
+            )
 
         # detection of failed jobs
         if returncode:
@@ -109,7 +134,7 @@ class BaciDriverDocker(Driver):
 
         """
         # set MPI command
-        mpi_command = '/usr/lib64/openmpi/bin/mpirun -np'
+        mpi_command = '/usr/lib64/openmpi/bin/mpirun --allow-run-as-root -np'
 
         command_list = [
             mpi_command,
@@ -121,6 +146,26 @@ class BaciDriverDocker(Driver):
 
         return ' '.join(filter(None, command_list))
 
+    def assemble_aws_run_task_command_string(self):
+        """  Assemble command list for BACI runin Docker container
+
+            Returns:
+                list: command list to execute BACI in Docker container
+
+        """
+        command_list = [
+            "aws ecs run-task ",
+            "--cluster worker-queens-cluster ",
+            "--task-definition docker-queens ",
+            "--count 1 ",
+            "--overrides '{ \"containerOverrides\": [ {\"name\": \"docker-queens-container\", ",
+            "\"command\": [\"",
+            self.baci_run_command_string,
+            "\"] } ] }'",
+        ]
+
+        return ''.join(filter(None, command_list))
+
     def assemble_docker_run_command_string(self):
         """  Assemble command list for BACI runin Docker container
 
@@ -130,7 +175,11 @@ class BaciDriverDocker(Driver):
         """
         command_list = [
             self.sudo,
-            " docker run -i --rm -v ",
+            " docker run -i --rm --user='",
+            str(os.geteuid()),
+            "' -e USER='",
+            getpass.getuser(),
+            "' -v ",
             self.experiment_dir,
             ":",
             self.experiment_dir,
