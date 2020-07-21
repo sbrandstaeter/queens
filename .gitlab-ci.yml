@@ -67,7 +67,7 @@ documentation:
     # "make html" triggers:
     - sphinx-build -b html -d build/doctrees   source build/html
   artifacts:
-    name: sphinx-documentation
+    name: sphinx_documentation
     paths:
       - doc/build/html
     when: on_success
