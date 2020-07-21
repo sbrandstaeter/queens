@@ -102,6 +102,9 @@ centos_full_test_suite_develop:
   stage: tests
   script:
     - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
+  only:
+    refs:
+      - master
 
 docker_full_test_suite_master:
   extends:
