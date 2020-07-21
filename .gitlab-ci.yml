@@ -1,8 +1,14 @@
+#---------------------------------------------------------------------------------------------------
+# Define stages
+#---------------------------------------------------------------------------------------------------
 stages:
   - codechecks
   - tests
   - pages
 
+#---------------------------------------------------------------------------------------------------
+# Define platfrom specific settings
+#---------------------------------------------------------------------------------------------------
 .docker_settings:
   image: continuumio/miniconda3:latest
   services:
@@ -20,6 +26,7 @@ stages:
   tags:
     - queens-docker
 
+#----------------------------------------------------------------------------------------------
 .centos_settings:
   before_script:
     - conda update -n base conda
@@ -31,20 +38,11 @@ stages:
   tags:
     - queens-local
 
-.full_test_suite_develop:
-  stage: tests
-  script:
-    - pytest -n4
-  except:
-    refs:
-      - master
-
-.full_test_suite_master:
-  stage: tests
-  script:
-    - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
-
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: codechecks
+#---------------------------------------------------------------------------------------------------
 pylint:
+  # codechecks based on pylint
   extends:
     - .centos_settings
   stage: codechecks
@@ -57,7 +55,9 @@ pylint:
     when: on_failure
     expire_in: 4 weeks
 
+#----------------------------------------------------------------------------------------------
 documentation:
+  # build the documentation
   extends:
     - .centos_settings
   stage: codechecks
@@ -73,6 +73,18 @@ documentation:
     when: on_success
     expire_in: 3 days
 
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: tests
+#---------------------------------------------------------------------------------------------------
+.full_test_suite_develop:
+  # run full test suite in prallel, meant for development and feature branches
+  stage: tests
+  script:
+    - pytest -n4
+  except:
+    refs:
+      - master
+
 docker_full_test_suite_develop:
   extends:
   - .docker_settings
@@ -82,6 +94,14 @@ centos_full_test_suite_develop:
   extends:
     - .centos_settings
     - .full_test_suite_develop
+
+#----------------------------------------------------------------------------------------------
+.full_test_suite_master:
+  # run full test suite on one core to be safe, meant for master branch only
+  # i.e., nightly testing and after a merge request
+  stage: tests
+  script:
+    - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
 
 docker_full_test_suite_master:
   extends:
@@ -100,7 +120,12 @@ centos_full_test_suite_master:
     when: on_success
     expire_in: 3 days
 
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: pages
+#---------------------------------------------------------------------------------------------------
 pages:
+  # used to deploy the coverage report and the documentation to GitLab pages
+  # job name has to be pages and triggers deploy stage
   stage: pages
   # disable cache on this job since we do not need conda env here
   dependencies:
