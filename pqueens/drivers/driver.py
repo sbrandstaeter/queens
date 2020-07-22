@@ -312,7 +312,8 @@ class Driver(metaclass=abc.ABCMeta):
             self.job['result'] = self.result
             self.job['status'] = 'complete'
             if (
-                self.scheduler_type != 'ecs_task'
+                self.job['start time'] is not None
+                and self.scheduler_type != 'ecs_task'
                 and self.scheduler_type != 'local_pbs'
                 and self.scheduler_type != 'local_slurm'
             ):
