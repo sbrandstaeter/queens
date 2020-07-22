@@ -109,7 +109,10 @@ class BaciDriverDeep(Driver):
 
         # Call BACI
         returncode, self.pid = run_subprocess(
-            command_string, type='simulation', loggername=loggername, terminate_expr='PROC.*ERROR'
+            command_string,
+            subprocess_type='simulation',
+            loggername=loggername,
+            terminate_expr='PROC.*ERROR',
         )
 
         if returncode:

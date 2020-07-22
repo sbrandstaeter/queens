@@ -1059,7 +1059,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         cmdlist_remote_main = ['/usr/bin/singularity run', local_singularity_path, remote_args]
         cmd_remote_main = ' '.join(cmdlist_remote_main)
 
-        _, pid = run_subprocess(cmd_remote_main, type='submit')
+        _, pid = run_subprocess(cmd_remote_main, subprocess_type='submit')
 
         return pid
 

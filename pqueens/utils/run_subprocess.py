@@ -14,7 +14,7 @@ def run_subprocess(command_string, **kwargs):
     stdout-return
     Args:
         command_string (str): Command string that should be run outside of Python
-        type (str): type of run_subprocess from utils
+        subprocess_type (str): subprocess_type of run_subprocess from utils
         loggername (str): loggername for logging module
         terminate_expr (str): regex to search in sdtout on which subprocess will terminate
     Returns:
@@ -23,35 +23,35 @@ def run_subprocess(command_string, **kwargs):
 
     """
 
-    type = kwargs.get('type')
+    subprocess_type = kwargs.get('subprocess_type')
 
-    if not type:
-        type = 'simple'
+    if not subprocess_type:
+        subprocess_type = 'simple'
 
-    subprocess_specific = _get_subprocess(type)
+    subprocess_specific = _get_subprocess(subprocess_type)
 
     return subprocess_specific(command_string, **kwargs)
 
 
-def _get_subprocess(type):
+def _get_subprocess(subprocess_type):
     """
-        Chose subprocess implementation by type
+        Chose subprocess implementation by subprocess_type
         Args:
-            type (str): Type of run_subprocess
+            subprocess_type (str): subprocess_type of run_subprocess
         Returns:
             function object (obj): function object for implementation type of run_subprocess from
                                     utils
 
     """
 
-    if type == 'simple':
+    if subprocess_type == 'simple':
         return _run_subprocess_simple
-    elif type == 'simulation':
+    elif subprocess_type == 'simulation':
         return _run_subprocess_simulation
-    elif type == 'submit':
+    elif subprocess_type == 'submit':
         return _run_subprocess_submit_job
     else:
-        raise ValueError(f'subprocess type {type} not found.')
+        raise ValueError(f'subprocess_type {subprocess_type} not found.')
 
 
 def _run_subprocess_simple(command_string, **kwargs):

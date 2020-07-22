@@ -138,7 +138,7 @@ class BaciDriverNative(Driver):
             # submit job
             returncode, self.pid = run_subprocess(
                 command_string,
-                type='simulation',
+                subprocess_type='simulation',
                 terminate_expr='PROC.*ERROR',
                 loggername=loggername,
             )
@@ -165,7 +165,7 @@ class BaciDriverNative(Driver):
             # run BACI command_string
             returncode, self.pid = run_subprocess(
                 command_string,
-                type='simulation',
+                subprocess_type='simulation',
                 terminate_expr='PROC.*ERROR',
                 loggername=loggername,
             )
