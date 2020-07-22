@@ -35,13 +35,13 @@
   "driver" :{
     "driver_type"           : "baci_native",
     "driver_params"         :{
-      "input_template"        : "example_input_files/dat_files/invaaa_ee.dat",
-      "path_to_executable"    : "<path>/workspace/build-release/baci-release",
-      "path_to_postprocessor" : "<path>/workspace/build-release/post_drt_monitor",
+      "input_template"        : "pqueens/tests/integration_tests/third_party_input_files/baci_input_files/invaaa_ee.dat",
+      "path_to_executable"    : "config/baci-release",
+      "path_to_postprocessor" : "config/post_drt_monitor",
       "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
-      "no_singularity": false,
+      "no_singularity": true,
       "post_process_options"  : ["--field=structure --node=26 --start=1"],
-      "experiment_dir"        : "<path>/output/elementary_effects_demo",
+      "experiment_dir"        : "{tempdir}",
       "post_post"         : {
         "post_post_approach_sel": "baci",
         "delete_field_data" : false,
