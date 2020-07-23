@@ -9,13 +9,13 @@
     "method_options" :{
       "seed" : 2,
       "model" : "model",
-      "num_trajectories" : 1000,
+      "num_trajectories" : 50,
       "num_optimal_trajectories" : 10,
       "grid_jump" : 0.6666,
-      "number_of_levels" : 4,
+      "number_of_levels" : 3,
       "confidence_level" : 0.95,
       "local_optimization" : "True",
-      "num_bootstrap_samples" : 1000,
+      "num_bootstrap_samples" : 50,
       "result_description" : {
         "write_results" : true,
         "plot_results" : true
@@ -35,13 +35,13 @@
   "driver" :{
     "driver_type"           : "baci_native",
     "driver_params"         :{
-      "input_template"        : "pqueens/tests/integration_tests/third_party_input_files/baci_input_files/invaaa_ee.dat",
-      "path_to_executable"    : "config/baci-release",
-      "path_to_postprocessor" : "config/post_drt_monitor",
+      "input_template"        : "{baci_input}",
+      "path_to_executable"    : "{baci-release}",
+      "path_to_postprocessor" : "{post_drt_monitor}",
       "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
       "no_singularity": true,
       "post_process_options"  : ["--field=structure --node=26 --start=1"],
-      "experiment_dir"        : "{tempdir}",
+      "experiment_dir"        : "{experiment_dir}",
       "post_post"         : {
         "post_post_approach_sel": "baci",
         "delete_field_data" : false,
@@ -55,7 +55,7 @@
   "resources" : {
     "local_machine" : {
       "scheduler"         : "local_scheduler",
-      "max-concurrent"    : 4,
+      "max-concurrent"    : 1,
       "max-finished-jobs" : 1000
     }
   },
@@ -73,12 +73,6 @@
       "size" : 1,
       "min"  : 0.8E6,
       "max"  : 1.2E6
-      },
-    "youngs2" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : 0.6E6,
-      "max"  : 0.9E6
       },
       "nue" : {
       "type" : "FLOAT",
