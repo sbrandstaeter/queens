@@ -354,6 +354,7 @@ class Driver(metaclass=abc.ABCMeta):
             # TODO the definition of output file and scratch seems redunant as this is already
             # defined in the child class;
             # create input file name
+            mpi_options = 'mpirun -np ' + str(self.num_procs_post)
             dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
             output_directory = os.path.join(dest_dir, 'output')
             input_file_name = str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
@@ -373,13 +374,16 @@ class Driver(metaclass=abc.ABCMeta):
                     target_file_opt_2 = self.file_prefix + "_" + str(num + 1)
                     target_file_opt = os.path.join(target_file_opt_1, target_file_opt_2)
                     postprocessing_list = [
+                        mpi_options,
                         self.postprocessor,
                         output_file_opt,
                         option,
                         target_file_opt,
                     ]
                     postprocess_command = ' '.join(filter(None, postprocessing_list))
-                    _, _, _ = self.run_subprocess(postprocess_command)
+                    _, stderr, _ = self.run_subprocess(postprocess_command)
+                    if stderr:
+                        print(stderr)
             else:
                 target_file_opt = os.path.join(
                     '--output=' + target_file_base_name, self.file_prefix
