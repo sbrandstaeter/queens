@@ -23,9 +23,7 @@ def test_baci_morris_salib(
     # check if symbolic links are existent
     if (not os.path.islink(baci_release)) or (not os.path.islink(post_drt_monitor)):
         # set default baci location for testing machine
-        dst_baci, dst_drt_monitor, src_baci, src_drt_monitor = set_baci_links_for_gitlab_runner(
-            config_dir
-        )
+        dst_baci, dst_drt_monitor, src_baci, src_drt_monitor = set_baci_links_for_gitlab_runner
         try:
             os.symlink(src_baci, dst_baci)
             os.symlink(src_drt_monitor, dst_drt_monitor)
