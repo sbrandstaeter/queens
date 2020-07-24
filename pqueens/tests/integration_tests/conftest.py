@@ -1,7 +1,7 @@
 ''' Collect fixtures used by the function tests. '''
 import os
-
 import pytest
+from pathlib import Path
 
 
 @pytest.fixture(scope='session')
@@ -26,3 +26,14 @@ def config_dir():
     dirpath = os.path.dirname(__file__)
     config_dir_path = os.path.join(dirpath, '../../../config')
     return config_dir_path
+
+
+@pytest.fixture()
+def set_baci_links_for_gitlab_runner(config_dir):
+    """ Set symbolic links for baci on testing machine"""
+    src_baci = os.path.join(config_dir, 'baci-release')
+    src_drt_monitor = os.path.join(config_dir, 'post_drt_monitor')
+    dst_baci = Path('$HOME/workspace/build/baci-release')
+    dst_drt_monitor = Path('$HOME/workspace/build/post_drt_monitor')
+    return dst_baci, dst_drt_monitor, src_baci, src_drt_monitor
+
