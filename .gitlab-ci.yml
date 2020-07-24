@@ -81,7 +81,7 @@ documentation:
   # meant for development and feature branches
   stage: tests
   script:
-    - pytest -n4 --ignore=pqueens/test/integration_tests/integration_tests_baci/
+    - pytest -n4 --ignore=pqueens/tests/integration_tests/integration_tests_baci/
   except:
     refs:
       - master
@@ -128,8 +128,7 @@ docker_full_test_suite_develop:
     - .docker_settings
     - .full_test_suite_develop
   script:
-    - pytest --ignore=pqueens/test/integration_tests/integration_tests_baci/
-
+    - pytest --ignore=pqueens/tests/integration_tests/integration_tests_baci/
 centos_full_test_suite_develop:
   extends:
     - .centos_settings
