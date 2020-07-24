@@ -293,6 +293,5 @@ class Resource(object):
 
         self.scheduler.submit_post_post(job['id'], batch)
         sys.stdout.write(
-                    'Submitted post-post job %d with %s \n' % (job['id'], self.scheduler_class)
-                )
-
+            'Submitted post-post job %d with %s \n' % (job['id'], self.scheduler_class)
+        )

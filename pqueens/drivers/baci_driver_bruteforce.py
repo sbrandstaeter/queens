@@ -1,6 +1,6 @@
-import re
 import os
 from pqueens.drivers.driver import Driver
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 class BaciDriverBruteforce(Driver):
@@ -72,7 +72,7 @@ class BaciDriverBruteforce(Driver):
     def run_job(self):
         """
         Actual method to run the job on computing machine
-        using run_subprocess method from base class
+        using run_subprocess method from utils
 
         Returns:
             None
@@ -89,8 +89,9 @@ class BaciDriverBruteforce(Driver):
         ]  # This is already within pbs
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
+
         # Call BACI
-        stdout, stderr, self.pid = self.run_subprocess(command_string)
+        returncode, self.pid, stdout, stderr = run_subprocess(command_string)
         # Print the stderr of BACI call to slurm file (SLURM_{SLURM_ID}.txt)
         print(stderr)
         # Print the stdout of BACI call to slurm file (SLURM_{SLURM_ID}.txt)
@@ -102,16 +103,6 @@ class BaciDriverBruteforce(Driver):
         with open(self.output_file + "_BACI_stdout.txt", "a") as text_file:
             print(stdout, file=text_file)
 
-        if stderr:
-            # TODO: fix this hack
-            # For the second call of remote_main.py with the --post=true flag
-            # (see the jobscript_slurm_queens.sh), the workdir does not exist anymore.
-            # Therefore, change directory in command_list ("cd self.workdir") does throw an error.
-            # We catch this error to detect that we are in a postprocessing call of the driver.
-            if re.fullmatch(
-                r'/bin/sh: line 0: cd: /scratch/SLURM_\d+: No such file or directory\n', stderr
-            ):
-                pass
-            else:
-                self.result = None  # This is necessary to detect failed jobs
-                self.job['status'] = 'failed'
+        if returncode:
+            self.result = None  # This is necessary to detect failed jobs
+            self.job['status'] = 'failed'
