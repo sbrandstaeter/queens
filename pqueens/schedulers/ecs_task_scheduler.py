@@ -64,7 +64,6 @@ class ECSTaskScheduler(Scheduler):
         """
         pass
 
-
     def get_process_id_from_output(self):
         """
         Not necessary for AWS ECS scheduler but mandatory for parent class initialization

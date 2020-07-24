@@ -1,5 +1,6 @@
 import os
 from pqueens.drivers.driver import Driver
+from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
 
@@ -115,8 +116,8 @@ class BaciDriverNative(Driver):
             command_list = [scheduler_start, submission_script_path]
             command_string = ' '.join(command_list)
 
-            # submit job
-            stdout, stderr, self.pid = self.run_subprocess(command_string)
+            # submit and run job
+            returncode, self.pid, stdout, stderr = run_subprocess(command_string)
 
             # save path to control file and number of processes to database
             self.job['control_file_path'] = self.control_file
@@ -138,16 +139,16 @@ class BaciDriverNative(Driver):
             command_string = self.assemble_direct_run_command_string()
 
             # run BACI via subprocess
-            stdout, stderr, self.pid = self.run_subprocess(command_string)
-
-            # print the standard output of the subprocess to file (for debugging)
-            with open(self.output_file + "_subprocess_stdout.txt", "w") as text_file:
-                print(stdout, file=text_file)
-            with open(self.output_file + "_subprocess_stderr.txt", "w") as text_file:
-                print(stderr, file=text_file)
+            returncode, self.pid, _, _ = run_subprocess(
+                command_string,
+                subprocess_type='simulation',
+                terminate_expr='PROC.*ERROR',
+                loggername=__name__ + f'_{self.job_id}',
+                output_file=self.output_file
+            )
 
         # detection of failed jobs
-        if stderr:
+        if returncode:
             self.result = None
             self.job['status'] = 'failed'
 

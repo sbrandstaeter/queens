@@ -27,21 +27,13 @@ def generate_submission_script(
 
     # copy submission script to specified local or remote location
     if connect_to_resource == None:
-        command_list = [
-            'cp',
-            local_dummy_path,
-            submission_script_path,
-        ]
+        command_list = ['cp', local_dummy_path, submission_script_path]
     else:
-        command_list = [
-            'scp',
-            local_dummy_path,
-            connect_to_resource + ':' + submission_script_path,
-        ]
+        command_list = ['scp', local_dummy_path, connect_to_resource + ':' + submission_script_path]
     command_string = ' '.join(command_list)
-    stdout, stderr, p = run_subprocess(command_string)
+    process_returncode, p, stdout, stderr = run_subprocess(command_string)
 
     # delete local dummy jobfile
     command_list = ['rm', local_dummy_path]
     command_string = ' '.join(command_list)
-    stdout, stderr, p = run_subprocess(command_string)
+    process_returncode, p, stdout, stderr = run_subprocess(command_string)

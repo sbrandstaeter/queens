@@ -16,7 +16,7 @@ def aws_extract(search_string, output):
         if search_string in item:
             newstr1 = item.strip()
             break
-    string_list = ['"',search_string, '": "']
+    string_list = ['"', search_string, '": "']
     replace_string = ''.join(filter(None, string_list))
     newstr2 = newstr1.replace(replace_string, '')
     extract_string = newstr2.replace('",', '')

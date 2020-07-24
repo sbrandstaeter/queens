@@ -578,7 +578,7 @@ class JobInterface(Interface):
                             current_check_job['aws_arn'],
                         ]
                         cmd = ''.join(filter(None, command_list))
-                        stdout, stderr, _ = run_subprocess(cmd)
+                        _, _, stdout, stderr= run_subprocess(cmd)
                         if stderr:
                             current_check_job['status'] = 'failed'
                         status_str = aws_extract("lastStatus", stdout)
@@ -626,7 +626,7 @@ class JobInterface(Interface):
         else:
             command_list = ['cd', self.output_dir, '; ls -l | grep ' '"^d" | wc -l']
         command_string = ' '.join(command_list)
-        str_number_of_subdirectories, _, _ = run_subprocess(command_string)
+        _, _, str_number_of_subdirectories, _ = run_subprocess(command_string)
         number_of_subdirectories = (
             int(str_number_of_subdirectories) if str_number_of_subdirectories else 0
         )
