@@ -142,8 +142,6 @@ centos_full_test_suite_develop:
   # run full test suite on one core to be safe, meant for master branch only
   # i.e., nightly testing and after a merge request
   stage: tests
-  script:
-    - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
   only:
     refs:
       - master
@@ -159,6 +157,8 @@ centos_full_test_suite_master:
   extends:
     - .centos_settings
     - .full_test_suite_master
+  script:
+    - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
   artifacts:
     name: coverage_report
     paths:
