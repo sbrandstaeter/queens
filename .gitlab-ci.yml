@@ -152,6 +152,8 @@ docker_full_test_suite_master:
   extends:
     - .docker_settings
     - .full_test_suite_master
+  script:
+    - pytest --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
 
 centos_full_test_suite_master:
   extends:
