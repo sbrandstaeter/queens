@@ -76,25 +76,66 @@ documentation:
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------
+.python_test_suite_develop:
+  # run python test suite in prallel (all tests that rely on QUEENS and Python alone)
+  # meant for development and feature branches
+  stage: tests
+  script:
+    - pytest -n4 --ignore=pqueens/test/integration_tests/integration_tests_baci/
+  except:
+    refs:
+      - master
+
+docker_python_test_suite_develop:
+  extends:
+  - .docker_settings
+  - .python_test_suite_develop
+
+centos_python_test_suite_develop:
+  extends:
+    - .centos_settings
+    - .python_test_suite_develop
+
+#----------------------------------------------------------------------------------------------
+.baci_test_suite_develop:
+  # run baci test suite (only tests related to QUEENS together with BACI)
+  # meant for development and feature branches
+  stage: tests
+  script:
+    - pytest --ignore=pqueens/tests/unittests/ --ignore=pqueens/tests/integration_tests/integration_tests_python/
+  except:
+    refs:
+      - master
+
+centos_baci_test_suite_develop:
+  extends:
+    - .centos_settings
+    - .baci_test_suite_develop
+
+#----------------------------------------------------------------------------------------------
 .full_test_suite_develop:
   # run full test suite in prallel, meant for development and feature branches
   stage: tests
-  script:
-    - pytest -n4
+  only:
+    refs:
+      - web
   except:
     refs:
       - master
 
 docker_full_test_suite_develop:
   extends:
-  - .docker_settings
-  - .full_test_suite_develop
+    - .docker_settings
+    - .full_test_suite_develop
+  script:
+    - pytest --ignore=pqueens/test/integration_tests/integration_tests_baci/
 
 centos_full_test_suite_develop:
   extends:
     - .centos_settings
     - .full_test_suite_develop
-
+  script:
+    - pytest
 #----------------------------------------------------------------------------------------------
 .full_test_suite_master:
   # run full test suite on one core to be safe, meant for master branch only
