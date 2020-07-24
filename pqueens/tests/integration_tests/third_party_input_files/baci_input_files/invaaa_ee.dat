@@ -1,0 +1,624 @@
+//
+// Maintainer: Michael Gee
+// gee@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-25239
+//
+// necessary defines: D_SOLID3 BINIO BINIO
+//
+// start with
+// mpirun -np 10 ./baci-release -ngroup=5 -glayout=2,2,2,2,2 -nptype=copyDatFile Input/invaaa.dat xxx | tee xxx.log
+// to use 5 groups with 2 procs each in nested parallel version
+==================================================================
+General Data File CCARAT
+==================================================================
+-----------------------------------------------------------------------TITLE
+Default_title
+----------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        12
+NODES                           52
+DIM                             3
+MATERIALS                       2
+NUMDF                           6
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Structure  //Inverse_Analysis
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     1
+NUMALEDIS                       1
+NUMTHERMDIS                     1
+--------------------------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+STRUCT_DISP                     Yes
+STRUCT_STRESS                   Cauchy                        // Cauchy 2PK
+STRUCT_STRAIN                   ea                            // ea gl
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+THERM_TEMPERATURE               No
+THERM_HEATFLUX                  No
+FILESTEPS                       1000
+------------------------------------------------------------INVERSE ANALYSIS
+INV_ANALYSIS                    gen                           // gen none
+INV_INITREG                     1.0                           // initial regularization value (>0.0)
+INV_ALPHA                       1.0e-5                        // perturbation factors for forward finite difference
+INV_BETA                        1.0e-3                        // eps = alpha + beta * matparameter
+INV_ANA_TOL                     0.00001                       // tolerance of inv. analysis
+MONITORFILE                     invaaa1.monitor               // file with monitored displacements
+INV_ANA_MAX_RUN                 10                            // max iterations
+UPDATE_REG                      res                           // gradient or residual based update
+PARAM_BOUNDS                    no                            // bound params to positive values
+----------------------------------------------------------STRUCTURAL DYNAMIC
+LINEAR_SOLVER                   1
+DYNAMICTYP                      Statics
+RESULTSEVRY                     1
+RESTARTEVRY                     0
+NLNSOL                          fullnewton                    // fullnewton lsnewton modnewton matfreenewton nlncg ptc
+TIMESTEP                        0.02
+NUMSTEP                         25
+MAXTIME                         0.5                           // prestress bis 0.3
+DAMPING                         no
+M_DAMP                          0.001
+K_DAMP                          0.001
+PREDICT                         ConstDisVelAcc                // ConstDis ConstDisVelAcc
+NORM_DISP                       Abs
+NORM_RESF                       Abs
+NORMCOMBI_RESFDISP              And
+TOLDISP                         1.0E-03
+TOLRES                          1.0E-03
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.01
+MAXITER                         150
+UZAWAPARAM                      1.0
+INT_STRATEGY                    Standard
+----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          TrLike
+BETA                            0.25
+GAMMA                           0.5
+ALPHA_M                         0.5
+ALPHA_F                         0.5
+------------------------------------------------STRUCT NOX/Printing
+Error                           = No
+Warning                         = No
+Outer Iteration                 = Yes
+Inner Iteration                 = No
+Parameters                      = No
+Details                         = No
+Outer Iteration StatusTest      = No
+Linear Solver Details           = No
+Test Details                    = No
+Debug                           = No
+--------------------------------------------------------------------SOLVER 1
+NAME                            Structure_Solver
+SOLVER                          UMFPACK                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        50                            // output every so often, 0 no output
+AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ML                            // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZREUSE                         8                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      1.0                           // fill-in for ILUT
+IFPACKGFILL                     0                             // graph fill for ILU
+AZTOL                           1.0E-4                        // tolerance in unscaled residual
+AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test
+AZITER                          5000                          // max iterations
+AZSUB                           50                            // size of krylov space for gmres
+AZOMEGA                         1.0                           // unused
+AZGRAPH                         1                             // unused
+AZPOLY                          5                             // polynomial order for Neumann
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          none                          // none sym infnorm scaling of the system
+ML_PRINT                        10                            // ML print-out level (0-10)
+ML_MAXCOARSESIZE                3000                          // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     5                             // ML max number of levels
+ML_COARSEN                      UC                            // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                            // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  1.33                          // 1.33 // damping factor for prolongator smoother (usually 0.0 or 1.33)
+ML_PROLONG_THRES                0.0                           // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 SGS                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU                           // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               Umfpack                       // Umfpack KLU Superlu
+ML_SMOTIMES                     4 1 1 1 1                     // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.69                          // damping fine grid
+ML_DAMPMED                      0.89                          // damping med grids
+ML_DAMPCOARSE                   1.0                           // damping coarse grid
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         12
+NDLINE                          20
+NDSURF                          11
+NDVOL                           2
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJCT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT                          5
+E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+-----------------------------------------------DESIGN LINE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE                           0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF                           6
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DVOL                            0
+---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
+DPOINT                          0
+----------------------------------------------DESIGN LINE NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
+DLINE                           0
+----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
+DSURF                           2
+E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
+E 9 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
+-----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
+DVOL                            0
+------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT                          0
+-------------------------------------------DESIGN LINE ALE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE                           0
+-------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF                           0
+------------------------------------DESIGN POINT TRANSPORT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT                          0
+-------------------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DLINE                           0
+-------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DSURF                           0
+-----------------------------------------DESIGN FSI COUPLING LINE CONDITIONS
+// DOBJECT FSI_ID FIELD MESH FLAG
+DLINE                           0
+-----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+// DOBJECT FSI_ID FIELD MESH
+DSURF                           0
+-----------------------------------DESIGN FLUID FREE SURFACE LINE CONDITIONS
+//                              DOBJECT
+DLINE                           0
+-----------------------------------DESIGN FLUID FREE SURFACE SURF CONDITIONS
+//                              DOBJECT
+DSURF                           0
+-----------------------------------DESIGN LINE MORTAR COUPLING CONDITIONS 2D
+DLINE                           0
+-----------------------------------DESIGN SURF MORTAR COUPLING CONDITIONS 3D
+DSURF                           0
+-----------------------------------------DESIGN SURFACE VOLUME CONSTRAINT 3D
+DSURF                           0
+-------------------------------------------DESIGN SURFACE AREA CONSTRAINT 3D
+DSURF                           0
+----------------------------------------------DESIGN LINE AREA CONSTRAINT 2D
+DLINE                           0
+--------------------------------------------DESIGN SURFACE VOLUME MONITOR 3D
+DSURF                           0
+----------------------------------------------DESIGN SURFACE AREA MONITOR 3D
+DSURF                           0
+-------------------------------------------------DESIGN LINE AREA MONITOR 2D
+DLINE                           0
+------------------------------------DESIGN FLUID STRESS CALC LINE CONDITIONS
+//                              DOBJECT
+DLINE                           0
+------------------------------------DESIGN FLUID STRESS CALC SURF CONDITIONS
+//                              DOBJECT
+DSURF                           0
+-------------------------------------------------DESIGN FLUID LINE LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER
+DLINE                           0
+-------------------------------------------------DESIGN FLUID SURF LIFT&DRAG
+// DOBJECT LIFT_DRAG_ID X_CENTER Y_CENTER Z_CENTER ALE_LINE
+DSURF                           0
+---------------------------------------DESIGN LINE WEAK DIRICHLET CONDITIONS
+// DOBJECT DEFGAMMA DEFPENALTYPAR LINEARISATION VAL(3) CURVE(3) FUNCT(3)
+DLINE                           0
+------------------------------------DESIGN SURFACE WEAK DIRICHLET CONDITIONS
+// DOBJECT DEFGAMMA DEFPENALTYPAR LINEARISATION VAL(3) CURVE(3) FUNCT(3)
+DSURF                           0
+-----------------------------DESIGN SURFACE CONSERVATIVE OUTFLOW CONSISTENCY
+DSURF                           0
+----------------------------------------------DESIGN POINT LOCSYS CONDITIONS
+// DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
+DPOINT                          0
+-----------------------------------------------DESIGN LINE LOCSYS CONDITIONS
+// DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
+DLINE                           0
+-----------------------------------------------DESIGN SURF LOCSYS CONDITIONS
+// DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
+DSURF                           0
+------------------------------------------------DESIGN VOL LOCSYS CONDITIONS
+// DOBJECT Id - NORMAL_X NORMAL_Y NORMAL_Z TANGENT_X TANGENT_Y TANGENT_Z
+DVOL                            0
+------------------------------------DESIGN LINE PERIODIC BOUNDARY CONDITIONS
+// DOBJECT PBC_ID ORIENTATION
+DLINE                           0
+------------------------------------DESIGN SURF PERIODIC BOUNDARY CONDITIONS
+// DOBJECT PBC_ID ORIENTATION
+DSURF                           0
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 48 DNODE 1
+NODE 52 DNODE 2
+NODE 47 DNODE 3
+NODE 51 DNODE 4
+NODE 26 DNODE 5
+NODE 28 DNODE 6
+NODE 25 DNODE 7
+NODE 27 DNODE 8
+NODE 4 DNODE 9
+NODE 2 DNODE 10
+NODE 3 DNODE 11
+NODE 1 DNODE 12
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+NODE 48 DLINE 1
+NODE 52 DLINE 1
+NODE 47 DLINE 2
+NODE 51 DLINE 2
+NODE 48 DLINE 3
+NODE 47 DLINE 3
+NODE 52 DLINE 4
+NODE 51 DLINE 4
+NODE 26 DLINE 5
+NODE 28 DLINE 5
+NODE 25 DLINE 6
+NODE 27 DLINE 6
+NODE 26 DLINE 7
+NODE 25 DLINE 7
+NODE 28 DLINE 8
+NODE 27 DLINE 8
+NODE 48 DLINE 9
+NODE 44 DLINE 9
+NODE 42 DLINE 9
+NODE 38 DLINE 9
+NODE 34 DLINE 9
+NODE 30 DLINE 9
+NODE 26 DLINE 9
+NODE 52 DLINE 10
+NODE 50 DLINE 10
+NODE 46 DLINE 10
+NODE 40 DLINE 10
+NODE 36 DLINE 10
+NODE 32 DLINE 10
+NODE 28 DLINE 10
+NODE 47 DLINE 11
+NODE 43 DLINE 11
+NODE 41 DLINE 11
+NODE 37 DLINE 11
+NODE 33 DLINE 11
+NODE 29 DLINE 11
+NODE 25 DLINE 11
+NODE 51 DLINE 12
+NODE 49 DLINE 12
+NODE 45 DLINE 12
+NODE 39 DLINE 12
+NODE 35 DLINE 12
+NODE 31 DLINE 12
+NODE 27 DLINE 12
+NODE 4 DLINE 13
+NODE 2 DLINE 13
+NODE 3 DLINE 14
+NODE 1 DLINE 14
+NODE 4 DLINE 15
+NODE 3 DLINE 15
+NODE 2 DLINE 16
+NODE 1 DLINE 16
+NODE 26 DLINE 17
+NODE 22 DLINE 17
+NODE 18 DLINE 17
+NODE 14 DLINE 17
+NODE 10 DLINE 17
+NODE 7 DLINE 17
+NODE 4 DLINE 17
+NODE 28 DLINE 18
+NODE 24 DLINE 18
+NODE 20 DLINE 18
+NODE 16 DLINE 18
+NODE 12 DLINE 18
+NODE 8 DLINE 18
+NODE 2 DLINE 18
+NODE 25 DLINE 19
+NODE 21 DLINE 19
+NODE 17 DLINE 19
+NODE 13 DLINE 19
+NODE 9 DLINE 19
+NODE 5 DLINE 19
+NODE 3 DLINE 19
+NODE 27 DLINE 20
+NODE 23 DLINE 20
+NODE 19 DLINE 20
+NODE 15 DLINE 20
+NODE 11 DLINE 20
+NODE 6 DLINE 20
+NODE 1 DLINE 20
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 48 DSURFACE 1
+NODE 52 DSURFACE 1
+NODE 47 DSURFACE 1
+NODE 51 DSURFACE 1
+NODE 48 DSURFACE 2
+NODE 52 DSURFACE 2
+NODE 26 DSURFACE 2
+NODE 28 DSURFACE 2
+NODE 44 DSURFACE 2
+NODE 42 DSURFACE 2
+NODE 38 DSURFACE 2
+NODE 34 DSURFACE 2
+NODE 30 DSURFACE 2
+NODE 50 DSURFACE 2
+NODE 46 DSURFACE 2
+NODE 40 DSURFACE 2
+NODE 36 DSURFACE 2
+NODE 32 DSURFACE 2
+NODE 47 DSURFACE 3
+NODE 51 DSURFACE 3
+NODE 25 DSURFACE 3
+NODE 27 DSURFACE 3
+NODE 43 DSURFACE 3
+NODE 41 DSURFACE 3
+NODE 37 DSURFACE 3
+NODE 33 DSURFACE 3
+NODE 29 DSURFACE 3
+NODE 49 DSURFACE 3
+NODE 45 DSURFACE 3
+NODE 39 DSURFACE 3
+NODE 35 DSURFACE 3
+NODE 31 DSURFACE 3
+NODE 48 DSURFACE 4
+NODE 47 DSURFACE 4
+NODE 26 DSURFACE 4
+NODE 25 DSURFACE 4
+NODE 44 DSURFACE 4
+NODE 42 DSURFACE 4
+NODE 38 DSURFACE 4
+NODE 34 DSURFACE 4
+NODE 30 DSURFACE 4
+NODE 43 DSURFACE 4
+NODE 41 DSURFACE 4
+NODE 37 DSURFACE 4
+NODE 33 DSURFACE 4
+NODE 29 DSURFACE 4
+NODE 52 DSURFACE 5
+NODE 51 DSURFACE 5
+NODE 28 DSURFACE 5
+NODE 27 DSURFACE 5
+NODE 50 DSURFACE 5
+NODE 46 DSURFACE 5
+NODE 40 DSURFACE 5
+NODE 36 DSURFACE 5
+NODE 32 DSURFACE 5
+NODE 49 DSURFACE 5
+NODE 45 DSURFACE 5
+NODE 39 DSURFACE 5
+NODE 35 DSURFACE 5
+NODE 31 DSURFACE 5
+NODE 26 DSURFACE 6
+NODE 28 DSURFACE 6
+NODE 25 DSURFACE 6
+NODE 27 DSURFACE 6
+NODE 26 DSURFACE 7
+NODE 28 DSURFACE 7
+NODE 4 DSURFACE 7
+NODE 2 DSURFACE 7
+NODE 22 DSURFACE 7
+NODE 18 DSURFACE 7
+NODE 14 DSURFACE 7
+NODE 10 DSURFACE 7
+NODE 7 DSURFACE 7
+NODE 24 DSURFACE 7
+NODE 20 DSURFACE 7
+NODE 16 DSURFACE 7
+NODE 12 DSURFACE 7
+NODE 8 DSURFACE 7
+NODE 25 DSURFACE 8
+NODE 27 DSURFACE 8
+NODE 3 DSURFACE 8
+NODE 1 DSURFACE 8
+NODE 21 DSURFACE 8
+NODE 17 DSURFACE 8
+NODE 13 DSURFACE 8
+NODE 9 DSURFACE 8
+NODE 5 DSURFACE 8
+NODE 23 DSURFACE 8
+NODE 19 DSURFACE 8
+NODE 15 DSURFACE 8
+NODE 11 DSURFACE 8
+NODE 6 DSURFACE 8
+NODE 26 DSURFACE 9
+NODE 25 DSURFACE 9
+NODE 4 DSURFACE 9
+NODE 3 DSURFACE 9
+NODE 22 DSURFACE 9
+NODE 18 DSURFACE 9
+NODE 14 DSURFACE 9
+NODE 10 DSURFACE 9
+NODE 7 DSURFACE 9
+NODE 21 DSURFACE 9
+NODE 17 DSURFACE 9
+NODE 13 DSURFACE 9
+NODE 9 DSURFACE 9
+NODE 5 DSURFACE 9
+NODE 28 DSURFACE 10
+NODE 27 DSURFACE 10
+NODE 2 DSURFACE 10
+NODE 1 DSURFACE 10
+NODE 24 DSURFACE 10
+NODE 20 DSURFACE 10
+NODE 16 DSURFACE 10
+NODE 12 DSURFACE 10
+NODE 8 DSURFACE 10
+NODE 23 DSURFACE 10
+NODE 19 DSURFACE 10
+NODE 15 DSURFACE 10
+NODE 11 DSURFACE 10
+NODE 6 DSURFACE 10
+NODE 4 DSURFACE 11
+NODE 2 DSURFACE 11
+NODE 3 DSURFACE 11
+NODE 1 DSURFACE 11
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 48 DVOLUME 1
+NODE 52 DVOLUME 1
+NODE 47 DVOLUME 1
+NODE 51 DVOLUME 1
+NODE 26 DVOLUME 1
+NODE 28 DVOLUME 1
+NODE 25 DVOLUME 1
+NODE 27 DVOLUME 1
+NODE 44 DVOLUME 1
+NODE 42 DVOLUME 1
+NODE 38 DVOLUME 1
+NODE 34 DVOLUME 1
+NODE 30 DVOLUME 1
+NODE 50 DVOLUME 1
+NODE 46 DVOLUME 1
+NODE 40 DVOLUME 1
+NODE 36 DVOLUME 1
+NODE 32 DVOLUME 1
+NODE 43 DVOLUME 1
+NODE 41 DVOLUME 1
+NODE 37 DVOLUME 1
+NODE 33 DVOLUME 1
+NODE 29 DVOLUME 1
+NODE 49 DVOLUME 1
+NODE 45 DVOLUME 1
+NODE 39 DVOLUME 1
+NODE 35 DVOLUME 1
+NODE 31 DVOLUME 1
+NODE 26 DVOLUME 2
+NODE 28 DVOLUME 2
+NODE 25 DVOLUME 2
+NODE 27 DVOLUME 2
+NODE 4 DVOLUME 2
+NODE 2 DVOLUME 2
+NODE 3 DVOLUME 2
+NODE 1 DVOLUME 2
+NODE 22 DVOLUME 2
+NODE 18 DVOLUME 2
+NODE 14 DVOLUME 2
+NODE 10 DVOLUME 2
+NODE 7 DVOLUME 2
+NODE 24 DVOLUME 2
+NODE 20 DVOLUME 2
+NODE 16 DVOLUME 2
+NODE 12 DVOLUME 2
+NODE 8 DVOLUME 2
+NODE 21 DVOLUME 2
+NODE 17 DVOLUME 2
+NODE 13 DVOLUME 2
+NODE 9 DVOLUME 2
+NODE 5 DVOLUME 2
+NODE 23 DVOLUME 2
+NODE 19 DVOLUME 2
+NODE 15 DVOLUME 2
+NODE 11 DVOLUME 2
+NODE 6 DVOLUME 2
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD -1.850000000000000e+01 2.265521754571398e-15 1.000000000000000e+00
+NODE 2 COORD -1.850000000000000e+01 2.265521754571398e-15 0.000000000000000e+00
+NODE 3 COORD -1.750000000000000e+01 2.143061119189160e-15 1.000000000000000e+00
+NODE 4 COORD -1.750000000000000e+01 2.143061119189160e-15 0.000000000000000e+00
+NODE 5 COORD -1.690370195938679e+01 4.529333291801695e+00 1.000000000000000e+00
+NODE 6 COORD -1.786962778563747e+01 4.788152337047497e+00 1.000000000000000e+00
+NODE 7 COORD -1.690370195938679e+01 4.529333291801695e+00 0.000000000000000e+00
+NODE 8 COORD -1.786962778563747e+01 4.788152337047497e+00 0.000000000000000e+00
+NODE 9 COORD -1.515544456607497e+01 8.750000000264491e+00 1.000000000000000e+00
+NODE 10 COORD -1.515544456607497e+01 8.750000000264491e+00 0.000000000000000e+00
+NODE 11 COORD -1.602146996985069e+01 9.250000000279597e+00 1.000000000000000e+00
+NODE 12 COORD -1.602146996985069e+01 9.250000000279597e+00 0.000000000000000e+00
+NODE 13 COORD -1.237436867076458e+01 1.237436867076458e+01 1.000000000000000e+00
+NODE 14 COORD -1.237436867076458e+01 1.237436867076458e+01 0.000000000000000e+00
+NODE 15 COORD -1.308147545195113e+01 1.308147545195113e+01 1.000000000000000e+00
+NODE 16 COORD -1.308147545195113e+01 1.308147545195113e+01 0.000000000000000e+00
+NODE 17 COORD -8.750000000042895e+00 1.515544456620291e+01 1.000000000000000e+00
+NODE 18 COORD -8.750000000042895e+00 1.515544456620291e+01 0.000000000000000e+00
+NODE 19 COORD -9.250000000045345e+00 1.602146996998593e+01 1.000000000000000e+00
+NODE 20 COORD -9.250000000045345e+00 1.602146996998593e+01 0.000000000000000e+00
+NODE 21 COORD -4.529333291558869e+00 1.690370195945185e+01 1.000000000000000e+00
+NODE 22 COORD -4.529333291558869e+00 1.690370195945185e+01 0.000000000000000e+00
+NODE 23 COORD -4.788152336790803e+00 1.786962778570625e+01 1.000000000000000e+00
+NODE 24 COORD -4.788152336790803e+00 1.786962778570625e+01 0.000000000000000e+00
+NODE 25 COORD 1.071530559594580e-15 1.750000000000000e+01 1.000000000000000e+00
+NODE 26 COORD 1.071530559594580e-15 1.750000000000000e+01 0.000000000000000e+00
+NODE 27 COORD 1.132760877285699e-15 1.850000000000000e+01 1.000000000000000e+00
+NODE 28 COORD 1.132760877285699e-15 1.850000000000000e+01 0.000000000000000e+00
+NODE 29 COORD 4.529333291801694e+00 1.690370195938679e+01 1.000000000000000e+00
+NODE 30 COORD 4.529333291801694e+00 1.690370195938679e+01 0.000000000000000e+00
+NODE 31 COORD 4.788152337047502e+00 1.786962778563747e+01 1.000000000000000e+00
+NODE 32 COORD 4.788152337047502e+00 1.786962778563747e+01 0.000000000000000e+00
+NODE 33 COORD 8.750000000264487e+00 1.515544456607497e+01 1.000000000000000e+00
+NODE 34 COORD 8.750000000264487e+00 1.515544456607497e+01 0.000000000000000e+00
+NODE 35 COORD 9.250000000279599e+00 1.602146996985069e+01 1.000000000000000e+00
+NODE 36 COORD 9.250000000279599e+00 1.602146996985069e+01 0.000000000000000e+00
+NODE 37 COORD 1.237436867076458e+01 1.237436867076458e+01 1.000000000000000e+00
+NODE 38 COORD 1.237436867076458e+01 1.237436867076458e+01 0.000000000000000e+00
+NODE 39 COORD 1.308147545195113e+01 1.308147545195113e+01 1.000000000000000e+00
+NODE 40 COORD 1.308147545195113e+01 1.308147545195113e+01 0.000000000000000e+00
+NODE 41 COORD 1.515544456620291e+01 8.750000000042897e+00 1.000000000000000e+00
+NODE 42 COORD 1.515544456620291e+01 8.750000000042897e+00 0.000000000000000e+00
+NODE 43 COORD 1.690370195945186e+01 4.529333291558871e+00 1.000000000000000e+00
+NODE 44 COORD 1.690370195945186e+01 4.529333291558871e+00 0.000000000000000e+00
+NODE 45 COORD 1.602146996998593e+01 9.250000000045345e+00 1.000000000000000e+00
+NODE 46 COORD 1.602146996998593e+01 9.250000000045345e+00 0.000000000000000e+00
+NODE 47 COORD 1.750000000000000e+01 0.000000000000000e+00 1.000000000000000e+00
+NODE 48 COORD 1.750000000000000e+01 0.000000000000000e+00 0.000000000000000e+00
+NODE 49 COORD 1.786962778570625e+01 4.788152336790805e+00 1.000000000000000e+00
+NODE 50 COORD 1.786962778570625e+01 4.788152336790805e+00 0.000000000000000e+00
+NODE 51 COORD 1.850000000000000e+01 0.000000000000000e+00 1.000000000000000e+00
+NODE 52 COORD 1.850000000000000e+01 0.000000000000000e+00 0.000000000000000e+00
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 43 49 51 47 44 50 52 48 MAT 1 KINEM nonlinear EAS none
+2 SOLIDH8 HEX8 41 45 49 43 42 46 50 44 MAT 1 KINEM nonlinear EAS none
+3 SOLIDH8 HEX8 37 39 45 41 38 40 46 42 MAT 1 KINEM nonlinear EAS none
+4 SOLIDH8 HEX8 33 35 39 37 34 36 40 38 MAT 1 KINEM nonlinear EAS none
+5 SOLIDH8 HEX8 29 31 35 33 30 32 36 34 MAT 1 KINEM nonlinear EAS none
+6 SOLIDH8 HEX8 25 27 31 29 26 28 32 30 MAT 1 KINEM nonlinear EAS none
+7 SOLIDH8 HEX8 21 23 27 25 22 24 28 26 MAT 2 KINEM nonlinear EAS none
+8 SOLIDH8 HEX8 17 19 23 21 18 20 24 22 MAT 2 KINEM nonlinear EAS none
+9 SOLIDH8 HEX8 13 15 19 17 14 16 20 18 MAT 2 KINEM nonlinear EAS none
+10 SOLIDH8 HEX8 9 11 15 13 10 12 16 14 MAT 2 KINEM nonlinear EAS none
+11 SOLIDH8 HEX8 5 6 11 9 7 8 12 10 MAT 2 KINEM nonlinear EAS none
+12 SOLIDH8 HEX8 3 1 6 5 4 2 8 7 MAT 2 KINEM nonlinear EAS none
+--------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------------------ALE ELEMENTS
+----------------------------------------------------------TRANSPORT ELEMENTS
+-------------------------------------------------------------------MATERIALS
+// too stiff and too soft (measured)
+//MAT 1 MAT_Struct_AAANeoHooke YOUNG 5.22E5 BETA 9.405E5 NUE 0.49 DENS 0.001
+//MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.566E6 BETA 2.8215E6 NUE 0.49 DENS 0.001
+// standard AAA material parameters
+MAT 1 MAT_Struct_AAANeoHooke YOUNG {youngs1} BETA {beta} NUE {nue} DENS 0.001
+MAT 2 MAT_Struct_AAANeoHooke YOUNG 0.8E6 BETA {beta} NUE {nue} DENS 0.001
+
+// fitted with neohooke, works quite well
+//MAT 1 MAT_Struct_NeoHooke YOUNG 2.73974e+06 NUE 6.18385e-02 DENS 0.001
+//MAT 2 MAT_Struct_NeoHooke YOUNG 4.21548e+06 NUE 3.78712e-01 DENS 0.001
+
+//MAT 1 MAT_ElastHyper NUMMAT 2 MATIDS 20 21 DENS 0.001
+//MAT 20 ELAST_IsoYeoh C1 1.74E5 C2 1.881E6 C3 0.0
+//MAT 21 ELAST_VolOgden KAPPA 17.4E6 BETA -2.0
+
+//MAT 2 MAT_ElastHyper NUMMAT 2 MATIDS 30 31 DENS 0.001
+//MAT 30 ELAST_IsoYeoh C1 1.74E5 C2 1.881E6 C3 0.0
+//MAT 31 ELAST_VolOgden KAPPA 17.4E6 BETA -2.0
+----------------------------------------------------------------------FUNCT1
+COMPONENT 0 FUNCTION a
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 23000 VALUES 0.0 {pressure} {pressure}
+----------------------------------------------------------------------FUNCT2
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------------------FUNCT5
+----------------------------------------------------------------------FUNCT6
+-------------------------------------------------------------------------END
+//                              END
