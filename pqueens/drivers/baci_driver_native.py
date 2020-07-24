@@ -1,4 +1,3 @@
-import logging
 import os
 from pqueens.drivers.driver import Driver
 from pqueens.utils.run_subprocess import run_subprocess
@@ -70,24 +69,6 @@ class BaciDriverNative(Driver):
             None
 
         """
-        # configure and set up logger for baci job logging
-        loggername = __name__ + f'{self.job_id}'
-        joblogger = logging.getLogger(loggername)
-        fh = logging.FileHandler(self.output_file + "_subprocess_stdout.txt", mode='w', delay=False)
-        fh.setLevel(logging.INFO)
-        fh.terminator = ''
-        efh = logging.FileHandler(
-            self.output_file + "_subprocess_stderr.txt", mode='w', delay=False
-        )
-        efh.setLevel(logging.ERROR)
-        efh.terminator = ''
-        ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        fh.setFormatter(ff)
-        efh.setFormatter(ff)
-        joblogger.addHandler(fh)
-        joblogger.addHandler(efh)
-        joblogger.setLevel(logging.INFO)
-
         # decide whether jobscript-based run or direct run
         if self.scheduler_type == 'local_pbs' or self.scheduler_type == 'local_slurm':
             # set options for jobscript
@@ -135,13 +116,8 @@ class BaciDriverNative(Driver):
             command_list = [scheduler_start, submission_script_path]
             command_string = ' '.join(command_list)
 
-            # submit job
-            returncode, self.pid = run_subprocess(
-                command_string,
-                subprocess_type='simulation',
-                terminate_expr='PROC.*ERROR',
-                loggername=loggername,
-            )
+            # submit and run job
+            returncode, self.pid, stdout, stderr = run_subprocess(command_string)
 
             # save path to control file and number of processes to database
             self.job['control_file_path'] = self.control_file
@@ -162,12 +138,13 @@ class BaciDriverNative(Driver):
             # assemble command string for direct run
             command_string = self.assemble_direct_run_command_string()
 
-            # run BACI command_string
-            returncode, self.pid = run_subprocess(
+            # run BACI via subprocess
+            returncode, self.pid, _, _ = run_subprocess(
                 command_string,
                 subprocess_type='simulation',
                 terminate_expr='PROC.*ERROR',
-                loggername=loggername,
+                loggername=__name__ + f'_{self.job_id}',
+                output_file=self.output_file
             )
 
         # detection of failed jobs

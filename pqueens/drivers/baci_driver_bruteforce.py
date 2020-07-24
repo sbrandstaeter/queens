@@ -1,6 +1,5 @@
 import os
 from pqueens.drivers.driver import Driver
-import logging
 from pqueens.utils.run_subprocess import run_subprocess
 
 
@@ -91,29 +90,18 @@ class BaciDriverBruteforce(Driver):
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
 
-        # configure and initiate logger for baci job
-        loggername = __name__ + f'{self.job_id}'
-        joblogger = logging.getLogger(loggername)
-        fh = logging.FileHandler(self.output_file + "_BACI_stdout.txt", mode='w', delay=False)
-        fh.setLevel(logging.INFO)
-        fh.terminator = ''
-        efh = logging.FileHandler(self.output_file + "_BACI_stderr.txt", mode='w', delay=False)
-        efh.setLevel(logging.ERROR)
-        efh.terminator = ''
-        ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        fh.setFormatter(ff)
-        efh.setFormatter(ff)
-        joblogger.addHandler(fh)
-        joblogger.addHandler(efh)
-        joblogger.setLevel(logging.INFO)
-
         # Call BACI
-        returncode, self.pid = run_subprocess(
-            command_string,
-            subprocess_type='simulation',
-            terminate_expr='PROC.*ERROR',
-            loggername=loggername,
-        )
+        returncode, self.pid, stdout, stderr = run_subprocess(command_string)
+        # Print the stderr of BACI call to slurm file (SLURM_{SLURM_ID}.txt)
+        print(stderr)
+        # Print the stdout of BACI call to slurm file (SLURM_{SLURM_ID}.txt)
+        print(stdout)
+        # Print the stderr of BACI to a separate file in the output directory
+        with open(self.output_file + "_BACI_stderr.txt", "a") as text_file:
+            print(stderr, file=text_file)
+        # Print the stdout of BACI to a separate file in the output directory
+        with open(self.output_file + "_BACI_stdout.txt", "a") as text_file:
+            print(stdout, file=text_file)
 
         if returncode:
             self.result = None  # This is necessary to detect failed jobs

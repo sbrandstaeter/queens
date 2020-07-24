@@ -640,6 +640,13 @@ class Scheduler(metaclass=abc.ABCMeta):
             hasher.update(data)
         hashlist.append(hasher.hexdigest())
 
+        rel_path = '../utils/run_subprocess.py'
+        abs_path = os.path.join(script_dir, rel_path)
+        with open(abs_path, 'rb') as inputfile:
+            data = inputfile.read()
+            hasher.update(data)
+        hashlist.append(hasher.hexdigest())
+
         # hash setup_remote
         rel_path = '../../setup_remote.py'
         abs_path = os.path.join(script_dir, rel_path)
@@ -974,7 +981,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             # definition 'docker-qstdoutueens', if existent
             new_task_definition_required = False
             cmd = 'aws ecs describe-task-definition --task-definition docker-queens'
-            stdout, stderr, _ = run_subprocess(cmd)
+            _, _, stdout, stderr = run_subprocess(cmd)
 
             # new task definition required, since definition 'docker-queens' is not existent
             if stderr:
@@ -1016,7 +1023,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                 ]
                 cmd = ''.join(cmdlist)
 
-                _, stderr, _ = run_subprocess(cmd)
+                _, _, _, stderr= run_subprocess(cmd)
                 if stderr:
                     raise RuntimeError(
                         "\nThe task definition could not be registered properly!"
@@ -1059,7 +1066,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         cmdlist_remote_main = ['/usr/bin/singularity run', local_singularity_path, remote_args]
         cmd_remote_main = ' '.join(cmdlist_remote_main)
 
-        _, pid = run_subprocess(cmd_remote_main, subprocess_type='submit')
+        _, pid, _, _ = run_subprocess(cmd_remote_main, subprocess_type='submit')
 
         return pid
 

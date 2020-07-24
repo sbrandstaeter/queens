@@ -10,16 +10,20 @@ import io
 
 def run_subprocess(command_string, **kwargs):
     """
-    Run a system command outside of the Python script and log errors and
-    stdout-return
+    Run a system command outside of the Python script. different implementations dependent on
+    subprocess_type
+
     Args:
         command_string (str): Command string that should be run outside of Python
         subprocess_type (str): subprocess_type of run_subprocess from utils
         loggername (str): loggername for logging module
         terminate_expr (str): regex to search in sdtout on which subprocess will terminate
+        output_file (str): output directory + filename-stem to write logfiles
     Returns:
         process_returncode (int): code for execution success of subprocess
         process_id (int): process id that was assigned to process
+        stdout (str): standard output content
+        stderr (str): standard error content
 
     """
 
@@ -35,12 +39,11 @@ def run_subprocess(command_string, **kwargs):
 
 def _get_subprocess(subprocess_type):
     """
-        Chose subprocess implementation by subprocess_type
-        Args:
-            subprocess_type (str): subprocess_type of run_subprocess
-        Returns:
-            function object (obj): function object for implementation type of run_subprocess from
-                                    utils
+    Choose subprocess implementation by subprocess_type
+    Args:
+        subprocess_type (str): subprocess_type of run_subprocess
+    Returns:
+        function object (obj): function object for implementation type of run_subprocess from utils
 
     """
 
@@ -89,13 +92,39 @@ def _run_subprocess_simulation(command_string, **kwargs):
             command_string (str): command, that will be run in subprocess
             terminate_expr (str): regular expression to terminate subprocess
             logger (str): logger name to write to. Should be configured previously
+            output_file (str): output directory + filename-stem to write logfiles
         Returns:
             process_returncode (int): code for success of subprocess
             process_id (int): unique process id, the subprocess was assigned on computing machine
+            stdout (str): always None
+            stderr (str): standard error content
 
     """
     logger = kwargs.get('loggername')
     terminate_expr = kwargs.get('terminate_expr')
+    output_file = kwargs.get('output_file')
+
+    joblogger = logging.getLogger(logger)
+
+    ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    joblogger.setLevel(logging.INFO)
+
+    # job logger configuration. This python code is run in parallel for cluster runs with
+    # singularity, so each processor logs his own file
+    fh = logging.FileHandler(
+        output_file + '_subprocess_stdout.txt', mode='w', delay=False
+    )
+    fh.setLevel(logging.INFO)
+    fh.terminator = ''
+    efh = logging.FileHandler(
+        output_file + '_subprocess_stderr.txt', mode='w', delay=False
+    )
+    efh.setLevel(logging.ERROR)
+    efh.terminator = ''
+    fh.setFormatter(ff)
+    efh.setFormatter(ff)
+    joblogger.addHandler(fh)
+    joblogger.addHandler(efh)
 
     joblogger = logging.getLogger(logger)
     process = subprocess.Popen(
@@ -106,6 +135,8 @@ def _run_subprocess_simulation(command_string, **kwargs):
         shell=True,
         universal_newlines=True,
     )
+
+    #actual logging
     joblogger.info('run_subprocess started with:\n')
     joblogger.info(command_string + '\n')
     for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
@@ -130,7 +161,7 @@ def _run_subprocess_simulation(command_string, **kwargs):
                 joblogger.warning('run_subprocess detected terminate expression:\n')
                 joblogger.error(line)
                 # give program the chance to terminate by itself, because terminate expression
-                # will be found also if program terminates correctly
+                # will be found also if program terminates itself properly
                 time.sleep(2)
                 if process.poll() is None:
                     # log terminate command
@@ -144,7 +175,11 @@ def _run_subprocess_simulation(command_string, **kwargs):
     process_id = process.pid
     process_returncode = process.returncode
 
-    return process_returncode, process_id
+    # stdout should be empty. nevertheless None is returned by default to keep the interface to
+    # run_subprocess consistent.
+    stdout = None
+
+    return process_returncode, process_id, stdout, stderr
 
 
 def _run_subprocess_submit_job(command_string, **kwargs):
@@ -157,6 +192,8 @@ def _run_subprocess_submit_job(command_string, **kwargs):
             process_returncode (int): always None here. this function does not wait for
                                         subprocess to finish.
             process_id (int): unique process id, the subprocess was assigned on computing machine
+            stdout (str): always None
+            stderr (str): always None
 
     """
 
@@ -173,4 +210,9 @@ def _run_subprocess_submit_job(command_string, **kwargs):
     # to keep the interface for run_subprocess consistent first return value is None (as it would
     # be, when you just submit the subprocess and not wait)
     process_returncode = None
-    return process_returncode, process_id
+
+    # stdout and stderr cannot be written in this state. nevertheless None is returned by default.
+    stdout = None
+    stderr = None
+
+    return process_returncode, process_id, stdout, stderr

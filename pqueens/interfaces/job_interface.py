@@ -578,7 +578,7 @@ class JobInterface(Interface):
                             current_check_job['aws_arn'],
                         ]
                         cmd = ''.join(filter(None, command_list))
-                        stdout, stderr, _ = run_subprocess(cmd)
+                        _, _, stdout, stderr= run_subprocess(cmd)
                         if stderr:
                             current_check_job['status'] = 'failed'
                         status_str = aws_extract("lastStatus", stdout)
