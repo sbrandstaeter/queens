@@ -85,6 +85,7 @@ documentation:
   except:
     refs:
       - master
+      - web
 
 docker_python_test_suite_develop:
   extends:
@@ -106,6 +107,7 @@ centos_python_test_suite_develop:
   except:
     refs:
       - master
+      - web
 
 centos_baci_test_suite_develop:
   extends:
