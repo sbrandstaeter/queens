@@ -53,7 +53,10 @@ class Driver(metaclass=abc.ABCMeta):
     def __init__(self, base_settings):
         self.simulation_input_template = base_settings['simulation_input_template']
         # TODO MongoDB object should be passed to init not created within
-        self.database = MongoDB(database_address=base_settings['address'])
+        self.database = MongoDB(
+            database_name_final=base_settings['experiment_name'],
+            database_address=base_settings['address'],
+        )
         self.scheduler_type = base_settings['scheduler_type']
         self.cluster_script = base_settings['cluster_script']
         self.output_file = base_settings['output_file']
