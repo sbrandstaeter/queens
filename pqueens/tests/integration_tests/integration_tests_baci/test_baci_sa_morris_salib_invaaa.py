@@ -5,6 +5,7 @@ simulations with BACI using the INVAAA minimal model.
 import os
 import numpy as np
 import pickle
+import matplotlib.pyplot as plt
 from pqueens.main import main
 from pqueens.utils import injector
 
@@ -53,6 +54,8 @@ def test_baci_morris_salib(
     result_file = os.path.join(tmpdir, 'ee_invaaa_local.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
+
+    # test results of SA analysis
     np.testing.assert_allclose(
         results["sensitivity_indices"]["mu"],
         np.array([-1.361395,  0.836351]),
@@ -73,3 +76,18 @@ def test_baci_morris_salib(
         np.array([0.11853, 0.146817]),
         rtol=1.0e-3,
     )
+
+    # test if figure is shown
+    # TODO: this should be tested more intensely after plotting capabilities are moved to
+    #  visualization tool
+    num_figure = plt.gcf().number
+    assert num_figure == 1
+
+    # test if figure was saved
+    figure_path = os.path.join(tmpdir, 'ee_invaaa_local_result.png')
+    assert os.path.isfile(figure_path)
+
+
+
+
+
