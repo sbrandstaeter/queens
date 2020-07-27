@@ -287,7 +287,15 @@ before the make command.
 
 [↑ Contents](#contents)
 ## Run the test suite
-QUEENS has a couple of unit and regression test.
+QUEENS has a couple of **unittests** and **integration test** which can be found under
+ `<QUEENS_BaseDir>/pqueens/tests`.
+In order to run local integration tests together with `BACI`, it is necessary that the user creates
+**symbolic links** to the `BACI-executables`, which are then stored under
+`<QUEENS_BaseDir>/config`. The links can be created by running the following commands:
+```
+ln -s <your/path/to/baci-release> <QUEENS_BaseDir>/config/baci-release
+ln -s <your/path/to/post_drt_monitor> <QUEENS_BaseDir>/config/post_drt_monitor
+```
 The testing strategy is more closely described in [TESTING.md](TESTING.md) 
 To run the test suite type:
 ```bash  

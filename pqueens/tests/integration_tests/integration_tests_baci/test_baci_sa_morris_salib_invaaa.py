@@ -31,7 +31,12 @@ def test_baci_morris_salib(
             raise FileNotFoundError(
                 'No working baci-release or post_drt_monitor could be found! '
                 'Make sure an appropriate symbolic link is made available '
-                'under the config directory! Abort...'
+                'under the config directory! \n'
+                'You can create the symbolic links on Linux via:\n'
+                '-------------------------------------------------------------------------\n'
+                'ln -s <path/to/baci-release> <QUEENS_BaseDir>/config/baci-release\n'
+                'ln -s <path/to/post_drt_monitor> <QUEENS_BaseDir>/config/post_drt_monitor\n'
+                '-------------------------------------------------------------------------\n'
             )
 
     dir_dict = {
