@@ -98,7 +98,7 @@ centos_full_test_suite_develop:
   script:
     - cd pqueens/
     - /usr/bin/singularity --version
-    - sudo /usr/bin/singularity build ../driver.simg ../singularity_recipe
+    - /usr/bin/singularity build --fakeroot ../driver.simg ../singularity_recipe
     - cd ../
     - pytest
 #----------------------------------------------------------------------------------------------
