@@ -50,21 +50,21 @@ def test_baci_morris_salib(
         results = pickle.load(handle)
     np.testing.assert_allclose(
         results["sensitivity_indices"]["mu"],
-        np.array([-0.294384, -1.255711, -0.324267, 0.963429]),
+        np.array([-1.361395,  0.836351]),
         rtol=1.0e-3,
     )
     np.testing.assert_allclose(
         results["sensitivity_indices"]["mu_star"],
-        np.array([0.294384, 1.255711, 0.324267, 0.963429]),
+        np.array([1.361395, 0.836351]),
         rtol=1.0e-3,
     )
     np.testing.assert_allclose(
         results["sensitivity_indices"]["sigma"],
-        np.array([0.04812, 0.125748, 0.039385, 0.14809]),
+        np.array([0.198629, 0.198629]),
         rtol=1.0e-3,
     )
     np.testing.assert_allclose(
         results["sensitivity_indices"]["mu_star_conf"],
-        np.array([0.024414, 0.069575, 0.025782, 0.087494]),
+        np.array([0.11853, 0.146817]),
         rtol=1.0e-3,
     )
