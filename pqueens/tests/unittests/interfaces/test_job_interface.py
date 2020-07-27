@@ -54,8 +54,10 @@ class TestJobInterface(unittest.TestCase):
     @mock.patch.multiple(
         'pqueens.database.mongodb.MongoDB',
         __init__=mock.Mock(return_value=None),
+        print_database_information=mock.DEFAULT,
         load=mock.DEFAULT,
         save=mock.DEFAULT,
+        remove=mock.DEFAULT,
     )
     def test_construction(self, **mocks):
         interface = Interface.from_config_create_interface('test_interface', self.config)
