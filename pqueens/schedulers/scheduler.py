@@ -3,7 +3,6 @@ try:
 except ImportError:
     import json
 import abc
-import hashlib
 import os
 import os.path
 import random
@@ -19,6 +18,7 @@ from pqueens.utils.aws_output_string_extractor import aws_extract
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
+from pqueens.utils.hash_singularity_files import hash_files
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -559,9 +559,6 @@ class Scheduler(metaclass=abc.ABCMeta):
              None
 
         """
-
-        # create hash for files in image
-        self.hash_files('hashing')
         # create the actual image
         command_string = '/usr/bin/singularity --version'
         _, _, _, stderr = run_subprocess(command_string)
@@ -593,92 +590,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                 '----------------------------------------------------------------------------------'
             )
             print(f'The returned error message was: {stderr}, {stdout}')
-            raise RuntimeError
-
-    def hash_files(self, mode=None):
-        """
-        Hash all files that are used in the singularity image anc check if some files were changed.
-        This is important to keep the singularity image always up to date with the code base
-
-        Args:
-            mode (str): (Arbitrary) string that determines whether files are checked for a hash or
-                        a new has is generated. When mode is set, a new hashfile is written out.
-
-        Returns:
-            None
-
-        """
-        hashlist = []
-        hasher = hashlib.md5()
-        # hash all drivers
-        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = "../drivers"
-        abs_path = os.path.join(script_dir, rel_path)
-        elements = os.listdir(abs_path)
-        filenames = [
-            os.path.join(abs_path, ele) for _, ele in enumerate(elements) if ele.endswith('.py')
-        ]
-        for filename in filenames:
-            with open(filename, 'rb') as inputfile:
-                data = inputfile.read()
-                hasher.update(data)
-            hashlist.append(hasher.hexdigest())
-
-        # hash mongodb
-        rel_path = "../database/mongodb.py"
-        abs_path = os.path.join(script_dir, rel_path)
-        with open(abs_path, 'rb') as inputfile:
-            data = inputfile.read()
-            hasher.update(data)
-        hashlist.append(hasher.hexdigest())
-
-        # hash utils
-        rel_path = '../utils/injector.py'
-        abs_path = os.path.join(script_dir, rel_path)
-        with open(abs_path, 'rb') as inputfile:
-            data = inputfile.read()
-            hasher.update(data)
-        hashlist.append(hasher.hexdigest())
-
-        rel_path = '../utils/run_subprocess.py'
-        abs_path = os.path.join(script_dir, rel_path)
-        with open(abs_path, 'rb') as inputfile:
-            data = inputfile.read()
-            hasher.update(data)
-        hashlist.append(hasher.hexdigest())
-
-        # hash setup_remote
-        rel_path = '../../setup_remote.py'
-        abs_path = os.path.join(script_dir, rel_path)
-        with open(abs_path, 'rb') as inputfile:
-            data = inputfile.read()
-            hasher.update(data)
-        hashlist.append(hasher.hexdigest())
-
-        # hash remote_main
-        rel_path = '../remote_main.py'
-        abs_path = os.path.join(script_dir, rel_path)
-        with open(abs_path, 'rb') as inputfile:
-            data = inputfile.read()
-            hasher.update(data)
-        hashlist.append(hasher.hexdigest())
-
-        # hash postpost files
-        rel_path = '../post_post/post_post.py'
-        abs_path = os.path.join(script_dir, rel_path)
-        with open(abs_path, 'rb') as inputfile:
-            data = inputfile.read()
-            hasher.update(data)
-        hashlist.append(hasher.hexdigest())
-        # write hash list to a file in utils directory
-        if mode is not None:
-            rel_path = '../../hashfile.txt'
-            abs_path = os.path.join(script_dir, rel_path)
-            with open(abs_path, 'w') as myfile:
-                for item in hashlist:
-                    myfile.write("%s" % item)
-        else:
-            return hashlist
+            raise RuntimeError(f'The returned error message was: {stderr}, {stdout}')
 
     def prepare_singularity_files(self):
         """
@@ -697,13 +609,21 @@ class Scheduler(metaclass=abc.ABCMeta):
         abs_path = os.path.join(script_dir, rel_path)
         if os.path.isfile(abs_path):
             # check singularity status local
-            rel_path = '../../hashfile.txt'
-            abs_path = os.path.join(script_dir, rel_path)
-            with open(abs_path, 'r') as oldhash:
-                old_data = oldhash.read()
-            hashlist = self.hash_files()
+            command_list = ['/usr/bin/singularity', 'run', abs_path, '--hash=true']
+            command_string = ' '.join(command_list)
+            _, _, old_data, stderr = run_subprocess(command_string)
+
+            if stderr:
+                raise RuntimeError(f'Singularity hash-check return the error: {stderr}. Abort...')
+
+            hashlist = hash_files()
             # Write local singularity image and remote image
-            if old_data != ''.join(hashlist):
+            # convert the string that is returned from the singularity image into a list
+            old_data = [ele.replace("\'", "") for ele in old_data.strip('][').split(', ')]
+            old_data = [ele.replace("]", "") for ele in old_data]
+            old_data = [ele.replace("\n", "") for ele in old_data]
+
+            if ''.join(old_data) != ''.join(hashlist):
                 print(
                     "Local singularity image is not up-to-date with QUEENS! "
                     "Writing new local image..."

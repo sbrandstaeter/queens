@@ -29,9 +29,8 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
         self.loc = np.array([[0, 0], [0, 10], [10, 0], [0, 25], [25, 0], [0, 100], [100, 0]])
         self.seed = 42
 
-        # pylint: disable:line-too-long
+        # pylint: disable=line-too-long
         self.my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-            # pylint: enable: line-too-long
             marg_pdf=self.marginal_pdf,
             spatial_dimension=self.dimension,
             corrstruct=self.corrstruct,
@@ -41,6 +40,7 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
             num_terms_per_dim=self.num_terms_per_dim,
             total_terms=self.total_terms,
         )
+        # pylint: enable=line-too-long
 
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
 

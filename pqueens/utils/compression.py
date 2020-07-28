@@ -32,7 +32,7 @@ def decompress_array(a):
     Returns:
         (np.array) uncompressed np.array
     """
-    return np.fromstring(zlib.decompress(base64.b64decode(a['value']))).reshape(a['shape'])
+    return np.frombuffer(zlib.decompress(base64.b64decode(a['value']))).reshape(a['shape'])
 
 
 def compress_nested_container(u_container):

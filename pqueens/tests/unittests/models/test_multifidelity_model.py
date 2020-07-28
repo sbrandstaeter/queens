@@ -23,11 +23,13 @@ class TestMultiFidelityModel(unittest.TestCase):
             "lofi_borehole": {"type": "simulation_model", "interface": "interface_lofi"},
             "interface_lofi": {
                 "type": "direct_python_interface",
-                "main_file": "/Users/jonas/work/adco/queens_code/pqueens/pqueens/example_simulator_functions/borehole_hifi.py",
+                "main_file": "/Users/jonas/work/adco/queens_code/pqueens/pqueens/"
+                "example_simulator_functions/borehole_hifi.py",
             },
             "interface_hifi": {
                 "type": "direct_python_interface",
-                "main_file": "/Users/jonas/work/adco/queens_code/pqueens/pqueens/example_simulator_functions/borehole_hifi.py",
+                "main_file": "/Users/jonas/work/adco/queens_code/pqueens/pqueens/"
+                "example_simulator_functions/borehole_hifi.py",
             },
         }
 

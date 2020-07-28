@@ -32,3 +32,6 @@ hashfile.txt
 
 # ignore egg package files
 .eggs/
+
+# ignore config folder 
+config/
