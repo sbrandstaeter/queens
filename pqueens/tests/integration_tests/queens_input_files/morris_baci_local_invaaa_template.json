@@ -13,7 +13,7 @@
             "confidence_level": 0.95,
             "local_optimization": "True",
             "num_bootstrap_samples": 15,
-            "result_description": {"write_results": true, "plot_results": true}
+            "result_description": {"write_results": true, "plot_results": false}
         }
     },
     "model": {"type": "simulation_model", "interface": "interface", "parameters": "parameters"},

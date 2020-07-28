@@ -141,13 +141,3 @@ def test_baci_morris_salib(
     np.testing.assert_allclose(
         results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3,
     )
-
-    # test if figure is shown
-    # TODO: this should be tested more intensely after plotting capabilities are moved to
-    #  visualization tool
-    num_figure = plt.gcf().number
-    assert type(num_figure) == int, "No figure was constructed"
-
-    # test if figure was saved
-    figure_path = os.path.join(tmpdir, 'ee_invaaa_local_result.png')
-    assert os.path.isfile(figure_path), "No saved image could be found!"
