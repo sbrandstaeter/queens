@@ -18,6 +18,7 @@ except ImportError:
 import sys
 
 from pqueens.drivers.driver import Driver
+from pqueens.utils.hash_singularity_files import hash_files
 
 
 def main(args):
@@ -43,6 +44,8 @@ def main(args):
     parser.add_argument("--path_json", help="system path to temporary json file", type=str)
     parser.add_argument("--post", help="option for postprocessing", type=str)
     parser.add_argument("--workdir", help="working directory", type=str)
+    parser.add_argument("--hash", help="Boolean that specifies whether the main run should return "
+                                       "the hash of all copied QUEENS files")
 
     args = parser.parse_args(args)
     job_id = args.job_id
@@ -51,8 +54,14 @@ def main(args):
     path_json = args.path_json
     post = args.post
     workdir = args.workdir
+    hash = args.hash
 
-    if port == "000":
+    # return hash of QUEENS files in singularity image
+    if hash == 'true':
+        hashlist = hash_files()
+        print(hashlist)
+
+    elif port == "000":
         try:
             with open(path_json, 'r') as myfile:
                 config = json.load(myfile, object_pairs_hook=OrderedDict)

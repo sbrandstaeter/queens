@@ -2,7 +2,13 @@ BootStrap: docker
 From: centos:7
 
 %help
-This is a singularity container containing CentOS7 and Python 3.7 as well as necessary QUEENS dependencies (Python packages) to run the latter on a HPC cluster. Central elements are a copy of the Drivers class and the main_remote.py file. This container version uses the MPI environment and 3rd library packages of the host! Therefore it assumes that a working executable (e.g. BACI) is already available on the cluster. The advantage of this layout is that that we are always up-to-date with the cluster infrastructure and just mount important directories and copy system variables at runtime.
+This is a singularity container containing CentOS7 and Python 3.7 as well as necessary QUEENS
+dependencies (Python packages) to run the latter on a HPC cluster. Central elements are a copy
+of the Drivers class and the main_remote.py file. This container version uses the MPI environment
+and 3rd library packages of the host! Therefore it assumes that a working executable (e.g. BACI) is
+already available on the cluster. The advantage of this layout is that that we are always
+up-to-date with the cluster infrastructure and just mount important directories and copy system
+variables at runtime.
 
 %files
   ../pqueens /
@@ -14,7 +20,7 @@ This is a singularity container containing CentOS7 and Python 3.7 as well as nec
 
 %labels
   Maintainer Jonas Nitzler
-  Date 23.08.2019
+  Date 27.07.2020
 
 %post
   yum install -y wget
