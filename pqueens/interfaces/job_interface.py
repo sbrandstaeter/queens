@@ -399,8 +399,6 @@ class JobInterface(Interface):
 
         output['mean'] = np.array(mean_values)
 
-        self.remove_jobs()
-
         return output
 
     # -------------private helper methods ---------------- #
