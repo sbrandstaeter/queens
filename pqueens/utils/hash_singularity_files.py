@@ -18,6 +18,7 @@ def hash_files():
     rel_path = "../drivers"
     abs_path = os.path.join(script_dir, rel_path)
     elements = os.listdir(abs_path)
+    elements.sort()
     filenames = [
         os.path.join(abs_path, ele) for _, ele in enumerate(elements) if ele.endswith('.py')
     ]
