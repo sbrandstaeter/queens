@@ -75,6 +75,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.experiment_dir = base_settings['experiment_dir']
         self.input_file = None
         self.input_dic_1 = None
+        self.direct_scheduling = base_settings['direct_scheduling']
 
     @classmethod
     def from_config_create_driver(
@@ -142,6 +143,14 @@ class Driver(metaclass=abc.ABCMeta):
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
         base_settings['scheduler_type'] = config[scheduler_name]['scheduler_type']
+        if (
+            base_settings['scheduler_type'] == 'ecs_task'
+            or base_settings['scheduler_type'] == 'local_pbs'
+            or base_settings['scheduler_type'] == 'local_slurm'
+        ):
+            base_settings['direct_scheduling'] = True
+        else:
+            base_settings['direct_scheduling'] = False
         if 'cluster_script' in config[scheduler_name]:
             base_settings['cluster_script'] = config[scheduler_name]['cluster_script']
         else:
@@ -291,11 +300,7 @@ class Driver(metaclass=abc.ABCMeta):
         if self.result is None:
             self.job['result'] = None  # TODO: maybe we should better use a pandas format here
             self.job['status'] = 'failed'
-            if (
-                self.scheduler_type != 'ecs_task'
-                and self.scheduler_type != 'local_pbs'
-                and self.scheduler_type != 'local_slurm'
-            ):
+            if not self.direct_scheduling:
                 self.job['end time'] = time.time()
             self.database.save(
                 self.job,
@@ -311,12 +316,7 @@ class Driver(metaclass=abc.ABCMeta):
         else:
             self.job['result'] = self.result
             self.job['status'] = 'complete'
-            if (
-                self.job['start time'] is not None
-                and self.scheduler_type != 'ecs_task'
-                and self.scheduler_type != 'local_pbs'
-                and self.scheduler_type != 'local_slurm'
-            ):
+            if self.job['start time'] is not None and not self.direct_scheduling:
                 self.job['end time'] = time.time()
                 computing_time = self.job['end time'] - self.job['start time']
                 sys.stdout.write(
@@ -345,11 +345,7 @@ class Driver(metaclass=abc.ABCMeta):
             None
 
         """
-        if (
-            self.scheduler_type != 'ecs_task'
-            and self.scheduler_type != 'local_pbs'
-            and self.scheduler_type != 'local_slurm'
-        ) or (self.post_options is not None):
+        if (not self.direct_scheduling) or (self.post_options is not None):
             # TODO maybe move to child-class due to specific form (e.g. .dat)
             # TODO the definition of output file and scratch seems redunant as this is already
             # defined in the child class;
