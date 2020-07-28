@@ -107,6 +107,10 @@ class JobInterface(Interface):
         # get experiment name
         experiment_name = config['global_settings']['experiment_name']
 
+        restart_from_finished_simulation = config['driver']['driver_params'].get(
+            'restart_from_finished_simulation', False
+        )
+
         # establish new database for this QUEENS run and
         # potentially drop other databases
         db = MongoDB(
@@ -116,15 +120,16 @@ class JobInterface(Interface):
         )
 
         # print out database information
-        db.print_database_information(database_address=db_address, drop_existing_db=drop_existing)
+        db.print_database_information(
+            database_address=db_address,
+            drop_existing_db=drop_existing,
+            restart=restart_from_finished_simulation,
+        )
 
         polling_time = config.get('polling-time', 1)
 
         # TODO: This is not nice -> should be solved solemnly over Driver class
         output_dir = config['driver']['driver_params']["experiment_dir"]
-        restart_from_finished_simulation = config['driver']['driver_params'].get(
-            'restart_from_finished_simulation', False
-        )
 
         # TODO: This is not nice
         connect = list(resources.values())[0].scheduler.connect_to_resource
