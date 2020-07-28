@@ -1,16 +1,19 @@
+#---------------------------------------------------------------------------------------------------
+# Define stages
+#---------------------------------------------------------------------------------------------------
 stages:
   - codechecks
   - tests
   - pages
 
-default:
+#---------------------------------------------------------------------------------------------------
+# Define platfrom specific settings
+#---------------------------------------------------------------------------------------------------
+.docker_settings:
   image: continuumio/miniconda3:latest
-
   services:
     - name: mongo:3.4
       alias: mongodb
-
-  # global/ default before_script can be overriden
   before_script:
     - export PIP_CACHE_DIR="/opt/cache/pip"
     - apt-get update
@@ -20,8 +23,28 @@ default:
     - conda env create -f environment.yml -n queens
     - source activate queens
     - python setup.py develop
+  tags:
+    - queens-docker
 
-codechecks:
+#----------------------------------------------------------------------------------------------
+.centos_settings:
+  before_script:
+    - conda update -n base conda
+    - conda env create -f environment.yml -n queens-$CI_JOB_ID
+    - source activate queens-$CI_JOB_ID
+    - python setup.py develop
+  after_script:
+    - conda env remove -n queens-$CI_JOB_ID
+  tags:
+    - queens-centos
+
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: codechecks
+#---------------------------------------------------------------------------------------------------
+code_analysis:
+  # code analysis with pylint
+  extends:
+    - .centos_settings
   stage: codechecks
   script:
     - pylint -j 4 --output-format=parseable pqueens | tee track_pylint.txt
@@ -31,64 +54,103 @@ codechecks:
       - track_pylint.txt
     when: on_failure
     expire_in: 4 weeks
-  tags:
-    - queens-docker
 
-full_test_suite_develop:
+#----------------------------------------------------------------------------------------------
+documentation:
+  # build the documentation
+  extends:
+    - .centos_settings
+  stage: codechecks
+  script:
+    - sphinx-apidoc -o doc/source pqueens -f -M
+    - cd doc
+    # "make html" triggers:
+    - sphinx-build -b html -d build/doctrees   source build/html
+  artifacts:
+    name: sphinx_documentation
+    paths:
+      - doc/build/html
+    when: on_success
+    expire_in: 3 days
+
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: tests
+#---------------------------------------------------------------------------------------------------
+.full_test_suite_develop:
+  # run full test suite in prallel, meant for development and feature branches
   stage: tests
   script:
-  - pytest -n4
+    - pytest -n4
   except:
     refs:
       - master
-  tags:
-    - queens-docker
 
-full_test_suite_master:
+docker_full_test_suite_develop:
+  extends:
+  - .docker_settings
+  - .full_test_suite_develop
+
+centos_full_test_suite_develop:
+  extends:
+    - .centos_settings
+    - .full_test_suite_develop
+
+#----------------------------------------------------------------------------------------------
+.full_test_suite_master:
+  # run full test suite on one core to be safe, meant for master branch only
+  # i.e., nightly testing and after a merge request
   stage: tests
   script:
     - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
-    - sphinx-apidoc -o doc/source pqueens -f -M
-    - cd doc
-    - apt-get install pandoc -y
-    # "make html" triggers:
-    - sphinx-build -b html -d build/doctrees   source build/html
+  only:
+    refs:
+      - master
+
+docker_full_test_suite_master:
+  extends:
+    - .docker_settings
+    - .full_test_suite_master
+
+centos_full_test_suite_master:
+  extends:
+    - .centos_settings
+    - .full_test_suite_master
   artifacts:
     name: coverage_report
     paths:
       - html_coverage_report
-      - doc/build/html
     when: on_success
     expire_in: 3 days
-  only:
-    refs:
-      - master
-  tags:
-    - queens-docker
 
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: pages
+#---------------------------------------------------------------------------------------------------
 pages:
+  # used to deploy the coverage report and the documentation to GitLab pages
+  # job name has to be pages and triggers deploy stage
   stage: pages
   # disable cache on this job since we do not need conda env here
   dependencies:
-    - full_test_suite_master
+    - documentation
+    - centos_full_test_suite_master
   before_script:
+    # use the base environment for badge creation
+    - source activate base
     - pip install anybadge
     - mkdir public
   script:
     - mv html_coverage_report public/coverage_report
     - mv doc/build/html public/docs
     # Create sphinx badge
-    - anybadge -l sphinx -v ok --color=green -f public/sphinx-badge.svg
-
+    - anybadge -l sphinx -v passed --color=green -f public/sphinx-badge.svg
   artifacts:
       # store the public path in artifact
       # this is needed since in a subsequent deploy stage (automatically generated by GitLab)
       # the content of the below artifact is published on GitLab Pages
       paths:
           - public
-  only:
-      refs:
-          - master
   tags:
-    - queens-docker
-
+    - queens-centos
+  only:
+    refs:
+      - master

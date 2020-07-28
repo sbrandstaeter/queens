@@ -95,16 +95,28 @@ class JobInterface(Interface):
         # get resources from config
         resources = parse_resources_from_configuration(config)
 
-        # connect to the database
+        # get address of database
         db_address = config['database']['address']
+
+        # get flag for potentially dropping databases
         if 'drop_existing' in config['database']:
             drop_existing = config['database']['drop_existing']
         else:
             drop_existing = False
+
+        # get experiment name
         experiment_name = config['global_settings']['experiment_name']
 
-        # sys.stderr.write('Using database at %s.\n' % db_address)
-        db = MongoDB(database_address=db_address, drop_existing_db=drop_existing)
+        # establish new database for this QUEENS run and
+        # potentially drop other databases
+        db = MongoDB(
+            database_name_final=experiment_name,
+            database_address=db_address,
+            drop_existing_db=drop_existing,
+        )
+
+        # print out database information
+        db.print_database_information(database_address=db_address, drop_existing_db=drop_existing)
 
         polling_time = config.get('polling-time', 1)
 
@@ -387,8 +399,6 @@ class JobInterface(Interface):
 
         output['mean'] = np.array(mean_values)
 
-        self.remove_jobs()
-
         return output
 
     # -------------private helper methods ---------------- #
@@ -588,7 +598,7 @@ class JobInterface(Interface):
                             current_check_job['aws_arn'],
                         ]
                         cmd = ''.join(filter(None, command_list))
-                        stdout, stderr, _ = run_subprocess(cmd)
+                        _, _, stdout, stderr = run_subprocess(cmd)
                         if stderr:
                             current_check_job['status'] = 'failed'
                         status_str = aws_extract("lastStatus", stdout)
@@ -636,7 +646,7 @@ class JobInterface(Interface):
         else:
             command_list = ['cd', self.output_dir, '; ls -l | grep ' '"^d" | wc -l']
         command_string = ' '.join(command_list)
-        str_number_of_subdirectories, _, _ = run_subprocess(command_string)
+        _, _, str_number_of_subdirectories, _ = run_subprocess(command_string)
         number_of_subdirectories = (
             int(str_number_of_subdirectories) if str_number_of_subdirectories else 0
         )

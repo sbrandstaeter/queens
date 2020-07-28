@@ -1,6 +1,6 @@
 import os
-import re
 import sys
+from pqueens.utils.run_subprocess import run_subprocess
 
 from pqueens.drivers.driver import Driver
 
@@ -74,7 +74,7 @@ class BaciDriverDeep(Driver):
     def run_job(self):
         """
         Actual method to run the job on computing machine
-        using run_subprocess method from base class
+        using run_subprocess method from utils
 
         Returns:
             None
@@ -90,8 +90,9 @@ class BaciDriverDeep(Driver):
         ]
         # Here we call directly the executable inside the container not the jobscript!
         command_string = ' '.join(filter(None, command_list))
+
         # Call BACI
-        stdout, stderr, self.pid = self.run_subprocess(command_string)
+        returncode, self.pid, stdout, stderr = run_subprocess(command_string)
         # Print the stderr of BACI call to pbs error file
         sys.stderr.write(stderr)
         # Print the stdout of BACI call to pbs output file
@@ -103,14 +104,6 @@ class BaciDriverDeep(Driver):
         with open(self.output_file + "_BACI_stdout.txt", "a") as text_file:
             print(stdout, file=text_file)
 
-        if stderr:
-            if re.fullmatch(
-                # pylint: disable=line-too-long
-                r'/bin/sh: line 0: cd: /scratch/PBS_\d+.master.cluster: No such file or directory\n',
-                # pylint: enable=line-too-long
-                stderr,
-            ):
-                pass
-            else:
-                self.result = None  # This is necessary to detect failed jobs
-                self.job['status'] = 'failed'
+        if returncode:
+            self.result = None  # This is necessary to detect failed jobs
+            self.job['status'] = 'failed'

@@ -4,6 +4,7 @@ import getpass
 import time
 from pqueens.drivers.driver import Driver
 from pqueens.utils.aws_output_string_extractor import aws_extract
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 class BaciDriverDocker(Driver):
@@ -73,7 +74,7 @@ class BaciDriverDocker(Driver):
 
     def run_job(self):
         """ Actual method to run the job on computing machine
-            using run_subprocess method from base class
+            using run_subprocess method from utils
         """
         # assemble BACI run command string
         self.baci_run_command_string = self.assemble_baci_run_command_string()
@@ -102,8 +103,7 @@ class BaciDriverDocker(Driver):
             #                               stderr=True)
 
         # run BACI in Docker container via subprocess
-        # _, stderr, self.pid = self.run_subprocess(docker_run_command_string)
-        stdout, stderr, self.pid = self.run_subprocess(run_command_string)
+        returncode, self.pid, stdout, stderr = run_subprocess(run_command_string)
 
         # save AWS ARN and number of processes to database for task-based run
         if self.docker_version == 'baci_docker_task':
@@ -122,7 +122,7 @@ class BaciDriverDocker(Driver):
             )
 
         # detection of failed jobs
-        if stderr:
+        if returncode:
             self.result = None
             self.job['status'] = 'failed'
 

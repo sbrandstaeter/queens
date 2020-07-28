@@ -1,10 +1,10 @@
-import sys
 import abc
-import subprocess
-import time
 import os
-from pqueens.utils.injector import inject
+import sys
+import time
 from pqueens.database.mongodb import MongoDB
+from pqueens.utils.injector import inject
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 class Driver(metaclass=abc.ABCMeta):
@@ -53,7 +53,10 @@ class Driver(metaclass=abc.ABCMeta):
     def __init__(self, base_settings):
         self.simulation_input_template = base_settings['simulation_input_template']
         # TODO MongoDB object should be passed to init not created within
-        self.database = MongoDB(database_address=base_settings['address'])
+        self.database = MongoDB(
+            database_name_final=base_settings['experiment_name'],
+            database_address=base_settings['address'],
+        )
         self.scheduler_type = base_settings['scheduler_type']
         self.cluster_script = base_settings['cluster_script']
         self.output_file = base_settings['output_file']
@@ -229,32 +232,6 @@ class Driver(metaclass=abc.ABCMeta):
         self.do_postpostprocessing()
         self.finish_job()
 
-    def run_subprocess(self, command_string):
-        """
-        Method to run command_string outside of Python
-
-        Args:
-            command_string (str): Command that should be run externally
-
-        Returns:
-            stdout (str): Output of the external subprocess
-            stderr (str): Potential errors of the external process
-            process_id (str): Process ID of the external process
-
-        """
-        process = subprocess.Popen(
-            command_string,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-            universal_newlines=True,
-        )
-
-        stdout, stderr = process.communicate()
-        process_id = process.pid
-        return stdout, stderr, process_id
-
     # ------ Base class methods ------------------------------------------------ #
     def init_job(self):
         """
@@ -275,6 +252,15 @@ class Driver(metaclass=abc.ABCMeta):
         # start settings for job
         start_time = time.time()
         self.job['start time'] = start_time
+
+        # save start time in database to make it accesible for the second post-processing call
+        self.database.save(
+            self.job,
+            self.experiment_name,
+            'jobs',
+            str(self.batch),
+            {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
+        )
 
         # create actual input file or dictionaries with parsed parameters
         if self.input_dic_1 is None:
@@ -377,7 +363,7 @@ class Driver(metaclass=abc.ABCMeta):
                         target_file_opt,
                     ]
                     postprocess_command = ' '.join(filter(None, postprocessing_list))
-                    _, stderr, _ = self.run_subprocess(postprocess_command)
+                    _, _, _, stderr = run_subprocess(postprocess_command)
                     if stderr:
                         print(stderr)
             else:
@@ -386,7 +372,7 @@ class Driver(metaclass=abc.ABCMeta):
                 )
                 postprocessing_list = [self.postprocessor, output_file_opt, target_file_opt]
                 postprocess_command = ' '.join(filter(None, postprocessing_list))
-                _, _, _ = self.run_subprocess(postprocess_command)
+                _, _, _, _ = run_subprocess(postprocess_command)
 
     def do_postpostprocessing(self):
         """

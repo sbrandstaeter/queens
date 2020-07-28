@@ -1,9 +1,9 @@
 """ This should be a docstring """
 
 import abc
-import subprocess
 import os
 import glob
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 class PostPost(metaclass=abc.ABCMeta):
@@ -118,7 +118,7 @@ class PostPost(metaclass=abc.ABCMeta):
                 + input_file_extention
                 + r" ../postpost_error/"
             )
-            _, _, _ = self.run_subprocess(command_string)
+            _, _, _, _ = run_subprocess(command_string)
 
     def delete_field_data(self):
         """ Delete output files except files with given prefix """
@@ -154,24 +154,3 @@ class PostPost(metaclass=abc.ABCMeta):
     def read_post_files(self):
         """ This method has to be implemented by all child classes """
         pass
-
-    def run_subprocess(self, command_string):
-        """ Method to run command_string outside of Python
-
-            Args:
-                command_string (str): Command to be executed
-
-            Returns:
-                str, str: stdout and std error
-        """
-        process = subprocess.Popen(
-            command_string,
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-            universal_newlines=True,
-        )
-        stdout, stderr = process.communicate()
-        process.poll()
-        return stdout, stderr, process

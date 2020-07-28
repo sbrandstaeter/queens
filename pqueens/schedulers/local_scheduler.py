@@ -1,6 +1,7 @@
 import os
 import sys
 from .scheduler import Scheduler
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 class LocalScheduler(Scheduler):
@@ -64,7 +65,7 @@ class LocalScheduler(Scheduler):
         alive = False
         command_list = ['ps h -p', str(process_id)]
         command_string = ' '.join(command_list)
-        stdout, _, p = super().run_subprocess(command_string)
+        _, _, stdout, _ = run_subprocess(command_string)
 
         if stdout:
             sys.stderr.write("Job %d waiting in queue.\n" % (process_id))
@@ -85,7 +86,7 @@ class LocalScheduler(Scheduler):
         else:
             return True
 
-    def get_process_id_from_output(self):
+    def get_cluster_job_id(self):
         """
         Not necessary for local scheduler but mandatory for parent class initialization
 
