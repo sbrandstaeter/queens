@@ -864,36 +864,6 @@ class Scheduler(metaclass=abc.ABCMeta):
                 else:
                     return self._submit_local_singularity
 
-    def create_submission_script(self, job_id):
-        """
-        Create a jobscript for the simulation on a remote based on a job-script template
-        that should be used on the remote system.
-        Args:
-            job_id (int): Internal QUEENS job-ID that is used to enumerate the simulations
-        Returns:
-            None
-        """
-        dest_dir = str(self.experiment_dir) + '/' + str(job_id) + "/output"
-        self.scheduler_options['DESTDIR'] = dest_dir
-        self.submission_script_path = str(self.experiment_dir) + '/jobfile.sh'
-
-        # local dummy path
-        local_dummy_path = os.path.join(os.path.dirname(__file__), 'dummy_jobfile')
-        # create actual submission file with parsed parameters
-        inject(self.scheduler_options, self.submission_script_template, local_dummy_path)
-        # copy submission script to cluster on specified location
-        command_list = [
-            'scp',
-            local_dummy_path,
-            self.connect_to_resource + ':' + self.submission_script_path,
-        ]
-        command_string = ' '.join(command_list)
-        _, _, _, _ = run_subprocess(command_string)
-        # delete local dummy jobfile
-        command_list = ['rm', local_dummy_path]
-        command_string = ' '.join(command_list)
-        _, _, _, _ = run_subprocess(command_string)
-
     # ------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED / ABSTRACTMETHODS ------
     @abc.abstractmethod  # how to check this is dependent on cluster / env
     def alive(self, process_id):
@@ -1023,7 +993,7 @@ class Scheduler(metaclass=abc.ABCMeta):
                 ]
                 cmd = ''.join(cmdlist)
 
-                _, _, _, stderr= run_subprocess(cmd)
+                _, _, _, stderr = run_subprocess(cmd)
                 if stderr:
                     raise RuntimeError(
                         "\nThe task definition could not be registered properly!"
