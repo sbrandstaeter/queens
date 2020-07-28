@@ -1,6 +1,6 @@
 {
     "experiment_name": "ee_invaaa_local",
-    "database": {"address": "localhost:27017", "drop_existing": true},
+    "database": {"address": "localhost:27017", "drop_existing": false},
     "method": {
         "method_name": "sa_morris_salib",
         "method_options": {
@@ -25,7 +25,7 @@
             "path_to_executable": "{baci-release}",
             "path_to_postprocessor": "{post_drt_monitor}",
             "cluster_bind": "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
-            "no_singularity": true,
+            "no_singularity": {singularity_boolean},
             "post_process_options": ["--field=structure --node=26 --start=1"],
             "experiment_dir": "{experiment_dir}",
             "post_post": {
