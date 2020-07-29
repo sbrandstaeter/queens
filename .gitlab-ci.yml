@@ -124,6 +124,10 @@ centos_full_test_suite_master:
     - .centos_settings
     - .full_test_suite_master
   script:
+    - cd pqueens/
+    - /usr/bin/singularity --version
+    - /usr/bin/singularity build --fakeroot ../driver.simg ../singularity_recipe
+    - cd ../
     - pytest --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
   artifacts:
     name: coverage_report
