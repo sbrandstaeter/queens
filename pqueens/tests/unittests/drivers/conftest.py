@@ -99,6 +99,7 @@ def ansys_driver(driver_base_settings, mocker):
     driver_base_settings['address'] = 'localhost:27017'
     driver_base_settings['file_prefix'] = 'rst'
     driver_base_settings['output_scratch'] = 'rst'
+    driver_base_settings['direct_scheduling'] = False
     my_driver = AnsysDriverNative(None, 'v15', driver_base_settings)
     return my_driver
 
