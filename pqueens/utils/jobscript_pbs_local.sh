@@ -1,12 +1,16 @@
- #!/bin/h
+#!/bin/bash
 ##########################################
 #                                        #
 #  Specify your PBS directives           #
 #                                        #
 ##########################################
+# Job name:
 #PBS -N {job_name}
+# Number of nodes and processors per node (ppn)
 #PBS -l nodes=1:ppn={ntasks}
+# Walltime: (hours:minutes:seconds)
 #PBS -l walltime=6:00:00
+# Executing queue
 #PBS -q batch
 ###########################################
 
@@ -24,8 +28,8 @@ OUTPUTPREFIX={OUTPUTPREFIX}
 ##########################################
 #                                        #
 #       RESTART SPECIFICATION            #
-RESTART=0                                # <= specify your restart step
-RESTART_FROM_PREFIX=xxx                  # <= specify the result prefix from which restart is to be read
+RESTART=0                                #
+RESTART_FROM_PREFIX=xxx                  #
 ##########################################
 
 ##########################################

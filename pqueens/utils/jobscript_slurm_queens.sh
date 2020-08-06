@@ -1,22 +1,18 @@
-#!/bin/sh -f
+#!/bin/bash
 ##########################################
 #                                        #
 #  Specify your SLURM directives         #
 #                                        #
 ##########################################
-#User's Mail:
-#SBATCH --mail-user=schmidt@lnm.mw.tum.de 
-#When to send mail?:
-#SBATCH --mail-type=BEGIN,END,FAIL
-#Job name:
+# Job name:
 #SBATCH -J {job_name}
 # Standard case: specify only number of cpus
 #SBATCH --ntasks={ntasks}
-# Walltime:
+# Walltime: (days-hours:minutes:seconds)
 #SBATCH --time=2-00:00:00
 # Exclusivity:
 #SBATCH --exclusive
-# Exclude nodes:
+# Exclude nodes: (e.g. exclude node07)
 # #SBATCH --exclude=node07
 ###########################################
 
@@ -33,8 +29,8 @@ OUTPUTPREFIX=''
 ##########################################
 #                                        #
 #       RESTART SPECIFICATION            #
-RESTART=0                                # <= specify your restart step
-RESTART_FROM_PREFIX="test"               # <= specify the result prefix from which restart is to be read
+RESTART=0                                #
+RESTART_FROM_PREFIX=xxx                  #
 ##########################################
 
 ##########################################
@@ -42,6 +38,9 @@ RESTART_FROM_PREFIX="test"               # <= specify the result prefix from whi
 #     POSTPROCESSING SPECIFICATION       #  # NOT NEEDED FOR QUEENS
 #                                        #
 DoPostprocess=false                      #
+# Note: supported post processor is the  #
+#       post_processor.                  #
+POSTEXE=''                               #
 # Specify everything you need here,      #
 # besides the '--file=' as this is       #
 # already done by default since it is    #
@@ -52,12 +51,13 @@ DoPostprocess=false                      #
 POSTOPTIONS='--filter="ensight"'         #
 ##########################################
 
+
 #################################################################
 # BEGIN ############### DO NOT TOUCH ME #########################
 #################################################################
 # This is not a suggestion, this is a rule.
 # Talk to admin before touching this section.
-source /lnm/share/donottouch_new.sh
+source /lnm/share/donottouch.sh
 trap 'EarlyTermination; StageOut' 2 9 15 18
 DoChecks
 StageIn

@@ -1,12 +1,16 @@
- #!/bin/h
+#!/bin/bash
 ##########################################
 #                                        #
 #  Specify your PBS directives           #
 #                                        #
 ##########################################
+# Job name:
 #PBS -N {job_name}
+# Number of nodes and processors per node (ppn)
 #PBS -l nodes=1:ppn={ntasks}
+# Walltime: (hours:minutes:seconds)
 #PBS -l walltime=6:00:00
+# Executing queue
 #PBS -q batch
 ###########################################
 
@@ -19,13 +23,13 @@
 WORKDIR=/scratch/PBS_$PBS_JOBID
 DESTDIR={DESTDIR}  # Output directory for simulation
 EXE={EXE}  # triggers mainrun of singularity image
-INPUT='{INPUT} --workdir='$WORKDIR  # for singularity just the args flags for the image that specify the run
+INPUT='{INPUT} --workdir '  # for singularity just the args flags for the image that specify the run
 OUTPUTPREFIX=''
 ##########################################
 #                                        #
 #       RESTART SPECIFICATION            #
-RESTART=0                                # <= specify your restart step
-RESTART_FROM_PREFIX=xxx                  # <= specify the result prefix from which restart is to be read
+RESTART=0                                #
+RESTART_FROM_PREFIX=xxx                  #
 ##########################################
 
 ##########################################
@@ -33,6 +37,9 @@ RESTART_FROM_PREFIX=xxx                  # <= specify the result prefix from whi
 #     POSTPROCESSING SPECIFICATION       #  # NOT NEEDED FOR QUEENS
 #                                        #
 DoPostprocess=false                      #
+# Note: supported post processor is the  #
+#       post_processor.                  #
+POSTEXE=''                               #
 # Specify everything you need here,      #
 # besides the '--file=' as this is       #
 # already done by default since it is    #
@@ -42,6 +49,7 @@ DoPostprocess=false                      #
 # be specified please use --help         #
 POSTOPTIONS='--filter="ensight"'         #
 ##########################################
+
 
 #################################################################
 # BEGIN ############### DO NOT TOUCH ME #########################
@@ -64,4 +72,4 @@ echo "Job finished with exit code $? at: `date`"
 
 # ------- FINISH AND CLEAN SINGULARITY JOB (DONE ON MASTER/LOGIN NODE!) -------
 wait
-$EXE $INPUT '--post=true'
+$EXE $INPUT $WORKDIR '--post=true'
