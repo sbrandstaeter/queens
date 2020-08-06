@@ -1,31 +1,22 @@
-#!/bin/bash
+ #!/bin/h
 ##########################################
 #                                        #
-#  Specify your SLURM directives         #
+#  Specify your PBS directives           #
 #                                        #
 ##########################################
-# User's Mail:
-#SBATCH --mail-user=name@lnm.mw.tum.de
-# When to send mail:
-#SBATCH --mail-type=BEGIN,END,FAIL
-# Job name:
-#SBATCH -J {job_name}
-# Standard case: specify only number of cpus
-#SBATCH --ntasks={ntasks}
-# Walltime: (days-hours:minutes:seconds)
-#SBATCH --time=2-00:00:00
-# Exclusivity:
-#SBATCH --exclusive
-# Exclude nodes: (e.g. exclude node07)
-# #SBATCH --exclude=node07
+#PBS -N {job_name}
+#PBS -l nodes=1:ppn={ntasks}
+#PBS -l walltime=6:00:00
+#PBS -q batch
 ###########################################
 
+# ------------- RUN MAIN JOB IN SINGULARITY (STANDARD JOB SCRIPT) -------------
 ##########################################
 #                                        #
 #  Specify your paths                    #
 #                                        #
 ##########################################
-WORKDIR=/scratch/SLURM_$SLURM_JOB_ID
+WORKDIR=/scratch/PBS_$PBS_JOBID
 DESTDIR={DESTDIR}  # Output directory for simulation
 EXE={EXE}  # triggers mainrun of singularity image
 INPUT='{INPUT} --workdir '  # for singularity just the args flags for the image that specify the run
@@ -33,8 +24,8 @@ OUTPUTPREFIX=''
 ##########################################
 #                                        #
 #       RESTART SPECIFICATION            #
-RESTART=0                                #
-RESTART_FROM_PREFIX=xxx                  #
+RESTART=0                                # <= specify your restart step
+RESTART_FROM_PREFIX=xxx                  # <= specify the result prefix from which restart is to be read
 ##########################################
 
 ##########################################
@@ -42,9 +33,6 @@ RESTART_FROM_PREFIX=xxx                  #
 #     POSTPROCESSING SPECIFICATION       #  # NOT NEEDED FOR QUEENS
 #                                        #
 DoPostprocess=false                      #
-# Note: supported post processor is the  #
-#       post_processor.                  #
-POSTEXE=$BACIDIR/post_processor          #
 # Specify everything you need here,      #
 # besides the '--file=' as this is       #
 # already done by default since it is    #
@@ -55,13 +43,12 @@ POSTEXE=$BACIDIR/post_processor          #
 POSTOPTIONS='--filter="ensight"'         #
 ##########################################
 
-
 #################################################################
 # BEGIN ############### DO NOT TOUCH ME #########################
 #################################################################
 # This is not a suggestion, this is a rule.
 # Talk to admin before touching this section.
-source /lnm/share/donottouch.sh
+source $HOME/donottouch_deep_queens.sh
 trap 'EarlyTermination; StageOut' 2 9 15 18
 DoChecks
 StageIn
@@ -77,5 +64,4 @@ echo "Job finished with exit code $? at: `date`"
 
 # ------- FINISH AND CLEAN SINGULARITY JOB (DONE ON MASTER/LOGIN NODE!) -------
 wait
-# cd back into home since pwd does not exist anymore
-$MPI_RUN $MPIFLAGS -np 1 $EXE $INPUT $WORKDIR '--post=true'
+$EXE $INPUT '--post=true'
