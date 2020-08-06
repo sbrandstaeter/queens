@@ -44,7 +44,7 @@ RESTART_FROM_PREFIX=xxx                  #
 DoPostprocess=false                      #
 # Note: supported post processor is the  #
 #       post_processor.                  #
-POSTEXE=$BACIDIR/post_processor          #
+POSTEXE=''                               #
 # Specify everything you need here,      #
 # besides the '--file=' as this is       #
 # already done by default since it is    #
