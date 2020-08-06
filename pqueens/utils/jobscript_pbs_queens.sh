@@ -4,10 +4,6 @@
 #  Specify your PBS directives           #
 #                                        #
 ##########################################
-# User's Mail:
-#PBS -M name@lnm.mw.tum.de
-# When to send mail:
-#PBS -m abe
 # Job name:
 #PBS -N {job_name}
 # Number of nodes and processors per node (ppn)

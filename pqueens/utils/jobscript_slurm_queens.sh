@@ -4,10 +4,6 @@
 #  Specify your SLURM directives         #
 #                                        #
 ##########################################
-# User's Mail:
-#SBATCH --mail-user=name@lnm.mw.tum.de
-# When to send mail:
-#SBATCH --mail-type=BEGIN,END,FAIL
 # Job name:
 #SBATCH -J {job_name}
 # Standard case: specify only number of cpus
