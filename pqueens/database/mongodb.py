@@ -74,7 +74,7 @@ class MongoDB(object):
             attempt += 1
 
     def print_database_information(
-        self, database_address='localhost:27017', drop_existing_db=False
+        self, database_address='localhost:27017', drop_existing_db=False, restart=False,
     ):
         """ Print out information onn existing and newly established databases
         Args:
@@ -95,9 +95,19 @@ class MongoDB(object):
             sys.stdout.write(
                 '\nList of existing QUEENS databases for this user: %s' % self.database_list
             )
-        sys.stdout.write('\nEstablished new database: %s' % self.database_name)
-        if self.database_already_existent:
-            sys.stdout.write('\nCaution: note that the newly established database already existed!')
+
+        if restart:
+            if self.database_already_existent:
+                sys.stdout.write('\nRestart: Database found.')
+            else:
+                sys.stdout.write('\nRestart: No database found.')
+        else:
+            sys.stdout.write('\nEstablished new database: %s' % self.database_name)
+            if self.database_already_existent:
+                sys.stdout.write(
+                    '\nCaution: note that the newly established database already existed!'
+                )
+
         sys.stdout.write('\n=====================================================================')
         sys.stdout.write('\n')
 

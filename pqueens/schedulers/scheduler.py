@@ -1010,10 +1010,7 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         driver_obj = Driver.from_config_create_driver(config, job_id, batch)
 
-        # only required for local scheduler: finish-and-clean call
-        # (taken care of by submit_post_post for other schedulers)
-        if type(self).__name__ == 'LocalScheduler':
-            driver_obj.finish_and_clean()
+        driver_obj.finish_and_clean()
 
         return 0
 

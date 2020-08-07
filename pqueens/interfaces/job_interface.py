@@ -50,6 +50,7 @@ class JobInterface(Interface):
         parameters,
         connect,
         scheduler_type,
+        direct_scheduling,
     ):
         """ Create JobInterface
 
@@ -78,6 +79,7 @@ class JobInterface(Interface):
         self.restart_from_finished_simulation = restart_from_finished_simulation
         self.connect_to_resource = connect
         self.scheduler_type = scheduler_type
+        self.direct_scheduling = direct_scheduling
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -105,6 +107,10 @@ class JobInterface(Interface):
         # get experiment name
         experiment_name = config['global_settings']['experiment_name']
 
+        restart_from_finished_simulation = config['driver']['driver_params'].get(
+            'restart_from_finished_simulation', False
+        )
+
         # establish new database for this QUEENS run and
         # potentially drop other databases
         db = MongoDB(
@@ -114,15 +120,16 @@ class JobInterface(Interface):
         )
 
         # print out database information
-        db.print_database_information(database_address=db_address, drop_existing_db=drop_existing)
+        db.print_database_information(
+            database_address=db_address,
+            drop_existing_db=drop_existing,
+            restart=restart_from_finished_simulation,
+        )
 
         polling_time = config.get('polling-time', 1)
 
         # TODO: This is not nice -> should be solved solemnly over Driver class
         output_dir = config['driver']['driver_params']["experiment_dir"]
-        restart_from_finished_simulation = config['driver']['driver_params'].get(
-            'restart_from_finished_simulation', False
-        )
 
         # TODO: This is not nice
         connect = list(resources.values())[0].scheduler.connect_to_resource
@@ -131,6 +138,15 @@ class JobInterface(Interface):
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
         scheduler_type = config[scheduler_name]['scheduler_type']
+
+        if (
+            scheduler_type == 'ecs_task'
+            or scheduler_type == 'local_pbs'
+            or scheduler_type == 'local_slurm'
+        ):
+            direct_scheduling = True
+        else:
+            direct_scheduling = False
 
         parameters = config['parameters']
 
@@ -147,6 +163,7 @@ class JobInterface(Interface):
             parameters,
             connect,
             scheduler_type,
+            direct_scheduling,
         )
 
     def map(self, samples):
@@ -169,31 +186,19 @@ class JobInterface(Interface):
         samples = pd.DataFrame(samples, index=range(1, len(samples) + 1))
 
         job_manager = self.get_job_manager()
-        job_manager(samples)
+        jobid_for_post_post = job_manager(samples)
 
-        # loop over all resources
+        # Post run
         for _, resource in self.resources.items():
             # only for ECS task scheduler and jobscript-based native driver
-            if (
-                self.scheduler_type == 'ecs_task'
-                or self.scheduler_type == 'local_pbs'
-                or self.scheduler_type == 'local_slurm'
-            ):
-                # determine whether task- or jobscript-based scheduler
-                task = False
-                if self.scheduler_type == 'ecs_task':
-                    task = True
-
-                # get range of job IDs
-                jobid_range = range(1, samples.size + 1, 1)
-
-                # check AWS tasks to determine completed jobs
+            if self.direct_scheduling and jobid_for_post_post.size != 0:
+                # check tasks to determine completed jobs
                 while not self.all_jobs_finished():
                     time.sleep(self.polling_time)
-                    self._check_job_completions(jobid_range, task)
+                    self._check_job_completions(jobid_for_post_post)
 
                 # submit post-post jobs
-                self._manage_post_post_submission(jobid_range)
+                self._manage_post_post_submission(jobid_for_post_post)
 
             # for all other resources:
             else:
@@ -413,6 +418,9 @@ class JobInterface(Interface):
         Args:
             samples (DataFrame):     realization/samples of QUEENS simulation input variables
         """
+        # Job that need direct post-post-processing
+        jobid_for_post_post = np.empty(shape=0)
+
         # Check results in database
         number_of_results_in_db, jobid_missing_results_in_db = self._check_results_in_db(samples)
 
@@ -425,12 +433,14 @@ class JobInterface(Interface):
             # Run jobs with missing results in database
             if len(jobid_missing_results_in_db) > 0:
                 self._manage_job_submission(samples, jobid_missing_results_in_db)
+                jobid_for_post_post = np.append(jobid_for_post_post, jobid_missing_results_in_db)
 
             # Find index for block-restart and run jobs
             jobid_for_block_restart = self._find_block_restart(samples)
             if jobid_for_block_restart is not None:
                 range_block_restart = range(jobid_for_block_restart, samples.size + 1)
                 self._manage_job_submission(samples, range_block_restart)
+                jobid_for_post_post = np.append(jobid_for_post_post, range_block_restart)
 
             # Check if database is complete: all jobs are loaded
             is_every_job_in_db, jobid_smallest_in_db = self._check_jobs_in_db()
@@ -443,6 +453,9 @@ class JobInterface(Interface):
                 # Restart single failed jobs
                 if len(jobid_for_single_restart) > 0:
                     self._manage_job_submission(samples, jobid_for_single_restart)
+                    jobid_for_post_post = np.append(jobid_for_post_post, jobid_for_single_restart)
+
+        return jobid_for_post_post
 
     def _manage_jobs(self, samples):
         """Manage regular submission of jobs without restart.
@@ -452,6 +465,8 @@ class JobInterface(Interface):
         """
         idx_range = range(1, samples.size + 1, 1)
         self._manage_job_submission(samples, idx_range)
+
+        return np.array(idx_range)
 
     def _check_results_in_db(self, samples):
         """Check complete results in database.
@@ -571,7 +586,7 @@ class JobInterface(Interface):
 
         return is_every_job_in_db, jobid_smallest_in_db
 
-    def _check_job_completions(self, jobid_range, task):
+    def _check_job_completions(self, jobid_range):
         """Check AWS tasks to determine completed jobs.
         """
         jobs = self.load_jobs()
@@ -580,7 +595,7 @@ class JobInterface(Interface):
                 current_check_job = next(job for job in jobs if job['id'] == check_jobid)
                 if current_check_job['status'] != 'complete':
                     completed = False
-                    if task:
+                    if self.scheduler_type == 'ecs_task':
                         command_list = [
                             "aws ecs describe-tasks ",
                             "--cluster worker-queens-cluster ",
@@ -595,7 +610,7 @@ class JobInterface(Interface):
                         if status_str == 'STOPPED':
                             completed = True
                     else:
-                        # indicate completion by exixting control file in output directory
+                        # indicate completion by existing control file in output directory
                         completed = os.path.isfile(current_check_job['control_file_path'])
                     if completed:
                         current_check_job['status'] = 'complete'
@@ -776,15 +791,8 @@ class JobInterface(Interface):
                         # check job completions for ECS task scheduler and
                         # jobscript-based native driver
                         for _, resource in self.resources.items():
-                            if (
-                                self.scheduler_type == 'ecs_task'
-                                or self.scheduler_type == 'local_pbs'
-                                or self.scheduler_type == 'local_slurm'
-                            ):
-                                task = False
-                                if self.scheduler_type == 'ecs_task':
-                                    task = True
-                                self._check_job_completions(jobid_range, task)
+                            if self.direct_scheduling:
+                                self._check_job_completions(jobid_range)
                         jobs = self.load_jobs()
 
         return

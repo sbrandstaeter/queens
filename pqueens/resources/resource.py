@@ -271,7 +271,7 @@ class Resource(object):
                 )
             elif process_id == 0:
                 sys.stdout.write(
-                    'Checked job %d for restart and loaded results into database.\n' % job['id']
+                    'Checked job %d for restart and loaded results into database.\n\n' % job['id']
                 )
         else:
             sys.stdout.write('Failed to submit job %d.\n' % job['id'])
