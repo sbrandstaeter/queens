@@ -41,7 +41,9 @@ class DirectPythonInterface(Interface):
         self.variables = variables
 
         # get path to queens example simulator functions directory
-        function_dir = os.path.join(os.path.dirname(__file__), '..', 'example_simulator_functions')
+        function_dir = os.path.join(
+            os.path.dirname(__file__), '..', 'tests/integration_tests/example_simulator_functions'
+        )
         abs_function_dir = os.path.abspath(function_dir)
         # join paths intelligently, i.e., if function_file contains an
         # absolute path it will be preserved, otherwise the call below will

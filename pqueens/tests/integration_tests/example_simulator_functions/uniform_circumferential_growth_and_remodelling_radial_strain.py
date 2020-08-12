@@ -1,6 +1,6 @@
 # pylint: disable=line-too-long
-import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uni_cir_gnr
-import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling_radial_displacement_lsq as uniform_growth_1D_lsq
+import pqueens.tests.integration_tests.example_simulator_functions.uniform_circumferential_growth_and_remodelling as uni_cir_gnr
+import pqueens.tests.integration_tests.example_simulator_functions.uniform_circumferential_growth_and_remodelling_radial_displacement_lsq as uniform_growth_1D_lsq
 
 # pylint: enable=line-too-long
 

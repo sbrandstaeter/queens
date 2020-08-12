@@ -1,5 +1,6 @@
 import numpy as np
-from pqueens.example_simulator_functions.perdikaris_1dsin_lofi import perdikaris_1dsin_lofi
+from pqueens.tests.integration_tests.example_simulator_functions.perdikaris_1dsin_lofi \
+    import perdikaris_1dsin_lofi
 
 
 def perdikaris_1dsin_hifi(x):

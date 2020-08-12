@@ -54,4 +54,6 @@ dependencies:
     - pyansys
 # for space filling subsets
     - diversipy
+# electrochemical impedance spectroscopy (EIS)
+    - impedance
 

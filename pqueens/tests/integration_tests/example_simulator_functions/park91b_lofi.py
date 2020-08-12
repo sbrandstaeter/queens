@@ -1,5 +1,4 @@
-import numpy as np
-from pqueens.example_simulator_functions.park91b_hifi import park91b_hifi
+from pqueens.tests.integration_tests.example_simulator_functions.park91b_hifi import park91b_hifi
 
 
 def park91b_lofi(x1, x2, x3, x4):
