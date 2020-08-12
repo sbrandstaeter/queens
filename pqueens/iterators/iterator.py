@@ -1,10 +1,4 @@
-""" There should be a docstring """
-
 import abc
-
-# TODO add iterator name to attributes
-# TODO pull model out of base class and add to all subclasses
-# TODO add docstring to global settings
 
 
 class Iterator(metaclass=abc.ABCMeta):
@@ -22,7 +16,7 @@ class Iterator(metaclass=abc.ABCMeta):
 
     """
 
-    def __init__(self, model=None, global_settings=None):  # TODO model should be deleted here
+    def __init__(self, model=None, global_settings=None):
         self.model = model
         self.global_settings = global_settings
 
@@ -46,12 +40,14 @@ class Iterator(metaclass=abc.ABCMeta):
         from .metropolis_hastings_iterator import MetropolisHastingsIterator
         from .monte_carlo_iterator import MonteCarloIterator
         from .morris_salib_wrapper_iterator import MorrisSALibIterator
+        from .optimization_iterator import OptimizationIterator
         from pqueens.iterators.optimization_iterator import OptimizationIterator
         from pqueens.iterators.baci_lm_iterator import BaciLMIterator
         from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .bmfmc_iterator import BMFMCIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+        from .grid_iterator import GridIterator
 
         method_dict = {
             'lhs': LHSIterator,
@@ -65,6 +61,7 @@ class Iterator(metaclass=abc.ABCMeta):
             'sa_saltelli_salib': SaltelliSALibIterator,
             'smc': SequentialMonteCarloIterator,
             'bmfmc': BMFMCIterator,
+            'grid': GridIterator,
             'baci_lm': BaciLMIterator,
         }
 

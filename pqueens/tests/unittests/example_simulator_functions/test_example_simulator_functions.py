@@ -5,36 +5,43 @@ import numpy as np
 import pytest
 import unittest
 
-import pqueens.example_simulator_functions.agawal as agawal
+import pqueens.tests.integration_tests.example_simulator_functions.agawal as agawal
 
-import pqueens.example_simulator_functions.borehole_hifi as borehole_hifi
-import pqueens.example_simulator_functions.borehole_lofi as borehole_lofi
+import pqueens.tests.integration_tests.example_simulator_functions.borehole_hifi as borehole_hifi
+import pqueens.tests.integration_tests.example_simulator_functions.borehole_lofi as borehole_lofi
 
-import pqueens.example_simulator_functions.branin_hifi as branin_hifi
-import pqueens.example_simulator_functions.branin_lofi as branin_lofi
-import pqueens.example_simulator_functions.branin_medfi as branin_medfi
+import pqueens.tests.integration_tests.example_simulator_functions.branin_hifi as branin_hifi
+import pqueens.tests.integration_tests.example_simulator_functions.branin_lofi as branin_lofi
+import pqueens.tests.integration_tests.example_simulator_functions.branin_medfi as branin_medfi
 
-import pqueens.example_simulator_functions.currin88_hifi as currin88_hifi
-import pqueens.example_simulator_functions.currin88_lofi as currin88_lofi
+import pqueens.tests.integration_tests.example_simulator_functions.currin88_hifi as currin88_hifi
+import pqueens.tests.integration_tests.example_simulator_functions.currin88_lofi as currin88_lofi
 
-import pqueens.example_simulator_functions.gardner2014a as gardner2014a
+import pqueens.tests.integration_tests.example_simulator_functions.gardner2014a as gardner2014a
 
-import pqueens.example_simulator_functions.ishigami as ishigami
+import pqueens.tests.integration_tests.example_simulator_functions.ishigami as ishigami
 
-import pqueens.example_simulator_functions.ma2009 as ma2009
+import pqueens.tests.integration_tests.example_simulator_functions.ma2009 as ma2009
 
-import pqueens.example_simulator_functions.oakley_ohagan2004 as oakley_ohagan2004
+import pqueens.tests.integration_tests.example_simulator_functions.oakley_ohagan2004 as \
+    oakley_ohagan2004
 
-import pqueens.example_simulator_functions.park91a_hifi as park91a_hifi
-import pqueens.example_simulator_functions.park91a_lofi as park91a_lofi
+import pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi as \
+    park91a_hifi
+import pqueens.tests.integration_tests.example_simulator_functions.park91a_lofi as \
+    park91a_lofi
 
-import pqueens.example_simulator_functions.park91b_hifi as park91b_hifi
-import pqueens.example_simulator_functions.park91b_lofi as park91b_lofi
+import pqueens.tests.integration_tests.example_simulator_functions.park91b_hifi as \
+    park91b_hifi
+import pqueens.tests.integration_tests.example_simulator_functions.park91b_lofi as \
+    park91b_lofi
 
-import pqueens.example_simulator_functions.perdikaris_1dsin_hifi as perdikaris_1dsin_hifi
-import pqueens.example_simulator_functions.perdikaris_1dsin_lofi as perdikaris_1dsin_lofi
+import pqueens.tests.integration_tests.example_simulator_functions.perdikaris_1dsin_hifi as \
+    perdikaris_1dsin_hifi
+import pqueens.tests.integration_tests.example_simulator_functions.perdikaris_1dsin_lofi as \
+    perdikaris_1dsin_lofi
 
-import pqueens.example_simulator_functions.sobol as sobol
+import pqueens.tests.integration_tests.example_simulator_functions.sobol as sobol
 
 
 class TestAgawal(unittest.TestCase):

@@ -1,7 +1,7 @@
 import numpy as np
 
 # pylint: disable=line-too-long
-import pqueens.example_simulator_functions.uniform_circumferential_growth_and_remodelling_radial_displacement_lsq as uni_cir_gnr_lsq
+import pqueens.tests.integration_tests.example_simulator_functions.uniform_circumferential_growth_and_remodelling_radial_displacement_lsq as uni_cir_gnr_lsq
 
 # pylint: enable=line-too-long
 

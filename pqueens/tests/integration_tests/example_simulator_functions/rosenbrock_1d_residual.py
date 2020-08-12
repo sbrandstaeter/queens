@@ -1,4 +1,5 @@
-from pqueens.example_simulator_functions.rosenbrock_residual import rosenbrock_residual
+from pqueens.tests.integration_tests.example_simulator_functions.rosenbrock_residual \
+    import rosenbrock_residual
 
 
 def main(job_id, params):

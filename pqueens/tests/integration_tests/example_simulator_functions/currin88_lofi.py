@@ -1,5 +1,5 @@
 import numpy as np
-from pqueens.example_simulator_functions.currin88_hifi import currin88_hifi
+from pqueens.tests.integration_tests.example_simulator_functions.currin88_hifi import currin88_hifi
 
 
 def currin88_lofi(x1, x2):
