@@ -6,7 +6,6 @@ simulations with BACI using the INVAAA minimal model.
 import os
 import numpy as np
 import pickle
-import matplotlib.pyplot as plt
 from pqueens.utils.hash_singularity_files import hash_files
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.main import main
