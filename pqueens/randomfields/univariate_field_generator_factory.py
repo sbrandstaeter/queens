@@ -25,7 +25,6 @@ class UniVarRandomFieldGeneratorFactory(object):
         num_realizations=None,
     ):
         """ Create random field generator based on arguments """
-
         if corrstruct == 'non_stationary_squared_exp':
             rf = NonStationarySquaredExp(
                 corr_length=corr_length,
