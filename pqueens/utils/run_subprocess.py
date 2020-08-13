@@ -111,14 +111,10 @@ def _run_subprocess_simulation(command_string, **kwargs):
 
     # job logger configuration. This python code is run in parallel for cluster runs with
     # singularity, so each processor logs his own file
-    fh = logging.FileHandler(
-        output_file + '_subprocess_stdout.txt', mode='w', delay=False
-    )
+    fh = logging.FileHandler(output_file + '_subprocess_stdout.txt', mode='w', delay=False)
     fh.setLevel(logging.INFO)
     fh.terminator = ''
-    efh = logging.FileHandler(
-        output_file + '_subprocess_stderr.txt', mode='w', delay=False
-    )
+    efh = logging.FileHandler(output_file + '_subprocess_stderr.txt', mode='w', delay=False)
     efh.setLevel(logging.ERROR)
     efh.terminator = ''
     fh.setFormatter(ff)
@@ -136,7 +132,7 @@ def _run_subprocess_simulation(command_string, **kwargs):
         universal_newlines=True,
     )
 
-    #actual logging
+    # actual logging
     joblogger.info('run_subprocess started with:\n')
     joblogger.info(command_string + '\n')
     for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
@@ -179,6 +175,11 @@ def _run_subprocess_simulation(command_string, **kwargs):
     # run_subprocess consistent.
     stdout = None
 
+    # we need to close the FileHandlers to prevent OSError: [Errno 24] Too many open files
+    fh.close()
+    efh.close()
+    joblogger.removeHandler(fh)
+    joblogger.removeHandler(efh)
     return process_returncode, process_id, stdout, stderr
 
 
