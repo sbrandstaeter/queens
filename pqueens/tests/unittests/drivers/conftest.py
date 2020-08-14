@@ -95,11 +95,23 @@ def ansys_driver(driver_base_settings, mocker):
     """ Generic ANSYS driver"""
     # TODO this is super ugly. creation of DB needs te be moved out of
     # driver init to resolve this
-    mocker.patch('pqueens.database.mongodb.MongoDB.__init__', return_value=None)
+    class FakeDB(object):
+        def print_database_information(self, *args, **kwargs):
+            print('test')
+
+    db_fake = FakeDB()
+
+    mocker.patch(
+        'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=db_fake
+    )
+
     driver_base_settings['address'] = 'localhost:27017'
     driver_base_settings['file_prefix'] = 'rst'
     driver_base_settings['output_scratch'] = 'rst'
     driver_base_settings['direct_scheduling'] = False
+    driver_base_settings['database'] = MongoDB.from_config_create_database(
+        {"database": {"address": "localhost:27017"}}
+    )
     my_driver = AnsysDriverNative(None, 'v15', driver_base_settings)
     return my_driver
 

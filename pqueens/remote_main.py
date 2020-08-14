@@ -65,6 +65,12 @@ def main(args):
         try:
             with open(path_json, 'r') as myfile:
                 config = json.load(myfile, object_pairs_hook=OrderedDict)
+                # move some parameters into a global settings dict to be passed to e.g.
+                # iterators facilitating input output stuff
+                global_settings = {"experiment_name": config["experiment_name"]}
+                # remove experiment_name field from options dict
+                config["global_settings"] = global_settings
+
         except FileNotFoundError:
             raise FileNotFoundError("temp.json did not load properly.")
 

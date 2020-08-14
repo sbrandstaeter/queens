@@ -42,10 +42,10 @@ def batch_id_2():
 def test_connection():
     # check if we can connect to mongodb
     try:
-        db = MongoDB(database_address="localhost:27017")
+        db = MongoDB.from_config_create_database({"database": {"address": "localhost:27017"}})
     except:
         # if local host fails try to use alias if db is in docker container
-        db = MongoDB(database_address="mongodb:27017")
+        db = MongoDB.from_config_create_database({"database": {"address": "mongodb:27017"}})
 
     assert isinstance(db, MongoDB)
 
@@ -53,26 +53,34 @@ def test_connection():
 def test_connection_fails():
     # check if we get correct exception when failing to connect mongodb
     with pytest.raises(ServerSelectionTimeoutError):
-        MongoDB(database_address="localhos:2016")
+        MongoDB.from_config_create_database({"database": {"address": "localhos:2016"}})
 
 
 def test_dropping():
     # check if we can connect to mongodb and clear preexisting db
     try:
-        db = MongoDB(database_address="localhost:27017", drop_existing_db=True)
+        db = MongoDB.from_config_create_database(
+            {"database": {"address": "localhost:27017", "drop_existing": True}}
+        )
     except:
         # if local host fails try to use alias if db is in docker container
-        db = MongoDB(database_address="mongodb:27017", drop_existing_db=True)
+        db = MongoDB.from_config_create_database(
+            {"database": {"address": "mongodb:27017", "drop_existing": True}}
+        )
 
     assert isinstance(db, MongoDB)
 
 
 def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
     try:
-        db = MongoDB(database_address="localhost:27017", drop_existing_db=True)
+        db = MongoDB.from_config_create_database(
+            {"database": {"address": "localhost:27017", "drop_existing": True}}
+        )
     except:
         # if local host fails try to use alias if db is in docker container
-        db = MongoDB(database_address="mongodb:27017", drop_existing_db=True)
+        db = MongoDB.from_config_create_database(
+            {"database": {"address": "mongodb:27017", "drop_existing": True}}
+        )
 
     # save some dummy data
     db.save(dummy_job, experiment_name, 'jobs', batch_id_1, {'id': job_id})
@@ -96,10 +104,14 @@ def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
 def test_write_multiple_entries(dummy_job, experiment_name, batch_id_2, job_id):
 
     try:
-        db = MongoDB(database_address="localhost:27017", drop_existing_db=True)
+        db = MongoDB.from_config_create_database(
+            {"database": {"address": "localhost:27017", "drop_existing": True}}
+        )
     except:
         # if local host fails try to use alias if db is in docker container
-        db = MongoDB(database_address="mongodb:27017", drop_existing_db=True)
+        db = MongoDB.from_config_create_database(
+            {"database": {"address": "mongodb:27017", "drop_existing": True}}
+        )
 
     # save some dummy data
     db.save(dummy_job, experiment_name, 'jobs', batch_id_2)
