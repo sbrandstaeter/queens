@@ -53,10 +53,7 @@ class Driver(metaclass=abc.ABCMeta):
     def __init__(self, base_settings):
         self.simulation_input_template = base_settings['simulation_input_template']
         # TODO MongoDB object should be passed to init not created within
-        self.database = MongoDB(
-            database_name_final=base_settings['experiment_name'],
-            database_address=base_settings['address'],
-        )
+        self.database = base_settings['database']
         self.scheduler_type = base_settings['scheduler_type']
         self.cluster_script = base_settings['cluster_script']
         self.output_file = base_settings['output_file']
@@ -140,7 +137,7 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings = {}  # initialize empty dictionary
 
         # general settings
-        base_settings['experiment_name'] = config['experiment_name']
+        base_settings['experiment_name'] = config['global_settings'].get('experiment_name')
 
         # scheduler settings
         first = list(config['resources'])[0]
@@ -163,6 +160,10 @@ class Driver(metaclass=abc.ABCMeta):
             base_settings['num_procs_post'] = config[scheduler_name]['num_procs_post']
         else:
             base_settings['num_procs_post'] = 1
+
+        # database
+        db = MongoDB.from_config_create_database(config)
+        base_settings['database'] = db
 
         # driver settings
         driver_options = config['driver']['driver_params']

@@ -7,6 +7,7 @@ import unittest
 import mock
 from pqueens.interfaces.job_interface import JobInterface
 from pqueens.interfaces.interface import Interface
+from pqueens.database.mongodb import MongoDB
 
 
 class TestJobInterface(unittest.TestCase):
@@ -33,11 +34,12 @@ class TestJobInterface(unittest.TestCase):
         dummy_resource = {}
         dummy_resource['my_machine'] = {
             'scheduler': 'my_local_scheduler',
-            'max-concurrent': 5,
+            'max-concurrent': 1,
             'max-finished-jobs': 100,
         }
         self.config['database'] = {}
         self.config['database']['address'] = 'localhost:27017'
+        self.config['database']['drop_existing'] = True
         self.config['output_dir'] = {}
         self.config['driver'] = {}
         self.config['driver']['driver_type'] = 'local'
@@ -51,15 +53,16 @@ class TestJobInterface(unittest.TestCase):
         self.config['my_local_scheduler'] = {}
         self.config['my_local_scheduler']['scheduler_type'] = 'local'
 
-    @mock.patch.multiple(
-        'pqueens.database.mongodb.MongoDB',
-        __init__=mock.Mock(return_value=None),
-        print_database_information=mock.DEFAULT,
-        load=mock.DEFAULT,
-        save=mock.DEFAULT,
-        remove=mock.DEFAULT,
+    class FakeDB(object):
+        def print_database_information(self, *args, **kwargs):
+            print('test')
+
+    db_fake = FakeDB()
+
+    @mock.patch(
+        'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=db_fake
     )
-    def test_construction(self, **mocks):
+    def test_construction(self, config, **mocks):
         interface = Interface.from_config_create_interface('test_interface', self.config)
         # ensure correct type
         self.assertIsInstance(interface, JobInterface)

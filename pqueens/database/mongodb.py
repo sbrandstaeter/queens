@@ -8,85 +8,125 @@ COMPRESS_TYPE = 'compressed array'
 
 
 class MongoDB(object):
-    """ MongoDB based database to store data of computer experiments
+    """
+    MongoDB based database to store data of computer experiments
 
     Attributes:
-        client (pymongo.MongoClient):   database client
-        db (string):                    database
-        myId (int):                     connection id
+        db (obj): Mongo DB database object
+        database_name (str): Name of the current database
+        database_list (list): List with names of existing QUEENS databases
+        database_already_existent (bool): Boolean which is True if database name already exists
+
+    Returns:
+        MongoDB_obj (obj): Instance of MongoDB class
+
     """
 
     def __init__(
         self,
-        database_name_final='dummy',
-        database_address='localhost:27017',
-        drop_existing_db=False,
+        db,
+        database_address,
+        database_name,
+        database_list,
+        database_already_existent,
+        drop_existing_db,
     ):
+        self.db = db
+        self.database_address = database_address
+        self.database_name = database_name
+        self.database_list = database_list
+        self.database_already_existent = database_already_existent
+        self.drop_existing_db = drop_existing_db
+
+    @classmethod
+    def from_config_create_database(cls, config):
         """
+        Create Mongo database object from problem description
+
         Args:
-            database_address (string): adress of database to connect to
-            database_name (string):    name of database
-            drop_existing_db (bool):   drop existing QUEENS databases of user if existent
+            config (dict): Dictionary containing the problem description of the current QUEENS
+                           simulation
+
+        Returns:
+            MongoDB_obj (obj): Instance of MongoDB class
+
         """
-        # try:
-        self.client = pymongo.MongoClient(host=[database_address], serverSelectionTimeoutMS=100)
+        try:
+            database_name_final = config['global_settings'].get('experiment_name', 'dummy')
+        # in case global settings do not exist
+        except KeyError:
+            database_name_final = 'dummy'
+
+        database_address = config['database'].get('address', 'localhost:27017')
+        drop_existing_db = config['database'].get('drop_existing', False)
+
+        client = pymongo.MongoClient(
+            host=[database_address], serverSelectionTimeoutMS=100, connect=False
+        )
 
         # get list of all existing databases
-        complete_database_list = self.client.list_database_names()
+        complete_database_list = client.list_database_names()
 
         # generate name of database to be established for this QUEENS run
         user_name = getpass.getuser()
         database_name_prefix = 'queens_db_' + user_name
-        self.database_name = database_name_prefix + '_' + database_name_final
+        database_name = database_name_prefix + '_' + database_name_final
 
         # declare boolean variable for existence of database to be established
-        self.database_already_existent = False
+        database_already_existent = False
 
         # declare list for QUEENS databases
-        self.database_list = []
+        database_list = []
 
         # check all existent databases on whether they are QUEENS databases
         for check_database in complete_database_list:
             if database_name_prefix in check_database:
                 # drop all existent QUEENS databases for this user if desired
                 if drop_existing_db:
-                    self.client.drop_database(check_database)
+                    client.drop_database(check_database)
                 else:
                     # add to list of existing QUEENS databases
-                    self.database_list.append(check_database)
+                    database_list.append(check_database)
                     # check if database with this name already existed before
-                    if check_database == self.database_name:
-                        self.database_already_existent = True
+                    if check_database == database_name:
+                        database_already_existent = True
 
         # establish new database for this QUEENS run
-        self.db = self.client[self.database_name]
+        db = client[database_name]
 
         attempt = 0
         while attempt < 10:
             try:
-                self.client.server_info()  # Forces a call
+                client.server_info()  # Forces a call
                 break
             except pymongo.errors.ServerSelectionTimeoutError:
                 if attempt == 9:
-                    self.client.server_info()
+                    client.server_info()
                 else:
                     print('ServerSelectionTimeoutError in mongodb.py')
             attempt += 1
 
-    def print_database_information(
-        self, database_address='localhost:27017', drop_existing_db=False, restart=False,
-    ):
+        return cls(
+            db,
+            database_address,
+            database_name,
+            database_list,
+            database_already_existent,
+            drop_existing_db,
+        )
+
+    def print_database_information(self, restart=False):
         """ Print out information onn existing and newly established databases
         Args:
-            drop_existing_db (bool):   drop existing QUEENS databases of user if existent
+            restart (bool): Flag for the restart option of QUEENS
 
         """
         sys.stdout.write('\n=====================================================================')
         sys.stdout.write('\nDatabase Information:      ')
         sys.stdout.write('\n=====================================================================')
-        sys.stdout.write('\nDatabase server: %s' % database_address)
+        sys.stdout.write('\nDatabase server: %s' % self.database_address)
 
-        if drop_existing_db:
+        if self.drop_existing_db:
             sys.stdout.write('\nAs requested, all QUEENS databases for this user were dropped.')
         else:
             sys.stdout.write(

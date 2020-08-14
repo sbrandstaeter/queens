@@ -23,7 +23,7 @@ from pqueens.utils.hash_singularity_files import hash_files
 
 class Scheduler(metaclass=abc.ABCMeta):
     """
-    Abstact base class for Schedulers in QUEENS. The purpose of a scheduler
+    Abstract base class for Schedulers in QUEENS. The purpose of a scheduler
     is twofold: First, it organized the simulations in QUEENS on local or remote computing resources
     by communication with the OS or the scheduling software installed on the system.
     Second it establishes the necessary connections via ssh port-forwarding to enable
@@ -744,13 +744,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             batch (int):             Batch number of job
 
        """
-
-        # load JSON input file
-        with open(self.config['input_file'], 'r') as myfile:
-            config = json.load(myfile, object_pairs_hook=OrderedDict)
-
         # create driver
-        driver_obj = Driver.from_config_create_driver(config, job_id, batch)
+        driver_obj = Driver.from_config_create_driver(self.config, job_id, batch)
 
         # do post-processing (if required), post-post-processing,
         # finish and clean job
@@ -860,8 +855,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             batch (str):     Batch number of job
 
         Returns:
-            int:            process ID
-
+            driver_obj.pid (int): process ID
         """
 
         # only required for ECS task scheduler:
@@ -920,12 +914,8 @@ class Scheduler(metaclass=abc.ABCMeta):
                         f"\nStderr:\n{stderr}"
                     )
 
-        # load JSON input file
-        with open(self.config['input_file'], 'r') as myfile:
-            config = json.load(myfile, object_pairs_hook=OrderedDict)
-
         # create and run driver
-        driver_obj = Driver.from_config_create_driver(config, job_id, batch)
+        driver_obj = Driver.from_config_create_driver(self.config, job_id, batch)
         driver_obj.main_run()
 
         # only required for local scheduler: finish-and-clean call
@@ -1005,10 +995,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         Returns:
             int:            process ID is 0 for restart
         """
-        with open(self.config['input_file'], 'r') as myfile:
-            config = json.load(myfile, object_pairs_hook=OrderedDict)
-
-        driver_obj = Driver.from_config_create_driver(config, job_id, batch)
+        driver_obj = Driver.from_config_create_driver(self.config, job_id, batch)
 
         driver_obj.finish_and_clean()
 

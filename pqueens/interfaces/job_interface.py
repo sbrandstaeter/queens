@@ -42,7 +42,6 @@ class JobInterface(Interface):
         interface_name,
         resources,
         experiment_name,
-        db_address,
         db,
         polling_time,
         output_dir,
@@ -58,7 +57,6 @@ class JobInterface(Interface):
             interface_name (string):    name of interface
             resources (dict):           dictionary with resources
             experiment_name (string):   name of experiment
-            db_address (string):         address of database to use
             db (mongodb):               mongodb to store results and job info
             polling_time (int):         how frequently do we check if jobs are done
             output_dir (string):        directory to write output to
@@ -69,12 +67,11 @@ class JobInterface(Interface):
         self.name = interface_name
         self.resources = resources
         self.experiment_name = experiment_name
-        self.db_address = db_address
         self.db = db
         self.polling_time = polling_time
         self.output_dir = output_dir
         self.parameters = parameters
-        self.batch_number = 1
+        self.batch_number = 0
         self.num_pending = None
         self.restart_from_finished_simulation = restart_from_finished_simulation
         self.connect_to_resource = connect
@@ -95,9 +92,6 @@ class JobInterface(Interface):
         # get resources from config
         resources = parse_resources_from_configuration(config)
 
-        # get address of database
-        db_address = config['database']['address']
-
         # get flag for potentially dropping databases
         if 'drop_existing' in config['database']:
             drop_existing = config['database']['drop_existing']
@@ -113,20 +107,12 @@ class JobInterface(Interface):
 
         # establish new database for this QUEENS run and
         # potentially drop other databases
-        db = MongoDB(
-            database_name_final=experiment_name,
-            database_address=db_address,
-            drop_existing_db=drop_existing,
-        )
+        db = MongoDB.from_config_create_database(config)
 
         # print out database information
-        db.print_database_information(
-            database_address=db_address,
-            drop_existing_db=drop_existing,
-            restart=restart_from_finished_simulation,
-        )
+        db.print_database_information(restart=restart_from_finished_simulation)
 
-        polling_time = config.get('polling-time', 1)
+        polling_time = config.get('polling-time', 1.0)
 
         # TODO: This is not nice -> should be solved solemnly over Driver class
         output_dir = config['driver']['driver_params']["experiment_dir"]
@@ -155,7 +141,6 @@ class JobInterface(Interface):
             interface_name,
             resources,
             experiment_name,
-            db_address,
             db,
             polling_time,
             output_dir,
@@ -257,17 +242,21 @@ class JobInterface(Interface):
         Returns:
             list : list with all jobs or an empty list
         """
-        jobs = self.db.load(
-            self.experiment_name,
-            str(self.batch_number),
-            'jobs',
-            {'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
-        )
 
-        if jobs is None:
-            jobs = []
-        if isinstance(jobs, dict):
-            jobs = [jobs]
+        jobs = []
+        for batch_num in range(1, self.batch_number + 1):
+            job = self.db.load(
+                self.experiment_name,
+                str(batch_num),
+                'jobs',
+                {'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
+            )
+            if isinstance(job, list):
+                jobs.extend(job)
+            else:
+                if job is not None:
+                    jobs.append(job)
+
         return jobs
 
     def save_job(self, job):
@@ -458,21 +447,26 @@ class JobInterface(Interface):
         return jobid_for_post_post
 
     def _manage_jobs(self, samples):
-        """Manage regular submission of jobs without restart.
+        """
+        Manage regular submission of jobs without restart.
 
         Args:
-            samples (DataFrame):     realization/samples of QUEENS simulation input variables
-        """
-        idx_range = range(1, samples.size + 1, 1)
-        self._manage_job_submission(samples, idx_range)
+            samples (DataFrame): realization/samples of QUEENS simulation input variables
 
-        return np.array(idx_range)
+        """
+        jobs = self.load_jobs()
+        if not jobs or self.batch_number == 1:
+            job_ids_generator = range(1, samples.size + 1, 1)
+        else:
+            job_ids_generator = range(len(jobs) + 1, len(jobs) + samples.size + 1, 1)
+
+        self._manage_job_submission(samples, job_ids_generator)
 
     def _check_results_in_db(self, samples):
         """Check complete results in database.
 
         Args:
-            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+            samples (DataFrame): realization/samples of QUEENS simulation input variables
 
         Returns:
             number_of_results_in_db (int):              number of results in database
@@ -762,10 +756,13 @@ class JobInterface(Interface):
                 # Loop over all available resources
                 for resource_name, resource in self.resources.items():
                     if resource.accepting_jobs(jobs):
-                        variables = samples.loc[jobid][0]
+                        job_num = jobid - (self.batch_number - 1) * samples.size
+                        variables = samples.loc[job_num][0]
                         try:
-                            current_job = next(job for job in jobs if job['id'] == jobid)
-                        except (StopIteration, IndexError):
+                            current_job = next(
+                                job for job in jobs if job is not None and job['id'] == jobid
+                            )
+                        except (StopIteration, IndexError, KeyError):
                             current_job = self.create_new_job(variables, resource_name, jobid)
 
                         current_job['status'] = 'pending'
