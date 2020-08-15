@@ -1,4 +1,6 @@
 import os
+
+from pqueens.database.mongodb import MongoDB
 from pqueens.drivers.driver import Driver
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -35,7 +37,15 @@ class AnsysDriverNative(Driver):
 
         """
         # TODO this needs to be fixed
-        base_settings['address'] = 'localhost:27017'
+        database_address = 'localhost:27017'
+
+        database_config = dict(
+            global_settings=config["global_settings"],
+            database=dict(address=database_address, drop_existing=False),
+        )
+        db = MongoDB.from_config_create_database(database_config)
+        base_settings['database'] = db
+
         # TODO this is superbad, but the only solution currently
         driver_setting = config["driver"]["driver_params"]
 

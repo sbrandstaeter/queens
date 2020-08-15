@@ -18,13 +18,19 @@ def test_init(mocker):
     assert my_driver.custom_executable == custom_executable
 
 
-def test_from_config_create_driver(mocker):
+def test_from_config_create_driver(fake_database, mocker):
     mocker.patch(
         'pqueens.drivers.ansys_driver_native.' 'AnsysDriverNative.__init__', return_value=None
     )
 
+    mocker.patch(
+        'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=fake_database
+    )
+
     base_settings = {'option': 'option_1'}
+
     config = {'driver': {}}
+    config['global_settings'] = {'experiment_name': 'test_ansys_driver_from_config_create'}
     config['driver']['driver_params'] = {
         'custom_executable': 'my_custom_anysy',
         'ansys_version': 'v15',

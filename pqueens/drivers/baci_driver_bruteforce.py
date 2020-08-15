@@ -1,4 +1,6 @@
 import os
+
+from pqueens.database.mongodb import MongoDB
 from pqueens.drivers.driver import Driver
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -35,7 +37,14 @@ class BaciDriverBruteforce(Driver):
             driver(obj): Baci_driver_bruteforce object
 
         """
-        base_settings['address'] = '10.10.0.1:' + str(base_settings['port'])
+        database_address = '10.10.0.1:' + str(base_settings['port'])
+        database_config = dict(
+            global_settings=config["global_settings"],
+            database=dict(address=database_address, drop_existing=False),
+        )
+        db = MongoDB.from_config_create_database(database_config)
+        base_settings['database'] = db
+
         base_settings['experiment_name'] = config['experiment_name']
         return cls(base_settings, workdir)
 
