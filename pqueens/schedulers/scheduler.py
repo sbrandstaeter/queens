@@ -15,10 +15,10 @@ from pprint import pprint
 import pqueens.interfaces.job_interface as job_interface
 from pqueens.drivers.driver import Driver
 from pqueens.utils.aws_output_string_extractor import aws_extract
+from pqueens.utils.manage_singularity import SingularityManager, hash_files
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
-from pqueens.utils.hash_singularity_files import hash_files
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -89,6 +89,12 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.restart_from_finished_simulation = base_settings['restart_from_finished_simulation']
         self.polling_time = base_settings['polling_time']
         self.docker_image = base_settings['docker_image']
+        self.singularity_manager = SingularityManager(
+            remote_flag=self.remote_flag,
+            connect_to_resource=self.connect_to_resource,
+            cluster_bind=self.cluster_bind,
+            path_to_singularity=self.path_to_singularity,
+        )
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name=None):
@@ -209,12 +215,12 @@ class Scheduler(metaclass=abc.ABCMeta):
             self.copy_temp_json()
             self.copy_post_post()
 
-            self.check_singularity_system_vars()
-            self.prepare_singularity_files()
+            self.singularity_manager.check_singularity_system_vars()
+            self.singularity_manager.prepare_singularity_files()
         else:
             if not self.no_singularity:
-                self.check_singularity_system_vars()
-                self.prepare_singularity_files()
+                self.singularity_manager.check_singularity_system_vars()
+                self.singularity_manager.prepare_singularity_files()
 
     def post_run(self):  # will actually be called in job_interface
         """
@@ -300,101 +306,6 @@ class Scheduler(metaclass=abc.ABCMeta):
                     print('Try again!')
         else:
             pass
-
-    def check_singularity_system_vars(self):
-        """
-        Check and establish necessary system variables for the singularity image.
-        Examples are directory bindings such that certain directories of the host can be
-        accessed on runtime within the singularity image. Other system variables include
-        path and environment variables
-
-        Returns:
-            None
-
-        """
-
-        # Check if SINGULARITY_BIND exists and if not write it to .bashrc file
-        if self.remote_flag:
-            command_list = ['ssh', self.connect_to_resource, '\'echo $SINGULARITY_BIND\'']
-        else:
-            command_list = ['echo $SINGULARITY_BIND']
-        command_string = ' '.join(command_list)
-        _, _, stdout, _ = run_subprocess(command_string)
-        if stdout == "\n":
-            if self.remote_flag:
-                command_list = [
-                    'ssh',
-                    self.connect_to_resource,
-                    "\"echo 'export SINGULARITY_BIND="
-                    + self.cluster_bind
-                    + "\' >> ~/.bashrc && source ~/.bashrc\"",
-                ]
-            else:
-                command_list = [
-                    "echo 'export SINGULARITY_BIND="
-                    + self.cluster_bind
-                    + "\' >> ~/.bashrc && source ~/.bashrc"
-                ]
-        command_string = ' '.join(command_list)
-        _, _, _, _ = run_subprocess(command_string)
-
-        # Create a Singularity PATH variable that is equal to the host PATH
-        if self.remote_flag:
-            command_list = ['ssh', self.connect_to_resource, '\'echo $SINGULARITYENV_APPEND_PATH\'']
-        else:
-            command_list = ['echo $SINGULARITYENV_APPEND_PATH']
-        command_string = ' '.join(command_list)
-        _, _, stdout, _ = run_subprocess(command_string)
-        if stdout == "\n":
-            if self.remote_flag:
-                command_list = [
-                    'ssh',
-                    self.connect_to_resource,
-                    # pylint: disable=line-too-long
-                    "\"echo 'export SINGULARITYENV_APPEND_PATH=$PATH' >> ~/.bashrc && source "
-                    "~/.bashrc\"",
-                    # pylint: enable=line-too-long
-                ]  # noqa
-            else:
-                command_list = [
-                    # pylint: disable=line-too-long
-                    "echo 'export SINGULARITYENV_APPEND_PATH=$PATH' >> ~/.bashrc && source "
-                    "~/.bashrc"
-                    # pylint: enable=line-too-long
-                ]  # noqa
-            command_string = ' '.join(command_list)
-            _, _, _, _ = run_subprocess(command_string)
-
-        # Create a Singulartity LD_LIBRARY_PATH variable that is equal to the host LD_LIBRARY_PATH
-        if self.remote_flag:
-            command_list = [
-                'ssh',
-                self.connect_to_resource,
-                '\'echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH\'',
-            ]
-        else:
-            command_list = ['echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH']
-        command_string = ' '.join(command_list)
-        _, _, stdout, _ = run_subprocess(command_string)
-        if stdout == "\n":
-            if self.remote_flag:
-                command_list = [
-                    'ssh',
-                    self.connect_to_resource,
-                    # pylint: disable=line-too-long
-                    "\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> "
-                    "~/.bashrc && source ~/.bashrc\"",
-                    # pylint: enable=line-too-long
-                ]  # noqa
-            else:
-                command_list = [
-                    # pylint: disable=line-too-long
-                    "echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> "
-                    "~/.bashrc && source ~/.bashrc"
-                    # pylint: enable=line-too-long
-                ]  # noqa
-            command_string = ' '.join(command_list)
-            _, _, _, _ = run_subprocess(command_string)
 
     def establish_port_forwarding_remote(self, address_localhost):
         """
@@ -550,174 +461,6 @@ class Scheduler(metaclass=abc.ABCMeta):
             raise RuntimeError(
                 "Error! Was not able to copy post_post directory to remote! Abort..."
             )
-
-    def create_singularity_image(self):
-        """
-        Add current QUEENS setup to pre-designed singularity image for cluster applications
-
-        Returns:
-             None
-
-        """
-        # create the actual image
-        command_string = '/usr/bin/singularity --version'
-        _, _, _, stderr = run_subprocess(command_string)
-        if stderr:
-            raise RuntimeError(
-                f'Singularity could not be executed! The error message was: {stderr}'
-            )
-
-        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path1 = '../../driver.simg'
-        rel_path2 = '../../singularity_recipe'
-        abs_path1 = os.path.join(script_dir, rel_path1)
-        abs_path2 = os.path.join(script_dir, rel_path2)
-        command_list = ["sudo /usr/bin/singularity build", abs_path1, abs_path2]
-        command_string = ' '.join(command_list)
-        _, _, stdout, stderr = run_subprocess(command_string)
-
-        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../../driver.simg'
-        abs_path = os.path.join(script_dir, rel_path)
-        if not os.path.isfile(abs_path):
-            print('Build of local singularity image failed!')
-            print(
-                'This could have several reasons but '
-                'make sure to run QUEENS from the base directory'
-            )
-            print('containing the main.py file to set the proper relatives paths!')
-            print(
-                '----------------------------------------------------------------------------------'
-            )
-            print(f'The returned error message was: {stderr}, {stdout}')
-            raise RuntimeError(f'The returned error message was: {stderr}, {stdout}')
-
-    def prepare_singularity_files(self):
-        """
-        Checks if local and remote singularity images are existent and compares a hash-file
-        to the current hash of the files to determine if the singularity image is up to date.
-        The method furthermore triggers the build of a new singularity image if necessary.
-
-        Returns:
-            None
-
-        """
-
-        # check existence local
-        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../../driver.simg'
-        abs_path = os.path.join(script_dir, rel_path)
-        if os.path.isfile(abs_path):
-            # check singularity status local
-            command_list = ['/usr/bin/singularity', 'run', abs_path, '--hash=true']
-            command_string = ' '.join(command_list)
-            _, _, old_data, stderr = run_subprocess(command_string)
-
-            if stderr:
-                raise RuntimeError(f'Singularity hash-check return the error: {stderr}. Abort...')
-
-            hashlist = hash_files()
-            # Write local singularity image and remote image
-            # convert the string that is returned from the singularity image into a list
-            old_data = [ele.replace("\'", "") for ele in old_data.strip('][').split(', ')]
-            old_data = [ele.replace("]", "") for ele in old_data]
-            old_data = [ele.replace("\n", "") for ele in old_data]
-
-            if ''.join(old_data) != ''.join(hashlist):
-                print(
-                    "Local singularity image is not up-to-date with QUEENS! "
-                    "Writing new local image..."
-                )
-                print("(This will take 3 min or so, but needs only to be done once)")
-                # deleting old image
-                rel_path = '../../driver*'
-                abs_path = os.path.join(script_dir, rel_path)
-                command_list = ['rm', abs_path]
-                command_string = ' '.join(command_list)
-                _, _, _, _ = run_subprocess(command_string)
-                self.create_singularity_image()
-                print("Local singularity image written successfully!")
-
-                # Update remote image
-                if self.remote_flag:
-                    print("Updating remote image from local image...")
-                    print("(This might take a couple of seconds, but needs only to be done once)")
-                    rel_path = "../../driver.simg"
-                    abs_path = os.path.join(script_dir, rel_path)
-                    command_list = [
-                        "scp",
-                        abs_path,
-                        self.connect_to_resource + ':' + self.path_to_singularity,
-                    ]
-                    command_string = ' '.join(command_list)
-                    _, _, _, stderr = run_subprocess(command_string)
-                    if stderr:
-                        raise RuntimeError(
-                            "Error! Was not able to copy local singularity image to remote! "
-                            "Abort..."
-                        )
-
-            # check existence singularity on remote
-            if self.remote_flag:
-                command_list = [
-                    'ssh -T',
-                    self.connect_to_resource,
-                    'test -f',
-                    self.path_to_singularity + "/driver.simg && echo 'Y' || echo 'N'",
-                ]
-                command_string = ' '.join(command_list)
-                _, _, stdout, _ = run_subprocess(command_string)
-                if 'N' in stdout:
-                    # Update remote image
-                    print(
-                        "Remote singularity image is not existent! "
-                        "Updating remote image from local image..."
-                    )
-                    print("(This might take a couple of seconds, but needs only to be done once)")
-                    rel_path = "../../driver.simg"
-                    abs_path = os.path.join(script_dir, rel_path)
-                    command_list = [
-                        "scp",
-                        abs_path,
-                        self.connect_to_resource + ':' + self.path_to_singularity,
-                    ]
-                    command_string = ' '.join(command_list)
-                    _, _, _, stderr = run_subprocess(command_string)
-                    if stderr:
-                        raise RuntimeError(
-                            "Error! Was not able to copy local singularity image to remote! "
-                            "Abort..."
-                        )
-                    print('All singularity images ok! Starting simulation on cluster...')
-
-        else:
-            # local image was not even existent --> create local and remote image
-            print("No local singularity image found! Building new image...")
-            print("(This will take 3 min or so, but needs only to be done once)")
-            print("_______________________________________________________________________________")
-            print("")
-            print("Make sure QUEENS was called from the base directory containing the main.py file")
-            print("to set the correct relative paths for the image; otherwise abort!")
-            print("_______________________________________________________________________________")
-            self.create_singularity_image()
-            print("Local singularity image written successfully!")
-            if self.remote_flag:
-                print("Updating now remote image from local image...")
-                print("(This might take a couple of seconds, but needs only to be done once)")
-                rel_path = "../../driver.simg"
-                abs_path = os.path.join(script_dir, rel_path)
-                command_list = [
-                    "scp",
-                    abs_path,
-                    self.connect_to_resource + ':' + self.path_to_singularity,
-                ]
-                command_string = ' '.join(command_list)
-                _, _, _, stderr = run_subprocess(command_string)
-                if stderr:
-                    raise RuntimeError(
-                        "Error! Was not able to copy local singularity image to remote! " "Abort..."
-                    )
-                print('All singularity images ok! Starting simulation on cluster...')
 
     def submit(self, job_id, batch):
         """ Function to submit new job to scheduling software on a given resource

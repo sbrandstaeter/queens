@@ -18,7 +18,7 @@ except ImportError:
 import sys
 
 from pqueens.drivers.driver import Driver
-from pqueens.utils.hash_singularity_files import hash_files
+from pqueens.utils.manage_singularity import hash_files
 
 
 def main(args):

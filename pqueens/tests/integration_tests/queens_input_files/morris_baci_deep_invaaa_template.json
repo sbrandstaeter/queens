@@ -1,0 +1,92 @@
+{
+  "experiment_name": "{experiment_name}",
+  "database": {
+    "address": "localhost:27017",
+    "drop_existing": false
+  },
+  "method": {
+    "method_name": "sa_morris_salib",
+    "method_options": {
+      "seed": 2,
+      "model": "model",
+      "num_trajectories": 15,
+      "num_optimal_trajectories": 5,
+      "grid_jump": 0.5,
+      "number_of_levels": 2,
+      "confidence_level": 0.95,
+      "local_optimization": "True",
+      "num_bootstrap_samples": 15,
+      "result_description": {
+        "write_results": true,
+        "plot_results": false
+      }
+    }
+  },
+  "model": {
+    "type": "simulation_model",
+    "interface": "interface",
+    "parameters": "parameters"
+  },
+  "interface": {
+    "type": "job_interface",
+    "resources": "resources",
+    "driver": "driver"
+  },
+  "driver": {
+    "driver_type": "baci_{cluster}",
+    "driver_params": {
+      "path_to_singularity": "{path_to_singularity}",
+      "input_template": "{input_template}",
+      "path_to_executable": "{path_to_executable}",
+      "path_to_postprocessor": "{path_to_postprocessor}",
+      "experiment_dir": "{experiment_dir}",
+      "post_process_options": [
+        "--field=structure --node=26 --start=1"
+      ],
+      "cluster_bind": "{cluster_bind}",
+      "post_post": {
+        "post_post_approach_sel": "baci",
+        "delete_field_data": false,
+        "target_time": 5e-1,
+        "time_tol": 1e-2,
+        "file_prefix": "QoI",
+        "usecols": [
+          1,
+          3
+        ],
+        "skiprows": 4
+      }
+    }
+  },
+  "resources": {
+    "deep": {
+      "scheduler": "scheduler",
+      "max-concurrent": 10,
+      "max-finished-jobs": 1000
+    }
+  },
+  "scheduler": {
+    "scheduler_type": "{scheduler_type}",
+    "num_procs": 1,
+    "num_procs_post": 1,
+    "walltime": "120:00:00",
+    "connect_to_resource": "{connect_to_resource}",
+    "scheduler_output": "True"
+  },
+  "parameters": {
+    "random_variables": {
+      "nue": {
+        "type": "FLOAT",
+        "size": 1,
+        "min": 0.45,
+        "max": 0.49
+      },
+      "pressure": {
+        "type": "FLOAT",
+        "size": 1,
+        "min": 28000,
+        "max": 38000
+      }
+    }
+  }
+}
