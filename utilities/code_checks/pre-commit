@@ -42,16 +42,19 @@ then
   if [ ! -z "$uncompliant_files" ]
   then
     printf "\n"
-    printf "The following file(s) are not compliant with QUEENS's PEP8 coding style:\n"
+    printf "The following file(s) are not compliant with the QUEENS coding style:\n"
     printf "\n"
     echo "########################################################################"
     printf "$uncompliant_files"
     echo "########################################################################"
     printf "\n"
-    echo "--> Please run Black code formatter manually for those files using:"
-    echo "black <path/to/file>"
+    echo "--> To format the code and detect pylint-errors, make sure to:"
     printf "\n"
-    echo "--> Afterwards, please add all formatted files to the Git staging area using: git add <path/to/file>"
+    echo "1.) Run Black code formatter manually for those files using: black <path/to/file>"
+    printf "\n"
+    echo "2.) Run Pylint manually for those files using: black <path/to/file>"
+    printf "\n"
+    echo "3.) Add all formatted files to the Git staging area using: git add <path/to/file>"
     printf "\n"
     exit 1
   fi

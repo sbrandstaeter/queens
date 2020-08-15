@@ -56,4 +56,6 @@ dependencies:
     - diversipy
 # electrochemical impedance spectroscopy (EIS)
     - impedance
+# Utility to handle pylint exit codes scripting friendly
+    - pylint-exit
 
