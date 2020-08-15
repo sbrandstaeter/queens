@@ -43,7 +43,6 @@ def request_user_input_with_default_and_timeout(default, timeout):
     """
     # set alarm
     signal.alarm(timeout)
-    print(f"You have {timeout}s:")
     user_input = request_user_input(default=default, timeout=timeout)
     # disable the alarm after success
     signal.alarm(0)
