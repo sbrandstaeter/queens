@@ -196,6 +196,12 @@ In CentOs7, singularity can directly be installed from the repository via:
 ```bash
 sudo yum install singularity
 ```
+after the installation execute the following command once on your workstation: 
+```bash
+sudo singularity config fakeroot --add <your_username>
+```
+For more information please see the singularity documentation for [user](https://sylabs.io/guides/3.5/user-guide/fakeroot.html) and [admin](https://sylabs.io/guides/3.5/admin-guide/user_namespace.html#config-fakeroot) on the fakeroot option of singularity.  
+
 Connecting via ssh to the compute machine and from the compute machine to the localhost needs to work passwordless. 
 Therefore, we need to copy the respective `id_rsa.pub`-keys on the localhost and the remote, once. Easiest way to do so should be:
 ```bash
