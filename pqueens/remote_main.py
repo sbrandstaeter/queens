@@ -44,8 +44,11 @@ def main(args):
     parser.add_argument("--path_json", help="system path to temporary json file", type=str)
     parser.add_argument("--post", help="option for postprocessing", type=str)
     parser.add_argument("--workdir", help="working directory", type=str)
-    parser.add_argument("--hash", help="Boolean that specifies whether the main run should return "
-                                       "the hash of all copied QUEENS files")
+    parser.add_argument(
+        "--hash",
+        help="Boolean that specifies whether the main run should return "
+        "the hash of all copied QUEENS files",
+    )
 
     args = parser.parse_args(args)
     job_id = args.job_id
@@ -86,6 +89,11 @@ def main(args):
             abs_path = os.path.join(path_json, 'temp.json')
             with open(abs_path, 'r') as myfile:
                 config = json.load(myfile, object_pairs_hook=OrderedDict)
+                # move some parameters into a global settings dict to be passed to e.g.
+                # iterators facilitating input output stuff
+                global_settings = {"experiment_name": config["experiment_name"]}
+                # remove experiment_name field from options dict
+                config["global_settings"] = global_settings
         except FileNotFoundError:
             raise FileNotFoundError("temp.json did not load properly.")
 
