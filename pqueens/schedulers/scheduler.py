@@ -284,7 +284,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             while True:
                 try:
                     print('Please type "y" or "n" >> ')
-                    answer = request_user_input_with_default_and_timeout(default="n", timeout=10)
+                    answer = request_user_input_with_default_and_timeout(default="n", timeout=20)
                 except SyntaxError:
                     answer = None
 

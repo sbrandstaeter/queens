@@ -20,7 +20,6 @@ def request_user_input(default, timeout):
     """
     try:
         user_input = input()
-        print(f"You typed {user_input}\n")
         return user_input
     except:
         # timeout
