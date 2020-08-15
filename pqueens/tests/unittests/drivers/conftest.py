@@ -91,18 +91,11 @@ def baci_post_cmds(baci_job, baci_output_file):
 
 
 @pytest.fixture(scope='function')
-def ansys_driver(driver_base_settings, mocker):
+def ansys_driver(driver_base_settings, fake_database, mocker):
     """ Generic ANSYS driver"""
-    # TODO this is super ugly. creation of DB needs te be moved out of
-    # driver init to resolve this
-    class FakeDB(object):
-        def print_database_information(self, *args, **kwargs):
-            print('test')
-
-    db_fake = FakeDB()
 
     mocker.patch(
-        'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=db_fake
+        'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=fake_database
     )
 
     driver_base_settings['address'] = 'localhost:27017'

@@ -2,6 +2,8 @@ import os
 import docker
 import getpass
 import time
+
+from pqueens.database.mongodb import MongoDB
 from pqueens.drivers.driver import Driver
 from pqueens.utils.aws_output_string_extractor import aws_extract
 from pqueens.utils.run_subprocess import run_subprocess
@@ -34,7 +36,14 @@ class BaciDriverDocker(Driver):
             driver (obj): BaciDriverDocker object
 
         """
-        base_settings['address'] = 'localhost:27017'
+        database_address = 'localhost:27017'
+        database_config = dict(
+            global_settings=config["global_settings"],
+            database=dict(address=database_address, drop_existing=False),
+        )
+        db = MongoDB.from_config_create_database(database_config)
+        base_settings['database'] = db
+
         base_settings['docker_version'] = config['driver']['driver_type']
         base_settings['docker_image'] = config['driver']['driver_params']['docker_image']
         return cls(base_settings)

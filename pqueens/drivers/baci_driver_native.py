@@ -1,4 +1,6 @@
 import os
+
+from pqueens.database.mongodb import MongoDB
 from pqueens.drivers.driver import Driver
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
@@ -31,7 +33,13 @@ class BaciDriverNative(Driver):
             BaciDriverNative_obj (obj): Instance of the BaciDriverNative class
 
         """
-        base_settings['address'] = 'localhost:27017'
+        database_address = 'localhost:27017'
+        database_config = dict(
+            global_settings=config["global_settings"],
+            database=dict(address=database_address, drop_existing=False),
+        )
+        db = MongoDB.from_config_create_database(database_config)
+        base_settings['database'] = db
         return cls(base_settings)
 
     # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
@@ -144,7 +152,7 @@ class BaciDriverNative(Driver):
                 subprocess_type='simulation',
                 terminate_expr='PROC.*ERROR',
                 loggername=__name__ + f'_{self.job_id}',
-                output_file=self.output_file
+                output_file=self.output_file,
             )
 
         # detection of failed jobs

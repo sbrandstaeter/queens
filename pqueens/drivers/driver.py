@@ -2,7 +2,6 @@ import abc
 import os
 import sys
 import time
-from pqueens.database.mongodb import MongoDB
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -162,8 +161,6 @@ class Driver(metaclass=abc.ABCMeta):
             base_settings['num_procs_post'] = 1
 
         # database
-        db = MongoDB.from_config_create_database(config)
-        base_settings['database'] = db
 
         # driver settings
         driver_options = config['driver']['driver_params']
@@ -337,7 +334,6 @@ class Driver(metaclass=abc.ABCMeta):
             # TODO the definition of output file and scratch seems redunant as this is already
             # defined in the child class;
             # create input file name
-            mpi_options = 'mpirun -np ' + str(self.num_procs_post)
             dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
             output_directory = os.path.join(dest_dir, 'output')
             input_file_name = str(self.experiment_name) + '_' + str(self.job_id) + '.dat'
@@ -357,7 +353,6 @@ class Driver(metaclass=abc.ABCMeta):
                     target_file_opt_2 = self.file_prefix + "_" + str(num + 1)
                     target_file_opt = os.path.join(target_file_opt_1, target_file_opt_2)
                     postprocessing_list = [
-                        mpi_options,
                         self.postprocessor,
                         output_file_opt,
                         option,
