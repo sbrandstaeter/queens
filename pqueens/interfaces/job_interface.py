@@ -92,12 +92,6 @@ class JobInterface(Interface):
         # get resources from config
         resources = parse_resources_from_configuration(config)
 
-        # get flag for potentially dropping databases
-        if 'drop_existing' in config['database']:
-            drop_existing = config['database']['drop_existing']
-        else:
-            drop_existing = False
-
         # get experiment name
         experiment_name = config['global_settings']['experiment_name']
 
