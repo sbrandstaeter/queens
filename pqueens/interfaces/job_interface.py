@@ -99,6 +99,12 @@ class JobInterface(Interface):
             'restart_from_finished_simulation', False
         )
 
+        if restart_from_finished_simulation:
+            reset_database = False
+        else:
+            reset_database = True
+
+        config["database"]["reset_database"] = reset_database
         # establish new database for this QUEENS run and
         # potentially drop other databases
         db = MongoDB.from_config_create_database(config)

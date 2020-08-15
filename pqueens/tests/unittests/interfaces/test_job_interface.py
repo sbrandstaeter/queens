@@ -39,7 +39,7 @@ class TestJobInterface(unittest.TestCase):
         }
         self.config['database'] = {}
         self.config['database']['address'] = 'localhost:27017'
-        self.config['database']['drop_existing'] = True
+        self.config['database']['drop_all_existing_dbs'] = True
         self.config['output_dir'] = {}
         self.config['driver'] = {}
         self.config['driver']['driver_type'] = 'local'

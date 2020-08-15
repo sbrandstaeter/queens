@@ -1,6 +1,6 @@
 {
     "experiment_name": "ee_invaaa_local",
-    "database": {"address": "localhost:27017", "drop_existing": false},
+    "database": {"address": "localhost:27017", "drop_all_existing_dbs": false},
     "method": {
         "method_name": "sa_morris_salib",
         "method_options": {

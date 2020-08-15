@@ -60,12 +60,12 @@ def test_dropping():
     # check if we can connect to mongodb and clear preexisting db
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_existing": True}}
+            {"database": {"address": "localhost:27017", "drop_all_existing_dbs": True}}
         )
     except:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_existing": True}}
+            {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
         )
 
     assert isinstance(db, MongoDB)
@@ -74,12 +74,12 @@ def test_dropping():
 def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_existing": True}}
+            {"database": {"address": "localhost:27017", "drop_all_existing_dbs": True}}
         )
     except:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_existing": True}}
+            {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
         )
 
     # save some dummy data
@@ -105,12 +105,12 @@ def test_write_multiple_entries(dummy_job, experiment_name, batch_id_2, job_id):
 
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_existing": True}}
+            {"database": {"address": "localhost:27017", "drop_all_existing_dbs": True}}
         )
     except:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_existing": True}}
+            {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
         )
 
     # save some dummy data

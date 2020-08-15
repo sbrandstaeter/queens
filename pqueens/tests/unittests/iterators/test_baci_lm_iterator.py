@@ -32,7 +32,7 @@ def fix_tolerance(request):
 @pytest.fixture()
 def default_baci_lm_iterator():
     config = {
-        'database': OrderedDict([('address', 'localhost:27017'), ('drop_existing', True)]),
+        'database': OrderedDict([('address', 'localhost:27017'), ('drop_all_existing_dbs', True)]),
         'method': OrderedDict(
             [
                 ('method_name', 'baci_lm'),

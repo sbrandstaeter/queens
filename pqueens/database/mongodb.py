@@ -29,14 +29,14 @@ class MongoDB(object):
         database_name,
         database_list,
         database_already_existent,
-        drop_existing_db,
+        drop_all_existing_dbs,
     ):
         self.db = db
         self.database_address = database_address
         self.database_name = database_name
         self.database_list = database_list
         self.database_already_existent = database_already_existent
-        self.drop_existing_db = drop_existing_db
+        self.drop_all_existing_dbs = drop_all_existing_dbs
 
     @classmethod
     def from_config_create_database(cls, config):
@@ -58,7 +58,9 @@ class MongoDB(object):
             database_name_final = 'dummy'
 
         database_address = config['database'].get('address', 'localhost:27017')
-        drop_existing_db = config['database'].get('drop_existing', False)
+        drop_all_existing_dbs = config['database'].get('drop_all_existing_dbs', False)
+
+        reset_database = config['database'].get('reset_database', False)
 
         client = pymongo.MongoClient(
             host=[database_address], serverSelectionTimeoutMS=100, connect=False
@@ -73,7 +75,7 @@ class MongoDB(object):
         database_name = database_name_prefix + '_' + database_name_final
 
         # declare boolean variable for existence of database to be established
-        database_already_existent = False
+        database_exists = False
 
         # declare list for QUEENS databases
         database_list = []
@@ -82,14 +84,17 @@ class MongoDB(object):
         for check_database in complete_database_list:
             if database_name_prefix in check_database:
                 # drop all existent QUEENS databases for this user if desired
-                if drop_existing_db:
+                if drop_all_existing_dbs:
                     client.drop_database(check_database)
                 else:
                     # add to list of existing QUEENS databases
                     database_list.append(check_database)
                     # check if database with this name already existed before
                     if check_database == database_name:
-                        database_already_existent = True
+                        database_exists = True
+
+        if database_exists and reset_database:
+            client.drop_database(database_name)
 
         # establish new database for this QUEENS run
         db = client[database_name]
@@ -111,8 +116,8 @@ class MongoDB(object):
             database_address,
             database_name,
             database_list,
-            database_already_existent,
-            drop_existing_db,
+            database_exists,
+            drop_all_existing_dbs,
         )
 
     def print_database_information(self, restart=False):
@@ -126,7 +131,7 @@ class MongoDB(object):
         sys.stdout.write('\n=====================================================================')
         sys.stdout.write('\nDatabase server: %s' % self.database_address)
 
-        if self.drop_existing_db:
+        if self.drop_all_existing_dbs:
             sys.stdout.write('\nAs requested, all QUEENS databases for this user were dropped.')
         else:
             sys.stdout.write(
