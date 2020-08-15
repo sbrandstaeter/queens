@@ -49,6 +49,8 @@ class PostPostDEAL(PostPost):
         prefix_expr = '*' + self.file_prefix + '*'
         files_of_interest = os.path.join(self.output_dir, prefix_expr)
         post_files_list = glob.glob(files_of_interest)
+        # glob returns arbitrary list -> need to sort the list before using
+        post_files_list.sort()
         # TODO this is not general but only for navier stokes solver
         path = post_files_list[0]
         post_out = np.empty(shape=0)

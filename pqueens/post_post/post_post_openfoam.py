@@ -62,6 +62,8 @@ class PostPostOpenFOAM(PostPost):
         time_dir = os.path.join(self.output_dir, str(self.target_time))
         files_of_interest = os.path.join(time_dir, prefix_expr)
         post_files_list = glob.glob(files_of_interest)
+        # glob returns arbitrary list -> need to sort the list before using
+        post_files_list.sort()
         post_out = []
 
         for filename in post_files_list:

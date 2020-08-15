@@ -17,7 +17,7 @@ class PostPostBACIShape(PostPost):
     """
 
     def __init__(
-        self, path_ref_data, time_tol, case_type, visualization, delete_field_data, file_prefix,
+        self, path_ref_data, time_tol, case_type, visualization, delete_field_data, file_prefix
     ):
 
         super(PostPostBACIShape, self).__init__(delete_field_data, file_prefix)
@@ -48,7 +48,7 @@ class PostPostBACIShape(PostPost):
         file_prefix = post_post_options['file_prefix']
         delete_field_data = post_post_options['delete_field_data']
         return cls(
-            path_ref_data, time_tol, case_type, visualization, delete_field_data, file_prefix,
+            path_ref_data, time_tol, case_type, visualization, delete_field_data, file_prefix
         )
 
     # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
@@ -75,6 +75,9 @@ class PostPostBACIShape(PostPost):
             path = glob.glob(files_of_interest + '*' + 'structure.case')
         else:
             raise ValueError('case_type unknown')
+
+        # glob returns arbitrary list -> need to sort the list before using
+        path.sort()
 
         if len(path) != 1:
             raise ValueError('We need exactly one *.case result.')
@@ -129,7 +132,7 @@ class PostPostBACIShape(PostPost):
         Returns:
             monfile_data (list): data from monitor file in numbers
         """
-        monitorcontent = open(self.path_ref_data,).readlines()
+        monitorcontent = open(self.path_ref_data).readlines()
         i = 0
         npoints = 0
         steps = 0
