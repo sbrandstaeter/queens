@@ -27,10 +27,8 @@ def run_subprocess(command_string, **kwargs):
 
     """
 
-    subprocess_type = kwargs.get('subprocess_type')
-
-    if not subprocess_type:
-        subprocess_type = 'simple'
+    # default subprocess type is "simple"
+    subprocess_type = kwargs.get('subprocess_type', 'simple')
 
     subprocess_specific = _get_subprocess(subprocess_type)
 
@@ -53,6 +51,8 @@ def _get_subprocess(subprocess_type):
         return _run_subprocess_simulation
     elif subprocess_type == 'submit':
         return _run_subprocess_submit_job
+    elif subprocess_type == 'remote':
+        return _run_subprocess_remote
     else:
         raise ValueError(f'subprocess_type {subprocess_type} not found.')
 
@@ -216,4 +216,40 @@ def _run_subprocess_submit_job(command_string, **kwargs):
     stdout = None
     stderr = None
 
+    return process_returncode, process_id, stdout, stderr
+
+
+def _run_subprocess_remote(command_string, **kwargs):
+    """
+        Run a system command outside of the Python script on a remote machine via ssh.
+        return stderr and stdout
+        Args:
+            command_string (str): command, that will be run in subprocess
+        Returns:
+            process_returncode (int): code for success of subprocess
+            process_id (int): unique process id, the subprocess was assigned on computing machine
+            stdout (str): standard output content
+            stderr (str): standard error content
+
+    """
+    remote_user = kwargs.get("remote_user", None)
+    if not remote_user:
+        raise ValueError("Remote commands need remote username.")
+
+    remote_address = kwargs.get("remote_address", None)
+    if not remote_user:
+        raise ValueError("Remote commands needs remote machine address.")
+
+    command_string = f'ssh {remote_user}@{remote_address} "{command_string}"'
+    process = subprocess.Popen(
+        command_string,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+        universal_newlines=True,
+    )
+    stdout, stderr = process.communicate()
+    process_id = process.pid
+    process_returncode = process.returncode
     return process_returncode, process_id, stdout, stderr
