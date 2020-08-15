@@ -42,9 +42,9 @@ class BaciDriverDeep(Driver):
         database_address = '129.187.58.20:' + str(base_settings['port'])
         database_config = dict(
             global_settings=config["global_settings"],
-            address=database_address,
-            drop_all_existing_dbs=False,
-            reset_database=False,
+            database=dict(
+                address=database_address, drop_all_existing_dbs=False, reset_database=False
+            ),
         )
         db = MongoDB.from_config_create_database(database_config)
         base_settings['database'] = db
