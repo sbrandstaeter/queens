@@ -25,7 +25,8 @@ def request_user_input(default, timeout):
     except:
         # timeout
         print(
-            f"\nNo user input within time limit of {timeout}s.\nReturning default value: {default}\n"
+            f"\nNo user input within time limit of {timeout}s.\n"
+            f"Returning default value: {default}\n"
         )
         return default
 
