@@ -64,6 +64,18 @@ class MongoDB(object):
             host=[database_address], serverSelectionTimeoutMS=100, connect=False
         )
 
+        attempt = 0
+        while attempt < 10:
+            try:
+                client.server_info()  # Forces a call
+                break
+            except pymongo.errors.ServerSelectionTimeoutError:
+                if attempt == 9:
+                    client.server_info()
+                else:
+                    print('ServerSelectionTimeoutError in mongodb.py')
+            attempt += 1
+
         # get list of all existing databases
         complete_database_list = client.list_database_names()
 
@@ -93,18 +105,6 @@ class MongoDB(object):
 
         # establish new database for this QUEENS run
         db = client[database_name]
-
-        attempt = 0
-        while attempt < 10:
-            try:
-                client.server_info()  # Forces a call
-                break
-            except pymongo.errors.ServerSelectionTimeoutError:
-                if attempt == 9:
-                    client.server_info()
-                else:
-                    print('ServerSelectionTimeoutError in mongodb.py')
-            attempt += 1
 
         return cls(
             db,
