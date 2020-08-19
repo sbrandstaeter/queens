@@ -19,6 +19,7 @@ from pqueens.utils.manage_singularity import SingularityManager, hash_files
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
+from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -282,7 +283,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             print('Do you want to close these connections (recommended)?')
             while True:
                 try:
-                    answer = input('Please type "y" or "n" >> ')
+                    print('Please type "y" or "n" >> ')
+                    answer = request_user_input_with_default_and_timeout(default="n", timeout=10)
                 except SyntaxError:
                     answer = None
 

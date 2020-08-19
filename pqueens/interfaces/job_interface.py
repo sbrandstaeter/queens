@@ -9,6 +9,7 @@ from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.aws_output_string_extractor import aws_extract
+from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 this = sys.modules[__name__]
 this.restart_flag = None
@@ -516,7 +517,8 @@ class JobInterface(Interface):
 
         while True:
             try:
-                answer = input('>> Please type "y", "n" or job ID(s) (int) >> ')
+                print('>> Please type "y", "n" or job ID(s) (int) >> ')
+                answer = request_user_input_with_default_and_timeout(default="y", timeout=10)
             except SyntaxError:
                 answer = None
 
