@@ -156,9 +156,9 @@ def test_restart_from_output_folders_baci(
     singularity_bool,
 ):
     """
-    Integration test for the restart functionality (with and without singularity):
-    - test restart from results in database (with drop_existing = false)
-    - test restart from results in output folders (with drop_existing = true).
+    Integration test for the restart functionality for restart from results in output folders
+    - test with and without singularity
+    - drop_database_boolean = true
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -221,9 +221,8 @@ def test_restart_from_db_baci(
     inputdir, tmpdir, third_party_inputs, config_dir, set_baci_links_for_gitlab_runner,
 ):
     """
-    Integration test for the restart functionality (with and without singularity):
-    - test restart from results in database (with drop_existing = false)
-    - test restart from results in output folders (with drop_existing = true).
+    Integration test for the restart functionality for restart from results in database
+    (drop_database_boolean = false)
 
     Args:
         inputdir (str): Path to the JSON input file
