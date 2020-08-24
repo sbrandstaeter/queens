@@ -10,6 +10,7 @@ dependencies:
   - scipy>=1.2.1
   - scikit-learn
   - arviz
+  - pandas
 # for database interfacing
   - pymongo
 # for design of experiments
