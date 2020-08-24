@@ -1,13 +1,14 @@
 import random
-import os
 import matplotlib as mpl
 import numpy as np
+import pandas as pd
 from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
 
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import write_results
 from .iterator import Iterator
+import pqueens.visualization.sa_visualization as qvis
 
 if not mpl.get_backend().lower() == 'agg':
     mpl.use('TkAgg')
@@ -127,6 +128,8 @@ class MorrisSALibIterator(Iterator):
             iterator: MorrisSALibIterator iterator object
 
         """
+        qvis.from_config_create(config)
+
         method_options = config["method"]["method_options"]
 
         if model is None:
@@ -215,17 +218,16 @@ class MorrisSALibIterator(Iterator):
         """ Analyze the results """
         results = self.process_results()
         if self.result_description is not None:
+            self.print_results(results)
+
             if self.result_description["write_results"] is True:
                 write_results(
                     results,
                     self.global_settings["output_dir"],
                     self.global_settings["experiment_name"],
                 )
-                self.print_results(results)
-                if self.result_description["plot_results"] is True:
-                    self.plot_results(results)
-            else:
-                self.print_results(results)
+
+            qvis.sa_visualization_instance.plot(results)
 
     def process_results(self):
         """ Write all results to self contained dictionary """

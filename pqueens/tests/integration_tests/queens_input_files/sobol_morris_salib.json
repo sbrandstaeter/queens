@@ -16,8 +16,22 @@
       "local_optimization" : false,
       "num_bootstrap_samples" : 1000,
       "result_description" : {
-          "write_results" : true,
-          "plot_results" : false
+        "write_results" : true,
+        "plotting_options": {
+          "plot_booleans": [
+            false,
+            false
+          ],
+          "plotting_dir": "dummy",
+          "plot_names": [
+            "bars",
+            "scatter"
+          ],
+          "save_bool": [
+            false,
+            false
+          ]
+        }
       }
     }
   },

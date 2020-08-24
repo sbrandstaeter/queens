@@ -18,7 +18,21 @@
       "num_bootstrap_samples": 15,
       "result_description": {
         "write_results": true,
-        "plot_results": false
+        "plotting_options": {
+          "plot_booleans": [
+            false,
+            false
+          ],
+          "plotting_dir": "dummy",
+          "plot_names": [
+            "bars",
+            "scatter"
+          ],
+          "save_bool": [
+            false,
+            false
+          ]
+        }
       }
     }
   },
