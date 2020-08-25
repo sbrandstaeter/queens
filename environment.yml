@@ -59,4 +59,6 @@ dependencies:
     - impedance
 # Utility to handle pylint exit codes scripting friendly
     - pylint-exit
+# Tool to perform license checks
+    - liccheck
 

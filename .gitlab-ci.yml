@@ -73,6 +73,17 @@ documentation:
     when: on_success
     expire_in: 3 days
 
+#----------------------------------------------------------------------------------------------
+license_check:
+  # check licence compliance
+  extends:
+    - .centos_settings
+  stage: codechecks
+  script:
+    - ./parse_env_for_liccheck.sh
+    - liccheck -s lic_strategy.ini  -r requirements.tmp
+
+
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------
