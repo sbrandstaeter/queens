@@ -1,8 +1,8 @@
 #!/bin/bash
 grep "^ *-" environment.yml > requirements.tmp
-sed -i '' 's/^ *-//' requirements.tmp  
-sed -i '' '/defaults/d' requirements.tmp 
-sed -i '' '/conda-forge/d' requirements.tmp
-sed -i '' '/python/d' requirements.tmp
-sed -i '' '/cython/d' requirements.tmp
-sed -i '' '/pip/d' requirements.tmp
+sed -i '.bak' 's/^ *-//' requirements.tmp  
+sed -i '.bak' '/defaults/d' requirements.tmp 
+sed -i '.bak' '/conda-forge/d' requirements.tmp
+sed -i '.bak' '/python/d' requirements.tmp
+sed -i '.bak' '/cython/d' requirements.tmp
+sed -i '.bak' '/pip/d' requirements.tmp
