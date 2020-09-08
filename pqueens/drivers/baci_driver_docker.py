@@ -1,7 +1,6 @@
 import os
 import docker
 import getpass
-import time
 
 from pqueens.database.mongodb import MongoDB
 from pqueens.drivers.driver import Driver
@@ -100,16 +99,21 @@ class BaciDriverDocker(Driver):
             # get Docker client
             # client = docker.from_env()
 
+            # assemble environment for Docker container
+            # env = {"USER": getpass.getuser()}
+
             # assemble volume map for docker container
             # volume_map = {self.experiment_dir: {'bind': self.experiment_dir, 'mode': 'rw'}}
 
             # run BACI in Docker container via SDK
             # stderr = client.containers.run(self.image_name,
-            #                               self.baci_run_command_string,
-            #                               remove=True,
-            #                               volumes=volume_map,
-            #                               stdout=False,
-            #                               stderr=True)
+            #                                self.baci_run_command_string,
+            #                                remove=True,
+            #                                user=os.geteuid(),
+            #                                environment=env,
+            #                                volumes=volume_map,
+            #                                stdout=False,
+            #                                stderr=True)
 
         # run BACI in Docker container via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(run_command_string)
@@ -156,7 +160,7 @@ class BaciDriverDocker(Driver):
         return ' '.join(filter(None, command_list))
 
     def assemble_aws_run_task_command_string(self):
-        """  Assemble command list for BACI runin Docker container
+        """  Assemble command list for BACI run in Docker container
 
             Returns:
                 list: command list to execute BACI in Docker container
