@@ -1,6 +1,6 @@
 {
     "experiment_name": "{experiment_name}",
-    "database": {"address": "localhost:27017", "drop_existing": false},
+    "database": {"address": "localhost:27017", "drop_existing": {drop_database_boolean}},
     "method": {
         "method_name": "sa_morris_salib",
         "method_options": {
@@ -16,21 +16,21 @@
             "result_description": {
                 "write_results": true,
                 "plotting_options": {
-                  "plot_booleans": [
-                    false,
-                    false
-                  ],
-                  "plotting_dir": "dummy",
-                  "plot_names": [
-                    "bars",
-                    "scatter"
-                  ],
-                  "save_bool": [
-                    false,
-                    false
-                  ]
-        }
-      }
+                    "plot_booleans": [
+                        false,
+                        false
+                    ],
+                    "plotting_dir": "dummy",
+                    "plot_names": [
+                        "bars",
+                        "scatter"
+                    ],
+                    "save_bool": [
+                        false,
+                        false
+                    ]
+                }
+            }
         }
     },
     "model": {"type": "simulation_model", "interface": "interface", "parameters": "parameters"},
@@ -38,6 +38,7 @@
     "driver": {
         "driver_type": "baci_native",
         "driver_params": {
+            "restart_from_finished_simulation": true,
             "input_template": "{baci_input}",
             "path_to_executable": "{baci-release}",
             "path_to_postprocessor": "{post_drt_monitor}",

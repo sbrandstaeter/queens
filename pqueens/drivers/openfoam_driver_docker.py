@@ -5,20 +5,25 @@ import stat
 import shutil
 import docker
 import getpass
+from pqueens.database.mongodb import MongoDB
 from pqueens.drivers.driver import Driver
+from pqueens.utils.aws_output_string_extractor import aws_extract
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
 
 
 class OpenFOAMDriverDocker(Driver):
-    """ Driver to run OpenFOAM in Docker container
+    """ 
+    Driver to run OpenFOAM in Docker container
 
-        Attributes:
+    Attributes:
+       docker_image (str): Path to the docker image
 
     """
 
     def __init__(self, base_settings):
         # TODO dunder init should not be called with dict
+        self.docker_version = base_settings['docker_version']
         self.docker_image = base_settings['docker_image']
         super(OpenFOAMDriverDocker, self).__init__(base_settings)
 
@@ -33,13 +38,28 @@ class OpenFOAMDriverDocker(Driver):
         Returns:
             driver: OpenFOAMDriverDocker object
         """
-        base_settings['address'] = 'localhost:27017'
+        database_address = 'localhost:27017'
+        database_config = dict(
+            global_settings=config["global_settings"],
+            database=dict(address=database_address, drop_existing=False),
+        )
+        db = MongoDB.from_config_create_database(database_config)
+        base_settings['database'] = db
+
+        base_settings['docker_version'] = config['driver']['driver_type']
         base_settings['docker_image'] = config['driver']['driver_params']['docker_image']
         return cls(base_settings)
 
     def setup_dirs_and_files(self):
-        """ Setup directory structure """
+        """ Setup directory structure
 
+            Args:
+                driver_options (dict): Options dictionary
+
+            Returns:
+                None
+
+        """
         # extract name of Docker image and potential sudo
         docker_image_list = self.docker_image.split()
         self.image_name = docker_image_list[0]
@@ -71,47 +91,79 @@ class OpenFOAMDriverDocker(Driver):
         """ Actual method to run the job on computing machine
             using run_subprocess method from utils
         """
-        # first alternative (used currently):
-        # explicitly assemble run command for Docker container
-        command_string = self.assemble_command_string()
+        # decide whether task-based run or direct run
+        if self.docker_version == 'openfoam_docker_task':
+            run_command_string = self.assemble_aws_run_task_command_string()
+        else:
+            # first alternative (used currently):
+            # explicitly assemble run command for Docker container
+            run_command_string = self.assemble_docker_run_command_string()
+
+            # second alternative (not used currently): use Docker SDK
+            # get Docker client
+            # client = docker.from_env()
+
+            # assemble environment for Docker container
+            # env = {"USER": getpass.getuser()}
+
+            # assemble volume map for docker container
+            # volume_map = {self.experiment_dir: {'bind': self.experiment_dir, 'mode': 'rw'}}
+
+            # run OpenFOAM in Docker container
+            # stderr = client.containers.run(self.image_name,
+            #                                self.case_run_script,
+            #                                remove=True,
+            #                                user=os.geteuid(),
+            #                                environment=env,
+            #                                volumes=volume_map,
+            #                                stdout=False,
+            #                                stderr=True)
 
         # run OpenFOAM in Docker container via subprocess
-        returncode, self.pid, _, _ = run_subprocess(command_string)
+        returncode, self.pid, stdout, stderr = run_subprocess(run_command_string)
 
-        # second alternative (not used currently): use Docker SDK
-        # get Docker client
-        # client = docker.from_env()
-
-        # assemble environment for Docker container
-        # env = {"USER": getpass.getuser(),
-        #       "QT_X11_NO_MITSHM": "1",
-        #       "QT_XKB_CONFIG_ROOT": "/usr/share/X11/xkb"}
-
-        # assemble volume map for docker container
-        # volume_map = {self.experiment_dir: {'bind': self.experiment_dir, 'mode': 'rw'},
-        #              '/etc/group': {'bind': '/etc/group', 'mode': 'ro'},
-        #              '/etc/passwd': {'bind': '/etc/passwd', 'mode': 'ro'},
-        #              '/etc/shadow': {'bind': '/etc/shadow', 'mode': 'ro'},
-        #              '/etc/sudoers.d': {'bind': '/etc/sudoers.d', 'mode': 'ro'},
-        #              '/tmp/.X11-unix': {'bind': '/tmp/.X11-unix', 'mode': 'ro'}}
-
-        # run OpenFOAM in Docker container
-        # stderr = client.containers.run(self.image_name,
-        #                               self.case_run_script,
-        #                               remove=True,
-        #                               user=os.geteuid(),
-        #                               environment=env,
-        #                               working_dir= os.environ['HOME'],
-        #                               volumes=volume_map,
-        #                               stdout=False,
-        #                               stderr=True)
+        # save AWS ARN and number of processes to database for task-based run
+        if self.docker_version == 'openfoam_docker_task':
+            self.job['aws_arn'] = aws_extract("taskArn", stdout)
+            self.job['num_procs'] = self.num_procs
+            self.database.save(
+                self.job,
+                self.experiment_name,
+                'jobs',
+                str(self.batch),
+                {
+                    'id': self.job_id,
+                    'expt_dir': self.experiment_dir,
+                    'expt_name': self.experiment_name,
+                },
+            )
 
         # detection of failed jobs
         if returncode:
             self.result = None
             self.job['status'] = 'failed'
 
-    def assemble_command_string(self):
+    def assemble_aws_run_task_command_string(self):
+        """  Assemble command list for OpenFOAM runin Docker container
+
+            Returns:
+                list: command list to execute OpenFOAM in Docker container
+
+        """
+        command_list = [
+            "aws ecs run-task ",
+            "--cluster worker-queens-cluster ",
+            "--task-definition docker-queens ",
+            "--count 1 ",
+            "--overrides '{ \"containerOverrides\": [ {\"name\": \"docker-queens-container\", ",
+            "\"command\": [\"",
+            self.case_run_script,
+            "\"] } ] }'",
+        ]
+
+        return ''.join(filter(None, command_list))
+
+    def assemble_docker_run_command_string(self):
         """  Assemble command list
 
             Returns:
@@ -124,20 +176,11 @@ class OpenFOAMDriverDocker(Driver):
             str(os.geteuid()),
             "' -e USER='",
             getpass.getuser(),
-            "' -e QT_X11_NO_MITSHM=1 ",
-            "-e QT_XKB_CONFIG_ROOT=/usr/share/X11/xkb ",
-            "--workdir='",
-            self.experiment_dir,
-            "' --volume='",
+            "' -v ",
             self.experiment_dir,
             ":",
             self.experiment_dir,
-            "' ",
-            "--volume='/etc/group:/etc/group:ro' ",
-            "--volume='/etc/passwd:/etc/passwd:ro' ",
-            "--volume='/etc/shadow:/etc/shadow:ro' ",
-            "--volume='/etc/sudoers.d:/etc/sudoers.d:ro' ",
-            "-v=/tmp/.X11-unix:/tmp/.X11-unix ",
+            " ",
             self.image_name,
             " ",
             self.case_run_script,

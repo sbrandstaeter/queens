@@ -128,6 +128,7 @@ class Driver(metaclass=abc.ABCMeta):
             'baci_docker': BaciDriverDocker,
             'baci_docker_task': BaciDriverDocker,
             'openfoam_docker': OpenFOAMDriverDocker,
+            'openfoam_docker_task': OpenFOAMDriverDocker,
         }
         driver_version = config['driver']['driver_type']
         driver_class = driver_dict[driver_version]
