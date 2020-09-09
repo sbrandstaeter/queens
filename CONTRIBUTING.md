@@ -18,5 +18,9 @@ Only a small number of people can merge feature branches onto the master branch 
 ## Tests and continuous integration
 QUEENS is covered by the testing suite. We expect changes to code to pass these tests, and for new code to be covered by new tests. Currently, coverage is reported by codecov.
 
+## Use of third party open-source software 
+Please do not use any third party code or library before having read 
+the [wiki page about our open-source license policy](https://gitlab.lrz.de/jbi/queens/-/wikis/third-party-software). 
+
 ## Documentation
 QUEENS documentation is not comprehensive, but covers enough to get users started. We expect that new features have documentation that can help other get up to speed.
