@@ -401,6 +401,9 @@ class JobInterface(Interface):
 
         Args:
             samples (DataFrame):     realization/samples of QUEENS simulation input variables
+
+        Returns:
+            jobid_for_post_post(ndarray): jobids for post-post-processing
         """
         # Job that need direct post-post-processing
         jobid_for_post_post = np.empty(shape=0)
@@ -448,6 +451,9 @@ class JobInterface(Interface):
         Args:
             samples (DataFrame): realization/samples of QUEENS simulation input variables
 
+        Returns:
+            jobid_for_post_post(ndarray): jobids for post-post-processing
+
         """
         jobs = self.load_jobs()
         if not jobs or self.batch_number == 1:
@@ -456,6 +462,8 @@ class JobInterface(Interface):
             job_ids_generator = range(len(jobs) + 1, len(jobs) + samples.size + 1, 1)
 
         self._manage_job_submission(samples, job_ids_generator)
+
+        return np.array(job_ids_generator)
 
     def _check_results_in_db(self, samples):
         """Check complete results in database.
