@@ -73,9 +73,9 @@ def print_resources_status(resources, jobs):
     sys.stdout.write('\nResources:      ')
     left_indent = 16
     indentation = ' ' * left_indent
-    sys.stdout.write('NAME          PENDING    COMPLETE    FAILED\n')
+    sys.stdout.write('NAME            PENDING      COMPLETED    FAILED   \n')
     sys.stdout.write(indentation)
-    sys.stdout.write('----          -------    --------    ------\n')
+    sys.stdout.write('------------    ---------    ---------    ---------\n')
     total_pending = 0
     total_complete = 0
     total_failed = 0
@@ -89,12 +89,18 @@ def print_resources_status(resources, jobs):
         total_complete += complete
         total_failed += failed
         sys.stdout.write(
-            "%s%-12.12s  %-9d  %-10d  %-9d\n"
-            % (indentation, resource.name, pending, complete, failed)
+            '{}{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
+                indentation, resource.name, pending, complete, failed
+            )
         )
     sys.stdout.write(
-        "%s%-12.12s  %-9d  %-10d  %-9d\n"
-        % (indentation, '*TOTAL*', total_pending, total_complete, total_failed)
+        '{}{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
+            indentation,
+            '*TOTAL*',
+            total_pending,
+            total_complete,
+            total_failed,
+        )
     )
     sys.stdout.write('\n')
 
