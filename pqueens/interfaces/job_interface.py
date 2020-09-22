@@ -666,7 +666,7 @@ class JobInterface(Interface):
         jobid_for_block_restart = None
         jobid_for_restart_found = False
         # Loop backwards to find first completed job
-        for jobid in range(jobid_start_search, -1, -1):
+        for jobid in range(jobid_start_search, 0, -1):
             # Loop over all available resources
             for resource_name, resource in self.resources.items():
                 current_job, process_id = self._get_current_job(
@@ -683,6 +683,8 @@ class JobInterface(Interface):
 
             if jobid_for_restart_found:
                 break
+            elif jobid == 1:
+                raise RuntimeError('Block-restart not found. Check for errors in PostPost-Module')
 
         # If jobid for block-restart out of range -> no restart
         if jobid_for_block_restart > samples.size:
