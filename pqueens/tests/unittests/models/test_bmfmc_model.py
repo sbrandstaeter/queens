@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 from mock import patch
 from pqueens.models.bmfmc_model import BMFMCModel
+from pqueens.models.simulation_model import SimulationModel
 import pqueens.models.bmfmc_model as bmfmc_model
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator
@@ -12,6 +13,16 @@ from pqueens.iterators.data_iterator import DataIterator
 def result_description():
     description = {"write_results": True}
     return description
+
+
+@pytest.fixture()
+def dummy_high_fidelity_model(parameters):
+    model_name = 'dummy'
+    interface = 'my_dummy_interface'
+    model_parameters = parameters
+    hf_model = SimulationModel(model_name, interface, model_parameters)
+    hf_model.response = {'mean': 1.0}
+    return hf_model
 
 
 @pytest.fixture()
@@ -69,11 +80,10 @@ def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
     model = BMFMCModel(
         settings_probab_mapping,
         False,
-        False,
         y_pdf_support,
         parameters,
         default_interface,
-        subordinate_model=None,
+        hf_model=None,
         no_features_comparison_bool=True,
         lf_data_iterators=None,
         hf_data_iterator=None,
@@ -131,12 +141,11 @@ def test_init(mocker, settings_probab_mapping, default_interface):
 
     model = BMFMCModel(
         settings_probab_mapping,
-        False,
         True,
         y_pdf_support,
         parameters,
         default_interface,
-        subordinate_model=None,
+        hf_model=None,
         no_features_comparison_bool=False,
         lf_data_iterators=None,
         hf_data_iterator=None,
@@ -146,14 +155,13 @@ def test_init(mocker, settings_probab_mapping, default_interface):
     mp.assert_called_once_with(name='bmfmc_model', uncertain_parameters=parameters, data_flag=True)
     assert model.interface == default_interface
     assert model.settings_probab_mapping == settings_probab_mapping
-    assert model.subordinate_model is None
+    assert model.high_fidelity_model is None
     assert model.X_train is None
     assert model.Y_HF_train is None
     assert model.Y_LFs_train is None
     assert model.X_mc is None
     assert model.Y_LFs_mc is None
     assert model.Y_HF_mc is None
-    assert model.active_learning is False
     assert model.gammas_ext_mc is None
     assert model.gammas_ext_train is None
     assert model.Z_train is None
@@ -194,6 +202,8 @@ def test_evaluate(mocker, default_bmfmc_model):
     default_bmfmc_model.p_ylf_mc = np.array([1])
     default_bmfmc_model.p_yhf_mc = np.array([1])
     default_bmfmc_model.Z_train = np.array([1])
+    default_bmfmc_model.X_train = np.array([1])
+    default_bmfmc_model.Y_HF_train = np.array([1])
 
     expected_output = {
         "Z_mc": np.array([1]),
@@ -207,6 +217,8 @@ def test_evaluate(mocker, default_bmfmc_model):
         "p_ylf_mc": np.array([1]),
         "p_yhf_mc": np.array([1]),
         "Z_train": np.array([1]),
+        "X_train": np.array([1]),
+        "Y_HF_train": np.array([1]),
     }
     output = default_bmfmc_model.evaluate()
 
@@ -255,7 +267,7 @@ def test_load_sampling_data(mocker, default_bmfmc_model, default_data_iterator, 
     # run the current method
     default_bmfmc_model.load_sampling_data()
 
-    # tests min amount of data iterator is calls
+    # tests min amount of data iterator calls
     assert mp1.call_count >= 6
 
     # test assembling of multiple LF data
@@ -268,25 +280,29 @@ def test_load_sampling_data(mocker, default_bmfmc_model, default_data_iterator, 
         default_bmfmc_model.Y_HF_mc, np.array([1.0, 1.0]).T, decimal=5
     )
 
-    # test HF MC NotImplementedError
-    default_bmfmc_model.hf_data_iterator = None
-    with pytest.raises(NotImplementedError):
-        default_bmfmc_model.load_sampling_data()
 
-
-def test_get_hf_training_data(default_bmfmc_model):
+def test_get_hf_training_data(mocker, default_bmfmc_model, dummy_high_fidelity_model):
+    mp1 = mocker.patch(
+        'pqueens.models.simulation_model.SimulationModel' '.update_model_from_sample_batch'
+    )
+    mp2 = mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate')
     default_bmfmc_model.X_train = None
 
+    # test X_train is None
     with pytest.raises(ValueError):
         default_bmfmc_model.get_hf_training_data()
 
     default_bmfmc_model.X_train = np.array([[1.0, 1.0], [2.0, 2.0]])
     default_bmfmc_model.Y_HF_mc = None
 
-    # TODO here comes the automated simulation of HF training data
-    with pytest.raises(NotImplementedError):
-        default_bmfmc_model.get_hf_training_data()
+    # test HF model given
+    default_bmfmc_model.high_fidelity_model = dummy_high_fidelity_model
+    default_bmfmc_model.get_hf_training_data()
+    mp1.assert_called_once()
+    mp2.assert_called_once()
 
+    # test HF MC data available and no HF model
+    default_bmfmc_model.high_fidelity_model = None
     default_bmfmc_model.Y_HF_mc = np.array([2.1, 1.5, 6.4, 2.4])
     default_bmfmc_model.X_mc = np.array([[1.1, 1.2], [1.3, 1.4], [1.5, 1.6], [1.7, 1.8]])
     default_bmfmc_model.X_train = np.array([[1.3, 1.4], [1.5, 1.6]])
@@ -294,6 +310,11 @@ def test_get_hf_training_data(default_bmfmc_model):
     np.testing.assert_array_almost_equal(
         default_bmfmc_model.Y_HF_train, np.array([[1.5, 6.4]]).T, decimal=5
     )
+
+    # test HF MC data available and HF model too (else statement)
+    default_bmfmc_model.high_fidelity_model = dummy_high_fidelity_model
+    with pytest.raises(RuntimeError):
+        default_bmfmc_model.get_hf_training_data()
 
 
 def test_build_approximation(mocker, default_bmfmc_model):
@@ -307,10 +328,6 @@ def test_build_approximation(mocker, default_bmfmc_model):
     mp1.assert_called_once()
     mp2.assert_called_once()
     mp3.assert_called_once()
-
-    default_bmfmc_model.active_learning = True
-    with pytest.raises(NotImplementedError):
-        default_bmfmc_model.build_approximation(approx_case=True)
 
 
 def test_compute_pyhf_statistics(mocker, default_bmfmc_model):
