@@ -4,6 +4,8 @@ from random import randint
 from diversipy import *
 import pandas as pd
 import pqueens.visualization.bmfmc_visualization as qvis
+from pqueens.utils.process_outputs import write_results
+from pqueens.utils.process_outputs import process_ouputs
 
 
 class BMFMCIterator(Iterator):
@@ -26,7 +28,6 @@ class BMFMCIterator(Iterator):
         model (obj): Instance of the BMFMCModel
         result_description (dict): Dictionary containing settings for plotting and saving data/
                                    results
-        experiment_dir (str): Path to the experiment directory where simulations are stored
         X_train (np.array): Corresponding input for the simulations that are used to train the
                             probabilistic mapping
         Y_HF_train (np.array): Outputs of the high-fidelity model that correspond to the training
@@ -64,6 +65,10 @@ class BMFMCIterator(Iterator):
                        *  "p_yhf_mc": Vector with reference HF output distribution (kde from MC
                                       reference data)
                        *  "Z_train": Corresponding training data in LF feature space
+                       *  "Y_HF_train": Outputs of the high-fidelity model that correspond to the
+                                     training inputs X_train such that :math:`Y_{HF}=y_{HF}(X)`
+                       *  "X_train": Corresponding input for the simulations that are used to
+                                     train the probabilistic mapping
 
         initial_design (dict): Dictionary containing settings for the selection strategy/initial
                                design of training points for the probabilistic mapping
@@ -85,7 +90,6 @@ class BMFMCIterator(Iterator):
         self,
         model,
         result_description,
-        experiment_dir,
         initial_design,
         predictive_var,
         BMFMC_reference,
@@ -97,7 +101,6 @@ class BMFMCIterator(Iterator):
         )  # Input prescribed by iterator.py
         self.model = model
         self.result_description = result_description
-        self.experiment_dir = experiment_dir
         self.X_train = None
         self.Y_LFs_train = None
         self.eigenfunc_random_fields_train = None
@@ -124,7 +127,6 @@ class BMFMCIterator(Iterator):
         method_options = config["method"]["method_options"]
         BMFMC_reference = method_options["BMFMC_reference"]
         result_description = method_options["result_description"]
-        experiment_dir = method_options["experiment_dir"]
         predictive_var = method_options["predictive_var"]
 
         initial_design = config["method"]["initial_design"]
@@ -141,7 +143,6 @@ class BMFMCIterator(Iterator):
         return cls(
             model,
             result_description,
-            experiment_dir,
             initial_design,
             predictive_var,
             BMFMC_reference,
@@ -216,6 +217,7 @@ class BMFMCIterator(Iterator):
             run_design_method (obj): Design method for selecting the HF training set
 
         """
+        self.model.calculate_extended_gammas()
         if design_method == 'random':
             run_design_method = self._random_design
 
@@ -244,7 +246,6 @@ class BMFMCIterator(Iterator):
             None
 
         """
-        self.model.calculate_extended_gammas()
         design = self.model.gammas_ext_mc
         prelim_subset = psa_select(design, n_points, selection_target='max_dist_from_boundary')
 
@@ -299,6 +300,7 @@ class BMFMCIterator(Iterator):
             )
 
         # Go through all bins and  randomly select points
+        training_indices = []
         for bin_n in range(n_bins):
             # array of booleans
             y_in_bin_bool = [bin_vec[0] == bin_n]
@@ -318,8 +320,10 @@ class BMFMCIterator(Iterator):
             if len(rnd_select) != 0:
                 self.X_train = np.vstack([self.X_train, bin_data_X_mc[rnd_select, :]])
                 self.Y_LFs_train = np.vstack((self.Y_LFs_train, bin_data_Y_LFs_mc[rnd_select, :]))
-        # return training indices to the BMFMC model
-        self.model.training_indices = np.array(rnd_select)
+            # return training indices to the BMFMC model
+            training_indices.extend(rnd_select)
+
+        self.model.training_indices = np.array(training_indices)
 
     def eval_model(self):
         """
@@ -350,7 +354,9 @@ class BMFMCIterator(Iterator):
         )
 
         if self.result_description['write_results'] is True:
-            # TODO this should be filled out    @staticmethod
-            #     def plot_pdfs(self, *args, **kwargs):
-            #         return 1
-            pass
+            results = process_ouputs(self.output, self.result_description)
+            write_results(
+                results,
+                self.global_settings["output_dir"],
+                self.global_settings["experiment_name"],
+            )

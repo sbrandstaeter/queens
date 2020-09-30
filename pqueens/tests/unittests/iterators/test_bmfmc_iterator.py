@@ -34,7 +34,7 @@ def settings_probab_mapping():
 
 
 @pytest.fixture()
-def default_bmfmc_model(default_interface):
+def default_bmfmc_model(default_interface, default_parameters):
     settings_probab_mapping = {
         "type": "gp_approximation_gpy",
         "features_config": "opt_features",
@@ -46,11 +46,10 @@ def default_bmfmc_model(default_interface):
     model = BMFMCModel(
         settings_probab_mapping,
         False,
-        False,
         y_pdf_support,
-        uncertain_parameters,
+        default_parameters,
         default_interface,
-        subordinate_model=None,
+        hf_model=None,
         no_features_comparison_bool=False,
         lf_data_iterators=None,
         hf_data_iterator=None,
@@ -58,6 +57,7 @@ def default_bmfmc_model(default_interface):
     np.random.seed(1)
     model.X_mc = np.random.random((20, 2))
     model.Y_LFs_mc = np.random.random((20, 2))
+
     return model
 
 
@@ -98,7 +98,6 @@ def default_bmfmc_iterator(
     global_settings,
     default_bmfmc_model,
     result_description,
-    experiment_dir,
     initial_design,
     predictive_var,
     BMFMC_reference,
@@ -106,7 +105,6 @@ def default_bmfmc_iterator(
     my_bmfmc_iterator = BMFMCIterator(
         default_bmfmc_model,
         result_description,
-        experiment_dir,
         initial_design,
         predictive_var,
         BMFMC_reference,
@@ -125,6 +123,10 @@ class InstanceMock:
     def plot_manifold(self, *args, **kwargs):
         return 1
 
+    @staticmethod
+    def plot_feature_ranking(self, *args, **kwargs):
+        return 1
+
 
 @pytest.fixture
 def mock_visualization():
@@ -138,7 +140,6 @@ def test_init(
     global_settings,
     default_bmfmc_model,
     result_description,
-    experiment_dir,
     initial_design,
     predictive_var,
     BMFMC_reference,
@@ -147,7 +148,6 @@ def test_init(
     my_bmfmc_iterator = BMFMCIterator(
         default_bmfmc_model,
         result_description,
-        experiment_dir,
         initial_design,
         predictive_var,
         BMFMC_reference,
@@ -157,7 +157,6 @@ def test_init(
     mp.assert_called_once_with(None, global_settings)
     assert my_bmfmc_iterator.model == default_bmfmc_model
     assert my_bmfmc_iterator.result_description == result_description
-    assert my_bmfmc_iterator.experiment_dir == experiment_dir
     assert my_bmfmc_iterator.X_train is None
     assert my_bmfmc_iterator.Y_LFs_train is None
     assert my_bmfmc_iterator.eigenfunc_random_fields_train is None
@@ -186,6 +185,15 @@ def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
 
 def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
     mp1 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator._diverse_subset_design')
+    mocker.patch(
+        'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
+        return_value=mock_visualization,
+    )
+
+    mocker.patch(
+        'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance'
+        '.plot_feature_ranking'
+    )
     default_bmfmc_iterator.X_train = np.array([1.0, 1.0, 1.0])
     default_bmfmc_iterator.Y_LFs_train = np.array([2.0, 2.0, 2.0])
     default_bmfmc_iterator.calculate_optimal_X_train()
@@ -205,6 +213,7 @@ def test_get_design_method(mocker, default_bmfmc_iterator):
         'pqueens.iterators.bmfmc_iterator.BMFMCIterator._diverse_subset_design',
         return_value='diverse',
     )
+    mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas')
 
     method = default_bmfmc_iterator._get_design_method('random')
     assert method() == 'random'
@@ -279,6 +288,10 @@ def test_post_run(mocker, default_bmfmc_iterator):
     mp2 = mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance.plot_manifold'
     )
+    mp3 = mocker.patch('pqueens.iterators.bmfmc_iterator.write_results')
+
     default_bmfmc_iterator.post_run()
+
     mp1.assert_called_once()
     mp2.assert_called_once()
+    mp3.assert_called_once()
