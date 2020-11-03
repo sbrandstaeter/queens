@@ -273,11 +273,11 @@ def test_read_external_data_get_functions(mocker, tmpdir, dat_dummy_get_fun, def
 
 def test_organize_sections(default_geo_obj):
     """Wrapper for _get_desired_dat_sections"""
-    desired_geo_sets = ['DSURFACE 9', 'DVOLUME 2', 'DLINE 1', 'DSURFACE 8']
+    desired_geo_sets = ['DSURFACE 9', 'DVOL 2', 'DLINE 1', 'DSURFACE 8']
     expected_dat_section = {
         'DLINE-NODE TOPOLOGY': ['DLINE 1'],
         'DSURF-NODE TOPOLOGY': ['DSURFACE 9', 'DSURFACE 8'],
-        'DVOL-NODE TOPOLOGY': ['DVOLUME 2'],
+        'DVOL-NODE TOPOLOGY': ['DVOL 2'],
     }
     default_geo_obj.list_geometric_sets = desired_geo_sets
     default_geo_obj._get_desired_dat_sections()

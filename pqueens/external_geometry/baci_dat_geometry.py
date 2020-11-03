@@ -51,7 +51,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         "DPOINT": "DNODE-NODE TOPOLOGY",
         "DLINE": "DLINE-NODE TOPOLOGY",
         "DSURFACE": "DSURF-NODE TOPOLOGY",
-        "DVOLUME": "DVOL-NODE TOPOLOGY",
+        "DVOL": "DVOL-NODE TOPOLOGY",
     }
 
     def __init__(
