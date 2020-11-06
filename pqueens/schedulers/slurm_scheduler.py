@@ -41,6 +41,7 @@ class SlurmScheduler(Scheduler):
         # read necessary variables from config
         num_procs = scheduler_options['num_procs']
         walltime = scheduler_options['walltime']
+        cluster_script = scheduler_options['cluster_script']
         if (
             scheduler_options['scheduler_output'].lower() == 'true'
             or scheduler_options['scheduler_output'] == ""
@@ -55,7 +56,7 @@ class SlurmScheduler(Scheduler):
 
         # pre assemble some strings as base_settings
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../utils/jobscript_slurm_queens.sh'
+        rel_path = '../utils/jobscript_slurm.sh'
         abs_path = os.path.join(script_dir, rel_path)
 
         base_settings['scheduler_template'] = abs_path
@@ -65,6 +66,7 @@ class SlurmScheduler(Scheduler):
         base_settings['scheduler_options']['ntasks'] = num_procs
         base_settings['scheduler_options']['walltime'] = walltime
         base_settings['scheduler_options']['job_name'] = None  # real name will be assembled later
+        base_settings['scheduler_options']['CLUSTERSCRIPT'] = cluster_script
 
         return cls(scheduler_name, base_settings)
 

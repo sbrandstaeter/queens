@@ -98,19 +98,21 @@ class BaciDriverNative(Driver):
                 script_options['POSTPROCESSFLAG'] = 'false'
                 script_options['POSTEXE'] = ''
                 script_options['nposttasks'] = ''
+            # flag only required for Singularity-based run
+            script_options['POSTPOSTPROCESSFLAG'] = 'false'
 
             # determine relative path to script template and start command for scheduler
             if self.scheduler_type == 'local_pbs':
-                rel_path = '../utils/jobscript_pbs_local.sh'
+                rel_path = '../utils/jobscript_pbs.sh'
                 scheduler_start = 'qsub'
             else:
-                rel_path = '../utils/jobscript_slurm_local.sh'
+                rel_path = '../utils/jobscript_slurm.sh'
                 scheduler_start = 'sbatch'
 
             # set paths for script template and final script location
-            submission_script_path = os.path.join(self.experiment_dir, 'jobfile.sh')
-            this_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
+            this_dir = os.path.dirname(__file__)
             submission_script_template = os.path.join(this_dir, rel_path)
+            submission_script_path = os.path.join(self.experiment_dir, 'jobfile.sh')
 
             # generate job script for submission
             generate_submission_script(

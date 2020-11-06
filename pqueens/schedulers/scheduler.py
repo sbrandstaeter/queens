@@ -546,7 +546,9 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         """
         # set data for jobscsript
-        self.scheduler_options['INPUT'] = '--job_id={} --batch={} --port={} --path_json={}'.format(
+        self.scheduler_options[
+            'INPUT'
+        ] = '--job_id={} --batch={} --port={} --path_json={} --workdir '.format(
             job_id, batch, self.port, self.path_to_singularity
         )
         self.scheduler_options['EXE'] = self.path_to_singularity + '/driver.simg'
@@ -555,6 +557,12 @@ class Scheduler(metaclass=abc.ABCMeta):
         )
         dest_dir = str(self.experiment_dir) + '/' + str(job_id) + "/output"
         self.scheduler_options['DESTDIR'] = dest_dir
+        self.scheduler_options['OUTPUTPREFIX'] = ''
+        self.scheduler_options['POSTPOSTPROCESSFLAG'] = 'true'
+        # following options only required for non-Singularity-based run
+        self.scheduler_options['POSTPROCESSFLAG'] = 'false'
+        self.scheduler_options['POSTEXE'] = ''
+        self.scheduler_options['nposttasks'] = ''
 
         # generate job script for submission
         self.submission_script_path = os.path.join(self.experiment_dir, 'jobfile.sh')

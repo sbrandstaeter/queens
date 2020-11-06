@@ -85,7 +85,8 @@
     "num_procs_post": 1,
     "walltime": "120:00:00",
     "connect_to_resource": "{connect_to_resource}",
-    "scheduler_output": "True"
+    "scheduler_output": "True",
+    "cluster_script": "/lnm/share/donottouch.sh"
   },
   "parameters": {
     "random_variables": {
