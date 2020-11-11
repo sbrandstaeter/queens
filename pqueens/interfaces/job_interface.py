@@ -8,7 +8,10 @@ from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.run_subprocess import run_subprocess
-from pqueens.utils.aws_output_string_extractor import aws_extract
+from pqueens.utils.string_extractor_and_checker import (
+    extract_string_from_output,
+    check_if_string_in_file,
+)
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 this = sys.modules[__name__]
@@ -122,6 +125,7 @@ class JobInterface(Interface):
 
         if (
             scheduler_type == 'ecs_task'
+            or scheduler_type == 'local_nohup'
             or scheduler_type == 'local_pbs'
             or scheduler_type == 'local_slurm'
         ):
@@ -604,9 +608,14 @@ class JobInterface(Interface):
                         _, _, stdout, stderr = run_subprocess(cmd)
                         if stderr:
                             current_check_job['status'] = 'failed'
-                        status_str = aws_extract("lastStatus", stdout)
+                        status_str = extract_string_from_output("lastStatus", stdout)
                         if status_str == 'STOPPED':
                             completed = True
+                    elif self.scheduler_type == 'local_nohup':
+                        search_string = 'Total CPU Time for CALCULATION'
+                        completed = check_if_string_in_file(
+                            current_check_job['log_file_path'], search_string
+                        )
                     else:
                         # indicate completion by existing control file in output directory
                         completed = os.path.isfile(current_check_job['control_file_path'])

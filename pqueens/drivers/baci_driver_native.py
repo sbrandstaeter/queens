@@ -64,10 +64,14 @@ class BaciDriverNative(Driver):
         if not os.path.isdir(self.output_directory):
             os.makedirs(self.output_directory)
 
-        # generate path to output files in general as well as control file in particular
+        # generate path to output files in general, control file and log file
         self.output_file = os.path.join(self.output_directory, self.output_prefix)
         control_file_str = self.output_prefix + '.control'
         self.control_file = os.path.join(self.output_directory, control_file_str)
+        log_file_str = self.output_prefix + '.out'
+        self.log_file = os.path.join(self.output_directory, log_file_str)
+        err_file_str = self.output_prefix + '.err'
+        self.err_file = os.path.join(self.output_directory, err_file_str)
 
     def run_job(self):
         """
@@ -143,41 +147,83 @@ class BaciDriverNative(Driver):
                     'expt_name': self.experiment_name,
                 },
             )
-
         else:
-            # assemble command string for direct run
-            command_string = self.assemble_direct_run_command_string()
+            # assemble command string for BACI run
+            baci_run_cmd = self.assemble_baci_run_cmd()
 
-            # run BACI via subprocess
-            returncode, self.pid, _, _ = run_subprocess(
-                command_string,
-                subprocess_type='simulation',
-                terminate_expr='PROC.*ERROR',
-                loggername=__name__ + f'_{self.job_id}',
-                output_file=self.output_file,
-            )
+            if self.scheduler_type == 'local_nohup':
+                # assemble command string for nohup BACI run
+                nohup_baci_run_cmd = self.assemble_nohup_baci_run_cmd(baci_run_cmd)
+
+                # run BACI via subprocess
+                returncode, self.pid, _, _ = run_subprocess(
+                    nohup_baci_run_cmd, subprocess_type='submit',
+                )
+
+                # save path to log file and number of processes to database
+                self.job['log_file_path'] = self.log_file
+                self.job['num_procs'] = self.num_procs
+                self.database.save(
+                    self.job,
+                    self.experiment_name,
+                    'jobs',
+                    str(self.batch),
+                    {
+                        'id': self.job_id,
+                        'expt_dir': self.experiment_dir,
+                        'expt_name': self.experiment_name,
+                    },
+                )
+            else:
+                # run BACI via subprocess
+                returncode, self.pid, _, _ = run_subprocess(
+                    baci_run_cmd,
+                    subprocess_type='simulation',
+                    terminate_expr='PROC.*ERROR',
+                    loggername=__name__ + f'_{self.job_id}',
+                    output_file=self.output_file,
+                )
 
         # detection of failed jobs
         if returncode:
             self.result = None
             self.job['status'] = 'failed'
 
-    def assemble_direct_run_command_string(self):
-        """  Assemble command for direct run of BACI
+    def assemble_baci_run_cmd(self):
+        """  Assemble command for BACI run
 
             Returns:
-                direct run command
+                BACI run command
 
         """
         # set MPI command
-        mpi_command = 'mpirun -np'
+        mpi_cmd = 'mpirun -np'
 
         command_list = [
-            mpi_command,
+            mpi_cmd,
             str(self.num_procs),
             self.executable,
             self.input_file,
             self.output_file,
+        ]
+
+        return ' '.join(filter(None, command_list))
+
+    def assemble_nohup_baci_run_cmd(self, baci_run_cmd):
+        """  Assemble command for nohup run of BACI
+
+            Returns:
+                nohup BACI run command
+
+        """
+        command_list = [
+            "nohup",
+            baci_run_cmd,
+            ">",
+            self.log_file,
+            "2>",
+            self.err_file,
+            "< /dev/null &",
         ]
 
         return ' '.join(filter(None, command_list))
