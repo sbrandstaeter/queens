@@ -14,7 +14,7 @@ from pprint import pprint
 
 import pqueens.interfaces.job_interface as job_interface
 from pqueens.drivers.driver import Driver
-from pqueens.utils.aws_output_string_extractor import aws_extract
+from pqueens.utils.string_extractor_and_checker import extract_string_from_output
 from pqueens.utils.manage_singularity import SingularityManager, hash_files
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
@@ -111,12 +111,14 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
         # import here to avoid issues with circular inclusion
         from .local_scheduler import LocalScheduler
+        from .nohup_scheduler import NohupScheduler
         from .PBS_scheduler import PBSScheduler
         from .slurm_scheduler import SlurmScheduler
         from .ecs_task_scheduler import ECSTaskScheduler
 
         scheduler_dict = {
             'local': LocalScheduler,
+            'local_nohup': NohupScheduler,
             'pbs': PBSScheduler,
             'local_pbs': PBSScheduler,
             'slurm': SlurmScheduler,
@@ -143,6 +145,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         base_settings['options'] = scheduler_options
         if (
             scheduler_options["scheduler_type"] == 'local'
+            or scheduler_options["scheduler_type"] == 'local_nohup'
             or scheduler_options["scheduler_type"] == 'local_pbs'
             or scheduler_options["scheduler_type"] == 'local_slurm'
             or scheduler_options["scheduler_type"] == 'ecs_task'
@@ -626,8 +629,8 @@ class Scheduler(metaclass=abc.ABCMeta):
 
             # check image and container path in most recent revision of task
             # definition 'docker-queens'
-            image_str = aws_extract("image", stdout)
-            container_path_str = aws_extract("containerPath", stdout)
+            image_str = extract_string_from_output("image", stdout)
+            container_path_str = extract_string_from_output("containerPath", stdout)
 
             # new task definition required, since definition 'docker-queens'
             # is not equal to desired one

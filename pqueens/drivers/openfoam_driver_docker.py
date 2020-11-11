@@ -7,7 +7,7 @@ import docker
 import getpass
 from pqueens.database.mongodb import MongoDB
 from pqueens.drivers.driver import Driver
-from pqueens.utils.aws_output_string_extractor import aws_extract
+from pqueens.utils.string_extractor_and_checker import extract_string_from_output
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -124,7 +124,7 @@ class OpenFOAMDriverDocker(Driver):
 
         # save AWS ARN and number of processes to database for task-based run
         if self.docker_version == 'openfoam_docker_task':
-            self.job['aws_arn'] = aws_extract("taskArn", stdout)
+            self.job['aws_arn'] = extract_string_from_output("taskArn", stdout)
             self.job['num_procs'] = self.num_procs
             self.database.save(
                 self.job,
