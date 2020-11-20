@@ -662,7 +662,7 @@ class BMFMCModel(Model):
             test_iter = np.dot(x_iter_test, select_bool)
 
             # substract last choice from candidate pool
-            x_iter_test = np.atleast_2d(np.dot(x_iter_test, ~select_bool))
+            x_iter_test = np.atleast_2d(x_iter_test[:, ~select_bool[:, 0]])
 
             # Scale features linearly to LF output data so that probabilistic model
             # can be fit easier
