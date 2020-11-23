@@ -1,8 +1,11 @@
 import sys
 import getpass
 import pymongo
+import pandas as pd
 from pymongo.errors import ServerSelectionTimeoutError
 from pqueens.utils.compression import compress_nested_container, decompress_nested_container
+import numpy as np
+import xarray as xr
 
 COMPRESS_TYPE = 'compressed array'
 
@@ -172,6 +175,8 @@ class MongoDB(object):
         if field_filters is None:
             field_filters = {}
 
+        self._pack_labeled_data(save_doc)
+
         save_doc = compress_nested_container(save_doc)
 
         dbcollection = self.db[experiment_name][batch][experiment_field]
@@ -224,6 +229,8 @@ class MongoDB(object):
         dbcollection = self.db[experiment_name][batch][experiment_field]
         dbdocs = list(dbcollection.find(field_filters))
 
+        self._unpack_labeled_data(dbdocs)
+
         if len(dbdocs) == 0:
             return None
         elif len(dbdocs) == 1:
@@ -242,3 +249,88 @@ class MongoDB(object):
                                        to delete
          """
         self.db[experiment_name][batch][experiment_field].delete_many(field_filters)
+
+    def _pack_labeled_data(self, save_doc):
+        """
+        Pack labeled data (e.g. pandas DataFrame or xarrays) for database
+
+        Args:
+              save_doc (dict): dictionary to be saved to database
+        """
+        if isinstance(save_doc.get('result', None), pd.DataFrame):
+            self._pack_pandas_dataframe(save_doc)
+
+        elif isinstance(save_doc.get('result', None), xr.DataArray) or isinstance(
+            save_doc.get('result', None), xr.Dataset
+        ):
+            raise Exception('Packing method for xarrays not implemented.')
+
+    @staticmethod
+    def _pack_pandas_dataframe(save_doc):
+        """
+        Pack pandas DataFrame for database
+
+        - reset index to recover the index in the unpacking method
+        - convert DataFrame to mongodb compatible data type
+
+        Args:
+              save_doc (dict): dictionary to be saved to database
+        """
+        result = save_doc['result']
+
+        number_of_index_levels = result.index.nlevels
+        result.reset_index(inplace=True)
+        column_header = np.array(result.columns)
+        index_format = np.empty_like(column_header)
+        index_format[0] = number_of_index_levels
+        index_format[1] = 'pd.DataFrame'
+        data = np.array(result)
+
+        result = np.vstack((index_format, column_header, data))
+        save_doc['result'] = result.tolist()
+
+    def _unpack_labeled_data(self, dbdocs):
+        """
+        Unpack data from database to labeled data format (e.g. pandas DataFrame or xarrays)
+
+        Args:
+            dbdocs (list): documents from database
+        """
+        for idx in range(len(dbdocs)):
+            current_doc = dbdocs[idx]
+            current_result = current_doc.get('result', None)
+
+            if isinstance(current_result, list) and (current_result[0][1] == 'pd.DataFrame'):
+                data, index = self._split_output(current_result)
+                current_doc['result'] = pd.DataFrame(data=data, index=index)
+
+    @staticmethod
+    def _split_output(result):
+        """"
+        Split output into (multi-)index and data
+
+        Args:
+            result (list): result as list with first row = header
+
+        Returns:
+            data (np.array): data as column vector
+            index (pd.MultiIndex): multiindex containing coordinates
+        """
+        index_format = result[0][0]
+        column_header = np.array(result[1])
+        body = np.array(result[2:])
+
+        coordinate_names = column_header[:index_format]
+
+        index = None
+        if index_format == 1:
+            index = pd.Index(body[:, 0])
+        elif index_format > 1:
+            coordinates = list(zip(*body[:, :index_format].transpose()))
+            index = pd.MultiIndex.from_tuples(coordinates, names=coordinate_names)
+        else:
+            Exception('No index found')
+
+        data = body[:, index_format:]
+
+        return data, index

@@ -11,6 +11,7 @@ dependencies:
   - scikit-learn
   - arviz
   - pandas
+  - xarray
 # for database interfacing
   - pymongo
 # for design of experiments
