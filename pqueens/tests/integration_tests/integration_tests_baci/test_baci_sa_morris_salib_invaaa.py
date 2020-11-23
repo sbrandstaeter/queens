@@ -342,7 +342,7 @@ def test_block_restart_baci(
         'baci-release': baci_release,
         'post_drt_monitor': post_drt_monitor,
         'singularity_boolean': singularity_boolean,
-        'drop_database_boolean': "false",
+        'drop_database_boolean': "true",
     }
 
     injector.inject(dir_dict, template, input_file)
