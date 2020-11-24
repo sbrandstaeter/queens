@@ -48,7 +48,7 @@ def test_run_job(ansys_driver, mocker):
         'pqueens.drivers.ansys_driver_native.run_subprocess',
         return_value=['random', 'stuff', 'out', 'err'],
     )
-
+    
     ansys_driver.run_job()
 
     ansys_driver.assemble_command_string.assert_called_once()

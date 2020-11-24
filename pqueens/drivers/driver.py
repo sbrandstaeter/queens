@@ -2,8 +2,10 @@ import abc
 import os
 import sys
 import time
+import json
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.numpy_array_encoder import NumpyArrayEncoder
 
 
 class Driver(metaclass=abc.ABCMeta):
@@ -71,10 +73,12 @@ class Driver(metaclass=abc.ABCMeta):
         self.num_procs = base_settings['num_procs']
         self.num_procs_post = base_settings['num_procs_post']
         self.experiment_name = base_settings['experiment_name']
+        self.global_output_dir = base_settings['global_output_dir']
         self.experiment_dir = base_settings['experiment_dir']
         self.input_file = None
         self.input_dic_1 = None
         self.direct_scheduling = base_settings['direct_scheduling']
+        self.connect_to_resource = base_settings['connect_to_resource']
 
     @classmethod
     def from_config_create_driver(
@@ -138,23 +142,45 @@ class Driver(metaclass=abc.ABCMeta):
 
         # general settings
         base_settings['experiment_name'] = config['global_settings'].get('experiment_name')
+        base_settings['global_output_dir'] = config['global_settings'].get('output_dir')
 
         # scheduler settings
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
         base_settings['scheduler_type'] = config[scheduler_name]['scheduler_type']
+
+        # check whether direct scheduling or not
         if (
             base_settings['scheduler_type'] == 'ecs_task'
+            or base_settings['scheduler_type'] == 'local_nohup'
             or base_settings['scheduler_type'] == 'local_pbs'
             or base_settings['scheduler_type'] == 'local_slurm'
+            or base_settings['scheduler_type'] == 'remote_nohup'
+            or base_settings['scheduler_type'] == 'remote_pbs'
+            or base_settings['scheduler_type'] == 'remote_slurm'
         ):
             base_settings['direct_scheduling'] = True
         else:
             base_settings['direct_scheduling'] = False
+
+        # check whether remote scheduling or not
+        if (
+            base_settings['scheduler_type'] == 'remote'
+            or base_settings['scheduler_type'] == 'remote_nohup'
+            or base_settings['scheduler_type'] == 'remote_pbs'
+            or base_settings['scheduler_type'] == 'remote_slurm'
+        ):
+            base_settings['connect_to_resource'] = config[scheduler_name]['connect_to_resource']
+        else:
+            base_settings['connect_to_resource'] = ''
+
+        # check whether cluster script or not
         if 'cluster_script' in config[scheduler_name]:
             base_settings['cluster_script'] = config[scheduler_name]['cluster_script']
         else:
             base_settings['cluster_script'] = None
+
+        # set number of processors for processing as well as post-processing
         base_settings['num_procs'] = config[scheduler_name]['num_procs']
         if 'num_procs_post' in config[scheduler_name]:
             base_settings['num_procs_post'] = config[scheduler_name]['num_procs_post']
@@ -261,17 +287,151 @@ class Driver(metaclass=abc.ABCMeta):
             {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
         )
 
-        # create actual input file or dictionaries with parsed parameters
-        if self.input_dic_1 is None:
-            inject(self.job['params'], self.simulation_input_template, self.input_file)
-        else:
-            # set path to input dictionary No. 1 and inject
-            self.input_file = os.path.join(self.case_dir, self.input_dic_1)
-            inject(self.job['params'], self.input_file, self.input_file)
+        if (
+            self.scheduler_type == 'remote'
+            or self.scheduler_type == 'remote_nohup'
+            or self.scheduler_type == 'remote_pbs'
+            or self.scheduler_type == 'remote_slurm'
+        ):
+            # generate a JSON file containing parameter dictionary
+            params_json_name = 'params_dict.json'
+            params_json_path = os.path.join(self.global_output_dir, params_json_name)
+            with open(params_json_path, 'w') as fp:
+                json.dump(self.job['params'], fp, cls=NumpyArrayEncoder)
 
-            # set path to input dictionary No. 2 and inject
-            self.input_file = os.path.join(self.case_dir, self.input_dic_2)
-            inject(self.job['params'], self.input_file, self.input_file)
+            # generate command for copying 'injector.py' and JSON file containing
+            # parameter dictionary to experiment directory on remote machine
+            injector_filename = 'injector.py'
+            this_dir = os.path.dirname(__file__)
+            rel_path = os.path.join('../utils', injector_filename)
+            abs_path = os.path.join(this_dir, rel_path)
+            command_list = [
+                "scp ",
+                abs_path,
+                " ",
+                params_json_path,
+                " ",
+                self.connect_to_resource,
+                ":",
+                self.experiment_dir,
+            ]
+            command_string = ''.join(command_list)
+            _, _, _, stderr = run_subprocess(command_string)
+
+            # detection of failed command
+            if stderr:
+                raise RuntimeError(
+                    "\nInjector file and param dict file could not be copied to remote machine!"
+                    f"\nStderr:\n{stderr}"
+                )
+
+            # remove local copy of JSON file containing parameter dictionary
+            os.remove(params_json_path)
+
+            # generate command for executing 'injector.py' on remote machine
+            injector_path_on_remote = os.path.join(self.experiment_dir, injector_filename)
+            json_path_on_remote = os.path.join(self.experiment_dir, params_json_name)
+
+            if self.input_dic_1 is None:
+                arg_list = (
+                    json_path_on_remote
+                    + ' '
+                    + self.simulation_input_template
+                    + ' '
+                    + self.input_file
+                )
+                command_list = [
+                    'ssh',
+                    self.connect_to_resource,
+                    '"python',
+                    injector_path_on_remote,
+                    arg_list,
+                    '"',
+                ]
+                command_string = ' '.join(command_list)
+                _, _, _, stderr = run_subprocess(command_string)
+
+                # detection of failed command
+                if stderr:
+                    raise RuntimeError(
+                        "\nInjector file could not be executed on remote machine!"
+                        f"\nStderr on remote:\n{stderr}"
+                    )
+            else:
+                # set path to input dictionary No. 1 and inject
+                self.input_file = os.path.join(self.case_dir, self.input_dic_1)
+                arg_list = json_path_on_remote + ' ' + self.input_file + ' ' + self.input_file
+                command_list = [
+                    'ssh',
+                    self.connect_to_resource,
+                    '"python',
+                    injector_path_on_remote,
+                    arg_list,
+                    '"',
+                ]
+                command_string = ' '.join(command_list)
+                _, _, _, stderr = run_subprocess(command_string)
+
+                # detection of failed command
+                if stderr:
+                    raise RuntimeError(
+                        "\nInjector file could not be executed for input dict 1 on remote machine!"
+                        f"\nStderr on remote:\n{stderr}"
+                    )
+
+                # set path to input dictionary No. 2 and inject
+                self.input_file = os.path.join(self.case_dir, self.input_dic_2)
+                arg_list = json_path_on_remote + ' ' + self.input_file + ' ' + self.input_file
+                command_list = [
+                    'ssh',
+                    self.connect_to_resource,
+                    '"python',
+                    injector_path_on_remote,
+                    arg_list,
+                    '"',
+                ]
+                command_string = ' '.join(command_list)
+                _, _, _, stderr = run_subprocess(command_string)
+
+                # detection of failed command
+                if stderr:
+                    raise RuntimeError(
+                        "\nInjector file could not be executed for input dict 2 on remote machine!"
+                        f"\nStderr on remote:\n{stderr}"
+                    )
+
+            # generate command for removing 'injector.py' and JSON file containing
+            # parameter dictionary from experiment directory on remote machine
+            command_list = [
+                'ssh',
+                self.connect_to_resource,
+                '"rm',
+                injector_path_on_remote,
+                json_path_on_remote,
+                '"',
+            ]
+            command_string = ' '.join(command_list)
+            _, _, _, stderr = run_subprocess(command_string)
+
+            # detection of failed command
+            if stderr:
+                raise RuntimeError(
+                    "\nInjector and JSON file could not be removed from remote machine!"
+                    f"\nStderr on remote:\n{stderr}"
+                )
+        else:
+            # create actual input file or dictionaries with parsed parameters
+            # in case of input dictionaries, inject input dictionary No. 1
+            if self.input_dic_1 is None:
+                inject(self.job['params'], self.simulation_input_template, self.input_file)
+            else:
+                # set path to input dictionary No. 1 and inject
+                self.input_file = os.path.join(self.case_dir, self.input_dic_1)
+                inject(self.job['params'], self.input_file, self.input_file)
+
+                # set path to input dictionary No. 2 and inject
+                self.input_file = os.path.join(self.case_dir, self.input_dic_2)
+                inject(self.job['params'], self.input_file, self.input_file)
 
     def finish_job(self):
         """
@@ -350,48 +510,129 @@ class Driver(metaclass=abc.ABCMeta):
 
             if self.post_options:
                 for num, option in enumerate(self.post_options):
+                    # generate post-processing command
                     target_file_opt_1 = '--output=' + target_file_base_name
                     target_file_opt_2 = self.file_prefix + "_" + str(num + 1)
                     target_file_opt = os.path.join(target_file_opt_1, target_file_opt_2)
-                    postprocessing_list = [
-                        self.postprocessor,
-                        output_file_opt,
-                        option,
-                        target_file_opt,
-                    ]
-                    postprocess_command = ' '.join(filter(None, postprocessing_list))
-                    _, _, _, stderr = run_subprocess(postprocess_command)
+                    postprocess_cmd = self.assemble_postprocessing_cmd(
+                        output_file_opt, target_file_opt, option
+                    )
+
+                    # wrap up post-processing command for remote scheduling or
+                    # directly use post-processing command for local scheduling
+                    if (
+                        self.scheduler_type == 'remote_nohup'
+                        or self.scheduler_type == 'remote_pbs'
+                        or self.scheduler_type == 'remote_slurm'
+                    ):
+                        final_postprocess_cmd = self.assemble_remote_postprocessing_cmd(
+                            postprocess_cmd
+                        )
+                    else:
+                        final_postprocess_cmd = postprocess_cmd
+
+                    # run post-processing command and print potential error messages
+                    _, _, _, stderr = run_subprocess(final_postprocess_cmd)
                     if stderr:
                         print(stderr)
             else:
+                # generate post-processing command
                 target_file_opt = os.path.join(
                     '--output=' + target_file_base_name, self.file_prefix
                 )
-                postprocessing_list = [self.postprocessor, output_file_opt, target_file_opt]
-                postprocess_command = ' '.join(filter(None, postprocessing_list))
-                _, _, _, _ = run_subprocess(postprocess_command)
+                option = ''
+                postprocess_cmd = self.assemble_postprocessing_cmd(
+                    output_file_opt, target_file_opt, option
+                )
+
+                # wrap up post-processing command for remote scheduling or
+                # directly use post-processing command for local scheduling
+                if self.scheduler_type == 'remote':
+                    final_postprocess_cmd = self.assemble_remote_postprocessing_cmd(postprocess_cmd)
+                else:
+                    final_postprocess_cmd = postprocess_cmd
+
+                # run post-processing command and print potential error messages
+                _, _, _, _ = run_subprocess(final_postprocess_cmd)
+
+    def assemble_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
+        """  Assemble command for postprocessing
+
+            Returns:
+                postprocessing command
+
+        """
+
+        command_list = [
+            self.postprocessor,
+            output_file_opt,
+            option,
+            target_file_opt,
+        ]
+
+        return ' '.join(filter(None, command_list))
+
+    def assemble_remote_postprocessing_cmd(self, postprocess_cmd):
+        """  Assemble command for remote postprocessing
+
+            Returns:
+                remote postprocessing command
+
+        """
+        command_list = [
+            'ssh',
+            self.connect_to_resource,
+            '"',
+            postprocess_cmd,
+            '"',
+        ]
+
+        return ' '.join(filter(None, command_list))
 
     def do_postpostprocessing(self):
         """
-        Extracts necessary information from postprocessed simulation file and saves it to
-        the database
+        Extract data of interest from post-processed files and save them to database
 
         Returns:
             None
 
         """
 
+        # load job from database if existent
         if self.job is None:
-            # Load the already initiated job entry
             self.job = self.database.load(
                 self.experiment_name, self.batch, 'jobs', {'id': self.job_id}
             )
-        dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
-        output_directory = os.path.join(dest_dir, 'output')
+
+        # get (from the point of view of the location of the post-processed files)
+        # "local" and "remote" output directory for this job ID, with the
+        # latter effectively used only in case of remote scheduling
+        local_dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
+        local_output_dir = os.path.join(local_dest_dir, 'output')
+        if (
+            self.scheduler_type == 'remote'
+            or self.scheduler_type == 'remote_nohup'
+            or self.scheduler_type == 'remote_pbs'
+            or self.scheduler_type == 'remote_slurm'
+        ):
+            remote_dest_dir = os.path.join(str(self.global_output_dir), str(self.job_id))
+            remote_output_dir = os.path.join(remote_dest_dir, 'output')
+            remote_connect = self.connect_to_resource
+        else:
+            remote_output_dir = None
+            remote_connect = None
+
+        # only proceed if this job did not fail
         if self.job['status'] != "failed":
-            # this is a security duplicate in case post_post did not catch an error
+            # set security duplicate in case post_post did not catch an error
             self.result = None
-            self.result = self.postpostprocessor.postpost_main(output_directory)
+
+            # call post-post-processing
+            self.result = self.postpostprocessor.postpost_main(
+                local_output_dir, remote_connect, remote_output_dir
+            )
+
+            # print obtained result to screen
             sys.stdout.write("Got result %s\n" % (self.result))
 
     def setup_mpi(self, ntasks):

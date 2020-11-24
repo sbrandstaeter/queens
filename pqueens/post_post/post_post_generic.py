@@ -52,11 +52,9 @@ class PostPostGeneric(PostPost):
 
         return cls(skip_rows, use_col, use_row, delete_data_flag, file_prefix)
 
-    def read_post_files(self):
+    def read_post_files(self, files_of_interest):
         """ Loop over post files in given output directory """
 
-        prefix_expr = '*' + self.file_prefix + '*'
-        files_of_interest = os.path.join(self.output_dir, prefix_expr)
         post_files_list = glob.glob(files_of_interest)
         # glob returns arbitrary list -> need to sort the list before using
         post_files_list.sort()

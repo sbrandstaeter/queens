@@ -52,7 +52,7 @@ class PostPostBACIShape(PostPost):
         )
 
     # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
-    def read_post_files(self):
+    def read_post_files(self, files_of_interest):
         """
         main evaluation routine of post and post_post are located here
         residual vector has signed scalar entries for distances between surface compared to
@@ -64,9 +64,6 @@ class PostPostBACIShape(PostPost):
         Returns:
             None
         """
-
-        prefix_expr = '*' + self.file_prefix + '*'
-        files_of_interest = os.path.join(self.output_dir, prefix_expr)
 
         # we can make use of specific cut output here
         if self.case_type == 'cut_fsi':

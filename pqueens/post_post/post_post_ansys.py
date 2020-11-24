@@ -45,11 +45,9 @@ class PostPostANSYS(PostPost):
 
         return cls(usecols, delete_data_flag, file_prefix)
 
-    def read_post_files(self):
+    def read_post_files(self, files_of_interest):
         """ Loop over all post file in given directory and extract results """
 
-        prefix_expr = '*' + self.file_prefix + '*'
-        files_of_interest = os.path.join(self.output_dir, prefix_expr)
         post_files_list = glob.glob(files_of_interest)
         # glob returns arbitrary list -> need to sort the list before using
         post_files_list.sort()

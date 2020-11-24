@@ -124,6 +124,7 @@ def driver_base_settings(job):
     base_settings['cluster_script'] = None
     base_settings['experiment_dir'] = job['expt_dir']
     base_settings['experiment_name'] = job['expt_name']
+    base_settings['global_output_dir'] = job['expt_dir']
     base_settings['job_id'] = job['id']
     base_settings['input_file'] = 'input.json'
     base_settings['simulation_input_template'] = 'template.dat'
@@ -138,5 +139,6 @@ def driver_base_settings(job):
     base_settings['port'] = 27017
     base_settings['num_procs'] = 4
     base_settings['num_procs_post'] = 2
+    base_settings['connect_to_resource'] = None
 
     return base_settings
