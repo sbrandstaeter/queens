@@ -118,11 +118,15 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         scheduler_dict = {
             'local': LocalScheduler,
+            'remote': LocalScheduler,
             'local_nohup': NohupScheduler,
+            'remote_nohup': NohupScheduler,
             'pbs': PBSScheduler,
             'local_pbs': PBSScheduler,
+            'remote_pbs': PBSScheduler,
             'slurm': SlurmScheduler,
             'local_slurm': SlurmScheduler,
+            'remote_slurm': SlurmScheduler,
             'ecs_task': ECSTaskScheduler,
         }
 
@@ -153,6 +157,17 @@ class Scheduler(metaclass=abc.ABCMeta):
             base_settings['remote_flag'] = False
             base_settings['singularity_path'] = None
             base_settings['connect'] = None
+            base_settings['cluster_bind'] = config['driver']['driver_params'].get('cluster_bind')
+            base_settings['scheduler_template'] = None
+        elif (
+            scheduler_options["scheduler_type"] == 'remote'
+            or scheduler_options["scheduler_type"] == 'remote_nohup'
+            or scheduler_options["scheduler_type"] == 'remote_pbs'
+            or scheduler_options["scheduler_type"] == 'remote_slurm'
+        ):
+            base_settings['remote_flag'] = True
+            base_settings['singularity_path'] = None
+            base_settings['connect'] = config[scheduler_name]['connect_to_resource']
             base_settings['cluster_bind'] = config['driver']['driver_params'].get('cluster_bind')
             base_settings['scheduler_template'] = None
         elif (
@@ -208,23 +223,50 @@ class Scheduler(metaclass=abc.ABCMeta):
             None
 
         """
-        if self.remote_flag:
-            _, _, hostname, _ = run_subprocess('hostname -i')
-            _, _, username, _ = run_subprocess('whoami')
-            address_localhost = username.rstrip() + r'@' + hostname.rstrip()
 
-            self.kill_previous_queens_ssh_remote(username)
-            self.establish_port_forwarding_local(address_localhost)
-            self.establish_port_forwarding_remote(address_localhost)
-            self.copy_temp_json()
-            self.copy_post_post()
-
+        # pre-run routines required when using Singularity both local and remote
+        if not self.no_singularity:
             self.singularity_manager.check_singularity_system_vars()
             self.singularity_manager.prepare_singularity_files()
-        else:
-            if not self.no_singularity:
-                self.singularity_manager.check_singularity_system_vars()
-                self.singularity_manager.prepare_singularity_files()
+
+            # pre-run routines required when using Singularity remote only
+            if self.remote_flag:
+                _, _, hostname, _ = run_subprocess('hostname -i')
+                _, _, username, _ = run_subprocess('whoami')
+                address_localhost = username.rstrip() + r'@' + hostname.rstrip()
+
+                self.kill_previous_queens_ssh_remote(username)
+                self.establish_port_forwarding_local(address_localhost)
+                self.establish_port_forwarding_remote(address_localhost)
+
+                self.copy_temp_json()
+                self.copy_post_post()
+
+        if self.remote_flag:
+            if type(self).__name__ == 'NohupScheduler':
+                # generate command for copying 'string_extractor_and_checker.py' to
+                # experiment directory on remote machine
+                checker_filename = 'string_extractor_and_checker.py'
+                this_dir = os.path.dirname(__file__)
+                rel_path = os.path.join('../utils', checker_filename)
+                abs_path = os.path.join(this_dir, rel_path)
+                command_list = [
+                    "scp ",
+                    abs_path,
+                    " ",
+                    self.connect_to_resource,
+                    ":",
+                    self.experiment_dir,
+                ]
+                command_string = ''.join(command_list)
+                _, _, _, stderr = run_subprocess(command_string)
+
+                # detection of failed command
+                if stderr:
+                    raise RuntimeError(
+                        "\nString checker file could not be copied to remote machine!"
+                        f"\nStderr:\n{stderr}"
+                    )
 
     def post_run(self):  # will actually be called in job_interface
         """
@@ -236,10 +278,31 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         """
         if self.remote_flag:
-            self.close_remote_port()
-            print('All port-forwardings were closed again.')
-        else:
-            pass
+            if not self.no_singularity:
+                self.close_remote_port()
+                print('All port-forwardings were closed again.')
+
+            if type(self).__name__ == 'NohupScheduler':
+                # generate command for removing 'string_extractor_and_checker.py'
+                # from experiment directory on remote machine
+                checker_filename = 'string_extractor_and_checker.py'
+                checker_path_on_remote = os.path.join(self.experiment_dir, checker_filename)
+                command_list = [
+                    'ssh',
+                    self.connect_to_resource,
+                    '"rm',
+                    checker_path_on_remote,
+                    '"',
+                ]
+                command_string = ' '.join(command_list)
+                _, _, _, stderr = run_subprocess(command_string)
+
+                # detection of failed command
+                if stderr:
+                    raise RuntimeError(
+                        "\nChecker file could not be removed from remote machine!"
+                        f"\nStderr on remote:\n{stderr}"
+                    )
 
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
     def kill_previous_queens_ssh_remote(self, username):
@@ -520,7 +583,10 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         else:
             if self.remote_flag:
-                return self._submit_remote
+                if self.no_singularity:
+                    return self._submit_local
+                else:
+                    return self._submit_remote
             else:
                 if self.no_singularity:
                     return self._submit_local

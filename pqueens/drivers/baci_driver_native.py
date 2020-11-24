@@ -55,14 +55,50 @@ class BaciDriverNative(Driver):
         dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
         self.output_prefix = str(self.experiment_name) + '_' + str(self.job_id)
 
-        # generate path to input file
+        # set path to input file
         input_file_str = self.output_prefix + '.dat'
         self.input_file = os.path.join(dest_dir, input_file_str)
 
-        # make output directory if not already existent
+        # set path to output directory (either on local or remote machine)
         self.output_directory = os.path.join(dest_dir, 'output')
-        if not os.path.isdir(self.output_directory):
-            os.makedirs(self.output_directory)
+
+        # make (actual) output directory on remote machine as well as "mirror"
+        # output directory on local machine for remote scheduling
+        if (
+            self.scheduler_type == 'remote'
+            or self.scheduler_type == 'remote_nohup'
+            or self.scheduler_type == 'remote_pbs'
+            or self.scheduler_type == 'remote_slurm'
+        ):
+            # generate command for making output directory on remote machine
+            command_list = [
+                'ssh',
+                self.connect_to_resource,
+                '"mkdir -p',
+                self.output_directory,
+                '"',
+            ]
+            command_string = ' '.join(command_list)
+            _, _, _, stderr = run_subprocess(command_string)
+
+            # detection of failed command
+            if stderr:
+                raise RuntimeError(
+                    "\nOutput directory could not be made on remote machine!"
+                    f"\nStderr from remote:\n{stderr}"
+                )
+
+            # set path to output directory on local machine
+            local_job_dir = os.path.join(str(self.global_output_dir), str(self.job_id))
+            self.local_job_output_dir = os.path.join(local_job_dir, 'output')
+
+            # make "mirror" output directory on local machine, if not already existent
+            if not os.path.isdir(self.local_job_output_dir):
+                os.makedirs(self.local_job_output_dir)
+        else:
+            # make output directory on local machine, if not already existent
+            if not os.path.isdir(self.output_directory):
+                os.makedirs(self.output_directory)
 
         # generate path to output files in general, control file and log file
         self.output_file = os.path.join(self.output_directory, self.output_prefix)
@@ -82,7 +118,12 @@ class BaciDriverNative(Driver):
 
         """
         # decide whether jobscript-based run or direct run
-        if self.scheduler_type == 'local_pbs' or self.scheduler_type == 'local_slurm':
+        if (
+            self.scheduler_type == 'local_pbs'
+            or self.scheduler_type == 'local_slurm'
+            or self.scheduler_type == 'remote_pbs'
+            or self.scheduler_type == 'remote_slurm'
+        ):
             # set options for jobscript
             script_options = {}
             script_options['job_name'] = '{}_{}_{}'.format(
@@ -106,7 +147,7 @@ class BaciDriverNative(Driver):
             script_options['POSTPOSTPROCESSFLAG'] = 'false'
 
             # determine relative path to script template and start command for scheduler
-            if self.scheduler_type == 'local_pbs':
+            if self.scheduler_type == 'local_pbs' or self.scheduler_type == 'remote_pbs':
                 rel_path = '../utils/jobscript_pbs.sh'
                 scheduler_start = 'qsub'
             else:
@@ -116,18 +157,60 @@ class BaciDriverNative(Driver):
             # set paths for script template and final script location
             this_dir = os.path.dirname(__file__)
             submission_script_template = os.path.join(this_dir, rel_path)
-            submission_script_path = os.path.join(self.experiment_dir, 'jobfile.sh')
+            jobfilename = 'jobfile.sh'
+            if self.scheduler_type == 'local_pbs' or self.scheduler_type == 'local_slurm':
+                submission_script_path = os.path.join(self.experiment_dir, jobfilename)
+            else:
+                submission_script_path = os.path.join(self.global_output_dir, jobfilename)
 
             # generate job script for submission
             generate_submission_script(
                 script_options, submission_script_path, submission_script_template
             )
 
-            # change directory
-            os.chdir(self.experiment_dir)
+            if self.scheduler_type == 'local_pbs' or self.scheduler_type == 'local_slurm':
+                # change directory
+                os.chdir(self.experiment_dir)
 
-            # assemble command string for jobscript-based run
-            command_list = [scheduler_start, submission_script_path]
+                # assemble command string for jobscript-based run
+                command_list = [scheduler_start, submission_script_path]
+            else:
+                # submit the job with jobfile.sh on remote machine
+                command_list = [
+                    "scp ",
+                    submission_script_path,
+                    " ",
+                    self.connect_to_resource,
+                    ":",
+                    self.experiment_dir,
+                ]
+                command_string = ''.join(command_list)
+                _, _, _, stderr = run_subprocess(command_string)
+
+                # detection of failed command
+                if stderr:
+                    raise RuntimeError(
+                        "\nJobscript could not be copied to remote machine!" f"\nStderr:\n{stderr}"
+                    )
+
+                # remove local copy of submission script and change path
+                # to submission script to the one on remote machine
+                os.remove(submission_script_path)
+                submission_script_path = os.path.join(self.experiment_dir, jobfilename)
+
+                # submit the job with jobfile.sh on remote machine
+                command_list = [
+                    'ssh',
+                    self.connect_to_resource,
+                    '"cd',
+                    self.experiment_dir,
+                    ';',
+                    scheduler_start,
+                    submission_script_path,
+                    '"',
+                ]
+
+            # set command string
             command_string = ' '.join(command_list)
 
             # submit and run job
@@ -151,13 +234,18 @@ class BaciDriverNative(Driver):
             # assemble command string for BACI run
             baci_run_cmd = self.assemble_baci_run_cmd()
 
-            if self.scheduler_type == 'local_nohup':
+            if self.scheduler_type == 'local_nohup' or self.scheduler_type == 'remote_nohup':
                 # assemble command string for nohup BACI run
                 nohup_baci_run_cmd = self.assemble_nohup_baci_run_cmd(baci_run_cmd)
 
+                if self.scheduler_type == 'remote_nohup':
+                    final_run_cmd = self.assemble_remote_run_cmd(nohup_baci_run_cmd)
+                else:
+                    final_run_cmd = nohup_baci_run_cmd
+
                 # run BACI via subprocess
                 returncode, self.pid, _, _ = run_subprocess(
-                    nohup_baci_run_cmd, subprocess_type='submit',
+                    final_run_cmd, subprocess_type='submit',
                 )
 
                 # save path to log file and number of processes to database
@@ -175,9 +263,14 @@ class BaciDriverNative(Driver):
                     },
                 )
             else:
+                if self.scheduler_type == 'remote':
+                    final_run_cmd = self.assemble_remote_run_cmd(baci_run_cmd)
+                else:
+                    final_run_cmd = baci_run_cmd
+
                 # run BACI via subprocess
                 returncode, self.pid, _, _ = run_subprocess(
-                    baci_run_cmd,
+                    final_run_cmd,
                     subprocess_type='simulation',
                     terminate_expr='PROC.*ERROR',
                     loggername=__name__ + f'_{self.job_id}',
@@ -224,6 +317,25 @@ class BaciDriverNative(Driver):
             "2>",
             self.err_file,
             "< /dev/null &",
+        ]
+
+        return ' '.join(filter(None, command_list))
+
+    def assemble_remote_run_cmd(self, run_cmd):
+        """  Assemble command for remote (nohup) run of BACI
+
+            Returns:
+                remote (nohup) BACI run command
+
+        """
+        command_list = [
+            'ssh',
+            self.connect_to_resource,
+            '"cd',
+            self.experiment_dir,
+            ';',
+            run_cmd,
+            '"',
         ]
 
         return ' '.join(filter(None, command_list))

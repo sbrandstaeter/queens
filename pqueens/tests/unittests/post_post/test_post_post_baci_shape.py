@@ -4,6 +4,7 @@ for distance to surface measurement post_post evaluation
 """
 
 import numpy as np
+import os
 import pytest
 
 import vtk
@@ -160,7 +161,9 @@ def test_read_post_files(mocker, all_case_types):
         'pqueens.post_post.post_post_baci_shape.PostPostBACIShape.create_mesh_and_intersect_vtk',
         return_value=[1, 0, 33.98],
     )
-    pp.read_post_files()
+    prefix_expr = '*' + pp.file_prefix + '*'
+    files_of_interest = os.path.join(pp.output_dir, prefix_expr)
+    pp.read_post_files(files_of_interest)
     assert pp.result == [1, 0, 33.98]
 
     ##test for ValueErrors
@@ -170,11 +173,11 @@ def test_read_post_files(mocker, all_case_types):
             'dummy_path', 1e-03, 'norealcase', False, True, 'dummy_prefix'
         )
         ppErr.output_dir = 'None'
-        ppErr.read_post_files()
+        ppErr.read_post_files(files_of_interest)
 
     with pytest.raises(ValueError):
         mocker.patch('glob.glob', return_value=['None', 'Neither'])
-        pp.read_post_files()
+        pp.read_post_files(files_of_interest)
 
 
 def test_delete_field_data(mocker, default_ppbacishapeclass):

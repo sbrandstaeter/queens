@@ -35,3 +35,14 @@ def check_if_string_in_file(file_name, string_to_search):
             if string_to_search in line:
                 return True
     return False
+
+
+if __name__ == "__main__":
+
+    import sys
+
+    string_present = check_if_string_in_file(sys.argv[1], sys.argv[2])
+    if string_present:
+        sys.stdout.write("True\n")
+        sys.stdout.flush()
+    sys.exit(0)

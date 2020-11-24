@@ -128,6 +128,9 @@ class JobInterface(Interface):
             or scheduler_type == 'local_nohup'
             or scheduler_type == 'local_pbs'
             or scheduler_type == 'local_slurm'
+            or scheduler_type == 'remote_nohup'
+            or scheduler_type == 'remote_pbs'
+            or scheduler_type == 'remote_slurm'
         ):
             direct_scheduling = True
         else:
@@ -190,8 +193,8 @@ class JobInterface(Interface):
                 while not self.all_jobs_finished():
                     time.sleep(self.polling_time)
 
-                # only for remote computation:
-                resource.scheduler.post_run()
+            # potential post-run options, currently only for remote computation:
+            resource.scheduler.post_run()
 
         # get sample and response data
         return self.get_output_data()
@@ -616,8 +619,53 @@ class JobInterface(Interface):
                         completed = check_if_string_in_file(
                             current_check_job['log_file_path'], search_string
                         )
+                    elif self.scheduler_type == 'remote_nohup':
+                        # generate command for executing 'string_extractor_and_checker.py'
+                        # on remote machine
+                        checker_filename = 'string_extractor_and_checker.py'
+                        checker_path_on_remote = os.path.join(self.output_dir, checker_filename)
+                        search_string = 'Total CPU Time for CALCULATION'
+                        command_list = [
+                            "ssh ",
+                            self.connect_to_resource,
+                            " 'python ",
+                            checker_path_on_remote,
+                            ' ',
+                            current_check_job['log_file_path'],
+                            " \"",
+                            search_string,
+                            "\"'",
+                        ]
+                        command_string = ''.join(command_list)
+                        _, _, stdout, stderr = run_subprocess(command_string)
+
+                        # detection of failed command
+                        if stderr:
+                            raise RuntimeError(
+                                "\nString checker file could not be executed on remote machine!"
+                                f"\nStderr on remote:\n{stderr}"
+                            )
+
+                        if stdout:
+                            completed = True
+                    elif (
+                        self.scheduler_type == 'remote_pbs' or self.scheduler_type == 'remote_slurm'
+                    ):
+                        # indicate completion by existing control file in remote output directory
+                        command_list = [
+                            'ssh',
+                            self.connect_to_resource,
+                            '"ls',
+                            current_check_job['control_file_path'],
+                            '"',
+                        ]
+                        command_string = ' '.join(command_list)
+                        _, _, _, stderr = run_subprocess(command_string)
+
+                        if not stderr:
+                            completed = True
                     else:
-                        # indicate completion by existing control file in output directory
+                        # indicate completion by existing control file in local output directory
                         completed = os.path.isfile(current_check_job['control_file_path'])
                     if completed:
                         current_check_job['status'] = 'complete'
