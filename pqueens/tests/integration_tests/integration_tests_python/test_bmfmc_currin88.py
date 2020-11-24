@@ -113,10 +113,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    arguments = [
-        '--input=' + input_file,
-        '--output=' + str(tmpdir),
-    ]
+    arguments = ['--input=' + input_file, '--output=' + str(tmpdir)]
 
     # actual main call of BMFMC
     main(arguments)
@@ -135,7 +132,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     )
 
     p_yhf_mc, _ = est.estimate_pdf(
-        np.atleast_2d(Y_HF_mc).T, bandwidth_lfmc, support_points=np.atleast_2d(y_pdf_support),
+        np.atleast_2d(Y_HF_mc).T, bandwidth_lfmc, support_points=np.atleast_2d(y_pdf_support)
     )
 
     kl_divergence = entropy(p_yhf_mc, results['raw_output_data']['p_yhf_mean'])

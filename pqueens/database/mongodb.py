@@ -154,7 +154,7 @@ class MongoDB(object):
         sys.stdout.write('\n=====================================================================')
         sys.stdout.write('\n')
 
-    def save(self, save_doc, experiment_name, experiment_field, batch, field_filters=None):
+    def save(self, save_doc, experiment_name, experiment_field, batch, field_filters={}):
         """ Save a document to the database.
 
         Any numpy arrays in the document are compressed so that they can be
@@ -172,40 +172,76 @@ class MongoDB(object):
         Returns:
             bool: is this the result of an acknowledged write operation ?
         """
-        if field_filters is None:
-            field_filters = {}
-
         self._pack_labeled_data(save_doc)
 
         save_doc = compress_nested_container(save_doc)
 
         dbcollection = self.db[experiment_name][batch][experiment_field]
-        dbdocs = list(dbcollection.find(field_filters))
 
-        upsert = False
-
-        if len(dbdocs) > 1:
+        # make sure that there will be only one document in the collection that fits field_filters
+        # note that the empty field_filers={} fits all documents in a collection
+        if dbcollection.count_documents(field_filters) > 1:
             raise Exception(
                 'Ambiguous save attempted. Field filters returned more than one document.'
             )
-        elif len(dbdocs) == 1:
-            dbdoc = dbdocs[0]
-        else:
-            upsert = True
-
         attempt = 0
-        while attempt < 10:
-            try:
-                result = dbcollection.replace_one(field_filters, save_doc, upsert=upsert)
-                break
-            except pymongo.errors.DuplicateKeyError:
-                if attempt == 9:
-                    result = dbcollection.replace_one(field_filters, save_doc, upsert=upsert)
-                else:
-                    print('Exception pymongo.errors.DuplicateKeyError occurred')
+        max_attempts = 10
+        while attempt < max_attempts:
             attempt += 1
-
+            try:
+                result = dbcollection.replace_one(field_filters, save_doc, upsert=True)
+                break
+            except pymongo.errors.DuplicateKeyError as duplicate_key_error:
+                print(
+                    f'Caught exception pymongo.errors.DuplicateKeyError. '
+                    f'Attempt: {attempt}/10.\n'
+                )
+                if attempt == max_attempts:
+                    print("Reached maximum attempts. Raising error:\n")
+                    raise duplicate_key_error
+                else:
+                    print('Retrying ...\n')
         return result.acknowledged
+
+    def count_documents(self, experiment_name, batch, experiment_field, field_filters={}):
+        """
+        Return number of document(s) in collection
+
+        Args:
+            experiment_name (string):  experiment the data belongs to
+            experiment_field (string): experiment field data belongs to
+            batch (string):            batch the data belongs to
+            field_filters (dict):      filter to find appropriate document(s)
+                                       to load
+
+        Returns:
+            int: number of documents in collection
+        """
+
+        dbcollection = self.db[experiment_name][batch][experiment_field]
+        doc_count = dbcollection.count_documents(field_filters)
+
+        return doc_count
+
+    def estimated_count(self, experiment_name, batch, experiment_field):
+        """ Return estimated count of document(s) in collection
+
+        This is very fast but not 100% safe.
+        Args:
+            experiment_name (string):  experiment the data belongs to
+            experiment_field (string): experiment field data belongs to
+            batch (string):            batch the data belongs to
+            field_filters (dict):      filter to find appropriate document(s)
+                                       to load
+
+        Returns:
+            int: number of documents in collection
+        """
+
+        dbcollection = self.db[experiment_name][batch][experiment_field]
+        doc_count = dbcollection.estimated_document_count()
+
+        return doc_count
 
     def load(self, experiment_name, batch, experiment_field, field_filters=None):
         """ Load document(s) from the database

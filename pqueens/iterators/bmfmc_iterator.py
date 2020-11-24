@@ -350,13 +350,11 @@ class BMFMCIterator(Iterator):
         # plot the figures
         qvis.bmfmc_visualization_instance.plot_pdfs(self.output)
         qvis.bmfmc_visualization_instance.plot_manifold(
-            self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train,
+            self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train
         )
 
         if self.result_description['write_results'] is True:
             results = process_ouputs(self.output, self.result_description)
             write_results(
-                results,
-                self.global_settings["output_dir"],
-                self.global_settings["experiment_name"],
+                results, self.global_settings["output_dir"], self.global_settings["experiment_name"]
             )
