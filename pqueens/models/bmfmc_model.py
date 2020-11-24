@@ -180,9 +180,7 @@ class BMFMCModel(Model):
         )  # TODO handling of variables, fields and parameters should be updated!
 
     @classmethod
-    def from_config_create_model(
-        cls, model_name, config,
-    ):
+    def from_config_create_model(cls, model_name, config):
         """
         Create a BMFMC model from a problem description defined in the input file of QUEENS
 

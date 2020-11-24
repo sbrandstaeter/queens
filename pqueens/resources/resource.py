@@ -63,48 +63,6 @@ def resource_factory(resource_name, exp_name, config):
     return Resource(resource_name, exp_name, scheduler, max_concurrent, max_finished_jobs)
 
 
-def print_resources_status(resources, jobs):
-    """ Print out whats going on on the resources
-    Args:
-        resources (dict):   Dictionary with used resources
-        jobs (list):        List of jobs
-
-    """
-    sys.stdout.write('\nResources:      ')
-    left_indent = 16
-    indentation = ' ' * left_indent
-    sys.stdout.write('NAME            PENDING      COMPLETED    FAILED   \n')
-    sys.stdout.write(indentation)
-    sys.stdout.write('------------    ---------    ---------    ---------\n')
-    total_pending = 0
-    total_complete = 0
-    total_failed = 0
-
-    # for resource in resources:
-    for _, resource in resources.items():
-        pending = resource.num_pending(jobs)
-        complete = resource.num_complete(jobs)
-        failed = resource.num_failed(jobs)
-        total_pending += pending
-        total_complete += complete
-        total_failed += failed
-        sys.stdout.write(
-            '{}{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
-                indentation, resource.name, pending, complete, failed
-            )
-        )
-    sys.stdout.write(
-        '{}{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
-            indentation,
-            '*TOTAL*',
-            total_pending,
-            total_complete,
-            total_failed,
-        )
-    )
-    sys.stdout.write('\n')
-
-
 class Resource(object):
     """class which manages a computing resource
 
@@ -159,86 +117,20 @@ class Resource(object):
             # filter(lambda job: job['resource']==self.name, jobs)
         return jobs
 
-    def num_pending(self, jobs):
-        """ Take a list of jobs and filter those that are either pending or new
-
-        Args:
-            jobs (list): List with jobs
-
-        Returns:
-            list: List with jobs that are either pending or new
-
-        """
-        jobs = self.filter_my_jobs(jobs)
-        if jobs:
-            pending_jobs = [job['status'] for job in jobs].count('pending')
-            return pending_jobs
-        return 0
-
-    def num_failed(self, jobs):
-        """ Take a list of jobs and filter those that have failed
-
-        Args:
-            jobs (list): List with jobs
-
-        Returns:
-            list: List with jobs that have failed
-
-        """
-        jobs = self.filter_my_jobs(jobs)
-        if jobs:
-            failed_jobs = [job['status'] for job in jobs].count('failed')
-            # map(lambda x: x['status'] in ['failed'], jobs)
-            return failed_jobs  # reduce(add, failed_jobs, 0)
-        else:
-            return 0
-
-    def num_complete(self, jobs):
-        """ Take a list of jobs and filter those that are complete
-
-        Args:
-            jobs (list): List with jobs
-
-        Returns:
-            list: List with jobs that either are complete
-
-        """
-        jobs = self.filter_my_jobs(jobs)
-        if jobs:
-            completed_jobs = [job['status'] for job in jobs].count('complete')
-            # map(lambda x: x['status'] == 'complete', jobs)
-            return completed_jobs  # reduce(add, completed_jobs, 0)
-        else:
-            return 0
-
-    def accepting_jobs(self, jobs):
+    def accepting_jobs(self, num_pending_jobs):
         """ Check if the resource currently is accepting new jobs
 
         Args:
-            jobs (list): List with jobs
+            num_pending_jobs (list): number of pending jobs of this resource
 
         Returns:
             bool: whether or not resource is accepting jobs
 
         """
-        if self.num_pending(jobs) >= self.max_concurrent:
-            return False
-
-        if self.num_complete(jobs) >= self.max_finished_jobs:
+        if num_pending_jobs >= self.max_concurrent:
             return False
 
         return True
-
-    def print_status(self, jobs):
-        """ Print number of pending ans completed jobs
-
-        Args:
-            jobs (list): List with jobs
-        """
-        sys.stdout.write(
-            "%-12s: %5d pending %5d complete\n"
-            % (self.name, self.num_pending(jobs), self.num_complete(jobs))
-        )
 
     def is_job_alive(self, job):  # TODO this method does not seem to be called
         """ Query if a particular job is alive?

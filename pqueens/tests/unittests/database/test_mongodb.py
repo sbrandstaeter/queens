@@ -142,7 +142,7 @@ def dummy_doc_with_xarray_dataarray(data_xarray_dataarray):
 
 @pytest.fixture(scope='module')
 def experiment_name():
-    return 'simple_test'
+    return 'mongodb_unittests'
 
 
 @pytest.fixture(scope='module')
@@ -160,8 +160,27 @@ def batch_id_2():
     return 2
 
 
-def test_connection():
-    # check if we can connect to mongodb
+@pytest.fixture(scope="session")
+def username(session_mocker):
+    """
+    Make sure username returned by getuser is a dummy test username.
+
+    This is necessary to ensure that the database tests do not interfere with the actual databases
+    of the user calling the tests.
+    """
+    username = "pytest"
+    session_mocker.patch('getpass.getuser', return_value=username)
+
+
+def test_connection(username):
+    """
+    Test connection to mongodb service.
+
+    Args:
+        username: mock username for safety reasons
+
+    """
+
     try:
         db = MongoDB.from_config_create_database({"database": {"address": "localhost:27017"}})
     except:
@@ -171,40 +190,55 @@ def test_connection():
     assert isinstance(db, MongoDB)
 
 
-def test_connection_fails():
-    # check if we get correct exception when failing to connect mongodb
+def test_connection_fails(username):
+    """
+    Test for correct exception in case of failing connection to MongoDB service.
+
+    Args:
+        username: mock username for safety reasons
+
+    Returns:
+
+    """
     with pytest.raises(ServerSelectionTimeoutError):
         MongoDB.from_config_create_database({"database": {"address": "localhos:2016"}})
 
 
-def test_dropping():
-    # check if we can connect to mongodb and clear preexisting db
+def test_read_write_delete(username, dummy_job, experiment_name, batch_id_1, job_id):
+    """
+    Test reading and writing to the database
+
+    Args:
+        username: mock username for safety reasons
+        dummy_job: a test job that will be written and read to/from the database
+        experiment_name: mock the experiment name of a QUEENS run needed for database name
+        batch_id_1: (int) batch id needed for database name
+        job_id: (int) id of the dummy_job needed for database name and database interaction
+
+    Returns:
+
+    """
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_existing": True}}
+            {
+                "global_settings": {"experiment_name": experiment_name},
+                "database": {"address": "localhost:27017", "drop_existing": True},
+            }
         )
     except:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_existing": True}}
-        )
-
-    assert isinstance(db, MongoDB)
-
-
-def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
-    try:
-        db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_existing": True}}
-        )
-    except:
-        # if local host fails try to use alias if db is in docker container
-        db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_existing": True}}
+            {
+                "global_settings": {"experiment_name": experiment_name},
+                "database": {"address": "mongodb:27017", "drop_existing": True},
+            }
         )
 
     # save some dummy data
+    # save non-existing job with field_filter that will not match any entry -> insert new document
     db.save(dummy_job, experiment_name, 'jobs', batch_id_1, {'id': job_id})
+    # empty field_filter will result in the insertion of a new document
+    # after this there will be two documents in the collection
     db.save(dummy_job, experiment_name, 'jobs', batch_id_1)
 
     # try to retrieve it
@@ -222,7 +256,7 @@ def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
     assert not jobs
 
 
-def test_write_multiple_entries(dummy_job, experiment_name, batch_id_2, job_id):
+def test_write_multiple_entries(username, dummy_job, experiment_name, batch_id_2, job_id):
 
     try:
         db = MongoDB.from_config_create_database(
@@ -245,7 +279,7 @@ def test_write_multiple_entries(dummy_job, experiment_name, batch_id_2, job_id):
 
     # should cause problems
     with pytest.raises(Exception):
-        db.save(dummy_job, experiment_name, 'jobs', batch_id_2)
+        db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {"dummy_field1": "garbage"})
 
 
 def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):

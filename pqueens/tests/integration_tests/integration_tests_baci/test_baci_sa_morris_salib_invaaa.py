@@ -204,16 +204,16 @@ def test_baci_morris_salib(
 
     # test results of SA analysis
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3,
+        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3
     )
 
 
@@ -279,16 +279,16 @@ def test_restart_from_output_folders_baci(
 
     # test results of SA analysis
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3,
+        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3
     )
 
 
@@ -357,16 +357,16 @@ def test_block_restart_baci(
 
     # test results of SA analysis
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3,
+        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3
     )
 
 
@@ -438,14 +438,14 @@ def test_restart_from_db_baci(
 
     # test results of SA analysis
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3,
+        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3,
+        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3
     )
