@@ -7,13 +7,13 @@ stages:
   - pages
 
 #---------------------------------------------------------------------------------------------------
-# Define platfrom specific settings
+# Define platform specific settings
 #---------------------------------------------------------------------------------------------------
 .docker_settings:
   image: continuumio/miniconda3:latest
   services:
-    - name: mongo:3.4
-      alias: mongodb
+    - name: mongo:4.1
+      alias: localhost
   before_script:
     - export PIP_CACHE_DIR="/opt/cache/pip"
     - apt-get update
