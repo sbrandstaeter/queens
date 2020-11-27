@@ -26,6 +26,7 @@ class TestJobInterface(unittest.TestCase):
 
         self.config = {}
         self.config['global_settings'] = {}
+        self.config['input_file'] = 'test-input-file'
         self.config['global_settings']['experiment_name'] = 'test-experiment'
         self.config['test_interface'] = {'type': 'job_interface', 'resources': 'dummy_resource'}
 
@@ -41,17 +42,16 @@ class TestJobInterface(unittest.TestCase):
         self.config['database']['address'] = 'localhost:27017'
         self.config['database']['drop_existing'] = True
         self.config['output_dir'] = {}
-        self.config['driver'] = {}
-        self.config['driver']['driver_type'] = 'local'
-        self.config['driver']['driver_params'] = {}
-        self.config['driver']['driver_params']['experiment_dir'] = 'dummy_dir'
-        self.config['driver']['driver_params']['restart_from_finished_simulation'] = False
 
         self.config['resources'] = {}
         self.config['resources'] = dummy_resource
 
         self.config['my_local_scheduler'] = {}
-        self.config['my_local_scheduler']['scheduler_type'] = 'local'
+        self.config['my_local_scheduler']['experiment_dir'] = 'dummy_dir'
+        self.config['my_local_scheduler']['scheduler_type'] = 'standard'
+        self.config['my_local_scheduler']['remote'] = False
+        self.config['my_local_scheduler']['singularity'] = False
+        self.config['my_local_scheduler']['restart'] = False
 
     class FakeDB(object):
         def print_database_information(self, *args, **kwargs):

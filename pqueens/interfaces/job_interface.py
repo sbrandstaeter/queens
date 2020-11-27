@@ -48,9 +48,10 @@ class JobInterface(Interface):
         db,
         polling_time,
         output_dir,
-        restart_from_finished_simulation,
+        restart,
         parameters,
-        connect,
+        remote,
+        remote_connect,
         scheduler_type,
         direct_scheduling,
     ):
@@ -64,8 +65,8 @@ class JobInterface(Interface):
             polling_time (int):         how frequently do we check if jobs are done
             output_dir (string):        directory to write output to
             parameters (dict):          dictionary with parameters
-            restart_from_finished_simulation (bool): true if restart option is chosen
-            connect (string):  connection to computing resource
+            restart_flag (bool):        true if restart option is chosen
+            remote_connect (string):    connection to computing resource
         """
         self.name = interface_name
         self.resources = resources
@@ -76,8 +77,9 @@ class JobInterface(Interface):
         self.parameters = parameters
         self.batch_number = 0
         self.num_pending = None
-        self.restart_from_finished_simulation = restart_from_finished_simulation
-        self.connect_to_resource = connect
+        self.restart = restart
+        self.remote = remote
+        self.remote_connect = remote_connect
         self.scheduler_type = scheduler_type
         self.direct_scheduling = direct_scheduling
 
@@ -92,50 +94,62 @@ class JobInterface(Interface):
         Returns:
             interface:              instance of JobInterface
         """
+        # get experiment name and polling time
+        experiment_name = config['global_settings']['experiment_name']
+        polling_time = config.get('polling-time', 1.0)
+
         # get resources from config
         resources = parse_resources_from_configuration(config)
 
-        # get experiment name
-        experiment_name = config['global_settings']['experiment_name']
+        # get parameters from config
+        parameters = config['parameters']
 
-        restart_from_finished_simulation = config['driver']['driver_params'].get(
-            'restart_from_finished_simulation', False
-        )
+        # get various scheduler options
+        # TODO: This is not nice
+        first = list(config['resources'])[0]
+        scheduler_name = config['resources'][first]['scheduler']
+        scheduler_options = config[scheduler_name]
+        output_dir = scheduler_options["experiment_dir"]
+        scheduler_type = scheduler_options['scheduler_type']
+
+        # get flag for remote scheduling
+        if scheduler_options.get('remote', False):
+            remote = True
+            remote_connect = scheduler_options['remote_connect']
+        else:
+            remote = False
+            remote_connect = None
+
+        # get flag for Singularity
+        if scheduler_options.get('singularity', False):
+            singularity = True
+        else:
+            singularity = False
+
+        # get flag for restart
+        if scheduler_options.get('restart', False):
+            restart = True
+        else:
+            restart = False
+
+        # set flag for direct scheduling
+        direct_scheduling = False
+        if not singularity:
+            if (
+                scheduler_type == 'ecs_task'
+                or scheduler_type == 'nohup'
+                or scheduler_type == 'pbs'
+                or scheduler_type == 'slurm'
+                or (scheduler_type == 'standard' and remote)
+            ):
+                direct_scheduling = True
 
         # establish new database for this QUEENS run and
         # potentially drop other databases
         db = MongoDB.from_config_create_database(config)
 
         # print out database information
-        db.print_database_information(restart=restart_from_finished_simulation)
-
-        polling_time = config.get('polling-time', 1.0)
-
-        # TODO: This is not nice -> should be solved solemnly over Driver class
-        output_dir = config['driver']['driver_params']["experiment_dir"]
-
-        # TODO: This is not nice
-        connect = list(resources.values())[0].scheduler.connect_to_resource
-
-        # TODO: This is definitely not nice, either
-        first = list(config['resources'])[0]
-        scheduler_name = config['resources'][first]['scheduler']
-        scheduler_type = config[scheduler_name]['scheduler_type']
-
-        if (
-            scheduler_type == 'ecs_task'
-            or scheduler_type == 'local_nohup'
-            or scheduler_type == 'local_pbs'
-            or scheduler_type == 'local_slurm'
-            or scheduler_type == 'remote_nohup'
-            or scheduler_type == 'remote_pbs'
-            or scheduler_type == 'remote_slurm'
-        ):
-            direct_scheduling = True
-        else:
-            direct_scheduling = False
-
-        parameters = config['parameters']
+        db.print_database_information(restart=restart)
 
         # instantiate object
         return cls(
@@ -145,9 +159,10 @@ class JobInterface(Interface):
             db,
             polling_time,
             output_dir,
-            restart_from_finished_simulation,
+            restart,
             parameters,
-            connect,
+            remote,
+            remote_connect,
             scheduler_type,
             direct_scheduling,
         )
@@ -205,7 +220,7 @@ class JobInterface(Interface):
             function object:    management function which should be used
 
         """
-        if self.restart_from_finished_simulation:
+        if self.restart:
             return self._manage_restart
 
         else:
@@ -596,94 +611,37 @@ class JobInterface(Interface):
             field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
         )
         for check_jobid in jobid_range:
-            try:
-                current_check_job = next(job for job in jobs if job['id'] == check_jobid)
-                if current_check_job['status'] != 'complete':
-                    completed = False
-                    if self.scheduler_type == 'ecs_task':
-                        command_list = [
-                            "aws ecs describe-tasks ",
-                            "--cluster worker-queens-cluster ",
-                            "--tasks ",
-                            current_check_job['aws_arn'],
-                        ]
-                        cmd = ''.join(filter(None, command_list))
-                        _, _, stdout, stderr = run_subprocess(cmd)
-                        if stderr:
+            for _, resource in self.resources.items():
+                try:
+                    current_check_job = next(job for job in jobs if job['id'] == check_jobid)
+                    if current_check_job['status'] != 'complete':
+                        completed, failed = resource.check_job_completion(current_check_job)
+
+                        # determine if this a failed job and return if yes
+                        if failed:
                             current_check_job['status'] = 'failed'
-                        status_str = extract_string_from_output("lastStatus", stdout)
-                        if status_str == 'STOPPED':
-                            completed = True
-                    elif self.scheduler_type == 'local_nohup':
-                        search_string = 'Total CPU Time for CALCULATION'
-                        completed = check_if_string_in_file(
-                            current_check_job['log_file_path'], search_string
-                        )
-                    elif self.scheduler_type == 'remote_nohup':
-                        # generate command for executing 'string_extractor_and_checker.py'
-                        # on remote machine
-                        checker_filename = 'string_extractor_and_checker.py'
-                        checker_path_on_remote = os.path.join(self.output_dir, checker_filename)
-                        search_string = 'Total CPU Time for CALCULATION'
-                        command_list = [
-                            "ssh ",
-                            self.connect_to_resource,
-                            " 'python ",
-                            checker_path_on_remote,
-                            ' ',
-                            current_check_job['log_file_path'],
-                            " \"",
-                            search_string,
-                            "\"'",
-                        ]
-                        command_string = ''.join(command_list)
-                        _, _, stdout, stderr = run_subprocess(command_string)
+                            return
 
-                        # detection of failed command
-                        if stderr:
-                            raise RuntimeError(
-                                "\nString checker file could not be executed on remote machine!"
-                                f"\nStderr on remote:\n{stderr}"
+                        # determine if this a completed job and return if yes
+                        if completed:
+                            current_check_job['status'] = 'complete'
+                            current_check_job['end time'] = time.time()
+                            computing_time = (
+                                current_check_job['end time'] - current_check_job['start time']
                             )
-
-                        if stdout:
-                            completed = True
-                    elif (
-                        self.scheduler_type == 'remote_pbs' or self.scheduler_type == 'remote_slurm'
-                    ):
-                        # indicate completion by existing control file in remote output directory
-                        command_list = [
-                            'ssh',
-                            self.connect_to_resource,
-                            '"ls',
-                            current_check_job['control_file_path'],
-                            '"',
-                        ]
-                        command_string = ' '.join(command_list)
-                        _, _, _, stderr = run_subprocess(command_string)
-
-                        if not stderr:
-                            completed = True
-                    else:
-                        # indicate completion by existing control file in local output directory
-                        completed = os.path.isfile(current_check_job['control_file_path'])
-                    if completed:
-                        current_check_job['status'] = 'complete'
-                        current_check_job['end time'] = time.time()
-                        computing_time = (
-                            current_check_job['end time'] - current_check_job['start time']
-                        )
-                        sys.stdout.write(
-                            'Successfully completed job {:d} (No. of proc.: {:d}, '
-                            'computing time: {:08.2f} s).\n'.format(
-                                current_check_job['id'],
-                                current_check_job['num_procs'],
-                                computing_time,
+                            sys.stdout.write(
+                                'Successfully completed job {:d} (No. of proc.: {:d}, '
+                                'computing time: {:08.2f} s).\n'.format(
+                                    current_check_job['id'],
+                                    current_check_job['num_procs'],
+                                    computing_time,
+                                )
                             )
-                        )
-                        self.save_job(current_check_job)
-            except (StopIteration, IndexError):
-                pass
+                            self.save_job(current_check_job)
+                            return
+
+                except (StopIteration, IndexError):
+                    pass
 
     def _find_block_restart(self, samples):
         """Find index for block-restart.
@@ -695,10 +653,10 @@ class JobInterface(Interface):
             jobid_for_block_restart (int):  index for block-restart of failed jobs
         """
         # Find number of subdirectories in output directory
-        if self.connect_to_resource:
+        if self.remote_connect:
             command_list = [
                 'ssh',
-                self.connect_to_resource,
+                self.remote_connect,
                 '"cd',
                 self.output_dir,
                 '; ls -l | grep ' '"^d" | wc -l "',

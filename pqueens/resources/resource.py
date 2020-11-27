@@ -176,6 +176,23 @@ class Resource(object):
 
         return process_id
 
+    def check_job_completion(self, job):
+        """ Check whether this job is completed using the scheduler of the resource
+
+        Args:
+            batch (string):         Batch number of job
+            job (dict):             Job to check
+
+        Returns:
+            int:       Process ID of job
+        """
+        if job['resource'] != self.name:
+            raise Exception("This job does not belong to me!")
+
+        completed, failed = self.scheduler.check_job_completion(job)
+
+        return completed, failed
+
     def dispatch_post_post_job(self, batch, job):
         """ Submit a new post-post job using the scheduler of the resource
 

@@ -56,7 +56,10 @@ class Driver(metaclass=abc.ABCMeta):
         # TODO MongoDB object should be passed to init not created within
         self.database = base_settings['database']
         self.scheduler_type = base_settings['scheduler_type']
+        self.remote = base_settings['remote']
+        self.singularity = base_settings['singularity']
         self.cluster_script = base_settings['cluster_script']
+        self.cluster_walltime = base_settings['cluster_walltime']
         self.output_file = base_settings['output_file']
         self.file_prefix = base_settings['file_prefix']
         self.output_scratch = base_settings['output_scratch']
@@ -78,7 +81,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.input_file = None
         self.input_dic_1 = None
         self.direct_scheduling = base_settings['direct_scheduling']
-        self.connect_to_resource = base_settings['connect_to_resource']
+        self.remote_connect = base_settings['remote_connect']
 
     @classmethod
     def from_config_create_driver(
@@ -147,52 +150,55 @@ class Driver(metaclass=abc.ABCMeta):
         # scheduler settings
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
-        base_settings['scheduler_type'] = config[scheduler_name]['scheduler_type']
-
-        # check whether direct scheduling or not
-        if (
-            base_settings['scheduler_type'] == 'ecs_task'
-            or base_settings['scheduler_type'] == 'local_nohup'
-            or base_settings['scheduler_type'] == 'local_pbs'
-            or base_settings['scheduler_type'] == 'local_slurm'
-            or base_settings['scheduler_type'] == 'remote_nohup'
-            or base_settings['scheduler_type'] == 'remote_pbs'
-            or base_settings['scheduler_type'] == 'remote_slurm'
-        ):
-            base_settings['direct_scheduling'] = True
+        scheduler_options = config[scheduler_name]
+        base_settings['experiment_dir'] = scheduler_options['experiment_dir']
+        base_settings['scheduler_type'] = scheduler_options['scheduler_type']
+        if scheduler_options.get('remote', False):
+            base_settings['remote'] = True
+            base_settings['remote_connect'] = scheduler_options['remote_connect']
         else:
-            base_settings['direct_scheduling'] = False
-
-        # check whether remote scheduling or not
-        if (
-            base_settings['scheduler_type'] == 'remote'
-            or base_settings['scheduler_type'] == 'remote_nohup'
-            or base_settings['scheduler_type'] == 'remote_pbs'
-            or base_settings['scheduler_type'] == 'remote_slurm'
-        ):
-            base_settings['connect_to_resource'] = config[scheduler_name]['connect_to_resource']
+            base_settings['remote'] = False
+            base_settings['remote_connect'] = None
+        if scheduler_options.get('singularity', False):
+            base_settings['singularity'] = True
         else:
-            base_settings['connect_to_resource'] = ''
+            base_settings['singularity'] = False
+        if scheduler_options.get('docker_image', False):
+            base_settings['docker_image'] = scheduler_options['docker_image']
+        else:
+            base_settings['docker_image'] = None
+        if scheduler_options.get('num_procs', False):
+            base_settings['num_procs'] = scheduler_options['num_procs']
+        else:
+            base_settings['num_procs'] = '1'
+        if scheduler_options.get('num_procs_post', False):
+            base_settings['num_procs_post'] = scheduler_options['num_procs_post']
+        else:
+            base_settings['num_procs_post'] = '1'
 
-        # check whether cluster script or not
-        if 'cluster_script' in config[scheduler_name]:
-            base_settings['cluster_script'] = config[scheduler_name]['cluster_script']
+        # set flag for direct scheduling
+        base_settings['direct_scheduling'] = False
+        if not base_settings['singularity']:
+            if (
+                base_settings['scheduler_type'] == 'ecs_task'
+                or base_settings['scheduler_type'] == 'nohup'
+                or base_settings['scheduler_type'] == 'pbs'
+                or base_settings['scheduler_type'] == 'slurm'
+                or (base_settings['scheduler_type'] == 'standard' and base_settings['remote'])
+            ):
+                base_settings['direct_scheduling'] = True
+
+        # get path to cluster script if required
+        if base_settings['scheduler_type'] == 'pbs' or base_settings['scheduler_type'] == 'slurm':
+            base_settings['cluster_script'] = scheduler_options['cluster_script']
+            base_settings['cluster_walltime'] = scheduler_options['cluster_walltime']
         else:
             base_settings['cluster_script'] = None
-
-        # set number of processors for processing as well as post-processing
-        base_settings['num_procs'] = config[scheduler_name]['num_procs']
-        if 'num_procs_post' in config[scheduler_name]:
-            base_settings['num_procs_post'] = config[scheduler_name]['num_procs_post']
-        else:
-            base_settings['num_procs_post'] = 1
-
-        # database
+            base_settings['cluster_walltime'] = None
 
         # driver settings
         driver_options = config['driver']['driver_params']
         base_settings['file_prefix'] = driver_options['post_post']['file_prefix']
-        base_settings['experiment_dir'] = driver_options['experiment_dir']
         base_settings['job_id'] = job_id
         base_settings['input_file'] = None
         base_settings['simulation_input_template'] = driver_options.get('input_template')
@@ -287,12 +293,7 @@ class Driver(metaclass=abc.ABCMeta):
             {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
         )
 
-        if (
-            self.scheduler_type == 'remote'
-            or self.scheduler_type == 'remote_nohup'
-            or self.scheduler_type == 'remote_pbs'
-            or self.scheduler_type == 'remote_slurm'
-        ):
+        if self.remote and not self.singularity:
             # generate a JSON file containing parameter dictionary
             params_json_name = 'params_dict.json'
             params_json_path = os.path.join(self.global_output_dir, params_json_name)
@@ -311,7 +312,7 @@ class Driver(metaclass=abc.ABCMeta):
                 " ",
                 params_json_path,
                 " ",
-                self.connect_to_resource,
+                self.remote_connect,
                 ":",
                 self.experiment_dir,
             ]
@@ -342,7 +343,7 @@ class Driver(metaclass=abc.ABCMeta):
                 )
                 command_list = [
                     'ssh',
-                    self.connect_to_resource,
+                    self.remote_connect,
                     '"python',
                     injector_path_on_remote,
                     arg_list,
@@ -363,7 +364,7 @@ class Driver(metaclass=abc.ABCMeta):
                 arg_list = json_path_on_remote + ' ' + self.input_file + ' ' + self.input_file
                 command_list = [
                     'ssh',
-                    self.connect_to_resource,
+                    self.remote_connect,
                     '"python',
                     injector_path_on_remote,
                     arg_list,
@@ -384,7 +385,7 @@ class Driver(metaclass=abc.ABCMeta):
                 arg_list = json_path_on_remote + ' ' + self.input_file + ' ' + self.input_file
                 command_list = [
                     'ssh',
-                    self.connect_to_resource,
+                    self.remote_connect,
                     '"python',
                     injector_path_on_remote,
                     arg_list,
@@ -404,7 +405,7 @@ class Driver(metaclass=abc.ABCMeta):
             # parameter dictionary from experiment directory on remote machine
             command_list = [
                 'ssh',
-                self.connect_to_resource,
+                self.remote_connect,
                 '"rm',
                 injector_path_on_remote,
                 json_path_on_remote,
@@ -521,9 +522,13 @@ class Driver(metaclass=abc.ABCMeta):
                     # wrap up post-processing command for remote scheduling or
                     # directly use post-processing command for local scheduling
                     if (
-                        self.scheduler_type == 'remote_nohup'
-                        or self.scheduler_type == 'remote_pbs'
-                        or self.scheduler_type == 'remote_slurm'
+                        (
+                            self.scheduler_type == 'nohup'
+                            or self.scheduler_type == 'pbs'
+                            or self.scheduler_type == 'slurm'
+                        )
+                        and self.remote
+                        and not self.singularity
                     ):
                         final_postprocess_cmd = self.assemble_remote_postprocessing_cmd(
                             postprocess_cmd
@@ -547,7 +552,7 @@ class Driver(metaclass=abc.ABCMeta):
 
                 # wrap up post-processing command for remote scheduling or
                 # directly use post-processing command for local scheduling
-                if self.scheduler_type == 'remote':
+                if self.remote and not self.singularity and self.scheduler_type == 'standard':
                     final_postprocess_cmd = self.assemble_remote_postprocessing_cmd(postprocess_cmd)
                 else:
                     final_postprocess_cmd = postprocess_cmd
@@ -581,7 +586,7 @@ class Driver(metaclass=abc.ABCMeta):
         """
         command_list = [
             'ssh',
-            self.connect_to_resource,
+            self.remote_connect,
             '"',
             postprocess_cmd,
             '"',
@@ -609,15 +614,10 @@ class Driver(metaclass=abc.ABCMeta):
         # latter effectively used only in case of remote scheduling
         local_dest_dir = os.path.join(str(self.experiment_dir), str(self.job_id))
         local_output_dir = os.path.join(local_dest_dir, 'output')
-        if (
-            self.scheduler_type == 'remote'
-            or self.scheduler_type == 'remote_nohup'
-            or self.scheduler_type == 'remote_pbs'
-            or self.scheduler_type == 'remote_slurm'
-        ):
+        if self.remote and not self.singularity:
             remote_dest_dir = os.path.join(str(self.global_output_dir), str(self.job_id))
             remote_output_dir = os.path.join(remote_dest_dir, 'output')
-            remote_connect = self.connect_to_resource
+            remote_connect = self.remote_connect
         else:
             remote_output_dir = None
             remote_connect = None

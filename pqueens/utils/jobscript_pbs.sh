@@ -9,7 +9,7 @@
 # Number of nodes and processors per node (ppn)
 #PBS -l nodes=1:ppn={ntasks}
 # Walltime: (hours:minutes:seconds)
-#PBS -l walltime=48:00:00
+#PBS -l walltime={walltime}
 # Executing queue
 #PBS -q batch
 ###########################################
@@ -77,6 +77,6 @@ wait
 # (cd back into home since pwd does not exist anymore)
 if [ $DoPostpostprocess = true ]
 then
-  $MPI_RUN $MPIFLAGS -np 1 $EXE $INPUT $WORKDIR '--post=true'
+  $MPI_RUN $MPIFLAGS -np {nposttasks} $EXE $INPUT $WORKDIR '--post=true'
 fi
 # END ################## DO NOT TOUCH ME #########################

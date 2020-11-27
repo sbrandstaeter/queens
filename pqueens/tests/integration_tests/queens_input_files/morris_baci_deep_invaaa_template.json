@@ -49,15 +49,13 @@
   "driver": {
     "driver_type": "baci_{cluster}",
     "driver_params": {
-      "path_to_singularity": "{path_to_singularity}",
+      "experiment_dir" : "{experiment_dir}",
       "input_template": "{input_template}",
       "path_to_executable": "{path_to_executable}",
       "path_to_postprocessor": "{path_to_postprocessor}",
-      "experiment_dir": "{experiment_dir}",
       "post_process_options": [
         "--field=structure --node=26 --start=1"
       ],
-      "cluster_bind": "{cluster_bind}",
       "post_post": {
         "post_post_approach_sel": "baci",
         "delete_field_data": false,
@@ -80,13 +78,17 @@
     }
   },
   "scheduler": {
+    "experiment_dir" : "{experiment_dir}",
     "scheduler_type": "{scheduler_type}",
-    "num_procs": 1,
-    "num_procs_post": 1,
-    "walltime": "120:00:00",
-    "connect_to_resource": "{connect_to_resource}",
-    "scheduler_output": "True",
-    "cluster_script": "/lnm/share/donottouch.sh"
+    "cluster_script": "/lnm/share/donottouch.sh",
+    "cluster_walltime" : "120:00:00",
+    "remote" : true,
+    "remote_connect" : "{connect_to_resource}",
+    "singularity" : true,
+    "singularity_cluster_path" : "{path_to_singularity}",
+    "singularity_cluster_bind" : "{cluster_bind}",
+    "num_procs" : 1,
+    "num_procs_post": 1
   },
   "parameters": {
     "random_variables": {

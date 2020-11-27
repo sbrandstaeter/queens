@@ -21,8 +21,8 @@ def singularity_bool(request):
 @pytest.fixture(scope="session")
 def output_directory_forward(tmpdir_factory):
     """
-    Create two temporary output directories for test runs without singularity (<...>_true) and
-    with singularity (<...>_false)
+    Create two temporary output directories for test runs with singularity (<...>_true) and
+    without singularity (<...>_false)
 
     Args:
         tmpdir_factory: fixture used to create arbitrary temporary directories
@@ -149,7 +149,7 @@ def test_baci_morris_salib(
     injector.inject(dir_dict, template, input_file)
     arguments = ['--input=' + input_file, '--output=' + str(experiment_directory)]
 
-    if singularity_bool == 'false':
+    if singularity_bool == 'true':
         # check existence of local singularity image
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
         rel_path = '../../../../driver.simg'
@@ -319,7 +319,7 @@ def test_block_restart_baci(
 
     """
     # Test without singularity:
-    singularity_boolean = "true"
+    singularity_boolean = "false"
     output_directory = output_directory_forward[singularity_boolean]
     number_of_output_directories = count_subdirectories(output_directory)
     experiment_name = "ee_invaaa_local_singularity_" + str(singularity_boolean)
@@ -399,7 +399,7 @@ def test_restart_from_db_baci(
     """
     # This test itself does not submit jobs and thus does not depend on singularity.
     # Set singularity_boolean for database reference only.
-    singularity_boolean = "true"
+    singularity_boolean = "false"
     output_directory = output_directory_forward[singularity_boolean]
     experiment_name = "ee_invaaa_local_singularity_" + str(singularity_boolean)
 
