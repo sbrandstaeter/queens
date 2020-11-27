@@ -1,7 +1,12 @@
 import hashlib
 import os
+import random
+import subprocess
+import time
+from pprint import pprint
 
 from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 
 def create_singularity_image():
@@ -47,11 +52,12 @@ def create_singularity_image():
 
 
 class SingularityManager:
-    def __init__(self, remote_flag, connect_to_resource, cluster_bind, path_to_singularity):
-        self.remote_flag = remote_flag
-        self.connect_to_resource = connect_to_resource
-        self.cluster_bind = cluster_bind
-        self.path_to_singularity = path_to_singularity
+    def __init__(self, remote, remote_connect, singularity_bind, singularity_path, input_file):
+        self.remote = remote
+        self.remote_connect = remote_connect
+        self.singularity_bind = singularity_bind
+        self.singularity_path = singularity_path
+        self.input_file = input_file
 
     def check_singularity_system_vars(self):
         """
@@ -66,42 +72,42 @@ class SingularityManager:
         """
 
         # Check if SINGULARITY_BIND exists and if not write it to .bashrc file
-        if self.remote_flag:
-            command_list = ['ssh', self.connect_to_resource, '\'echo $SINGULARITY_BIND\'']
+        if self.remote:
+            command_list = ['ssh', self.remote_connect, '\'echo $SINGULARITY_BIND\'']
         else:
             command_list = ['echo $SINGULARITY_BIND']
         command_string = ' '.join(command_list)
         _, _, stdout, _ = run_subprocess(command_string)
         if stdout == "\n":
-            if self.remote_flag:
+            if self.remote:
                 command_list = [
                     'ssh',
-                    self.connect_to_resource,
+                    self.remote_connect,
                     "\"echo 'export SINGULARITY_BIND="
-                    + self.cluster_bind
+                    + self.singularity_bind
                     + "\' >> ~/.bashrc && source ~/.bashrc\"",
                 ]
             else:
                 command_list = [
                     "echo 'export SINGULARITY_BIND="
-                    + self.cluster_bind
+                    + self.singularity_bind
                     + "\' >> ~/.bashrc && source ~/.bashrc"
                 ]
         command_string = ' '.join(command_list)
         _, _, _, _ = run_subprocess(command_string)
 
         # Create a Singularity PATH variable that is equal to the host PATH
-        if self.remote_flag:
-            command_list = ['ssh', self.connect_to_resource, '\'echo $SINGULARITYENV_APPEND_PATH\'']
+        if self.remote:
+            command_list = ['ssh', self.remote_connect, '\'echo $SINGULARITYENV_APPEND_PATH\'']
         else:
             command_list = ['echo $SINGULARITYENV_APPEND_PATH']
         command_string = ' '.join(command_list)
         _, _, stdout, _ = run_subprocess(command_string)
         if stdout == "\n":
-            if self.remote_flag:
+            if self.remote:
                 command_list = [
                     'ssh',
-                    self.connect_to_resource,
+                    self.remote_connect,
                     # pylint: disable=line-too-long
                     "\"echo 'export SINGULARITYENV_APPEND_PATH=$PATH' >> ~/.bashrc && source "
                     "~/.bashrc\"",
@@ -119,10 +125,10 @@ class SingularityManager:
 
         # Create a Singulartity LD_LIBRARY_PATH variable that is equal to the host
         # LD_LIBRARY_PATH
-        if self.remote_flag:
+        if self.remote:
             command_list = [
                 'ssh',
-                self.connect_to_resource,
+                self.remote_connect,
                 '\'echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH\'',
             ]
         else:
@@ -130,10 +136,10 @@ class SingularityManager:
         command_string = ' '.join(command_list)
         _, _, stdout, _ = run_subprocess(command_string)
         if stdout == "\n":
-            if self.remote_flag:
+            if self.remote:
                 command_list = [
                     'ssh',
-                    self.connect_to_resource,
+                    self.remote_connect,
                     # pylint: disable=line-too-long
                     "\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> "
                     "~/.bashrc && source ~/.bashrc\"",
@@ -196,7 +202,7 @@ class SingularityManager:
                 print("Local singularity image written successfully!")
 
                 # Update remote image
-                if self.remote_flag:
+                if self.remote:
                     print("Updating remote image from local image...")
                     print("(This might take a couple of seconds, but needs only to be done once)")
                     rel_path = "../../driver.simg"
@@ -204,7 +210,7 @@ class SingularityManager:
                     command_list = [
                         "scp",
                         abs_path,
-                        self.connect_to_resource + ':' + self.path_to_singularity,
+                        self.remote_connect + ':' + self.singularity_path,
                     ]
                     command_string = ' '.join(command_list)
                     _, _, _, stderr = run_subprocess(command_string)
@@ -215,12 +221,12 @@ class SingularityManager:
                         )
 
             # check existence singularity on remote
-            if self.remote_flag:
+            if self.remote:
                 command_list = [
                     'ssh -T',
-                    self.connect_to_resource,
+                    self.remote_connect,
                     'test -f',
-                    self.path_to_singularity + "/driver.simg && echo 'Y' || echo 'N'",
+                    self.singularity_path + "/driver.simg && echo 'Y' || echo 'N'",
                 ]
                 command_string = ' '.join(command_list)
                 _, _, stdout, _ = run_subprocess(command_string)
@@ -236,7 +242,7 @@ class SingularityManager:
                     command_list = [
                         "scp",
                         abs_path,
-                        self.connect_to_resource + ':' + self.path_to_singularity,
+                        self.remote_connect + ':' + self.singularity_path,
                     ]
                     command_string = ' '.join(command_list)
                     _, _, _, stderr = run_subprocess(command_string)
@@ -258,7 +264,7 @@ class SingularityManager:
             print("_______________________________________________________________________________")
             create_singularity_image()
             print("Local singularity image written successfully!")
-            if self.remote_flag:
+            if self.remote:
                 print("Updating now remote image from local image...")
                 print("(This might take a couple of seconds, but needs only to be done once)")
                 rel_path = "../../driver.simg"
@@ -266,7 +272,7 @@ class SingularityManager:
                 command_list = [
                     "scp",
                     abs_path,
-                    self.connect_to_resource + ':' + self.path_to_singularity,
+                    self.remote_connect + ':' + self.singularity_path,
                 ]
                 command_string = ' '.join(command_list)
                 _, _, _, stderr = run_subprocess(command_string)
@@ -275,6 +281,235 @@ class SingularityManager:
                         "Error! Was not able to copy local singularity image to remote! " "Abort..."
                     )
                 print('All singularity images ok! Starting simulation on cluster...')
+
+    def kill_previous_queens_ssh_remote(self, username):
+        """
+        Kill existing ssh-port-forwardings on the remote
+        that were caused by previous QUEENS simulations
+        that either crashed or are still in place due to other reasons.
+        This method will avoid that a user opens too many unnecessary ports on the remote
+        and blocks them for other users.
+
+        Args:
+            username (string): Username of person logged in on remote machine
+
+        Returns:
+            None
+
+        """
+
+        # find active queens ssh ports on remote
+        command_list = [
+            'ssh',
+            self.remote_connect,
+            '\'ps -aux | grep ssh | grep',
+            username.rstrip(),
+            '| grep :localhost:27017\'',
+        ]
+
+        command_string = ' '.join(command_list)
+        _, _, active_ssh, _ = run_subprocess(command_string)
+
+        # skip entries that contain "grep" as this is the current command
+        try:
+            active_ssh = [line for line in active_ssh.splitlines() if not 'grep' in line]
+        except IndexError:
+            pass
+
+        if active_ssh:
+            # print the queens related open ports
+            print('The following QUEENS sessions are still occupying ports on the remote:')
+            print('----------------------------------------------------------------------')
+            pprint(active_ssh, width=150)
+            print('----------------------------------------------------------------------')
+            print('')
+            print('Do you want to close these connections (recommended)?')
+            while True:
+                try:
+                    print('Please type "y" or "n" >> ')
+                    answer = request_user_input_with_default_and_timeout(default="n", timeout=10)
+                except SyntaxError:
+                    answer = None
+
+                if answer.lower() == 'y':
+                    ssh_ids = [line.split()[1] for line in active_ssh]
+                    for ssh_id in ssh_ids:
+                        command_list = ['ssh', self.remote_connect, '\'kill -9', ssh_id + '\'']
+                        command_string = ' '.join(command_list)
+                        _, _, std, err = run_subprocess(command_string)
+                    print('Old QUEENS port-forwardings were successfully terminated!')
+                    break
+                elif answer.lower() == 'n':
+                    break
+                elif answer is None:
+                    print('You gave an empty input! Only "y" or "n" are valid inputs! Try again!')
+                else:
+                    print(
+                        f'The input "{answer}" is not an appropriate choice! '
+                        f'Only "y" or "n" are valid inputs!'
+                    )
+                    print('Try again!')
+        else:
+            pass
+
+    def establish_port_forwarding_remote(self, address_localhost):
+        """
+        Automated port-forwarding from localhost to remote machine to forward data to the database
+        on localhost's port 27017 and a designated port on the master node of the remote machine
+
+        Args:
+            address_localhost (str): IP-address of localhost
+
+        Returns:
+            None
+        """
+
+        port_fail = 1
+        while port_fail != "":
+            port = random.randrange(2030, 20000, 1)
+            command_list = [
+                'ssh',
+                '-t',
+                '-t',
+                self.remote_connect,
+                '\'ssh',
+                '-fN',
+                '-g',
+                '-L',
+                str(port) + r':' + 'localhost' + r':27017',
+                address_localhost + '\'',
+            ]
+            command_string = ' '.join(command_list)
+            port_fail = os.popen(command_string).read()
+            time.sleep(0.1)
+        print('Remote port-forwarding successfully established for port %s' % (port))
+
+        return port
+
+    def establish_port_forwarding_local(self, address_localhost):
+        """
+        Establish a port-forwarding for localhost's port 9001 to the remote's ssh-port 22
+        for passwordless communication with the remote machine over ssh
+
+        Args:
+            address_localhost (str): IP-address of the localhost
+
+        Returns:
+            None
+
+        """
+        remote_address = self.remote_connect.split(r'@')[1]
+        command_list = [
+            'ssh',
+            '-f',
+            '-N',
+            '-L',
+            r'9001:' + remote_address + r':22',
+            address_localhost,
+        ]
+        ssh_proc = subprocess.Popen(
+            command_list, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        )
+        stat = ssh_proc.poll()
+        while stat is None:
+            stat = ssh_proc.poll()
+        # TODO Think of some kind of error catching here;
+        #  so far it works but error might be cryptical
+
+    def close_remote_port(self, port):
+        """
+        Closes the ports that were used in the current QUEENS simulation for remote computing.
+
+        Returns:
+            None
+
+        """
+        # get the process id of open port
+        _, _, username, _ = run_subprocess('whoami')
+        command_list = [
+            'ssh',
+            self.remote_connect,
+            '\'ps -aux | grep ssh | grep',
+            username.rstrip(),
+            '| grep',
+            str(port) + ':localhost:27017\'',
+        ]
+        command_string = ' '.join(command_list)
+        _, _, active_ssh, _ = run_subprocess(command_string)
+
+        # skip entries that contain "grep" as this is the current command
+        try:
+            active_ssh_ids = [
+                line.split()[1] for line in active_ssh.splitlines() if not 'grep' in line
+            ]
+        except IndexError:
+            pass
+
+        if active_ssh_ids != '':
+            for ssh_id in active_ssh_ids:
+                command_list = ['ssh', self.remote_connect, '\'kill -9', ssh_id + '\'']
+                command_string = ' '.join(command_list)
+                _, _, _, _ = run_subprocess(command_string)
+            print('Active QUEENS port-forwardings were closed successfully!')
+
+    def copy_temp_json(self):
+        """
+        Copies a (temporary) JSON input-file on a remote to execute some parts of QUEENS within
+        the singularity image on the remote, given the input configurations.
+
+        Returns:
+            None
+
+        """
+
+        command_list = [
+            "scp",
+            self.input_file,
+            self.remote_connect + ':' + self.singularity_path + '/temp.json',
+        ]
+        command_string = ' '.join(command_list)
+        _, _, _, stderr = run_subprocess(command_string)
+        if stderr:
+            raise RuntimeError(
+                "Error! Was not able to copy temporary input file to remote! Abort..."
+            )
+
+    def copy_post_post(self):
+        """
+        Copy an instance of the post-post module to the remote and
+        load it dynamically during runtime.
+        This enables fast changes in post-post scripts without the need to rebuild the singularity
+        image.
+
+        Returns:
+            None
+
+        """
+
+        abs_dirpath_current_file = os.path.dirname(os.path.abspath(__file__))
+        abs_path_post_post = os.path.join(abs_dirpath_current_file, '../post_post')
+        # delete old files
+        command_list = [
+            "ssh",
+            self.remote_connect,
+            '\'rm -r',
+            self.singularity_path + '/post_post\'',
+        ]
+        command_string = ' '.join(command_list)
+        _, _, _, _ = run_subprocess(command_string)
+
+        # copy new files
+        command_list = [
+            "scp -r",
+            abs_path_post_post,
+            self.remote_connect + ':' + self.singularity_path + '/post_post',
+        ]
+        command_string = ' '.join(command_list)
+        _, _, _, stderr = run_subprocess(command_string)
+        if stderr:
+            raise RuntimeError(
+                "Error! Was not able to copy post_post directory to remote! Abort..."
+            )
 
 
 def hash_files():

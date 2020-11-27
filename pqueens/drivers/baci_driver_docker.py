@@ -44,7 +44,6 @@ class BaciDriverDocker(Driver):
         base_settings['database'] = db
 
         base_settings['docker_version'] = config['driver']['driver_type']
-        base_settings['docker_image'] = config['driver']['driver_params']['docker_image']
         return cls(base_settings)
 
     def setup_dirs_and_files(self):
@@ -120,7 +119,7 @@ class BaciDriverDocker(Driver):
             #                                stdout=False,
             #                                stderr=True)
 
-            if self.scheduler_type == 'local_nohup':
+            if self.scheduler_type == 'nohup':
                 # assemble command string for nohup BACI run in Docker container
                 run_command_string = self.assemble_nohup_docker_baci_run_cmd(docker_baci_run_cmd)
             else:
@@ -144,7 +143,7 @@ class BaciDriverDocker(Driver):
                     'expt_name': self.experiment_name,
                 },
             )
-        elif self.scheduler_type == 'local_nohup':
+        elif self.scheduler_type == 'nohup':
             # save path to log file and number of processes to database
             self.job['log_file_path'] = self.log_file
             self.job['num_procs'] = self.num_procs

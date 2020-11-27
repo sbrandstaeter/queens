@@ -144,7 +144,7 @@ class PostPost(metaclass=abc.ABCMeta):
             _, _, _, _ = run_subprocess(command_string)
 
     def delete_field_data(self, output_dir, remote_connect):
-        """ Delete post-processed files except files with given prefix """
+        """ Delete output files except files with given prefix """
 
         inverse_prefix_expr = r"*[!" + self.file_prefix + r"]*"
         files_of_interest = os.path.join(output_dir, inverse_prefix_expr)

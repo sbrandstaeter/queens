@@ -8,8 +8,8 @@
 #SBATCH -J {job_name}
 # Standard case: specify only number of cpus
 #SBATCH --ntasks={ntasks}
-# Walltime: (days-hours:minutes:seconds)
-#SBATCH --time=2-00:00:00
+# Walltime: (hours:minutes:seconds)
+#SBATCH --time={walltime}
 # Exclusivity:
 # #SBATCH --exclusive
 # Exclude nodes: (e.g. exclude node07)
@@ -79,6 +79,6 @@ wait
 # (cd back into home since pwd does not exist anymore)
 if [ $DoPostpostprocess = true ]
 then
-  $MPI_RUN $MPIFLAGS -np 1 $EXE $INPUT $WORKDIR '--post=true'
+  $MPI_RUN $MPIFLAGS -np {nposttasks} $EXE $INPUT $WORKDIR '--post=true'
 fi
 # END ################## DO NOT TOUCH ME #########################

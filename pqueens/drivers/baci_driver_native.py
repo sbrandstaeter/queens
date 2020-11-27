@@ -64,16 +64,11 @@ class BaciDriverNative(Driver):
 
         # make (actual) output directory on remote machine as well as "mirror"
         # output directory on local machine for remote scheduling
-        if (
-            self.scheduler_type == 'remote'
-            or self.scheduler_type == 'remote_nohup'
-            or self.scheduler_type == 'remote_pbs'
-            or self.scheduler_type == 'remote_slurm'
-        ):
+        if self.remote and not self.singularity:
             # generate command for making output directory on remote machine
             command_list = [
                 'ssh',
-                self.connect_to_resource,
+                self.remote_connect,
                 '"mkdir -p',
                 self.output_directory,
                 '"',
@@ -118,11 +113,8 @@ class BaciDriverNative(Driver):
 
         """
         # decide whether jobscript-based run or direct run
-        if (
-            self.scheduler_type == 'local_pbs'
-            or self.scheduler_type == 'local_slurm'
-            or self.scheduler_type == 'remote_pbs'
-            or self.scheduler_type == 'remote_slurm'
+        if not self.singularity and (
+            self.scheduler_type == 'pbs' or self.scheduler_type == 'slurm'
         ):
             # set options for jobscript
             script_options = {}
@@ -130,6 +122,7 @@ class BaciDriverNative(Driver):
                 self.experiment_name, 'queens', self.job_id
             )
             script_options['ntasks'] = self.num_procs
+            script_options['walltime'] = self.cluster_walltime
             script_options['DESTDIR'] = self.output_directory
             script_options['EXE'] = self.executable
             script_options['INPUT'] = self.input_file
@@ -147,7 +140,7 @@ class BaciDriverNative(Driver):
             script_options['POSTPOSTPROCESSFLAG'] = 'false'
 
             # determine relative path to script template and start command for scheduler
-            if self.scheduler_type == 'local_pbs' or self.scheduler_type == 'remote_pbs':
+            if self.scheduler_type == 'pbs':
                 rel_path = '../utils/jobscript_pbs.sh'
                 scheduler_start = 'qsub'
             else:
@@ -158,7 +151,7 @@ class BaciDriverNative(Driver):
             this_dir = os.path.dirname(__file__)
             submission_script_template = os.path.join(this_dir, rel_path)
             jobfilename = 'jobfile.sh'
-            if self.scheduler_type == 'local_pbs' or self.scheduler_type == 'local_slurm':
+            if not self.remote:
                 submission_script_path = os.path.join(self.experiment_dir, jobfilename)
             else:
                 submission_script_path = os.path.join(self.global_output_dir, jobfilename)
@@ -168,7 +161,7 @@ class BaciDriverNative(Driver):
                 script_options, submission_script_path, submission_script_template
             )
 
-            if self.scheduler_type == 'local_pbs' or self.scheduler_type == 'local_slurm':
+            if not self.remote:
                 # change directory
                 os.chdir(self.experiment_dir)
 
@@ -180,7 +173,7 @@ class BaciDriverNative(Driver):
                     "scp ",
                     submission_script_path,
                     " ",
-                    self.connect_to_resource,
+                    self.remote_connect,
                     ":",
                     self.experiment_dir,
                 ]
@@ -201,7 +194,7 @@ class BaciDriverNative(Driver):
                 # submit the job with jobfile.sh on remote machine
                 command_list = [
                     'ssh',
-                    self.connect_to_resource,
+                    self.remote_connect,
                     '"cd',
                     self.experiment_dir,
                     ';',
@@ -234,11 +227,11 @@ class BaciDriverNative(Driver):
             # assemble command string for BACI run
             baci_run_cmd = self.assemble_baci_run_cmd()
 
-            if self.scheduler_type == 'local_nohup' or self.scheduler_type == 'remote_nohup':
+            if self.scheduler_type == 'nohup':
                 # assemble command string for nohup BACI run
                 nohup_baci_run_cmd = self.assemble_nohup_baci_run_cmd(baci_run_cmd)
 
-                if self.scheduler_type == 'remote_nohup':
+                if self.remote:
                     final_run_cmd = self.assemble_remote_run_cmd(nohup_baci_run_cmd)
                 else:
                     final_run_cmd = nohup_baci_run_cmd
@@ -263,7 +256,7 @@ class BaciDriverNative(Driver):
                     },
                 )
             else:
-                if self.scheduler_type == 'remote':
+                if not self.singularity and self.remote:
                     final_run_cmd = self.assemble_remote_run_cmd(baci_run_cmd)
                 else:
                     final_run_cmd = baci_run_cmd
@@ -330,7 +323,7 @@ class BaciDriverNative(Driver):
         """
         command_list = [
             'ssh',
-            self.connect_to_resource,
+            self.remote_connect,
             '"cd',
             self.experiment_dir,
             ';',
