@@ -132,8 +132,8 @@ def write_results(processed_results, path_to_file, file_name):
 
     Args:
         processed_results (dict):  Dictionary with results
-        path_to_file (str):        Path to write resutls to
-        file_name (str):           Name of resutl file
+        path_to_file (str):        Path to write results to
+        file_name (str):           Name of result file
 
     """
 

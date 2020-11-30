@@ -4,9 +4,9 @@ from .scheduler import Scheduler
 from pqueens.utils.run_subprocess import run_subprocess
 
 
-class LocalScheduler(Scheduler):
+class NohupScheduler(Scheduler):
     """
-    Scheduler for QUEENS jobs on the localhost.
+    Scheduler for nohup QUEENS jobs
 
     Args:
         base_settings (dict): Configurations that are set in the base class and are partly used
@@ -19,7 +19,7 @@ class LocalScheduler(Scheduler):
 
     def __init__(self, base_settings, scheduler_name):
         self.name = scheduler_name
-        super(LocalScheduler, self).__init__(base_settings)
+        super(NohupScheduler, self).__init__(base_settings)
 
     @classmethod
     def from_config_create_scheduler(
@@ -40,12 +40,7 @@ class LocalScheduler(Scheduler):
         """
 
         # pre assemble some strings as base_settings
-        base_settings['output'] = None
-        base_settings['tasks_info'] = None
-        base_settings['walltime_info'] = None
-        base_settings['job_flag'] = None
         base_settings['scheduler_start'] = None
-        base_settings['command_line_opt'] = None
         base_settings['scheduler_options'] = None
 
         return cls(base_settings, scheduler_name)
@@ -88,7 +83,7 @@ class LocalScheduler(Scheduler):
 
     def get_cluster_job_id(self):
         """
-        Not necessary for local scheduler but mandatory for parent class initialization
+        Not necessary for nohup scheduler but mandatory for parent class initialization
 
         Returns:
             None

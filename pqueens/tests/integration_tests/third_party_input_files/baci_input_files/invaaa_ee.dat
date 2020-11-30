@@ -39,16 +39,6 @@ FLUID_VIS                       No
 THERM_TEMPERATURE               No
 THERM_HEATFLUX                  No
 FILESTEPS                       1000
-------------------------------------------------------------INVERSE ANALYSIS
-INV_ANALYSIS                    gen                           // gen none
-INV_INITREG                     1.0                           // initial regularization value (>0.0)
-INV_ALPHA                       1.0e-5                        // perturbation factors for forward finite difference
-INV_BETA                        1.0e-3                        // eps = alpha + beta * matparameter
-INV_ANA_TOL                     0.00001                       // tolerance of inv. analysis
-MONITORFILE                     invaaa1.monitor               // file with monitored displacements
-INV_ANA_MAX_RUN                 10                            // max iterations
-UPDATE_REG                      res                           // gradient or residual based update
-PARAM_BOUNDS                    no                            // bound params to positive values
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   1
 DYNAMICTYP                      Statics

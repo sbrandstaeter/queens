@@ -22,7 +22,7 @@ class BmfmcInterface(Interface):
     """
 
     def __init__(self, probabilistic_mapping_config, variables=None):
-
+        # TODO we should think about using the parent class interface here
         self.variables = variables  # TODO: This is not used at the moment!
         self.probabilistic_mapping_config = probabilistic_mapping_config
         self.probabilistic_mapping_obj = None

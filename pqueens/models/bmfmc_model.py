@@ -3,7 +3,6 @@ import pqueens.utils.pdf_estimation as est
 from pqueens.iterators.data_iterator import DataIterator
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from .model import Model
-from .simulation_model import SimulationModel
 import scipy.stats as st
 from pqueens.variables.variables import Variables
 from sklearn.preprocessing import StandardScaler
@@ -36,9 +35,7 @@ class BMFMCModel(Model):
         set is representative and its input :math:`Z` is a subset of the LF model sampling set:
         :math:`Z\\subset Z^*`
     2.  Run optimal HF simulations based on LF data. This requires a suitable simulation sub-model
-        and sub-iterator for the HF model. Note: This submodel/iterator can also be used for
-        the active learning feature that allows batch-sequential refinement of the BMFMC method by
-        determining next optimal HF simulations
+        and sub-iterator for the HF model.
     3.  Provide HF sampling data (as a file), calculated with same :math:`Z^*` as the
         LF simulation runs and select optimal HF training set from this data. This is just helpful
         for scientific benchmarking when a ground-truth solution for the HF output uncertainty has
@@ -59,17 +56,8 @@ class BMFMCModel(Model):
                                         - *X_cols*: for `man_features`, columns of X-matrix that
                                                     should be used as an informative feature
 
-        subordinate_model (obj): HF (simulation) model to run simulations that yield the HF
-                                 training set :math:`\\mathcal{D}_{HF}=\\{Z, Y_{HF}\\}` or HF
-                                 model to perform active learning (in to order to extend training
-                                 data set of probabilistic mapping with most promising HF
-                                 data points)
-
-        eval_fit (str): String that determines which error-evaluation technique should be used to
-                        assess the quality of the probabilistic mapping
-        error_measures (list): List of string with desired error metrics that should be used to
-                               assess the quality of the probabilistic mapping based on
-                               cross-validation
+        high_fidelity_model (obj): HF (simulation) model to run simulations that yield the HF
+                                 training set :math:`\\mathcal{D}_{HF}=\\{Z, Y_{HF}\\}`
         X_train (np.array): Matrix of simulation inputs correspond to the training
                                       data-set of the multi-fidelity mapping
         Y_HF_train (np.array): Vector or matrix of HF output that correspond to training input
@@ -87,8 +75,6 @@ class BMFMCModel(Model):
         Y_HF_mc (np.array): (optional for benchmarking) Output vector/matrix for the HF model
                             that correspond to the X_mc according to
                             :math:`Y_{HF}^*=y_{HF}(X^*)`.
-        active_learning (bool): Flag that triggers active learning on the HF model (not
-                                implemented yet)
         gammas_ext_mc (np.array): Matrix of extended low-fidelity informative features
                                 :math:`\\boldsymbol{\\Gamma}^*` corresponding to Monte-Carlo
                                 input :math:`X^*`
@@ -150,37 +136,31 @@ class BMFMCModel(Model):
     def __init__(
         self,
         settings_probab_mapping,
-        eval_fit,
-        error_measures,
-        active_learning,
         predictive_var_bool,
         y_pdf_support,
         uncertain_parameters,
-        subordinate_model=None,
-        no_features_comparison_bool=False,
-        lf_data_iterators=None,
-        hf_data_iterator=None,
+        interface,
+        hf_model,
+        no_features_comparison_bool,
+        lf_data_iterators,
+        hf_data_iterator,
     ):
 
-        self.interface = None
+        self.interface = interface
         self.settings_probab_mapping = settings_probab_mapping
-        self.subordinate_model = subordinate_model
-        self.eval_fit = eval_fit
-        self.error_measures = error_measures
+        self.high_fidelity_model = hf_model
         self.X_train = None
         self.Y_HF_train = None
         self.Y_LFs_train = None
         self.X_mc = None
         self.Y_LFs_mc = None
         self.Y_HF_mc = None
-        self.active_learning = active_learning
         self.gammas_ext_mc = None
         self.gammas_ext_train = None
         self.Z_train = None
         self.Z_mc = None
         self.m_f_mc = None
         self.var_y_mc = None
-        self.y_pdf_support = None
         self.p_yhf_mean = None
         self.p_yhf_var = None
         self.predictive_var_bool = predictive_var_bool
@@ -200,9 +180,7 @@ class BMFMCModel(Model):
         )  # TODO handling of variables, fields and parameters should be updated!
 
     @classmethod
-    def from_config_create_model(
-        cls, model_name, config,
-    ):
+    def from_config_create_model(cls, model_name, config):
         """
         Create a BMFMC model from a problem description defined in the input file of QUEENS
 
@@ -222,48 +200,46 @@ class BMFMCModel(Model):
 
         # get model options
         model_options = config['method'][model_name]
-        eval_fit = model_options["eval_fit"]
-        error_measures = model_options["error_measures"]
         settings_probab_mapping = model_options["approx_settings"]
-        lf_data_paths = model_options.get("path_to_lf_data")
-        hf_data_path = model_options.get("path_to_hf_data")
+        interface = BmfmcInterface(settings_probab_mapping)
+        lf_data_paths = model_options.get("path_to_lf_mc_data")
+        hf_data_path = model_options.get("path_to_hf_mc_reference_data")
+        hf_model_name = model_options.get("high_fidelity_model")
 
         # get some method options
         method_options = config["method"]["method_options"]
         no_features_comparison_bool = method_options["BMFMC_reference"]
-        active_learning = method_options["active_learning"]
         predictive_var_bool = method_options["predictive_var"]
         y_pdf_support_max = method_options["y_pdf_support_max"]
         y_pdf_support_min = method_options["y_pdf_support_min"]
 
         y_pdf_support = np.linspace(y_pdf_support_min, y_pdf_support_max, 200)
-        # ------------------------------ ACTIVE LEARNING ------------------------------
-        if active_learning is True:  # TODO also if yhf is not computed yet not only for a.l.
-            # TODO: create subordinate model for active learning
-            subordinate_HF_model_name = model_options["subordinate_model"]
-            subordinate_model = SimulationModel.from_config_create_model(
-                subordinate_HF_model_name, config
-            )
+
+        # if HF model is specified create an HF model object
+        if hf_model_name is not None:
+            hf_model = Model.from_config_create_model(hf_model_name, config)
         else:
-            subordinate_model = None  # TODO For now not used
+            hf_model = None
+
+        if hf_data_path is not None:
+            hf_data_iterator = DataIterator(hf_data_path, None, None)
+        else:
+            hf_data_iterator = None
 
         # ----------------------- create subordinate data iterators ------------------------------
         lf_data_iterators = [DataIterator(path, None, None) for path in lf_data_paths]
-        hf_data_iterator = DataIterator(hf_data_path, None, None)
         uncertain_parameters = None  # we set this None for now and update in load_sampling_data()
         # method later
 
         return cls(
             settings_probab_mapping,
-            eval_fit,
-            error_measures,
-            active_learning,
             predictive_var_bool,
             y_pdf_support,
             uncertain_parameters,
+            interface,
             lf_data_iterators=lf_data_iterators,
             hf_data_iterator=hf_data_iterator,
-            subordinate_model=subordinate_model,
+            hf_model=hf_model,
             no_features_comparison_bool=no_features_comparison_bool,
         )
 
@@ -293,39 +269,24 @@ class BMFMCModel(Model):
                            *  p_yhf_mc: For benchmarking, output pdf of HF model based on kde
                                         estimate for full Monte-Carlo simulation on HF model
                            *  Z_train: LF feature vector for training of the probabilistic mapping
+                           *  "Y_HF_train": Outputs of the high-fidelity model that correspond to
+                                            the training inputs X_train such that :math:`Y_{HF}=y_{
+                                            HF}(X)`
+                           *  "X_train": Corresponding input for the simulations that are used to
+                                         train the probabilistic mapping
+
         """
-        self.interface = BmfmcInterface(self.settings_probab_mapping)
         p_yhf_mean_BMFMC = None
         p_yhf_var_BMFMC = None
 
-        if np.any(self.Y_HF_mc):
-            self.compute_pymc_reference()
+        self.compute_pymc_reference()
 
         # ------------------ STANDARD BMFMC (no additional features) for comparison ----------------
         if self.no_features_comparison_bool is True:
-            # construct the probabilistic mapping between y_HF and y_LF
-            self.build_approximation(approx_case=False)
-
-            # Evaluate probabilistic mapping for LF points
-            self.m_f_mc, self.var_y_mc = self.interface.map(self.Y_LFs_mc.T)
-            self.f_mean_train, _ = self.interface.map(self.Y_LFs_train.T)
-
-            # actual 'evaluation' of BMFMC routine
-            self.compute_pyhf_statistics()
-            p_yhf_mean_BMFMC = self.p_yhf_mean  # this is just for comparison so no class attribute
-            p_yhf_var_BMFMC = self.p_yhf_var  # this is just for comparison so no class attribute
+            p_yhf_mean_BMFMC, p_yhf_var_BMFMC = self.run_BMFMC_without_features()
 
         # ------------------- Generalized BMFMC with features --------------------------------------
-        # construct the probabilistic mapping between y_HF and LF features z_LF
-        self.build_approximation(approx_case=True)
-
-        # Evaluate probabilistic mapping for certain Z-points
-        self.m_f_mc, self.var_y_mc = self.interface.map(self.Z_mc.T)
-        self.f_mean_train, _ = self.interface.map(self.Z_train.T)
-        # TODO the variables (here) manifold must probably an object from the variable class!
-
-        # actual 'evaluation' of generalized BMFMC routine
-        self.compute_pyhf_statistics()
+        self.run_BMFMC()
 
         # gather and return the output
         output = {
@@ -340,8 +301,52 @@ class BMFMCModel(Model):
             "p_ylf_mc": self.p_ylf_mc,
             "p_yhf_mc": self.p_yhf_mc,
             "Z_train": self.Z_train,
+            "X_train": self.X_train,
+            "Y_HF_train": self.Y_HF_train,
         }
         return output
+
+    def run_BMFMC(self):
+        """
+        Run BMFMC (with additional informative features.)
+
+        Returns:
+            None
+
+        """
+        # construct the probabilistic mapping between y_HF and LF features z_LF
+        self.build_approximation(approx_case=True)
+
+        # Evaluate probabilistic mapping for certain Z-points
+        self.m_f_mc, self.var_y_mc = self.interface.map(self.Z_mc.T)
+        self.f_mean_train, _ = self.interface.map(self.Z_train.T)
+        # TODO the variables (here) manifold must probably an object from the variable class!
+
+        # actual 'evaluation' of generalized BMFMC routine
+        self.compute_pyhf_statistics()
+
+    def run_BMFMC_without_features(self):
+        """
+        Run BMFMC without further informative LF features (mostly for comparison)
+
+        Returns:
+            p_yhf_mean_BMFMC (np.array): Posterior mean function of the HF output density
+            p_yhf_var_BMFMC (np.array): Posterior variance function of the HF output density
+
+        """
+        # construct the probabilistic mapping between y_HF and y_LF
+        self.build_approximation(approx_case=False)
+
+        # Evaluate probabilistic mapping for LF points
+        self.m_f_mc, self.var_y_mc = self.interface.map(self.Y_LFs_mc.T)
+        self.f_mean_train, _ = self.interface.map(self.Y_LFs_train.T)
+
+        # actual 'evaluation' of BMFMC routine
+        self.compute_pyhf_statistics()
+        p_yhf_mean_BMFMC = self.p_yhf_mean  # this is just for comparison so no class attribute
+        p_yhf_var_BMFMC = self.p_yhf_var  # this is just for comparison so no class attribute
+
+        return p_yhf_mean_BMFMC, p_yhf_var_BMFMC
 
     def load_sampling_data(self):
         """
@@ -356,12 +361,11 @@ class BMFMCModel(Model):
         # we load the description of the uncertain parameters from the first lf iterator
         # (note: all lf iterators have the same description)
         self.uncertain_parameters = (
-            self.lf_data_iterators[0].read_pickle_file().get('uncertain_parameters')
+            self.lf_data_iterators[0].read_pickle_file().get('input_description')
         )
 
-        # --------------------- load LF sampling data with data iterators --------------
-        self.X_mc = self.lf_data_iterators[0].read_pickle_file().get("input")
-        # TODO maybe load this also as samples for the uncertain parameters?
+        # --------------------- load LF sampling raw data with data iterators --------------
+        self.X_mc = self.lf_data_iterators[0].read_pickle_file().get("input_data")
         # here we assume that all lfs have the same input vector
         try:
             self.eigenfunc_random_fields = (
@@ -376,6 +380,7 @@ class BMFMCModel(Model):
             lf_data_iterator.read_pickle_file().get("output")[:, 0]
             for lf_data_iterator in self.lf_data_iterators
         ]
+
         self.Y_LFs_mc = np.atleast_2d(np.vstack(Y_LFs_mc)).T
 
         # ------------------- Deal with potential HF-MC data --------------------------
@@ -388,13 +393,6 @@ class BMFMCModel(Model):
                     "The file containing the high-fidelity Monte-Carlo data"
                     "was not found! Abort..."
                 )
-        else:
-            raise NotImplementedError(
-                "Currently the Monte-Carlo benchmark data for the "
-                "high-fidelity model must be provided! In the future QUEENS"
-                "will also be able to run the HF simulation based on the"
-                "LF data set, automatically. For now abort!...."
-            )
 
     def get_hf_training_data(self):
         """
@@ -414,7 +412,23 @@ class BMFMCModel(Model):
             )
 
         # check how we should get the corresponding HF simulation output
-        if self.Y_HF_mc is not None:
+        # Directly start simulations of HF model for optimal input batch X_train
+        if (self.high_fidelity_model is not None) and (self.Y_HF_mc is None):
+            print(
+                'High-fidelity model found! Starting now simulation on HF model for BMFMC '
+                'training data...'
+            )
+            self.high_fidelity_model.update_model_from_sample_batch(self.X_train)
+            # Evaluate High Fidelity Model
+            self.high_fidelity_model.evaluate()
+
+            # Get the HF-model training data for BMFMC
+            self.Y_HF_train = self.high_fidelity_model.response['mean']
+            print(
+                "High-fidelity simulations finished successfully!\n Starting now BMFMC "
+                "routine..."
+            )
+        elif (self.Y_HF_mc is not None) and (self.high_fidelity_model is None):
             # match Y_HF_mc data with X_train do determine Y_HF_train
             index_rows = [
                 np.where(np.all(self.X_mc == self.X_train[i, :], axis=1))[0][0]
@@ -424,13 +438,11 @@ class BMFMCModel(Model):
             self.Y_HF_train = np.atleast_2d(
                 np.asarray([self.Y_HF_mc[index] for index in index_rows])
             ).T
-
         else:
-            raise NotImplementedError(
-                "Currently the Monte-Carlo benchmark data for the "
-                "high-fidelity model must be provided! In the future QUEENS"
-                "will also be able to run the HF simulation based on the"
-                "LF data set, automatically. For now abort!...."
+            raise RuntimeError(
+                'Please make sure to provide either a pickle file with '
+                'high-fidelity Monte-Carlo data or an appropriate high-fidelity '
+                'model to compute the high-fidelity training data! Abort...'
             )
 
     def build_approximation(self, approx_case=True):
@@ -445,8 +457,8 @@ class BMFMCModel(Model):
 
         Returns:
             None
-        """
 
+        """
         # get the HF output data (from file or by starting a simulation, dependent on config)
         self.get_hf_training_data()
 
@@ -456,45 +468,6 @@ class BMFMCModel(Model):
             self.interface.build_approximation(self.Z_train, self.Y_HF_train)
         else:
             self.interface.build_approximation(self.Y_LFs_train, self.Y_HF_train)
-
-        # TODO below is a wrong error measure for probabilistic mapping
-        if self.eval_fit == "kfold":
-            error_measures = self.eval_surrogate_accuracy_cv(
-                self.Z_train, self.Y_HF_train, k_fold=5, measures=self.error_measures
-            )
-            for measure, error in error_measures.items():
-                print("Error {} is:{}".format(measure, error))
-
-        #  TODO implement proper active learning with subiterator below
-        if self.active_learning is True:
-            raise NotImplementedError(
-                'Active learning is not implemented yet! At the moment you '
-                'cannot use this option! Please set active_learning to '
-                '`False`!'
-            )
-
-    def eval_surrogate_accuracy_cv(self, Z, Y_HF, k_fold, measures):
-        """
-        Compute k-fold cross-validation error for probabilistic mapping
-
-        Args:
-            Z (np.array):       Low-fidelity features input-array
-            Y_HF (np.array):    High-fidelity output-array
-            k_fold (int):       Split dataset in k_fold subsets for cross-validation
-            measures (list):    List with desired error metrics
-
-        Returns:
-            dict: Dictionary with error metrics and corresponding error values
-        """
-
-        if not self.interface.is_initiliazed():
-            raise RuntimeError("Cannot compute accuracy of an uninitialized model")
-
-        response_cv = self.interface.cross_validate(Z, Y_HF, k_fold)
-        y_pred = np.reshape(np.array(response_cv), (-1, 1))
-
-        error_info = compute_error_measures(Y_HF, y_pred, measures)
-        return error_info
 
     def compute_pyhf_statistics(self):
         """
@@ -548,6 +521,8 @@ class BMFMCModel(Model):
         yhf_pdf_grid = np.zeros((points.shape[0],))
         i = 1
         print('\n')
+
+        # TODO we should speed this up with multiprocessing
         for num1, (mean1, var1) in enumerate(
             zip(tqdm(f_mean_pred, desc=r'Calculating Var_f[p(y_HF|f,z,D)]'), yhf_var_pred)
         ):
@@ -592,19 +567,22 @@ class BMFMCModel(Model):
 
         """
         # optimize the bandwidth for the kde
-        bandwidth_hfmc = est.estimate_bandwidth_for_kde(
-            self.Y_HF_mc, np.amin(self.Y_HF_mc), np.amax(self.Y_HF_mc)
+        bandwidth_lfmc = est.estimate_bandwidth_for_kde(
+            self.Y_LFs_mc[:, 0], np.amin(self.Y_LFs_mc[:, 0]), np.amax(self.Y_LFs_mc[:, 0])
         )
-        # perform kde with the optimized bandwidth
-        self.p_yhf_mc, _ = est.estimate_pdf(
-            np.atleast_2d(self.Y_HF_mc),
-            bandwidth_hfmc,
-            support_points=np.atleast_2d(self.y_pdf_support),
-        )
+
+        if self.Y_HF_mc is not None:
+            # perform kde with the optimized bandwidth in case HF MC is given
+            self.p_yhf_mc, _ = est.estimate_pdf(
+                np.atleast_2d(self.Y_HF_mc),
+                bandwidth_lfmc,
+                support_points=np.atleast_2d(self.y_pdf_support),
+            )
+
         if self.Y_LFs_train.shape[1] < 2:
             self.p_ylf_mc, _ = est.estimate_pdf(
                 np.atleast_2d(self.Y_LFs_mc).T,
-                bandwidth_hfmc,
+                bandwidth_lfmc,
                 support_points=np.atleast_2d(self.y_pdf_support),
             )  # TODO: make this also work for several lfs
 
@@ -619,8 +597,8 @@ class BMFMCModel(Model):
         """
         if self.settings_probab_mapping['features_config'] == "man_features":
             idx_vec = self.settings_probab_mapping['X_cols']
-            self.gammas_ext_train = np.atleast_2d(self.X_train[:, idx_vec])
-            self.gammas_ext_mc = np.atleast_2d(self.X_mc[:, idx_vec])
+            self.gammas_ext_train = np.atleast_2d(self.X_train[:, idx_vec]).T
+            self.gammas_ext_mc = np.atleast_2d(self.X_mc[:, idx_vec]).T
             self.Z_train = np.hstack([self.Y_LFs_train, self.gammas_ext_train])
             self.Z_mc = np.hstack([self.Y_LFs_mc, self.gammas_ext_mc])
         elif self.settings_probab_mapping['features_config'] == "opt_features":
@@ -635,10 +613,12 @@ class BMFMCModel(Model):
             self.Z_train = self.Y_LFs_train
             self.Z_mc = self.Y_LFs_mc
         else:
-            raise ValueError("Feature space method specified in input file is unknown!")
+            raise IOError("Feature space method specified in input file is unknown!")
 
         # TODO current workaround to update variables object with the inputs for the
         #  multi-fidelity mapping
+
+        # TODO This does not seem to have any effect --> check this again
         update_model_variables(self.Y_LFs_train, self.Z_mc)
 
     def calculate_extended_gammas(self):
@@ -654,16 +634,17 @@ class BMFMCModel(Model):
             None
 
         """
-        x_red = self.input_dim_red()
+        x_red = self.input_dim_red()  # this is also standardized
         x_iter_test = x_red
         self.gammas_ext_mc = np.empty((x_iter_test.shape[0], 0))
 
+        # standardize the LF output vector for better performance
+        Y_LFS_mc_stdized = StandardScaler().fit_transform(self.Y_LFs_mc)
+
         # Iteratively sort reduced input space by importance of its dimensions
         for counter in range(x_red.shape[1]):
-            # standardize the LF output vector for better performance
-            Y_LFS_mc_stdized = StandardScaler().fit_transform(self.Y_LFs_mc)
-
             # calculate the scores/ranking of candidates for informative input features gamma_i
+            # by projecting the (dim. reduced) input on the LFs output
             corr_coef_unnorm = np.abs(np.dot(x_iter_test.T, Y_LFS_mc_stdized))
 
             # --------- plot the rankings/scores for first iteration -------------------------------
@@ -677,6 +658,9 @@ class BMFMCModel(Model):
             # select input feature with the highest score
             select_bool = corr_coef_unnorm == np.max(corr_coef_unnorm)
             test_iter = np.dot(x_iter_test, select_bool)
+
+            # substract last choice from candidate pool
+            x_iter_test = np.atleast_2d(x_iter_test[:, ~select_bool[:, 0]])
 
             # Scale features linearly to LF output data so that probabilistic model
             # can be fit easier
@@ -703,7 +687,10 @@ class BMFMCModel(Model):
         self.Z_mc = np.hstack([self.Y_LFs_mc, gamma_mc])
 
         # Get training data from training_indices previously calculated in the iterator
-        self.Z_train = self.Z_mc[self.training_indices, :]
+        if self.training_indices is not None:
+            self.Z_train = self.Z_mc[self.training_indices, :]
+        else:
+            raise ValueError('The training indices are still set to None! Abort...')
 
         # update dataset for probabilistic mapping with new feature dimensions
         self.interface.build_approximation(self.Z_train, self.Y_HF_train)
@@ -728,12 +715,17 @@ class BMFMCModel(Model):
         x_uncorr, truncated_basis_dict = self.get_random_fields_and_truncated_basis(
             explained_var=95
         )
-        coefs_mat = _project_samples_on_truncated_basis(truncated_basis_dict, self.X_mc.shape[0])
-        X_red_test_stdizd = _assemble_x_red_stdizd(x_uncorr, coefs_mat)
+        if truncated_basis_dict is not None:
+            coefs_mat = _project_samples_on_truncated_basis(
+                truncated_basis_dict, self.X_mc.shape[0]
+            )
+        else:
+            coefs_mat = None
 
+        X_red_test_stdizd = _assemble_x_red_stdizd(x_uncorr, coefs_mat)
         return X_red_test_stdizd
 
-    def get_random_fields_and_truncated_basis(self, explained_var=0.95):
+    def get_random_fields_and_truncated_basis(self, explained_var=95.0):
         """
         Get the random fields and their description from the data files (pickle-files) and
         return their truncated basis. The truncation is determined based on the explained
@@ -755,48 +747,54 @@ class BMFMCModel(Model):
 
         # iterate over all random fields
         dim_random_fields = 0
-        for random_field, basis, eigenvals in zip(
-            self.uncertain_parameters.get("random_fields").items(),
-            self.eigenfunc_random_fields.items(),
-            self.eigenvals.items(),
-        ):
-            # check which type of random field was used
-            if random_field[1].get("corrstruct") != "non_stationary_squared_exp":
-                raise NotImplementedError(
-                    f"Your random field had the correlation structure "
-                    f"{random_field.get('corrstruct')} but this function is at "
-                    f"the moment only implemented for the correlation "
-                    f"structure non_stationary_squared_exp! Abort...."
-                )
-            else:
-                # write the simulated samples of the random fields also in the new dictionary
-                # Attention: Here we assume that X_mx contains in the first columns uncorrelated
-                #            random variables until the column id 'num_random_var' and then only
-                #            random fields
-                random_fields_trunc_dict = {
-                    random_field[0]: {
-                        "samples": self.X_mc[
-                            :,
-                            num_random_var
-                            + dim_random_fields : num_random_var
-                            + dim_random_fields
-                            + random_field[1]["num_points"],
-                        ]
+
+        if self.uncertain_parameters.get("random_fields") is not None:
+            for random_field, basis, eigenvals in zip(
+                self.uncertain_parameters.get("random_fields").items(),
+                self.eigenfunc_random_fields.items(),
+                self.eigenvals.items(),
+            ):
+                # check which type of random field was used
+                if random_field[1].get("corrstruct") != "non_stationary_squared_exp":
+                    raise NotImplementedError(
+                        f"Your random field had the correlation structure "
+                        f"{random_field[1].get('corrstruct')} but this function is at "
+                        f"the moment only implemented for the correlation "
+                        f"structure non_stationary_squared_exp! Abort...."
+                    )
+                else:
+                    # write the simulated samples of the random fields also in the new dictionary
+                    # Attention: Here we assume that X_mc contains in the first columns uncorrelated
+                    #            random variables until the column id 'num_random_var' and then only
+                    #            random fields
+                    random_fields_trunc_dict = {
+                        random_field[0]: {
+                            "samples": self.X_mc[
+                                :,
+                                num_random_var
+                                + dim_random_fields : num_random_var
+                                + dim_random_fields
+                                + random_field[1]["num_points"],
+                            ]
+                        }
                     }
-                }
 
-                # determine the truncation basis
-                idx_truncation = [
-                    idx for idx, eigenval in enumerate(eigenvals[1]) if eigenval > explained_var
-                ][0]
+                    # determine the truncation basis
+                    idx_truncation = [
+                        idx
+                        for idx, eigenval in enumerate(eigenvals[1])
+                        if eigenval >= explained_var
+                    ][0]
 
-                # write the truncated basis also in the dictionary
-                random_fields_trunc_dict[random_field[0]].update(
-                    {"trunc_basis": basis[1][0:idx_truncation]}
-                )
+                    # write the truncated basis also in the dictionary
+                    random_fields_trunc_dict[random_field[0]].update(
+                        {"trunc_basis": basis[1][0:idx_truncation]}
+                    )
 
-                # adjust the counter for next iteration
-                dim_random_fields += random_field[1]["num_points"]
+                    # adjust the counter for next iteration
+                    dim_random_fields += random_field[1]["num_points"]
+        else:
+            random_fields_trunc_dict = None
 
         return x_uncorr, random_fields_trunc_dict
 
@@ -806,7 +804,7 @@ def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
     """
     Project the high-dimensional samples of the random field on the truncated bases to yield the
     projection coefficients of the series expansion that serve as a new reduced representation of
-    the random fields/
+    the random fields
 
     Args:
         truncated_basis_dict (dic): Dictionary containing random field samples and truncated bases
@@ -817,57 +815,12 @@ def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
                               stacked together along the columns
     """
     coefs_mat = np.empty((num_samples, 0))
+
+    # iterate over random fields
     for basis in truncated_basis_dict.items():
         coefs_mat = np.hstack((coefs_mat, np.dot(basis[1]["samples"], basis[1]["trunc_basis"].T)))
 
     return coefs_mat
-
-
-def compute_error(y_act, y_pred, measure):
-    """ Compute error for a given a specific error metric
-
-        Args:
-            y_act (np.array):  Prediction with full data set
-            y_pred (np.array): Prediction with reduced data set
-            measure (str):     Desired error metric
-
-        Returns:
-            float: error based on desired metric
-    """
-    if measure == "sum_squared":
-        error = np.sum((y_act - y_pred) ** 2)
-    elif measure == "mean_squared":
-        error = np.mean((y_act - y_pred) ** 2)
-    elif measure == "root_mean_squared":
-        error = np.sqrt(np.mean((y_act - y_pred) ** 2))
-    elif measure == "sum_abs":
-        error = np.sum(np.abs(y_act - y_pred))
-    elif measure == "mean_abs":
-        error = np.mean(np.abs(y_act - y_pred))
-    elif measure == "abs_max":
-        error = np.max(np.abs(y_act - y_pred))
-    else:
-        raise NotImplementedError("Desired error measure is unknown!")
-    return error
-
-
-def compute_error_measures(y_act, y_pred, measures):
-    """
-        Compute error-metrics based on difference between prediction with full data-set and reduced
-        data-set
-
-        Args:
-            y_act (np.array):  Predictions with full data-set
-            y_pred (np.array): Predictions with reduced data-set
-            measures (list):   Dictionary with desired error metrics
-
-        Returns:
-            dict: Dictionary with error measures and corresponding error values
-    """
-    error_measures = {}
-    for measure in measures:
-        error_measures[measure] = compute_error(y_act, y_pred, measure)
-    return error_measures
 
 
 def update_model_variables(Y_LFs_train, Z_mc):
@@ -883,15 +836,18 @@ def update_model_variables(Y_LFs_train, Z_mc):
 
     Returns:
         None
+
     """
     # TODO this is an intermediate solution while the variable class has not been changed to a
     #  more flexible version
+
+    # TODO this does not seem to have any effect as Model class is not directly connected to BMFMC
 
     uncertain_parameters = {
         "random_variables": {}
     }  # initialize a dict uncertain parameters to define input_variables of model
 
-    num_lfs = Y_LFs_train.shape[1]  # TODO not a very nice solution but work for now
+    num_lfs = Y_LFs_train.shape[1]  # TODO not a very nice solution but works for now
 
     # set the random variable for the LFs first
     for counter, value in enumerate(Z_mc.T):  # iterate over all lfs
@@ -904,7 +860,7 @@ def update_model_variables(Y_LFs_train, Z_mc):
         uncertain_parameters["random_variables"].update(dummy)  # we assume only 1 column per dim
 
     # Append random variables for the feature dimensions (random fields are not necessary so far)
-    Model.variables = [Variables(uncertain_parameters)]
+    Model.variables = [Variables(uncertain_parameters)]  # TODO check effect here
 
 
 # ---------------- Some private helper functions ------------------------------------------------
@@ -940,6 +896,9 @@ def _assemble_x_red_stdizd(x_uncorr, coef_mat):
         X_red_test_stdizd (np.array):
 
     """
-    x_red = np.hstack((x_uncorr, coef_mat))
+    if coef_mat is not None:
+        x_red = np.hstack((x_uncorr, coef_mat))
+    else:
+        x_red = x_uncorr
     X_red_test_stdizd = StandardScaler().fit_transform(x_red)
     return X_red_test_stdizd

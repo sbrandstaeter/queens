@@ -1,29 +1,30 @@
 #!/bin/bash
 ##########################################
 #                                        #
-#  Specify your PBS directives           #
+#  Specify your SLURM directives         #
 #                                        #
 ##########################################
 # Job name:
-#PBS -N {job_name}
-# Number of nodes and processors per node (ppn)
-#PBS -l nodes=1:ppn={ntasks}
+#SBATCH -J {job_name}
+# Standard case: specify only number of cpus
+#SBATCH --ntasks={ntasks}
 # Walltime: (hours:minutes:seconds)
-#PBS -l walltime=6:00:00
-# Executing queue
-#PBS -q batch
+#SBATCH --time={walltime}
+# Exclusivity:
+# #SBATCH --exclusive
+# Exclude nodes: (e.g. exclude node07)
+# #SBATCH --exclude=node07
 ###########################################
 
-# ------------- RUN MAIN JOB IN SINGULARITY (STANDARD JOB SCRIPT) -------------
 ##########################################
 #                                        #
 #  Specify your paths                    #
 #                                        #
 ##########################################
-WORKDIR=/scratch/PBS_$PBS_JOBID
-DESTDIR={DESTDIR}  # Output directory for simulation
-EXE={EXE}
-INPUT={INPUT}
+WORKDIR=/scratch/SLURM_$SLURM_JOB_ID
+DESTDIR={DESTDIR}  # output directory for run
+EXE={EXE} # either CAE excutable or singularity image
+INPUT='{INPUT}'  # either input file or, for singularity, list of arguments specifying run
 OUTPUTPREFIX={OUTPUTPREFIX}
 ##########################################
 #                                        #
@@ -34,11 +35,13 @@ RESTART_FROM_PREFIX=xxx                  #
 
 ##########################################
 #                                        #
-#     POSTPROCESSING SPECIFICATION       #
+#     POST- AND POST-POST-PROCESSING     #
+#     SPECIFICATION                      #
 #                                        #
 ##########################################
-DoPostprocess={POSTPROCESSFLAG}
-POSTEXE={POSTEXE}
+DoPostprocess={POSTPROCESSFLAG} # post-processing flag for non-singularity run
+POSTEXE={POSTEXE} # post-processing executable for non-singularity run
+DoPostpostprocess={POSTPOSTPROCESSFLAG} # post- and post-post-processing flag for singularity run
 
 #################################################################
 # BEGIN ############### DO NOT TOUCH ME #########################
@@ -51,8 +54,9 @@ DoChecks
 StageIn
 RunProgram
 wait
-#RunPostprocessor # This is still specific to BACI and does not include drt_monitor
-# QUEENS Post-processing within jobscript only for post processor without additional options so far
+#RunPostprocessor
+# Post-processing for non-singularity run
+# (only for post-processor without additional options so far) 
 if [ $DoPostprocess = true ]
 then
   if [ $RESTART -le 0 ]
@@ -69,4 +73,12 @@ StageOut
 #Show
 echo
 echo "Job finished with exit code $? at: `date`"
+# ------- FINISH AND CLEAN SINGULARITY JOB (DONE ON MASTER/LOGIN NODE!) -------
+wait
+# Post- and post-post-processing for singularity run
+# (cd back into home since pwd does not exist anymore)
+if [ $DoPostpostprocess = true ]
+then
+  $MPI_RUN $MPIFLAGS -np {nposttasks} $EXE $INPUT $WORKDIR '--post=true'
+fi
 # END ################## DO NOT TOUCH ME #########################

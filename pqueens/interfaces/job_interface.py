@@ -5,10 +5,13 @@ import os
 import sys
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
-from pqueens.resources.resource import print_resources_status
 from pqueens.database.mongodb import MongoDB
 from pqueens.utils.run_subprocess import run_subprocess
-from pqueens.utils.aws_output_string_extractor import aws_extract
+from pqueens.utils.string_extractor_and_checker import (
+    extract_string_from_output,
+    check_if_string_in_file,
+)
+from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 this = sys.modules[__name__]
 this.restart_flag = None
@@ -45,9 +48,10 @@ class JobInterface(Interface):
         db,
         polling_time,
         output_dir,
-        restart_from_finished_simulation,
+        restart,
         parameters,
-        connect,
+        remote,
+        remote_connect,
         scheduler_type,
         direct_scheduling,
     ):
@@ -61,8 +65,8 @@ class JobInterface(Interface):
             polling_time (int):         how frequently do we check if jobs are done
             output_dir (string):        directory to write output to
             parameters (dict):          dictionary with parameters
-            restart_from_finished_simulation (bool): true if restart option is chosen
-            connect (string):  connection to computing resource
+            restart_flag (bool):        true if restart option is chosen
+            remote_connect (string):    connection to computing resource
         """
         self.name = interface_name
         self.resources = resources
@@ -73,8 +77,9 @@ class JobInterface(Interface):
         self.parameters = parameters
         self.batch_number = 0
         self.num_pending = None
-        self.restart_from_finished_simulation = restart_from_finished_simulation
-        self.connect_to_resource = connect
+        self.restart = restart
+        self.remote = remote
+        self.remote_connect = remote_connect
         self.scheduler_type = scheduler_type
         self.direct_scheduling = direct_scheduling
 
@@ -89,15 +94,55 @@ class JobInterface(Interface):
         Returns:
             interface:              instance of JobInterface
         """
+        # get experiment name and polling time
+        experiment_name = config['global_settings']['experiment_name']
+        polling_time = config.get('polling-time', 1.0)
+
         # get resources from config
         resources = parse_resources_from_configuration(config)
 
-        # get experiment name
-        experiment_name = config['global_settings']['experiment_name']
+        # get parameters from config
+        parameters = config['parameters']
 
-        restart_from_finished_simulation = config['driver']['driver_params'].get(
-            'restart_from_finished_simulation', False
-        )
+        # get various scheduler options
+        # TODO: This is not nice
+        first = list(config['resources'])[0]
+        scheduler_name = config['resources'][first]['scheduler']
+        scheduler_options = config[scheduler_name]
+        output_dir = scheduler_options["experiment_dir"]
+        scheduler_type = scheduler_options['scheduler_type']
+
+        # get flag for remote scheduling
+        if scheduler_options.get('remote', False):
+            remote = True
+            remote_connect = scheduler_options['remote_connect']
+        else:
+            remote = False
+            remote_connect = None
+
+        # get flag for Singularity
+        if scheduler_options.get('singularity', False):
+            singularity = True
+        else:
+            singularity = False
+
+        # get flag for restart
+        if scheduler_options.get('restart', False):
+            restart = True
+        else:
+            restart = False
+
+        # set flag for direct scheduling
+        direct_scheduling = False
+        if not singularity:
+            if (
+                scheduler_type == 'ecs_task'
+                or scheduler_type == 'nohup'
+                or scheduler_type == 'pbs'
+                or scheduler_type == 'slurm'
+                or (scheduler_type == 'standard' and remote)
+            ):
+                direct_scheduling = True
 
         if restart_from_finished_simulation:
             reset_database = False
@@ -110,31 +155,7 @@ class JobInterface(Interface):
         db = MongoDB.from_config_create_database(config)
 
         # print out database information
-        db.print_database_information(restart=restart_from_finished_simulation)
-
-        polling_time = config.get('polling-time', 1.0)
-
-        # TODO: This is not nice -> should be solved solemnly over Driver class
-        output_dir = config['driver']['driver_params']["experiment_dir"]
-
-        # TODO: This is not nice
-        connect = list(resources.values())[0].scheduler.connect_to_resource
-
-        # TODO: This is definitely not nice, either
-        first = list(config['resources'])[0]
-        scheduler_name = config['resources'][first]['scheduler']
-        scheduler_type = config[scheduler_name]['scheduler_type']
-
-        if (
-            scheduler_type == 'ecs_task'
-            or scheduler_type == 'local_pbs'
-            or scheduler_type == 'local_slurm'
-        ):
-            direct_scheduling = True
-        else:
-            direct_scheduling = False
-
-        parameters = config['parameters']
+        db.print_database_information(restart=restart)
 
         # instantiate object
         return cls(
@@ -144,9 +165,10 @@ class JobInterface(Interface):
             db,
             polling_time,
             output_dir,
-            restart_from_finished_simulation,
+            restart,
             parameters,
-            connect,
+            remote,
+            remote_connect,
             scheduler_type,
             direct_scheduling,
         )
@@ -191,8 +213,8 @@ class JobInterface(Interface):
                 while not self.all_jobs_finished():
                     time.sleep(self.polling_time)
 
-                # only for remote computation:
-                resource.scheduler.post_run()
+            # potential post-run options, currently only for remote computation:
+            resource.scheduler.post_run()
 
         # get sample and response data
         return self.get_output_data()
@@ -204,7 +226,7 @@ class JobInterface(Interface):
             function object:    management function which should be used
 
         """
-        if self.restart_from_finished_simulation:
+        if self.restart:
             return self._manage_restart
 
         else:
@@ -236,21 +258,35 @@ class JobInterface(Interface):
 
         return process_id
 
-    def load_jobs(self):
-        """ Load jobs from the jobs database
+    def count_jobs(self, field_filters={}):
+        """
+        Count jobs matching field_filters in the database
+
+        default: count all jobs in the database
+        Args:
+            field_filters: (dict) criteria that jobs to count have to fulfill
+        Returns:
+            int : number of jobs matching field_filters in the database
+        """
+        total_num_jobs = 0
+        for batch_num in range(1, self.batch_number + 1):
+            num_jobs_in_batch = self.db.count_documents(
+                self.experiment_name, str(batch_num), 'jobs', field_filters
+            )
+            total_num_jobs += num_jobs_in_batch
+
+        return total_num_jobs
+
+    def load_jobs(self, field_filters={}):
+        """ Load jobs that match field_filters from the jobs database
 
         Returns:
-            list : list with all jobs or an empty list
+            list : list with all jobs that match the criteria
         """
 
         jobs = []
         for batch_num in range(1, self.batch_number + 1):
-            job = self.db.load(
-                self.experiment_name,
-                str(batch_num),
-                'jobs',
-                {'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
-            )
+            job = self.db.load(self.experiment_name, str(batch_num), 'jobs', field_filters)
             if isinstance(job, list):
                 jobs.extend(job)
             else:
@@ -285,10 +321,10 @@ class JobInterface(Interface):
             job: new job
         """
 
-        jobs = self.load_jobs()
         if new_id is None:
             print("Created new job")
-            job_id = len(jobs) + 1
+            num_jobs = self.count_jobs()
+            job_id = num_jobs + 1
         else:
             job_id = int(new_id)
 
@@ -319,19 +355,6 @@ class JobInterface(Interface):
             {'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
         )
 
-    def tired(self, resource):
-        """ Quick check whether a resource is fully occupied
-
-        Args:
-            (resource): resource object
-        Returns:
-            bool: whether or not resource is tired
-        """
-        jobs = self.load_jobs()
-        if resource.accepting_jobs(jobs):
-            return False
-        return True
-
     def all_jobs_finished(self):
         """ Determine whether all jobs are finished
 
@@ -341,26 +364,18 @@ class JobInterface(Interface):
             bool: returns true if all jobs in the database have reached completion
                   or failed
         """
-        jobs = self.load_jobs()
-        num_pending = 0
-        for job in jobs:
-            if (
-                job['status'] != 'complete'
-                and job['status'] != 'failed'
-                and job['status'] != 'broken'
-            ):
-                num_pending = num_pending + 1
+        num_pending = self.count_jobs({"status": "pending"})
 
         if (num_pending == self.num_pending) or (self.num_pending is None):
             pass
         else:
             self.num_pending = num_pending
-            print_resources_status(self.resources, jobs)
+            self.print_resources_status()
 
         if num_pending != 0:
             return False
 
-        print_resources_status(self.resources, jobs)
+        self.print_resources_status()
         return True
 
     def get_output_data(self):
@@ -378,7 +393,9 @@ class JobInterface(Interface):
         if not self.all_jobs_finished():
             print("Not all jobs are finished yet, try again later")
         else:
-            jobs = self.load_jobs()
+            jobs = self.load_jobs(
+                field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
+            )
 
             # Sort job IDs in ascending order to match ordering of samples
             jobids = [job['id'] for job in jobs]
@@ -406,6 +423,9 @@ class JobInterface(Interface):
 
         Args:
             samples (DataFrame):     realization/samples of QUEENS simulation input variables
+
+        Returns:
+            jobid_for_post_post(ndarray): jobids for post-post-processing
         """
         # Job that need direct post-post-processing
         jobid_for_post_post = np.empty(shape=0)
@@ -453,14 +473,19 @@ class JobInterface(Interface):
         Args:
             samples (DataFrame): realization/samples of QUEENS simulation input variables
 
+        Returns:
+            jobid_for_post_post(ndarray): jobids for post-post-processing
+
         """
-        jobs = self.load_jobs()
-        if not jobs or self.batch_number == 1:
+        num_jobs = self.count_jobs()
+        if not num_jobs or self.batch_number == 1:
             job_ids_generator = range(1, samples.size + 1, 1)
         else:
-            job_ids_generator = range(len(jobs) + 1, len(jobs) + samples.size + 1, 1)
+            job_ids_generator = range(num_jobs + 1, num_jobs + samples.size + 1, 1)
 
         self._manage_job_submission(samples, job_ids_generator)
+
+        return np.array(job_ids_generator)
 
     def _check_results_in_db(self, samples):
         """Check complete results in database.
@@ -472,7 +497,9 @@ class JobInterface(Interface):
             number_of_results_in_db (int):              number of results in database
             jobid_missing_results_in_db (ndarray):      job IDs of jobs with missing results
         """
-        jobs = self.load_jobs()
+        jobs = self.load_jobs(
+            field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
+        )
 
         number_of_results_in_db = 0
         jobid_missing_results_in_db = []
@@ -522,14 +549,15 @@ class JobInterface(Interface):
 
         while True:
             try:
-                answer = input('>> Please type "y", "n" or job ID(s) (int) >> ')
+                print('>> Please type "y", "n" or job ID(s) (int) >> ')
+                answer = request_user_input_with_default_and_timeout(default="y", timeout=10)
             except SyntaxError:
                 answer = None
 
             if answer.lower() == 'y':
                 return jobid_for_restart
             elif answer.lower() == 'n':
-                return None
+                return []
             elif answer is None:
                 print('>> Empty input! Only "y", "n" or job ID(s) (int) are valid inputs!')
                 print('>> Try again!')
@@ -573,7 +601,9 @@ class JobInterface(Interface):
             is_every_job_in_db (boolean):   true if smallest job ID in database is 1
             jobid_smallest_in_db (int):     smallest job ID in database
         """
-        jobs = self.load_jobs()
+        jobs = self.load_jobs(
+            field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
+        )
 
         jobid_smallest_in_db = min([job['id'] for job in jobs])
         is_every_job_in_db = jobid_smallest_in_db == 1
@@ -583,46 +613,41 @@ class JobInterface(Interface):
     def _check_job_completions(self, jobid_range):
         """Check AWS tasks to determine completed jobs.
         """
-        jobs = self.load_jobs()
+        jobs = self.load_jobs(
+            field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
+        )
         for check_jobid in jobid_range:
-            try:
-                current_check_job = next(job for job in jobs if job['id'] == check_jobid)
-                if current_check_job['status'] != 'complete':
-                    completed = False
-                    if self.scheduler_type == 'ecs_task':
-                        command_list = [
-                            "aws ecs describe-tasks ",
-                            "--cluster worker-queens-cluster ",
-                            "--tasks ",
-                            current_check_job['aws_arn'],
-                        ]
-                        cmd = ''.join(filter(None, command_list))
-                        _, _, stdout, stderr = run_subprocess(cmd)
-                        if stderr:
+            for _, resource in self.resources.items():
+                try:
+                    current_check_job = next(job for job in jobs if job['id'] == check_jobid)
+                    if current_check_job['status'] != 'complete':
+                        completed, failed = resource.check_job_completion(current_check_job)
+
+                        # determine if this a failed job and return if yes
+                        if failed:
                             current_check_job['status'] = 'failed'
-                        status_str = aws_extract("lastStatus", stdout)
-                        if status_str == 'STOPPED':
-                            completed = True
-                    else:
-                        # indicate completion by existing control file in output directory
-                        completed = os.path.isfile(current_check_job['control_file_path'])
-                    if completed:
-                        current_check_job['status'] = 'complete'
-                        current_check_job['end time'] = time.time()
-                        computing_time = (
-                            current_check_job['end time'] - current_check_job['start time']
-                        )
-                        sys.stdout.write(
-                            'Successfully completed job {:d} (No. of proc.: {:d}, '
-                            'computing time: {:08.2f} s).\n'.format(
-                                current_check_job['id'],
-                                current_check_job['num_procs'],
-                                computing_time,
+                            return
+
+                        # determine if this a completed job and return if yes
+                        if completed:
+                            current_check_job['status'] = 'complete'
+                            current_check_job['end time'] = time.time()
+                            computing_time = (
+                                current_check_job['end time'] - current_check_job['start time']
                             )
-                        )
-                        self.save_job(current_check_job)
-            except (StopIteration, IndexError):
-                pass
+                            sys.stdout.write(
+                                'Successfully completed job {:d} (No. of proc.: {:d}, '
+                                'computing time: {:08.2f} s).\n'.format(
+                                    current_check_job['id'],
+                                    current_check_job['num_procs'],
+                                    computing_time,
+                                )
+                            )
+                            self.save_job(current_check_job)
+                            return
+
+                except (StopIteration, IndexError):
+                    pass
 
     def _find_block_restart(self, samples):
         """Find index for block-restart.
@@ -634,10 +659,10 @@ class JobInterface(Interface):
             jobid_for_block_restart (int):  index for block-restart of failed jobs
         """
         # Find number of subdirectories in output directory
-        if self.connect_to_resource:
+        if self.remote_connect:
             command_list = [
                 'ssh',
-                self.connect_to_resource,
+                self.remote_connect,
                 '"cd',
                 self.output_dir,
                 '; ls -l | grep ' '"^d" | wc -l "',
@@ -662,14 +687,10 @@ class JobInterface(Interface):
         jobid_for_block_restart = None
         jobid_for_restart_found = False
         # Loop backwards to find first completed job
-        for jobid in range(jobid_start_search, -1, -1):
+        for jobid in range(jobid_start_search, 0, -1):
             # Loop over all available resources
             for resource_name, resource in self.resources.items():
-                current_job, process_id = self._get_current_job(
-                    samples, resource, resource_name, jobid
-                )
-
-                assert process_id == 0, "Error: Process ID in find_block_restart must be 0."
+                current_job = self._get_current_restart_job(jobid, resource, resource_name, samples)
 
                 if current_job.get('result', np.empty(shape=0)).size != 0:
                     # Last finished job -> restart from next job
@@ -679,6 +700,8 @@ class JobInterface(Interface):
 
             if jobid_for_restart_found:
                 break
+            elif jobid == 1:
+                raise RuntimeError('Block-restart not found. Check for errors in PostPost-Module')
 
         # If jobid for block-restart out of range -> no restart
         if jobid_for_block_restart > samples.size:
@@ -713,11 +736,7 @@ class JobInterface(Interface):
 
         for jobid in range(1, jobid_end):
             for resource_name, resource in self.resources.items():
-                current_job, process_id = self._get_current_job(
-                    samples, resource, resource_name, jobid
-                )
-
-                assert process_id == 0, "Error: Process ID in load_missing_jobs_to_db must be 0."
+                current_job = self._get_current_restart_job(jobid, resource, resource_name, samples)
 
                 if current_job.get('result', np.empty(shape=0)).size == 0:
                     # No result
@@ -726,8 +745,7 @@ class JobInterface(Interface):
         # Get user input for restart of single jobs
         if len(jobid_for_single_restart) == 0:
             print('>> No restart of single jobs detected.')
-            jobs = self.load_jobs()
-            print_resources_status(self.resources, jobs)
+            self.print_resources_status()
         else:
             print(
                 f'>> Single restart detected for job(s) #',
@@ -748,22 +766,32 @@ class JobInterface(Interface):
             samples (DataFrame):     realization/samples of QUEENS simulation input variables
             jobid_range (range):     range of job IDs which are submitted
         """
-        jobs = self.load_jobs()
 
         for jobid in jobid_range:
             processed_suggestion = False
             while not processed_suggestion:
                 # Loop over all available resources
                 for resource_name, resource in self.resources.items():
-                    if resource.accepting_jobs(jobs):
-                        job_num = jobid - (self.batch_number - 1) * samples.size
-                        variables = samples.loc[job_num][0]
-                        try:
-                            current_job = next(
-                                job for job in jobs if job is not None and job['id'] == jobid
-                            )
-                        except (StopIteration, IndexError, KeyError):
+                    num_pending_jobs_of_resource = self.count_jobs(
+                        {"status": "pending", "resource": resource_name}
+                    )
+                    if resource.accepting_jobs(num_pending_jobs=num_pending_jobs_of_resource):
+                        # try to load existing job (with same jobid) from the database
+                        current_job = self.load_jobs(
+                            field_filters={
+                                'id': jobid,
+                                'expt_dir': self.output_dir,
+                                'expt_name': self.experiment_name,
+                            }
+                        )
+                        if len(current_job) == 1:
+                            current_job = current_job[0]
+                        elif not current_job:
+                            job_num = jobid - (self.batch_number - 1) * samples.size
+                            variables = samples.loc[job_num][0]
                             current_job = self.create_new_job(variables, resource_name, jobid)
+                        else:
+                            raise ValueError(f"Found more than one job with jobid {jobid} in db.")
 
                         current_job['status'] = 'pending'
                         self.save_job(current_job)
@@ -780,8 +808,7 @@ class JobInterface(Interface):
                             current_job['proc_id'] = process_id
 
                         processed_suggestion = True
-                        jobs = self.load_jobs()
-                        print_resources_status(self.resources, jobs)
+                        self.print_resources_status()
 
                     else:
                         time.sleep(self.polling_time)
@@ -790,9 +817,49 @@ class JobInterface(Interface):
                         for _, resource in self.resources.items():
                             if self.direct_scheduling:
                                 self._check_job_completions(jobid_range)
-                        jobs = self.load_jobs()
 
         return
+
+    def _get_current_restart_job(self, jobid, resource, resource_name, samples):
+        """Get the current job with ID (job_id) from database or from output directory.
+
+        Args:
+            jobid (int):      job ID
+            resource (Resource object): computing resource
+            resource_name (str):  name of computing resource
+            samples (DataFrame):     realization/samples of QUEENS simulation input variables
+
+        Returns:
+            current job (dict):    current job with ID (job_id)
+        """
+
+        # try to load existing job (with same jobid) from the database
+        current_job = self.load_jobs(
+            field_filters={
+                'id': jobid,
+                'expt_dir': self.output_dir,
+                'expt_name': self.experiment_name,
+            }
+        )
+
+        if not current_job:
+            # job not in database -> load result from output folder
+            job_num = jobid - (self.batch_number - 1) * samples.size
+            variables = samples.loc[job_num][0]
+            current_job = self.create_new_job(variables, resource_name, jobid)
+
+            this.restart_flag = True
+            self.attempt_dispatch(resource, current_job)
+            current_job = self.load_jobs(
+                field_filters={
+                    'id': jobid,
+                    'expt_dir': self.output_dir,
+                    'expt_name': self.experiment_name,
+                }
+            )
+        elif len(current_job) != 1:
+            raise ValueError(f"Found more than one job with jobid {jobid} in db.")
+        return current_job[0]
 
     def _manage_post_post_submission(self, jobid_range):
         """Manage submission of post-post processing.
@@ -800,7 +867,9 @@ class JobInterface(Interface):
         Args:
             jobid_range (range):     range of job IDs which are submitted
         """
-        jobs = self.load_jobs()
+        jobs = self.load_jobs(
+            field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
+        )
         for jobid in jobid_range:
             for _, resource in self.resources.items():
                 try:
@@ -810,39 +879,39 @@ class JobInterface(Interface):
 
                 resource.dispatch_post_post_job(self.batch_number, current_job)
 
-        jobs = self.load_jobs()
-        print_resources_status(self.resources, jobs)
+        self.print_resources_status()
 
         return
 
-    def _get_current_job(self, samples, resource, resource_name, job_id):
-        """Get the current job with ID (job_id) from database or from output directory.
-
-        Args:
-            samples (DataFrame):     realization/samples of QUEENS simulation input variables
-            resource (Resource object): computing resource
-            resource_name (str):  name of computing resource
-            job_id (int):      job ID
-
-        Returns:
-            current job (dict):    current job with ID (job_id)
-            process_id (int):      0 if loaded from database or output directory
+    def print_resources_status(self):
+        """ Print out whats going on on the resources
         """
-        variables = samples.loc[job_id][0]
-        jobs = self.load_jobs()
+        sys.stdout.write('\nResources:      ')
+        left_indent = 16
+        indentation = ' ' * left_indent
+        sys.stdout.write('NAME            PENDING      COMPLETED    FAILED   \n')
+        sys.stdout.write(indentation)
+        sys.stdout.write('------------    ---------    ---------    ---------\n')
+        total_pending = 0
+        total_complete = 0
+        total_failed = 0
 
-        try:
-            # Job already in database
-            current_job = next(job for job in jobs if job['id'] == job_id)
-            process_id = 0
-        except StopIteration:
-            # Job not in database:
-            # load result from output directory into database
-            current_job = self.create_new_job(variables, resource_name, job_id)
-            this.restart_flag = True
-            process_id = self.attempt_dispatch(resource, current_job)
-
-            jobs = self.load_jobs()
-            current_job = next(job for job in jobs if job['id'] == job_id)
-
-        return current_job, process_id
+        # for resource in resources:
+        for resource_name, resource in self.resources.items():
+            pending = self.count_jobs({"status": "pending", "resource": resource_name})
+            complete = self.count_jobs({"status": "complete", "resource": resource_name})
+            failed = self.count_jobs({"status": "failed", "resource": resource_name})
+            total_pending += pending
+            total_complete += complete
+            total_failed += failed
+            sys.stdout.write(
+                '{}{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
+                    indentation, resource.name, pending, complete, failed
+                )
+            )
+        sys.stdout.write(
+            '{}{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
+                indentation, '*TOTAL*', total_pending, total_complete, total_failed
+            )
+        )
+        sys.stdout.write('\n')

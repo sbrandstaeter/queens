@@ -1,6 +1,6 @@
 {
-    "experiment_name": "ee_invaaa_local",
-    "database": {"address": "localhost:27017", "drop_all_existing_dbs": false},
+    "experiment_name": "{experiment_name}",
+    "database": {"address": "localhost:27017", "drop_existing": {drop_database_boolean}},
     "method": {
         "method_name": "sa_morris_salib",
         "method_options": {
@@ -16,21 +16,21 @@
             "result_description": {
                 "write_results": true,
                 "plotting_options": {
-                  "plot_booleans": [
-                    false,
-                    false
-                  ],
-                  "plotting_dir": "dummy",
-                  "plot_names": [
-                    "bars",
-                    "scatter"
-                  ],
-                  "save_bool": [
-                    false,
-                    false
-                  ]
-        }
-      }
+                    "plot_booleans": [
+                        false,
+                        false
+                    ],
+                    "plotting_dir": "dummy",
+                    "plot_names": [
+                        "bars",
+                        "scatter"
+                    ],
+                    "save_bool": [
+                        false,
+                        false
+                    ]
+                }
+            }
         }
     },
     "model": {"type": "simulation_model", "interface": "interface", "parameters": "parameters"},
@@ -64,7 +64,7 @@
         "experiment_dir": "{experiment_dir}",
         "scheduler_type": "standard",
         "singularity": {singularity_boolean},
-        "restart": false,
+        "restart": true,
         "num_procs": 1,
         "num_procs_post": 1
     },

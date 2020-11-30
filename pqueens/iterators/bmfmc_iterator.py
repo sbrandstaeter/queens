@@ -1,10 +1,11 @@
 from pqueens.models.bmfmc_model import BMFMCModel
 from .iterator import Iterator
 from random import randint
-from sklearn.preprocessing import StandardScaler
 from diversipy import *
 import pandas as pd
 import pqueens.visualization.bmfmc_visualization as qvis
+from pqueens.utils.process_outputs import write_results
+from pqueens.utils.process_outputs import process_ouputs
 
 
 class BMFMCIterator(Iterator):
@@ -27,7 +28,6 @@ class BMFMCIterator(Iterator):
         model (obj): Instance of the BMFMCModel
         result_description (dict): Dictionary containing settings for plotting and saving data/
                                    results
-        experiment_dir (str): Path to the experiment directory where simulations are stored
         X_train (np.array): Corresponding input for the simulations that are used to train the
                             probabilistic mapping
         Y_HF_train (np.array): Outputs of the high-fidelity model that correspond to the training
@@ -65,6 +65,10 @@ class BMFMCIterator(Iterator):
                        *  "p_yhf_mc": Vector with reference HF output distribution (kde from MC
                                       reference data)
                        *  "Z_train": Corresponding training data in LF feature space
+                       *  "Y_HF_train": Outputs of the high-fidelity model that correspond to the
+                                     training inputs X_train such that :math:`Y_{HF}=y_{HF}(X)`
+                       *  "X_train": Corresponding input for the simulations that are used to
+                                     train the probabilistic mapping
 
         initial_design (dict): Dictionary containing settings for the selection strategy/initial
                                design of training points for the probabilistic mapping
@@ -86,19 +90,17 @@ class BMFMCIterator(Iterator):
         self,
         model,
         result_description,
-        experiment_dir,
         initial_design,
         predictive_var,
         BMFMC_reference,
         global_settings,
     ):
-
+        #  TODO check if None for the model is appropriate here
         super(BMFMCIterator, self).__init__(
             None, global_settings
         )  # Input prescribed by iterator.py
         self.model = model
         self.result_description = result_description
-        self.experiment_dir = experiment_dir
         self.X_train = None
         self.Y_LFs_train = None
         self.eigenfunc_random_fields_train = None
@@ -125,7 +127,6 @@ class BMFMCIterator(Iterator):
         method_options = config["method"]["method_options"]
         BMFMC_reference = method_options["BMFMC_reference"]
         result_description = method_options["result_description"]
-        experiment_dir = method_options["experiment_dir"]
         predictive_var = method_options["predictive_var"]
 
         initial_design = config["method"]["initial_design"]
@@ -142,7 +143,6 @@ class BMFMCIterator(Iterator):
         return cls(
             model,
             result_description,
-            experiment_dir,
             initial_design,
             predictive_var,
             BMFMC_reference,
@@ -173,11 +173,6 @@ class BMFMCIterator(Iterator):
         # ---- determine optimal input points for which HF should be simulated -------
         self.calculate_optimal_X_train()
 
-        # update the Bmfmc model variables
-        # TODO: normally done by model.update_model_from_sample_batch() !
-        self.model.X_train = self.X_train
-        self.model.Y_LFs_train = self.Y_LFs_train
-
         # ----- build model on training points and evaluate it -----------------------
         self.output = self.eval_model()
 
@@ -203,76 +198,31 @@ class BMFMCIterator(Iterator):
         """
         design_method = self.initial_design.get('method')
         n_points = self.initial_design.get("num_HF_eval")
+        run_design_method = self._get_design_method(design_method)
+        run_design_method(n_points)
 
-        # -------------------------- RANDOM FROM BINS METHOD --------------------------
+        # update the Bmfmc model variables
+        # TODO: normally done by model.update_model_from_sample_batch() !
+        self.model.X_train = self.X_train
+        self.model.Y_LFs_train = self.Y_LFs_train
+
+    def _get_design_method(self, design_method):
+        """
+        Get the design method for selecting the HF data from the LF MC data-set
+
+        Args:
+            design_method (str): Design method specified in input file
+
+        Returns:
+            run_design_method (obj): Design method for selecting the HF training set
+
+        """
+        self.model.calculate_extended_gammas()
         if design_method == 'random':
-            n_bins = self.initial_design.get("num_bins")
-            ylf_min = np.amin(self.model.Y_LFs_mc)
-            ylf_max = np.amax(self.model.Y_LFs_mc)
-            break_points = np.linspace(ylf_min, ylf_max, n_bins + 1)
+            run_design_method = self._random_design
 
-            # TODO: bin_vec only works for one LF --> user should define a 'master LF' for
-            #  binning at the moment the first LF in the list is taken as the 'master LF'
-            bin_vec = pd.cut(
-                self.model.Y_LFs_mc[:, 0],
-                bins=break_points,
-                labels=False,
-                include_lowest=True,
-                retbins=True,
-            )
-
-            # Some initialization
-            self.Y_LFs_train = np.empty((0, self.model.Y_LFs_mc.shape[1]))
-
-            self.X_train = np.array([]).reshape(0, self.model.X_mc.shape[1])
-
-            if self.model.eigenfunc_random_fields is not None:
-                self.eigenfunc_random_fields_train = np.array([]).reshape(
-                    0, self.model.eigenfunc_random_fields.shape[1]
-                )
-
-            # Go through all bins and  randomly select points
-            for bin_n in range(n_bins):
-                # array of booleans
-                y_in_bin_bool = [bin_vec[0] == bin_n]
-
-                # define bin data
-                bin_data_X_mc = self.model.X_mc[tuple(y_in_bin_bool)]
-                bin_data_Y_LFs_mc = self.model.Y_LFs_mc[tuple(y_in_bin_bool)]
-
-                # randomly select points in bins
-                rnd_select = []
-                for _ in range(n_points // n_bins):
-                    rnd_select.append(randint(0, bin_data_Y_LFs_mc.shape[0] - 1))
-
-                # Define X_train and Y_LFs_train by checking the bins
-                if len(rnd_select) != 0:
-                    self.X_train = np.vstack([self.X_train, bin_data_X_mc[rnd_select, :]])
-                    self.Y_LFs_train = np.vstack(
-                        (self.Y_LFs_train, bin_data_Y_LFs_mc[rnd_select, :])
-                    )
-
-            # return training indices to the BMFMC model
-            self.model.training_indices = np.array(rnd_select)
-        # --------------------------- DIVERSE SUBSET METHOD ---------------------------
         elif design_method == 'diverse_subset':
-            # ------- calculate space filling subset ----------------------------------
-            # call bmfmc_model method to calculate the extended gammas
-            self.model.calculate_extended_gammas()
-            design = self.model.gammas_ext_mc
-            prelim_subset = psa_select(design, n_points, selection_target='max_dist_from_boundary')
-
-            # return training data for outputs and corresponding inputs
-            index = np.vstack(
-                np.array(
-                    np.all((design[:, None, :] == prelim_subset[None, :, :]), axis=-1).nonzero()
-                ).T.tolist()
-            )[:, 0]
-
-            # set the training data and indices in the BMFMC model and iterator
-            self.model.training_indices = index
-            self.X_train = self.model.X_mc[index, :]
-            self.Y_LFs_train = self.model.Y_LFs_mc[index, :]
+            run_design_method = self._diverse_subset_design
 
         else:
             raise NotImplementedError(
@@ -281,6 +231,99 @@ class BMFMCIterator(Iterator):
                 f"implemented! The only valid methods are 'random' or "
                 f"'diverse_subset'. Abort..."
             )
+
+        return run_design_method
+
+    def _diverse_subset_design(self, n_points):
+        """
+        Calculate the HF training points from large LF-MC data-set based on the diverse subset
+        strategy based on the psa_select method from **diversipy**.
+
+        Args:
+             n_points (int): Number of HF training points to be selected
+
+        Returns:
+            None
+
+        """
+        design = self.model.gammas_ext_mc
+        prelim_subset = psa_select(design, n_points, selection_target='max_dist_from_boundary')
+
+        # return training data for outputs and corresponding inputs
+        index = np.vstack(
+            np.array(
+                np.all((design[:, None, :] == prelim_subset[None, :, :]), axis=-1).nonzero()
+            ).T.tolist()
+        )[:, 0]
+
+        # set the training data and indices in the BMFMC model and iterator
+        self.model.training_indices = index
+        self.X_train = self.model.X_mc[index, :]
+        self.Y_LFs_train = self.model.Y_LFs_mc[index, :]
+
+    def _random_design(self, n_points):
+        """
+        Calculate the HF training points from large LF-MC data-set based on random selection
+        from bins over y_LF.
+
+        Args:
+            n_points (int): Number of HF training points to be selected
+
+        Returns:
+            None
+
+        """
+        n_bins = self.initial_design.get("num_bins")
+        seed = self.initial_design.get("seed")
+        ylf_min = np.amin(self.model.Y_LFs_mc)
+        ylf_max = np.amax(self.model.Y_LFs_mc)
+        break_points = np.linspace(ylf_min, ylf_max, n_bins + 1)
+
+        # TODO: bin_vec only works for one LF --> user should define a 'master LF' for
+        #  binning at the moment the first LF in the list is taken as the 'master LF'
+        bin_vec = pd.cut(
+            self.model.Y_LFs_mc[:, 0],
+            bins=break_points,
+            labels=False,
+            include_lowest=True,
+            retbins=True,
+        )
+
+        # Some initialization
+        self.Y_LFs_train = np.empty((0, self.model.Y_LFs_mc.shape[1]))
+
+        self.X_train = np.array([]).reshape(0, self.model.X_mc.shape[1])
+
+        if self.model.eigenfunc_random_fields is not None:
+            self.eigenfunc_random_fields_train = np.array([]).reshape(
+                0, self.model.eigenfunc_random_fields.shape[1]
+            )
+
+        # Go through all bins and  randomly select points
+        training_indices = []
+        for bin_n in range(n_bins):
+            # array of booleans
+            y_in_bin_bool = [bin_vec[0] == bin_n]
+
+            # define bin data
+            bin_data_X_mc = self.model.X_mc[tuple(y_in_bin_bool)]
+            bin_data_Y_LFs_mc = self.model.Y_LFs_mc[tuple(y_in_bin_bool)]
+
+            # randomly select points in bins
+            rnd_select = []
+            for _ in range(n_points // n_bins):
+                random.seed(seed)
+                rnd_select.append(randint(0, bin_data_Y_LFs_mc.shape[0] - 1))
+                seed += 1
+
+            # Define X_train and Y_LFs_train by checking the bins
+            if len(rnd_select) != 0:
+                self.X_train = np.vstack([self.X_train, bin_data_X_mc[rnd_select, :]])
+                self.Y_LFs_train = np.vstack((self.Y_LFs_train, bin_data_Y_LFs_mc[rnd_select, :]))
+            # return training indices to the BMFMC model
+            training_indices.extend(rnd_select)
+
+        self.model.training_indices = np.array(training_indices)
 
     def eval_model(self):
         """
@@ -295,12 +338,6 @@ class BMFMCIterator(Iterator):
         """
         return self.model.evaluate()
 
-    def active_learning(self):
-        """
-        Not implemented yet
-        """
-        pass
-
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
     def post_run(self):
         """
@@ -313,8 +350,11 @@ class BMFMCIterator(Iterator):
         # plot the figures
         qvis.bmfmc_visualization_instance.plot_pdfs(self.output)
         qvis.bmfmc_visualization_instance.plot_manifold(
-            self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train,
+            self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train
         )
 
         if self.result_description['write_results'] is True:
-            pass
+            results = process_ouputs(self.output, self.result_description)
+            write_results(
+                results, self.global_settings["output_dir"], self.global_settings["experiment_name"]
+            )

@@ -35,3 +35,7 @@ hashfile.txt
 
 # ignore config folder 
 config/
+
+
+# ignore temporarily created requirements file 
+requirements.tmp

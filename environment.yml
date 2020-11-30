@@ -10,6 +10,8 @@ dependencies:
   - scipy>=1.2.1
   - scikit-learn
   - arviz
+  - pandas
+  - xarray
 # for database interfacing
   - pymongo
 # for design of experiments
@@ -58,4 +60,6 @@ dependencies:
     - impedance
 # Utility to handle pylint exit codes scripting friendly
     - pylint-exit
+# Tool to perform license checks
+    - liccheck
 

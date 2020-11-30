@@ -120,10 +120,18 @@ def driver_base_settings(job):
 
     base_settings = dict()
 
-    base_settings['scheduler_type'] = 'local'
-    base_settings['cluster_script'] = None
-    base_settings['experiment_dir'] = job['expt_dir']
     base_settings['experiment_name'] = job['expt_name']
+    base_settings['global_output_dir'] = job['expt_dir']
+    base_settings['experiment_dir'] = job['expt_dir']
+    base_settings['scheduler_type'] = 'standard'
+    base_settings['remote'] = False
+    base_settings['remote_connect'] = None
+    base_settings['singularity'] = False
+    base_settings['docker_image'] = None
+    base_settings['num_procs'] = 4
+    base_settings['num_procs_post'] = 2
+    base_settings['cluster_script'] = None
+    base_settings['cluster_walltime'] = None
     base_settings['job_id'] = job['id']
     base_settings['input_file'] = 'input.json'
     base_settings['simulation_input_template'] = 'template.dat'
@@ -132,11 +140,9 @@ def driver_base_settings(job):
     base_settings['batch'] = 1
     base_settings['executable'] = 'baci-release'
     base_settings['result'] = 1e-3
+    base_settings['port'] = 27017
     base_settings['postprocessor'] = 'post_drt_mon'
     base_settings['post_options'] = '--field=structure --node=26 --start=1'
     base_settings['postpostprocessor'] = 'Post_post.py'
-    base_settings['port'] = 27017
-    base_settings['num_procs'] = 4
-    base_settings['num_procs_post'] = 2
 
     return base_settings

@@ -116,7 +116,7 @@ class GPGPyRegression(RegressionApproximation):
             output (dict): Dictionary with mean, variance, and possibly
                            posterior samples of latent function at Xnew
         """
-        Xnew = np.atleast_2d(Xnew).T  # make 1 d vector to column vector 2D
+        Xnew = np.atleast_2d(Xnew).reshape((-1, self.m.input_dim))
         output = {}
         output["mean"], output["variance"] = self.m.predict(Xnew, full_cov=full_cov)
         if self.num_posterior_samples is not None:
@@ -134,7 +134,7 @@ class GPGPyRegression(RegressionApproximation):
         Returns:
             np.array, np.array: mean and variance of latent function at Xnew
         """
-        Xnew = np.atleast_2d(Xnew).T  # make 1 d vector to column vector 2D
+        Xnew = np.atleast_2d(Xnew).reshape((-1, self.m.input_dim))
         output = {}
         output["mean"], output["variance"] = self.m.predict_noiseless(Xnew, full_cov=full_cov)
         if self.num_posterior_samples is not None:
