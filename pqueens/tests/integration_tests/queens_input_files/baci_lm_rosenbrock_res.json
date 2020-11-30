@@ -2,7 +2,7 @@
   "experiment_name" : "OptimizeLM",
   "database"  :{
     "address"   : "localhost:27017",
-    "drop_existing" : true 
+    "drop_all_existing_dbs" : true
     },
   "method": {
     "method_name": "baci_lm",

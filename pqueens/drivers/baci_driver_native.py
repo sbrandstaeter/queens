@@ -36,7 +36,9 @@ class BaciDriverNative(Driver):
         database_address = 'localhost:27017'
         database_config = dict(
             global_settings=config["global_settings"],
-            database=dict(address=database_address, drop_existing=False),
+            database=dict(
+                address=database_address, drop_all_existing_dbs=False, reset_database=False
+            ),
         )
         db = MongoDB.from_config_create_database(database_config)
         base_settings['database'] = db

@@ -126,12 +126,6 @@ class JobInterface(Interface):
         else:
             singularity = False
 
-        # get flag for restart
-        if scheduler_options.get('restart', False):
-            restart = True
-        else:
-            restart = False
-
         # set flag for direct scheduling
         direct_scheduling = False
         if not singularity:
@@ -144,6 +138,15 @@ class JobInterface(Interface):
             ):
                 direct_scheduling = True
 
+        # get flag for restart
+        if scheduler_options.get('restart', False):
+            restart = True
+            reset_database = False
+        else:
+            restart = False
+            reset_database = True
+
+        config["database"]["reset_database"] = reset_database
         # establish new database for this QUEENS run and
         # potentially drop other databases
         db = MongoDB.from_config_create_database(config)
