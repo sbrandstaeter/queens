@@ -4,31 +4,32 @@ import abc
 class RegressionApproximation(metaclass=abc.ABCMeta):
     """ Base class for regression approximations
 
-        Regression approxiamtion are regression models/approaches that are called
+        Regression approximation are regression models/approaches that are called
         regression approximations within QUEENS to avoid the term model.
 
     """
 
     @classmethod
-    def from_options(cls, approx_options, Xtrain, Ytrain):
-        """ Create approxiamtion from options dict
+    def from_config_create(cls, config, approx_name, Xtrain, Ytrain):
+        """ Create approximation from options dict
 
         Args:
-            approx_options (dict): Dictionary with approximation options
-            Xtrain (np.array):     Training inputs
+            config (dict): Dictionary with problem description
+            approx_name (str): Name of the approximation model
+            Xtrain (npq.array):     Training inputs
             Ytrain (np.array):     Training outputs
 
         Returns:
-            regression_approximation: Approximation object
+            regression_approximation (obj): Approximation object
 
         """
         from .gp_approximation_gpy import GPGPyRegression
 
         approx_dict = {'gp_approximation_gpy': GPGPyRegression}
-
+        approx_options = config[approx_name]
         approximation_class = approx_dict[approx_options["type"]]
 
-        return approximation_class.from_options(approx_options, Xtrain, Ytrain)
+        return approximation_class.from_config_create(config, approx_name, Xtrain, Ytrain)
 
     @abc.abstractmethod
     def train(self):

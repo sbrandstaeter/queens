@@ -17,20 +17,26 @@ def default_parameters():
 
 
 @pytest.fixture()
-def default_interface(settings_probab_mapping):
-    interface = BmfmcInterface(settings_probab_mapping)
+def approx_name():
+    name = 'gp_approximation_gpy'
+    return name
+
+
+@pytest.fixture()
+def default_interface(config):
+    interface = BmfmcInterface(config, approx_name)
     return interface
 
 
 @pytest.fixture()
-def settings_probab_mapping():
-    settings_probab_mapping = {
+def config():
+    config = {
         "type": "gp_approximation_gpy",
         "features_config": "opt_features",
         "num_features": 1,
         "X_cols": 1,
     }
-    return settings_probab_mapping
+    return config
 
 
 @pytest.fixture()

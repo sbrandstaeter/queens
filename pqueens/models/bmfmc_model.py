@@ -199,9 +199,8 @@ class BMFMCModel(Model):
         #  if not provided in the data field
 
         # get model options
-        model_options = config['method'][model_name]
-        settings_probab_mapping = model_options["approx_settings"]
-        interface = BmfmcInterface(settings_probab_mapping)
+        model_options = config[model_name]
+        interface = BmfmcInterface(config, model_name)
         lf_data_paths = model_options.get("path_to_lf_mc_data")
         hf_data_path = model_options.get("path_to_hf_mc_reference_data")
         hf_model_name = model_options.get("high_fidelity_model")
@@ -232,7 +231,7 @@ class BMFMCModel(Model):
         # method later
 
         return cls(
-            settings_probab_mapping,
+            model_options,
             predictive_var_bool,
             y_pdf_support,
             uncertain_parameters,

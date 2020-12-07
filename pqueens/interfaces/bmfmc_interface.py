@@ -11,7 +11,8 @@ class BmfmcInterface(Interface):
 
     Attributes:
         variables (dict): dictionary with variables (not used at the moment!)
-        probabilistic_mapping_config (dict): Configuration / settings for the probabilistic mapping
+        config (dict): Dictionary with problem description (input file)
+        approx_name (str): Name of the used approximation model
         probabilistic_mapping_obj (obj): Instance of the probabilistic mapping which models the
                                          probabilistic dependency between high-fidelity model,
                                          low-fidelity models and informative input features.
@@ -21,10 +22,11 @@ class BmfmcInterface(Interface):
 
     """
 
-    def __init__(self, probabilistic_mapping_config, variables=None):
+    def __init__(self, config, approx_name, variables=None):
         # TODO we should think about using the parent class interface here
         self.variables = variables  # TODO: This is not used at the moment!
-        self.probabilistic_mapping_config = probabilistic_mapping_config
+        self.config = config
+        self.approx_name = approx_name
         self.probabilistic_mapping_obj = None
 
     def map(self, Z_LF, support='y', full_cov=False):
@@ -69,8 +71,8 @@ class BmfmcInterface(Interface):
             None
 
         """
-        self.probabilistic_mapping_obj = RegressionApproximation.from_options(
-            self.probabilistic_mapping_config, Z_LF_train, Y_HF_train
+        self.probabilistic_mapping_obj = RegressionApproximation.from_config_create(
+            self.config, self.approx_name, Z_LF_train, Y_HF_train
         )
 
         self.probabilistic_mapping_obj.train()

@@ -39,7 +39,6 @@ class DataFitSurrogateModel(Model):
         """
         super(DataFitSurrogateModel, self).__init__(model_name, model_parameters)
         self.interface = interface
-        # TODO remove this property, as this is not needed
         self.subordinate_model = subordinate_model
         self.subordinate_iterator = subordinate_iterator
         self.eval_fit = eval_fit
