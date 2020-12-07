@@ -57,20 +57,34 @@ def parameters():
 
 
 @pytest.fixture()
-def settings_probab_mapping():
-    settings_probab_mapping = {
-        "type": "gp_approximation_gpy",
-        "features_config": "opt_features",
-        "num_features": 1,
-        "X_cols": 1,
+def config():
+    config = {
+        "joint_density_approx": {
+            "type": "gp_approximation_gpy",
+            "features_config": "opt_features",
+            "num_features": 1,
+            "X_cols": 1,
+        }
     }
-    return settings_probab_mapping
+    return config
 
 
 @pytest.fixture()
-def default_interface(settings_probab_mapping):
-    interface = BmfmcInterface(settings_probab_mapping)
+def approximation_name():
+    name = 'joint_density_approx'
+    return name
+
+
+@pytest.fixture()
+def default_interface(config, approximation_name):
+    interface = BmfmcInterface(config, approximation_name)
     return interface
+
+
+@pytest.fixture()
+def settings_probab_mapping(config, approximation_name):
+    settings = config[approximation_name]
+    return settings
 
 
 @pytest.fixture()

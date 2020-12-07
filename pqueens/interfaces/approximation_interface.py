@@ -9,34 +9,36 @@ class ApproximationInterface(Interface):
 
         The ApproximationInterface uses a so-called regression approximation,
         which just another name for a regression model that is used in this context
-        to avoid confusion and not having to call everthing a model.
+        to avoid confusion and not having to call everything a model.
 
         For now this interface holds only one approximation object. In the future,
-        this could be extendend to multiple objects
+        this could be extended to multiple objects
 
     Attributes:
         name (string):                 Name of interface
         variables (dict):              Dictionary with variables
-        approximation_config (dict):   Config options for approximation
+        config (dict):   Problem description (input file)
         approximation (regression_approximation):   Approximation object
-        approx_init (bool):            Flag wether or not approximation has been
+        approximation_init (bool):            Flag whether or not approximation has been
                                        initialized
     """
 
-    def __init__(self, interface_name, approximation_config, variables):
+    def __init__(self, interface_name, config, approximation_name, variables):
         """ Create interface
 
         Args:
             interface_name (string):     Name of interface
-            approximation_config (dict): Config options for approximation
-            variables (dict):            Dictionary with variables
+            config (dict): Problem description (input file)
+            approximation_name (str): Name of approximation model in config
+            variables (dict):  Dictionary with variables
 
         """
         self.name = interface_name
         self.variables = variables
-        self.approximation_config = approximation_config
+        self.config = config
+        self.approximation_name = approximation_name
         self.approximation = None
-        self.approx_init = False
+        self.approximation_init = False
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -51,11 +53,11 @@ class ApproximationInterface(Interface):
         """
         interface_options = config[interface_name]
         approximation_name = interface_options["approximation"]
-        approximation_config = config[approximation_name]
+        config = config
         parameters = config['parameters']
 
         # initialize object
-        return cls(interface_name, approximation_config, parameters)
+        return cls(interface_name, config, approximation_name, parameters)
 
     def map(self, samples):
         """ Mapping function which calls the regression approximation
@@ -65,9 +67,9 @@ class ApproximationInterface(Interface):
             samples (list):         list of variables objects
 
         Returns:
-            dict:               Dict with results correspoding to samples
+            dict:               Dict with results corresponding to samples
         """
-        if not self.approx_init:
+        if not self.approximation_init:
             raise RuntimeError("Approximation has not been properly initialized, cannot continue!")
 
         inputs = []
@@ -88,15 +90,15 @@ class ApproximationInterface(Interface):
             Xtrain (np.array):  Training inputs
             Ytrain (np.array):  Training outputs
         """
-        self.approximation = RegressionApproximation.from_options(
-            self.approximation_config, Xtrain, Ytrain
+        self.approximation = RegressionApproximation.from_config_create(
+            self.config, self.approximation_name, Xtrain, Ytrain
         )
         self.approximation.train()
-        self.approx_init = True
+        self.approximation_init = True
 
     def is_initiliazed(self):
         """ Is the approximation properly initialized """
-        return self.approx_init
+        return self.approximation_init
 
     def cross_validate(self, X, Y, folds):
         """ Cross validation function which calls the regression approximation
@@ -117,8 +119,9 @@ class ApproximationInterface(Interface):
         kf.get_n_splits(X)
 
         for train_index, test_index in kf.split(X):
-            approximation = RegressionApproximation.from_options(
-                self.approximation_config, X[train_index], Y[train_index]
+            # TODO configuration here is not nice
+            approximation = RegressionApproximation.from_config_create(
+                self.config, self.approximation_name, X[train_index], Y[train_index]
             )
             approximation.train()
             outputs[test_index] = approximation.predict_f(X[test_index].T)['mean']

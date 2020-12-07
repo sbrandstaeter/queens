@@ -18,19 +18,19 @@ class FakeRegression:
 
 
 @pytest.fixture()
-def settings_probab_mapping():
-    settings_probab_mapping = {
+def config():
+    config = {
         "type": "gp_approximation_gpy",
         "features_config": "opt_features",
         "num_features": 1,
         "X_cols": 1,
     }
-    return settings_probab_mapping
+    return config
 
 
 @pytest.fixture()
-def default_interface(settings_probab_mapping):
-    interface = BmfmcInterface(settings_probab_mapping)
+def default_interface(config, approx_name):
+    interface = BmfmcInterface(config, approx_name)
     return interface
 
 
@@ -46,14 +46,20 @@ def map_output_dict():
     return output
 
 
-# --------- actual unittests ---------------------------
-def test_init(settings_probab_mapping):
+@pytest.fixture()
+def approx_name():
+    name = 'some_name'
+    return name
 
-    interface = BmfmcInterface(settings_probab_mapping, variables=None)
+
+# --------- actual unittests ---------------------------
+def test_init(config, approx_name):
+
+    interface = BmfmcInterface(config, approx_name, variables=None)
 
     # asserts / tests
     assert interface.variables is None
-    assert interface.probabilistic_mapping_config == settings_probab_mapping
+    assert interface.config == config
     assert interface.probabilistic_mapping_obj is None
 
 
@@ -86,7 +92,7 @@ def test_build_approximation(mocker, default_interface):
     Y = np.atleast_2d(np.linspace(1.0, 2.0, 10))
     mp1 = mocker.patch(
         "pqueens.regression_approximations.regression_approximation.RegressionApproximation"
-        ".from_options",
+        ".from_config_create",
         return_value=FakeRegression,
     )
     mp2 = mocker.patch(

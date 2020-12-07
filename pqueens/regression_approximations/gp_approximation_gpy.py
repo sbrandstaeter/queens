@@ -19,27 +19,23 @@ class GPGPyRegression(RegressionApproximation):
     """
 
     @classmethod
-    def from_options(cls, approx_options, x_train, y_train):
+    def from_config_create(cls, config, approx_name, x_train, y_train):
         """ Create approximation from options dictionary
 
         Args:
-            approx_options (dict): Dictionary with approximation options
+            config (dict): Dictionary with problem description (input file)
             x_train (np.array):    Training inputs
             y_train (np.array):    Training outputs
 
         Returns:
             gp_approximation_gpy: approximation object
         """
+        approx_options = config[approx_name]
         num_posterior_samples = approx_options.get('num_posterior_samples', None)
         return cls(x_train, y_train, num_posterior_samples)
 
     def __init__(self, X, y, num_posterior_samples):
-        """
-        Args:
-            approx_options (dict):  Dictionary with model options
-            X (np.array):           Training inputs
-            y (np.array):           Training outputs
-        """
+
         self.X = X
         self.y = y
         self.num_posterior_samples = num_posterior_samples
@@ -65,7 +61,7 @@ class GPGPyRegression(RegressionApproximation):
 
         k = k_list[0]
         if len(k_list) > 1:
-            for k_ele in k_list[1:-1]:
+            for k_ele in k_list[1:]:
                 k += k_ele
 
         self.m = GPy.models.GPRegression(self.X, self.y, kernel=k, normalizer=True)
