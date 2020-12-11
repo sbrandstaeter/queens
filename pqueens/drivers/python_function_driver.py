@@ -3,28 +3,28 @@ import os
 import numpy as np
 
 
-def python_driver_vector_interface(job):
+def python_function_driver(job):
     """
-    Driver to call a python function specified in the job dict
+    Driver for python function specified in job dictionary
 
     Args:
-        job (dict): Dictionary containing all information to run the function
+        job (dict): dictionary containing function
 
     Returns:
-        result (float): Result of the QUEENS simulation
+        result (float): result of run
 
     """
-    # Run a Python function
-    sys.stderr.write("Running python job.\n")
+    # run Python function
+    sys.stdout.write("Running job for Python function.\n")
 
-    # Add directory to the system path.
+    # add directory to system path.
     sys.path.append(os.path.realpath(job['expt_dir']))
 
-    # Change into the directory.
+    # change to directory.
     os.chdir(job['expt_dir'])
-    sys.stderr.write("Changed into dir %s\n" % (os.getcwd()))
+    sys.stdout.write("Changed to directory %s\n" % (os.getcwd()))
 
-    # Convert dict into vector of parameters.
+    # convert dict to vector of parameters.
     params = {}
     for name, param in job['params'].items():
         vals = param['values']
@@ -37,18 +37,18 @@ def python_driver_vector_interface(job):
         else:
             raise Exception("Unknown parameter type.")
 
-    # Load up this module and run
+    # load module and run
     main_file = job['driver_params']['main-file']
     if main_file[-3:] == '.py':
         main_file = main_file[:-3]
-    sys.stderr.write('Importing %s.py\n' % main_file)
+    sys.stdout.write('Importing %s.py\n' % main_file)
     module = __import__(main_file)
-    sys.stderr.write('Running %s.main()\n' % main_file)
+    sys.stdout.write('Running %s.main()\n' % main_file)
     result = module.main(job['id'], params)
 
-    # Change back out.
+    # change back
     os.chdir('..')
 
-    sys.stderr.write("Got result %s\n" % (result))
+    sys.stdout.write("Got result %s\n" % (result))
 
     return result

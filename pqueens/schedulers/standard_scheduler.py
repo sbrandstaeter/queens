@@ -83,7 +83,7 @@ class StandardScheduler(Scheduler):
             int:            process ID
 
         """
-        if not self.remote:
+        if not self.remote and self.scheduler_type == 'standard':
             local_path_json = self.input_file
             remote_args = '--job_id={} --batch={} --port={} --path_json={}'.format(
                 job_id, batch, '000', local_path_json
@@ -111,9 +111,14 @@ class StandardScheduler(Scheduler):
                 _, pid, _, _ = run_subprocess(cmd_remote_main, subprocess_type='submit')
                 return pid
         else:
-            raise ValueError(
-                "\nSingularity cannot yet be used remotely with standard/nohup scheduling!"
-            )
+            if self.scheduler_type == 'nohup':
+                raise ValueError(
+                    "\nSingularity is not recommended to be used with nohup scheduling!"
+                )
+            else:
+                raise ValueError(
+                    "\nSingularity cannot yet be used remotely with standard scheduling!"
+                )
             return None
 
     def get_cluster_job_id(self):

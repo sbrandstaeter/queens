@@ -117,13 +117,13 @@ class ECSTaskScheduler(Scheduler):
 
     def _submit_singularity(self):
         """
-        Not necessary for AWS ECS scheduler but mandatory for parent class initialization
+        Not possible for ECS task scheduler: throw error message
 
         Returns:
             None
 
         """
-        pass
+        raise ValueError("\nSingularity cannot be used with ECS task scheduling!")
 
     def get_cluster_job_id(self):
         """

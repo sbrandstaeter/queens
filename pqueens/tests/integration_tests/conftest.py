@@ -100,6 +100,17 @@ def cluster_bind(cluster):
 
 
 @pytest.fixture(scope="session")
+def cluster_singularity_ip(cluster):
+    if cluster == "deep":
+        cluster_singularity_ip = '129.187.58.20'
+    elif cluster == "bruteforce":
+        cluster_singularity_ip = '10.10.0.1'
+    else:
+        cluster_singularity_ip = None
+    return cluster_singularity_ip
+
+
+@pytest.fixture(scope="session")
 def scheduler_type(cluster):
     """ Switch type of scheduler according to cluster. """
     if cluster == "deep":
@@ -209,6 +220,7 @@ def cluster_testsuite_settings(
     cluster_path_to_singularity,
     prepare_singularity,
     scheduler_type,
+    cluster_singularity_ip
 ):
     """ Collection of settings needed for all cluster tests. """
     if not prepare_singularity:
@@ -225,6 +237,7 @@ def cluster_testsuite_settings(
     cluster_testsuite_settings["cluster_queens_testing_folder"] = cluster_queens_testing_folder
     cluster_testsuite_settings["cluster_path_to_singularity"] = cluster_path_to_singularity
     cluster_testsuite_settings["scheduler_type"] = scheduler_type
+    cluster_testsuite_settings["singularity_remote_ip"] = cluster_singularity_ip
 
     return cluster_testsuite_settings
 
