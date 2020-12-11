@@ -81,8 +81,8 @@ def main(args):
 
         # Run the singularity image in two stages waiting for each other but within one
         # singularity call
-        driver_obj.main_run()
-        driver_obj.finish_and_clean()
+        driver_obj.pre_job_run_and_run_job()
+        driver_obj.post_job_run()
 
     else:
         try:
@@ -105,9 +105,9 @@ def main(args):
         # Run the singularity image in two steps and two different singularity calls to have more
         # freedom concerning mpi ranks
         if post == 'true':
-            driver_obj.finish_and_clean()
+            driver_obj.post_job_run()
         else:
-            driver_obj.main_run()
+            driver_obj.pre_job_run_and_run_job()
 
 
 # ------------------------------ HELPER FUNCTIONS -----------------------------

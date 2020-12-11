@@ -31,7 +31,7 @@
     "driver" : "driver"
   },
   "driver" :{
-    "driver_type"           : "baci_native",
+    "driver_type"           : "baci",
     "driver_params"         :{
       "input_template"        : "{baci_input}",
       "path_to_executable"    : "{baci-release}",

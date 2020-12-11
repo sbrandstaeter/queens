@@ -47,7 +47,7 @@
     "driver": "driver"
   },
   "driver": {
-    "driver_type": "baci_{cluster}",
+    "driver_type": "baci",
     "driver_params": {
       "experiment_dir" : "{experiment_dir}",
       "input_template": "{input_template}",
@@ -85,6 +85,7 @@
     "remote" : true,
     "remote_connect" : "{connect_to_resource}",
     "singularity" : true,
+    "singularity_remote_ip": "{singularity_remote_ip}",
     "singularity_cluster_path" : "{path_to_singularity}",
     "singularity_cluster_bind" : "{cluster_bind}",
     "num_procs" : 1,

@@ -195,7 +195,7 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         # do post-processing (if required), post-post-processing,
         # finish and clean job
-        driver_obj.finish_and_clean()
+        driver_obj.post_job_run()
 
     # ------- CHILDREN METHODS THAT NEED TO BE IMPLEMENTED / ABSTRACTMETHODS ------
     @abc.abstractmethod
@@ -240,16 +240,16 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         if not restart:
             # run driver and get process ID, if not restart
-            driver_obj.main_run()
+            driver_obj.pre_job_run_and_run_job()
             pid = driver_obj.pid
 
             # only required for standard scheduling: finish-and-clean call
             # (taken care of by submit_post_post for other schedulers)
             if self.scheduler_type == 'standard':
-                driver_obj.finish_and_clean()
+                driver_obj.post_job_run()
         else:
             # set process ID to zero as well as finish and clean, if restart
             pid = 0
-            driver_obj.finish_and_clean()
+            driver_obj.post_job_run()
 
         return pid

@@ -92,7 +92,8 @@ def _run_subprocess_simulation(command_string, **kwargs):
             command_string (str): command, that will be run in subprocess
             terminate_expr (str): regular expression to terminate subprocess
             logger (str): logger name to write to. Should be configured previously
-            output_file (str): output directory + filename-stem to write logfiles
+            log_file (str): path to log file
+            error_file (str): path to error file
         Returns:
             process_returncode (int): code for success of subprocess
             process_id (int): unique process id, the subprocess was assigned on computing machine
@@ -102,7 +103,8 @@ def _run_subprocess_simulation(command_string, **kwargs):
     """
     logger = kwargs.get('loggername')
     terminate_expr = kwargs.get('terminate_expr')
-    output_file = kwargs.get('output_file')
+    log_file = kwargs.get('log_file')
+    error_file = kwargs.get('error_file')
 
     joblogger = logging.getLogger(logger)
 
@@ -111,10 +113,10 @@ def _run_subprocess_simulation(command_string, **kwargs):
 
     # job logger configuration. This python code is run in parallel for cluster runs with
     # singularity, so each processor logs his own file
-    fh = logging.FileHandler(output_file + '_subprocess_stdout.txt', mode='w', delay=False)
+    fh = logging.FileHandler(log_file, mode='w', delay=False)
     fh.setLevel(logging.INFO)
     fh.terminator = ''
-    efh = logging.FileHandler(output_file + '_subprocess_stderr.txt', mode='w', delay=False)
+    efh = logging.FileHandler(error_file, mode='w', delay=False)
     efh.setLevel(logging.ERROR)
     efh.terminator = ''
     fh.setFormatter(ff)

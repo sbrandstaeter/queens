@@ -1,6 +1,6 @@
 """ Fixtures needed for testing the Driver classes. """
 import pytest
-from pqueens.drivers.ansys_driver_native import AnsysDriverNative
+from pqueens.drivers.ansys_driver import ANSYSDriver
 from pqueens.database.mongodb import MongoDB
 
 
@@ -12,6 +12,7 @@ def job(tmpdir_factory):
     job_dict['expt_name'] = 'experiment_name'
     job_dict['id'] = 666
     job_dict['params'] = {'alpha': 3.14, 'beta': 2.3}
+    job_dict['status'] = 'unknown'
 
     return job_dict
 
@@ -98,14 +99,14 @@ def ansys_driver(driver_base_settings, fake_database, mocker):
         'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=fake_database
     )
 
-    driver_base_settings['address'] = 'localhost:27017'
+    driver_base_settings['custom_executable'] = 'my_custom_ansys'
+    driver_base_settings['cae_software_version'] = 'v15'
     driver_base_settings['file_prefix'] = 'rst'
-    driver_base_settings['output_scratch'] = 'rst'
     driver_base_settings['direct_scheduling'] = False
     driver_base_settings['database'] = MongoDB.from_config_create_database(
         {"database": {"address": "localhost:27017"}}
     )
-    my_driver = AnsysDriverNative(None, 'v15', driver_base_settings)
+    my_driver = ANSYSDriver(driver_base_settings)
     return my_driver
 
 
@@ -133,16 +134,25 @@ def driver_base_settings(job):
     base_settings['cluster_script'] = None
     base_settings['cluster_walltime'] = None
     base_settings['job_id'] = job['id']
-    base_settings['input_file'] = 'input.json'
     base_settings['simulation_input_template'] = 'template.dat'
-    base_settings['output_file'] = 'experiment.out'
     base_settings['job'] = job
     base_settings['batch'] = 1
     base_settings['executable'] = 'baci-release'
     base_settings['result'] = 1e-3
     base_settings['port'] = 27017
+    base_settings['do_postprocessing'] = False
     base_settings['postprocessor'] = 'post_drt_mon'
     base_settings['post_options'] = '--field=structure --node=26 --start=1'
     base_settings['postpostprocessor'] = 'Post_post.py'
+    base_settings['input_file'] = 'input.json'
+    base_settings['input_file_2'] = None
+    base_settings['case_run_script'] = None
+    base_settings['output_prefix'] = None
+    base_settings['output_directory'] = None
+    base_settings['local_output_dir'] = None
+    base_settings['output_file'] = 'experiment.out'
+    base_settings['control_file'] = None
+    base_settings['log_file'] = None
+    base_settings['error_file'] = None
 
     return base_settings

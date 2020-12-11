@@ -42,6 +42,7 @@ def test_cluster_morris_salib(
     cluster_queens_testing_folder = cluster_testsuite_settings["cluster_queens_testing_folder"]
     cluster_path_to_singularity = cluster_testsuite_settings["cluster_path_to_singularity"]
     scheduler_type = cluster_testsuite_settings["scheduler_type"]
+    singularity_remote_ip = cluster_testsuite_settings["singularity_remote_ip"]
 
     path_to_executable = baci_cluster_paths["path_to_executable"]
     path_to_postprocessor = baci_cluster_paths["path_to_postprocessor"]
@@ -110,6 +111,7 @@ def test_cluster_morris_salib(
         'cluster_bind': cluster_bind,
         'cluster': cluster,
         'scheduler_type': scheduler_type,
+        'singularity_remote_ip': singularity_remote_ip
     }
 
     injector.inject(dir_dict, template, input_file)

@@ -58,15 +58,17 @@ class PostPostOpenFOAM(PostPost):
     def read_post_files(self, files_of_interest):
         """ Loop over post files in given output directory and extract results """
 
-        # different identification compared to general one, such that repeat is necessary
-        prefix_expr = '*' + self.file_prefix + '*'
-        time_dir = os.path.join(self.output_dir, str(self.target_time))
+        # recover prefix and path to output directory
+        output_dir, prefix_expr = os.path.split(files_of_interest)
+
+        # set path to time directory and get files of interest
+        time_dir = os.path.join(output_dir, str(self.target_time))
         files_of_interest = os.path.join(time_dir, prefix_expr)
 
         post_files_list = glob.glob(files_of_interest)
         # glob returns arbitrary list -> need to sort the list before using
         post_files_list.sort()
-        post_out = []
+        post_out = np.empty(shape=0)
 
         for filename in post_files_list:
             try:

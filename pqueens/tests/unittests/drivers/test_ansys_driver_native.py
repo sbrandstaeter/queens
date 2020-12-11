@@ -1,55 +1,42 @@
-from pqueens.drivers.ansys_driver_native import AnsysDriverNative
+from pqueens.drivers.ansys_driver import ANSYSDriver
 from pqueens.drivers.driver import Driver
 import pqueens
 
 
 def test_init(mocker):
-    custom_executable = 'my_custom_anysy'
-    ansys_version = 'v15'
     base_settings = {'option': 'option_1'}
 
     mocker.patch('pqueens.drivers.driver.Driver.__init__')
 
-    my_driver = AnsysDriverNative(custom_executable, ansys_version, base_settings)
+    my_driver = ANSYSDriver(base_settings)
 
     pqueens.drivers.driver.Driver.__init__.assert_called_once_with(base_settings)
 
-    assert my_driver.ansys_version == ansys_version
-    assert my_driver.custom_executable == custom_executable
-
 
 def test_from_config_create_driver(fake_database, mocker):
-    mocker.patch(
-        'pqueens.drivers.ansys_driver_native.' 'AnsysDriverNative.__init__', return_value=None
-    )
+    mocker.patch('pqueens.drivers.ansys_driver.' 'ANSYSDriver.__init__', return_value=None)
 
     mocker.patch(
         'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=fake_database
     )
 
     base_settings = {'option': 'option_1'}
+    base_settings['experiment_name'] = 'experiment_name'
+    base_settings['experiment_dir'] = 'experiment_dir'
+    base_settings['job_id'] = 666
 
-    config = {'driver': {}}
-    config['global_settings'] = {'experiment_name': 'test_ansys_driver_from_config_create'}
-    config['driver']['driver_params'] = {
-        'custom_executable': 'my_custom_anysy',
-        'ansys_version': 'v15',
-    }
-
-    AnsysDriverNative.from_config_create_driver(config, base_settings)
-    pqueens.drivers.ansys_driver_native.AnsysDriverNative.__init__.assert_called_once_with(
-        'my_custom_anysy', 'v15', base_settings
-    )
+    ANSYSDriver.from_config_create_driver(base_settings)
+    pqueens.drivers.ansys_driver.ANSYSDriver.__init__.assert_called_once_with(base_settings)
 
 
 def test_run_job(ansys_driver, mocker):
-    mocker.patch.object(ansys_driver, 'assemble_command_string', return_value='stuff')
+    mocker.patch.object(ansys_driver, 'assemble_ansys_run_cmd', return_value='stuff')
     m1 = mocker.patch(
-        'pqueens.drivers.ansys_driver_native.run_subprocess',
+        'pqueens.drivers.ansys_driver.run_subprocess',
         return_value=['random', 'stuff', 'out', 'err'],
     )
-    
+
     ansys_driver.run_job()
 
-    ansys_driver.assemble_command_string.assert_called_once()
-    m1.assert_called_once_with('stuff')
+    ansys_driver.assemble_ansys_run_cmd.assert_called_once()
+    m1.assert_called_once_with('stuff', subprocess_type='simple')

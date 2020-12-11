@@ -85,6 +85,9 @@ class ClusterScheduler(Scheduler):
             base_settings['cluster_options']['singularity_bind'] = scheduler_options[
                 'singularity_cluster_bind'
             ]
+            base_settings['cluster_options']['singularity_remote_ip'] = scheduler_options[
+                'singularity_remote_ip'
+            ]
 
             # set further fixed options when using Singularity
             base_settings['cluster_options']['OUTPUTPREFIX'] = ''
