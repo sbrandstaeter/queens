@@ -271,7 +271,7 @@ class BaciDriver(Driver):
         # assemble run command for Slurm and PBS scheduler with Singularity (A-II-3
         # and A-II-4) and without Singularity (B-I-3, B-I-4, B-II-3, and B-II-4)
         if self.scheduler_type == 'pbs' or self.scheduler_type == 'slurm':
-            if self.singularity:
+            if self.singularity is True:
                 command_string = self.assemble_sing_baci_cluster_job_cmd()
             else:
                 command_string = self.assemble_baci_cluster_job_cmd()

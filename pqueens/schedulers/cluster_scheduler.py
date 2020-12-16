@@ -117,7 +117,7 @@ class ClusterScheduler(Scheduler):
         """
 
         # pre-run routines required when using Singularity both local and remote
-        if self.singularity:
+        if self.singularity is True:
             self.singularity_manager.check_singularity_system_vars()
             self.singularity_manager.prepare_singularity_files()
 

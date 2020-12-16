@@ -11,9 +11,10 @@ from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.main import main
 from pqueens.utils import injector
 import pytest
+import json
 
 
-@pytest.fixture(params=["true", "false"])
+@pytest.fixture(params=[True, False])
 def singularity_bool(request):
     return request.param
 
@@ -35,7 +36,7 @@ def output_directory_forward(tmpdir_factory):
     path_singularity_true = tmpdir_factory.mktemp("test_baci_morris_salib_true")
     path_singularity_false = tmpdir_factory.mktemp("test_baci_morris_salib_false")
 
-    return {"true": path_singularity_true, "false": path_singularity_false}
+    return {True: path_singularity_true, False: path_singularity_false}
 
 
 @pytest.fixture()
@@ -143,13 +144,13 @@ def test_baci_morris_salib(
         'baci_input': third_party_input_file,
         'baci-release': baci_release,
         'post_drt_monitor': post_drt_monitor,
-        'singularity_boolean': singularity_bool,
+        'singularity_boolean': json.dumps(singularity_bool),
     }
 
     injector.inject(dir_dict, template, input_file)
     arguments = ['--input=' + input_file, '--output=' + str(experiment_directory)]
 
-    if singularity_bool == 'true':
+    if singularity_bool is True:
         # check existence of local singularity image
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
         rel_path = '../../../../driver.simg'
@@ -263,7 +264,7 @@ def test_restart_from_output_folders_baci(
         'baci_input': third_party_input_file,
         'baci-release': baci_release,
         'post_drt_monitor': post_drt_monitor,
-        'singularity_boolean': singularity_bool,
+        'singularity_boolean': json.dumps(singularity_bool),
         'drop_database_boolean': "true",
     }
 
@@ -319,7 +320,7 @@ def test_block_restart_baci(
 
     """
     # Test without singularity:
-    singularity_boolean = "false"
+    singularity_boolean = False
     output_directory = output_directory_forward[singularity_boolean]
     number_of_output_directories = count_subdirectories(output_directory)
     experiment_name = "ee_invaaa_local_singularity_" + str(singularity_boolean)
@@ -341,7 +342,7 @@ def test_block_restart_baci(
         'baci_input': third_party_input_file,
         'baci-release': baci_release,
         'post_drt_monitor': post_drt_monitor,
-        'singularity_boolean': singularity_boolean,
+        'singularity_boolean': json.dumps(singularity_boolean),
         'drop_database_boolean': "true",
     }
 
@@ -399,7 +400,7 @@ def test_restart_from_db_baci(
     """
     # This test itself does not submit jobs and thus does not depend on singularity.
     # Set singularity_boolean for database reference only.
-    singularity_boolean = "false"
+    singularity_boolean = False
     output_directory = output_directory_forward[singularity_boolean]
     experiment_name = "ee_invaaa_local_singularity_" + str(singularity_boolean)
 
@@ -422,7 +423,7 @@ def test_restart_from_db_baci(
         'baci_input': third_party_input_file,
         'baci-release': baci_release,
         'post_drt_monitor': post_drt_monitor,
-        'singularity_boolean': singularity_boolean,
+        'singularity_boolean': json.dumps(singularity_boolean),
         'drop_database_boolean': "false",
     }
 

@@ -86,7 +86,7 @@ class DealIINavierStokesDriver(Driver):
             raise RuntimeError(
                 "\nDeal.II Navier-Stokes driver currently not available with Docker container!"
             )
-        if self.singularity:
+        if self.singularity is True:
             raise RuntimeError(
                 "\nDeal.II Navier-Stokes driver not available in combination with Singularity!"
             )

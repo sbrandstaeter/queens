@@ -71,7 +71,7 @@ class ANSYSDriver(Driver):
             raise RuntimeError(
                 "\nANSYS driver currently not available for ANSYS in Docker container!"
             )
-        if self.singularity:
+        if self.singularity is True:
             raise RuntimeError(
                 "\nANSYS driver currently not available in combination with Singularity!"
             )

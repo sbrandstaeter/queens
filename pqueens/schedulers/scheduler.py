@@ -143,10 +143,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             base_settings['remote_connect'] = None
 
         # 6) set flag for Singularity container (default: false)
-        if scheduler_options.get('singularity', False):
-            base_settings['singularity'] = True
-        else:
-            base_settings['singularity'] = False
+        base_settings['singularity'] = scheduler_options.get('singularity', False)
 
         # 7) set flag for restart from finished simulation (default: false)
         if scheduler_options.get('restart', False):
@@ -175,7 +172,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         # get restart flag from job interface
         restart = job_interface.restart_flag
 
-        if self.singularity:
+        if self.singularity is True:
             pid = self._submit_singularity(job_id, batch, restart)
         else:
             pid = self._submit_driver(job_id, batch, restart)

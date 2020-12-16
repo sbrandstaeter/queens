@@ -110,7 +110,7 @@ class OpenFOAMDriver(Driver):
             raise RuntimeError(
                 "\nOpenFOAM driver currently only available for OpenFOAM in Docker container!"
             )
-        if self.singularity:
+        if self.singularity is True:
             raise RuntimeError(
                 "\nOpenFOAM driver currently not available in combination with Singularity!"
             )
