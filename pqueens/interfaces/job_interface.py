@@ -6,6 +6,7 @@ import sys
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.database.mongodb import MongoDB
+from pqueens.utils.information_output import print_database_information
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.string_extractor_and_checker import (
     extract_string_from_output,
@@ -152,7 +153,7 @@ class JobInterface(Interface):
         db = MongoDB.from_config_create_database(config)
 
         # print out database information
-        db.print_database_information(restart=restart)
+        print_database_information(db, restart=restart)
 
         # instantiate object
         return cls(

@@ -10,6 +10,7 @@ from collections import OrderedDict
 
 import pqueens.interfaces.job_interface as job_interface
 from pqueens.drivers.driver import Driver
+from pqueens.utils.information_output import print_scheduling_information, print_driver_information
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
@@ -154,6 +155,23 @@ class Scheduler(metaclass=abc.ABCMeta):
         # generate specific scheduler class
         scheduler_class = scheduler_dict[scheduler_options['scheduler_type']]
         scheduler = scheduler_class.create_scheduler_class(base_settings)
+
+        # print out scheduling information
+        print_scheduling_information(
+            base_settings['scheduler_type'],
+            base_settings['remote'],
+            base_settings['remote_connect'],
+            base_settings['singularity'],
+        )
+
+        # print out driver information
+        # (done here to print out this information only once)
+        print_driver_information(
+            config['driver']['driver_type'],
+            config['driver']['driver_params'].get('cae_software_version', None),
+            config['driver']['driver_params']['post_post']['file_prefix'],
+            scheduler_options.get('docker_image', None),
+        )
 
         return scheduler
 

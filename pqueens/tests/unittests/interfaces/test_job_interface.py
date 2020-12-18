@@ -53,9 +53,18 @@ class TestJobInterface(unittest.TestCase):
         self.config['my_local_scheduler']['singularity'] = False
         self.config['my_local_scheduler']['restart'] = False
 
+        self.config['driver'] = {}
+        self.config['driver']['driver_type'] = 'baci'
+        self.config['driver']['driver_params'] = {}
+        self.config['driver']['driver_params']['post_post'] = {}
+        self.config['driver']['driver_params']['post_post']['file_prefix'] = 'test-file-prefix'
+
     class FakeDB(object):
-        def print_database_information(self, *args, **kwargs):
-            print('test')
+        database_address = 'localhost:27017'
+        database_name = 'test-database'
+        database_list = {}
+        database_already_existent = False
+        drop_all_existing_dbs = True
 
     db_fake = FakeDB()
 
