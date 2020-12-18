@@ -123,42 +123,6 @@ class MongoDB(object):
             drop_all_existing_dbs,
         )
 
-    def print_database_information(self, restart=False):
-        """ Print out information onn existing and newly established databases
-        Args:
-            restart (bool): Flag for the restart option of QUEENS
-
-        """
-        sys.stdout.write('\n=====================================================================')
-        sys.stdout.write('\nDatabase Information:      ')
-        sys.stdout.write('\n=====================================================================')
-        sys.stdout.write('\nDatabase server: %s' % self.database_address)
-
-        if self.drop_all_existing_dbs:
-            sys.stdout.write('\nAs requested, all QUEENS databases for this user were dropped.')
-        else:
-            sys.stdout.write(
-                '\nNumber of existing QUEENS databases for this user: %d' % len(self.database_list)
-            )
-            sys.stdout.write(
-                '\nList of existing QUEENS databases for this user: %s' % self.database_list
-            )
-
-        if restart:
-            if self.database_already_existent:
-                sys.stdout.write('\nRestart: Database found.')
-            else:
-                sys.stdout.write('\nRestart: No database found.')
-        else:
-            sys.stdout.write('\nEstablished new database: %s' % self.database_name)
-            if self.database_already_existent:
-                sys.stdout.write(
-                    '\nCaution: note that the newly established database already existed!'
-                )
-
-        sys.stdout.write('\n=====================================================================')
-        sys.stdout.write('\n')
-
     def save(self, save_doc, experiment_name, experiment_field, batch, field_filters={}):
         """ Save a document to the database.
 
