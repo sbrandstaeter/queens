@@ -114,9 +114,9 @@ class JobInterface(Interface):
         scheduler_type = scheduler_options['scheduler_type']
 
         # get flag for remote scheduling
-        if scheduler_options.get('remote', False):
+        if scheduler_options.get('remote'):
             remote = True
-            remote_connect = scheduler_options['remote_connect']
+            remote_connect = scheduler_options['remote']['connect']
         else:
             remote = False
             remote_connect = None

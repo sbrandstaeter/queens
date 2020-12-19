@@ -1,5 +1,6 @@
 import sys
 import os
+import numpy as np
 from .scheduler import Scheduler
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
@@ -27,66 +28,101 @@ class ClusterScheduler(Scheduler):
             scheduler (obj):      instance of scheduler class
 
         """
-        # get scheduler options from base settings
-        scheduler_options = base_settings['options']
+        # get input options for scheduler in general and cluster in
+        # particular from base settings
+        scheduler_input_options = base_settings['scheduler_input_options']
+        cluster_input_options = base_settings['cluster_input_options']
+        singularity_input_options = base_settings['singularity_input_options']
 
         # initalize sub-dictionary for cluster options within base settings
         base_settings['cluster_options'] = {}
 
         # get general cluster options
         base_settings['cluster_options']['job_name'] = None  # job name assembled later
-        base_settings['cluster_options']['walltime'] = scheduler_options['cluster_walltime']
-        base_settings['cluster_options']['CLUSTERSCRIPT'] = scheduler_options['cluster_script']
+        base_settings['cluster_options']['walltime'] = cluster_input_options['walltime']
+        base_settings['cluster_options']['CLUSTERSCRIPT'] = cluster_input_options['script']
 
         # set output option (currently not enforced)
-        if scheduler_options.get('cluster_output', True):
+        if cluster_input_options.get('output', True):
             base_settings['cluster_options']['output'] = ''
         else:
             base_settings['cluster_options']['output'] = '--output=/dev/null --error=/dev/null'
 
-        # set cluster options required for PBS or SLURM
-        if scheduler_options['scheduler_type'] == 'pbs':
+        # get number of processors for processing and post-processing (default: 1)
+        ntasks = int(scheduler_input_options.get('num_procs', '1'))
+        base_settings['cluster_options']['nposttasks'] = scheduler_input_options.get(
+            'num_procs_post', '1'
+        )
+
+        # set cluster options required specifically for PBS or Slurm
+        if scheduler_input_options['scheduler_type'] == 'pbs':
             # set PBS start command
             base_settings['cluster_options']['start_cmd'] = 'qsub'
 
             # set relative path to PBS jobscript template
             rel_path = '../utils/jobscript_pbs.sh'
+
+            # for PBS, get type of batch (default: batch)
+            base_settings['cluster_options']['pbs_queue'] = cluster_input_options.get(
+                'pbs_queue', 'batch'
+            )
+            # for PBS, split up number of tasks into number of nodes and
+            # processors per node
+            navppn = int(scheduler_input_options.get('pbs_num_avail_ppn', '16'))
+            if ntasks <= navppn:
+                base_settings['cluster_options']['pbs_nodes'] = '1'
+                base_settings['cluster_options']['pbs_ppn'] = str(ntasks)
+            else:
+                num_nodes = np.ceil(ntasks/navppn)
+                if ntasks % num_nodes == 0:
+                    base_settings['cluster_options']['pbs_ppn'] = str(ntasks/num_nodes)
+                else:
+                    raise ValueError(
+                       "Number of tasks not evenly distributable, as required for PBS scheduler!"
+                     )
         else:
-            # set SLURM start command
+            # set Slurm start command
             base_settings['cluster_options']['start_cmd'] = 'sbatch'
 
-            # set relative path to SLURM jobscript template
+            # set relative path to Slurm jobscript template
             rel_path = '../utils/jobscript_slurm.sh'
+
+            # for Slurm, directly set number of tasks for processing
+            base_settings['cluster_options']['slurm_ntasks'] = str(ntasks)
+
+            # for Slurm, get exclusivity flag (default: false)
+            if cluster_input_options.get('slurm_exclusive', False):
+                base_settings['cluster_options']['slurm_exclusive'] = ''
+            else:
+                base_settings['cluster_options']['slurm_exclusive'] = '#'
+
+            # for Slurm, get node-exclusion flag (default: false) as well
+            # as potentially excluded nodes
+            if cluster_input_options.get('slurm_exclude', False):
+                base_settings['cluster_options']['slurm_exclude'] = ''
+                base_settings['cluster_options']['slurm_excl_node'] = scheduler_options[
+                    'cluster_slurm_excl_node'
+                ]
+            else:
+                base_settings['cluster_options']['slurm_exclude'] = '#'
+                base_settings['cluster_options']['slurm_excl_node'] = ''
 
         # set absolute path to jobscript template
         script_dir = os.path.dirname(__file__)  # absolute path to directory of this file
         abs_path = os.path.join(script_dir, rel_path)
         base_settings['cluster_options']['jobscript_template'] = abs_path
 
-        # set number of processors for processing and post-processing (default: 1)
-        if scheduler_options.get('num_procs', False):
-            base_settings['cluster_options']['ntasks'] = scheduler_options['num_procs']
-        else:
-            base_settings['cluster_options']['ntasks'] = '1'
-        if scheduler_options.get('num_procs_post', False):
-            base_settings['cluster_options']['nposttasks'] = scheduler_options['num_procs_post']
-        else:
-            base_settings['cluster_options']['nposttasks'] = '1'
-
         # set cluster options required for Singularity
-        if scheduler_options['singularity']:
+        if singularity_input_options is not None:
             # set path to Singularity container in general and
             # also already as executable for jobscript
-            singularity_path = scheduler_options['singularity_cluster_path']
+            singularity_path = singularity_input_options['cluster_path']
             base_settings['cluster_options']['singularity_path'] = singularity_path
             base_settings['cluster_options']['EXE'] = os.path.join(singularity_path, 'driver.simg')
 
             # set cluster bind for Singularity
-            base_settings['cluster_options']['singularity_bind'] = scheduler_options[
-                'singularity_cluster_bind'
-            ]
-            base_settings['cluster_options']['singularity_remote_ip'] = scheduler_options[
-                'singularity_remote_ip'
+            base_settings['cluster_options']['singularity_bind'] = singularity_input_options[
+                'cluster_bind'
             ]
 
             # set further fixed options when using Singularity
@@ -205,8 +241,9 @@ class ClusterScheduler(Scheduler):
                     return None
             # restart submission
             else:
-                self.cluster_options['EXE'] = self.cluster_options['singularity_path'] + \
-                                              '/driver.simg'
+                self.cluster_options['EXE'] = (
+                    self.cluster_options['singularity_path'] + '/driver.simg'
+                )
                 self.cluster_options[
                     'INPUT'
                 ] = '--job_id={} --batch={} --port={} --path_json={}'.format(

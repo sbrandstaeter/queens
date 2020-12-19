@@ -36,17 +36,17 @@ class Scheduler(metaclass=abc.ABCMeta):
                                    QUEENS input file
         scheduler_type (str):      type of scheduler chosen in QUEENS input file
         experiment_dir (str):      path to QUEENS experiment directory
+        restart (bool):            flag for restart
+        cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
+                                   cluster options
+        ecs_task_options (dict):   (only for ECS task scheduler) further ECS task
+                                   options
         remote (bool):             flag for remote scheduling
         remote connect (str):      (only for remote scheduling) adress of remote
                                    computing resource
         singularity (bool):        flag for use of Singularity containers
         port (int):                (only for remote scheduling with Singularity) port of
                                    remote resource for ssh port-forwarding to database
-        restart (bool):            flag for restart
-        cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
-                                   cluster options
-        ecs_task_options (dict):   (only for ECS task scheduler) further ECS task
-                                   options
         job_id (int):              job ID (used for database organization)
         singularity_manager (obj): instance of Singularity-manager class
 
@@ -62,13 +62,13 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.config = base_settings['config']
         self.scheduler_type = base_settings['scheduler_type']
         self.experiment_dir = base_settings['experiment_dir']
+        self.restart = base_settings['restart']
+        self.cluster_options = base_settings['cluster_options']
+        self.ecs_task_options = base_settings['ecs_task_options']
         self.remote = base_settings['remote']
         self.remote_connect = base_settings['remote_connect']
         self.singularity = base_settings['singularity']
         self.port = None
-        self.restart = base_settings['restart']
-        self.cluster_options = base_settings['cluster_options']
-        self.ecs_task_options = base_settings['ecs_task_options']
         self.job_id = None
         self.singularity_manager = SingularityManager(
             remote=self.remote,
@@ -124,9 +124,11 @@ class Scheduler(metaclass=abc.ABCMeta):
         # 1) set complete configuration for subsequent transfer to driver
         base_settings['config'] = config
 
-        # 2) set scheduler options for subsequent transfer
-        #    to specific scheduler class
-        base_settings['options'] = scheduler_options
+        # 2) set scheduler options as well as subsection for cluster for
+        #    subsequent transfer to specific scheduler class
+        base_settings['scheduler_input_options'] = scheduler_options
+        if scheduler_options.get('cluster'):
+            base_settings['cluster_input_options'] = scheduler_options['cluster']
 
         # 3) set type of scheduler
         base_settings['scheduler_type'] = scheduler_options['scheduler_type']
@@ -134,23 +136,25 @@ class Scheduler(metaclass=abc.ABCMeta):
         # 4) set experiment directory
         base_settings['experiment_dir'] = scheduler_options['experiment_dir']
 
-        # 5) set flag for remote scheduling (default: false)
+        # 5) set flag for restart from finished simulation (default: false)
+        base_settings['restart'] = scheduler_options.get('restart', False)
+
+        # 6) set flag for remote scheduling (default: false)
         #    as well as further options for remote scheduling
-        if scheduler_options.get('remote', False):
+        if scheduler_options.get('remote'):
             base_settings['remote'] = True
-            base_settings['remote_connect'] = scheduler_options['remote_connect']
+            base_settings['remote_connect'] = scheduler_options['remote']['connect']
         else:
             base_settings['remote'] = False
             base_settings['remote_connect'] = None
 
-        # 6) set flag for Singularity container (default: false)
+        # 7) set flag for Singularity container (default: false) as well as
+        #    subsection for subsequent transfer to specific scheduler class
         base_settings['singularity'] = scheduler_options.get('singularity', False)
-
-        # 7) set flag for restart from finished simulation (default: false)
-        if scheduler_options.get('restart', False):
-            base_settings['restart'] = True
+        if scheduler_options.get('singularity_settings'):
+            base_settings['singularity_input_options'] = scheduler_options['singularity_settings']
         else:
-            base_settings['restart'] = False
+            base_settings['singularity_input_options'] = None
 
         # generate specific scheduler class
         scheduler_class = scheduler_dict[scheduler_options['scheduler_type']]
@@ -251,7 +255,9 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
 
         # create driver
-        driver_obj = Driver.from_config_create_driver(self.config, job_id, batch)
+        driver_obj = Driver.from_config_create_driver(
+            self.config, job_id, batch, cluster_options=self.cluster_options
+        )
 
         if not restart:
             # run driver and get process ID, if not restart
