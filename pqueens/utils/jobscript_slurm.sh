@@ -7,13 +7,13 @@
 # Job name:
 #SBATCH -J {job_name}
 # Standard case: specify only number of cpus
-#SBATCH --ntasks={ntasks}
+#SBATCH --ntasks={slurm_ntasks}
 # Walltime: (hours:minutes:seconds)
 #SBATCH --time={walltime}
 # Exclusivity:
-# #SBATCH --exclusive
+#{slurm_exclusive}SBATCH --exclusive
 # Exclude nodes: (e.g. exclude node07)
-# #SBATCH --exclude=node07
+#{slurm_exclude}SBATCH --exclude={slurm_excl_node}
 ###########################################
 
 ##########################################

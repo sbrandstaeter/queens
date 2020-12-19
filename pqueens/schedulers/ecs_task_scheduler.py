@@ -29,8 +29,8 @@ class ECSTaskScheduler(Scheduler):
             scheduler (obj):      instance of scheduler class
 
         """
-        # get scheduler options from base settings
-        scheduler_options = base_settings['options']
+        # get input options for scheduler from base settings
+        scheduler_input_options = base_settings['scheduler_input_options']
 
         # initalize sub-dictionary for cluster options within base settings to None
         base_settings['cluster_options'] = {}
@@ -41,7 +41,7 @@ class ECSTaskScheduler(Scheduler):
         base_settings['ecs_task_options'] = {}
 
         # get Docker image
-        base_settings['ecs_task_options']['docker_image'] = scheduler_options['docker_image']
+        base_settings['ecs_task_options']['docker_image'] = scheduler_input_options['docker_image']
 
         # set absolute path to taskscript template
         script_dir = os.path.dirname(__file__)  # absolute path to directory of this file

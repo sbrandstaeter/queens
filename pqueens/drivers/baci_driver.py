@@ -448,37 +448,21 @@ class BaciDriver(Driver):
 
         """
         # set options for jobscript
-        script_options = {}
-        script_options['job_name'] = '{}_{}_{}'.format(self.experiment_name, 'queens', self.job_id)
-        script_options['ntasks'] = self.num_procs
-        script_options['walltime'] = self.cluster_walltime
-        script_options['DESTDIR'] = self.output_directory
-        script_options['EXE'] = self.executable
-        script_options['INPUT'] = self.input_file
-        script_options['OUTPUTPREFIX'] = self.output_prefix
-        script_options['CLUSTERSCRIPT'] = self.cluster_script
+        self.cluster_options['job_name'] = '{}_{}_{}'.format(
+            self.experiment_name, 'queens', self.job_id
+        )
+        self.cluster_options['DESTDIR'] = self.output_directory
+        self.cluster_options['EXE'] = self.executable
+        self.cluster_options['INPUT'] = self.input_file
+        self.cluster_options['OUTPUTPREFIX'] = self.output_prefix
         if (self.postprocessor is not None) and (self.post_options is None):
-            script_options['POSTPROCESSFLAG'] = 'true'
-            script_options['POSTEXE'] = self.postprocessor
-            script_options['nposttasks'] = self.num_procs_post
+            self.cluster_options['POSTPROCESSFLAG'] = 'true'
+            self.cluster_options['POSTEXE'] = self.postprocessor
         else:
-            script_options['POSTPROCESSFLAG'] = 'false'
-            script_options['POSTEXE'] = ''
-            script_options['nposttasks'] = ''
-        # flag only required for Singularity-based run
-        script_options['POSTPOSTPROCESSFLAG'] = 'false'
+            self.cluster_options['POSTPROCESSFLAG'] = 'false'
+            self.cluster_options['POSTEXE'] = ''
 
-        # determine relative path to script template and start command for scheduler
-        if self.scheduler_type == 'pbs':
-            rel_path = '../utils/jobscript_pbs.sh'
-            scheduler_start = 'qsub'
-        else:
-            rel_path = '../utils/jobscript_slurm.sh'
-            scheduler_start = 'sbatch'
-
-        # set paths for script template and final script location
-        this_dir = os.path.dirname(__file__)
-        submission_script_template = os.path.join(this_dir, rel_path)
+        # set path for script location
         jobfilename = 'jobfile.sh'
         if not self.remote:
             submission_script_path = os.path.join(self.experiment_dir, jobfilename)
@@ -487,7 +471,7 @@ class BaciDriver(Driver):
 
         # generate job script for submission
         generate_submission_script(
-            script_options, submission_script_path, submission_script_template
+            self.cluster_options, submission_script_path, self.cluster_options['jobscript_template']
         )
 
         if not self.remote:
@@ -495,7 +479,7 @@ class BaciDriver(Driver):
             os.chdir(self.experiment_dir)
 
             # assemble command string for jobscript-based run
-            command_list = [scheduler_start, submission_script_path]
+            command_list = [self.cluster_options['start_cmd'], submission_script_path]
         else:
             # submit the job with jobfile.sh on remote machine
             command_list = [
@@ -527,7 +511,7 @@ class BaciDriver(Driver):
                 '"cd',
                 self.experiment_dir,
                 ';',
-                scheduler_start,
+                self.cluster_options['start_cmd'],
                 submission_script_path,
                 '"',
             ]

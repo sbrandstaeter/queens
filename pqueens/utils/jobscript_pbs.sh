@@ -7,11 +7,11 @@
 # Job name:
 #PBS -N {job_name}
 # Number of nodes and processors per node (ppn)
-#PBS -l nodes=1:ppn={ntasks}
+#PBS -l nodes={pbs_nodes}:ppn={pbs_ppn}
 # Walltime: (hours:minutes:seconds)
 #PBS -l walltime={walltime}
 # Executing queue
-#PBS -q batch
+#PBS -q {pbs_queue}
 ###########################################
 
 ##########################################

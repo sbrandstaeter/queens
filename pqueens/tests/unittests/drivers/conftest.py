@@ -131,8 +131,7 @@ def driver_base_settings(job):
     base_settings['docker_image'] = None
     base_settings['num_procs'] = 4
     base_settings['num_procs_post'] = 2
-    base_settings['cluster_script'] = None
-    base_settings['cluster_walltime'] = None
+    base_settings['cluster_options'] = None
     base_settings['job_id'] = job['id']
     base_settings['simulation_input_template'] = 'template.dat'
     base_settings['job'] = job

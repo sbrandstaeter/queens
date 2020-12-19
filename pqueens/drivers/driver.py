@@ -36,10 +36,7 @@ class Driver(metaclass=abc.ABCMeta):
         num_procs (int):           number of processors for processing
         num_procs_post (int):      number of processors for post-processing
         direct_scheduling(bool):   flag for direct scheduling
-        cluster_script (str):      (only for cluster schedulers Slurm and PBS) path to
-                                   cluster script
-        cluster_walltime (int):    (only for cluster schedulers Slurm and PBS) wall time
-                                   set for cluster computation
+        cluster_options (str):     (only for cluster schedulers Slurm and PBS) cluster options
         job_id (int):              job ID as provided in database within range [1, n_jobs]
         job (dict):                dictionary containing description of current job
         pid (int):                 unique process ID for subprocess
@@ -89,8 +86,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.num_procs = base_settings['num_procs']
         self.num_procs_post = base_settings['num_procs_post']
         self.direct_scheduling = base_settings['direct_scheduling']
-        self.cluster_script = base_settings['cluster_script']
-        self.cluster_walltime = base_settings['cluster_walltime']
+        self.cluster_options = base_settings['cluster_options']
         self.batch = base_settings['batch']
         self.job_id = base_settings['job_id']
         self.job = base_settings['job']
@@ -118,7 +114,7 @@ class Driver(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_driver(
-        cls, config, job_id, batch, port=None, abs_path=None, workdir=None
+        cls, config, job_id, batch, port=None, abs_path=None, workdir=None, cluster_options=None
     ):
         """
         Create driver from problem description
@@ -179,18 +175,18 @@ class Driver(metaclass=abc.ABCMeta):
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
         scheduler_options = config[scheduler_name]
-        base_settings['experiment_dir'] = scheduler_options['experiment_dir']
         base_settings['scheduler_type'] = scheduler_options['scheduler_type']
+        base_settings['experiment_dir'] = scheduler_options['experiment_dir']
+        base_settings['docker_image'] = scheduler_options.get('docker_image')
+        base_settings['num_procs'] = scheduler_options.get('num_procs', '1')
+        base_settings['num_procs_post'] = scheduler_options.get('num_procs_post', '1')
         if scheduler_options.get('remote', False):
             base_settings['remote'] = True
-            base_settings['remote_connect'] = scheduler_options['remote_connect']
+            base_settings['remote_connect'] = scheduler_options['remote']['connect']
         else:
             base_settings['remote'] = False
             base_settings['remote_connect'] = None
         base_settings['singularity'] = scheduler_options.get('singularity', False)
-        base_settings['docker_image'] = scheduler_options.get('docker_image', None)
-        base_settings['num_procs'] = scheduler_options.get('num_procs', '1')
-        base_settings['num_procs_post'] = scheduler_options.get('num_procs_post', '1')
 
         # set flag for direct scheduling
         base_settings['direct_scheduling'] = False
@@ -204,13 +200,11 @@ class Driver(metaclass=abc.ABCMeta):
             ):
                 base_settings['direct_scheduling'] = True
 
-        # get path to cluster script if required
+        # get cluster options if required
         if base_settings['scheduler_type'] == 'pbs' or base_settings['scheduler_type'] == 'slurm':
-            base_settings['cluster_script'] = scheduler_options['cluster_script']
-            base_settings['cluster_walltime'] = scheduler_options['cluster_walltime']
+            base_settings['cluster_options'] = cluster_options
         else:
-            base_settings['cluster_script'] = None
-            base_settings['cluster_walltime'] = None
+            base_settings['cluster_options'] = None
 
         # 3) database settings
         base_settings['port'] = port
@@ -218,7 +212,9 @@ class Driver(metaclass=abc.ABCMeta):
         # Singularity, else get database address, with default being localhost
         if base_settings['singularity'] and base_settings['remote']:
             database_address = (
-                scheduler_options['singularity_remote_ip'] + ':' + str(base_settings['port'])
+                scheduler_options['singularity_settings']['remote_ip']
+                + ':'
+                + str(base_settings['port'])
             )
         else:
             database_address = config['database'].get('address', 'localhost:27017')
@@ -257,7 +253,7 @@ class Driver(metaclass=abc.ABCMeta):
         if base_settings['postprocessor'] and (
             (not base_settings['direct_scheduling']) or (base_settings['post_options'] is not None)
         ):
-            if base_settings['remote'] and not base_settings['singularity']:
+            if base_settings['remote']:
                 base_settings['do_postprocessing'] = 'remote'
             else:
                 base_settings['do_postprocessing'] = 'local'
@@ -265,7 +261,7 @@ class Driver(metaclass=abc.ABCMeta):
             base_settings['do_postprocessing'] = None
 
         # 6) driver settings for post-post-processing
-        # TODO "hiding" a complete object in the base settings dict is unbelievably ugly
+        # TODO "hiding" a complete object in the base settings dict is unbelieveably ugly
         # and should be fixed ASAP
         base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(config)
         base_settings['file_prefix'] = driver_options['post_post']['file_prefix']
@@ -388,7 +384,7 @@ class Driver(metaclass=abc.ABCMeta):
             )
 
             # print obtained result to screen
-            sys.stdout.write("Got result %s\n" % self.result)
+            sys.stdout.write("Got result %s\n" % (self.result))
 
     def finalize_job_in_db(self):
         """
