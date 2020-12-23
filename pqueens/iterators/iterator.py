@@ -45,6 +45,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from pqueens.iterators.baci_lm_iterator import BaciLMIterator
         from .saltelli_iterator import SaltelliIterator
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
+        from .single_sim_run_iterator import SingleSimRunIterator
         from .bmfmc_iterator import BMFMCIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
         from .grid_iterator import GridIterator
@@ -60,6 +61,7 @@ class Iterator(metaclass=abc.ABCMeta):
             'sa_saltelli': SaltelliIterator,
             'sa_saltelli_salib': SaltelliSALibIterator,
             'smc': SequentialMonteCarloIterator,
+            'sing_sim_run': SingleSimRunIterator,
             'bmfmc': BMFMCIterator,
             'grid': GridIterator,
             'baci_lm': BaciLMIterator,

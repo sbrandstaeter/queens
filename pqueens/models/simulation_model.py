@@ -39,8 +39,21 @@ class SimulationModel(Model):
         # get options
         model_options = config[model_name]
         interface_name = model_options["interface"]
-        parameters = model_options["parameters"]
-        model_parameters = config[parameters]
+        parameters = model_options.get("parameters")
+
+        # get model parameters, if such parameters are provided in input
+        # file (default)
+        if parameters is not None:
+            model_parameters = config[parameters]
+        # if there are not any model parameters provided in the input file
+        # (as currently for single simulation runs), generate pseudo model
+        # parameters to be used below
+        else:
+            model_parameters = {}
+            model_parameters["random_variables"] = {}
+            model_parameters["random_variables"]["pseudo_var"] = {}
+            model_parameters["random_variables"]["pseudo_var"]["size"] = 1
+            model_parameters["random_variables"]["pseudo_var"]["type"] = 'none'
 
         # create interface
         interface = Interface.from_config_create_interface(interface_name, config)

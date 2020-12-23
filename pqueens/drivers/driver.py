@@ -99,8 +99,11 @@ class Driver(metaclass=abc.ABCMeta):
         self.do_postprocessing = base_settings['do_postprocessing']
         self.postprocessor = base_settings['postprocessor']
         self.post_options = base_settings['post_options']
+        self.do_postpostprocessing = base_settings['do_postpostprocessing']
         self.postpostprocessor = base_settings['postpostprocessor']
         self.file_prefix = base_settings['file_prefix']
+        self.error_file = base_settings['error_file']
+        self.cae_output_streaming = base_settings['cae_output_streaming']
         self.input_file = base_settings['input_file']
         self.input_file_2 = base_settings['input_file_2']
         self.case_run_script = base_settings['case_run_script']
@@ -238,7 +241,7 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['custom_executable'] = driver_options.get('custom_executable', None)
         base_settings['cae_software_version'] = driver_options.get('cae_software_version', None)
 
-        # 5) driver settings for post-processing
+        # 5) driver settings for post-processing, if required
         base_settings['postprocessor'] = driver_options.get('path_to_postprocessor', None)
         if base_settings['postprocessor'] is not None:
             base_settings['post_options'] = driver_options['post_process_options']
@@ -260,11 +263,19 @@ class Driver(metaclass=abc.ABCMeta):
         else:
             base_settings['do_postprocessing'] = None
 
-        # 6) driver settings for post-post-processing
-        # TODO "hiding" a complete object in the base settings dict is unbelieveably ugly
-        # and should be fixed ASAP
-        base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(config)
-        base_settings['file_prefix'] = driver_options['post_post']['file_prefix']
+        # 6) driver settings for post-post-processing, if required, else set output
+        #    streaming to 'stdout' for single simulation run
+        base_settings['do_postpostprocessing'] = driver_options.get('post_post', None)
+        if base_settings['do_postpostprocessing'] is not None:
+            # TODO "hiding" a complete object in the base settings dict is unbelieveably ugly
+            # and should be fixed ASAP
+            base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(config)
+            base_settings['file_prefix'] = driver_options['post_post']['file_prefix']
+            base_settings['cae_output_streaming'] = False
+        else:
+            base_settings['postpostprocessor'] = None
+            base_settings['file_prefix'] = None
+            base_settings['cae_output_streaming'] = True
 
         # 7) initialize driver settings which are not required for all
         # specific drivers or only for remote scheduling, respectively
@@ -307,7 +318,8 @@ class Driver(metaclass=abc.ABCMeta):
 
     def post_job_run(self):
         """
-        Post-process (if required), post-post process and finalize job in database
+        Post-process (if required), post-post process (if required) and
+        finalize job in database
 
         Returns:
             None
@@ -315,7 +327,17 @@ class Driver(metaclass=abc.ABCMeta):
         """
         if self.do_postprocessing is not None:
             self.postprocess_job()
-        self.postpostprocessing()
+        if self.do_postpostprocessing is not None:
+            self.postpostprocessing()
+        else:
+            # set result to "no" and load job from database, if there
+            # has not been any post-post-processing before
+            self.result = 'no post-post-processed result'
+            if self.job is None:
+                self.job = self.database.load(
+                    self.experiment_name, self.batch, 'jobs', {'id': self.job_id}
+                )
+
         self.finalize_job_in_db()
 
     # ------ Base class methods ------------------------------------------------ #

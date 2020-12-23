@@ -308,13 +308,9 @@ class BaciDriver(Driver):
         )
 
         # redirect stdout/stderr output to log and error file, respectively,
-        # for Slurm, PBS (CAE stdout/stderr on remote for A-II, submission
-        # stdout/stdderr on local for B-II) and remote standard scheduling
-        if (
-            self.scheduler_type == 'pbs'
-            or self.scheduler_type == 'slurm'
-            or (self.scheduler_type == 'standard' and self.remote)
-        ):
+        # for Slurm and PBS (CAE stdout/stderr on remote for A-II,
+        # submission stdout/stdderr on local for B-II)
+        if self.scheduler_type == 'pbs' or self.scheduler_type == 'slurm':
             with open(self.log_file, "a") as text_file:
                 print(stdout, file=text_file)
             with open(self.error_file, "a") as text_file:
@@ -389,14 +385,23 @@ class BaciDriver(Driver):
                 error_file = self.error_file
 
         # run BACI via subprocess
-        returncode, self.pid, _, _ = run_subprocess(
+        returncode, self.pid, stdout, stderr = run_subprocess(
             command_string,
             subprocess_type=subprocess_type,
             terminate_expr=terminate_expr,
             loggername=loggername,
             log_file=log_file,
             error_file=error_file,
+            streaming=self.cae_output_streaming,
         )
+
+        # redirect stdout/stderr output to log and error file, respectively,
+        # for remote standard scheduling
+        if self.scheduler_type == 'standard' and self.remote:
+            with open(self.log_file, "a") as text_file:
+                print(stdout, file=text_file)
+            with open(self.error_file, "a") as text_file:
+                print(stderr, file=text_file)
 
         return returncode
 
