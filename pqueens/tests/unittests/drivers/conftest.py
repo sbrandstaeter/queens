@@ -142,7 +142,9 @@ def driver_base_settings(job):
     base_settings['do_postprocessing'] = False
     base_settings['postprocessor'] = 'post_drt_mon'
     base_settings['post_options'] = '--field=structure --node=26 --start=1'
+    base_settings['do_postpostprocessing'] = True
     base_settings['postpostprocessor'] = 'Post_post.py'
+    base_settings['cae_output_streaming'] = False
     base_settings['input_file'] = 'input.json'
     base_settings['input_file_2'] = None
     base_settings['case_run_script'] = None

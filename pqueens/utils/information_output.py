@@ -69,10 +69,11 @@ def print_driver_information(
             '\nAs requested, %s will be run in Docker containers based on'
             '\nthe following Docker image:\n\t%s.' % (driver_name, docker_image)
         )
-    sys.stdout.write(
-        '\nQuantities of interest will be extracted from result files indicated'
-        '\nby the following (sub-)string:\n\t%s' % post_post_file_prefix
-    )
+    if post_post_file_prefix is not None:
+        sys.stdout.write(
+            '\nQuantities of interest will be extracted from result files indicated'
+            '\nby the following (sub-)string:\n\t%s' % post_post_file_prefix
+        )
     sys.stdout.write('\n=====================================================================')
     sys.stdout.write('\n')
 

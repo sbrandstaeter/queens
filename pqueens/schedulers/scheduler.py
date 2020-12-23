@@ -170,10 +170,16 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         # print out driver information
         # (done here to print out this information only once)
+        if config['driver']['driver_params'].get('post_post') is not None:
+            post_post_file_prefix = config['driver']['driver_params']['post_post'].get(
+                'file_prefix'
+            )
+        else:
+            post_post_file_prefix = None
         print_driver_information(
             config['driver']['driver_type'],
-            config['driver']['driver_params'].get('cae_software_version', None),
-            config['driver']['driver_params']['post_post']['file_prefix'],
+            config['driver']['driver_params'].get('cae_software_version'),
+            post_post_file_prefix,
             scheduler_options.get('docker_image', None),
         )
 

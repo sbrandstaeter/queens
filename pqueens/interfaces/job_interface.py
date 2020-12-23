@@ -102,8 +102,8 @@ class JobInterface(Interface):
         # get resources from config
         resources = parse_resources_from_configuration(config)
 
-        # get parameters from config
-        parameters = config['parameters']
+        # get parameters from config, if any
+        parameters = config.get('parameters')
 
         # get various scheduler options
         # TODO: This is not nice

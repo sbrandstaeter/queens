@@ -6,6 +6,7 @@ import logging
 import time
 import re
 import io
+import sys
 
 
 def run_subprocess(command_string, **kwargs):
@@ -19,6 +20,8 @@ def run_subprocess(command_string, **kwargs):
         loggername (str): loggername for logging module
         terminate_expr (str): regex to search in sdtout on which subprocess will terminate
         output_file (str): output directory + filename-stem to write logfiles
+        error_file (str): output directory + filename-stem to write error files
+        stream (str): streaming output to given stream
     Returns:
         process_returncode (int): code for execution success of subprocess
         process_id (int): process id that was assigned to process
@@ -105,6 +108,7 @@ def _run_subprocess_simulation(command_string, **kwargs):
     terminate_expr = kwargs.get('terminate_expr')
     log_file = kwargs.get('log_file')
     error_file = kwargs.get('error_file')
+    streaming = kwargs.get('streaming')
 
     joblogger = logging.getLogger(logger)
 
@@ -123,6 +127,15 @@ def _run_subprocess_simulation(command_string, **kwargs):
     efh.setFormatter(ff)
     joblogger.addHandler(fh)
     joblogger.addHandler(efh)
+
+    # additional streaming to given stream, if required
+    # import pdb; pdb.set_trace()
+    if streaming:
+        sh = logging.StreamHandler(stream=sys.stdout)
+        sh.setLevel(logging.INFO)
+        sh.terminator = ''
+        sh.setFormatter(fmt=None)
+        joblogger.addHandler(sh)
 
     joblogger = logging.getLogger(logger)
     process = subprocess.Popen(
@@ -182,6 +195,10 @@ def _run_subprocess_simulation(command_string, **kwargs):
     efh.close()
     joblogger.removeHandler(fh)
     joblogger.removeHandler(efh)
+    if streaming:
+        sh.close()
+        joblogger.removeHandler(sh)
+
     return process_returncode, process_id, stdout, stderr
 
 
