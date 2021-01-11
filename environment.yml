@@ -46,6 +46,8 @@ dependencies:
   - tqdm
 # visualization toolkit that can manage mesh data
   - vtk
+# enforce package compliance of parso package
+  - parso>=0.8.0
 # it's recommended to list pip explicitly
   - pip
   - pip:
