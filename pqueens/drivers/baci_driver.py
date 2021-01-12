@@ -150,8 +150,8 @@ class BaciDriver(Driver):
         # set output and core of target file opt
         output_file_opt = '--file=' + self.output_file
         target_file_opt_core = '--output=' + self.output_directory
-
-        if self.post_options:
+        
+        if (self.post_options is not None):
             for num, option in enumerate(self.post_options):
                 # set extension of target file opt and final target file opt
                 target_file_opt_ext = self.file_prefix + "_" + str(num + 1)
@@ -161,7 +161,12 @@ class BaciDriver(Driver):
                 self.run_postprocessing_cmd(output_file_opt, target_file_opt, option)
         else:
             # set target file opt
-            target_file_opt = os.path.join(target_file_opt_core, self.file_prefix)
+            if self.do_postpostprocessing is not None:
+                target_file_opt = os.path.join(target_file_opt_core, self.file_prefix)
+            else:
+                target_file_opt = ''
+
+            # set no option
             option = ''
 
             # run post-processing command
@@ -279,28 +284,20 @@ class BaciDriver(Driver):
                 # additionally set path to control file
                 self.job['control_file_path'] = self.control_file
 
-            # set subprocess type 'simple' with stdout/stderr output (CAE stdout/stderr
-            # on remote for A-II, submission stdout/stdderr on local for B-II)
-            # redirected to log and error file, respectively, below
-            subprocess_type = 'simple'
-
         # assemble run command for ECS task scheduler, which is always without
         # Singularity (B-I-5 and B-II-5)
         else:
-            # assemble core command string for BACI run
-            core_baci_run_cmd = self.assemble_baci_run_cmd()
+            # assemble command string for BACI run
+            baci_run_cmd = self.assemble_baci_run_cmd()
 
-            # assemble extended core command string for Docker BACI run
-            if self.docker_image is not None:
-                baci_run_cmd = self.assemble_docker_run_cmd(core_baci_run_cmd)
-            else:
-                baci_run_cmd = core_baci_run_cmd
-
-            # assemble final command string for ECS task
+            # assemble command string for ECS task
             command_string = self.assemble_ecs_task_run_cmd(baci_run_cmd)
 
-            # set subprocess type 'submit' without stdout/stderr output
-            subprocess_type = 'submit'
+        # set subprocess type 'simple' with stdout/stderr output for
+        # script-based jobs (CAE stdout/stderr on remote for A-II,
+        # submission stdout/stdderr on local for B-II) redirected to
+        # log and error file, respectively, and task stdout/stderr for 5
+        subprocess_type = 'simple'
 
         # run BACI via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(
