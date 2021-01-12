@@ -244,7 +244,7 @@ class Driver(metaclass=abc.ABCMeta):
         # 5) driver settings for post-processing, if required
         base_settings['postprocessor'] = driver_options.get('path_to_postprocessor', None)
         if base_settings['postprocessor'] is not None:
-            base_settings['post_options'] = driver_options['post_process_options']
+            base_settings['post_options'] = driver_options.get('post_process_options', None)
         else:
             base_settings['post_options'] = None
 
@@ -253,7 +253,7 @@ class Driver(metaclass=abc.ABCMeta):
         # post-processor given and either no direct scheduling or direct
         # scheduling with post-processing options (e.g., post_drt_monitor)
         # and further distinguish whether it needs to be done remotely
-        if base_settings['postprocessor'] and (
+        if (base_settings['postprocessor'] is not None) and (
             (not base_settings['direct_scheduling']) or (base_settings['post_options'] is not None)
         ):
             if base_settings['remote']:

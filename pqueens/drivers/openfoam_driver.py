@@ -7,6 +7,7 @@ from pqueens.drivers.driver import Driver
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.injector import inject
 from pqueens.utils.numpy_array_encoder import NumpyArrayEncoder
+from pqueens.utils.string_extractor_and_checker import extract_string_from_output
 
 
 class OpenFOAMDriver(Driver):
@@ -117,14 +118,7 @@ class OpenFOAMDriver(Driver):
 
         # assemble run command for ECS task scheduler (I-5 and II-5)
         if self.scheduler_type == 'ecs_task':
-            command_string = self.assemble_ecs_task_run_cmd(self, self.case_run_script)
-
-            # additionally extract ECS task ARN from output and
-            # transfer to job database
-            self.job['aws_arn'] = extract_string_from_output("taskArn", stdout)
-
-            # set subprocess type 'submit' without stdout/stderr output
-            subprocess_type = 'submit'
+            command_string = self.assemble_ecs_task_run_cmd(self.case_run_script)
         elif self.scheduler_type == 'standard':
             # assemble command string for Docker OpenFOAM run
             openfoam_run_cmd = self.assemble_docker_run_cmd(self.case_run_script)
@@ -136,18 +130,23 @@ class OpenFOAMDriver(Driver):
             # assemble local run command for standard scheduler (I-1)
             else:
                 command_string = openfoam_run_cmd
-
-            # set subprocess type 'simple' with stdout/stderr output
-            subprocess_type = 'simple'
         else:
             raise RuntimeError(
                 "\nIncorrect scheduler for OpenFOAM driver: currently, only standard and ECS task!"
             )
 
+        # set subprocess type 'simple' with stdout/stderr output
+        subprocess_type = 'simple'
+
         # run OpenFOAM via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(
             command_string, subprocess_type=subprocess_type,
         )
+
+        # extract ECS task ARN from output for transfer to job database
+        # for ECS task scheduler (I-5 and II-5)
+        if self.scheduler_type == 'ecs_task':
+            self.job['aws_arn'] = extract_string_from_output("taskArn", stdout)
 
         # detection of failed jobs
         if returncode:
