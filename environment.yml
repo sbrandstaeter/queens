@@ -64,4 +64,9 @@ dependencies:
     - pylint-exit
 # Tool to perform license checks
     - liccheck
+# gpflow to build tensorflow based (latent) variable Gaussian Processes and variational GPs
+    - gpflow
+# tensorflow and tensorflow probability
+    - tensorflow
+    - tensorflow-probability
 

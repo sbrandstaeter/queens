@@ -24,8 +24,12 @@ class RegressionApproximation(metaclass=abc.ABCMeta):
 
         """
         from .gp_approximation_gpy import GPGPyRegression
+        from .heteroskedastic_GPflow import HeteroskedasticGP
 
-        approx_dict = {'gp_approximation_gpy': GPGPyRegression}
+        approx_dict = {
+            'gp_approximation_gpy': GPGPyRegression,
+            'heteroskedastic_gp': HeteroskedasticGP,
+        }
         approx_options = config[approx_name]
         approximation_class = approx_dict[approx_options["type"]]
 
