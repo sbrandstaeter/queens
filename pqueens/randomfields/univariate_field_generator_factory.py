@@ -1,4 +1,4 @@
-from pqueens.randomfields.non_stationary_squared_exp import NonStationarySquaredExp
+from pqueens.randomfields.generic_external_random_field import GenericExternalRandomField
 
 from pqueens.randomfields.random_field_gen_fourier_1d import RandomFieldGenFourier1D
 from pqueens.randomfields.random_field_gen_fourier_2d import RandomFieldGenFourier2D
@@ -7,9 +7,22 @@ from pqueens.randomfields.random_field_gen_fourier_3d import RandomFieldGenFouri
 from pqueens.randomfields.random_field_gen_KLE_1d import RandomFieldGenKLE1D
 from pqueens.randomfields.random_field_gen_KLE_2d import RandomFieldGenKLE2D
 from pqueens.randomfields.random_field_gen_KLE_3d import RandomFieldGenKLE3D
+import numpy as np
 
 
 class UniVarRandomFieldGeneratorFactory(object):
+    """
+    Class that is currently used for the generation of random fields and which gets called in
+    other modules such as the monte_carlo_iterator. This class is basically a wrapper for
+    different existing random field definitions.
+
+    Returns:
+        rf (obj): Instance of a random field class
+
+    """
+
+    # TODO: we should clean this up and update the rfs to the QUEENS coding style and architecture
+
     def create_new_random_field_generator(
         marg_pdf=None,
         corrstruct=None,
@@ -19,19 +32,50 @@ class UniVarRandomFieldGeneratorFactory(object):
         field_bbox=None,
         num_terms_per_dim=None,
         total_terms=None,
-        rel_std=None,
+        std_hyperparam_rf=None,
         mean_fun_params=None,
-        num_points=None,
-        num_realizations=None,
+        mean_fun_type=None,
+        num_samples=None,
+        external_geometry_obj=None,
+        external_definition=None,
     ):
-        """ Create random field generator based on arguments """
-        if corrstruct == 'non_stationary_squared_exp':
-            rf = NonStationarySquaredExp(
+        """
+        Create random field generator based on arguments
+
+        Args:
+            marg_pdf (obj): Marginal probability distribution of the random field (for spectral
+                            definition only)
+            corrstruct (str): Correlation structure or type of random field that should be
+                              initialized
+            spatial_dimension (int): Spatial dimension of the random field
+            corr_length (float): Hyperparameter for the correlation length (a.t.m. only one)
+            energy_frac (float): Energy fraction of random field truncation for spectral
+                                 representations
+            field_bbox (np.array): Box in which the random field should be realized (for spectral
+                              representation only and without external definition)
+            num_terms_per_dim (int): Number of terms per dimension (for spectral decomposition only)
+            total_terms (int): Total number of terms (spectral decomposition only)
+            std_hyperparam_rf (float): Hyperparameter for standard-deviation of random field
+            mean_fun_params (lst): List of parameters for mean function parameterization
+                                   of random field
+            mean_fun_type (str): Type of mean function that should be used
+            num_samples (int): Number of samples/field_realizations of the random field
+            external_geometry_obj (obj): Instance of the external geometry class
+            external_definition (dict): External definition of the random fields
+
+        Returns:
+            rf (obj): Instance of a random field generator class
+
+        """
+        if corrstruct == 'generic_external_random_field':
+            rf = GenericExternalRandomField(
                 corr_length=corr_length,
-                rel_std=rel_std,
+                std_hyperparam_rf=std_hyperparam_rf,
                 mean_fun_params=mean_fun_params,
-                num_points=num_points,
-                num_realizations=num_realizations,
+                num_samples=num_samples,
+                external_definition=external_definition,
+                external_geometry_obj=external_geometry_obj,
+                mean_fun_type=mean_fun_type,
             )
 
         elif corrstruct == 'squared_exp':
@@ -97,3 +141,58 @@ class UniVarRandomFieldGeneratorFactory(object):
         return rf
 
     factory = staticmethod(create_new_random_field_generator)
+
+    @staticmethod
+    def calculate_one_truncated_realization_of_all_fields(
+        database, job_id, experiment_name, batch, experiment_dir, random_fields_lst
+    ):
+        """
+        This method gets called in the driver and calculated one realization of all involved
+        random fields from the in the db stored truncated basis, the random coefficients matrix
+        and the current job number. (Driver realizes one input sample, such that the job_id is
+        used to identify the current sample from the sample matrix.)
+
+        Args:
+            database (obj): Database instance
+            job_id (int): Job ID number
+            experiment_name (str): Name of the current QUEENS experiment
+            batch (int): Batch number
+            random_fields_lst (lst): List of random field definitions
+            experiment_dir (str): Path to QUEENS experiment directory
+
+        Returns:
+            realized_random_fields_lst (lst): List containing field_realizations of involved random
+            fields
+
+        """
+        # load random field representation
+        truncated_random_field_representation_dict = database.load(
+            experiment_name, '1', 'truncated_random_fields'
+        )
+
+        # load current job
+        job = database.load(
+            experiment_name,
+            batch,
+            'jobs',
+            {'id': job_id, 'expt_dir': experiment_dir, 'expt_name': experiment_name},
+        )
+
+        # calculate high dim realization of random field from basis functions
+        realized_random_fields_lst = []
+        for random_field in random_fields_lst:
+            random_field_name = random_field[0]
+            random_field_definition = random_field[1]
+            random_vec = np.dot(
+                truncated_random_field_representation_dict[random_field_name],
+                job['params'][random_field_name],
+            )
+
+            updated_random_field_dict = {
+                "name": random_field_name,
+                "external_definition": random_field_definition,
+                "values": random_vec,
+            }
+            realized_random_fields_lst.append(updated_random_field_dict)
+
+        return realized_random_fields_lst

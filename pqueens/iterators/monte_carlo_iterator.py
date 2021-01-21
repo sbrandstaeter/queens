@@ -6,11 +6,14 @@ from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 from pqueens.randomfields.univariate_field_generator_factory import (
-    UniVarRandomFieldGeneratorFactory,
+    UniVarRandomFieldGeneratorFactory,  # TODO we should create a unified interface for rf
 )
 from pqueens.utils import mcmc_utils
 from pqueens.utils.input_to_random_variable import get_random_samples
 from .iterator import Iterator
+from pqueens.external_geometry.external_geometry import ExternalGeometry
+from pqueens.database.mongodb import MongoDB
+import copy
 
 
 class MonteCarloIterator(Iterator):
@@ -23,15 +26,30 @@ class MonteCarloIterator(Iterator):
         result_description (dict):  Description of desired results
         samples (np.array):         Array with all samples
         outputs (np.array):         Array with all model outputs
+        external_geometry_obj (obj): External external_geometry_obj object containing node and
+                                     mesh information
+        db (obj):                   Data base object
+
     """
 
-    def __init__(self, model, seed, num_samples, result_description, global_settings):
+    def __init__(
+        self,
+        model,
+        seed,
+        num_samples,
+        result_description,
+        global_settings,
+        external_geometry_obj,
+        db,
+    ):
         super(MonteCarloIterator, self).__init__(model, global_settings)
         self.seed = seed
         self.num_samples = num_samples
         self.result_description = result_description
         self.samples = None
         self.output = None
+        self.external_geometry_obj = external_geometry_obj
+        self.db = db
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
@@ -58,6 +76,12 @@ class MonteCarloIterator(Iterator):
 
         result_description = method_options.get('result_description', None)
         global_settings = config.get('global_settings', None)
+        if config.get('external_geometry') is not None:
+            external_geometry_obj = ExternalGeometry.from_config_create_external_geometry(config)
+        else:
+            external_geometry_obj = None
+
+        db = MongoDB.from_config_create_database(config)
 
         return cls(
             model,
@@ -65,6 +89,8 @@ class MonteCarloIterator(Iterator):
             method_options['num_samples'],
             result_description,
             global_settings,
+            external_geometry_obj,
+            db,
         )
 
     def eval_model(self):
@@ -89,14 +115,18 @@ class MonteCarloIterator(Iterator):
 
         num_eval_locations = []
 
+        # TODO this if statement is useless for external random fields
         if random_fields is not None:
             for _, rf in random_fields.items():
-                dim = rf["dimension"]
-                eval_locations_list = rf.get("eval_locations", None)
-                eval_locations = np.array(eval_locations_list).reshape(-1, dim)
-                temp = eval_locations.shape[0]
-                num_eval_locations.append(temp)
-                num_inputs += temp
+                # TODO not nice and should be changed
+                external_bool = rf.get('external_definition', False)
+                if not external_bool:
+                    dim = rf["dimension"]
+                    eval_locations_list = rf.get("eval_locations", None)  # TODO how to handle this?
+                    eval_locations = np.array(eval_locations_list).reshape(-1, dim)
+                    temp = eval_locations.shape[0]
+                    num_eval_locations.append(temp)
+                    num_inputs += temp
 
         self.samples = np.zeros((self.num_samples, num_inputs))
         # loop over random variables to generate samples
@@ -113,21 +143,26 @@ class MonteCarloIterator(Iterator):
         # loop over random fields to generate samples
         field_num = 0
         if random_fields is not None:
-            for _, rf in random_fields.items():
+            for rf_name, rf in random_fields.items():
                 print("rf corrstruct {}".format(rf.get("corrstruct")))
                 # create appropriate random field generator
 
                 random_field_opt = {}
                 random_field_opt['corrstruct'] = rf.get("corrstruct")
                 random_field_opt['corr_length'] = rf.get("corr_length")
-                if rf.get("corrstruct") == "non_stationary_squared_exp":
-                    random_field_opt['rel_std'] = rf['rel_std']
-                    random_field_opt['mean_fun'] = rf['mean_fun']
+                # TODO logic is ugly and should be changed in the future
+                if rf.get("corrstruct") == "generic_external_random_field":
+                    random_field_opt['std_hyperparam_rf'] = rf['std_hyperparam_rf']
+                    random_field_opt['mean_fun_type'] = rf['mean_fun_type']
                     random_field_opt['mean_fun_params'] = rf['mean_fun_params']
-                    random_field_opt['num_points'] = rf['num_points']
                     random_field_opt['num_samples'] = self.num_samples
+                    # get input points form external external_geometry_obj here
+                    if self.external_geometry_obj is not None:
+                        self.external_geometry_obj.main_run()
+                    random_field_opt['external_geometry_obj'] = self.external_geometry_obj
+                    random_field_opt['external_definition'] = rf['external_definition']
                 else:
-                    random_field_opt['evel_locations'] = rf.get('eval_location')
+                    random_field_opt['eval_locations'] = rf.get('eval_location')  # TODO depreciated
                     random_field_opt['dimension'] = rf.get("dimension")
                     random_field_opt['energy_frac'] = rf.get("energy_frac")
                     random_field_opt['field_bbox'] = np.array(rf.get("field_bbox"))
@@ -135,15 +170,15 @@ class MonteCarloIterator(Iterator):
                     random_field_opt['total_terms'] = rf.get("total_terms")
                 # pylint: disable=line-too-long
                 my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                    mcmc_utils.create_proposal_distribution(rf), random_field_opt
+                    mcmc_utils.create_proposal_distribution(rf), **random_field_opt
                 )
                 # pylint: enable=line-too-long
-                eval_locations_list = rf.get("eval_locations", None)
-                eval_locations = np.array(eval_locations_list).reshape(
-                    -1, random_field_opt['dimension']
-                )
+                # eval_locations_list = rf.get("eval_locations", None)
+                # eval_locations = np.array(eval_locations_list).reshape(
+                #    -1, random_field_opt['dimension']
+                # )
 
-                if random_field_opt['corrstruct'] != 'non_stationary_squared_exp':
+                if random_field_opt['corrstruct'] != 'generic_external_random_field':
                     my_stoch_dim = my_field_generator.get_stoch_dim()
                     my_vals = np.zeros((self.num_samples, eval_locations.shape[0]))
 
@@ -156,20 +191,35 @@ class MonteCarloIterator(Iterator):
                         :, num_rv + field_num : num_rv + field_num + len(eval_locations)
                     ] = my_vals
                 else:
-                    my_field_generator.main_run()
-                    my_vals = my_field_generator.realizations
-                    for num in range(my_vals.shape[0]):
-                        self.samples[num, -1] = my_vals[
-                            num, :
-                        ]  # np.hstack((self.samples, my_vals))
+                    my_field_generator.main_run()  # here the field truncation is done by main run
+                    my_vals = np.atleast_2d(my_field_generator.realizations)
+                    self.samples = np.hstack((self.samples, np.atleast_2d(my_vals).T))
+
+                    # db code comes here
+                    truncated_rf_dict = {
+                        rf_name: my_field_generator.weighted_eigen_val_mat_truncated
+                    }
+                    experiment_field = "truncated_random_fields"
+                    batch = 1  # dummy batch
+                    self.db.save(
+                        truncated_rf_dict,
+                        self.global_settings["experiment_name"],
+                        experiment_field,
+                        batch,
+                    )
+
+                    # initialize here sizes of all random field samples
+                    self.model.variables[0].variables[rf_name].update(
+                        {"size": my_field_generator.weighted_eigen_val_mat_truncated.shape[1]}
+                    )
+                    for i in range(1, self.num_samples):
+                        self.model.variables.append(copy.deepcopy(self.model.variables[0]))
 
                 field_num += 1
 
     def core_run(self):
         """  Run Monte Carlo Analysis on model """
-
         self.model.update_model_from_sample_batch(self.samples)
-
         self.output = self.eval_model()
 
     def post_run(self):

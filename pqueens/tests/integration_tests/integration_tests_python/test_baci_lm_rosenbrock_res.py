@@ -2,7 +2,6 @@ import os
 
 import pandas as pd
 import numpy as np
-import pytest
 
 from pqueens.main import main
 

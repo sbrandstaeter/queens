@@ -45,18 +45,18 @@ class BMFMCIterator(Iterator):
         output (dict): Dictionary containing the output quantities:
 
                        *  "Z_mc": Corresponding Monte-Carlo point in LF informative feature space
-                       *  "m_f_mc": Corresponding Monte-Carlo points of posterior mean of the
-                                    probabilistic mapping
+                       *  "m_f_mc": Corresponding Monte-Carlo points of posterior mean of
+                                    the probabilistic mapping
                        *  "var_y_mc": Corresponding Monte-Carlo posterior variance samples of the
                                       probabilistic mapping
                        *  "y_pdf_support": Support vector for QoI output distribution
-                       *  "p_yhf_mean": Vector containing mean function of HF output posterior
-                                        distribution
+                       *  "p_yhf_mean": Vector containing mean function of HF output
+                                        posterior distribution
                        *  "p_yhf_var": Vector containing posterior variance function of HF output
                                        distribution
-                       *  "p_yhf_mean_BMFMC": Vector containing mean function of HF output posterior
-                                              distribution calculated without informative features
-                                              :math:`\\boldsymbol{\\gamma}`
+                       *  "p_yhf_mean_BMFMC": Vector containing mean function of HF output
+                                              posterior distribution calculated without informative
+                                              features :math:`\\boldsymbol{\\gamma}`
                        *  "p_yhf_var_BMFMC": Vector containing posterior variance function of HF
                                              output distribution calculated without informative
                                              features :math:`\\boldsymbol{\\gamma}`

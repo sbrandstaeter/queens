@@ -183,8 +183,7 @@ def test_read_post_files(mocker, all_case_types):
 def test_delete_field_data(mocker, default_ppbacishapeclass):
 
     mp = mocker.patch(
-        'pqueens.post_post.post_post_baci_shape.run_subprocess',
-        return_value=[1, 2, 'out', 'err'],
+        'pqueens.post_post.post_post_baci_shape.run_subprocess', return_value=[1, 2, 'out', 'err'],
     )
     mocker.patch('os.path.join', return_value='files_search')
     mocker.patch('glob.glob', return_value=['file1', 'file2'])
@@ -197,8 +196,7 @@ def test_delete_field_data(mocker, default_ppbacishapeclass):
 
 def test_error_handling(mocker, default_ppbacishapeclass):
     mp = mocker.patch(
-        'pqueens.post_post.post_post_baci_shape.run_subprocess',
-        return_value=[1, 2, 'out', 'err'],
+        'pqueens.post_post.post_post_baci_shape.run_subprocess', return_value=[1, 2, 'out', 'err'],
     )
     default_ppbacishapeclass.error = True
     default_ppbacishapeclass.output_dir = 'None'

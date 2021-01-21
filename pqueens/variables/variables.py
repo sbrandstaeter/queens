@@ -1,5 +1,5 @@
 """
-Variables module provides a data container for random variables and their realizations
+Variables module provides a data container for random variables and their field realizations
 """
 import numpy as np
 
@@ -52,10 +52,17 @@ class Variables(object):
                 self.variables[key] = {}
                 dim = data["dimension"]
                 eval_locations_list = data.get("eval_locations", None)
-                eval_locations = np.array(eval_locations_list).reshape(-1, dim)
-                my_size = eval_locations.shape[0]
-                self.variables[key]['size'] = my_size
-                self.variables[key]['value'] = values[i : i + my_size]
+                if eval_locations_list is not None:
+                    eval_locations = np.array(eval_locations_list).reshape(-1, dim)
+                    my_size = eval_locations.shape[0]
+                    self.variables[key]['size'] = my_size
+                    self.variables[key]['value'] = values[i : i + my_size]
+                else:
+                    # TODO seems to be useless and overwritten e.g. MC iterator l210
+                    my_size = 1
+                    self.variables[key]['size'] = None
+                    self.variables[key]['value'] = None
+
                 self.variables[key]['type'] = data['type']
                 self.variables[key]['active'] = active[i]
                 i += my_size
@@ -164,7 +171,7 @@ class Variables(object):
             my_size = self.variables[key]['size']
             self.variables[key]['value'] = np.squeeze(
                 data_vector[i : i + my_size]
-            )  # TODO here might be is a problem!
+            )  # TODO here might be a problem!
             i += my_size
         if i != len(data_vector):
-            raise IndexError('The passed vector is to long!')
+            raise IndexError('The data size seems to be off!')

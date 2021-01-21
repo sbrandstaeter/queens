@@ -5,7 +5,7 @@ import getpass
 import time
 
 from pqueens.database.mongodb import MongoDB
-from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.external_geometry.external_geometry import ExternalGeometry
 
 
 class Driver(metaclass=abc.ABCMeta):
@@ -18,7 +18,7 @@ class Driver(metaclass=abc.ABCMeta):
 
     Args:
         base_settings (dict):      dictionary containing settings from base class for
-                                   potential further use and completion in child classes 
+                                   potential further use and completion in child classes
 
     Attributes:
         experiment_name (str):     name of QUEENS experiment
@@ -292,6 +292,26 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['log_file'] = None
         base_settings['error_file'] = None
 
+        # 8) potentially generate an external external_geometry_obj object for input file
+        # manipulation
+        if config.get('external_geometry') is not None:
+            external_geometry_obj = ExternalGeometry.from_config_create_external_geometry(config)
+        else:
+            external_geometry_obj = None
+        base_settings["external_geometry_obj"] = external_geometry_obj
+
+        # 9) get list of random field tuples: name, type
+        model_name = config['method']['method_options'].get('model')
+        parameter_name = config[model_name]['parameters']
+        random_fields = config[parameter_name].get("random_fields")
+        if random_fields is not None:
+            random_fields_lst = [
+                (name, value['external_definition']) for name, value in random_fields.items()
+            ]
+        else:
+            random_fields_lst = None
+        base_settings["random_fields_lst"] = random_fields_lst
+
         # generate specific driver class
         driver = driver_class.from_config_create_driver(base_settings, workdir)
 
@@ -364,6 +384,8 @@ class Driver(metaclass=abc.ABCMeta):
         # set start time and store it in database
         start_time = time.time()
         self.job['start time'] = start_time
+
+        # save start time in database to make it accessible for the second post-processing call
         self.database.save(
             self.job,
             self.experiment_name,

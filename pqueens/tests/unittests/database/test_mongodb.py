@@ -66,8 +66,7 @@ def dummy_job_with_list(dummy_output_multi_index):
     dummy_job_with_list = {0: {}}
     dummy_job_with_list[0]['dummy_field1'] = 'garbage'
     dummy_job_with_list[0]['dummy_field2'] = 'rubbish'
-    dummy_job_with_list[0]['result'] = [[0, 1, 2],
-                                        [3, 4, 5]]
+    dummy_job_with_list[0]['result'] = [[0, 1, 2], [3, 4, 5]]
 
     return dummy_job_with_list
 
@@ -325,12 +324,7 @@ def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
     db.save(dummy_doc_with_pandas_simple, 'dummy', 'jobs', 1)
     assert isinstance(dummy_doc_with_pandas_simple['result'], list)
     expected_format = np.array(
-        [
-            [1, 'pd.DataFrame', None, None],
-            ['index', 0, 1, 2],
-            ['a', 1, 2, 3],
-            ['b', 4, 5, 6],
-        ]
+        [[1, 'pd.DataFrame', None, None], ['index', 0, 1, 2], ['a', 1, 2, 3], ['b', 4, 5, 6],]
     )
     np.testing.assert_array_equal(
         np.array(dummy_doc_with_pandas_simple['result'][:4]), expected_format

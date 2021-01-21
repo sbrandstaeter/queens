@@ -21,9 +21,7 @@ def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
         results["raw_output_data"]["mean"], expected_response,
     )
 
-    np.testing.assert_allclose(
-        results["input_data"], expected_grid, rtol=1.0e-3
-    )
+    np.testing.assert_allclose(results["input_data"], expected_grid, rtol=1.0e-3)
 
 
 @pytest.fixture()

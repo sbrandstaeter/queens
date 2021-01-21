@@ -220,7 +220,7 @@ def cluster_testsuite_settings(
     cluster_path_to_singularity,
     prepare_singularity,
     scheduler_type,
-    cluster_singularity_ip
+    cluster_singularity_ip,
 ):
     """ Collection of settings needed for all cluster tests. """
     if not prepare_singularity:

@@ -3,9 +3,9 @@ import abc
 
 class ExternalGeometry(metaclass=abc.ABCMeta):
     """
-    Abstract base class to read in external geometry formats into QUEENS.
-    The class enables, e.g., geometry based construction of random fields or post processing
-    routines
+    Abstract base class to read in external external_geometry_obj formats into QUEENS.
+    The class enables, e.g., external_geometry_obj based construction of random fields or post
+    processing routines
 
     Returns:
         geometry_obj (obj): Instance of the ExternalGeometry class.
@@ -18,7 +18,7 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
     @classmethod
     def from_config_create_external_geometry(cls, config):
         """
-        Construct the geometry object from the problem description.
+        Construct the external_geometry_obj object from the problem description.
 
         Args:
             config (dict): Dictionary containing the problem description of the QUEENS simulation
@@ -44,7 +44,7 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
 
     def main_run(self):
         """
-        Main routine of geometry object
+        Main routine of external_geometry_obj object
 
         Returns:
             None
@@ -57,7 +57,7 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def read_external_data(self):
         """
-        Method that reads in external files containing a geometry definition
+        Method that reads in external files containing a external_geometry_obj definition
         """
         pass
 

@@ -8,19 +8,32 @@ from pqueens.utils.script_generator import generate_submission_script
 from pqueens.utils.injector import inject
 from pqueens.utils.numpy_array_encoder import NumpyArrayEncoder
 from pqueens.utils.string_extractor_and_checker import extract_string_from_output
+from pqueens.randomfields.univariate_field_generator_factory import (
+    UniVarRandomFieldGeneratorFactory,  # TODO we should create a unified interface for rf
+)
 
 
 class BaciDriver(Driver):
     """
     Driver to run BACI
+
+    Attributes:
+        workdir (str): Path to the working directory of QUEENS experiment
+        external_geometry_obj (obj): Object instance of external external_geometry_obj definition
+        random_fields_lst (lst): List of descriptions of random fields
+        random_fields_realized_lst (lst): List containing one realization of potentially several
+                                          random fields
     """
 
-    def __init__(self, base_settings, workdir):
+    def __init__(self, base_settings, workdir, external_geometry_obj, random_fields_lst):
         super(BaciDriver, self).__init__(base_settings)
         self.workdir = workdir
+        self.external_geometry_obj = external_geometry_obj
+        self.random_fields_lst = random_fields_lst
+        self.random_fields_realized_lst = []
 
     @classmethod
-    def from_config_create_driver(cls, base_settings, workdir):
+    def from_config_create_driver(cls, base_settings, workdir=None):
         """
         Create Driver to run BACI from input configuration
         and set up required directories and files
@@ -28,12 +41,18 @@ class BaciDriver(Driver):
         Args:
             base_settings (dict): dictionary with base settings of parent class
                                   (depreciated: will be removed soon)
-            workdir (str):        path to working directory
+            workdir (str): path to working directory
 
         Returns:
-            BaciDriver (obj):     instance of BaciDriver class
+            BaciDriver (obj): instance of BaciDriver class
 
         """
+        # potentially create an external external_geometry_obj object for dat-file manipulation
+        external_geometry_obj = base_settings["external_geometry_obj"]
+
+        # get list of random field tuples: name, type
+        random_fields_lst = base_settings["random_fields_lst"]
+
         # set destination directory and output prefix
         dest_dir = os.path.join(str(base_settings['experiment_dir']), str(base_settings['job_id']))
         base_settings['output_prefix'] = (
@@ -84,7 +103,7 @@ class BaciDriver(Driver):
             base_settings['output_directory'], error_file_str
         )
 
-        return cls(base_settings, workdir)
+        return cls(base_settings, workdir, external_geometry_obj, random_fields_lst)
 
     # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def prepare_input_files(self):
@@ -150,8 +169,8 @@ class BaciDriver(Driver):
         # set output and core of target file opt
         output_file_opt = '--file=' + self.output_file
         target_file_opt_core = '--output=' + self.output_directory
-        
-        if (self.post_options is not None):
+
+        if self.post_options is not None:
             for num, option in enumerate(self.post_options):
                 # set extension of target file opt and final target file opt
                 target_file_opt_ext = self.file_prefix + "_" + str(num + 1)
@@ -259,6 +278,48 @@ class BaciDriver(Driver):
             )
 
     # ----- RUN METHODS ---------------------------------------------------------
+    # overload the parent pre_job_run method
+    def pre_job_run(self):
+        """
+        Runtime manipulations on the dat-file that need to be performed before the actual
+        simulation run. This method overloads the same-named parent method.
+
+        Returns:
+            None
+
+        """
+        if self.external_geometry_obj is not None:
+            # TODO currently we have to perform the main run here a second time
+            # TODO this is not optimal and should be changed but ok for now
+            self.external_geometry_obj.main_run()
+            # realize random field sample form decomposition here
+            # pylint: disable=line-too-long
+            self.random_fields_realized_lst = UniVarRandomFieldGeneratorFactory.calculate_one_truncated_realization_of_all_fields(
+                self.database,
+                self.job_id,
+                self.experiment_name,
+                self.batch,
+                self.experiment_dir,
+                self.random_fields_lst,
+            )
+            # pylint: enable=line-too-long
+            self._manipulate_dat_file()
+        super(BaciDriver, self).pre_job_run()
+
+    def _manipulate_dat_file(self):
+        """
+        Helper method that calls the dat-file manipulation method from the external_geometry_obj.
+
+        Returns:
+            None
+
+        """
+        # set also new name for copied dat-file
+        if self.random_fields_lst is not None:
+            self.simulation_input_template = self.external_geometry_obj.write_random_fields_to_dat(
+                self.random_fields_realized_lst
+            )
+
     def run_job_via_script(self):
         """
         Run BACI with the following scheduling options:

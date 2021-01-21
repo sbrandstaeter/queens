@@ -39,9 +39,10 @@ class BmfmcInterface(Interface):
                               points on which the probabilistic mapping should be evaluated
 
         Returns:
-            mean_Y_HF_given_Z_LF (np.array): Vector of mean predictions :math:`\\mathbb{E}_{f^*}[p(
-                                             y_{HF}^*|f^*,z_{LF}^*,\\mathcal{D}_{f})]` for the
-                                             HF model given the low-fidelity feature input
+            mean_Y_HF_given_Z_LF (np.array): Vector of mean predictions
+                                             :math:`\\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,
+                                             \\mathcal{D}_{f})]` for the HF model given the
+                                             low-fidelity feature input
             var_Y_HF_given_Z_LF (np.array): Vector of variance predictions :math:`\\mathbb{V}_{
                                             f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\\mathcal{D}_{f})]` for the
                                             HF model given the low-fidelity feature input
@@ -50,7 +51,7 @@ class BmfmcInterface(Interface):
 
         if self.probabilistic_mapping_obj is None:
             raise RuntimeError(
-                "The probabilistic mapping has not been properly initialized, " "cannot continue!"
+                "The probabilistic mapping has not been properly initialized, cannot continue!"
             )
 
         output = self.probabilistic_mapping_obj.predict(Z_LF, support=support, full_cov=full_cov)

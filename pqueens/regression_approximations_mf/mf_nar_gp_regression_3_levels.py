@@ -239,7 +239,7 @@ class MF_NAR_GP_Regression_3_Levels(object):
 
             Args:
                 Xnew (np.array):    Inputs at which to evaluate latent function f
-                num_samples (int):  Number of posterior realizations of GP
+                num_samples (int):  Number of posterior field_realizations of GP
 
             Returns:
                 np.array: samples of latent function at Xnew
