@@ -66,7 +66,7 @@ class BMFMCModel(Model):
                                 the training input according to :math:`Y_{LF,i}=y_{LF,i}(X)`
         X_mc (np.array): Matrix of simulation inputs that were used in the Monte-Carlo sampling
                          of the LF models. Each row is one input set for a simulation. Columns
-                         refer to different realizations of the same variable
+                         refer to different field_realizations of the same variable
         Y_LFs_mc (np.array): Output vector/matrix for the LF models that correspond to the X_mc
                             according to :math:`Y_{LF,i}^*=y_{LF,i}(X^*)`. At the moment Y_LF_mc
                             contains in one row scalar results for different LF models. (In the
@@ -92,8 +92,9 @@ class BMFMCModel(Model):
                              corresponding to the Monte-Carlo input Z_mc according to
                              :math:`\\mathrm{m}_{f^*}(Z^*)`
         y_pdf_support (np.array): Support grid for HF output density :math:`p(y_{HF})`
-        p_yhf_mean (np.array): Vector that contains the mean approximation of the HF output
-                               density defined on y_hf_support. The vector p_yhf_mean is defined as:
+        p_yhf_mean (np.array): Vector that contains the mean approximation of the HF
+                               output density defined on y_hf_support. The vector p_yhf_mean is
+                               defined as:
                                :math:`\\mathbb{E}_{f^*}\\left[p(y_{HF}^*|f^*,D_f)\\right]`
                                according to eq. (14) in [1]
         p_yhf_var (np.array): Vector that contains the variance approximation of the HF output
@@ -253,8 +254,8 @@ class BMFMCModel(Model):
         Returns:
             output (dict): Dictionary containing the core results and some additional quantities:
                            *  Z_mc: LF-features Monte-Carlo data
-                           *  m_f_mc: posterior mean values of probabilistic mapping (f) for LF
-                                      Monte-Carlo inputs (Y_LF_mc or Z_mc)
+                           *  m_f_mc: posterior mean values of probabilistic mapping (f)
+                                      for LF Monte-Carlo inputs (Y_LF_mc or Z_mc)
                            *  var_y_mc: posterior variance of probabilistic mapping (f) for LF
                                         Monte-Carlo inputs (Y_LF_mc or Z_mc)
                            *  y_pdf_support: PDF support used in this analysis

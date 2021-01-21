@@ -1,5 +1,4 @@
 import numpy as np
-import re
 import os
 import pytest
 from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
@@ -10,10 +9,10 @@ from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 def default_geo_obj(tmpdir):
     path_to_dat_file = os.path.join(tmpdir, 'myfile.dat')
     list_geometric_sets = ["DSURFACE 9"]
-    node_topology = {"node_mesh": [], "node_topology": []}
-    line_topology = {"node_mesh": [], "line_topology": []}
-    surface_topology = {"node_mesh": [], "surface_topology": []}
-    volume_topology = {"node_mesh": [], "volume_topology": []}
+    node_topology = [{"node_mesh": [], "node_topology": [], "topology_name": ""}]
+    line_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
+    surface_topology = [{"node_mesh": [], "surface_topology": [], "topology_name": ""}]
+    volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
     node_coordinates = {"node_mesh": [], "coordinates": []}
 
     geo_obj = BaciDatExternalGeometry(
@@ -170,10 +169,10 @@ def default_topology_vol():
 def test_init(mocker):
     path_to_dat_file = 'dummy_path'
     list_geometric_sets = ["DSURFACE 9"]
-    node_topology = {"node_mesh": [], "node_topology": []}
-    line_topology = {"node_mesh": [], "line_topology": []}
-    surface_topology = {"node_mesh": [], "line_topology": []}
-    volume_topology = {"node_mesh": [], "volume_topology": []}
+    node_topology = [{"node_mesh": [], "node_topology": [], "topology_name": ""}]
+    line_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
+    surface_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
+    volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
     node_coordinates = {"node_mesh": [], "coordinates": []}
     mp = mocker.patch('pqueens.external_geometry.external_geometry.ExternalGeometry.__init__')
     geo_obj = BaciDatExternalGeometry(
@@ -330,26 +329,26 @@ def test_get_topology(
     if current_dat_sections == 'DNODE-NODE TOPOLOGY':
         for line in default_topology_node:
             default_geo_obj._get_topology(line)
-        assert default_geo_obj.node_topology['node_mesh'] == [1, 2, 4, 9, 13]
-        assert default_geo_obj.node_topology['node_topology'] == [1, 1, 1, 1, 1]
+        assert default_geo_obj.node_topology[0]['node_mesh'] == [1, 2, 4, 9, 13]
+        assert default_geo_obj.node_topology[0]['node_topology'] == [1, 1, 1, 1, 1]
 
     elif current_dat_sections == 'DLINE-NODE TOPOLOGY':
         for line in default_topology_line:
             default_geo_obj._get_topology(line)
-        assert default_geo_obj.line_topology['node_mesh'] == [1, 2, 4, 9, 13]
-        assert default_geo_obj.line_topology['line_topology'] == [1, 1, 1, 1, 1]
+        assert default_geo_obj.line_topology[0]['node_mesh'] == [1, 2, 4, 9, 13]
+        assert default_geo_obj.line_topology[0]['line_topology'] == [1, 1, 1, 1, 1]
 
     elif current_dat_sections == 'DSURF-NODE TOPOLOGY':
         for line in default_topology_surf:
             default_geo_obj._get_topology(line)
-        assert default_geo_obj.surface_topology['node_mesh'] == [1, 2, 4, 9, 13]
-        assert default_geo_obj.surface_topology['surface_topology'] == [1, 1, 1, 1, 1]
+        assert default_geo_obj.surface_topology[0]['node_mesh'] == [1, 2, 4, 9, 13]
+        assert default_geo_obj.surface_topology[0]['surface_topology'] == [1, 1, 1, 1, 1]
 
     elif current_dat_sections == 'DVOL-NODE TOPOLOGY':
         for line in default_topology_vol:
             default_geo_obj._get_topology(line)
-        assert default_geo_obj.volume_topology['node_mesh'] == [1, 2, 4, 9, 13]
-        assert default_geo_obj.volume_topology['volume_topology'] == [1, 1, 1, 1, 1]
+        assert default_geo_obj.volume_topology[0]['node_mesh'] == [1, 2, 4, 9, 13]
+        assert default_geo_obj.volume_topology[0]['volume_topology'] == [1, 1, 1, 1, 1]
 
 
 def test_get_only_desired_topology(default_geo_obj, mocker):
@@ -418,14 +417,14 @@ def test_get_coordinates_of_desired_geometric_sets(default_geo_obj, default_coor
 
 
 def test_get_nodes_of_interest(default_geo_obj):
-    default_geo_obj.node_topology['node_mesh'] = [1, 2, 4, 9, 13]
-    default_geo_obj.node_topology['node_topology'] = [1, 1, 1, 1, 1]
-    default_geo_obj.line_topology['node_mesh'] = [1, 2, 4, 9, 13]
-    default_geo_obj.line_topology['line_topology'] = [1, 1, 1, 1, 1]
-    default_geo_obj.surface_topology['node_mesh'] = [1, 2, 4, 9, 13]
-    default_geo_obj.surface_topology['surface_topology'] = [1, 1, 1, 1, 1]
-    default_geo_obj.volume_topology['node_mesh'] = [1, 2, 4, 9, 13]
-    default_geo_obj.volume_topology['volume_topology'] = [1, 1, 1, 1, 1]
+    default_geo_obj.node_topology[-1]['node_mesh'] = [1, 2, 4, 9, 13]
+    default_geo_obj.node_topology[-1]['node_topology'] = [1, 1, 1, 1, 1]
+    default_geo_obj.line_topology[-1]['node_mesh'] = [1, 2, 4, 9, 13]
+    default_geo_obj.line_topology[-1]['line_topology'] = [1, 1, 1, 1, 1]
+    default_geo_obj.surface_topology[-1]['node_mesh'] = [1, 2, 4, 9, 13]
+    default_geo_obj.surface_topology[-1]['surface_topology'] = [1, 1, 1, 1, 1]
+    default_geo_obj.volume_topology[-1]['node_mesh'] = [1, 2, 4, 9, 13]
+    default_geo_obj.volume_topology[-1]['volume_topology'] = [1, 1, 1, 1, 1]
 
     default_geo_obj._get_nodes_of_interest()
     assert default_geo_obj.nodes_of_interest == [1, 2, 4, 9, 13]

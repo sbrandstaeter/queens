@@ -111,7 +111,7 @@ def test_cluster_morris_salib(
         'cluster_bind': cluster_bind,
         'cluster': cluster,
         'scheduler_type': scheduler_type,
-        'singularity_remote_ip': singularity_remote_ip
+        'singularity_remote_ip': singularity_remote_ip,
     }
 
     injector.inject(dir_dict, template, input_file)

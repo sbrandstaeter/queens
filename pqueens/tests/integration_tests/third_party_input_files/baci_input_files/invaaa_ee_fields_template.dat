@@ -102,16 +102,14 @@ ML_DAMPFINE                     0.69                          // damping fine gr
 ML_DAMPMED                      0.89                          // damping med grids
 ML_DAMPCOARSE                   1.0                           // damping coarse grid
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         12
+NDPOINT                         8
 NDLINE                          20
 NDSURF                          11
 NDVOL                           2
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJCT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          5
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+DPOINT                          3
 E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 E 11 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
@@ -137,8 +135,7 @@ DPOINT                          0
 DLINE                           0
 ----------------------------------------------DESIGN SURF NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC TYPE NSURF
-DSURF                           2
-E 4 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
+DSURF                           1
 E 9 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL -1.0 0.0 0.0 0.0 0.0 0.0 FUNCT 1 1 1 1 1 1 pseudo_orthopressure Mid
 -----------------------------------------------DESIGN VOL NEUMANN CONDITIONS
 // DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC
@@ -228,13 +225,9 @@ DLINE                           0
 // DOBJECT PBC_ID ORIENTATION
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
-NODE 48 DNODE 1
 NODE 52 DNODE 2
-NODE 47 DNODE 3
 NODE 51 DNODE 4
-NODE 26 DNODE 5
 NODE 28 DNODE 6
-NODE 25 DNODE 7
 NODE 27 DNODE 8
 NODE 4 DNODE 9
 NODE 2 DNODE 10

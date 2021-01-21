@@ -44,8 +44,8 @@ def test_init(tmpdir):
 
 def test_plot_QoI_grid(tmpdir, dummy_vis):
     # set arguments
-    output = {"mean": np.array([1., 2., 3., 4.])}
-    samples = np.array([[1., 1.], [2., 2.], [1., 2.], [2., 1.]])
+    output = {"mean": np.array([1.0, 2.0, 3.0, 4.0])}
+    samples = np.array([[1.0, 1.0], [2.0, 2.0], [1.0, 2.0], [2.0, 1.0]])
     num_params = 2
     n_grid_p = [2, 2]
     qvis.grid_iterator_visualization_instance.plot_QoI_grid(output, samples, num_params, n_grid_p)
@@ -75,16 +75,16 @@ def test_higher_d(dummy_vis):
 
 
 def test_plot_one_d(dummy_vis):
-    output = {'mean': np.array([0., 1.])}
-    samples = np.array([0., 1.])
-    dummy = 1.
+    output = {'mean': np.array([0.0, 1.0])}
+    samples = np.array([0.0, 1.0])
+    dummy = 1.0
     return_value = qvis.grid_iterator_visualization_instance._plot_one_d(output, samples, dummy)
     assert return_value is None
 
 
 def test_plot_two_d(dummy_vis):
-    samples = np.array([[0., 0.], [0., 1.], [1., 0.], [1., 1.]])
-    output = {'mean': np.array([0., 1., 0., 1.])}
+    samples = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
+    output = {'mean': np.array([0.0, 1.0, 0.0, 1.0])}
     n_gird_p = [2, 2]
     return_value = qvis.grid_iterator_visualization_instance._plot_two_d(output, samples, n_gird_p)
     assert return_value is None

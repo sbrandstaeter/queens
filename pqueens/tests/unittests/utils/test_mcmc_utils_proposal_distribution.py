@@ -327,7 +327,7 @@ def test_ppf_Lognormal(valid_mean_value, valid_var_value):
 def test_init_NormalProposal_univariate(univariate_normal, valid_mean_value, valid_var_value):
     """ Test init method of NormalProposal class (univariate case). """
 
-    # cholesky decomposition of a scalar is root of scalar
+    # cholesky_decomp_covar_mat decomposition of a scalar is root of scalar
     lower_cholesky = np.atleast_2d(np.sqrt(valid_var_value))
 
     assert univariate_normal.dimension == 1

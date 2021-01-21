@@ -238,18 +238,13 @@ class GridIteratorVisualization(object):
         max_z = max(output['mean'])
 
         # --------------------- plot QoI over samples ---------------------
-        surf = ax.plot_surface(
-            np.log10(x), y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False
-        )
+        surf = ax.plot_surface(np.log10(x), y, z, cmap=cm.coolwarm, linewidth=0, antialiased=False)
         x_formatter = self._get_tick_formatter('x')
         y_formatter = self._get_tick_formatter('y')
 
         # scale axes with user defined tick formatter
         # TODO the formatter contains currently a bug
-        #ax.xaxis.set_major_formatter(mticker.FuncFormatter(x_formatter(samples[:, 0])))
         ax.xaxis.set_major_locator(plt.MaxNLocator(n_grid_p[0]))
-
-        #ax.yaxis.set_major_formatter(mticker.FuncFormatter(y_formatter(samples[:, 1])))
         ax.yaxis.set_major_locator(plt.MaxNLocator(n_grid_p[1]))
 
         # Customize the z axis.

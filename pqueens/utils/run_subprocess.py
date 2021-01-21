@@ -18,7 +18,7 @@ def run_subprocess(command_string, **kwargs):
         command_string (str): Command string that should be run outside of Python
         subprocess_type (str): subprocess_type of run_subprocess from utils
         loggername (str): loggername for logging module
-        terminate_expr (str): regex to search in sdtout on which subprocess will terminate
+        terminate_expr (str): regex to search in stdout on which subprocess will terminate
         output_file (str): output directory + filename-stem to write logfiles
         error_file (str): output directory + filename-stem to write error files
         stream (str): streaming output to given stream

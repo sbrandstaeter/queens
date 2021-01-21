@@ -39,6 +39,8 @@ class TestMCIterator(unittest.TestCase):
         uncertain_parameters["random_variables"] = random_variables
         some_settings = {}
         some_settings["experiment_name"] = "test"
+        dummy_obj = None
+        dummy_db = None
 
         self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
 
@@ -55,17 +57,14 @@ class TestMCIterator(unittest.TestCase):
             num_samples=100,
             result_description=None,
             global_settings=some_settings,
+            external_geometry_obj=dummy_obj,
+            db=dummy_db,
         )
 
     def test_correct_sampling(self):
         """ Test if we get correct samples"""
 
         self.my_iterator.pre_run()
-
-        # np.set_printoptions(precision=10)
-        # print("Samples first row {}".format(self.my_iterator.samples[0,:]))
-        # print("Sample mean {}".format(np.mean(self.my_iterator.samples,axis=0)))
-        # print("Sample std {}".format(np.std(self.my_iterator.samples,axis=0)))
 
         # check if mean and std match
         means_ref = np.array([-1.8735991508e-01, -2.1607203347e-03, 2.8955130234e00])

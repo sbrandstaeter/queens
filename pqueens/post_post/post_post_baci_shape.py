@@ -184,13 +184,17 @@ class PostPostBACIShape(PostPost):
     def create_mesh_and_intersect_vtk(self, path):
 
         """
-        Create vtk representation of deformed geometry and evaluate surface distance measurement for
-        every given timestep from the experiment. (More than one for example for viscous behaviour)
+        Create vtk representation of deformed external_geometry_obj and evaluate surface distance
+        measurement for every given timestep from the experiment. (More than one for example for
+        viscous behaviour)
+
         Args:
             ref_data (list): formatted list from monitor file
             path (string): path to .case result
+
         Returns:
             residual (list): full residual from this post_post class
+
         """
         residual = []
         # get visual feedback for the intersection problems

@@ -46,7 +46,7 @@ def parameters():
                 'max': 1,
                 'corrstruct': 'non_stationary_squared_exp',
                 'corr_length': 0.08,
-                'rel_std': 0.1,
+                'std_hyperparam_rf': 0.1,
                 'mean_fun': 'inflow_parabola',
                 'mean_fun_params': [1.5],
                 'num_points': 10,

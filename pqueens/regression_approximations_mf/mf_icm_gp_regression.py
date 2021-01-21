@@ -140,7 +140,7 @@ class MF_ICM_GP_Regression(object):
 
             Args:
                 Xnew (np.array):    Inputs at which to evaluate latent function f
-                num_samples (int):  Number of posterior realizations of GP
+                num_samples (int):  Number of posterior field_realizations of GP
                 level (int): level for which to make prediction
 
 

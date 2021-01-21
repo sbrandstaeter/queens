@@ -73,13 +73,13 @@ class ClusterScheduler(Scheduler):
                 base_settings['cluster_options']['pbs_nodes'] = '1'
                 base_settings['cluster_options']['pbs_ppn'] = str(ntasks)
             else:
-                num_nodes = np.ceil(ntasks/navppn)
+                num_nodes = np.ceil(ntasks / navppn)
                 if ntasks % num_nodes == 0:
-                    base_settings['cluster_options']['pbs_ppn'] = str(ntasks/num_nodes)
+                    base_settings['cluster_options']['pbs_ppn'] = str(ntasks / num_nodes)
                 else:
                     raise ValueError(
-                       "Number of tasks not evenly distributable, as required for PBS scheduler!"
-                     )
+                        "Number of tasks not evenly distributable, as required for PBS scheduler!"
+                    )
         else:
             # set Slurm start command
             base_settings['cluster_options']['start_cmd'] = 'sbatch'

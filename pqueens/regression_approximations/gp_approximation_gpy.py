@@ -143,7 +143,7 @@ class GPGPyRegression(RegressionApproximation):
 
             Args:
                 Xnew (np.array):    Inputs at which to evaluate latent function f
-                num_samples (int):  Number of posterior realizations of GP
+                num_samples (int):  Number of posterior field_realizations of GP
 
             Returns:
                 np.array, np.array: mean and variance of latent functions at Xnew

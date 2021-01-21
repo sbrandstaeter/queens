@@ -14,6 +14,8 @@ variables at runtime.
   ../pqueens /
   ../pqueens/drivers /
   ../pqueens/database /
+  ../pqueens/external_geometry /
+  ../pqueens/randomfields /
   ../pqueens/utils /
   ../setup_remote.py /
   ../pqueens/remote_main.py /
@@ -36,7 +38,7 @@ variables at runtime.
   # set anaconda path
   export PATH="/usr/local/anaconda/bin:$PATH"
   conda update -y conda
-  conda create -y -n QUEENS python=3.7 cython numpy pymongo matplotlib plotly pandas vtk xarray
+  conda create -y -n QUEENS python=3.7 cython numpy pymongo matplotlib plotly pandas vtk xarray scipy
   /usr/local/anaconda/envs/QUEENS/bin/pip install pyansys docker
   cd /
   mkdir scratch
@@ -45,6 +47,8 @@ variables at runtime.
   chmod -R +xr /pqueens/drivers
   chmod -R +xr /pqueens/database
   chmod -R +xr /pqueens/utils
+  chmod -R +xr /pqueens/external_geometry
+  chmod -R +xr /pqueens/randomfields
   chmod -R +xr /setup_remote.py
   chmod -R +xr /pqueens/remote_main.py
 
