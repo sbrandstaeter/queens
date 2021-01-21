@@ -81,6 +81,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.scheduler_type = base_settings['scheduler_type']
         self.remote = base_settings['remote']
         self.remote_connect = base_settings['remote_connect']
+        self.remote_python_cmd = base_settings['remote_python_cmd']
         self.singularity = base_settings['singularity']
         self.docker_image = base_settings['docker_image']
         self.num_procs = base_settings['num_procs']
@@ -185,10 +186,13 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['num_procs_post'] = scheduler_options.get('num_procs_post', '1')
         if scheduler_options.get('remote', False):
             base_settings['remote'] = True
-            base_settings['remote_connect'] = scheduler_options['remote']['connect']
+            remote_options = scheduler_options['remote']
+            base_settings['remote_connect'] = remote_options['connect']
+            base_settings['remote_python_cmd'] = remote_options.get('python_cmd', 'python')
         else:
             base_settings['remote'] = False
             base_settings['remote_connect'] = None
+            base_settings['remote_python_cmd'] = None
         base_settings['singularity'] = scheduler_options.get('singularity', False)
 
         # set flag for direct scheduling

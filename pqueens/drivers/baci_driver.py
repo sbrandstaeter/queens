@@ -222,7 +222,8 @@ class BaciDriver(Driver):
         command_list = [
             'ssh',
             self.remote_connect,
-            '"python',
+            '"',
+            self.remote_python_cmd,
             injector_path_on_remote,
             arg_list,
             '"',

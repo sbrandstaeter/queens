@@ -22,7 +22,8 @@ def make_directory_on_remote(remote_connect, directory):
     # detection of failed command
     if stderr:
         raise RuntimeError(
-            "\nDirectory could not be made on remote machine!\nStderr from remote:\n{stderr}"
+            "\nDirectory could not be made on remote machine!\nStderr from remote:"
+            f"\n{stderr}"
         )
 
 
@@ -44,5 +45,6 @@ def copy_directory_to_remote(remote_connect, local_dir, remote_dir):
     # detection of failed command
     if stderr:
         raise RuntimeError(
-            "\nDirectory could not be copied to remote machine!\nStderr from remote:\n{stderr}"
+            "\nDirectory could not be copied to remote machine!\nStderr from remote:"
+            f"\n{stderr}"
         )
