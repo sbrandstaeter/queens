@@ -127,6 +127,7 @@ def driver_base_settings(job):
     base_settings['scheduler_type'] = 'standard'
     base_settings['remote'] = False
     base_settings['remote_connect'] = None
+    base_settings['remote_python_cmd'] = None
     base_settings['singularity'] = False
     base_settings['docker_image'] = None
     base_settings['num_procs'] = 4
