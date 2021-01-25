@@ -77,19 +77,24 @@
       "max-finished-jobs": 1000
     }
   },
-  "scheduler": {
-    "experiment_dir" : "{experiment_dir}",
+  "scheduler" : {
     "scheduler_type": "{scheduler_type}",
-    "cluster_script": "/lnm/share/donottouch.sh",
-    "cluster_walltime" : "120:00:00",
-    "remote" : true,
-    "remote_connect" : "{connect_to_resource}",
-    "singularity" : true,
-    "singularity_remote_ip": "{singularity_remote_ip}",
-    "singularity_cluster_path" : "{path_to_singularity}",
-    "singularity_cluster_bind" : "{cluster_bind}",
-    "num_procs" : 1,
-    "num_procs_post": 1
+    "experiment_dir": "{experiment_dir}",
+    "num_procs": 1,
+    "num_procs_post": 1,
+    "cluster": {
+      "script": "/lnm/share/donottouch.sh",
+      "walltime": "120:00:00"
+    },
+    "remote": {
+      "connect": "{connect_to_resource}"
+    },
+    "singularity": true,
+    "singularity_settings": {
+      "remote_ip": "{singularity_remote_ip}",
+      "cluster_path": "{path_to_singularity}",
+      "cluster_bind": "{cluster_bind}"
+    }
   },
   "parameters": {
     "random_variables": {
