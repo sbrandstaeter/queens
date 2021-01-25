@@ -468,15 +468,23 @@ class BaciDriver(Driver):
         """ 
         Run command for postprocessing
         """
-        # assemble post-processing command
-        pp_cmd = self.assemble_postprocessing_cmd(output_file_opt, target_file_opt, option)
-
-        # wrap up post-processing command for remote scheduling or
-        # directly use post-processing command for local scheduling
-        if self.do_postprocessing == 'remote':
-            final_pp_cmd = self.assemble_remote_postprocessing_cmd(pp_cmd)
+        # assemble post-processing command with three options:
+        # 1) post-processing with Singularity container on cluster with Slurm or PBS
+        # 2) local post-processing
+        # 3) remote post-processing
+        if self.do_postprocessing == 'cluster_sing':
+            final_pp_cmd = self.assemble_sing_postprocessing_cmd(
+                output_file_opt, target_file_opt, option
+            )
         else:
-            final_pp_cmd = pp_cmd
+            pp_cmd = self.assemble_postprocessing_cmd(output_file_opt, target_file_opt, option)
+
+            # wrap up post-processing command for remote scheduling or
+            # directly use post-processing command for local scheduling
+            if self.do_postprocessing == 'remote':
+                final_pp_cmd = self.assemble_remote_postprocessing_cmd(pp_cmd)
+            else:
+                final_pp_cmd = pp_cmd
 
         # run post-processing command and print potential error messages
         _, _, _, stderr = run_subprocess(final_pp_cmd)
@@ -625,13 +633,36 @@ class BaciDriver(Driver):
         return final_nohup_baci_run_cmd
 
     def assemble_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
-        """  Assemble command for postprocessing
+        """  Assemble general command for postprocessing
 
             Returns:
                 postprocessing command
 
         """
+        # set MPI command
+        if self.docker_image is not None:
+            mpi_cmd = '/usr/lib64/openmpi/bin/mpirun --allow-run-as-root -np'
+        else:
+            mpi_cmd = 'mpirun -np'
 
+        command_list = [
+            mpi_cmd,
+            str(self.num_procs_post),
+            self.postprocessor,
+            output_file_opt,
+            option,
+            target_file_opt,
+        ]
+
+        return ' '.join(filter(None, command_list))
+
+    def assemble_sing_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
+        """  Assemble command for postprocessing in Singularity container
+
+            Returns:
+                Singularity postprocessing command
+
+        """
         command_list = [
             self.postprocessor,
             output_file_opt,

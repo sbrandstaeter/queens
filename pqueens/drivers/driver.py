@@ -256,12 +256,20 @@ class Driver(metaclass=abc.ABCMeta):
         # with the following prerequisite:
         # post-processor given and either no direct scheduling or direct
         # scheduling with post-processing options (e.g., post_drt_monitor)
-        # and further distinguish whether it needs to be done remotely
+        # further distinguish:
+        # 1) local post-processing
+        # 2) remote post-processing
+        # 3) post-processing with Singularity container on cluster with Slurm or PBS
         if (base_settings['postprocessor'] is not None) and (
             (not base_settings['direct_scheduling']) or (base_settings['post_options'] is not None)
         ):
-            if base_settings['remote']:
+            if base_settings['remote'] and not base_settings['singularity']:
                 base_settings['do_postprocessing'] = 'remote'
+            elif base_settings['singularity'] and (
+                base_settings['scheduler_type'] == 'pbs'
+                or base_settings['scheduler_type'] == 'slurm'
+            ):
+                base_settings['do_postprocessing'] = 'cluster_sing'
             else:
                 base_settings['do_postprocessing'] = 'local'
         else:
