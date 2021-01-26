@@ -9,8 +9,10 @@ from collections import OrderedDict
 import os
 import sys
 import time
-
+import pathlib
 import pyfiglet
+
+from pqueens.utils.logger_settings import setup_logging
 
 try:
     import simplejson as json
@@ -53,6 +55,10 @@ def main(args):
     # read input
     start_time_input = time.time()
     options = get_options(args)
+    setup_logging(
+        pathlib.Path(options["global_settings"]["output_dir"]),
+        options["global_settings"]["experiment_name"]
+    )
 
     # build iterator
     my_iterator = Iterator.from_config_create_iterator(options)
