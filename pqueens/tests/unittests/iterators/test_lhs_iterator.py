@@ -59,6 +59,7 @@ class TestLHSIterator(unittest.TestCase):
             num_iterations=1,
             result_description=None,
             global_settings=some_settings,
+            criterion='maximin'
         )
 
     def test_correct_sampling(self):

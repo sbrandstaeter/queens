@@ -20,6 +20,8 @@ from pqueens.utils.plot_outputs import plot_pdf
 from pqueens.utils.plot_outputs import plot_cdf
 from pqueens.utils.plot_outputs import plot_failprob
 from pqueens.utils.plot_outputs import plot_icdf
+import logging
+_logger = logging.getLogger(__name__)
 
 
 def process_ouputs(output_data, output_description, input_data=None):
@@ -156,9 +158,9 @@ def estimate_result_interval(output_data):
 
     """
     samples = output_data["mean"]
-    print(samples)
+    _logger.debug(samples)
     min_data = np.amin(samples)
-    print(min_data)
+    _logger.debug(min_data)
     max_data = np.amax(samples)
 
     interval_length = max_data - min_data

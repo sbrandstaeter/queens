@@ -14,6 +14,10 @@ class TestQUEENSMain(unittest.TestCase):
     def setUp(self):
         self.options = {
             "experiment_name": "my_test",
+            "global_settings": {
+                "output_dir": 'dummy_path',
+                "experiment_name": 'xxx'
+            },
             "method": {
                 "method_name": "monte_carlo",
                 "method_options": {"seed": 42, "num_samples": 20, "model": "model"},

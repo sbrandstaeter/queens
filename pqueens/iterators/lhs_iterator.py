@@ -5,6 +5,9 @@ from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 from pqueens.utils.scale_samples import scale_samples
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class LHSIterator(Iterator):
@@ -22,13 +25,21 @@ class LHSIterator(Iterator):
     """
 
     def __init__(
-        self, model, seed, num_samples, num_iterations, result_description, global_settings
+        self,
+        model,
+        seed,
+        num_samples,
+        num_iterations,
+        result_description,
+        global_settings,
+        criterion,
     ):
         super(LHSIterator, self).__init__(model, global_settings)
         self.seed = seed
         self.num_samples = num_samples
         self.num_iterations = num_iterations
         self.result_description = result_description
+        self.criterion = criterion
         self.samples = None
         self.output = None
 
@@ -64,6 +75,7 @@ class LHSIterator(Iterator):
             method_options.get("num_iterations", 10),
             result_description,
             global_settings,
+            method_options.get("criterion", "maximin"),
         )
 
     def eval_model(self):
@@ -98,9 +110,14 @@ class LHSIterator(Iterator):
             temp["distribution_parameter"] = rv["distribution_parameter"]
             distribution_info.append(temp)
 
+        _logger.info(f'Number of inputs: {num_inputs}')
+        _logger.info(f'Number of samples: {self.num_samples}')
+        _logger.info(f'Criterion: {self.criterion}')
+        _logger.info(f'Number of iterations: {self.num_iterations}')
+
         # create latin hyper cube samples in unit hyper cube
         hypercube_samples = lhs(
-            num_inputs, self.num_samples, 'maximin', iterations=self.num_iterations
+            num_inputs, self.num_samples, criterion=self.criterion, iterations=self.num_iterations
         )
         # scale and transform samples according to the inverse cdf
         self.samples = scale_samples(hypercube_samples, distribution_info)
@@ -122,8 +139,8 @@ class LHSIterator(Iterator):
                     self.global_settings["output_dir"],
                     self.global_settings["experiment_name"],
                 )
-        # else:
-        print("Size of inputs {}".format(self.samples.shape))
-        print("Inputs {}".format(self.samples))
-        print("Size of outputs {}".format(self.output['mean'].shape))
-        print("Outputs {}".format(self.output['mean']))
+
+        _logger.info("Size of inputs {}".format(self.samples.shape))
+        _logger.debug("Inputs {}".format(self.samples))
+        _logger.info("Size of outputs {}".format(self.output['mean'].shape))
+        _logger.debug("Outputs {}".format(self.output['mean']))
