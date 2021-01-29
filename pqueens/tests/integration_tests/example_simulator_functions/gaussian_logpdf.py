@@ -1,4 +1,5 @@
 from pqueens.utils.mcmc_utils import NormalProposal
+import numpy as np
 
 mean = 0.0
 covariance = 1.0
@@ -26,12 +27,12 @@ def gaussian_logpdf(x):
 
         [1] https://en.wikipedia.org/wiki/Normal_distribution
     """
-    y = standard_normal.logpdf(x)
+    y = np.atleast_2d(standard_normal.logpdf(x))
     return y
 
 
 def main(job_id, params):
-    """ Interface to 1D Guassian model
+    """ Interface to 1D Gaussian model
 
     Args:
         job_id (int):  ID of job

@@ -1,15 +1,13 @@
 import abc
 from copy import deepcopy
-
 import numpy as np
-
 from pqueens.variables.variables import Variables
 
 
 class Model(metaclass=abc.ABCMeta):
     """ Base class of model hierarchy
 
-         The model hierarchy contains a set of variables, an interface,
+        The model hierarchy contains a set of variables, an interface,
         and a set of responses. An iterator operates on the model to map
         the variables into responses using the interface.
 
@@ -58,6 +56,7 @@ class Model(metaclass=abc.ABCMeta):
         from .data_fit_surrogate_model_mf import MFDataFitSurrogateModel
         from .multifidelity_model import MultifidelityModel
         from .bmfmc_model import BMFMCModel
+        from .likelihood_models.likelihood_model import LikelihoodModel
 
         model_dict = {
             'simulation_model': SimulationModel,
@@ -65,6 +64,7 @@ class Model(metaclass=abc.ABCMeta):
             'datafit_surrogate_model_mf': MFDataFitSurrogateModel,
             'multi_fidelity_model': MultifidelityModel,
             'bmfmc_model': BMFMCModel,
+            'likelihood_model': LikelihoodModel,
         }
 
         model_options = config[model_name]
@@ -111,10 +111,11 @@ class Model(metaclass=abc.ABCMeta):
         #    temp_variable.update_variables_from_vector(data_vector)
         #    new_var = deepcopy(temp_variable)
         #    self.variables.append(new_var)
-
+        # TODO JN: the variable class is strange we should change this
         num_variables = len(self.variables)
         num_data_vectors = data.shape[0]
 
+        # TODO JN: I dont understand the del statement
         if num_variables > num_data_vectors:
             del self.variables[num_data_vectors:]
 

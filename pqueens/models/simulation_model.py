@@ -1,4 +1,3 @@
-import numpy as np
 from .model import Model
 from pqueens.interfaces.interface import Interface
 

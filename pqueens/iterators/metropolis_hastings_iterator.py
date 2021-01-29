@@ -229,6 +229,7 @@ class MetropolisHastingsIterator(Iterator):
         """
 
         log_prior = np.zeros((self.num_chains, 1))
+        self.model.update_model_from_sample_batch(chains)
         for i in range(chains.shape[0]):
             j = 0
             for _, variable in self.model.variables[i].variables.items():
@@ -241,7 +242,7 @@ class MetropolisHastingsIterator(Iterator):
         """ Evaluate natural logarithm of likelihood at samples of chains. """
 
         self.model.update_model_from_sample_batch(chains)
-        log_likelihood = self.eval_model()['mean']
+        log_likelihood = self.eval_model()
 
         return log_likelihood
 
@@ -272,7 +273,6 @@ class MetropolisHastingsIterator(Iterator):
         log_accept_prob = log_posterior_prop - self.log_posterior[step_id - 1]
 
         new_sample, accepted = mcmc_utils.mh_select(log_accept_prob, cur_sample, proposal)
-
         self.accepted += accepted
         self.accepted_interval += accepted
 

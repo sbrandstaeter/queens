@@ -48,6 +48,10 @@ dependencies:
   - vtk
 # enforce package compliance of parso package
   - parso>=0.8.0
+# wrapper around numpy for automated differentiation
+  - autograd
+# multiprocessing with more complex python objects
+  - pathos
 # it's recommended to list pip explicitly
   - pip
   - pip:

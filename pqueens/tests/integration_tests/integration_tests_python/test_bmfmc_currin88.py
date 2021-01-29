@@ -136,4 +136,4 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     )
 
     kl_divergence = entropy(p_yhf_mc, results['raw_output_data']['p_yhf_mean'])
-    assert kl_divergence < 0.15
+    assert kl_divergence < 0.3

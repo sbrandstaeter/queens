@@ -1,5 +1,3 @@
-""" This should be a docstring """
-
 import abc
 import os
 import glob
@@ -10,11 +8,11 @@ class PostPost(metaclass=abc.ABCMeta):
     """ Base class for post post processing
 
         Attributes:
-            delete_data_flag (bool):  Delete files after processing
-            file_prefix ():           Prefix of result files
-            error ():
-            output_dir (str):         Path to result files
-            result ():
+            delete_data_flag (bool): Delete files after processing
+            file_prefix (str): Prefix of result files
+            error (bool): Indicator for erroneous simulation
+            output_dir (str): Path to result files
+            result (np.array or xarray): Result of simulation used in QUEENS analysis
 
     """
 
@@ -36,13 +34,15 @@ class PostPost(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_post_post(cls, config):
-        """ Create PostPost object from problem description
+        """
+        Create PostPost object from problem description
 
         Args:
             config (dict): input json file with problem description
 
         Returns:
             post_post: post_post object
+
         """
 
         from .post_post_ansys import PostPostANSYS
@@ -51,14 +51,18 @@ class PostPost(metaclass=abc.ABCMeta):
         from .post_post_generic import PostPostGeneric
         from .post_post_openfoam import PostPostOpenFOAM
         from .post_post_baci_shape import PostPostBACIShape
+        from .post_post_net_cdf import PostPostNetCDF
+        from .post_post_baci_vectorized import PostPostBACIVector
 
         post_post_dict = {
             'ansys': PostPostANSYS,
             'baci': PostPostBACI,
+            'baci_vector': PostPostBACIVector,
             'deal': PostPostDEAL,
             'generic': PostPostGeneric,
             'openfoam': PostPostOpenFOAM,
             'baci_shape': PostPostBACIShape,
+            'netCDF': PostPostNetCDF,
         }
 
         # determine which object to create
@@ -71,6 +75,8 @@ class PostPost(metaclass=abc.ABCMeta):
             post_post_version = 'ansys'
         elif post_post_options['post_post_approach_sel'] == 'baci':
             post_post_version = 'baci'
+        elif post_post_options['post_post_approach_sel'] == 'baci_vector':
+            post_post_version = 'baci_vector'
         elif post_post_options['post_post_approach_sel'] == 'deal':
             post_post_version = 'deal'
         elif post_post_options['post_post_approach_sel'] == 'generic':
@@ -79,6 +85,8 @@ class PostPost(metaclass=abc.ABCMeta):
             post_post_version = 'baci_shape'
         elif post_post_options['post_post_approach_sel'] == 'openfoam':
             post_post_version = 'openfoam'
+        elif post_post_options['post_post_approach_sel'] == 'netCDF':
+            post_post_version = 'netCDF'
         else:
             raise RuntimeError("post_post_approach_sel not set, fix your input file")
 
@@ -87,10 +95,7 @@ class PostPost(metaclass=abc.ABCMeta):
         # ---------------------------- CREATE BASE SETTINGS ---------------------------
         base_settings = {}
         base_settings['options'] = post_post_options
-        # base_settings['file_prefix'] = post_post_options['file_prefix']
-        # base_settings['usecols'] = post_post_options['usecols']
-        # base_settings['delete_field_data'] = post_post_options['delete_field_data']
-
+        base_settings['config'] = config
         post_post = post_post_class.from_config_create_post_post(base_settings)
         return post_post
 

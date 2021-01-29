@@ -113,8 +113,10 @@ class Resource(object):
 
         """
         if jobs:
-            return [job for job in jobs if job['resource'] == self.name]
-            # filter(lambda job: job['resource']==self.name, jobs)
+            try:
+                return [job for job in jobs if job['resource'] == self.name]
+            except TypeError:
+                raise TypeError('The design of the jobs list seems wrong! Abort...')
         return jobs
 
     def accepting_jobs(self, num_pending_jobs):

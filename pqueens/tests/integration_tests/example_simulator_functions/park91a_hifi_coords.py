@@ -2,8 +2,9 @@ import numpy as np
 import math
 
 
-def park91a_hifi(x1, x2, x3, x4):
-    """ High-fidelity Park91a function
+def park91a_hifi_coords(x1, x2, x3, x4):
+    """ High-fidelity Park91a function with x3 and x4 as fixed coordinates. Coordinates are
+    prescribed in the main function of this module.
 
     Simple four dimensional benchmark function as proposed in [1] to mimic
     a computer model. For the purpose of multi-fidelity simulation, [3]
@@ -49,6 +50,12 @@ def park91a_hifi(x1, x2, x3, x4):
 
     y = term1 + term2
 
+    # catch non-numeric values in case x is outside of allowed design space
+    if math.isnan(y):
+        y = 100
+    if math.isinf(y):
+        y = 100
+
     return y
 
 
@@ -62,4 +69,18 @@ def main(job_id, params):
     Returns:
         float: Value of the function at parameter specified in input dict
     """
-    return park91a_hifi(params['x1'], params['x2'], params['x3'], params['x4'])
+
+    # use x3 and x4 as coordinates and create coordinate grid
+    xx3 = np.linspace(0, 1, 4)
+    xx4 = np.linspace(0, 1, 4)
+    x3_vec, x4_vec = np.meshgrid(xx3, xx4)
+    x3_vec = x3_vec.flatten()
+    x4_vec = x4_vec.flatten()
+
+    # evaluate testing functions for coordinates and fixed input
+    y_vec = []
+    for x3, x4 in zip(x3_vec, x4_vec):
+        y_vec.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4))
+    y_vec = np.array(y_vec)
+
+    return y_vec

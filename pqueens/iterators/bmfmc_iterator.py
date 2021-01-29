@@ -341,11 +341,11 @@ class BMFMCIterator(Iterator):
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
     def post_run(self):
         """
-        Saving and plotting of the results. The latter will be moved to a separate module in the
-        future.
+        Saving and plotting of the results.
 
         Returns:
             None
+
         """
         # plot the figures
         qvis.bmfmc_visualization_instance.plot_pdfs(self.output)

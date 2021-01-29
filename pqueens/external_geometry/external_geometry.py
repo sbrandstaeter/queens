@@ -34,11 +34,14 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
             'baci_dat': BaciDatExternalGeometry,
         }
 
-        geometry_version = config['external_geometry']['type']
-        geometry_class = geometry_dict[geometry_version]
-
-        # create specific driver
-        geometry_obj = geometry_class.from_config_create_external_geometry(config)
+        geometry = config.get('external_geometry')
+        if geometry is not None:
+            geometry_version = geometry.get('type')
+            geometry_class = geometry_dict[geometry_version]
+            # create specific driver
+            geometry_obj = geometry_class.from_config_create_external_geometry(config)
+        else:
+            geometry_obj = None
 
         return geometry_obj
 
