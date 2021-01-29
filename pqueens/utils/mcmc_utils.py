@@ -3,9 +3,14 @@ Collection of utility functions and classes for Markov Chain Monte Carlo algorit
 """
 
 import abc
-import numpy as np
 import scipy.linalg
 import scipy.stats
+import autograd.numpy as np
+import numpy as npy
+from scipy.optimize import curve_fit
+import autograd.numpy.random as npr
+import autograd.scipy.stats.norm as norm
+from scipy.stats import multivariate_normal as mvn
 
 
 class ProposalDistribution:
@@ -83,7 +88,7 @@ class Uniform(ProposalDistribution):
         Return ndarray of shape num_draws with samples between [a, b).
         """
 
-        return np.random.uniform(low=self.a, high=self.b, size=num_draws)
+        return npy.random.uniform(low=self.a, high=self.b, size=num_draws)
 
     def logpdf(self, x):
 
@@ -115,7 +120,7 @@ class LogNormal(ProposalDistribution):
 
         # sanity checks:
         if sigma <= 0:
-            raise ValueError(f"Sigma has to be positiv. (sigma > 0). You supplied {sigma}")
+            raise ValueError(f"Sigma has to be positive. (sigma > 0). You supplied {sigma}")
 
         self.mu = mu
         self.sigma = sigma
@@ -137,7 +142,7 @@ class LogNormal(ProposalDistribution):
         return scipy.stats.lognorm.cdf(x, s=self.sigma, scale=np.exp(self.mu))
 
     def draw(self, num_draws=1):
-        return np.random.lognormal(mean=self.mu, sigma=self.sigma, size=num_draws)
+        return npy.random.lognormal(mean=self.mu, sigma=self.sigma, size=num_draws)
 
     def logpdf(self, x):
         return -self.K2 * (np.log(x) - self.mu) ** 2 + self.log_K1 - np.log(x)
@@ -203,18 +208,26 @@ class NormalProposal(ProposalDistribution):
 
     def draw(self, num_draws=1):
         uncorrelated_vector = (
-            np.random.randn(self.dimension, num_draws)
+            npy.random.randn(self.dimension, num_draws)
             .reshape((self.dimension, num_draws))
             .reshape((self.dimension, num_draws))
         )
         return (
-            np.reshape(self.mean, (self.dimension, 1))
-            + (np.dot(self.low_chol, uncorrelated_vector))
+            npy.reshape(self.mean, (self.dimension, 1))
+            + (npy.dot(self.low_chol, uncorrelated_vector))
         ).T
 
     def logpdf(self, x):
-        y = x - self.mean
-        logpdf = self.log_K1 - 0.5 * np.dot(np.dot(y, self.Q), y)
+        if self.dimension == 1:
+            logpdf = (
+                -np.log(np.sqrt(self.covariance))
+                - 0.5 * np.log(2 * np.pi)
+                - 0.5 * ((x - self.mean) ** 2 / self.covariance)
+            )
+        else:
+            y = x - self.mean
+            logpdf = self.log_K1 - 0.5 * np.dot(np.dot(y, self.Q), y)
+
         return logpdf
 
     def ppf(self, q):
@@ -232,6 +245,120 @@ class NormalProposal(ProposalDistribution):
         return pdf
 
 
+class MeanFieldNormalProposal(ProposalDistribution):
+    """
+    Uncorrelated mean field multivariate normal distribution.
+    """
+
+    def __init__(self, mean, diag_covariance):
+        if len(mean) != len(diag_covariance):
+            raise ValueError(
+                "The dimensions of the mean vector and variance vector do not match! " "Abort ..."
+            )
+        else:
+            dimension = len(mean)
+            self.params_per_dim = (
+                np.ones((1, dimension)) * 2
+            )  # might be important for more complex densities
+
+        super(MeanFieldNormalProposal, self).__init__(mean, diag_covariance, dimension)
+
+    def cdf(self, x):
+        raise NotImplementedError(
+            "Efficient computation of mean-field normal CDF is not " "implemented, yet. Abort ..."
+        )
+
+    def draw(self, variational_params, num):
+        D = variational_params.size // 2
+        mu, cov = variational_params[:D], np.exp(2 * variational_params[D:])
+        sample = npr.randn(num, D) * np.sqrt(cov).reshape(1, -1) + mu.reshape(1, -1)
+        return sample
+
+    def log_pdf_rb(self, variational_params, x):
+        """
+        Evaluate the logarithm of the Gaussian mean field approach separately per dimension
+
+        Args:
+            x (np.array): Input matrix containing row-wise input vectors at which the density
+                          should be evaluated at
+
+        Returns:
+            logpdf (np.array): Vector containing logarithm of the Gaussian mean field density
+                               corresponding to each input vector
+
+        """
+        D = variational_params.size // 2
+        mu, cov = variational_params[:D], np.exp(2 * variational_params[D:])
+
+        logpdf = np.empty((0, 1))
+        x = x.T
+        # calculate log variational distribution based on current variational parameters
+        for d in range(D):
+            logpdf = np.vstack((logpdf, norm.logpdf(x[d], loc=(mu[d]), scale=(np.sqrt(cov[d])))))
+
+        # we have to do this for both params so stack the result ones again
+        logpdf = np.vstack((logpdf, logpdf))
+        return logpdf
+
+    def log_pdf_rb_for_grad(self, variational_params, x):
+        """
+        Evaluate the logarithm of the Gaussian mean field approach
+
+        Args:
+            x (np.array): Input matrix containing row-wise input vectors at which the density
+                          should be evaluated at
+
+        Returns:
+            logpdf (float): Standard logpdf result for the variational distribution
+
+        """
+        D = variational_params.size // 2
+        mu, cova = variational_params[:D], np.exp(2 * variational_params[D:])
+        S_inv = np.diag((1 / cova).flatten())
+
+        # calculate log variational distribution based on current variational parameters
+        logpdf = -0.5 * (
+            np.log(np.prod(cova))
+            + np.dot(np.dot((x - mu), S_inv), (x - mu).T)
+            + D * np.log(2 * np.pi)
+        )
+
+        return logpdf.flatten()
+
+    def ppf(self, q):
+        raise RuntimeError(
+            "ppf for multivariate gaussians is not supported.\n"
+            "It is not uniquely defined, since cdf is not uniquely defined! "
+        )
+
+    def pdf(self, variational_params, x):
+        """Evaluate the pdf at the location x"""
+        D = variational_params.size // 2
+        mu, cova = variational_params[:D], np.exp(2 * variational_params[D:])
+        cov = np.diag(cova.flatten())
+        pdf = mvn.pdf(x, mean=mu.flatten(), cov=cov)
+        return pdf
+
+    def update_distribution_params(self, distribution_params):
+        # TODO below automated differentiation (take exp into account)
+        # TODO below automated differentiation (take exp into account)
+        """
+        Update distribution parameters from list
+        Args:
+            distribution_params (lst): List containing mean and variance parameters for Gaussian
+                                       mean field approach. The first half of the list contains
+                                       the mean values and the second half of the list the
+                                       variance parameters.
+
+        Returns:
+            None
+
+        """
+        half_list = len(distribution_params) // 2
+        self.mean = distribution_params[:half_list]
+        self.covariance = list(np.array(distribution_params[half_list:]))
+
+
 def create_proposal_distribution(distribution_options):
     """ Create proposal distribution object from parameter dictionary
 
@@ -246,18 +373,28 @@ def create_proposal_distribution(distribution_options):
     if distribution_type is None:
         distribution = None
     else:
-        # TODO: what if we have  a distribution with more than two shape parameters
-        shape_parameter_1, shape_parameter_2 = distribution_options.get(
-            'distribution_parameter', list()
-        )
-        # shape_parameter_1 = np.squeeze(np.asarray(distribution_options['proposal_mean']))
-        # shape_parameter_2 = np.squeeze(np.asarray(distribution_options['proposal_covariance']))
+        distr_params = distribution_options.get('distribution_parameter', list())
+        if isinstance(distr_params, list):
+            shape_parameters_1, shape_parameters_2 = distribution_options.get(
+                'distribution_parameter', list()
+            )
+        elif isinstance(distr_params, dict):
+            shape_parameters_1 = distr_params.get("mean")
+            shape_parameters_2 = distr_params.get("standard_deviation")
+        else:
+            raise TypeError(
+                "The distribution parameters of the variational distribution have to "
+                "be passed in list or dictionary format! Abort..."
+            )
+
         if distribution_type == 'normal':
-            distribution = NormalProposal(mean=shape_parameter_1, covariance=shape_parameter_2)
+            distribution = NormalProposal(mean=shape_parameters_1, covariance=shape_parameters_2)
+        elif distribution_type == 'mean_field_normal':
+            distribution = MeanFieldNormalProposal(shape_parameters_1, shape_parameters_2)
         elif distribution_type == 'uniform':
-            distribution = Uniform(a=shape_parameter_1, b=shape_parameter_2)
+            distribution = Uniform(a=shape_parameters_1, b=shape_parameters_2)
         elif distribution_type == 'lognormal':
-            distribution = LogNormal(mu=shape_parameter_1, sigma=shape_parameter_2)
+            distribution = LogNormal(mu=shape_parameters_1, sigma=shape_parameters_2)
         else:
             supported_proposal_types = {'normal', 'lognormal', 'uniform'}
             raise ValueError(
@@ -271,15 +408,15 @@ def create_proposal_distribution(distribution_options):
 def mh_select(log_acceptance_probability, current_sample, proposed_sample):
     """Do Metropolis Hastings selection"""
 
-    isfinite = np.isfinite(log_acceptance_probability)
+    isfinite = npy.isfinite(log_acceptance_probability)
     accept = (
-        np.log(np.random.uniform(size=log_acceptance_probability.shape))
+        npy.log(npy.random.uniform(size=log_acceptance_probability.shape))
         < log_acceptance_probability
     )
 
     bool_idx = isfinite * accept
 
-    selected_samples = np.where(bool_idx, proposed_sample, current_sample)
+    selected_samples = npy.where(bool_idx, proposed_sample, current_sample)
 
     return selected_samples, bool_idx
 

@@ -224,7 +224,7 @@ class SequentialMonteCarloIterator(Iterator):
         """ Evaluate natural logarithm of likelihood at sample. """
 
         self.model.update_model_from_sample(sample)
-        log_likelihood = self.eval_model()['mean']
+        log_likelihood = self.eval_model()
 
         return log_likelihood
 

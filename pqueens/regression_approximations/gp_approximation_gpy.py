@@ -68,7 +68,9 @@ class GPGPyRegression(RegressionApproximation):
 
     def train(self):
         """ Train the GP by maximizing the likelihood """
-        self.m.optimize_restarts(num_restarts=5, max_iters=1000, messages=True)
+        self.m.optimize_restarts(
+            num_restarts=5, max_iters=1000, messages=True, robust=True, seed=42
+        )  # TODO pull the seed out to json
         display(self.m)
 
     def predict(self, Xnew, support='y', full_cov=False):
