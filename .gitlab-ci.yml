@@ -1,4 +1,9 @@
 #---------------------------------------------------------------------------------------------------
+# Define variables
+#---------------------------------------------------------------------------------------------------
+variables:
+  PYTEST_OPTIONAL_PARAMETERS: ""
+#---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
 stages:
@@ -100,7 +105,9 @@ docker_full_test_suite_develop:
     - .docker_settings
     - .full_test_suite_develop
   script:
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/
+    - echo "executing:"
+    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
+    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS
 
 centos_full_test_suite_develop:
   extends:
@@ -111,7 +118,9 @@ centos_full_test_suite_develop:
     - /usr/bin/singularity --version
     - /usr/bin/singularity build --fakeroot ../driver.simg ../singularity_recipe
     - cd ../
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/
+    - echo "executing:"
+    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
+    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS
 #----------------------------------------------------------------------------------------------
 .full_test_suite_master:
   # run full test suite on one core to be safe, meant for master branch only
@@ -128,7 +137,9 @@ docker_full_test_suite_master:
     - .docker_settings
     - .full_test_suite_master
   script:
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/  --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
+    - echo "executing:"
+    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
+    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/  --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
 
 centos_full_test_suite_master:
   extends:
@@ -139,7 +150,9 @@ centos_full_test_suite_master:
     - /usr/bin/singularity --version
     - /usr/bin/singularity build --fakeroot ../driver.simg ../singularity_recipe
     - cd ../
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report
+    - echo "executing:"
+    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
+    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   artifacts:
     name: coverage_report
     paths:
