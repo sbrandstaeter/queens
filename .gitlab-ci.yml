@@ -54,13 +54,22 @@ stages:
   tags:
     - queens-centos
 
+#----------------------------------------------------------------------------------------------
+.codechecks_settings:
+  extends:
+    - .centos_settings
+  stage: codechecks
+  only:
+  tags:
+    - codechecks
+
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: codechecks
 #---------------------------------------------------------------------------------------------------
 code_analysis:
   # code analysis with pylint
   extends:
-    - .centos_settings
+    - .codechecks_settings
   stage: codechecks
   script:
     - pylint --output-format=parseable pqueens | tee track_pylint.txt
@@ -75,7 +84,7 @@ code_analysis:
 documentation:
   # build the documentation
   extends:
-    - .centos_settings
+    - .codechecks_settings
   stage: codechecks
   script:
     - sphinx-apidoc -o doc/source pqueens -f -M
@@ -93,12 +102,11 @@ documentation:
 license_check:
   # check licence compliance
   extends:
-    - .centos_settings
+    - .codechecks_settings
   stage: codechecks
   script:
     - ./parse_env_for_liccheck.sh
     - liccheck -s lic_strategy.ini  -r requirements.tmp
-
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
