@@ -2,7 +2,12 @@
 # Define variables
 #---------------------------------------------------------------------------------------------------
 variables:
+  # flags to turn on/ off tests for specific platforms
+  DOCKER_TESTS: "1"
+  CENTOS_TESTS: "1"
+  # optional parameters for pytest calls
   PYTEST_OPTIONAL_PARAMETERS: ""
+
 #---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
@@ -28,6 +33,9 @@ stages:
     - conda env create -f environment.yml -n queens
     - source activate queens
     - python setup.py develop
+  only:
+    variables:
+      - $DOCKER_TESTS == "1"
   tags:
     - queens-docker
 
@@ -40,6 +48,9 @@ stages:
     - python setup.py develop
   after_script:
     - conda env remove -n queens-$CI_JOB_ID
+  only:
+    variables:
+      - $CENTOS_TESTS == "1"
   tags:
     - queens-centos
 
