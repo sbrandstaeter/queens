@@ -61,13 +61,16 @@ class DataFitSurrogateModel(Model):
         parameters = model_options["parameters"]
         model_parameters = config[parameters]
 
-        subordinate_model_name = model_options["subordinate_model"]
+        subordinate_model_name = model_options.get("subordinate_model", None)
         subordinate_iterator_name = model_options["subordinate_iterator"]
         eval_fit = model_options.get("eval_fit", None)
         error_measures = model_options.get("error_measures", None)
 
         # create subordinate model
-        subordinate_model = Model.from_config_create_model(subordinate_model_name, config)
+        if subordinate_model_name is not None:
+            subordinate_model = Model.from_config_create_model(subordinate_model_name, config)
+        else:
+            subordinate_model = None
 
         # create subordinate iterator
         subordinate_iterator = Iterator.from_config_create_iterator(
