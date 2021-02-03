@@ -1,6 +1,4 @@
 import glob
-from io import StringIO
-import os
 import numpy as np
 import pandas as pd
 from pqueens.post_post.post_post import PostPost
@@ -10,30 +8,42 @@ class PostPostBACI(PostPost):
     """ Class for post-post-processing BACI output
 
         Attributes:
-            time_tol (float):       Tolerance if desired time can not be matched exactly
-            target_time (float):    Time at which to evaluate QoI
-            skiprows (int):         Number of header rows to skip
+            time_tol_lst (lst):     List with tolerances if desired time can not be matched
+                                    exactly. Entries relate to files that are post-post processed
+            target_time_lst (lst):  Time at which to evaluate QoI
+            skip_rows_lst (lst):    List with number of header rows to skip per post-processed file
 
     """
 
-    def __init__(self, time_tol, target_time, skiprows, usecols, delete_data_flag, file_prefix):
+    def __init__(
+        self,
+        time_tol_lst,
+        target_time_lst,
+        skip_rows_lst,
+        use_cols_lst,
+        delete_data_flag,
+        post_post_file_name_prefix_lst,
+    ):
         """ Init PostPost object
 
         Args:
-            time_tol (float):         Tolerance if desired time can not be matched exactly
-            target_time (float):      Time at which to evaluate QoI
-            skiprows (int):           Number of header rows to skip
-            usecols (list):           Index of columns to use in result file
+            time_tol_lst (lst):    List with tolerances if desired time can not be matched
+                                     exactly. Entries relate to files that are post-post  processed
+            target_time_lst (lst): List with time at which to evaluate QoI per respective
+                                     post-file
+            skip_rows_lst (lst):      List with number of header rows to skip per post-file
+            use_cols_lst (list):      List with indices of columns to use in result file. List
+                                      entry corresponds to files in post_post_file_name_prefix_lst
             delete_data_flag (bool):  Delete files after processing
-            file_prefix (str):        Prefix of result files
+            post_post_file_name_prefix_lst (lst): List with prefixes of result files
 
         """
 
-        super(PostPostBACI, self).__init__(delete_data_flag, file_prefix)
-        self.usecols = usecols
-        self.time_tol = time_tol
-        self.target_time = target_time
-        self.skiprows = skiprows
+        super(PostPostBACI, self).__init__(delete_data_flag, post_post_file_name_prefix_lst)
+        self.use_col_lst = use_cols_lst
+        self.time_tol_lst = time_tol_lst
+        self.target_time_lst = target_time_lst
+        self.skip_rows_lst = skip_rows_lst
 
     @classmethod
     def from_config_create_post_post(cls, options):
@@ -46,16 +56,36 @@ class PostPostBACI(PostPost):
             post_post: PostPostBACI object
         """
         post_post_options = options['options']
-        time_tol = post_post_options['time_tol']
-        target_time = post_post_options['target_time']
-        skiprows = post_post_options['skiprows']
-        usecols = post_post_options['usecols']
+
+        time_tol_lst = post_post_options['time_tol_lst']
+        assert isinstance(time_tol_lst, list), "The option time_tol_lst must be of type list!"
+
+        target_time_lst = post_post_options['target_time_lst']
+        assert isinstance(target_time_lst, list), "The option target_time_lst must be of type list!"
+
+        skip_rows_lst = post_post_options['skip_rows_lst']
+        assert isinstance(skip_rows_lst, list), "The option skip_rows_lst must be of type list!"
+
+        use_col_lst = post_post_options['use_col_lst']
+        assert isinstance(use_col_lst, list), "The option use_col_lst must be of type list!"
+
         delete_data_flag = post_post_options['delete_field_data']
-        file_prefix = post_post_options['file_prefix']
 
-        return cls(time_tol, target_time, skiprows, usecols, delete_data_flag, file_prefix)
+        post_post_file_name_prefix_lst = post_post_options['post_post_file_name_prefix_lst']
+        assert isinstance(
+            post_post_file_name_prefix_lst, list
+        ), "The option post_post_file_name_prefix_lst must be of type list!"
 
-    def read_post_files(self, files_of_interest):
+        return cls(
+            time_tol_lst,
+            target_time_lst,
+            skip_rows_lst,
+            use_col_lst,
+            delete_data_flag,
+            post_post_file_name_prefix_lst,
+        )
+
+    def read_post_files(self, files_of_interest, num):
         """ Loop over post files in given output directory """
 
         post_files_list = glob.glob(files_of_interest)
@@ -68,11 +98,13 @@ class PostPostBACI(PostPost):
                 post_data = pd.read_csv(
                     filename,
                     sep=r',|\s+',
-                    usecols=self.usecols,
-                    skiprows=self.skiprows,
+                    usecols=self.use_col_lst[num],
+                    skiprows=self.skip_rows_lst[num],
                     engine='python',
                 )
-                identifier = abs(post_data.iloc[:, 0] - self.target_time) < self.time_tol
+                identifier = (
+                    abs(post_data.iloc[:, 0] - self.target_time_lst[num]) < self.time_tol_lst[num]
+                )
                 quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
                 post_out = np.append(post_out, quantity_of_interest)
                 # very simple error check

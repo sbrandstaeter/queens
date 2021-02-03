@@ -101,7 +101,7 @@ def ansys_driver(driver_base_settings, fake_database, mocker):
 
     driver_base_settings['custom_executable'] = 'my_custom_ansys'
     driver_base_settings['cae_software_version'] = 'v15'
-    driver_base_settings['file_prefix'] = 'rst'
+    driver_base_settings['post_file_name_prefix_lst'] = 'rst'
     driver_base_settings['direct_scheduling'] = False
     driver_base_settings['database'] = MongoDB.from_config_create_database(
         {"database": {"address": "localhost:27017"}}

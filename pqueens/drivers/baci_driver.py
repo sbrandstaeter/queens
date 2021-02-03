@@ -1,5 +1,6 @@
 import os
 import json
+import pathlib
 
 from pqueens.drivers.driver import Driver
 from pqueens.utils.run_subprocess import run_subprocess
@@ -8,6 +9,7 @@ from pqueens.utils.script_generator import generate_submission_script
 from pqueens.utils.injector import inject
 from pqueens.utils.numpy_array_encoder import NumpyArrayEncoder
 from pqueens.utils.string_extractor_and_checker import extract_string_from_output
+from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,  # TODO we should create a unified interface for rf
 )
@@ -60,7 +62,9 @@ class BaciDriver(Driver):
         )
 
         # set path to input file
-        input_file_str = base_settings['output_prefix'] + '.dat'
+        file_extension_obj = pathlib.PurePosixPath(base_settings['simulation_input_template'])
+        input_file_str = base_settings['output_prefix'] + file_extension_obj.suffix
+
         base_settings['input_file'] = os.path.join(dest_dir, input_file_str)
 
         # set path to output directory (either on local or remote machine)
@@ -170,26 +174,15 @@ class BaciDriver(Driver):
         output_file_opt = '--file=' + self.output_file
         target_file_opt_core = '--output=' + self.output_directory
 
-        if self.post_options is not None:
-            for num, option in enumerate(self.post_options):
+        if self.post_options:
+            for num, (option, target_file_prefix) in enumerate(
+                zip(self.post_options, self.post_file_name_prefix_lst)
+            ):
                 # set extension of target file opt and final target file opt
-                target_file_opt_ext = self.file_prefix + "_" + str(num + 1)
-                target_file_opt = os.path.join(target_file_opt_core, target_file_opt_ext)
+                target_file_opt = os.path.join(target_file_opt_core, target_file_prefix)
 
                 # run post-processing command
                 self.run_postprocessing_cmd(output_file_opt, target_file_opt, option)
-        else:
-            # set target file opt
-            if self.do_postpostprocessing is not None:
-                target_file_opt = os.path.join(target_file_opt_core, self.file_prefix)
-            else:
-                target_file_opt = ''
-
-            # set no option
-            option = ''
-
-            # run post-processing command
-            self.run_postprocessing_cmd(output_file_opt, target_file_opt, option)
 
     # ----- METHODS FOR PREPARATIVE TASKS ON REMOTE MACHINE ---------------------
     def prepare_input_file_on_remote(self):
@@ -367,9 +360,11 @@ class BaciDriver(Driver):
         )
 
         # redirect stdout/stderr output to log and error file, respectively,
-        # for Slurm and PBS (CAE stdout/stderr on remote for A-II,
-        # submission stdout/stdderr on local for B-II)
+        # for Slurm, PBS (CAE stdout/stderr on remote for A-II, submission
+        # stdout/stderr on local for B-II) and remote standard scheduling
         if self.scheduler_type == 'pbs' or self.scheduler_type == 'slurm':
+            # override the pid with cluster scheduler id
+            self.pid = get_cluster_job_id(self.scheduler_type, stdout)
             with open(self.log_file, "a") as text_file:
                 print(stdout, file=text_file)
             with open(self.error_file, "a") as text_file:
@@ -633,10 +628,18 @@ class BaciDriver(Driver):
         return final_nohup_baci_run_cmd
 
     def assemble_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
-        """  Assemble general command for postprocessing
+        """
+        Assemble command for postprocessing
 
-            Returns:
-                postprocessing command
+        Args:
+            output_file_opt (str): Path (with name) to the simulation output files without the
+                                   file extension
+            target_file_opt (str): Path (with name) of the post-processed file without the file
+                                   extension
+            option (str): Post-processing options for external post-processor
+
+        Returns:
+            postprocessing command
 
         """
         # set MPI command

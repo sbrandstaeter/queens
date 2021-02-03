@@ -125,16 +125,6 @@ class ECSTaskScheduler(Scheduler):
         """
         raise ValueError("\nSingularity cannot be used with ECS task scheduling!")
 
-    def get_cluster_job_id(self):
-        """
-        Not necessary for AWS ECS scheduler but mandatory for parent class initialization
-
-        Returns:
-            None
-
-        """
-        pass
-
     def alive(self, process_id):  # TODO: seems not to be used
         """
         Not necessary for AWS ECS scheduler but mandatory for parent class initialization

@@ -9,9 +9,11 @@ import pytest
 import scipy.stats
 
 from pqueens.utils.mcmc_utils import create_proposal_distribution
+from pqueens.utils.mcmc_utils import BetaDistribution
 from pqueens.utils.mcmc_utils import LogNormal
 from pqueens.utils.mcmc_utils import NormalProposal
 from pqueens.utils.mcmc_utils import Uniform
+
 
 ########################### UNIFORM ####################################
 @pytest.fixture(params=[-2.0, -1.0, 0.0, 1.0, 2.0])
@@ -148,6 +150,16 @@ def uncorrelated_vector(num_draws):
 def lognormal_distr(valid_mean_value, valid_var_value):
     """ A lognormal distribution. """
     return LogNormal(mu=valid_mean_value, sigma=np.sqrt(valid_var_value))
+
+
+# -------- some fixtures for the beta distribution
+@pytest.fixture()
+def default_beta_distr():
+    a = 2.0
+    b = 2.0
+    loc = 1
+    scale = 2
+    return BetaDistribution(a, b, loc, scale)
 
 
 ########################################################################
@@ -490,6 +502,21 @@ def test_ppf_NormalProposal_multivariate(multivariate_normal):
     """ Test ppf method of NormalProposal class (multivariate case). """
     with pytest.raises(RuntimeError):
         multivariate_normal.ppf(q=0.5)
+
+
+# ---- some quick analytic tests for the beta distribution
+def test_pdf_beta(default_beta_distr):
+    x = 2.0
+    pdf_value = default_beta_distr.pdf(x)
+    expected_pdf_value = 0.75
+    np.testing.assert_almost_equal(pdf_value, expected_pdf_value, decimal=4)
+
+
+def test_cdf_beta(default_beta_distr):
+    x = 2.0
+    cdf_value = default_beta_distr.cdf(x)
+    expected_cdf_value = 0.5
+    np.testing.assert_almost_equal(cdf_value, expected_cdf_value, decimal=4)
 
 
 ####################### Create Distribution ############################
