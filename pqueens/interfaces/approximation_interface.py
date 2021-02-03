@@ -124,6 +124,6 @@ class ApproximationInterface(Interface):
                 self.config, self.approximation_name, X[train_index], Y[train_index]
             )
             approximation.train()
-            outputs[test_index] = approximation.predict_f(X[test_index].T)['mean']
+            outputs[test_index] = approximation.predict(X[test_index].T, support='f')['mean']
 
         return outputs
