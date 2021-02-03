@@ -38,6 +38,8 @@ class JobInterface(Interface):
         restart_from_finished_simulation (bool): true if restart option is chosen
         parameters (dict):                       dictionary with parameters
         connect (string):                        connection to computing resource
+        time_for_data_copy (float): Time (s) to wait such that copying process of simulation
+                                    input file can finish and we do not overload the network
 
     """
 
@@ -55,6 +57,7 @@ class JobInterface(Interface):
         remote_connect,
         scheduler_type,
         direct_scheduling,
+        time_for_data_copy
     ):
         """ Create JobInterface
 
@@ -68,6 +71,8 @@ class JobInterface(Interface):
             parameters (dict):          dictionary with parameters
             restart_flag (bool):        true if restart option is chosen
             remote_connect (string):    connection to computing resource
+            time_for_data_copy (float): Time (s) to wait such that copying process of simulation
+                                        input file can finish and we do not overload the network
         """
         self.name = interface_name
         self.resources = resources
@@ -83,6 +88,7 @@ class JobInterface(Interface):
         self.remote_connect = remote_connect
         self.scheduler_type = scheduler_type
         self.direct_scheduling = direct_scheduling
+        self.time_for_data_copy = time_for_data_copy
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -155,6 +161,10 @@ class JobInterface(Interface):
         # print out database information
         print_database_information(db, restart=restart)
 
+        # get waiting time for copying data
+        interface_options = config[interface_name]
+        time_for_data_copy = interface_options.get('time_for_data_copy')
+
         # instantiate object
         return cls(
             interface_name,
@@ -169,6 +179,7 @@ class JobInterface(Interface):
             remote_connect,
             scheduler_type,
             direct_scheduling,
+            time_for_data_copy
         )
 
     def map(self, samples):
@@ -774,6 +785,9 @@ class JobInterface(Interface):
                         {"status": "pending", "resource": resource_name}
                     )
                     if resource.accepting_jobs(num_pending_jobs=num_pending_jobs_of_resource):
+                        # wait with submission of next job
+                        if self.time_for_data_copy is not None:
+                            time.sleep(self.time_for_data_copy)
                         # try to load existing job (with same jobid) from the database
                         current_job = self.load_jobs(
                             field_filters={

@@ -2,9 +2,9 @@ import sys
 import os
 import numpy as np
 from .scheduler import Scheduler
-from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
+from pqueens.utils.cluster_utils import get_cluster_job_id
 
 
 class ClusterScheduler(Scheduler):
@@ -34,7 +34,7 @@ class ClusterScheduler(Scheduler):
         cluster_input_options = base_settings['cluster_input_options']
         singularity_input_options = base_settings['singularity_input_options']
 
-        # initalize sub-dictionary for cluster options within base settings
+        # initialize sub-dictionary for cluster options within base settings
         base_settings['cluster_options'] = {}
 
         # get general cluster options
@@ -232,7 +232,7 @@ class ClusterScheduler(Scheduler):
                     )
 
                 # check matching of job ID
-                match = self.get_cluster_job_id(stdout)
+                match = get_cluster_job_id(self.scheduler_type, stdout)
 
                 try:
                     return int(match)
@@ -271,26 +271,6 @@ class ClusterScheduler(Scheduler):
                 return 0
         else:
             raise ValueError("\nSingularity cannot yet be used locally on computing clusters!")
-            return None
-
-    def get_cluster_job_id(self, output):
-        """
-        Helper function to retrieve job_id information after
-        submitting a job to the job scheduling software
-
-        Args:
-            output (string): Output returned when submitting the job
-
-        Returns:
-            match object (str): with regular expression matching job id
-
-        """
-        if self.scheduler_type == 'pbs':
-            output = output.split('.')[0]
-        else:
-            output = output.split()[-1]
-
-        return output
 
     def alive(self, process_id):  # TODO method might me depreciated!
         """ Check whether job is alive
@@ -375,6 +355,8 @@ class ClusterScheduler(Scheduler):
         else:
             return True
 
+    # TODO this method needs to be replaced by job_id/scheduler_id check
+    #  we can only check here if job was completed but might still be failed though
     def check_job_completion(self, job):
         """
         Check whether this job has been completed
@@ -383,29 +365,51 @@ class ClusterScheduler(Scheduler):
             None
 
         """
-        # intialize completion and failure flags to false
+        # initialize completion and failure flags to false
         # (Note that failure is not checked for cluster scheduler
         #  and returned false in any case.)
-        completed = False
+        completed = True
         failed = False
+        job_id = job['id']
+
+        if self.scheduler_type == 'pbs':
+            check_cmd = 'qstat'
+            check_loc = -2
+        elif self.scheduler_type == 'slurm':
+            check_cmd = 'squeue --job'
+            check_loc = -4
+        else:
+            raise RuntimeError('Unknown scheduler type! Abort...')
 
         if self.remote:
-            # indicate completion by existing control file in remote output directory
+            # set check command, check location and delete command for PBS or SLURM
+            # generate check command
             command_list = [
                 'ssh',
                 self.remote_connect,
-                '"ls',
-                job['control_file_path'],
+                '"',
+                check_cmd,
+                str(self.process_id[str(job_id)]),
                 '"',
             ]
-            command_string = ' '.join(command_list)
-            _, _, _, stderr = run_subprocess(command_string)
-
-            if not stderr:
-                completed = True
         else:
-            # indicate completion by existing control file in local output directory
-            completed = os.path.isfile(job['control_file_path'])
+            # generate check command
+            command_list = [
+                check_cmd,
+                str(self.process_id[str(job_id)]),
+            ]
+
+        command_string = ' '.join(command_list)
+        _, _, stdout, stderr = run_subprocess(command_string)
+
+        if stdout:
+            # split output string
+            output = stdout.split()
+
+            # second/fourth to last entry should be job status
+            status = output[check_loc]
+            if status in ['Q', 'R', 'H', 'S']:
+                completed = False
 
         return completed, failed
 

@@ -3,17 +3,11 @@ try:
 except ImportError:
     import json
 import abc
-import os
-import os.path
-import sys
-from collections import OrderedDict
 
 import pqueens.interfaces.job_interface as job_interface
 from pqueens.drivers.driver import Driver
 from pqueens.utils.information_output import print_scheduling_information, print_driver_information
 from pqueens.utils.manage_singularity import SingularityManager
-from pqueens.utils.injector import inject
-from pqueens.utils.run_subprocess import run_subprocess
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -47,8 +41,15 @@ class Scheduler(metaclass=abc.ABCMeta):
         singularity (bool):        flag for use of Singularity containers
         port (int):                (only for remote scheduling with Singularity) port of
                                    remote resource for ssh port-forwarding to database
+        restart (bool):            flag for restart
+        cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
+                                   cluster options
+        ecs_task_options (dict):   (only for ECS task scheduler) further ECS task
+                                   options
         job_id (int):              job ID (used for database organization)
         singularity_manager (obj): instance of Singularity-manager class
+        process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids as
+                           keys
 
     Returns:
         scheduler (obj):           instance of scheduler class
@@ -70,6 +71,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.singularity = base_settings['singularity']
         self.port = None
         self.job_id = None
+        self.process_ids = {}
         self.singularity_manager = SingularityManager(
             remote=self.remote,
             remote_connect=self.remote_connect,
@@ -205,6 +207,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         else:
             pid = self._submit_driver(job_id, batch, restart)
 
+        self.process_ids[str(job_id)] = pid
+
         return pid
 
     def submit_post_post(self, job_id, batch):
@@ -229,10 +233,6 @@ class Scheduler(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def _submit_singularity(self, job_id, batch, restart):
-        pass
-
-    @abc.abstractmethod
-    def get_cluster_job_id(self, output):
         pass
 
     @abc.abstractmethod

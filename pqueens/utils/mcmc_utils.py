@@ -3,6 +3,7 @@ Collection of utility functions and classes for Markov Chain Monte Carlo algorit
 """
 
 import abc
+import numpy as np
 import scipy.linalg
 import scipy.stats
 import autograd.numpy as np
@@ -17,6 +18,7 @@ class ProposalDistribution:
     """ Base class for continuous probability distributions. """
 
     def __init__(self, mean, covariance, dimension):
+        # TODO this base class is not general enough
         self.mean = mean
         self.covariance = covariance
         self.dimension = dimension
@@ -359,6 +361,53 @@ class MeanFieldNormalProposal(ProposalDistribution):
         self.covariance = list(np.array(distribution_params[half_list:]))
 
 
+class BetaDistribution(ProposalDistribution):
+    """
+    A generalized one dim beta distribution based on scipy stats. The generalized beta
+    distribution has a lower bound at :math:`lb = loc` and and upper bound at :math:`ub = loc +
+    scale`. The parameters :math:`a` and :math:`b` determine the shape of the distribution within
+    these bounds.
+
+    Attributes:
+        a (float): Shape parameter of the beta distribution, must be > 0
+        b (float): Shape parameter of the beta distribution, must be > 0
+        loc (float): The lower bound of the beta distribution
+        scale (float): Scaling form the lower bound such that scale + loc defines the upper bound
+    """
+
+    def __init__(self, a, b, loc, scale):
+        # sanity checks:
+        if (a <= 0) or (b <= 0):
+            raise ValueError(
+                f"The parameters a and b have to be positive. (sigma > 0). You "
+                f"supplied a={a} and b={b}"
+            )
+
+        self.a = a
+        self.b = b
+        self.loc = loc
+        self.scale = scale
+        self.distr = scipy.stats.beta(scale=scale, loc=loc, a=a, b=b)
+        super(BetaDistribution, self).__init__(
+            mean=self.distr.mean(), covariance=self.distr.var(), dimension=1
+        )
+
+    def cdf(self, x):
+        return self.distr.cdf(x)
+
+    def draw(self, num_draws=1):
+        return self.distr.rvs(size=num_draws)
+
+    def logpdf(self, x):
+        return self.distr.logpdf(x)
+
+    def pdf(self, x):
+        return self.distr.pdf(x)
+
+    def ppf(self, q):
+        return self.distr.ppf(q)
+
+
 def create_proposal_distribution(distribution_options):
     """ Create proposal distribution object from parameter dictionary
 
@@ -373,30 +422,26 @@ def create_proposal_distribution(distribution_options):
     if distribution_type is None:
         distribution = None
     else:
-        distr_params = distribution_options.get('distribution_parameter', list())
-        if isinstance(distr_params, list):
-            shape_parameters_1, shape_parameters_2 = distribution_options.get(
-                'distribution_parameter', list()
-            )
-        elif isinstance(distr_params, dict):
-            shape_parameters_1 = distr_params.get("mean")
-            shape_parameters_2 = distr_params.get("standard_deviation")
-        else:
-            raise TypeError(
-                "The distribution parameters of the variational distribution have to "
-                "be passed in list or dictionary format! Abort..."
-            )
-
+        shape_parameters = distribution_options.get('distribution_parameter', list())
         if distribution_type == 'normal':
-            distribution = NormalProposal(mean=shape_parameters_1, covariance=shape_parameters_2)
-        elif distribution_type == 'mean_field_normal':
-            distribution = MeanFieldNormalProposal(shape_parameters_1, shape_parameters_2)
+            distribution = NormalProposal(mean=shape_parameters[0], covariance=shape_parameters[1])
         elif distribution_type == 'uniform':
-            distribution = Uniform(a=shape_parameters_1, b=shape_parameters_2)
+            distribution = Uniform(a=shape_parameters[0], b=shape_parameters[1])
         elif distribution_type == 'lognormal':
-            distribution = LogNormal(mu=shape_parameters_1, sigma=shape_parameters_2)
+            distribution = LogNormal(mu=shape_parameters[0], sigma=shape_parameters[1])
+        elif distribution_type == 'mean_field_normal':
+            distribution = MeanFieldNormalProposal(
+                shape_parameters['mean'], shape_parameters['standard_deviation']
+            )
+        elif distribution_type == 'beta':
+            distribution = BetaDistribution(
+                a=shape_parameters[0],
+                b=shape_parameters[1],
+                loc=shape_parameters[2],
+                scale=shape_parameters[3],
+            )
         else:
-            supported_proposal_types = {'normal', 'lognormal', 'uniform'}
+            supported_proposal_types = {'normal', 'lognormal', 'uniform', 'beta'}
             raise ValueError(
                 "Requested distribution type not supported: {0}.\n"
                 "Supported types of proposal distribution:  {1}. "

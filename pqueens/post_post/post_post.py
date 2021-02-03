@@ -8,25 +8,25 @@ class PostPost(metaclass=abc.ABCMeta):
     """ Base class for post post processing
 
         Attributes:
-            delete_data_flag (bool): Delete files after processing
-            file_prefix (str): Prefix of result files
-            error (bool): Indicator for erroneous simulation
+            delete_data_flag (bool):  Delete files after processing
+            post_post_file_name_prefix_lst (lst): List with prefixes of post-processed files
+            error ():
             output_dir (str): Path to result files
-            result (np.array or xarray): Result of simulation used in QUEENS analysis
+            result (np.array): Array containing the quantities of interest
 
     """
 
-    def __init__(self, delete_data_flag, file_prefix):
+    def __init__(self, delete_data_flag, post_post_file_name_prefix_lst):
         """ Init post post class
 
             Args:
                 delete_data_flag (bool): Delete files after processing
-                file_prefix (str):       Prefix of result files
+                post_post_file_name_prefix_lst (lst): List with prefixes of result files
 
         """
 
         self.delete_data_flag = delete_data_flag
-        self.file_prefix = file_prefix
+        self.post_post_file_name_prefix_lst = post_post_file_name_prefix_lst
 
         self.error = False
         self.output_dir = None
@@ -151,7 +151,7 @@ class PostPost(metaclass=abc.ABCMeta):
     def delete_field_data(self, output_dir, remote_connect):
         """ Delete output files except files with given prefix """
 
-        inverse_prefix_expr = r"*[!" + self.file_prefix + r"]*"
+        inverse_prefix_expr = r"*[!" + self.post_post_file_name_prefix_lst + r"]*"
         files_of_interest = os.path.join(output_dir, inverse_prefix_expr)
         post_file_list = glob.glob(files_of_interest)
 
@@ -187,18 +187,23 @@ class PostPost(metaclass=abc.ABCMeta):
                 (from the point of view of the location of the post-processed files)
 
             Returns:
-                result of post_post
-                # TODO determine type
+                result (np.array): Result of the post-post operation which is the current value
+                                   of the quantities of interest
+
         """
 
         # identify post-processed files containing data of interest in "local" output directory
-        prefix_expr = '*' + self.file_prefix + '*'
-        files_of_interest = os.path.join(local_output_dir, prefix_expr)
+        prefix_expr = []
+        files_of_interest = []
+        for file_prefix in self.post_post_file_name_prefix_lst:
+            prefix_expr.append('*' + file_prefix + '*')
+            files_of_interest.append(os.path.join(local_output_dir, prefix_expr[-1]))
 
         if remote_connect is not None:
             # copy identified post-processed files from "local" output directory
             # to "remote" output directory in case of remote scheduling
-            self.copy_post_files(files_of_interest, remote_connect, remote_output_dir)
+            for file in files_of_interest:
+                self.copy_post_files(file, remote_connect, remote_output_dir)
 
             # set output directory to "remote"
             output_dir = remote_output_dir
@@ -207,20 +212,20 @@ class PostPost(metaclass=abc.ABCMeta):
             output_dir = local_output_dir
 
         # get data of interest from identified post-processed files in output directory
-        self.read_post_files(files_of_interest)
+        for num, my_file in enumerate(files_of_interest):
+            self.read_post_files(my_file, num)
 
         # mark failed simulation and set results appropriately in output directory
         self.error_handling(output_dir)
 
         # clear memory by removing all other post-processed files in either "local"
         # or "remote" output directory
-        # TODO check if json input is interpreated as boolean
-        if self.delete_data_flag:
+        if self.delete_data_flag is True:
             self.delete_field_data(output_dir, remote_connect)
 
         return self.result
 
     @abc.abstractmethod
-    def read_post_files(self):
+    def read_post_files(self, files, num):
         """ This method has to be implemented by all child classes """
         pass

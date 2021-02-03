@@ -80,13 +80,3 @@ class NohupScheduler(Scheduler):
             return False
         else:
             return True
-
-    def get_cluster_job_id(self):
-        """
-        Not necessary for nohup scheduler but mandatory for parent class initialization
-
-        Returns:
-            None
-
-        """
-        pass

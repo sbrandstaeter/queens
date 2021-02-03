@@ -52,9 +52,9 @@ class Driver(metaclass=abc.ABCMeta):
                                    respective CAE software
         post_options (list):       (only for post-processing) list containing settings/options
                                    for post-processing
+        post_file_name_prefix_lst (lst): List with unique prefix sequence to name the
+                                         post-processed files by the post-processor
         postpostprocessor (obj):   instance of post-post class
-        file_prefix (str):         unique string sequence identifying files containing
-                                   quantities of interest for post-post-processing
         input_file (str):          path to input file
         input_file_2 (str):        path to second input file (not required for all drivers)
         case_run_script (str):     path to case run script (not required for all drivers)
@@ -97,14 +97,17 @@ class Driver(metaclass=abc.ABCMeta):
         self.custom_executable = base_settings['custom_executable']
         self.cae_software_version = base_settings['cae_software_version']
         self.result = base_settings['result']
+
         self.do_postprocessing = base_settings['do_postprocessing']
         self.postprocessor = base_settings['postprocessor']
         self.post_options = base_settings['post_options']
+        self.post_file_name_prefix_lst = base_settings['post_file_name_prefix_lst']
+
         self.do_postpostprocessing = base_settings['do_postpostprocessing']
         self.postpostprocessor = base_settings['postpostprocessor']
-        self.file_prefix = base_settings['file_prefix']
         self.error_file = base_settings['error_file']
         self.cae_output_streaming = base_settings['cae_output_streaming']
+
         self.input_file = base_settings['input_file']
         self.input_file_2 = base_settings['input_file_2']
         self.case_run_script = base_settings['case_run_script']
@@ -263,6 +266,9 @@ class Driver(metaclass=abc.ABCMeta):
         if (base_settings['postprocessor'] is not None) and (
             (not base_settings['direct_scheduling']) or (base_settings['post_options'] is not None)
         ):
+            base_settings['post_file_name_prefix_lst'] = driver_options.get(
+                'post_file_name_prefix_lst', None
+            )
             if base_settings['remote'] and not base_settings['singularity']:
                 base_settings['do_postprocessing'] = 'remote'
             elif base_settings['singularity'] and (
@@ -282,11 +288,9 @@ class Driver(metaclass=abc.ABCMeta):
             # TODO "hiding" a complete object in the base settings dict is unbelieveably ugly
             # and should be fixed ASAP
             base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(config)
-            base_settings['file_prefix'] = driver_options['post_post']['file_prefix']
             base_settings['cae_output_streaming'] = False
         else:
             base_settings['postpostprocessor'] = None
-            base_settings['file_prefix'] = None
             base_settings['cae_output_streaming'] = True
 
         # 7) initialize driver settings which are not required for all
