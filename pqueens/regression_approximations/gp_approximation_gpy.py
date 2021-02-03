@@ -36,17 +36,16 @@ class GPGPyRegression(RegressionApproximation):
 
     def __init__(self, X, y, num_posterior_samples):
 
-        self.X = X
-        self.y = y
+        self.x_train = X
+        self.y_train = y
         self.num_posterior_samples = num_posterior_samples
 
         # input dimension
-        input_dim = self.X.shape[1]
+        input_dim = self.x_train.shape[1]
 
         # simple GP Model
-        lengthscale_0 = 0.1 * abs(np.max(self.X) - np.min(self.X))  # proper initialization of
-        # length scale
-        variance_0 = abs(np.max(self.y) - np.min(self.y))  # proper initialization of variance
+        lengthscale_0 = 0.1 * abs(np.max(self.x_train) - np.min(self.x_train))
+        variance_0 = abs(np.max(self.y_train) - np.min(self.y_train)) 
 
         k_list = [
             GPy.kern.RBF(
@@ -64,7 +63,7 @@ class GPGPyRegression(RegressionApproximation):
             for k_ele in k_list[1:]:
                 k += k_ele
 
-        self.m = GPy.models.GPRegression(self.X, self.y, kernel=k, normalizer=True)
+        self.m = GPy.models.GPRegression(self.x_train, self.y_train, kernel=k, normalizer=True)
 
     def train(self):
         """ Train the GP by maximizing the likelihood """
