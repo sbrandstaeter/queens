@@ -9,6 +9,12 @@ import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # suppress warnings
 
+# Use GPU acceleration
+if tf.test.gpu_device_name() != '/device:GPU:0':
+    print('WARNING: GPU device not found.')
+else:
+    print('SUCCESS: Found GPU: {}'.format(tf.test.gpu_device_name()))
+
 
 class GPFlowRegression(RegressionApproximation):
     """Class for creating GP regression model based on GPFlow

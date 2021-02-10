@@ -10,6 +10,13 @@ from sklearn.cluster import KMeans
 from gpflow.utilities import print_summary
 
 
+# Use GPU acceleration if possible
+if tf.test.gpu_device_name() != '/device:GPU:0':
+    print('WARNING: GPU device not found.')
+else:
+    print('SUCCESS: Found GPU: {}'.format(tf.test.gpu_device_name()))
+
+
 class HeteroskedasticGP(RegressionApproximation):
     """ Class for creating heteroskedastic GP based regression model based on GPFlow
 
@@ -98,8 +105,8 @@ class HeteroskedasticGP(RegressionApproximation):
         adams_training_rate = approx_options.get('adams_training_rate')
         optimizer_seed = approx_options.get('optimizer_seed')
 
-        gpf_model = HeteroskedasticGP._build_model(num_inducing_points, x_train)
-        optimizer = HeteroskedasticGP._build_optimizer(
+        gpf_model = cls._build_model(num_inducing_points, x_train)
+        optimizer = cls._build_optimizer(
             x_train, y_train, gpf_model, adams_training_rate
         )
 
