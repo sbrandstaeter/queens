@@ -77,8 +77,11 @@ def compute_step_with_bounds(x0, method, rel_step, bounds):
 
     if lb.shape != x0.shape or ub.shape != x0.shape:
         raise ValueError("Inconsistent shapes between bounds and `x0`.")
-
-    h = _compute_absolute_step(rel_step, x0, method)
+    # f0: empty array that the method _compute_absolute_step requires now
+    # not needed for computation only datatype is checked once in method
+    # seems to be a bug in scipy
+    f0 = np.array([])
+    h = _compute_absolute_step(rel_step, x0, f0, method)
 
     if method == '2-point':
         h, use_one_sided = _adjust_scheme_to_bounds(x0, h, 1, '1-sided', lb, ub)
