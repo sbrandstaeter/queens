@@ -71,17 +71,21 @@ class PostPostNetCDF(PostPost):
             replace_non_numerics,
         )
 
-    def read_post_files(self):
+    def read_post_files(self, file_names, **kwargs):
         """
         Read-in netCDF files and interpolate fields at experimental data locations.
         Return then only the interpolated field values on these location in form of a
         np.array.
 
+        Args:
+            file_names (str): Path with filenames without specific extension
+
+        Returns:
+            None
+
+
         """
-        # Read in all netCDF data experiment directory as a xarray
-        prefix_expr = '*' + self.file_prefix + '*.nc'
-        files_of_interest = os.path.join(self.output_dir, prefix_expr)
-        post_file = glob.glob(files_of_interest)
+        post_file = glob.glob(file_names)
         # glob returns arbitrary list -> need to sort the list before using
         post_file.sort()
 
