@@ -363,8 +363,14 @@ class BaciDriver(Driver):
         # for Slurm, PBS (CAE stdout/stderr on remote for A-II, submission
         # stdout/stderr on local for B-II) and remote standard scheduling
         if self.scheduler_type == 'pbs' or self.scheduler_type == 'slurm':
-            # override the pid with cluster scheduler id
-            self.pid = get_cluster_job_id(self.scheduler_type, stdout)
+            if self.singularity is True:
+                # pid is handled by ClusterScheduler._submit_singularity
+                # stdout is raw baci log
+                pass
+            else:
+                # override the pid with cluster scheduler id
+                self.pid = get_cluster_job_id(self.scheduler_type, stdout)
+
             with open(self.log_file, "a") as text_file:
                 print(stdout, file=text_file)
             with open(self.error_file, "a") as text_file:
