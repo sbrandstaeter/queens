@@ -100,8 +100,8 @@ class ClusterScheduler(Scheduler):
             # as potentially excluded nodes
             if cluster_input_options.get('slurm_exclude', False):
                 base_settings['cluster_options']['slurm_exclude'] = ''
-                base_settings['cluster_options']['slurm_excl_node'] = scheduler_options[
-                    'cluster_slurm_excl_node'
+                base_settings['cluster_options']['slurm_excl_node'] = cluster_input_options[
+                    'slurm_excl_node'
                 ]
             else:
                 base_settings['cluster_options']['slurm_exclude'] = '#'
@@ -389,14 +389,14 @@ class ClusterScheduler(Scheduler):
                 self.remote_connect,
                 '"',
                 check_cmd,
-                str(self.process_id[str(job_id)]),
+                str(self.process_ids[str(job_id)]),
                 '"',
             ]
         else:
             # generate check command
             command_list = [
                 check_cmd,
-                str(self.process_id[str(job_id)]),
+                str(self.process_ids[str(job_id)]),
             ]
 
         command_string = ' '.join(command_list)
