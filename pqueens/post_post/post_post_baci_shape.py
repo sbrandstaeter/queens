@@ -52,7 +52,7 @@ class PostPostBACIShape(PostPost):
         )
 
     # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
-    def read_post_files(self, files_of_interest):
+    def read_post_files(self, file_names, **kwargs):
         """
         main evaluation routine of post and post_post are located here
         residual vector has signed scalar entries for distances between surface compared to
@@ -67,9 +67,9 @@ class PostPostBACIShape(PostPost):
 
         # we can make use of specific cut output here
         if self.case_type == 'cut_fsi':
-            path = glob.glob(files_of_interest + 'boundary_of_structure' + '*' + '.case')
+            path = glob.glob(file_names + 'boundary_of_structure' + '*' + '.case')
         elif self.case_type in ['2d_full', '3d_full']:
-            path = glob.glob(files_of_interest + '*' + 'structure.case')
+            path = glob.glob(file_names + '*' + 'structure.case')
         else:
             raise ValueError('case_type unknown')
 

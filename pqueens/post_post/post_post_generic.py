@@ -3,6 +3,8 @@ import glob
 import numpy as np
 import pandas as pd
 from pqueens.post_post.post_post import PostPost
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class PostPostGeneric(PostPost):
@@ -74,19 +76,20 @@ class PostPostGeneric(PostPost):
             post_post_file_name_prefix_lst,
         )
 
-    def read_post_files(self, file_name, current_file_name_num):
+    def read_post_files(self, file_names, **kwargs):
         """
         Loop over post files in given output directory
 
         Args:
-            file_name (str): Path with filename without specific extension
-            current_file_name_num (int): Number of current filename path
+            file_names (str): Path with filenames without specific extension
 
         Returns:
             None
 
         """
-        post_files_list = glob.glob(file_name)
+        idx = kwargs.get('idx')
+
+        post_files_list = glob.glob(file_names)
         # glob returns arbitrary list -> need to sort the list before using
         post_files_list.sort()
         post_out = np.empty(shape=0)
@@ -96,26 +99,27 @@ class PostPostGeneric(PostPost):
                 post_data = pd.read_csv(
                     filename,
                     sep=r',|\s+',
-                    usecols=self.use_col_lst[current_file_name_num],
-                    skiprows=self.skip_rows_lst[current_file_name_num],
+                    usecols=self.use_col_lst[idx],
+                    skiprows=self.skip_rows_lst[idx],
                     engine='python',
                 )
-                quantity_of_interest = post_data.loc[self.use_row_lst[current_file_name_num]]
-                post_out = np.append(post_out, quantity_of_interest)
-                # very simple error check
-                # TODO the error check should be done more selective so that we know which part
-                #  of the result did actually fail
-                if not np.any(post_out):
-                    self.error = True
-                    self.result = None
-                    break
             except IOError:
+                _logger.info("Could not read csv-file.")
+                self.error = True
+                self.result = None
+                break
+
+            quantity_of_interest = post_data.loc[self.use_row_lst[idx]]
+            post_out = np.append(post_out, quantity_of_interest)
+            # very simple error check
+            # TODO the error check should be done more selective so that we know which part
+            #  of the result did actually fail
+            if not np.any(post_out):
                 self.error = True
                 self.result = None
                 break
 
         self.error = False
-
         if self.result is None:
             self.result = post_out
         else:

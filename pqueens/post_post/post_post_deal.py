@@ -43,10 +43,19 @@ class PostPostDEAL(PostPost):
 
         return cls(skiprows, usecols, delete_data_flag, file_prefix)
 
-    def read_post_files(self, files_of_interest):
-        """ Loop over post files in given output directory """
+    def read_post_files(self, file_names, **kwargs):
+        """
+        Loop over post files in given output directory
 
-        post_files_list = glob.glob(files_of_interest)
+        Args:
+            file_names (str): Path with filenames without specific extension
+
+        Returns:
+            None
+
+        """
+
+        post_files_list = glob.glob(file_names)
         # glob returns arbitrary list -> need to sort the list before using
         post_files_list.sort()
         # TODO this is not general but only for navier stokes solver

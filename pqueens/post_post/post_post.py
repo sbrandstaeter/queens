@@ -183,6 +183,8 @@ class PostPost(metaclass=abc.ABCMeta):
 
             Args:
                 local_output_dir (str): Path to "local" output directory
+                remote_connect (str):  address of remote computing resource (only for remote
+                scheduling)
                 remote_output_dir (str): Path to "remote" output directory
                 (from the point of view of the location of the post-processed files)
 
@@ -212,8 +214,8 @@ class PostPost(metaclass=abc.ABCMeta):
             output_dir = local_output_dir
 
         # get data of interest from identified post-processed files in output directory
-        for num, my_file in enumerate(files_of_interest):
-            self.read_post_files(my_file, num)
+        for current_idx, current_file in enumerate(files_of_interest):
+            self.read_post_files(current_file, idx=current_idx)
 
         # mark failed simulation and set results appropriately in output directory
         self.error_handling(output_dir)
@@ -226,6 +228,6 @@ class PostPost(metaclass=abc.ABCMeta):
         return self.result
 
     @abc.abstractmethod
-    def read_post_files(self, files, num):
+    def read_post_files(self, file_names, **kwargs):
         """ This method has to be implemented by all child classes """
         pass

@@ -1,9 +1,9 @@
 import glob
-from io import StringIO
-import os
 import numpy as np
 import pandas as pd
 from pqueens.post_post.post_post import PostPost
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class PostPostBACIVector(PostPost):
@@ -55,12 +55,18 @@ class PostPostBACIVector(PostPost):
 
         return cls(time_tol, target_time, skiprows, usecols, delete_data_flag, file_prefix)
 
-    def read_post_files(self):
-        """ Loop over post files in given output directory """
+    def read_post_files(self, file_names, **kwargs):
+        """
+        Loop over post files in given output directory
 
-        prefix_expr = '*' + self.file_prefix + '*'
-        files_of_interest = os.path.join(self.output_dir, prefix_expr)
-        post_files_list = glob.glob(files_of_interest)
+        Args:
+            file_names (str): Path with filenames without specific extension
+
+        Returns:
+            None
+
+        """
+        post_files_list = glob.glob(file_names)
         post_out = np.empty(shape=0)
 
         for filename in post_files_list:
@@ -72,17 +78,20 @@ class PostPostBACIVector(PostPost):
                     skiprows=self.skiprows,
                     engine='python',
                 )
-                quantity_of_interest = post_data
-                post_out = np.append(post_out, quantity_of_interest)
-
-                # very simple error check
-                if not np.any(post_out):
-                    self.error = True
-                    self.result = None
-                    break
             except IOError:
+                _logger.info("Could not read csv-file.")
                 self.error = True
                 self.result = None
                 break
+
+            quantity_of_interest = post_data
+            post_out = np.append(post_out, quantity_of_interest)
+
+            # very simple error check
+            if not np.any(post_out):
+                self.error = True
+                self.result = None
+                break
+
         self.error = False
         self.result = post_out

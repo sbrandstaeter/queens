@@ -2,6 +2,8 @@ import glob
 import numpy as np
 import pandas as pd
 from pqueens.post_post.post_post import PostPost
+import logging
+_logger = logging.getLogger(__name__)
 
 
 class PostPostBACI(PostPost):
@@ -85,10 +87,20 @@ class PostPostBACI(PostPost):
             post_post_file_name_prefix_lst,
         )
 
-    def read_post_files(self, files_of_interest, num):
-        """ Loop over post files in given output directory """
+    def read_post_files(self, file_names, **kwargs):
+        """
+        Loop over post files in given output directory
 
-        post_files_list = glob.glob(files_of_interest)
+        Args:
+            file_names (str): Path with filenames without specific extension
+
+        Returns:
+            None
+
+        """
+        idx = kwargs.get('idx')
+
+        post_files_list = glob.glob(file_names)
         # glob returns arbitrary list -> need to sort the list before using
         post_files_list.sort()
         post_out = np.empty(shape=0)
@@ -98,23 +110,30 @@ class PostPostBACI(PostPost):
                 post_data = pd.read_csv(
                     filename,
                     sep=r',|\s+',
-                    usecols=self.use_col_lst[num],
-                    skiprows=self.skip_rows_lst[num],
+                    usecols=self.use_col_lst[idx],
+                    skiprows=self.skip_rows_lst[idx],
                     engine='python',
                 )
-                identifier = (
-                    abs(post_data.iloc[:, 0] - self.target_time_lst[num]) < self.time_tol_lst[num]
-                )
-                quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
-                post_out = np.append(post_out, quantity_of_interest)
-                # very simple error check
-                if not post_out:
-                    self.error = True
-                    self.result = None
-                    break
             except IOError:
+                _logger.info("Could not read csv-file.")
                 self.error = True
                 self.result = None
                 break
+
+            identifier = (
+                    abs(post_data.iloc[:, 0] - self.target_time_lst[idx]) < self.time_tol_lst[idx]
+                )
+            if not np.any(identifier):
+                _logger.info("`target_time` not found.")
+                self.error = True
+                self.result = None
+                break
+
+            quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
+            post_out = np.append(post_out, quantity_of_interest)
+
         self.error = False
-        self.result = post_out
+        if self.result is None:
+            self.result = post_out
+        else:
+            self.result = np.append(self.result, post_out)

@@ -55,17 +55,18 @@ class PostPostOpenFOAM(PostPost):
 
         return cls(time_tol, target_time, skiprows, usecols, delete_data_flag, file_prefix)
 
-    def read_post_files(self, files_of_interest):
-        """ Loop over post files in given output directory and extract results """
+    def read_post_files(self, file_names, **kwargs):
+        """ Loop over post files in given output directory and extract results
 
-        # recover prefix and path to output directory
-        output_dir, prefix_expr = os.path.split(files_of_interest)
+        Args:
+            file_names (str): Path with filenames without specific extension
 
-        # set path to time directory and get files of interest
-        time_dir = os.path.join(output_dir, str(self.target_time))
-        files_of_interest = os.path.join(time_dir, prefix_expr)
+        Returns:
+            None
 
-        post_files_list = glob.glob(files_of_interest)
+        """
+
+        post_files_list = glob.glob(file_names)
         # glob returns arbitrary list -> need to sort the list before using
         post_files_list.sort()
         post_out = np.empty(shape=0)
