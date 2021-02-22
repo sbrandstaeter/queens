@@ -5,7 +5,7 @@ systems.
 
 ## Contents
 1. [Prerequisites](#prerequisites)
-    1. [Configuration of Git](#configuration-of-git)
+    1. [Git](#git)
     1. [Anaconda](#anaconda)
     1. [MongoDB](#mongodb)
     1. [Optional: Singularity](#optional-singularity)
@@ -19,10 +19,10 @@ systems.
 
 
 ## Prerequisites
-There are various prerequisites for QUEENS such as Git (along with an appropriate configuration), Anaconda, and MongoDB.
+There are various prerequisites for QUEENS such as (an appropriately configured) Git, Anaconda, and MongoDB.
 
 [↑ Contents](#contents)
-### Configuration of Git 
+### Git 
 > **Note** this can be skipped if you have already configured Git for other projects
 
 A Git version >= 2.9 is required. <!-- We need at least this version to be able to configure the path to the git-hooks as outlined below. -->
