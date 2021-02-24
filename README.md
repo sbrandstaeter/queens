@@ -89,8 +89,6 @@ source activate <name_of_your_environment>
 ### MongoDB
 QUEENS uses a [MongoDB database](https://www.mongodb.com/) for data handling. Therefore, QUEENS requires certain write and access rights. MongoDB does not necessarily have to run on the same machine as QUEENS, although this is the default case. In certain situations, though, it might make sense to have the database running on a different computer and connect to the database via port-forwarding.
 
-We strongly recommend the use of **MongoDB version 3.4**, since this version has been proven to work in the current framework!
-
 For installation on various OS, the following hints might be useful:
 
 - Installation instructions for **macOS** can be found [here](https://docs.mongodb.com/master/tutorial/install-mongodb-on-os-x/?_ga=2.181134695.1149150790.1494232459-1730069423.1494232449)
@@ -203,26 +201,25 @@ For more information please refer to the singularity documentation for [user](ht
 
 Updates from time to time are recommended:
 
-**Update your Python packages:**<br />
-The easy (default) way:
-```bash
-cd <your-path-to-QUEENS> 
-conda env update
-```
-The advanced way:
-```bash
-conda env update --verbose --name <your-custom-queens-env-name> -f <your-path-to-QUEENS>/environment.yml 
-```  
+- Update your Python packages the easy (default) way:
+   ```
+   cd <your-path-to-QUEENS> 
+  conda env update
+   ```
+- Update your Python packages in a more advanced way:
+   ```
+   conda env update --verbose --name <your-custom-queens-env-name> -f <your-path-to-QUEENS>/environment.yml 
+   ```  
 
-**Update Python version of your Conda environment:**<br />
-To keep in sync with the latest Python version recommended with QUEENS, keep in sync with the latest
-changes on the  `master` branch and follow the normal update procedure described above.
-This will keep your `environment.yml` up to date and with it your environment.
+- Update Python version of your Conda environment: to be in sync with the latest Python version recommended for QUEENS, act in sync with the latest changes on the  `master` branch and follow the normal update procedure described above. This will keep both your environment-related file `environment.yml` and your environment up to date.
 
+Furthermore, you might be interested in using Jupyter notebooks:
 
-**Use conda environments in Jupyter notebooks:**<br />
-To get your conda environments into your Jupyter kernel, run:  
-`conda install nb_conda_kernels`
+- Use conda environments in Jupyter notebooks: to get your conda environments into your Jupyter kernel, run the following command:
+
+   ```
+   conda install nb_conda_kernels
+   ```  
 
 [↑ Contents](#contents)
 
