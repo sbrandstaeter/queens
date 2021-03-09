@@ -39,3 +39,8 @@ config/
 
 # ignore temporarily created requirements file 
 requirements.tmp
+
+# vscode config files
+.vscode/settings.json
+.vscode/launch.json
+vscode_workspace_queens.code-workspace
