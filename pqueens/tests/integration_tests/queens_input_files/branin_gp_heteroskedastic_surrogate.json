@@ -36,9 +36,9 @@
       "ard" : "True",
       "num_posterior_samples" : null,
       "num_inducing_points": 30,
-      "num_epochs": 1000,
+      "num_epochs": 100,
       "adams_training_rate": 0.1,
-      "optimizer_seed": 1
+      "random_seed": 1
     },
     "truth_model_iterator" : {
       "method_name": "monte_carlo",

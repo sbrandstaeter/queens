@@ -36,9 +36,10 @@ dependencies:
 # create mock objects for unit testing
   - mock
 # linting, check code  -style (PEP8)
-  - astroid>2.3.3
-  - pylint
-# make ascii  -art prints
+  - astroid>=2.5.1
+  - pylint>=2.5.1
+  - isort<5
+# make ascii  -art printsc
   - pyfiglet
 # code formatter
   - black

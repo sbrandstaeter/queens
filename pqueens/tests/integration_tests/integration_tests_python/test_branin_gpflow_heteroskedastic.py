@@ -19,7 +19,7 @@ def test_branin_gpflow_heteroskedastic(inputdir, tmpdir, expected_mean, expected
         results = pickle.load(handle)
 
     np.testing.assert_array_almost_equal(
-        results["raw_output_data"]["mean"], expected_mean, decimal=4
+        results["raw_output_data"]["mean"], expected_mean, decimal=2
     )
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["variance"], expected_var, decimal=2
@@ -30,16 +30,16 @@ def test_branin_gpflow_heteroskedastic(inputdir, tmpdir, expected_mean, expected
 def expected_mean():
     mean = np.array(
         [
-            [0.20460629],
-            [1.20638755],
-            [2.11045979],
-            [1.85950349],
-            [2.4312511],
-            [0.31418876],
-            [1.0806681],
-            [1.22094408],
-            [1.18375414],
-            [3.01705721],
+            [5.12899758],
+            [4.07705793],
+            [10.22698405],
+            [2.55114341],
+            [4.56170606],
+            [2.45214928],
+            [2.5610184],
+            [3.32166064],
+            [7.84211279],
+            [6.96924365],
         ]
     )
     return mean
@@ -49,16 +49,16 @@ def expected_mean():
 def expected_var():
     var = np.array(
         [
-            [33365.73939649],
-            [6110.0866159],
-            [3628.43470359],
-            [862.10622222],
-            [270.78329203],
-            [27494.43093913],
-            [14647.44633305],
-            [23662.30150605],
-            [4752.77857839],
-            [392.26766014],
+            [1057.67077678],
+            [4803.47277567],
+            [1298.02323316],
+            [1216.18467643],
+            [456.57239924],
+            [13143.69339927],
+            [8244.44914723],
+            [21364.37227331],
+            [877.20094392],
+            [207.58530761],
         ]
     )
     return var
