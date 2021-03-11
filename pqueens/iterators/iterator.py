@@ -50,10 +50,12 @@ class Iterator(metaclass=abc.ABCMeta):
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .single_sim_run_iterator import SingleSimRunIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+        from .sobol_sequence_iterator import SobolSequenceIterator
 
         method_dict = {
             'lhs': LHSIterator,
             'lhs_mf': MF_LHSIterator,
+            'sobol_sequence': SobolSequenceIterator,
             'metropolis_hastings': MetropolisHastingsIterator,
             'monte_carlo': MonteCarloIterator,
             'optimization': OptimizationIterator,

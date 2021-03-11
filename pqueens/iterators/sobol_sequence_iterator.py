@@ -1,26 +1,26 @@
-import numpy as np
-from pyDOE import lhs
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs
 from pqueens.utils.process_outputs import write_results
 from pqueens.utils.scale_samples import scale_samples
 from pqueens.utils.get_random_variables import get_random_variables
+from torch.quasirandom import SobolEngine
 import logging
 
 _logger = logging.getLogger(__name__)
 
 
-class LHSIterator(Iterator):
-    """Basic LHS Iterator to enable Latin Hypercube sampling
+class SobolSequenceIterator(Iterator):
+    """Sobol sequence in multiple dimensions
 
     Attributes:
         model (model):        Model to be evaluated by iterator
-        seed  (int):          Seed for random number generation
-        num_samples (int):    Number of samples to compute
-        num_iterations (int): Number of optimization iterations of design
+        number_of_samples (int):    Number of samples to compute
+        randomize (bool): Setting this to True will produce scrambled Sobol sequences. Scrambling is
+                          capable of producing better Sobol sequences.
+        seed  (int): This is the seed for the scrambling. The seed of the random number generator is
+                     set to this, if specified. Otherwise, it uses a random seed.
         result_description (dict):  Description of desired results
-        seed (int): Seed for numpy random number generator
         samples (np.array):   Array with all samples
         output (np.array):   Array with all model outputs
 
@@ -30,24 +30,23 @@ class LHSIterator(Iterator):
         self,
         model,
         seed,
-        num_samples,
-        num_iterations,
+        number_of_samples,
+        randomize,
         result_description,
         global_settings,
-        criterion,
     ):
-        super(LHSIterator, self).__init__(model, global_settings)
+        super(SobolSequenceIterator, self).__init__(model, global_settings)
         self.seed = seed
-        self.num_samples = num_samples
-        self.num_iterations = num_iterations
+        self.number_of_samples = number_of_samples
+        self.randomize = randomize
         self.result_description = result_description
-        self.criterion = criterion
         self.samples = None
         self.output = None
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """Create LHS iterator from problem description
+        """Create sobol sequence iterator from problem description
+
 
         Args:
             config (dict):       Dictionary with QUEENS problem description
@@ -56,7 +55,7 @@ class LHSIterator(Iterator):
             model (model):       Model to use (optional)
 
         Returns:
-            iterator: LHSIterator object
+            iterator: SobolSequenceIterator object
 
         """
         if iterator_name is None:
@@ -67,17 +66,20 @@ class LHSIterator(Iterator):
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)
 
+        seed = method_options["seed"]
+        number_of_samples = method_options["num_samples"]
+        randomize = method_options.get("randomize", False)
+
         result_description = method_options.get("result_description", None)
         global_settings = config.get("global_settings", None)
 
         return cls(
             model,
-            method_options["seed"],
-            method_options["num_samples"],
-            method_options.get("num_iterations", 10),
+            seed,
+            number_of_samples,
+            randomize,
             result_description,
             global_settings,
-            method_options.get("criterion", "maximin"),
         )
 
     def eval_model(self):
@@ -85,32 +87,26 @@ class LHSIterator(Iterator):
         return self.model.evaluate()
 
     def pre_run(self):
-        """ Generate samples for subsequent LHS analysis """
-        np.random.seed(self.seed)
+        """ Generate samples for subsequent sobol sequence analysis """
 
-        random_variables, random_fields, num_inputs, distribution_info = get_random_variables(
-            self.model
+        _, _, number_input_dimensions, distribution_info = get_random_variables(self.model)
+
+        _logger.info(f'Number of inputs: {number_input_dimensions}')
+        _logger.info(f'Number of samples: {self.number_of_samples}')
+        _logger.info(f'Randomize: {self.randomize}')
+
+        # create samples
+        sobol_engine = SobolEngine(
+            dimension=number_input_dimensions, scramble=self.randomize, seed=self.seed
         )
 
-        if random_fields is not None:
-            raise RuntimeError(
-                "LHS Sampling is currently not implemented in conjunction with random fields."
-            )
+        qmc_samples = sobol_engine.draw(n=self.number_of_samples)
 
-        _logger.info(f'Number of inputs: {num_inputs}')
-        _logger.info(f'Number of samples: {self.num_samples}')
-        _logger.info(f'Criterion: {self.criterion}')
-        _logger.info(f'Number of iterations: {self.num_iterations}')
-
-        # create latin hyper cube samples in unit hyper cube
-        hypercube_samples = lhs(
-            num_inputs, self.num_samples, criterion=self.criterion, iterations=self.num_iterations
-        )
         # scale and transform samples according to the inverse cdf
-        self.samples = scale_samples(hypercube_samples, distribution_info)
+        self.samples = scale_samples(qmc_samples.numpy().astype('float64'), distribution_info)
 
     def core_run(self):
-        """ Run LHS Analysis on model """
+        """ Run sobol sequence analysis on model """
 
         self.model.update_model_from_sample_batch(self.samples)
 
@@ -119,15 +115,10 @@ class LHSIterator(Iterator):
     def post_run(self):
         """ Analyze the results """
         if self.result_description is not None:
-            results = process_ouputs(self.output, self.result_description)
+            results = process_ouputs(self.output, self.result_description, input_data=self.samples)
             if self.result_description["write_results"] is True:
                 write_results(
                     results,
                     self.global_settings["output_dir"],
                     self.global_settings["experiment_name"],
                 )
-
-        _logger.info("Size of inputs {}".format(self.samples.shape))
-        _logger.debug("Inputs {}".format(self.samples))
-        _logger.info("Size of outputs {}".format(self.output['mean'].shape))
-        _logger.debug("Outputs {}".format(self.output['mean']))
