@@ -266,9 +266,6 @@ class Driver(metaclass=abc.ABCMeta):
         if (base_settings['postprocessor'] is not None) and (
             (not base_settings['direct_scheduling']) or (base_settings['post_options'] is not None)
         ):
-            base_settings['post_file_name_prefix_lst'] = driver_options.get(
-                'post_file_name_prefix_lst', None
-            )
             if base_settings['remote'] and not base_settings['singularity']:
                 base_settings['do_postprocessing'] = 'remote'
             elif base_settings['singularity'] and (
@@ -280,6 +277,10 @@ class Driver(metaclass=abc.ABCMeta):
                 base_settings['do_postprocessing'] = 'local'
         else:
             base_settings['do_postprocessing'] = None
+
+        base_settings['post_file_name_prefix_lst'] = driver_options.get(
+            'post_file_name_prefix_lst', None
+        )
 
         # 6) driver settings for post-post-processing, if required, else set output
         #    streaming to 'stdout' for single simulation run
