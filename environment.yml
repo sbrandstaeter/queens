@@ -74,4 +74,5 @@ dependencies:
 # tensorflow and tensorflow probability
     - tensorflow
     - tensorflow-probability
-
+# for Quasi-Monte-Carlo methods
+    - torch
