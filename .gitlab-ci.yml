@@ -3,7 +3,7 @@
 #---------------------------------------------------------------------------------------------------
 variables:
   # flags to turn on/ off tests for specific platforms
-  DOCKER_TESTS: "0"
+  DOCKER_TESTS: "1"
   CENTOS_TESTS: "1"
   # optional parameters for pytest calls
   PYTEST_OPTIONAL_PARAMETERS: ""
