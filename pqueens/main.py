@@ -13,6 +13,7 @@ import pathlib
 import pyfiglet
 
 from pqueens.utils.logger_settings import setup_logging
+from pqueens.utils import ascii_art
 
 try:
     import simplejson as json
@@ -31,18 +32,7 @@ def main(args):
     Args:
         args (list): list of arguments to be parsed
     """
-    # pylint: disable=anomalous-backslash-in-string
-    crown = """
-                                *
-                              * | *
-                             * \|/ *
-                        * * * \|O|/ * * *
-                         \o\o\o|O|o/o/o/
-                         (<><><>O<><><>)
-                          '==========='
-    """
-    # pylint: enable=anomalous-backslash-in-string
-    print(crown)
+    ascii_art.print_crown()
     result = pyfiglet.figlet_format("QUEENS", font="banner3-D")
     print(result)
     result = """

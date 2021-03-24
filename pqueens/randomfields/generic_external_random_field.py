@@ -1,4 +1,5 @@
 import numpy as np
+import scipy as sp
 
 
 class GenericExternalRandomField:
@@ -29,7 +30,7 @@ class GenericExternalRandomField:
         eigen_vecs_mat (np.array): Eigenvector matrix of covariance 
         eigen_vals_vec (np.array): Vector of eigenvalues of covariance matrix
         weighted_eigen_val_mat_truncated (np.array): Truncated and with eigenvalues weighted 
-                                                     eigenvalues representation of the covariance 
+                                                     eigen representation of the covariance 
                                                      matrix
 
     Returns:
@@ -46,6 +47,7 @@ class GenericExternalRandomField:
         external_definition=None,
         external_geometry_obj=None,
         mean_fun_type=None,
+        dimension=None,
     ):
         self.corr_length = corr_length
         self.std_hyperparam_rf = std_hyperparam_rf
@@ -57,7 +59,7 @@ class GenericExternalRandomField:
         self.cholesky_decomp_covar_mat = None
         self.realizations = None
         self.fixed_one_dim_coords_vector = None
-        self.nugget_variance_rf = 1e-06
+        self.nugget_variance_rf = 1e-9
         self.mean_fun_type = mean_fun_type
         self.external_geometry_obj = external_geometry_obj
         self.external_definition = external_definition
@@ -65,6 +67,7 @@ class GenericExternalRandomField:
         self.eigen_vecs_mat = None
         self.eigen_vals_vec = None
         self.weighted_eigen_val_mat_truncated = None
+        self.dimension = dimension
 
     def main_run(self):
         """
@@ -100,36 +103,45 @@ class GenericExternalRandomField:
         elif self.mean_fun_type == 'constant':  # TODO quick option for testing should be extra
             # get name of geometric set the current rf is defined on
             geometric_set_name = self.external_definition['external_instance']
-            topology_total = (
-                self.external_geometry_obj.node_topology
-                + self.external_geometry_obj.line_topology
-                + self.external_geometry_obj.surface_topology
-                + self.external_geometry_obj.volume_topology
-            )
+            field_type = self.external_definition['type']
 
-            # get geometric nodes from topology nodes in sorted order
-            random_field_nodes = sorted(
-                (
-                    [
-                        topology['node_mesh']
-                        for topology in topology_total
-                        if topology['topology_name'] == geometric_set_name
-                    ]
-                )[0]
-            )
+            if field_type == 'material':
+                # get element centers and coordinate
+                # TODO atm we assume only one random field this should be generalized
+                coordinates_random_field = self.external_geometry_obj.element_centers
 
-            # get coordinates iteratively per sorted nodes
-            coordinates_random_field = []
-            index = 0
-            for node in random_field_nodes:
-                while self.external_geometry_obj.node_coordinates['node_mesh'][index] != node:
-                    index += 1
-                coordinates_random_field.append(
-                    self.external_geometry_obj.node_coordinates['coordinates'][index]
+            else:
+                # loop over all topologies of interest
+                topology_total = (
+                    self.external_geometry_obj.node_topology
+                    + self.external_geometry_obj.line_topology
+                    + self.external_geometry_obj.surface_topology
+                    + self.external_geometry_obj.volume_topology
                 )
-                index += 1
 
-            self.random_field_coordinates = np.array(coordinates_random_field)
+                # filter topology for geometric nodes for the current random field
+                random_field_nodes = sorted(
+                    (
+                        [
+                            topology['node_mesh']
+                            for topology in topology_total
+                            if topology['topology_name'] == geometric_set_name
+                        ]
+                    )[0]
+                )
+
+                # get coordinates of nodes for topology for current random field
+                coordinates_random_field = []
+                index = 0
+                for node in random_field_nodes:
+                    while self.external_geometry_obj.node_coordinates['node_mesh'][index] != node:
+                        index += 1
+                    coordinates_random_field.append(
+                        self.external_geometry_obj.node_coordinates['coordinates'][index]
+                    )
+                    index += 1
+
+            self.random_field_coordinates = np.array(coordinates_random_field)[:, : self.dimension]
             self.num_points = self.random_field_coordinates.shape[0]
             self.mean = self.mean_fun_params[0] * np.ones(self.random_field_coordinates.shape[0])
         else:
@@ -151,6 +163,7 @@ class GenericExternalRandomField:
                 K_mat[num1, num2] = self.std_hyperparam_rf ** 2 * np.exp(
                     -(np.linalg.norm(x_one - x_two) ** 2) / (2 * self.corr_length ** 2)
                 )
+
         self.K_mat = K_mat + self.nugget_variance_rf * np.eye(self.num_points)
         self.cholesky_decomp_covar_mat = np.linalg.cholesky(self.K_mat)
 
@@ -168,27 +181,24 @@ class GenericExternalRandomField:
         """
         # compute eigendecomposition
         # TODO we should use the information about the Cholesky decomp
-        eig_val, eig_vec = np.linalg.eig(self.K_mat)
-        index = eig_val.argsort(kind='mergesort')[::-1]
-        # sort eigenvalues and eigenfunctions according to size
-        self.eigen_vals_vec = np.real((eig_val[index]).reshape(-1, 1))
-        self.eigen_vecs_mat = np.real(np.atleast_2d(eig_vec[:, index]))
+        eig_val, eig_vec = sp.linalg.eigh(self.K_mat)
+        self.eigen_vals_vec = np.real(eig_val)
+        self.eigen_vecs_mat = np.real(eig_vec)
 
         sum_val = 0
         sum_eigenval = np.sum(self.eigen_vals_vec)
-        num_eigen = 0
-        # calculate m, which is the truncated length and covers 99% of variance
-        for num, eigenval in enumerate(self.eigen_vals_vec):
+        # calculate m, which is the truncated length and covers 98% of variance
+        for num, eigenval in reversed(list(enumerate(self.eigen_vals_vec))):
             sum_val += eigenval
             variance_fraction = sum_val / sum_eigenval
             num_eigen = num
-            if variance_fraction > 0.98:  # TODO pull this out to json file
+            if variance_fraction > 0.95:  # TODO pull this out to json file
                 break
         # truncated eigenfunction base
-        eigen_vec_mat_red = self.eigen_vecs_mat[:, : num_eigen + 1]
+        eigen_vec_mat_red = self.eigen_vecs_mat[:, num_eigen:]
 
         # truncated eigenvalues
-        eig_val_vec_red = self.eigen_vals_vec[: num_eigen + 1, :]
+        eig_val_vec_red = self.eigen_vals_vec[num_eigen:]
 
         # truncated diagonal eigenvalue matrix
         eigen_val_red_diag_mat = np.diagflat(eig_val_vec_red)
@@ -201,7 +211,7 @@ class GenericExternalRandomField:
 
     def calculate_random_coef_matrix(self):
         """
-        Provide the random coefficients to of the truncated field representation. The actual
+        Provide the random coefficients of the truncated field representation. The actual
         field is not build here but will be reconstructed from the coefficient matrix and the
         truncated basis
 

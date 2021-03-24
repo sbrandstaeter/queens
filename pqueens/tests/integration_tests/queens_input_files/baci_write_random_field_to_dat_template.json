@@ -18,7 +18,8 @@
   },
   "external_geometry": {
     "type": "baci_dat",
-    "list_geometric_sets": ["DSURFACE 4"]
+    "list_geometric_sets": ["DSURFACE 4"],
+    "queens_tmp_dir": "{experiment_dir}"
   },
   "model" : {
     "type" : "simulation_model",

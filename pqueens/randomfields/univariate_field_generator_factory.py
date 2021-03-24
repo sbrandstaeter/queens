@@ -38,6 +38,7 @@ class UniVarRandomFieldGeneratorFactory(object):
         num_samples=None,
         external_geometry_obj=None,
         external_definition=None,
+        dimension=None,
     ):
         """
         Create random field generator based on arguments
@@ -76,6 +77,7 @@ class UniVarRandomFieldGeneratorFactory(object):
                 external_definition=external_definition,
                 external_geometry_obj=external_geometry_obj,
                 mean_fun_type=mean_fun_type,
+                dimension=dimension,
             )
 
         elif corrstruct == 'squared_exp':
@@ -162,7 +164,7 @@ class UniVarRandomFieldGeneratorFactory(object):
 
         Returns:
             realized_random_fields_lst (lst): List containing field_realizations of involved random
-            fields
+                                              fields
 
         """
         # load random field representation
@@ -183,8 +185,9 @@ class UniVarRandomFieldGeneratorFactory(object):
         for random_field in random_fields_lst:
             random_field_name = random_field[0]
             random_field_definition = random_field[1]
-            random_vec = np.dot(
-                truncated_random_field_representation_dict[random_field_name],
+            # random field realization: mean_fun + realization with mean zero (dot product)
+            random_vec = truncated_random_field_representation_dict[random_field_name][1] + np.dot(
+                truncated_random_field_representation_dict[random_field_name][0],
                 job['params'][random_field_name],
             )
 

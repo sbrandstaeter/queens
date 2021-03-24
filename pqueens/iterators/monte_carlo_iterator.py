@@ -1,5 +1,3 @@
-""" There should be some docstring """
-
 import numpy as np
 import matplotlib.pyplot as plt
 from pqueens.models.model import Model
@@ -144,7 +142,7 @@ class MonteCarloIterator(Iterator):
         field_num = 0
         if random_fields is not None:
             for rf_name, rf in random_fields.items():
-                print("rf corrstruct {}".format(rf.get("corrstruct")))
+                print("The selected random field is: {}".format(rf.get("corrstruct")))
                 # create appropriate random field generator
 
                 random_field_opt = {}
@@ -156,6 +154,7 @@ class MonteCarloIterator(Iterator):
                     random_field_opt['mean_fun_type'] = rf['mean_fun_type']
                     random_field_opt['mean_fun_params'] = rf['mean_fun_params']
                     random_field_opt['num_samples'] = self.num_samples
+                    random_field_opt['dimension'] = rf.get("dimension")
                     # get input points form external external_geometry_obj here
                     if self.external_geometry_obj is not None:
                         self.external_geometry_obj.main_run()
@@ -178,26 +177,18 @@ class MonteCarloIterator(Iterator):
                 #    -1, random_field_opt['dimension']
                 # )
 
-                if random_field_opt['corrstruct'] != 'generic_external_random_field':
-                    my_stoch_dim = my_field_generator.get_stoch_dim()
-                    my_vals = np.zeros((self.num_samples, eval_locations.shape[0]))
+                if random_field_opt['corrstruct'] == 'generic_external_random_field':
 
-                    for i in range(self.num_samples):
-                        xi = np.random.randn(my_stoch_dim, 1)
-                        my_vals[i, :] = my_field_generator.evaluate_field_at_location(
-                            eval_locations, xi
-                        )
-                    self.samples[
-                        :, num_rv + field_num : num_rv + field_num + len(eval_locations)
-                    ] = my_vals
-                else:
                     my_field_generator.main_run()  # here the field truncation is done by main run
                     my_vals = np.atleast_2d(my_field_generator.realizations)
                     self.samples = np.hstack((self.samples, np.atleast_2d(my_vals).T))
 
                     # db code comes here
                     truncated_rf_dict = {
-                        rf_name: my_field_generator.weighted_eigen_val_mat_truncated
+                        rf_name: [
+                            my_field_generator.weighted_eigen_val_mat_truncated,
+                            my_field_generator.mean,
+                        ]
                     }
                     experiment_field = "truncated_random_fields"
                     batch = 1  # dummy batch
@@ -214,6 +205,19 @@ class MonteCarloIterator(Iterator):
                     )
                     for i in range(1, self.num_samples):
                         self.model.variables.append(copy.deepcopy(self.model.variables[0]))
+
+                else:
+                    my_stoch_dim = my_field_generator.get_stoch_dim()
+                    my_vals = np.zeros((self.num_samples, eval_locations.shape[0]))
+
+                    for i in range(self.num_samples):
+                        xi = np.random.randn(my_stoch_dim, 1)
+                        my_vals[i, :] = my_field_generator.evaluate_field_at_location(
+                            eval_locations, xi
+                        )
+                    self.samples[
+                        :, num_rv + field_num : num_rv + field_num + len(eval_locations)
+                    ] = my_vals
 
                 field_num += 1
 

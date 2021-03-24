@@ -9,6 +9,8 @@ from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 def default_geo_obj(tmpdir):
     path_to_dat_file = os.path.join(tmpdir, 'myfile.dat')
     list_geometric_sets = ["DSURFACE 9"]
+    list_associated_material_nubmers = [[10, 11]]
+    element_topology = [{"element_number": [], "nodes": [], "material": []}]
     node_topology = [{"node_mesh": [], "node_topology": [], "topology_name": ""}]
     line_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
     surface_topology = [{"node_mesh": [], "surface_topology": [], "topology_name": ""}]
@@ -18,11 +20,14 @@ def default_geo_obj(tmpdir):
     geo_obj = BaciDatExternalGeometry(
         path_to_dat_file,
         list_geometric_sets,
+        list_associated_material_nubmers,
+        element_topology,
         node_topology,
         line_topology,
         surface_topology,
         volume_topology,
         node_coordinates,
+        tmpdir
     )
     return geo_obj
 
@@ -166,9 +171,11 @@ def default_topology_vol():
 
 
 # ----------------- actual unittests -------------------------------------------------------------
-def test_init(mocker):
+def test_init(mocker, tmpdir):
     path_to_dat_file = 'dummy_path'
     list_geometric_sets = ["DSURFACE 9"]
+    list_associated_material_numbers = [[10, 11]]
+    element_topology = [{"element_number": [], "nodes": [], "material": []}]
     node_topology = [{"node_mesh": [], "node_topology": [], "topology_name": ""}]
     line_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
     surface_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
@@ -178,11 +185,14 @@ def test_init(mocker):
     geo_obj = BaciDatExternalGeometry(
         path_to_dat_file,
         list_geometric_sets,
+        list_associated_material_numbers,
+        element_topology,
         node_topology,
         line_topology,
         surface_topology,
         volume_topology,
         node_coordinates,
+        tmpdir
     )
     mp.assert_called_once()
     assert geo_obj.path_to_dat_file == path_to_dat_file
@@ -196,6 +206,7 @@ def test_init(mocker):
     assert geo_obj.desired_dat_sections == {}
     assert geo_obj.nodes_of_interest is None
     assert geo_obj.node_coordinates == node_coordinates
+    assert geo_obj.tmpdir == tmpdir
 
 
 def test_read_external_data_comment(mocker, tmpdir, dat_dummy_comment, default_geo_obj):
@@ -226,17 +237,32 @@ def test_read_external_data_comment(mocker, tmpdir, dat_dummy_comment, default_g
         return_value=1,
     )
 
+    mocker.patch(
+        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry._get_materials',
+        return_value=1,
+    )
+
+    mocker.patch(
+        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
+        '._get_elements_belonging_to_desired_material',
+        return_value=1,
+    )
+
     default_geo_obj._read_geometry_from_dat_file()
 
     assert default_geo_obj._get_current_dat_section.call_count == 2
     assert default_geo_obj._get_design_description.call_count == 0
     assert default_geo_obj._get_only_desired_topology.call_count == 0
     assert default_geo_obj._get_only_desired_coordinates.call_count == 0
+    assert default_geo_obj._get_materials.call_count == 0
+    assert default_geo_obj._get_elements_belonging_to_desired_material.call_count == 0
 
 
 def test_read_external_data_get_functions(mocker, tmpdir, dat_dummy_get_fun, default_geo_obj):
     filepath = os.path.join(tmpdir, "myfile.dat")
     write_to_file(dat_dummy_get_fun, filepath)
+
+    default_geo_obj.current_dat_section = 'dummy'
 
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
@@ -262,12 +288,25 @@ def test_read_external_data_get_functions(mocker, tmpdir, dat_dummy_get_fun, def
         return_value=1,
     )
 
+    mocker.patch(
+        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry' '._get_materials',
+        return_value=1,
+    )
+
+    mocker.patch(
+        'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
+        '._get_elements_belonging_to_desired_material',
+        return_value=1,
+    )
+
     default_geo_obj._read_geometry_from_dat_file()
 
     assert default_geo_obj._get_current_dat_section.call_count == 4
     assert default_geo_obj._get_design_description.call_count == 4
     assert default_geo_obj._get_only_desired_topology.call_count == 4
     assert default_geo_obj._get_only_desired_coordinates.call_count == 4
+    assert default_geo_obj._get_materials.call_count == 4
+    assert default_geo_obj._get_elements_belonging_to_desired_material.call_count == 4
 
 
 def test_organize_sections(default_geo_obj):

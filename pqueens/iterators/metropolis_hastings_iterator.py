@@ -42,7 +42,7 @@ class MetropolisHastingsIterator(Iterator):
         log_posterior (np.array): log of pdf of posterior at samples
         log_prior (np.array): log of pdf of prior at samples
         num_burn_in (int): Number of burn-in samples
-        num_chains (int): Number of idependent chains
+        num_chains (int): Number of independent chains
         num_samples (int): Number of samples per chain
         tot_num_samples (int): Total number of samples per chain, i.e.,
                                (initial + burn-in + chain)
