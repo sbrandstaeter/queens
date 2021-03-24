@@ -86,13 +86,9 @@ def remove_job_output_directory(experiment_directory, jobid):
     _, _, _, stderr = run_subprocess(rm_cmd)
 
 
+@pytest.mark.baci
 def test_baci_morris_salib(
-    inputdir,
-    third_party_inputs,
-    config_dir,
-    set_baci_links_for_gitlab_runner,
-    singularity_bool,
-    experiment_directory,
+    inputdir, third_party_inputs, baci_link_paths, singularity_bool, experiment_directory
 ):
     """
     Integration test for the Salib Morris Iterator together with BACI. The test runs a local native
@@ -101,9 +97,7 @@ def test_baci_morris_salib(
     Args:
         inputdir (str): Path to the JSON input file
         third_party_inputs (str): Path to the BACI input files
-        config_dir (str): Path to the config directory of QUEENS containing BACI executables
-        set_baci_links_for_gitlab_runner (str): Several paths that are needed to build symbolic
-                                                links to executables
+        baci_link_paths(str): Path to the links pointing to baci-release and post_drt_monitor
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
         experiment_directory (LocalPath): experiment directory depending on singularity_bool
 
@@ -116,27 +110,7 @@ def test_baci_morris_salib(
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 
-    baci_release = os.path.join(config_dir, "baci-release")
-    post_drt_monitor = os.path.join(config_dir, "post_drt_monitor")
-
-    # check if symbolic links are existent
-    if (not os.path.islink(baci_release)) or (not os.path.islink(post_drt_monitor)):
-        # set default baci location for testing machine
-        dst_baci, dst_drt_monitor, src_baci, src_drt_monitor = set_baci_links_for_gitlab_runner
-        try:
-            os.symlink(src_baci, dst_baci)
-            os.symlink(src_drt_monitor, dst_drt_monitor)
-        except FileNotFoundError:
-            raise FileNotFoundError(
-                'No working baci-release or post_drt_monitor could be found! '
-                'Make sure an appropriate symbolic link is made available '
-                'under the config directory! \n'
-                'You can create the symbolic links on Linux via:\n'
-                '-------------------------------------------------------------------------\n'
-                'ln -s <path/to/baci-release> <QUEENS_BaseDir>/config/baci-release\n'
-                'ln -s <path/to/post_drt_monitor> <QUEENS_BaseDir>/config/post_drt_monitor\n'
-                '-------------------------------------------------------------------------\n'
-            )
+    baci_release, post_drt_monitor = baci_link_paths
 
     dir_dict = {
         'experiment_name': experiment_name,
@@ -218,12 +192,12 @@ def test_baci_morris_salib(
     )
 
 
+@pytest.mark.baci
 def test_restart_from_output_folders_baci(
     inputdir,
     tmpdir,
     third_party_inputs,
-    config_dir,
-    set_baci_links_for_gitlab_runner,
+    baci_link_paths,
     singularity_bool,
     experiment_directory,
     check_experiment_directory,
@@ -239,9 +213,7 @@ def test_restart_from_output_folders_baci(
         inputdir (str): Path to the JSON input file
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
-        config_dir (str): Path to the config directory of QUEENS containing BACI executables
-        set_baci_links_for_gitlab_runner (str): Several paths that are needed to build symbolic
-                                                links to executables
+        baci_link_paths(str): Path to the links pointing to baci-release and post_drt_monitor
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
         experiment_directory (LocalPath): experiment directory depending on singularity_bool
         check_experiment_directory: Check if experiment directory contains subdirectories
@@ -255,8 +227,7 @@ def test_restart_from_output_folders_baci(
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 
-    baci_release = os.path.join(config_dir, "baci-release")
-    post_drt_monitor = os.path.join(config_dir, "post_drt_monitor")
+    baci_release, post_drt_monitor = baci_link_paths
 
     dir_dict = {
         'experiment_name': experiment_name,
@@ -293,13 +264,9 @@ def test_restart_from_output_folders_baci(
     )
 
 
+@pytest.mark.baci
 def test_block_restart_baci(
-    inputdir,
-    tmpdir,
-    third_party_inputs,
-    config_dir,
-    set_baci_links_for_gitlab_runner,
-    output_directory_forward,
+    inputdir, tmpdir, third_party_inputs, baci_link_paths, output_directory_forward
 ):
     """
     Integration test for the block-restart functionality: Delete last results and block-restart
@@ -309,9 +276,7 @@ def test_block_restart_baci(
         inputdir (str): Path to the JSON input file
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
-        config_dir (str): Path to the config directory of QUEENS containing BACI executables
-        set_baci_links_for_gitlab_runner (str): Several paths that are needed to build symbolic
-                                                links to executables
+        baci_link_paths(str): Path to the links pointing to baci-release and post_drt_monitor
         output_directory_forward (dict): paths to output directory for test with and without
                                          singularity
 
@@ -333,8 +298,7 @@ def test_block_restart_baci(
     input_file = os.path.join(tmpdir, "morris_baci_local_invaaa_restart.json")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
 
-    baci_release = os.path.join(config_dir, "baci-release")
-    post_drt_monitor = os.path.join(config_dir, "post_drt_monitor")
+    baci_release, post_drt_monitor = baci_link_paths
 
     dir_dict = {
         'experiment_name': experiment_name,
@@ -371,13 +335,9 @@ def test_block_restart_baci(
     )
 
 
+@pytest.mark.baci
 def test_restart_from_db_baci(
-    inputdir,
-    tmpdir,
-    third_party_inputs,
-    config_dir,
-    set_baci_links_for_gitlab_runner,
-    output_directory_forward,
+    inputdir, tmpdir, third_party_inputs, baci_link_paths, output_directory_forward
 ):
     """
     Integration test for the restart functionality for restart from results in database
@@ -388,9 +348,7 @@ def test_restart_from_db_baci(
         inputdir (str): Path to the JSON input file
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
-        config_dir (str): Path to the config directory of QUEENS containing BACI executables
-        set_baci_links_for_gitlab_runner (str): Several paths that are needed to build symbolic
-                                                links to executables
+        baci_link_paths(str): Path to the links pointing to baci-release and post_drt_monitor
         output_directory_forward (dict): paths to output directory for test with and without
                                          singularity
 
@@ -414,8 +372,7 @@ def test_restart_from_db_baci(
     input_file = os.path.join(tmpdir, "morris_baci_local_invaaa_restart.json")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
 
-    baci_release = os.path.join(config_dir, "baci-release")
-    post_drt_monitor = os.path.join(config_dir, "post_drt_monitor")
+    baci_release, post_drt_monitor = baci_link_paths
 
     dir_dict = {
         'experiment_name': experiment_name,

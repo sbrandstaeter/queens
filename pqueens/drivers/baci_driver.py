@@ -1,18 +1,23 @@
-import os
 import json
+import logging
+import os
 import pathlib
 
+import numpy as np
+
 from pqueens.drivers.driver import Driver
-from pqueens.utils.run_subprocess import run_subprocess
-from pqueens.utils.remote_operations import make_directory_on_remote
-from pqueens.utils.script_generator import generate_submission_script
+from pqueens.randomfields.univariate_field_generator_factory import (
+    UniVarRandomFieldGeneratorFactory,
+)  # TODO we should create a unified interface for rf
+from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.injector import inject
 from pqueens.utils.numpy_array_encoder import NumpyArrayEncoder
+from pqueens.utils.remote_operations import make_directory_on_remote
+from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.script_generator import generate_submission_script
 from pqueens.utils.string_extractor_and_checker import extract_string_from_output
-from pqueens.utils.cluster_utils import get_cluster_job_id
-from pqueens.randomfields.univariate_field_generator_factory import (
-    UniVarRandomFieldGeneratorFactory,  # TODO we should create a unified interface for rf
-)
+
+_logger = logging.getLogger(__name__)
 
 
 class BaciDriver(Driver):
@@ -119,6 +124,16 @@ class BaciDriver(Driver):
             self.prepare_input_file_on_remote()
         else:
             inject(self.job['params'], self.simulation_input_template, self.input_file)
+
+        # delete copied file and potential back-up files afterwards to save to space
+        if self.external_geometry_obj:
+            cmd_lst = [
+                "rm -f",
+                self.simulation_input_template,
+                self.simulation_input_template + '.bak',
+            ]
+            cmd_str = ' '.join(cmd_lst)
+            _, _, _, stderr = run_subprocess(cmd_str)
 
     def run_job(self):
         """
@@ -310,7 +325,7 @@ class BaciDriver(Driver):
         # set also new name for copied dat-file
         if self.random_fields_lst is not None:
             self.simulation_input_template = self.external_geometry_obj.write_random_fields_to_dat(
-                self.random_fields_realized_lst
+                self.random_fields_realized_lst, self.job_id
             )
 
     def run_job_via_script(self):
@@ -492,7 +507,7 @@ class BaciDriver(Driver):
 
         # detection of failed command
         if stderr:
-            print("\nPost-processing of BACI failed!" f"\nStderr:\n{stderr}")
+            _logger.error("\nPost-processing of BACI failed!" f"\nStderr:\n{stderr}")
 
     # ----- COMMAND-ASSEMBLY METHODS ---------------------------------------------
     def assemble_sing_baci_cluster_job_cmd(self):
@@ -528,7 +543,7 @@ class BaciDriver(Driver):
         self.cluster_options['EXE'] = self.executable
         self.cluster_options['INPUT'] = self.input_file
         self.cluster_options['OUTPUTPREFIX'] = self.output_prefix
-        if (self.postprocessor is not None) and (self.post_options is None):
+        if self.postprocessor is not None:
             self.cluster_options['POSTPROCESSFLAG'] = 'true'
             self.cluster_options['POSTEXE'] = self.postprocessor
         else:

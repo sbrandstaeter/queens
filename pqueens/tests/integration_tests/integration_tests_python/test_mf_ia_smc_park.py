@@ -3,8 +3,6 @@ import pickle
 import pytest
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 from pqueens.main import main
 from pqueens.utils import injector
 from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_coords import (

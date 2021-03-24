@@ -1,4 +1,7 @@
 import abc
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class ExternalGeometry(metaclass=abc.ABCMeta):
@@ -53,9 +56,11 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
             None
 
         """
+        _logger.info('Start reading external geometry from file...')
         self.organize_sections()
         self.read_external_data()
         self.finish_and_clean()
+        _logger.info('Finished reading external geometry from file!')
 
     @abc.abstractmethod
     def read_external_data(self):

@@ -34,15 +34,21 @@ def config_dir():
     return config_dir_path
 
 
-@pytest.fixture()
-def set_baci_links_for_gitlab_runner(config_dir):
+@pytest.fixture(scope="session")
+def baci_link_paths(config_dir):
     """ Set symbolic links for baci on testing machine. """
-    dst_baci = os.path.join(config_dir, 'baci-release')
-    dst_drt_monitor = os.path.join(config_dir, 'post_drt_monitor')
+    baci = str(pathlib.Path(config_dir).joinpath('baci-release'))
+    post_drt_monitor = str(pathlib.Path(config_dir).joinpath('post_drt_monitor'))
+    return baci, post_drt_monitor
+
+
+@pytest.fixture(scope="session")
+def baci_source_paths_for_gitlab_runner():
+    """ Set symbolic links for baci on testing machine. """
     home = pathlib.Path.home()
     src_baci = pathlib.Path.joinpath(home, 'workspace/build/baci-release')
     src_drt_monitor = pathlib.Path.joinpath(home, 'workspace/build/post_drt_monitor')
-    return dst_baci, dst_drt_monitor, src_baci, src_drt_monitor
+    return src_baci, src_drt_monitor
 
 
 # CLUSTER TESTS ------------------------------------------------------------------------------------

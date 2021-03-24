@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from pqueens.post_post.post_post import PostPost
 import logging
+
 _logger = logging.getLogger(__name__)
 
 
@@ -59,8 +60,10 @@ class PostPostBACI(PostPost):
         """
         post_post_options = options['options']
 
-        time_tol_lst = post_post_options['time_tol_lst']
-        assert isinstance(time_tol_lst, list), "The option time_tol_lst must be of type list!"
+        time_tol_lst = post_post_options.get('time_tol_lst')
+        assert isinstance(
+            time_tol_lst, (list, type(None))
+        ), "The option time_tol_lst must be of type list!"
 
         target_time_lst = post_post_options['target_time_lst']
         assert isinstance(target_time_lst, list), "The option target_time_lst must be of type list!"
@@ -120,11 +123,16 @@ class PostPostBACI(PostPost):
                 self.result = None
                 break
 
-            identifier = (
+            if self.target_time_lst[idx] == 'last':
+                identifier = post_data.iloc[:, 0] == post_data.iloc[-1, 0]
+
+            else:
+                identifier = (
                     abs(post_data.iloc[:, 0] - self.target_time_lst[idx]) < self.time_tol_lst[idx]
                 )
+
             if not np.any(identifier):
-                _logger.info("`target_time` not found.")
+                _logger.info("target_time not found.")
                 self.error = True
                 self.result = None
                 break

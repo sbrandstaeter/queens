@@ -17,6 +17,7 @@ from pqueens.utils.manage_singularity import hash_files
 from pqueens.utils.run_subprocess import run_subprocess
 
 
+@pytest.mark.lnm_cluster
 def test_cluster_morris_salib(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):

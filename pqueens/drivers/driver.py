@@ -350,7 +350,8 @@ class Driver(metaclass=abc.ABCMeta):
             None
 
         """
-        self.initialize_job_in_db()
+        if self.job is None:
+            self.initialize_job_in_db()
         self.prepare_input_files()
 
     def post_job_run(self):
