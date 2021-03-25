@@ -4,7 +4,7 @@ import tensorflow_probability as tfp
 import gpflow as gpf
 from sklearn.preprocessing import StandardScaler
 from gpflow.utilities import print_summary, set_trainable
-from .regression_approximation import RegressionApproximation
+from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # suppress warnings

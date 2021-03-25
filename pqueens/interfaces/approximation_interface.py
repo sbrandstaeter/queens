@@ -83,47 +83,47 @@ class ApproximationInterface(Interface):
         output = self.approximation.predict(inputs)
         return output
 
-    def build_approximation(self, Xtrain, Ytrain):
+    def build_approximation(self, x_train, y_train):
         """ Build and train underlying regression model
 
         Args:
-            Xtrain (np.array):  Training inputs
-            Ytrain (np.array):  Training outputs
+            x_train (np.array):  Training inputs
+            y_train (np.array):  Training outputs
         """
         self.approximation = RegressionApproximation.from_config_create(
-            self.config, self.approximation_name, Xtrain, Ytrain
+            self.config, self.approximation_name, x_train, y_train
         )
         self.approximation.train()
         self.approximation_init = True
 
-    def is_initiliazed(self):
+    def is_initialized(self):
         """ Is the approximation properly initialized """
         return self.approximation_init
 
-    def cross_validate(self, X, Y, folds):
+    def cross_validate(self, x_train, y_train, folds):
         """ Cross validation function which calls the regression approximation
 
         Args:
-            X (np.array):   Array of inputs
-            Y (np.array):   Array of outputs
+            x_train (np.array):   Array of inputs
+            y_train (np.array):   Array of outputs
             folds (int):    In how many subsets do we split for cv
 
         Returns:
             np.array:        Array with predictions
         """
         # init output array
-        outputs = np.zeros_like(Y, dtype=float)
+        outputs = np.zeros_like(y_train, dtype=float)
         # set random_state=None, shuffle=False)
         # TODO check out randomness feature
         kf = KFold(n_splits=folds)
-        kf.get_n_splits(X)
+        kf.get_n_splits(x_train)
 
-        for train_index, test_index in kf.split(X):
+        for train_index, test_index in kf.split(x_train):
             # TODO configuration here is not nice
             approximation = RegressionApproximation.from_config_create(
-                self.config, self.approximation_name, X[train_index], Y[train_index]
+                self.config, self.approximation_name, x_train[train_index], y_train[train_index]
             )
             approximation.train()
-            outputs[test_index] = approximation.predict(X[test_index].T, support='f')['mean']
+            outputs[test_index] = approximation.predict(x_train[test_index].T, support='f')['mean']
 
         return outputs

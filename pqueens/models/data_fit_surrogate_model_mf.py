@@ -80,7 +80,7 @@ class MFDataFitSurrogateModel(Model):
         Returns:
             np.array: Results correspoding to current set of variables
         """
-        if not self.interface.is_initiliazed():
+        if not self.interface.is_initialized():
             self.build_approximation()
 
         self.response = self.interface.map(self.variables)

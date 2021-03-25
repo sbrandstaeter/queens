@@ -2,13 +2,17 @@ import numpy as np
 from pqueens.iterators.iterator import Iterator
 from pqueens.interfaces.interface import Interface
 from .model import Model
+import pqueens.visualization.surrogate_visualization as qvis
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class DataFitSurrogateModel(Model):
-    """ Surrogate model class
+    """Surrogate model class
 
-        Attributes:
-            interface (interface):          approximation interface
+    Attributes:
+        interface (interface):          approximation interface
 
     """
 
@@ -19,10 +23,12 @@ class DataFitSurrogateModel(Model):
         model_parameters,
         subordinate_model,
         subordinate_iterator,
+        testing_iterator,
         eval_fit,
         error_measures,
+        nash_sutcliffe_efficiency,
     ):
-        """ Initialize data fit surrogate model
+        """Initialize data fit surrogate model
 
         Args:
             model_name (string):        Name of model
@@ -33,27 +39,33 @@ class DataFitSurrogateModel(Model):
             subordinate_iterator (Iterator): Iterator to evaluate the subordinate
                                              model with the purpose of getting
                                              training data
+            testing_iterator (Iterator): Iterator to evaluate the subordinate
+                                         model with the purpose of getting
+                                         testing data
             eval_fit (str):                 How to evaluate goodness of fit
             error_measures (list):          List of error measures to compute
+            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
 
         """
         super(DataFitSurrogateModel, self).__init__(model_name, model_parameters)
         self.interface = interface
         self.subordinate_model = subordinate_model
         self.subordinate_iterator = subordinate_iterator
+        self.testing_iterator = testing_iterator
         self.eval_fit = eval_fit
         self.error_measures = error_measures
+        self.nash_sutcliffe_efficiency = nash_sutcliffe_efficiency
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
-        """  Create data fit surrogate model from problem description
+        """Create data fit surrogate model from problem description
 
         Args:
             model_name (string): Name of model
             config (dict):       Dictionary containing problem description
 
         Returns:
-            data_fit_surrogate_model:   Instance of DataFitSurrogateModel 
+            data_fit_surrogate_model:   Instance of DataFitSurrogateModel
         """
         # get options
         model_options = config[model_name]
@@ -63,11 +75,13 @@ class DataFitSurrogateModel(Model):
 
         subordinate_model_name = model_options.get("subordinate_model", None)
         subordinate_iterator_name = model_options["subordinate_iterator"]
+        testing_iterator_name = model_options.get("testing_iterator", None)
+
         eval_fit = model_options.get("eval_fit", None)
         error_measures = model_options.get("error_measures", None)
 
         # create subordinate model
-        if subordinate_model_name is not None:
+        if subordinate_model_name:
             subordinate_model = Model.from_config_create_model(subordinate_model_name, config)
         else:
             subordinate_model = None
@@ -77,8 +91,15 @@ class DataFitSurrogateModel(Model):
             config, subordinate_iterator_name, subordinate_model
         )
 
+        testing_iterator, nash_sutcliffe_efficiency = cls._setup_testing_iterator(
+            testing_iterator_name, config, model_options, subordinate_model
+        )
+
         # create interface
         interface = Interface.from_config_create_interface(interface_name, config)
+
+        # visualization
+        qvis.from_config_create(config, model_name=model_name)
 
         return cls(
             model_name,
@@ -86,17 +107,19 @@ class DataFitSurrogateModel(Model):
             model_parameters,
             subordinate_model,
             subordinate_iterator,
+            testing_iterator,
             eval_fit,
             error_measures,
+            nash_sutcliffe_efficiency,
         )
 
     def evaluate(self):
-        """ Evaluate model with current set of variables
+        """Evaluate model with current set of variables
 
         Returns:
-            np.array: Results correspoding to current set of variables
+            np.array: Results corresponding to current set of variables
         """
-        if not self.interface.is_initiliazed():
+        if not self.interface.is_initialized():
             self.build_approximation()
 
         self.response = self.interface.map(self.variables)
@@ -108,120 +131,211 @@ class DataFitSurrogateModel(Model):
         self.subordinate_iterator.run()
 
         # get samples and results
-        X = self.subordinate_iterator.samples
-        Y = self.subordinate_iterator.output['mean']
+        x_train, y_train = self._get_data_set(self.subordinate_iterator)
 
         # train regression model on the data
-        self.interface.build_approximation(X, Y)
+        self.interface.build_approximation(x_train, y_train)
+
+        # plot
+        qvis.surrogate_visualization_instance.plot(self.interface)
 
         if self.eval_fit == "kfold":
             error_measures = self.eval_surrogate_accuracy_cv(
-                X=X, Y=Y, k_fold=5, measures=self.error_measures
+                x_test=x_train, y_test=y_train, k_fold=5, measures=self.error_measures
             )
             for measure, error in error_measures.items():
-                print("Error {} is:{}".format(measure, error))
+                _logger.info("Error {} is: {}".format(measure, error))
         # TODO check that final surrogate is on all points
 
-        # TODO add proper test for error computation on test set
-        # if True:
-        #     X_train = X[:100,:]
-        #     y_train = Y[:100]
-        #     self.interface.build_approximation(X_train, y_train)
-        #
-        #     X_test = X[101:,:]
-        #     y_test = Y[101:]
-        #     error_measures = self.eval_surrogate_accuracy(X_test,y_test, self.error_measures)
-        #     for measure, error in error_measures.items():
-        #         print("Error {} is:{}".format(measure,error))
+        if self.testing_iterator:
+            self.testing_iterator.run()
 
-    def eval_surrogate_accuracy(self, X_test, y_test, measures):
-        """ Evaluate the accuracy of the surrogate model based on test set
+            x_test, y_test = self._get_data_set(self.testing_iterator)
 
-            Evaluate the accuracy of the surogate model using the provided
-            error metrics.
+            error_measures = self.eval_surrogate_accuracy(x_test, y_test, self.error_measures)
+            for measure, error in error_measures.items():
+                _logger.info("Error {} is: {}".format(measure, error))
 
-            Args:
-                X_test (np.array):  Test inputs
-                y_test (np.array):  Test outputs
-                measures (list):    List with desired error metrics
+    def eval_surrogate_accuracy(self, x_test, y_test, measures):
+        """Evaluate the accuracy of the surrogate model based on test set
 
-            Returns:
-                dict: Dictionary with proving error metrics
+        Evaluate the accuracy of the surrogate model using the provided
+        error metrics.
+
+        Args:
+            x_test (np.array):  Test inputs
+            y_test (np.array):  Test outputs
+            measures (list):    List with desired error metrics
+
+        Returns:
+            dict: Dictionary with proving error metrics
         """
-        if not self.interface.is_initiliazed():
-            raise RuntimeError("Cannot compute accuracy on unitialized model")
-        X_test_var = self.convert_array_to_model_variables(X_test)
-        response = self.interface.map(X_test_var)
-        y_response = np.reshape(np.array(response), (-1, 1))
-        error_info = self.compute_error_measures(y_test, y_response, measures)
+        if not self.interface.is_initialized():
+            raise RuntimeError("Cannot compute accuracy on uninitialized model")
+
+        x_test_var = self.convert_array_to_model_variables(x_test)
+        response = self.interface.map(x_test_var)
+        y_prediction = response['mean'].reshape((-1, 1))
+
+        error_info = {}
+        if measures is not None:
+            error_info = self.compute_error_measures(y_test, y_prediction, measures)
+
+        if self.nash_sutcliffe_efficiency is True:
+            error_info["nash_sutcliffe_efficiency"] = self.compute_nash_sutcliffe_efficiency(
+                y_test, y_prediction
+            )
         return error_info
 
-    def eval_surrogate_accuracy_cv(self, X, Y, k_fold, measures):
-        """ Compute k-fold cross-validation error
+    def eval_surrogate_accuracy_cv(self, x_test, y_test, k_fold, measures):
+        """Compute k-fold cross-validation error
 
-            Args:
-                X (np.array):       Input array
-                Y (np.array):       Output array
-                k_fold (int):       Split dataset in k_fold subsets for cv
-                measures (list):    List with desired error metrics
+        Args:
+            x_test (np.array):       Input array
+            y_test (np.array):       Output array
+            k_fold (int):       Split dataset in k_fold subsets for cv
+            measures (list):    List with desired error metrics
 
-            Returns:
-                dict: Dictionary with error measures and correspoding error values
+        Returns:
+            dict: Dictionary with error measures and corresponding error values
         """
-        if not self.interface.is_initiliazed():
-            raise RuntimeError("Cannot compute accuracy on unitialized model")
+        if not self.interface.is_initialized():
+            raise RuntimeError("Cannot compute accuracy on uninitialized model")
 
-        response_cv = self.interface.cross_validate(X, Y, k_fold)
-        y_pred = np.reshape(np.array(response_cv), (-1, 1))
+        response_cv = self.interface.cross_validate(x_test, y_test, k_fold)
+        y_prediction = np.reshape(np.array(response_cv), (-1, 1))
+        error_info = self.compute_error_measures(y_test, y_prediction, measures)
 
-        error_info = self.compute_error_measures(Y, y_pred, measures)
         return error_info
 
-    def compute_error_measures(self, y_act, y_pred, measures):
-        """ Compute error measures
+    def compute_error_measures(self, y_test, y_posterior_mean, measures):
+        """Compute error measures
 
-            Compute based on difference between predicted and actual values.
+        Compute based on difference between predicted and actual values.
 
-            Args:
-                y_act (np.array):  Actual values
-                y_pred (np.array): Predicted values
-                measures (list):   Dictionary with desired error measures
+        Args:
+            y_test (ndarray): output values from testing data set
+            y_posterior_mean (ndarray): posterior mean values of the GP
+            measures (list):   Dictionary with desired error measures
 
-            Returns:
-                dict: Dictionary with error measures and correspoding error values
+        Returns:
+            dict: Dictionary with error measures and corresponding error values
         """
         error_measures = {}
         for measure in measures:
-            error_measures[measure] = self.compute_error(y_act, y_pred, measure)
+            error_measures[measure] = self.compute_error(y_test, y_posterior_mean, measure)
         return error_measures
 
-    def compute_error(self, y_act, y_pred, measure):
-        """ Compute error for given a specific error measure
+    @staticmethod
+    def compute_error(y_test, y_posterior_mean, measure):
+        """Compute error for given a specific error measure
 
-            Args:
-                y_act (np.array):  Actual values
-                y_pred (np.array): Predicted values
-                measure (str):     Desired error metric
+        Args:
+            y_test (ndarray): output values from testing data set
+            y_posterior_mean (ndarray): posterior mean values of the GP
+            measure (str):     Desired error metric
 
-            Returns:
-                float: error based on desired metric
+        Returns:
+            float: error based on desired metric
 
-            Raises:
+        Raises:
 
         """
-        # TODO checkout raises field
-        if measure == "sum_squared":
-            error = np.sum((y_act - y_pred) ** 2)
-        elif measure == "mean_squared":
-            error = np.mean((y_act - y_pred) ** 2)
-        elif measure == "root_mean_squared":
-            error = np.sqrt(np.mean((y_act - y_pred) ** 2))
-        elif measure == "sum_abs":
-            error = np.sum(np.abs(y_act - y_pred))
-        elif measure == "mean_abs":
-            error = np.mean(np.abs(y_act - y_pred))
-        elif measure == "abs_max":
-            error = np.max(np.abs(y_act - y_pred))
+        return {
+            "sum_squared": np.sum((y_test - y_posterior_mean) ** 2),
+            "mean_squared": np.mean((y_test - y_posterior_mean) ** 2),
+            "root_mean_squared": np.sqrt(np.mean((y_test - y_posterior_mean) ** 2)),
+            "sum_abs": np.sum(np.abs(y_test - y_posterior_mean)),
+            "mean_abs": np.mean(np.abs(y_test - y_posterior_mean)),
+            "abs_max": np.max(np.abs(y_test - y_posterior_mean)),
+        }.get(measure, NotImplementedError("Desired error measure is unknown!"))
+
+    @staticmethod
+    def compute_nash_sutcliffe_efficiency(y_test, y_posterior_mean):
+        """
+        Nash-Sutcliffe model efficiency
+
+        .. math::
+            NSE = 1-\\frac{\\sum_{i=1}^{N}(e_{i}-s_{i})^2}{\\sum_{i=1}^{N}(e_{i}-\\bar{e})^2}
+
+        Args:
+            y_test (ndarray): output values from testing data set
+            y_posterior_mean (ndarray): posterior mean values of the GP
+
+        Returns:
+            efficiency (float): Nash-Sutcliffe model efficiency
+        """
+
+        if len(y_test) == len(y_posterior_mean):
+            y_posterior_mean, y_test = np.array(y_posterior_mean), np.array(y_test)
+            if y_test.shape != y_posterior_mean.shape:
+                y_posterior_mean = y_posterior_mean.transpose()
+
+            mean_observed = np.nanmean(y_test)
+            numerator = np.nansum((y_test - y_posterior_mean) ** 2)
+            denominator = np.nansum((y_test - mean_observed) ** 2)
+            efficiency = 1 - (numerator / denominator)
+            return efficiency
+
         else:
-            raise NotImplementedError("Desired error measure is unknown!")
-        return error
+            _logger.warning("Evaluation and simulation lists does not have the same length.")
+            return np.nan
+
+    @staticmethod
+    def _get_data_set(iterator):
+        """
+        Get input and output from iterator
+
+        Args:
+            iterator (pqueens.iterators.Iterator): iterator where to get input and output from
+
+        Returns:
+            x (ndarray): input (samples)
+            y (ndarray): output (response)
+
+        """
+        if hasattr(iterator, 'samples'):
+            x = iterator.samples
+        else:
+            raise AttributeError(
+                f'Your iterator {type(iterator).__name__} has no samples and, thus, cannot be used '
+                f'for training or testing a surrogate model.'
+            )
+
+        if hasattr(iterator, 'output'):
+            y = iterator.output['mean']
+        else:
+            raise AttributeError(
+                f'Your iterator {type(iterator).__name__} has no output data and, thus, cannot be '
+                f'used for training or testing a surrogate model.'
+            )
+
+        return x, y
+
+    @classmethod
+    def _setup_testing_iterator(
+        cls, testing_iterator_name, config, model_options, subordinate_model
+    ):
+        """
+        Set up the testing iterator
+
+        Args:
+            config (dict): dictionary containing problem description
+            model_options (dict): model options
+            subordinate_model (model): model to use
+            testing_iterator_name (str): name of the iterator which should be configured
+
+        Returns:
+            testing_iterator (iterator): testing iterator
+            nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
+
+        """
+        if testing_iterator_name:
+            testing_iterator = Iterator.from_config_create_iterator(
+                config, testing_iterator_name, subordinate_model
+            )
+            nash_sutcliffe_efficiency = model_options.get("nash_sutcliffe_efficiency", False)
+        else:
+            testing_iterator = None
+            nash_sutcliffe_efficiency = False
+        return testing_iterator, nash_sutcliffe_efficiency

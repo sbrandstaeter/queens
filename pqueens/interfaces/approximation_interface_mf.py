@@ -100,6 +100,6 @@ class ApproximationInterfaceMF(Interface):
         self.approximation.train()
         self.approx_init = True
 
-    def is_initiliazed(self):
+    def is_initialized(self):
         """ Is the approximation properly initialzed """
         return self.approx_init

@@ -1,5 +1,6 @@
 import logging
 import sys
+import io
 
 
 class LogFilter(logging.Filter):
@@ -57,3 +58,30 @@ def setup_logging(output_dir, experiment_name):
     # deactivate logging for specific modules
     logging.getLogger('arviz').setLevel(logging.CRITICAL)
     logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
+    logging.getLogger('tensorflow').setLevel(logging.CRITICAL)
+
+
+def log_through_print(logger, command):
+    """
+    Parse print output to logger
+
+    This can be used e.g. for printing a GP kernel or a pandas DataFrame.
+    It works for all objects that implement a print method.
+
+    Args:
+        logger (Logger): logger to parse to print output to
+        command (object): command/object which should be printed
+    """
+    old_stdout = sys.stdout
+    new_stdout = io.StringIO()
+    sys.stdout = new_stdout
+
+    print(command)
+
+    output = new_stdout.getvalue()
+    split_data = output.splitlines()
+    for line_number in range(len(split_data)):
+        logger.info(split_data[line_number])
+    logger.info('')
+
+    sys.stdout = old_stdout

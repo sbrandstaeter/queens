@@ -27,15 +27,18 @@ this = sys.modules[__name__]
 this.grid_iterator_visualization_instance = None
 
 
-def from_config_create(config):
+def from_config_create(config, iterator_name=None):
     """
     Module function that calls the class function `from_config_create` and creates instance of the
     GridIteratorVisualization class from the problem description.
 
     Args:
         config (dict): Dictionary created from the input file, containing the problem description
+        iterator_name (str): Name of iterator to identify right section in options dict (optional)
     """
-    this.grid_iterator_visualization_instance = GridIteratorVisualization.from_config_create(config)
+    this.grid_iterator_visualization_instance = GridIteratorVisualization.from_config_create(
+        config, iterator_name
+    )
 
 
 def _log_tick_formatter(val):
@@ -111,17 +114,23 @@ class GridIteratorVisualization(object):
         self.var_names_list = var_names_list
 
     @classmethod
-    def from_config_create(cls, config):
+    def from_config_create(cls, config, iterator_name=None):
         """
         Create the grid visualization object from the problem description
         Args:
             config (dict): Dictionary containing the problem description
+            iterator_name (str): Name of iterator to identify right section in options dict
+                                 (optional)
 
         Returns:
             Instance of GridIteratorVisualization (obj)
 
         """
-        method_options = config["method"].get("method_options")
+        if iterator_name is None:
+            method_options = config["method"].get("method_options")
+        else:
+            method_options = config[iterator_name].get("method_options")
+
         plotting_options = method_options["result_description"].get("plotting_options")
         paths = [
             os.path.join(plotting_options.get("plotting_dir"), name)
@@ -217,7 +226,7 @@ class GridIteratorVisualization(object):
 
     def _plot_two_d(self, output, samples, n_grid_p):
         """
-        Plotting method for one dimensional grid
+        Plotting method for two dimensional grid
 
         Args:
             output (np.array): Simulation output

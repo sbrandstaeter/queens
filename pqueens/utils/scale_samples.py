@@ -33,6 +33,9 @@ def scale_samples(samples, distribution_info):
                                   input array
     """
 
+    if len(samples.shape) == 1:
+        samples = np.atleast_2d(samples)
+
     if samples.shape[1] != len(distribution_info):
         raise ValueError(
             "Number of provided distributions must match number of \

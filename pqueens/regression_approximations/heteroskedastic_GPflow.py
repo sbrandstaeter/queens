@@ -1,4 +1,4 @@
-from .regression_approximation import RegressionApproximation
+from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 import numpy as np
 import logging
 import os
@@ -25,7 +25,7 @@ class HeteroskedasticGP(RegressionApproximation):
     Attributes:
         x_train (np.array): Training inputs
         y_train (np.array): Training outputs
-        gpf_model (gpf.model):  gpflow based heteroskedastic Gaussian process model
+        model (gpf.model):  gpflow based heteroskedastic Gaussian process model
         num_posterior_samples (int): Number of posterior GP samples (realizations of posterior GP)
         num_inducing_points (int): Number of inducing points for variational GPs
         optimizer (obj): Tensorflow optimization object
@@ -50,7 +50,7 @@ class HeteroskedasticGP(RegressionApproximation):
         y_train,
         num_posterior_samples,
         num_inducing_points,
-        gpf_model,
+        model,
         optimizer,
         num_epochs,
         random_seed_seed,
@@ -63,7 +63,7 @@ class HeteroskedasticGP(RegressionApproximation):
             y_train (np.array): Training outputs
             num_posterior_samples: Number of posterior GP samples
             num_inducing_points: Number of inducing points for variational GP approximation
-            gpf_model (obj): GPFlow model instance
+            model (obj): GPFlow model instance
             optimizer (obj): GPflow optimization object
             num_epochs (int): Number of epochs used for variational training of the GP
             random_seed_seed (int): Random seed for stochastic optimization routine and samples
@@ -77,7 +77,7 @@ class HeteroskedasticGP(RegressionApproximation):
         self.y_train = y_train
         self.num_posterior_samples = num_posterior_samples
         self.num_inducing_points = num_inducing_points
-        self.gpf_model = gpf_model
+        self.model = model
         self.optimizer = optimizer
         self.num_epochs = num_epochs
         self.random_seed = random_seed_seed
@@ -104,9 +104,9 @@ class HeteroskedasticGP(RegressionApproximation):
         adams_training_rate = approx_options.get('adams_training_rate')
         random_seed = approx_options.get('random_seed')
 
-        gpf_model = HeteroskedasticGP._build_model(num_inducing_points, x_train)
+        model = HeteroskedasticGP._build_model(num_inducing_points, x_train)
         optimizer = HeteroskedasticGP._build_optimizer(
-            x_train, y_train, gpf_model, adams_training_rate, random_seed
+            x_train, y_train, model, adams_training_rate, random_seed
         )
 
         return cls(
@@ -114,7 +114,7 @@ class HeteroskedasticGP(RegressionApproximation):
             y_train,
             num_posterior_samples,
             num_inducing_points,
-            gpf_model,
+            model,
             optimizer,
             num_epochs,
             random_seed,
@@ -128,7 +128,7 @@ class HeteroskedasticGP(RegressionApproximation):
             self.optimizer()
             if epoch % 20 == 0 and epoch > 0:
                 data = (self.x_train, self.y_train)
-                loss_fun = self.gpf_model.training_loss_closure(data)
+                loss_fun = self.model.training_loss_closure(data)
                 print(
                     f'Progress: {epoch / self.num_epochs * 100 : .2f} %, Epoch {epoch}, '
                     f'Loss: {loss_fun().numpy() : .2f}'
@@ -169,7 +169,7 @@ class HeteroskedasticGP(RegressionApproximation):
         x_test = np.atleast_2d(x_test).reshape((-1, self.x_train.shape[1]))
         output = {}
         # TODO this method call is super slow as cholesky decomp gets computed in every call
-        mean, variance = self.gpf_model.predict_y(x_test)
+        mean, variance = self.model.predict_y(x_test)
         mean = mean.numpy()
         variance = variance.numpy()
         if full_cov is True:
@@ -203,7 +203,7 @@ class HeteroskedasticGP(RegressionApproximation):
                                          (the latter might be a vector/matrix of points)
         """
         np.random.seed(self.random_seed)
-        post_samples = self.gpf_model.predict_f_samples(x_test, num_samples).numpy()
+        post_samples = self.model.predict_f_samples(x_test, num_samples).numpy()
 
         return post_samples[:, :, 0], post_samples[:, :, 1]
 
