@@ -24,6 +24,7 @@
     "mf_approx_settings": {
           "type": "gp_approximation_gpy",
           "features_config": "no_features",
+          "num_restart": 0,
           "X_cols": [0,1],
           "num_features": 0,
           "mf_subiterator": "bmfia_iterator"
@@ -32,8 +33,8 @@
     "output_label": "y_obs",
     "coordinate_labels": ["x3","x4"],
     "likelihood_noise_type": "fixed",
-    "fixed_likelihood_noise_value": 1E-3,
-    "nugget_noise_var": 1E-12,
+    "fixed_likelihood_noise_value": 1E-2,
+    "nugget_noise_var": 1E-8,
     "noise_upper_bound": 2.0,
     "experimental_csv_data_base_dirs": ["{experimental_data_path}"],
     "parameters" : "parameters"
@@ -53,7 +54,7 @@
     "high_fidelity_model": "hf_model",
     "initial_design": {
       "type": "random",
-      "num_HF_eval": 10,
+      "num_HF_eval": 20,
       "seed": 1
     }
   },

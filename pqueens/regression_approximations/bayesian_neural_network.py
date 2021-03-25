@@ -3,7 +3,7 @@ import os
 import tensorflow as tf
 import tensorflow_probability as tfp
 
-from .regression_approximation import RegressionApproximation
+from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 tfd = tfp.distributions

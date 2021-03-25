@@ -23,7 +23,22 @@
       "interface" : "approximation_interface",
       "parameters" : "parameters",
       "subordinate_model" : "truth_model",
-      "subordinate_iterator" : "truth_model_iterator"
+      "subordinate_iterator" : "truth_model_iterator",
+      "plotting_options": {
+        "plot_booleans": [
+          false,
+          false
+        ],
+        "plotting_dir": "dummy",
+        "plot_names": [
+          "1D",
+          "2D"
+        ],
+        "save_bool": [
+          false,
+          false
+        ]
+      }
     },
     "approximation_interface" : {
       "type" : "approximation_interface",

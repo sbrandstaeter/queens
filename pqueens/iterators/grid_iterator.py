@@ -25,7 +25,13 @@ class GridIterator(Iterator):
     """
 
     def __init__(
-        self, model, result_description, global_settings, grid_dict, parameters, num_parameters,
+        self,
+        model,
+        result_description,
+        global_settings,
+        grid_dict,
+        parameters,
+        num_parameters,
     ):
         super(GridIterator, self).__init__(model, global_settings)
         self.grid_dict = grid_dict
@@ -63,7 +69,7 @@ class GridIterator(Iterator):
 
         result_description = method_options.get("result_description", None)
         global_settings = config.get("global_settings", None)
-        grid_dict = config["method"]["method_options"]["grid_design"]
+        grid_dict = method_options.get("grid_design", None)
         parameters = config["parameters"]["random_variables"]
         num_parameters = len(grid_dict)
 
@@ -72,7 +78,7 @@ class GridIterator(Iterator):
             raise RuntimeError("Number of parameters (num_parameters) not given by user!")
 
         # ---------------------- CREATE VISUALIZATION BORG ----------------------------
-        qvis.from_config_create(config)
+        qvis.from_config_create(config, iterator_name=iterator_name)
 
         return cls(
             model, result_description, global_settings, grid_dict, parameters, num_parameters

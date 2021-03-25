@@ -297,8 +297,6 @@ class BMFIAIterator(Iterator):
             "Optimal features for inverse problems are not yet implemented! Abort..."
         )
 
-
-
     def eval_model(self):
         """
         Evaluate the LF and HF model to for the training inputs X_train.

@@ -1,29 +1,62 @@
 import numpy as np
 import GPy
-from .regression_approximation import RegressionApproximation
-from IPython.display import display
+from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from sklearn.preprocessing import StandardScaler
+from pqueens.regression_approximations.utils.gpy_kernels import get_gpy_kernel_type
+import logging
+from pqueens.utils.logger_settings import log_through_print
+
+_logger = logging.getLogger(__name__)
 
 
 class GPGPyRegression(RegressionApproximation):
-    """ Class for creating GP based regression model based on GPy
+    """Class for creating GP based regression model based on GPy
 
-    This class constructs a GP regression, currently using a GPy model.
-    Currently, a lot of parameters are still hard coded, which will be
-    improved in the future
+    This class constructs a GP regression using a GPy model.
 
     Attributes:
-        X (np.array):               Training inputs
-        y (np.array):               Training outputs
-        m (Gpy.model):              GPy based Gaussian process model
+        x_train (np.array): Training inputs
+        y_train (np.array): Training outputs
+        scaler_x (sklearn scaler object): Scaler for inputs
+        number_posterior_samples (int): Number of posterior samples
+        model (Gpy.model): GPy based Gaussian process model
+        seed_optimizer (int): seed for optimizer for training the GP
+        seed_posterior_samples (int): seed for posterior samples
 
     """
 
+    def __init__(
+        self,
+        x_train,
+        y_train,
+        scaler_x,
+        number_posterior_samples,
+        number_input_dimensions,
+        model,
+        seed_optimizer,
+        seed_posterior_samples,
+        number_restarts,
+        number_optimizer_iterations,
+    ):
+
+        self.x_train = x_train
+        self.y_train = y_train
+        self.scaler_x = scaler_x
+        self.number_posterior_samples = number_posterior_samples
+        self.number_input_dimensions = number_input_dimensions
+        self.model = model
+        self.seed_optimizer = seed_optimizer
+        self.seed_posterior_samples = seed_posterior_samples
+        self.number_restarts = number_restarts
+        self.number_optimizer_iterations = number_optimizer_iterations
+
     @classmethod
     def from_config_create(cls, config, approx_name, x_train, y_train):
-        """ Create approximation from options dictionary
+        """Create approximation from options dictionary
 
         Args:
-            config (dict): Dictionary with problem description (input file)
+            config (dict):         Dictionary with problem description (input file)
+            approx_name (str):     Name of approximation method
             x_train (np.array):    Training inputs
             y_train (np.array):    Training outputs
 
@@ -31,128 +64,181 @@ class GPGPyRegression(RegressionApproximation):
             gp_approximation_gpy: approximation object
         """
         approx_options = config[approx_name]
-        num_posterior_samples = approx_options.get('num_posterior_samples', None)
-        return cls(x_train, y_train, num_posterior_samples)
+        number_posterior_samples = approx_options.get('num_posterior_samples', None)
+        ard = approx_options.get('ard', False)
+        kernel_type = approx_options.get('kernel_type', "sum_rbf")
+        seed_optimizer = approx_options.get("seed_optimizer", 42)
+        seed_posterior_samples = approx_options.get("seed_posterior_samples", None)
+        number_restarts = approx_options.get("num_restart", 5)
+        number_optimizer_iterations = approx_options.get("number_optimizer_iterations", 1000)
 
-    def __init__(self, X, y, num_posterior_samples):
-
-        self.x_train = X
-        self.y_train = y
-        self.num_posterior_samples = num_posterior_samples
+        normalize_y = approx_options.get("normalize_y", True)
 
         # input dimension
-        input_dim = self.x_train.shape[1]
+        if len(x_train.shape) == 1:
+            number_input_dimensions = 1
+        else:
+            number_input_dimensions = x_train.shape[1]
 
-        # simple GP Model
-        lengthscale_0 = 0.1 * abs(np.max(self.x_train) - np.min(self.x_train))
-        variance_0 = abs(np.max(self.y_train) - np.min(self.y_train)) 
+        if y_train.ndim == 1:
+            y_train = y_train.reshape((-1, 1))
 
-        k_list = [
-            GPy.kern.RBF(
-                input_dim=1,
-                variance=variance_0,
-                lengthscale=lengthscale_0,
-                ARD=False,
-                active_dims=[dim],
-            )
-            for dim in range(input_dim)
-        ]
+        # scaling of input dimensions
+        scaler_x = StandardScaler()
+        scaler_x.fit(x_train)
+        x_train = scaler_x.transform(x_train)
 
-        k = k_list[0]
-        if len(k_list) > 1:
-            for k_ele in k_list[1:]:
-                k += k_ele
+        lengthscale_0 = 0.1 * abs(np.max(x_train) - np.min(x_train))
 
-        self.m = GPy.models.GPRegression(self.x_train, self.y_train, kernel=k, normalizer=True)
+        if normalize_y is True:
+            variance_0 = 1.0
+        else:
+            variance_0 = abs(np.max(y_train) - np.min(y_train))
+
+        kernel = cls._setup_kernel(
+            kernel_type, number_input_dimensions, variance_0, lengthscale_0, ard
+        )
+        model = GPy.models.GPRegression(x_train, y_train, kernel=kernel, normalizer=normalize_y)
+        log_through_print(_logger, model)
+
+        return cls(
+            x_train,
+            y_train,
+            scaler_x,
+            number_posterior_samples,
+            number_input_dimensions,
+            model,
+            seed_optimizer,
+            seed_posterior_samples,
+            number_restarts,
+            number_optimizer_iterations,
+        )
 
     def train(self):
         """ Train the GP by maximizing the likelihood """
-        self.m.optimize_restarts(
-            num_restarts=5, max_iters=1000, messages=True, robust=True, seed=42
-        )  # TODO pull the seed out to json
-        display(self.m)
+        # fix seed for randomize in restarts
+        np.random.seed(self.seed_optimizer)
+        self.model.optimize_restarts(
+            num_restarts=self.number_restarts,
+            max_iters=self.number_optimizer_iterations,
+            messages=True,
+        )
+        log_through_print(_logger, self.model)
 
-    def predict(self, Xnew, support='y', full_cov=False):
+    def predict(self, x_test, support='y', full_cov=False):
         """
-        Predict the posterior distribution at Xnew with respect to the data 'y' or the latent
+        Predict the posterior distribution at x_test with respect to the data 'y' or the latent
         function 'f'.
 
         Args:
-            Xnew (np.array): Inputs at which to evaluate latent function f
+            x_test (np.array): Inputs at which to evaluate latent function f
             support (str): Probabilistic support of random process (default: 'y'). Possible options
                            are 'y' or 'f'. Here, 'f' means the latent function so that the posterior
                            variance of the GP is calculated with respect to f. In contrast 'y'
                            refers to the data itself so that the posterior variance is computed
                            with respect to 'y' (f is integrated out) leading to an extra addition
-                           of noise in the posterior variance)
+                           of noise in the posterior variance.
             full_cov (bool): Boolean that specifies whether the entire posterior covariance matrix
                              should be returned or only the posterior variance
 
         Returns:
             output (dict): Dictionary with mean, variance, and possibly
-                           posterior samples at Xnew
+                           posterior samples at x_test
         """
+        x_test = np.atleast_2d(x_test).reshape((-1, self.model.input_dim))
+        x_test = self.scaler_x.transform(x_test)
+
         if support == 'y':
-            output = self.predict_y(Xnew, full_cov=full_cov)
+            output = self.predict_y(x_test, full_cov=full_cov)
         elif support == 'f':
-            output = self.predict_f(Xnew, full_cov=full_cov)
+            output = self.predict_f(x_test, full_cov=full_cov)
         else:
             raise NotImplementedError(
-                f"You choose support={support} but the only valid options " f"are 'y' or 'f'"
+                f"You choose support={support} but the only valid options are 'y' or 'f'"
             )
+        if self.number_posterior_samples is not None:
+            output["post_samples"] = self.predict_f_samples(x_test, self.number_posterior_samples)
         return output
 
-    def predict_y(self, Xnew, full_cov=False):
+    def predict_y(self, x_test, full_cov=False):
         """
-        Compute the posterior distribution at Xnew with respect to the data 'y'
+        Compute the posterior distribution at x_test with respect to the data 'y'
 
         Args:
-            Xnew (np.array): Inputs at which to evaluate latent function f
+            x_test (np.array): Inputs at which to evaluate latent function f
+            full_cov (bool): Boolean that specifies whether the entire posterior covariance
+                             matrix should be returned or only the posterior variance.
 
         Returns:
             output (dict): Dictionary with mean, variance, and possibly
-                           posterior samples of latent function at Xnew
+                           posterior samples at x_test
         """
-        Xnew = np.atleast_2d(Xnew).reshape((-1, self.m.input_dim))
-        output = {}
-        output["mean"], output["variance"] = self.m.predict(Xnew, full_cov=full_cov)
-        if self.num_posterior_samples is not None:
-            output["post_samples"] = self.predict_f_samples(Xnew, self.num_posterior_samples)
+        output = {"x_test": x_test}
+        output["mean"], output["variance"] = self.model.predict(x_test, full_cov=full_cov)
+        if self.number_posterior_samples is not None:
+            output["post_samples"] = self.predict_f_samples(x_test, self.number_posterior_samples)
 
         return output
 
-    def predict_f(self, Xnew, full_cov=False):
+    def predict_f(self, x_test, full_cov=False):
         """
-        Compute the mean and variance of the latent function at Xnew
+        Compute the mean and variance of the latent function at x_test
 
         Args:
-            Xnew (np.array): Inputs at which to evaluate latent function f
+            x_test (np.array): Inputs at which to evaluate latent function f
+            full_cov (bool): Boolean that specifies whether the entire posterior covariance
+                             matrix should be returned or only the posterior variance.
 
         Returns:
-            np.array, np.array: mean and variance of latent function at Xnew
+            output (dict): Dictionary with mean, variance, and possibly
+                           posterior samples at x_test
         """
-        Xnew = np.atleast_2d(Xnew).reshape((-1, self.m.input_dim))
-        output = {}
-        output["mean"], output["variance"] = self.m.predict_noiseless(Xnew, full_cov=full_cov)
-        if self.num_posterior_samples is not None:
-            output["post_samples"] = self.predict_f_samples(Xnew, self.num_posterior_samples)
+        output = {"x_test": x_test}
+        output["mean"], output["variance"] = self.model.predict_noiseless(x_test, full_cov=full_cov)
 
         return output
 
-    def predict_f_samples(self, Xnew, num_samples):
-        """ Produce samples from the posterior latent function Xnew
+    def predict_f_samples(self, x_test, num_samples):
+        """Produce samples from the posterior latent function x_test
 
-            Args:
-                Xnew (np.array):    Inputs at which to evaluate latent function f
-                num_samples (int):  Number of posterior field_realizations of GP
+        Args:
+            x_test (np.array):    Inputs at which to evaluate latent function f
+            num_samples (int):  Number of posterior field_realizations of GP
 
-            Returns:
-                np.array, np.array: mean and variance of latent functions at Xnew
+        Returns:
+            np.array, np.array: mean and variance of latent functions at x_test
+        """
+        if self.seed_posterior_samples:
+            # fix seed for random samples
+            np.random.seed(self.seed_posterior_samples)
+            _logger.warning("Beware, the seed for drawing posterior samples is fixed.")
+        post_samples = self.model.posterior_samples_f(x_test, num_samples)
+        # GPy returns 3d array middle dimension indicates number of outputs, i.e.
+        # it is only != 1 for multi-output processes
+        if post_samples.shape[1] != 1:
+            raise Exception("GPGPyRegression can not deal with multi-output GPs")
+        return np.reshape(post_samples, (x_test.shape[0], num_samples))
+
+    @classmethod
+    def _setup_kernel(cls, kernel_type, input_dim, variance_0, lengthscale_0, ard):
+        """
+        Choose the correct kernel setup method and setup kernel
+
+        Args:
+            kernel_type (str): kernel type to setup
+            input_dim (int): number of input dimensions
+            variance_0 (float): initial kernel variance of the GP
+            lengthscale_0 (float): initial kernel lengthscale(s) of the GP
+            ard (bool): true if automatic relevance determination is active
+
+        Returns:
+            kernel (GPy.kern object): kernel for Gaussian Process
+
         """
 
-        post_samples = self.m.posterior_samples_f(Xnew, num_samples)
-        # GPy returns 3d array middle dimension indicates number of ouputs, i.e.
-        # it is only != 1 for multioutput processes
-        if post_samples.shape[1] != 1:
-            raise Exception("GPGPyRegression can not deal with multioutput GPs")
-        return np.reshape(post_samples, (Xnew.shape[0], num_samples))
+        setup_specific_kernel = get_gpy_kernel_type(kernel_type)
+        kernel = setup_specific_kernel(input_dim, variance_0, lengthscale_0, ard)
+        log_through_print(_logger, kernel)
+
+        return kernel
+

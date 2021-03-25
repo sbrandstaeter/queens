@@ -12,6 +12,9 @@ from .iterator import Iterator
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 from pqueens.database.mongodb import MongoDB
 import copy
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class MonteCarloIterator(Iterator):
@@ -258,7 +261,7 @@ class MonteCarloIterator(Iterator):
                         ax.set_xlabel(r'$C_L(t)$')
                         plt.show()
         # else:
-        print("Size of inputs {}".format(self.samples.shape))
-        print("Inputs {}".format(self.samples))
-        print("Size of outputs {}".format(self.output['mean'].shape))
-        print("Outputs {}".format(self.output['mean']))
+        _logger.debug("Size of inputs {}".format(self.samples.shape))
+        _logger.debug("Inputs {}".format(self.samples))
+        _logger.debug("Size of outputs {}".format(self.output['mean'].shape))
+        _logger.debug("Outputs {}".format(self.output['mean']))
