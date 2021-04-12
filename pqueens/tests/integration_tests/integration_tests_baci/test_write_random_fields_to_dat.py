@@ -14,7 +14,7 @@ def test_write_random_dirichlet_to_dat(
         third_party_inputs, "baci_input_files", "invaaa_ee_fields_template.dat"
     )
 
-    baci_release, post_drt_monitor = baci_link_paths
+    baci_release, post_drt_monitor, _ = baci_link_paths
 
     dir_dict = {
         'experiment_dir': str(tmpdir),

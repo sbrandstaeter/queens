@@ -17,25 +17,47 @@ class PostPostBACIShape(PostPost):
     """
 
     def __init__(
-        self, path_ref_data, time_tol, case_type, visualization, delete_field_data, file_prefix
+        self,
+        path_ref_data,
+        time_tol,
+        visualization,
+        delete_field_data,
+        file_prefix,
+        file_postfix,
+        displacement_fields,
+        problem_dimension,
     ):
+        """Initialize post_post_baci_shape class
 
+        Args:
+            path_ref_data (string): experimental data in monitor format
+            time_tol (float): time tolerance for given reference timepoints
+            visualization (bool): boolean for vtk visualization control
+            file_prefix (string): file prefix in result data to find result files
+            file_postfix (string): file postfix and ending to find result files
+            displacement_fields (list): strings with exact field names for displacement to apply
+            problem_dimension (string): string to determine problems spatial dimension
+
+        Returns:
+            post_post (post_post object)
+        """
         super(PostPostBACIShape, self).__init__(delete_field_data, file_prefix)
         self.path_ref_data = path_ref_data
         self.time_tol = time_tol
-        self.case_type = case_type
         self.visualizationon = visualization
         self.file_prefix = file_prefix
-
+        self.file_postfix = file_postfix
+        self.displacement_fields = displacement_fields
+        self.problem_dimension = problem_dimension
         # this is ugly, but necessary as there is no other method only called once
         self.ref_data = self.read_monitorfile()
 
     @classmethod
     def from_config_create_post_post(cls, base_settings):
-        """ Create post_post routine from problem description
+        """Create post_post routine from problem description
 
         Args:
-            config: input json file with problem description
+            base_settings (list): input read from json input file
 
         Returns:
             post_post (post_post object)
@@ -43,12 +65,21 @@ class PostPostBACIShape(PostPost):
         post_post_options = base_settings['options']
         path_ref_data = post_post_options['path_to_ref_data']
         time_tol = post_post_options['time_tol']
-        case_type = post_post_options['case_type']
-        visualization = post_post_options['visualization']
+        visualization = post_post_options.get('visualization', False)
         file_prefix = post_post_options['file_prefix']
-        delete_field_data = post_post_options['delete_field_data']
+        file_postfix = post_post_options.get('file_postfix', 'structure.case')
+        displacement_fields = post_post_options.get('displacement_fields', ['displacement'])
+        problem_dimension = post_post_options.get('problem_dimension', '2d')
+        delete_field_data = post_post_options.get('delete_field_data', False)
         return cls(
-            path_ref_data, time_tol, case_type, visualization, delete_field_data, file_prefix
+            path_ref_data,
+            time_tol,
+            visualization,
+            delete_field_data,
+            file_prefix,
+            file_postfix,
+            displacement_fields,
+            problem_dimension,
         )
 
     # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
@@ -65,13 +96,7 @@ class PostPostBACIShape(PostPost):
             None
         """
 
-        # we can make use of specific cut output here
-        if self.case_type == 'cut_fsi':
-            path = glob.glob(file_names + 'boundary_of_structure' + '*' + '.case')
-        elif self.case_type in ['2d_full', '3d_full']:
-            path = glob.glob(file_names + '*' + 'structure.case')
-        else:
-            raise ValueError('case_type unknown')
+        path = glob.glob(file_names + '*' + self.file_postfix)
 
         # glob returns arbitrary list -> need to sort the list before using
         path.sort()
@@ -101,7 +126,18 @@ class PostPostBACIShape(PostPost):
             # "cd " + self.output_file + "&& ls | grep -v --include=*.{mon,csv} | xargs rm"
             _, _, _, _ = run_subprocess(command_string)
 
-    def error_handling(self):
+    def error_handling(self, output_dir):
+
+        """
+        error handling function
+
+        Args:
+            output_dir (string): location to copy failed input files to
+
+        Returns:
+            None
+
+        """
         # TODO  ### Error Types ###
         # No QoI file
         # Time/Time step not reached
@@ -129,50 +165,61 @@ class PostPostBACIShape(PostPost):
         Returns:
             monfile_data (list): data from monitor file in numbers
         """
-        monitorcontent = open(self.path_ref_data).readlines()
-        i = 0
-        npoints = 0
-        steps = 0
-        npoint_lines = []
-        steps_lines = []
-        for line in monitorcontent:
-            if line.startswith('#'):
-                continue
-            if line.startswith('steps'):
-                firstline = line
-                steps = re.findall('^(?:steps )(.+)(?= npoints)', firstline, re.M)
-                steps = int(steps[0])
-                npoints = re.findall('^(?:steps )(?:.+)?(?: npoints )(.+)', firstline, re.M)
-                npoints = int(npoints[0])
-                continue
-            if i < npoints:
-                npoint_lines.append(line)
-                i += 1
-                continue
-            if i - npoints - 1 < steps:
-                steps_lines.append(line)
+        with open(self.path_ref_data) as mymonitorfile:
+            lines = mymonitorfile.readlines()
+            i = 0
+            npoints = 0
+            steps = 0
+            # lines specifying number of spatial dimensions and dimension ids
+            npoint_lines = []
+            # measurements for all points in different time steps
+            steps_lines = []
+            # sort lines into npoint_lines and steps_lines
+            for line in lines:
+                if line.startswith('#'):
+                    continue
+                line = line.strip()
+                if line.startswith('steps'):
+                    firstline = line
+                    steps = re.findall('^(?:steps )(.+)(?= npoints)', firstline, re.M)
+                    steps = int(steps[0])
+                    npoints = re.findall('^(?:steps )(?:.+)?(?: npoints )(.+)', firstline, re.M)
+                    npoints = int(npoints[0])
+                    continue
+                if i < npoints:
+                    npoint_lines.append(line.split())
+                    i += 1
+                    continue
+                if i - npoints - 1 < steps:
+                    steps_lines.append(line.split())
 
-        if npoints == 0 or steps == 0:
-            raise ValueError(
-                'read_monitorfile did not find useful content. Monitor format is ' 'probably wrong'
-            )
+            if npoints == 0 or steps == 0:
+                raise ValueError(
+                    'read_monitorfile did not find useful content. Monitor format is probably wrong'
+                )
 
-        npoint_lines = [i.strip() for i in npoint_lines]
-        npoint_lines = [i.split() for i in npoint_lines]
+        # read numeric content from file data
         npoint_lines = [[int(ii) for ii in i] for i in npoint_lines]
-
-        steps_lines = [i.split() for i in steps_lines]
         steps_lines = [[float(ii) for ii in i] for i in steps_lines]
 
+        # prefill monfile_data of adequate size with zeros
+        # monfile_data has dimensions
+        # [number of timesteps][2][number of points][2][3dim]
+        # it contains pairs of points on the interface and in the domain (for distance
+        # in prescribed direction) measured in experiment
         monfile_data = []
         for i in steps_lines:
             monfile_data.append(
                 [[0.0e0], [[[0, 0, 0] for j in range(0, 2)] for k in range(0, npoints)]]
             )
 
+        # for all npoint_lines read according data from steps_lines to monfile_data
+        # loop over time steps
         for i in range(len(steps_lines)):
             k = 1
+            # save time value for time step
             monfile_data[i][0] = steps_lines[i][0]
+            # loop over points
             for ii in range(len(npoint_lines)):
                 for x in range(0, 2):
                     for iii in range(0, npoint_lines[ii][0]):
@@ -199,7 +246,7 @@ class PostPostBACIShape(PostPost):
         residual = []
         # get visual feedback for the intersection problems
         self.visualizationon
-        for meas_iter_t, meas_t in enumerate(self.ref_data):
+        for meas_iter_t, measurementCurrStep in enumerate(self.ref_data):
 
             if self.visualizationon:
                 colors = vtk.vtkNamedColors()
@@ -213,14 +260,15 @@ class PostPostBACIShape(PostPost):
                 points = vtk.vtkPoints()
                 vertices = vtk.vtkCellArray()
 
-            grid = self.create_UnstructuredGridFromEnsight(path, meas_t[0])
+            grid = self.create_UnstructuredGridFromEnsight(path, measurementCurrStep[0])
 
             geo = vtk.vtkGeometryFilter()
             geo.SetInputData(grid)
             geo.Update()
             geoout = geo.GetOutput()
 
-            if self.case_type == '2d_full':
+            # switch between problem dimension as vtk functions depend on it
+            if self.problem_dimension == '2d':
                 # following part is 2D specific
                 outline = vtk.vtkFeatureEdges()
                 outline.SetInputData(geoout)
@@ -230,15 +278,15 @@ class PostPostBACIShape(PostPost):
                 outlines = outlineout.GetLines()
                 odata = outlines.GetData()
 
-            elif self.case_type in ['cut_fsi', '3d_full']:
+            elif self.problem_dimension == '3d':
                 outlineout = geoout
                 outlines = outlineout.GetPolys()
                 odata = outlines.GetData()
 
             npodata = vtk_to_numpy(odata)
 
-            for meas_iter, meas in enumerate(meas_t[1]):
-                vec = self.stretch_vector(meas[0], meas[1], 10)
+            for meas_iter, measuredPointPair in enumerate(measurementCurrStep[1]):
+                vec = self.stretch_vector(measuredPointPair[0], measuredPointPair[1], 10)
 
                 i = 0
 
@@ -292,7 +340,7 @@ class PostPostBACIShape(PostPost):
                     i += numpoints
                     i += 1
 
-                distance = self.compute_distance(intersectionpoints, meas)
+                distance = self.compute_distance(intersectionpoints, measuredPointPair)
 
                 residual.append(distance)
 
@@ -322,7 +370,6 @@ class PostPostBACIShape(PostPost):
                 pointActor.GetProperty().SetColor([0.0, 0.0, 1.0])
                 pointActor.GetProperty().SetPointSize(10)
                 pointActor.GetProperty().SetRenderPointsAsSpheres(True)
-                # pointActor.GetProperty().VertexVisibilityOff()
 
                 ugridActor = vtk.vtkActor()
                 ugridActor.SetMapper(ugridMapper)
@@ -451,15 +498,23 @@ class PostPostBACIShape(PostPost):
             )
         block = readout.GetBlock(0)
 
-        if self.case_type in ['2d_full', '3d_full']:
-            block.GetPointData().SetActiveVectors('displacement')
-        elif self.case_type in ['cut_fsi']:
-            block.GetPointData().SetActiveVectors('idispnp')
+        block.GetPointData().SetActiveVectors(self.displacement_fields[0])
 
         wv = vtk.vtkWarpVector()
         wv.SetScaleFactor(1.0)
         wv.SetInputData(block)
         wv.Update()
+        if len(self.displacement_fields) > 1:
+            for i, field in enumerate(self.displacement_fields):
+                if i > 0:
+                    secondblock = wv.GetOutput()
+                    secondblock.GetPointData().SetActiveVectors(field)
+                    wvb = vtk.vtkWarpVector()
+                    wvb.SetScaleFactor(1.0)
+                    wvb.SetInputData(secondblock)
+                    wvb.Update()
+                    wv = wvb
+
         grid = wv.GetUnstructuredGridOutput()
 
         return grid

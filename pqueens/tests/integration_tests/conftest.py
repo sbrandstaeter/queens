@@ -39,7 +39,8 @@ def baci_link_paths(config_dir):
     """ Set symbolic links for baci on testing machine. """
     baci = str(pathlib.Path(config_dir).joinpath('baci-release'))
     post_drt_monitor = str(pathlib.Path(config_dir).joinpath('post_drt_monitor'))
-    return baci, post_drt_monitor
+    post_processor = str(pathlib.Path(config_dir).joinpath('post_processor'))
+    return baci, post_drt_monitor, post_processor
 
 
 @pytest.fixture(scope="session")
@@ -48,7 +49,8 @@ def baci_source_paths_for_gitlab_runner():
     home = pathlib.Path.home()
     src_baci = pathlib.Path.joinpath(home, 'workspace/build/baci-release')
     src_drt_monitor = pathlib.Path.joinpath(home, 'workspace/build/post_drt_monitor')
-    return src_baci, src_drt_monitor
+    src_post_processor = pathlib.Path.joinpath(home, 'workspace/build/post_processor')
+    return src_baci, src_drt_monitor, src_post_processor
 
 
 # CLUSTER TESTS ------------------------------------------------------------------------------------
@@ -194,7 +196,7 @@ def prepare_singularity(
     cluster_path_to_singularity,
     prepare_cluster_testing_environment,
 ):
-    """ Build singularity based on the code during test invokation.
+    """Build singularity based on the code during test invokation.
 
     WARNING: needs to be done AFTER prepare_cluster_testing_environment to make sure cluster testing
      folder is clean and existing

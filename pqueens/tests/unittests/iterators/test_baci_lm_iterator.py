@@ -79,10 +79,15 @@ def default_baci_lm_iterator():
         ),
         'debug': False,
         'input_file': 'dummy_input',
-        'global_settings': {'output_dir': 'dummy_output', 'experiment_name': 'OptimizeLM',},
+        'global_settings': {
+            'output_dir': 'dummy_output',
+            'experiment_name': 'OptimizeLM',
+        },
     }
 
-    baci_lm_i = BaciLMIterator.from_config_create_iterator(config,)
+    baci_lm_i = BaciLMIterator.from_config_create_iterator(
+        config,
+    )
 
     return baci_lm_i
 
@@ -95,7 +100,12 @@ def fix_true_false_param(request):
 @pytest.fixture(scope='module')
 def fix_plotly_fig():
     data = pd.DataFrame({'x': [1.0, 2.0], 'y': [1.1, 2.1], 'z': [1.2, 2.2]})
-    fig = px.line_3d(data, x='x', y='y', z='z',)
+    fig = px.line_3d(
+        data,
+        x='x',
+        y='y',
+        z='z',
+    )
     return fig
 
 
@@ -103,6 +113,8 @@ def test_init(mocker):
 
     global_settings = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
     initial_guess = np.array([1, 2.2])
+    bounds = np.array([[0.0, 1.0], [1.0, 2.0]])
+    havebounds = True
     jac_rel_step = 1e-3
     jac_abs_step = 1e-2
     init_reg = 1.0
@@ -118,6 +130,8 @@ def test_init(mocker):
     my_baci_lm_iterator = BaciLMIterator(
         global_settings,
         initial_guess,
+        bounds,
+        havebounds,
         jac_rel_step,
         jac_abs_step,
         init_reg,
@@ -174,7 +188,10 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
             [('type', 'simulation_model'), ('interface', 'interface'), ('parameters', 'parameters')]
         ),
         'input_file': 'input_path',
-        'global_settings': {'output_dir': 'output_path', 'experiment_name': 'experimentname',},
+        'global_settings': {
+            'output_dir': 'output_path',
+            'experiment_name': 'experimentname',
+        },
     }
 
     mp = mocker.patch(
@@ -240,7 +257,8 @@ def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
     )
 
     m4 = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.eval_model', return_value=None,
+        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.eval_model',
+        return_value=None,
     )
 
     default_baci_lm_iterator.model.response = {'mean': np.array([[3.0, 4.2], [99.9, 99.9]])}
@@ -280,7 +298,8 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
     )
 
     m4 = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.eval_model', return_value=None,
+        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.eval_model',
+        return_value=None,
     )
 
     default_baci_lm_iterator.model.response = {'mean': np.array([[3.0, 4.2], [99.9, 99.9]])}
@@ -313,7 +332,9 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
 def test_initialize_run(mocker, fix_true_false_param, default_baci_lm_iterator):
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
-    m1 = mocker.patch('builtins.open',)
+    m1 = mocker.patch(
+        'builtins.open',
+    )
     m2 = mocker.patch('pandas.core.generic.NDFrame.to_csv')
 
     default_baci_lm_iterator.initialize_run()
@@ -359,7 +380,10 @@ def test_core_run(default_baci_lm_iterator, mocker, fix_update_reg, fix_toleranc
             assert m2.call_count == 3
             assert m3.call_count == 3
             np.testing.assert_almost_equal(
-                default_baci_lm_iterator.param_opt, np.array([0.0275, 0.1725]), 1e-12
+                default_baci_lm_iterator.param_current, np.array([-0.00875, 0.15875]), 8
+            )
+            np.testing.assert_almost_equal(
+                default_baci_lm_iterator.param_opt, np.array([0.1, 0.2]), 8
             )
 
 
@@ -484,16 +508,24 @@ def test_post_run_0param(mocker, default_baci_lm_iterator, fix_plotly_fig):
 def test_get_positions_raw_2pointperturb(default_baci_lm_iterator):
     x = np.array([1.1, 2.5])
     pos, delta_pos = default_baci_lm_iterator.get_positions_raw_2pointperturb(x)
+    np.testing.assert_almost_equal(pos, np.array([[1.1, 2.5], [1.101011, 2.5], [1.1, 2.501025]]), 8)
+    np.testing.assert_almost_equal(delta_pos, np.array([[0.001011], [0.001025]]), 8)
+
+    default_baci_lm_iterator.bounds = [[0.0, 0.0], [np.inf, 2.5]]
+    default_baci_lm_iterator.havebounds = True
+    posb, delta_posb = default_baci_lm_iterator.get_positions_raw_2pointperturb(x)
     np.testing.assert_almost_equal(
-        pos, np.array([[1.1, 2.5], [1.101011, 2.5], [1.1, 2.501025]]), 1e-12
+        posb, np.array([[1.1, 2.5], [1.101011, 2.5], [1.1, 2.498975]]), 8
     )
-    np.testing.assert_almost_equal(delta_pos, np.array([[0.001011], [0.001025]]), 1e-12)
+    np.testing.assert_almost_equal(delta_posb, np.array([[0.001011], [-0.001025]]), 8)
 
 
 def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
-    m1 = mocker.patch('builtins.open',)
+    m1 = mocker.patch(
+        'builtins.open',
+    )
     m2 = mocker.patch('pandas.core.generic.NDFrame.to_csv')
 
     default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
@@ -506,7 +538,7 @@ def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
             header=None,
             mode='a',
             index=None,
-            float_format='%.6f',
+            float_format='%.8f',
         )
 
     else:
@@ -514,3 +546,18 @@ def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
         assert not m2.called
         default_baci_lm_iterator.result_description = None
         default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
+
+
+def test_checkbounds(mocker, default_baci_lm_iterator):
+
+    default_baci_lm_iterator.bounds = np.array([[0.0, 0.0], [5.0, 2.0]])
+    m1 = mocker.patch('builtins.print')
+
+    stepoutside = default_baci_lm_iterator.checkbounds(np.array([1.0, 2.1]), 3)
+
+    assert stepoutside == True
+    assert default_baci_lm_iterator.reg_param == 2.0
+    m1.assert_called_with(
+        f'WARNING: STEP #{3} IS OUT OF BOUNDS; double reg_param and compute new iteration.'
+        f'\n declined step was: {np.array([1.1, 2.3])}'
+    )

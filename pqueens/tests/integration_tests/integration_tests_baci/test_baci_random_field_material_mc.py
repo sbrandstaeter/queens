@@ -21,7 +21,7 @@ def test_write_random_material_to_dat(
     command_string = ' '.join(cmd_lst)
     _, _, _, stderr = run_subprocess(command_string)
 
-    baci_release, post_drt_monitor = baci_link_paths
+    baci_release, post_drt_monitor, _ = baci_link_paths
 
     dir_dict = {
         'experiment_dir': str(tmpdir),
