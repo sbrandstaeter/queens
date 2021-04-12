@@ -23,6 +23,8 @@ class BaciLMIterator(Iterator):
         self,
         global_settings,
         initial_guess,
+        bounds,
+        havebounds,
         jac_rel_step,
         jac_abs_step,
         init_reg,
@@ -36,6 +38,8 @@ class BaciLMIterator(Iterator):
         super().__init__(model, global_settings)
 
         self.initial_guess = initial_guess
+        self.bounds = bounds
+        self.havebounds = havebounds
         self.param_current = initial_guess
         self.jac_rel_step = jac_rel_step
         self.max_feval = max_feval
@@ -43,6 +47,7 @@ class BaciLMIterator(Iterator):
 
         self.jac_abs_step = jac_abs_step
         self.reg_param = init_reg
+        self.init_reg = init_reg
         self.update_reg = update_reg
         self.tolerance = tolerance
 
@@ -81,6 +86,11 @@ class BaciLMIterator(Iterator):
 
         initial_guess = np.array(method_options.get('initial_guess'), dtype=float)
 
+        bounds = method_options.get("bounds", None)
+        havebounds = True
+        if bounds is None:
+            havebounds = False
+
         max_feval = method_options.get('max_feval', 1)
 
         jac_rel_step = method_options.get('jac_rel_step', 1e-4)
@@ -97,6 +107,8 @@ class BaciLMIterator(Iterator):
         return cls(
             global_settings=global_settings,
             initial_guess=initial_guess,
+            bounds=bounds,
+            havebounds=havebounds,
             jac_rel_step=jac_rel_step,
             jac_abs_step=jac_abs_step,
             init_reg=init_reg,
@@ -135,7 +147,8 @@ class BaciLMIterator(Iterator):
             self.eval_model()
 
         # model response should now correspond to objective function evaluated at positions
-        f_batch = np.atleast_1d(np.squeeze(self.model.response['mean']))
+        f = self.model.response['mean']
+        f_batch = f[-(len(x_batch)) :]
 
         # first entry corresponds to f(x0)
         f0 = f_batch[0]
@@ -163,7 +176,8 @@ class BaciLMIterator(Iterator):
             self.model.update_model_from_sample_batch(positions)
             self.eval_model()
 
-        f_batch = self.model.response['mean']
+        f = self.model.response['mean']
+        f_batch = f[-(len(positions)) :]
 
         f0 = f_batch[0]  # first entry corresponds to f(x0)
         f_perturbed = np.delete(f_batch, 0, 0)  # delete the first entry
@@ -221,9 +235,8 @@ class BaciLMIterator(Iterator):
             none
         """
 
-        resnorm = float('inf')
-
-        gradnorm = float('inf')
+        resnorm = np.inf
+        gradnorm = np.inf
 
         converged = False
 
@@ -242,18 +255,18 @@ class BaciLMIterator(Iterator):
                 f"{self.param_current}"
             )
 
-            J = self.jacobian(self.param_current)
-            r = self.residual(self.param_current)
+            jacobian = self.jacobian(self.param_current)
+            residual = self.residual(self.param_current)
 
             # store terms for repeated useage
-            JTJ = (J.T).dot(J)
-            JTr = (J.T).dot(r)
+            JTJ = (jacobian.T).dot(jacobian)
+            JTr = (jacobian.T).dot(residual)
 
             resnorm_o = resnorm
-            resnorm = np.linalg.norm(r)
+            resnorm = np.linalg.norm(residual) / np.sqrt(residual.size)
 
             gradnorm_o = gradnorm
-            gradnorm = np.linalg.norm((J.T).dot(r))
+            gradnorm = np.linalg.norm(JTr)
 
             if i == 0:
                 resnorm_o = resnorm
@@ -269,10 +282,21 @@ class BaciLMIterator(Iterator):
 
             # compute update step. Not necessary for last iteration! Should usually be low
             # dimension matrix inversion. We need J and r anyway for convergence check.
-            param_delta = -(np.linalg.inv(JTJ + self.reg_param * np.diag(np.diag(JTJ))).dot(JTr))
+            param_delta = np.linalg.solve(JTJ + self.reg_param * np.diag(np.diag(JTJ)), -(JTr))
 
             # output for iteration. Before update including next step
             self.printstep(i, resnorm, gradnorm, param_delta)
+
+            # evaluate bounds
+            if self.havebounds and self.checkbounds(param_delta, i):
+                if self.reg_param > 1.0e6 * self.init_reg:
+                    print(
+                        f'WARNING: STEP #{i} IS OUT OF BOUNDS and reg_param is unreasonably '
+                        f'high. Ending iterations!'
+                    )
+                    break
+                else:
+                    continue
 
             # update param for next step
             self.param_current = self.param_current + param_delta
@@ -303,10 +327,10 @@ class BaciLMIterator(Iterator):
         Write solution to console and optionally create .html plot from result file.
 
         Args:
-        none
+            none
 
         Returns:
-        none
+            none
         """
         print(f"The optimum:\t{self.solution} occured in iteration #{self.iter_opt}.")
         if self.result_description:
@@ -383,14 +407,20 @@ class BaciLMIterator(Iterator):
         Get parameter sets for objective function evaluations.
 
         Args:
-        x0 (numpy.ndarray): vector with current parameters
+            x0 (numpy.ndarray): vector with current parameters
 
         Returns:
-        positions (numpy.ndarray): parameter batch for function evluation
-        delta_positions (numpy.array): parameter perturbations for finite difference scheme
+            positions (numpy.ndarray): parameter batch for function evaluation
+            delta_positions (numpy.ndarray): parameter perturbations for finite difference scheme
         """
 
-        delta_positions = self.jac_abs_step + self.jac_rel_step * x0
+        delta_positions = self.jac_abs_step + self.jac_rel_step * np.abs(x0)
+        # if bounds do not allow finite difference step, use opposite direction
+        if self.havebounds:
+            perturbed = x0 + delta_positions
+            for i, current_p in enumerate(perturbed):
+                if (current_p < self.bounds[0][i]) or (current_p > self.bounds[1][i]):
+                    delta_positions[i] = -delta_positions[i]
 
         positions = np.zeros((x0.size + 1, x0.size))
         positions[0] = x0
@@ -410,16 +440,15 @@ class BaciLMIterator(Iterator):
         Opens file in append mode, so that file is updated frequently.
 
         Args:
-        i (int): iteration number
-        resnorm (float): residual norm
-        gradnorm (float): gradient norm
-        param_delta (numpy.ndarray): parameter step
+            i (int): iteration number
+            resnorm (float): residual norm
+            gradnorm (float): gradient norm
+            param_delta (numpy.ndarray): parameter step
 
         Returns:
-        None
+            None
         """
 
-        string = np.array2string(param_delta, precision=8)
         # write iteration to file
         if self.result_description:
             if self.result_description["write_results"]:
@@ -433,11 +462,37 @@ class BaciLMIterator(Iterator):
                     df = pd.DataFrame(
                         {
                             'iter': i,
-                            'resnorm': resnorm,
-                            'gradnorm': gradnorm,
+                            'resnorm': np.format_float_scientific(resnorm, precision=8),
+                            'gradnorm': np.format_float_scientific(gradnorm, precision=8),
                             'params': [np.array2string(self.param_current, precision=8)],
                             'delta_params': [np.array2string(param_delta, precision=8)],
-                            'mu': self.reg_param,
+                            'mu': np.format_float_scientific(self.reg_param, precision=8),
                         }
                     )
-                    df.to_csv(f, sep='\t', header=None, mode='a', index=None, float_format='%.6f')
+                    df.to_csv(f, sep='\t', header=None, mode='a', index=None, float_format='%.8f')
+
+    def checkbounds(self, param_delta, i):
+
+        """
+        check if proposed step is in bounds, otherwise double regularization and compute new step
+
+        Args:
+            param_delta (numpy.ndarray): parameter step
+            i (int): iteration number
+
+        Returns:
+            stepisoutside (bool): flag if proposed step is out of bounds
+        """
+
+        stepisoutside = False
+        nextstep = self.param_current + param_delta
+        if np.any(nextstep < self.bounds[0]) or np.any(nextstep > self.bounds[1]):
+            stepisoutside = True
+            print(
+                f'WARNING: STEP #{i} IS OUT OF BOUNDS; double reg_param and compute new iteration.'
+                f'\n declined step was: {nextstep}'
+            )
+
+            self.reg_param *= 2
+
+        return stepisoutside

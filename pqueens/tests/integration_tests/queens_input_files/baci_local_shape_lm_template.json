@@ -1,24 +1,28 @@
 {
-  "experiment_name" : "OptimizeBiofilmLSQ",
+  "experiment_name" : "{experiment_name}",
   "database"  :{
     "address"   : "localhost:27017",
-    "drop_existing" : true
-},
+    "drop_all_existing_dbs" : true 
+    },
   "method": {
-    "method_name": "optimization",
+    "method_name": "baci_lm",
     "method_options" :{
       "model" : "model",
       "jac_method":"2-point",
-      "jac_rel_step":1e-5,
-      "max_feval":2,
+      "jac_rel_step":1e-3,
+      "jac_abs_step":1e-5,
+      "max_feval":50,
+      "init_reg": 1,
+      "update_reg": "grad",
       "algorithm" : "LSQ",
+      "convergence_tolerance":1.0e-2,
       "initial_guess" : [1500 , 0.4],
       "result_description" : {
           "write_results" : true,
           "plot_results" : true
           },
       "bounds": [[0       , -0.5],
-                 [Infinity, 1.0 ]]
+                 [Infinity, 0.49 ]]
     }
   },
   "model" : {
@@ -32,22 +36,24 @@
     "driver" : "driver"
   },
   "driver" :{
-    "driver_type"           : "baci_native",
+    "driver_type"           : "baci",
     "driver_params"         :{
-      "input_template"        : "/home/willmann/sim/queens/test_contour/invana_levenbergmarquardt_tri_fsi_contour_template.dat",
-      "path_to_executable"    : "/home/willmann/baci/gitlab/build/baci-release",
-      "path_to_postprocessor" : "/home/willmann/baci/gitlab/build/post_drt_ensight",
-      "post_process_options"  : null,
-      "no_singularity"        : true,
+      "input_template"        : "{baci_input}",
+      "path_to_executable"    : "{baci-release}",
+      "path_to_postprocessor" : "{post_processor}",
+      "post_process_options"  : ["--filter=ensight"],
       "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
-      "experiment_dir"        : "/home/willmann/sim/queens/test_contour/",
+      "experiment_dir"        : "{experiment_dir}",
+      "post_file_name_prefix_lst": ["xx"],
       "post_post"             : {
         "post_post_approach_sel" : "baci_shape",
-        "path_to_ref_data" : "/home/willmann/sim/queens/test_contour/invana_levenbergmarquardt_tri_fsi_contour_E2000_nue03_p.monitor",
+        "path_to_ref_data" : "{baci_input_monitor}",
         "delete_field_data" : false,
         "time_tol": 1e-2,
-        "file_prefix": "xx",
-        "case_type": "2d_full",
+        "file_prefix": ["xx"],
+        "file_postfix":"structure.case",
+        "displacement_fields":["displacement"],
+        "problem_dimension": "2d",
         "visualization": false
         }
     }
@@ -71,9 +77,11 @@
       }
     }
   },
-  "scheduler" : {
-    "scheduler_type" : "local",
-    "num_procs" : 1
+    "scheduler" : {
+    "scheduler_type" : "standard",
+    "num_procs" : 2,
+    "singularity": {singularity_boolean},
+    "experiment_dir": "{experiment_dir}"
   }
 }
 

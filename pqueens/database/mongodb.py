@@ -305,9 +305,10 @@ class MongoDB(object):
             current_doc = dbdocs[idx]
             current_result = current_doc.get('result', None)
 
-            if isinstance(current_result, list) and (current_result[0][1] == 'pd.DataFrame'):
-                data, index = self._split_output(current_result)
-                current_doc['result'] = pd.DataFrame(data=data, index=index)
+            if isinstance(current_result, list) and isinstance(current_result[0], list):
+                if current_result[0][1] == 'pd.DataFrame':
+                    data, index = self._split_output(current_result)
+                    current_doc['result'] = pd.DataFrame(data=data, index=index)
 
     @staticmethod
     def _split_output(result):
