@@ -325,6 +325,8 @@ In order to run local integration tests together with `BACI`, it is necessary th
 ```
 ln -s <your/path/to/baci-release> <QUEENS_BaseDir>/config/baci-release
 ln -s <your/path/to/post_drt_monitor> <QUEENS_BaseDir>/config/post_drt_monitor
+ln -s <your/path/to/post_drt_ensight> <QUEENS_BaseDir>/config/post_drt_ensight
+ln -s <your/path/to/post_processor> <QUEENS_BaseDir>/config/post_processor
 ```
 The testing strategy is more closely described in [TESTING.md](TESTING.md) 
 To run the test suite type:
