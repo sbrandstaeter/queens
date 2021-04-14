@@ -3,8 +3,6 @@ Test suite for integration tests for the Morris-Salib Iterator (Elementary Effec
 simulations with BACI using the INVAAA minimal model.
 """
 
-import getpass
-import os
 import pickle
 import pathlib
 
@@ -13,7 +11,6 @@ import pytest
 
 from pqueens.main import main
 from pqueens.utils import injector
-from pqueens.utils.manage_singularity import hash_files
 from pqueens.utils.run_subprocess import run_subprocess
 
 
@@ -46,7 +43,10 @@ def test_cluster_morris_salib(
     singularity_remote_ip = cluster_testsuite_settings["singularity_remote_ip"]
 
     path_to_executable = baci_cluster_paths["path_to_executable"]
-    path_to_postprocessor = baci_cluster_paths["path_to_postprocessor"]
+    path_to_drt_monitor = baci_cluster_paths["path_to_drt_monitor"]
+    path_to_drt_ensight = baci_cluster_paths["path_to_drt_ensight"]
+    path_to_drt_monitor = baci_cluster_paths["path_to_drt_monitor"]
+    path_to_post_processor = baci_cluster_paths["path_to_post_processor"]
 
     # unique experiment name
     experiment_name = cluster + "_morris_salib"
@@ -106,7 +106,9 @@ def test_cluster_morris_salib(
         'path_to_singularity': str(cluster_path_to_singularity),
         'input_template': str(input_file_cluster),
         'path_to_executable': str(path_to_executable),
-        'path_to_postprocessor': str(path_to_postprocessor),
+        'path_to_drt_monitor': str(path_to_drt_monitor),
+        'path_to_drt_ensight': str(path_to_drt_ensight),
+        'path_to_post_processor': str(path_to_post_processor),
         'experiment_dir': str(experiment_dir),
         'connect_to_resource': connect_to_resource,
         'cluster_bind': cluster_bind,

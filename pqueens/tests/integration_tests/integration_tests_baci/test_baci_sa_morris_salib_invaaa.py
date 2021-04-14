@@ -110,7 +110,7 @@ def test_baci_morris_salib(
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 
-    baci_release, post_drt_monitor, _ = baci_link_paths
+    baci_release, post_drt_monitor, _, _ = baci_link_paths
 
     dir_dict = {
         'experiment_name': experiment_name,
@@ -227,7 +227,7 @@ def test_restart_from_output_folders_baci(
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 
-    baci_release, post_drt_monitor, _ = baci_link_paths
+    baci_release, post_drt_monitor, _, _ = baci_link_paths
 
     dir_dict = {
         'experiment_name': experiment_name,
@@ -298,7 +298,7 @@ def test_block_restart_baci(
     input_file = os.path.join(tmpdir, "morris_baci_local_invaaa_restart.json")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
 
-    baci_release, post_drt_monitor, _ = baci_link_paths
+    baci_release, post_drt_monitor, _, _ = baci_link_paths
 
     dir_dict = {
         'experiment_name': experiment_name,
@@ -372,7 +372,7 @@ def test_restart_from_db_baci(
     input_file = os.path.join(tmpdir, "morris_baci_local_invaaa_restart.json")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
 
-    baci_release, post_drt_monitor, _ = baci_link_paths
+    baci_release, post_drt_monitor, _, _ = baci_link_paths
 
     dir_dict = {
         'experiment_name': experiment_name,

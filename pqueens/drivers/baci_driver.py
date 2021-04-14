@@ -126,7 +126,7 @@ class BaciDriver(Driver):
             inject(self.job['params'], self.simulation_input_template, self.input_file)
 
         # delete copied file and potential back-up files afterwards to save to space
-        if self.external_geometry_obj:
+        if self.external_geometry_obj and ("_copy_" in self.simulation_input_template):
             cmd_lst = [
                 "rm -f",
                 self.simulation_input_template,
@@ -296,7 +296,7 @@ class BaciDriver(Driver):
             None
 
         """
-        if self.external_geometry_obj is not None:
+        if (self.external_geometry_obj is not None) and self.random_fields_lst:
             # TODO currently we have to perform the main run here a second time
             # TODO this is not optimal and should be changed but ok for now
             self.external_geometry_obj.main_run()
@@ -373,7 +373,6 @@ class BaciDriver(Driver):
         returncode, self.pid, stdout, stderr = run_subprocess(
             command_string, subprocess_type=subprocess_type,
         )
-
         # redirect stdout/stderr output to log and error file, respectively,
         # for Slurm, PBS (CAE stdout/stderr on remote for A-II, submission
         # stdout/stderr on local for B-II) and remote standard scheduling

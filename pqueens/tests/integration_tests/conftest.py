@@ -39,8 +39,9 @@ def baci_link_paths(config_dir):
     """ Set symbolic links for baci on testing machine. """
     baci = str(pathlib.Path(config_dir).joinpath('baci-release'))
     post_drt_monitor = str(pathlib.Path(config_dir).joinpath('post_drt_monitor'))
+    post_drt_ensight = str(pathlib.Path(config_dir).joinpath('post_drt_ensight'))
     post_processor = str(pathlib.Path(config_dir).joinpath('post_processor'))
-    return baci, post_drt_monitor, post_processor
+    return baci, post_drt_monitor, post_drt_ensight, post_processor
 
 
 @pytest.fixture(scope="session")
@@ -49,8 +50,9 @@ def baci_source_paths_for_gitlab_runner():
     home = pathlib.Path.home()
     src_baci = pathlib.Path.joinpath(home, 'workspace/build/baci-release')
     src_drt_monitor = pathlib.Path.joinpath(home, 'workspace/build/post_drt_monitor')
+    src_post_drt_ensight = pathlib.Path.joinpath(home, 'workspace/build/post_drt_ensight')
     src_post_processor = pathlib.Path.joinpath(home, 'workspace/build/post_processor')
-    return src_baci, src_drt_monitor, src_post_processor
+    return src_baci, src_drt_monitor, src_post_drt_ensight, src_post_processor
 
 
 # CLUSTER TESTS ------------------------------------------------------------------------------------
@@ -253,9 +255,19 @@ def cluster_testsuite_settings(
 @pytest.fixture(scope="session")
 def baci_cluster_paths(cluster_user, cluster_address):
     path_to_executable = pathlib.Path("/home", cluster_user, "workspace", "build", "baci-release")
-    path_to_postprocessor = pathlib.Path(
+
+    path_to_drt_monitor = pathlib.Path(
         "/home", cluster_user, "workspace", "build", "post_drt_monitor"
     )
+
+    path_to_post_processor = pathlib.Path(
+        "/home", cluster_user, "workspace", "build", "post_processor"
+    )
+
+    path_to_drt_ensight = pathlib.Path(
+        "/home", cluster_user, "workspace", "build", "post_drt_ensight"
+    )
+
     command_string = f'test -f {path_to_executable}'
     returncode, _, stdout, stderr = run_subprocess(
         command_string=command_string,
@@ -269,7 +281,7 @@ def baci_cluster_paths(cluster_user, cluster_address):
             f"Was looking here: {path_to_executable}"
         )
 
-    command_string = f'test -f {path_to_postprocessor}'
+    command_string = f'test -f {path_to_drt_monitor}'
     returncode, _, stdout, stderr = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
@@ -279,9 +291,39 @@ def baci_cluster_paths(cluster_user, cluster_address):
     if returncode:
         raise RuntimeError(
             f"Could not find postprocessor on {cluster_address}.\n"
-            f"Was looking here: {path_to_postprocessor}"
+            f"Was looking here: {path_to_drt_monitor}"
         )
+
+    command_string = f'test -f {path_to_drt_ensight}'
+    returncode, _, stdout, stderr = run_subprocess(
+        command_string=command_string,
+        subprocess_type='remote',
+        remote_user=cluster_user,
+        remote_address=cluster_address,
+    )
+    if returncode:
+        raise RuntimeError(
+            f"Could not find postprocessor on {cluster_address}.\n"
+            f"Was looking here: {path_to_drt_ensight}"
+        )
+
+    command_string = f'test -f {path_to_post_processor}'
+    returncode, _, stdout, stderr = run_subprocess(
+        command_string=command_string,
+        subprocess_type='remote',
+        remote_user=cluster_user,
+        remote_address=cluster_address,
+    )
+    if returncode:
+        raise RuntimeError(
+            f"Could not find postprocessor on {cluster_address}.\n"
+            f"Was looking here: {path_to_post_processor}"
+        )
+
     baci_cluster_paths = dict(
-        path_to_executable=path_to_executable, path_to_postprocessor=path_to_postprocessor
+        path_to_executable=path_to_executable,
+        path_to_drt_monitor=path_to_drt_monitor,
+        path_to_drt_ensight=path_to_drt_ensight,
+        path_to_post_processor=path_to_post_processor,
     )
     return baci_cluster_paths

@@ -86,7 +86,7 @@ def test_baci_lm_shape(
     )
     experiment_name = "OptmizeBaciLM_" + json.dumps(singularity_bool)
 
-    baci_release, _, post_processor = baci_link_paths
+    baci_release, _, _, post_processor = baci_link_paths
 
     dir_dict = {
         'experiment_name': experiment_name,
