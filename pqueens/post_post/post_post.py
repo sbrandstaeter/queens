@@ -53,11 +53,13 @@ class PostPost(metaclass=abc.ABCMeta):
         from .post_post_baci_shape import PostPostBACIShape
         from .post_post_net_cdf import PostPostNetCDF
         from .post_post_baci_vectorized import PostPostBACIVector
+        from .post_post_baci_ensight import PostPostBACIEnsight
 
         post_post_dict = {
             'ansys': PostPostANSYS,
             'baci': PostPostBACI,
             'baci_vector': PostPostBACIVector,
+            'baci_ensight': PostPostBACIEnsight,
             'deal': PostPostDEAL,
             'generic': PostPostGeneric,
             'openfoam': PostPostOpenFOAM,
@@ -75,6 +77,8 @@ class PostPost(metaclass=abc.ABCMeta):
             post_post_version = 'ansys'
         elif post_post_options['post_post_approach_sel'] == 'baci':
             post_post_version = 'baci'
+        elif post_post_options['post_post_approach_sel'] == 'baci_ensight':
+            post_post_version = 'baci_ensight'
         elif post_post_options['post_post_approach_sel'] == 'baci_vector':
             post_post_version = 'baci_vector'
         elif post_post_options['post_post_approach_sel'] == 'deal':
@@ -95,6 +99,11 @@ class PostPost(metaclass=abc.ABCMeta):
         # ---------------------------- CREATE BASE SETTINGS ---------------------------
         base_settings = {}
         base_settings['options'] = post_post_options
+
+        # overwrite database settings so that we dont delete the existing dbs
+        config['database']['reset_database'] = False
+        config['database']['drop_all_existing_dbs'] = False
+
         base_settings['config'] = config
         post_post = post_post_class.from_config_create_post_post(base_settings)
         return post_post
