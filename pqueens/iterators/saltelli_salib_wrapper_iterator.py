@@ -142,7 +142,12 @@ class SaltelliSALibIterator(Iterator):
             'dists': dists,
         }
         print("Draw samples...")
-        self.samples = saltelli.sample(self.salib_problem, self.num_samples, self.calc_second_order)
+        self.samples = saltelli.sample(
+            self.salib_problem,
+            self.num_samples,
+            calc_second_order=self.calc_second_order,
+            skip_values=1000,
+        )
 
     def get_all_samples(self):
         """ Return all samples """
