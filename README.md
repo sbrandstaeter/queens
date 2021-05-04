@@ -70,9 +70,9 @@ user profile under the section `User settings - SSH keys`
 [Install](http://docs.anaconda.com/anaconda/install/linux/) the latest version of [Anaconda](https://www.anaconda.com/) with Python 3.x.
  *Anaconda* is an open-source Python distribution and provides a [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) with many popular data science Python packages. In the following, we will provide some of the most important commands when using Anaconda.
 
-- Create a new Anaconda environment, e.g., using Python 3.7:  
+- Create a new Anaconda environment, e.g., using Python 3.8:  
 ```
-conda create -n <name_of_your_environment> python=3.7
+conda create -n <name_of_your_environment> python=3.8
 ```
 
 - List all packages linked into an Anaconda environment:
