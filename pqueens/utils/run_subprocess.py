@@ -114,6 +114,7 @@ def _run_subprocess_simulation(command_string, **kwargs):
 
     ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
     joblogger.setLevel(logging.INFO)
+    joblogger.propagate = False
 
     # job logger configuration. This python code is run in parallel for cluster runs with
     # singularity, so each processor logs his own file
@@ -129,7 +130,6 @@ def _run_subprocess_simulation(command_string, **kwargs):
     joblogger.addHandler(efh)
 
     # additional streaming to given stream, if required
-    # import pdb; pdb.set_trace()
     if streaming:
         sh = logging.StreamHandler(stream=sys.stdout)
         sh.setLevel(logging.INFO)
