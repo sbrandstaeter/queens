@@ -251,8 +251,12 @@ class Driver(metaclass=abc.ABCMeta):
         # 5) driver settings for post-processing, if required
         base_settings['postprocessor'] = driver_options.get('path_to_postprocessor', None)
         if base_settings['postprocessor'] is not None:
+            base_settings['post_file_name_prefix_lst'] = driver_options.get(
+                'post_file_name_prefix_lst', None
+            )
             base_settings['post_options'] = driver_options.get('post_process_options', None)
         else:
+            base_settings['post_file_name_prefix_lst'] = None
             base_settings['post_options'] = None
 
         # determine whether post-processing needs to be done,
@@ -277,10 +281,6 @@ class Driver(metaclass=abc.ABCMeta):
                 base_settings['do_postprocessing'] = 'local'
         else:
             base_settings['do_postprocessing'] = None
-
-        base_settings['post_file_name_prefix_lst'] = driver_options.get(
-            'post_file_name_prefix_lst', None
-        )
 
         # 6) driver settings for post-post-processing, if required, else set output
         #    streaming to 'stdout' for single simulation run
@@ -315,15 +315,18 @@ class Driver(metaclass=abc.ABCMeta):
 
         # 9) get list of random field tuples: name, type
         model_name = config['method']['method_options'].get('model')
-        parameter_name = config[model_name]['parameters']
-        random_fields = config[parameter_name].get("random_fields")
-        if random_fields is not None:
-            random_fields_lst = [
-                (name, value['external_definition']) for name, value in random_fields.items()
-            ]
+        parameter_name = config[model_name].get('parameters')
+        if parameter_name is not None:
+            random_fields = config[parameter_name].get("random_fields")
+            if random_fields is not None:
+                random_fields_lst = [
+                    (name, value['external_definition']) for name, value in random_fields.items()
+                ]
+            else:
+                random_fields_lst = None
+            base_settings["random_fields_lst"] = random_fields_lst
         else:
-            random_fields_lst = None
-        base_settings["random_fields_lst"] = random_fields_lst
+            base_settings["random_fields_lst"] = None
 
         # generate specific driver class
         driver = driver_class.from_config_create_driver(base_settings, workdir)
