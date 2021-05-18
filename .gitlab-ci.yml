@@ -194,6 +194,7 @@ pages:
   before_script:
     # use the base environment for badge creation
     - source activate base
+    - conda install pip
     - pip install anybadge
     - mkdir public
   script:
