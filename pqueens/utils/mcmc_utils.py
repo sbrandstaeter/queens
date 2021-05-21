@@ -247,120 +247,6 @@ class NormalProposal(ProposalDistribution):
         return pdf
 
 
-class MeanFieldNormalProposal(ProposalDistribution):
-    """
-    Uncorrelated mean field multivariate normal distribution.
-    """
-
-    def __init__(self, mean, diag_covariance):
-        if len(mean) != len(diag_covariance):
-            raise ValueError(
-                "The dimensions of the mean vector and variance vector do not match! " "Abort ..."
-            )
-        else:
-            dimension = len(mean)
-            self.params_per_dim = (
-                np.ones((1, dimension)) * 2
-            )  # might be important for more complex densities
-
-        super(MeanFieldNormalProposal, self).__init__(mean, diag_covariance, dimension)
-
-    def cdf(self, x):
-        raise NotImplementedError(
-            "Efficient computation of mean-field normal CDF is not " "implemented, yet. Abort ..."
-        )
-
-    def draw(self, variational_params, num):
-        D = variational_params.size // 2
-        mu, cov = variational_params[:D], np.exp(2 * variational_params[D:])
-        sample = npr.randn(num, D) * np.sqrt(cov).reshape(1, -1) + mu.reshape(1, -1)
-        return sample
-
-    def log_pdf_rb(self, variational_params, x):
-        """
-        Evaluate the logarithm of the Gaussian mean field approach separately per dimension
-
-        Args:
-            x (np.array): Input matrix containing row-wise input vectors at which the density
-                          should be evaluated at
-
-        Returns:
-            logpdf (np.array): Vector containing logarithm of the Gaussian mean field density
-                               corresponding to each input vector
-
-        """
-        D = variational_params.size // 2
-        mu, cov = variational_params[:D], np.exp(2 * variational_params[D:])
-
-        logpdf = np.empty((0, 1))
-        x = x.T
-        # calculate log variational distribution based on current variational parameters
-        for d in range(D):
-            logpdf = np.vstack((logpdf, norm.logpdf(x[d], loc=(mu[d]), scale=(np.sqrt(cov[d])))))
-
-        # we have to do this for both params so stack the result ones again
-        logpdf = np.vstack((logpdf, logpdf))
-        return logpdf
-
-    def log_pdf_rb_for_grad(self, variational_params, x):
-        """
-        Evaluate the logarithm of the Gaussian mean field approach
-
-        Args:
-            x (np.array): Input matrix containing row-wise input vectors at which the density
-                          should be evaluated at
-
-        Returns:
-            logpdf (float): Standard logpdf result for the variational distribution
-
-        """
-        D = variational_params.size // 2
-        mu, cova = variational_params[:D], np.exp(2 * variational_params[D:])
-        S_inv = np.diag((1 / cova).flatten())
-
-        # calculate log variational distribution based on current variational parameters
-        logpdf = -0.5 * (
-            np.log(np.prod(cova))
-            + np.dot(np.dot((x - mu), S_inv), (x - mu).T)
-            + D * np.log(2 * np.pi)
-        )
-
-        return logpdf.flatten()
-
-    def ppf(self, q):
-        raise RuntimeError(
-            "ppf for multivariate gaussians is not supported.\n"
-            "It is not uniquely defined, since cdf is not uniquely defined! "
-        )
-
-    def pdf(self, variational_params, x):
-        """Evaluate the pdf at the location x"""
-        D = variational_params.size // 2
-        mu, cova = variational_params[:D], np.exp(2 * variational_params[D:])
-        cov = np.diag(cova.flatten())
-        pdf = mvn.pdf(x, mean=mu.flatten(), cov=cov)
-        return pdf
-
-    def update_distribution_params(self, distribution_params):
-        # TODO below automated differentiation (take exp into account)
-        # TODO below automated differentiation (take exp into account)
-        """
-        Update distribution parameters from list
-        Args:
-            distribution_params (lst): List containing mean and variance parameters for Gaussian
-                                       mean field approach. The first half of the list contains
-                                       the mean values and the second half of the list the
-                                       variance parameters.
-
-        Returns:
-            None
-
-        """
-        half_list = len(distribution_params) // 2
-        self.mean = distribution_params[:half_list]
-        self.covariance = list(np.array(distribution_params[half_list:]))
-
-
 class BetaDistribution(ProposalDistribution):
     """
     A generalized one dim beta distribution based on scipy stats. The generalized beta
@@ -429,10 +315,6 @@ def create_proposal_distribution(distribution_options):
             distribution = Uniform(a=shape_parameters[0], b=shape_parameters[1])
         elif distribution_type == 'lognormal':
             distribution = LogNormal(mu=shape_parameters[0], sigma=shape_parameters[1])
-        elif distribution_type == 'mean_field_normal':
-            distribution = MeanFieldNormalProposal(
-                shape_parameters['mean'], shape_parameters['standard_deviation']
-            )
         elif distribution_type == 'beta':
             distribution = BetaDistribution(
                 a=shape_parameters[0],
