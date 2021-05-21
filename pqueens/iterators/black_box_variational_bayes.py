@@ -669,15 +669,6 @@ class BBVIIterator(Iterator):
         self.variational_params = self.stochastic_ascent_adam(gradient, self.variational_params)
         self._get_percentage_change_params(old_variational_params)
 
-        if self.variational_approximation_type == "mean_field":
-            mean, cov = self.variational_distribution_obj.reconstruct_parameters(
-                self.variational_params
-            )
-            # visualize the parameter updates
-            vis.vi_visualization_instance.plot_gaussian_pdfs_params(
-                mean, cov, self.variational_transformation
-            )
-
     def _get_percentage_change_params(self, old_variational_params):
         """
         Calculate L2 norm of the percentage change of the variational parameters
@@ -1170,9 +1161,8 @@ class BBVIIterator(Iterator):
         self.grad_params_log_variational_mat = None
 
         # some plotting and output
-        iterations = np.arange(self.optimization_iteration + 1)
         vis.vi_visualization_instance.plot_convergence(
-            iterations,
+            self.optimization_iteration,
             self.variational_params_array,
             self.elbo_list,
             self.relative_change_variational_params,
