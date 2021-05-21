@@ -124,10 +124,10 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
     result_description = {
         "write_results": False,
         "plotting_options": {
-            "plot_booleans": [False, False],
+            "plot_boolean": False,
             "plotting_dir": tmpdir,
-            "plot_names": ["pdfs_params.eps", "variat_params_convergence.eps"],
-            "save_bool": [False, False],
+            "plot_name": "variational_params_convergence.eps",
+            "save_bool": False,
         },
     }
 
@@ -265,10 +265,9 @@ def visualization_obj(tmpdir):
                 "result_description": {
                     "plotting_options": {
                         "plotting_dir": tmpdir,
-                        "save_bool": [False, False],
-                        "plot_booleans": [False, False],
-                        "plot_names": ["pdfs_params.eps", "variat_params_convergence.eps"],
-                        "MLE_comparison": [0.5, 0.2, 0.6, 0.1, 0.2, 0.5, 0.8, 0.9, 0.1, 0.5],
+                        "save_bool": False,
+                        "plot_boolean": False,
+                        "plot_name": "variat_params_convergence.eps",
                     }
                 }
             }

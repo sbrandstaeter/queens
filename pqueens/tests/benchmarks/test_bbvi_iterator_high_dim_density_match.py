@@ -31,7 +31,7 @@ def test_bbvi_density_match_high_dimensional(
     td = lambda self, x: target_density(self, target_distribution_obj, x=x, pdf=False)
 
     # Create the visualization_obj with the MLE estimates for plotting
-    visualization_obj(tmpdir, target_distribution_obj.mean)
+    visualization_obj(tmpdir)
 
     # actual main call of bbvi with patched density for posterior
     with patch.object(BBVIIterator, 'get_log_posterior_unnormalized', td):
@@ -90,10 +90,10 @@ def dummy_bbvi_instance(tmpdir, RV_dimension, my_variational_distribution_obj):
     result_description = {
         "write_results": False,
         "plotting_options": {
-            "plot_booleans": [False, False],
+            "plot_boolean": False,
             "plotting_dir": tmpdir,
-            "plot_names": ["pdfs_params.eps", "variat_params_convergence.eps"],
-            "save_bool": [False, False],
+            "plot_name": "variat_params_convergence.eps",
+            "save_bool": False,
         },
     }
 
@@ -202,18 +202,16 @@ def my_variational_distribution_obj(RV_dimension):
     return my_variational_object
 
 
-def visualization_obj(tmpdir, mle):
-    # Keep in mind this can be slow due to the high dimension of the problem
+def visualization_obj(tmpdir):
     visualization_dict = {
         "method": {
             "method_options": {
                 "result_description": {
                     "plotting_options": {
                         "plotting_dir": tmpdir,
-                        "save_bool": [False, False],
-                        "plot_booleans": [False, False],
-                        "plot_names": ["pdfs_params.eps", "variat_params_convergence.eps"],
-                        "MLE_comparison": mle,
+                        "save_bool": False,
+                        "plot_boolean": False,
+                        "plot_name": "variat_params_convergence.eps",
                     }
                 }
             }

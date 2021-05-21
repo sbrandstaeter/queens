@@ -36,23 +36,10 @@
                 "write_results": true,
                 "export_iteration_data": true,
                 "plotting_options": {
-                    "plot_booleans": [
-                        false,
-                        false
-                    ],
+                    "plot_boolean": false,
                     "plotting_dir": "{plot_dir}",
-                    "plot_names": [
-                        "pdfs_params.eps",
-                        "variat_params_convergence.eps"
-                    ],
-                    "save_bool": [
-                        false,
-                        false
-                    ],
-                    "MLE_comparison": [
-                        0.5,
-                        0.2
-                    ]
+                    "plot_name": "variatonal_params_convergence.eps",
+                    "save_bool": false
                 }
             }
         }
