@@ -1,75 +1,64 @@
-import pytest
 import numpy as np
+import pytest
+import scipy.stats
+from pqueens.utils.variational_inference_utils import create_variational_distribution
 from mock import patch
-from scipy.stats import multivariate_normal as mvn
-from pqueens.utils import mcmc_utils
-from pqueens.utils import variational_inference_utils
+from pqueens.main import main
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
 import pqueens.visualization.variational_inference_visualization as vis
 
 
 @pytest.mark.benchmark
-def test_bbvi_density_match_high_dimensional(
-    mocker,
-    inputdir,
-    tmpdir,
-    my_variational_distribution_obj,
-    target_distribution_obj,
-    dummy_bbvi_instance,
-    RV_dimension,
+def test_bbvi_GMM_density_match(
+    mocker, inputdir, tmpdir, variational_distribution_obj, dummy_bbvi_instance, visualization_obj,
 ):
+    # The test is done with a fixed number of iterations, since the convergence criteria are not
+    # optimatl yet
+
     # fix the random seed
     np.random.seed(1)
-
     # mock all parts of the algorithm that has to do with initialization or an underlying model
     mocker.patch(
         "pqueens.iterators.black_box_variational_bayes.BBVIIterator.initialize_run",
         return_value=None,
     )
 
-    # Function to patch get_log_posterior_unormalized with the initialized target distribution
-    td = lambda self, x: target_density(self, target_distribution_obj, x=x, pdf=False)
-
-    # Create the visualization_obj with the MLE estimates for plotting
-    visualization_obj(tmpdir)
-
     # actual main call of bbvi with patched density for posterior
-    with patch.object(BBVIIterator, 'get_log_posterior_unnormalized', td):
-
-        # set some instance attributes that we need for out density matching test
-        var_params = (
-            dummy_bbvi_instance.variational_distribution_obj.initialize_parameters_randomly()
-        )
+    with patch.object(BBVIIterator, 'get_log_posterior_unnormalized', negative_potential):
+        variational_distr_obj = dummy_bbvi_instance.variational_distribution_obj
+        var_params = variational_distr_obj.initialize_parameters_randomly()
         dummy_bbvi_instance.variational_params = var_params
         dummy_bbvi_instance.variational_params_array = np.empty((len(var_params), 0))
-
         # actual run of the algorithm
         dummy_bbvi_instance.run()
 
-        variational_distr_obj = dummy_bbvi_instance.variational_distribution_obj
         opt_variational_params = np.array(dummy_bbvi_instance.variational_params)
+        elbo = dummy_bbvi_instance.elbo_list
+
     # Actual tests
     opt_variational_samples = variational_distr_obj.draw(opt_variational_params, 10000)
-    variational_logpdf = variational_distr_obj.logpdf(
-        opt_variational_params, opt_variational_samples
+    variational_pdf = variational_distr_obj.pdf(opt_variational_params, opt_variational_samples)
+
+    # Approximitely the exact pdf, the normalization constant was obtained using numerical
+    # integration
+    target_pdf = negative_potential('dummy', x=opt_variational_samples).flatten() - np.log(
+        6.53715345
     )
-    target_logpdf = target_density(
-        "dummy", target_distribution_obj, x=opt_variational_samples, pdf=False
-    ).flatten()
-    kl_divergence = np.abs(np.mean(variational_logpdf - target_logpdf))
+    kl_divergence = np.abs(np.mean(variational_pdf - target_pdf))
+    assert elbo[-1] > elbo[0]
     assert kl_divergence < 5.0
 
 
 @pytest.fixture()
-def dummy_bbvi_instance(tmpdir, RV_dimension, my_variational_distribution_obj):
+def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
     #  ----- interesting params one might want to change ---------------------------
-    n_samples_per_iter = 30
-    relative_change_variational_params = 0.001
-    num_variables = RV_dimension
-    learning_rate = 0.1
-    max_feval = 1e5
+    n_samples_per_iter = 5
+    # -1 indicates to run a fixed number of samples
+    min_requ_relative_change_variational_params = -1
+    max_feval = 3000
     num_variables = 5
-    memory = 10
+    learning_rate = 0.01
+    memory = 50
     natural_gradient_bool = True
     clipping_bool = True
     fim_dampening_bool = True
@@ -91,7 +80,7 @@ def dummy_bbvi_instance(tmpdir, RV_dimension, my_variational_distribution_obj):
         "plotting_options": {
             "plot_boolean": False,
             "plotting_dir": tmpdir,
-            "plot_name": "variat_params_convergence.eps",
+            "plot_name": "variational_params_convergence.eps",
             "save_bool": False,
         },
     }
@@ -108,7 +97,7 @@ def dummy_bbvi_instance(tmpdir, RV_dimension, my_variational_distribution_obj):
         result_description=result_description,
         db=db,
         experiment_name=experiment_name,
-        min_requ_relative_change_variational_params=relative_change_variational_params,
+        min_requ_relative_change_variational_params=min_requ_relative_change_variational_params,
         variational_params_initialization_approach=variational_params_initialization_approach,
         n_samples_per_iter=n_samples_per_iter,
         variational_transformation=variational_transformation,
@@ -128,7 +117,7 @@ def dummy_bbvi_instance(tmpdir, RV_dimension, my_variational_distribution_obj):
         export_quantities_over_iter=export_quantities_over_iter,
         control_variates_scaling_type=control_variates_scaling_type,
         loo_cv_bool=loo_cv_bool,
-        variational_distribution_obj=my_variational_distribution_obj,
+        variational_distribution_obj=variational_distribution_obj,
         variational_family=variational_family,
         optimization_iteration=0,
         v_param_adams=0,
@@ -153,53 +142,47 @@ def dummy_bbvi_instance(tmpdir, RV_dimension, my_variational_distribution_obj):
     return bbvi_instance
 
 
-def target_density(self, target_distribution_obj, x=None, pdf=False):
-    output_array = []
-    if pdf is False:
-        for value in x:
-            output_array.append(target_distribution_obj.logpdf(value))
-    else:
-        for value in x:
-            output_array.append(target_distribution_obj.pdf(value))
+def negative_potential(self, x=None):
+    '''
+    The unnormalized probabilistic model used in this test is proportional to exp(-U) where U
+    is a potential. Hence the log_posterior_unnormalized is given by -U.
 
-    output_array = np.array(output_array).T
-    return output_array
-
-
-@pytest.fixture()
-def RV_dimension():
-    RV_dimension = 100
-    return RV_dimension
-
-
-@pytest.fixture()
-def target_distribution_obj(RV_dimension):
-    # Initializing the target distribution
-    mean = np.random.rand(RV_dimension)
-    std = np.random.rand(RV_dimension) + 0.01
-
-    distribution_options = {
-        "distribution": "normal",
-        "distribution_parameter": [mean, np.diag(std ** 2)],
-    }
-    target_distribution_object = mcmc_utils.create_proposal_distribution(distribution_options)
-    return target_distribution_object
+    It is the first potential in https://arxiv.org/pdf/1505.05770.pdf (rotated by 70 degrees)
+    '''
+    theta = np.radians(70)
+    c, s = np.cos(theta), np.sin(theta)
+    R = np.array(((c, -s), (s, c)))
+    x = np.dot(x, R.T)
+    z_1, z_2 = x[:, 0], x[:, 1]
+    norm = np.sqrt(z_1 ** 2 + z_2 ** 2)
+    outer_term_1 = 0.5 * ((norm - 2) / 0.4) ** 2
+    inner_term_1 = np.exp((-0.5 * ((z_1 - 2) / 0.6) ** 2))
+    inner_term_2 = np.exp((-0.5 * ((z_1 + 2) / 0.6) ** 2))
+    outer_term_2 = np.log(inner_term_1 + inner_term_2 + 1e-7)
+    u = outer_term_1 - outer_term_2
+    log_posterior_unnormalized = -u
+    return log_posterior_unnormalized
 
 
 @pytest.fixture()
-def my_variational_distribution_obj(RV_dimension):
-    # Initializing the variational distribution
-    distribution_options = {
+def variational_distribution_obj():
+    k = 4
+    d = 2
+    base_distribution = {
         "variational_family": "normal",
-        "variational_approximation_type": "mean_field",
-        "dimension": RV_dimension,
+        "variational_approximation_type": "fullrank",
     }
-    my_variational_object = variational_inference_utils.create_variational_distribution(
-        distribution_options
-    )
-    return my_variational_object
+    mixture_model_dict = {
+        "variational_family": "mixture_model",
+        "dimension": d,
+        "num_components": k,
+        "base_distribution": base_distribution,
+    }
+    mixture_model_obj = create_variational_distribution(mixture_model_dict)
+    return mixture_model_obj
 
 
+@pytest.fixture()
 def visualization_obj(tmpdir):
     visualization_dict = {
         "method": {
@@ -216,3 +199,4 @@ def visualization_obj(tmpdir):
         }
     }
     vis.from_config_create(visualization_dict)
+

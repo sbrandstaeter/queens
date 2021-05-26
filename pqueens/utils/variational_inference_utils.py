@@ -489,40 +489,338 @@ class FullRankNormalVariational(VariationalDistribution):
         return export_dict
 
 
+class MixtureModel(VariationalDistribution):
+    """
+    Mixture model variational distribution class. Every component is a member of the same 
+    distribution family. Uses the parameterization:
+    :math:`parameters=[\\lambda_0,\\lambda_1,...,\\lambda_{C},\\lambda_{weights}]` 
+    where :math:`C` is the number of components, :math:`\\lambda_i` are the variational parameters 
+    of the ith component and :math:`\\lambda_{weights}` parameters such that the component weights
+    are obtain by:
+    :math:`weight_i=\\frac{exp(\\lambda_{weights,i})}{\\sum_{j=1}^{C}exp(\\lambda_{weights,j})}`
+
+    This allows the weight parameters :math:`\\lambda_{weights}` to be unconstrained. 
+    
+    Attributes:
+        dimension (int): Dimension of the random variable
+        num_params (int): Number of parameters used in the parameterization
+        base_distribution: Variational distribution object for the components
+    """
+
+    def __init__(self, base_distribution, dimension, num_components):
+        super(MixtureModel, self).__init__(dimension)
+        self.num_components = num_components
+        self.base_distribution = base_distribution
+        self.num_params = num_components * base_distribution.num_params
+
+    def initialize_parameters_randomly(self):
+        """
+        Initialize the variational parameters. The weight parameters are intialized in a random 
+        (is said to be beneficial for the optimization) but bounded way such that no component 
+        has a dominating or extremely small weight in the begining of the optimization. The 
+        parameters of the base distribution are initialized by the object itself.
+
+        Args:
+            None
+
+        Returns:
+            variational_params (np.array): Variational parameters
+
+        """
+        variational_params = []
+        # Initialize the variational parameters of the components
+        for j in range(self.num_components):
+            params_comp = self.base_distribution.initialize_parameters_randomly().tolist()
+            variational_params.extend(params_comp)
+        # Initialize weight parameters with random uniform noise
+        params_weights = 1 + 0.1 * (np.random.rand(self.num_components) - 0.5)
+        variational_params.extend(params_weights.tolist())
+        variational_params = np.array(variational_params)
+        return variational_params
+
+    def reconstruct_parameters(self, variational_params):
+        """
+        Reconstruct the weights of the mixture and create a list containing the variational
+        parameters of the different components.
+
+        Args:
+            variational_params (np.array): Variational parameters
+        
+        Returns:
+            variational_params_list (list): List of the variational parameters (np.array) of
+                                            the different components. 
+            weights (np.array): Weights of the mixture
+
+        """
+        num_params_comp = self.base_distribution.num_params
+        variational_params_list = []
+        for j in range(self.num_components):
+            params_comp = variational_params[num_params_comp * j : num_params_comp * (j + 1)]
+            variational_params_list.append(params_comp)
+        # Compute the weights from the weight parameters
+        weights = np.exp(variational_params[-self.num_components :])
+        weights = weights / np.sum(weights)
+        return variational_params_list, weights
+
+    def draw(self, variational_params, num_draws=1):
+        """
+        Draw `num_draw` samples from the variational distribution given the parameters.
+        Uses a two step process:
+            1. From a multinomial distribution, based on the weights, select a component
+            2. Sample from the selected component 
+
+        Args:
+            variational_params (np.array): Variational parameters 
+            num_draw (int): Number of samples to draw
+
+        Returns:
+            samples (np.array): Row-wise samples of the variational distribution
+
+        """
+        parameters_list, weights = self.reconstruct_parameters(variational_params)
+        samples = []
+        for j in range(num_draws):
+            # Select component to draw from
+            component = np.argmax(np.random.multinomial(1, weights))
+            # Draw a sample of this component
+            sample = self.base_distribution.draw(parameters_list[component], 1)
+            samples.append(sample)
+        samples = np.concatenate(samples, axis=0)
+        return samples
+
+    def logpdf(self, variational_params, x):
+        """
+        Logpdf of the variational distribution evaluted using the variational parameters at given
+        samples `x`. Is a general implementation using the logpdf function of the components. Uses
+         the log-sum-exp trick [1] in order to reduce floating point issues.
+
+        [1] :  David M. Blei, Alp Kucukelbir & Jon D. McAuliffe (2017) Variational Inference: A 
+        Review for Statisticians, Journal of the American Statistical Association, 112:518
+
+        Args: 
+            variational_params (np.array): Variational parameters 
+            x (np.array): Row-wise samples
+
+        Returns:
+            logpdf (np.array): Rowvector of the logpdfs
+
+        """
+        parameters_list, weights = self.reconstruct_parameters(variational_params)
+        logpdf = []
+        x = np.atleast_2d(x)
+        # Parameter for the log-sum-exp trick
+        m = -np.inf * np.ones(len(x))
+        for j in range(self.num_components):
+            logpdf.append(np.log(weights[j]) + self.base_distribution.logpdf(parameters_list[j], x))
+            m = np.maximum(m, logpdf[-1])
+        logpdf = np.array(logpdf) - np.tile(m, (self.num_components, 1))
+        logpdf = np.sum(np.exp(logpdf), axis=0)
+        logpdf = np.log(logpdf) + m
+        return logpdf
+
+    def pdf(self, variational_params, x):
+        """
+        Pdf of the variational distribution evaluted using the variational parameters at given 
+        samples `x`. 
+        
+        Args: 
+            variational_params (np.array): Variational parameters 
+            x (np.array): Row-wise samples
+
+        Returns:
+            pdf (np.array): Rowvector of the pdfs
+
+        """
+        pdf = np.exp(self.logpdf(variational_params, x))
+        return pdf
+
+    def grad_params_logpdf(self, variational_params, x):
+        """
+        Computes the gradient of the logpdf w.r.t. to the variational parameters of the 
+        distribution evaluated at samples `x`. Also known as the score function. Is a general 
+        implementation using the score functions of the components.  
+
+        Args:
+            variational_params (np.array): Variational parameters
+            x (np.array): Row-wise samples
+
+        Returns: 
+            score (np.array): Column-wise scores
+
+        """
+        parameters_list, weights = self.reconstruct_parameters(variational_params)
+        x = np.atleast_2d(x)
+        # Jacobian of the weights w.r.t. weight parameters
+        jacobian_weights = np.diag(weights) - np.outer(weights, weights)
+        # Score function entries due to the parameters of the components
+        component_block = []
+        # Score function entries due to the weight parameterization
+        weights_block = np.zeros((self.num_components, len(x)))
+        logpdf = self.logpdf(variational_params, x)
+        for j in range(self.num_components):
+            # coefficient for the score term of every component
+            precoeff = np.exp(self.base_distribution.logpdf(parameters_list[j], x) - logpdf)
+            # Score function of the jth component
+            score_comp = self.base_distribution.grad_params_logpdf(parameters_list[j], x)
+            component_block.append(
+                weights[j] * np.tile(precoeff, (len(score_comp), 1)) * score_comp
+            )
+            weights_block += np.tile(precoeff, (self.num_components, 1)) * jacobian_weights[
+                :, j
+            ].reshape(-1, 1)
+        score = np.vstack((np.concatenate(component_block, axis=0), weights_block))
+        return score
+
+    def fisher_information_matrix(self, variational_params, num_samples=1000):
+        """
+        Approximate the Fisher information matrix using Monte Carlo.
+
+        Args:
+            variational_params (np.array): Variational parameters
+            num_samples (int): Number of samples used in the Monte Carlo estimation
+
+        Returns: 
+            FIM (np.array): Matrix (num parameters x num parameters)
+
+        """
+        samples = self.draw(variational_params, num_samples)
+        scores = self.grad_params_logpdf(variational_params, samples)
+        FIM = 0
+        for j in range(num_samples):
+            FIM = FIM + np.outer(scores[:, j], scores[:, j])
+        FIM = FIM / num_samples
+        return FIM
+
+    def export_dict(self, variational_params):
+        """
+        Create a dict of the distribution based on the given parameters.
+
+        Args:
+            variational_params (np.array): Variational parameters
+
+        Returns:
+            export_dict (dictionnary): Dict containing distribution information
+
+        """
+        parameters_list, weights = self.reconstruct_parameters(variational_params)
+        export_dict = {
+            "type": "mixture_model",
+            "dimension": self.dimension,
+            "num_components": self.num_components,
+            "weights": weights,
+            "variational_parameters": variational_params,
+        }
+        # Loop over the components
+        for j in range(self.num_components):
+            component_dict = self.base_distribution.export_dict(parameters_list[j])
+            component_key = "component_" + str(j)
+            export_dict.update({component_key: component_dict})
+        return export_dict
+
+
+def create_simple_distribution(distribution_options):
+    """
+    Create a simple variational distribution object. (No nested distributions like mixture models)
+
+    Args:
+        distribution_options (dict): Dict for the distribution options 
+    
+    Returns:
+        distribution_obj: Variational distribution object
+
+    """
+    distribution_family = distribution_options.get('variational_family', None)
+    if distribution_family == "normal":
+        dimension = distribution_options.get('dimension')
+        approximation_type = distribution_options.get('variational_approximation_type', None)
+        distribution_obj = create_normal_distribution(dimension, approximation_type)
+    return distribution_obj
+
+
+def create_normal_distribution(dimension, approximation_type):
+    """
+    Create a normal variational distribution object.
+
+    Args:
+        dimension (int): Dimension of latent variable
+        approximation type (str): fullrank or mean field
+    
+    Returns:
+        distribution_obj: Variational distribution object
+
+    """
+    if approximation_type == "mean_field":
+        distribution_obj = MeanFieldNormalVariational(dimension)
+    elif approximation_type == "fullrank":
+        distribution_obj = FullRankNormalVariational(dimension)
+    else:
+        supported_types = {'mean_field', 'fullrank'}
+        raise ValueError(
+            "Requested variational approximation type not supported: {0}.\n"
+            "Supported types:  {1}. "
+            "".format(approximation_type, supported_types)
+        )
+    return distribution_obj
+
+
+def create_mixture_model_distribution(base_distribution, dimension, num_components):
+    """
+    Create a mixture model variational distribution.
+
+    Args:
+        dimension (int): Dimension of latent variable
+        num_components (int): Number of mixture components
+        base_distribution: Variational distribution object 
+    
+    Returns:
+        distribution_obj: Variational distribution object
+
+    """
+    if num_components > 1:
+        distribution_obj = MixtureModel(base_distribution, dimension, num_components)
+    else:
+        raise ValueError(
+            f"Number of mixture components has be greater than 1. If a single component is"
+            f"desired use the respective variational distribution directly (is computationally"
+            f"more efficient)."
+        )
+    return distribution_obj
+
+
 def create_variational_distribution(distribution_options):
     """ 
-    Create variational distribution object fromdictionary
+    Create variational distribution object from dictionary
 
     Args:
         distribution_options (dict): Dictionary containing parameters
                                      defining the distribution
 
     Returns:
-        distribution:     Variational distribution object
+        distribution: Variational distribution object
 
     """
     distribution_family = distribution_options.get('variational_family', None)
-    approximation_type = distribution_options.get('variational_approximation_type', None)
-    if distribution_family == "normal":
+    supported_simple_distribution_families = ['normal']
+    supported_nested_distribution_families = ['mixture_model']
+    if distribution_family in supported_simple_distribution_families:
+        distribution_obj = create_simple_distribution(distribution_options)
+    elif distribution_family in supported_nested_distribution_families:
         dimension = distribution_options.get('dimension')
-        if approximation_type == "mean_field":
-            distribution_obj = MeanFieldNormalVariational(dimension)
-        elif approximation_type == "fullrank":
-            distribution_obj = FullRankNormalVariational(dimension)
-        else:
-            supported_types = {'mean_field', 'fullrank'}
-            raise ValueError(
-                "Requested variational approximation type not supported: {0}.\n"
-                "Supported types:  {1}. "
-                "".format(approximation_type, supported_types)
-            )
-
+        num_components = distribution_options.get('num_components')
+        base_distribution_options = distribution_options.get('base_distribution')
+        base_distribution_options.update({"dimension": dimension})
+        base_distribution_obj = create_simple_distribution(base_distribution_options)
+        distribution_obj = create_mixture_model_distribution(
+            base_distribution_obj, dimension, num_components
+        )
     else:
-        supported_types = {'normal'}
+        supported_distributions = (
+            supported_nested_distribution_families + supported_simple_distribution_families
+        )
         raise ValueError(
             "Requested variational family type not supported: {0}.\n"
             "Supported types:  {1}. "
-            "".format(distribution_family, supported_types)
+            "".format(distribution_family, supported_distributions)
         )
     return distribution_obj
 
