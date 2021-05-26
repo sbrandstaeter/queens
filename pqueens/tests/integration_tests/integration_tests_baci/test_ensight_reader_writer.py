@@ -8,12 +8,11 @@ from pqueens.utils import injector
 
 
 def test_ensight_reader_writer(
-    inputdir, tmpdir, third_party_inputs, config_dir, expected_mean, expected_var
+    inputdir, tmpdir, third_party_inputs, baci_link_paths, config_dir, expected_mean, expected_var
 ):
     # generate json input file from template
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
-    baci_release = os.path.join(config_dir, "baci-release")
-    post_drt_ensight = os.path.join(config_dir, "post_drt_ensight")
+    baci_release, _, post_drt_ensight, _ = baci_link_paths
     dir_dict = {
         'experiment_dir': str(tmpdir),
         'baci_input': third_party_input_file,
