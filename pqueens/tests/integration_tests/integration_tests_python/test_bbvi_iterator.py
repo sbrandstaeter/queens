@@ -119,7 +119,6 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
     # ------ params we want to keep fixed -----------------------------------------
     variational_transformation = None
     variational_family = 'normal'
-    variational_approximation_type = 'mean_field'
     experiment_name = 'density_match'
     result_description = {
         "write_results": False,
@@ -165,7 +164,6 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         loo_cv_bool=loo_cv_bool,
         variational_distribution_obj=my_variational_distribution_obj,
         variational_family=variational_family,
-        variational_approximation_type=variational_approximation_type,
         optimization_iteration=0,
         v_param_adams=0,
         m_param_adams=0,

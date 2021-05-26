@@ -48,8 +48,6 @@ class BBVIIterator(Iterator):
                                                              the variational parameters in order
                                                              to reach convergence
         variational_family (str): Density type for variatonal approximation
-        variational_approximation_type (str): Currently, string determineing mean field or fullrank
-                                              approximation for the variational distribution
         variational_params_initialization_approach (str): Flag to decide how to initialize the  
                                                           variational paramaters
         learning_rate (float): Learning rate of the ADAMS stochastic decent optimizer
@@ -117,7 +115,6 @@ class BBVIIterator(Iterator):
         experiment_name,
         min_requ_relative_change_variational_params,
         variational_family,
-        variational_approximation_type,
         variational_params_initialization_approach,
         learning_rate,
         n_samples_per_iter,
@@ -206,7 +203,6 @@ class BBVIIterator(Iterator):
         self.ess_list = ess_list
         self.noise_list = noise_list
         self.variational_family = variational_family
-        self.variational_approximation_type = variational_approximation_type
         self.variational_params_array = variational_params_array
 
     @classmethod
@@ -249,9 +245,6 @@ class BBVIIterator(Iterator):
             variational_distribution_description
         )
         variational_family = variational_distribution_description.get("variational_family")
-        variational_approximation_type = variational_distribution_description.get(
-            "variational_approximation_type"
-        )
         n_samples_per_iter = method_options.get("n_samples_per_iter")
         variational_transformation = method_options.get("variational_transformation")
         random_seed = method_options.get("random_seed")
@@ -311,7 +304,6 @@ class BBVIIterator(Iterator):
             experiment_name=experiment_name,
             min_requ_relative_change_variational_params=relative_change_variational_params,
             variational_family=variational_family,
-            variational_approximation_type=variational_approximation_type,
             variational_params_initialization_approach=variational_params_initialization_approach,
             learning_rate=learning_rate,
             n_samples_per_iter=n_samples_per_iter,
@@ -1067,7 +1059,7 @@ class BBVIIterator(Iterator):
 
                 # Self normalize weighs
                 selfnormalized_weights = weights_is / normalizing_constant
-                self.ess_list.append(1 / np.sum(weights_is ** 2))
+                self.ess_list.append(1 / np.sum(selfnormalized_weights ** 2))
 
         return selfnormalized_weights, normalizing_constant, samples
 
