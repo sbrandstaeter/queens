@@ -108,8 +108,8 @@ class StaticStateSpaceModel(ssp.StaticModel):
 
     Attributes:
         prior (distribution StructDist object): `Particles` prior 
-        likeklihood_model (object): Log-likelihood function
-        random_varianle_keys (list): Lst containing the names of the RV
+        likelihood_model (object): Log-likelihood function
+        random_variable_keys (list): Lst containing the names of the RV
         n_sims (int): Number of model calls
     """
 
