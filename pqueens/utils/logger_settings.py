@@ -5,6 +5,7 @@ import io
 
 class LogFilter(logging.Filter):
     """Filters (lets through) all messages with level <= LEVEL"""
+
     def __init__(self, level):
         super().__init__()
         self.level = level
@@ -59,6 +60,7 @@ def setup_logging(output_dir, experiment_name):
     logging.getLogger('arviz').setLevel(logging.CRITICAL)
     logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
     logging.getLogger('tensorflow').setLevel(logging.CRITICAL)
+    logging.getLogger('numba').setLevel(logging.CRITICAL)
 
 
 def log_through_print(logger, command):

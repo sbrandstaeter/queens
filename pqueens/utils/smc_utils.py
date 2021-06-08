@@ -97,3 +97,63 @@ def calc_ess(weights):
 
     ess = np.sum(weights) ** 2 / (np.sum(np.power(weights, 2)))
     return ess
+
+
+from particles import smc_samplers as ssp
+
+
+class StaticStateSpaceModel(ssp.StaticModel):
+    """
+    Model needed for the particles library implementation of SMC. 
+
+    Attributes:
+        prior (distribution StructDist object): `Particles` prior 
+        likeklihood_model (object): Log-likelihood function
+        random_varianle_keys (list): Lst containing the names of the RV
+        n_sims (int): Number of model calls
+    """
+
+    def __init__(self, likelihood_model, random_variable_keys, data=None, prior=None):
+        # Data is always set to `Ǹone` as we let QUEENS handle the actual likelihood computation
+        super(StaticStateSpaceModel, self).__init__(data=None, prior=prior)
+        self.likelihood_model = likelihood_model
+        self.random_variable_keys = random_variable_keys
+        self.n_sims = 0
+
+    def loglik(self, theta):
+        """
+        Log. Likelihood function for `particles` SMC implementation
+
+        Args:
+            theta: Samples at which to evaluate the likehood
+
+        Returns:
+            The log likelihood
+        
+        """
+        x = self.particles_array_to_numpy(theta)
+        # Increase the model counter
+        self.n_sims += len(x)
+        return self.likelihood_model(x).flatten()
+
+    def particles_array_to_numpy(self, theta):
+        """
+        The `particles` library uses an homemade variable type. We need to convert this into numpy 
+        array to work with queens.
+
+        Args:
+            theta (`particles` object): `Particle` variables object 
+
+        Returns:
+            x (np.array): Numpy array from of the given data
+
+        """
+        x = None
+        for theta_i in self.random_variable_keys:
+            theta_i_np = theta[theta_i].flatten()
+            if x is not None:
+                x = np.vstack((x, theta_i_np))
+            else:
+                x = theta_i_np
+        x = np.transpose(np.atleast_2d(x))
+        return x

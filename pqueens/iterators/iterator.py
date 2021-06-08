@@ -50,6 +50,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .single_sim_run_iterator import SingleSimRunIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+        from .sequential_monte_carlo_chopin_iterator import SequentialMonteCarloChopinIterator
         from .sobol_sequence_iterator import SobolSequenceIterator
 
         method_dict = {
@@ -64,6 +65,7 @@ class Iterator(metaclass=abc.ABCMeta):
             'sa_saltelli': SaltelliIterator,
             'sa_saltelli_salib': SaltelliSALibIterator,
             'smc': SequentialMonteCarloIterator,
+            'smc_chopin': SequentialMonteCarloChopinIterator,
             'sing_sim_run': SingleSimRunIterator,
             'bmfmc': BMFMCIterator,
             'grid': GridIterator,
