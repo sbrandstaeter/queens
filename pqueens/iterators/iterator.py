@@ -50,12 +50,11 @@ class Iterator(metaclass=abc.ABCMeta):
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .single_sim_run_iterator import SingleSimRunIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
-        from .sobol_sequence_iterator import SobolSequenceIterator
+        from .variational_inference_reparameterization import VIRPIterator
 
         method_dict = {
             'lhs': LHSIterator,
             'lhs_mf': MF_LHSIterator,
-            'sobol_sequence': SobolSequenceIterator,
             'metropolis_hastings': MetropolisHastingsIterator,
             'monte_carlo': MonteCarloIterator,
             'optimization': OptimizationIterator,
@@ -70,6 +69,7 @@ class Iterator(metaclass=abc.ABCMeta):
             'baci_lm': BaciLMIterator,
             'bbvi': BBVIIterator,
             'bmfia': BMFIAIterator,
+            'virp': VIRPIterator
         }
 
         if iterator_name is None:
