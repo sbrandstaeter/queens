@@ -1,6 +1,9 @@
+import abc
+
 import numpy as np
 import scipy
-import abc
+
+import autograd.numpy as npy
 
 
 class VariationalDistribution:
@@ -209,6 +212,23 @@ class MeanFieldNormalVariational(VariationalDistribution):
             ]
         )
         return score
+
+    def grad_logpdf_sample(self, x, variational_params):
+        """
+        Computes the gradient of the logpdf w.r.t. to the sample x of the 
+        distribution evaluated at samples x.
+
+        Args:
+            variational_params (np.array): Variational parameters
+            x (np.array): Row-wise samples
+
+        Returns: 
+            gradient (np.array): Column-wise gradient
+
+        """
+        mean, cov = self.reconstruct_parameters(variational_params)
+        gradient = 2 * (x - mean) / cov
+        return gradient.reshape(-1, 1)
 
     def fisher_information_matrix(self, variational_params):
         """
@@ -636,9 +656,9 @@ class MixtureModel(VariationalDistribution):
 
     def grad_params_logpdf(self, variational_params, x):
         """
-        Computes the gradient of the logpdf w.r.t. to the variational parameters of the 
-        distribution evaluated at samples `x`. Also known as the score function. Is a general 
-        implementation using the score functions of the components.  
+        Computes the gradient of the logpdf w.r.t. to the variational parameters of the
+        distribution evaluated at samples `x`. Also known as the score function. Is a general
+        implementation using the score functions of the components.
 
         Args:
             variational_params (np.array): Variational parameters
@@ -824,3 +844,98 @@ def create_variational_distribution(distribution_options):
         )
     return distribution_obj
 
+
+def draw_base_samples_from_standard_normal(n_samples_per_iter, num_variables):
+    """
+    Generate standard normal-distributed variational samples with mean zero and variance one.
+    
+    Args:
+        n_samples_per_iter (int): Number of samples that should be realized
+        num_variables (int): Number of random variables / dimension of samples
+
+    Returns:
+        sample_batch (np.array): Matrix with normal-distributed samples
+
+    """
+    sample_batch = np.random.normal(0, 1, size=(n_samples_per_iter, num_variables))
+    return sample_batch
+
+
+def conduct_reparameterization(variational_params, sample_dim):
+    """
+    Conduct the reparameterization trick in the sample generation.
+
+    Args:
+        variational_params (np.array): Array containing the variational parameters
+        sample_dim (int): Dimension of the variational distribution
+
+    Returns:
+        param (float): Actual sample of the variational distribution
+
+    """
+    # note sample is one sample and one dim of the sample_vector
+    mu = variational_params[0]
+    sigma_transformed = variational_params[1]
+
+    # transformation for variance
+    sigma = npy.sqrt(npy.exp(2 * sigma_transformed))
+    param = mu + sigma * sample_dim
+
+    return param
+
+
+def calculate_grad_log_variational_distr_variational_params(
+    grad_reparameterization_variational_params, grad_log_variational_distr_params
+):
+    """
+    Calculate the gradient of the log-variational distribution w.r.t. variational parameters,
+    evaluated at the current value of the variational params
+
+    Args:
+        grad_reparameterization_variational_params (np.array): Gradient of the
+                                                                reparameterization
+        grad_log_variational_distr_params (np.array): Gradient of the variational distribution
+
+    Returns:
+        grad_log_variational_distr_variational_params (np.array): gradient of the
+        log-variational distribution w.r.t. variational parameters
+
+    """
+    # pylint: disable=line-too-long
+    grad_log_variational_distr_variational_params = grad_reparameterization_variational_params.reshape(
+        -1, 1
+    ) * np.vstack(
+        (
+            grad_log_variational_distr_params.reshape(-1, 1),
+            grad_log_variational_distr_params.reshape(-1, 1),
+        )
+    )
+    # pyplint: enable=line-too-long
+
+    return grad_log_variational_distr_variational_params
+
+
+def calculate_grad_log_variational_distr_params(
+    grad_log_variational_distr_params, param, variational_params
+):
+    """
+    Calculate the gradient of the log variational distribution w.r.t. to the parameters,
+    evaluated at the current parameter values
+
+    Args:
+        grad_log_variational_distr_params (obj): Gradient method for the gradient of the
+                                                 log variational
+                                                 distribution w.r.t. the random variable (param)
+        param (np.array): Random parameters of the invers problem
+        variational_params (np.array): Variational parameters of the variational distribution
+
+    Returns:
+        grad_variational (np.array): Gradient of the log variational distribution
+                                        w.r.t the random parameters
+        
+    """
+    grad_variational = grad_log_variational_distr_params(
+        param.flatten(), variational_params.flatten()
+    )
+
+    return grad_variational

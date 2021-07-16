@@ -238,6 +238,7 @@ class BBVIIterator(Iterator):
         )
         num_variables = len(model.variables[0].variables)
 
+        # set-up of the variational distribution
         variational_distribution_description = method_options.get("variational_distribution")
         # TODO this may have to be changed in the future
         variational_distribution_description.update({"dimension": num_variables})
@@ -806,7 +807,7 @@ class BBVIIterator(Iterator):
 
     def _prepare_result_description(self):
         """
-        Creates the dictionnary for the result pickle file.
+        Creates the dictionary for the result pickle file.
 
         Returns:
             result_description (dict): Dictionary with result summary of the analysis
@@ -1180,4 +1181,3 @@ class BBVIIterator(Iterator):
                 dampening_coefficient = self.fim_dampening_coefficient
             FIM = FIM + np.eye(len(FIM)) * dampening_coefficient
         return FIM
-
