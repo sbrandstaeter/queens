@@ -1,3 +1,4 @@
+import abc
 import numpy as np
 import os
 import glob
@@ -176,6 +177,7 @@ class LikelihoodModel(Model):
         else:
             raise IOError("You did not specify any experimental data!")
 
+    @abc.abstractmethod
     def evaluate(self):
         """ Evaluate model with current set of variables """
         pass
