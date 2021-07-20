@@ -51,8 +51,8 @@ def test_cluster_morris_salib(
     # unique experiment name
     experiment_name = cluster + "_morris_salib"
 
-    template = pathlib.Path(inputdir, "morris_baci_deep_invaaa_template.json")
-    input_file = pathlib.Path(tmpdir, "morris_baci_deep_invaaa.json")
+    template = pathlib.Path(inputdir, "morris_baci_cluster_invaaa_template.json")
+    input_file = pathlib.Path(tmpdir, f"morris_{cluster}_deep_invaaa.json")
 
     # specific folder for this test
     cluster_experiment_dir = cluster_queens_testing_folder.joinpath(experiment_name)
