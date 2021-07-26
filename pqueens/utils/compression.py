@@ -6,7 +6,7 @@ import numpy as np
 import base64
 
 
-COMPRESS_TYPE = 'compressed array'
+COMPRESS_TYPE = 'uncompressed array'
 
 
 def compress_array(a):
@@ -17,11 +17,7 @@ def compress_array(a):
     Returns:
         dict: compressed array
     """
-    return {
-        'ctype': COMPRESS_TYPE,
-        'shape': list(a.shape),
-        'value': base64.b64encode(zlib.compress(a)),
-    }
+    return {'ctype': COMPRESS_TYPE, 'shape': list(a.shape), 'value': a.tolist()}
 
 
 def decompress_array(a):
@@ -32,7 +28,14 @@ def decompress_array(a):
     Returns:
         (np.array) uncompressed np.array
     """
-    return np.frombuffer(zlib.decompress(base64.b64decode(a['value']))).reshape(a['shape'])
+    value = a["value"]
+    shape = a["shape"]
+
+    array = np.array(value)
+
+    if list(array.shape) != shape:
+        raise ValueError("Error while decompressing the array. ")
+    return np.array(value)
 
 
 def compress_nested_container(u_container):
