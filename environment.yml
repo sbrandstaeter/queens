@@ -10,6 +10,8 @@ dependencies:
   - scikit-learn
   - arviz
   - xarray
+  - numpy
+  - pandas==1.2.4
 # for database interfacing
   - pymongo
 # for design of experiments
@@ -56,8 +58,6 @@ dependencies:
 # it's recommended to list pip explicitly
   - pip
   - pip:
-    - numpy
-    - pandas
 # for sensitivity analysis
     - SALib>=1.3.3
     - docker
