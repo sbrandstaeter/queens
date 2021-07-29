@@ -184,6 +184,6 @@ class GaussianStaticLikelihood(LikelihoodModel):
         # self.variables is updated
         self.forward_model.variables = self.variables
         n_samples_batch = len(self.variables)  # TODO check if this is generally true
-        Y_mat = self.forward_model.evaluate()['mean']  # [-n_samples_batch:]  # TODO check this
+        Y_mat = self.forward_model.evaluate()['mean'][-n_samples_batch:]  # TODO check this
 
         return Y_mat
