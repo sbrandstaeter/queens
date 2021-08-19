@@ -5,6 +5,7 @@ import gpflow as gpf
 from sklearn.preprocessing import StandardScaler
 from gpflow.utilities import print_summary, set_trainable
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from pqueens.utils.gpf_utils import set_transform_function, extract_block_diag, init_scaler
 import os
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # suppress warnings
@@ -110,14 +111,8 @@ class GPFlowRegression(RegressionApproximation):
         restart_min_value = config[approx_name].get('restart_min_value', 0)
         restart_max_value = config[approx_name].get('restart_max_value', 5)
 
-        # scaling
-        scaler_x = StandardScaler()
-        scaler_x.fit(x_train)
-        x_train = scaler_x.transform(x_train)
-
-        scaler_y = StandardScaler()
-        scaler_y.fit(y_train)
-        y_train = scaler_y.transform(y_train)
+        scaler_x, x_train = init_scaler(x_train)
+        scaler_y, y_train = init_scaler(y_train)
 
         # initialize hyperparameters
         dimension_lengthscales = config[approx_name].get('dimension_lengthscales', None)
@@ -127,7 +122,7 @@ class GPFlowRegression(RegressionApproximation):
         # choose kernel
         kernel = gpf.kernels.RBF(lengthscales=lengthscales_0, variance=variances_0)
 
-        # # initialize model
+        # initialize model
         model = gpf.models.GPR(data=(x_train, y_train), kernel=kernel, mean_function=None)
 
         train_likelihood_variance = config[approx_name].get('train_likelihood_variance', True)
@@ -135,17 +130,10 @@ class GPFlowRegression(RegressionApproximation):
             model.likelihood.variance.assign(1.1e-6)  # small value for numerical stability
             set_trainable(model.likelihood.variance, False)
 
-        # set transform function to exp()
-        model.kernel.lengthscales = gpf.Parameter(
-            model.kernel.lengthscales,
-            name=model.kernel.lengthscales.name.split(":")[0],
-            transform=tfp.bijectors.Exp(),
+        model.kernel.lengthscales = set_transform_function(
+            model.kernel.lengthscales, tfp.bijectors.Exp()
         )
-        model.kernel.variance = gpf.Parameter(
-            model.kernel.variance,
-            name=model.kernel.variance.name.split(":")[0],
-            transform=tfp.bijectors.Exp(),
-        )
+        model.kernel.variance = set_transform_function(model.kernel.variance, tfp.bijectors.Exp())
 
         return cls(
             x_train,
@@ -237,7 +225,7 @@ class GPFlowRegression(RegressionApproximation):
         output = {'mean': mean.reshape(number_test_samples, -1), 'x_test': x_test}
         if support == 'f' and full_cov is True:
             output['variance'] = np.squeeze(var, axis=0)
-            output['variance_diagonal'] = self.extract_block_diag(
+            output['variance_diagonal'] = extract_block_diag(
                 np.squeeze(var, axis=0), output['mean'].shape[1]
             )
         else:
@@ -308,21 +296,3 @@ class GPFlowRegression(RegressionApproximation):
         dimension_hyperparameters = hyperparameters.shape.dims[0]
 
         return dimension_hyperparameters
-
-    @staticmethod
-    def extract_block_diag(a, n):
-        """Extract block diagonals of square 2D Array
-
-        Args:
-            a (np.ndarray):      square 2D array
-            n (int):             block size
-
-        Returns: 3D Array containing block diagonals
-        """
-
-        n_blocks = a.shape[0] // n
-
-        new_shape = (n_blocks, n, n)
-        new_strides = (n * a.strides[0] + n * a.strides[1], a.strides[0], a.strides[1])
-
-        return np.lib.stride_tricks.as_strided(a, new_shape, new_strides)
