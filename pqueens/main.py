@@ -12,7 +12,7 @@ import time
 import pathlib
 import pyfiglet
 
-from pqueens.utils.logger_settings import setup_logging
+from pqueens.utils.logger_settings import setup_basic_logging
 from pqueens.utils import ascii_art
 
 try:
@@ -45,9 +45,9 @@ def main(args):
     # read input
     start_time_input = time.time()
     options = get_options(args)
-    setup_logging(
+    setup_basic_logging(
         pathlib.Path(options["global_settings"]["output_dir"]),
-        options["global_settings"]["experiment_name"]
+        options["global_settings"]["experiment_name"],
     )
 
     # build iterator
