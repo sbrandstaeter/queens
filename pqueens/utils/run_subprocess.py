@@ -2,11 +2,11 @@
 Wrapped functions of subprocess stdlib module.
 """
 import subprocess
-import logging
 import time
-import re
 import io
 import sys
+
+from pqueens.utils.logger_settings import get_job_logger, job_logging, finish_job_logger
 
 
 def run_subprocess(command_string, **kwargs):
@@ -104,40 +104,17 @@ def _run_subprocess_simulation(command_string, **kwargs):
             stderr (str): standard error content
 
     """
-    logger = kwargs.get('loggername')
-    terminate_expr = kwargs.get('terminate_expr')
+    # get input data
+    logger_name = kwargs.get('loggername')
     log_file = kwargs.get('log_file')
     error_file = kwargs.get('error_file')
     streaming = kwargs.get('streaming')
+    terminate_expr = kwargs.get('terminate_expr')
 
-    joblogger = logging.getLogger(logger)
+    # setup job logging and get job logger as well as handlers
+    joblogger, lfh, efh, sh = get_job_logger(logger_name, log_file, error_file, streaming)
 
-    ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    joblogger.setLevel(logging.INFO)
-    joblogger.propagate = False
-
-    # job logger configuration. This python code is run in parallel for cluster runs with
-    # singularity, so each processor logs his own file
-    fh = logging.FileHandler(log_file, mode='w', delay=False)
-    fh.setLevel(logging.INFO)
-    fh.terminator = ''
-    efh = logging.FileHandler(error_file, mode='w', delay=False)
-    efh.setLevel(logging.ERROR)
-    efh.terminator = ''
-    fh.setFormatter(ff)
-    efh.setFormatter(ff)
-    joblogger.addHandler(fh)
-    joblogger.addHandler(efh)
-
-    # additional streaming to given stream, if required
-    if streaming:
-        sh = logging.StreamHandler(stream=sys.stdout)
-        sh.setLevel(logging.INFO)
-        sh.terminator = ''
-        sh.setFormatter(fmt=None)
-        joblogger.addHandler(sh)
-
-    joblogger = logging.getLogger(logger)
+    # run subprocess
     process = subprocess.Popen(
         command_string,
         stdin=subprocess.PIPE,
@@ -147,57 +124,19 @@ def _run_subprocess_simulation(command_string, **kwargs):
         universal_newlines=True,
     )
 
-    # actual logging
-    joblogger.info('run_subprocess started with:\n')
-    joblogger.info(command_string + '\n')
-    for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
-        if line == '' and process.poll() is not None:
-            joblogger.info(
-                'subprocess.Popen() -info: stdout is finished and process.poll() not None.\n'
-            )
-            # This line waits for termination and puts together stdout not yet consumed from the
-            # stream by the logger and finally the stderr.
-            stdout, stderr = process.communicate()
-            # following line should never really do anything. We want to log all that was
-            # written to stdout even after program was terminated.
-            joblogger.info(stdout + '\n')
-            if stderr:
-                joblogger.error('error message (if provided) follows:\n')
-                for errline in io.StringIO(stderr):
-                    joblogger.error(errline)
-            break
-        if terminate_expr:
-            # two seconds in time.sleep(2) are arbitrary. Feel free to tune it to your needs.
-            if re.search(terminate_expr, line):
-                joblogger.warning('run_subprocess detected terminate expression:\n')
-                joblogger.error(line)
-                # give program the chance to terminate by itself, because terminate expression
-                # will be found also if program terminates itself properly
-                time.sleep(2)
-                if process.poll() is None:
-                    # log terminate command
-                    joblogger.warning('running job will be terminated by QUEENS.\n')
-                    process.terminate()
-                    # wait before communicate call which gathers all the output
-                    time.sleep(2)
-                continue
-        joblogger.info(line)
-
-    process_id = process.pid
-    process_returncode = process.returncode
+    # actual logging of job
+    stderr = job_logging(command_string, process, joblogger, terminate_expr)
 
     # stdout should be empty. nevertheless None is returned by default to keep the interface to
     # run_subprocess consistent.
     stdout = None
 
-    # we need to close the FileHandlers to prevent OSError: [Errno 24] Too many open files
-    fh.close()
-    efh.close()
-    joblogger.removeHandler(fh)
-    joblogger.removeHandler(efh)
-    if streaming:
-        sh.close()
-        joblogger.removeHandler(sh)
+    # get ID and returncode of subprocess
+    process_id = process.pid
+    process_returncode = process.returncode
+
+    # close and remove file handlers (to prevent OSError: [Errno 24] Too many open files)
+    finish_job_logger(joblogger, lfh, efh, sh)
 
     return process_returncode, process_id, stdout, stderr
 
