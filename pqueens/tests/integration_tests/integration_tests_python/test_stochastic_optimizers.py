@@ -40,42 +40,54 @@ def test_Adam(adam_optimizer):
 @pytest.fixture()
 def adam_optimizer():
     opt_config = {
-        "algorithm": "Adam",
-        "learning_rate": 1e-2,
-        "optimization_type": "max",
-        "rel_L1_change_threshold": 1e-4,
-        "rel_L2_change_threshold": 1e-6,
-        "max_iter": 1000,
+        "dummy_section": {
+            "stochastic_optimizer": "Adam",
+            "learning_rate": 1e-2,
+            "optimization_type": "max",
+            "rel_L1_change_threshold": 1e-4,
+            "rel_L2_change_threshold": 1e-6,
+            "max_iter": 1000,
+        }
     }
-    optimizer = StochasticOptimizer.from_config_create_optimizer(opt_config)
+    optimizer = StochasticOptimizer.from_config_create_optimizer(
+        opt_config, section_name="dummy_section"
+    )
     return optimizer
 
 
 @pytest.fixture()
 def adamax_optimizer():
     opt_config = {
-        "algorithm": "Adamax",
-        "learning_rate": 1e-2,
-        "optimization_type": "min",
-        "rel_L1_change_threshold": 1e-4,
-        "rel_L2_change_threshold": 1e-6,
-        "max_iter": 1000,
+        "dummy_section": {
+            "stochastic_optimizer": "Adamax",
+            "learning_rate": 1e-2,
+            "optimization_type": "min",
+            "rel_L1_change_threshold": 1e-4,
+            "rel_L2_change_threshold": 1e-6,
+            "max_iter": 1000,
+        }
     }
-    optimizer = StochasticOptimizer.from_config_create_optimizer(opt_config)
+    optimizer = StochasticOptimizer.from_config_create_optimizer(
+        opt_config, section_name="dummy_section"
+    )
     return optimizer
 
 
 @pytest.fixture()
 def rmsprop_optimizer():
     opt_config = {
-        "algorithm": "RMSprop",
-        "learning_rate": 5e-2,
-        "optimization_type": "max",
-        "rel_L1_change_threshold": -1,
-        "rel_L2_change_threshold": -1,
-        "max_iter": 500,
+        "dummy_section": {
+            "stochastic_optimizer": "RMSprop",
+            "learning_rate": 5e-2,
+            "optimization_type": "max",
+            "rel_L1_change_threshold": -1,
+            "rel_L2_change_threshold": -1,
+            "max_iter": 500,
+        }
     }
-    optimizer = StochasticOptimizer.from_config_create_optimizer(opt_config)
+    optimizer = StochasticOptimizer.from_config_create_optimizer(
+        opt_config, section_name="dummy_section"
+    )
     return optimizer
 
 
