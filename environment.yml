@@ -55,6 +55,8 @@ dependencies:
   - autograd
 # multiprocessing with more complex python objects
   - pathos
+# numba library for fast computing and jit compilation
+  - numba
 # it's recommended to list pip explicitly
   - pip
   - pip:

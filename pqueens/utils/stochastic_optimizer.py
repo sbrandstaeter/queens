@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 
 class StochasticOptimizer(metaclass=abc.ABCMeta):
     """
-    Base class for  stochastic optimizers. 
+    Base class for  stochastic optimizers.
 
     The optimizers are implemented as generators. This increases the modularity of this class as
     since object can be used in different settings. Some examples:
@@ -23,17 +23,17 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         2. Create a optimizer object `optimizer` with the gradient function `gradient`
         3. Run the optimization by `optimizer.run_optimization()` in your script
             
-    - Example 2. Adding additional functionality during the optimization        
+    - Example 2. Adding additional functionality during the optimization
         1. Define a optimizer object using a gradient function.
         2. Example code snippet:
 
             for parameters in optimizer:
-                rel_L2_change_params=optimizer.relative_L2_change
+                rel_L2_change_params=optimizer.rel_L2_change
                 iteration=optimizer.iteration
                 
                 # Verbose output
                 print(f"Iter {iteration}, parameters {parameters}, rel L2 change "
-                f"{rel_L2_change:.2f}") 
+                f"{rel_L2_change:.2f}")
 
                 # Some additional condition to stop optimization
                 if self.number_of_simulations >= 1000:
@@ -54,8 +54,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
                 if optimizer2.iteration % 1000 == 0:
                     optimizer2.learning_rate *= 0.5
 
-                done_bool = optimizer1.done and optimizer2.done 
-    
+                done_bool = optimizer1.done and optimizer2.done
 
     Attributes:
         learning_rate (float): Learning rate for the optimizer
@@ -75,6 +74,8 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         rel_L2_change (float): Relative change in L2-norm of variational params w.r.t. the previous
                               iteration
         current_variational_parameters (np.array): Variational parameters
+        current_gradient_value (np.array): Current gradient vector w.r.t. the variational
+                                           parameters
 
     """
 
@@ -93,6 +94,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         clip_by_L2_norm_threshold,
         clip_by_value_threshold,
         max_iteration,
+        current_gradient_value
     ):
         self.learning_rate = learning_rate
         self.gradient = gradient
@@ -107,27 +109,34 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         self.rel_L2_change_threshold = rel_L2_change_threshold
         self.rel_L1_change_threshold = rel_L1_change_threshold
         self.current_variational_parameters = current_variational_parameters
+        self.current_gradient_value = current_gradient_value
 
     @classmethod
-    def from_config_create_optimizer(cls, config):
+    def from_config_create_optimizer(cls, config, section_name=None):
         """
         Create an optimizer object from dict.
 
         Args:
             config (dict): Configuration dict
+            section_name (str): String of section name in which optimizer is defined
 
         Returns:
             StochasticOptimizer object
     
         """
         valid_options = ["Adam", "RMSprop", "Adamax"]
-        algorithm = config["algorithm"]
+        if section_name:
+            algorithm = config[section_name].get("stochastic_optimizer")
+        else:
+            raise ValueError("You did not provide a section name for the stochastic "
+                             "optimizer in the input file. Abort...")
+
         if algorithm == "Adam":
-            return Adam.from_config_create_optimizer(config)
+            return Adam.from_config_create_optimizer(config, section_name)
         elif algorithm == "RMSprop":
-            return RMSprop.from_config_create_optimizer(config)
+            return RMSprop.from_config_create_optimizer(config, section_name)
         elif algorithm == "Adamax":
-            return Adamax.from_config_create_optimizer(config)
+            return Adamax.from_config_create_optimizer(config, section_name)
         else:
             raise NotImplementedError(
                 f"Algorithm {algorithm} unknown. Valid options are" f"{valid_options}"
@@ -214,6 +223,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             current_gradient = self.gradient(self.current_variational_parameters)
             current_gradient = self.clip_gradient(current_gradient)
             current_gradient = self.scheme_specific_gradient(current_gradient)
+            self.current_gradient_value = current_gradient
             self.do_single_iteration(current_gradient)
             self._compute_rel_change(old_parameters, self.current_variational_parameters)
             self._check_if_done()
@@ -283,6 +293,8 @@ class RMSprop(StochasticOptimizer):
         beta (float): :math:`beta` parameter as described in [1]
         v (ExponentialAveragingObject): Exponential average of the gradient momentum
         eps (float): Nugget term to avoid a division by values close to zero
+        current_gradient_value (np.array): Current value of the gradient w.r.t. variational
+                                           parameters
     
     """
 
@@ -304,6 +316,7 @@ class RMSprop(StochasticOptimizer):
         beta,
         v,
         eps,
+        current_gradient_value
     ):
         super().__init__(
             learning_rate=learning_rate,
@@ -319,26 +332,33 @@ class RMSprop(StochasticOptimizer):
             clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
+            current_gradient_value=current_gradient_value
         )
         self.beta = beta
         self.v = v
         self.eps = eps
 
     @classmethod
-    def from_config_create_optimizer(cls, config):
+    def from_config_create_optimizer(cls, config, section_name):
         """
         Create an RMSprop object from dict.
 
         Args:
             config (dict): Configuration dict
+            section_name (str): Name of section in which optimizer is defined
 
         Returns:
             RMSprop object
     
         """
-        learning_rate = config.get("learning_rate")
+        if section_name is None:
+            config_sec = config
+        else:
+            config_sec = config[section_name]
+
+        learning_rate = config_sec.get("learning_rate")
         gradient = None
-        optimization_type = config.get("optimization_type")
+        optimization_type = config_sec.get("optimization_type")
         if optimization_type == "min":
             precoefficient = -1
         elif optimization_type == "max":
@@ -347,20 +367,22 @@ class RMSprop(StochasticOptimizer):
             raise NotImplementedError(
                 f"optimization_type '{optimization_type}' unknown. Valid options are 'min' or 'max'"
             )
-        rel_L1_change_threshold = config.get("rel_L1_change_threshold")
-        rel_L2_change_threshold = config.get("rel_L2_change_threshold")
-        clip_by_L2_norm_threshold = config.get("clip_by_L2_norm_threshold", 1e6)
-        clip_by_value_threshold = config.get("clip_by_value_threshold", 1e6)
-        max_iteration = config.get("max_iter", 1e6)
+        rel_L1_change_threshold = config_sec.get("rel_L1_change_threshold")
+        rel_L2_change_threshold = config_sec.get("rel_L2_change_threshold")
+        clip_by_L2_norm_threshold = config_sec.get("clip_by_L2_norm_threshold", 1e6)
+        clip_by_value_threshold = config_sec.get("clip_by_value_threshold", 1e6)
+        max_iteration = config_sec.get("max_iter", 1e6)
         current_variational_parameters = 0
         iteration = 0
         done = False
         rel_L1_change = 1
         rel_L2_change = 1
 
-        beta = config.get("beta", 0.999)
+        beta = config_sec.get("beta", 0.999)
         v = ExponentialAveraging.from_config_create_iterative_averaging({"coefficient": beta})
-        eps = config.get("eps", 1e-8)
+        eps = config_sec.get("eps", 1e-8)
+
+        current_gradient_value = None
 
         return cls(
             learning_rate=learning_rate,
@@ -379,6 +401,7 @@ class RMSprop(StochasticOptimizer):
             beta=beta,
             v=v,
             eps=eps,
+            current_gradient_value=current_gradient_value
         )
 
     def scheme_specific_gradient(self, gradient):
@@ -431,6 +454,8 @@ class Adam(StochasticOptimizer):
         m (ExponentialAveragingObject): Exponential average of the gradient
         v (ExponentialAveragingObject): Exponential average of the gradient momentum
         eps (float): Nugget term to avoid a division by values close to zero
+        current_gradient_value (np.array): Current gradient of the iteration w.r.t.
+                                           variational parameters
     
     """
 
@@ -454,6 +479,7 @@ class Adam(StochasticOptimizer):
         eps,
         m,
         v,
+        current_gradient_value
     ):
         super().__init__(
             learning_rate=learning_rate,
@@ -469,6 +495,7 @@ class Adam(StochasticOptimizer):
             clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
+            current_gradient_value=current_gradient_value
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2
@@ -477,10 +504,18 @@ class Adam(StochasticOptimizer):
         self.eps = eps
 
     @classmethod
-    def from_config_create_optimizer(cls, config):
-        learning_rate = config.get("learning_rate")
+    def from_config_create_optimizer(cls, config, section_name):
+        """
+        """
+        if section_name is None:
+            config_sec = config
+        else:
+            config_sec = config[section_name]
+
+        learning_rate = config_sec.get("learning_rate")
+        optimization_type = config_sec.get("optimization_type")
+
         gradient = None
-        optimization_type = config.get("optimization_type")
         if optimization_type == "min":
             precoefficient = -1
         elif optimization_type == "max":
@@ -489,22 +524,24 @@ class Adam(StochasticOptimizer):
             raise NotImplementedError(
                 f"optimization_type '{optimization_type}' unknown. Valid options are 'min' or 'max'"
             )
-        rel_L1_change_threshold = config.get("rel_L1_change_threshold")
-        rel_L2_change_threshold = config.get("rel_L2_change_threshold")
-        clip_by_L2_norm_threshold = config.get("clip_by_L2_norm_threshold", 1e6)
-        clip_by_value_threshold = config.get("clip_by_value_threshold", 1e6)
-        max_iteration = config.get("max_iter", 1e6)
+        rel_L1_change_threshold = config_sec.get("rel_L1_change_threshold")
+        rel_L2_change_threshold = config_sec.get("rel_L2_change_threshold")
+        clip_by_L2_norm_threshold = config_sec.get("clip_by_L2_norm_threshold", 1e6)
+        clip_by_value_threshold = config_sec.get("clip_by_value_threshold", 1e6)
+        max_iteration = config_sec.get("max_iter", 1e6)
         current_variational_parameters = 0
         iteration = 0
         done = False
         rel_L1_change = 1
         rel_L2_change = 1
 
-        beta_1 = config.get("beta_1", 0.9)
-        beta_2 = config.get("beta_2", 0.999)
+        beta_1 = config[section_name].get("beta_1", 0.9)
+        beta_2 = config[section_name].get("beta_2", 0.999)
         m = ExponentialAveraging.from_config_create_iterative_averaging({"coefficient": beta_1})
         v = ExponentialAveraging.from_config_create_iterative_averaging({"coefficient": beta_2})
-        eps = config.get("eps", 1e-8)
+        eps = config_sec.get("eps", 1e-8)
+
+        current_gradient_value = None
 
         return cls(
             learning_rate=learning_rate,
@@ -525,6 +562,7 @@ class Adam(StochasticOptimizer):
             eps=eps,
             m=m,
             v=v,
+            current_gradient_value=current_gradient_value
         )
 
     def scheme_specific_gradient(self, gradient):
@@ -580,6 +618,8 @@ class Adamax(StochasticOptimizer):
         m (ExponentialAveragingObject): Exponential average of the gradient
         u (np.array): Maximum gradient momentum
         eps (float): Nugget term to avoid a division by values close to zero
+        current_gradient_value (np.array): Current gradient value of the iteration
+                                           w.r.t. the variational parameters
     
     """
 
@@ -603,6 +643,7 @@ class Adamax(StochasticOptimizer):
         u,
         m,
         eps,
+        current_gradient_value
     ):
         super().__init__(
             learning_rate=learning_rate,
@@ -618,6 +659,7 @@ class Adamax(StochasticOptimizer):
             clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
+            current_gradient_value=current_gradient_value
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2
@@ -626,20 +668,26 @@ class Adamax(StochasticOptimizer):
         self.eps = eps
 
     @classmethod
-    def from_config_create_optimizer(cls, config):
+    def from_config_create_optimizer(cls, config, section_name):
         """
         Create an Adamax object from dict.
 
         Args:
             config (dict): Configuration dict
+            section_name (str): Name of section in which optimizer is defined
 
         Returns:
             Adamax object
     
         """
-        learning_rate = config.get("learning_rate")
+        if section_name is None:
+            config_sec = config
+        else:
+            config_sec = config[section_name]
+
+        learning_rate = config_sec.get("learning_rate")
         gradient = None
-        optimization_type = config.get("optimization_type")
+        optimization_type = config_sec.get("optimization_type")
         if optimization_type == "min":
             precoefficient = -1
         elif optimization_type == "max":
@@ -648,22 +696,25 @@ class Adamax(StochasticOptimizer):
             raise NotImplementedError(
                 f"optimization_type '{optimization_type}' unknown. Valid options are 'min' or 'max'"
             )
-        rel_L1_change_threshold = config.get("rel_L1_change_threshold")
-        rel_L2_change_threshold = config.get("rel_L2_change_threshold")
-        clip_by_L2_norm_threshold = config.get("clip_by_L2_norm_threshold", 1e6)
-        clip_by_value_threshold = config.get("clip_by_value_threshold", 1e6)
-        max_iteration = config.get("max_iter", 1e6)
+        rel_L1_change_threshold = config_sec.get("rel_L1_change_threshold")
+        rel_L2_change_threshold = config_sec.get("rel_L2_change_threshold")
+        clip_by_L2_norm_threshold = config_sec.get("clip_by_L2_norm_threshold", 1e6)
+        clip_by_value_threshold = config_sec.get("clip_by_value_threshold", 1e6)
+        max_iteration = config_sec.get("max_iter", 1e6)
         current_variational_parameters = 0
         iteration = 0
         done = False
         rel_L1_change = 1
         rel_L2_change = 1
 
-        beta_1 = config.get("beta_1", 0.9)
-        beta_2 = config.get("beta_2", 0.999)
+        beta_1 = config_sec.get("beta_1", 0.9)
+        beta_2 = config_sec.get("beta_2", 0.999)
         m = ExponentialAveraging.from_config_create_iterative_averaging({"coefficient": beta_1})
         u = 0
-        eps = config.get("eps", 1e-8)
+        eps = config_sec.get("eps", 1e-8)
+
+        current_gradient_value = None
+
         return cls(
             learning_rate=learning_rate,
             gradient=gradient,
@@ -683,6 +734,7 @@ class Adamax(StochasticOptimizer):
             eps=eps,
             m=m,
             u=u,
+            current_gradient_value=current_gradient_value
         )
 
     def scheme_specific_gradient(self, gradient):
@@ -706,6 +758,7 @@ class Adamax(StochasticOptimizer):
         self.u = np.maximum(self.beta_2 * self.u, abs_grad)
         gradient = m_hat / (self.u + self.eps)
         return gradient
+
 
 def clip_by_L2_norm(gradient, L2_norm_threshold=1e6):
     """
