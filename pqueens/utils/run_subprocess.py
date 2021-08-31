@@ -2,7 +2,6 @@
 Wrapped functions of subprocess stdlib module.
 """
 import subprocess
-import time
 import io
 import sys
 
