@@ -2,6 +2,7 @@ import logging
 import sys
 import io
 import re
+import time
 
 
 class LogFilter(logging.Filter):
