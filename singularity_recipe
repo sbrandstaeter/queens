@@ -12,13 +12,7 @@ variables at runtime.
 
 %files
   ../pqueens /
-  ../pqueens/drivers /
-  ../pqueens/database /
-  ../pqueens/external_geometry /
-  ../pqueens/randomfields /
-  ../pqueens/utils /
   ../setup_remote.py /
-  ../pqueens/remote_main.py /
 
 %labels
   Maintainer Jonas Nitzler
