@@ -60,9 +60,9 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         learning_rate (float): Learning rate for the optimizer
         gradient (function): Function to compute the gradient
         precoefficient (int): is 1 in case of maximization and -1 for minimization
-        rel_L2_change_threshold (float): If the L2 relative change in parameters falls below this 
+        rel_L2_change_threshold (float): If the L2 relative change in parameters falls below this
                                          value, this criteria catches.
-        rel_L1_change_threshold (float): If the L1 relative change in parameters falls below this 
+        rel_L1_change_threshold (float): If the L1 relative change in parameters falls below this
                                          value, this criteria catches.
         clip_by_L2_norm_threshold (float): Threshold to clip the gradient by L2-norm
         clip_by_value_threshold (float): Threshold to clip the gradient components
@@ -94,7 +94,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         clip_by_L2_norm_threshold,
         clip_by_value_threshold,
         max_iteration,
-        current_gradient_value
+        current_gradient_value,
     ):
         self.learning_rate = learning_rate
         self.gradient = gradient
@@ -128,8 +128,10 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         if section_name:
             algorithm = config[section_name].get("stochastic_optimizer")
         else:
-            raise ValueError("You did not provide a section name for the stochastic "
-                             "optimizer in the input file. Abort...")
+            raise ValueError(
+                "You did not provide a section name for the stochastic "
+                "optimizer in the input file. Abort..."
+            )
 
         if algorithm == "Adam":
             return Adam.from_config_create_optimizer(config, section_name)
@@ -247,7 +249,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
 
         """
         if np.any(np.isnan(self.current_variational_parameters)):
-            raise ValueError(f"At least one of the variational parameters is NaN")
+            raise ValueError("At least one of the variational parameters is NaN")
         else:
             self.done = (
                 self.rel_L2_change <= self.rel_L2_change_threshold
@@ -269,16 +271,16 @@ class RMSprop(StochasticOptimizer):
     RMSprop stochastic optimizer [1].
 
     References:
-        [1] Tieleman and Hinton. "Lecture 6.5-rmsprop: Divide the gradient by a running average of 
+        [1] Tieleman and Hinton. "Lecture 6.5-rmsprop: Divide the gradient by a running average of
         its recent magnitude". Coursera. 2012.
 
     Attributes:
         learning_rate (float): Learning rate for the optimizer
         gradient (function): Function to compute the gradient
         precoefficient (int): is 1 in case of maximization and -1 for minimization
-        rel_L2_change_threshold (float): If the L2 relative change in parameters falls below this 
+        rel_L2_change_threshold (float): If the L2 relative change in parameters falls below this
                                          value, this criteria catches.
-        rel_L1_change_threshold (float): If the L1 relative change in parameters falls below this 
+        rel_L1_change_threshold (float): If the L1 relative change in parameters falls below this
                                          value, this criteria catches.
         clip_by_L2_norm_threshold (float): Threshold to clip the gradient by L2-norm
         clip_by_value_threshold (float): Threshold to clip the gradient components
@@ -295,7 +297,7 @@ class RMSprop(StochasticOptimizer):
         eps (float): Nugget term to avoid a division by values close to zero
         current_gradient_value (np.array): Current value of the gradient w.r.t. variational
                                            parameters
-    
+   
     """
 
     def __init__(
@@ -316,7 +318,7 @@ class RMSprop(StochasticOptimizer):
         beta,
         v,
         eps,
-        current_gradient_value
+        current_gradient_value,
     ):
         super().__init__(
             learning_rate=learning_rate,
@@ -332,7 +334,7 @@ class RMSprop(StochasticOptimizer):
             clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
-            current_gradient_value=current_gradient_value
+            current_gradient_value=current_gradient_value,
         )
         self.beta = beta
         self.v = v
@@ -401,7 +403,7 @@ class RMSprop(StochasticOptimizer):
             beta=beta,
             v=v,
             eps=eps,
-            current_gradient_value=current_gradient_value
+            current_gradient_value=current_gradient_value,
         )
 
     def scheme_specific_gradient(self, gradient):
@@ -479,7 +481,7 @@ class Adam(StochasticOptimizer):
         eps,
         m,
         v,
-        current_gradient_value
+        current_gradient_value,
     ):
         super().__init__(
             learning_rate=learning_rate,
@@ -495,7 +497,7 @@ class Adam(StochasticOptimizer):
             clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
-            current_gradient_value=current_gradient_value
+            current_gradient_value=current_gradient_value,
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2
@@ -562,13 +564,13 @@ class Adam(StochasticOptimizer):
             eps=eps,
             m=m,
             v=v,
-            current_gradient_value=current_gradient_value
+            current_gradient_value=current_gradient_value,
         )
 
     def scheme_specific_gradient(self, gradient):
         """
         Adam gradient computation
-        
+  
         Args:
             gradient (np.array): Gradient
 
@@ -599,9 +601,9 @@ class Adamax(StochasticOptimizer):
         learning_rate (float): Learning rate for the optimizer
         gradient (function): Function to compute the gradient
         precoefficient (int): is 1 in case of maximization and -1 for minimization
-        rel_L2_change_threshold (float): If the L2 relative change in parameters falls below this 
+        rel_L2_change_threshold (float): If the L2 relative change in parameters falls below this
                                          value, this criteria catches.
-        rel_L1_change_threshold (float): If the L1 relative change in parameters falls below this 
+        rel_L1_change_threshold (float): If the L1 relative change in parameters falls below this
                                          value, this criteria catches.
         clip_by_L2_norm_threshold (float): Threshold to clip the gradient by L2-norm
         clip_by_value_threshold (float): Threshold to clip the gradient components
@@ -620,7 +622,7 @@ class Adamax(StochasticOptimizer):
         eps (float): Nugget term to avoid a division by values close to zero
         current_gradient_value (np.array): Current gradient value of the iteration
                                            w.r.t. the variational parameters
-    
+  
     """
 
     def __init__(
@@ -643,7 +645,7 @@ class Adamax(StochasticOptimizer):
         u,
         m,
         eps,
-        current_gradient_value
+        current_gradient_value,
     ):
         super().__init__(
             learning_rate=learning_rate,
@@ -659,7 +661,7 @@ class Adamax(StochasticOptimizer):
             clip_by_L2_norm_threshold=clip_by_L2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
-            current_gradient_value=current_gradient_value
+            current_gradient_value=current_gradient_value,
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2
@@ -734,7 +736,7 @@ class Adamax(StochasticOptimizer):
             eps=eps,
             m=m,
             u=u,
-            current_gradient_value=current_gradient_value
+            current_gradient_value=current_gradient_value,
         )
 
     def scheme_specific_gradient(self, gradient):
@@ -787,4 +789,3 @@ def clip_by_value(gradient, threshold=1e6):
     gradient = np.nan_to_num(gradient)
     gradient = np.clip(gradient, -threshold, threshold)
     return gradient
-

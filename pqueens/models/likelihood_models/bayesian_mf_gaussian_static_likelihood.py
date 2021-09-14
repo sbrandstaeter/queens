@@ -1,20 +1,69 @@
+import logging
+
 import numpy as np
-from scipy.optimize import minimize
+import pqueens.visualization.bmfia_visualization as qvis
+from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.iterators.iterator import Iterator
+from pqueens.utils.ascii_art import print_bmfia_acceleration
+
 from .likelihood_model import LikelihoodModel
-from pqueens.interfaces.bmfmc_interface import BmfmcInterface
+
+_logger = logging.getLogger(__name__)
 
 
 class BMFGaussianStaticModel(LikelihoodModel):
     """
+    Multi-fidelity likelihood of the Bayesian multi-fidelity inverse analysis scheme [1, 2].
+
+    Args:
+        model_name (str): Name of the likelihood model in the config file
+        model_parameters (np.array): Parameters of the inverse problem
+        nugget_noise_var (float): Lower bound for the likelihood noise
+        forward_model (obj): Forward model to iteratate; here: the low fidelity model
+        coords_mat (np.array): Matrix with coordinate values for observations
+        time_vec (np.array): Vector with time-stamps of observations
+        y_obs_vec (np.array): Matrix / vector of observations
+        likelihood_noise_type (str): Type likelihood noise computation
+        fixed_likelihood_noise_value (float): Prescribed value for the likelihood noise
+        output_label (str): Label / name of the output / QoI in the experimental data file
+        coord_labels (str): Labels / names of the coordinates in the experimental data file
+        settings_probab_mapping (dict): Dictionary with problem setup for the
+                                        probabilistic regression model used in
+                                        the likelihood formulation
+        mf_interface (obj): QUEENS multi-fidelity interface
+        bmfia_subiterator (obj): Subiterator to select the training data of the
+                                 probabilistic regression model
+        noise_upper_bound (float): Upper bound for the likelihood noise
+        x_train (np.array): Input of the simulation model used to generate training outputs
+                            for probabilistic regression model
+        y_hf_train (np.array): High-fidelity training output data for probabilistic
+                               regression model
+        y_lfs_train (np.array): Low-fidelity training outputs for probabilistic regression
+                                models
+        gammas_ext_train (np.array): Low-fidelity training features for probabilistic
+                                     regression model
+        z_train (np.array): Combined low-fidelity training vector for probabilistic
+                            regression model
+        eigenfunc_random_fields (np.array):
+        eigenvals (np.array):
+        f_mean_train (np.array): Mean values of probabilistic regression model at
+                                 training points
+        noise_var (float): Noise variance in the multi-fidelity likelihood
+        noise_var_lst (lst): List with noise variance per iteration
+
     Returns:
         Instance of BMFGaussianStaticModel. This is a multi-fidelity version of the
         Gaussian static noise likelihood model.
 
+
     References:
-        [1] Nitzler, J., Biehler, J., Fehn, N., Koutsourelakis, P.-S. and Wall, W.A. (2020),
+        [1] Nitzler, J.; Biehler, J.; Fehn, N.; Koutsourelakis, P.-S. and Wall, W.A. (2020),
             "A Generalized Probabilistic Learning Approach for Multi-Fidelity Uncertainty
             Propagation in Complex Physical Simulations", arXiv:2001.02892
+
+        [2] Nitzler J.; Wall, W. A. and Koutsourelakis P.-S. (2021),
+            "An efficient Bayesian multi-fidelity framework for the solution of high-dimensional
+            inverse problems in computationally demanding simulations", unpublished internal report
     """
 
     def __init__(
@@ -24,51 +73,56 @@ class BMFGaussianStaticModel(LikelihoodModel):
         nugget_noise_var,
         forward_model,
         coords_mat,
+        time_vec,
         y_obs_vec,
         likelihood_noise_type,
         fixed_likelihood_noise_value,
         output_label,
         coord_labels,
         settings_probab_mapping,
-        mf_interface,  # TODO maybe this can be deleted
+        mf_interface,
         bmfia_subiterator,
         noise_upper_bound,
+        x_train,
+        y_hf_train,
+        y_lfs_train,
+        gammas_train,
+        z_train,
+        eigenfunc_random_fields,
+        eigenvals,
+        f_mean_train,
+        noise_var,
+        noise_var_lst,
     ):
         super(BMFGaussianStaticModel, self).__init__(
             model_name,
             model_parameters,
             forward_model,
             coords_mat,
+            time_vec,
             y_obs_vec,
             output_label,
             coord_labels,
         )
 
-        self.mf_interface = mf_interface  # TODO check if this can be deleted
+        self.mf_interface = mf_interface
         self.settings_probab_mapping = settings_probab_mapping
-        self.x_train = None
-        self.y_hf_train = None
-        self.y_lfs_train = None
-        self.gammas_ext_train = None
-        self.z_train = None
-        self.p_yhf_mean = None
-        self.p_yhf_var = None
-        self.eigenfunc_random_fields = None  # TODO this should be moved to the variable class!
-        self.eigenvals = None
-        self.f_mean_train = None
-        self.training_indices = None
+        self.x_train = x_train
+        self.y_hf_train = y_hf_train
+        self.y_lfs_train = y_lfs_train
+        self.gammas_train = gammas_train
+        self.z_train = z_train
+        self.eigenfunc_random_fields = eigenfunc_random_fields
+        self.eigenvals = eigenvals
+        self.f_mean_train = f_mean_train
         self.bmfia_subiterator = bmfia_subiterator
         self.uncertain_parameters = model_parameters
-        self.k_mf = None
-        self.det_k_mf = None
-        self.k_mf_inv = None
-
-        self.noise_var = 1e-4
+        self.noise_var = noise_var
         self.nugget_noise_var = nugget_noise_var
         self.likelihood_noise_type = likelihood_noise_type
         self.fixed_likelihood_noise_value = fixed_likelihood_noise_value
         self.noise_upper_bound = noise_upper_bound
-        self.noise_var_lst = []
+        self.noise_var_lst = noise_var_lst
 
     @classmethod
     def from_config_create_likelihood(
@@ -78,6 +132,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         model_parameters,
         forward_model,
         coords_mat,
+        time_vec,
         y_obs_vec,
         output_label,
         coord_labels,
@@ -105,11 +160,26 @@ class BMFGaussianStaticModel(LikelihoodModel):
         # ---------- multi-fidelity settings ---------------------------------------------------
         settings_probab_mapping = {"mf_approx_settings": model_options.get("mf_approx_settings")}
         approximation_settings_name = "mf_approx_settings"
-        mf_interface = BmfmcInterface(settings_probab_mapping, approximation_settings_name)
+        mf_interface = BmfiaInterface(settings_probab_mapping, approximation_settings_name)
 
         # ----------------------- create subordinate bmfia iterator ------------------------------
         bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator"]
         bmfia_subiterator = Iterator.from_config_create_iterator(config, bmfia_iterator_name)
+
+        # ----------------------- create visualization object(s) ---------------------------------
+        qvis.from_config_create(config, model_name=model_name)
+
+        # ----------------------  Initialize some attributes -----------------------------------
+        x_train = None
+        y_hf_train = None
+        y_lfs_train = None
+        gammas_ext_train = None
+        z_train = None
+        eigenfunc_random_fields = None  # TODO this should be moved to the variable class!
+        eigenvals = None
+        f_mean_train = None
+        noise_var = 1e-4
+        noise_var_lst = []
 
         return cls(
             model_name,
@@ -117,15 +187,26 @@ class BMFGaussianStaticModel(LikelihoodModel):
             nugget_noise_var,
             forward_model,
             coords_mat,
+            time_vec,
             y_obs_vec,
             likelihood_noise_type,
             fixed_likelihood_noise_value,
             output_label,
             coord_labels,
             settings_probab_mapping,
-            mf_interface,  # TODO check if this is really needed
+            mf_interface,
             bmfia_subiterator,
             noise_upper_bound,
+            x_train,
+            y_hf_train,
+            y_lfs_train,
+            gammas_ext_train,
+            z_train,
+            eigenfunc_random_fields,
+            eigenvals,
+            f_mean_train,
+            noise_var,
+            noise_var_lst,
         )
 
     def evaluate(self):
@@ -141,13 +222,21 @@ class BMFGaussianStaticModel(LikelihoodModel):
         if self.z_train is None:
             self._initialize()
         # catch one dimensional vectors
-        Y_LF_mat = self._update_and_evaluate_forward_model()
 
-        # get x_batch form variable object
+        # TODO: as we treat the likelihood sequentially, we only take the last response
+        # None former responses of one batch are still saved in the model output
+        # TODO: check if this works for matrix valued responses as well
+
+        # reshape the model output according to the number of coordinates
+        num_coordinates = self.coords_mat.shape[0]
+        Y_LF_mat = self._update_and_evaluate_forward_model()[-1].reshape(num_coordinates, -1)
+
+        # get x_batch from variable object
         x_batch = []
         for j, _ in enumerate(self.variables):
             x_batch.append(np.array([i[1]['value'] for i in self.variables[j].variables.items()]))
 
+        x_batch = np.array(x_batch).squeeze()
         x_batch = np.atleast_2d(x_batch)
 
         # evaluate the modified multi-fidelity likelihood expression with LF model response
@@ -157,7 +246,8 @@ class BMFGaussianStaticModel(LikelihoodModel):
 
     def _evaluate_mf_likelihood(self, y_lf_mat, x_batch):
         """
-        Bayesian multi-fidelity likelihood as described in [1]
+        Evaluate the Bayesian multi-fidelity likelihood as described in [1].
+
         Args:
             y_lf_mat (np.array): Response matrix of the low-fidelity model; Row-wise corresponding
                                  to rows in x_batch input batch matrix. Different coordinate
@@ -175,122 +265,142 @@ class BMFGaussianStaticModel(LikelihoodModel):
                 Propagation in Complex Physical Simulations", arXiv:2001.02892
 
         """
-        n = self.y_obs_vec.size
-
-        # loop over all simulation runs, respectively x_vecs and y_vecs
+        # construct LF feature matrix
+        z_mat = self._get_feature_mat(y_lf_mat, x_batch, self.coords_mat[: y_lf_mat.shape[0]])
+        m_f_vec, var_y_vec = self.mf_interface.map(z_mat, full_cov=True)  # full cov is misleading
         log_lik_mf_lst = []
-        for x_vec, y_lf_vec in zip(x_batch, y_lf_mat):
-            # construct LF feature matrix
-            z_mat = np.atleast_2d(
-                self._get_feature_mat(y_lf_vec, x_vec, self.coords_mat[: y_lf_vec.shape[0]])
-            ).T
+        num_obser = self.y_obs_vec.shape[0]
 
-            # output is vector-valued to to z_mat
-            m_f_vec, k_y_mat = self.mf_interface.map(z_mat, full_cov=True)
-            diff_vec = np.atleast_2d(self.y_obs_vec).T - m_f_vec
+        # iterate here over all GPs simultaneously such that the new m is a vector of all e.g. first
+        # entries in all GPs
+        for mean_value, variance_value in zip(m_f_vec.T, var_y_vec.T):
+            diff_vec = mean_value - self.y_obs_vec
 
             if self.likelihood_noise_type == "fixed":
                 self.noise_var = self.fixed_likelihood_noise_value
             elif self.likelihood_noise_type == "jeffreys_prior":
-                # optimize log likelihood here
-                res = minimize(
-                    lambda noise: self._neg_log_likelihood_fun(noise, k_y_mat, n, diff_vec),
-                    self.noise_var,
-                    method='L-BFGS-B',
-                    bounds=((self.nugget_noise_var, self.noise_upper_bound),),  # TODO pull bounds
-                    # out
-                    jac=lambda noise: self._grad_neg_log_likelihood_fun_noise(
-                        noise, k_y_mat, n, diff_vec
-                    ),
-                    options={'disp': False},
-                )
-                self.noise_var = res.x
-                self.noise_var_lst.append(res.x)
-                print(f"Optimized noise: {res.x}")
+                self.noise_var = np.sum(diff_vec ** 2, axis=0) / (1 + (mean_value.shape[0]))
+                _logger.info(f"Calculated ML-estimate for likelihood noise: {self.noise_var}")
 
-            log_lik_mf = -self._neg_log_likelihood_fun(self.noise_var, k_y_mat, n, diff_vec)
-
+            log_lik_mf = -self._neg_log_likelihood_fun(
+                variance_value + self.noise_var, num_obser, diff_vec
+            )
             log_lik_mf_lst.append(log_lik_mf)
+        return np.array(log_lik_mf_lst)
 
-        log_lik_mf_vec = np.array(log_lik_mf_lst).reshape(-1, 1)
+    def _neg_log_likelihood_fun(self, variance_vec, num_obs, diff_vec):
+        """
+        Negative multi-fidelity log-likelihood function.
 
-        return log_lik_mf_vec
+        Args:
+            variance_vec (np.array): Vector of predicted posterior variance values of
+                                     the probabilistic multi-fidelity regression model
+            num_obs (int): Number of observations
+            diff_vec (np.array): Vector of differences between observation and simulations
 
-    def _neg_log_likelihood_fun(self, noise_var, k_y_mat, n, diff_vec):
+        Retruns:
+            log_lik_mf (np.array): Value of negative log-likelihood function
+                                   for difference vector
 
-        k_mf = k_y_mat + noise_var * np.eye(k_y_mat.shape[0])
-
-        if not np.array_equal(k_mf, self.k_mf):
-            self.k_mf_inv = np.linalg.inv(k_mf)
-            self.det_k_mf = np.linalg.det(k_mf)  # TODO get determinante from gauss-seidel
-            self.k_mf = k_mf
-
+        """
+        inv_variance_vec = 1 / variance_vec
         log_lik_mf = -(
-            -n / 2 * np.log(2 * np.pi)
-            - 1 / 2 * np.log(self.det_k_mf)
-            - 0.5 * np.dot(np.dot(diff_vec.T, self.k_mf_inv), diff_vec)
+            -num_obs / 2 * np.log(2 * np.pi)
+            - 1 / 2 * np.sum(np.log(variance_vec))
+            - 1 / 2 * np.sum(inv_variance_vec * (diff_vec) ** 2)
         )
 
         # potentially extent likelihood by Jeffreys prior
         if self.likelihood_noise_type == "jeffreys_prior":
-            # note that K is multivariate and dense here such that the Jeffreys prior yields:
-            log_lik_mf = log_lik_mf + (n + 2) / 2 * np.log(self.det_k_mf)
+            log_lik_mf = log_lik_mf - np.log(np.sqrt(2.0)) + 0.5 * np.log(self.noise_var)
 
-        log_lik_mf = log_lik_mf.squeeze()
+        return np.array(log_lik_mf)
 
-        return log_lik_mf
+    def _get_feature_mat(self, y_LF_vec, x_vec, coords_mat):
+        """ 
+        Compose the low-fidelity feature matrix that consists of the low-fidelity
+        model outputs and the low-fidelity informative features.
 
-    def _grad_neg_log_likelihood_fun_noise(self, noise_var, K_y_mat, n, diff_vec):
 
-        K_mf = K_y_mat + noise_var * np.eye(K_y_mat.shape[0])
+            y_LF_vec (np.array): Low-fidelity output vector
+            x_vec (np.array): Input vector for the simulation model
+            coords_mat (np.array): Coordinate matrix for the observations
 
-        if not np.array_equal(K_mf, self.k_mf):
-            self.k_mf_inv = np.linalg.inv(K_mf)
-            self.det_k_mf = np.linalg.det(K_mf)  # TODO get determinante from gauss-seidel
-            self.k_mf = K_mf
+        Retruns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions
 
-        alpha = np.dot(self.k_mf_inv, diff_vec)
-        grad_log = 0.5 * np.trace(np.outer(alpha, alpha.T) - self.k_mf_inv) - (
-            n + 2
-        ) / 2 * np.trace(self.k_mf_inv)
+        """
 
-        return -grad_log
-
-    def _get_feature_mat(
-        self, y_LF_vec, x_vec, coordinates
-    ):  # TODO make this a compatible to vector coords
         y_LF_vec = np.atleast_2d(y_LF_vec).T
         x_vec = np.atleast_2d(x_vec)
+
+        # ------ configure manual informative features ------------------------------------------
         if self.bmfia_subiterator.settings_probab_mapping['features_config'] == "man_features":
-            output_size = int(y_LF_vec.shape[0] / x_vec.shape[0])
+
             idx_vec = self.bmfia_subiterator.settings_probab_mapping['X_cols']
             if len(idx_vec) < 2:
-                gamma_vec = np.atleast_2d(x_vec[:, idx_vec]).T
+                gamma_vec = np.atleast_2d(x_vec[:, idx_vec])
             else:
                 gamma_vec = np.atleast_2d(x_vec[:, idx_vec])
 
-            gamma_vec_rep = np.matlib.repmat(gamma_vec, 1, output_size).reshape(
-                -1, gamma_vec.shape[1]
-            )
-            z_mat = np.hstack([y_LF_vec, gamma_vec_rep, coordinates])
+            # normalization
+            gamma_vec_rep = (gamma_vec - np.min(gamma_vec)) / (
+                np.max(gamma_vec) - np.min(gamma_vec)
+            ) * (np.max(self.y_obs_vec) - np.min(self.y_obs_vec)) + np.min(self.y_obs_vec)
+
+            z_lst = []
+            for y in y_LF_vec:
+                z_lst.append(np.hstack([y.reshape(-1, 1), gamma_vec_rep]))
+
+            z_mat = np.array(z_lst).T
+
+        # ------ configure optimal informative features with highest sensitivity -------------
         elif self.bmfia_subiterator.settings_probab_mapping['features_config'] == "opt_features":
             if self.bmfia_subiterator.settings_probab_mapping['num_features'] < 1:
                 raise ValueError()
             self.bmfia_subiterator._update_probabilistic_mapping_with_features()
+
+        # ----- configure informative features from (spatial) coordinates ----------------------
         elif self.bmfia_subiterator.settings_probab_mapping['features_config'] == "coord_features":
-            z_mat = np.hstack([y_LF_vec, coordinates])
+            idx_vec = self.bmfia_subiterator.settings_probab_mapping['coords_cols']
+            z_mat = np.hstack([y_LF_vec, coords_mat[:, idx_vec]])
+
+        # ----- configure no additional informative features ------------------------------------
         elif self.bmfia_subiterator.settings_probab_mapping['features_config'] == "no_features":
-            z_mat = y_LF_vec
+            z_mat = y_LF_vec.T
+
+        # ----- configure informative features based on time coordinate --------------------------
+        elif self.bmfia_subiterator.settings_probab_mapping['features_config'] == "time_features":
+            time_repeat = int(y_LF_vec.shape[0] / self.time_vec.size)
+            time_vec = np.repeat(self.time_vec.reshape(-1, 1), repeats=time_repeat, axis=0)
+
+            # some normalization
+            time_vec = time_vec / np.max(time_vec) * (
+                np.max(self.y_obs_vec) - np.min(self.y_obs_vec)
+            ) + np.min(self.y_obs_vec)
+
+            z_mat = np.hstack([y_LF_vec, time_vec])
         else:
             raise IOError("Feature space method specified in input file is unknown!")
 
         return z_mat
 
     def _initialize(self):
-        print("---------------------------------------------------------------------")
-        print("Speed-up through Bayesian multi-fidelity inverse analysis (BMFIA)!")
-        print("---------------------------------------------------------------------")
-        self.bmfia_subiterator.coords = self.coords_mat
+        """
+        Initialize the multi-fidelity likelihood model.
+
+        Returns:
+            None
+
+        """
+        _logger.info("---------------------------------------------------------------------")
+        _logger.info("Speed-up through Bayesian multi-fidelity inverse analysis (BMFIA)!")
+        _logger.info("---------------------------------------------------------------------")
+        print_bmfia_acceleration()
+
+        self.bmfia_subiterator.coords_experimental_data = self.coords_mat
+        self.bmfia_subiterator.time_vec = self.time_vec
         self.bmfia_subiterator.y_obs_vec = self.y_obs_vec
         self._build_approximation()
 
@@ -307,12 +417,25 @@ class BMFGaussianStaticModel(LikelihoodModel):
         self.z_train, self.y_hf_train = self.bmfia_subiterator.core_run()
         # ----- train regression model on the data ----------------------------------------
         self.mf_interface.build_approximation(self.z_train, self.y_hf_train)
-        print('Probabilistic model was built successfully!')
+        _logger.info("---------------------------------------------------------------------")
+        _logger.info('Probabilistic model was built successfully!')
+        _logger.info("---------------------------------------------------------------------")
 
-    # ------- TODO below not needed atm but something similar might be of interest lateron -----
+        # plot the surrogate model
+        qvis.bmfia_visualization_instance.plot(
+            self.z_train, self.y_hf_train, self.mf_interface.probabilistic_mapping_obj_lst
+        )
+
+    # ------- TODO: below not needed atm but something similar might be of interest lateron -----
     def input_dim_red(self):
+        """
+        Compression of the input array of the simulation.
+
+        Returns:
+            None
+        """
         self.get_random_fields()
-        # TODO more to come...
+        # TODO: more to come...
 
     def get_random_fields_and_truncated_basis(self, explained_var=95.0):
         """
@@ -330,13 +453,16 @@ class BMFGaussianStaticModel(LikelihoodModel):
                                  variables
 
         """
+        raise NotImplementedError(
+            "Implementation of the method "
+            "'get_random_fields_and_truncated_basis' is not finished."
+            "The method cannot be used at the moment. Abort..."
+        )
         # determine uncorrelated random variables
         num_random_var = len(self.uncertain_parameters.get("random_variables"))
         x_uncorr = self.X_mc[:, 0:num_random_var]
 
         # iterate over all random fields
-        dim_random_fields = 0
-
         if self.uncertain_parameters.get("random_fields") is not None:
             # TODO get information of random fields and conduct dim reduction
             pass
@@ -353,30 +479,36 @@ class BMFGaussianStaticModel(LikelihoodModel):
         # Note that the wrapper of the model update needs to called externally such that
         # self.variables is updated
         self.forward_model.variables = self.variables
+
         Y_mat = self.forward_model.evaluate()['mean']
 
         return Y_mat
 
+    # --------------------------- functions ------------------------------------------------------
+    @staticmethod
+    def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
+        """
+        Project the high-dimensional samples of the random field on the truncated bases to yield the
+        projection coefficients of the series expansion that serve as a new reduced representation
+        of the random fields
 
-# --------------------------- functions ------------------------------------------------------
-def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
-    """
-    Project the high-dimensional samples of the random field on the truncated bases to yield the
-    projection coefficients of the series expansion that serve as a new reduced representation of
-    the random fields
+        Args:
+            truncated_basis_dict (dic): Dictionary containing random field samples and truncated
+                                        bases
+            num_samples (int): Number of Monte-Carlo samples
 
-    Args:
-        truncated_basis_dict (dic): Dictionary containing random field samples and truncated bases
-        num_samples (int): Number of Monte-Carlo samples
+        Returns:
+            coefs_mat (np.array): Matrix containing the reduced representation of all random fields
+                                stacked together along the columns
 
-    Returns:
-        coefs_mat (np.array): Matrix containing the reduced representation of all random fields
-                              stacked together along the columns
-    """
-    coefs_mat = np.empty((num_samples, 0))
+        """
+        # TODO: not yet used at the moment but will follow soon
+        coefs_mat = np.empty((num_samples, 0))
 
-    # iterate over random fields
-    for basis in truncated_basis_dict.items():
-        coefs_mat = np.hstack((coefs_mat, np.dot(basis[1]["samples"], basis[1]["trunc_basis"].T)))
+        # iterate over random fields
+        for basis in truncated_basis_dict.items():
+            coefs_mat = np.hstack(
+                (coefs_mat, np.dot(basis[1]["samples"], basis[1]["trunc_basis"].T))
+            )
 
-    return coefs_mat
+        return coefs_mat

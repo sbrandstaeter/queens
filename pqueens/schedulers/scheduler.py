@@ -50,6 +50,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         singularity_manager (obj): instance of Singularity-manager class
         process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids as
                            keys
+        driver_name (str):         Name of the driver that shall be used for job submission
 
     Returns:
         scheduler (obj):           instance of scheduler class
@@ -79,9 +80,10 @@ class Scheduler(metaclass=abc.ABCMeta):
             singularity_path=base_settings['cluster_options']['singularity_path'],
             input_file=self.input_file,
         )
+        self.driver_name = base_settings['driver_name']
 
     @classmethod
-    def from_config_create_scheduler(cls, config, scheduler_name=None):
+    def from_config_create_scheduler(cls, config, scheduler_name=None, driver_name=None):
         """
         Create scheduler from problem configuration
 
@@ -89,6 +91,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             config (dict):        dictionary containing configuration
                                   as provided in QUEENS input file
             scheduler_name (str): name of scheduler
+            driver_name (str): Name of driver that should be used in this job-submission
  
         Returns:
             scheduler (obj):        scheduler object
@@ -121,6 +124,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         base_settings['experiment_name'] = config['global_settings']['experiment_name']
         base_settings['polling_time'] = config.get('polling-time', 1)
         base_settings['input_file'] = config['input_file']
+        base_settings['driver_name'] = driver_name
 
         # base settings for scheduler:
         # 1) set complete configuration for subsequent transfer to driver
@@ -170,20 +174,24 @@ class Scheduler(metaclass=abc.ABCMeta):
             base_settings['singularity'],
         )
 
+        # TODO: this might not work anymore for multiple drivers
         # print out driver information
         # (done here to print out this information only once)
-        if config['driver']['driver_params'].get('post_post') is not None:
-            post_post_file_prefix = config['driver']['driver_params']['post_post'].get(
-                'file_prefix'
+        try:
+            if config['driver']['driver_params'].get('post_post') is not None:
+                post_post_file_prefix = config['driver']['driver_params']['post_post'].get(
+                    'file_prefix'
+                )
+            else:
+                post_post_file_prefix = None
+            print_driver_information(
+                config['driver']['driver_type'],
+                config['driver']['driver_params'].get('cae_software_version'),
+                post_post_file_prefix,
+                scheduler_options.get('docker_image', None),
             )
-        else:
-            post_post_file_prefix = None
-        print_driver_information(
-            config['driver']['driver_type'],
-            config['driver']['driver_params'].get('cae_software_version'),
-            post_post_file_prefix,
-            scheduler_options.get('docker_image', None),
-        )
+        except KeyError:
+            pass
 
         return scheduler
 
@@ -220,7 +228,9 @@ class Scheduler(metaclass=abc.ABCMeta):
 
        """
         # create driver
-        driver_obj = Driver.from_config_create_driver(self.config, job_id, batch)
+        # TODO we should not create a new driver instance here every time
+        # instead only update the driver attributes.
+        driver_obj = Driver.from_config_create_driver(self.config, job_id, batch, self.driver_name)
 
         # do post-processing (if required), post-post-processing,
         # finish and clean job
@@ -261,8 +271,11 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
 
         # create driver
+        # TODO we should not create the object here everytime!
+        # TODO instead only update the attributes of the instance.
+        # TODO we should specify the data base sheet as well
         driver_obj = Driver.from_config_create_driver(
-            self.config, job_id, batch, cluster_options=self.cluster_options
+            self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
         )
 
         if not restart:

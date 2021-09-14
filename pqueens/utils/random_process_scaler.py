@@ -11,7 +11,7 @@ class Scaler(metaclass=abc.ABCMeta):
     Attributes:
         mean (np.array): Mean-values of the data-matrix (column-wise)
         standard_deviation (np.array): Standard deviation of the data-matrix (per column)
- 
+
     Returns:
         Instance of the Scaler Class (obj)
 
@@ -45,32 +45,48 @@ class Scaler(metaclass=abc.ABCMeta):
         return scaler_class.from_config_create_scaler(scaler_settings, mean, standard_deviation)
 
     @abc.abstractmethod
-    def fit(self):
+    def fit(self, x_mat):
         """
         Fit/calculate the scaling based on the input samples
+
+        Args:
+            x_mat (np.array): Data matrix that should be standardized
+
         """
         pass
 
     @abc.abstractmethod
-    def transform(self):
+    def transform(self, x_mat):
         """
         Conduct the scaling transformation on the input samples.
+
+        Args:
+            x_mat (np.array): Data matrix that should be standardized
+
         """
         pass
 
     @abc.abstractmethod
-    def inverse_transform_mean(self):
+    def inverse_transform_mean(self, x_mat):
         """
         Conduct the inverse transformation for the mean / the mean function
         of the random process trained on the scaled training data.
+
+        Args:
+            x_mat (np.array): Data matrix that should be standardized
+
         """
         pass
 
     @abc.abstractmethod
-    def inverse_transform_std(self):
+    def inverse_transform_std(self, x_mat):
         """
         Conduct the inverse transformation for the posterior standard deviation of the
         random process trained on the scaled training data.
+
+        Args:
+            x_mat (np.array): Data matrix that should be standardized
+
         """
         pass
 
@@ -192,7 +208,7 @@ class IdentityScaler(Scaler):
 
         return cls(mean, standard_deviation)
 
-    def fit(x_mat):
+    def fit(self, x_mat):
         """
         Fit/calculate the scaling based on the input samples
 

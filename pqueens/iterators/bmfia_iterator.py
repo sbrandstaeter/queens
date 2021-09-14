@@ -1,11 +1,14 @@
+import logging
+
 import numpy as np
-import numpy.matlib
 from pqueens.database.mongodb import MongoDB
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs, write_results
+
+_logger = logging.getLogger(__name__)
 
 
 class BMFIAIterator(Iterator):
@@ -26,6 +29,7 @@ class BMFIAIterator(Iterator):
         hf_model (obj): High-fidelity model object
         lf_model (obj): Low fidelity model object
         coords_experimental_data (np.array): Coordinates of the experimental data
+        time_vec (np.array): Time vector of experimental observations
         output_label (str): Name or label of the output quantity of interest (used to find the
                             data in the csv file)
         coord_labels (lst): Label or names of the underlying coordinates for the experimental
@@ -35,6 +39,7 @@ class BMFIAIterator(Iterator):
                                         multi-fidelity mapping
         db (obj): Database object
         external_geometry_obj (obj): External geometry object
+        gammas_train (np.array): Informative features evaluated at the training inputs
 
 
     Returns:
@@ -54,7 +59,14 @@ class BMFIAIterator(Iterator):
         settings_probab_mapping,
         db,
         external_geometry_obj,
-        x_train
+        x_train,
+        Y_LF_train,
+        Y_HF_train,
+        Z_train,
+        coords_experimental_data,
+        time_vec,
+        y_obs_vec,
+        gammas_train,
     ):
         super(BMFIAIterator, self).__init__(
             None, global_settings
@@ -62,19 +74,21 @@ class BMFIAIterator(Iterator):
 
         self.result_description = result_description
         self.X_train = x_train
-        self.Y_LF_train = None
-        self.Y_HF_train = None
-        self.Z_train = None
+        self.Y_LF_train = Y_LF_train
+        self.Y_HF_train = Y_HF_train
+        self.Z_train = Z_train
         self.features_config = features_config
         self.hf_model = hf_model
         self.lf_model = lf_model
-        self.coords_experimental_data = None
+        self.coords_experimental_data = coords_experimental_data
+        self.time_vec = time_vec
         self.output_label = output_label
         self.coord_labels = coord_labels
-        self.y_obs_vec = None
+        self.y_obs_vec = y_obs_vec
         self.settings_probab_mapping = settings_probab_mapping
         self.db = db
         self.external_geometry_obj = external_geometry_obj
+        self.gammas_train = gammas_train
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
@@ -121,8 +135,14 @@ class BMFIAIterator(Iterator):
         # ---------- calculate the optimal training samples via classmethods ----------
         x_train = cls._calculate_optimal_x_train(initial_design_dict, external_geometry, lf_model)
 
-        # ---------------------- CREATE VISUALIZATION BORG ----------------------------
-        # qvis.from_config_create(config)
+        # ---------------------- initialize some variables / attributes ---------------
+        Y_LF_train = None
+        Y_HF_train = None
+        Z_train = None
+        coords_experimental_data = None
+        time_vec = None
+        y_obs_vec = None
+        gammas_train = None
 
         return cls(
             result_description,
@@ -135,7 +155,14 @@ class BMFIAIterator(Iterator):
             mf_approx_settings,
             db,
             external_geometry,
-            x_train
+            x_train,
+            Y_LF_train,
+            Y_HF_train,
+            Z_train,
+            coords_experimental_data,
+            time_vec,
+            y_obs_vec,
+            gammas_train,
         )
 
     @classmethod
@@ -241,8 +268,10 @@ class BMFIAIterator(Iterator):
 
         """
         self.lf_model.update_model_from_sample_batch(self.X_train)
-        # reshape the scalar output such that output vector are appended
-        self.Y_LF_train = self.lf_model.evaluate()['mean'].reshape(-1, 1)
+
+        # reshape the scalar output by the coordinate dimension
+        num_coords = self.coords_experimental_data.shape[0]
+        self.Y_LF_train = self.lf_model.evaluate()['mean'].reshape(-1, num_coords)
 
     def _evaluate_HF_model_for_X_train(self):
         """
@@ -253,13 +282,30 @@ class BMFIAIterator(Iterator):
 
         """
         self.hf_model.update_model_from_sample_batch(self.X_train)
-        # reshape the scalar output such that output vectors are appended
-        self.Y_HF_train = self.hf_model.evaluate()['mean'].reshape(-1, 1)
+
+        # reshape the scalar output by the coordinate dimension
+        num_coords = self.coords_experimental_data.shape[0]
+        self.Y_HF_train = self.hf_model.evaluate()['mean'].reshape(-1, num_coords)
 
     def _set_feature_strategy(self):
         """
         Depending on the method specified in the input file, set the strategy that will be used to
-        calculate the low-fidelity features :math:`Z_{\\text{LF}}`.
+        calculate the low-fidelity features :math:`Z_{\\text{LF}}`. Basically this methods gives
+        different options on how to construct informative features :math:`\\gamma_i` from which
+        the low-fidelity feature vector/matrix :math:`Z_{\\text{LF}}` is constructed upon.
+        So far we have the option of:
+        -  selecting :math:`\\gamma_i` manually from the input
+        vector (man_features)
+        - automatically determine optimal features from the input vector
+        (opt_features) (not ready yet)
+        - seleting no further informative features (no_features), meaning only
+        the low fidelity model output is considered in the mapping.
+        - Additionally integrate the spatial coordinates as an informative feature
+        (coord_features)
+        - Additionally integrate the time-coordinates as an informative features
+        (time_features)
+
+        Note: At the moment still under heavy development and not finished, yet.
 
         Returns:
             None
@@ -268,27 +314,45 @@ class BMFIAIterator(Iterator):
         self.coords_experimental_data = np.tile(
             self.coords_experimental_data, (self.X_train.shape[0], 1)
         )
-
         if self.settings_probab_mapping['features_config'] == "man_features":
-            output_size = int(self.Y_LF_train.shape[0] / self.num_training)
             idx_vec = self.settings_probab_mapping['X_cols']
-            gammas_train = np.atleast_2d(self.X_train[:, idx_vec])
+            if len(idx_vec) < 2:
+                gammas_train = np.atleast_2d(self.X_train[:, idx_vec]).T
+            else:
+                gammas_train = np.atleast_2d(self.X_train[:, idx_vec])
 
-            gammas_train_rep = np.matlib.repmat(gammas_train, 1, output_size).reshape(
-                -1, gammas_train.shape[1]
-            )
-            self.gammas_train = np.array(gammas_train_rep)
-            self.Z_train = np.hstack(
-                [self.Y_LF_train, self.gammas_train, self.coords_experimental_data]
-            )
+            # normalization
+            self.gammas_train = (gammas_train - np.min(gammas_train)) / (
+                np.max(gammas_train) - np.min(gammas_train)
+            ) * (np.max(self.y_obs_vec) - np.min(self.y_obs_vec)) + np.min(self.y_obs_vec)
+
+            z_lst = []
+            for y in self.Y_LF_train.T:
+                z_lst.append(np.hstack([np.atleast_2d(y).T, np.atleast_2d(self.gammas_train).T]))
+
+            self.Z_train = np.array(z_lst).T
+
         elif self.settings_probab_mapping['features_config'] == "opt_features":
             if self.settings_probab_mapping['num_features'] < 1:
-                raise ValueError()
+                raise ValueError(
+                    f"You selected "
+                    f"'num_features={self.settings_probab_mapping['num_features']}' optimal"
+                    f"informative features. This is not a valid choice for the number of "
+                    f"informative features! Abort..."
+                )
             self._update_probabilistic_mapping_with_features()
         elif self.settings_probab_mapping['features_config'] == "coord_features":
             self.Z_train = np.hstack([self.Y_LF_train, self.coords_experimental_data])
         elif self.settings_probab_mapping['features_config'] == "no_features":
             self.Z_train = self.Y_LF_train
+        elif self.settings_probab_mapping['features_config'] == "time_features":
+            time_repeat = int(self.coords_experimental_data.shape[0] / self.time_vec.size)
+            self.time_vec = np.repeat(self.time_vec.reshape(-1, 1), repeats=time_repeat, axis=0)
+            self.time_vec = self.time_vec / np.max(self.time_vec) * (
+                np.max(self.y_obs_vec) - np.min(self.y_obs_vec)
+            ) + np.min(self.y_obs_vec)
+
+            self.Z_train = np.hstack([self.Y_LF_train, self.time_vec])
         else:
             raise IOError("Feature space method specified in input file is unknown!")
 
@@ -307,10 +371,26 @@ class BMFIAIterator(Iterator):
         """
         # ---- run LF model on X_train (potentially we need to iterate over this and the previous
         # step to determine optimal X_train; for now just one sequence)
+        _logger.info('-------------------------------------------------------------------')
+        _logger.info('Starting to evaluate the low-fidelity model for training points....')
+        _logger.info('-------------------------------------------------------------------')
+
         self._evaluate_LF_model_for_X_train()
 
+        _logger.info('-------------------------------------------------------------------')
+        _logger.info('Successfully calculated the low-fidelity training points!')
+        _logger.info('-------------------------------------------------------------------')
+
         # ---- run HF model on X_train
+        _logger.info('-------------------------------------------------------------------')
+        _logger.info('Starting to evaluate the high-fidelity model for training points...')
+        _logger.info('-------------------------------------------------------------------')
+
         self._evaluate_HF_model_for_X_train()
+
+        _logger.info('-------------------------------------------------------------------')
+        _logger.info('Successfully calculated the high-fidelity training points!')
+        _logger.info('-------------------------------------------------------------------')
 
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
     def post_run(self):

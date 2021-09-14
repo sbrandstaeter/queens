@@ -1,10 +1,12 @@
-import sys
 import os
+import sys
+
 import numpy as np
-from .scheduler import Scheduler
+from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
-from pqueens.utils.cluster_utils import get_cluster_job_id
+
+from .scheduler import Scheduler
 
 
 class ClusterScheduler(Scheduler):
@@ -191,11 +193,17 @@ class ClusterScheduler(Scheduler):
                 self.cluster_options['job_name'] = '{}_{}_{}'.format(
                     self.experiment_name, 'queens', job_id
                 )
+                # pylint: disable=line-too-long
                 self.cluster_options[
                     'INPUT'
-                ] = '--job_id={} --batch={} --port={} --path_json={} --workdir '.format(
-                    job_id, batch, self.port, self.cluster_options['singularity_path']
+                ] = '--job_id={} --batch={} --port={} --path_json={} --driver_name={} --workdir '.format(
+                    job_id,
+                    batch,
+                    self.port,
+                    self.cluster_options['singularity_path'],
+                    self.driver_name,
                 )
+                # pylint: enable=line-too-long
                 self.cluster_options['DESTDIR'] = os.path.join(
                     str(self.experiment_dir), str(job_id), 'output'
                 )
@@ -246,8 +254,12 @@ class ClusterScheduler(Scheduler):
                 )
                 self.cluster_options[
                     'INPUT'
-                ] = '--job_id={} --batch={} --port={} --path_json={}'.format(
-                    job_id, batch, self.port, self.cluster_options['singularity_path']
+                ] = '--job_id={} --batch={} --port={} --path_json={} --driver_name={}'.format(
+                    job_id,
+                    batch,
+                    self.port,
+                    self.cluster_options['singularity_path'],
+                    self.driver_name,
                 )
                 command_list = [
                     'singularity run',

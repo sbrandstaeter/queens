@@ -259,12 +259,12 @@ def test_write_multiple_entries(username, dummy_job, experiment_name, batch_id_2
 
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "localhost:27017"}}, reset_database=True
         )
     except:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "mongodb:27017"}}, reset_database=True
         )
 
     # save some dummy data

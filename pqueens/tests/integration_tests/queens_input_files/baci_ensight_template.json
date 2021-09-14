@@ -62,7 +62,7 @@
             "vtk_field_label": ["displacement"],
             "field_components": [[0,1]]
           },
-          "target_time": ["last"]
+          "target_time": [["last"]]
         }
       }
     }

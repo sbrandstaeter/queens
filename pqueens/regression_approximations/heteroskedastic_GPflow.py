@@ -3,12 +3,13 @@ import numpy as np
 import logging
 import os
 
-os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 import tensorflow as tf
 import tensorflow_probability as tfp
 import gpflow as gpf
 from sklearn.cluster import KMeans
 from gpflow.utilities import print_summary
+
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 _logger = logging.getLogger(__name__)
 tf.get_logger().setLevel(logging.ERROR)
 
@@ -34,6 +35,8 @@ class HeteroskedasticGP(RegressionApproximation):
                               optimizer
         posterior_cov_mat_y (np.array): Posterior covariance matrix of heteroskedastic GP wrt
                                         y-coordinate
+        num_samples_stats (int): Number of samples used to calculate empirical
+                                    variance/covariance
 
     References:
         [1]: https://gpflow.readthedocs.io/en/develop/notebooks/advanced/heteroskedastic.html
@@ -54,6 +57,8 @@ class HeteroskedasticGP(RegressionApproximation):
         optimizer,
         num_epochs,
         random_seed_seed,
+        num_samples_stats,
+        posterior_cov_mat_y,
     ):
         """
         Initialize an instance of the Heteroskedastic GPflow class
@@ -67,6 +72,10 @@ class HeteroskedasticGP(RegressionApproximation):
             optimizer (obj): GPflow optimization object
             num_epochs (int): Number of epochs used for variational training of the GP
             random_seed_seed (int): Random seed for stochastic optimization routine and samples
+            num_samples_stats (int): Number of samples used to calculate empirical
+                                     variance/covariance
+            posterior_cov_mat_y (np.array): Posterior covariance prediction matrix of GP calculated
+                                            w.r.t. the model output `y`.
 
         Returns:
             None
@@ -81,7 +90,8 @@ class HeteroskedasticGP(RegressionApproximation):
         self.optimizer = optimizer
         self.num_epochs = num_epochs
         self.random_seed = random_seed_seed
-        self.posterior_cov_mat_y = None
+        self.posterior_cov_mat_y = posterior_cov_mat_y
+        self.num_samples_stats = num_samples_stats
 
     @classmethod
     def from_config_create(cls, config, approx_name, x_train, y_train):
@@ -108,6 +118,17 @@ class HeteroskedasticGP(RegressionApproximation):
         optimizer = HeteroskedasticGP._build_optimizer(
             x_train, y_train, model, adams_training_rate, random_seed
         )
+        num_samples_stats = approx_options.get('num_samples_stats')
+        if num_samples_stats is None or num_samples_stats < 100:
+            raise RuntimeError(
+                f"You configured {num_samples_stats} number of samples for the calculation "
+                "of the empirical posterior statistics. This number is either too low for "
+                "reliable results or not a valid input. Please provide a valide integrer input "
+                "greater than 100. Abort ..."
+            )
+
+        # initialize some variables
+        posterior_cov_mat_y = None
 
         return cls(
             x_train,
@@ -118,6 +139,8 @@ class HeteroskedasticGP(RegressionApproximation):
             optimizer,
             num_epochs,
             random_seed,
+            num_samples_stats,
+            posterior_cov_mat_y,
         )
 
     def train(self):
@@ -173,9 +196,10 @@ class HeteroskedasticGP(RegressionApproximation):
         mean = mean.numpy()
         variance = variance.numpy()
         if full_cov is True:
-            # TODO we sample the posterior statistics here with num = 500
             posterior_samples_y = []
-            posterior_samples_mean, posterior_samples_noise = self.predict_f_samples(x_test, 1000)
+            posterior_samples_mean, posterior_samples_noise = self.predict_f_samples(
+                x_test, self.num_samples_stats
+            )
             for mean_sample, noise_sample in zip(posterior_samples_mean, posterior_samples_noise):
                 posterior_samples_y.append(np.random.normal(mean_sample, np.exp(noise_sample)))
 
@@ -186,7 +210,7 @@ class HeteroskedasticGP(RegressionApproximation):
         output["mean"] = mean
         output["variance"] = variance
 
-        if self.num_posterior_samples is not None:
+        if self.num_posterior_samples:
             output["post_samples"] = self.predict_f_samples(x_test, self.num_posterior_samples)
 
         return output
@@ -280,7 +304,6 @@ class HeteroskedasticGP(RegressionApproximation):
         # TODO pull below out to json
         np.random.seed(random_seed)
         tf.random.set_seed(random_seed)
-
         data = (x_train, y_train)
         loss_fn = gpflow_model.training_loss_closure(data)
 

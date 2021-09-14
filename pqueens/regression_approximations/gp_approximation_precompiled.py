@@ -1,11 +1,21 @@
-import logging
-
-import numpy as np
-from numba import jit
-from numpy.linalg.linalg import cholesky
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from pqueens.utils.random_process_scaler import Scaler
 from pqueens.utils.stochastic_optimizer import StochasticOptimizer
+
+try:
+    from pqueens.visualization.gnuplot_vis import gnuplot_gp_convergence
+except:
+
+    def print_import_warning(*args, **kargs):
+        print("Cannot import gnuplotlib! No terminal plots available...")
+
+    gnuplot_gp_convergence = print_import_warning
+
+import logging
+import numpy as np
+from numba import jit
+from numpy.linalg.linalg import cholesky
+
 
 _logger = logging.getLogger(__name__)
 
@@ -39,6 +49,7 @@ class GPPrecompiled(RegressionApproximation):
         l_scale_sq (float): Squared length scale of the RBF kernel
         sigma_n_sq (float): Noise variance of the RBF kernel
         noise_var_lb (float): Lower bound for Gaussian noise variance in RBF kernel
+        plot_refresh_rate (int): Refresh rate of the plot (every n-iterations)
 
     """
 
@@ -64,6 +75,7 @@ class GPPrecompiled(RegressionApproximation):
         l_scale_sq,
         sigma_n_sq,
         noise_var_lb,
+        plot_refresh_rate,
     ):
         self.x_train_vec = x_train_vec
         self.y_train_vec = y_train_vec
@@ -85,6 +97,7 @@ class GPPrecompiled(RegressionApproximation):
         self.l_scale_sq = l_scale_sq
         self.sigma_n_sq = sigma_n_sq
         self.noise_var_lb = noise_var_lb
+        self.plot_refresh_rate = plot_refresh_rate
 
     @classmethod
     def from_config_create(cls, config, approx_name, x_train, y_train):
@@ -103,16 +116,30 @@ class GPPrecompiled(RegressionApproximation):
         """
         # get the initial hyperparameters
         sigma_0_sq = config[approx_name].get("sigma_0_sq")
+        if sigma_0_sq is None:
+            raise ValueError(
+                "The hyper-parameter 'sigma_0_sq' was not initialized in the input file. Abort..."
+            )
+
         l_scale_sq = config[approx_name].get("l_scale_sq")
+        if l_scale_sq is None:
+            raise ValueError(
+                "The hyper-parameter 'l_scale_sq' was not initialized in the input file. Abort..."
+            )
+
         sigma_n_sq = config[approx_name].get("sigma_n_sq")
+        if sigma_n_sq is None:
+            raise ValueError(
+                "The hyper-parameter 'sigma_n_sq' was not initialized in the input file. Abort..."
+            )
 
         # get hyper prior settings
         delta_y = np.max(y_train) - np.min(y_train)
         hyper_prior_settings = config[approx_name].get("hyper_prior_lengthscale")
 
         hyper_prior_bool = hyper_prior_settings.get("hyper_prior_bool")
-        f_S = hyper_prior_settings.get("f_S")
-        f_M = hyper_prior_settings.get("f_M")
+        fraction_standard_deviation = hyper_prior_settings.get("fraction_standard_deviation")
+        fraction_mean_value = hyper_prior_settings.get("fraction_mean_value")
 
         # get normalization bool
         scaler_settings = config[approx_name].get("data_scaling")
@@ -131,8 +158,15 @@ class GPPrecompiled(RegressionApproximation):
 
         # calculate gamma hyper prior parameters
         if hyper_prior_bool:
-            k_prior = 0.25 * (f_M / f_S + np.sqrt((f_M / f_S) ** 2 + 4)) ** 2
-            theta_prior = f_S * delta_y / np.sqrt(k_prior)
+            k_prior = (
+                0.25
+                * (
+                    fraction_mean_value / fraction_standard_deviation
+                    + np.sqrt((fraction_mean_value / fraction_standard_deviation) ** 2 + 4)
+                )
+                ** 2
+            )
+            theta_prior = fraction_standard_deviation * delta_y / np.sqrt(k_prior)
 
         else:
             k_prior = None
@@ -159,6 +193,9 @@ class GPPrecompiled(RegressionApproximation):
 
         # configure the stochastic optimizer and iterative averaging
         stochastic_optimizer = StochasticOptimizer.from_config_create_optimizer(config, approx_name)
+
+        # get the plot refresh rate
+        plot_refresh_rate = config[approx_name].get("plot_refresh_rate", None)
 
         # get lower bound for Gaussian noise variance in RB kernel
         noise_var_lb = config[approx_name].get("noise_var_lb")
@@ -193,6 +230,7 @@ class GPPrecompiled(RegressionApproximation):
             l_scale_sq,
             sigma_n_sq,
             noise_var_lb,
+            plot_refresh_rate,
         )
 
     @staticmethod
@@ -231,7 +269,7 @@ class GPPrecompiled(RegressionApproximation):
         for i, x in enumerate(x_train_mat):
             for j, y in enumerate(x_train_mat):
                 if i == j:
-                    noise_var = max(sigma_n_sq, 1e-7)  # nugget term
+                    noise_var = sigma_n_sq
                 else:
                     noise_var = 0.0
 
@@ -299,9 +337,8 @@ class GPPrecompiled(RegressionApproximation):
             mu_vec = np.dot(np.dot(k_vec.T, k_mat_inv), (y_train_vec))
         elif prior_mean_function_type == "identity":
 
-            dim_x = x_train_mat.shape[1]  # dimension of x-inputs
-            mean_train_prior = x_train_mat.reshape(y_train_vec.shape)
-            mean_test_prior = x_test_mat.reshape(-1, dim_x)[:, 0, None]
+            mean_train_prior = x_train_mat
+            mean_test_prior = x_test_mat
 
             mu_vec = mean_test_prior + np.dot(
                 np.dot(k_vec.T, k_mat_inv), (y_train_vec - mean_train_prior)
@@ -385,24 +422,26 @@ class GPPrecompiled(RegressionApproximation):
                                             variance variational parameter
 
         Returns:
-            grad (np.array): Gradient vector of the evidence w.r.t. the hyperparamters (np.array)
+            grad (np.array): Gradient vector of the evidence w.r.t. the parameterization
+                             of the hyperparameters
 
         """
         sigma_0_sq_param, l_scale_sq_param, sigma_n_sq_param = param_vec
-        y_dim = y_train_vec.flatten().size
-        data_minus_prior_mean = np.atleast_2d(x_train_vec[:, 0]) - y_train_vec.reshape(y_dim, 1)
+        data_minus_prior_mean = y_train_vec - x_train_vec
         alpha = np.dot(k_mat_inv, data_minus_prior_mean)
 
-        grad_ev_sigma_0_sq = 0.5 * np.trace(
+        grad_ev_sigma_0_sq_param = 0.5 * np.trace(
             (np.dot(alpha, alpha.T) - k_mat_inv) @ (partial_sigma_0_sq) * np.exp(sigma_0_sq_param)
         )
-        grad_ev_sigma_n_sq = 0.5 * np.trace(
+        grad_ev_sigma_n_sq_param = 0.5 * np.trace(
             (np.dot(alpha, alpha.T) - k_mat_inv) @ (partial_sigma_n_sq) * np.exp(sigma_n_sq_param)
         )
-        grad_ev_l_scale_sq = 0.5 * np.trace(
+        grad_ev_l_scale_sq_param = 0.5 * np.trace(
             (np.dot(alpha, alpha.T) - k_mat_inv) @ (partial_l_scale_sq) * np.exp(l_scale_sq_param)
         )
-        grad = np.array([grad_ev_sigma_0_sq, grad_ev_l_scale_sq, grad_ev_sigma_n_sq]).flatten()
+        grad = np.array(
+            [grad_ev_sigma_0_sq_param, grad_ev_l_scale_sq_param, grad_ev_sigma_n_sq_param]
+        ).flatten()
 
         return grad
 
@@ -420,8 +459,8 @@ class GPPrecompiled(RegressionApproximation):
         if self.prior_mean_function_type is None:
             data_minus_prior_mean = self.y_train_vec.reshape(y_dim, 1)
         elif self.prior_mean_function_type == 'identity':
-            data_minus_prior_mean = self.x_train_vec[:, 0, None] - self.y_train_vec.reshape(
-                y_dim, 1
+            data_minus_prior_mean = (
+                self.y_train_vec.reshape(y_dim, 1) - self.x_train_vec[:, 0, None]
             )
         elif self.prior_mean_function_type == 'linear':
             raise NotImplementedError(
@@ -462,7 +501,6 @@ class GPPrecompiled(RegressionApproximation):
 
         """
         # initialize hyperparameters and associated linear algebra
-        y_dim = self.y_train_vec.flatten().size
         sigma_0_sq_param_init = np.log(self.sigma_0_sq)
         l_sq_param_init = np.log(self.l_scale_sq)
         sigma_n_sq_param_init = np.log(self.sigma_n_sq)
@@ -476,7 +514,7 @@ class GPPrecompiled(RegressionApproximation):
             self.partial_l_scale_sq,
             self.partial_sigma_n_sq,
         ) = GPPrecompiled.pre_compile_linalg_gp(
-            self.x_train_vec.reshape(y_dim, -1), self.sigma_0_sq, self.l_scale_sq, self.sigma_n_sq
+            self.x_train_vec, self.sigma_0_sq, self.l_scale_sq, self.sigma_n_sq
         )
 
         _logger.info("Initiating training of the GP model...")
@@ -493,6 +531,8 @@ class GPPrecompiled(RegressionApproximation):
             self.partial_sigma_n_sq,
         )
         log_ev_max = -np.inf
+        log_ev_lst = []
+        iter_lst = []
         for params in self.stochastic_optimizer:
             rel_L2_change_params = self.stochastic_optimizer.rel_L2_change
             iteration = self.stochastic_optimizer.iteration
@@ -501,10 +541,9 @@ class GPPrecompiled(RegressionApproximation):
             sigma_0_sq_param, l_scale_sq_param, sigma_n_sq_param = params
             self.sigma_0_sq = np.exp(sigma_0_sq_param)
             self.l_scale_sq = np.exp(l_scale_sq_param)
-            self.sigma_n_sq = np.exp(sigma_n_sq_param)
+            self.sigma_n_sq = max(np.exp(sigma_n_sq_param), self.noise_var_lb)
 
             self.grad_log_evidence_value = self.stochastic_optimizer.current_gradient_value
-
             (
                 self.k_mat,
                 self.k_mat_inv,
@@ -513,10 +552,7 @@ class GPPrecompiled(RegressionApproximation):
                 self.partial_l_scale_sq,
                 self.partial_sigma_n_sq,
             ) = GPPrecompiled.pre_compile_linalg_gp(
-                self.x_train_vec.reshape(y_dim, -1),
-                self.sigma_0_sq,
-                self.l_scale_sq,
-                self.sigma_n_sq,
+                self.x_train_vec, self.sigma_0_sq, self.l_scale_sq, self.sigma_n_sq,
             )
             self.stochastic_optimizer.gradient = lambda param_vec: GPPrecompiled.grad_log_evidence(
                 param_vec,
@@ -530,12 +566,21 @@ class GPPrecompiled(RegressionApproximation):
 
             log_ev = self.log_evidence()
 
-            # Verbose output
-            print(
-                f"Iter {iteration}, parameters {params}, gradient log evidence: "
-                f"{self.grad_log_evidence_value}, rel L2 change "
-                f"{rel_L2_change_params:.6f}, log-evidence: {log_ev}"
-            )
+            iter_lst.append(iteration)
+            log_ev_lst.append(log_ev)
+
+            if self.plot_refresh_rate:
+                if iteration % int(self.plot_refresh_rate) == 0:
+
+                    # make some funky gnuplot terminal plots
+                    gnuplot_gp_convergence(iter_lst, log_ev_lst)
+
+                    # Verbose output
+                    print(
+                        f"Iter {iteration}, parameters {params}, gradient log evidence: "
+                        f"{self.grad_log_evidence_value}, rel L2 change "
+                        f"{rel_L2_change_params:.6f}, log-evidence: {log_ev}"
+                    )
 
             # store the max value for log evidence along with the parameters
             if log_ev > log_ev_max:
@@ -546,8 +591,7 @@ class GPPrecompiled(RegressionApproximation):
         sigma_0_sq_param, l_scale_sq_param, sigma_n_sq_param = params_ev_max
         self.sigma_0_sq = np.exp(sigma_0_sq_param)
         self.l_scale_sq = np.exp(l_scale_sq_param)
-        # nugget term for the noise variance
-        self.sigma_n_sq = np.max([np.exp(sigma_n_sq_param), self.noise_var_lb])
+        self.sigma_n_sq = max(np.exp(sigma_n_sq_param), self.noise_var_lb)
 
         _logger.info("GP model trained sucessfully!")
 
@@ -574,8 +618,8 @@ class GPPrecompiled(RegressionApproximation):
         posterior_mean_test_vec = GPPrecompiled.posterior_mean(
             self.k_mat_inv,
             self.scaler_x.transform(x_test_mat.reshape(-1, dim_x)),
-            self.x_train_vec.reshape(dim_y, -1),
-            self.y_train_vec.reshape(dim_y, 1),
+            self.x_train_vec,
+            self.y_train_vec,
             self.sigma_0_sq,
             self.l_scale_sq,
             self.prior_mean_function_type,
@@ -592,6 +636,11 @@ class GPPrecompiled(RegressionApproximation):
             self.l_scale_sq,
             self.sigma_n_sq,
             support,
+        )
+        assert np.any(var.flatten() > 0.0), (
+            'Posterior variance has negative values! It seems like the condition of your '
+            'covariance matrix is rather bad. Please increase the noise variance lower bound! '
+            'Abort....'
         )
 
         output = {"x_test": x_test_mat.reshape(-1, x_dim)}

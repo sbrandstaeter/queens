@@ -8,13 +8,14 @@ image.
 """
 
 import argparse
-from collections import OrderedDict
 import os
+from collections import OrderedDict
 
 try:
     import simplejson as json
 except ImportError:
     import json
+
 import sys
 
 from pqueens.drivers.driver import Driver
@@ -43,6 +44,7 @@ def main(args):
     parser.add_argument("--port", help="port number chosen for port-forwarding", type=str)
     parser.add_argument("--path_json", help="system path to temporary json file", type=str)
     parser.add_argument("--post", help="option for postprocessing", type=str)
+    parser.add_argument("--driver_name", help="name of driver for the current run", type=str)
     parser.add_argument("--workdir", help="working directory", type=str)
     parser.add_argument(
         "--hash",
@@ -58,6 +60,7 @@ def main(args):
     post = args.post
     workdir = args.workdir
     hash = args.hash
+    driver_name = args.driver_name
 
     # return hash of QUEENS files in singularity image
     if hash == 'true':
@@ -77,7 +80,7 @@ def main(args):
         except FileNotFoundError:
             raise FileNotFoundError("temp.json did not load properly.")
 
-        driver_obj = Driver.from_config_create_driver(config, job_id, batch)
+        driver_obj = Driver.from_config_create_driver(config, job_id, batch, driver_name)
 
         # Run the singularity image in two stages waiting for each other but within one
         # singularity call
@@ -99,7 +102,7 @@ def main(args):
 
         path_to_post_post_file = os.path.join(path_json, 'post_post/post_post.py')
         driver_obj = Driver.from_config_create_driver(
-            config, job_id, batch, port, path_to_post_post_file, workdir
+            config, job_id, batch, driver_name, port, path_to_post_post_file, workdir
         )
 
         # Run the singularity image in two steps and two different singularity calls to have more

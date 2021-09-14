@@ -33,7 +33,7 @@ variables at runtime.
   export PATH="/usr/local/anaconda/bin:$PATH"
   conda update -y conda
   conda create -y -n QUEENS python=3.8 cython numpy pymongo matplotlib plotly pandas vtk xarray scipy -c conda-forge
-  /usr/local/anaconda/envs/QUEENS/bin/pip install pyansys docker netcdf4
+  /usr/local/anaconda/envs/QUEENS/bin/pip install docker netcdf4
   cd /
   mkdir scratch
   /usr/local/anaconda/envs/QUEENS/bin/python setup_remote.py develop

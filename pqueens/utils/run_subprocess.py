@@ -2,9 +2,6 @@
 Wrapped functions of subprocess stdlib module.
 """
 import subprocess
-import io
-import sys
-
 from pqueens.utils.logger_settings import get_job_logger, job_logging, finish_job_logger
 
 

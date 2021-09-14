@@ -1,10 +1,11 @@
 import glob
 
 import numpy as np
+import pandas as pd
 import vtk
 from pqueens.database.mongodb import MongoDB
-from pqueens.post_post.post_post import PostPost
 from pqueens.external_geometry.external_geometry import ExternalGeometry
+from pqueens.post_post.post_post import PostPost
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
 
@@ -17,6 +18,11 @@ class PostPostBACIEnsight(PostPost):
         db (obj): Database object
         experiment_name (str): Name of the current QUEENS experiment
         external_geometry_obj (obj): QUEENS external geometry object
+        experimental_data (pd.DataFrame): Pandas dataframe with experimental data
+        coordinates_label_experimental (lst): List of (spatial) coordinate labels
+                                                of the experimental data set
+        output_label_experimental (str): Output label of the experimental data set
+        time_label_experimental (str): Time label of the experimental data set
 
     """
 
@@ -27,6 +33,10 @@ class PostPostBACIEnsight(PostPost):
         field_specification_dict,
         database,
         experiment_name,
+        experimental_data,
+        coordinates_label_experimental,
+        output_label_experimental,
+        time_label_experimental,
         external_geometry_obj,
     ):
         """
@@ -39,6 +49,11 @@ class PostPostBACIEnsight(PostPost):
                                              fields which should be read in
             db (obj): Database object
             experiment_name (str): Name of QUEENS experiment
+            experimental_data (pd.DataFrame): Pandas dataframe with experimental data
+            coordinates_label_experimental (lst): List of (spatial) coordinate labels
+                                                  of the experimental data set
+            output_label_experimental (str): Output label of the experimental data set
+            time_label_experimental (str): Time label of the experimental data set
             external_geometry_obj (obj): QUEENS external geometry object
 
         Returns:
@@ -49,6 +64,10 @@ class PostPostBACIEnsight(PostPost):
         self.field_specification_dict = field_specification_dict
         self.db = database
         self.experiment_name = experiment_name
+        self.experimental_data = experimental_data
+        self.coordinates_label_experimental = coordinates_label_experimental
+        self.ouput_label_experimental = output_label_experimental
+        self.time_label_experimental = time_label_experimental
         self.external_geometry_obj = external_geometry_obj
 
     @classmethod
@@ -56,7 +75,7 @@ class PostPostBACIEnsight(PostPost):
         """ Create post_post routine from problem description
 
         Args:
-            options ( dict): input options
+            options (dict): input options
 
         Returns:
             post_post: PostPostBACIEnsight object
@@ -81,7 +100,17 @@ class PostPostBACIEnsight(PostPost):
             raise IOError("List length of ensight field specifications have to be the same!")
 
         database = MongoDB.from_config_create_database(options['config'])
+
+        # get some properties of the experimental data
+        options['config']['database']['drop_all_existing_dbs'] = False
         experiment_name = options['config']['global_settings']['experiment_name']
+        experimental_data = database.load(experiment_name, 1, 'experimental_data')
+        experimental_data = pd.DataFrame.from_dict(experimental_data)
+
+        model_name = options['config']['method']['method_options']['model']
+        coordinates_label_experimental = options['config'][model_name].get('coordinate_labels')
+        ouput_label_experimental = options['config'][model_name].get('output_label')
+        time_label_experimental = options['config'][model_name].get('time_label')
 
         external_geometry_obj = ExternalGeometry.from_config_create_external_geometry(
             options['config']
@@ -93,6 +122,10 @@ class PostPostBACIEnsight(PostPost):
             field_specification_dict,
             database,
             experiment_name,
+            experimental_data,
+            coordinates_label_experimental,
+            ouput_label_experimental,
+            time_label_experimental,
             external_geometry_obj,
         )
 
@@ -115,6 +148,7 @@ class PostPostBACIEnsight(PostPost):
             time_tol = self.field_specification_dict['time_tol'][index]
         except KeyError:
             time_tol = None
+
         target_time = self.field_specification_dict['target_time'][index]
         vtk_field_type = self.field_specification_dict['physical_field_dict']['vtk_field_type'][
             index
@@ -139,27 +173,48 @@ class PostPostBACIEnsight(PostPost):
         if len(post_file) > 1:
             raise IOError("There can only be one .case file per BACI field")
 
-        try:
-            # here we load the EnSight Files (only one post file should be found)
-            vtk_reader_obj.SetCaseFileName(post_file[0])  # index 0 as only one file
-            vtk_reader_obj.Update()
-            post_data = self._vtk_from_ensight(vtk_reader_obj, target_time, time_tol)
+        # determine the correct time vector depending on input specification
+        if target_time[0] == "from_experimental_data":
+            # get unique time list
+            time_vec = list(set(self.experimental_data[self.time_label_experimental]))
+        else:
+            time_vec = target_time
 
-            # check if data was found
-            if not post_data:
+        # loop over differnt time-steps here.
+        time_vec = sorted(time_vec)
+        for time_value in time_vec:
+            try:
+                # here we load the EnSight Files (only one post file should be found)
+                vtk_reader_obj.SetCaseFileName(post_file[0])  # index 0 as only one file
+                vtk_reader_obj.Update()
+                post_data = self._vtk_from_ensight(vtk_reader_obj, time_value, time_tol)
+
+                # check if data was found
+                if not post_data:
+                    self.error = True
+                    self.result = None
+                    break
+
+            except FileNotFoundError:
                 self.error = True
                 self.result = None
+                break
 
-        except FileNotFoundError:
-            self.error = True
-            self.result = None
+            # get ensight field from specified coordinates
+            result = self._get_field_values_by_coordinates(
+                post_data,
+                vtk_array_type,
+                vtk_field_label,
+                vtk_field_components,
+                geometric_target,
+                time_value,
+            )
 
-        # get ensight field from specified coordinates
-        result = self._get_field_values_by_coordinates(
-            post_data, vtk_array_type, vtk_field_label, vtk_field_components, geometric_target,
-        )
-
-        self.result = np.array(result)
+            # potentially append new time step result to result array
+            if self.result is not None:
+                self.result = np.hstack((self.result, result))
+            else:
+                self.result = result
 
     def _get_field_values_by_coordinates(
         self,
@@ -168,6 +223,7 @@ class PostPostBACIEnsight(PostPost):
         vtk_field_label,
         vtk_field_components,
         geometric_target,
+        time_value,
     ):
         """
         Interpolate the vtk field to the coordinates from experimental data
@@ -176,7 +232,7 @@ class PostPostBACIEnsight(PostPost):
             vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
                                      interest
             vtk_field_label (str): Field label that should be extracted
-            vtk_field_components (lst): List of components of the respective fields that should be 
+            vtk_field_components (lst): List of components of the respective fields that should be
                                         extracted
             vtk_array_type (str): Type of vtk array (cell array or point array)
 
@@ -192,19 +248,16 @@ class PostPostBACIEnsight(PostPost):
 
                                     The second list entry specifies the label or name of the
                                     geometric set or the experimental data.
+            time_value (float): Current time value at which simulation should be evaluated
 
         Returns:
-            interpolated_data (np.array): Array of field values at specified coordinates/geometric 
+            interpolated_data (np.array): Array of field values at specified coordinates/geometric
                                           sets
 
         """
         if geometric_target[0] == "experimental_data":
             response_data = self._get_data_from_experimental_coordinates(
-                vtk_post_data_obj,
-                vtk_array_type,
-                vtk_field_label,
-                vtk_field_components,
-                geometric_target[1],
+                vtk_post_data_obj, vtk_array_type, vtk_field_label, vtk_field_components, time_value
             )
         elif geometric_target[0] == "geometric_set":
             response_data = self._get_data_from_geometric_set(
@@ -223,12 +276,7 @@ class PostPostBACIEnsight(PostPost):
         return response_data
 
     def _get_data_from_experimental_coordinates(
-        self,
-        vtk_post_data_obj,
-        vtk_array_type,
-        vtk_field_label,
-        vtk_field_components,
-        experimental_data_label,
+        self, vtk_post_data_obj, vtk_array_type, vtk_field_label, vtk_field_components, time_value
     ):
         """
         Interpolate the ensight/vtk field to experimental coordinates
@@ -240,23 +288,23 @@ class PostPostBACIEnsight(PostPost):
             vtk_field_label (str): Field label that should be extracted
             vtk_field_components (lst): List of components of the respective fields that should
                                         be extracted
-            experimental_data_label (str): Label/name of experimental data set that should be used
+            time_value (float): Current time value at which the simulation shall be evaluated
 
         Returns:
             interpolated_data (np.array): Array of field values interpolated to coordinates
                                           of experimental data
 
         """
-        experimental_data = self.db.load(
-            self.experiment_name, 1, 'experiment_data', experimental_data_label
-        )
-
-        # load experimental data of interest
-        experimental_coordinates = experimental_data["coordinates"]
+        experimental_coordinates_for_snapshot = []
+        for _, row in self.experimental_data.iterrows():
+            if time_value == row[self.time_label_experimental]:
+                experimental_coordinates_for_snapshot.append(
+                    row[self.coordinates_label_experimental].to_list()
+                )
 
         # interpolate vtk solution to experimental coordinates
         interpolated_data = PostPostBACIEnsight._interpolate_vtk(
-            experimental_coordinates,
+            experimental_coordinates_for_snapshot,
             vtk_post_data_obj,
             vtk_array_type,
             vtk_field_label,
@@ -413,18 +461,19 @@ class PostPostBACIEnsight(PostPost):
 
         """
         # Ensight contains different "timesets" which are containers for the actual data
-        number_of_timestets = vtk_reader_obj.GetTimeSets().GetNumberOfItems()
+        number_of_timesets = vtk_reader_obj.GetTimeSets().GetNumberOfItems()
 
-        for num in range(number_of_timestets):
+        for num in range(number_of_timesets):
             time_set = vtk_to_numpy(vtk_reader_obj.GetTimeSets().GetItem(num))
             # Find the timeset that has more than one entry as sometimes there is an empty dummy
             # timeset in the ensight file (seems to be an artifact)
             if time_set.size > 1:
-                # if theo keyword `last` was provided, get the last timestep
+                # if the keyword `last` was provided, get the last timestep
                 if target_time == 'last':
                     vtk_reader_obj.SetTimeValue(time_set[-1])
                 else:
                     timestep = time_set.flat[np.abs(time_set - target_time).argmin()]
+
                     if np.abs(timestep - target_time) > time_tol:
                         raise RuntimeError(
                             "Time not within tolerance"

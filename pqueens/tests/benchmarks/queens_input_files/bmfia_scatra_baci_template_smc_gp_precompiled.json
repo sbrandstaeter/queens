@@ -1,0 +1,350 @@
+{
+  "experiment_name": "bmfia_baci_scatra_smc",
+  "database": {
+    "address": "localhost:27017",
+    "reset_database": true
+  },
+  "method": {
+    "method_name": "smc",
+    "method_options": {
+      "seed": 41,
+      "num_particles": 40,
+      "model": "model",
+      "temper_type": "bayes",
+      "plot_trace_every": 0,
+      "result_description": {
+        "write_results": true,
+        "plot_results": false,
+        "cov": true
+      }
+    }
+  },
+  "model": {
+    "type": "likelihood_model",
+    "subtype": "bmf_gaussian_static",
+    "mf_approx_settings": {
+      "type": "gp_precompiled",
+      "stochastic_optimizer": "Adam",
+      "learning_rate": 0.001,
+      "optimization_type": "max",
+      "max_iterations": 1000,
+      "plot_refresh_rate": 10,
+      "rel_L1_change_threshold": 1E-5,
+      "rel_L2_change_threshold": 1E-5,
+      "noise_var_lb": 1E-6,
+      "data_scaling": {
+        "type": "standard_scaler"
+      },
+      "sigma_0_sq": 1.0,
+      "l_scale_sq": 1.0,
+      "sigma_n_sq": 1.0,
+      "hyper_prior_lengthscale": {
+        "hyper_prior_bool": false,
+        "fraction_standard_deviation": 0.15,
+        "fraction_mean_value": 0.25
+      },
+      "prior_mean_function_type": "identity",
+      "random_seed": 1,
+      "features_config": "no_features",
+      "X_cols": [
+        0
+      ],
+      "num_features": 1,
+      "mf_subiterator": "bmfia_iterator"
+    },
+    "forward_model": "lf_model_2",
+    "output_label": "phi",
+    "coordinate_labels": [
+      "x",
+      "y",
+      "z"
+    ],
+    "time_label": "t",
+    "likelihood_noise_type": "jeffreys_prior",
+    "fixed_likelihood_noise_value": 1E-7,
+    "nugget_noise_var": 1E-9,
+    "noise_upper_bound": 2.0,
+    "experimental_csv_data_base_dirs": [
+      "{experimental_data_path}"
+    ],
+    "parameters": "parameters",
+    "plotting_options": {
+      "plotting_dir": "{plot_dir}",
+      "plot_names": [
+        "conditional_plot.png",
+        "mf_posterior.png"
+      ],
+      "save_bool": [
+        true,
+        true
+      ],
+      "plot_booleans": [
+        true,
+        true
+      ]
+    }
+  },
+  "MCMC_Kernel": {
+    "method_name": "metropolis-hastings",
+    "method_options": {
+      "as_mcmc_kernel": true,
+      "num_chains": 20,
+      "num_samples": 2,
+      "proposal_distribution": "normal_proposal"
+    }
+  },
+  "bmfia_iterator": {
+    "method_name": "bmfia",
+    "low_fidelity_model": "lf_model_1",
+    "high_fidelity_model": "hf_model",
+    "initial_design": {
+      "type": "random",
+      "num_HF_eval": 20,
+      "seed": 1
+    }
+  },
+  "lf_model_1": {
+    "type": "simulation_model",
+    "interface": "lf_interface_1",
+    "parameters": "parameters"
+  },
+  "lf_model_2": {
+    "type": "simulation_model",
+    "interface": "lf_interface_2",
+    "parameters": "parameters"
+  },
+  "hf_model": {
+    "type": "simulation_model",
+    "interface": "hf_interface",
+    "parameters": "parameters"
+  },
+  "normal_proposal": {
+    "type": "normal",
+    "mean": [
+      0.0,
+      0.0
+    ],
+    "cov": [
+      [
+        0.02,
+        0.00
+      ],
+      [
+        0.00,
+        0.02
+      ]
+    ]
+  },
+  "lf_interface_1": {
+    "type": "job_interface",
+    "resources": "resources",
+    "driver": "lf_driver_1"
+  },
+  "lf_interface_2": {
+    "type": "job_interface",
+    "resources": "resources",
+    "driver": "lf_driver_2"
+  },
+  "hf_interface": {
+    "type": "job_interface",
+    "resources": "resources",
+    "driver": "hf_driver"
+  },
+  "resources": {
+    "local_machine": {
+      "scheduler": "local_scheduler",
+      "max-concurrent": 1,
+      "max-finished-jobs": 10000
+    }
+  },
+  "local_scheduler": {
+    "experiment_dir": "{experiment_dir}",
+    "scheduler_type": "standard",
+    "singularity": false,
+    "restart": false,
+    "num_procs": 1,
+    "num_procs_post": 1
+  },
+  "hf_driver": {
+    "driver_type": "baci",
+    "driver_params": {
+      "input_template": "{baci_hf_input}",
+      "path_to_executable": "{baci-release}",
+      "path_to_postprocessor": "{post_drt_ensight}",
+      "post_file_name_prefix_lst": [
+        "scatra"
+      ],
+      "post_process_options": [
+        ""
+      ],
+      "post_post": {
+        "post_post_approach_sel": "baci_ensight",
+        "post_post_file_name_prefix_lst": [
+          "scatra"
+        ],
+        "field_specification": {
+          "geometric_target": [
+            [
+              "experimental_data"
+            ]
+          ],
+          "physical_field_dict": {
+            "vtk_field_type": [
+              "scatra"
+            ],
+            "vtk_array_type": [
+              "point_array"
+            ],
+            "vtk_field_label": [
+              "phi_1"
+            ],
+            "field_components": [
+              [
+                0
+              ]
+            ]
+          },
+          "target_time": [
+            [
+              "from_experimental_data"
+            ]
+          ],
+          "time_tol": [
+            0.001
+          ]
+        },
+        "delete_field_data": false
+      }
+    }
+  },
+  "lf_driver_1": {
+    "driver_type": "baci",
+    "driver_params": {
+      "input_template": "{baci_lf_input}",
+      "path_to_executable": "{baci-release}",
+      "path_to_postprocessor": "{post_drt_ensight}",
+      "post_file_name_prefix_lst": [
+        "scatra"
+      ],
+      "post_process_options": [
+        ""
+      ],
+      "post_post": {
+        "post_post_approach_sel": "baci_ensight",
+        "post_post_file_name_prefix_lst": [
+          "scatra"
+        ],
+        "field_specification": {
+          "geometric_target": [
+            [
+              "experimental_data"
+            ]
+          ],
+          "physical_field_dict": {
+            "vtk_field_type": [
+              "scatra"
+            ],
+            "vtk_array_type": [
+              "point_array"
+            ],
+            "vtk_field_label": [
+              "phi_1"
+            ],
+            "field_components": [
+              [
+                0
+              ]
+            ]
+          },
+          "target_time": [
+            [
+              "from_experimental_data"
+            ]
+          ],
+          "time_tol": [
+            0.001
+          ]
+        },
+        "delete_field_data": false
+      }
+    }
+  },
+  "lf_driver_2": {
+    "driver_type": "baci",
+    "driver_params": {
+      "input_template": "{baci_lf_input}",
+      "path_to_executable": "{baci-release}",
+      "path_to_postprocessor": "{post_drt_ensight}",
+      "post_file_name_prefix_lst": [
+        "scatra"
+      ],
+      "post_process_options": [
+        ""
+      ],
+      "post_post": {
+        "post_post_approach_sel": "baci_ensight",
+        "post_post_file_name_prefix_lst": [
+          "scatra"
+        ],
+        "field_specification": {
+          "geometric_target": [
+            [
+              "experimental_data"
+            ]
+          ],
+          "physical_field_dict": {
+            "vtk_field_type": [
+              "scatra"
+            ],
+            "vtk_array_type": [
+              "point_array"
+            ],
+            "vtk_field_label": [
+              "phi_1"
+            ],
+            "field_components": [
+              [
+                0
+              ]
+            ]
+          },
+          "target_time": [
+            [
+              "from_experimental_data"
+            ]
+          ],
+          "time_tol": [
+            0.001
+          ]
+        },
+        "delete_field_data": false
+      }
+    }
+  },
+  "parameters": {
+    "random_variables": {
+      "x_s": {
+        "type": "FLOAT",
+        "size": 1,
+        "min": 0.001,
+        "max": 0.998,
+        "distribution": "uniform",
+        "distribution_parameter": [
+          0.00001,
+          0.9998
+        ]
+      },
+      "y_s": {
+        "type": "FLOAT",
+        "size": 1,
+        "min": 0.001,
+        "max": 0.998,
+        "distribution": "uniform",
+        "distribution_parameter": [
+          0.0001,
+          0.9998
+        ]
+      }
+    }
+  }
+}

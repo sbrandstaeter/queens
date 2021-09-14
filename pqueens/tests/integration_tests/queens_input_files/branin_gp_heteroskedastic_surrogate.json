@@ -38,7 +38,8 @@
       "num_inducing_points": 30,
       "num_epochs": 100,
       "adams_training_rate": 0.1,
-      "random_seed": 1
+      "random_seed": 1,
+      "num_samples_stats": 1000
     },
     "truth_model_iterator" : {
       "method_name": "monte_carlo",

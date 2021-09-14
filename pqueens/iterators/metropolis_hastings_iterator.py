@@ -240,7 +240,6 @@ class MetropolisHastingsIterator(Iterator):
 
     def eval_log_likelihood(self, chains):
         """ Evaluate natural logarithm of likelihood at samples of chains. """
-
         self.model.update_model_from_sample_batch(chains)
         log_likelihood = self.eval_model()
 
@@ -251,7 +250,9 @@ class MetropolisHastingsIterator(Iterator):
 
         # tune covariance of proposal
         if not step_id % self.tune_interval and self.tune:
-            accept_rate_interval = self.accepted_interval / self.tune_interval
+            accept_rate_interval = np.exp(
+                np.log(self.accepted_interval) - np.log(self.tune_interval)
+            )
             if not self.as_mcmc_kernel:
                 print(f"Current acceptance rate: {accept_rate_interval}.")
             self.scale_covariance = mcmc_utils.tune_scale_covariance(
@@ -343,7 +344,7 @@ class MetropolisHastingsIterator(Iterator):
             self.do_mh_step(i)
 
         if self.num_burn_in:
-            burn_in_accept_rate = self.accepted / self.num_burn_in
+            burn_in_accept_rate = np.exp(np.log(self.accepted) - np.log(self.num_burn_in))
             print("Acceptance rate during burn in: {0}".format(burn_in_accept_rate))
         # reset number of accepted samples
         self.accepted = np.zeros((self.num_chains, 1))
@@ -356,7 +357,9 @@ class MetropolisHastingsIterator(Iterator):
     def post_run(self):
         """ Analyze the resulting chain. """
 
-        avg_accept_rate = np.sum(self.accepted) / (self.num_samples * self.num_chains)
+        avg_accept_rate = np.exp(
+            np.log(np.sum(self.accepted)) - np.log((self.num_samples * self.num_chains))
+        )
         if self.as_mcmc_kernel:
             # the iterator is used as MCMC kernel for the Sequential Monte Carlo iterator
             return [
@@ -371,7 +374,7 @@ class MetropolisHastingsIterator(Iterator):
             chain_burn_in = self.chains[1 : self.num_burn_in + 1]
             chain_core = self.chains[self.num_burn_in + 1 : self.num_samples + self.num_burn_in + 1]
 
-            accept_rate = self.accepted / self.num_samples
+            accept_rate = np.exp(np.log(self.accepted) - np.log(self.num_samples))
 
             # process output takes a dict as input with key 'mean'
             results = process_ouputs(

@@ -1,6 +1,7 @@
 import abc
-import os
 import glob
+import os
+
 from pqueens.utils.run_subprocess import run_subprocess
 
 
@@ -33,7 +34,7 @@ class PostPost(metaclass=abc.ABCMeta):
         self.result = None
 
     @classmethod
-    def from_config_create_post_post(cls, config):
+    def from_config_create_post_post(cls, config, driver_name=None):
         """
         Create PostPost object from problem description
 
@@ -47,13 +48,13 @@ class PostPost(metaclass=abc.ABCMeta):
 
         from .post_post_ansys import PostPostANSYS
         from .post_post_baci import PostPostBACI
+        from .post_post_baci_ensight import PostPostBACIEnsight
+        from .post_post_baci_shape import PostPostBACIShape
+        from .post_post_baci_vectorized import PostPostBACIVector
         from .post_post_deal import PostPostDEAL
         from .post_post_generic import PostPostGeneric
-        from .post_post_openfoam import PostPostOpenFOAM
-        from .post_post_baci_shape import PostPostBACIShape
         from .post_post_net_cdf import PostPostNetCDF
-        from .post_post_baci_vectorized import PostPostBACIVector
-        from .post_post_baci_ensight import PostPostBACIEnsight
+        from .post_post_openfoam import PostPostOpenFOAM
 
         post_post_dict = {
             'ansys': PostPostANSYS,
@@ -71,7 +72,10 @@ class PostPost(metaclass=abc.ABCMeta):
         # TODO this is not a reliable approach? What if we have multiple drivers?
         # However, this cannot be fixed by itself here, but we need to
         # cleanup the whole input parameter handling to fix this.
-        post_post_options = config['driver']['driver_params']['post_post']
+        if driver_name:
+            post_post_options = config[driver_name]['driver_params']['post_post']
+        else:
+            post_post_options = config['driver']['driver_params']['post_post']
 
         if post_post_options['post_post_approach_sel'] == 'ansys':
             post_post_version = 'ansys'

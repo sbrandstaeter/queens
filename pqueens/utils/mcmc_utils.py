@@ -8,10 +8,6 @@ import scipy.linalg
 import scipy.stats
 import autograd.numpy as np
 import numpy as npy
-from scipy.optimize import curve_fit
-import autograd.numpy.random as npr
-import autograd.scipy.stats.norm as norm
-from scipy.stats import multivariate_normal as mvn
 
 
 class ProposalDistribution:
@@ -187,7 +183,13 @@ class NormalProposal(ProposalDistribution):
 
         super(NormalProposal, self).__init__(mean, covariance, dimension)
 
-        self.low_chol = scipy.linalg.cholesky(covariance, lower=True)
+        # Potentially catch ill-conditioned covariance matrices
+        try:
+            self.low_chol = scipy.linalg.cholesky(covariance, lower=True)
+        except:
+            covariance = covariance + 1e-9 * np.eye(covariance.shape[0])
+            self.low_chol = scipy.linalg.cholesky(covariance, lower=True)
+
         # precision matrix Q and determinant of cov matrix
         if self.dimension == 1:
             self.Q = 1.0 / self.covariance

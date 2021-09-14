@@ -1,5 +1,6 @@
-from .likelihood_model import LikelihoodModel
 import numpy as np
+
+from .likelihood_model import LikelihoodModel
 
 
 class GaussianStaticLikelihood(LikelihoodModel):
@@ -26,6 +27,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
         nugget_noise_var,
         forward_model,
         coords_mat,
+        time_vec,
         y_obs_vec,
         likelihood_noise_type,
         fixed_likelihood_noise_value,
@@ -37,6 +39,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
             model_parameters,
             forward_model,
             coords_mat,
+            time_vec,
             y_obs_vec,
             output_label,
             coord_labels,
@@ -54,6 +57,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
         model_parameters,
         forward_model,
         coords_mat,
+        time_vec,
         y_obs_vec,
         output_label,
         coord_labels,
@@ -67,6 +71,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
             model_parameters (dict): Dictionary containing description of model parameters
             forward_model (obj): Forward model on which the likelihood model is based
             coords_mat (np.array): Row-wise coordinates at which the observations were recorded
+            time_vec (np.array): Vector of observation times
             y_obs_vec (np.array): Corresponding experimental data vector to coords_mat
             output_label (str): Name of the experimental outputs (column label in csv-file)
             coord_labels (lst): List with coordinate labels for (column labels in csv-file)
@@ -89,6 +94,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
             nugget_noise_var,
             forward_model,
             coords_mat,
+            time_vec,
             y_obs_vec,
             likelihood_noise_type,
             fixed_likelihood_noise_value,
@@ -105,15 +111,14 @@ class GaussianStaticLikelihood(LikelihoodModel):
             log_likelihood (np.array): Vector of log-likelihood values per model input.
 
         """
-
         Y_mat = self._update_and_evaluate_forward_model()
 
         n = self.y_obs_vec.size
         self._update_noise_var(n, Y_mat)
 
         log_likelihood = []
-
         for y_vec in Y_mat:
+
             dist = np.atleast_2d(self.y_obs_vec - y_vec)
             dist_squared = (dist ** 2).reshape(1, -1)  # squared distances as row vector
             log_likelihood.append(

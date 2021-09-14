@@ -1,17 +1,12 @@
+import sys
 import time
+
 import numpy as np
 import pandas as pd
-import os
-import sys
+from pqueens.database.mongodb import MongoDB
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
-from pqueens.database.mongodb import MongoDB
-from pqueens.utils.information_output import print_database_information
 from pqueens.utils.run_subprocess import run_subprocess
-from pqueens.utils.string_extractor_and_checker import (
-    extract_string_from_output,
-    check_if_string_in_file,
-)
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 this = sys.modules[__name__]
@@ -57,7 +52,8 @@ class JobInterface(Interface):
         remote_connect,
         scheduler_type,
         direct_scheduling,
-        time_for_data_copy
+        time_for_data_copy,
+        driver_name,
     ):
         """ Create JobInterface
 
@@ -73,6 +69,8 @@ class JobInterface(Interface):
             remote_connect (string):    connection to computing resource
             time_for_data_copy (float): Time (s) to wait such that copying process of simulation
                                         input file can finish and we do not overload the network
+            driver_name (str):          Name of the associated driver for the current interface
+
         """
         self.name = interface_name
         self.resources = resources
@@ -89,14 +87,16 @@ class JobInterface(Interface):
         self.scheduler_type = scheduler_type
         self.direct_scheduling = direct_scheduling
         self.time_for_data_copy = time_for_data_copy
+        self.driver_name = driver_name
 
     @classmethod
-    def from_config_create_interface(cls, interface_name, config):
+    def from_config_create_interface(cls, interface_name, config, driver_name):
         """ Create JobInterface from config dictionary
 
         Args:
             interface_name (str):   name of interface
             config (dict):          dictionary containing problem description
+            driver_name (str): Name of the driver that uses this interface
 
         Returns:
             interface:              instance of JobInterface
@@ -106,7 +106,7 @@ class JobInterface(Interface):
         polling_time = config.get('polling-time', 1.0)
 
         # get resources from config
-        resources = parse_resources_from_configuration(config)
+        resources = parse_resources_from_configuration(config, driver_name)
 
         # get parameters from config, if any
         parameters = config.get('parameters')
@@ -146,20 +146,10 @@ class JobInterface(Interface):
                 direct_scheduling = True
 
         # get flag for restart
-        if scheduler_options.get('restart', False):
-            restart = True
-            reset_database = False
-        else:
-            restart = False
-            reset_database = True
+        restart = scheduler_options.get('restart', False)
 
-        config["database"]["reset_database"] = reset_database
-        # establish new database for this QUEENS run and
-        # potentially drop other databases
+        # establish new database for this QUEENS run
         db = MongoDB.from_config_create_database(config)
-
-        # print out database information
-        print_database_information(db, restart=restart)
 
         # get waiting time for copying data
         interface_options = config[interface_name]
@@ -179,7 +169,8 @@ class JobInterface(Interface):
             remote_connect,
             scheduler_type,
             direct_scheduling,
-            time_for_data_copy
+            time_for_data_copy,
+            driver_name,
         )
 
     def map(self, samples):
@@ -201,6 +192,7 @@ class JobInterface(Interface):
         # Convert samples to pandas DataFrame to use index
         samples = pd.DataFrame(samples, index=range(1, len(samples) + 1))
 
+        # Main run
         job_manager = self.get_job_manager()
         jobid_for_post_post = job_manager(samples)
 
@@ -280,7 +272,7 @@ class JobInterface(Interface):
         total_num_jobs = 0
         for batch_num in range(1, self.batch_number + 1):
             num_jobs_in_batch = self.db.count_documents(
-                self.experiment_name, str(batch_num), 'jobs', field_filters
+                self.experiment_name, str(batch_num), 'jobs_' + self.driver_name, field_filters
             )
             total_num_jobs += num_jobs_in_batch
 
@@ -292,10 +284,11 @@ class JobInterface(Interface):
         Returns:
             list : list with all jobs that match the criteria
         """
-
         jobs = []
         for batch_num in range(1, self.batch_number + 1):
-            job = self.db.load(self.experiment_name, str(batch_num), 'jobs', field_filters)
+            job = self.db.load(
+                self.experiment_name, str(batch_num), 'jobs_' + self.driver_name, field_filters
+            )
             if isinstance(job, list):
                 jobs.extend(job)
             else:
@@ -313,7 +306,7 @@ class JobInterface(Interface):
         self.db.save(
             job,
             self.experiment_name,
-            'jobs',
+            'jobs_' + self.driver_name,
             str(self.batch_number),
             {'id': job['id'], 'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
         )
@@ -329,7 +322,6 @@ class JobInterface(Interface):
         Returns:
             job: new job
         """
-
         if new_id is None:
             print("Created new job")
             num_jobs = self.count_jobs()
@@ -347,6 +339,7 @@ class JobInterface(Interface):
             'submit time': time.time(),
             'start time': None,
             'end time': None,
+            'driver_name': self.driver_name,
         }
 
         self.save_job(job)
@@ -359,7 +352,7 @@ class JobInterface(Interface):
         """
         self.db.remove(
             self.experiment_name,
-            'jobs',
+            'jobs_' + self.driver_name,
             str(self.batch_number),
             {'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
         )
