@@ -1,10 +1,11 @@
-import numpy as np
-import GPy
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
-from sklearn.preprocessing import StandardScaler
-from pqueens.regression_approximations.utils.gpy_kernels import get_gpy_kernel_type
 import logging
+
+import GPy
+import numpy as np
+from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from pqueens.regression_approximations.utils.gpy_kernels import get_gpy_kernel_type
 from pqueens.utils.logger_settings import log_through_print
+from sklearn.preprocessing import StandardScaler
 
 _logger = logging.getLogger(__name__)
 
@@ -62,6 +63,7 @@ class GPGPyRegression(RegressionApproximation):
 
         Returns:
             gp_approximation_gpy: approximation object
+
         """
         approx_options = config[approx_name]
         number_posterior_samples = approx_options.get('num_posterior_samples', None)
@@ -98,7 +100,7 @@ class GPGPyRegression(RegressionApproximation):
         kernel = cls._setup_kernel(
             kernel_type, number_input_dimensions, variance_0, lengthscale_0, ard
         )
-        model = GPy.models.GPRegression(x_train, y_train, kernel=kernel, normalizer=normalize_y)
+        model = GPy.models.GPRegression(x_train, y_train, kernel=kernel, normalizer=normalize_y,)
         log_through_print(_logger, model)
 
         return cls(
@@ -241,4 +243,3 @@ class GPGPyRegression(RegressionApproximation):
         log_through_print(_logger, kernel)
 
         return kernel
-

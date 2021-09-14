@@ -3,7 +3,6 @@ from io import StringIO
 import os
 import numpy as np
 import pandas as pd
-import pyansys
 from pqueens.post_post.post_post import PostPost
 
 

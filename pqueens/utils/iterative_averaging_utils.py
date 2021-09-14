@@ -9,8 +9,8 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
     Attributes:
         current_average (np.array): Current average value
         new_value (np.array): New value for the averaging process
-        rel_L1_change (float): Relative change in L1 norm of the average value 
-        rel_L2_change (float): Relative change in L2 norm of the average value 
+        rel_L1_change (float): Relative change in L1 norm of the average value
+        rel_L2_change (float): Relative change in L2 norm of the average value
 
     """
 
@@ -21,24 +21,29 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         self.rel_L2_change = rel_L2_change
 
     @classmethod
-    def from_config_create_iterative_averaging(cls, config):
+    def from_config_create_iterative_averaging(cls, config, section_name=None):
         """
             Build a iterative averaging scheme from config
         Args:
             config (dict): Configuration dict
+            section_name (str): Name of section where the averaging object is configured
 
         Returns:
             iterative averaging object
 
         """
         valid_options = ["moving_average", "polyak_averaging", "exponential_averaging"]
-        averaging_type = config.get("averaging_type")
+        if section_name:
+            averaging_type = config[section_name].get("averaging_type")
+        else:
+            averaging_type = config.get("averaging_type")
+
         if averaging_type == "moving_average":
-            return MovingAveraging.from_config_create_iterative_averaging(config)
+            return MovingAveraging.from_config_create_iterative_averaging(config, section_name)
         elif averaging_type == "polyak_averaging":
-            return PolyakAveraging.from_config_create_iterative_averaging(config)
+            return PolyakAveraging.from_config_create_iterative_averaging(config, section_name)
         elif averaging_type == "exponential_averaging":
-            return ExponentialAveraging.from_config_create_iterative_averaging(config)
+            return ExponentialAveraging.from_config_create_iterative_averaging(config, section_name)
         else:
             raise NotImplementedError(
                 f"Iterative averaging option '{averaging_type}' unknown. Valid options are"
@@ -106,11 +111,12 @@ class MovingAveraging(IterativeAveraging):
         self.data = data
 
     @classmethod
-    def from_config_create_iterative_averaging(cls, config):
+    def from_config_create_iterative_averaging(cls, config, section_name=None):
         """
             Build a moving averaging object from config
         Args:
             config (dict): Configuration dict
+            section_name (str): Name of section where the averaging object is configured
 
         Returns:
             MovingAveraging object
@@ -120,7 +126,10 @@ class MovingAveraging(IterativeAveraging):
         new_value = None
         rel_L1_change = 1
         rel_L2_change = 1
-        num_iter_for_avg = config.get("num_iter_for_avg")
+        if section_name:
+            num_iter_for_avg = config[section_name].get("num_iter_for_avg")
+        else:
+            num_iter_for_avg = config.get("num_iter_for_avg")
         data = []
         return cls(current_average, new_value, rel_L1_change, rel_L2_change, num_iter_for_avg, data)
 
@@ -170,11 +179,12 @@ class PolyakAveraging(IterativeAveraging):
         self.sum_over_iter = sum_over_iter
 
     @classmethod
-    def from_config_create_iterative_averaging(cls, config):
+    def from_config_create_iterative_averaging(cls, config, section_name=None):
         """
             Build a Polyak averaging object from config
         Args:
             config (dict): Configuration dict
+            section_name (str): Name of section where the averaging object is created
 
         Returns:
             PolyakAveraging object
@@ -234,11 +244,12 @@ class ExponentialAveraging(IterativeAveraging):
         self.coefficient = coefficient
 
     @classmethod
-    def from_config_create_iterative_averaging(cls, config):
+    def from_config_create_iterative_averaging(cls, config, section_name=None):
         """
             Build a exponential averaging object from config
         Args:
             config (dict): Configuration dict
+            section_name (str): Name of section where the averaging object is created
 
         Returns:
             ExponentialAveraging object
@@ -248,7 +259,12 @@ class ExponentialAveraging(IterativeAveraging):
         new_value = None
         rel_L1_change = 1
         rel_L2_change = 1
-        coefficient = config.get("coefficient")
+
+        if section_name:
+            coefficient = config[section_name].get("coefficient")
+        else:
+            coefficient = config.get("coefficient")
+
         if coefficient < 0 or coefficient > 1:
             raise ValueError(f"Coefficient for exponential averaging needs to be in (0,1)")
         return cls(current_average, new_value, rel_L2_change, rel_L2_change, coefficient)

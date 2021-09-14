@@ -42,13 +42,18 @@ class MongoDB(object):
         self.drop_all_existing_dbs = drop_all_existing_dbs
 
     @classmethod
-    def from_config_create_database(cls, config):
+    def from_config_create_database(cls, config, reset_database=False, drop_all_existing_dbs=False):
         """
         Create Mongo database object from problem description
 
         Args:
             config (dict): Dictionary containing the problem description of the current QUEENS
                            simulation
+            reset_database (bool): Flag to reset/drop potentially existing database with the
+                                   same name. If `True`, the database will be reset. If `False`
+                                   or nothing specified, a potentially existing database is kept.
+            drop_all_existing_dbs (bool): Flag to drop all existing user specific databases
+                                          (if set to True)
 
         Returns:
             MongoDB_obj (obj): Instance of MongoDB class
@@ -61,9 +66,6 @@ class MongoDB(object):
             database_name_final = 'dummy'
 
         database_address = config['database'].get('address', 'localhost:27017')
-        drop_all_existing_dbs = config['database'].get('drop_all_existing_dbs', False)
-
-        reset_database = config['database'].get('reset_database', False)
 
         client = pymongo.MongoClient(
             host=[database_address], serverSelectionTimeoutMS=100, connect=False

@@ -8,17 +8,18 @@ If the workload capacity allows it the computing resource accepts jobs and execu
 import sys
 
 import numpy as np
-
 from pqueens.schedulers.scheduler import Scheduler
 
 # TODO refactor this method into a class method
 
 
-def parse_resources_from_configuration(config):
+def parse_resources_from_configuration(config, driver_name):
     """ Parse the configuration dictionary
 
     Args:
         config (dict): Dictionary with problem description
+        driver_name (str): Name of driver that should be used in this job-submission
+
     Returns:
         dict: Dictionary with resource objects keyed with resource name
     """
@@ -28,20 +29,23 @@ def parse_resources_from_configuration(config):
         for resource_name, _ in config["resources"].items():
             global_settings = config.get("global_settings")
             exp_name = global_settings.get("experiment_name")
-            resources[resource_name] = resource_factory(resource_name, exp_name, config)
+            resources[resource_name] = resource_factory(
+                resource_name, exp_name, config, driver_name
+            )
         return resources
     # no specified resources
     else:
         raise Exception("Resources are not properly specified")
 
 
-def resource_factory(resource_name, exp_name, config):
+def resource_factory(resource_name, exp_name, config, driver_name):
     """ Create a resource object
 
     Args:
         resource_name (string): name of resource
         exp_name (string):      name of experiment to be run on resource
         config   (dict):        dictionary with problem description
+        driver_name (str): Name of driver that should be used in this job-submission
 
     Returns:
         resource:  resource object constructed from the resource name,
@@ -56,7 +60,9 @@ def resource_factory(resource_name, exp_name, config):
     scheduler_name = resource_options['scheduler']
 
     # create scheduler from config
-    scheduler = Scheduler.from_config_create_scheduler(scheduler_name=scheduler_name, config=config)
+    scheduler = Scheduler.from_config_create_scheduler(
+        scheduler_name=scheduler_name, config=config, driver_name=driver_name
+    )
     # Create/update singularity image in case of cluster job
     scheduler.pre_run()
 

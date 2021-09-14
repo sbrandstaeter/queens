@@ -121,6 +121,7 @@ def driver_base_settings(job):
 
     base_settings = dict()
 
+    base_settings['driver_name'] = 'my_driver'
     base_settings['experiment_name'] = job['expt_name']
     base_settings['global_output_dir'] = job['expt_dir']
     base_settings['experiment_dir'] = job['expt_dir']

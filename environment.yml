@@ -63,8 +63,6 @@ dependencies:
 # for sensitivity analysis
     - SALib>=1.3.3
     - docker
-# Pythonic interface to ANSYS binary files
-    - pyansys
 # for space filling subsets
     - diversipy
 # electrochemical impedance spectroscopy (EIS)
@@ -80,3 +78,5 @@ dependencies:
     - tensorflow-probability
 # for Quasi-Monte-Carlo methods
     - torch
+# for gnuplot based terminal ascii plots
+    - gnuplotlib

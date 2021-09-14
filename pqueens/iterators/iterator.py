@@ -69,7 +69,7 @@ class Iterator(metaclass=abc.ABCMeta):
             'baci_lm': BaciLMIterator,
             'bbvi': BBVIIterator,
             'bmfia': BMFIAIterator,
-            'virp': VIRPIterator
+            'virp': VIRPIterator,
         }
 
         if iterator_name is None:
@@ -80,6 +80,7 @@ class Iterator(metaclass=abc.ABCMeta):
             method_name = config[iterator_name]['method_name']
             iterator_class = method_dict[method_name]
             iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
+
         return iterator
 
     def initialize_run(self):

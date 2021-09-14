@@ -3,8 +3,6 @@ import logging
 import os
 import pathlib
 
-import numpy as np
-
 from pqueens.drivers.driver import Driver
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,
@@ -149,7 +147,7 @@ class BaciDriver(Driver):
         2) nohup (not required in combination with A)
         3) Slurm
         4) PBS
-        5) ECS task 
+        5) ECS task
         
         """
         if (
@@ -171,7 +169,7 @@ class BaciDriver(Driver):
             self.database.save(
                 self.job,
                 self.experiment_name,
-                'jobs',
+                'jobs_' + self.driver_name,
                 str(self.batch),
                 {
                     'id': self.job_id,
@@ -309,6 +307,7 @@ class BaciDriver(Driver):
                 self.batch,
                 self.experiment_dir,
                 self.random_fields_lst,
+                self.driver_name,
             )
             # pylint: enable=line-too-long
             self._manipulate_dat_file()

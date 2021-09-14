@@ -39,6 +39,26 @@ def park91a_hifi_coords(x1, x2, x3, x4):
             http://doi.org/10.1080/00401706.2012.723572
 
     """
+    # catch values outside of definition
+    if x1 <= 0:
+        x1 = 0.01
+    elif x1 >= 1:
+        x1 = 0.99
+
+    if x2 <= 0:
+        x2 = 0.01
+    elif x2 >= 1:
+        x2 = 0.99
+
+    if x3 <= 0:
+        x3 = 0.01
+    elif x3 >= 1:
+        x3 = 0.99
+
+    if x4 <= 0:
+        x4 = 0.01
+    elif x4 >= 1:
+        x4 = 0.99
 
     term1a = x1 / 2
     term1b = np.sqrt(1 + (x2 + x3 ** 2) * x4 / (x1 ** 2)) - 1
@@ -49,12 +69,6 @@ def park91a_hifi_coords(x1, x2, x3, x4):
     term2 = term2a * term2b
 
     y = term1 + term2
-
-    # catch non-numeric values in case x is outside of allowed design space
-    if math.isnan(y):
-        y = 100
-    if math.isinf(y):
-        y = 100
 
     return y
 

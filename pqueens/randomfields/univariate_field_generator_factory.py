@@ -146,7 +146,7 @@ class UniVarRandomFieldGeneratorFactory(object):
 
     @staticmethod
     def calculate_one_truncated_realization_of_all_fields(
-        database, job_id, experiment_name, batch, experiment_dir, random_fields_lst
+        database, job_id, experiment_name, batch, experiment_dir, random_fields_lst, driver_name
     ):
         """
         This method gets called in the driver and calculated one realization of all involved
@@ -161,6 +161,7 @@ class UniVarRandomFieldGeneratorFactory(object):
             batch (int): Batch number
             random_fields_lst (lst): List of random field definitions
             experiment_dir (str): Path to QUEENS experiment directory
+            driver_name (str): Name of the driver for current analysis
 
         Returns:
             realized_random_fields_lst (lst): List containing field_realizations of involved random
@@ -176,7 +177,7 @@ class UniVarRandomFieldGeneratorFactory(object):
         job = database.load(
             experiment_name,
             batch,
-            'jobs',
+            'jobs_' + driver_name,
             {'id': job_id, 'expt_dir': experiment_dir, 'expt_name': experiment_name},
         )
 

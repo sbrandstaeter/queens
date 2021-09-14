@@ -121,7 +121,7 @@ class Variables(object):
             # if len(data['value']) > 1:
             #    active_vars[key] = data['value'].tolist()
             # else:
-            active_vars[key] = data['value']
+            active_vars[key] = data['value'].copy(order='C')
         return active_vars
 
     def get_active_variables_vector(self):

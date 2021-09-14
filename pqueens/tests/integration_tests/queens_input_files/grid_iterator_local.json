@@ -21,7 +21,7 @@
       "result_description": {
         "write_results": true,
         "plotting_options": {
-          "plot_booleans": [false],
+          "plot_booleans": [true],
           "plotting_dir": "some/plotting/dir",
           "plot_names": ["grid_plot.eps"],
           "save_bool": [false]

@@ -205,25 +205,37 @@ class SequentialMonteCarloIterator(Iterator):
         result_dict = self.model.evaluate()
         return result_dict
 
-    def eval_log_prior(self, sample):
+    def eval_log_prior(self, sample_batch):
         """
         Evaluate natural logarithm of prior at sample.
 
+        Args:
+            sample_batch (np.array): Array of input samples
+
+        Returns:
+            log_prior_array (np.array): Array of log-prior values for input samples
+
         Note: we assume a multiplicative split of prior pdf
         """
+        log_prior_lst = []
 
-        log_prior = 0.0
-        i = 0
-        for _, variable in self.model.variables[0].variables.items():
-            log_prior += variable['distribution'].logpdf(sample[i])
-            i += 1
+        for sample in sample_batch:
+            log_prior = 0.0
+            for i, (_, variable) in enumerate(self.model.variables[0].variables.items()):
+                log_prior += variable['distribution'].logpdf(sample[i])
+            log_prior_lst.append(log_prior)
 
-        return log_prior
+        log_prior_array = np.atleast_2d(np.array(log_prior_lst))
+
+        # catch problem with one dim arrays and shape
+        if log_prior_array.shape[0] == 1:
+            log_prior_array = log_prior_array.T
+
+        return log_prior_array
 
     def eval_log_likelihood(self, sample):
         """ Evaluate natural logarithm of likelihood at sample. """
-
-        self.model.update_model_from_sample(sample)
+        self.model.update_model_from_sample(np.atleast_2d(sample).T)
         log_likelihood = self.eval_model()
 
         return log_likelihood
@@ -235,7 +247,9 @@ class SequentialMonteCarloIterator(Iterator):
         np.random.seed(self.seed)
 
         # draw initial particles from prior distribution
+        # TODO we should change this such that entire batch is evaluated at once
         for i in range(self.num_particles):
+
             self.particles[i] = np.array(
                 [
                     variable['distribution'].draw(num_draws=1)
@@ -243,9 +257,11 @@ class SequentialMonteCarloIterator(Iterator):
                     for variable_name, variable in model_variable.variables.items()
                 ]
             ).T
+
             self.log_likelihood[i] = self.eval_log_likelihood(self.particles[i])
-            self.log_prior[i] = self.eval_log_prior(self.particles[i])
-            self.log_posterior[i] = self.log_likelihood[i] + self.log_prior[i]
+
+        self.log_prior = self.eval_log_prior(self.particles)
+        self.log_posterior = self.log_likelihood + self.log_prior
 
         # initialize importance weights
         self.weights = np.ones((self.num_particles, 1))
@@ -266,17 +282,33 @@ class SequentialMonteCarloIterator(Iterator):
         - Eq.(22) with Eq.(14) in [1]
         - Table 1: (2) in [2]
         - Eq.(31) with Eq.(11) in [4]
-        """
 
-        weights_new = self.weights * np.exp(
-            self.temper(self.log_prior, self.log_likelihood, gamma_new)
-            - self.temper(self.log_prior, self.log_likelihood, gamma_old)
+        We use the exp-log trick here to avoid numerical problems and normalize the
+        particles in this method.
+
+        Args:
+            gamma_new (float): Old value of gamma blendig parameter
+            gamma_old (float): New value of gamma blending parameter
+
+        Returns:
+            weights_new (np.array): New and normalized weights
+
+        """
+        weights_scaling = self.temper(self.log_prior, self.log_likelihood, gamma_new) - self.temper(
+            self.log_prior, self.log_likelihood, gamma_old
         )
+        a_norm = np.max(weights_scaling)
+
+        log_weights_new = np.log(self.weights) + weights_scaling
+
+        log_normalizer = a_norm + np.log(np.sum(self.weights * np.exp(weights_scaling - a_norm)))
+        log_weights_new_normalized = log_weights_new - log_normalizer
+        weights_new = np.exp(log_weights_new_normalized)
+
         return weights_new
 
     def calc_new_ess(self, gamma_new, gamma_old):
         """ Calculate predicted Effective Sample Size at gamma_new. """
-
         weights_new = self.calc_new_weights(gamma_new, gamma_old)
         ess = smc_utils.calc_ess(weights_new)
         return ess
@@ -348,11 +380,10 @@ class SequentialMonteCarloIterator(Iterator):
         eliminating particles with small weights and duplicating
         particles with large weights (see 2.2.1 in [2]).
         """
-        normalized_weights = self.weights / np.sum(self.weights)
 
         # draw from multinomial distribution to decide
         # the frequency of individual particles
-        particle_freq = np.random.multinomial(self.num_particles, np.squeeze(normalized_weights))
+        particle_freq = np.random.multinomial(self.num_particles, np.squeeze(self.weights))
 
         idx_list = list()
         for idx, freq in enumerate(particle_freq):
@@ -371,7 +402,6 @@ class SequentialMonteCarloIterator(Iterator):
         """ Core run of Sequential Monte Carlo iterator. """
 
         print('Welcome to SMC core run.')
-
         # counter
         step = 0
         # average accept rate of MCMC kernel

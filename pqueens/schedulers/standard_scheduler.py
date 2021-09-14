@@ -85,8 +85,8 @@ class StandardScheduler(Scheduler):
         """
         if not self.remote and self.scheduler_type == 'standard':
             local_path_json = self.input_file
-            remote_args = '--job_id={} --batch={} --port={} --path_json={}'.format(
-                job_id, batch, '000', local_path_json
+            remote_args = '--job_id={} --batch={} --port={} --path_json={} --driver_name={}'.format(
+                job_id, batch, '000', local_path_json, self.driver_name
             )
             script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
             rel_path = '../../driver.simg'

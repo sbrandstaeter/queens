@@ -22,7 +22,7 @@ def inputdir():
 def third_party_inputs():
     """ Return the path to the json input-files of the function test. """
     dirpath = os.path.dirname(__file__)
-    input_files_path = os.path.join(dirpath, 'third_party_input_files')
+    input_files_path = os.path.join(dirpath, '..', 'integration_tests', 'third_party_input_files')
     return input_files_path
 
 

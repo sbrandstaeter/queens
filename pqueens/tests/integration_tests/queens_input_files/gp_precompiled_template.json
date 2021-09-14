@@ -7,13 +7,13 @@
     "method_name": "monte_carlo",
     "method_options": {
       "seed": 44,
-      "num_samples": 10,
+      "num_samples": 100,
       "model": "gp_surrogate_model",
       "result_description": {
         "write_results": true,
         "plot_results": false,
         "bayesian": false,
-        "num_support_points": 10,
+        "num_support_points": null,
         "estimate_all": false
       }
     }
@@ -52,24 +52,25 @@
     "max_iterations": 1000,
     "rel_L1_change_threshold": 1E-4,
     "rel_L2_change_threshold": 1E-4,
-    "sigma_0_sq": 5.0,
-    "l_scale_sq": 15.0,
-    "sigma_n_sq": 0.1,
-    "noise_var_lb": 0.000001,
+    "sigma_0_sq": 1.0,
+    "l_scale_sq": 1.0,
+    "sigma_n_sq": 0.01,
+    "plot_refresh_rate": 10,
+    "noise_var_lb": 1E-5,
     "data_scaling": {
       "type": "standard_scaler"
     },
     "hyper_prior_lengthscale": {
       "hyper_prior_bool": false,
-      "f_S": 0.15,
-      "f_M": 0.25
+      "fraction_standard_deviation": 0.15,
+      "fraction_mean_value": 0.25
     }
   },
   "truth_model_iterator": {
     "method_name": "monte_carlo",
     "method_options": {
       "seed": 42,
-      "num_samples": 20
+      "num_samples": 50
     }
   },
   "truth_model": {
@@ -79,32 +80,11 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "branin_hifi.py"
+    "main_file": "{test_fun}"
   },
   "parameters": {
     "random_variables": {
-      "x1": {
-        "type": "FLOAT",
-        "size": 1,
-        "min": -5,
-        "max": 10,
-        "distribution": "uniform",
-        "distribution_parameter": [
-          -5,
-          10
-        ]
-      },
-      "x2": {
-        "type": "FLOAT",
-        "size": 1,
-        "min": 0,
-        "max": 15,
-        "distribution": "uniform",
-        "distribution_parameter": [
-          0,
-          15
-        ]
-      }
+      {variables}
     }
   }
 }

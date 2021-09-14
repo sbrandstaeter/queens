@@ -294,10 +294,7 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
         tf.random.set_seed(self.optimizer_seed)
 
         self.bnn_model.fit(
-            self.x_train,
-            self.y_train,
-            epochs=self.num_epochs,
-            verbose=self.verbosity_on,
+            self.x_train, self.y_train, epochs=self.num_epochs, verbose=self.verbosity_on,
         )
 
         # print out the model summary

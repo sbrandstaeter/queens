@@ -75,12 +75,14 @@ class DirectPythonInterface(Interface):
         self.pool = pool
 
     @classmethod
-    def from_config_create_interface(cls, interface_name, config):
+    def from_config_create_interface(cls, interface_name, config, driver_name):
         """ Create interface from config dictionary
 
         Args:
             interface_name (str):   name of interface
             config(dict):           dictionary containing problem description
+            driver_name (str): Name of the driver that uses this interface
+                               (not used here)
 
         Returns:
             interface:              instance of DirectPythonInterface

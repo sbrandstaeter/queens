@@ -107,7 +107,6 @@ class PostPostBACI(PostPost):
         # glob returns arbitrary list -> need to sort the list before using
         post_files_list.sort()
         post_out = np.empty(shape=0)
-
         for filename in post_files_list:
             try:
                 post_data = pd.read_csv(

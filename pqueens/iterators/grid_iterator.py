@@ -173,11 +173,11 @@ class GridIterator(Iterator):
                     " grid iterator (possible: 'FLOAT' or 'INT') "
                 )
 
-        if self.num_parameters is 1:
+        if self.num_parameters == 1:
             # change to correct order of samples array
             self.samples = np.atleast_2d(grid_point_list[0]).T
 
-        elif self.num_parameters is 2:
+        elif self.num_parameters == 2:
             # get mesh_grid coordinates
             grid_coord0, grid_coord1 = np.meshgrid(grid_point_list[0], grid_point_list[1])
             # flatten to 2D array
@@ -185,7 +185,7 @@ class GridIterator(Iterator):
             self.samples[:, 0] = grid_coord0.flatten()
             self.samples[:, 1] = grid_coord1.flatten()
 
-        elif self.num_parameters is 3:
+        elif self.num_parameters == 3:
             # get mesh_grid coordinates
             grid_coord0, grid_coord1, grid_coord2 = np.meshgrid(
                 grid_point_list[0], grid_point_list[1], grid_point_list[2]

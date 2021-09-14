@@ -16,7 +16,7 @@ def test_smc_park_hf(inputdir, tmpdir, design_and_write_experimental_data_to_csv
     """ Integration test for bayesian multi-fidelity inverse analysis (bmfia) using the park91 function """
 
     # generate json input file from template
-    template = os.path.join(inputdir, 'smc_mf_park.json')
+    template = os.path.join(inputdir, 'bmfia_smc_park.json')
     experimental_data_path = tmpdir
     dir_dict = {'experimental_data_path': experimental_data_path}
     input_file = os.path.join(tmpdir, 'smc_mf_park_realization.json')

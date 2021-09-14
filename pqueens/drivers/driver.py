@@ -1,7 +1,7 @@
 import abc
-import sys
-import os
 import getpass
+import os
+import sys
 import time
 
 from pqueens.database.mongodb import MongoDB
@@ -21,6 +21,8 @@ class Driver(metaclass=abc.ABCMeta):
                                    potential further use and completion in child classes
 
     Attributes:
+        driver_name (str):         Name of the driver used for the analysis. The name is
+                                   specified in the json-input file.
         experiment_name (str):     name of QUEENS experiment
         global_output_dir (str):   path to global output directory provided when launching
         port (int):                (only for remote scheduling with Singularity) port of
@@ -73,6 +75,7 @@ class Driver(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, base_settings):
+        self.driver_name = base_settings['driver_name']
         self.experiment_name = base_settings['experiment_name']
         self.global_output_dir = base_settings['global_output_dir']
         self.port = base_settings['port']
@@ -121,7 +124,15 @@ class Driver(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_driver(
-        cls, config, job_id, batch, port=None, abs_path=None, workdir=None, cluster_options=None
+        cls,
+        config,
+        job_id,
+        batch,
+        driver_name,
+        port=None,
+        abs_path=None,
+        workdir=None,
+        cluster_options=None,
     ):
         """
         Create driver from problem description
@@ -133,6 +144,7 @@ class Driver(metaclass=abc.ABCMeta):
             port (int):     Port for data forwarding from/to remote resource
             abs_path (str): Absolute path to post-post module on remote resource
             workdir (str):  Path to working directory on remote resource
+            driver_name (str): Name of driver instance that should be realized
 
         Returns:
             driver (obj):   Driver object
@@ -167,8 +179,6 @@ class Driver(metaclass=abc.ABCMeta):
             'dealII_navierstokes': DealIINavierStokesDriver,
             'openfoam': OpenFOAMDriver,
         }
-        driver_version = config['driver']['driver_type']
-        driver_class = driver_dict[driver_version]
 
         # ---------------------------- CREATE BASE SETTINGS ---------------------------
         # initialize empty dictionary
@@ -177,6 +187,7 @@ class Driver(metaclass=abc.ABCMeta):
         # 1) general settings
         base_settings['experiment_name'] = config['global_settings'].get('experiment_name')
         base_settings['global_output_dir'] = config['global_settings'].get('output_dir')
+        base_settings['driver_name'] = driver_name
 
         # 2) scheduler settings
         first = list(config['resources'])[0]
@@ -238,7 +249,9 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['database'] = db
 
         # 4) general driver settings
-        driver_options = config['driver']['driver_params']
+
+        # load correct driver settings
+        driver_options = config[driver_name]['driver_params']
         base_settings['batch'] = batch
         base_settings['job_id'] = job_id
         base_settings['job'] = None
@@ -288,7 +301,9 @@ class Driver(metaclass=abc.ABCMeta):
         if base_settings['do_postpostprocessing'] is not None:
             # TODO "hiding" a complete object in the base settings dict is unbelieveably ugly
             # and should be fixed ASAP
-            base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(config)
+            base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(
+                config, driver_name=driver_name
+            )
             base_settings['cae_output_streaming'] = False
         else:
             base_settings['postpostprocessor'] = None
@@ -328,7 +343,13 @@ class Driver(metaclass=abc.ABCMeta):
         else:
             base_settings["random_fields_lst"] = None
 
-        # generate specific driver class
+        # generate specific driver class / base_settings are already set for this driver name
+        if driver_name:
+            driver_version = config[driver_name]['driver_type']
+        else:
+            driver_version = config['driver']['driver_type']
+
+        driver_class = driver_dict[driver_version]
         driver = driver_class.from_config_create_driver(base_settings, workdir)
 
         return driver
@@ -376,7 +397,10 @@ class Driver(metaclass=abc.ABCMeta):
             self.result = 'no post-post-processed result'
             if self.job is None:
                 self.job = self.database.load(
-                    self.experiment_name, self.batch, 'jobs', {'id': self.job_id}
+                    self.experiment_name,
+                    self.batch,
+                    'jobs_' + self.driver_name,
+                    {'id': self.job_id},
                 )
 
         self.finalize_job_in_db()
@@ -394,7 +418,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.job = self.database.load(
             self.experiment_name,
             self.batch,
-            'jobs',
+            'jobs_' + self.driver_name,
             {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
         )
 
@@ -406,7 +430,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.database.save(
             self.job,
             self.experiment_name,
-            'jobs',
+            'jobs_' + self.driver_name,
             str(self.batch),
             {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
         )
@@ -423,7 +447,7 @@ class Driver(metaclass=abc.ABCMeta):
         # load job from database if existent
         if self.job is None:
             self.job = self.database.load(
-                self.experiment_name, self.batch, 'jobs', {'id': self.job_id}
+                self.experiment_name, self.batch, 'jobs_' + self.driver_name, {'id': self.job_id},
             )
 
         # get (from the point of view of the location of the post-processed files)
@@ -468,7 +492,7 @@ class Driver(metaclass=abc.ABCMeta):
             self.database.save(
                 self.job,
                 self.experiment_name,
-                'jobs',
+                'jobs_' + self.driver_name,
                 str(self.batch),
                 {
                     'id': self.job_id,
@@ -491,7 +515,7 @@ class Driver(metaclass=abc.ABCMeta):
             self.database.save(
                 self.job,
                 self.experiment_name,
-                'jobs',
+                'jobs_' + self.driver_name,
                 str(self.batch),
                 {
                     'id': self.job_id,

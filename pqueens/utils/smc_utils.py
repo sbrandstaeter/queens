@@ -93,7 +93,10 @@ def temper_factory(temper_type):
 
 
 def calc_ess(weights):
-    """ Calculate Effective Sample Size from current weights. """
+    """ 
+    Calculate Effective Sample Size from current weights.
+    We use the exp-log trick here to avoid numerical problems.
+    """
 
-    ess = np.sum(weights) ** 2 / (np.sum(np.power(weights, 2)))
+    ess = np.exp(np.log(np.sum(weights) ** 2) - np.log(np.sum(weights ** 2)))
     return ess
