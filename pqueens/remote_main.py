@@ -97,6 +97,12 @@ def main(args):
                 global_settings = {"experiment_name": config["experiment_name"]}
                 # remove experiment_name field from options dict
                 config["global_settings"] = global_settings
+
+                # Patch the remote address to the config
+                remote_address = (
+                    str(config["scheduler"]["singularity_settings"]["remote_ip"]) + ":" + str(port)
+                )
+                config["database"]["address"] = remote_address
         except FileNotFoundError:
             raise FileNotFoundError("temp.json did not load properly.")
 

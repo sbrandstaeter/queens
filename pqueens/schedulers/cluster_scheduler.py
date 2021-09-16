@@ -7,6 +7,7 @@ from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
 from .scheduler import Scheduler
+import atexit
 
 
 class ClusterScheduler(Scheduler):
@@ -16,6 +17,9 @@ class ClusterScheduler(Scheduler):
 
     def __init__(self, base_settings):
         super(ClusterScheduler, self).__init__(base_settings)
+
+        # Close the ssh ports at when exiting after the queens run
+        atexit.register(self.post_run)
 
     @classmethod
     def create_scheduler_class(cls, base_settings):

@@ -296,12 +296,22 @@ class PostPostBACIEnsight(PostPost):
 
         """
         experimental_coordinates_for_snapshot = []
-        for _, row in self.experimental_data.iterrows():
-            if time_value == row[self.time_label_experimental]:
+        if self.time_label_experimental:
+            for _, row in self.experimental_data.iterrows():
+                if time_value == row[self.time_label_experimental]:
+                    experimental_coordinates_for_snapshot.append(
+                        row[self.coordinates_label_experimental].to_list()
+                    )
+        else:
+            for coord in self.coordinates_label_experimental:
                 experimental_coordinates_for_snapshot.append(
-                    row[self.coordinates_label_experimental].to_list()
+                    np.array(self.experimental_data[coord]).reshape(-1, 1)
                 )
-
+            if len(experimental_coordinates_for_snapshot) != 3:
+                raise ValueError(f"Please provide 3d coordinates in the observation data")
+            experimental_coordinates_for_snapshot = np.concatenate(
+                experimental_coordinates_for_snapshot, axis=1
+            )
         # interpolate vtk solution to experimental coordinates
         interpolated_data = PostPostBACIEnsight._interpolate_vtk(
             experimental_coordinates_for_snapshot,
