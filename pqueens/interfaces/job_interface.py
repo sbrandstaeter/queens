@@ -214,9 +214,6 @@ class JobInterface(Interface):
                 while not self.all_jobs_finished():
                     time.sleep(self.polling_time)
 
-            # potential post-run options, currently only for remote computation:
-            resource.scheduler.post_run()
-
         # get sample and response data
         return self.get_output_data()
 

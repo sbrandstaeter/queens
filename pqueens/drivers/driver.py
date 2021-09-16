@@ -154,23 +154,7 @@ class Driver(metaclass=abc.ABCMeta):
         from pqueens.drivers.baci_driver import BaciDriver
         from pqueens.drivers.dealII_navierstokes_driver import DealIINavierStokesDriver
         from pqueens.drivers.openfoam_driver import OpenFOAMDriver
-
-        # import post-post module depending on whether absolute path is given
-        # (in case of using Singularity on remote machine) or not
-        if abs_path is None:
-            # FIXME singularity doesnt load post_post from path but rather
-            # uses image module
-            from pqueens.post_post.post_post import PostPost
-        else:
-            import importlib.util
-
-            spec = importlib.util.spec_from_file_location("post_post", abs_path)
-            post_post = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(post_post)
-            try:
-                from post_post.post_post import PostPost
-            except ImportError:
-                raise ImportError('Could not import post-post module!')
+        from pqueens.post_post.post_post import PostPost
 
         # determine Driver class
         driver_dict = {
@@ -229,23 +213,7 @@ class Driver(metaclass=abc.ABCMeta):
 
         # 3) database settings
         base_settings['port'] = port
-        # add port to IP address in input file for database connection if remote
-        # Singularity, else get database address, with default being localhost
-        if base_settings['singularity'] and base_settings['remote']:
-            database_address = (
-                scheduler_options['singularity_settings']['remote_ip']
-                + ':'
-                + str(base_settings['port'])
-            )
-        else:
-            database_address = config['database'].get('address', 'localhost:27017')
-        database_config = dict(
-            global_settings=config["global_settings"],
-            database=dict(
-                address=database_address, drop_all_existing_dbs=False, reset_database=False
-            ),
-        )
-        db = MongoDB.from_config_create_database(database_config)
+        db = MongoDB.from_config_create_database(config)
         base_settings['database'] = db
 
         # 4) general driver settings
