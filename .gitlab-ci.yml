@@ -218,6 +218,7 @@ docker_full_test_suite_master:
     - echo "executing:"
     - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
     - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/  --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
+  needs: []
 #---------------------------------------------------------------------------------------------------
 centos_full_test_suite_master:
   extends:
