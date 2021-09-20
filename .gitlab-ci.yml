@@ -1,4 +1,3 @@
-#---------------------------------------------------------------------------------------------------
 # Define variables
 #---------------------------------------------------------------------------------------------------
 variables:
@@ -12,9 +11,11 @@ variables:
 # Define stages
 #---------------------------------------------------------------------------------------------------
 stages:
+  - build
   - codechecks
   - tests
   - pages
+  - cleanup
 
 #---------------------------------------------------------------------------------------------------
 # Define platform specific settings
@@ -41,20 +42,25 @@ stages:
     - queens-docker
 
 #----------------------------------------------------------------------------------------------
-.centos_settings:
+# Settings
+#----------------------------------------------------------------------------------------------
+.centos_build_settings:
   before_script:
     - conda update -n base conda
-    - conda env create -f environment.yml -n queens-$CI_JOB_ID
-    - source activate queens-$CI_JOB_ID
-    - python setup.py develop
-  after_script:
-    - conda env remove -n queens-$CI_JOB_ID
   only:
     variables:
       - $CENTOS_TESTS == "1"
   tags:
     - queens-centos
-
+#----------------------------------------------------------------------------------------------
+.centos_settings:
+  before_script:
+    - source activate queens-$CI_PIPELINE_ID
+  only:
+    variables:
+      - $CENTOS_TESTS == "1"
+  tags:
+    - queens-centos
 #----------------------------------------------------------------------------------------------
 .codechecks_settings:
   extends:
@@ -63,6 +69,51 @@ stages:
   only:
   tags:
     - codechecks
+
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: build conda and remove
+#---------------------------------------------------------------------------------------------------
+build_conda_env:
+  extends:
+    - .centos_build_settings
+  stage: build
+  script:
+    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - source activate queens-$CI_PIPELINE_ID
+    - conda env export > pipeline_conda_environment.yml 
+  artifacts:
+    name: "conda_env-$CI_PIPELINE_ID.yml"
+    paths:
+      - pipeline_conda_environment.yml
+    when: always
+    expire_in: 4 weeks
+
+remove_conda_env:
+  stage: cleanup
+  script:
+    - conda env remove -n queens-$CI_PIPELINE_ID
+  when: always
+  only:
+    variables:
+      - $CENTOS_TESTS == "1"
+  tags:
+    - queens-centos
+
+build_singularity:
+  stage: build
+  script:
+    - cd pqueens/
+    - /usr/bin/singularity --version
+    - /usr/bin/singularity build --fakeroot ../driver.simg ../singularity_recipe
+  artifacts:
+    paths:
+      - driver.simg
+    expire_in: 1 day
+  only:
+    variables:
+      - $CENTOS_TESTS == "1"
+  tags:
+    - queens-centos
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: codechecks
@@ -80,7 +131,8 @@ code_analysis:
       - track_pylint.txt
     when: on_failure
     expire_in: 4 weeks
-
+  needs:
+    - build_conda_env
 #----------------------------------------------------------------------------------------------
 documentation:
   # build the documentation
@@ -98,7 +150,8 @@ documentation:
       - doc/build/html
     when: on_success
     expire_in: 3 days
-
+  needs:
+    - build_conda_env
 #----------------------------------------------------------------------------------------------
 license_check:
   # check licence compliance
@@ -108,6 +161,8 @@ license_check:
   script:
     - ./parse_env_for_liccheck.sh
     - liccheck -s lic_strategy.ini  -r requirements.tmp
+  needs:
+    - build_conda_env
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
@@ -119,7 +174,7 @@ license_check:
   except:
     refs:
       - master
-
+#---------------------------------------------------------------------------------------------------
 docker_full_test_suite_develop:
   extends:
     - .docker_settings
@@ -128,19 +183,22 @@ docker_full_test_suite_develop:
     - echo "executing:"
     - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
     - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS
-
+  needs: []
+#---------------------------------------------------------------------------------------------------
 centos_full_test_suite_develop:
   extends:
     - .centos_settings
     - .full_test_suite_develop
   script:
-    - cd pqueens/
-    - /usr/bin/singularity --version
-    - /usr/bin/singularity build --fakeroot ../driver.simg ../singularity_recipe
-    - cd ../
+    - python setup.py develop
     - echo "executing:"
     - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
     - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS
+  needs:
+    - build_conda_env
+    - build_singularity
+#----------------------------------------------------------------------------------------------
+# Master tests
 #----------------------------------------------------------------------------------------------
 .full_test_suite_master:
   # run full test suite on one core to be safe, meant for master branch only
@@ -151,7 +209,7 @@ centos_full_test_suite_develop:
   only:
     refs:
       - master
-
+#---------------------------------------------------------------------------------------------------
 docker_full_test_suite_master:
   extends:
     - .docker_settings
@@ -160,16 +218,13 @@ docker_full_test_suite_master:
     - echo "executing:"
     - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
     - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/  --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
-
+#---------------------------------------------------------------------------------------------------
 centos_full_test_suite_master:
   extends:
     - .centos_settings
     - .full_test_suite_master
   script:
-    - cd pqueens/
-    - /usr/bin/singularity --version
-    - /usr/bin/singularity build --fakeroot ../driver.simg ../singularity_recipe
-    - cd ../
+    - python setup.py develop
     - echo "executing:"
     - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
     - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
@@ -179,6 +234,9 @@ centos_full_test_suite_master:
       - html_coverage_report
     when: on_success
     expire_in: 3 days
+  needs:
+    - build_conda_env
+    - build_singularity
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: pages
@@ -203,11 +261,11 @@ pages:
     # Create sphinx badge
     - anybadge -l sphinx -v passed --color=green -f public/sphinx-badge.svg
   artifacts:
-      # store the public path in artifact
-      # this is needed since in a subsequent deploy stage (automatically generated by GitLab)
-      # the content of the below artifact is published on GitLab Pages
-      paths:
-          - public
+    # store the public path in artifact
+    # this is needed since in a subsequent deploy stage (automatically generated by GitLab)
+    # the content of the below artifact is published on GitLab Pages
+    paths:
+      - public
   tags:
     - queens-centos
   only:
