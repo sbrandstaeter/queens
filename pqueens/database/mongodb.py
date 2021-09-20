@@ -59,11 +59,20 @@ class MongoDB(object):
             MongoDB_obj (obj): Instance of MongoDB class
 
         """
-        try:
-            database_name_final = config['global_settings'].get('experiment_name', 'dummy')
-        # in case global settings do not exist
-        except KeyError:
-            database_name_final = 'dummy'
+
+        database_name = config['database'].get('name')
+        #  if the database name is not defined in the input file, create a unique name now
+        if not database_name:
+            try:
+                database_name_suffix = config['global_settings'].get('experiment_name', 'dummy')
+            # in case global settings do not exist
+            except KeyError:
+                database_name_suffix = 'dummy'
+
+            # generate name of database to be established for this QUEENS run
+            user_name = getpass.getuser()
+            database_name_prefix = 'queens_db_' + user_name
+            database_name = database_name_prefix + '_' + database_name_suffix
 
         database_address = config['database'].get('address', 'localhost:27017')
 
@@ -85,11 +94,6 @@ class MongoDB(object):
 
         # get list of all existing databases
         complete_database_list = client.list_database_names()
-
-        # generate name of database to be established for this QUEENS run
-        user_name = getpass.getuser()
-        database_name_prefix = 'queens_db_' + user_name
-        database_name = database_name_prefix + '_' + database_name_final
 
         # declare boolean variable for existence of database to be established
         database_exists = False
