@@ -61,6 +61,8 @@ class MongoDB(object):
         """
 
         database_name = config['database'].get('name')
+        database_name_prefix = database_name
+
         #  if the database name is not defined in the input file, create a unique name now
         if not database_name:
             try:
@@ -69,7 +71,6 @@ class MongoDB(object):
             except KeyError:
                 database_name_suffix = 'dummy'
 
-            # generate name of database to be established for this QUEENS run
             user_name = getpass.getuser()
             database_name_prefix = 'queens_db_' + user_name
             database_name = database_name_prefix + '_' + database_name_suffix
