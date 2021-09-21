@@ -143,7 +143,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         base_settings['experiment_dir'] = scheduler_options['experiment_dir']
 
         # 5) set flag for restart from finished simulation (default: false)
-        base_settings['restart'] = scheduler_options.get('restart', False)
+        base_settings['restart'] = config.get('restart', False)
 
         # 6) set flag for remote scheduling (default: false)
         #    as well as further options for remote scheduling

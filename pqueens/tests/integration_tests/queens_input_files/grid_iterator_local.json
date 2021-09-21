@@ -1,8 +1,7 @@
 {
   "experiment_name" : "grid_iterator_local",
   "database"  :{
-    "address"   : "localhost:27017",
-    "drop_all_existing_dbs" : true
+    "address"   : "localhost:27017"
   },
   "method": {
     "method_name": "grid",

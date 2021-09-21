@@ -1,8 +1,7 @@
 {
   "experiment_name" : "bmfmc_currin88",
   "database"  :{
-    "address"   : "localhost:27017",
-    "drop_existing" : true
+    "address"   : "localhost:27017"
   },
   "method": {
     "method_name": "bmfmc",

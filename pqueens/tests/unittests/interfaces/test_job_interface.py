@@ -38,6 +38,8 @@ class TestJobInterface(unittest.TestCase):
             'max-concurrent': 1,
             'max-finished-jobs': 100,
         }
+        self.config['restart'] = False
+
         self.config['database'] = {}
         self.config['database']['address'] = 'localhost:27017'
         self.config['database']['drop_all_existing_dbs'] = True
@@ -51,7 +53,6 @@ class TestJobInterface(unittest.TestCase):
         self.config['my_local_scheduler']['scheduler_type'] = 'standard'
         self.config['my_local_scheduler']['remote'] = False
         self.config['my_local_scheduler']['singularity'] = False
-        self.config['my_local_scheduler']['restart'] = False
 
         self.config['driver'] = {}
         self.config['driver']['driver_type'] = 'baci'

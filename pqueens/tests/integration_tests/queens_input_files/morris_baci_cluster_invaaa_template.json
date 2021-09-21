@@ -2,8 +2,7 @@
   "experiment_name": "{experiment_name}",
   "database": {
     "name": "queens_db_cluster_test_morris_invaaa",
-    "address": "localhost:27017",
-    "reset_database" : true
+    "address": "localhost:27017"
   },
   "method": {
     "method_name": "sa_morris_salib",
