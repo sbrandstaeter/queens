@@ -1,6 +1,7 @@
 {
     "experiment_name": "{experiment_name}",
-    "database": {"address": "localhost:27017", "drop_all_existing_dbs": true},
+    "restart": false,
+    "database": {"address": "localhost:27017"},
     "method": {
         "method_name": "sa_morris_salib",
         "method_options": {
@@ -65,7 +66,6 @@
         "experiment_dir": "{experiment_dir}",
         "scheduler_type": "standard",
         "singularity": {singularity_boolean},
-        "restart": false,
         "num_procs": 1,
         "num_procs_post": 1
     },

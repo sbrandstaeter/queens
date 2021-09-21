@@ -146,7 +146,7 @@ class JobInterface(Interface):
                 direct_scheduling = True
 
         # get flag for restart
-        restart = scheduler_options.get('restart', False)
+        restart = config.get('restart', False)
 
         # establish new database for this QUEENS run
         db = MongoDB.from_config_create_database(config)

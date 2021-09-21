@@ -1,8 +1,7 @@
 {
   "experiment_name" : "{experiment_name}",
   "database"  :{
-    "address"   : "localhost:27017",
-    "reset_database" : true 
+    "address"   : "localhost:27017"
     },
   "method": {
     "method_name": "baci_lm",

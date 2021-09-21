@@ -1,8 +1,7 @@
 {
   "experiment_name" : "baci_mc_randomfields_from_geometry",
   "database"  :{
-    "address" : "localhost:27017",
-    "drop_all_existing_dbs" : false
+    "address" : "localhost:27017"
   },
   "method": {
     "method_name": "monte_carlo",

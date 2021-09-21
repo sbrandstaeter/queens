@@ -51,11 +51,16 @@ def main(args):
         options["global_settings"]["experiment_name"],
     )
 
-    # create database and potentially drop existing databases
+    # create database
     database = options.get('database', None)
     if database:
-        reset_database = options['database'].get('reset_database', False)
-        MongoDB.from_config_create_database(options, reset_database=reset_database)
+        # reset database if a database with the same name already exists unless restart is enabled
+        restart = options.get("restart", False)
+        if not restart:
+            reset_database = True
+        else:
+            reset_database = False
+        reset_database = MongoDB.from_config_create_database(options, reset_database=reset_database)
 
     # build iterator
     my_iterator = Iterator.from_config_create_iterator(options)
