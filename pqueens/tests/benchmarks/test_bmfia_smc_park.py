@@ -12,6 +12,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_co
 )
 
 
+@pytest.mark.benchmark
 def test_smc_park_hf(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
     """ Integration test for bayesian multi-fidelity inverse analysis (bmfia) using the park91 function """
 
