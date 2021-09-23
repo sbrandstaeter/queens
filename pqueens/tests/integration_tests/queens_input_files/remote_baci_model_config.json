@@ -90,7 +90,7 @@
     "cluster": {
       "scheduler": "scheduler",
       "max-concurrent": 2,
-      "max-finished-jobs": 1000
+      "max-finished-jobs": 10
     }
   },
   "scheduler": {
@@ -100,7 +100,7 @@
     "num_procs_post": 1,
     "cluster": {
       "script": "/lnm/share/donottouch.sh",
-      "walltime": "120:00:00"
+      "walltime": "00:01:00"
     },
     "remote": {
       "connect": "{connect_to_resource}"
