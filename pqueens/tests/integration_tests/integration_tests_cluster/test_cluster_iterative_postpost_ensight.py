@@ -141,20 +141,23 @@ def test_cluster_postpost_ensight(
     # Evaluate the first batch
     samples = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])
     model.update_model_from_sample_batch(samples)
-    first_batch = model.evaluate()["mean"]
+    first_batch = np.array(model.evaluate()["mean"])
 
     # Evaluate a second batch
     # In order to make sure that no port is closed after one batch
     samples = np.array([[0.3, 20], [0.45, 100], [0.2, 10]])
     model.update_model_from_sample_batch(samples)
-    second_batch = model.evaluate()["mean"][-3:]
+    second_batch = np.array(model.evaluate()["mean"][-3:])
 
-    # Note that the test does not check if the postpost is correct!
-    # It only checks it consistant between batches
-    np.testing.assert_array_equal(first_batch[0], second_batch[2])
-    np.testing.assert_array_equal(first_batch[1], second_batch[0])
-    np.testing.assert_array_equal(first_batch[2], second_batch[1])
+    # Check results
+    sample_result = np.array([-0.0006949830567464232, 0.0017958658281713724])
+    np.testing.assert_array_equal(first_batch[0], sample_result)
+    np.testing.assert_array_equal(second_batch[2], sample_result)
 
-    # This check verifies if any simulation failed
-    assert not np.isnan(first_batch.astype(float)).any()
-    assert not np.isnan(second_batch.astype(float)).any()
+    sample_result = np.array([-0.0012194387381896377, 0.003230389906093478])
+    np.testing.assert_array_equal(first_batch[1], sample_result)
+    np.testing.assert_array_equal(second_batch[0], sample_result)
+
+    sample_result = np.array([-0.004366828128695488, 0.0129017299041152])
+    np.testing.assert_array_equal(first_batch[2], sample_result)
+    np.testing.assert_array_equal(second_batch[1], sample_result)
