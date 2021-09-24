@@ -93,6 +93,8 @@ remove_conda_env:
   script:
     - conda env remove -n queens-$CI_PIPELINE_ID
   when: always
+  variables:
+    GIT_STRATEGY: none
   only:
     variables:
       - $CENTOS_TESTS == "1"
