@@ -8,6 +8,7 @@ import numpy as np
 import pytest
 
 
+@pytest.mark.benchmark
 def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir):
     """ Integration test for smc with a simple diffusion problem (scatra) in baci """
 

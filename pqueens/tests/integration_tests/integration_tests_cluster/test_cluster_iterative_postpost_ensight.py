@@ -1,25 +1,27 @@
-"""
-Test suite for integration tests for the Morris-Salib Iterator (Elementary Effects) for local
-simulations with BACI using the INVAAA minimal model.
-"""
-
 import pickle
 import pathlib
-
 import numpy as np
 import pytest
-
-from pqueens.main import main
+import json
 from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.models.model import Model
+from pqueens.database.mongodb import MongoDB
 
 
 @pytest.mark.lnm_cluster
-def test_cluster_morris_salib(
+def test_cluster_postpost_ensight(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):
     """
-    Integration test for the Salib Morris Iterator on the clusters together with BACI.
+    Test suite for remote BACI sumlations on the cluster in combination with the BACI ensight
+    post-post-processor. No iterator is used, the model is called directly.
+
+    This integration test is constructed such that:
+        - The interface-map function is called twice (mimics feedback-loops)
+        - The maximum concurrent job is activated
+        - Post_Post_ensight to remotely communicate with the database (besides the driver)
+        - No iterator is used to reduce complexity 
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -49,10 +51,10 @@ def test_cluster_morris_salib(
     path_to_post_processor = baci_cluster_paths["path_to_post_processor"]
 
     # unique experiment name
-    experiment_name = cluster + "_morris_salib"
+    experiment_name = cluster + "_remote_post_post_ensight"
 
-    template = pathlib.Path(inputdir, "morris_baci_cluster_invaaa_template.json")
-    input_file = pathlib.Path(tmpdir, f"morris_{cluster}_deep_invaaa.json")
+    template = pathlib.Path(inputdir, "remote_baci_model_config.json")
+    input_file = pathlib.Path(tmpdir, f"remote_baci_model_config.json")
 
     # specific folder for this test
     cluster_experiment_dir = cluster_queens_testing_folder.joinpath(experiment_name)
@@ -62,7 +64,7 @@ def test_cluster_morris_salib(
         third_party_inputs, "baci_input_files", baci_input_filename
     )
     path_to_input_file_cluster = cluster_experiment_dir.joinpath("input")
-    input_file_cluster = path_to_input_file_cluster.joinpath(baci_input_filename)
+    baci_input_file_cluster = path_to_input_file_cluster.joinpath(baci_input_filename)
 
     experiment_dir = cluster_experiment_dir.joinpath("output")
 
@@ -93,7 +95,7 @@ def test_cluster_morris_salib(
         [
             'scp',
             str(third_party_input_file_local),
-            connect_to_resource + ':' + str(input_file_cluster),
+            connect_to_resource + ':' + str(baci_input_file_cluster),
         ]
     )
     returncode, pid, stdout, stderr = run_subprocess(command)
@@ -104,7 +106,7 @@ def test_cluster_morris_salib(
     dir_dict = {
         'experiment_name': str(experiment_name),
         'path_to_singularity': str(cluster_path_to_singularity),
-        'input_template': str(input_file_cluster),
+        'input_template': str(baci_input_file_cluster),
         'path_to_executable': str(path_to_executable),
         'path_to_drt_monitor': str(path_to_drt_monitor),
         'path_to_drt_ensight': str(path_to_drt_ensight),
@@ -118,24 +120,51 @@ def test_cluster_morris_salib(
     }
 
     injector.inject(dir_dict, template, input_file)
-    arguments = ['--input=' + str(input_file), '--output=' + str(tmpdir)]
 
-    main(arguments)
+    # Patch the missing config arguments
+    with open(str(input_file)) as f:
+        config = json.load(f)
+        global_settings = {
+            "output_dir": str(tmpdir),
+            "experiment_name": config["experiment_name"],
+        }
+        config["global_settings"] = global_settings
+        config["input_file"] = str(input_file)
 
-    result_file = pathlib.Path(tmpdir, experiment_name + '.pickle')
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
+    # Add experimental coordinates to the database
+    database = MongoDB.from_config_create_database(config, reset_database=True)
+    experimental_data_dict = {"x1": [-16, 10], "x2": [7, 15], "x3": [0.63, 0.2]}
+    database.save(experimental_data_dict, experiment_name, 'experimental_data', 1)
 
-    # test results of SA analysis
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
+    # Create a BACI model for the benchmarks
+    model = Model.from_config_create_model("model", config)
+
+    # Evaluate the first batch
+    first_sample_batch = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])
+    model.update_model_from_sample_batch(first_sample_batch)
+    first_batch = np.array(model.evaluate()["mean"])
+
+    # Evaluate a second batch
+    # In order to make sure that no port is closed after one batch
+    second_sample_batch = np.array([[0.25, 25], [0.4, 46], [0.47, 211]])
+    model.update_model_from_sample_batch(second_sample_batch)
+    second_batch = np.array(model.evaluate()["mean"][-3:])
+
+    # Check results
+    first_batch_reference_solution = np.array(
+        [
+            [-0.0006949830567464232, 0.0017958658281713724],
+            [-0.0012194387381896377, 0.003230389906093478],
+            [-0.004366828128695488, 0.0129017299041152],
+        ]
     )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
+    second_batch_reference_solution = np.array(
+        [
+            [-0.0016464125365018845, 0.004280212335288525],
+            [-0.0023093123454600573, 0.00646978011354804],
+            [-0.008715332485735416, 0.026327939704060555],
+        ]
     )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
-    )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3
-    )
+
+    np.testing.assert_array_equal(first_batch, first_batch_reference_solution)
+    np.testing.assert_array_equal(second_batch, second_batch_reference_solution)
