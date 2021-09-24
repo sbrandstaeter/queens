@@ -1,8 +1,3 @@
-"""
-Test suite for remote BACI sumlations on the cluster in combination with the BACI ensight
- post-post-processor. No iterator is used, the model is called directly.
-"""
-
 import pickle
 import pathlib
 import numpy as np
@@ -19,7 +14,14 @@ def test_cluster_postpost_ensight(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):
     """
-    Integration test for clusters BACI runs with the postpost processor `post_post_ensight`.
+    Test suite for remote BACI sumlations on the cluster in combination with the BACI ensight
+    post-post-processor. No iterator is used, the model is called directly.
+
+    This integration test is constructed such that:
+        - The interface-map function is called twice (mimics feedback-loops)
+        - The maximum concurrent job is activated
+        - Post_Post_ensight to remotely communicate with the database (besides the driver)
+        - No iterator is used to reduce complexity 
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -62,7 +64,7 @@ def test_cluster_postpost_ensight(
         third_party_inputs, "baci_input_files", baci_input_filename
     )
     path_to_input_file_cluster = cluster_experiment_dir.joinpath("input")
-    input_file_cluster = path_to_input_file_cluster.joinpath(baci_input_filename)
+    baci_input_file_cluster = path_to_input_file_cluster.joinpath(baci_input_filename)
 
     experiment_dir = cluster_experiment_dir.joinpath("output")
 
@@ -93,7 +95,7 @@ def test_cluster_postpost_ensight(
         [
             'scp',
             str(third_party_input_file_local),
-            connect_to_resource + ':' + str(input_file_cluster),
+            connect_to_resource + ':' + str(baci_input_file_cluster),
         ]
     )
     returncode, pid, stdout, stderr = run_subprocess(command)
@@ -104,7 +106,7 @@ def test_cluster_postpost_ensight(
     dir_dict = {
         'experiment_name': str(experiment_name),
         'path_to_singularity': str(cluster_path_to_singularity),
-        'input_template': str(input_file_cluster),
+        'input_template': str(baci_input_file_cluster),
         'path_to_executable': str(path_to_executable),
         'path_to_drt_monitor': str(path_to_drt_monitor),
         'path_to_drt_ensight': str(path_to_drt_ensight),
@@ -118,7 +120,6 @@ def test_cluster_postpost_ensight(
     }
 
     injector.inject(dir_dict, template, input_file)
-    arguments = ['--input=' + str(input_file), '--output=' + str(tmpdir)]
 
     # Patch the missing config arguments
     with open(str(input_file)) as f:
@@ -139,25 +140,31 @@ def test_cluster_postpost_ensight(
     model = Model.from_config_create_model("model", config)
 
     # Evaluate the first batch
-    samples = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])
-    model.update_model_from_sample_batch(samples)
+    first_sample_batch = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])
+    model.update_model_from_sample_batch(first_sample_batch)
     first_batch = np.array(model.evaluate()["mean"])
 
     # Evaluate a second batch
     # In order to make sure that no port is closed after one batch
-    samples = np.array([[0.3, 20], [0.45, 100], [0.2, 10]])
-    model.update_model_from_sample_batch(samples)
+    second_sample_batch = np.array([[0.25, 25], [0.4, 46], [0.47, 211]])
+    model.update_model_from_sample_batch(second_sample_batch)
     second_batch = np.array(model.evaluate()["mean"][-3:])
 
     # Check results
-    sample_result = np.array([-0.0006949830567464232, 0.0017958658281713724])
-    np.testing.assert_array_equal(first_batch[0], sample_result)
-    np.testing.assert_array_equal(second_batch[2], sample_result)
+    first_batch_reference_solution = np.array(
+        [
+            [-0.0006949830567464232, 0.0017958658281713724],
+            [-0.0012194387381896377, 0.003230389906093478],
+            [-0.004366828128695488, 0.0129017299041152],
+        ]
+    )
+    second_batch_reference_solution = np.array(
+        [
+            [-0.0016464125365018845, 0.004280212335288525],
+            [-0.0023093123454600573, 0.00646978011354804],
+            [-0.008715332485735416, 0.026327939704060555],
+        ]
+    )
 
-    sample_result = np.array([-0.0012194387381896377, 0.003230389906093478])
-    np.testing.assert_array_equal(first_batch[1], sample_result)
-    np.testing.assert_array_equal(second_batch[0], sample_result)
-
-    sample_result = np.array([-0.004366828128695488, 0.0129017299041152])
-    np.testing.assert_array_equal(first_batch[2], sample_result)
-    np.testing.assert_array_equal(second_batch[1], sample_result)
+    np.testing.assert_array_equal(first_batch, first_batch_reference_solution)
+    np.testing.assert_array_equal(second_batch, second_batch_reference_solution)
