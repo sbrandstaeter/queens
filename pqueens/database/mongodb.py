@@ -1,135 +1,186 @@
-import sys
 import getpass
-import pymongo
-import pandas as pd
-from pymongo.errors import ServerSelectionTimeoutError
-from pqueens.utils.compression import compress_nested_container, decompress_nested_container
-import numpy as np
-import xarray as xr
+import logging
 
+import numpy as np
+import pandas as pd
+import pymongo
+import xarray as xr
+from pqueens.utils.compression import compress_nested_container, decompress_nested_container
+from pqueens.utils.decorators import safe_mongodb_operation
+from pymongo import MongoClient
+
+from .database import Database
+
+_logger = logging.getLogger(__name__)
 COMPRESS_TYPE = 'compressed array'
 
 
-class MongoDB(object):
+class MongoDB(Database):
     """
-    MongoDB based database to store data of computer experiments
+    MongoDB based database to store data of computer experiments.
 
     Attributes:
-        db (obj): Mongo DB database object
-        database_name (str): Name of the current database
-        database_list (list): List with names of existing QUEENS databases
-        database_already_existent (bool): Boolean which is True if database name already exists
-
+        db_name (str): Name of the current database
+        reset_existing_db (boolean): Flag to reset the database if necessary
+        db_obj (obj): Mongo DB database object
+        db_address (str): Database address
+        db_list (list): List with names of existing QUEENS databases
+        db_already_existent (bool): Boolean which is True if database name already exists
+        drop_alle_existing_dbs (bool): Flag to drop all user databases if desired
+        mongo_client (MongoClient): Mongodb client object
+        max_number_of_attempts (int): Max number of attempts to perform a db action
     Returns:
-        MongoDB_obj (obj): Instance of MongoDB class
+        MongoDB (obj): Instance of MongoDB class
 
     """
 
     def __init__(
         self,
-        db,
-        database_address,
-        database_name,
-        database_list,
-        database_already_existent,
-        drop_all_existing_dbs,
+        db_name,
+        reset_existing_db,
+        db_obj=None,
+        db_address="localhost:27017",
+        db_list=None,
+        db_already_existent=False,
+        drop_all_existing_dbs=False,
+        mongo_client=None,
+        max_number_of_attempts=10,
     ):
-        self.db = db
-        self.database_address = database_address
-        self.database_name = database_name
-        self.database_list = database_list
-        self.database_already_existent = database_already_existent
+        super().__init__(db_name, reset_existing_db)
+        self.db_address = db_address
+        self.db_obj = db_obj
+        self.db_list = db_list
+        self.db_already_existent = db_already_existent
         self.drop_all_existing_dbs = drop_all_existing_dbs
+        self.mongo_client = mongo_client
+        self.max_number_of_attempts = max_number_of_attempts
 
     @classmethod
-    def from_config_create_database(cls, config, reset_database=False, drop_all_existing_dbs=False):
+    def from_config_create_database(cls, config):
         """
         Create Mongo database object from problem description
 
         Args:
             config (dict): Dictionary containing the problem description of the current QUEENS
                            simulation
-            reset_database (bool): Flag to reset/drop potentially existing database with the
-                                   same name. If `True`, the database will be reset. If `False`
-                                   or nothing specified, a potentially existing database is kept.
-            drop_all_existing_dbs (bool): Flag to drop all existing user specific databases
-                                          (if set to True)
 
         Returns:
-            MongoDB_obj (obj): Instance of MongoDB class
+            MongoDB (obj): Instance of MongoDB class
 
         """
 
-        database_name = config['database'].get('name')
-        database_name_prefix = database_name
+        db_name = config['database'].get('name')
 
         #  if the database name is not defined in the input file, create a unique name now
-        if not database_name:
+        # TODO fix this
+        if not db_name:
             try:
-                database_name_suffix = config['global_settings'].get('experiment_name', 'dummy')
+                db_name_suffix = config['global_settings'].get('experiment_name', 'dummy')
             # in case global settings do not exist
-            except KeyError:
-                database_name_suffix = 'dummy'
+            except KeyError as key_error:
+                db_name_suffix = 'dummy'
+                _logger.warning(f"Global settings missing, db_suffix was set to 'dummy'")
 
             user_name = getpass.getuser()
-            database_name_prefix = 'queens_db_' + user_name
-            database_name = database_name_prefix + '_' + database_name_suffix
+            db_name_prefix = 'queens_db_' + user_name
+            db_name = db_name_prefix + '_' + db_name_suffix
 
-        database_address = config['database'].get('address', 'localhost:27017')
+        reset_existing_db = config['database'].get('reset_existing_db', True)
+        drop_all_existing_dbs = config['database'].get('drop_all_existing_dbs', False)
+        db_address = config['database'].get('address', 'localhost:27017')
+        max_number_of_attempts = config['database'].get('max_number_of_attempts', 10)
+        db_name_prefix = db_name
 
-        client = pymongo.MongoClient(
-            host=[database_address], serverSelectionTimeoutMS=100, connect=False
-        )
-
-        attempt = 0
-        while attempt < 10:
-            try:
-                client.server_info()  # Forces a call
-                break
-            except pymongo.errors.ServerSelectionTimeoutError:
-                if attempt == 9:
-                    client.server_info()
-                else:
-                    print('ServerSelectionTimeoutError in mongodb.py')
-            attempt += 1
-
-        # get list of all existing databases
-        complete_database_list = client.list_database_names()
-
-        # declare boolean variable for existence of database to be established
-        database_exists = False
-
-        # declare list for QUEENS databases
-        database_list = []
-
-        # check all existent databases on whether they are QUEENS databases
-        for check_database in complete_database_list:
-            if database_name_prefix in check_database:
-                # drop all existent QUEENS databases for this user if desired
-                if drop_all_existing_dbs:
-                    client.drop_database(check_database)
-                else:
-                    # add to list of existing QUEENS databases
-                    database_list.append(check_database)
-                    # check if database with this name already existed before
-                    if check_database == database_name:
-                        database_exists = True
-
-        if database_exists and reset_database:
-            client.drop_database(database_name)
-
-        # establish new database for this QUEENS run
-        db = client[database_name]
+        # Pass empty arguments. These are later established in the _connect function
+        mongo_client = None
+        db_obj = None
+        db_list = None
+        db_already_existent = False
 
         return cls(
-            db,
-            database_address,
-            database_name,
-            database_list,
-            database_exists,
+            db_name,
+            reset_existing_db,
+            db_obj,
+            db_address,
+            db_list,
+            db_already_existent,
             drop_all_existing_dbs,
+            mongo_client,
+            max_number_of_attempts,
         )
 
+    def _connect(self):
+        """
+        (Trying to) connect to the database
+        """
+
+        # Construct the Mongodb client
+        self.mongo_client = MongoClient(
+            host=[self.db_address], serverSelectionTimeoutMS=1000, connect=False
+        )
+
+        # Try the connection
+        # Here the decorator is called directly rather than the whole function
+        safe_mongodb_operation(self.mongo_client.server_info())
+
+        self.db_obj = self.mongo_client[self.db_name]
+
+        _logger.info(f"Connected to {self.db_address}")
+
+    def _disconnect(self):
+        """
+        MongoDB automatically closed connections so that there is not need to close the connection
+        """
+        _logger.info(f"Disconnected the database")
+
+    def _clean_database(self):
+        """
+        If desired reset the current database
+        """
+
+        # get list of all existing databases
+        complete_db_list = self.mongo_client.list_database_names()
+
+        # Check if db exists already
+        db_exists = self.db_name in complete_db_list
+        self.db_already_existent = db_exists
+
+        # Reset the database if desired
+        if db_exists and self.reset_existing_db:
+            self._delete_database(self.db_name)
+
+        self.db_list = complete_db_list
+
+    def _delete_database(self, db_name):
+        """
+        Remove database from the database server 
+
+        Args: 
+            db_name (str): database name to be deleted
+        """
+        self.mongo_client.drop_database(db_name)
+        _logger.info(f"{db_name} was dropped")
+
+    def _delete_databases_by_prefix(self, prefix):
+        """
+        Remove databases from the database server of which the name starts with the prefix 
+
+        Args: 
+            prefix (str): Databases with this prefix in the name are deleted
+        """
+
+        # get list of all existing databases
+        complete_db_list = self.mongo_client.list_database_names()
+
+        # List of dbs with this prefix
+        db_to_deleted_list = [db for db in complete_db_list if not db.find(prefix)]
+
+        for db in db_to_deleted_list:
+            self.mongo_client.drop_database(db)
+
+        _logger.info(f"Databases with prefix {prefix} were deleted!")
+
+    @safe_mongodb_operation
     def save(self, save_doc, experiment_name, experiment_field, batch, field_filters={}):
         """ Save a document to the database.
 
@@ -152,7 +203,7 @@ class MongoDB(object):
 
         save_doc = compress_nested_container(save_doc)
 
-        dbcollection = self.db[experiment_name][batch][experiment_field]
+        dbcollection = self.db_obj[experiment_name][batch][experiment_field]
 
         # make sure that there will be only one document in the collection that fits field_filters
         # note that the empty field_filers={} fits all documents in a collection
@@ -160,25 +211,10 @@ class MongoDB(object):
             raise Exception(
                 'Ambiguous save attempted. Field filters returned more than one document.'
             )
-        attempt = 0
-        max_attempts = 10
-        while attempt < max_attempts:
-            attempt += 1
-            try:
-                result = dbcollection.replace_one(field_filters, save_doc, upsert=True)
-                break
-            except pymongo.errors.DuplicateKeyError as duplicate_key_error:
-                print(
-                    f'Caught exception pymongo.errors.DuplicateKeyError. '
-                    f'Attempt: {attempt}/10.\n'
-                )
-                if attempt == max_attempts:
-                    print("Reached maximum attempts. Raising error:\n")
-                    raise duplicate_key_error
-                else:
-                    print('Retrying ...\n')
+        result = dbcollection.replace_one(field_filters, save_doc, upsert=True)
         return result.acknowledged
 
+    @safe_mongodb_operation
     def count_documents(self, experiment_name, batch, experiment_field, field_filters={}):
         """
         Return number of document(s) in collection
@@ -194,11 +230,12 @@ class MongoDB(object):
             int: number of documents in collection
         """
 
-        dbcollection = self.db[experiment_name][batch][experiment_field]
+        dbcollection = self.db_obj[experiment_name][batch][experiment_field]
         doc_count = dbcollection.count_documents(field_filters)
 
         return doc_count
 
+    @safe_mongodb_operation
     def estimated_count(self, experiment_name, batch, experiment_field):
         """ Return estimated count of document(s) in collection
 
@@ -214,11 +251,12 @@ class MongoDB(object):
             int: number of documents in collection
         """
 
-        dbcollection = self.db[experiment_name][batch][experiment_field]
+        dbcollection = self.db_obj[experiment_name][batch][experiment_field]
         doc_count = dbcollection.estimated_document_count()
 
         return doc_count
 
+    @safe_mongodb_operation
     def load(self, experiment_name, batch, experiment_field, field_filters=None):
         """ Load document(s) from the database
 
@@ -238,7 +276,7 @@ class MongoDB(object):
         if field_filters is None:
             field_filters = {}
 
-        dbcollection = self.db[experiment_name][batch][experiment_field]
+        dbcollection = self.db_obj[experiment_name][batch][experiment_field]
         dbdocs = list(dbcollection.find(field_filters))
 
         self._unpack_labeled_data(dbdocs)
@@ -250,6 +288,7 @@ class MongoDB(object):
         else:
             return [decompress_nested_container(dbdoc) for dbdoc in dbdocs]
 
+    @safe_mongodb_operation
     def remove(self, experiment_name, experiment_field, batch, field_filters={}):
         """ Remove a list of documents from the database
 
@@ -260,7 +299,7 @@ class MongoDB(object):
             field_filters (dict):      filter to find appropriate document(s)
                                        to delete
          """
-        self.db[experiment_name][batch][experiment_field].delete_many(field_filters)
+        self.db_obj[experiment_name][batch][experiment_field].delete_many(field_filters)
 
     def _pack_labeled_data(self, save_doc):
         """
@@ -347,3 +386,19 @@ class MongoDB(object):
         data = body[:, index_format:]
 
         return data, index
+
+    def __str__(self):
+        """
+        Internal python function which creates a string describing the MongoDB object.
+
+        Is usefull for debugging
+
+        Returns:
+            string (str): MongoDB obj description
+        """
+        string = "\n" + "-" * 80
+        string += "\nQUEENS MongoDB object wrapper\n\n"
+        string += "Database address:\t" + self.db_address + "\n"
+        string += "Database name:\t\t" + self.db_name + "\n"
+        string += "-" * 80 + "\n"
+        return string

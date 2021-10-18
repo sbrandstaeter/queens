@@ -1,86 +1,104 @@
 {
-  "experiment_name" : "{experiment_name}",
-  "database"  :{
-    "address"   : "localhost:27017"
-    },
+  "experiment_name": "{experiment_name}",
+  "database": {
+    "type": "mongodb",
+    "address": "localhost:27017"
+  },
   "method": {
     "method_name": "baci_lm",
-    "method_options" :{
-      "model" : "model",
-      "jac_method":"2-point",
-      "jac_rel_step":1e-3,
-      "jac_abs_step":1e-5,
-      "max_feval":50,
+    "method_options": {
+      "model": "model",
+      "jac_method": "2-point",
+      "jac_rel_step": 1e-3,
+      "jac_abs_step": 1e-5,
+      "max_feval": 50,
       "init_reg": 1,
       "update_reg": "grad",
-      "algorithm" : "LSQ",
-      "convergence_tolerance":1.0e-2,
-      "initial_guess" : [1500 , 0.4],
-      "result_description" : {
-          "write_results" : true,
-          "plot_results" : true
-          },
-      "bounds": [[0       , -0.5],
-                 [Infinity, 0.49 ]]
+      "algorithm": "LSQ",
+      "convergence_tolerance": 1.0e-2,
+      "initial_guess": [
+        1500,
+        0.4
+      ],
+      "result_description": {
+        "write_results": true,
+        "plot_results": true
+      },
+      "bounds": [
+        [
+          0,
+          -0.5
+        ],
+        [Infinity,
+          0.49
+        ]
+      ]
     }
   },
-  "model" : {
-    "type" : "simulation_model",
-    "interface" : "interface",
-    "parameters" : "parameters"
+  "model": {
+    "type": "simulation_model",
+    "interface": "interface",
+    "parameters": "parameters"
   },
-  "interface" : {
-    "type" : "job_interface",
+  "interface": {
+    "type": "job_interface",
     "resources": "resources",
-    "driver" : "driver"
+    "driver": "driver"
   },
-  "driver" :{
-    "driver_type"           : "baci",
-    "driver_params"         :{
-      "input_template"        : "{baci_input}",
-      "path_to_executable"    : "{baci-release}",
-      "path_to_postprocessor" : "{post_processor}",
-      "post_process_options"  : ["--filter=ensight"],
-      "cluster_bind"          : "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
-      "experiment_dir"        : "{experiment_dir}",
-      "post_file_name_prefix_lst": ["xx"],
-      "post_post"             : {
-        "post_post_approach_sel" : "baci_shape",
-        "path_to_ref_data" : "{baci_input_monitor}",
-        "delete_field_data" : false,
+  "driver": {
+    "driver_type": "baci",
+    "driver_params": {
+      "input_template": "{baci_input}",
+      "path_to_executable": "{baci-release}",
+      "path_to_postprocessor": "{post_processor}",
+      "post_process_options": [
+        "--filter=ensight"
+      ],
+      "cluster_bind": "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm",
+      "experiment_dir": "{experiment_dir}",
+      "post_file_name_prefix_lst": [
+        "xx"
+      ],
+      "post_post": {
+        "post_post_approach_sel": "baci_shape",
+        "path_to_ref_data": "{baci_input_monitor}",
+        "delete_field_data": false,
         "time_tol": 1e-2,
-        "file_prefix": ["xx"],
-        "file_postfix":"structure.case",
-        "displacement_fields":["displacement"],
+        "file_prefix": [
+          "xx"
+        ],
+        "file_postfix": "structure.case",
+        "displacement_fields": [
+          "displacement"
+        ],
         "problem_dimension": "2d",
         "visualization": false
-        }
-    }
-  },
-  "resources" : {
-    "my-machine" : {
-      "scheduler"         : "scheduler",
-      "max-concurrent"    : 3,
-      "max-finished-jobs" : 10
-    }
-  },
-  "parameters" : {
-    "random_variables" : {
-      "E" : {
-        "type" : "FLOAT",
-        "size" : 1
-      },
-      "nue" : {
-        "type" : "FLOAT",
-        "size" : 1
       }
     }
   },
-    "scheduler" : {
-    "scheduler_type" : "standard",
-    "num_procs" : 2,
+  "resources": {
+    "my-machine": {
+      "scheduler": "scheduler",
+      "max-concurrent": 3,
+      "max-finished-jobs": 10
+    }
+  },
+  "parameters": {
+    "random_variables": {
+      "E": {
+        "type": "FLOAT",
+        "size": 1
+      },
+      "nue": {
+        "type": "FLOAT",
+        "size": 1
+      }
+    }
+  },
+  "scheduler": {
+    "scheduler_type": "standard",
+    "num_procs": 2,
     "singularity": {singularity_boolean},
     "experiment_dir": "{experiment_dir}"
   }
 }
-

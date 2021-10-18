@@ -25,7 +25,7 @@ from pqueens.utils.fd_jacobian import compute_step_with_bounds
 from pqueens.utils.fd_jacobian import get_positions
 from pqueens.utils.fd_jacobian import fd_jacobian
 from pqueens.utils.process_outputs import write_results
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 
 
 class OptimizationIterator(Iterator):
@@ -193,7 +193,7 @@ class OptimizationIterator(Iterator):
         experimental_data_path_list = method_options.get('experimental_csv_data_base_dirs', None)
         output_column = method_options.get('output_observation_column_in_csv')
         if experimental_data_path_list is not None:
-            db = MongoDB.from_config_create_database(config)
+            db = DB_module.database
         else:
             db = None
         experiment_name = config['global_settings']['experiment_name']

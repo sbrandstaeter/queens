@@ -104,10 +104,6 @@ class PostPost(metaclass=abc.ABCMeta):
         base_settings = {}
         base_settings['options'] = post_post_options
 
-        # overwrite database settings so that we dont delete the existing dbs
-        config['database']['reset_database'] = False
-        config['database']['drop_all_existing_dbs'] = False
-
         base_settings['config'] = config
         post_post = post_post_class.from_config_create_post_post(base_settings)
         return post_post

@@ -1,34 +1,35 @@
 {
-  "experiment_name" : "GaussSMCGenTemp",
-  "database"  :{
-    "address"   : "localhost:27017"
+  "experiment_name": "GaussSMCGenTemp",
+  "database": {
+    "type": "mongodb",
+    "address": "localhost:27017"
   },
   "method": {
     "method_name": "smc",
-    "method_options" : {
-      "seed" : 42,
-      "num_particles" : 200,
-      "model" : "model",
-      "temper_type" : "generic",
-      "plot_trace_every" : 0,
-      "result_description" : {
-          "write_results" : true,
-          "plot_results" : false,
-          "cov" : true
+    "method_options": {
+      "seed": 42,
+      "num_particles": 200,
+      "model": "model",
+      "temper_type": "generic",
+      "plot_trace_every": 0,
+      "result_description": {
+        "write_results": true,
+        "plot_results": false,
+        "cov": true
       }
     }
   },
   "MCMC_Kernel": {
     "method_name": "metropolis-hastings",
-    "method_options" : {
-      "as_mcmc_kernel" : true,
-      "num_chains" : 20,
-      "num_samples" : 20,
-      "proposal_distribution" : "normal_proposal"
+    "method_options": {
+      "as_mcmc_kernel": true,
+      "num_chains": 20,
+      "num_samples": 20,
+      "proposal_distribution": "normal_proposal"
     }
   },
-  "model" : {
-    "type" : "likelihood_model",
+  "model": {
+    "type": "likelihood_model",
     "subtype": "gaussian_static",
     "forward_model": "forward_model",
     "output_label": "y_obs",
@@ -36,52 +37,93 @@
     "likelihood_noise_type": "fixed",
     "fixed_likelihood_noise_value": 1.0,
     "nugget_noise_var": 1E-5,
-    "experimental_csv_data_base_dirs": ["{experimental_data_path}"],
-    "parameters" : "parameters"
+    "experimental_csv_data_base_dirs": [
+      "{experimental_data_path}"
+    ],
+    "parameters": "parameters"
   },
-  "forward_model":{
+  "forward_model": {
     "type": "simulation_model",
-    "interface" : "interface",
-    "parameters" : "parameters"
+    "interface": "interface",
+    "parameters": "parameters"
   },
-  "normal_proposal" : {
-    "type" : "normal",
-    "mean" : [0.0, 0.0, 0.0, 0.0],
-    "cov" : [[1.0, 0.00, 0.00, 0.00],
-             [0.00, 1.0, 0.00, 0.00],
-             [0.00, 0.00, 1.0, 0.00],
-             [0.00, 0.00, 0.00, 1.0]]
+  "normal_proposal": {
+    "type": "normal",
+    "mean": [
+      0.0,
+      0.0,
+      0.0,
+      0.0
+    ],
+    "cov": [
+      [
+        1.0,
+        0.00,
+        0.00,
+        0.00
+      ],
+      [
+        0.00,
+        1.0,
+        0.00,
+        0.00
+      ],
+      [
+        0.00,
+        0.00,
+        1.0,
+        0.00
+      ],
+      [
+        0.00,
+        0.00,
+        0.00,
+        1.0
+      ]
+    ]
   },
-  "interface" : {
-    "type" : "direct_python_interface",
-    "num_workers" : 1,
-    "main_file" : "multivariate_gaussian_4D_logpdf.py"
+  "interface": {
+    "type": "direct_python_interface",
+    "num_workers": 1,
+    "main_file": "multivariate_gaussian_4D_logpdf.py"
   },
-  "parameters" : {
-    "random_variables" : {
-      "x1" : {
-        "type" : "FLOAT",
-        "size" : 1,
-        "distribution" : "normal",
-        "distribution_parameter" : [1.0,5.0]
+  "parameters": {
+    "random_variables": {
+      "x1": {
+        "type": "FLOAT",
+        "size": 1,
+        "distribution": "normal",
+        "distribution_parameter": [
+          1.0,
+          5.0
+        ]
       },
-      "x2" : {
-        "type" : "FLOAT",
-        "size" : 1,
-        "distribution" : "normal",
-        "distribution_parameter" : [3.0,5.0]
+      "x2": {
+        "type": "FLOAT",
+        "size": 1,
+        "distribution": "normal",
+        "distribution_parameter": [
+          3.0,
+          5.0
+        ]
       },
-      "x3" : {
-        "type" : "FLOAT",
-        "size" : 1,
-        "distribution" : "normal",
-        "distribution_parameter" : [-3.0,5.0]
+      "x3": {
+        "type": "FLOAT",
+        "size": 1,
+        "distribution": "normal",
+        "distribution_parameter": [
+          -3.0,
+          5.0
+        ]
       },
-      "x4" : {
-        "type" : "FLOAT",
-        "size" : 1,
-        "distribution" : "normal",
-        "distribution_parameter" : [1.0,5.0]
+      "x4": {
+        "type": "FLOAT",
+        "size": 1,
+        "distribution": "normal",
+        "distribution_parameter": [
+          1.0,
+          5.0
+        ]
       }
     }
   }

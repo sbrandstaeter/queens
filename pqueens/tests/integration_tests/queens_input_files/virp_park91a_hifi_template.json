@@ -1,6 +1,7 @@
 {
   "experiment_name": "inverse_virp_park91a_hifi",
   "database": {
+    "type": "mongodb",
     "address": "localhost:27017"
   },
   "method": {

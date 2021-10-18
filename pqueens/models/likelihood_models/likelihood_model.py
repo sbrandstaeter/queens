@@ -5,7 +5,7 @@ import glob
 import pprint
 import pandas as pd
 from pqueens.models.model import Model
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 
 
 class LikelihoodModel(Model):
@@ -81,7 +81,7 @@ class LikelihoodModel(Model):
         output_label = model_options.get('output_label')
         coord_labels = model_options.get('coordinate_labels')
         time_label = model_options.get('time_label')
-        db = MongoDB.from_config_create_database(config)
+        db = DB_module.database
         global_settings = config.get('global_settings', None)
         experimental_data_path_list = model_options.get("experimental_csv_data_base_dirs")
         experiment_name = global_settings["experiment_name"]

@@ -6,7 +6,7 @@ import json
 from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.models.model import Model
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 
 
 @pytest.mark.lnm_cluster
@@ -131,24 +131,28 @@ def test_cluster_postpost_ensight(
         config["global_settings"] = global_settings
         config["input_file"] = str(input_file)
 
-    # Add experimental coordinates to the database
-    database = MongoDB.from_config_create_database(config, reset_database=True)
-    experimental_data_dict = {"x1": [-16, 10], "x2": [7, 15], "x3": [0.63, 0.2]}
-    database.save(experimental_data_dict, experiment_name, 'experimental_data', 1)
+    # Initialise db module
+    DB_module.from_config_create_database(config)
 
-    # Create a BACI model for the benchmarks
-    model = Model.from_config_create_model("model", config)
+    with DB_module.database as db:
 
-    # Evaluate the first batch
-    first_sample_batch = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])
-    model.update_model_from_sample_batch(first_sample_batch)
-    first_batch = np.array(model.evaluate()["mean"])
+        # Add experimental coordinates to the database
+        experimental_data_dict = {"x1": [-16, 10], "x2": [7, 15], "x3": [0.63, 0.2]}
+        db.save(experimental_data_dict, experiment_name, 'experimental_data', 1)
 
-    # Evaluate a second batch
-    # In order to make sure that no port is closed after one batch
-    second_sample_batch = np.array([[0.25, 25], [0.4, 46], [0.47, 211]])
-    model.update_model_from_sample_batch(second_sample_batch)
-    second_batch = np.array(model.evaluate()["mean"][-3:])
+        # Create a BACI model for the benchmarks
+        model = Model.from_config_create_model("model", config)
+
+        # Evaluate the first batch
+        first_sample_batch = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])
+        model.update_model_from_sample_batch(first_sample_batch)
+        first_batch = np.array(model.evaluate()["mean"])
+
+        # Evaluate a second batch
+        # In order to make sure that no port is closed after one batch
+        second_sample_batch = np.array([[0.25, 25], [0.4, 46], [0.47, 211]])
+        model.update_model_from_sample_batch(second_sample_batch)
+        second_batch = np.array(model.evaluate()["mean"][-3:])
 
     # Check results
     first_batch_reference_solution = np.array(

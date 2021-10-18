@@ -21,6 +21,7 @@ import sys
 from pqueens.drivers.driver import Driver
 from pqueens.utils.manage_singularity import hash_files
 import logging
+import pqueens.database.database as DB_module
 
 _logger = logging.getLogger(__name__)
 
@@ -86,12 +87,15 @@ def main(args):
             except FileNotFoundError:
                 raise FileNotFoundError("temp.json did not load properly.")
 
-            driver_obj = Driver.from_config_create_driver(config, job_id, batch, driver_name)
+            config["database"]["reset_existing_db"] = False
+            DB_module.from_config_create_database(config)
+            with DB_module.database:
+                driver_obj = Driver.from_config_create_driver(config, job_id, batch, driver_name)
 
-            # Run the singularity image in two stages waiting for each other but within one
-            # singularity call
-            driver_obj.pre_job_run_and_run_job()
-            driver_obj.post_job_run()
+                # Run the singularity image in two stages waiting for each other but within one
+                # singularity call
+                driver_obj.pre_job_run_and_run_job()
+                driver_obj.post_job_run()
         else:
             try:
                 abs_path = os.path.join(path_json, 'temp.json')
@@ -115,15 +119,18 @@ def main(args):
                 raise FileNotFoundError("temp.json did not load properly.")
 
             path_to_post_post_file = os.path.join(path_json, 'post_post/post_post.py')
-            driver_obj = Driver.from_config_create_driver(
-                config, job_id, batch, driver_name, port, path_to_post_post_file, workdir
-            )
-            # Run the singularity image in two steps and two different singularity calls to have
-            # more freedom concerning mpi ranks
-            if post == 'true':
-                driver_obj.post_job_run()
-            else:
-                driver_obj.pre_job_run_and_run_job()
+            config["database"]["reset_existing_db"] = False
+            DB_module.from_config_create_database(config)
+            with DB_module.database:
+                driver_obj = Driver.from_config_create_driver(
+                    config, job_id, batch, driver_name, port, path_to_post_post_file, workdir
+                )
+                # Run the singularity image in two steps and two different singularity calls to have
+                # more freedom concerning mpi ranks
+                if post == 'true':
+                    driver_obj.post_job_run()
+                else:
+                    driver_obj.pre_job_run_and_run_job()
     except Exception as singularity_error:
         _logger.error(f"Queens remote main run failed!:")
         try:

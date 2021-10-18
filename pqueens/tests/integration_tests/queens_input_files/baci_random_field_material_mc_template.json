@@ -2,6 +2,7 @@
   "experiment_name": "baci_write_random_field_to_dat",
   "restart": false,
   "database": {
+    "type": "mongodb",
     "address": "localhost:27017"
   },
   "method": {

@@ -10,7 +10,7 @@ from pqueens.utils import mcmc_utils
 from pqueens.utils.input_to_random_variable import get_random_samples
 from .iterator import Iterator
 from pqueens.external_geometry.external_geometry import ExternalGeometry
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 import copy
 import logging
 
@@ -82,7 +82,7 @@ class MonteCarloIterator(Iterator):
         else:
             external_geometry_obj = None
 
-        db = MongoDB.from_config_create_database(config)
+        db = DB_module.database
 
         return cls(
             model,

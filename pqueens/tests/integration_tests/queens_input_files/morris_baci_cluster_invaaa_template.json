@@ -1,6 +1,7 @@
 {
   "experiment_name": "{experiment_name}",
   "database": {
+    "type": "mongodb",
     "name": "queens_db_cluster_test_morris_invaaa",
     "address": "localhost:27017"
   },
@@ -49,22 +50,37 @@
   "driver": {
     "driver_type": "baci",
     "driver_params": {
-      "experiment_dir" : "{experiment_dir}",
+      "experiment_dir": "{experiment_dir}",
       "input_template": "{input_template}",
       "path_to_executable": "{path_to_executable}",
       "path_to_postprocessor": "{path_to_drt_monitor}",
-       "post_file_name_prefix_lst": ["QoI"],
+      "post_file_name_prefix_lst": [
+        "QoI"
+      ],
       "post_process_options": [
         "--field=structure --node=26 --start=1"
       ],
       "post_post": {
         "post_post_approach_sel": "baci",
         "delete_field_data": false,
-        "target_time_lst": [5e-1],
-        "time_tol_lst": [1e-2],
-        "post_post_file_name_prefix_lst": ["QoI"],
-        "use_col_lst": [[1, 3]],
-        "skip_rows_lst": [4]
+        "target_time_lst": [
+          5e-1
+        ],
+        "time_tol_lst": [
+          1e-2
+        ],
+        "post_post_file_name_prefix_lst": [
+          "QoI"
+        ],
+        "use_col_lst": [
+          [
+            1,
+            3
+          ]
+        ],
+        "skip_rows_lst": [
+          4
+        ]
       }
     }
   },
@@ -75,7 +91,7 @@
       "max-finished-jobs": 1000
     }
   },
-  "scheduler" : {
+  "scheduler": {
     "scheduler_type": "{scheduler_type}",
     "experiment_dir": "{experiment_dir}",
     "num_procs": 1,
