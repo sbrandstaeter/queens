@@ -1,7 +1,11 @@
 {
     "experiment_name": "{experiment_name}",
     "restart": true,
-    "database": {"address": "localhost:27017"},
+    "database": {
+        "type": "mongodb",
+        "address": "localhost:27017",
+        "reset_existing_db": {drop_database_boolean}
+    },
     "method": {
         "method_name": "sa_morris_salib",
         "method_options": {
@@ -34,24 +38,49 @@
             }
         }
     },
-    "model": {"type": "simulation_model", "interface": "interface", "parameters": "parameters"},
-    "interface": {"type": "job_interface", "resources": "resources", "driver": "driver"},
+    "model": {
+        "type": "simulation_model",
+        "interface": "interface",
+        "parameters": "parameters"
+    },
+    "interface": {
+        "type": "job_interface",
+        "resources": "resources",
+        "driver": "driver"
+    },
     "driver": {
         "driver_type": "baci",
         "driver_params": {
             "input_template": "{baci_input}",
             "path_to_executable": "{baci-release}",
             "path_to_postprocessor": "{post_drt_monitor}",
-            "post_file_name_prefix_lst": ["QoI"],
-            "post_process_options": ["--field=structure --node=26 --start=1"],
+            "post_file_name_prefix_lst": [
+                "QoI"
+            ],
+            "post_process_options": [
+                "--field=structure --node=26 --start=1"
+            ],
             "post_post": {
                 "post_post_approach_sel": "baci",
                 "delete_field_data": false,
-                "target_time_lst": [5e-1],
-                "time_tol_lst": [1e-2],
-                "post_post_file_name_prefix_lst": ["QoI"],
-                "use_col_lst": [[1, 3]],
-                "skip_rows_lst": [4]
+                "target_time_lst": [
+                    5e-1
+                ],
+                "time_tol_lst": [
+                    1e-2
+                ],
+                "post_post_file_name_prefix_lst": [
+                    "QoI"
+                ],
+                "use_col_lst": [
+                    [
+                        1,
+                        3
+                    ]
+                ],
+                "skip_rows_lst": [
+                    4
+                ]
             }
         }
     },
@@ -71,8 +100,18 @@
     },
     "parameters": {
         "random_variables": {
-            "nue": {"type": "FLOAT", "size": 1, "min": 0.45, "max": 0.49},
-            "pressure": {"type": "FLOAT", "size": 1, "min": 28000, "max": 38000}
+            "nue": {
+                "type": "FLOAT",
+                "size": 1,
+                "min": 0.45,
+                "max": 0.49
+            },
+            "pressure": {
+                "type": "FLOAT",
+                "size": 1,
+                "min": 28000,
+                "max": 38000
+            }
         }
     }
 }

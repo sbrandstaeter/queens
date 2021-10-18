@@ -1,20 +1,21 @@
 {
-  "experiment_name" : "xxx",
-  "database"  :{
-    "address"   : "localhost:27017"
+  "experiment_name": "xxx",
+  "database": {
+    "type": "mongodb",
+    "address": "localhost:27017"
   },
   "method": {
     "method_name": "sa_morris_salib",
-    "method_options" :{
-      "seed" : 2,
-      "model" : "model",
-      "num_trajectories" : 100,
-      "num_optimal_trajectories" : 4,
-      "grid_jump" : 2,
-      "number_of_levels" : 10,
-      "confidence_level" : 0.95,
-      "local_optimization" : "False",
-      "num_bootstrap_samples" : 1000,
+    "method_options": {
+      "seed": 2,
+      "model": "model",
+      "num_trajectories": 100,
+      "num_optimal_trajectories": 4,
+      "grid_jump": 2,
+      "number_of_levels": 10,
+      "confidence_level": 0.95,
+      "local_optimization": "False",
+      "num_bootstrap_samples": 1000,
       "result_description": {
         "write_results": true,
         "plotting_options": {
@@ -35,35 +36,35 @@
       }
     }
   },
-  "model" : {
-    "type" : "simulation_model",
-    "interface" : "interface",
-    "parameters" : "parameters"
+  "model": {
+    "type": "simulation_model",
+    "interface": "interface",
+    "parameters": "parameters"
   },
-  "interface" : {
-    "type" : "direct_python_interface",
-    "main_file" : "ishigami.py"
+  "interface": {
+    "type": "direct_python_interface",
+    "main_file": "ishigami.py"
   },
-  "parameters" : {
-    "random_variables" : {
-      "x1" : {
-        "type" : "FLOAT",
-        "size" : 1,
-        "min"  : -3.14159265359,
-        "max"  : 3.14159265359
-    },
-    "x2" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : -3.14159265359,
-      "max"  : 3.14159265359
-    },
-      "x3" : {
-      "type" : "FLOAT",
-      "size" : 1,
-      "min"  : -3.14159265359,
-      "max"  : 3.14159265359
+  "parameters": {
+    "random_variables": {
+      "x1": {
+        "type": "FLOAT",
+        "size": 1,
+        "min": -3.14159265359,
+        "max": 3.14159265359
+      },
+      "x2": {
+        "type": "FLOAT",
+        "size": 1,
+        "min": -3.14159265359,
+        "max": 3.14159265359
+      },
+      "x3": {
+        "type": "FLOAT",
+        "size": 1,
+        "min": -3.14159265359,
+        "max": 3.14159265359
+      }
     }
-  }
   }
 }

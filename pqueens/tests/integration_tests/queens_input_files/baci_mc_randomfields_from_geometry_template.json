@@ -1,90 +1,107 @@
 {
-  "experiment_name" : "baci_mc_randomfields_from_geometry",
-  "database"  :{
-    "address" : "localhost:27017"
+  "experiment_name": "baci_mc_randomfields_from_geometry",
+  "database": {
+    "type": "mongodb",
+    "address": "localhost:27017"
   },
   "method": {
     "method_name": "monte_carlo",
-    "method_options" :{
-      "seed" : 1,
-      "num_samples" : 10000,
-      "model" : "model",
-      "result_description" : {
-          "write_results" : true,
-          "plot_results" : false
+    "method_options": {
+      "seed": 1,
+      "num_samples": 10000,
+      "model": "model",
+      "result_description": {
+        "write_results": true,
+        "plot_results": false
       }
     }
   },
   "external_geometry": {
     "type": "baci_dat",
-    "list_geometric_sets": ["DSURFACE 9"],
+    "list_geometric_sets": [
+      "DSURFACE 9"
+    ],
     "queens_tmp_dir": "{experiment_dir}"
   },
-  "model" : {
-    "type" : "simulation_model",
-    "interface" : "interface",
-    "parameters" : "parameters"
+  "model": {
+    "type": "simulation_model",
+    "interface": "interface",
+    "parameters": "parameters"
   },
-  "interface" : {
-    "type" : "job_interface",
+  "interface": {
+    "type": "job_interface",
     "resources": "resources",
-    "driver" : "driver"
+    "driver": "driver"
   },
-  "driver" :{
-    "driver_type"           : "baci",
-    "driver_params"         :{
-      "input_template"        : "{baci_input}",
-      "path_to_executable"    : "{baci-release}",
-      "path_to_postprocessor" : "{post_drt_monitor}",
-      "post_process_options"  : ["--field=structure --node=220 --start=1","--field=structure --node=219 --start=1", "--field=structure --node=344 --start=1"],
+  "driver": {
+    "driver_type": "baci",
+    "driver_params": {
+      "input_template": "{baci_input}",
+      "path_to_executable": "{baci-release}",
+      "path_to_postprocessor": "{post_drt_monitor}",
+      "post_process_options": [
+        "--field=structure --node=220 --start=1",
+        "--field=structure --node=219 --start=1",
+        "--field=structure --node=344 --start=1"
+      ],
       "post_post": {
-          "post_post_approach_sel": "baci",
-          "delete_field_data": false,
-          "target_time": 5e-1,
-          "time_tol": 1e-2,
-          "file_prefix": "QoI",
-          "usecols": [1, 3],
-          "skiprows": 4
+        "post_post_approach_sel": "baci",
+        "delete_field_data": false,
+        "target_time": 5e-1,
+        "time_tol": 1e-2,
+        "file_prefix": "QoI",
+        "usecols": [
+          1,
+          3
+        ],
+        "skiprows": 4
       }
     }
   },
-  "resources" : {
-    "local_machine" : {
-      "scheduler"         : "local_scheduler",
-      "max-concurrent"    : 1,
-      "max-finished-jobs" : 10001
+  "resources": {
+    "local_machine": {
+      "scheduler": "local_scheduler",
+      "max-concurrent": 1,
+      "max-finished-jobs": 10001
     }
   },
-  "local_scheduler" : {
-    "experiment_dir" : "{experiment_dir}",
-    "scheduler_type" : "standard",
-    "num_procs" : 4,
-    "num_procs_post" : 1
+  "local_scheduler": {
+    "experiment_dir": "{experiment_dir}",
+    "scheduler_type": "standard",
+    "num_procs": 4,
+    "num_procs_post": 1
   },
-  "parameters" : {
-    "random_variables" : {
-      "emodul" : {
-        "type" : "FLOAT",
-        "size" : 1,
-        "distribution" : "lognormal",
-        "distribution_parameter" : [6.392,0.0705]
-      }},
-    "random_fields" : {
-      "random_inflow" : {
-        "type" : "FLOAT",
+  "parameters": {
+    "random_variables": {
+      "emodul": {
+        "type": "FLOAT",
+        "size": 1,
+        "distribution": "lognormal",
+        "distribution_parameter": [
+          6.392,
+          0.0705
+        ]
+      }
+    },
+    "random_fields": {
+      "random_inflow": {
+        "type": "FLOAT",
         "external_definition": {
           "type": "dirichlet",
           "external_instance": "DSURFACE 9"
         },
-        "dimension" :  2,
-        "min"  : 0,
-        "max"  : 1,
-        "corrstruct" : "generic_external_random_field",
+        "dimension": 2,
+        "min": 0,
+        "max": 1,
+        "corrstruct": "generic_external_random_field",
         "corr_length": 0.08,
         "std_hyperparam_rf": 0.1,
         "mean_fun": "inflow_parabola",
-        "mean_fun_params": [1.5],
-        "num_points" : 200
+        "mean_fun_params": [
+          1.5
+        ],
+        "num_points": 200
+      }
     }
   }
-  }}
+}

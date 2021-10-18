@@ -21,7 +21,7 @@ except ImportError:
     import json
 
 from pqueens.iterators.iterator import Iterator
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 
 
 def main(args):
@@ -50,35 +50,27 @@ def main(args):
         pathlib.Path(options["global_settings"]["output_dir"]),
         options["global_settings"]["experiment_name"],
     )
+    DB_module.from_config_create_database(options)
 
-    # create database
-    database = options.get('database', None)
-    if database:
-        # reset database if a database with the same name already exists unless restart is enabled
-        restart = options.get("restart", False)
-        if not restart:
-            reset_database = True
-        else:
-            reset_database = False
-        reset_database = MongoDB.from_config_create_database(options, reset_database=reset_database)
+    with DB_module.database as db:
 
-    # build iterator
-    my_iterator = Iterator.from_config_create_iterator(options)
+        # build iterator
+        my_iterator = Iterator.from_config_create_iterator(options)
 
-    end_time_input = time.time()
+        end_time_input = time.time()
 
-    print("")
-    print(f"Time for INPUT: {end_time_input - start_time_input} s")
-    print("")
+        print("")
+        print(f"Time for INPUT: {end_time_input - start_time_input} s")
+        print("")
 
-    start_time_calc = time.time()
+        start_time_calc = time.time()
 
-    print("")
-    print("Starting Analysis...")
-    print("")
+        print("")
+        print("Starting Analysis...")
+        print("")
 
-    # perform analysis
-    my_iterator.run()
+        # perform analysis
+        my_iterator.run()
 
     end_time_calc = time.time()
     print("")

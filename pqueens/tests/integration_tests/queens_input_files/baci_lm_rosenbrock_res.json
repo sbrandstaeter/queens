@@ -1,46 +1,49 @@
 {
-  "experiment_name" : "OptimizeLM",
-  "database"  :{
-    "address"   : "localhost:27017"
-    },
+  "experiment_name": "OptimizeLM",
+  "database": {
+    "type": "mongodb",
+    "address": "localhost:27017"
+  },
   "method": {
     "method_name": "baci_lm",
-    "method_options" :{
-      "model" : "model",
-      "jac_method":"2-point",
-      "jac_rel_step":1e-5,
-      "jac_abs_step":1e-3,
-      "max_feval":99,
+    "method_options": {
+      "model": "model",
+      "jac_method": "2-point",
+      "jac_rel_step": 1e-5,
+      "jac_abs_step": 1e-3,
+      "max_feval": 99,
       "init_reg": 0.01,
       "update_reg": "grad",
-      "convergence_tolerance":1e-6,
-      "initial_guess" : [0.9 , 0.9],
-      "result_description" : {
-          "write_results" : true,
-          "plot_results" : true
-          }
+      "convergence_tolerance": 1e-6,
+      "initial_guess": [
+        0.9,
+        0.9
+      ],
+      "result_description": {
+        "write_results": true,
+        "plot_results": true
+      }
     }
   },
-  "model" : {
-    "type" : "simulation_model",
-    "interface" : "interface",
-    "parameters" : "parameters"
+  "model": {
+    "type": "simulation_model",
+    "interface": "interface",
+    "parameters": "parameters"
   },
-    "interface" : {
-      "type" : "direct_python_interface",
-      "main_file" : "rosenbrock_residual.py"
-    },
-  "parameters" : {
-    "random_variables" : {
-      "x1" : {
-        "type" : "FLOAT",
-        "size" : 1
+  "interface": {
+    "type": "direct_python_interface",
+    "main_file": "rosenbrock_residual.py"
+  },
+  "parameters": {
+    "random_variables": {
+      "x1": {
+        "type": "FLOAT",
+        "size": 1
       },
-      "x2" : {
-        "type" : "FLOAT",
-        "size" : 1
+      "x2": {
+        "type": "FLOAT",
+        "size": 1
       }
     }
   }
 }
-

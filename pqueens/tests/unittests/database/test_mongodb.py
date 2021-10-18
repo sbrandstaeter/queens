@@ -200,7 +200,8 @@ def test_connection_fails(username):
 
     """
     with pytest.raises(ServerSelectionTimeoutError):
-        MongoDB.from_config_create_database({"database": {"address": "localhos:2016"}})
+        db = MongoDB.from_config_create_database({"database": {"address": "localhos:2016"}})
+        db._connect()
 
 
 def test_read_write_delete(username, dummy_job, experiment_name, batch_id_1, job_id):
@@ -232,53 +233,55 @@ def test_read_write_delete(username, dummy_job, experiment_name, batch_id_1, job
                 "database": {"address": "mongodb:27017", "drop_all_existing_dbs": True},
             }
         )
+    with db:
+        # save some dummy data
+        # save non-existing job with field_filter that will not match any entry -> insert new
+        # document
+        db.save(dummy_job, experiment_name, 'jobs', batch_id_1, {'id': job_id})
+        # empty field_filter will result in the insertion of a new document
+        # after this there will be two documents in the collection
+        db.save(dummy_job, experiment_name, 'jobs', batch_id_1)
 
-    # save some dummy data
-    # save non-existing job with field_filter that will not match any entry -> insert new document
-    db.save(dummy_job, experiment_name, 'jobs', batch_id_1, {'id': job_id})
-    # empty field_filter will result in the insertion of a new document
-    # after this there will be two documents in the collection
-    db.save(dummy_job, experiment_name, 'jobs', batch_id_1)
+        # try to retrieve it
+        jobs = db.load(experiment_name, batch_id_1, 'jobs')
+        if isinstance(jobs, dict):
+            jobs = [jobs]
 
-    # try to retrieve it
-    jobs = db.load(experiment_name, batch_id_1, 'jobs')
-    if isinstance(jobs, dict):
-        jobs = [jobs]
+        test = jobs[0]['dummy_field1']
+        assert test == 'garbage'
 
-    test = jobs[0]['dummy_field1']
-    assert test == 'garbage'
-
-    # remove dummy data
-    db.remove(experiment_name, 'jobs', batch_id_1)
-    jobs = db.load(experiment_name, batch_id_1, 'jobs')
-    # assert that jobs is empty
-    assert not jobs
+        # remove dummy data
+        db.remove(experiment_name, 'jobs', batch_id_1)
+        jobs = db.load(experiment_name, batch_id_1, 'jobs')
+        # assert that jobs is empty
+        assert not jobs
 
 
 def test_write_multiple_entries(username, dummy_job, experiment_name, batch_id_2, job_id):
 
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017"}}, reset_database=True
+            {"database": {"address": "localhost:27017", "reset_existing_db": True}}
         )
     except:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017"}}, reset_database=True
+            {"database": {"address": "mongodb:27017", "reset_existing_db": True}}
         )
 
-    # save some dummy data
-    db.save(dummy_job, experiment_name, 'jobs', batch_id_2)
-    db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {'id': job_id})
+    with db:
+        # save some dummy data
+        db.save(dummy_job, experiment_name, 'jobs', batch_id_2)
+        db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {'id': job_id})
 
-    jobs = db.load(experiment_name, batch_id_2, 'jobs')
-    if isinstance(jobs, dict):
-        jobs = [jobs]
-    assert len(jobs) == 2
+        jobs = db.load(experiment_name, batch_id_2, 'jobs')
+        if isinstance(jobs, dict):
+            jobs = [jobs]
+        assert len(jobs) == 2
 
-    # should cause problems
-    with pytest.raises(Exception):
-        db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {"dummy_field1": "garbage"})
+        # should cause problems
+        with pytest.raises(Exception):
+            db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {"dummy_field1": "garbage"})
 
 
 def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):
@@ -292,21 +295,22 @@ def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):
             {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
         )
 
-    db._pack_pandas_dataframe(dummy_doc_with_pandas_multi)
-    db.save(dummy_doc_with_pandas_multi, 'dummy', 'jobs', 1)
-    assert isinstance(dummy_doc_with_pandas_multi['result'], list)
+    with db:
+        db._pack_pandas_dataframe(dummy_doc_with_pandas_multi)
+        db.save(dummy_doc_with_pandas_multi, 'dummy', 'jobs', 1)
+        assert isinstance(dummy_doc_with_pandas_multi['result'], list)
 
-    expected_format = np.array(
-        [
-            [2, 'pd.DataFrame', None],
-            ['first', 'second', 0],
-            ['bar', 'one', 1.6243453636632417],
-            ['bar', 'two', -0.6117564136500754],
-        ]
-    )
-    np.testing.assert_array_equal(
-        np.array(dummy_doc_with_pandas_multi['result'][:4]), expected_format
-    )
+        expected_format = np.array(
+            [
+                [2, 'pd.DataFrame', None],
+                ['first', 'second', 0],
+                ['bar', 'one', 1.6243453636632417],
+                ['bar', 'two', -0.6117564136500754],
+            ]
+        )
+        np.testing.assert_array_equal(
+            np.array(dummy_doc_with_pandas_multi['result'][:4]), expected_format
+        )
 
 
 def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
@@ -320,15 +324,16 @@ def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
             {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
         )
 
-    db._pack_pandas_dataframe(dummy_doc_with_pandas_simple)
-    db.save(dummy_doc_with_pandas_simple, 'dummy', 'jobs', 1)
-    assert isinstance(dummy_doc_with_pandas_simple['result'], list)
-    expected_format = np.array(
-        [[1, 'pd.DataFrame', None, None], ['index', 0, 1, 2], ['a', 1, 2, 3], ['b', 4, 5, 6],]
-    )
-    np.testing.assert_array_equal(
-        np.array(dummy_doc_with_pandas_simple['result'][:4]), expected_format
-    )
+    with db:
+        db._pack_pandas_dataframe(dummy_doc_with_pandas_simple)
+        db.save(dummy_doc_with_pandas_simple, 'dummy', 'jobs', 1)
+        assert isinstance(dummy_doc_with_pandas_simple['result'], list)
+        expected_format = np.array(
+            [[1, 'pd.DataFrame', None, None], ['index', 0, 1, 2], ['a', 1, 2, 3], ['b', 4, 5, 6],]
+        )
+        np.testing.assert_array_equal(
+            np.array(dummy_doc_with_pandas_simple['result'][:4]), expected_format
+        )
 
 
 def test_pack_xarrays(dummy_doc_with_xarray_dataarray):

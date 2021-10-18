@@ -1,6 +1,7 @@
 {
   "experiment_name": "xxx",
   "database": {
+    "type": "mongodb",
     "address": "localhost:27017"
   },
   "method": {

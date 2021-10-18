@@ -5,6 +5,7 @@ Created on January 18th  2018
 '''
 
 import unittest
+
 import mock
 from pqueens.main import get_options
 from pqueens.main import main as queens_main
@@ -14,10 +15,8 @@ class TestQUEENSMain(unittest.TestCase):
     def setUp(self):
         self.options = {
             "experiment_name": "my_test",
-            "global_settings": {
-                "output_dir": 'dummy_path',
-                "experiment_name": 'xxx'
-            },
+            "global_settings": {"output_dir": 'dummy_path', "experiment_name": 'xxx'},
+            "database": {"type": "mongodb", "reset_existing_db": True},
             "method": {
                 "method_name": "monte_carlo",
                 "method_options": {"seed": 42, "num_samples": 20, "model": "model"},

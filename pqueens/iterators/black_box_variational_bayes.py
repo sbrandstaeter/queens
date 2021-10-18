@@ -1,14 +1,13 @@
+import logging
 import time
-import numpy as np
 
+import numpy as np
+import pqueens.database.database as DB_module
+import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
+from pqueens.utils import mcmc_utils, variational_inference_utils
 from pqueens.utils.process_outputs import write_results
-from pqueens.database.mongodb import MongoDB
-from pqueens.utils import variational_inference_utils
-from pqueens.utils import mcmc_utils
-import pqueens.visualization.variational_inference_visualization as vis
-import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -231,7 +230,7 @@ class BBVIIterator(Iterator):
         result_description = method_options.get('result_description', None)
         global_settings = config.get('global_settings', None)
 
-        db = MongoDB.from_config_create_database(config)
+        db = DB_module.database
         experiment_name = config['global_settings']['experiment_name']
         relative_change_variational_params = method_options.get(
             'min_relative_change_variational_params', 0.01

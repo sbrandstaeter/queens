@@ -4,7 +4,7 @@ import os
 import sys
 import time
 
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 
 
@@ -213,9 +213,7 @@ class Driver(metaclass=abc.ABCMeta):
 
         # 3) database settings
         base_settings['port'] = port
-        db = MongoDB.from_config_create_database(config)
-        base_settings['database'] = db
-
+        base_settings['database'] = DB_module.database
         # 4) general driver settings
 
         # load correct driver settings

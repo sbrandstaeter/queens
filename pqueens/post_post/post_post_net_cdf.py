@@ -3,7 +3,7 @@ import os
 import numpy as np
 import xarray as xr
 from pqueens.post_post.post_post import PostPost
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 
 
 class PostPostNetCDF(PostPost):
@@ -56,7 +56,7 @@ class PostPostNetCDF(PostPost):
         experiment_name = options['config']['global_settings']['experiment_name']
         coordinate_labels = options['config']['method']['method_options']['coordinate_labels']
         output_label = options['config']['method']['method_options']['output_label']
-        db = MongoDB.from_config_create_database(options['config'])
+        db = DB_module.datbase
         replace_non_numerics = options['config']['driver']['driver_params']['post_post'].get(
             'replace_non_numeric_values'
         )

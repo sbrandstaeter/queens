@@ -3,7 +3,7 @@ import glob
 import numpy as np
 import pandas as pd
 import vtk
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 from pqueens.post_post.post_post import PostPost
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
@@ -99,7 +99,7 @@ class PostPostBACIEnsight(PostPost):
         if not len_time == len_field_type == len_array_type == len_field_label == len_field_comp:
             raise IOError("List length of ensight field specifications have to be the same!")
 
-        database = MongoDB.from_config_create_database(options['config'])
+        database = DB_module.database
 
         # get some properties of the experimental data
         options['config']['database']['drop_all_existing_dbs'] = False

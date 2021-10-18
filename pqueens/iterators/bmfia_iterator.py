@@ -1,7 +1,7 @@
 import logging
 
 import numpy as np
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
@@ -130,8 +130,7 @@ class BMFIAIterator(Iterator):
         # ---------- create database object to load coordinates --------------------------
         output_label = config[model_name].get("output_label")
         coord_labels = config[model_name].get("coordinate_labels")
-        db = MongoDB.from_config_create_database(config)
-
+        db = DB_module.database
         # ---------- calculate the optimal training samples via classmethods ----------
         x_train = cls._calculate_optimal_x_train(initial_design_dict, external_geometry, lf_model)
 

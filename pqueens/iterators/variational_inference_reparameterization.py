@@ -6,7 +6,7 @@ import autograd.numpy as np
 import numpy as npy
 import pqueens.visualization.variational_inference_visualization as vis
 from autograd import grad
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
@@ -211,7 +211,7 @@ class VIRPIterator(Iterator):
         export_quantities_over_iter = result_description.get("export_iteration_data")
         global_settings = config.get('global_settings', None)
 
-        db = MongoDB.from_config_create_database(config)
+        db = DB_module.database
         experiment_name = config['global_settings']['experiment_name']
         relative_change_variational_params = method_options.get(
             'min_relative_change_variational_params', 0.01

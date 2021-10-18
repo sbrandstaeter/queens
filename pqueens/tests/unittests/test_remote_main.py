@@ -2,11 +2,12 @@
 Test if the remote main function catches failed singularity runs
 """
 
-import pytest
-from pqueens.remote_main import main
-import pqueens
 import json
 import os
+
+import pqueens
+import pytest
+from pqueens.remote_main import main
 
 
 @pytest.fixture(scope="module", params=[True, False])
@@ -15,7 +16,7 @@ def finalize_fail(request):
     return request.param
 
 
-@pytest.fixture(scope="module", params=["000", "666"])
+@pytest.fixture(scope="module", params=["000", "27017"])
 def port(request):
     return request.param
 
@@ -35,8 +36,8 @@ def test_exit_conditions_remote_main(mocker, monkeypatch, finalize_fail, port):
     def json_load_response(*args, **kwargs):
         dummy_dict = {
             "experiment_name": "entry",
-            "database": {"address": 121},
-            "scheduler": {"singularity_settings": {"remote_ip": 42}},
+            "database": {"type": "mongodb", "name": "test_remote_main",},
+            "scheduler": {"singularity_settings": {"remote_ip": "localhost"}},
         }
         return dummy_dict
 

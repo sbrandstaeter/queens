@@ -3,7 +3,7 @@ import time
 
 import numpy as np
 import pandas as pd
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
 from pqueens.utils.run_subprocess import run_subprocess
@@ -148,8 +148,7 @@ class JobInterface(Interface):
         # get flag for restart
         restart = config.get('restart', False)
 
-        # establish new database for this QUEENS run
-        db = MongoDB.from_config_create_database(config)
+        db = DB_module.database
 
         # get waiting time for copying data
         interface_options = config[interface_name]
@@ -673,9 +672,10 @@ class JobInterface(Interface):
         number_of_subdirectories = (
             int(str_number_of_subdirectories) if str_number_of_subdirectories else 0
         )
-        assert (
-            number_of_subdirectories != 0
-        ), "You chose restart_from_finished simulations, but your output folder is empty. "
+        if not number_of_subdirectories:
+            raise FileNotFoundError(
+                "You chose restart_from_finished simulations, but your output folder is empty."
+            )
 
         if number_of_subdirectories < samples.size:
             # Start from (number of subdirectories) + 1
