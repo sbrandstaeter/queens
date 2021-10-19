@@ -1,3 +1,4 @@
+import atexit
 import os
 import sys
 
@@ -7,7 +8,6 @@ from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
 from .scheduler import Scheduler
-import atexit
 
 
 class ClusterScheduler(Scheduler):
@@ -287,89 +287,6 @@ class ClusterScheduler(Scheduler):
                 return 0
         else:
             raise ValueError("\nSingularity cannot yet be used locally on computing clusters!")
-
-    def alive(self, process_id):  # TODO method might me depreciated!
-        """ Check whether job is alive
-        The function checks if job is alive. If it is not i.e., the job is
-        either on hold or suspended the function will attempt to kill it
-
-        Args:
-            process_id (int): id of process associated with job
-
-        Returns:
-            bool: is job alive or dead
-
-        """
-
-        # initialize alive flag to False
-        alive = False
-
-        # set check command, check location and delete command for PBS or SLURM
-        if self.scheduler_type == 'pbs':
-            check_cmd = 'qstat'
-            check_loc = -2
-            del_cmd = 'qdel'
-        else:
-            check_cmd = 'squeue --job'
-            check_loc = -4
-            del_cmd = 'scancel'
-
-        try:
-            # generate check command
-            command_list = [
-                'ssh',
-                self.remote_connect,
-                '"',
-                check_cmd,
-                str(process_id),
-                '"',
-            ]
-            command_string = ' '.join(command_list)
-            _, _, stdout, _ = run_subprocess(command_string)
-
-            # split output string
-            output2 = stdout.split()
-
-            # second/fourth to last entry should be job status
-            # TODO: Check if that still holds
-            status = output2[check_loc]
-        except ValueError:
-            # job not found
-            status = -1
-            sys.stdout.write("EXC: %s\n" % str(sys.exc_info()[0]))
-            sys.stdout.write("Could not find job for process id %d\n" % process_id)
-
-        if status == 'Q':
-            sys.stdout.write("Job %d waiting in queue.\n" % (process_id))
-            alive = True
-        elif status == 'R':
-            sys.stdout.write("Job %d running.\n" % (process_id))
-            alive = True
-        elif status in ['H', 'S']:
-            sys.stdout.write("Job %d held or suspended.\n" % (process_id))
-            alive = False
-
-        if not alive:
-            try:
-                # generate delete command
-                command_list = [
-                    'ssh',
-                    self.remote_connect,
-                    '"',
-                    del_cmd,
-                    str(process_id),
-                    '"',
-                ]
-                command_string = ' '.join(command_list)
-                _, _, stdout, stderr = run_subprocess(command_string)
-
-                sys.stdout.write("Killed job %d.\n" % (process_id))
-            except ValueError:
-                sys.stdout.write("Failed to kill job %d.\n" % (process_id))
-
-            return False
-        else:
-            return True
 
     # TODO this method needs to be replaced by job_id/scheduler_id check
     #  we can only check here if job was completed but might still be failed though

@@ -1,10 +1,12 @@
 import os
 import sys
-from .scheduler import Scheduler
-from pqueens.utils.run_subprocess import run_subprocess
+
 from pqueens.utils.injector import inject
-from pqueens.utils.string_extractor_and_checker import extract_string_from_output
+from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
+from pqueens.utils.string_extractor_and_checker import extract_string_from_output
+
+from .scheduler import Scheduler
 
 
 class ECSTaskScheduler(Scheduler):
@@ -124,16 +126,6 @@ class ECSTaskScheduler(Scheduler):
 
         """
         raise ValueError("\nSingularity cannot be used with ECS task scheduling!")
-
-    def alive(self, process_id):  # TODO: seems not to be used
-        """
-        Not necessary for AWS ECS scheduler but mandatory for parent class initialization
-
-        Returns:
-            None
-
-        """
-        pass
 
     def check_job_completion(self, job):
         """
