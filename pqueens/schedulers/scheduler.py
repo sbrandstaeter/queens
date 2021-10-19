@@ -2,11 +2,12 @@ try:
     import simplejson as json
 except ImportError:
     import json
+
 import abc
 
 import pqueens.interfaces.job_interface as job_interface
 from pqueens.drivers.driver import Driver
-from pqueens.utils.information_output import print_scheduling_information, print_driver_information
+from pqueens.utils.information_output import print_driver_information, print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
 
 
@@ -98,9 +99,9 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         """
         # import here to avoid issues with circular inclusion
-        from .standard_scheduler import StandardScheduler
         from .cluster_scheduler import ClusterScheduler
         from .ecs_task_scheduler import ECSTaskScheduler
+        from .standard_scheduler import StandardScheduler
 
         scheduler_dict = {
             'standard': StandardScheduler,
@@ -243,11 +244,6 @@ class Scheduler(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def _submit_singularity(self, job_id, batch, restart):
-        pass
-
-    @abc.abstractmethod
-    # check whether job is still alive (dependent on scheduler on cluster)
-    def alive(self, process_id):
         pass
 
     @abc.abstractmethod

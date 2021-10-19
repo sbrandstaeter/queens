@@ -1,8 +1,10 @@
 import os
 import sys
-from .scheduler import Scheduler
+
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.string_extractor_and_checker import check_if_string_in_file
+
+from .scheduler import Scheduler
 
 
 class StandardScheduler(Scheduler):
@@ -122,16 +124,6 @@ class StandardScheduler(Scheduler):
             return None
 
     def get_cluster_job_id(self):
-        """
-        Not necessary for standard scheduler but mandatory for parent class initialization
-
-        Returns:
-            None
-
-        """
-        pass
-
-    def alive(self, process_id):
         """
         Not necessary for standard scheduler but mandatory for parent class initialization
 
