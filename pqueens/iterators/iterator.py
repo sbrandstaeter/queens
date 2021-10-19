@@ -2,7 +2,7 @@ import abc
 
 
 class Iterator(metaclass=abc.ABCMeta):
-    """ Base class for Iterator hierarchy
+    """Base class for Iterator hierarchy
 
     This Iterator class is the base class for one of the primary class
     hierarchies in QUEENS.The job of the iterator hierarchy is to coordinate
@@ -22,7 +22,7 @@ class Iterator(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """ Create iterator from problem description
+        """Create iterator from problem description
 
         Args:
             config (dict):       Dictionary with QUEENS problem description
@@ -50,6 +50,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .single_sim_run_iterator import SingleSimRunIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+        from .sobol_sequence_iterator import SobolSequenceIterator
         from .variational_inference_reparameterization import VIRPIterator
 
         method_dict = {
@@ -63,6 +64,7 @@ class Iterator(metaclass=abc.ABCMeta):
             'sa_saltelli': SaltelliIterator,
             'sa_saltelli_salib': SaltelliSALibIterator,
             'smc': SequentialMonteCarloIterator,
+            'sobol_sequence': SobolSequenceIterator,
             'sing_sim_run': SingleSimRunIterator,
             'bmfmc': BMFMCIterator,
             'grid': GridIterator,
@@ -88,10 +90,10 @@ class Iterator(metaclass=abc.ABCMeta):
         pass
 
     def pre_run(self):
-        """ Optional pre-run portion of run
+        """Optional pre-run portion of run
 
-            Implemented by Iterators which can generate all Variables
-            a priori
+        Implemented by Iterators which can generate all Variables
+        a priori
         """
         pass
 
