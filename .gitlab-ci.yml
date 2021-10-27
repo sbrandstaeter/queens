@@ -194,8 +194,8 @@ centos_full_test_suite_develop:
   script:
     - python setup.py develop
     - echo "executing:"
-    - echo "pytest --ignore=pqueens/tests/benchmarks/  $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest --ignore=pqueens/tests/benchmarks/ $PYTEST_OPTIONAL_PARAMETERS
+    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/  $PYTEST_OPTIONAL_PARAMETERS"
+    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - build_conda_env
     - build_singularity
@@ -229,8 +229,8 @@ centos_full_test_suite_master:
   script:
     - python setup.py develop
     - echo "executing:"
-    - echo "pytest --ignore=pqueens/tests/benchmarks/ $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest --ignore=pqueens/tests/benchmarks/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
+    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
+    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   artifacts:
     name: coverage_report
     paths:
