@@ -181,7 +181,7 @@ export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 
 1. After having [Git](#configuration-of-git) availabe and appropriately configured, this repository might be cloned to your local machine:  
     ```
-    git clone git@gitlab.com:adco-engineering-gw/queens/queens.git <target-directory>
+    git clone git@gitlab.lrz.de:queens_community/queens.git <target-directory>
     ```
 1. Assuming that Anaconda is installed on your local machine, create a QUEENS environment:
     ```
