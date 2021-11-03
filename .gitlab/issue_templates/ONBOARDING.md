@@ -38,7 +38,7 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
    - [ ] Set up your GitLab account
    - [ ] Get the code
    - [ ] Configure git including the git hooks
-   - [ ] Build the code and run some tests for verification
+   - [ ] Download the project and run the tests for verification (see [README](https://gitlab.lrz.de/queens_community/queens/-/blob/master/README.md))
 - [ ] Read through our [CONTRIBUTING](https://gitlab.lrz.de/queens_community/queens/-/blob/master/CONTRIBUTING.md) guidelines
 - [ ] Set up your Integrated Development Environment (IDE)
 - [ ] Browse through some open issues and merge requests to get a first impression
