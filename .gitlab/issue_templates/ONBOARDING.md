@@ -32,7 +32,7 @@ To be filled by the new team member.
 Tick the box as soon as a task is completed (either by inserting an "x" in edit mode or clicking on it in view mode).
 -->
 - [x] Register an account on LRZ GitLab (you wouldn't be here without it :wink:)
-- [ ] Sign the LNM software agreement
+- [ ] Sign the LNM software agreement (only for now while we are in the transition phase and license is not yet determined)
 - [ ] Complete the [brief introduction of the new team member](#brief-introduction-of-the-new-team-member)
 - [ ] Read through our [README](https://gitlab.lrz.de/queens_community/queens/-/blob/master/README.md) and follow the instructions to
    - [ ] Set up your GitLab account
