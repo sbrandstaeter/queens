@@ -61,4 +61,4 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 <!---
 If there's anyone particular you think should be notified, feel free to @mention them here.
 -->
-@queens_community/queens_collaborators, @queens_community/QUEENS_developer
+@queens_community/queens_collaborators, @queens_community/QUEENS_developer, @queens_community/QUEENS_maintainers
