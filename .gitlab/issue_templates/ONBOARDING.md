@@ -10,7 +10,7 @@ Note that anything between these delimiters is a comment that will not appear in
 -->
 
 <!---
-Assignee: Assign this issue to the new developer.
+@mention below the new developer.
 -->
 
 ## Welcome to the QUEENS team!
@@ -61,4 +61,4 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 <!---
 If there's anyone particular you think should be notified, feel free to @mention them here.
 -->
-@queens_community/queens_collaborators, @queens_community/QUEENS_developer, @queens_community/QUEENS_maintainer
+@queens_community/QUEENS_developer, @queens_community/QUEENS_maintainer
