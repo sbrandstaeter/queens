@@ -11,9 +11,9 @@ We do welcome contributions to QUEENS. However, the project is deliberately of l
  - Some further resources can be found [here](http://neckbeardrepublic.com/screencasts/)
  - The book *Fluent Python* is also highly recommended.
 
-## Pull requests and the master branch
+## Merge requests and the master branch
 All code that is destined for the master branch of QUEENS should initially be developed in a separate feature  branch.
-Only a small number of people can merge feature branches onto the master branch (currently Jonas Biehler).
+Only QUEENS maintainers can merge feature branches onto the master branch.
 
 ## Tests and continuous integration
 QUEENS is covered by the testing suite. We expect changes to code to pass these tests, and for new code to be covered by new tests. Currently, coverage is reported by codecov.
