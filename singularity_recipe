@@ -45,6 +45,7 @@ variables at runtime.
   chmod -R +xr /pqueens/randomfields
   chmod -R +xr /setup_remote.py
   chmod -R +xr /pqueens/remote_main.py
+  yum clean all
 
 %runscript
   exec /usr/local/anaconda/envs/QUEENS/bin/python /pqueens/remote_main.py $@

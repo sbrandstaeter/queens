@@ -107,10 +107,8 @@ build_singularity:
     - cd pqueens/
     - /usr/bin/singularity --version
     - /usr/bin/singularity build --fakeroot ../driver.simg ../singularity_recipe
-  artifacts:
-    paths:
-      - driver.simg
-    expire_in: 1 day
+    - du -sh ../driver.simg
+    - mv ../driver.simg /tmp/driver.simg
   only:
     variables:
       - $CENTOS_TESTS == "1"
@@ -192,6 +190,7 @@ centos_full_test_suite_develop:
     - .centos_settings
     - .full_test_suite_develop
   script:
+    - mv /tmp/driver.simg  driver.simg
     - python setup.py develop
     - echo "executing:"
     - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/  $PYTEST_OPTIONAL_PARAMETERS"
@@ -227,6 +226,7 @@ centos_full_test_suite_master:
     - .centos_settings
     - .full_test_suite_master
   script:
+    - mv /tmp/driver.simg  driver.simg
     - python setup.py develop
     - echo "executing:"
     - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
