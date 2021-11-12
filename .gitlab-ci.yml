@@ -226,7 +226,7 @@ centos_full_test_suite_master:
     - .centos_settings
     - .full_test_suite_master
   script:
-    - mv /tmp/driver.simg  driver.simg
+    - mv /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
     - python setup.py develop
     - echo "executing:"
     - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
