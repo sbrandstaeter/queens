@@ -1,6 +1,5 @@
 """ Fixtures needed for testing the Driver classes. """
 import pytest
-from pqueens.drivers.ansys_driver import ANSYSDriver
 from pqueens.database.mongodb import MongoDB
 
 
@@ -89,25 +88,6 @@ def baci_post_cmds(baci_job, baci_output_file):
         )
         post_cmds.append(post_cmd)
     return post_cmds
-
-
-@pytest.fixture(scope='function')
-def ansys_driver(driver_base_settings, fake_database, mocker):
-    """ Generic ANSYS driver"""
-
-    mocker.patch(
-        'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=fake_database
-    )
-
-    driver_base_settings['custom_executable'] = 'my_custom_ansys'
-    driver_base_settings['cae_software_version'] = 'v15'
-    driver_base_settings['post_file_name_prefix_lst'] = 'rst'
-    driver_base_settings['direct_scheduling'] = False
-    driver_base_settings['database'] = MongoDB.from_config_create_database(
-        {"database": {"address": "localhost:27017"}}
-    )
-    my_driver = ANSYSDriver(driver_base_settings)
-    return my_driver
 
 
 ########################################################################

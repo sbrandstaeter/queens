@@ -51,10 +51,7 @@ def print_driver_information(
     """
     # determine name of driver
     driver_dict = {
-        'ansys': 'ANSYS',
         'baci': 'BACI',
-        'dealII_navierstokes': 'deal.II Navier-Stokes code',
-        'openfoam': 'OpenFOAM',
     }
     driver_name = driver_dict[driver_type]
 
