@@ -181,8 +181,8 @@ docker_full_test_suite_develop:
     - .full_test_suite_develop
   script:
     - echo "executing:"
-    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS
+    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/baci/ --ignore=pqueens/tests/integration_tests/cluster/ $PYTEST_OPTIONAL_PARAMETERS"
+    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/baci/ --ignore=pqueens/tests/integration_tests/cluster/ $PYTEST_OPTIONAL_PARAMETERS
   needs: []
 #---------------------------------------------------------------------------------------------------
 centos_full_test_suite_develop:
@@ -193,8 +193,8 @@ centos_full_test_suite_develop:
     - mv /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
     - python setup.py develop
     - echo "executing:"
-    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/  $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS
+    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/cluster/  $PYTEST_OPTIONAL_PARAMETERS"
+    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/cluster/ $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - build_conda_env
     - build_singularity
@@ -217,8 +217,8 @@ docker_full_test_suite_master:
     - .full_test_suite_master
   script:
     - echo "executing:"
-    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_baci/  --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
+    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/baci/ --ignore=pqueens/tests/integration_tests/cluster/ $PYTEST_OPTIONAL_PARAMETERS"
+    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/baci/  --ignore=pqueens/tests/integration_tests/cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   needs: []
 #---------------------------------------------------------------------------------------------------
 centos_full_test_suite_master:
@@ -229,8 +229,8 @@ centos_full_test_suite_master:
     - mv /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
     - python setup.py develop
     - echo "executing:"
-    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/integration_tests_cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
+    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/cluster/ $PYTEST_OPTIONAL_PARAMETERS"
+    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   artifacts:
     name: coverage_report
     paths:
