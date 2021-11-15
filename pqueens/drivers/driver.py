@@ -45,7 +45,7 @@ class Driver(metaclass=abc.ABCMeta):
         simulation_input_t. (str): path to template for simulation input file
         executable (str):          path to main executable of respective CAE software
         custom_executable (str):   (if required) path to potential additional customized
-                                   executable of respective CAE software (e.g., for ANSYS)
+                                   executable of respective CAE software
         cae_software_vers. (str):  (if required) version of CAE software
         result (np.array):         simulation result to be stored in database
         do_postprocessing (str):   string for identifying either local post-processing
@@ -150,18 +150,12 @@ class Driver(metaclass=abc.ABCMeta):
             driver (obj):   Driver object
 
         """
-        from pqueens.drivers.ansys_driver import ANSYSDriver
         from pqueens.drivers.baci_driver import BaciDriver
-        from pqueens.drivers.dealII_navierstokes_driver import DealIINavierStokesDriver
-        from pqueens.drivers.openfoam_driver import OpenFOAMDriver
         from pqueens.post_post.post_post import PostPost
 
         # determine Driver class
         driver_dict = {
-            'ansys': ANSYSDriver,
             'baci': BaciDriver,
-            'dealII_navierstokes': DealIINavierStokesDriver,
-            'openfoam': OpenFOAMDriver,
         }
 
         # ---------------------------- CREATE BASE SETTINGS ---------------------------
