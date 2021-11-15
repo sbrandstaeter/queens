@@ -6,23 +6,25 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 
 class PostPost(metaclass=abc.ABCMeta):
-    """ Base class for post post processing
+    """
+    Base class for post post processing
 
-        Attributes:
-            delete_data_flag (bool):  Delete files after processing
-            post_post_file_name_prefix_lst (lst): List with prefixes of post-processed files
-            error ():
-            output_dir (str): Path to result files
-            result (np.array): Array containing the quantities of interest
+    Attributes:
+        delete_data_flag (bool):  Delete files after processing
+        post_post_file_name_prefix_lst (lst): List with prefixes of post-processed files
+        error ():
+        output_dir (str): Path to result files
+        result (np.array): Array containing the quantities of interest
 
     """
 
     def __init__(self, delete_data_flag, post_post_file_name_prefix_lst):
-        """ Init post post class
+        """
+        Init post post class
 
-            Args:
-                delete_data_flag (bool): Delete files after processing
-                post_post_file_name_prefix_lst (lst): List with prefixes of result files
+        Args:
+            delete_data_flag (bool): Delete files after processing
+            post_post_file_name_prefix_lst (lst): List with prefixes of result files
 
         """
 
@@ -40,32 +42,24 @@ class PostPost(metaclass=abc.ABCMeta):
 
         Args:
             config (dict): input json file with problem description
+            driver_name (str): Name of driver that should be used in this job-submission
 
         Returns:
             post_post: post_post object
-
         """
 
-        from .post_post_ansys import PostPostANSYS
         from .post_post_baci import PostPostBACI
         from .post_post_baci_ensight import PostPostBACIEnsight
         from .post_post_baci_shape import PostPostBACIShape
         from .post_post_baci_vectorized import PostPostBACIVector
-        from .post_post_deal import PostPostDEAL
         from .post_post_generic import PostPostGeneric
-        from .post_post_net_cdf import PostPostNetCDF
-        from .post_post_openfoam import PostPostOpenFOAM
 
         post_post_dict = {
-            'ansys': PostPostANSYS,
             'baci': PostPostBACI,
             'baci_vector': PostPostBACIVector,
             'baci_ensight': PostPostBACIEnsight,
-            'deal': PostPostDEAL,
             'generic': PostPostGeneric,
-            'openfoam': PostPostOpenFOAM,
             'baci_shape': PostPostBACIShape,
-            'netCDF': PostPostNetCDF,
         }
 
         # determine which object to create
@@ -77,25 +71,8 @@ class PostPost(metaclass=abc.ABCMeta):
         else:
             post_post_options = config['driver']['driver_params']['post_post']
 
-        if post_post_options['post_post_approach_sel'] == 'ansys':
-            post_post_version = 'ansys'
-        elif post_post_options['post_post_approach_sel'] == 'baci':
-            post_post_version = 'baci'
-        elif post_post_options['post_post_approach_sel'] == 'baci_ensight':
-            post_post_version = 'baci_ensight'
-        elif post_post_options['post_post_approach_sel'] == 'baci_vector':
-            post_post_version = 'baci_vector'
-        elif post_post_options['post_post_approach_sel'] == 'deal':
-            post_post_version = 'deal'
-        elif post_post_options['post_post_approach_sel'] == 'generic':
-            post_post_version = 'generic'
-        elif post_post_options['post_post_approach_sel'] == 'baci_shape':
-            post_post_version = 'baci_shape'
-        elif post_post_options['post_post_approach_sel'] == 'openfoam':
-            post_post_version = 'openfoam'
-        elif post_post_options['post_post_approach_sel'] == 'netCDF':
-            post_post_version = 'netCDF'
-        else:
+        post_post_version = post_post_options.get('post_post_approach_sel', None)
+        if post_post_version not in post_post_dict.keys():
             raise RuntimeError("post_post_approach_sel not set, fix your input file")
 
         post_post_class = post_post_dict[post_post_version]
@@ -109,8 +86,10 @@ class PostPost(metaclass=abc.ABCMeta):
         return post_post
 
     def copy_post_files(self, files_of_interest, remote_connect, remote_output_dir):
-        """ Copy identified post-processed files from "local" output directory
-            to "remote" output directory in case of remote scheduling """
+        """
+        Copy identified post-processed files from "local" output directory
+        to "remote" output directory in case of remote scheduling
+        """
 
         remote_file_name = os.path.join(remote_output_dir, '.')
         command_list = [
@@ -132,9 +111,10 @@ class PostPost(metaclass=abc.ABCMeta):
             )
 
     def error_handling(self, output_dir):
-        """ Mark failed simulation and set results appropriately
+        """
+        Mark failed simulation and set results appropriately
 
-            What does this function do?? This is super unclear
+        What does this function do?? This is super unclear
         """
         # TODO  ### Error Types ###
         # No QoI file
@@ -188,18 +168,19 @@ class PostPost(metaclass=abc.ABCMeta):
                 os.remove(filename)
 
     def postpost_main(self, local_output_dir, remote_connect, remote_output_dir):
-        """ Main routine for managing post-post-processing
+        """
+        Main routine for managing post-post-processing
 
-            Args:
-                local_output_dir (str): Path to "local" output directory
-                remote_connect (str):  address of remote computing resource (only for remote
-                scheduling)
-                remote_output_dir (str): Path to "remote" output directory
-                (from the point of view of the location of the post-processed files)
+        Args:
+            local_output_dir (str): Path to "local" output directory
+            remote_connect (str):  address of remote computing resource (only for remote
+            scheduling)
+            remote_output_dir (str): Path to "remote" output directory
+            (from the point of view of the location of the post-processed files)
 
-            Returns:
-                result (np.array): Result of the post-post operation which is the current value
-                                   of the quantities of interest
+        Returns:
+            result (np.array): Result of the post-post operation which is the current value
+                               of the quantities of interest
 
         """
 
