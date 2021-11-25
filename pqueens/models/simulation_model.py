@@ -62,4 +62,3 @@ class SimulationModel(Model):
         """ Evaluate model with current set of variables """
         self.response = self.interface.map(self.variables)
         return self.response
-        # return np.reshape(np.array(self.response), (-1, 1))

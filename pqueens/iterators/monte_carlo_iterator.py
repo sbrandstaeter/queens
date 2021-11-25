@@ -7,7 +7,7 @@ from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,  # TODO we should create a unified interface for rf
 )
 from pqueens.utils import mcmc_utils
-from pqueens.utils.input_to_random_variable import get_random_samples
+from pqueens.utils.get_random_variables import get_random_samples
 from .iterator import Iterator
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 import pqueens.database.database as DB_module

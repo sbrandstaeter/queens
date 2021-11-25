@@ -5,7 +5,10 @@ import numpy as np
 import pandas as pd
 import pymongo
 import xarray as xr
-from pqueens.utils.compression import compress_nested_container, decompress_nested_container
+from pqueens.utils.restructure_data_format import (
+    convert_nested_data_to_db_dict,
+    convert_nested_db_dicts_to_lists_or_arrays,
+)
 from pqueens.utils.decorators import safe_mongodb_operation
 from pymongo import MongoClient
 
@@ -201,7 +204,7 @@ class MongoDB(Database):
         """
         self._pack_labeled_data(save_doc)
 
-        save_doc = compress_nested_container(save_doc)
+        save_doc = convert_nested_data_to_db_dict(save_doc)
 
         dbcollection = self.db_obj[experiment_name][batch][experiment_field]
 
@@ -284,9 +287,9 @@ class MongoDB(Database):
         if len(dbdocs) == 0:
             return None
         elif len(dbdocs) == 1:
-            return decompress_nested_container(dbdocs[0])
+            return convert_nested_db_dicts_to_lists_or_arrays(dbdocs[0])
         else:
-            return [decompress_nested_container(dbdoc) for dbdoc in dbdocs]
+            return [convert_nested_db_dicts_to_lists_or_arrays(dbdoc) for dbdoc in dbdocs]
 
     @safe_mongodb_operation
     def remove(self, experiment_name, experiment_field, batch, field_filters={}):
