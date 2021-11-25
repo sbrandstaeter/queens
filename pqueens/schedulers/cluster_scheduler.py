@@ -142,9 +142,6 @@ class ClusterScheduler(Scheduler):
             base_settings['cluster_options']['singularity_bind'] = None
             base_settings['cluster_options']['POSTPOSTPROCESSFLAG'] = 'false'
 
-        # initalize sub-dictionary for ECS task options within base settings to None
-        base_settings['ecs_task_options'] = None
-
         return cls(base_settings)
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
