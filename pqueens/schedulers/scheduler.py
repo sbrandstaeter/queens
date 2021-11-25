@@ -34,8 +34,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         restart (bool):            flag for restart
         cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                    cluster options
-        ecs_task_options (dict):   (only for ECS task scheduler) further ECS task
-                                   options
         remote (bool):             flag for remote scheduling
         remote connect (str):      (only for remote scheduling) adress of remote
                                    computing resource
@@ -45,8 +43,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         restart (bool):            flag for restart
         cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                    cluster options
-        ecs_task_options (dict):   (only for ECS task scheduler) further ECS task
-                                   options
         job_id (int):              job ID (used for database organization)
         singularity_manager (obj): instance of Singularity-manager class
         process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids as
@@ -67,7 +63,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.experiment_dir = base_settings['experiment_dir']
         self.restart = base_settings['restart']
         self.cluster_options = base_settings['cluster_options']
-        self.ecs_task_options = base_settings['ecs_task_options']
         self.remote = base_settings['remote']
         self.remote_connect = base_settings['remote_connect']
         self.singularity = base_settings['singularity']
@@ -100,15 +95,12 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
         # import here to avoid issues with circular inclusion
         from .cluster_scheduler import ClusterScheduler
-        from .ecs_task_scheduler import ECSTaskScheduler
         from .standard_scheduler import StandardScheduler
 
         scheduler_dict = {
             'standard': StandardScheduler,
-            'nohup': StandardScheduler,
             'pbs': ClusterScheduler,
             'slurm': ClusterScheduler,
-            'ecs_task': ECSTaskScheduler,
         }
 
         # get scheduler options according to chosen scheduler name

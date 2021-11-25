@@ -13,10 +13,8 @@ def print_scheduling_information(scheduler_type, remote, remote_connect, singula
     # determine scheduler name
     scheduler_dict = {
         'standard': 'standard',
-        'nohup': 'nohup',
         'slurm': 'Slurm',
         'pbs': 'PBS/Torque',
-        'ecs_task': 'ECS task',
     }
     scheduler_name = scheduler_dict[scheduler_type]
 

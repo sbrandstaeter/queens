@@ -191,9 +191,7 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['direct_scheduling'] = False
         if not base_settings['singularity']:
             if (
-                base_settings['scheduler_type'] == 'ecs_task'
-                or base_settings['scheduler_type'] == 'nohup'
-                or base_settings['scheduler_type'] == 'pbs'
+                base_settings['scheduler_type'] == 'pbs'
                 or base_settings['scheduler_type'] == 'slurm'
                 or (base_settings['scheduler_type'] == 'standard' and base_settings['remote'])
             ):
@@ -485,30 +483,11 @@ class Driver(metaclass=abc.ABCMeta):
             )
 
     # ---------------- COMMAND-ASSEMBLY METHODS ----------------------------------
-    def assemble_nohup_run_cmd(self, run_cmd, log_file, err_file):
-        """  Assemble command for nohup run
-
-            Returns:
-                nohup run command
-
-        """
-        command_list = [
-            "nohup",
-            run_cmd,
-            ">",
-            log_file,
-            "2>",
-            err_file,
-            "< /dev/null &",
-        ]
-
-        return ' '.join(filter(None, command_list))
-
     def assemble_remote_run_cmd(self, run_cmd):
-        """  Assemble command for remote (nohup) run
+        """  Assemble command for remote run
 
             Returns:
-                remote (nohup) run command
+                remote run command
 
         """
         command_list = [
@@ -544,26 +523,6 @@ class Driver(metaclass=abc.ABCMeta):
             self.docker_image,
             " ",
             run_cmd,
-        ]
-
-        return ''.join(filter(None, command_list))
-
-    def assemble_ecs_task_run_cmd(self, run_cmd):
-        """  Assemble command for run as ECS task
-
-            Returns:
-                ECS task run command
-
-        """
-        command_list = [
-            "aws ecs run-task ",
-            "--cluster worker-queens-cluster ",
-            "--task-definition docker-queens ",
-            "--count 1 ",
-            "--overrides '{ \"containerOverrides\": [ {\"name\": \"docker-queens-container\", ",
-            "\"command\": [\"",
-            run_cmd,
-            "\"] } ] }'",
         ]
 
         return ''.join(filter(None, command_list))

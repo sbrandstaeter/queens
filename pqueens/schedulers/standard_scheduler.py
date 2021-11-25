@@ -9,7 +9,7 @@ from .scheduler import Scheduler
 
 class StandardScheduler(Scheduler):
     """
-    Standard/nohup scheduler class for QUEENS.
+    Standard scheduler class for QUEENS.
 
     """
 
@@ -19,7 +19,7 @@ class StandardScheduler(Scheduler):
     @classmethod
     def create_scheduler_class(cls, base_settings):
         """
-        Create standard/nohup scheduler class for QUEENS.
+        Create standard scheduler class for QUEENS.
 
         Args:
             base_settings (dict): dictionary containing settings from base class for
@@ -29,19 +29,17 @@ class StandardScheduler(Scheduler):
             scheduler (obj):      instance of scheduler class
 
         """
-        # initalize sub-dictionary for cluster and ECS task options
-        # within base settings to None
+        # initalize sub-dictionary for cluster within base settings to None
         base_settings['cluster_options'] = {}
         base_settings['cluster_options']['singularity_path'] = None
         base_settings['cluster_options']['singularity_bind'] = None
-        base_settings['ecs_task_options'] = None
 
         return cls(base_settings)
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
         """
-        Pre-run routine for remote nohup computing: copying checker file to remote
+        Pre-run routine for remote computing: copying checker file to remote
         machine
 
         Returns:
@@ -49,30 +47,7 @@ class StandardScheduler(Scheduler):
 
         """
 
-        if self.remote and self.scheduler_type == 'nohup':
-            # generate command for copying 'string_extractor_and_checker.py' to
-            # experiment directory on remote machine
-            checker_filename = 'string_extractor_and_checker.py'
-            this_dir = os.path.dirname(__file__)
-            rel_path = os.path.join('../utils', checker_filename)
-            abs_path = os.path.join(this_dir, rel_path)
-            command_list = [
-                "scp ",
-                abs_path,
-                " ",
-                self.remote_connect,
-                ":",
-                self.experiment_dir,
-            ]
-            command_string = ''.join(command_list)
-            _, _, _, stderr = run_subprocess(command_string)
-
-            # detection of failed command
-            if stderr:
-                raise RuntimeError(
-                    "\nString checker file could not be copied to remote machine!"
-                    f"\nStderr:\n{stderr}"
-                )
+        pass
 
     def _submit_singularity(self, job_id, batch, restart):
         """Submit job locally to Singularity
@@ -113,14 +88,7 @@ class StandardScheduler(Scheduler):
                 _, pid, _, _ = run_subprocess(cmd_remote_main, subprocess_type='submit')
                 return pid
         else:
-            if self.scheduler_type == 'nohup':
-                raise ValueError(
-                    "\nSingularity is not recommended to be used with nohup scheduling!"
-                )
-            else:
-                raise ValueError(
-                    "\nSingularity cannot yet be used remotely with standard scheduling!"
-                )
+            raise ValueError("\nSingularity cannot yet be used remotely with standard scheduling!")
             return None
 
     def get_cluster_job_id(self):
@@ -188,31 +156,11 @@ class StandardScheduler(Scheduler):
 
     def post_run(self):
         """
-        Post-run routine for remote nohup computing: removing checker file from remote
+        Post-run routine for remote computing: removing checker file from remote
         machine
 
         Returns:
             None
 
         """
-        if self.remote and self.scheduler_type == 'nohup':
-            # generate command for removing 'string_extractor_and_checker.py'
-            # from experiment directory on remote machine
-            checker_filename = 'string_extractor_and_checker.py'
-            checker_path_on_remote = os.path.join(self.experiment_dir, checker_filename)
-            command_list = [
-                'ssh',
-                self.remote_connect,
-                '"rm',
-                checker_path_on_remote,
-                '"',
-            ]
-            command_string = ' '.join(command_list)
-            _, _, _, stderr = run_subprocess(command_string)
-
-            # detection of failed command
-            if stderr:
-                raise RuntimeError(
-                    "\nChecker file could not be removed from remote machine!"
-                    f"\nStderr on remote:\n{stderr}"
-                )
+        pass

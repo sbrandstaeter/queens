@@ -137,9 +137,7 @@ class JobInterface(Interface):
         direct_scheduling = False
         if not singularity:
             if (
-                scheduler_type == 'ecs_task'
-                or scheduler_type == 'nohup'
-                or scheduler_type == 'pbs'
+                scheduler_type == 'pbs'
                 or scheduler_type == 'slurm'
                 or (scheduler_type == 'standard' and remote)
             ):
@@ -197,7 +195,6 @@ class JobInterface(Interface):
 
         # Post run
         for _, resource in self.resources.items():
-            # only for ECS task scheduler and jobscript-based native driver
             if self.direct_scheduling and jobid_for_post_post.size != 0:
                 # check tasks to determine completed jobs
                 while not self.all_jobs_finished():
@@ -814,8 +811,7 @@ class JobInterface(Interface):
 
                     else:
                         time.sleep(self.polling_time)
-                        # check job completions for ECS task scheduler and
-                        # jobscript-based native driver
+                        # check job completions for jobscript-based native driver
                         for _, resource in self.resources.items():
                             if self.direct_scheduling:
                                 self._check_job_completions(jobid_range)
