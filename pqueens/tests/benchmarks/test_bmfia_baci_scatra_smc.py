@@ -61,8 +61,8 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
     dim_labels_lst = ['x_s', 'y_s']
     qvis.bmfia_visualization_instance.plot_posterior_from_samples(samples, weights, dim_labels_lst)
 
-    np.tessting.assert_array_almost_equal(weights, expected_weights, decimal=5)
-    np.tessting.assert_array_almost_equal(samples, expected_samples, decimal=5)
+    np.testing.assert_array_almost_equal(weights, expected_weights, decimal=5)
+    np.testing.assert_array_almost_equal(samples, expected_samples, decimal=5)
 
 
 @pytest.fixture()

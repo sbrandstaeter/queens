@@ -227,7 +227,6 @@ class MetropolisHastingsIterator(Iterator):
 
         Note: we assume a multiplicative split of prior pdf
         """
-
         log_prior = np.zeros((self.num_chains, 1))
         self.model.update_model_from_sample_batch(chains)
         for i in range(chains.shape[0]):

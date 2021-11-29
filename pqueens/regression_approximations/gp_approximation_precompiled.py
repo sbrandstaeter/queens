@@ -23,7 +23,7 @@ _logger = logging.getLogger(__name__)
 class GPPrecompiled(RegressionApproximation):
     """
     A custom Gaussian process implementation using numba for precompiling linear algebra
-    operations. The GP also allows to specifiy a Gamma hyper-prior or the length scale but only
+    operations. The GP also allows to specify a Gamma hyper-prior or the length scale but only
     computes the MAP estimate and does not marginalize the hyper-parameters.
 
     Attributes:
@@ -43,7 +43,7 @@ class GPPrecompiled(RegressionApproximation):
         stochastic_optimizer (obj): Stochastic optimizer object
         scaler_x (obj): Scaler for inputs
         scaler_y (obj): Scaler for outputs
-        grad_log_evidence_value (np.array): Current gradient of the log marginal likelhood w.r.t.
+        grad_log_evidence_value (np.array): Current gradient of the log marginal likelihood w.r.t.
                                             the parameterization
         sigma_0_sq (float): Signal variance of the RBF kernel
         l_scale_sq (float): Squared length scale of the RBF kernel
@@ -102,7 +102,7 @@ class GPPrecompiled(RegressionApproximation):
     @classmethod
     def from_config_create(cls, config, approx_name, x_train, y_train):
         """
-        Instanciate class GPPrecomiled from problem description.
+        Instantiate class GPPrecompiled from problem description.
 
         Args:
             config (dict): Problem description of the QUEENS analysis
@@ -151,6 +151,8 @@ class GPPrecompiled(RegressionApproximation):
         scaler_obj_x = Scaler.from_config_create_scaler(scaler_settings)
         scaler_obj_y = Scaler.from_config_create_scaler(scaler_settings)
 
+        dim_y = y_train.shape[0]
+        x_train = x_train.reshape(dim_y, -1)
         scaler_obj_x.fit(x_train.T)
         x_train = scaler_obj_x.transform(x_train.T).T
         scaler_obj_y.fit(y_train)
@@ -174,7 +176,7 @@ class GPPrecompiled(RegressionApproximation):
 
         # Check prior mean function type here as cannot be checked in precompiled jit methods
         prior_mean_function_type = config[approx_name].get("prior_mean_function_type")
-        if prior_mean_function_type == "identity":
+        if prior_mean_function_type == "lf-identity":
             pass
         elif prior_mean_function_type is None:
             pass
@@ -187,7 +189,7 @@ class GPPrecompiled(RegressionApproximation):
         else:
             raise ValueError(
                 f"You selected the prior mean function type '{prior_mean_function_type}', "
-                f"which is not a valid option! Valid options are: 'identity', 'linear' or"
+                f"which is not a valid option! Valid options are: 'lf-identity', 'linear' or"
                 f" 'null/None'. Abort..."
             )
 
@@ -335,13 +337,15 @@ class GPPrecompiled(RegressionApproximation):
 
         if prior_mean_function_type is None:
             mu_vec = np.dot(np.dot(k_vec.T, k_mat_inv), (y_train_vec))
-        elif prior_mean_function_type == "identity":
+        elif prior_mean_function_type == "lf-identity":
 
             mean_train_prior = x_train_mat
             mean_test_prior = x_test_mat
 
-            mu_vec = mean_test_prior + np.dot(
-                np.dot(k_vec.T, k_mat_inv), (y_train_vec - mean_train_prior)
+            # please note that the first column holds the output values of the LF
+            # model in this formulation.
+            mu_vec = mean_test_prior[:, 0] + np.dot(
+                np.dot(k_vec.T, k_mat_inv), (y_train_vec - mean_train_prior[:, 0])
             )
 
         return mu_vec
@@ -458,7 +462,7 @@ class GPPrecompiled(RegressionApproximation):
         y_dim = self.y_train_vec.flatten().size
         if self.prior_mean_function_type is None:
             data_minus_prior_mean = self.y_train_vec.reshape(y_dim, 1)
-        elif self.prior_mean_function_type == 'identity':
+        elif self.prior_mean_function_type == 'lf-identity':
             data_minus_prior_mean = (
                 self.y_train_vec.reshape(y_dim, 1) - self.x_train_vec[:, 0, None]
             )
@@ -469,7 +473,7 @@ class GPPrecompiled(RegressionApproximation):
         else:
             raise ValueError(
                 f"Your specified {self.prior_mean_function_type} for a prior mean function type, "
-                f"which is not a valid option. Valid options are: 'null/None', 'identity' or "
+                f"which is not a valid option. Valid options are: 'null/None', 'lf-identity' or "
                 f"'linear'. Abort..."
             )
 
@@ -576,7 +580,7 @@ class GPPrecompiled(RegressionApproximation):
                     gnuplot_gp_convergence(iter_lst, log_ev_lst)
 
                     # Verbose output
-                    print(
+                    _logger.info(
                         f"Iter {iteration}, parameters {params}, gradient log evidence: "
                         f"{self.grad_log_evidence_value}, rel L2 change "
                         f"{rel_L2_change_params:.6f}, log-evidence: {log_ev}"
@@ -619,7 +623,7 @@ class GPPrecompiled(RegressionApproximation):
             self.k_mat_inv,
             self.scaler_x.transform(x_test_mat.reshape(-1, dim_x)),
             self.x_train_vec,
-            self.y_train_vec,
+            self.y_train_vec.flatten(),
             self.sigma_0_sq,
             self.l_scale_sq,
             self.prior_mean_function_type,

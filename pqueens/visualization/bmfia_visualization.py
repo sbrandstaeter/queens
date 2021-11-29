@@ -107,6 +107,47 @@ class BMFIAVisualization(object):
             if self.save_bools[0] is not None:
                 _save_plot(self.save_bools[0], self.paths[0])
 
+    def plot_posterior_from_samples(self, samples, weights, dim_labels_lst):
+        """
+        Visualize the multi-fideltiy posterior distribution (up to 2D) or its marginals
+        for higher dimensional posteriors.
+
+        Args:
+            samples (np.array): Samples of the posterior. Each row is a differnt sample-vector.
+                                Different columns represent the different dimensions of the 
+                                posterior.
+            weights (np.array): Weights of the posterior samples. One weight for each sample row.
+            dim_labels_lst (lst): List with labels/naming of the involved dimensions.
+                                Order of the list corresponds to order of columns in sample matrix.
+
+        Returns:
+            None
+
+        """
+        if self.plot_booleans[1]:
+
+            if samples.shape[1] > 2:
+                RuntimeError(
+                    f"At the moment we only support posterior plots up to two dimensions. "
+                    f"Your posterior has {samples.shape[1]}-dimensions. Abort ...."
+                )
+
+            sns.set_theme(style='whitegrid')
+            f, ax = plt.subplots(figsize=(6, 6))
+            sns.scatterplot(x=samples[:, 0], y=samples[:, 1], s=5)
+            sns.kdeplot(x=samples[:, 0], y=samples[:, 1], weights=weights)
+
+            ax.set_title(r"Posterior distribution $p(x,y|D)$")
+            ax.set_xlabel(fr'${dim_labels_lst[0]}$')
+            ax.set_ylabel(fr'${dim_labels_lst[1]}$')
+            ax.set_xlim(-0.2, 1.2)
+            ax.set_ylim(-0.2, 1.2)
+
+            plt.show()
+
+            if self.save_bools[1] is not None:
+                _save_plot(self.save_bools[1], self.paths[1])
+
 
 def plot_model_dependency(z_train, Y_HF_train, regression_obj_lst):
     """
@@ -135,36 +176,43 @@ def plot_model_dependency(z_train, Y_HF_train, regression_obj_lst):
         raise RuntimeError("Dimension of intended surrogate is too high to be plotted! Abort")
 
 
-def _plot_3d_dependency(z_train, Y_HF_train, regression_obj_lst):
+def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
     """
     Plot the 3D-dependency meaning the LF-HF dependency with one more informative feature.
 
     Args:
         z_train (np.array): Array of low-fidelity model output and informative features.
                             One sample per row
-        Y_HF_train (np.array): Array of high-fidelity model outputs. One sample per row.
+        y_hf_train (np.array): Array of high-fidelity model outputs. One sample per row.
         regression_obj_lst (np.aray): List with regression models
 
     Returns:
         None
 
     """
-    y_lf_test = np.linspace(np.min(z_train), np.max(z_train), 50)
-    x_test, y_test = np.meshgrid(y_lf_test, y_lf_test)
-    z_test = np.hstack((x_test.reshape(-1, 1), y_test.reshape(-1, 1)))
-    fig = make_subplots(
-        rows=4,
-        cols=4,
-        specs=[
-            [{'type': 'surface'}, {'type': 'surface'}, {'type': 'surface'}, {'type': 'surface'}],
-            [{'type': 'surface'}, {'type': 'surface'}, {'type': 'surface'}, {'type': 'surface'}],
-            [{'type': 'surface'}, {'type': 'surface'}, {'type': 'surface'}, {'type': 'surface'}],
-            [{'type': 'surface'}, {'type': 'surface'}, {'type': 'surface'}, {'type': 'surface'}],
-        ],
-    )
-    for i in np.arange(4):
-        for j in np.arange(4):
-            reg_obj = regression_obj_lst[j + i * 4]
+    num_test_points = 50
+
+    num_rows = int(np.ceil(np.sqrt(z_train.shape[2])))
+    row_list = [{'type': 'surface'}] * num_rows
+
+    specs_list = [row_list for x in range(num_rows)]
+    fig = make_subplots(rows=num_rows, cols=num_rows, specs=specs_list)
+
+    for i in np.arange(num_rows):
+        for j in np.arange(num_rows):
+
+            num_coord = j + i * num_rows
+
+            y_lf_test = np.linspace(
+                np.min(z_train[0, :, num_coord]), np.max(z_train[0, :, num_coord]), num_test_points
+            )
+            gamma_lf_test = np.linspace(
+                np.min(z_train[1, :, num_coord]), np.max(z_train[1, :, num_coord]), num_test_points
+            )
+            y_test, gamma_test = np.meshgrid(y_lf_test, gamma_lf_test)
+            z_test = np.hstack((y_test.reshape(-1, 1), gamma_test.reshape(-1, 1)))
+
+            reg_obj = regression_obj_lst[num_coord]
             output = reg_obj.predict(z_test, support='y')
             mu = output['mean']
             var = output['variance']
@@ -173,11 +221,11 @@ def _plot_3d_dependency(z_train, Y_HF_train, regression_obj_lst):
 
             fig.add_trace(
                 go.Scatter3d(
-                    x=z_train[0, :, 0].flatten(),
-                    y=z_train[1, :, 0].flatten(),
-                    z=Y_HF_train[:, 0].flatten(),
+                    x=z_train[0, :, num_coord].flatten(),
+                    y=z_train[1, :, num_coord].flatten(),
+                    z=y_hf_train[:, num_coord].flatten(),
                     mode='markers',
-                    marker=dict(size=5,),
+                    marker=dict(size=3,),
                 ),
                 row=row,
                 col=col,
@@ -185,20 +233,21 @@ def _plot_3d_dependency(z_train, Y_HF_train, regression_obj_lst):
 
             fig.add_trace(
                 go.Surface(
-                    x=x_test,
-                    y=y_test,
-                    z=mu.reshape(x_test.shape),
+                    x=y_test,
+                    y=gamma_test,
+                    z=mu.reshape(y_test.shape),
                     colorscale='Viridis',
                     showscale=False,
                 ),
                 row=row,
                 col=col,
             )
+
             fig.add_trace(
                 go.Surface(
-                    x=x_test,
-                    y=y_test,
-                    z=(mu.reshape(x_test.shape) - np.sqrt(var).reshape(x_test.shape)),
+                    x=y_test,
+                    y=gamma_test,
+                    z=(mu - np.sqrt(var)).reshape(y_test.shape),
                     colorscale='Viridis',
                     showscale=False,
                     opacity=0.5,
@@ -208,9 +257,9 @@ def _plot_3d_dependency(z_train, Y_HF_train, regression_obj_lst):
             )
             fig.add_trace(
                 go.Surface(
-                    x=x_test,
-                    y=y_test,
-                    z=(mu.reshape(x_test.shape) + np.sqrt(var).reshape(x_test.shape)),
+                    x=y_test,
+                    y=gamma_test,
+                    z=(mu + np.sqrt(var)).reshape(y_test.shape),
                     colorscale='Viridis',
                     showscale=False,
                     opacity=0.5,
@@ -219,13 +268,16 @@ def _plot_3d_dependency(z_train, Y_HF_train, regression_obj_lst):
                 col=col,
             )
 
-    fig.update_layout(
-        scene=dict(
-            xaxis=dict(title=r"$y_{LF}$"),
-            yaxis=dict(title=r"$\gamma$"),
-            zaxis=dict(title=r"$y_{HF}$"),
-        )
-    )
+            fig.update_layout(
+                scene=dict(
+                    xaxis=dict(title=r'$y_{LF}$'),
+                    yaxis=dict(title=r'$\gamma$'),
+                    zaxis=dict(title=r'$y_{HF}$'),
+                ),
+                xaxis_range=[np.min(z_train[0, :, num_coord]), np.max(z_train[0, :, num_coord])],
+                yaxis_range=[np.min(z_train[1, :, num_coord]), np.max(z_train[1, :, num_coord])],
+                scene_aspectmode='cube',
+            )
 
     fig.show()
 
@@ -242,7 +294,7 @@ def _plot_2d_dependency(z_train, Y_HF_train, regression_obj_lst):
 
     Returns:
         None
-   
+
     """
 
     sub_plot_square = int(np.ceil(np.sqrt(len(regression_obj_lst))))
@@ -260,7 +312,7 @@ def _plot_2d_dependency(z_train, Y_HF_train, regression_obj_lst):
 
         ax = axx[0]
         output_dict = regression_obj.predict(y_lf_test.T, 'y')
-        mean_vec = output_dict['mean']
+        mean_vec = np.atleast_2d(output_dict['mean']).T
         var_vec = output_dict['variance']
         std_vec = np.atleast_2d(np.sqrt(var_vec)).T
 
@@ -324,55 +376,6 @@ def _plot_2d_dependency(z_train, Y_HF_train, regression_obj_lst):
         ax.legend()
 
     fig1.set_size_inches(25, 25)
-
-
-def plot_posterior_from_samples(self, samples, weights, dim_labels_lst):
-    """
-    Visualize the multi-fideltiy posterior distribution (up to 2D) or its marginals
-    for higher dimensional posteriors.
-
-    Args:
-        samples (np.array): Samples of the posterior. Each row is a differnt sample-vector.
-                            Different columns represent the different dimensions of the posterior.
-        weights (np.array): Weights of the posterior samples. One weight for each sample row.
-        dim_labels_lst (lst): List with labels/naming of the involved dimensions.
-                              Order of the list corresponds to order of columns in sample matrix.
-
-    Returns:
-        None
-
-    """
-    if self.plot_booleans[1]:
-
-        if samples.shape[1] > 2:
-            RuntimeError(
-                f"At the moment we only support posterior plots up to two dimensions. "
-                f"Your posterior has {samples.shape[1]}-dimensions. Abort ...."
-            )
-
-        sns.set_theme(style='whitegrid')
-        f, ax = plt.subplots(figsize=(6, 6))
-        sns.scatterplot(x=samples[:, 0], y=samples[:, 1], s=5)
-        sns.kdeplot(
-            x=samples[:, 0],
-            y=samples[:, 1],
-            weights=weights,
-            thresh=0.1,
-            levels=15,
-            color='k',
-            linewidths=1,
-        )
-
-        ax.set_title(r"Posterior distribution $p(x,y|D)$")
-        ax.set_xlabel(fr'${dim_labels_lst[0]}$')
-        ax.set_ylabel(fr'${dim_labels_lst[1]}$')
-        ax.set_xlim(-0.2, 1.2)
-        ax.set_ylim(-0.2, 1.2)
-
-        plt.show()
-
-        if self.save_bools[1] is not None:
-            _save_plot(self.save_bools[1], self.paths[1])
 
 
 def _save_plot(save_bool, path):
