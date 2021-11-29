@@ -8,6 +8,8 @@ from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs, write_results
 
+from sklearn.preprocessing import StandardScaler
+
 _logger = logging.getLogger(__name__)
 
 
@@ -40,6 +42,7 @@ class BMFIAIterator(Iterator):
         db (obj): Database object
         external_geometry_obj (obj): External geometry object
         gammas_train (np.array): Informative features evaluated at the training inputs
+        scaler_gamma (obj): Scaler object for the informative features gamma
 
 
     Returns:
@@ -67,6 +70,7 @@ class BMFIAIterator(Iterator):
         time_vec,
         y_obs_vec,
         gammas_train,
+        scaler_gamma,
     ):
         super(BMFIAIterator, self).__init__(
             None, global_settings
@@ -89,6 +93,7 @@ class BMFIAIterator(Iterator):
         self.db = db
         self.external_geometry_obj = external_geometry_obj
         self.gammas_train = gammas_train
+        self.scaler_gamma = scaler_gamma
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
@@ -142,6 +147,7 @@ class BMFIAIterator(Iterator):
         time_vec = None
         y_obs_vec = None
         gammas_train = None
+        scaler_gamma = StandardScaler()
 
         return cls(
             result_description,
@@ -162,6 +168,7 @@ class BMFIAIterator(Iterator):
             time_vec,
             y_obs_vec,
             gammas_train,
+            scaler_gamma,
         )
 
     @classmethod
@@ -320,10 +327,8 @@ class BMFIAIterator(Iterator):
             else:
                 gammas_train = np.atleast_2d(self.X_train[:, idx_vec])
 
-            # normalization
-            self.gammas_train = (gammas_train - np.min(gammas_train)) / (
-                np.max(gammas_train) - np.min(gammas_train)
-            ) * (np.max(self.y_obs_vec) - np.min(self.y_obs_vec)) + np.min(self.y_obs_vec)
+            # standardization
+            self.gammas_train = self.scaler_gamma.fit_transform(gammas_train.T).T
 
             z_lst = []
             for y in self.Y_LF_train.T:

@@ -201,7 +201,8 @@ class SequentialMonteCarloIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate model at current sample. """
+        """ Evaluate model at current sample batch. """
+
         result_dict = self.model.evaluate()
         return result_dict
 
@@ -233,9 +234,18 @@ class SequentialMonteCarloIterator(Iterator):
 
         return log_prior_array
 
-    def eval_log_likelihood(self, sample):
-        """ Evaluate natural logarithm of likelihood at sample. """
-        self.model.update_model_from_sample(np.atleast_2d(sample).T)
+    def eval_log_likelihood(self, sample_batch):
+        """
+        Evaluate natural logarithm of likelihood at sample batch
+
+        Args:
+            sample_batch (np.array): Batch of samples
+
+        Returns:
+            None
+
+        """
+        self.model.update_model_from_sample_batch(np.atleast_2d(sample_batch))
         log_likelihood = self.eval_model()
 
         return log_likelihood
@@ -247,7 +257,6 @@ class SequentialMonteCarloIterator(Iterator):
         np.random.seed(self.seed)
 
         # draw initial particles from prior distribution
-        # TODO we should change this such that entire batch is evaluated at once
         for i in range(self.num_particles):
 
             self.particles[i] = np.array(
@@ -257,12 +266,10 @@ class SequentialMonteCarloIterator(Iterator):
                     for variable_name, variable in model_variable.variables.items()
                 ]
             ).T
-
-            self.log_likelihood[i] = self.eval_log_likelihood(self.particles[i])
+        self.log_likelihood = self.eval_log_likelihood(self.particles)
 
         self.log_prior = self.eval_log_prior(self.particles)
         self.log_posterior = self.log_likelihood + self.log_prior
-
         # initialize importance weights
         self.weights = np.ones((self.num_particles, 1))
         self.ess_cur = self.num_particles

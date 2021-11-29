@@ -9,7 +9,7 @@
     "method_name": "smc",
     "method_options": {
       "seed": 41,
-      "num_particles": 40,
+      "num_particles": 50,
       "model": "model",
       "temper_type": "bayes",
       "plot_trace_every": 0,
@@ -26,13 +26,13 @@
     "mf_approx_settings": {
       "type": "gp_precompiled",
       "stochastic_optimizer": "Adam",
-      "learning_rate": 0.001,
+      "learning_rate": 0.01,
       "optimization_type": "max",
       "max_iterations": 1000,
       "plot_refresh_rate": 10,
-      "rel_L1_change_threshold": 1E-5,
-      "rel_L2_change_threshold": 1E-5,
-      "noise_var_lb": 1E-6,
+      "rel_L1_change_threshold": 1E-4,
+      "rel_L2_change_threshold": 1E-4,
+      "noise_var_lb": 1E-7,
       "data_scaling": {
         "type": "standard_scaler"
       },
@@ -62,8 +62,8 @@
     ],
     "time_label": "t",
     "likelihood_noise_type": "jeffreys_prior",
-    "fixed_likelihood_noise_value": 1E-7,
-    "nugget_noise_var": 1E-9,
+    "fixed_likelihood_noise_value": 1E-9,
+    "nugget_noise_var": 1E-8,
     "noise_upper_bound": 2.0,
     "experimental_csv_data_base_dirs": [
       "{experimental_data_path}"
@@ -89,8 +89,8 @@
     "method_name": "metropolis-hastings",
     "method_options": {
       "as_mcmc_kernel": true,
-      "num_chains": 20,
-      "num_samples": 2,
+      "num_chains": 50,
+      "num_samples": 3,
       "proposal_distribution": "normal_proposal"
     }
   },
@@ -100,7 +100,7 @@
     "high_fidelity_model": "hf_model",
     "initial_design": {
       "type": "random",
-      "num_HF_eval": 20,
+      "num_HF_eval": 100,
       "seed": 1
     }
   },

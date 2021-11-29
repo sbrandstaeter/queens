@@ -19,7 +19,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         model_name (str): Name of the likelihood model in the config file
         model_parameters (np.array): Parameters of the inverse problem
         nugget_noise_var (float): Lower bound for the likelihood noise
-        forward_model (obj): Forward model to iteratate; here: the low fidelity model
+        forward_model (obj): Forward model to iterate; here: the low fidelity model
         coords_mat (np.array): Matrix with coordinate values for observations
         time_vec (np.array): Vector with time-stamps of observations
         y_obs_vec (np.array): Matrix / vector of observations
@@ -154,7 +154,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         # get specifics of gaussian static likelihood model
         likelihood_noise_type = model_options["likelihood_noise_type"]
         fixed_likelihood_noise_value = model_options.get("fixed_likelihood_noise_value")
-        nugget_noise_var = model_options.get("nugget_noise_var")
+        nugget_noise_var = model_options.get("nugget_noise_var", 1E-9)
         noise_upper_bound = model_options.get("noise_upper_bound")
 
         # ---------- multi-fidelity settings ---------------------------------------------------
@@ -221,15 +221,16 @@ class BMFGaussianStaticModel(LikelihoodModel):
         # Initialize underlying models in the first call
         if self.z_train is None:
             self._initialize()
-        # catch one dimensional vectors
-
-        # TODO: as we treat the likelihood sequentially, we only take the last response
-        # None former responses of one batch are still saved in the model output
-        # TODO: check if this works for matrix valued responses as well
 
         # reshape the model output according to the number of coordinates
         num_coordinates = self.coords_mat.shape[0]
-        Y_LF_mat = self._update_and_evaluate_forward_model()[-1].reshape(num_coordinates, -1)
+        num_variables = len(self.variables)
+
+        # we explicitly cut the array at the variable size as within one batch several chains
+        # e.g. in MCMC might be calculated; we only want the last chain here
+        Y_LF_mat = self._update_and_evaluate_forward_model().reshape(-1, num_coordinates)[
+            :num_variables, :
+        ]
 
         # get x_batch from variable object
         x_batch = []
@@ -267,30 +268,36 @@ class BMFGaussianStaticModel(LikelihoodModel):
         """
         # construct LF feature matrix
         z_mat = self._get_feature_mat(y_lf_mat, x_batch, self.coords_mat[: y_lf_mat.shape[0]])
-        m_f_vec, var_y_vec = self.mf_interface.map(z_mat, full_cov=True)  # full cov is misleading
+        m_f_mat, var_y_mat = self.mf_interface.map(z_mat, full_cov=True)  # full cov is misleading
         log_lik_mf_lst = []
         num_obser = self.y_obs_vec.shape[0]
 
+        diff_mat = m_f_mat - np.atleast_2d(self.y_obs_vec) * np.ones(m_f_mat.shape)
+
+        if self.likelihood_noise_type == "fixed":
+            self.noise_var = max(self.fixed_likelihood_noise_value, self.nugget_noise_var)
+        elif self.likelihood_noise_type == "jeffreys_prior":
+            self.noise_var = np.sum(diff_mat ** 2) / (
+                1 + (diff_mat.shape[0] * diff_mat.shape[1])
+            )
+            self.noise_var = max(self.noise_var, self.nugget_noise_var)
+            _logger.info(f"Calculated ML-estimate for likelihood noise: {self.noise_var}")
+
         # iterate here over all GPs simultaneously such that the new m is a vector of all e.g. first
         # entries in all GPs
-        for mean_value, variance_value in zip(m_f_vec.T, var_y_vec.T):
-            diff_vec = mean_value - self.y_obs_vec
-
-            if self.likelihood_noise_type == "fixed":
-                self.noise_var = self.fixed_likelihood_noise_value
-            elif self.likelihood_noise_type == "jeffreys_prior":
-                self.noise_var = np.sum(diff_vec ** 2, axis=0) / (1 + (mean_value.shape[0]))
-                _logger.info(f"Calculated ML-estimate for likelihood noise: {self.noise_var}")
-
-            log_lik_mf = -self._neg_log_likelihood_fun(
-                variance_value + self.noise_var, num_obser, diff_vec
+        for diff_vec, variance_vec in zip(diff_mat, var_y_mat):
+            log_lik_mf = self._log_likelihood_fun(
+                variance_vec + self.noise_var, num_obser, diff_vec
             )
             log_lik_mf_lst.append(log_lik_mf)
-        return np.array(log_lik_mf_lst)
 
-    def _neg_log_likelihood_fun(self, variance_vec, num_obs, diff_vec):
+        log_lik_mf = np.atleast_2d(np.array(log_lik_mf_lst)).T
+
+        return log_lik_mf
+
+    def _log_likelihood_fun(self, variance_vec, num_obs, diff_vec):
         """
-        Negative multi-fidelity log-likelihood function.
+        Multi-fidelity log-likelihood function.
 
         Args:
             variance_vec (np.array): Vector of predicted posterior variance values of
@@ -299,20 +306,20 @@ class BMFGaussianStaticModel(LikelihoodModel):
             diff_vec (np.array): Vector of differences between observation and simulations
 
         Retruns:
-            log_lik_mf (np.array): Value of negative log-likelihood function
+            log_lik_mf (np.array): Value of log-likelihood function
                                    for difference vector
 
         """
         inv_variance_vec = 1 / variance_vec
-        log_lik_mf = -(
+        log_lik_mf = (
             -num_obs / 2 * np.log(2 * np.pi)
-            - 1 / 2 * np.sum(np.log(variance_vec))
+            + 1 / 2 * np.sum(np.log(inv_variance_vec))
             - 1 / 2 * np.sum(inv_variance_vec * (diff_vec) ** 2)
         )
 
         # potentially extent likelihood by Jeffreys prior
         if self.likelihood_noise_type == "jeffreys_prior":
-            log_lik_mf = log_lik_mf - np.log(np.sqrt(2.0)) + 0.5 * np.log(self.noise_var)
+            log_lik_mf = log_lik_mf + (0.5 * np.log(2) - 0.5 * np.log(self.noise_var))
 
         return np.array(log_lik_mf)
 
@@ -331,34 +338,31 @@ class BMFGaussianStaticModel(LikelihoodModel):
                               informative feature dimensions
 
         """
-
         y_LF_vec = np.atleast_2d(y_LF_vec).T
         x_vec = np.atleast_2d(x_vec)
 
         # ------ configure manual informative features ------------------------------------------
         if self.bmfia_subiterator.settings_probab_mapping['features_config'] == "man_features":
-
             idx_vec = self.bmfia_subiterator.settings_probab_mapping['X_cols']
             if len(idx_vec) < 2:
                 gamma_vec = np.atleast_2d(x_vec[:, idx_vec])
             else:
                 gamma_vec = np.atleast_2d(x_vec[:, idx_vec])
 
-            # normalization
-            gamma_vec_rep = (gamma_vec - np.min(gamma_vec)) / (
-                np.max(gamma_vec) - np.min(gamma_vec)
-            ) * (np.max(self.y_obs_vec) - np.min(self.y_obs_vec)) + np.min(self.y_obs_vec)
-
+            # data scaling
+            gamma_vec = self.bmfia_subiterator.scaler_gamma.transform(gamma_vec)
             z_lst = []
             for y in y_LF_vec:
-                z_lst.append(np.hstack([y.reshape(-1, 1), gamma_vec_rep]))
+                z_lst.append(np.hstack([y.reshape(-1, 1), gamma_vec]))
 
-            z_mat = np.array(z_lst).T
+            z_mat = np.array(z_lst).squeeze().T
 
         # ------ configure optimal informative features with highest sensitivity -------------
         elif self.bmfia_subiterator.settings_probab_mapping['features_config'] == "opt_features":
             if self.bmfia_subiterator.settings_probab_mapping['num_features'] < 1:
-                raise ValueError()
+                raise ValueError(
+                    'Number of informative features must be greater than one! Abort...'
+                )
             self.bmfia_subiterator._update_probabilistic_mapping_with_features()
 
         # ----- configure informative features from (spatial) coordinates ----------------------
@@ -479,7 +483,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
         # Note that the wrapper of the model update needs to called externally such that
         # self.variables is updated
         self.forward_model.variables = self.variables
-
         Y_mat = self.forward_model.evaluate()['mean']
 
         return Y_mat

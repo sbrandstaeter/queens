@@ -21,13 +21,12 @@ class BmfiaInterface(Interface):
     as an individual regression model.
 
     Attributes:
-        variables (dict): dictionary with variables (not used at the moment!)
         config (dict): Dictionary with problem description (input file)
         approx_name (str): Name of the used approximation model
         probabilistic_mapping_obj_lst (lst): List of probabilistic mapping objects which models the
                                              probabilistic dependency between high-fidelity model,
                                              low-fidelity models and informative input features for
-                                             each coordinate touple of 
+                                             each coordinate tuple of 
                                              :math: `y_{lf} x y_{hf} x gamma_i` individually.
 
     Returns:
@@ -35,9 +34,8 @@ class BmfiaInterface(Interface):
 
     """
 
-    def __init__(self, config, approx_name, variables=None):
+    def __init__(self, config, approx_name):
         # TODO we should think about using the parent class interface here
-        self.variables = variables  # TODO: This is not used at the moment!
         self.config = config
         self.approx_name = approx_name
         self.probabilistic_mapping_obj_lst = []
@@ -51,13 +49,13 @@ class BmfiaInterface(Interface):
         Args:
             Z_LF (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
                              points on which the probabilistic mapping should be evaluated.
-                             Dimensions: Rows: differnt multi-fidelity vector/points
+                             Dimensions: Rows: different multi-fidelity vector/points
                              (each row is one multi-fidelity point).
                              Columns: different model outputs/informative features.
             full_cov (bool): Boolean that returns full covariance matrix (True) or variance (False)
                              along with the mean prediction
             support (str): Support/variable for which we predict the mean and (co)variance. For
-                            `suppoprt=f` the Gaussian process predicts w.r.t. the latent function
+                            `support=f` the Gaussian process predicts w.r.t. the latent function
                             `f`. For the choice of `support=y` we predict w.r.t. to the
                             simulation/experimental output `y`,
                             which introduces the additional variance of the observation noise.
@@ -83,7 +81,7 @@ class BmfiaInterface(Interface):
         """
         if not self.probabilistic_mapping_obj_lst:
             raise RuntimeError(
-                "The probabilistic mapping has not been properly initialized, cannot continue!"
+                "The probabilistic mapping has not been initialized, cannot continue!"
             )
 
         mean_Y_HF_given_Z_LF = []
@@ -127,7 +125,7 @@ class BmfiaInterface(Interface):
             _logger.info(f'Training model {num + 1} of {Z_LF_train.T.shape[0]}.')
             self.probabilistic_mapping_obj_lst.append(
                 RegressionApproximation.from_config_create(
-                    self.config, self.approx_name, z_lf.reshape(-1, 1), y_hf.reshape(-1, 1)
+                    self.config, self.approx_name, np.atleast_2d(z_lf), np.atleast_2d(y_hf).T
                 )
             )
             self.probabilistic_mapping_obj_lst[-1].train()
