@@ -48,7 +48,7 @@ and your email address to your institute email address with the following comman
 
     ```bash
     cd <someBaseDir>/<sourceDir>
-    git config core.hooksPath ./utilities/code_checks/
+    git config core.hooksPath /code_checks/code_checks/
     ```
    
 1. In case you are using GitLab for the first time on your machine: Add your public SSH key to your GitLab 
