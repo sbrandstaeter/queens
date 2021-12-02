@@ -5,6 +5,7 @@ Created on November 20th  2017
 '''
 import unittest
 import numpy as np
+import pytest
 from pqueens.utils.scale_samples import scale_samples
 
 
@@ -59,6 +60,7 @@ class TestScaleSamples(unittest.TestCase):
         self.wrong_normal_distribution_list = [wrong_normal_distribution] * 3
         self.wrong_lognormal_distribution_list = [wrong_lognormal_distribution] * 3
 
+    @pytest.mark.unit_tests
     def test_correct_sample_scaling(self):
         """ Test if scaling works correctly """
 
@@ -76,6 +78,7 @@ class TestScaleSamples(unittest.TestCase):
         # print("shape scale_samples: {}".format(scaled_samples))
         np.testing.assert_allclose(scaled_samples, ref_vals, 1e-07, 1e-07)
 
+    @pytest.mark.unit_tests
     def test_wrong_distribution_parameters(self):
         """ Test if scale samples trows error if we pass unadmissible distribution
             parameters """
@@ -87,6 +90,7 @@ class TestScaleSamples(unittest.TestCase):
         with self.assertRaises(ValueError):
             scale_samples(self.samples, self.wrong_lognormal_distribution_list)
 
+    @pytest.mark.unit_tests
     def test_non_matching_inputs(self):
         """ Test if we get error when the number os distributions doas not match
             the number of parameters """

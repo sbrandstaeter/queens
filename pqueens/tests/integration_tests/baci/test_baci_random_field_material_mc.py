@@ -1,13 +1,14 @@
 import os
-import pytest
-import numpy as np
 import pickle
+
+import numpy as np
+import pytest
 from pqueens.main import main
 from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess
 
 
-@pytest.mark.baci
+@pytest.mark.integration_tests_baci
 def test_write_random_material_to_dat(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, expected_result
 ):

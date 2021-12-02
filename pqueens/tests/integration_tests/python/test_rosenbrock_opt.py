@@ -19,6 +19,7 @@ def algorithm(request):
     return request.param
 
 
+@pytest.mark.integration_tests
 def test_rosenbrock_opt(inputdir, tmpdir, algorithm):
     """ Test different solution algorithms in optimization iterator. """
 

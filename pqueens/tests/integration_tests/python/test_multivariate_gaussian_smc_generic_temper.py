@@ -21,6 +21,7 @@ from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCar
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 
 
+@pytest.mark.integration_tests
 def test_multivariate_gaussian_smc_generic_temper(inputdir, tmpdir, dummy_data):
     """ Test SMC with a multivariate Gaussian and generic tempering. """
     template = os.path.join(inputdir, "multivariate_gaussian_smc_generic_temper.json")

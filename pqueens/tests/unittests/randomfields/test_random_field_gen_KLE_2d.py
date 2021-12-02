@@ -6,6 +6,7 @@ Created on April 25th 2017
 
 import unittest
 import numpy as np
+import pytest
 
 from scipy import stats
 from scipy.stats import norm
@@ -45,6 +46,7 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
 
     # should trigger error because desired energy fraction not reached
+    @pytest.mark.unit_tests
     def test_not_enough_fourier_terms(self):
         with self.assertRaises(RuntimeError):
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -60,6 +62,7 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
 
     # # should trigger error because number of phase angles do not match stochastic
     # # dimension
+    @pytest.mark.unit_tests
     def test_wrong_number_phase_angles(self):
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -75,6 +78,7 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
             mystuff.gen_sample_gauss_field(self.loc, np.array((4, 4)))
 
     # # should trigger error because dimension of location is wrong
+    @pytest.mark.unit_tests
     def test_wrong_number_loc_dimensions(self):
         mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
             marg_pdf=self.marginal_pdf,
@@ -92,6 +96,7 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             mystuff.gen_sample_gauss_field(np.array(([4], [4], [4])), xi)
 
+    @pytest.mark.unit_tests
     def test_values_at_location(self):
         np.random.seed(self.seed)
         xi = np.random.randn(self.my_stoch_dim, 1)
@@ -116,6 +121,7 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
             1e-07,
         )
 
+    @pytest.mark.unit_tests
     def test_correlation(self):
         my_vals = np.zeros((self.loc.shape[0], 200))
         np.random.seed(self.seed)
@@ -182,6 +188,7 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
             'Correlation for distance 100 is not correct.',
         )
 
+    @pytest.mark.unit_tests
     def test_marginal_distribution(self):
         my_vals = np.zeros((1, 200))
         np.random.seed(self.seed)

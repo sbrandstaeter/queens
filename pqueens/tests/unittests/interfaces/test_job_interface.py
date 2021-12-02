@@ -5,6 +5,7 @@ Created on Dezember 11th  2017
 '''
 import unittest
 import mock
+import pytest
 from pqueens.interfaces.job_interface import JobInterface
 from pqueens.interfaces.interface import Interface
 from pqueens.database.mongodb import MongoDB
@@ -69,6 +70,7 @@ class TestJobInterface(unittest.TestCase):
 
     db_fake = FakeDB()
 
+    @pytest.mark.unit_tests
     @mock.patch(
         'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=db_fake
     )

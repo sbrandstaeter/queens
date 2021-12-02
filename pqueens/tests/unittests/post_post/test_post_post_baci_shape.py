@@ -103,6 +103,7 @@ def vtkUnstructuredGridExample3d():
 ############## actual tests
 
 
+@pytest.mark.unit_tests
 def test_init(mocker):
 
     path_ref_data = 'dummypath'
@@ -143,6 +144,7 @@ def test_init(mocker):
     assert my_postpost.problem_dimension == problem_dimension
 
 
+@pytest.mark.unit_tests
 def test_from_config_create_post_post(mocker):
     mp = mocker.patch(
         'pqueens.post_post.post_post_baci_shape.PostPostBACIShape.__init__', return_value=None
@@ -173,6 +175,7 @@ def test_from_config_create_post_post(mocker):
     )
 
 
+@pytest.mark.unit_tests
 def test_read_post_files(mocker):
 
     mocker.patch(
@@ -221,29 +224,25 @@ def test_read_post_files(mocker):
         pp.read_post_files(files_of_interest)
 
 
+@pytest.mark.unit_tests
 def test_delete_field_data(mocker, default_ppbacishapeclass):
 
     mp = mocker.patch(
-        'pqueens.post_post.post_post_baci_shape.run_subprocess',
-        return_value=[1, 2, 'out', 'err'],
+        'pqueens.post_post.post_post_baci_shape.run_subprocess', return_value=[1, 2, 'out', 'err'],
     )
     mocker.patch('os.path.join', return_value='files_search')
     mocker.patch('glob.glob', return_value=['file1', 'file2'])
 
     default_ppbacishapeclass.delete_field_data()
 
-    mp.assert_any_call(
-        'rm file1',
-    )
-    mp.assert_any_call(
-        'rm file2',
-    )
+    mp.assert_any_call('rm file1',)
+    mp.assert_any_call('rm file2',)
 
 
+@pytest.mark.unit_tests
 def test_error_handling(mocker, default_ppbacishapeclass):
     mp = mocker.patch(
-        'pqueens.post_post.post_post_baci_shape.run_subprocess',
-        return_value=[1, 2, 'out', 'err'],
+        'pqueens.post_post.post_post_baci_shape.run_subprocess', return_value=[1, 2, 'out', 'err'],
     )
     default_ppbacishapeclass.error = True
     default_ppbacishapeclass.output_dir = 'None'
@@ -253,9 +252,8 @@ def test_error_handling(mocker, default_ppbacishapeclass):
     )
 
 
-def test_read_monitorfile(
-    mocker,
-):
+@pytest.mark.unit_tests
+def test_read_monitorfile(mocker,):
 
     # monitor_string will be used to mock the content of a monitor file that is linked at
     # path_to_ref_data whereas the indentation is compulsory
@@ -317,6 +315,7 @@ steps 2 npoints 4
         pp.read_monitorfile()
 
 
+@pytest.mark.unit_tests
 def test_create_mesh_and_intersect_vtk(
     mocker, default_ppbacishapeclass, vtkUnstructuredGridExample2d, vtkUnstructuredGridExample3d
 ):
@@ -328,20 +327,8 @@ def test_create_mesh_and_intersect_vtk(
         return_value=vtkUnstructuredGridExample2d,
     )
     default_ppbacishapeclass.ref_data = [
-        [
-            1.0,
-            [
-                [[1.0, 1.0, 0], [3.0, 1.0, 0]],
-                [[0.5, 4.0, 0], [0.5, 3.0, 0]],
-            ],
-        ],
-        [
-            2.0,
-            [
-                [[1.0, 1.0, 0], [3.0, 1.0, 0]],
-                [[0.5, 4.0, 0], [0.5, 3.0, 0]],
-            ],
-        ],
+        [1.0, [[[1.0, 1.0, 0], [3.0, 1.0, 0]], [[0.5, 4.0, 0], [0.5, 3.0, 0]],],],
+        [2.0, [[[1.0, 1.0, 0], [3.0, 1.0, 0]], [[0.5, 4.0, 0], [0.5, 3.0, 0]],],],
     ]
 
     assert default_ppbacishapeclass.create_mesh_and_intersect_vtk('dummypath') == [
@@ -374,6 +361,7 @@ def test_create_mesh_and_intersect_vtk(
     )
 
 
+@pytest.mark.unit_tests
 def test_stretch_vector(default_ppbacishapeclass):
 
     assert default_ppbacishapeclass.stretch_vector([1, 2, 3], [2, 4, 6], 2) == [
@@ -382,6 +370,7 @@ def test_stretch_vector(default_ppbacishapeclass):
     ]
 
 
+@pytest.mark.unit_tests
 def test_compute_distance(default_ppbacishapeclass):
 
     assert default_ppbacishapeclass.compute_distance(
@@ -389,6 +378,7 @@ def test_compute_distance(default_ppbacishapeclass):
     ) == pytest.approx(np.sqrt(14), abs=10e-12)
 
 
+@pytest.mark.unit_tests
 def test_create_UnstructuredGridFromEnsight(default_ppbacishapeclass):
     # this method is basically vtk functions only. not really testable unless we mock every line
     pass
