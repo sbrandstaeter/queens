@@ -5,14 +5,13 @@ import os
 import pathlib
 
 import pytest
-
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.fixture(scope='session')
 def inputdir():
-    """ Return the path to the json input-files of the function test. """
+    """Return the path to the json input-files of the function test."""
     dirpath = os.path.dirname(__file__)
     input_files_path = os.path.join(dirpath, 'queens_input_files')
     return input_files_path
@@ -20,7 +19,7 @@ def inputdir():
 
 @pytest.fixture(scope='session')
 def third_party_inputs():
-    """ Return the path to the json input-files of the function test. """
+    """Return the path to the json input-files of the function test."""
     dirpath = os.path.dirname(__file__)
     input_files_path = os.path.join(dirpath, 'third_party_input_files')
     return input_files_path
@@ -28,15 +27,15 @@ def third_party_inputs():
 
 @pytest.fixture(scope='session')
 def config_dir():
-    """ Return the path to the json input-files of the function test. """
-    dirpath = os.path.dirname(__file__)
-    config_dir_path = os.path.join(dirpath, '../../../config')
+    """Return the path to the json input-files of the function test."""
+    dirpath = os.path.dirname(__file__).split("/pqueens")[0]
+    config_dir_path = os.path.join(dirpath, 'config')
     return config_dir_path
 
 
 @pytest.fixture(scope="session")
 def baci_link_paths(config_dir):
-    """ Set symbolic links for baci on testing machine. """
+    """Set symbolic links for baci on testing machine."""
     baci = str(pathlib.Path(config_dir).joinpath('baci-release'))
     post_drt_monitor = str(pathlib.Path(config_dir).joinpath('post_drt_monitor'))
     post_drt_ensight = str(pathlib.Path(config_dir).joinpath('post_drt_ensight'))
@@ -46,7 +45,7 @@ def baci_link_paths(config_dir):
 
 @pytest.fixture(scope="session")
 def baci_source_paths_for_gitlab_runner():
-    """ Set symbolic links for baci on testing machine. """
+    """Set symbolic links for baci on testing machine."""
     home = pathlib.Path.home()
     src_baci = pathlib.Path.joinpath(home, 'workspace/build/baci-release')
     src_drt_monitor = pathlib.Path.joinpath(home, 'workspace/build/post_drt_monitor')
@@ -60,13 +59,13 @@ def baci_source_paths_for_gitlab_runner():
 
 @pytest.fixture(scope="session")
 def user():
-    """ Name of user calling the test suite. """
+    """Name of user calling the test suite."""
     return getpass.getuser()
 
 
 @pytest.fixture(scope="session")
 def cluster_user(user):
-    """ Username of cluster account to use for tests. """
+    """Username of cluster account to use for tests."""
     # user who calles the test suite
     # gitlab-runner has to run simulation as different user on cluster everyone else should use
     # account with same name
@@ -84,14 +83,14 @@ def cluster(request):
 
 @pytest.fixture(scope="session")
 def cluster_address(cluster):
-    """ String used for ssh connect to the cluster. """
+    """String used for ssh connect to the cluster."""
     address = cluster + '.lnm.mw.tum.de'
     return address
 
 
 @pytest.fixture(scope="session")
 def connect_to_resource(cluster_user, cluster):
-    """ String used for ssh connect to the cluster. """
+    """String used for ssh connect to the cluster."""
     connect_to_resource = cluster_user + '@' + cluster + '.lnm.mw.tum.de'
     return connect_to_resource
 
@@ -122,7 +121,7 @@ def cluster_singularity_ip(cluster):
 
 @pytest.fixture(scope="session")
 def scheduler_type(cluster):
-    """ Switch type of scheduler according to cluster. """
+    """Switch type of scheduler according to cluster."""
     if cluster == "deep":
         scheduler_type = "pbs"
     elif cluster == "bruteforce":
@@ -132,14 +131,14 @@ def scheduler_type(cluster):
 
 @pytest.fixture(scope="session")
 def cluster_queens_testing_folder(cluster_user):
-    """ Generic folder on cluster for testing. """
+    """Generic folder on cluster for testing."""
     cluster_queens_testing_folder = pathlib.Path("/home", cluster_user, "queens-testing")
     return cluster_queens_testing_folder
 
 
 @pytest.fixture(scope="session")
 def cluster_path_to_singularity(cluster_queens_testing_folder):
-    """ Folder on cluster where to put the singularity file. """
+    """Folder on cluster where to put the singularity file."""
     cluster_path_to_singularity = cluster_queens_testing_folder.joinpath("singularity")
     return cluster_path_to_singularity
 
@@ -148,7 +147,7 @@ def cluster_path_to_singularity(cluster_queens_testing_folder):
 def prepare_cluster_testing_environment(
     cluster_user, cluster_address, cluster_queens_testing_folder, cluster_path_to_singularity
 ):
-    """ Create a clean testing environment on the cluster. """
+    """Create a clean testing environment on the cluster."""
     # remove old folder
     print(f"Delete testing folder from {cluster_address}")
     command_string = f'rm -rfv {cluster_queens_testing_folder}'
@@ -232,7 +231,7 @@ def cluster_testsuite_settings(
     scheduler_type,
     cluster_singularity_ip,
 ):
-    """ Collection of settings needed for all cluster tests. """
+    """Collection of settings needed for all cluster tests."""
     if not prepare_singularity:
         raise RuntimeError(
             "Preparation of singularity for cluster failed."
