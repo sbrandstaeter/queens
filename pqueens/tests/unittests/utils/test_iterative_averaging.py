@@ -1,7 +1,9 @@
 from pqueens.utils.iterative_averaging_utils import *
 import numpy as np
+import pytest
 
 
+@pytest.mark.unit_tests
 def test_L1_norm():
     x = 2 * np.ones(10)
     norm_L1 = L1_norm(x)
@@ -10,6 +12,7 @@ def test_L1_norm():
     np.testing.assert_almost_equal(norm_L1_avg, 2)
 
 
+@pytest.mark.unit_tests
 def test_L2_norm():
     x = 2 * np.ones(10)
     norm_L2 = L2_norm(x)
@@ -18,6 +21,7 @@ def test_L2_norm():
     np.testing.assert_almost_equal(norm_L2_avg, 2)
 
 
+@pytest.mark.unit_tests
 def test_relative_change():
     old = np.ones(10)
     new = np.ones(10) * 2
@@ -25,6 +29,7 @@ def test_relative_change():
     np.testing.assert_almost_equal(rel_change, 1)
 
 
+@pytest.mark.unit_tests
 def test_polyak_averaging():
     polyak = PolyakAveraging(None, 0, 1, 1, 1, 0)
     for j in range(10):
@@ -32,6 +37,7 @@ def test_polyak_averaging():
     np.testing.assert_almost_equal(polyak.current_average, np.mean(np.arange(10)))
 
 
+@pytest.mark.unit_tests
 def test_moving_averaging():
     moving = MovingAveraging(None, 0, 1, 1, 5, [])
     for j in range(10):
@@ -39,6 +45,7 @@ def test_moving_averaging():
     np.testing.assert_almost_equal(moving.current_average, np.mean(np.arange(0, 10)[-5:]))
 
 
+@pytest.mark.unit_tests
 def test_exponential_averaging():
     alpha = 0.25
     exponential_avg = ExponentialAveraging(None, 0, 1, 1, alpha)
@@ -47,4 +54,3 @@ def test_exponential_averaging():
     # For this special case there is a analytical solution
     ref = np.sum((1 - alpha) * np.arange(1, 10) * alpha ** np.arange(0, 9)[::-1])
     np.testing.assert_almost_equal(exponential_avg.current_average, ref)
-

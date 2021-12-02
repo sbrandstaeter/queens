@@ -6,6 +6,7 @@ import pytest
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_borehole_saltelli(inputdir, tmpdir):
     """ Test case for SA_lib saltelli iterator """
     arguments = [

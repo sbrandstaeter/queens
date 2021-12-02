@@ -6,6 +6,7 @@ import pytest
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_ishigami_saltelli_salib(inputdir, tmpdir):
     """ Test case for salib based saltelli iterator """
     arguments = [

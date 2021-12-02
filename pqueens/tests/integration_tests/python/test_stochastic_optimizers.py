@@ -3,6 +3,7 @@ import pytest
 from pqueens.utils.stochastic_optimizer import StochasticOptimizer
 
 
+@pytest.mark.integration_tests
 def test_RMSprop_max(rmsprop_optimizer):
     varparams = 5 * np.ones(5).reshape(-1, 1)
     rmsprop_optimizer.current_variational_parameters = varparams
@@ -16,6 +17,7 @@ def test_RMSprop_max(rmsprop_optimizer):
     assert np.mean(result - 0.5) < 0.05
 
 
+@pytest.mark.integration_tests
 def test_Adamax(adamax_optimizer):
     varparams = np.ones(5).reshape(-1, 1)
     adamax_optimizer.current_variational_parameters = varparams
@@ -27,6 +29,7 @@ def test_Adamax(adamax_optimizer):
     assert np.mean(result - 0.5) < 0.005
 
 
+@pytest.mark.integration_tests
 def test_Adam(adam_optimizer):
     varparams = np.ones(5).reshape(-1, 1)
     adam_optimizer.current_variational_parameters = varparams

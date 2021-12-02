@@ -11,6 +11,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_co
 import pqueens.visualization.bmfia_visualization as qvis
 
 
+@pytest.mark.integration_tests
 def test_smc_park_hf(
     inputdir, tmpdir, design_and_write_experimental_data_to_csv, expected_samples, expected_weights
 ):

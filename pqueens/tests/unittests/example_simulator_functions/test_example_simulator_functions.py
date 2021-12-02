@@ -23,23 +23,22 @@ import pqueens.tests.integration_tests.example_simulator_functions.ishigami as i
 
 import pqueens.tests.integration_tests.example_simulator_functions.ma2009 as ma2009
 
-import pqueens.tests.integration_tests.example_simulator_functions.oakley_ohagan2004 as \
-    oakley_ohagan2004
+from pqueens.tests.integration_tests.example_simulator_functions import (
+    oakley_ohagan2004 as oakley_ohagan2004,
+)
 
-import pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi as \
-    park91a_hifi
-import pqueens.tests.integration_tests.example_simulator_functions.park91a_lofi as \
-    park91a_lofi
+import pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi as park91a_hifi
+import pqueens.tests.integration_tests.example_simulator_functions.park91a_lofi as park91a_lofi
 
-import pqueens.tests.integration_tests.example_simulator_functions.park91b_hifi as \
-    park91b_hifi
-import pqueens.tests.integration_tests.example_simulator_functions.park91b_lofi as \
-    park91b_lofi
+import pqueens.tests.integration_tests.example_simulator_functions.park91b_hifi as park91b_hifi
+import pqueens.tests.integration_tests.example_simulator_functions.park91b_lofi as park91b_lofi
 
-import pqueens.tests.integration_tests.example_simulator_functions.perdikaris_1dsin_hifi as \
-    perdikaris_1dsin_hifi
-import pqueens.tests.integration_tests.example_simulator_functions.perdikaris_1dsin_lofi as \
-    perdikaris_1dsin_lofi
+from pqueens.tests.integration_tests.example_simulator_functions import (
+    perdikaris_1dsin_hifi as perdikaris_1dsin_hifi,
+)
+from pqueens.tests.integration_tests.example_simulator_functions import (
+    perdikaris_1dsin_lofi as perdikaris_1dsin_lofi,
+)
 
 import pqueens.tests.integration_tests.example_simulator_functions.sobol as sobol
 
@@ -50,6 +49,7 @@ class TestAgawal(unittest.TestCase):
         self.params2 = {'x1': 0.4, 'x2': 0.4}
         self.dummy_id = 100
 
+    @pytest.mark.unit_tests
     def test_vals_params(self):
         actual_result1 = agawal.main(self.dummy_id, self.params1)
         desired_result1 = 0.0
@@ -65,6 +65,7 @@ class TestPerdikarisMultiFidelity(unittest.TestCase):
         self.params1 = {'x': 0.6}
         self.dummy_id = 100
 
+    @pytest.mark.unit_tests
     def test_vals_params(self):
         actual_result_hifi = perdikaris_1dsin_lofi.main(self.dummy_id, self.params1)
         actual_result_lofi = perdikaris_1dsin_hifi.main(self.dummy_id, self.params1)
@@ -89,6 +90,7 @@ class TestBraninMultiFidelity(unittest.TestCase):
         self.params1 = {'x1': -4, 'x2': 5}
         self.dummy_id = 100
 
+    @pytest.mark.unit_tests
     def test_vals_params(self):
         actual_result_hifi = branin_hifi.main(self.dummy_id, self.params1)
         actual_result_medfi = branin_medfi.main(self.dummy_id, self.params1)
@@ -120,6 +122,7 @@ class TestPark91aMultiFidelity(unittest.TestCase):
         self.params1 = {'x1': 0.3, 'x2': 0.6, 'x3': 0.5, 'x4': 0.1}
         self.dummy_id = 100
 
+    @pytest.mark.unit_tests
     def test_vals_params(self):
         actual_result_hifi = park91a_hifi.main(self.dummy_id, self.params1)
         actual_result_lofi = park91a_lofi.main(self.dummy_id, self.params1)
@@ -144,6 +147,7 @@ class TestPark91bMultiFidelity(unittest.TestCase):
         self.params1 = {'x1': 0.3, 'x2': 0.6, 'x3': 0.5, 'x4': 0.1}
         self.dummy_id = 100
 
+    @pytest.mark.unit_tests
     def test_vals_params(self):
         actual_result_hifi = park91b_hifi.main(self.dummy_id, self.params1)
         actual_result_lofi = park91b_lofi.main(self.dummy_id, self.params1)
@@ -184,6 +188,7 @@ class TestOakleyOHagan(unittest.TestCase):
         }
         self.dummy_id = 100
 
+    @pytest.mark.unit_tests
     def test_vals_params(self):
         actual_result = oakley_ohagan2004.main(self.dummy_id, self.params1)
 
@@ -199,6 +204,7 @@ class TestMa(unittest.TestCase):
         self.params1 = {'x1': 0.25, 'x2': 0.5}
         self.dummy_id = 100
 
+    @pytest.mark.unit_tests
     def test_vals_params(self):
         actual_result = ma2009.main(self.dummy_id, self.params1)
 
@@ -214,6 +220,7 @@ class TestCurrin88bMultiFidelity(unittest.TestCase):
         self.params1 = {'x1': 0.6, 'x2': 0.1}
         self.dummy_id = 100
 
+    @pytest.mark.unit_tests
     def test_vals_params(self):
         actual_result_hifi = currin88_hifi.main(self.dummy_id, self.params1)
         actual_result_lofi = currin88_lofi.main(self.dummy_id, self.params1)
@@ -247,6 +254,7 @@ class TestBoreholeMultiFidelity(unittest.TestCase):
         }
         self.dummy_id = 100
 
+    @pytest.mark.unit_tests
     def test_vals_params(self):
         actual_result_hifi = borehole_hifi.main(self.dummy_id, self.params1)
         actual_result_lofi = borehole_lofi.main(self.dummy_id, self.params1)
@@ -316,6 +324,7 @@ def input_sobol_10dim():
     return input_vector
 
 
+@pytest.mark.unit_tests
 def test_sobol_8dim(parameters_sobol_8dim, input_sobol_8dim):
     """ Test 8 dimensional Sobol G function. """
     expected_result = 1.4119532907954928
@@ -328,6 +337,7 @@ def test_sobol_8dim(parameters_sobol_8dim, input_sobol_8dim):
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_sobol_8dim_first_order_variance(parameters_sobol_8dim):
     """ Test first order variance of 8 dimensional Sobol G function. """
     expected_result = np.array(
@@ -349,6 +359,7 @@ def test_sobol_8dim_first_order_variance(parameters_sobol_8dim):
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_sobol_8dim_variance():
     """ Test variance of 8 dimensional Sobol G function. """
     expected_result = 0.4654244319022063
@@ -370,6 +381,7 @@ def test_sobol_8dim_variance():
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_sobol_8dim_first_order_indices(parameters_sobol_8dim):
     """ Test first order indices of 8 dimensional Sobol G function. """
     expected_result = np.array(
@@ -392,6 +404,7 @@ def test_sobol_8dim_first_order_indices(parameters_sobol_8dim):
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_sobol_8dim_total_order_indices(parameters_sobol_8dim):
     """ Test total order indices of 8 dimensional Sobol G function. """
     expected_result = np.array(
@@ -414,6 +427,7 @@ def test_sobol_8dim_total_order_indices(parameters_sobol_8dim):
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_sobol_negative_a_valueerror(parameters_sobol_8dim, input_sobol_8dim):
     """ Test 10 dimensional Sobol G function raises ValueError with a<0 """
     # test negative value
@@ -425,6 +439,7 @@ def test_sobol_negative_a_valueerror(parameters_sobol_8dim, input_sobol_8dim):
         result = sobol.sobol(a=a, alpha=alpha, delta=delta, **input_sobol_8dim)
 
 
+@pytest.mark.unit_tests
 def test_sobol_negative_alpha_valueerror(parameters_sobol_8dim, input_sobol_8dim):
     """ Test 10 dimensional Sobol G function raises ValueError with alpha<=0. """
     a = parameters_sobol_8dim["a"]
@@ -440,6 +455,7 @@ def test_sobol_negative_alpha_valueerror(parameters_sobol_8dim, input_sobol_8dim
         result = sobol.sobol(a=a, alpha=alpha, delta=delta, **input_sobol_8dim)
 
 
+@pytest.mark.unit_tests
 def test_sobol_delta_out_of_bound_valueerror(parameters_sobol_8dim, input_sobol_8dim):
     """ Test 10 dimensional Sobol G function raises ValueError with delta not in 0<=delta<=1.0. """
     a = parameters_sobol_8dim["a"]
@@ -456,6 +472,7 @@ def test_sobol_delta_out_of_bound_valueerror(parameters_sobol_8dim, input_sobol_
         result = sobol.sobol(a=a, alpha=alpha, delta=delta, **input_sobol_8dim)
 
 
+@pytest.mark.unit_tests
 def test_sobol_shape_mismatch_valueerror(parameters_sobol_8dim, input_sobol_8dim):
     """ Test 10 dimensional Sobol G function raises ValueError with delta not in 0<=delta<=1.0. """
     a = parameters_sobol_8dim["a"]
@@ -477,6 +494,7 @@ def test_sobol_shape_mismatch_valueerror(parameters_sobol_8dim, input_sobol_8dim
         result = sobol.sobol(a=a, alpha=alpha, delta=delta, **too_small_input)
 
 
+@pytest.mark.unit_tests
 def test_sobol_default_10dim(input_sobol_10dim):
     """ Test 10 dimensional Sobol G function. """
     expected_result = 0.27670926062343376
@@ -485,6 +503,7 @@ def test_sobol_default_10dim(input_sobol_10dim):
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_sobol_main_wrapper(input_sobol_10dim, dummy_job_id):
     """ Test 10 dimensional Sobol G function called with main wrapper. """
     expected_result = 0.27670926062343376
@@ -493,6 +512,7 @@ def test_sobol_main_wrapper(input_sobol_10dim, dummy_job_id):
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_sobol_default_10dim_first_order_variance():
     """ Test first order variance of 10 dimensional Sobol G function. """
     expected_result = np.array(
@@ -514,6 +534,7 @@ def test_sobol_default_10dim_first_order_variance():
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_sobol_default_10dim_variance():
     """ Test variance of 10 dimensional Sobol G function. """
     expected_result = 16.037447681001517
@@ -537,6 +558,7 @@ def test_sobol_default_10dim_variance():
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_sobol_10dim_first_order_indices():
     """ Test first order indices of 10 dimensional Sobol G function. """
     expected_result = np.array(
@@ -558,6 +580,7 @@ def test_sobol_10dim_first_order_indices():
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_sobol_default_10dim_total_order_indices():
     """ Test total order indices of 10 dimensional Sobol G function. """
     expected_result = np.array(
@@ -600,6 +623,7 @@ def expected_result_ishigami():
     return 0.4639052488541057
 
 
+@pytest.mark.unit_tests
 def test_ishigami(parameters_ishigami, input_ishigami, expected_result_ishigami):
     """ Test Ishigami function. """
     P1 = parameters_ishigami["p1"]
@@ -610,6 +634,7 @@ def test_ishigami(parameters_ishigami, input_ishigami, expected_result_ishigami)
     assert np.allclose(result, expected_result_ishigami)
 
 
+@pytest.mark.unit_tests
 def test_ishigami_default_parameter(input_ishigami, expected_result_ishigami):
     """ Test Ishigami function with default parameters. """
     result = ishigami.ishigami(*input_ishigami.values())
@@ -617,6 +642,7 @@ def test_ishigami_default_parameter(input_ishigami, expected_result_ishigami):
     assert np.allclose(result, expected_result_ishigami)
 
 
+@pytest.mark.unit_tests
 def test_ishigami_main_wrapper(input_ishigami, expected_result_ishigami, dummy_job_id):
     """ Test Ishigami function main wrapper which uses default parameters. """
     result = ishigami.main(dummy_job_id, input_ishigami)
@@ -624,6 +650,7 @@ def test_ishigami_main_wrapper(input_ishigami, expected_result_ishigami, dummy_j
     assert np.allclose(result, expected_result_ishigami)
 
 
+@pytest.mark.unit_tests
 def test_ishigami_variance(parameters_ishigami):
     """ Test variance of Ishigami function. """
     P1 = parameters_ishigami["p1"]
@@ -636,6 +663,7 @@ def test_ishigami_variance(parameters_ishigami):
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_ishigami_first_effect_variance(parameters_ishigami):
     """ Test first effect variance Ishigami function. """
     P1 = parameters_ishigami["p1"]
@@ -648,6 +676,7 @@ def test_ishigami_first_effect_variance(parameters_ishigami):
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_ishigami_first_order_indices(parameters_ishigami):
     """ Test first order indices Ishigami function. """
     P1 = parameters_ishigami["p1"]
@@ -660,6 +689,7 @@ def test_ishigami_first_order_indices(parameters_ishigami):
     assert np.allclose(result, expected_result)
 
 
+@pytest.mark.unit_tests
 def test_ishigami_total_order_indices(parameters_ishigami):
     """ Test total order variance Ishigami function. """
     P1 = parameters_ishigami["p1"]
@@ -679,6 +709,7 @@ def input_gardner2014a():
     return input_vector
 
 
+@pytest.mark.unit_tests
 def test_gardner2014a(input_gardner2014a):
     """ Test Gardner2014a function. """
 
@@ -693,6 +724,7 @@ def test_gardner2014a(input_gardner2014a):
     assert np.allclose(c_result, expected_c_result)
 
 
+@pytest.mark.unit_tests
 def test_gardner2014a_main_wrapper(input_gardner2014a, dummy_job_id):
     """ Test Gardner2014a function's main wrapper. """
     expected_y_result = 0.32925795427636007

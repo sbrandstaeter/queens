@@ -45,6 +45,7 @@ def proposed_sample(current_sample):
     return 2.0 * current_sample
 
 
+@pytest.mark.unit_tests
 def test_mh_select(
     acceptance_probability, log_acceptance_probability, current_sample, proposed_sample, mocker
 ):
@@ -67,6 +68,7 @@ def test_mh_select(
     assert accepted[1] == True
 
 
+@pytest.mark.unit_tests
 def test_mh_select_accept_prob_1(current_sample, proposed_sample, num_chains):
     """
     Test acceptance of proposal based on acceptance probability >= 1.0.
@@ -82,6 +84,7 @@ def test_mh_select_accept_prob_1(current_sample, proposed_sample, num_chains):
     assert np.all(accepted)
 
 
+@pytest.mark.unit_tests
 def test_mh_select_accept_prob_0(current_sample, proposed_sample, num_chains):
     """
     Test rejection of proposal based on acceptance probability = 0.0.

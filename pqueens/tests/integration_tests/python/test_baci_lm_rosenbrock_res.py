@@ -2,10 +2,12 @@ import os
 
 import pandas as pd
 import numpy as np
+import pytest
 
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_baci_lm_rosenbrock_res(inputdir, tmpdir):
     """ Test case for Levenberg Marquardt iterator. """
     arguments = [

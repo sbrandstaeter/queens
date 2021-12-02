@@ -5,6 +5,7 @@ import numpy as np
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
     """ Integration test for the grid iterator """
     arguments = [

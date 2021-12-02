@@ -6,6 +6,7 @@ import pytest
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_borehole_monte_carlo(inputdir, tmpdir):
     """ Test case for monte carlo iterator """
     arguments = [

@@ -52,6 +52,7 @@ def bounds(request):
     return request.param
 
 
+@pytest.mark.unit_tests
 def test_fd_jacobian(x0, method, rel_step, bounds):
     """
     Test reimplementation of Jacobian against the original

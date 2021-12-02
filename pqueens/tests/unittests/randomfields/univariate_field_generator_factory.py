@@ -6,6 +6,7 @@ Created on April 19th 2017
 
 import unittest
 import numpy as np
+import pytest
 from scipy.stats import norm
 from scipy.stats import beta
 
@@ -28,6 +29,7 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
         self.loc = [0, 10, 25, 100]
         self.seed = 42
 
+    @pytest.mark.unit_tests
     def test_construction_wrong_distribution(self):
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -42,6 +44,7 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
             )
             mystuff.gen_sample_gauss_field(10, np.array((4, 4)))
 
+    @pytest.mark.unit_tests
     def test_construction_wrong_covariance(self):
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -56,6 +59,7 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
             )
             mystuff.gen_sample_gauss_field(10, np.array((4, 4)))
 
+    @pytest.mark.unit_tests
     def test_construction_wrong_dimension(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -97,6 +101,7 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
 
     # raise RuntimeError('field bounding box must be size {} and not {}'.format(
     # self.spatial_dim*2,san_check_bbox[0]))
+    @pytest.mark.unit_tests
     def test_construction_boundingbox_dimension(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -111,6 +116,7 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
             )
 
     # raise ValueError('energy fraction must be between 0 and 1.')
+    @pytest.mark.unit_tests
     def test_construction_wrong_engergy_frac(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -137,6 +143,7 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
             mystuff.gen_sample_gauss_field(10, np.array((4, 4)))
 
     # raise ValueError('correlation length must smaller than
+    @pytest.mark.unit_tests
     def test_construction_correlation_length_to_long(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -151,6 +158,7 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
             )
 
     # raise RuntimeError('Error: correlation length must be positive')
+    @pytest.mark.unit_tests
     def test_construction_correlation_length_negative(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -181,6 +189,7 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
 
     # raise RuntimeError('field bounding box must be size {} and not {}'.format(
     # self.spatial_dim*2,san_check_bbox[0]))
+    @pytest.mark.unit_tests
     def test_construction_boundingbox_dimension(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -195,6 +204,7 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
             )
 
     # raise RuntimeError Number of terms in KLE expansion is too large. '
+    @pytest.mark.unit_tests
     def test_num_expansion_terms(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -209,6 +219,7 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
             )
 
     # raise ValueError('energy fraction must be between 0 and 1.')
+    @pytest.mark.unit_tests
     def test_construction_wrong_engergy_frac(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -235,6 +246,7 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
             mystuff.gen_sample_gauss_field(10, np.array((4, 4)))
 
     # raise RuntimeError('Error: correlation length must be positive')
+    @pytest.mark.unit_tests
     def test_construction_correlation_length_negative(self):
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(

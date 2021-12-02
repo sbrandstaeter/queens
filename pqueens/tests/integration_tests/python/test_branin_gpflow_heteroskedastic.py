@@ -6,6 +6,7 @@ import pytest
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_branin_gpflow_heteroskedastic(inputdir, tmpdir, expected_mean, expected_var):
     """ Test case for GPflow based heteroskedastic model """
     arguments = [

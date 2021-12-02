@@ -23,6 +23,7 @@ from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIte
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_multivariate_gaussian_metropolis_hastings(inputdir, tmpdir, dummy_data):
     """ Test case for metropolis hastings iterator """
     template = os.path.join(inputdir, "multivariate_gaussian_metropolis_hastings.json")

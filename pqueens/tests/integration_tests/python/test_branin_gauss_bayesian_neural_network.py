@@ -6,6 +6,7 @@ import pytest
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_branin_gauss_bayesian_neural_network(inputdir, tmpdir, expected_mean, expected_var):
     """ Test case for bayesian neural network model """
     arguments = [

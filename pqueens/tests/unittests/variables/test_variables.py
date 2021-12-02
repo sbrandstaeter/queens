@@ -78,6 +78,7 @@ def variable(uncertain_parameters, data_vector, active):
     return Variables(uncertain_parameters, values=data_vector, active=active)
 
 
+@pytest.mark.unit_tests
 def test_from_data_vector_create(uncertain_parameters, data_vector):
     """
     Test from_uncertain_parameters_create
@@ -88,6 +89,7 @@ def test_from_data_vector_create(uncertain_parameters, data_vector):
     np.testing.assert_allclose(data, data_vector)
 
 
+@pytest.mark.unit_tests
 def test_get_active_variables(variable, data_vector):
     """
     Test get_active_variables.
@@ -104,6 +106,7 @@ def test_get_active_variables(variable, data_vector):
         np.testing.assert_allclose(active_variables[key], value)
 
 
+@pytest.mark.unit_tests
 def test_get_active_variables_vector(variable, data_vector):
     """
     Test get_active_variables_vector.
@@ -113,6 +116,7 @@ def test_get_active_variables_vector(variable, data_vector):
     np.testing.assert_allclose(data, data_vector)
 
 
+@pytest.mark.unit_tests
 def test_update_variables_from_vector(uncertain_parameters, data_vector, active):
     """ Test update_variables_from_vector method. """
 

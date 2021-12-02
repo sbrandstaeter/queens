@@ -90,6 +90,7 @@ def design_method(request):
 
 
 # ---- actual integration tests ------------------------------------------------
+@pytest.mark.integration_tests
 def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     tmpdir,
     inputdir,

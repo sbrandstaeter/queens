@@ -82,6 +82,7 @@ def responses():
     return responses
 
 
+@pytest.mark.unit_tests
 def test_get_parameters(model, model_name, uncertain_parameters):
     """
     Test get_parameters
@@ -89,6 +90,7 @@ def test_get_parameters(model, model_name, uncertain_parameters):
     assert model.get_parameter() is uncertain_parameters
 
 
+@pytest.mark.unit_tests
 def test_update_model_from_sample(data_vector, model):
     """ Test if the model variables can be updated from ndarray. """
 
@@ -99,6 +101,7 @@ def test_update_model_from_sample(data_vector, model):
     np.testing.assert_allclose(model.variables[0].variables['x2']['value'], data_vector[1:])
 
 
+@pytest.mark.unit_tests
 def test_update_model_from_sample_batch(data_batch, model):
     """ Test if model variables can be updated from multiple ndarrays. """
     model.update_model_from_sample_batch(data_batch)
@@ -110,6 +113,7 @@ def test_update_model_from_sample_batch(data_batch, model):
         np.testing.assert_allclose(variables.variables['x2']['value'], data_batch[i, 1:])
 
 
+@pytest.mark.unit_tests
 def test_convert_array_to_model_variables(data_batch, model):
     """ Based on batch of data vectors return instance of variables. """
 
@@ -122,6 +126,7 @@ def test_convert_array_to_model_variables(data_batch, model):
         np.testing.assert_allclose(variable.variables['x2']['value'], data_batch[i, 1:])
 
 
+@pytest.mark.unit_tests
 def test_check_for_precalculated_response_of_sample_batch(data_batch, model, mocker):
     """ check if sample batch as already been evaluated. """
 
@@ -134,6 +139,7 @@ def test_check_for_precalculated_response_of_sample_batch(data_batch, model, moc
     assert precalculated is True
 
 
+@pytest.mark.unit_tests
 def test_check_for_precalculated_response_of_sample_batch_wrong_data(data_batch, model):
     """ Batch was NOT precalculated. """
 
@@ -146,6 +152,7 @@ def test_check_for_precalculated_response_of_sample_batch_wrong_data(data_batch,
     assert precalculated is False
 
 
+@pytest.mark.unit_tests
 def test_check_for_precalculated_response_of_sample_batch_wrong_size(data_batch, model):
     """ Requested batch size does not match current variables size. """
 

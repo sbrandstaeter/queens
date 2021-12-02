@@ -23,6 +23,7 @@ from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIte
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_gaussian_smc(inputdir, tmpdir, dummy_data):
     """ Test Sequential Monte Carlo with univariate Gaussian. """
     template = os.path.join(inputdir, "gaussian_smc.json")

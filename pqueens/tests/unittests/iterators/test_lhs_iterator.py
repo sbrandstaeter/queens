@@ -5,6 +5,7 @@ Created on November 23th  2017
 '''
 import unittest
 import numpy as np
+import pytest
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.variables.variables import Variables
@@ -59,9 +60,10 @@ class TestLHSIterator(unittest.TestCase):
             num_iterations=1,
             result_description=None,
             global_settings=some_settings,
-            criterion='maximin'
+            criterion='maximin',
         )
 
+    @pytest.mark.unit_tests
     def test_correct_sampling(self):
         """ Test if we get correct samples"""
 
@@ -88,6 +90,7 @@ class TestLHSIterator(unittest.TestCase):
             self.my_iterator.samples[0, :], ref_sample_first_row, 1e-07, 1e-07
         )
 
+    @pytest.mark.unit_tests
     def test_correct_results(self):
         """ Test if we get correct results"""
         self.my_iterator.pre_run()
