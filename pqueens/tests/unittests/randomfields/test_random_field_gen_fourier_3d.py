@@ -6,6 +6,7 @@ Created on April 21th 2017
 
 import unittest
 import numpy as np
+import pytest
 
 from scipy import stats
 from scipy.stats import norm
@@ -58,6 +59,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
 
     # should trigger error because desired energy fraction not reached
+    @pytest.mark.unit_tests
     def test_not_enough_fourier_terms(self):
         with self.assertRaises(RuntimeError):
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -73,6 +75,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
 
     # should trigger error because number of phase angles do not match stochastic
     # dimension
+    @pytest.mark.unit_tests
     def test_wrong_number_phase_angles(self):
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -88,6 +91,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
             mystuff.gen_sample_gauss_field(np.array([[10, 10, 10]]), np.array((4, 4)))
 
     # should trigger error because dimension of location is of
+    @pytest.mark.unit_tests
     def test_wrong_locatio_dimension(self):
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -103,6 +107,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
             xi = np.random.randn(mystuff.get_stoch_dim(), 1)
             mystuff.gen_sample_gauss_field(np.array([[10, 10]]), xi)
 
+    @pytest.mark.unit_tests
     def test_values_at_location(self):
         np.random.seed(self.seed)
         xi = np.random.randn(self.my_stoch_dim, 1)
@@ -128,6 +133,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         # last two arguments are relative and absolute tolerance, respectively
         np.testing.assert_allclose(my_vals, ref_vals, 1e-10, 1e-10)
 
+    @pytest.mark.unit_tests
     def test_correlation(self):
         my_vals = np.zeros((self.loc.shape[0], 200))
         np.random.seed(self.seed)
@@ -234,6 +240,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
             'Correlation for distance 100 is not correct.',
         )
 
+    @pytest.mark.unit_tests
     def test_marginal_distribution(self):
         my_vals = np.zeros((1, 200))
         np.random.seed(self.seed)

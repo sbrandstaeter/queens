@@ -168,6 +168,7 @@ def default_beta_distr():
 
 
 ############################## Uniform #################################
+@pytest.mark.unit_tests
 def test_init_Uniform(uniform_distr, a, b):
     """ Test init method of Uniform class. """
 
@@ -183,6 +184,7 @@ def test_init_Uniform(uniform_distr, a, b):
     np.testing.assert_allclose(uniform_distr.width, width)
 
 
+@pytest.mark.unit_tests
 def test_init_Uniform_wrong_interval(a):
     """ Test init method of Uniform class. """
 
@@ -190,6 +192,7 @@ def test_init_Uniform_wrong_interval(a):
         Uniform(a, a - np.abs(a))
 
 
+@pytest.mark.unit_tests
 def test_cdf_Uniform(uniform_distr, a, b):
     """ Test cdf method of Uniform distribution class. """
 
@@ -199,6 +202,7 @@ def test_cdf_Uniform(uniform_distr, a, b):
     np.testing.assert_allclose(uniform_distr.cdf(sample_pos), ref_sol)
 
 
+@pytest.mark.unit_tests
 def test_draw_Uniform(uniform_distr, a, b, mocker):
     """ Test the draw method of uniform distribution. """
 
@@ -209,6 +213,7 @@ def test_draw_Uniform(uniform_distr, a, b, mocker):
     np.testing.assert_allclose(draw, sample)
 
 
+@pytest.mark.unit_tests
 def test_logpdf_Uniform(uniform_distr, a, b, sample_pos):
     """ Test pdf method of Uniform distribution class. """
 
@@ -221,6 +226,7 @@ def test_logpdf_Uniform(uniform_distr, a, b, sample_pos):
     np.testing.assert_allclose(uniform_distr.logpdf(sample_pos), ref_sol)
 
 
+@pytest.mark.unit_tests
 def test_pdf_Uniform(uniform_distr, a, b, sample_pos):
     """ Test pdf method of Uniform distribution class. """
 
@@ -233,6 +239,7 @@ def test_pdf_Uniform(uniform_distr, a, b, sample_pos):
     np.testing.assert_allclose(uniform_distr.pdf(sample_pos), ref_sol)
 
 
+@pytest.mark.unit_tests
 def test_ppf_Uniform(uniform_distr, a, b):
     """ Test ppf method of Uniform distribution class. """
 
@@ -243,6 +250,7 @@ def test_ppf_Uniform(uniform_distr, a, b):
 
 
 ############################ LogNormal #################################
+@pytest.mark.unit_tests
 def test_init_LogNormal(lognormal_distr, valid_mean_value, valid_var_value):
     """ Test init method of LogNormal class. """
 
@@ -258,12 +266,14 @@ def test_init_LogNormal(lognormal_distr, valid_mean_value, valid_var_value):
     np.testing.assert_allclose(lognormal_distr.covariance, var_ref)
 
 
+@pytest.mark.unit_tests
 def test_init_LogNormal_invalid(valid_mean_value, valid_var_value):
     """ Test init method of LogNormal class. """
     with pytest.raises(ValueError, match=r'Sigma has to be positiv.*'):
         LogNormal(valid_mean_value, -valid_var_value)
 
 
+@pytest.mark.unit_tests
 def test_cdf_Lognormal(valid_mean_value, valid_var_value):
     """
     Test cdf method of Lognormal class (univariate case).
@@ -282,6 +292,7 @@ def test_cdf_Lognormal(valid_mean_value, valid_var_value):
     np.testing.assert_allclose(lognormal_distr.cdf(sample_pos), ref_sol)
 
 
+@pytest.mark.unit_tests
 def test_draw_LogNormal(lognormal_distr, mocker):
     """ Test the draw method of uniform distribution. """
 
@@ -292,6 +303,7 @@ def test_draw_LogNormal(lognormal_distr, mocker):
     np.testing.assert_allclose(draw, sample)
 
 
+@pytest.mark.unit_tests
 def test_pdf_Lognormal(lognormal_distr, valid_mean_value, valid_var_value):
     """ Test pdf method of Lognormal class (univariate case). """
 
@@ -304,6 +316,7 @@ def test_pdf_Lognormal(lognormal_distr, valid_mean_value, valid_var_value):
     np.testing.assert_allclose(lognormal_distr.pdf(x), reference_solution)
 
 
+@pytest.mark.unit_tests
 def test_logpdf_Lognormal(lognormal_distr, valid_mean_value, valid_var_value):
     """ Test logpdf method of Lognormal class (univariate case). """
 
@@ -316,6 +329,7 @@ def test_logpdf_Lognormal(lognormal_distr, valid_mean_value, valid_var_value):
     np.testing.assert_allclose(lognormal_distr.logpdf(x), reference_solution)
 
 
+@pytest.mark.unit_tests
 def test_ppf_Lognormal(valid_mean_value, valid_var_value):
     """
     Test ppf method of Lognormal class (univariate case).
@@ -336,6 +350,7 @@ def test_ppf_Lognormal(valid_mean_value, valid_var_value):
 
 ############################## Normal ##################################
 # univariate
+@pytest.mark.unit_tests
 def test_init_NormalProposal_univariate(univariate_normal, valid_mean_value, valid_var_value):
     """ Test init method of NormalProposal class (univariate case). """
 
@@ -348,6 +363,7 @@ def test_init_NormalProposal_univariate(univariate_normal, valid_mean_value, val
     np.testing.assert_allclose(univariate_normal.low_chol, lower_cholesky)
 
 
+@pytest.mark.unit_tests
 def test_cdf_NormalProposal_univariate(valid_mean_value, univariate_normal):
     """ Test cdf method of NormalProposal class (univariate case). """
 
@@ -358,6 +374,7 @@ def test_cdf_NormalProposal_univariate(valid_mean_value, univariate_normal):
     np.testing.assert_allclose(univariate_normal.cdf(sample_pos), ref_sol)
 
 
+@pytest.mark.unit_tests
 def test_draw_NormalProposal_univariate(
     univariate_normal, valid_mean_value, valid_var_value, num_draws, mocker
 ):
@@ -371,6 +388,7 @@ def test_draw_NormalProposal_univariate(
     np.testing.assert_allclose(univariate_draw, normal_sample)
 
 
+@pytest.mark.unit_tests
 def test_logpdf_NormalProposal_univariate(univariate_normal, valid_mean_value, valid_var_value):
     """ Test logpdf method of NormalProposal class (univariate case). """
 
@@ -381,6 +399,7 @@ def test_logpdf_NormalProposal_univariate(univariate_normal, valid_mean_value, v
     np.testing.assert_allclose(univariate_normal.logpdf(x), ref_sol)
 
 
+@pytest.mark.unit_tests
 def test_pdf_NormalProposal_univariate(univariate_normal, valid_mean_value, valid_var_value):
     """ Test pdf method of NormalProposal class (univariate case). """
 
@@ -391,6 +410,7 @@ def test_pdf_NormalProposal_univariate(univariate_normal, valid_mean_value, vali
     np.testing.assert_allclose(univariate_normal.pdf(x), ref_sol)
 
 
+@pytest.mark.unit_tests
 def test_ppf_NormalProposal_univariate(univariate_normal, valid_mean_value, valid_var_value):
     """ Test ppf method of NormalProposal class (univariate case). """
     quantile = 0.5
@@ -400,6 +420,7 @@ def test_ppf_NormalProposal_univariate(univariate_normal, valid_mean_value, vali
 
 
 # multivariate
+@pytest.mark.unit_tests
 def test_init_NormalProposal_wrong_dimension(
     valid_mean_vector, invalid_dimension_covariance_matrix
 ):
@@ -409,6 +430,7 @@ def test_init_NormalProposal_wrong_dimension(
         NormalProposal(valid_mean_vector, invalid_dimension_covariance_matrix)
 
 
+@pytest.mark.unit_tests
 def test_init_NormalProposal_not_quadratic(
     valid_mean_vector, invalid_rectangular_covariance_matrix
 ):
@@ -418,6 +440,7 @@ def test_init_NormalProposal_not_quadratic(
         NormalProposal(valid_mean_vector, invalid_rectangular_covariance_matrix)
 
 
+@pytest.mark.unit_tests
 def test_init_NormalProposal_not_symmetric(
     valid_mean_vector, invalid_nonsymmetric_covariance_matrix
 ):
@@ -427,6 +450,7 @@ def test_init_NormalProposal_not_symmetric(
         NormalProposal(valid_mean_vector, invalid_nonsymmetric_covariance_matrix)
 
 
+@pytest.mark.unit_tests
 def test_init_NormalProposal_multivariate(
     multivariate_normal, valid_mean_vector, valid_covariance_matrix, valid_lower_cholesky
 ):
@@ -438,6 +462,7 @@ def test_init_NormalProposal_multivariate(
     np.testing.assert_allclose(multivariate_normal.low_chol, valid_lower_cholesky)
 
 
+@pytest.mark.unit_tests
 def test_draw_NormalProposal_multivariate(
     multivariate_normal,
     valid_mean_vector,
@@ -458,6 +483,7 @@ def test_draw_NormalProposal_multivariate(
     np.testing.assert_allclose(multivariate_draw, correlated_vector)
 
 
+@pytest.mark.unit_tests
 def test_cdf_NormalProposal_multivariate(
     multivariate_normal, valid_mean_vector, valid_covariance_matrix
 ):
@@ -470,6 +496,7 @@ def test_cdf_NormalProposal_multivariate(
     np.testing.assert_allclose(multivariate_normal.cdf(sample_pos), ref_sol, rtol=1e-4)
 
 
+@pytest.mark.unit_tests
 def test_pdf_NormalProposal_multivariate(
     multivariate_normal, valid_mean_vector, valid_covariance_matrix
 ):
@@ -484,6 +511,7 @@ def test_pdf_NormalProposal_multivariate(
     np.testing.assert_allclose(multivariate_normal.pdf(x), reference_solution)
 
 
+@pytest.mark.unit_tests
 def test_logpdf_NormalProposal_multivariate(
     multivariate_normal, valid_mean_vector, valid_covariance_matrix
 ):
@@ -498,6 +526,7 @@ def test_logpdf_NormalProposal_multivariate(
     np.testing.assert_allclose(multivariate_normal.logpdf(x), reference_solution)
 
 
+@pytest.mark.unit_tests
 def test_ppf_NormalProposal_multivariate(multivariate_normal):
     """ Test ppf method of NormalProposal class (multivariate case). """
     with pytest.raises(RuntimeError):
@@ -505,6 +534,7 @@ def test_ppf_NormalProposal_multivariate(multivariate_normal):
 
 
 # ---- some quick analytic tests for the beta distribution
+@pytest.mark.unit_tests
 def test_pdf_beta(default_beta_distr):
     x = 2.0
     pdf_value = default_beta_distr.pdf(x)
@@ -512,6 +542,7 @@ def test_pdf_beta(default_beta_distr):
     np.testing.assert_almost_equal(pdf_value, expected_pdf_value, decimal=4)
 
 
+@pytest.mark.unit_tests
 def test_cdf_beta(default_beta_distr):
     x = 2.0
     cdf_value = default_beta_distr.cdf(x)
@@ -520,6 +551,7 @@ def test_cdf_beta(default_beta_distr):
 
 
 ####################### Create Distribution ############################
+@pytest.mark.unit_tests
 def test_create_proposal_distribution_normal(valid_mean_vector, valid_covariance_matrix):
     """ Test creation routine of proposal distribution objects. """
 
@@ -533,6 +565,7 @@ def test_create_proposal_distribution_normal(valid_mean_vector, valid_covariance
     assert isinstance(normal_proposal, NormalProposal)
 
 
+@pytest.mark.unit_tests
 def test_create_proposal_distribution_invalid():
     """ Test creation routine of proposal distribution objects. """
 

@@ -7,6 +7,7 @@ from pqueens.main import main
 from pqueens.utils import injector
 
 
+@pytest.mark.integration_tests_baci
 def test_ensight_reader_writer(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, config_dir, expected_mean, expected_var
 ):

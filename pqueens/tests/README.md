@@ -6,6 +6,20 @@ In short
 for more control over the test you can run pytest directly
 `pytest`
 
+Every test is marked with a pytest marker. These allow us to group tests together and run every test of a group:
+- Unit tests 
+  - `pytest -m unit_tests`  
+- Integration tests without BACI 
+  - `pytest -m integration_tests`
+- Integration tests with BACI 
+  - `pytest -m integration_tests_baci`
+- Integration tests with or without BACI
+  - `pytest -m "integration_tests or integration_tests_baci"`
+- Cluster tests (requires BACI) 
+  - `pytest -m lnm_clusters`  
+- Benchmarks (requires BACI)   
+  - `pytest -m benchmark`
+
 Note that per default the options defined in  `setup.cfg` under 
 `[tool:pytest]` will be added.
 
@@ -25,6 +39,7 @@ for output directly to the shell.
 
 To run tests against the installed package type
 `pytest --pyargs model_creator`
+
 
 ## Tools for testing ##
 - pytest

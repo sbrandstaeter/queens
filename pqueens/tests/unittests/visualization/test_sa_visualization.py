@@ -26,6 +26,7 @@ def dummy_vis(tmpdir):
     return sa_vis
 
 
+@pytest.mark.unit_tests
 def test_init(tmpdir, dummy_vis):
     """
     Test initialization of SAVisualization
@@ -64,6 +65,7 @@ def dummy_sensitivity_indices():
     return results
 
 
+@pytest.mark.unit_tests
 def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
     """
     Test whether bar plot of sensitivity indices is plotting and saving the plot as a file
@@ -77,6 +79,7 @@ def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
     assert os.path.isfile(path_output_image)
 
 
+@pytest.mark.unit_tests
 def test_sa_visualization_scatter(tmpdir, dummy_vis, dummy_sensitivity_indices):
     """
     Test whether scatter plot of sensitivity indices is plotting and saving the plot as a file

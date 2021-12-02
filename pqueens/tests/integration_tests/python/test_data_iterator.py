@@ -7,6 +7,7 @@ import pytest
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_branin_data_iterator(inputdir, tmpdir, mocker):
     """ Test case for data iterator """
     arguments = [

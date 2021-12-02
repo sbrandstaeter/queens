@@ -15,6 +15,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_co
 import pqueens.visualization.variational_inference_visualization as vis
 
 # TODO add the test prefix again after fullrank was implemented
+@pytest.mark.integration_tests
 def virp_density_match(
     mocker, inputdir, tmpdir, dummy_virp_instance, visualization_obj,
 ):
@@ -55,6 +56,7 @@ def virp_density_match(
     assert elbo[0] < elbo[-1]
 
 
+@pytest.mark.integration_tests
 def test_virp_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
     """ Integration test for the virp iterator based on the park91a_hifi function """
 

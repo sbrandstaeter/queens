@@ -23,6 +23,7 @@ from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIte
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_multivariate_gaussian_mixture_smc_bayes_temper(inputdir, tmpdir, dummy_data):
     """ Test SMC with a multivariate Gaussian mixture (multimodal). """
     template = os.path.join(inputdir, "multivariate_gaussian_mixture_smc_bayes_temper.json")

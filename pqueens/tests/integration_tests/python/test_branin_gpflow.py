@@ -6,6 +6,7 @@ import pytest
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_branin_gpflow(inputdir, tmpdir, expected_mean, expected_var):
     """ Test case for GPflow based GP model """
     arguments = [

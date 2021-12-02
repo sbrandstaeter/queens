@@ -6,6 +6,7 @@ Created on April 19th 2017
 
 import unittest
 import numpy as np
+import pytest
 
 from scipy import stats
 from scipy.stats import norm
@@ -44,6 +45,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
 
     # should trigger error because desired energy fraction not reached
+    @pytest.mark.unit_tests
     def test_not_enough_fourier_terms(self):
         with self.assertRaises(RuntimeError):
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -59,6 +61,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
 
     # should trigger error because number of phase angles do not match stochastic
     # dimension
+    @pytest.mark.unit_tests
     def test_wrong_number_phase_angles(self):
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -73,6 +76,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
             )
             mystuff.gen_sample_gauss_field(10, np.array((4, 4)))
 
+    @pytest.mark.unit_tests
     def test_values_at_location(self):
         loc = np.array([0, 25, 50, 100])
         np.random.seed(self.seed)
@@ -84,6 +88,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
             my_vals, np.array([0.88594784, 1.08872132, 0.88706044, -0.81812818]), 1e-07, 1e-07
         )
 
+    @pytest.mark.unit_tests
     def test_correlation(self):
         loc = np.array([0, 10, 25, 100])
         my_vals = np.zeros((loc.shape[0], 1000))
@@ -126,6 +131,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
             'Correlation for distance 100 is not correct.',
         )
 
+    @pytest.mark.unit_tests
     def test_marginal_distribution(self):
         my_vals = np.zeros((1, 200))
         np.random.seed(self.seed)

@@ -21,6 +21,7 @@ def port(request):
     return request.param
 
 
+@pytest.mark.unit_tests
 def test_exit_conditions_remote_main(mocker, monkeypatch, finalize_fail, port):
 
     # Patch open() function

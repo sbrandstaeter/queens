@@ -4,6 +4,8 @@ variables:
   # flags to turn on/ off tests for specific platforms
   DOCKER_TESTS: "1"
   CENTOS_TESTS: "1"
+  CLUSTER_TESTS: "0"
+  BENCHMARKS: "0"
   # optional parameters for pytest calls
   PYTEST_OPTIONAL_PARAMETERS: ""
 
@@ -66,7 +68,9 @@ stages:
   extends:
     - .centos_settings
   stage: codechecks
-  only:
+  except:
+    - $CLUSTER_TESTS==1
+    - $BENCHMARKS==1
   tags:
     - codechecks
 
@@ -88,10 +92,11 @@ build_conda_env:
     when: always
     expire_in: 4 weeks
 
-remove_conda_env:
+remove_conda_env_and_singularity_image:
   stage: cleanup
   script:
     - conda env remove -n queens-$CI_PIPELINE_ID
+    - rm /tmp/driver.simg-$CI_PIPELINE_ID
   when: always
   variables:
     GIT_STRATEGY: none
@@ -167,70 +172,47 @@ license_check:
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------
-.full_test_suite_develop:
-  # run full test suite, meant for development and feature branches
-  # note that baci related tests don't work with docker
-  stage: tests
-  except:
-    refs:
-      - master
+# Docker tests
 #---------------------------------------------------------------------------------------------------
-docker_full_test_suite_develop:
+docker_full_test_suite:
+  stage: tests
   extends:
     - .docker_settings
-    - .full_test_suite_develop
   script:
-    - echo "executing:"
-    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/baci/ --ignore=pqueens/tests/integration_tests/cluster/ $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/baci/ --ignore=pqueens/tests/integration_tests/cluster/ $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -m "unit_tests or integration_tests" $PYTEST_OPTIONAL_PARAMETERS
   needs: []
+  when: always
+#---------------------------------------------------------------------------------------------------
+# Centos tests
 #---------------------------------------------------------------------------------------------------
 centos_full_test_suite_develop:
+  stage: tests
   extends:
     - .centos_settings
-    - .full_test_suite_develop
   script:
-    - mv /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
+    - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
     - python setup.py develop
-    - echo "executing:"
-    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/cluster/  $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/cluster/ $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -m "unit_tests or integration_tests or integration_tests_baci" $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - build_conda_env
     - build_singularity
-#----------------------------------------------------------------------------------------------
-# Master tests
-#----------------------------------------------------------------------------------------------
-.full_test_suite_master:
-  # run full test suite on one core to be safe, meant for master branch only
-  # i.e., nightly testing and after a merge request
-  # build a html coverage report based on the full test suite
-  # note that baci related tests don't work with docker
-  stage: tests
-  only:
+  except:
+    variables:
+      - $CLUSTER_TESTS=="1"
+      - $BENCHMARKS=="1"
     refs:
       - master
-#---------------------------------------------------------------------------------------------------
-docker_full_test_suite_master:
-  extends:
-    - .docker_settings
-    - .full_test_suite_master
-  script:
-    - echo "executing:"
-    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/baci/ --ignore=pqueens/tests/integration_tests/cluster/ $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/baci/  --ignore=pqueens/tests/integration_tests/cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
-  needs: []
+#----------------------------------------------------------------------------------------------
+# Master tests
 #---------------------------------------------------------------------------------------------------
 centos_full_test_suite_master:
+  stage: tests
   extends:
     - .centos_settings
-    - .full_test_suite_master
   script:
-    - mv /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
+    - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
     - python setup.py develop
-    - echo "executing:"
-    - echo "pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/cluster/ $PYTEST_OPTIONAL_PARAMETERS"
-    - pytest --ignore=pqueens/tests/benchmarks/ --ignore=pqueens/tests/integration_tests/cluster/ --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   artifacts:
     name: coverage_report
     paths:
@@ -240,6 +222,41 @@ centos_full_test_suite_master:
   needs:
     - build_conda_env
     - build_singularity
+  only:
+    refs:
+      - master
+#----------------------------------------------------------------------------------------------
+# Weekly tests
+#---------------------------------------------------------------------------------------------------
+cluster_tests:
+  stage: tests
+  extends:
+    - .centos_settings
+  script:
+    - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
+    - python setup.py develop
+    - pytest -m lnm_cluster
+  needs:
+    - build_conda_env
+    - build_singularity
+  only:
+    variables:
+    - $CLUSTER_TESTS=="1"
+#---------------------------------------------------------------------------------------------------
+benchmarks:
+  stage: tests
+  extends:
+    - .centos_settings
+  script:
+    - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
+    - python setup.py develop
+    - pytest -m benchmark
+  needs:
+    - build_conda_env
+    - build_singularity
+  only:
+    variables:
+    - $BENCHMARKS=="1"
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: pages

@@ -4,15 +4,16 @@ simulations with BACI using a minimal FSI model and the post_post_baci_shape eva
 therefore post_drt_ensight postprocessing - post_processor.
 """
 
+import json
 import os
+
 import numpy as np
 import pandas as pd
-from pqueens.utils.manage_singularity import hash_files
-from pqueens.utils.run_subprocess import run_subprocess
+import pytest
 from pqueens.main import main
 from pqueens.utils import injector
-import pytest
-import json
+from pqueens.utils.manage_singularity import hash_files
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.fixture(params=[False, True])
@@ -51,6 +52,7 @@ def experiment_directory(output_directory_forward, singularity_bool):
     return output_directory_forward[singularity_bool]
 
 
+@pytest.mark.integration_tests_baci
 def test_baci_lm_shape(
     inputdir,
     third_party_inputs,

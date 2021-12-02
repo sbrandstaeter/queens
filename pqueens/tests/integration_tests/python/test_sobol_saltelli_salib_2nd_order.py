@@ -7,6 +7,7 @@ import pytest
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
     """
     Test Saltelli SALib iterator with Sobol G function.

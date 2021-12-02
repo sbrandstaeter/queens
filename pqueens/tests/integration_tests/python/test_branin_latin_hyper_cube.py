@@ -6,6 +6,7 @@ import pytest
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_branin_latin_hyper_cube(inputdir, tmpdir):
     """ Test case for latin hyper cube iterator """
     arguments = [

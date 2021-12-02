@@ -5,6 +5,7 @@ Created on November 20th  2017
 '''
 import unittest
 import numpy as np
+import pytest
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.variables.variables import Variables
@@ -49,6 +50,7 @@ class TestSASaltelliIshigami(unittest.TestCase):
             global_settings=some_settings,
         )
 
+    @pytest.mark.unit_tests
     def test_correct_sampling(self):
         """ Test if scaling works correctly """
         self.my_iterator.pre_run()
@@ -88,6 +90,7 @@ class TestSASaltelliIshigami(unittest.TestCase):
         # print("shape scale_samples: {}".format(scaled_samples))
         np.testing.assert_allclose(self.my_iterator.samples, ref_vals, 1e-07, 1e-07)
 
+    @pytest.mark.unit_tests
     def test_correct_sensitivity_indices(self):
         """ Test if we get error when the number os distributions doas not match
             the number of parameters """
@@ -226,6 +229,7 @@ class TestSASaltelliBorehole(unittest.TestCase):
             global_settings=some_settings,
         )
 
+    @pytest.mark.unit_tests
     def test_correct_sampling(self):
         """ Test if scaling works correctly """
         self.my_iterator.pre_run()
@@ -541,6 +545,7 @@ class TestSASaltelliBorehole(unittest.TestCase):
         # print("shape scale_samples: {}".format(scaled_samples))
         np.testing.assert_allclose(self.my_iterator.samples, ref_vals, 1e-07, 1e-07)
 
+    @pytest.mark.unit_tests
     def test_correct_sensitivity_indices(self):
         """ Test if we get error when the number os distributions doas not match
             the number of parameters """

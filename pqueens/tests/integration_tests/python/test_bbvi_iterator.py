@@ -15,6 +15,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_co
 import pqueens.visualization.variational_inference_visualization as vis
 
 
+@pytest.mark.integration_tests
 def test_bbvi_density_match(
     mocker, inputdir, tmpdir, dummy_bbvi_instance, visualization_obj,
 ):
@@ -55,6 +56,7 @@ def test_bbvi_density_match(
     assert elbo[0] < elbo[-1]
 
 
+@pytest.mark.integration_tests
 def test_bbvi_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
     """ Integration test for the bbvi iterator based on the park91a_hifi function """
 

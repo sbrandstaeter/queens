@@ -115,6 +115,7 @@ def direct_python_interface_parallel(variables):
     return DirectPythonInterface(interface_name, python_function_name, variables, num_workers=2)
 
 
+@pytest.mark.unit_tests
 def test_map(list_of_variables, expected_results, direct_python_interface):
     """ Test mapping from input to response/ output. """
 
@@ -124,6 +125,7 @@ def test_map(list_of_variables, expected_results, direct_python_interface):
     np.testing.assert_allclose(output["mean"], expected_results)
 
 
+@pytest.mark.unit_tests
 def test_map_parallel(list_of_variables, expected_results, direct_python_interface_parallel):
     """
     Test parallel mapping from multiple input vectors to
@@ -136,6 +138,7 @@ def test_map_parallel(list_of_variables, expected_results, direct_python_interfa
     np.testing.assert_allclose(output["mean"], expected_results)
 
 
+@pytest.mark.unit_tests
 def test_create_from_config(variables, config):
     """ Given a config dict instantiate DirectPythonInterface. """
 
@@ -145,6 +148,7 @@ def test_create_from_config(variables, config):
     assert isinstance(direct_python_interface, DirectPythonInterface)
 
 
+@pytest.mark.unit_tests
 def test_create_from_config_parallel(variables, config_parallel):
     """
     Given a config dict instantiate DirectPythonInterface

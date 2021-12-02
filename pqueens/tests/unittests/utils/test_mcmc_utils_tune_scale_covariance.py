@@ -31,6 +31,7 @@ def accept_rate_and_scale_covariance(request):
     return request.param
 
 
+@pytest.mark.unit_tests
 def test_tune_scale_covariance(accept_rate_and_scale_covariance):
     """ Test the tuning of scale covariance in MCMC methods. """
 
@@ -40,6 +41,7 @@ def test_tune_scale_covariance(accept_rate_and_scale_covariance):
     assert tune_scale_covariance(current_scale, accept_rate) == expected_scale
 
 
+@pytest.mark.unit_tests
 def test_tune_scale_covariance_multiple_chains():
     """
     Test the tuning of proposal covariance in MCMC methods with multiple chains.
