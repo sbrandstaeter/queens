@@ -1,4 +1,4 @@
-name: queens 
+name: queens
 channels:
   - defaults
   - conda-forge
@@ -80,3 +80,5 @@ dependencies:
     - torch
 # for gnuplot based terminal ascii plots
     - gnuplotlib
+# pre-commit management
+    - pre-commit
