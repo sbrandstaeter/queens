@@ -7,17 +7,18 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from pqueens.main import main
 from pqueens.utils import injector
+import pqueens.visualization.bmfia_visualization as qvis
 from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_coords import (
     park91a_hifi_coords,
 )
 
 
 @pytest.mark.benchmark
-def test_smc_park_hf(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
+def test_bmfia_park_hf_smc(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
     """ Integration test for bayesian multi-fidelity inverse analysis (bmfia) using the park91 function """
 
     # generate json input file from template
-    template = os.path.join(inputdir, 'bmfia_smc_park.json')
+    template = os.path.join(inputdir, 'bmfia_smc_park_copy.json')
     experimental_data_path = tmpdir
     dir_dict = {'experimental_data_path': experimental_data_path}
     input_file = os.path.join(tmpdir, 'smc_mf_park_realization.json')
@@ -40,6 +41,9 @@ def test_smc_park_hf(inputdir, tmpdir, design_and_write_experimental_data_to_csv
     samples = results['raw_output_data']['particles'].squeeze()
     weights = results['raw_output_data']['weights'].squeeze()
 
+    # some optional plotting
+    qvis.bmfia_visualization_instance.plot_posterior_from_samples(samples, weights, ['x_1', 'x_2'])
+
     # quick and dirty plotting
     sns.set_theme(style='whitegrid')
     f, ax = plt.subplots(figsize=(6, 6))
@@ -58,24 +62,6 @@ def test_smc_park_hf(inputdir, tmpdir, design_and_write_experimental_data_to_csv
     ax.set_ylabel(r'$x_2$')
     ax.set_xlim(0.0, 1.0)
     ax.set_ylim(0.0, 1.0)
-
-    plt.savefig('/home/nitzler/park_mf_smc.jpg', dpi=300)
-
-    # Actual test
-    f2, ax2 = plt.subplots(figsize=(6, 6))
-    noise_var_lst = results['raw_output_data']['noise_var_lst']
-    ax2.plot(noise_var_lst, '.')
-    ax2.set_xlabel('iter')
-    ax2.set_ylabel(r'$\sigma^2_{\mathrm{obs,MAP}}$')
-    plt.savefig('/home/nitzler/noise_var_lst.jpg', dpi=300)
-
-
-# assert np.abs(results['variational_distr']['mu'][0] - 0.5) < 0.01
-# assert np.abs(results['variational_distr']['mu'][1] - 0.2) < 0.03
-# assert results['variational_distr']['sigma'][0] < 0.1
-# assert results['variational_distr']['sigma'][1] < 0.3
-# assert results['variational_distr']['noise_std'] < 0.05
-# assert results['iterations'] < 10000
 
 
 @pytest.fixture()

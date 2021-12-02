@@ -178,7 +178,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         eigenfunc_random_fields = None  # TODO this should be moved to the variable class!
         eigenvals = None
         f_mean_train = None
-        noise_var = 1e-4
+        noise_var = None
         noise_var_lst = []
 
         return cls(
