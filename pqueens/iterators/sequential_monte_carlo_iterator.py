@@ -1,6 +1,4 @@
-"""
-Sequential Monte Carlo algorithm
-
+"""Sequential Monte Carlo algorithm.
 
 References:
 [1]: Del Moral, P., Doucet, A. and Jasra, A. (2007)
@@ -35,13 +33,11 @@ from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from pqueens.models.model import Model
 from pqueens.utils import smc_utils
-from pqueens.utils.process_outputs import process_ouputs
-from pqueens.utils.process_outputs import write_results
+from pqueens.utils.process_outputs import process_ouputs, write_results
 
 
 class SequentialMonteCarloIterator(Iterator):
-    """
-    Iterator based on Sequential Monte Carlo algorithm
+    """Iterator based on Sequential Monte Carlo algorithm.
 
     The Sequential Monte Carlo algorithm is a very general algorithm for
     sampling from complex, intractable probability distributions from
@@ -130,8 +126,7 @@ class SequentialMonteCarloIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """
-        Create Sequential Monte Carlo iterator from problem description
+        """Create Sequential Monte Carlo iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -140,7 +135,6 @@ class SequentialMonteCarloIterator(Iterator):
 
         Returns:
             iterator: SequentialMonteCarloIterator object
-
         """
 
         print(
@@ -201,14 +195,13 @@ class SequentialMonteCarloIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate model at current sample batch. """
+        """Evaluate model at current sample batch."""
 
         result_dict = self.model.evaluate()
         return result_dict
 
     def eval_log_prior(self, sample_batch):
-        """
-        Evaluate natural logarithm of prior at sample.
+        """Evaluate natural logarithm of prior at sample.
 
         Args:
             sample_batch (np.array): Array of input samples
@@ -235,15 +228,13 @@ class SequentialMonteCarloIterator(Iterator):
         return log_prior_array
 
     def eval_log_likelihood(self, sample_batch):
-        """
-        Evaluate natural logarithm of likelihood at sample batch
+        """Evaluate natural logarithm of likelihood at sample batch.
 
         Args:
             sample_batch (np.array): Batch of samples
 
         Returns:
             None
-
         """
         self.model.update_model_from_sample_batch(np.atleast_2d(sample_batch))
         log_likelihood = self.eval_model()
@@ -251,7 +242,7 @@ class SequentialMonteCarloIterator(Iterator):
         return log_likelihood
 
     def initialize_run(self):
-        """ Draw initial sample. """
+        """Draw initial sample."""
 
         print("Initialize run.")
         np.random.seed(self.seed)
@@ -282,8 +273,7 @@ class SequentialMonteCarloIterator(Iterator):
             self.draw_trace(0)
 
     def calc_new_weights(self, gamma_new, gamma_old):
-        """
-        Calculate the weights at new gamma value.
+        """Calculate the weights at new gamma value.
 
         This is a core equation of the SMC algorithm. See for example
         - Eq.(22) with Eq.(14) in [1]
@@ -299,7 +289,6 @@ class SequentialMonteCarloIterator(Iterator):
 
         Returns:
             weights_new (np.array): New and normalized weights
-
         """
         weights_scaling = self.temper(self.log_prior, self.log_likelihood, gamma_new) - self.temper(
             self.log_prior, self.log_likelihood, gamma_old
@@ -315,14 +304,13 @@ class SequentialMonteCarloIterator(Iterator):
         return weights_new
 
     def calc_new_ess(self, gamma_new, gamma_old):
-        """ Calculate predicted Effective Sample Size at gamma_new. """
+        """Calculate predicted Effective Sample Size at gamma_new."""
         weights_new = self.calc_new_weights(gamma_new, gamma_old)
         ess = smc_utils.calc_ess(weights_new)
         return ess
 
     def calc_new_gamma(self, gamma_cur):
-        """
-        Calculate the new gamma value.
+        """Calculate the new gamma value.
 
         Based on the current gamma, calculate the new gamma such that
         the ESS at the new gamma is equal to zeta times current gamma.
@@ -349,8 +337,7 @@ class SequentialMonteCarloIterator(Iterator):
         return gamma_new
 
     def update_ess(self, resampled=False):
-        """
-        Update effective sample size (ess) and store current value
+        """Update effective sample size (ess) and store current value.
 
         Based on the current weights, calculate the corresponding ESS.
         Store the new ESS value.
@@ -369,19 +356,18 @@ class SequentialMonteCarloIterator(Iterator):
             self.ess.append(self.ess_cur)
 
     def update_gamma(self, gamma_new):
-        """ Update the current gamma value and store old value. """
+        """Update the current gamma value and store old value."""
 
         self.gamma_cur = gamma_new
         self.gammas.append(self.gamma_cur)
 
     def update_weights(self, weights_new):
-        """ Update the weights to their new values. """
+        """Update the weights to their new values."""
 
         self.weights = weights_new
 
     def resample(self):
-        """
-        Resample particle distribution based on their weights.
+        """Resample particle distribution based on their weights.
 
         Resampling reduces the variance of the particle approximation by
         eliminating particles with small weights and duplicating
@@ -406,7 +392,7 @@ class SequentialMonteCarloIterator(Iterator):
         )
 
     def core_run(self):
-        """ Core run of Sequential Monte Carlo iterator. """
+        """Core run of Sequential Monte Carlo iterator."""
 
         print('Welcome to SMC core run.')
         # counter
@@ -471,7 +457,7 @@ class SequentialMonteCarloIterator(Iterator):
                 self.draw_trace(step)
 
     def post_run(self):
-        """ Analyze the resulting importance sample. """
+        """Analyze the resulting importance sample."""
 
         normalized_weights = self.weights / np.sum(self.weights)
 
@@ -521,8 +507,7 @@ class SequentialMonteCarloIterator(Iterator):
             print("\tcov: {}".format(results.get('cov', np.nan)))
 
     def draw_trace(self, step):
-        """
-        Plot the trace of the current particle approximation.
+        """Plot the trace of the current particle approximation.
 
         :param step: (int) current step index
         :return: None

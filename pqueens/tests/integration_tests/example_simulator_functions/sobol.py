@@ -1,5 +1,4 @@
-"""
-Sobol's G function
+"""Sobol's G function.
 
 a test function for sensitivity analysis.
 
@@ -20,8 +19,7 @@ DELTA = np.array([0] * dim)
 
 
 def sobol(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
-    """
-    Compute generalized Sobol's G function
+    """Compute generalized Sobol's G function.
 
     with variable dimension. See (33) in [1].
     Default is a 10 dimensional version as defined in [1].
@@ -54,8 +52,7 @@ def sobol(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
 
 
 def first_effect_variance(a=A, alpha=ALPHA):
-    """
-    Calculate first effect variance V_xi[E_x~i[Y|xi]]
+    """Calculate first effect variance V_xi[E_x~i[Y|xi]]
 
     Args:
         a (ndarray): vector of a parameter values
@@ -68,8 +65,7 @@ def first_effect_variance(a=A, alpha=ALPHA):
 
 
 def variance(Vi=first_effect_variance(a=A, alpha=ALPHA)):
-    """
-    Calculate variance of Sobol function V_x[Y]
+    """Calculate variance of Sobol function V_x[Y]
 
     Args:
         Vi (ndarray): vector of first effect variances
@@ -81,8 +77,7 @@ def variance(Vi=first_effect_variance(a=A, alpha=ALPHA)):
 
 
 def first_order_indices(a=A, alpha=ALPHA):
-    """
-    Compute first order indices of the Sobol test function
+    """Compute first order indices of the Sobol test function.
 
     see (32) in [1]
     Args:
@@ -98,8 +93,7 @@ def first_order_indices(a=A, alpha=ALPHA):
 
 
 def total_order_indices(a=A, alpha=ALPHA):
-    """
-    Compute total indices of Sobol test function
+    """Compute total indices of Sobol test function.
 
     see (31)-(32) in [1]
 
@@ -122,8 +116,7 @@ def total_order_indices(a=A, alpha=ALPHA):
 
 
 def main(job_id, params):
-    """
-    Interface to Sobol G function
+    """Interface to Sobol G function.
 
     Args:
         job_id (int):   ID of job

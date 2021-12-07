@@ -1,32 +1,29 @@
-"""
-Main module of QUEENS containing the high-level control routine.
+"""Main module of QUEENS containing the high-level control routine.
 
-Handles input parsing.
-Controls and runs the analysis.
+Handles input parsing. Controls and runs the analysis.
 """
 import argparse
-from collections import OrderedDict
 import os
+import pathlib
 import sys
 import time
-import pathlib
+from collections import OrderedDict
+
 import pyfiglet
 
-from pqueens.utils.logger_settings import setup_basic_logging
+import pqueens.database.database as DB_module
+from pqueens.iterators.iterator import Iterator
 from pqueens.utils import ascii_art
+from pqueens.utils.logger_settings import setup_basic_logging
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from pqueens.iterators.iterator import Iterator
-import pqueens.database.database as DB_module
-
 
 def main(args):
-    """
-    Main function of QUEENS
+    """Main function of QUEENS.
 
     controls and runs the analysis.
 
@@ -79,8 +76,7 @@ def main(args):
 
 
 def get_options(args):
-    """
-    Parse options from command line and input file.
+    """Parse options from command line and input file.
 
     Args:
         args (list): list of arguments to be parsed

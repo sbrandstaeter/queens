@@ -1,5 +1,4 @@
-"""
-Weighted mixture of 2 multivariate Gaussian distributions.
+"""Weighted mixture of 2 multivariate Gaussian distributions.
 
 Example adapted from from [1], section 3.4.
 
@@ -28,7 +27,7 @@ gaussian2 = mcmc_utils.NormalProposal(mean=mean2, covariance=cov)
 
 
 def gaussian_mixture_logpdf(x1, x2, x3, x4):
-    """ Multivariate Gaussian Mixture likelihood model
+    """Multivariate Gaussian Mixture likelihood model.
 
     Used as a basic test function for MCMC and SMC methods.
 
@@ -60,7 +59,7 @@ def gaussian_mixture_logpdf(x1, x2, x3, x4):
 
 
 def main(job_id, params):
-    """ Interface to Gaussian Mixture logpdf model
+    """Interface to Gaussian Mixture logpdf model.
 
     Args:
         job_id (int):  ID of job

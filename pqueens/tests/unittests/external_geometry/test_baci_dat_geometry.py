@@ -1,6 +1,8 @@
-import numpy as np
 import os
+
+import numpy as np
 import pytest
+
 from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 
 
@@ -314,7 +316,7 @@ def test_read_external_data_get_functions(mocker, tmpdir, dat_dummy_get_fun, def
 
 @pytest.mark.unit_tests
 def test_organize_sections(default_geo_obj):
-    """Wrapper for _get_desired_dat_sections"""
+    """Wrapper for _get_desired_dat_sections."""
     desired_geo_sets = ['DSURFACE 9', 'DVOL 2', 'DLINE 1', 'DSURFACE 8']
     expected_dat_section = {
         'DLINE-NODE TOPOLOGY': ['DLINE 1'],

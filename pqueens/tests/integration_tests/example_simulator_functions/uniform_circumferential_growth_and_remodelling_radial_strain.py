@@ -9,8 +9,8 @@ T = uniform_growth_1D_lsq.T_END
 
 
 def main(job_id, params):
-    """
-    Interface to radial engineering strain of GnR model parameterized with primary parameters.
+    """Interface to radial engineering strain of GnR model parameterized with
+    primary parameters.
 
     UNITS:
     - length [m]

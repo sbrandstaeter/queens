@@ -10,12 +10,11 @@ from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 
 def create_singularity_image():
-    """
-    Add current QUEENS setup to pre-designed singularity image for cluster applications
+    """Add current QUEENS setup to pre-designed singularity image for cluster
+    applications.
 
     Returns:
          None
-
     """
     # create the actual image
     command_string = '/usr/bin/singularity --version'
@@ -60,15 +59,13 @@ class SingularityManager:
         self.input_file = input_file
 
     def check_singularity_system_vars(self):
-        """
-        Check and establish necessary system variables for the singularity image.
-        Examples are directory bindings such that certain directories of the host can be
-        accessed on runtime within the singularity image. Other system variables include
-        path and environment variables
+        """Check and establish necessary system variables for the singularity
+        image. Examples are directory bindings such that certain directories of
+        the host can be accessed on runtime within the singularity image. Other
+        system variables include path and environment variables.
 
         Returns:
             None
-
         """
 
         # Check if SINGULARITY_BIND exists and if not write it to .bashrc file
@@ -156,14 +153,13 @@ class SingularityManager:
             _, _, _, _ = run_subprocess(command_string)
 
     def prepare_singularity_files(self):
-        """
-        Checks if local and remote singularity images are existent and compares a hash-file
-        to the current hash of the files to determine if the singularity image is up to date.
-        The method furthermore triggers the build of a new singularity image if necessary.
+        """Checks if local and remote singularity images are existent and
+        compares a hash-file to the current hash of the files to determine if
+        the singularity image is up to date. The method furthermore triggers
+        the build of a new singularity image if necessary.
 
         Returns:
             None
-
         """
 
         # check existence local
@@ -283,19 +279,16 @@ class SingularityManager:
                 print('All singularity images ok! Starting simulation on cluster...')
 
     def kill_previous_queens_ssh_remote(self, username):
-        """
-        Kill existing ssh-port-forwardings on the remote
-        that were caused by previous QUEENS simulations
-        that either crashed or are still in place due to other reasons.
-        This method will avoid that a user opens too many unnecessary ports on the remote
-        and blocks them for other users.
+        """Kill existing ssh-port-forwardings on the remote that were caused by
+        previous QUEENS simulations that either crashed or are still in place
+        due to other reasons. This method will avoid that a user opens too many
+        unnecessary ports on the remote and blocks them for other users.
 
         Args:
             username (string): Username of person logged in on remote machine
 
         Returns:
             None
-
         """
 
         # find active queens ssh ports on remote
@@ -353,9 +346,9 @@ class SingularityManager:
             pass
 
     def establish_port_forwarding_remote(self, address_localhost):
-        """
-        Automated port-forwarding from localhost to remote machine to forward data to the database
-        on localhost's port 27017 and a designated port on the master node of the remote machine
+        """Automated port-forwarding from localhost to remote machine to
+        forward data to the database on localhost's port 27017 and a designated
+        port on the master node of the remote machine.
 
         Args:
             address_localhost (str): IP-address of localhost
@@ -387,16 +380,15 @@ class SingularityManager:
         return port
 
     def establish_port_forwarding_local(self, address_localhost):
-        """
-        Establish a port-forwarding for localhost's port 9001 to the remote's ssh-port 22
-        for passwordless communication with the remote machine over ssh
+        """Establish a port-forwarding for localhost's port 9001 to the
+        remote's ssh-port 22 for passwordless communication with the remote
+        machine over ssh.
 
         Args:
             address_localhost (str): IP-address of the localhost
 
         Returns:
             None
-
         """
         remote_address = self.remote_connect.split(r'@')[1]
         command_list = [
@@ -417,12 +409,11 @@ class SingularityManager:
         #  so far it works but error might be cryptical
 
     def close_remote_port(self, port):
-        """
-        Closes the ports that were used in the current QUEENS simulation for remote computing.
+        """Closes the ports that were used in the current QUEENS simulation for
+        remote computing.
 
         Returns:
             None
-
         """
         # get the process id of open port
         _, _, username, _ = run_subprocess('whoami')
@@ -453,13 +444,12 @@ class SingularityManager:
             print('Active QUEENS port-forwardings were closed successfully!')
 
     def copy_temp_json(self):
-        """
-        Copies a (temporary) JSON input-file on a remote to execute some parts of QUEENS within
-        the singularity image on the remote, given the input configurations.
+        """Copies a (temporary) JSON input-file on a remote to execute some
+        parts of QUEENS within the singularity image on the remote, given the
+        input configurations.
 
         Returns:
             None
-
         """
 
         command_list = [
@@ -475,15 +465,12 @@ class SingularityManager:
             )
 
     def copy_post_post(self):
-        """
-        Copy an instance of the post-post module to the remote and
-        load it dynamically during runtime.
-        This enables fast changes in post-post scripts without the need to rebuild the singularity
-        image.
+        """Copy an instance of the post-post module to the remote and load it
+        dynamically during runtime. This enables fast changes in post-post
+        scripts without the need to rebuild the singularity image.
 
         Returns:
             None
-
         """
 
         abs_dirpath_current_file = os.path.dirname(os.path.abspath(__file__))
@@ -513,13 +500,12 @@ class SingularityManager:
 
 
 def hash_files():
-    """
-    Hash all files that are used in the singularity image anc check if some files were changed.
-    This is important to keep the singularity image always up to date with the code base
+    """Hash all files that are used in the singularity image anc check if some
+    files were changed. This is important to keep the singularity image always
+    up to date with the code base.
 
     Returns:
         None
-
     """
     hashlist = []
     hasher = hashlib.md5()

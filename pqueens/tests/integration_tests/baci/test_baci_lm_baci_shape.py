@@ -1,6 +1,7 @@
-"""
-Test suite for integration tests for the heritage baci Levenberg-Marquardt optimizer for local
-simulations with BACI using a minimal FSI model and the post_post_baci_shape evaluation and
+"""Test suite for integration tests for the heritage baci Levenberg-Marquardt
+optimizer for local simulations with BACI using a minimal FSI model and the
+post_post_baci_shape evaluation and.
+
 therefore post_drt_ensight postprocessing - post_processor.
 """
 
@@ -10,6 +11,7 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
+
 from pqueens.main import main
 from pqueens.utils import injector
 from pqueens.utils.manage_singularity import hash_files
@@ -23,9 +25,8 @@ def singularity_bool(request):
 
 @pytest.fixture(scope="session")
 def output_directory_forward(tmpdir_factory):
-    """
-    Create two temporary output directories for test runs with singularity (<...>_true) and
-    without singularity (<...>_false)
+    """Create two temporary output directories for test runs with singularity
+    (<...>_true) and without singularity (<...>_false)
 
     Args:
         tmpdir_factory: fixture used to create arbitrary temporary directories
@@ -33,7 +34,6 @@ def output_directory_forward(tmpdir_factory):
     Returns:
         output_directory_forward (dict): temporary output directories for simulation without and
                                          with singularity
-
     """
     path_singularity_true = tmpdir_factory.mktemp("test_baci_lm_shape_singularity")
     path_singularity_false = tmpdir_factory.mktemp("test_baci_lm_shape_nosingularity")
@@ -43,8 +43,7 @@ def output_directory_forward(tmpdir_factory):
 
 @pytest.fixture()
 def experiment_directory(output_directory_forward, singularity_bool):
-    """
-    Return experiment directory depending on singularity_bool
+    """Return experiment directory depending on singularity_bool.
 
     Returns:
         experiment_directory (LocalPath): experiment directory depending on singularity_bool
@@ -61,9 +60,9 @@ def test_baci_lm_shape(
     singularity_bool,
     experiment_directory,
 ):
-    """
-    Integration test for the Baci Levenberg Marquardt Iterator together with BACI. The test runs
-    local native BACI simulations as well as a local Singularity based BACI simulations.
+    """Integration test for the Baci Levenberg Marquardt Iterator together with
+    BACI. The test runs local native BACI simulations as well as a local
+    Singularity based BACI simulations.
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -76,7 +75,6 @@ def test_baci_lm_shape(
 
     Returns:
         None
-
     """
     template = os.path.join(inputdir, "baci_local_shape_lm_template.json")
     input_file = os.path.join(experiment_directory, "baci_local_shape_lm.json")
@@ -154,10 +152,7 @@ def test_baci_lm_shape(
     result_file_name = experiment_name + ".csv"
     result_file = os.path.join(experiment_directory, result_file_name)
 
-    result_data = pd.read_csv(
-        result_file,
-        sep='\t',
-    )
+    result_data = pd.read_csv(result_file, sep='\t',)
 
     np.testing.assert_equal(result_data['iter'][1], 1)
     np.testing.assert_allclose(result_data['resnorm'][1], 1.42069484e-02, 1.0e-5)

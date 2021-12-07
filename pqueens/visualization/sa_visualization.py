@@ -1,9 +1,11 @@
 import os
 import sys
-import pandas as pd
+
 import matplotlib.pyplot as plt
 import matplotlib.style as style
+import pandas as pd
 import seaborn as sns
+
 import pqueens.visualization.bmfmc_visualization as qvis
 
 cycle_colors = sns.color_palette()
@@ -29,9 +31,8 @@ this.sa_visualization_instance = None
 
 
 def from_config_create(config):
-    """
-    Module function that calls the class function `from_config_create` and creates instance of the
-    SAVisualization class from the problem description.
+    """Module function that calls the class function `from_config_create` and
+    creates instance of the SAVisualization class from the problem description.
 
     Args:
         config (dict): Dictionary created from the input file, containing the problem description
@@ -40,8 +41,7 @@ def from_config_create(config):
 
 
 def convert_to_dict(values):
-    """
-    Convert values to dictionary with plot keys
+    """Convert values to dictionary with plot keys.
 
     Returns:
         plot_dict (dict): data as dictionary with plot keys
@@ -53,8 +53,7 @@ def convert_to_dict(values):
 
 
 def convert_to_pandas(results):
-    """
-    Convert results to pandas DataFrame
+    """Convert results to pandas DataFrame.
 
     Args:
         results (dict): data as dictionary
@@ -68,8 +67,7 @@ def convert_to_pandas(results):
 
 
 def annotate_points(data):
-    """
-    Annotate points in scatter plot with parameter names
+    """Annotate points in scatter plot with parameter names.
 
     Args:
          data (DataFrame): data to be annotated
@@ -86,9 +84,9 @@ def annotate_points(data):
 
 
 class SAVisualization(object):
-    """
-    Visualization class for sensitivity analysis that contains several plotting, storing and
-    visualization methods that can be used anywhere in QUEENS.
+    """Visualization class for sensitivity analysis that contains several
+    plotting, storing and visualization methods that can be used anywhere in
+    QUEENS.
 
     Attributes:
        saving_paths (dict): Dict of paths where to save the plots.
@@ -140,8 +138,7 @@ class SAVisualization(object):
         return cls(saving_paths, save_plot, display_plot)
 
     def plot(self, results):
-        """
-        Call plotting methods for sensitivity analysis
+        """Call plotting methods for sensitivity analysis.
 
         Args:
             results (dict): dictionary containing results to plot
@@ -157,15 +154,13 @@ class SAVisualization(object):
             self._display_plots()
 
     def plot_si_bar(self, results):
-        """
-        Plot the sensitivity indices as bar plot with error bars.
+        """Plot the sensitivity indices as bar plot with error bars.
 
         Args:
             results (dict): dictionary containing results to plot
 
         Returns:
             Plot of sensitivity indices as bar plot
-
         """
         if self.should_be_saved['bar'] or self.should_be_displayed['bar']:
             sensitivity_indices = convert_to_pandas(results)
@@ -184,15 +179,13 @@ class SAVisualization(object):
             self.figures['bar'] = plt.gcf()
 
     def plot_si_scatter(self, results):
-        """
-        Plot the sensitivity indices as scatter plot of sigma over mu_star.
+        """Plot the sensitivity indices as scatter plot of sigma over mu_star.
 
         Args:
             results (dict): dictionary containing results to plot
 
         Returns:
             Plot of sensitivity indices as scatter plot
-
         """
         if self.should_be_saved['scatter'] or self.should_be_displayed['scatter']:
             sensitivity_indices = convert_to_pandas(results)
@@ -211,8 +204,7 @@ class SAVisualization(object):
             self.figures['scatter'] = plt.gcf()
 
     def _display_plots(self):
-        """
-        Show plots according to input plot_booleans
+        """Show plots according to input plot_booleans.
 
         Return:
             Displays plots.
@@ -224,15 +216,13 @@ class SAVisualization(object):
         plt.show()
 
     def _save_plot(self, key):
-        """
-        Save the plot to specified path.
+        """Save the plot to specified path.
 
         Args:
             key (str): key of current plot
 
         Returns:
             Saved plot.
-
         """
         if self.should_be_saved[key] is True:
             plt.savefig(self.saving_paths[key], dpi=300)

@@ -1,11 +1,12 @@
 import numpy as np
 import pytest
 import scipy.stats
-from pqueens.utils.variational_inference_utils import create_variational_distribution
 from mock import patch
-from pqueens.main import main
-from pqueens.iterators.black_box_variational_bayes import BBVIIterator
+
 import pqueens.visualization.variational_inference_visualization as vis
+from pqueens.iterators.black_box_variational_bayes import BBVIIterator
+from pqueens.main import main
+from pqueens.utils.variational_inference_utils import create_variational_distribution
 
 
 @pytest.mark.benchmark
@@ -143,12 +144,13 @@ def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
 
 
 def negative_potential(self, x=None):
-    '''
-    The unnormalized probabilistic model used in this test is proportional to exp(-U) where U
-    is a potential. Hence the log_posterior_unnormalized is given by -U.
+    """The unnormalized probabilistic model used in this test is proportional
+    to exp(-U) where U is a potential. Hence the log_posterior_unnormalized is
+    given by -U.
 
-    It is the first potential in https://arxiv.org/pdf/1505.05770.pdf (rotated by 70 degrees)
-    '''
+    It is the first potential in https://arxiv.org/pdf/1505.05770.pdf
+    (rotated by 70 degrees)
+    """
     theta = np.radians(70)
     c, s = np.cos(theta), np.sin(theta)
     R = np.array(((c, -s), (s, c)))
@@ -199,4 +201,3 @@ def visualization_obj(tmpdir):
         }
     }
     vis.from_config_create(visualization_dict)
-

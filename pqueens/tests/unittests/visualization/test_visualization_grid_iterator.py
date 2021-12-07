@@ -1,7 +1,9 @@
-import numpy as np
 import os
-import pytest
 import re
+
+import numpy as np
+import pytest
+
 import pqueens.visualization.grid_iterator_visualization as qvis
 from pqueens.visualization.grid_iterator_visualization import GridIteratorVisualization
 

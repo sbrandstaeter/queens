@@ -1,17 +1,16 @@
-import numpy as np
 import abc
+
+import numpy as np
 
 
 class IterativeAveraging(metaclass=abc.ABCMeta):
-    """
-    Base class for iterative averaging schemes
+    """Base class for iterative averaging schemes.
 
     Attributes:
         current_average (np.array): Current average value
         new_value (np.array): New value for the averaging process
         rel_L1_change (float): Relative change in L1 norm of the average value
         rel_L2_change (float): Relative change in L2 norm of the average value
-
     """
 
     def __init__(self, current_average, new_value, rel_L1_change, rel_L2_change):
@@ -51,24 +50,21 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
             )
 
     def _compute_rel_change(self, old_average, new_average):
-        """
-        Compute the relative changes (L1 and L2) between new and old average       
+        """Compute the relative changes (L1 and L2) between new and old
+        average.
 
         Args:
             old_average (np.array): Old average value
             new_average (np.array): New average value
-
         """
         self.rel_L2_change = relative_change(old_average, new_average, L2_norm)
         self.rel_L1_change = relative_change(old_average, new_average, L1_norm)
 
     def update_average(self, new_value):
-        """
-        Compute the actual average. (Is scheme specific)
+        """Compute the actual average. (Is scheme specific)
 
         Args:
             new_value (np.array): New observation for the averaging
-
         """
         if isinstance(new_value, (float, int)):
             new_value = np.array(new_value)
@@ -83,7 +79,7 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
 
     @abc.abstractclassmethod
     def average_computation(self):
-        """ Here the averaging approach is implemented """
+        """Here the averaging approach is implemented."""
         pass
 
 
@@ -92,15 +88,15 @@ class MovingAveraging(IterativeAveraging):
     Compute the moving average:
         :math:`x^{(j)}_{avg}=\\frac{1}{k}\\sum_{i=0}^{k-1}x^{(j-i)}`
     where :math: `k-1` is the number of values from previous iterations that are used
-    
+
     Attributes:
         current_average (np.array): Current average value
         new_value (np.array): New value for the averaging process
-        rel_L1_change (float): Relative change in L1 norm of the average value 
-        rel_L2_change (float): Relative change in L2 norm of the average value 
-        num_iter_for_avg (int): Number of samples in the averaging window 
+        rel_L1_change (float): Relative change in L1 norm of the average value
+        rel_L2_change (float): Relative change in L2 norm of the average value
+        num_iter_for_avg (int): Number of samples in the averaging window
         data (list): List of the stored values
-   
+
     """
 
     def __init__(
@@ -134,12 +130,10 @@ class MovingAveraging(IterativeAveraging):
         return cls(current_average, new_value, rel_L1_change, rel_L2_change, num_iter_for_avg, data)
 
     def average_computation(self, new_value):
-        """
-        Compute the moving average
+        """Compute the moving average.
 
         Returns:
             average (np.array): The current average
-
         """
         self.data.append(new_value.copy())
         if len(self.data) > self.num_iter_for_avg:
@@ -158,11 +152,11 @@ class PolyakAveraging(IterativeAveraging):
     Attributes:
         current_average (np.array): Current average value
         new_value (np.array): New value for the averaging process
-        rel_L1_change (float): Relative change in L1 norm of the average value 
-        rel_L2_change (float): Relative change in L2 norm of the average value 
-        iteration_counter (float): Number of samples 
+        rel_L1_change (float): Relative change in L1 norm of the average value
+        rel_L2_change (float): Relative change in L2 norm of the average value
+        iteration_counter (float): Number of samples
         sum_over_iter (np.array): Sum over all samples
-  
+
     """
 
     def __init__(
@@ -207,12 +201,10 @@ class PolyakAveraging(IterativeAveraging):
         )
 
     def average_computation(self, new_value):
-        """
-        Compute the Polyak average
+        """Compute the Polyak average.
 
         Returns:
             current_average (np.array): returns the current average
-        
         """
 
         self.sum_over_iter += new_value
@@ -233,8 +225,8 @@ class ExponentialAveraging(IterativeAveraging):
     Args:
         current_average (np.array): Current average value
         new_value (np.array): New value for the averaging process
-        rel_L1_change (float): Relative change in L1 norm of the average value 
-        rel_L2_change (float): Relative change in L2 norm of the average value 
+        rel_L1_change (float): Relative change in L1 norm of the average value
+        rel_L2_change (float): Relative change in L2 norm of the average value
         coefficient (float): Coefficient in (0,1) for the average
 
     """
@@ -270,12 +262,10 @@ class ExponentialAveraging(IterativeAveraging):
         return cls(current_average, new_value, rel_L2_change, rel_L2_change, coefficient)
 
     def average_computation(self, new_value):
-        """
-        Compute the exponential average
+        """Compute the exponential average.
 
         Returns:
             current_average (np.array): returns the current average
-
         """
         current_average = (
             self.coefficient * self.current_average + (1 - self.coefficient) * new_value
@@ -284,16 +274,14 @@ class ExponentialAveraging(IterativeAveraging):
 
 
 def L1_norm(x, averaged=False):
-    """
-    Compute the L1 norm of the vector `x`.
+    """Compute the L1 norm of the vector `x`.
 
     Args:
         x (np.array): Vector
         averaged (bool): If enabled the norm is divided by the number of components
 
     Returns:
-        norm (float): L1 norm of `x` 
-    
+        norm (float): L1 norm of `x`
     """
     x = np.array(x).flatten()
     x = np.nan_to_num(x)
@@ -304,8 +292,7 @@ def L1_norm(x, averaged=False):
 
 
 def L2_norm(x, averaged=False):
-    """
-    Compute the L2 norm of the vector `x`.
+    """Compute the L2 norm of the vector `x`.
 
     Args:
         x (np.array): Vector
@@ -313,8 +300,7 @@ def L2_norm(x, averaged=False):
                          components
 
     Returns:
-        norm (float): L2 norm of `x` 
-    
+        norm (float): L2 norm of `x`
     """
     x = np.array(x).flatten()
     x = np.nan_to_num(x)
@@ -325,19 +311,16 @@ def L2_norm(x, averaged=False):
 
 
 def relative_change(old_value, new_value, norm):
-    """
-    Compute the relative change of the old and new value for a given norm
+    """Compute the relative change of the old and new value for a given norm.
 
     Args:
         old_value (np.array): Old values
         new_value (np.array): New values
-        norm (func): Function to compute a norm 
+        norm (func): Function to compute a norm
 
     Returns:
         Relative change
-
     """
     increment = old_value - new_value
     increment = np.nan_to_num(increment)
     return norm(increment) / (norm(old_value) + 1e-16)
-

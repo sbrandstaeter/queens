@@ -1,5 +1,4 @@
-"""
-Test suite for integration tests of optimization iterator
+"""Test suite for integration tests of optimization iterator.
 
 based on the Rosenbrock test function
 """
@@ -21,7 +20,7 @@ def algorithm(request):
 
 @pytest.mark.integration_tests
 def test_rosenbrock_opt(inputdir, tmpdir, algorithm):
-    """ Test different solution algorithms in optimization iterator. """
+    """Test different solution algorithms in optimization iterator."""
 
     template = os.path.join(inputdir, 'rosenbrock_opt_template.json')
     input_file = str(tmpdir) + 'rosenbrock_opt.json'

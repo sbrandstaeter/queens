@@ -3,6 +3,7 @@ import pickle
 
 import numpy as np
 import pytest
+
 from pqueens.main import main
 from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess

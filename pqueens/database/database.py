@@ -1,5 +1,8 @@
 import abc
+import logging
 import sys
+
+_logger = logging.getLogger(__name__)
 
 # This construct follows the spirit of singleton design patterns
 # Informally: there only exists one database instance
@@ -8,9 +11,7 @@ this.database = None
 
 
 def from_config_create_database(config):
-    """
-
-    Create a QUEENS DB object from config
+    """Create a QUEENS DB object from config.
 
     Args:
         config (dict): Problem configuration
@@ -20,8 +21,7 @@ def from_config_create_database(config):
 
 
 class Database(metaclass=abc.ABCMeta):
-    """
-        QUEENS database base-class
+    """QUEENS database base-class.
 
         This class is implemented such that it can be used in a context framework
 
@@ -39,7 +39,7 @@ class Database(metaclass=abc.ABCMeta):
 
     def __enter__(self):
         """
-        'enter'-function in order to use the db objects as a context. This function is called 
+        'enter'-function in order to use the db objects as a context. This function is called
         prior to entering the context
         In this function:
             1. the connection is established
@@ -53,89 +53,75 @@ class Database(metaclass=abc.ABCMeta):
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
-        """
-        'exit'-function in order to use the db objects as a context. 
+        """'exit'-function in order to use the db objects as a context.
 
-        This function is called at the end of the conext in order to close the connection to the 
+        This function is called at the end of the context in order to close the connection to the
         database.
 
-        The exception as well as traceback arguments are required to implement the `__exit__` 
-        method, however, we do not use them explicitly. 
+        The exception as well as traceback arguments are required to implement the `__exit__`
+        method, however, we do not use them explicitly.
 
         Args:
             exception_type: indicates class of exception (e.g. ValueError)
             exception_value: indicates exception instance
-            traceback: A traceback obj
+            traceback: traceback object
         """
+        if exception_type:
+            _logger.exception(exception_type(exception_value).with_traceback(traceback))
+
         self._disconnect()
 
     @abc.abstractmethod
     def save(self):
-        """
-        Save an entry to the database
-        """
+        """Save an entry to the database."""
         pass
 
     @abc.abstractmethod
     def load(self):
-        """
-        Load an entry from the database
-        """
+        """Load an entry from the database."""
         pass
 
     @abc.abstractmethod
     def remove(self):
-        """
-        Remove an entry from the database
-        """
+        """Remove an entry from the database."""
         pass
 
     @abc.abstractmethod
     def _connect():
-        """
-        Connect to the database
-        """
+        """Connect to the database."""
         pass
 
     @abc.abstractmethod
     def _disconnect():
-        """
-        Close connection to the database
-        """
+        """Close connection to the database."""
         pass
 
     @abc.abstractmethod
     def _delete_database(self):
-        """
-        Remove a single database 
-        """
+        """Remove a single database."""
         pass
 
     @abc.abstractmethod
-    def _delete_databases_by_prefix(self, prefix):
-        """
-        Remove all databases based on a prefix
-        Args:
-            prefix (str): Databases with this prefix are deleted
-        """
+    def _delete_databases_by_prefix(self):
+        """Remove all databases based on a prefix."""
         pass
 
     @abc.abstractmethod
     def _clean_database(self):
-        """
-        Clean up the database prior to a queens run. This includes actions like reseting existing
-        databases delete all related databases or similar.
+        """Clean up the database prior to a queens run.
+
+        This includes actions like reseting existing databases delete
+        all related databases or similar.
         """
         pass
 
     @classmethod
-    def from_config_create_database(cls, config):
-        """
-        Create new QUEENS database object from config
+    def from_config_create_database(_, config):
+        """Create new QUEENS database object from config.
 
         Args:
             config (dict): Problem configuration
-        
+
         Returns:
             Database object
         """

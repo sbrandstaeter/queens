@@ -1,11 +1,12 @@
-""" Fixtures needed for testing the Driver classes. """
+"""Fixtures needed for testing the Driver classes."""
 import pytest
+
 from pqueens.database.mongodb import MongoDB
 
 
 @pytest.fixture(scope='session')
 def job(tmpdir_factory):
-    """ Generic job dictionary for testing drivers"""
+    """Generic job dictionary for testing drivers."""
     job_dict = dict()
     job_dict['expt_dir'] = str(tmpdir_factory.mktemp('expt_dir'))
     job_dict['expt_name'] = 'experiment_name'
@@ -18,7 +19,7 @@ def job(tmpdir_factory):
 
 @pytest.fixture(scope='session')
 def baci_job(job, tmpdir_factory):
-    """ Generic job dictionary for testing BACI drivers"""
+    """Generic job dictionary for testing BACI drivers."""
 
     baci_dir = tmpdir_factory.mktemp('baci_dir')
 
@@ -40,14 +41,14 @@ def baci_job(job, tmpdir_factory):
 
 @pytest.fixture(scope='session')
 def baci_input_file(job):
-    """ BACI input file created by inject based on job description"""
+    """BACI input file created by inject based on job description."""
     baci_input_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id']) + '.dat'
     return baci_input_file
 
 
 @pytest.fixture(scope='session')
 def baci_output_file(job):
-    """ BACI output file based on job description"""
+    """BACI output file based on job description."""
     baci_output_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id'])
     return baci_output_file
 
@@ -95,9 +96,7 @@ def baci_post_cmds(baci_job, baci_output_file):
 ########################################################################
 @pytest.fixture(scope='session')
 def driver_base_settings(job):
-    """
-    A base settings dict that can be used to create Driver object.
-    """
+    """A base settings dict that can be used to create Driver object."""
 
     base_settings = dict()
 

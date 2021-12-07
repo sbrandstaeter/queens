@@ -1,31 +1,28 @@
 import os
 import pickle
-import pandas as pd
-from pqueens.utils import injector
+
 import numpy as np
+import pandas as pd
 import pytest
 from mock import patch
 
-# fmt: off
-from pqueens.tests.integration_tests.example_simulator_functions\
-    .gaussian_logpdf\
-    import (
-    standard_normal,
-)
-from pqueens.tests.integration_tests.example_simulator_functions\
-    .gaussian_logpdf\
-    import (
-    gaussian_logpdf,
-)
+from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
+
 # fmt: on
 from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
-from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from pqueens.main import main
+
+# fmt: off
+from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
+    gaussian_logpdf,
+    standard_normal,
+)
+from pqueens.utils import injector
 
 
 @pytest.mark.integration_tests
 def test_gaussian_smc(inputdir, tmpdir, dummy_data):
-    """ Test Sequential Monte Carlo with univariate Gaussian. """
+    """Test Sequential Monte Carlo with univariate Gaussian."""
     template = os.path.join(inputdir, "gaussian_smc.json")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}

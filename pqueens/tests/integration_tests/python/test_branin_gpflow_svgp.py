@@ -1,13 +1,15 @@
 import os
 import pickle
+
 import numpy as np
 import pytest
+
 from pqueens.main import main
 
 
 @pytest.mark.integration_tests
 def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
-    """ Test case for GPflow based SVGP model """
+    """Test case for GPflow based SVGP model."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'branin_gpflow_svgp_surrogate.json'),
         '--output=' + str(tmpdir),

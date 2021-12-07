@@ -1,11 +1,10 @@
 import numpy as np
+
 from pqueens.randomfields.random_field_gen_KLE import RandomFieldGenKLE
 
 
 class RandomFieldGenKLE2D(RandomFieldGenKLE):
-    """Generator for 2d random fields based on KLE expansion
-
-    """
+    """Generator for 2d random fields based on KLE expansion."""
 
     def __init__(
         self,
@@ -80,7 +79,7 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
         self.act_energy_frac = retained_energy
 
     def gen_sample_gauss_field(self, loc, phase_angles):
-        """ Generate sample of standard Gaussian field
+        """Generate sample of standard Gaussian field.
 
         Compute realization of standard Gaussian field based on passed phase
         angles phase_angles and location

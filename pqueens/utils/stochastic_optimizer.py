@@ -1,19 +1,20 @@
-import numpy as np
 import abc
+import logging
+
+import numpy as np
+
 from pqueens.utils.iterative_averaging_utils import (
     ExponentialAveraging,
-    L2_norm,
     L1_norm,
+    L2_norm,
     relative_change,
 )
-import logging
 
 _logger = logging.getLogger(__name__)
 
 
 class StochasticOptimizer(metaclass=abc.ABCMeta):
-    """
-    Base class for  stochastic optimizers.
+    """Base class for  stochastic optimizers.
 
     The optimizers are implemented as generators. This increases the modularity of this class as
     since object can be used in different settings. Some examples:
@@ -22,7 +23,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         1. Define a gradient function `gradient()`
         2. Create a optimizer object `optimizer` with the gradient function `gradient`
         3. Run the optimization by `optimizer.run_optimization()` in your script
-            
+
     - Example 2. Adding additional functionality during the optimization
         1. Define a optimizer object using a gradient function.
         2. Example code snippet:
@@ -30,7 +31,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             for parameters in optimizer:
                 rel_L2_change_params=optimizer.rel_L2_change
                 iteration=optimizer.iteration
-                
+
                 # Verbose output
                 print(f"Iter {iteration}, parameters {parameters}, rel L2 change "
                 f"{rel_L2_change:.2f}")
@@ -76,7 +77,6 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         current_variational_parameters (np.array): Variational parameters
         current_gradient_value (np.array): Current gradient vector w.r.t. the variational
                                            parameters
-
     """
 
     def __init__(
@@ -113,8 +113,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_optimizer(cls, config, section_name=None):
-        """
-        Create an optimizer object from dict.
+        """Create an optimizer object from dict.
 
         Args:
             config (dict): Configuration dict
@@ -122,7 +121,6 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
 
         Returns:
             StochasticOptimizer object
-    
         """
         valid_options = ["Adam", "RMSprop", "Adamax"]
         if section_name:
@@ -146,24 +144,20 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
 
     @abc.abstractclassmethod
     def scheme_specific_gradient(self, gradient):
-        """
-        Scheme specific gradient computation. Here the gradient is transformed according to the
-        desired stochastic optimization approach. 
+        """Scheme specific gradient computation. Here the gradient is
+        transformed according to the desired stochastic optimization approach.
 
         Args:
             gradient (np.array): Current gradient
-
         """
         pass
 
     def _compute_rel_change(self, old_parameters, new_parameters):
-        """
-        Compute L1 and L2 based relative changes of variational parameters.
+        """Compute L1 and L2 based relative changes of variational parameters.
 
         Args:
             old_parameters (np.array): Old parameters
             new_parameters (np.array): New parameters
-
         """
         L2_avg = lambda x: L2_norm(x, averaged=True)
         L1_avg = lambda x: L1_norm(x, averaged=True)
@@ -188,24 +182,21 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         self.iteration += 1
 
     def clip_gradient(self, gradient):
-        """
-        Clip the gradient by value and then by norm
+        """Clip the gradient by value and then by norm.
 
         Args:
             gradient (np.array): Current gradient
 
         Returns:
             gradient (np.array): The clipped gradient
-
         """
         gradient = clip_by_value(gradient, self.clip_by_value_threshold)
         gradient = clip_by_L2_norm(gradient, self.clip_by_L2_norm_threshold)
         return gradient
 
     def __next__(self):
-        """
-        Python intern function to make this object a generator. Essentially this is a single 
-        iteration of the stochastic optimizer consiting of:
+        """Python intern function to make this object a generator. Essentially
+        this is a single iteration of the stochastic optimizer consiting of:
 
             1. Computing the noisy gradient
             2. Clipping the gradient
@@ -215,7 +206,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             6. Check if optimization is done
 
         Returns:
-            current_variational_parameters (np.array): current variational parameters of the 
+            current_variational_parameters (np.array): current variational parameters of the
             optimization
         """
         if self.done:
@@ -232,8 +223,8 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             return self.current_variational_parameters
 
     def __iter__(self):
-        """
-        Python intern function needed to make this object iterable. Hence it can be called as
+        """Python intern function needed to make this object iterable. Hence it
+        can be called as.
 
             for p in optimizer:
                 print(f"Current parameters: {p}")
@@ -244,10 +235,8 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         return self
 
     def _check_if_done(self):
-        """
-        Check if optimization is done based on L1 and L2 norms of the variational parameters
-
-        """
+        """Check if optimization is done based on L1 and L2 norms of the
+        variational parameters."""
         if np.any(np.isnan(self.current_variational_parameters)):
             raise ValueError("At least one of the variational parameters is NaN")
         else:
@@ -257,18 +246,14 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             ) or self.iteration >= self.max_iteration
 
     def run_optimization(self):
-        """
-        Run the optimization.
-
-        """
+        """Run the optimization."""
         for _ in self:
             pass
         return self.current_variational_parameters
 
 
 class RMSprop(StochasticOptimizer):
-    """
-    RMSprop stochastic optimizer [1].
+    """RMSprop stochastic optimizer [1].
 
     References:
         [1] Tieleman and Hinton. "Lecture 6.5-rmsprop: Divide the gradient by a running average of
@@ -297,7 +282,6 @@ class RMSprop(StochasticOptimizer):
         eps (float): Nugget term to avoid a division by values close to zero
         current_gradient_value (np.array): Current value of the gradient w.r.t. variational
                                            parameters
-   
     """
 
     def __init__(
@@ -342,8 +326,7 @@ class RMSprop(StochasticOptimizer):
 
     @classmethod
     def from_config_create_optimizer(cls, config, section_name):
-        """
-        Create an RMSprop object from dict.
+        """Create an RMSprop object from dict.
 
         Args:
             config (dict): Configuration dict
@@ -351,7 +334,6 @@ class RMSprop(StochasticOptimizer):
 
         Returns:
             RMSprop object
-    
         """
         if section_name is None:
             config_sec = config
@@ -407,15 +389,13 @@ class RMSprop(StochasticOptimizer):
         )
 
     def scheme_specific_gradient(self, gradient):
-        """
-        RMSprop gradient computation
-        
+        """RMSprop gradient computation.
+
         Args:
             gradient (np.array): Gradient
 
         Returns:
             gradient (np.array): RMSprop gradient
-
         """
         if self.iteration == 0:
             self.v.current_average = np.zeros(gradient.shape)
@@ -427,8 +407,7 @@ class RMSprop(StochasticOptimizer):
 
 
 class Adam(StochasticOptimizer):
-    """
-    Adam stochastic optimizer [1].
+    """Adam stochastic optimizer [1].
 
     References:
         [1] Kingma and Ba. "Adam: A Method for Stochastic Optimization".  ICLR 2015. 2015.
@@ -437,9 +416,9 @@ class Adam(StochasticOptimizer):
         learning_rate (float): Learning rate for the optimizer
         gradient (function): Function to compute the gradient
         precoefficient (int): is 1 in case of maximization and -1 for minimization
-        rel_L2_change_threshold (float): If the L2 relative change in parameters falls below this 
+        rel_L2_change_threshold (float): If the L2 relative change in parameters falls below this
                                          value, this criteria catches.
-        rel_L1_change_threshold (float): If the L1 relative change in parameters falls below this 
+        rel_L1_change_threshold (float): If the L1 relative change in parameters falls below this
                                          value, this criteria catches.
         clip_by_L2_norm_threshold (float): Threshold to clip the gradient by L2-norm
         clip_by_value_threshold (float): Threshold to clip the gradient components
@@ -458,7 +437,6 @@ class Adam(StochasticOptimizer):
         eps (float): Nugget term to avoid a division by values close to zero
         current_gradient_value (np.array): Current gradient of the iteration w.r.t.
                                            variational parameters
-    
     """
 
     def __init__(
@@ -507,8 +485,7 @@ class Adam(StochasticOptimizer):
 
     @classmethod
     def from_config_create_optimizer(cls, config, section_name):
-        """
-        """
+        """"""
         if section_name is None:
             config_sec = config
         else:
@@ -568,15 +545,13 @@ class Adam(StochasticOptimizer):
         )
 
     def scheme_specific_gradient(self, gradient):
-        """
-        Adam gradient computation
-  
+        """Adam gradient computation.
+
         Args:
             gradient (np.array): Gradient
 
         Returns:
             gradient (np.array): Adam gradient
-
         """
         if self.iteration == 0:
             self.m.current_average = np.zeros(gradient.shape)
@@ -591,8 +566,7 @@ class Adam(StochasticOptimizer):
 
 
 class Adamax(StochasticOptimizer):
-    """
-    Adamax stochastic optimizer [1]. `eps` added to avoid devision by zero.
+    """Adamax stochastic optimizer [1]. `eps` added to avoid devision by zero.
 
     References:
         [1] Kingma and Ba. "Adam: A Method for Stochastic Optimization".  ICLR 2015. 2015.
@@ -622,7 +596,6 @@ class Adamax(StochasticOptimizer):
         eps (float): Nugget term to avoid a division by values close to zero
         current_gradient_value (np.array): Current gradient value of the iteration
                                            w.r.t. the variational parameters
-  
     """
 
     def __init__(
@@ -671,8 +644,7 @@ class Adamax(StochasticOptimizer):
 
     @classmethod
     def from_config_create_optimizer(cls, config, section_name):
-        """
-        Create an Adamax object from dict.
+        """Create an Adamax object from dict.
 
         Args:
             config (dict): Configuration dict
@@ -680,7 +652,6 @@ class Adamax(StochasticOptimizer):
 
         Returns:
             Adamax object
-    
         """
         if section_name is None:
             config_sec = config
@@ -740,15 +711,13 @@ class Adamax(StochasticOptimizer):
         )
 
     def scheme_specific_gradient(self, gradient):
-        """
-        Adamax gradient computation
-        
+        """Adamax gradient computation.
+
         Args:
             gradient (np.array): Gradient
 
         Returns:
             gradient (np.array): Adam gradient
-
         """
         if self.iteration == 0:
             self.m.current_average = np.zeros(gradient.shape)
@@ -763,12 +732,10 @@ class Adamax(StochasticOptimizer):
 
 
 def clip_by_L2_norm(gradient, L2_norm_threshold=1e6):
-    """
-    Clip gradients by L2-norm
+    """Clip gradients by L2-norm.
 
     Returns:
         gradient (np.array): Clipped gradients
-
     """
     gradient = np.nan_to_num(gradient)
     gradient_L2_norm = L2_norm(gradient)
@@ -779,9 +746,8 @@ def clip_by_L2_norm(gradient, L2_norm_threshold=1e6):
 
 
 def clip_by_value(gradient, threshold=1e6):
-    """
-    Clip gradients by value. Clips if the absolute value op the component is larger than the 
-    threshold
+    """Clip gradients by value. Clips if the absolute value op the component is
+    larger than the threshold.
 
     Returns:
         gradient (np.array): Clipped gradients

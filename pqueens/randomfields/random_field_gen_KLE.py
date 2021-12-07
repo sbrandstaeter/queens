@@ -1,10 +1,11 @@
-import scipy
 import numpy as np
+import scipy
+
 from pqueens.randomfields.univariate_random_field_generator import UnivariateRandomFieldSimulator
 
 
 class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
-    """ Karhuenen Loeve  based random field generator
+    """Karhuenen Loeve  based random field generator.
 
     Random field generation based on Karhunen-Loeve expansion using the
     analytic solution of the Fredholm equation presented in [#f1]_.
@@ -26,7 +27,6 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
                                  (so far only isotropic fields)
         w_n (np.array):          roots of characteristic functions
         lambda_n (np.array):     eigenvalues of Fredholm equation
-
     """
 
     EPS = 0.000000001
@@ -97,14 +97,13 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         self.stoch_dim = num_terms
 
     def compute_roots_of_characteristic_equation(self):
-        """Compute roots of characteristic equation
+        """Compute roots of characteristic equation.
 
         Details see (11) in [#f1]_.
 
         Returns:
             np.array: vector containing the first m roots of the characteristic
                       equation. Where the number of root is stored in self.m
-
         """
 
         w_n = np.zeros((self.m, 1))
@@ -163,22 +162,20 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         return w_n
 
     def compute_w(self, w):
-        """ Compute characteristic function
-        For details see (12) in [#f1]_.
+        """Compute characteristic function For details see (12) in [#f1]_.
 
         Arguments:
             w (double): argument of characteristic function
 
         Returns:
             double: value of characteristic function at w
-
         """
         return 2 * self.corr_length * w / (self.corr_length ** 2 * w ** 2 - 1) - np.tan(
             w * self.largest_length
         )
 
     def compute_eigen_function_vec(self, loc, dim):
-        """ Compute eigenfunctions of Fredholm equation
+        """Compute eigenfunctions of Fredholm equation.
 
         Arguments:
             loc (np.array): vector of locations
@@ -186,7 +183,6 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
         Returns:
             np.array: values of the eigenfunctions at the locations loc
-
         """
         x = loc[:, dim].reshape(-1, 1)
         helper = np.ones((len(x), 1))

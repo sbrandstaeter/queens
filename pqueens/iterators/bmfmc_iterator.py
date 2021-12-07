@@ -1,17 +1,18 @@
-from pqueens.models.bmfmc_model import BMFMCModel
-from .iterator import Iterator
 from random import randint
-from diversipy import *
+
 import pandas as pd
+from diversipy import *
+
 import pqueens.visualization.bmfmc_visualization as qvis
-from pqueens.utils.process_outputs import write_results
-from pqueens.utils.process_outputs import process_ouputs
+from pqueens.models.bmfmc_model import BMFMCModel
+from pqueens.utils.process_outputs import process_ouputs, write_results
+
+from .iterator import Iterator
 
 
 class BMFMCIterator(Iterator):
-    """
-    Iterator for the (generalized) Bayesian multi-fidelity Monte-Carlo method. The iterator
-    fulfills the following tasks:
+    """Iterator for the (generalized) Bayesian multi-fidelity Monte-Carlo
+    method. The iterator fulfills the following tasks:
 
     1.  Load the low-fidelity Monte Carlo data
     2.  Based on low-fidelity data, calculate optimal X_train to evaluate the high-fidelity model
@@ -83,7 +84,6 @@ class BMFMCIterator(Iterator):
     Returns:
 
        BMFMCIterator (obj): Instance of the BMFMCIterator
-
     """
 
     def __init__(
@@ -111,8 +111,7 @@ class BMFMCIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """
-        Create LHS iterator from problem description in input file
+        """Create LHS iterator from problem description in input file.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -121,7 +120,6 @@ class BMFMCIterator(Iterator):
 
         Returns:
             iterator (obj): BMFMCIterator object
-
         """
         # Initialize Iterator and model
         method_options = config["method"]["method_options"]
@@ -150,8 +148,7 @@ class BMFMCIterator(Iterator):
         )
 
     def core_run(self):
-        """
-        Main run of the BMFMCIterator that covers the following points:
+        """Main run of the BMFMCIterator that covers the following points:
 
         1.  Reading the sampling data from the low-fidelity model in QUEENS
         2.  Based on LF data, determine optimal X_train for which the high-fidelity model should
@@ -165,7 +162,6 @@ class BMFMCIterator(Iterator):
 
         Returns:
             None
-
         """
         # -------- Load MC data from model -----------------------
         self.model.load_sampling_data()
@@ -177,10 +173,10 @@ class BMFMCIterator(Iterator):
         self.output = self.eval_model()
 
     def calculate_optimal_X_train(self):
-        """
-        Based on the low-fidelity sampling data, calculate the optimal model inputs X_train on
-        which the high-fidelity model should be evaluated to construct the training data set for
-        BMFMC. This selection is performed based on the following method options:
+        """Based on the low-fidelity sampling data, calculate the optimal model
+        inputs X_train on which the high-fidelity model should be evaluated to
+        construct the training data set for BMFMC. This selection is performed
+        based on the following method options:
 
         1. **random**: Divides the :math:`y_{LF}` data set in bins and selects training
                        candidates random from each bin until :math:`n_{train}` is reached
@@ -194,7 +190,6 @@ class BMFMCIterator(Iterator):
 
         Returns:
             None
-
         """
         design_method = self.initial_design.get('method')
         n_points = self.initial_design.get("num_HF_eval")
@@ -207,15 +202,14 @@ class BMFMCIterator(Iterator):
         self.model.Y_LFs_train = self.Y_LFs_train
 
     def _get_design_method(self, design_method):
-        """
-        Get the design method for selecting the HF data from the LF MC data-set
+        """Get the design method for selecting the HF data from the LF MC data-
+        set.
 
         Args:
             design_method (str): Design method specified in input file
 
         Returns:
             run_design_method (obj): Design method for selecting the HF training set
-
         """
         self.model.calculate_extended_gammas()
         if design_method == 'random':
@@ -235,16 +229,16 @@ class BMFMCIterator(Iterator):
         return run_design_method
 
     def _diverse_subset_design(self, n_points):
-        """
-        Calculate the HF training points from large LF-MC data-set based on the diverse subset
-        strategy based on the psa_select method from **diversipy**.
+        """Calculate the HF training points from large LF-MC data-set based on
+        the diverse subset strategy based on the psa_select method from.
+
+        **diversipy**.
 
         Args:
              n_points (int): Number of HF training points to be selected
 
         Returns:
             None
-
         """
         design = self.model.gammas_ext_mc
         prelim_subset = psa_select(design, n_points, selection_target='max_dist_from_boundary')
@@ -262,16 +256,14 @@ class BMFMCIterator(Iterator):
         self.Y_LFs_train = self.model.Y_LFs_mc[index, :]
 
     def _random_design(self, n_points):
-        """
-        Calculate the HF training points from large LF-MC data-set based on random selection
-        from bins over y_LF.
+        """Calculate the HF training points from large LF-MC data-set based on
+        random selection from bins over y_LF.
 
         Args:
             n_points (int): Number of HF training points to be selected
 
         Returns:
             None
-
         """
         n_bins = self.initial_design.get("num_bins")
         seed = self.initial_design.get("seed")
@@ -340,12 +332,10 @@ class BMFMCIterator(Iterator):
 
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
     def post_run(self):
-        """
-        Saving and plotting of the results.
+        """Saving and plotting of the results.
 
         Returns:
             None
-
         """
         # plot the figures
         qvis.bmfmc_visualization_instance.plot_pdfs(self.output)

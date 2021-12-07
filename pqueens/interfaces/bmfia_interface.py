@@ -1,19 +1,21 @@
+import logging
+
+import numpy as np
+
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 
 from .interface import Interface
-import numpy as np
-
-import logging
 
 _logger = logging.getLogger(__name__)
 
 
 class BmfiaInterface(Interface):
-    """
-    Interface for grouping the outputs of several simulation models with identical model inputs to
-    one multi-fidelity data point in the multi-fidelity space:
+    """Interface for grouping the outputs of several simulation models with
+    identical model inputs to one multi-fidelity data point in the multi-
+    fidelity space:
+
     .. math::
-        \\Omega: y_{hf} x y_{lf} x \\gamma_{i} 
+        \\Omega: y_{hf} x y_{lf} x \\gamma_{i}
 
     The BmfiaInterface is basically a version of the
     approximation_interface class that allows for vectorized mapping and
@@ -26,12 +28,11 @@ class BmfiaInterface(Interface):
         probabilistic_mapping_obj_lst (lst): List of probabilistic mapping objects which models the
                                              probabilistic dependency between high-fidelity model,
                                              low-fidelity models and informative input features for
-                                             each coordinate tuple of 
+                                             each coordinate tuple of
                                              :math: `y_{lf} x y_{hf} x gamma_i` individually.
 
     Returns:
         BMFMCInterface (obj): Instance of the BMFMCInterface
-
     """
 
     def __init__(self, config, approx_name):
@@ -41,10 +42,9 @@ class BmfiaInterface(Interface):
         self.probabilistic_mapping_obj_lst = []
 
     def map(self, Z_LF, support='y', full_cov=False):
-        """
-        Calls the probabilistic mapping and predicts the mean and variance,
-        respectively covariance, for the high-fidelity model,
-        given the inputs Z_LF.
+        """Calls the probabilistic mapping and predicts the mean and variance,
+        respectively covariance, for the high-fidelity model, given the inputs
+        Z_LF.
 
         Args:
             Z_LF (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
@@ -68,7 +68,7 @@ class BmfiaInterface(Interface):
                                              per row. Each row corresponds to one multi-fidelity
                                              input vector in
                                              :math:`\\Omega_{y_{lf}\\times\\gamma_i}`.
-                                             
+
             var_Y_HF_given_Z_LF (np.array): Vector of variance predictions :math:`\\mathbb{V}_{
                                             f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\\mathcal{D}_{f})]` for the
                                             HF model given the low-fidelity feature input.
@@ -76,8 +76,6 @@ class BmfiaInterface(Interface):
                                             per row. Each row corresponds to one multi-fidelity
                                             input vector in
                                             :math:`\\Omega_{y_{lf}\\times\\gamma_i}`.
-
-
         """
         if not self.probabilistic_mapping_obj_lst:
             raise RuntimeError(
@@ -105,10 +103,9 @@ class BmfiaInterface(Interface):
         return mean, variance
 
     def build_approximation(self, Z_LF_train, Y_HF_train):
-        """
-        Build and train the probabilistic mapping objects based on the
-        training inputs :math:`\\mathcal{D}_f={Y_{HF},Z_{LF}}` per
-        coordinate point / measurement point in the inverse problem.
+        """Build and train the probabilistic mapping objects based on the
+        training inputs :math:`\\mathcal{D}_f={Y_{HF},Z_{LF}}` per coordinate
+        point / measurement point in the inverse problem.
 
         Args:
             Z_LF_train (np.array): Training inputs for probabilistic mapping.
@@ -118,7 +115,6 @@ class BmfiaInterface(Interface):
 
         Returns:
             None
-
         """
         # TODO: make this parallel!
         for num, (z_lf, y_hf) in enumerate(zip(Z_LF_train.T, Y_HF_train.T)):

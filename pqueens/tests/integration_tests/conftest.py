@@ -1,10 +1,11 @@
-""" Collect fixtures used by the integration tests. """
+"""Collect fixtures used by the integration tests."""
 
 import getpass
 import os
 import pathlib
 
 import pytest
+
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 

@@ -1,6 +1,7 @@
-from pqueens.utils.iterative_averaging_utils import *
 import numpy as np
 import pytest
+
+from pqueens.utils.iterative_averaging_utils import *
 
 
 @pytest.mark.unit_tests

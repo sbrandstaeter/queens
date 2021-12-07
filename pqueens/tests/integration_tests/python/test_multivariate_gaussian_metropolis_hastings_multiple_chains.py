@@ -1,31 +1,28 @@
 import os
 import pickle
-import pandas as pd
-from mock import patch
-from pqueens.utils import injector
-import numpy as np
-import pytest
 
-# fmt: off
-from pqueens.tests.integration_tests.example_simulator_functions\
-    .multivariate_gaussian_logpdf\
-    import (
-    gauss_like,
-)
-from pqueens.tests.integration_tests.example_simulator_functions\
-    .multivariate_gaussian_logpdf\
-    import (
-    gaussian_logpdf,
-)
+import numpy as np
+import pandas as pd
+import pytest
+from mock import patch
+
+from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
+
 # fmt: on
 from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
-from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from pqueens.main import main
+
+# fmt: off
+from pqueens.tests.integration_tests.example_simulator_functions.multivariate_gaussian_logpdf import (
+    gauss_like,
+    gaussian_logpdf,
+)
+from pqueens.utils import injector
 
 
 @pytest.mark.integration_tests
 def test_multivariate_gaussian_metropolis_hastings(inputdir, tmpdir, dummy_data):
-    """ Test case for metropolis hastings iterator """
+    """Test case for metropolis hastings iterator."""
     template = os.path.join(
         inputdir, "multivariate_gaussian_metropolis_hastings_multiple_chains.json"
     )

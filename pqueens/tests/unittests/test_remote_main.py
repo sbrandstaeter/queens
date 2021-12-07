@@ -1,12 +1,11 @@
-"""
-Test if the remote main function catches failed singularity runs
-"""
+"""Test if the remote main function catches failed singularity runs."""
 
 import json
 import os
 
-import pqueens
 import pytest
+
+import pqueens
 from pqueens.remote_main import main
 
 

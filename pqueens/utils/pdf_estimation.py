@@ -1,5 +1,5 @@
-"""
-Estimation of the probability density function based on samples from the distribution.
+"""Estimation of the probability density function based on samples from the
+distribution.
 
 It uses the kernel density estimation (kde) algorithm.
 """
@@ -9,11 +9,10 @@ import pdb
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
-import numpy as np
 
 
 def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
-    """ Estimate optimal bandwidth for kde of pdf
+    """Estimate optimal bandwidth for kde of pdf.
 
     Args:
         samples (np.array):  samples for which to estimate pdf
@@ -22,7 +21,6 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
 
     Returns:
         float: estimate for optimal kernel_bandwidth
-
     """
     kernel_bandwidth_upper_bound = np.log10((max_samples - min_samples) / 2.0)
     kernel_bandwidth_lower_bound = np.log10((max_samples - min_samples) / 30.0)
@@ -45,7 +43,7 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
 
 
 def estimate_pdf(samples, kernel_bandwidth, support_points=None):
-    """ Estimate pdf using kernel density estimation
+    """Estimate pdf using kernel density estimation.
 
     Args:
         samples (np.array):         samples for which to estimate pdf

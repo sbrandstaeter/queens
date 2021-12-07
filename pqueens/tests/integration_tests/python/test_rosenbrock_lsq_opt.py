@@ -9,7 +9,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_rosenbrock_lsq_opt(inputdir, tmpdir):
-    """ Test case for optimization iterator with least squares. """
+    """Test case for optimization iterator with least squares."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'rosenbrock_lsq_opt.json'),
         '--output=' + str(tmpdir),

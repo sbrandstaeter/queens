@@ -1,14 +1,12 @@
-"""
-Wrapped functions of subprocess stdlib module.
-"""
+"""Wrapped functions of subprocess stdlib module."""
 import subprocess
-from pqueens.utils.logger_settings import get_job_logger, job_logging, finish_job_logger
+
+from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
 
 
 def run_subprocess(command_string, **kwargs):
-    """
-    Run a system command outside of the Python script. different implementations dependent on
-    subprocess_type
+    """Run a system command outside of the Python script. different
+    implementations dependent on subprocess_type.
 
     Args:
         command_string (str): Command string that should be run outside of Python
@@ -23,7 +21,6 @@ def run_subprocess(command_string, **kwargs):
         process_id (int): process id that was assigned to process
         stdout (str): standard output content
         stderr (str): standard error content
-
     """
 
     # default subprocess type is "simple"
@@ -57,16 +54,16 @@ def _get_subprocess(subprocess_type):
 
 
 def _run_subprocess_simple(command_string, **kwargs):
-    """
-        Run a system command outside of the Python script. return stderr and stdout
-        Args:
-            command_string (str): command, that will be run in subprocess
-        Returns:
-            process_returncode (int): code for success of subprocess
-            process_id (int): unique process id, the subprocess was assigned on computing machine
-            stdout (str): standard output content
-            stderr (str): standard error content
+    """Run a system command outside of the Python script.
 
+    return stderr and stdout
+    Args:
+        command_string (str): command, that will be run in subprocess
+    Returns:
+        process_returncode (int): code for success of subprocess
+        process_id (int): unique process id, the subprocess was assigned on computing machine
+        stdout (str): standard output content
+        stderr (str): standard error content
     """
     process = subprocess.Popen(
         command_string,
@@ -83,22 +80,22 @@ def _run_subprocess_simple(command_string, **kwargs):
 
 
 def _run_subprocess_simulation(command_string, **kwargs):
-    """
-        Run a system command outside of the Python script. log errors and stdout-return to
-        initialized logger during runtime. Terminate subprocess if regular expression pattern
-        is found in stdout.
-        Args:
-            command_string (str): command, that will be run in subprocess
-            terminate_expr (str): regular expression to terminate subprocess
-            logger (str): logger name to write to. Should be configured previously
-            log_file (str): path to log file
-            error_file (str): path to error file
-        Returns:
-            process_returncode (int): code for success of subprocess
-            process_id (int): unique process id, the subprocess was assigned on computing machine
-            stdout (str): always None
-            stderr (str): standard error content
+    """Run a system command outside of the Python script.
 
+    log errors and stdout-return to
+    initialized logger during runtime. Terminate subprocess if regular expression pattern
+    is found in stdout.
+    Args:
+        command_string (str): command, that will be run in subprocess
+        terminate_expr (str): regular expression to terminate subprocess
+        logger (str): logger name to write to. Should be configured previously
+        log_file (str): path to log file
+        error_file (str): path to error file
+    Returns:
+        process_returncode (int): code for success of subprocess
+        process_id (int): unique process id, the subprocess was assigned on computing machine
+        stdout (str): always None
+        stderr (str): standard error content
     """
     # get input data
     logger_name = kwargs.get('loggername')
@@ -174,17 +171,17 @@ def _run_subprocess_submit_job(command_string, **kwargs):
 
 
 def _run_subprocess_remote(command_string, **kwargs):
-    """
-        Run a system command outside of the Python script on a remote machine via ssh.
-        return stderr and stdout
-        Args:
-            command_string (str): command, that will be run in subprocess
-        Returns:
-            process_returncode (int): code for success of subprocess
-            process_id (int): unique process id, the subprocess was assigned on computing machine
-            stdout (str): standard output content
-            stderr (str): standard error content
+    """Run a system command outside of the Python script on a remote machine
+    via ssh.
 
+    return stderr and stdout
+    Args:
+        command_string (str): command, that will be run in subprocess
+    Returns:
+        process_returncode (int): code for success of subprocess
+        process_id (int): unique process id, the subprocess was assigned on computing machine
+        stdout (str): standard output content
+        stderr (str): standard error content
     """
     remote_user = kwargs.get("remote_user", None)
     if not remote_user:

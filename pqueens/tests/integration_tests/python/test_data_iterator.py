@@ -9,7 +9,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_branin_data_iterator(inputdir, tmpdir, mocker):
-    """ Test case for data iterator """
+    """Test case for data iterator."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'branin_data_iterator.json'),
         '--output=' + str(tmpdir),

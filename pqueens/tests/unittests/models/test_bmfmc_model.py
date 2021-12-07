@@ -1,11 +1,12 @@
-import pytest
 import numpy as np
+import pytest
 from mock import patch
-from pqueens.models.bmfmc_model import BMFMCModel
-from pqueens.models.simulation_model import SimulationModel
+
 import pqueens.models.bmfmc_model as bmfmc_model
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator
+from pqueens.models.bmfmc_model import BMFMCModel
+from pqueens.models.simulation_model import SimulationModel
 
 
 # ------------ fixtures --------------------------

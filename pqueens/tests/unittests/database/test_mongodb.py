@@ -1,20 +1,19 @@
-'''
-Created on June 22nd 2017
-@author: jbi
+"""Created on June 22nd 2017.
 
-'''
-from pymongo.errors import ServerSelectionTimeoutError
-import pytest
-import pandas as pd
+@author: jbi
+"""
 import numpy as np
+import pandas as pd
+import pytest
 import xarray as xr
+from pymongo.errors import ServerSelectionTimeoutError
 
 from pqueens.database.mongodb import MongoDB
 
 
 @pytest.fixture(scope='module')
 def dummy_job():
-    """ A dummy job for the database. """
+    """A dummy job for the database."""
     dummy_job = {}
     dummy_job['dummy_field1'] = 'garbage'
     dummy_job['dummy_field2'] = 'rubbish'
@@ -48,7 +47,7 @@ def dummy_output_multi_index():
 
 @pytest.fixture(scope='module')
 def dummy_job_with_result(dummy_output_multi_index):
-    """ A dummy job for the database. """
+    """A dummy job for the database."""
     dummy_job_with_result = {0: {}, 1: {}}
     dummy_job_with_result[0]['dummy_field1'] = 'garbage'
     dummy_job_with_result[0]['dummy_field2'] = 'rubbish'
@@ -62,7 +61,7 @@ def dummy_job_with_result(dummy_output_multi_index):
 
 @pytest.fixture(scope='module')
 def dummy_job_with_list(dummy_output_multi_index):
-    """ A dummy job with real list as result for the database. """
+    """A dummy job with real list as result for the database."""
     dummy_job_with_list = {0: {}}
     dummy_job_with_list[0]['dummy_field1'] = 'garbage'
     dummy_job_with_list[0]['dummy_field2'] = 'rubbish'
@@ -105,7 +104,7 @@ def data_xarray_dataarray():
 
 @pytest.fixture(scope='module')
 def dummy_doc_with_pandas_multi(data_pandas_multi_index):
-    """ A dummy doc for the database. """
+    """A dummy doc for the database."""
     dummy_doc_with_pandas_multi = {
         'dummy_field1': 'garbage',
         'dummy_field2': 'rubbish',
@@ -117,7 +116,7 @@ def dummy_doc_with_pandas_multi(data_pandas_multi_index):
 
 @pytest.fixture(scope='module')
 def dummy_doc_with_pandas_simple(data_pandas_simple_index):
-    """ A dummy doc for the database. """
+    """A dummy doc for the database."""
     dummy_doc_with_pandas_simple = {
         'dummy_field1': 'garbage',
         'dummy_field2': 'rubbish',
@@ -129,7 +128,7 @@ def dummy_doc_with_pandas_simple(data_pandas_simple_index):
 
 @pytest.fixture(scope='module')
 def dummy_doc_with_xarray_dataarray(data_xarray_dataarray):
-    """ A dummy doc for the database. """
+    """A dummy doc for the database."""
     dummy_doc_with_xarray_dataarray = {
         'dummy_field1': 'garbage',
         'dummy_field2': 'rubbish',
@@ -161,11 +160,10 @@ def batch_id_2():
 
 @pytest.fixture(scope="session")
 def username(session_mocker):
-    """
-    Make sure username returned by getuser is a dummy test username.
+    """Make sure username returned by getuser is a dummy test username.
 
-    This is necessary to ensure that the database tests do not interfere with the actual databases
-    of the user calling the tests.
+    This is necessary to ensure that the database tests do not interfere
+    with the actual databases of the user calling the tests.
     """
     username = "pytest"
     session_mocker.patch('getpass.getuser', return_value=username)
@@ -173,12 +171,10 @@ def username(session_mocker):
 
 @pytest.mark.unit_tests
 def test_connection(username):
-    """
-    Test connection to mongodb service.
+    """Test connection to mongodb service.
 
     Args:
         username: mock username for safety reasons
-
     """
 
     try:
@@ -192,14 +188,13 @@ def test_connection(username):
 
 @pytest.mark.unit_tests
 def test_connection_fails(username):
-    """
-    Test for correct exception in case of failing connection to MongoDB service.
+    """Test for correct exception in case of failing connection to MongoDB
+    service.
 
     Args:
         username: mock username for safety reasons
 
     Returns:
-
     """
     with pytest.raises(ServerSelectionTimeoutError):
         db = MongoDB.from_config_create_database({"database": {"address": "localhos:2016"}})
@@ -208,8 +203,7 @@ def test_connection_fails(username):
 
 @pytest.mark.unit_tests
 def test_read_write_delete(username, dummy_job, experiment_name, batch_id_1, job_id):
-    """
-    Test reading and writing to the database
+    """Test reading and writing to the database.
 
     Args:
         username: mock username for safety reasons
@@ -219,7 +213,6 @@ def test_read_write_delete(username, dummy_job, experiment_name, batch_id_1, job
         job_id: (int) id of the dummy_job needed for database name and database interaction
 
     Returns:
-
     """
     try:
         db = MongoDB.from_config_create_database(

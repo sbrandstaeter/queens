@@ -40,7 +40,6 @@ dependencies:
 # linting, check code  -style (PEP8)
   - astroid>=2.5.1
   - pylint>=2.5.1
-  - isort<5
 # make ascii  -art printsc
   - pyfiglet
 # code formatter
@@ -82,3 +81,9 @@ dependencies:
     - gnuplotlib
 # pre-commit management
     - pre-commit
+# detect dead code
+    - vulture
+# sort all imports
+    - isort
+# check the docstrings
+    - pydocstyle

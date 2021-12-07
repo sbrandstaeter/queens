@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from pqueens.iterators.grid_iterator import GridIterator
 from pqueens.models.simulation_model import SimulationModel
 

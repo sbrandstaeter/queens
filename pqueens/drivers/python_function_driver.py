@@ -1,18 +1,17 @@
-import sys
 import os
+import sys
+
 import numpy as np
 
 
 def python_function_driver(job):
-    """
-    Driver for python function specified in job dictionary
+    """Driver for python function specified in job dictionary.
 
     Args:
         job (dict): dictionary containing function
 
     Returns:
         result (float): result of run
-
     """
     # run Python function
     sys.stdout.write("Running job for Python function.\n")

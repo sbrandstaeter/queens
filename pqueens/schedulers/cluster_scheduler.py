@@ -3,6 +3,7 @@ import os
 import sys
 
 import numpy as np
+
 from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
@@ -11,9 +12,7 @@ from .scheduler import Scheduler
 
 
 class ClusterScheduler(Scheduler):
-    """
-    Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS.
-    """
+    """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS."""
 
     def __init__(self, base_settings):
         super(ClusterScheduler, self).__init__(base_settings)
@@ -23,16 +22,14 @@ class ClusterScheduler(Scheduler):
 
     @classmethod
     def create_scheduler_class(cls, base_settings):
-        """
-        Create cluster scheduler (Slurm or Torque/PBS) class for QUEENS.
+        """Create cluster scheduler (Slurm or Torque/PBS) class for QUEENS.
 
         Args:
             base_settings (dict): dictionary containing settings from base class for
-                                  further use and completion in this child class 
+                                  further use and completion in this child class
 
         Returns:
             scheduler (obj):      instance of scheduler class
-
         """
         # get input options for scheduler in general and cluster in
         # particular from base settings
@@ -146,13 +143,11 @@ class ClusterScheduler(Scheduler):
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
-        """
-        Pre-run routine for local and remote computing with Singularity, such as
-        automated port-forwarding and copying files/folders
+        """Pre-run routine for local and remote computing with Singularity,
+        such as automated port-forwarding and copying files/folders.
 
         Returns:
             None
-
         """
 
         # pre-run routines required when using Singularity both local and remote
@@ -176,7 +171,7 @@ class ClusterScheduler(Scheduler):
                 self.singularity_manager.copy_post_post()
 
     def _submit_singularity(self, job_id, batch, restart):
-        """Submit job remotely to Singularity
+        """Submit job remotely to Singularity.
 
         Args:
             job_id (int):    ID of job to submit
@@ -184,7 +179,6 @@ class ClusterScheduler(Scheduler):
 
         Returns:
             int:            process ID
-
         """
         if self.remote:
             # "normal" submission
@@ -288,12 +282,10 @@ class ClusterScheduler(Scheduler):
     # TODO this method needs to be replaced by job_id/scheduler_id check
     #  we can only check here if job was completed but might still be failed though
     def check_job_completion(self, job):
-        """
-        Check whether this job has been completed
+        """Check whether this job has been completed.
 
         Returns:
             None
-
         """
         # initialize completion and failure flags to false
         # (Note that failure is not checked for cluster scheduler
@@ -344,12 +336,10 @@ class ClusterScheduler(Scheduler):
         return completed, failed
 
     def post_run(self):
-        """
-        Post-run routine for remote computing with Singularity: close ports
+        """Post-run routine for remote computing with Singularity: close ports.
 
         Returns:
             None
-
         """
         if self.remote and self.singularity:
             self.singularity_manager.close_remote_port(self.port)

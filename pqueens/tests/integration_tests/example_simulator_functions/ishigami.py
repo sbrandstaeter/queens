@@ -1,5 +1,5 @@
-"""
-Ishigami function is a three dimensional test function for sensitvity analysis and UQ
+"""Ishigami function is a three dimensional test function for sensitvity
+analysis and UQ.
 
 It is nonlinear and nonmonoton.
 """
@@ -12,7 +12,7 @@ P2 = 0.1
 
 
 def ishigami(x1, x2, x3, p1=P1, p2=P2):
-    """ Three dimensional benchmark function
+    """Three dimensional benchmark function.
 
     Three dimensional benchmark function from [2] used for UQ because it
     exhibits strong nonlinearity and nonmonotonicity.
@@ -68,7 +68,7 @@ def ishigami(x1, x2, x3, p1=P1, p2=P2):
 
 
 def variance(p1=P1, p2=P2):
-    """ Variance of Ishigami test funcion.
+    """Variance of Ishigami test funcion.
 
     according to (50) in [1].
 
@@ -87,7 +87,7 @@ def variance(p1=P1, p2=P2):
 
 
 def first_effect_variance(p1=P1, p2=P2):
-    """ Total variance of Ishigami test funcion.
+    """Total variance of Ishigami test funcion.
 
     according to (50)-(53) in [1].
 
@@ -109,7 +109,7 @@ def first_effect_variance(p1=P1, p2=P2):
 
 
 def first_order_indices(p1=P1, p2=P2):
-    """ First order Sobol' indices of Ishigami test funcion.
+    """First order Sobol' indices of Ishigami test funcion.
 
     according to (50)-(53) in [1].
 
@@ -130,7 +130,7 @@ def first_order_indices(p1=P1, p2=P2):
 
 
 def total_order_indices(p1=P1, p2=P2):
-    """ Total order Sobol' indices of Ishigami test funcion.
+    """Total order Sobol' indices of Ishigami test funcion.
 
     according to (50)-(57) in [1].
 
@@ -161,7 +161,7 @@ def total_order_indices(p1=P1, p2=P2):
 
 
 def main(job_id, params):
-    """ Interface to ishigami function
+    """Interface to ishigami function.
 
     Args:
         job_id (int):  ID of job

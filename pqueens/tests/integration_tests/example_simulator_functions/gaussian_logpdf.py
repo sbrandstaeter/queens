@@ -1,5 +1,6 @@
-from pqueens.utils.mcmc_utils import NormalProposal
 import numpy as np
+
+from pqueens.utils.mcmc_utils import NormalProposal
 
 mean = 0.0
 covariance = 1.0
@@ -8,7 +9,7 @@ standard_normal = NormalProposal(mean=mean, covariance=covariance)
 
 
 def gaussian_logpdf(x):
-    """ 1D Gaussian likelihood model
+    """1D Gaussian likelihood model.
 
     Used as a basic test function for MCMC methods.
 
@@ -32,7 +33,7 @@ def gaussian_logpdf(x):
 
 
 def main(job_id, params):
-    """ Interface to 1D Gaussian model
+    """Interface to 1D Gaussian model.
 
     Args:
         job_id (int):  ID of job

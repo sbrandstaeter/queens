@@ -1,9 +1,9 @@
-'''
-Created on Dezember 11th  2017
-@author: jbi
+"""Created on Dezember 11th  2017.
 
-'''
+@author: jbi
+"""
 import unittest
+
 import mock
 import pytest
 

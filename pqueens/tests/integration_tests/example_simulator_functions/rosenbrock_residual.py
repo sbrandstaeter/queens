@@ -2,8 +2,7 @@ import numpy as np
 
 
 def rosenbrock_residual(x1, x2):
-    """
-    Residuals of Rosenbrock banana function
+    """Residuals of Rosenbrock banana function.
 
     Args:
         x1 (float):  Input one
@@ -20,7 +19,7 @@ def rosenbrock_residual(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to Residuals of Rosenbrock banana function
+    """Interface to Residuals of Rosenbrock banana function.
 
     Args:
         job_id (int):   ID of job

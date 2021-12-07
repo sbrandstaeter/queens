@@ -8,7 +8,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_ishigami_saltelli_salib(inputdir, tmpdir):
-    """ Test case for salib based saltelli iterator """
+    """Test case for salib based saltelli iterator."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'ishigami_saltelli.json'),
         '--output=' + str(tmpdir),

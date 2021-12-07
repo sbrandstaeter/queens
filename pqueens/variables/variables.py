@@ -1,13 +1,12 @@
-"""
-Variables module provides a data container for random variables and their field realizations
-"""
+"""Variables module provides a data container for random variables and their
+field realizations."""
 import numpy as np
 
 from pqueens.utils import mcmc_utils
 
 
 class Variables(object):
-    """ Class for storing variables
+    """Class for storing variables.
 
     For now basically only a wrapper around a dictionary with two sub dictionaries.
     One for random variables and one for random fields.
@@ -22,7 +21,7 @@ class Variables(object):
     """
 
     def __init__(self, uncertain_parameters, values=None, active=None):
-        """ Initialize variable object
+        """Initialize variable object.
 
         Args:
             uncertain_parameters (dict): description of all uncertain params
@@ -69,7 +68,7 @@ class Variables(object):
 
     @classmethod
     def from_uncertain_parameters_create(cls, uncertain_parameters):
-        """ Create variables from uncertain parameter
+        """Create variables from uncertain parameter.
 
         Args:
             uncertain_parameters (dict): Dictionary with uncertain parameters
@@ -90,7 +89,7 @@ class Variables(object):
 
     @classmethod
     def from_data_vector_create(cls, uncertain_parameters, data_vector):
-        """ Create variables from uncertain parameter
+        """Create variables from uncertain parameter.
 
         Args:
             uncertain_parameters (dict): Dictionary with uncertain parameters
@@ -107,7 +106,7 @@ class Variables(object):
         return cls(uncertain_parameters, values, active)
 
     def get_active_variables(self):
-        """ Get dictinary of all active variables
+        """Get dictinary of all active variables.
 
         Returns:
             dict: dictionary with active variables, name and value only
@@ -125,7 +124,7 @@ class Variables(object):
         return active_vars
 
     def get_active_variables_vector(self):
-        """ Get vector with values of all active variables
+        """Get vector with values of all active variables.
 
         Returns:
             np.array: vector with values of all active variables
@@ -134,7 +133,7 @@ class Variables(object):
         return np.hstack(active_var_vals)
 
     def get_number_of_active_variables(self):
-        """ Get number of currently active variables
+        """Get number of currently active variables.
 
         Returns:
             int: number of active variables
@@ -147,7 +146,7 @@ class Variables(object):
         return num_active_vars
 
     def update_variables(self, new_variable_data):
-        """ Update variable data
+        """Update variable data.
 
         Args:
             new_variable_data (dict): data to update the variables with
@@ -161,7 +160,7 @@ class Variables(object):
             data['distribution'] = mcmc_utils.create_proposal_distribution(new_variable_data[key])
 
     def update_variables_from_vector(self, data_vector):
-        """ Update variable values from vector
+        """Update variable values from vector.
 
         Args:
             data_vector (np.array): Vector with new data for active variables

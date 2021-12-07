@@ -1,6 +1,4 @@
-"""
-Scale uniformly [0,1] distributed samples to other distributions.
-"""
+"""Scale uniformly [0,1] distributed samples to other distributions."""
 
 import warnings
 
@@ -9,7 +7,7 @@ import scipy.stats
 
 
 def scale_samples(samples, distribution_info):
-    """ Scale samples that are in [0,1] range to other distributions
+    """Scale samples that are in [0,1] range to other distributions.
 
     Scale samples generated e.g. by a sobol sequence or latin hyper cube
     sampling and which thus lie within the [0,1]^d hypercube to samples arising

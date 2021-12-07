@@ -1,22 +1,24 @@
 import random
+
 import matplotlib as mpl
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
 
+import pqueens.visualization.sa_visualization as qvis
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import write_results
+
 from .iterator import Iterator
-import pqueens.visualization.sa_visualization as qvis
 
 if not mpl.get_backend().lower() == 'agg':
     mpl.use('TkAgg')
-from matplotlib import pyplot as plt
 
 
 class MorrisSALibIterator(Iterator):
-    """ Morris SAlib Wrapper Iterator to compute elementary effects
+    """Morris SAlib Wrapper Iterator to compute elementary effects.
 
     Attributes:
 
@@ -52,8 +54,7 @@ class MorrisSALibIterator(Iterator):
         salib_problem (dict):       Dictionary with SALib problem description
 
         sensitivity_indices (dict): Dictionary with all sensitivity indices
-
-"""
+    """
 
     def __init__(
         self,
@@ -69,7 +70,7 @@ class MorrisSALibIterator(Iterator):
         result_description,
         global_settings,
     ):
-        """ Initialize MorrisSALibIterator
+        """Initialize MorrisSALibIterator.
 
         Args:
             model (model):             QUEENS model to evaluate
@@ -95,8 +96,6 @@ class MorrisSALibIterator(Iterator):
                                           compute confidence intervals for
                                           sensitivity measures
             result_description (dict):      Dictionary with desired result description
-
-
         """
         super(MorrisSALibIterator, self).__init__(model, global_settings)
         self.num_trajectories = num_trajectories
@@ -118,7 +117,7 @@ class MorrisSALibIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
-        """ Create MorrisSALibIterator iterator from problem description
+        """Create MorrisSALibIterator iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -126,7 +125,6 @@ class MorrisSALibIterator(Iterator):
 
         Returns:
             iterator: MorrisSALibIterator iterator object
-
         """
         qvis.from_config_create(config)
 
@@ -154,11 +152,11 @@ class MorrisSALibIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate the model """
+        """Evaluate the model."""
         return self.model.evaluate()
 
     def pre_run(self):
-        """ Generate samples for subsequent analysis and update model """
+        """Generate samples for subsequent analysis and update model."""
         random.seed(self.seed)
         np.random.seed(self.seed)
         np.random.RandomState(seed=self.seed)
@@ -198,7 +196,7 @@ class MorrisSALibIterator(Iterator):
         )
 
     def core_run(self):
-        """ Run Analysis on model """
+        """Run Analysis on model."""
 
         self.model.update_model_from_sample_batch(self.samples)
 
@@ -215,7 +213,7 @@ class MorrisSALibIterator(Iterator):
         )
 
     def post_run(self):
-        """ Analyze the results """
+        """Analyze the results."""
         results = self.process_results()
         if self.result_description is not None:
             self.print_results(results)
@@ -230,7 +228,7 @@ class MorrisSALibIterator(Iterator):
             qvis.sa_visualization_instance.plot(results)
 
     def process_results(self):
-        """ Write all results to self contained dictionary """
+        """Write all results to self contained dictionary."""
 
         results = {}
         results["parameter_names"] = self.parameter_names
@@ -238,7 +236,7 @@ class MorrisSALibIterator(Iterator):
         return results
 
     def print_results(self, results):
-        """ Print results to screen """
+        """Print results to screen."""
 
         print(
             "{0:<30} {1:>10} {2:>10} {3:>15} {4:>10}".format(

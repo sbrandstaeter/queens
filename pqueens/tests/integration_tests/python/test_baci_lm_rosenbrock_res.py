@@ -1,7 +1,7 @@
 import os
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import pytest
 
 from pqueens.main import main
@@ -9,7 +9,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_baci_lm_rosenbrock_res(inputdir, tmpdir):
-    """ Test case for Levenberg Marquardt iterator. """
+    """Test case for Levenberg Marquardt iterator."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'baci_lm_rosenbrock_res.json'),
         '--output=' + str(tmpdir),

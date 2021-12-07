@@ -12,16 +12,15 @@ from pqueens.utils.manage_singularity import SingularityManager
 
 
 class Scheduler(metaclass=abc.ABCMeta):
-    """
-    Abstract base class for schedulers in QUEENS.
-    
+    """Abstract base class for schedulers in QUEENS.
+
     The scheduler manages simulation runs in QUEENS on local or remote computing resources
     with or without Singularity containers using various scheduling systems on respective
     computing resource (see also respective Wiki article for more details).
 
     Args:
         base_settings (dict):      dictionary containing settings from base class for
-                                   further use and completion in child classes 
+                                   further use and completion in child classes
 
     Attributes:
         experiment_name (str):     name of QUEENS experiment
@@ -51,7 +50,6 @@ class Scheduler(metaclass=abc.ABCMeta):
 
     Returns:
         scheduler (obj):           instance of scheduler class
-
     """
 
     def __init__(self, base_settings):
@@ -80,18 +78,16 @@ class Scheduler(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name=None, driver_name=None):
-        """
-        Create scheduler from problem configuration
+        """Create scheduler from problem configuration.
 
         Args:
             config (dict):        dictionary containing configuration
                                   as provided in QUEENS input file
             scheduler_name (str): name of scheduler
             driver_name (str): Name of driver that should be used in this job-submission
- 
+
         Returns:
             scheduler (obj):        scheduler object
-
         """
         # import here to avoid issues with circular inclusion
         from .cluster_scheduler import ClusterScheduler
@@ -190,7 +186,8 @@ class Scheduler(metaclass=abc.ABCMeta):
 
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
     def submit(self, job_id, batch):
-        """ Function to submit new job to scheduling software on a given resource
+        """Function to submit new job to scheduling software on a given
+        resource.
 
         Args:
             job_id (int):            ID of job to submit
@@ -198,7 +195,6 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         Returns:
             pid (int):               process id of job
-
         """
         # get restart flag from job interface
         restart = job_interface.restart_flag
@@ -213,13 +209,13 @@ class Scheduler(metaclass=abc.ABCMeta):
         return pid
 
     def submit_post_post(self, job_id, batch):
-        """ Function to submit new post-post job to scheduling software on a given resource
+        """Function to submit new post-post job to scheduling software on a
+        given resource.
 
         Args:
             job_id (int):            ID of job to submit
             batch (int):             Batch number of job
-
-       """
+        """
         # create driver
         # TODO we should not create a new driver instance here every time
         # instead only update the driver attributes.
@@ -248,7 +244,7 @@ class Scheduler(metaclass=abc.ABCMeta):
 
     # ------------- private helper methods ----------------#
     def _submit_driver(self, job_id, batch, restart):
-        """Submit job to driver
+        """Submit job to driver.
 
         Args:
             job_id (int):    ID of job to submit

@@ -1,13 +1,16 @@
 import numpy as np
 from pyDOE import lhs
-from .iterator import Iterator
+
 from pqueens.models.model import Model
 from pqueens.models.multifidelity_model import MultifidelityModel
 from pqueens.utils.scale_samples import scale_samples
 
+from .iterator import Iterator
+
+
 # TODO add test cases for mf LHS iterator
 class MF_LHSIterator(Iterator):
-    """ Multi-Fidelity LHS Iterator to enable Latin Hypercube sampling
+    """Multi-Fidelity LHS Iterator to enable Latin Hypercube sampling.
 
     Multi-Fidelity LHS Iterator with the purpose to generate multi-fidelity
     experimental design for multi-fidelity models. Currently there are two modes,
@@ -22,7 +25,6 @@ class MF_LHSIterator(Iterator):
         mode (str):           Mode of sampling (nested/independent)
         samples (list):       List of arrays with all samples
         outputs (list):       List of dicts with all model outputs
-
     """
 
     def __init__(self, model, seed, num_samples, num_iterations, mode, global_settings):
@@ -39,7 +41,7 @@ class MF_LHSIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """ Create LHS iterator from problem description
+        """Create LHS iterator from problem description.
 
         Args:
             config (dict):       Dictionary with QUEENS problem description
@@ -49,7 +51,6 @@ class MF_LHSIterator(Iterator):
 
         Returns:
             iterator: MF_LHSIterator object
-
         """
         if iterator_name is None:
             method_options = config["method"]["method_options"]
@@ -69,11 +70,11 @@ class MF_LHSIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate the model """
+        """Evaluate the model."""
         return self.model.evaluate()
 
     def pre_run(self):
-        """ Generate samples for subsequent LHS analysis """
+        """Generate samples for subsequent LHS analysis."""
         np.random.seed(self.seed)
         distribution_info = self.model.get_parameter_distribution_info()
         numparams = len(distribution_info)
@@ -105,7 +106,7 @@ class MF_LHSIterator(Iterator):
             raise ValueError("Mode must be either 'nested' or 'independent' ")
 
     def core_run(self):
-        """ Run LHS Analysis on model """
+        """Run LHS Analysis on model."""
 
         self.model.set_response_mode("bypass_lofi")
 
@@ -115,7 +116,7 @@ class MF_LHSIterator(Iterator):
             self.outputs.append(self.eval_model())
 
     def post_run(self):
-        """ Analyze the results """
+        """Analyze the results."""
         for i in range(self.model.num_levels):
             print("Size of inputs in LHS{}".format(self.samples[i].shape))
             print("Inputs {}".format(self.samples[i]))
@@ -123,7 +124,7 @@ class MF_LHSIterator(Iterator):
             print("Outputs {}".format(self.outputs[i]['mean']))
 
     def select_random_subset(self, samples, subset_size):
-        """ Select a subset of provided samples and return it
+        """Select a subset of provided samples and return it.
 
         Args:
             samples (np.array): Array with samples
@@ -131,7 +132,6 @@ class MF_LHSIterator(Iterator):
 
         Returns:
             np.array: Subset of samples
-
         """
         num_samples = samples.shape[0]
         subset_indices = np.random.choice(num_samples, subset_size, replace=False)
