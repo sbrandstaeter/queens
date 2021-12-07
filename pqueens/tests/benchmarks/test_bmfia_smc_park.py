@@ -1,20 +1,23 @@
 import os
 import pickle
-import pytest
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import pytest
 import seaborn as sns
-import matplotlib.pyplot as plt
+
 from pqueens.main import main
-from pqueens.utils import injector
 from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_coords import (
     park91a_hifi_coords,
 )
+from pqueens.utils import injector
 
 
 @pytest.mark.benchmark
 def test_smc_park_hf(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
-    """ Integration test for bayesian multi-fidelity inverse analysis (bmfia) using the park91 function """
+    """Integration test for bayesian multi-fidelity inverse analysis (bmfia)
+    using the park91 function."""
 
     # generate json input file from template
     template = os.path.join(inputdir, 'bmfia_smc_park.json')

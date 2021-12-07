@@ -1,10 +1,10 @@
-import numpy as np
-import pytest
-import pandas as pd
 import os
-import plotly.express as px
-
 from collections import OrderedDict
+
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import pytest
 
 from pqueens.iterators.baci_lm_iterator import BaciLMIterator
 

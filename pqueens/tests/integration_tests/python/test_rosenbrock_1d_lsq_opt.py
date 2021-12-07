@@ -9,8 +9,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_rosenbrock_1d_lsq_opt(inputdir, tmpdir):
-    """
-    Test special case for optimization iterator with least squares.
+    """Test special case for optimization iterator with least squares.
 
     Special case: 1 unknown but 2 residuals
     """

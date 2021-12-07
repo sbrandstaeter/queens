@@ -4,3 +4,24 @@
 [tool.black]
 line-length = 100
 skip-string-normalization = true
+
+[tool.vulture]
+min_confidence = 100
+sort_by_size = true
+exclude = ["pqueens/tests"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+use_parentheses = true
+force_grid_wrap = 0
+multi_line_output = 3
+include_trailing_comma = true
+skip = ["pqueens/tests"]
+
+[tool.pydocstyle]
+convention = "google"
+match-dir = '(?!tests).*'
+match = '(?!__init__).*\.py'
+
+[tool.docformatter]

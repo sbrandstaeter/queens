@@ -1,9 +1,10 @@
-import numpy as np
 import math
+
+import numpy as np
 
 
 def park91a_hifi(x1, x2, x3, x4):
-    """ High-fidelity Park91a function
+    """High-fidelity Park91a function.
 
     Simple four dimensional benchmark function as proposed in [1] to mimic
     a computer model. For the purpose of multi-fidelity simulation, [3]
@@ -36,7 +37,6 @@ def park91a_hifi(x1, x2, x3, x4):
         [3] Xiong, S., Qian, P., & Wu, C. (2013). Sequential design and analysis of
             high-accuracy and low-accuracy computer codes. Technometrics.
             http://doi.org/10.1080/00401706.2012.723572
-
     """
 
     term1a = x1 / 2
@@ -53,7 +53,7 @@ def park91a_hifi(x1, x2, x3, x4):
 
 
 def main(job_id, params):
-    """ Interface to Park91a test fuction
+    """Interface to Park91a test fuction.
 
     Args:
         job_id (int):  ID of job

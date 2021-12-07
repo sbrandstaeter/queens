@@ -1,31 +1,22 @@
-"""
-Collection of utility functions for post-processing.
-"""
+"""Collection of utility functions for post-processing."""
 
+import logging
 import pathlib
 import pickle
 import warnings
-
-import numpy as np
-from sklearn.model_selection import GridSearchCV
-from sklearn.neighbors import KernelDensity
-
 
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
-from pqueens.utils.plot_outputs import plot_pdf
-from pqueens.utils.plot_outputs import plot_cdf
-from pqueens.utils.plot_outputs import plot_failprob
-from pqueens.utils.plot_outputs import plot_icdf
-import logging
+from pqueens.utils.plot_outputs import plot_cdf, plot_failprob, plot_icdf, plot_pdf
+
 _logger = logging.getLogger(__name__)
 
 
 def process_ouputs(output_data, output_description, input_data=None):
-    """ Process output from QUEENS models
+    """Process output from QUEENS models.
 
     Args:
         output_data (dict):         Dictionary containing model output
@@ -50,7 +41,7 @@ def process_ouputs(output_data, output_description, input_data=None):
 
 
 def do_processing(output_data, output_description):
-    """ Do actual processing of output
+    """Do actual processing of output.
 
     Args:
         output_data (dict):         Dictionary containing model output
@@ -130,13 +121,12 @@ def do_processing(output_data, output_description):
 
 
 def write_results(processed_results, path_to_file, file_name):
-    """ Write results to pickle file
+    """Write results to pickle file.
 
     Args:
         processed_results (dict):  Dictionary with results
         path_to_file (str):        Path to write results to
         file_name (str):           Name of result file
-
     """
 
     pickle_file = pathlib.Path(path_to_file, file_name + ".pickle")
@@ -146,7 +136,7 @@ def write_results(processed_results, path_to_file, file_name):
 
 
 def estimate_result_interval(output_data):
-    """ Estimate interval of output data
+    """Estimate interval of output data.
 
     Estimate interval of output data and add small margins
 
@@ -155,7 +145,6 @@ def estimate_result_interval(output_data):
 
     Returns:
         list:                     Output interval
-
     """
     samples = output_data["mean"]
     _logger.debug(samples)
@@ -171,42 +160,39 @@ def estimate_result_interval(output_data):
 
 
 def estimate_mean(output_data):
-    """ Estimate mean based on standard unbiased estimator
+    """Estimate mean based on standard unbiased estimator.
 
     Args:
         output_data (dict):       Dictionary with output data
 
     Returns:
         float                     Unbiased mean estimate
-
     """
     samples = output_data["mean"]
     return np.mean(samples, axis=0)
 
 
 def estimate_var(output_data):
-    """ Estimate variance based on standard unbiased estimator
+    """Estimate variance based on standard unbiased estimator.
 
     Args:
         output_data (dict):       Dictionary with output data
 
     Returns:
         float                     Unbiased variance estimate
-
     """
     samples = output_data["mean"]
     return np.var(samples, ddof=1, axis=0)
 
 
 def estimate_cov(output_data):
-    """ Estimate covariance based on standard unbiased estimator
+    """Estimate covariance based on standard unbiased estimator.
 
     Args:
         output_data (dict):       Dictionary with output data
 
     Returns:
         numpy.array                    Unbiased covariance estimate
-
     """
     samples = output_data["mean"]
 
@@ -220,7 +206,7 @@ def estimate_cov(output_data):
 
 
 def estimate_cdf(output_data, support_points, bayesian):
-    """ Compute estimate of CDF based on provided sampling data
+    """Compute estimate of CDF based on provided sampling data.
 
     Args:
         output_data (dict):         Dictionary with output data
@@ -229,7 +215,6 @@ def estimate_cdf(output_data, support_points, bayesian):
 
     Returns:
         cdf:                        Dictionary with cdf estimates
-
     """
 
     cdf = {}
@@ -270,7 +255,7 @@ def estimate_cdf(output_data, support_points, bayesian):
 
 
 def estimate_icdf(output_data, bayesian):
-    """ Compute estimate of inverse CDF based on provided sampling data
+    """Compute estimate of inverse CDF based on provided sampling data.
 
     Args:
         output_data (dict):         Dictionary with output data
@@ -278,7 +263,6 @@ def estimate_icdf(output_data, bayesian):
 
     Returns:
         icdf:                        Dictionary with icdf estimates
-
     """
     my_percentiles = 100 * np.linspace(0 + 1 / 1000, 1 - 1 / 1000, 999)
     icdf = {}
@@ -306,24 +290,21 @@ def estimate_icdf(output_data, bayesian):
     return icdf
 
 
-def estimate_failprob(output_data, failure_thesholds, bayesian):
-    """ Compute estimate of failure probability plot based on passed data
+def estimate_failprob(output_data, bayesian):
+    """Compute estimate of failure probability plot based on passed data.
 
     Args:
         output_data (dict):            Dictionary with output data
-        failure_thesholds (np.array):  Failure thresholds for which to evaluate
-                                       failure probability
         bayesian (bool):               Compute confindence intervals etc.
 
     Returns:
         icdf:                        Dictionary with icdf estimates
-
     """
     raise NotImplementedError
 
 
 def estimate_pdf(output_data, support_points, bayesian):
-    """ Compute estimate of PDF based on provided sampling data
+    """Compute estimate of PDF based on provided sampling data.
 
     Args:
         output_data (dict):         Dictionary with output data
@@ -332,7 +313,6 @@ def estimate_pdf(output_data, support_points, bayesian):
 
     Returns:
         pdf:                        Dictionary with pdf estimates
-
     """
     pdf = {}
     pdf["x"] = support_points
@@ -366,7 +346,7 @@ def estimate_pdf(output_data, support_points, bayesian):
 
 
 def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
-    """ Estimate optimal bandwidth for kde of pdf
+    """Estimate optimal bandwidth for kde of pdf.
 
     Args:
         samples (np.array):  samples for which to estimate pdf
@@ -395,7 +375,7 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
 
 
 def perform_kde(samples, kernel_bandwidth, support_points):
-    """ Estimate pdf using kernel density estimation
+    """Estimate pdf using kernel density estimation.
 
     Args:
         samples (np.array):         samples for which to estimate pdf

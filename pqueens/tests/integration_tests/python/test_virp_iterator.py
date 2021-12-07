@@ -1,18 +1,20 @@
 import os
 import pickle
-import pytest
+
 import numpy as np
 import pandas as pd
+import pytest
 from mock import patch
 from scipy.stats import multivariate_normal as mvn
-from pqueens.utils import variational_inference_utils
-from pqueens.main import main
+
+import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.variational_inference_reparameterization import VIRPIterator
-from pqueens.utils import injector
+from pqueens.main import main
 from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_coords import (
     park91a_hifi_coords,
 )
-import pqueens.visualization.variational_inference_visualization as vis
+from pqueens.utils import injector, variational_inference_utils
+
 
 # TODO add the test prefix again after fullrank was implemented
 @pytest.mark.integration_tests
@@ -58,7 +60,8 @@ def virp_density_match(
 
 @pytest.mark.integration_tests
 def test_virp_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
-    """ Integration test for the virp iterator based on the park91a_hifi function """
+    """Integration test for the virp iterator based on the park91a_hifi
+    function."""
 
     # generate json input file from template
     template = os.path.join(inputdir, "virp_park91a_hifi_template.json")

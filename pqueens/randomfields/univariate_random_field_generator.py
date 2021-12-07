@@ -25,7 +25,6 @@ class UnivariateRandomFieldSimulator(object):
             series approximation
         stoch_dim (int): stochastic dimension, i.e., number of random variable
             needed to generate samples
-
     """
 
     def __init__(self, marginal_distribution):
@@ -70,13 +69,12 @@ class UnivariateRandomFieldSimulator(object):
         self.prob_dist = marginal_distribution
 
     def gen_sample_gauss_field(self, x, xi):
-        """
-        gen_sample_gauss_field(x, xi)
-        input x location(s) at which realization of random field is evaluated
-        xi random phase angles or amplitudes used to generate realization of
-        random field. This mehtod generates sample of standard Gaussian random
-        field and evaluates it at x. The actual generation based on series
-        expansion methods is implemented in the subclasses.
+        """gen_sample_gauss_field(x, xi) input x location(s) at which
+        realization of random field is evaluated xi random phase angles or
+        amplitudes used to generate realization of random field. This mehtod
+        generates sample of standard Gaussian random field and evaluates it at
+        x. The actual generation based on series expansion methods is
+        implemented in the subclasses.
 
         Args:
             x (np.array): location at which field is evaluated
@@ -84,12 +82,11 @@ class UnivariateRandomFieldSimulator(object):
 
         Returns:
             np.array: value of random field at locations x
-
         """
         raise NotImplementedError()
 
     def get_stoch_dim(self):
-        """return stochastic dimension of the field
+        """return stochastic dimension of the field.
 
         Returns:
             int: stochastic dimension of the field
@@ -97,7 +94,7 @@ class UnivariateRandomFieldSimulator(object):
         return self.stoch_dim
 
     def evaluate_field_at_location(self, x, xi):
-        """Generate sample of random field based on xi and evaluate it at x
+        """Generate sample of random field based on xi and evaluate it at x.
 
         Args:
             x (np.array): location at which field is evaluated

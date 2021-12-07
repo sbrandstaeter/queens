@@ -1,8 +1,9 @@
+import os
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
-import os
-import sys
 
 """
 A module that provides utilities and a class for visualization in BMFMC-UQ
@@ -24,9 +25,9 @@ this.bmfmc_visualization_instance = None
 
 
 def from_config_create(config):
-    """
-    Module function that calls the class function `from_config_create` and creates instance of the
-    BMFMCVisualization class from the problem description.
+    """Module function that calls the class function `from_config_create` and
+    creates instance of the BMFMCVisualization class from the problem
+    description.
 
     Args:
         config (dict): Dictionary created from the input file, containing the problem description
@@ -35,9 +36,8 @@ def from_config_create(config):
 
 
 class BMFMCVisualization(object):
-    """
-    Visualization class for BMFMC-UQ that containts several plotting, storing and visualization
-    methods that can be used anywhere in QUEENS.
+    """Visualization class for BMFMC-UQ that containts several plotting,
+    storing and visualization methods that can be used anywhere in QUEENS.
 
     Attributes:
        paths (list): List with paths to save the plots.
@@ -94,17 +94,16 @@ class BMFMCVisualization(object):
         )
 
     def plot_pdfs(self, output):
-        """
-        Plot the output distributions of HF output prediction, LF output, Monte-Carlo reference,
-        posterior variance or BMFMC reference with no features, depending on settings in input file.
-        Animate and save plots dependent on problem description.
+        """Plot the output distributions of HF output prediction, LF output,
+        Monte-Carlo reference, posterior variance or BMFMC reference with no
+        features, depending on settings in input file. Animate and save plots
+        dependent on problem description.
 
         Args:
             output (dict): dictionary containing key-value paris to plot
 
         Returns:
             Plots of model output distribution
-
         """
         if self.plot_booleans[0]:
             fig, ax = plt.subplots()
@@ -170,11 +169,11 @@ class BMFMCVisualization(object):
             plt.show()
 
     def plot_manifold(self, output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
-        """
-        Plot the probabilistic manifold of high-fidelity, low-fidelity outputs and informative
-        features of the input space, depending on the description in the input file. Also plot
-        the probabilistic mapping along with its training points. Potentially animate and save
-        these plots.
+        """Plot the probabilistic manifold of high-fidelity, low-fidelity
+        outputs and informative features of the input space, depending on the
+        description in the input file. Also plot the probabilistic mapping
+        along with its training points. Potentially animate and save these
+        plots.
 
         Args:
             output (dict): dictionary containing key-value paris to plot
@@ -184,7 +183,6 @@ class BMFMCVisualization(object):
 
         Returns:
             Plots of the probabilistic manifold
-
         """
         if self.plot_booleans[1]:
             manifold_plotter = _get_manifold_plotter(output)
@@ -244,15 +242,14 @@ class BMFMCVisualization(object):
 
 # ------ helper functions ----------------------------------------------------------
 def _get_manifold_plotter(output):
-    """
-    Service method that returns the proper manifold plotting function depending on the output.
+    """Service method that returns the proper manifold plotting function
+    depending on the output.
 
     Args:
         output (dict): Dictionary containing several output quantities for plotting
 
     Returns:
         Proper plotting function for either 2D or 3D plots depending on the output.
-
     """
     if output['Z_mc'].shape[1] < 2:
         return _2d_manifold
@@ -326,8 +323,7 @@ def _3d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
 
 
 def _2d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
-    """
-    Plot 2D output data manifold (:math:`y_{HF}-y_{LF}`.
+    """Plot 2D output data manifold (:math:`y_{HF}-y_{LF}`.
 
     Args:
         output (dict): Dictionary containing output data to plot.
@@ -337,7 +333,6 @@ def _2d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
 
     Returns:
         2D-plot of data manifold (:math:`y_{HF}-y_{LF}`-dependency.
-
     """
     fig2, ax2 = plt.subplots()
     ax2.plot(
@@ -410,8 +405,7 @@ def _2d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
 
 
 def _animate_3d(output, Y_HF_mc, save_path):
-    """
-    Animate 3D-data plots for better visual representation of the data.
+    """Animate 3D-data plots for better visual representation of the data.
     Potentially save animation as mp4.
 
     Args:
@@ -421,7 +415,6 @@ def _animate_3d(output, Y_HF_mc, save_path):
 
     Returns:
         Animation of 3D plots.
-
     """
 
     def init():
@@ -455,10 +448,9 @@ def _animate_3d(output, Y_HF_mc, save_path):
 
 
 def _plot_pdf_var(output, reference_str=''):
-    """
-    Plot the root of the posterior variance (=SD) of HF output density estimate :math:`\\mathbb{V}_{
-    f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` in form of credible intervals around
-    the mean prediction.
+    """Plot the root of the posterior variance (=SD) of HF output density
+    estimate :math:`\\mathbb{V}_{ f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]`
+    in form of credible intervals around the mean prediction.
 
     Args:
         output (dict): Dictionary containing output data to plot
@@ -468,7 +460,6 @@ def _plot_pdf_var(output, reference_str=''):
 
     Returns:
         Plot of credible intervals for predicted HF output densities
-
     """
     ax = plt.gca()
     variance_base = 'p_yhf_mean' + reference_str
@@ -489,8 +480,7 @@ def _plot_pdf_var(output, reference_str=''):
 
 
 def _save_plot(save_bool, path):
-    """
-    Save the plot to specified path.
+    """Save the plot to specified path.
 
     Args:
         save_bool (bool): Flag to decide whether saving option is triggered.
@@ -498,7 +488,6 @@ def _save_plot(save_bool, path):
 
     Returns:
         Saved plot.
-
     """
     if save_bool is True:
         plt.savefig(path, dpi=300)

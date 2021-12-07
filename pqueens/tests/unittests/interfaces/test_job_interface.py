@@ -1,14 +1,15 @@
-'''
-Created on Dezember 11th  2017
-@author: jbi
+"""Created on Dezember 11th  2017.
 
-'''
+@author: jbi
+"""
 import unittest
+
 import mock
 import pytest
-from pqueens.interfaces.job_interface import JobInterface
-from pqueens.interfaces.interface import Interface
+
 from pqueens.database.mongodb import MongoDB
+from pqueens.interfaces.interface import Interface
+from pqueens.interfaces.job_interface import JobInterface
 
 
 class TestJobInterface(unittest.TestCase):

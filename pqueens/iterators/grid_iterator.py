@@ -1,15 +1,15 @@
 import numpy as np
-from .iterator import Iterator
-from pqueens.models.model import Model
-from pqueens.utils.process_outputs import process_ouputs
-from pqueens.utils.process_outputs import write_results
+
 import pqueens.visualization.grid_iterator_visualization as qvis
+from pqueens.models.model import Model
+from pqueens.utils.process_outputs import process_ouputs, write_results
+
+from .iterator import Iterator
 
 
 class GridIterator(Iterator):
-    """
-    Grid Iterator to enable meshgrid evaluations with different axis scaling such as linear,
-    log10 or ln.
+    """Grid Iterator to enable meshgrid evaluations with different axis scaling
+    such as linear, log10 or ln.
 
     Attributes:
         model (model): Model to be evaluated by iterator
@@ -21,17 +21,10 @@ class GridIterator(Iterator):
         output (np.array):   Array with all model outputs
         num_grid_points_per_axis (list):  list with number of grid points for each grid axis
         scale_type (list): list with string entries denoting scaling type for each grid axis
-
     """
 
     def __init__(
-        self,
-        model,
-        result_description,
-        global_settings,
-        grid_dict,
-        parameters,
-        num_parameters,
+        self, model, result_description, global_settings, grid_dict, parameters, num_parameters,
     ):
         super(GridIterator, self).__init__(model, global_settings)
         self.grid_dict = grid_dict
@@ -45,8 +38,7 @@ class GridIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """
-        Create grid iterator from problem description
+        """Create grid iterator from problem description.
 
         Args:
             config (dict):       Dictionary with QUEENS problem description
@@ -57,7 +49,6 @@ class GridIterator(Iterator):
 
         Returns:
             iterator (obj): GridIterator object
-
         """
         if iterator_name is None:
             method_options = config["method"]["method_options"]
@@ -85,13 +76,11 @@ class GridIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate the model """
+        """Evaluate the model."""
         return self.model.evaluate()
 
     def pre_run(self):
-        """
-        Generate samples based on description in grid_dict
-        """
+        """Generate samples based on description in grid_dict."""
         # get variables from problem description (needed to design the grid)
         parameters = self.model.get_parameter()
 
@@ -130,11 +119,7 @@ class GridIterator(Iterator):
             if axis_type == 'lin':
                 grid_point_list.append(
                     np.linspace(
-                        start_value,
-                        stop_value,
-                        num=num_grid_points,
-                        endpoint=True,
-                        retstep=False,
+                        start_value, stop_value, num=num_grid_points, endpoint=True, retstep=False,
                     )
                 )
 
@@ -200,12 +185,12 @@ class GridIterator(Iterator):
             raise ValueError("More than 3 grid parameters are currently not supported! Abort...")
 
     def core_run(self):
-        """ Evaluate the meshgrid on model """
+        """Evaluate the meshgrid on model."""
         self.model.update_model_from_sample_batch(self.samples)
         self.output = self.eval_model()
 
     def post_run(self):
-        """ Analyze the results """
+        """Analyze the results."""
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description, self.samples)
             if self.result_description["write_results"] is True:
@@ -217,8 +202,5 @@ class GridIterator(Iterator):
 
         # plot QoI over grid
         qvis.grid_iterator_visualization_instance.plot_QoI_grid(
-            self.output,
-            self.samples,
-            self.num_parameters,
-            self.num_grid_points_per_axis,
+            self.output, self.samples, self.num_parameters, self.num_grid_points_per_axis,
         )

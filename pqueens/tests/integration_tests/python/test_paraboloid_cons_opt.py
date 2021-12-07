@@ -16,10 +16,10 @@ def algorithm(request):
 
 @pytest.mark.integration_tests
 def test_paraboloid_cons_opt(inputdir, tmpdir, algorithm):
-    """ Test different solution algorithms in optimization iterator.
+    """Test different solution algorithms in optimization iterator.
 
-        COBYLA: constained but unbounded
-        SLSQP:  constrained and bounded
+    COBYLA: constained but unbounded
+    SLSQP:  constrained and bounded
     """
 
     template = os.path.join(inputdir, 'paraboloid_opt_template.json')

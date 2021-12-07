@@ -3,6 +3,7 @@ import time
 
 import numpy as np
 import pandas as pd
+
 import pqueens.database.database as DB_module
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
@@ -14,8 +15,7 @@ this.restart_flag = None
 
 
 class JobInterface(Interface):
-    """
-        Class for mapping input variables to responses
+    """Class for mapping input variables to responses.
 
         The JobInterface class maps input variables to outputs, i.e. responses
         by creating a job which is then submitted to a job manager on some
@@ -35,7 +35,6 @@ class JobInterface(Interface):
         connect (string):                        connection to computing resource
         time_for_data_copy (float): Time (s) to wait such that copying process of simulation
                                     input file can finish and we do not overload the network
-
     """
 
     def __init__(
@@ -55,7 +54,7 @@ class JobInterface(Interface):
         time_for_data_copy,
         driver_name,
     ):
-        """ Create JobInterface
+        """Create JobInterface.
 
         Args:
             interface_name (string):    name of interface
@@ -70,7 +69,6 @@ class JobInterface(Interface):
             time_for_data_copy (float): Time (s) to wait such that copying process of simulation
                                         input file can finish and we do not overload the network
             driver_name (str):          Name of the associated driver for the current interface
-
         """
         self.name = interface_name
         self.resources = resources
@@ -91,7 +89,7 @@ class JobInterface(Interface):
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config, driver_name):
-        """ Create JobInterface from config dictionary
+        """Create JobInterface from config dictionary.
 
         Args:
             interface_name (str):   name of interface
@@ -171,8 +169,8 @@ class JobInterface(Interface):
         )
 
     def map(self, samples):
-        """
-        Mapping function which orchestrates call to external simulation software
+        """Mapping function which orchestrates call to external simulation
+        software.
 
         Second variant which takes the input samples as argument
 
@@ -182,7 +180,6 @@ class JobInterface(Interface):
         Returns:
             np.array,np.array       two arrays containing the inputs from the
                                     suggester, as well as the corresponding outputs
-
         """
         self.batch_number += 1
 
@@ -218,7 +215,6 @@ class JobInterface(Interface):
 
         Returns:
             function object:    management function which should be used
-
         """
         if self.restart:
             return self._manage_restart
@@ -227,7 +223,7 @@ class JobInterface(Interface):
             return self._manage_jobs
 
     def attempt_dispatch(self, resource, new_job):
-        """ Attempt to dispatch job multiple times
+        """Attempt to dispatch job multiple times.
 
         Submitting jobs to the queue sometimes fails, hence we try multiple times
         before giving up. We also wait one second between submit commands
@@ -253,8 +249,7 @@ class JobInterface(Interface):
         return process_id
 
     def count_jobs(self, field_filters={}):
-        """
-        Count jobs matching field_filters in the database
+        """Count jobs matching field_filters in the database.
 
         default: count all jobs in the database
         Args:
@@ -272,7 +267,7 @@ class JobInterface(Interface):
         return total_num_jobs
 
     def load_jobs(self, field_filters={}):
-        """ Load jobs that match field_filters from the jobs database
+        """Load jobs that match field_filters from the jobs database.
 
         Returns:
             list : list with all jobs that match the criteria
@@ -291,7 +286,7 @@ class JobInterface(Interface):
         return jobs
 
     def save_job(self, job):
-        """ Save a job to the job database
+        """Save a job to the job database.
 
         Args:
             job (dict): dictionary with job details
@@ -305,7 +300,7 @@ class JobInterface(Interface):
         )
 
     def create_new_job(self, variables, resource_name, new_id=None):
-        """ Create new job and save it to database and return it
+        """Create new job and save it to database and return it.
 
         Args:
             variables (Variables):     variables to run model at
@@ -340,9 +335,7 @@ class JobInterface(Interface):
         return job
 
     def remove_jobs(self):
-        """ Remove jobs from the jobs database
-
-        """
+        """Remove jobs from the jobs database."""
         self.db.remove(
             self.experiment_name,
             'jobs_' + self.driver_name,
@@ -351,7 +344,7 @@ class JobInterface(Interface):
         )
 
     def all_jobs_finished(self):
-        """ Determine whether all jobs are finished
+        """Determine whether all jobs are finished.
 
         Finished can either mean, complete or failed
 
@@ -374,14 +367,13 @@ class JobInterface(Interface):
         return True
 
     def get_output_data(self):
-        """ Extract output data from database and return it
+        """Extract output data from database and return it.
 
         Returns:
             dict: output dictionary; i
                   key:   | value:
                   'mean' | ndarray shape(batch_size, shape_of_response)
                   'var'  | ndarray (optional)
-
         """
         output = {}
         mean_values = []
@@ -462,15 +454,13 @@ class JobInterface(Interface):
         return jobid_for_post_post
 
     def _manage_jobs(self, samples):
-        """
-        Manage regular submission of jobs without restart.
+        """Manage regular submission of jobs without restart.
 
         Args:
             samples (DataFrame): realization/samples of QUEENS simulation input variables
 
         Returns:
             jobid_for_post_post(ndarray): jobids for post-post-processing
-
         """
         num_jobs = self.count_jobs()
         if not num_jobs or self.batch_number == 1:
@@ -590,7 +580,8 @@ class JobInterface(Interface):
                         print('>> Try again!')
 
     def _check_jobs_in_db(self):
-        """Check jobs in database and find the job with the smallest job ID in the database.
+        """Check jobs in database and find the job with the smallest job ID in
+        the database.
 
         Returns:
             is_every_job_in_db (boolean):   true if smallest job ID in database is 1
@@ -606,8 +597,7 @@ class JobInterface(Interface):
         return is_every_job_in_db, jobid_smallest_in_db
 
     def _check_job_completions(self, jobid_range):
-        """Check AWS tasks to determine completed jobs.
-        """
+        """Check AWS tasks to determine completed jobs."""
         jobs = self.load_jobs(
             field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
         )
@@ -819,7 +809,8 @@ class JobInterface(Interface):
         return
 
     def _get_current_restart_job(self, jobid, resource, resource_name, samples):
-        """Get the current job with ID (job_id) from database or from output directory.
+        """Get the current job with ID (job_id) from database or from output
+        directory.
 
         Args:
             jobid (int):      job ID
@@ -882,8 +873,7 @@ class JobInterface(Interface):
         return
 
     def print_resources_status(self):
-        """ Print out whats going on on the resources
-        """
+        """Print out whats going on on the resources."""
         sys.stdout.write('\nResources:      ')
         left_indent = 16
         indentation = ' ' * left_indent

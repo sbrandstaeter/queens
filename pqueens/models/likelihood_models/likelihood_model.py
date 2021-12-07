@@ -1,17 +1,18 @@
 import abc
-import numpy as np
-import os
 import glob
+import os
 import pprint
+
+import numpy as np
 import pandas as pd
-from pqueens.models.model import Model
+
 import pqueens.database.database as DB_module
+from pqueens.models.model import Model
 
 
 class LikelihoodModel(Model):
-    """
-    Base class for likelihood models that unifies interfaces of likelihood models
-    used in inverse analysis.
+    """Base class for likelihood models that unifies interfaces of likelihood
+    models used in inverse analysis.
 
     Attributes:
         forward_model (obj): Forward model on which the likelihood model is based
@@ -23,7 +24,6 @@ class LikelihoodModel(Model):
 
     Returns:
         Instance of LikelihoodModel class
-
     """
 
     def __init__(
@@ -47,8 +47,7 @@ class LikelihoodModel(Model):
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
-        """
-        Create a likelihood model from the problem description
+        """Create a likelihood model from the problem description.
 
         Args:
             model_name (str): Name of the model
@@ -56,11 +55,10 @@ class LikelihoodModel(Model):
 
         Returns:
             Instance of likelihood_model class
-
         """
         # get child likelihood classes
-        from .gaussian_static_likelihood import GaussianStaticLikelihood
         from .bayesian_mf_gaussian_static_likelihood import BMFGaussianStaticModel
+        from .gaussian_static_likelihood import GaussianStaticLikelihood
 
         model_dict = {
             'gaussian_static': GaussianStaticLikelihood,
@@ -113,8 +111,8 @@ class LikelihoodModel(Model):
         time_label,
         output_label,
     ):
-        """
-        Load all experimental data into QUEENS and conduct some preprocessing and cleaning.
+        """Load all experimental data into QUEENS and conduct some
+        preprocessing and cleaning.
 
         Args:
             experimental_data_path_list (lst): List containing paths to base directories of
@@ -130,7 +128,6 @@ class LikelihoodModel(Model):
                                   observation coordinates
             experimental_coordinates (np.array): Matrix with observation coordinates. One row
                                                  corresponds to one coordinate point.
-
         """
         if experimental_data_path_list is not None:
 
@@ -198,5 +195,5 @@ class LikelihoodModel(Model):
 
     @abc.abstractmethod
     def evaluate(self):
-        """ Evaluate model with current set of variables """
+        """Evaluate model with current set of variables."""
         pass

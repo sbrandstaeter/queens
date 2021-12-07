@@ -1,18 +1,17 @@
 import pickle
+
 from pqueens.iterators.iterator import Iterator
-from pqueens.utils.process_outputs import process_ouputs
-from pqueens.utils.process_outputs import write_results
+from pqueens.utils.process_outputs import process_ouputs, write_results
 
 
 class DataIterator(Iterator):
-    """ Basic Data Iterator to enable restarts from data
+    """Basic Data Iterator to enable restarts from data.
 
     Attributes:
         samples (np.array):         Array with all samples
         output (np.array):          Array with all model outputs
         path_to_data (string):      Path to pickle file containing data
         result_description (dict):  Description of desired results
-
     """
 
     def __init__(self, path_to_data, result_description, global_settings):
@@ -25,7 +24,7 @@ class DataIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """ Create data iterator from problem description
+        """Create data iterator from problem description.
 
         Args:
             config (dict):       Dictionary with QUEENS problem description
@@ -35,7 +34,6 @@ class DataIterator(Iterator):
 
         Returns:
             iterator: DataIterator object
-
         """
         print(config.get("experiment_name"))
         if iterator_name is None:
@@ -50,14 +48,14 @@ class DataIterator(Iterator):
         return cls(path_to_data, result_description, global_settings)
 
     def eval_model(self):
-        """ Evaluate the model """
+        """Evaluate the model."""
         pass
 
     def pre_run(self):
         pass
 
     def core_run(self):
-        """  Read data from file """
+        """Read data from file."""
         # TODO: We should return a more general data structure in the future
         # TODO: including I/O and meta data; for now catch it with a try statement
         # TODO: see Issue #45;
@@ -67,7 +65,7 @@ class DataIterator(Iterator):
             self.samples, self.output = self.read_pickle_file()
 
     def post_run(self):
-        """ Analyze the results """
+        """Analyze the results."""
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description)
             if self.result_description["write_results"] is True:
@@ -83,7 +81,7 @@ class DataIterator(Iterator):
         print("Outputs {}".format(self.output['mean']))
 
     def read_pickle_file(self):
-        """ Read in data from a pickle file
+        """Read in data from a pickle file.
 
         Main reason for putting this functionality in a method is to make
         making mocking reading input easy for testing
@@ -91,7 +89,6 @@ class DataIterator(Iterator):
         Returns:
             np.array, np.array: Two arrays, the first contains input samples,
                                 the second the corresponding output samples
-
         """
 
         data = pickle.load(open(self.path_to_data, "rb"))

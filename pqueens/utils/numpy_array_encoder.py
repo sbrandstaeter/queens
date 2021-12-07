@@ -1,9 +1,8 @@
-"""
-Module supplies function for encoding NumPy array into JSON.
-"""
+"""Module supplies function for encoding NumPy array into JSON."""
 
 import json
 from json import JSONEncoder
+
 import numpy as np
 
 

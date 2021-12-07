@@ -17,28 +17,35 @@ repos:
     rev: v2.3
     hooks:
     -   id: vulture
+        additional_dependencies: ["toml"]
+        always_run: false
+        pass_filenames: true
 -   repo: https://github.com/myint/docformatter
     rev: v1.4
     hooks:
     -   id: docformatter
+        args: [--in-place]
 -   repo: https://github.com/PyCQA/pydocstyle
     rev: 6.1.1
     hooks:
     -   id: pydocstyle
+        additional_dependencies: ["toml"]
 -   repo: local
     hooks:
     -   id: pylint
         name: pylint
         entry: pylint
-        language: system
+        language: python
+        additional_dependencies: ["toml"]
         always_run: false
         pass_filenames: true
     -   id: isort
         name: isort (python)
         entry: isort
-        language: system
+        language: python
         always_run: false
         pass_filenames: true
+        additional_dependencies: ["toml"]
     -   id: black
         name: black
         entry: black
@@ -46,3 +53,4 @@ repos:
         types: ["python"]
         always_run: false
         pass_filenames: true
+        additional_dependencies: ["toml"]

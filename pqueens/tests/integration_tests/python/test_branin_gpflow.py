@@ -1,5 +1,6 @@
 import os
 import pickle
+
 import numpy as np
 import pytest
 
@@ -8,7 +9,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_branin_gpflow(inputdir, tmpdir, expected_mean, expected_var):
-    """ Test case for GPflow based GP model """
+    """Test case for GPflow based GP model."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'branin_gpflow_surrogate.json'),
         '--output=' + str(tmpdir),
@@ -40,7 +41,7 @@ def expected_mean():
             [104.25630329],
             [92.22700928],
             [50.69060622],
-            [22.18886383]
+            [22.18886383],
         ]
     )
     return mean
@@ -59,7 +60,7 @@ def expected_var():
             [14.06623098],
             [8.34025715],
             [0.95922611],
-            [0.33420735]
+            [0.33420735],
         ]
     )
     return var

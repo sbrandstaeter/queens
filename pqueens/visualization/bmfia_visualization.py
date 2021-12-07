@@ -2,9 +2,9 @@ import os
 import sys
 
 import matplotlib.pyplot as plt
-import seaborn as sns
 import numpy as np
 import plotly.graph_objects as go
+import seaborn as sns
 from plotly.subplots import make_subplots
 
 """
@@ -28,9 +28,9 @@ this.bmfia_visualization_instance = None
 
 
 def from_config_create(config, model_name):
-    """
-    Module function that calls the class function `from_config_create` and creates instance of the
-    BMFIAVisualization class from the problem description.
+    """Module function that calls the class function `from_config_create` and
+    creates instance of the BMFIAVisualization class from the problem
+    description.
 
     Args:
         config (dict): Dictionary created from the input file, containing the problem description
@@ -39,9 +39,8 @@ def from_config_create(config, model_name):
 
 
 class BMFIAVisualization(object):
-    """
-    Visualization class for BMFIA that containts several plotting, storing and visualization
-    methods that can be used anywhere in QUEENS.
+    """Visualization class for BMFIA that containts several plotting, storing
+    and visualization methods that can be used anywhere in QUEENS.
 
     Attributes:
        paths (list): List with paths to save the plots.
@@ -51,7 +50,6 @@ class BMFIAVisualization(object):
 
     Returns:
         BMFIAVisualization (obj): Instance of the BMIAVisualization Class
-
     """
 
     # some overall class states
@@ -66,8 +64,7 @@ class BMFIAVisualization(object):
 
     @classmethod
     def from_config_create(cls, config, model_name):
-        """
-        Create the BMFIA visualization object from the problem description
+        """Create the BMFIA visualization object from the problem description.
 
         Args:
             config (dict): Dictionary containing the problem description
@@ -75,7 +72,6 @@ class BMFIAVisualization(object):
 
         Returns:
             Instance of BMFIA visualization (obj)
-
         """
         plotting_options = config[model_name].get("plotting_options")
         paths = [
@@ -87,11 +83,11 @@ class BMFIAVisualization(object):
         return cls(paths, save_bools, plot_booleans)
 
     def plot(self, z_train, Y_HF_train, regression_obj_lst):
-        """
-        Plot the probabilistic manifold of high-fidelity, low-fidelity outputs and informative
-        features of the input space, depending on the description in the input file. Also plot
-        the probabilistic mapping along with its training points. Potentially animate and save
-        these plots.
+        """Plot the probabilistic manifold of high-fidelity, low-fidelity
+        outputs and informative features of the input space, depending on the
+        description in the input file. Also plot the probabilistic mapping
+        along with its training points. Potentially animate and save these
+        plots.
 
         Args:
             Y_HF_train (np.array): High-fidelity output training points
@@ -100,7 +96,6 @@ class BMFIAVisualization(object):
 
         Returns:
             Plots of the probabilistic manifold
-
         """
         if self.plot_booleans[0]:
             plot_model_dependency(z_train, Y_HF_train, regression_obj_lst)
@@ -108,13 +103,12 @@ class BMFIAVisualization(object):
                 _save_plot(self.save_bools[0], self.paths[0])
 
     def plot_posterior_from_samples(self, samples, weights, dim_labels_lst):
-        """
-        Visualize the multi-fideltiy posterior distribution (up to 2D) or its marginals
-        for higher dimensional posteriors.
+        """Visualize the multi-fideltiy posterior distribution (up to 2D) or
+        its marginals for higher dimensional posteriors.
 
         Args:
             samples (np.array): Samples of the posterior. Each row is a differnt sample-vector.
-                                Different columns represent the different dimensions of the 
+                                Different columns represent the different dimensions of the
                                 posterior.
             weights (np.array): Weights of the posterior samples. One weight for each sample row.
             dim_labels_lst (lst): List with labels/naming of the involved dimensions.
@@ -122,7 +116,6 @@ class BMFIAVisualization(object):
 
         Returns:
             None
-
         """
         if self.plot_booleans[1]:
 
@@ -150,9 +143,8 @@ class BMFIAVisualization(object):
 
 
 def plot_model_dependency(z_train, Y_HF_train, regression_obj_lst):
-    """
-    Plot the multi-fidelity dependency in :math:`\\Omega_{y_{lf}\\times y_{hf}}`
-    or in :math:`\\Omega_{y_{lf}\\times y_{hf}\\times \\gamma_1}`
+    """Plot the multi-fidelity dependency in :math:`\\Omega_{y_{lf}\\times
+    y_{hf}}` or in :math:`\\Omega_{y_{lf}\\times y_{hf}\\times \\gamma_1}`
 
     Args:
         z_train (np.array): Training data for the low-fidelity vector that contains the
@@ -163,7 +155,6 @@ def plot_model_dependency(z_train, Y_HF_train, regression_obj_lst):
 
     Returns:
         None
-
     """
     z_train = z_train.squeeze()
     Y_HF_train = Y_HF_train.squeeze()
@@ -177,8 +168,8 @@ def plot_model_dependency(z_train, Y_HF_train, regression_obj_lst):
 
 
 def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
-    """
-    Plot the 3D-dependency meaning the LF-HF dependency with one more informative feature.
+    """Plot the 3D-dependency meaning the LF-HF dependency with one more
+    informative feature.
 
     Args:
         z_train (np.array): Array of low-fidelity model output and informative features.
@@ -188,7 +179,6 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
 
     Returns:
         None
-
     """
     num_test_points = 50
 
@@ -283,8 +273,7 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
 
 
 def _plot_2d_dependency(z_train, Y_HF_train, regression_obj_lst):
-    """
-     Plot the 2D-dependency meaning the LF-HF dependency.
+    """Plot the 2D-dependency meaning the LF-HF dependency.
 
     Args:
         z_train (np.array): Array of low-fidelity model output and informative features.
@@ -294,7 +283,6 @@ def _plot_2d_dependency(z_train, Y_HF_train, regression_obj_lst):
 
     Returns:
         None
-
     """
 
     sub_plot_square = int(np.ceil(np.sqrt(len(regression_obj_lst))))
@@ -379,8 +367,7 @@ def _plot_2d_dependency(z_train, Y_HF_train, regression_obj_lst):
 
 
 def _save_plot(save_bool, path):
-    """
-    Save the plot to specified path.
+    """Save the plot to specified path.
 
     Args:
         save_bool (bool): Flag to decide whether saving option is triggered.
@@ -388,7 +375,6 @@ def _save_plot(save_bool, path):
 
     Returns:
         Saved plot.
-
     """
     if save_bool:
         plt.savefig(path, dpi=300)

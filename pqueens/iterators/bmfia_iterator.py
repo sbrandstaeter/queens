@@ -1,6 +1,8 @@
 import logging
 
 import numpy as np
+from sklearn.preprocessing import StandardScaler
+
 import pqueens.database.database as DB_module
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 from pqueens.iterators.iterator import Iterator
@@ -8,18 +10,17 @@ from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import process_ouputs, write_results
 
-from sklearn.preprocessing import StandardScaler
-
 _logger = logging.getLogger(__name__)
 
 
 class BMFIAIterator(Iterator):
-    """
-    Iterator for Bayesian multi-fidelity inverse analysis. Here, we build the multi-fidelity
-    probabilistic surrogate, determine optimal training points X_train and evaluate the low- and
-    high-fidelity model for these training inputs to yield Y_LF_train and Y_HF_train.
-    training data. The actual inverse problem is not solved or iterated in this module but
-    instead we iterate over the training data to approximate the probabilistic mapping p(yhf|ylf).
+    """Iterator for Bayesian multi-fidelity inverse analysis. Here, we build
+    the multi-fidelity probabilistic surrogate, determine optimal training
+    points X_train and evaluate the low- and high-fidelity model for these
+    training inputs to yield Y_LF_train and Y_HF_train. training data. The
+    actual inverse problem is not solved or iterated in this module but instead
+    we iterate over the training data to approximate the probabilistic mapping
+    p(yhf|ylf).
 
     Attributes:
         result_description (dict): Dictionary containing settings for result handling and writing
@@ -47,7 +48,6 @@ class BMFIAIterator(Iterator):
 
     Returns:
        BMFIAIterator (obj): Instance of the BMFIAIterator
-
     """
 
     def __init__(
@@ -97,8 +97,7 @@ class BMFIAIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """
-        Build a BMFIAIterator object from the problem description
+        """Build a BMFIAIterator object from the problem description.
 
         Args:
             config (dict): Configuration / input file for QUEENS as dictionary
@@ -107,7 +106,6 @@ class BMFIAIterator(Iterator):
 
         Returns:
             iterator (obj): BMFIAIterator object
-
         """
         # Get appropriate sections in the config file
         method_options = config["method"]["method_options"]
@@ -173,9 +171,9 @@ class BMFIAIterator(Iterator):
 
     @classmethod
     def _calculate_optimal_x_train(cls, initial_design_dict, external_geometry_obj, model):
-        """
-        Based on the selected design method, determine the optimal set of input points X_train to
-        run the HF and the LF model on for the construction of the probabilistic surrogate
+        """Based on the selected design method, determine the optimal set of
+        input points X_train to run the HF and the LF model on for the
+        construction of the probabilistic surrogate.
 
         Args:
             initial_design_dict (dict): Dictionary with description of initial design.
@@ -185,7 +183,6 @@ class BMFIAIterator(Iterator):
 
         Returns:
             x_train (np.array): Optimal training input samples
-
         """
         run_design_method = cls._get_design_method(initial_design_dict)
         x_train = run_design_method(initial_design_dict, external_geometry_obj, model)
@@ -193,15 +190,14 @@ class BMFIAIterator(Iterator):
 
     @classmethod
     def _get_design_method(cls, initial_design_dict):
-        """
-        Get the design method for selecting the HF data from the LF MC data-set
+        """Get the design method for selecting the HF data from the LF MC data-
+        set.
 
         Args:
             initial_design_dict (dict): Dictionary with description of initial design.
 
         Returns:
             run_design_method (obj): Design method for selecting the HF training set
-
         """
         # choose design method
         if initial_design_dict['type'] == 'random':
@@ -213,9 +209,8 @@ class BMFIAIterator(Iterator):
 
     @classmethod
     def _random_design(cls, initial_design_dict, external_geometry_obj, model):
-        """
-        Calculate the HF training points from large LF-MC data-set based on random selection
-        from bins over y_LF.
+        """Calculate the HF training points from large LF-MC data-set based on
+        random selection from bins over y_LF.
 
         Args:
             initial_design_dict (dict): Dictionary with description of initial design.
@@ -225,7 +220,6 @@ class BMFIAIterator(Iterator):
 
         Returns:
             x_train (np.array): Optimal training input samples
-
         """
         # Some dummy arguments that are necessary for class initialization but not needed
         dummy_model = model
@@ -248,14 +242,13 @@ class BMFIAIterator(Iterator):
 
     # ----------- main methods of the object form here ----------------------------------------
     def core_run(self):
-        """
-        Main or core run of the BMFIA iterator that summarizes the actual evaluation of the HF and
-        LF models for these data and the determination of LF informative features.
+        """Main or core run of the BMFIA iterator that summarizes the actual
+        evaluation of the HF and LF models for these data and the determination
+        of LF informative features.
 
         Returns:
             Z_train (np.array): Matrix with low-fidelity feature training data
             Y_HF_train (np.array): Matrix with HF training data
-
         """
         # ----- build model on training points and evaluate it -----------------------
         self.eval_model()
@@ -266,12 +259,10 @@ class BMFIAIterator(Iterator):
         return self.Z_train, self.Y_HF_train
 
     def _evaluate_LF_model_for_X_train(self):
-        """
-        Evaluate the low-fidelity model for the X_train input data-set
+        """Evaluate the low-fidelity model for the X_train input data-set.
 
         Returns:
             None
-
         """
         self.lf_model.update_model_from_sample_batch(self.X_train)
 
@@ -280,12 +271,10 @@ class BMFIAIterator(Iterator):
         self.Y_LF_train = self.lf_model.evaluate()['mean'].reshape(-1, num_coords)
 
     def _evaluate_HF_model_for_X_train(self):
-        """
-        Evaluate the high-fidelity model for the X_train input data-set
+        """Evaluate the high-fidelity model for the X_train input data-set.
 
         Returns:
             None
-
         """
         self.hf_model.update_model_from_sample_batch(self.X_train)
 
@@ -294,12 +283,13 @@ class BMFIAIterator(Iterator):
         self.Y_HF_train = self.hf_model.evaluate()['mean'].reshape(-1, num_coords)
 
     def _set_feature_strategy(self):
-        """
-        Depending on the method specified in the input file, set the strategy that will be used to
-        calculate the low-fidelity features :math:`Z_{\\text{LF}}`. Basically this methods gives
-        different options on how to construct informative features :math:`\\gamma_i` from which
-        the low-fidelity feature vector/matrix :math:`Z_{\\text{LF}}` is constructed upon.
-        So far we have the option of:
+        """Depending on the method specified in the input file, set the
+        strategy that will be used to calculate the low-fidelity features
+        :math:`Z_{\\text{LF}}`. Basically this methods gives different options
+        on how to construct informative features :math:`\\gamma_i` from which
+        the low-fidelity feature vector/matrix :math:`Z_{\\text{LF}}` is
+        constructed upon. So far we have the option of:
+
         -  selecting :math:`\\gamma_i` manually from the input
         vector (man_features)
         - automatically determine optimal features from the input vector
@@ -315,7 +305,6 @@ class BMFIAIterator(Iterator):
 
         Returns:
             None
-
         """
         self.coords_experimental_data = np.tile(
             self.coords_experimental_data, (self.X_train.shape[0], 1)
@@ -366,12 +355,10 @@ class BMFIAIterator(Iterator):
         )
 
     def eval_model(self):
-        """
-        Evaluate the LF and HF model to for the training inputs X_train.
+        """Evaluate the LF and HF model to for the training inputs X_train.
 
         Returns:
             None
-
         """
         # ---- run LF model on X_train (potentially we need to iterate over this and the previous
         # step to determine optimal X_train; for now just one sequence)
@@ -398,8 +385,7 @@ class BMFIAIterator(Iterator):
 
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
     def post_run(self):
-        """
-        Saving and plotting of the results.
+        """Saving and plotting of the results.
 
         Returns:
             None

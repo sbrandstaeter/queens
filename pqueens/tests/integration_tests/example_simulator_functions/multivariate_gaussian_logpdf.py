@@ -15,7 +15,7 @@ gauss_like = mcmc_utils.NormalProposal(mean=meas_data, covariance=cov)
 
 
 def gaussian_logpdf(x1, x2):
-    """ 2D Gaussian likelihood model
+    """2D Gaussian likelihood model.
 
     Used as a basic test function for MCMC methods.
 
@@ -45,7 +45,7 @@ def gaussian_logpdf(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to 1D Guassian model
+    """Interface to 1D Guassian model.
 
     Args:
         job_id (int):  ID of job

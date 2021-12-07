@@ -2,8 +2,8 @@ import numpy as np
 
 
 def oakley_ohagan2004_func(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15):
-    """ Oakley O'Hagan 2004 function
-    15 dimensional benchmark function proposed in [1]
+    """Oakley O'Hagan 2004 function 15 dimensional benchmark function proposed
+    in [1]
 
     :math:`f({\\bf x})=
     {\\bf a_1}^T{\\bf x}+{\\bf a_2}^T\\sin({\\bf x})+{\\bf a_3}^T\\cos({\\bf x})+{\\bf x^T M x}`
@@ -393,7 +393,7 @@ def oakley_ohagan2004_func(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x1
 
 
 def main(job_id, params):
-    """ Interface to Oakley O'Hagan 2004 fuction
+    """Interface to Oakley O'Hagan 2004 fuction.
 
     Args:
         job_id (int):  ID of job

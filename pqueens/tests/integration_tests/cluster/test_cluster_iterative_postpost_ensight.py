@@ -1,27 +1,29 @@
-import pickle
+import json
 import pathlib
+import pickle
+
 import numpy as np
 import pytest
-import json
+
+import pqueens.database.database as DB_module
+from pqueens.models.model import Model
 from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess
-from pqueens.models.model import Model
-import pqueens.database.database as DB_module
 
 
 @pytest.mark.lnm_cluster
 def test_cluster_postpost_ensight(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):
-    """
-    Test suite for remote BACI sumlations on the cluster in combination with the BACI ensight
-    post-post-processor. No iterator is used, the model is called directly.
+    """Test suite for remote BACI sumlations on the cluster in combination with
+    the BACI ensight post-post-processor. No iterator is used, the model is
+    called directly.
 
     This integration test is constructed such that:
         - The interface-map function is called twice (mimics feedback-loops)
         - The maximum concurrent job is activated
         - Post_Post_ensight to remotely communicate with the database (besides the driver)
-        - No iterator is used to reduce complexity 
+        - No iterator is used to reduce complexity
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -31,7 +33,6 @@ def test_cluster_postpost_ensight(
 
     Returns:
         None
-
     """
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]

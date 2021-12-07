@@ -1,12 +1,14 @@
+import logging
+import os
+
+import gpflow as gpf
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-import gpflow as gpf
 from gpflow.utilities import print_summary, set_trainable
+
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
-from pqueens.utils.gpf_utils import set_transform_function, extract_block_diag, init_scaler
-import os
-import logging
+from pqueens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
 
 # suppress tensorflow warnings
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -15,8 +17,8 @@ tf.get_logger().setLevel(logging.ERROR)
 
 
 class GPflowSVGP(RegressionApproximation):
-    """
-    Class for creating Sparse Variational GP regression model based on GPFlow
+    """Class for creating Sparse Variational GP regression model based on
+    GPFlow.
 
     Key reference:
         J. Hensman, A. Matthews, and Z. Ghahramani, “Scalable Variational Gaussian Process
@@ -80,8 +82,7 @@ class GPflowSVGP(RegressionApproximation):
 
     @classmethod
     def from_config_create(cls, config, approx_name, x_train, y_train):
-        """
-        Create approximation from options dictionary
+        """Create approximation from options dictionary.
 
         Args:
             config (dict): dictionary with options
@@ -127,9 +128,7 @@ class GPflowSVGP(RegressionApproximation):
         )
 
     def train(self):
-        """
-        Train the GP
-        """
+        """Train the GP."""
         optimizer = tf.optimizers.Adam()
         for i in range(self.dimension_output):
             training_iterations = iter(self.training_data[i].batch(self.mini_batch_size))
@@ -150,8 +149,7 @@ class GPflowSVGP(RegressionApproximation):
             print_summary(self.model[i])
 
     def predict(self, x_test, support='f', full_cov=False):
-        """
-        Predict the posterior distribution at x_test
+        """Predict the posterior distribution at x_test.
 
         Options:
             'f': predict the latent function values
@@ -212,8 +210,7 @@ class GPflowSVGP(RegressionApproximation):
 
     @classmethod
     def _init_training_dataset(cls, x_train, y_train, seed):
-        """
-        Initialize the training data set
+        """Initialize the training data set.
 
         Args:
             x_train (np.array): training inputs
@@ -263,8 +260,7 @@ class GPflowSVGP(RegressionApproximation):
 
     @classmethod
     def _build_model(cls, approx_options, dimension_output, x_train, y_train):
-        """
-        Build the SVGP model
+        """Build the SVGP model.
 
         Args:
             approx_options (dict): dictionary with options for approximation method
@@ -305,8 +301,7 @@ class GPflowSVGP(RegressionApproximation):
                 set_trainable(model[i].likelihood.variance, False)
 
             model[i].kernel.lengthscales = set_transform_function(
-                model[i].kernel.lengthscales,
-                tfp.bijectors.Exp(),
+                model[i].kernel.lengthscales, tfp.bijectors.Exp(),
             )
             model[i].kernel.variance = set_transform_function(
                 model[i].kernel.variance, tfp.bijectors.Exp()
@@ -316,8 +311,7 @@ class GPflowSVGP(RegressionApproximation):
 
     @classmethod
     def _init_inducing_points(cls, x_train, approx_options):
-        """
-        Initialize inducing points
+        """Initialize inducing points.
 
         Args:
             x_train (np.ndarray): training inputs
@@ -336,8 +330,7 @@ class GPflowSVGP(RegressionApproximation):
 
     @staticmethod
     def _squeeze_output(output):
-        """
-        Squeeze output
+        """Squeeze output.
 
         Args:
             output (dict): output dictionary

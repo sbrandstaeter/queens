@@ -6,10 +6,11 @@ import pytest
 
 from pqueens.main import main
 
+
 # TODO fix these test, because as of now these test produce platform dependent results
 @pytest.mark.integration_tests
 def test_ishigami_morris_salib(inputdir, tmpdir):
-    """ Test case for salib based morris iterator """
+    """Test case for salib based morris iterator."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'sobol_morris_salib.json'),
         '--output=' + str(tmpdir),

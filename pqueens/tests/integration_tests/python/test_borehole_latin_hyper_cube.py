@@ -8,7 +8,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_borehole_latin_hyper_cube(inputdir, tmpdir):
-    """ Test case for latin hyper cube iterator """
+    """Test case for latin hyper cube iterator."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'borehole_latin_hyper_cube.json'),
         '--output=' + str(tmpdir),

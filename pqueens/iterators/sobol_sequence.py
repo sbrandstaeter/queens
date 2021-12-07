@@ -48,7 +48,7 @@ if sys.version_info[0] > 2:
 
 
 def sample(N, D):
-    """Generate (N x D) numpy array of Sobol sequence samples"""
+    """Generate (N x D) numpy array of Sobol sequence samples."""
     scale = 31
     result = np.zeros([N, D])
 

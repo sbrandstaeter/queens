@@ -1,19 +1,21 @@
-import numpy as np
-from pqueens.iterators.iterator import Iterator
-from pqueens.interfaces.interface import Interface
-from .model import Model
-import pqueens.visualization.surrogate_visualization as qvis
 import logging
+
+import numpy as np
+
+import pqueens.visualization.surrogate_visualization as qvis
+from pqueens.interfaces.interface import Interface
+from pqueens.iterators.iterator import Iterator
+
+from .model import Model
 
 _logger = logging.getLogger(__name__)
 
 
 class DataFitSurrogateModel(Model):
-    """Surrogate model class
+    """Surrogate model class.
 
     Attributes:
         interface (interface):          approximation interface
-
     """
 
     def __init__(
@@ -28,7 +30,7 @@ class DataFitSurrogateModel(Model):
         error_measures,
         nash_sutcliffe_efficiency,
     ):
-        """Initialize data fit surrogate model
+        """Initialize data fit surrogate model.
 
         Args:
             model_name (string):        Name of model
@@ -45,7 +47,6 @@ class DataFitSurrogateModel(Model):
             eval_fit (str):                 How to evaluate goodness of fit
             error_measures (list):          List of error measures to compute
             nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
-
         """
         super(DataFitSurrogateModel, self).__init__(model_name, model_parameters)
         self.interface = interface
@@ -58,7 +59,7 @@ class DataFitSurrogateModel(Model):
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
-        """Create data fit surrogate model from problem description
+        """Create data fit surrogate model from problem description.
 
         Args:
             model_name (string): Name of model
@@ -114,7 +115,7 @@ class DataFitSurrogateModel(Model):
         )
 
     def evaluate(self):
-        """Evaluate model with current set of variables
+        """Evaluate model with current set of variables.
 
         Returns:
             np.array: Results corresponding to current set of variables
@@ -126,7 +127,7 @@ class DataFitSurrogateModel(Model):
         return self.response
 
     def build_approximation(self):
-        """ Build underlying approximation """
+        """Build underlying approximation."""
 
         self.subordinate_iterator.run()
 
@@ -157,7 +158,7 @@ class DataFitSurrogateModel(Model):
                 _logger.info("Error {} is: {}".format(measure, error))
 
     def eval_surrogate_accuracy(self, x_test, y_test, measures):
-        """Evaluate the accuracy of the surrogate model based on test set
+        """Evaluate the accuracy of the surrogate model based on test set.
 
         Evaluate the accuracy of the surrogate model using the provided
         error metrics.
@@ -188,7 +189,7 @@ class DataFitSurrogateModel(Model):
         return error_info
 
     def eval_surrogate_accuracy_cv(self, x_test, y_test, k_fold, measures):
-        """Compute k-fold cross-validation error
+        """Compute k-fold cross-validation error.
 
         Args:
             x_test (np.array):       Input array
@@ -209,7 +210,7 @@ class DataFitSurrogateModel(Model):
         return error_info
 
     def compute_error_measures(self, y_test, y_posterior_mean, measures):
-        """Compute error measures
+        """Compute error measures.
 
         Compute based on difference between predicted and actual values.
 
@@ -228,7 +229,7 @@ class DataFitSurrogateModel(Model):
 
     @staticmethod
     def compute_error(y_test, y_posterior_mean, measure):
-        """Compute error for given a specific error measure
+        """Compute error for given a specific error measure.
 
         Args:
             y_test (ndarray): output values from testing data set
@@ -239,7 +240,6 @@ class DataFitSurrogateModel(Model):
             float: error based on desired metric
 
         Raises:
-
         """
         return {
             "sum_squared": np.sum((y_test - y_posterior_mean) ** 2),
@@ -252,8 +252,7 @@ class DataFitSurrogateModel(Model):
 
     @staticmethod
     def compute_nash_sutcliffe_efficiency(y_test, y_posterior_mean):
-        """
-        Nash-Sutcliffe model efficiency
+        """Nash-Sutcliffe model efficiency.
 
         .. math::
             NSE = 1-\\frac{\\sum_{i=1}^{N}(e_{i}-s_{i})^2}{\\sum_{i=1}^{N}(e_{i}-\\bar{e})^2}
@@ -283,8 +282,7 @@ class DataFitSurrogateModel(Model):
 
     @staticmethod
     def _get_data_set(iterator):
-        """
-        Get input and output from iterator
+        """Get input and output from iterator.
 
         Args:
             iterator (pqueens.iterators.Iterator): iterator where to get input and output from
@@ -292,7 +290,6 @@ class DataFitSurrogateModel(Model):
         Returns:
             x (ndarray): input (samples)
             y (ndarray): output (response)
-
         """
         if hasattr(iterator, 'samples'):
             x = iterator.samples
@@ -316,8 +313,7 @@ class DataFitSurrogateModel(Model):
     def _setup_testing_iterator(
         cls, testing_iterator_name, config, model_options, subordinate_model
     ):
-        """
-        Set up the testing iterator
+        """Set up the testing iterator.
 
         Args:
             config (dict): dictionary containing problem description
@@ -328,7 +324,6 @@ class DataFitSurrogateModel(Model):
         Returns:
             testing_iterator (iterator): testing iterator
             nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
-
         """
         if testing_iterator_name:
             testing_iterator = Iterator.from_config_create_iterator(

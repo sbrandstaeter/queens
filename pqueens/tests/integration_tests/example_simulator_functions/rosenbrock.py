@@ -1,5 +1,5 @@
 def rosenbrock(x1, x2):
-    """ Rosenbrocks banana function
+    """Rosenbrocks banana function.
 
     Args:
         x1 (float):  Input one
@@ -15,7 +15,7 @@ def rosenbrock(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to Rosenbrock Banana function
+    """Interface to Rosenbrock Banana function.
 
     Args:
         job_id (int):   ID of job

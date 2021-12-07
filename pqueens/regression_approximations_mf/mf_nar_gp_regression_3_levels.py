@@ -1,9 +1,10 @@
-import numpy as np
 import GPy
+import numpy as np
 
 
 class MF_NAR_GP_Regression_3_Levels(object):
-    """ Class for creating multi-fidelity nonlinear auto-regressive GP based emulator
+    """Class for creating multi-fidelity nonlinear auto-regressive GP based
+    emulator.
 
         This class constructs a multi fidelity GP emulator, using nonlinear
         information fusion algorihtm described in [1] with three levels.
@@ -23,13 +24,11 @@ class MF_NAR_GP_Regression_3_Levels(object):
         m1 (GPy.model):                 GPy based Gaussian process model
         m2 (GPy.model):                 GPy based Gaussian process model
         m3 (GPy.model):                 GPy based Gaussian process model
-
-
     """
 
     @classmethod
     def from_options(cls, approx_options, Xtrain, ytrain):
-        """ Create approxiamtion from options dictionary
+        """Create approxiamtion from options dictionary.
 
         Args:
             approx_options (dict): Dictionary with approximation options
@@ -159,7 +158,7 @@ class MF_NAR_GP_Regression_3_Levels(object):
         self.m3.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
 
     def predict(self, x_test):
-        """ Compute latent function at x_test
+        """Compute latent function at x_test.
 
         Args:
             x_test (np.array): Inputs at which to evaluate latent function f
@@ -178,14 +177,13 @@ class MF_NAR_GP_Regression_3_Levels(object):
         return output
 
     def predict_f(self, x_test):
-        """ Compute the mean and variance of the latent function at x_test
+        """Compute the mean and variance of the latent function at x_test.
 
         Args:
             x_test (np.array): Inputs at which to evaluate latent function f
 
         Returns:
             np.array, np.array: mean and varaince of latent function at Xnew
-
         """
 
         dim_x = x_test.shape[1]
@@ -235,13 +233,13 @@ class MF_NAR_GP_Regression_3_Levels(object):
         # return mean_x_test, var_x_test
 
     def predict_f_samples(self, Xnew, num_samples):
-        """ Produce samples from the posterior latent funtion Xnew
+        """Produce samples from the posterior latent funtion Xnew.
 
-            Args:
-                Xnew (np.array):    Inputs at which to evaluate latent function f
-                num_samples (int):  Number of posterior field_realizations of GP
+        Args:
+            Xnew (np.array):    Inputs at which to evaluate latent function f
+            num_samples (int):  Number of posterior field_realizations of GP
 
-            Returns:
-                np.array: samples of latent function at Xnew
+        Returns:
+            np.array: samples of latent function at Xnew
         """
         raise NotImplementedError

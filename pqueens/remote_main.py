@@ -1,34 +1,33 @@
-"""
-This file contains the high-level control routine for remote computations.
+"""This file contains the high-level control routine for remote computations.
 
-Remote computation means the evaluation of the forward model in a detached process (from the main
-QUEENS run). The detached process can run on the same machine as the main run or on a different,
-remote machine (e.g., a computing cluster). Additionally, it may also be wrapped in a singularity
-image.
+Remote computation means the evaluation of the forward model in a
+detached process (from the main QUEENS run). The detached process can
+run on the same machine as the main run or on a different, remote
+machine (e.g., a computing cluster). Additionally, it may also be
+wrapped in a singularity image.
 """
 
 import argparse
+import logging
 import os
+import sys
 from collections import OrderedDict
+
+import pqueens.database.database as DB_module
+from pqueens.drivers.driver import Driver
+from pqueens.utils.manage_singularity import hash_files
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-import sys
-
-from pqueens.drivers.driver import Driver
-from pqueens.utils.manage_singularity import hash_files
-import logging
-import pqueens.database.database as DB_module
 
 _logger = logging.getLogger(__name__)
 
 
 def main(args):
-    """
-    Main function for remote forward model evaluation.
+    """Main function for remote forward model evaluation.
 
     Control routine for the forward model evaluation in an independent, detached process, i.e.,
     remote.

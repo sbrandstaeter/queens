@@ -1,15 +1,16 @@
-'''
-Created on November 20th  2017
-@author: jbi
+"""Created on November 20th  2017.
 
-'''
+@author: jbi
+"""
 import unittest
+
 import numpy as np
 import pytest
+
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
+from pqueens.iterators.saltelli_salib_wrapper_iterator import SaltelliSALibIterator
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.variables.variables import Variables
-from pqueens.iterators.saltelli_salib_wrapper_iterator import SaltelliSALibIterator
 
 
 class TestSASaltelliSALib(unittest.TestCase):
@@ -53,7 +54,7 @@ class TestSASaltelliSALib(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_correct_sampling(self):
-        """ Test if scaling works correctly """
+        """Test if scaling works correctly."""
         self.my_iterator.pre_run()
 
         # asser that samples match
@@ -93,8 +94,8 @@ class TestSASaltelliSALib(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_correct_sensitivity_indices(self):
-        """ Test if we get error when the number os distributions doas not match
-            the number of parameters """
+        """Test if we get error when the number os distributions doas not match
+        the number of parameters."""
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
         si = self.my_iterator.sensitivity_indices
@@ -232,7 +233,7 @@ class TestSASaltelliBorehole(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_correct_sampling(self):
-        """ Test if scaling works correctly """
+        """Test if scaling works correctly."""
         self.my_iterator.pre_run()
 
         # asser that samples matc
@@ -548,8 +549,8 @@ class TestSASaltelliBorehole(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_correct_sensitivity_indices(self):
-        """ Test if we get error when the number of distributions does not match
-            the number of parameters """
+        """Test if we get error when the number of distributions does not match
+        the number of parameters."""
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
         si = self.my_iterator.sensitivity_indices

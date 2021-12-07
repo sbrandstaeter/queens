@@ -9,11 +9,10 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_sobol_saltelli_2nd_order(inputdir, tmpdir):
-    """
-    Test saltelli iterator with Sobol G function.
+    """Test saltelli iterator with Sobol G function.
 
-    Including first, second and total order indices.
-    The test should converge to the analytical solution defined in the Sobol G function
+    Including first, second and total order indices. The test should
+    converge to the analytical solution defined in the Sobol G function
     implementaion (see sobol.py).
     """
     arguments = [

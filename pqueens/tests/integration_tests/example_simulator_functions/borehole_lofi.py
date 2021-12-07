@@ -2,7 +2,7 @@ import numpy as np
 
 
 def borehole_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
-    """ Low-fidelity version of Borehole benchmark function
+    """Low-fidelity version of Borehole benchmark function.
 
     Very simple and quick to evaluate eight dimensional function that models
     water flow through a borehole. Frequently used function for testing a wide
@@ -57,7 +57,7 @@ def borehole_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
 
 
 def main(job_id, params):
-    """ Interface to low-fidelity borehole function
+    """Interface to low-fidelity borehole function.
 
     Args:
         job_id (int):  ID of job

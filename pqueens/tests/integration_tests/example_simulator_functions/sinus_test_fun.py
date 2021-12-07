@@ -2,14 +2,13 @@ import numpy as np
 
 
 def sinus_test_fun(x1):
-    """ A standard sinus as a test function
+    """A standard sinus as a test function.
 
     Args:
         x1 (float): Input of the sinus in RAD
 
     Returns:
         float: Value of the sinus function
-
     """
 
     result = np.sin(x1)
@@ -18,7 +17,7 @@ def sinus_test_fun(x1):
 
 
 def main(job_id, params):
-    """ Interface to sinus test function
+    """Interface to sinus test function.
 
     Args:
         job_id (int):  ID of job

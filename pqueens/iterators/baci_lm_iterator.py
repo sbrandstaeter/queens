@@ -1,5 +1,6 @@
-import numpy as np
 import os
+
+import numpy as np
 import pandas as pd
 import plotly.express as px
 
@@ -9,14 +10,12 @@ from pqueens.utils.fd_jacobian import fd_jacobian
 
 
 class BaciLMIterator(Iterator):
-    """
-    Iterator for deterministic optimization problems
+    """Iterator for deterministic optimization problems.
 
     Levenberg Marquardt iterator in the style of baci "gen_inv_analysis"
 
     parts of this class are boldly stolen from optimization_iterator
     we need to take control in the details, although it is less flexible it is far more simple
-
     """
 
     def __init__(
@@ -56,8 +55,7 @@ class BaciLMIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """
-        Create Levenberg Marquardt iterator from problem description
+        """Create Levenberg Marquardt iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -121,14 +119,13 @@ class BaciLMIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate model at current point. """
+        """Evaluate model at current point."""
 
         result_dict = self.model.evaluate()
         return result_dict
 
     def residual(self, x0):
-        """
-        Evaluate objective function at x0.
+        """Evaluate objective function at x0.
 
         Args:
             x0 (numpy.ndarray): vector with current parameters
@@ -156,9 +153,8 @@ class BaciLMIterator(Iterator):
         return f0
 
     def jacobian(self, x0):
-        """
-        Evaluate Jacobian of objective function at x0.
-        For BACI LM we can restrict to "2-point"
+        """Evaluate Jacobian of objective function at x0. For BACI LM we can
+        restrict to "2-point".
 
         Args:
             x0 (numpy.ndarray): vector with current parameters
@@ -197,8 +193,8 @@ class BaciLMIterator(Iterator):
         return J
 
     def initialize_run(self):
-        """
-        Print console output and optionally open .csv file for results and write header.
+        """Print console output and optionally open .csv file for results and
+        write header.
 
         Args:
             none
@@ -225,8 +221,7 @@ class BaciLMIterator(Iterator):
                     df.to_csv(f, sep='\t', index=None)
 
     def core_run(self):
-        """
-        Core run of Levenberg Marquardt iterator
+        """Core run of Levenberg Marquardt iterator.
 
         Args:
             none
@@ -323,8 +318,8 @@ class BaciLMIterator(Iterator):
         self.solution = self.param_opt
 
     def post_run(self):
-        """
-        Write solution to console and optionally create .html plot from result file.
+        """Write solution to console and optionally create .html plot from
+        result file.
 
         Args:
             none
@@ -403,8 +398,7 @@ class BaciLMIterator(Iterator):
 
     def get_positions_raw_2pointperturb(self, x0):
 
-        """
-        Get parameter sets for objective function evaluations.
+        """Get parameter sets for objective function evaluations.
 
         Args:
             x0 (numpy.ndarray): vector with current parameters
@@ -435,9 +429,8 @@ class BaciLMIterator(Iterator):
 
     def printstep(self, i, resnorm, gradnorm, param_delta):
 
-        """
-        Print iteration data to console and optionally to file.
-        Opens file in append mode, so that file is updated frequently.
+        """Print iteration data to console and optionally to file. Opens file
+        in append mode, so that file is updated frequently.
 
         Args:
             i (int): iteration number
@@ -473,8 +466,8 @@ class BaciLMIterator(Iterator):
 
     def checkbounds(self, param_delta, i):
 
-        """
-        check if proposed step is in bounds, otherwise double regularization and compute new step
+        """check if proposed step is in bounds, otherwise double regularization
+        and compute new step.
 
         Args:
             param_delta (numpy.ndarray): parameter step

@@ -1,12 +1,11 @@
-"""
-Gradner2014a function is a two dimensional benchmark function for constraint Bayesian optimization.
-"""
+"""Gradner2014a function is a two dimensional benchmark function for constraint
+Bayesian optimization."""
 import numpy as np
 
 
 def gardner2014a(x1, x2):
-    """ Gradner2014a function:
-    Two dimensional benchmark function for constraint Bayesian optimization [1]
+    """Gradner2014a function: Two dimensional benchmark function for constraint
+    Bayesian optimization [1]
 
     :math:`f({\\bf x}) = \\cos(2x_1)\\cos(x_2)+ \\sin(x_1)`
 
@@ -42,7 +41,7 @@ def gardner2014a(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to ma function
+    """Interface to ma function.
 
     Args:
         job_id (int):  ID of job

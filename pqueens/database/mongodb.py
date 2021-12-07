@@ -5,12 +5,13 @@ import numpy as np
 import pandas as pd
 import pymongo
 import xarray as xr
+from pymongo import MongoClient
+
+from pqueens.utils.decorators import safe_mongodb_operation
 from pqueens.utils.restructure_data_format import (
     convert_nested_data_to_db_dict,
     convert_nested_db_dicts_to_lists_or_arrays,
 )
-from pqueens.utils.decorators import safe_mongodb_operation
-from pymongo import MongoClient
 
 from .database import Database
 
@@ -19,8 +20,7 @@ COMPRESS_TYPE = 'compressed array'
 
 
 class MongoDB(Database):
-    """
-    MongoDB based database to store data of computer experiments.
+    """MongoDB based database to store data of computer experiments.
 
     Attributes:
         db_name (str): Name of the current database
@@ -34,7 +34,6 @@ class MongoDB(Database):
         max_number_of_attempts (int): Max number of attempts to perform a db action
     Returns:
         MongoDB (obj): Instance of MongoDB class
-
     """
 
     def __init__(
@@ -60,8 +59,7 @@ class MongoDB(Database):
 
     @classmethod
     def from_config_create_database(cls, config):
-        """
-        Create Mongo database object from problem description
+        """Create Mongo database object from problem description.
 
         Args:
             config (dict): Dictionary containing the problem description of the current QUEENS
@@ -69,7 +67,6 @@ class MongoDB(Database):
 
         Returns:
             MongoDB (obj): Instance of MongoDB class
-
         """
 
         db_name = config['database'].get('name')
@@ -113,9 +110,7 @@ class MongoDB(Database):
         )
 
     def _connect(self):
-        """
-        (Trying to) connect to the database
-        """
+        """(Trying to) connect to the database."""
 
         # Construct the Mongodb client
         self.mongo_client = MongoClient(
@@ -131,15 +126,12 @@ class MongoDB(Database):
         _logger.info(f"Connected to {self.db_address}")
 
     def _disconnect(self):
-        """
-        MongoDB automatically closed connections so that there is not need to close the connection
-        """
+        """MongoDB automatically closed connections so that there is not need
+        to close the connection."""
         _logger.info(f"Disconnected the database")
 
     def _clean_database(self):
-        """
-        If desired reset the current database
-        """
+        """If desired reset the current database."""
 
         # get list of all existing databases
         complete_db_list = self.mongo_client.list_database_names()
@@ -155,20 +147,19 @@ class MongoDB(Database):
         self.db_list = complete_db_list
 
     def _delete_database(self, db_name):
-        """
-        Remove database from the database server 
+        """Remove database from the database server.
 
-        Args: 
+        Args:
             db_name (str): database name to be deleted
         """
         self.mongo_client.drop_database(db_name)
         _logger.info(f"{db_name} was dropped")
 
     def _delete_databases_by_prefix(self, prefix):
-        """
-        Remove databases from the database server of which the name starts with the prefix 
+        """Remove databases from the database server of which the name starts
+        with the prefix.
 
-        Args: 
+        Args:
             prefix (str): Databases with this prefix in the name are deleted
         """
 
@@ -185,7 +176,7 @@ class MongoDB(Database):
 
     @safe_mongodb_operation
     def save(self, save_doc, experiment_name, experiment_field, batch, field_filters={}):
-        """ Save a document to the database.
+        """Save a document to the database.
 
         Any numpy arrays in the document are compressed so that they can be
         saved to MongoDB. field_filters must return at most one document,
@@ -219,8 +210,7 @@ class MongoDB(Database):
 
     @safe_mongodb_operation
     def count_documents(self, experiment_name, batch, experiment_field, field_filters={}):
-        """
-        Return number of document(s) in collection
+        """Return number of document(s) in collection.
 
         Args:
             experiment_name (string):  experiment the data belongs to
@@ -240,7 +230,7 @@ class MongoDB(Database):
 
     @safe_mongodb_operation
     def estimated_count(self, experiment_name, batch, experiment_field):
-        """ Return estimated count of document(s) in collection
+        """Return estimated count of document(s) in collection.
 
         This is very fast but not 100% safe.
         Args:
@@ -261,7 +251,7 @@ class MongoDB(Database):
 
     @safe_mongodb_operation
     def load(self, experiment_name, batch, experiment_field, field_filters=None):
-        """ Load document(s) from the database
+        """Load document(s) from the database.
 
         Decompresses any numpy arrays
 
@@ -293,7 +283,7 @@ class MongoDB(Database):
 
     @safe_mongodb_operation
     def remove(self, experiment_name, experiment_field, batch, field_filters={}):
-        """ Remove a list of documents from the database
+        """Remove a list of documents from the database.
 
         Args:
             experiment_name (string):  experiment the data belongs to
@@ -301,12 +291,11 @@ class MongoDB(Database):
             batch (string):            batch the data belongs to
             field_filters (dict):      filter to find appropriate document(s)
                                        to delete
-         """
+        """
         self.db_obj[experiment_name][batch][experiment_field].delete_many(field_filters)
 
     def _pack_labeled_data(self, save_doc):
-        """
-        Pack labeled data (e.g. pandas DataFrame or xarrays) for database
+        """Pack labeled data (e.g. pandas DataFrame or xarrays) for database.
 
         Args:
               save_doc (dict): dictionary to be saved to database
@@ -321,8 +310,7 @@ class MongoDB(Database):
 
     @staticmethod
     def _pack_pandas_dataframe(save_doc):
-        """
-        Pack pandas DataFrame for database
+        """Pack pandas DataFrame for database.
 
         - reset index to recover the index in the unpacking method
         - convert DataFrame to mongodb compatible data type
@@ -344,8 +332,8 @@ class MongoDB(Database):
         save_doc['result'] = result.tolist()
 
     def _unpack_labeled_data(self, dbdocs):
-        """
-        Unpack data from database to labeled data format (e.g. pandas DataFrame or xarrays)
+        """Unpack data from database to labeled data format (e.g. pandas
+        DataFrame or xarrays)
 
         Args:
             dbdocs (list): documents from database
@@ -361,8 +349,7 @@ class MongoDB(Database):
 
     @staticmethod
     def _split_output(result):
-        """"
-        Split output into (multi-)index and data
+        """" Split output into (multi-)index and data.
 
         Args:
             result (list): result as list with first row = header
@@ -391,8 +378,8 @@ class MongoDB(Database):
         return data, index
 
     def __str__(self):
-        """
-        Internal python function which creates a string describing the MongoDB object.
+        """Internal python function which creates a string describing the
+        MongoDB object.
 
         Is usefull for debugging
 

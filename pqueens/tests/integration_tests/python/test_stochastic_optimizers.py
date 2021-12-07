@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from pqueens.utils.stochastic_optimizer import StochasticOptimizer
 
 
@@ -96,4 +97,3 @@ def rmsprop_optimizer():
 
 def gradient(x):
     return -2 * (x - 0.5).reshape(-1, 1)
-

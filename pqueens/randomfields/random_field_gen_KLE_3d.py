@@ -6,9 +6,7 @@ from pqueens.randomfields.random_field_gen_KLE import RandomFieldGenKLE
 
 
 class RandomFieldGenKLE3D(RandomFieldGenKLE):
-    """Generator for 3d random fields based on KLE expansion
-
-    """
+    """Generator for 3d random fields based on KLE expansion."""
 
     def __init__(
         self,
@@ -103,7 +101,7 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         self.act_energy_frac = retained_energy
 
     def gen_sample_gauss_field(self, loc, phase_angles):
-        """ Generate sample of standard Gaussian field
+        """Generate sample of standard Gaussian field.
 
         Compute realization of standard Gaussian field based on passed phase
         angles phase_angles and location

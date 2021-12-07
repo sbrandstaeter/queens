@@ -1,17 +1,16 @@
-"""
-Collection of utility functions and classes for Markov Chain Monte Carlo algorithms
-"""
+"""Collection of utility functions and classes for Markov Chain Monte Carlo
+algorithms."""
 
 import abc
-import numpy as np
-import scipy.linalg
-import scipy.stats
+
 import autograd.numpy as np
 import numpy as npy
+import scipy.linalg
+import scipy.stats
 
 
 class ProposalDistribution:
-    """ Base class for continuous probability distributions. """
+    """Base class for continuous probability distributions."""
 
     def __init__(self, mean, covariance, dimension):
         # TODO this base class is not general enough
@@ -21,41 +20,32 @@ class ProposalDistribution:
 
     @abc.abstractmethod
     def cdf(self, x):
-        """
-        Evaluate the cummulative distribution function (cdf).
-        """
+        """Evaluate the cummulative distribution function (cdf)."""
         pass
 
     @abc.abstractmethod
     def draw(self, num_draws=1):
-        """ Draw num_draws samples from distribution. """
+        """Draw num_draws samples from distribution."""
         pass
 
     @abc.abstractmethod
     def logpdf(self, x):
-        """
-        Evaluate the natural logarithm of the pdf at sample.
-        """
+        """Evaluate the natural logarithm of the pdf at sample."""
         pass
 
     @abc.abstractmethod
     def pdf(self, x):
-        """
-        Evaluate the probability density function (pdf) at sample.
-        """
+        """Evaluate the probability density function (pdf) at sample."""
         pass
 
     @abc.abstractmethod
     def ppf(self, x):
-        """
-        Evaluate the ppf, i.e. the inverse of the cdf.
-        """
+        """Evaluate the ppf, i.e. the inverse of the cdf."""
         pass
 
 
 class Uniform(ProposalDistribution):
-    """
-    Uniform distribution.
+    """Uniform distribution.
 
     On the interval [a, b)
     """
@@ -82,9 +72,7 @@ class Uniform(ProposalDistribution):
         return scipy.stats.uniform.cdf(x, loc=self.a, scale=self.width)
 
     def draw(self, num_draws=1):
-        """
-        Return ndarray of shape num_draws with samples between [a, b).
-        """
+        """Return ndarray of shape num_draws with samples between [a, b)."""
 
         return npy.random.uniform(low=self.a, high=self.b, size=num_draws)
 
@@ -107,8 +95,7 @@ class Uniform(ProposalDistribution):
 
 
 class LogNormal(ProposalDistribution):
-    """
-    Lognormal distribution.
+    """Lognormal distribution.
 
     mu and sigma are the parameters (mean and standard deviation) of the
     underlying normal distribution.
@@ -153,7 +140,7 @@ class LogNormal(ProposalDistribution):
 
 
 class NormalProposal(ProposalDistribution):
-    """ Normal distribution. """
+    """Normal distribution."""
 
     def __init__(self, mean, covariance):
 
@@ -297,7 +284,7 @@ class BetaDistribution(ProposalDistribution):
 
 
 def create_proposal_distribution(distribution_options):
-    """ Create proposal distribution object from parameter dictionary
+    """Create proposal distribution object from parameter dictionary.
 
     Args:
         distribution_options (dict): Dictionary containing parameters
@@ -335,7 +322,7 @@ def create_proposal_distribution(distribution_options):
 
 
 def mh_select(log_acceptance_probability, current_sample, proposed_sample):
-    """Do Metropolis Hastings selection"""
+    """Do Metropolis Hastings selection."""
 
     isfinite = npy.isfinite(log_acceptance_probability)
     accept = (
@@ -351,8 +338,7 @@ def mh_select(log_acceptance_probability, current_sample, proposed_sample):
 
 
 def tune_scale_covariance(scale_covariance, accept_rate):
-    """
-    Tune the acceptance rate according to the last tuning interval
+    """Tune the acceptance rate according to the last tuning interval.
 
     The goal is an acceptance rate within 20\% - 50\%.
     The (acceptance) rate is adapted according to the following rule:

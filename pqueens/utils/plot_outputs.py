@@ -1,18 +1,16 @@
-"""
-Collection of plotting capabilities for probability distributions.
-"""
+"""Collection of plotting capabilities for probability distributions."""
 
 import plotly
 import plotly.graph_objs as go
 
 
 def plot_pdf(pdf_estimate, support_points, bayes=False):
-    """ Create pdf plot based on passed data
+    """Create pdf plot based on passed data.
 
-        Args:
-            pdf_estimate   (dict):      Estimate of pdf at supporting points
-            support_points (np.array):  Supporting points
-            bayes (bool):               Do we want to plot confidence intervals
+    Args:
+        pdf_estimate   (dict):      Estimate of pdf at supporting points
+        support_points (np.array):  Supporting points
+        bayes (bool):               Do we want to plot confidence intervals
     """
     mean_pdf = go.Scatter(
         x=support_points, y=pdf_estimate["mean"], mode='markers+lines', name='Mean'
@@ -45,12 +43,12 @@ def plot_pdf(pdf_estimate, support_points, bayes=False):
 
 
 def plot_cdf(cdf_estimate, support_points, bayes=False):
-    """ Create cdf plot based on passed data
+    """Create cdf plot based on passed data.
 
-        Args:
-            cdf_estimate   (dict):      Estimate of cdf at supporting points
-            support_points (np.array):  Supporting points
-            bayes (bool):               Do we want to plot confidence intervals
+    Args:
+        cdf_estimate   (dict):      Estimate of cdf at supporting points
+        support_points (np.array):  Supporting points
+        bayes (bool):               Do we want to plot confidence intervals
     """
     # Create a trace
     mean_cdf = go.Scatter(
@@ -94,11 +92,11 @@ def plot_cdf(cdf_estimate, support_points, bayes=False):
 
 
 def plot_icdf(icdf_estimate, bayes=False):
-    """ Create icdf plot based on passed data
+    """Create icdf plot based on passed data.
 
-        Args:
-            icdf_estimate   (dict):      Estimate of icdf at supporting points
-            bayes (bool):                Do we want to plot confidence intervals
+    Args:
+        icdf_estimate   (dict):      Estimate of icdf at supporting points
+        bayes (bool):                Do we want to plot confidence intervals
     """
     # Create a trace
     my_percentiles = icdf_estimate["x"]
@@ -133,13 +131,10 @@ def plot_icdf(icdf_estimate, bayes=False):
     plotly.offline.plot(fig, filename='ICDF.html', auto_open=True)
 
 
-def plot_failprob(failprob_estimate, failure_threshold, bayes=False):
-    """ Create failure probability plot based on passed data
+def plot_failprob(bayes=False):
+    """Create failure probability plot based on passed data.
 
-        Args:
-            failprob_estimate   (dict):    Estimate of failprob_estimate for
-                                           failure thresholds
-            failure_threshold (np.array):  Failure thresholds
-            bayes (bool):                  Do we want to plot confidence intervals
+    Args:
+        bayes (bool):                  Do we want to plot confidence intervals
     """
     raise NotImplementedError

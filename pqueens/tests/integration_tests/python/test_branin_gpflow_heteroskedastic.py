@@ -1,5 +1,6 @@
 import os
 import pickle
+
 import numpy as np
 import pytest
 
@@ -8,7 +9,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_branin_gpflow_heteroskedastic(inputdir, tmpdir, expected_mean, expected_var):
-    """ Test case for GPflow based heteroskedastic model """
+    """Test case for GPflow based heteroskedastic model."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'branin_gp_heteroskedastic_surrogate.json'),
         '--output=' + str(tmpdir),
