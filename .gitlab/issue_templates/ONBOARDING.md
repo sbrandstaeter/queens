@@ -50,8 +50,7 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 Tick the box as soon as a task is completed (either by inserting an "x" in edit mode or clicking on it in view mode).
 -->
 - [ ] Add new team member to the QUEENS gitlab groups 
-    - "QUEENS_collaborators": Members that are mainly users of QUEENS but do not actively contribute to the code base.
-    - "QUEENS_developers": Members that actively develop in QUEENS and intend to contribute to the core framework over longer time periods. (Students should not be part of this group!)
+    - "QUEENS_contributers": Members that are interested in contributing to QUEENS (students should not be part of this group!)
     - "QUEENS_maintainers": Maintainers of the QUEENS project. Maintainers contribute to the code on a regular basis and manage the software planning (merge requests, issue handling.). Every maintainer is automatically also in the group "QUEENS_developers"
     - "students": Group that contains all students that are currently using QUEENS and contributing to QUEENS
 - [ ] Assign and @mention an experienced "QUEENS buddy" to help with git, the first issue, first commit, ...
@@ -61,4 +60,4 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 <!---
 If there's anyone particular you think should be notified, feel free to @mention them here.
 -->
-@queens_community/QUEENS_developer, @queens_community/QUEENS_maintainer
+@queens_community/QUEENS_contributers, @queens_community/QUEENS_maintainer
