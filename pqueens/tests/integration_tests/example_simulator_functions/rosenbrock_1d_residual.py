@@ -1,9 +1,10 @@
-from pqueens.tests.integration_tests.example_simulator_functions.rosenbrock_residual \
-    import rosenbrock_residual
+from pqueens.tests.integration_tests.example_simulator_functions.rosenbrock_residual import (
+    rosenbrock_residual,
+)
 
 
 def main(job_id, params):
-    """ Interface to Residuals of Rosenbrock banana function
+    """Interface to Residuals of Rosenbrock banana function.
 
     Args:
         job_id (int):   ID of job

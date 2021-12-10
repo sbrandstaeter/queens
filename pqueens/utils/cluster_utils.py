@@ -1,7 +1,6 @@
 def get_cluster_job_id(scheduler_type, output_str_cluster):
-    """
-    Helper function to retrieve job_id information after
-    submitting a job to the job scheduling software
+    """Helper function to retrieve job_id information after submitting a job to
+    the job scheduling software.
 
     Args:
         scheduler_type (str): Type of cluster scheduler
@@ -9,7 +8,6 @@ def get_cluster_job_id(scheduler_type, output_str_cluster):
 
     Returns:
          job_id_return (str/None): job ID return value
-
     """
     if output_str_cluster:
         if scheduler_type == 'pbs':

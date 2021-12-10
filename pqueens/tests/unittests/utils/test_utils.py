@@ -1,16 +1,15 @@
-'''
-Created on January 18th  2018
-@author: jbi
+"""Created on January 18th  2018.
 
-'''
-import mock
+@author: jbi
+"""
 import unittest
+
+import mock
 import numpy as np
 import pytest
 from sklearn.neighbors import KernelDensity
-from pqueens.utils.pdf_estimation import estimate_bandwidth_for_kde
-from pqueens.utils.pdf_estimation import estimate_pdf
 
+from pqueens.utils.pdf_estimation import estimate_bandwidth_for_kde, estimate_pdf
 
 # class TestInjector(unittest.TestCase):
 #     def setUp(self):

@@ -2,8 +2,7 @@ import numpy as np
 
 
 def parabula_residual(x1):
-    """
-    Residual formulation of a parabula
+    """Residual formulation of a parabula.
 
     Args:
         x1 (float):  Input one
@@ -18,7 +17,7 @@ def parabula_residual(x1):
 
 
 def main(job_id, params):
-    """ Interface to Residuals of Rosenbrock banana function
+    """Interface to Residuals of Rosenbrock banana function.
 
     Args:
         job_id (int):   ID of job

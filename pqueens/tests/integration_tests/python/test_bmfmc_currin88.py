@@ -1,18 +1,20 @@
-import pytest
-import pickle
-import numpy as np
 import os
-from pqueens.utils import injector
+import pickle
+
+import numpy as np
+import pytest
+from scipy.stats import entropy
+
 import pqueens.utils.pdf_estimation as est
 from pqueens.main import main
-from scipy.stats import entropy
-from pqueens.utils.process_outputs import write_results
-from pqueens.tests.integration_tests.example_simulator_functions.currin88_lofi import (
-    main as currin88_lofi,
-)
 from pqueens.tests.integration_tests.example_simulator_functions.currin88_hifi import (
     main as currin88_hifi,
 )
+from pqueens.tests.integration_tests.example_simulator_functions.currin88_lofi import (
+    main as currin88_lofi,
+)
+from pqueens.utils import injector
+from pqueens.utils.process_outputs import write_results
 
 
 # ---- fixtures ----------------------------------------------------------------
@@ -99,7 +101,8 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     generate_LF_MC_data,
     design_method,
 ):
-    """ Integration tests for the BMFMC routine based on the HF and LF currin88 function"""
+    """Integration tests for the BMFMC routine based on the HF and LF currin88
+    function."""
     # generate json input file from template
     template = os.path.join(inputdir, 'bmfmc_currin88_template.json')
     plot_dir = tmpdir

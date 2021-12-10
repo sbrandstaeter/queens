@@ -1,5 +1,4 @@
-"""
-Uniform circumferential Growth and Remodelling of a homogeneous vessel
+"""Uniform circumferential Growth and Remodelling of a homogeneous vessel.
 
 see Chapter 6.2 of [1].
 In particular equations (78) + (80) with (79)
@@ -9,7 +8,6 @@ References:
     ‘Vascular homeostasis and the concept of mechanobiological stability’,
     International Journal of Engineering Science, 85, pp. 203–223.
     doi: 10.1016/j.ijengsci.2014.08.003.
-
 """
 
 import numpy as np
@@ -131,7 +129,8 @@ def neo_hooke_elastic_modulus_cir(lambda_phi, lambda_r, mu, rho=1.0):
 
 
 class UniformCircumferentialGrowthAndRemodellingParams:
-    """ Collection of a full parameter set for UniformCircumferentialGrowthAndRemodelling Model.
+    """Collection of a full parameter set for
+    UniformCircumferentialGrowthAndRemodelling Model.
 
      Units of the parameters should be:
      - length [m]
@@ -300,12 +299,12 @@ class UniformCircumferentialGrowthAndRemodellingParams:
             )
 
     def homeostatic_thickness(self):
-        """Return initial, homeostatic thickness of wall based on Laplace Law. """
+        """Return initial, homeostatic thickness of wall based on Laplace
+        Law."""
         return self.mean_pressure * self.r0 / (self.Phi.dot(self.Sigma_cir))
 
     def stab_margin(self):
-        """
-        Return stability margin.
+        """Return stability margin.
 
         see eq. (79) in [1]
         """
@@ -322,8 +321,7 @@ class UniformCircumferentialGrowthAndRemodellingParams:
 
 
 class UniformCircumferentialGrowthAndRemodelling:
-    """
-    Uniform circumferential growth and remodelling of a homogeneous vessel.
+    """Uniform circumferential growth and remodelling of a homogeneous vessel.
 
     see Chapter 6.2 of [1].
     In particular equations (78) + (80) with (79)
@@ -343,8 +341,7 @@ class UniformCircumferentialGrowthAndRemodelling:
         self.params = UniformCircumferentialGrowthAndRemodellingParams(primary=primary, **kwargs)
 
     def de_r(self, t):
-        """
-        Return engineering strain of radius de_r at time t.
+        """Return engineering strain of radius de_r at time t.
 
         see eq. (3) with (78) + (79) in [1]
         """
@@ -361,13 +358,11 @@ class UniformCircumferentialGrowthAndRemodelling:
         return np.squeeze(de_r)
 
     def dr(self, t):
-        """
-        Return radial displacement dr at time t.
-        """
+        """Return radial displacement dr at time t."""
 
         return self.de_r(t) * self.params.r0
 
     def radius(self, t):
-        """ Return current radius at time t. """
+        """Return current radius at time t."""
         r = self.dr(t) + self.params.r0
         return np.squeeze(r)

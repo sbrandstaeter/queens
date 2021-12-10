@@ -1,13 +1,15 @@
 import numpy as np
-import pqueens.utils.pdf_estimation as est
-from pqueens.iterators.data_iterator import DataIterator
-from pqueens.interfaces.bmfmc_interface import BmfmcInterface
-from .model import Model
 import scipy.stats as st
-from pqueens.variables.variables import Variables
 from sklearn.preprocessing import StandardScaler
-import pqueens.visualization.bmfmc_visualization as qvis
 from tqdm import tqdm
+
+import pqueens.utils.pdf_estimation as est
+import pqueens.visualization.bmfmc_visualization as qvis
+from pqueens.interfaces.bmfmc_interface import BmfmcInterface
+from pqueens.iterators.data_iterator import DataIterator
+from pqueens.variables.variables import Variables
+
+from .model import Model
 
 
 class BMFMCModel(Model):
@@ -182,8 +184,8 @@ class BMFMCModel(Model):
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
-        """
-        Create a BMFMC model from a problem description defined in the input file of QUEENS
+        """Create a BMFMC model from a problem description defined in the input
+        file of QUEENS.
 
         Args:
             config (dict): Dictionary containing the problem description and created from the
@@ -244,9 +246,9 @@ class BMFMCModel(Model):
         )
 
     def evaluate(self):
-        """
-        Construct the probabilistic mapping between HF model and LF features and evaluate the
-        BMFMC routine. This evaluation consists of two steps.:
+        """Construct the probabilistic mapping between HF model and LF features
+        and evaluate the BMFMC routine. This evaluation consists of two steps.:
+
             #. Evaluate the probabilistic mapping for LF Monte Carlo Points and the LF training
                points
             #. Use the previous result to actually evaluate the BMFMC posterior statistics
@@ -274,7 +276,6 @@ class BMFMCModel(Model):
                                             HF}(X)`
                            *  "X_train": Corresponding input for the simulations that are used to
                                          train the probabilistic mapping
-
         """
         p_yhf_mean_BMFMC = None
         p_yhf_var_BMFMC = None
@@ -307,12 +308,10 @@ class BMFMCModel(Model):
         return output
 
     def run_BMFMC(self):
-        """
-        Run BMFMC (with additional informative features.)
+        """Run BMFMC (with additional informative features.)
 
         Returns:
             None
-
         """
         # construct the probabilistic mapping between y_HF and LF features z_LF
         self.build_approximation(approx_case=True)
@@ -326,13 +325,12 @@ class BMFMCModel(Model):
         self.compute_pyhf_statistics()
 
     def run_BMFMC_without_features(self):
-        """
-        Run BMFMC without further informative LF features (mostly for comparison)
+        """Run BMFMC without further informative LF features (mostly for
+        comparison)
 
         Returns:
             p_yhf_mean_BMFMC (np.array): Posterior mean function of the HF output density
             p_yhf_var_BMFMC (np.array): Posterior variance function of the HF output density
-
         """
         # construct the probabilistic mapping between y_HF and y_LF
         self.build_approximation(approx_case=False)
@@ -349,9 +347,9 @@ class BMFMCModel(Model):
         return p_yhf_mean_BMFMC, p_yhf_var_BMFMC
 
     def load_sampling_data(self):
-        """
-        Load the low-fidelity sampling data from a pickle file into QUEENS.
-        Check if high-fidelity benchmark data is available and load this as well.
+        """Load the low-fidelity sampling data from a pickle file into QUEENS.
+        Check if high-fidelity benchmark data is available and load this as
+        well.
 
         Returns:
             None
@@ -395,14 +393,13 @@ class BMFMCModel(Model):
                 )
 
     def get_hf_training_data(self):
-        """
-        Given the low-fidelity sampling data and the optimal training input :math:`X`, either
-        simulate the high-fidelity response for :math:`X` or load the corresponding high-fidelity
-        response from the high-fidelity benchmark data provided by a pickle file.
+        """Given the low-fidelity sampling data and the optimal training input
+        :math:`X`, either simulate the high-fidelity response for :math:`X` or
+        load the corresponding high-fidelity response from the high-fidelity
+        benchmark data provided by a pickle file.
 
         Returns:
             None
-
         """
         # check if training simulation input was correctly calculated in iterator
         if self.X_train is None:
@@ -446,9 +443,9 @@ class BMFMCModel(Model):
             )
 
     def build_approximation(self, approx_case=True):
-        """
-        Construct the probabilistic surrogate / mapping based on the provided training-data and
-        optimize the hyper-parameters by maximizing the data's evidence or its lower bound (ELBO).
+        """Construct the probabilistic surrogate / mapping based on the
+        provided training-data and optimize the hyper-parameters by maximizing
+        the data's evidence or its lower bound (ELBO).
 
         Args:
             approx_case (bool):  Boolean that switches input features :math:`\\boldsymbol{\\gamma}`
@@ -457,7 +454,6 @@ class BMFMCModel(Model):
 
         Returns:
             None
-
         """
         # get the HF output data (from file or by starting a simulation, dependent on config)
         self.get_hf_training_data()
@@ -470,13 +466,12 @@ class BMFMCModel(Model):
             self.interface.build_approximation(self.Y_LFs_train, self.Y_HF_train)
 
     def compute_pyhf_statistics(self):
-        """
-        Calculate the high-fidelity output density prediction `p_yhf_mean` and its credible bounds
-        `p_yhf_var` on the support `y_pdf_support` according to equation (14) and (15) in [1].
+        """Calculate the high-fidelity output density prediction `p_yhf_mean`
+        and its credible bounds `p_yhf_var` on the support `y_pdf_support`
+        according to equation (14) and (15) in [1].
 
         Returns:
             None
-
         """
         self._calculate_p_yhf_mean()
 
@@ -486,12 +481,10 @@ class BMFMCModel(Model):
             self.p_yhf_var = None
 
     def _calculate_p_yhf_mean(self):
-        """
-        Calculate the posterior mean estimate for the HF density.
+        """Calculate the posterior mean estimate for the HF density.
 
         Returns:
             None
-
         """
         standard_deviation = np.sqrt(self.var_y_mc)
         pdf_mat = st.norm.pdf(self.y_pdf_support, loc=self.m_f_mc, scale=standard_deviation)
@@ -499,12 +492,10 @@ class BMFMCModel(Model):
         self.p_yhf_mean = 1 / self.m_f_mc.size * pyhf_mean_vec
 
     def _calculate_p_yhf_var(self):
-        """
-        Calculate the posterior variance of the HF density prediction.
+        """Calculate the posterior variance of the HF density prediction.
 
         Returns:
             None
-
         """
         # calculate full posterior covariance matrix for testing points
         _, k_post = self.interface.map(self.Z_mc.T, support='f', full_cov=True)
@@ -558,13 +549,12 @@ class BMFMCModel(Model):
                 self.p_yhf_var = 1 / (i - 1) * yhf_pdf_grid - 0.9995 * self.p_yhf_mean ** 2
 
     def compute_pymc_reference(self):
-        """
-         Given a high-fidelity Monte-Carlo benchmark dataset, compute the reference kernel
-         density estimate for the quantity of interest and optimize the bandwith of the kde.
+        """Given a high-fidelity Monte-Carlo benchmark dataset, compute the
+        reference kernel density estimate for the quantity of interest and
+        optimize the bandwith of the kde.
 
         Returns:
             None
-
         """
         # optimize the bandwidth for the kde
         bandwidth_lfmc = est.estimate_bandwidth_for_kde(
@@ -587,13 +577,12 @@ class BMFMCModel(Model):
             )  # TODO: make this also work for several lfs
 
     def set_feature_strategy(self):
-        """
-        Depending on the method specified in the input file, set the strategy that will be used to
-        calculate the low-fidelity features :math:`Z_{\\text{LF}}`.
+        """Depending on the method specified in the input file, set the
+        strategy that will be used to calculate the low-fidelity features
+        :math:`Z_{\\text{LF}}`.
 
         Returns:
             None
-
         """
         if self.settings_probab_mapping['features_config'] == "man_features":
             idx_vec = self.settings_probab_mapping['X_cols']
@@ -698,19 +687,19 @@ class BMFMCModel(Model):
         self.f_mean_train, _ = self.interface.map(self.Z_train.T)
 
     def input_dim_red(self):
-        """
-        Unsupervised dimensionality reduction of the input space. The random are first expressed
-        via a truncated Karhunen-Loeve expansion that still contains, e.g., 95 % of the field's
-        variance. Afterwards, input samples of the random fields get projected on the reduced
-        basis and the coefficients of the projection sever as the new reduced encoding for the
-        latter. Eventually the uncorrelated input samples and the reduced representation of
-        random field samples get assembled to a new reduced input vector which is also
-        standardized along each of the remaining dimensions.
+        """Unsupervised dimensionality reduction of the input space. The random
+        are first expressed via a truncated Karhunen-Loeve expansion that still
+        contains, e.g., 95 % of the field's variance. Afterwards, input samples
+        of the random fields get projected on the reduced basis and the
+        coefficients of the projection sever as the new reduced encoding for
+        the latter. Eventually the uncorrelated input samples and the reduced
+        representation of random field samples get assembled to a new reduced
+        input vector which is also standardized along each of the remaining
+        dimensions.
 
         Returns:
             X_red_test (np.array): Dimensionality reduced input matrix corresponding to
                                    testing/sampling data for the probabilistic mapping
-
         """
         x_uncorr, truncated_basis_dict = self.get_random_fields_and_truncated_basis(
             explained_var=95
@@ -726,10 +715,9 @@ class BMFMCModel(Model):
         return X_red_test_stdizd
 
     def get_random_fields_and_truncated_basis(self, explained_var=95.0):
-        """
-        Get the random fields and their description from the data files (pickle-files) and
-        return their truncated basis. The truncation is determined based on the explained
-        variance threshold (explained_var).
+        """Get the random fields and their description from the data files
+        (pickle-files) and return their truncated basis. The truncation is
+        determined based on the explained variance threshold (explained_var).
 
         Args:
             explained_var (float): Threshold for truncation in percent.
@@ -739,7 +727,6 @@ class BMFMCModel(Model):
                                              as well as their truncated basis.
             x_uncorr (np.array): Array containing the samples of remaining uncorrelated random
                                  variables
-
         """
         # determine uncorrelated random variables
         num_random_var = len(self.uncertain_parameters.get("random_variables"))
@@ -801,10 +788,9 @@ class BMFMCModel(Model):
 
 # --------------------------- functions ------------------------------------------------------
 def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
-    """
-    Project the high-dimensional samples of the random field on the truncated bases to yield the
-    projection coefficients of the series expansion that serve as a new reduced representation of
-    the random fields
+    """Project the high-dimensional samples of the random field on the
+    truncated bases to yield the projection coefficients of the series
+    expansion that serve as a new reduced representation of the random fields.
 
     Args:
         truncated_basis_dict (dic): Dictionary containing random field samples and truncated bases
@@ -824,9 +810,8 @@ def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
 
 
 def update_model_variables(Y_LFs_train, Z_mc):
-    """
-    Intermediate solution: Update the QUEENS variable object with the previous calculated
-    low-fidelity features :math:`Z_{\\text{LF}}`
+    """Intermediate solution: Update the QUEENS variable object with the
+    previous calculated low-fidelity features :math:`Z_{\\text{LF}}`
 
     Args:
         Y_LFs_train (np.array): Low-fidelity outputs :math:`Y_{\\text{LF}}` for training input
@@ -836,7 +821,6 @@ def update_model_variables(Y_LFs_train, Z_mc):
 
     Returns:
         None
-
     """
     # TODO this is an intermediate solution while the variable class has not been changed to a
     #  more flexible version
@@ -865,8 +849,8 @@ def update_model_variables(Y_LFs_train, Z_mc):
 
 # ---------------- Some private helper functions ------------------------------------------------
 def _linear_scale_a_to_b(data_a, data_b):
-    """
-    Scale a data vector 'data_a' linearly to the range of data vector 'data_b'.
+    """Scale a data vector 'data_a' linearly to the range of data vector
+    'data_b'.
 
     Args:
         data_a (np.array): Data vector that should be scaled.
@@ -874,7 +858,6 @@ def _linear_scale_a_to_b(data_a, data_b):
 
     Returns:
        scaled_a (np.array): Scaled data_a vector.
-
     """
     min_b = np.min(data_b)
     max_b = np.max(data_b)
@@ -885,8 +868,7 @@ def _linear_scale_a_to_b(data_a, data_b):
 
 
 def _assemble_x_red_stdizd(x_uncorr, coef_mat):
-    """
-    Assemble and standardize the dimension-reduced input x_red
+    """Assemble and standardize the dimension-reduced input x_red.
 
     Args:
         x_uncorr (np.array):
@@ -894,7 +876,6 @@ def _assemble_x_red_stdizd(x_uncorr, coef_mat):
 
     Returns:
         X_red_test_stdizd (np.array):
-
     """
     if coef_mat is not None:
         x_red = np.hstack((x_uncorr, coef_mat))

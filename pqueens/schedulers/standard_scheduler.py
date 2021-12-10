@@ -8,26 +8,21 @@ from .scheduler import Scheduler
 
 
 class StandardScheduler(Scheduler):
-    """
-    Standard scheduler class for QUEENS.
-
-    """
+    """Standard scheduler class for QUEENS."""
 
     def __init__(self, base_settings):
         super(StandardScheduler, self).__init__(base_settings)
 
     @classmethod
     def create_scheduler_class(cls, base_settings):
-        """
-        Create standard scheduler class for QUEENS.
+        """Create standard scheduler class for QUEENS.
 
         Args:
             base_settings (dict): dictionary containing settings from base class for
-                                  further use and completion in this child class 
+                                  further use and completion in this child class
 
         Returns:
             scheduler (obj):      instance of scheduler class
-
         """
         # initalize sub-dictionary for cluster within base settings to None
         base_settings['cluster_options'] = {}
@@ -38,19 +33,17 @@ class StandardScheduler(Scheduler):
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
-        """
-        Pre-run routine for remote computing: copying checker file to remote
-        machine
+        """Pre-run routine for remote computing: copying checker file to remote
+        machine.
 
         Returns:
             None
-
         """
 
         pass
 
     def _submit_singularity(self, job_id, batch, restart):
-        """Submit job locally to Singularity
+        """Submit job locally to Singularity.
 
         Args:
             job_id (int):    ID of job to submit
@@ -58,7 +51,6 @@ class StandardScheduler(Scheduler):
 
         Returns:
             int:            process ID
-
         """
         if not self.remote and self.scheduler_type == 'standard':
             local_path_json = self.input_file
@@ -89,25 +81,21 @@ class StandardScheduler(Scheduler):
                 return pid
         else:
             raise ValueError("\nSingularity cannot yet be used remotely with standard scheduling!")
-            return None
 
     def get_cluster_job_id(self):
-        """
-        Not necessary for standard scheduler but mandatory for parent class initialization
+        """Not necessary for standard scheduler but mandatory for parent class
+        initialization.
 
         Returns:
             None
-
         """
         pass
 
     def check_job_completion(self, job):
-        """
-        Check whether this job has been completed
+        """Check whether this job has been completed.
 
         Returns:
             None
-
         """
         # intialize completion and failure flags to false
         # (Note that failure is not checked for standard scheduler
@@ -155,12 +143,10 @@ class StandardScheduler(Scheduler):
         return completed, failed
 
     def post_run(self):
-        """
-        Post-run routine for remote computing: removing checker file from remote
-        machine
+        """Post-run routine for remote computing: removing checker file from
+        remote machine.
 
         Returns:
             None
-
         """
         pass

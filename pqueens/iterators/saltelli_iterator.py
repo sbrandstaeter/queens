@@ -1,15 +1,18 @@
 import random
-from scipy.stats import norm
+
 import numpy as np
+from scipy.stats import norm
+
 from pqueens.models.model import Model
-from .iterator import Iterator
-from . import sobol_sequence
-from pqueens.utils.scale_samples import scale_samples
 from pqueens.utils.process_outputs import write_results
+from pqueens.utils.scale_samples import scale_samples
+
+from . import sobol_sequence
+from .iterator import Iterator
 
 
 class SaltelliIterator(Iterator):
-    """ Pseudo Saltelli iterator
+    """Pseudo Saltelli iterator.
 
         This class is for performing sensitivity analysis using Sobol indices
         based on a Saltelli sampling scheme.
@@ -55,7 +58,7 @@ class SaltelliIterator(Iterator):
         result_description,
         global_settings,
     ):
-        """ Initialize Saltelli iterator object
+        """Initialize Saltelli iterator object.
 
         Args:
             model (model):                  Model to sample
@@ -81,7 +84,7 @@ class SaltelliIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
-        """ Create Saltelli iterator from problem description
+        """Create Saltelli iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -89,7 +92,6 @@ class SaltelliIterator(Iterator):
 
         Returns:
             iterator: SaltelliIterator object
-
         """
         method_options = config["method"]["method_options"]
 
@@ -109,19 +111,19 @@ class SaltelliIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate the model """
+        """Evaluate the model."""
         return self.model.evaluate()
 
     def pre_run(self):
-        """ Generates samples based on Saltelli's extension of the Sobol sequence
+        """Generates samples based on Saltelli's extension of the Sobol
+        sequence.
 
-            Saltelli's scheme extends the Sobol sequence in a way to reduce
-            the error rates in the resulting sensitivity index calculations. If
-            calc_second_order is False, the resulting matrix has N * (D + 2)
-            rows, where D is the number of parameters and N is the number of
-            samples. If calc_second_order is True, the resulting matrix has
-            N * (2D + 2) rows.
-
+        Saltelli's scheme extends the Sobol sequence in a way to reduce
+        the error rates in the resulting sensitivity index calculations. If
+        calc_second_order is False, the resulting matrix has N * (D + 2)
+        rows, where D is the number of parameters and N is the number of
+        samples. If calc_second_order is True, the resulting matrix has
+        N * (2D + 2) rows.
         """
         # fix seed of random number generator
         np.random.seed(self.seed)
@@ -212,16 +214,15 @@ class SaltelliIterator(Iterator):
         self.samples = scaled_saltelli
 
     def get_all_samples(self):
-        """ Return all samples
+        """Return all samples.
 
         Returns:
             np.array:    array with all samples
-
         """
         return self.samples
 
     def core_run(self):
-        """ Run Analysis on model """
+        """Run Analysis on model."""
 
         # update the model
         self.model.update_model_from_sample_batch(self.samples)
@@ -233,7 +234,7 @@ class SaltelliIterator(Iterator):
         self.analyze(np.reshape(self.output['mean'], (-1)))
 
     def post_run(self):
-        """ Analyze the results """
+        """Analyze the results."""
         results = self.process_results()
         if self.result_description is not None:
             if self.result_description["write_results"] is True:
@@ -246,13 +247,13 @@ class SaltelliIterator(Iterator):
                 self.print_results(results)
 
     def analyze(self, Y):
-        """ Perform Sobol Analysis on model outputs.
+        """Perform Sobol Analysis on model outputs.
 
-        Computes a dictionary with keys 'S1', 'S1_conf', 'ST', and 'ST_conf', where
-        each entry is a list of size num_params containing the
-        indices in the same order as the parameter file.  If calc_second_order is
-        True, the dictionary also contains keys 'S2' and 'S2_conf'.
-
+        Computes a dictionary with keys 'S1', 'S1_conf', 'ST', and
+        'ST_conf', where each entry is a list of size num_params
+        containing the indices in the same order as the parameter file.
+        If calc_second_order is True, the dictionary also contains keys
+        'S2' and 'S2_conf'.
         """
 
         if self.calc_second_order and Y.size % (2 * self.num_params + 2) == 0:
@@ -292,7 +293,7 @@ class SaltelliIterator(Iterator):
         self.sensitivity_indices = S
 
     def first_order(self, A, AB, B):
-        """ Compute first order indices, normalized by sample variance
+        """Compute first order indices, normalized by sample variance.
 
         Args:
             A (np.array):   Results corresponding to A
@@ -305,7 +306,7 @@ class SaltelliIterator(Iterator):
         return np.mean(B * (AB - A), axis=0) / np.var(np.r_[A, B], axis=0)
 
     def total_order(self, A, AB, B):
-        """ Compute total order indices, normalized by sample variance
+        """Compute total order indices, normalized by sample variance.
 
         Args:
             A (np.array):   Results corresponding to A
@@ -314,12 +315,11 @@ class SaltelliIterator(Iterator):
 
         Returns:
             np.array: total order indices
-
         """
         return 0.5 * np.mean((A - AB) ** 2, axis=0) / np.var(np.r_[A, B], axis=0)
 
     def second_order(self, A, ABj, ABk, BAj, B):
-        """ Compute second order indices, normalized by sample variance
+        """Compute second order indices, normalized by sample variance.
 
         Args:
             A (np.array):   Results corresponding to A
@@ -328,7 +328,6 @@ class SaltelliIterator(Iterator):
 
         Returns:
             np.array: Second order indices
-
         """
         Vjk = np.mean(BAj * ABk - A * B, axis=0) / np.var(np.r_[A, B], axis=0)
         Sj = self.first_order(A, ABj, B)
@@ -337,7 +336,7 @@ class SaltelliIterator(Iterator):
         return Vjk - Sj - Sk
 
     def create_si_dict(self):
-        """ Create a dictionnary to store the results
+        """Create a dictionnary to store the results.
 
         Returns:
             dict: Prototype dictionay to store sensitivity indices
@@ -352,13 +351,12 @@ class SaltelliIterator(Iterator):
         return S
 
     def separate_output_values(self, Y):
-        """ From all computed samples in Y get results corresponding to the
+        """From all computed samples in Y get results corresponding to the
         matrices A, B, AB, BA, see Saltelli et a. 2010.
 
         Args:
             Y (np.array): Outputs from model
         Returns:
-
         """
 
         AB = np.zeros((self.num_samples, self.num_params))
@@ -375,7 +373,7 @@ class SaltelliIterator(Iterator):
         return A, B, AB, BA
 
     def print_results(self, results):
-        """ Function to print results """
+        """Function to print results."""
 
         # get shorter name
         S = results["sensitivity_indices"]
@@ -405,7 +403,7 @@ class SaltelliIterator(Iterator):
                     )
 
     def process_results(self):
-        """ Write all results to self contained dictionary """
+        """Write all results to self contained dictionary."""
 
         results = {}
         results["parameter_names"] = self.parameter_names

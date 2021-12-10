@@ -2,8 +2,7 @@ import numpy as np
 
 
 def ma2009(x1, x2):
-    """ Ma09 function:
-    Two dimensional benchmark function for UQ defined in [1]
+    """Ma09 function: Two dimensional benchmark function for UQ defined in [1]
 
     :math:`f({\\bf x}) = \\frac{1}{|0.3-x_1^2 - x_2^2|+0.1}`
 
@@ -28,7 +27,7 @@ def ma2009(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to ma function
+    """Interface to ma function.
 
     Args:
         job_id (int):  ID of job

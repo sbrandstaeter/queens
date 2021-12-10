@@ -1,8 +1,7 @@
-'''
-Created on January 18th  2018
-@author: jbi
+"""Created on January 18th  2018.
 
-'''
+@author: jbi
+"""
 
 import unittest
 

@@ -1,11 +1,13 @@
 import numpy as np
 from sklearn.model_selection import KFold
+
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+
 from .interface import Interface
 
 
 class ApproximationInterface(Interface):
-    """ Class for mapping input variables to responses using an approximation
+    """Class for mapping input variables to responses using an approximation.
 
         The ApproximationInterface uses a so-called regression approximation,
         which just another name for a regression model that is used in this context
@@ -24,14 +26,13 @@ class ApproximationInterface(Interface):
     """
 
     def __init__(self, interface_name, config, approximation_name, variables):
-        """ Create interface
+        """Create interface.
 
         Args:
             interface_name (string):     Name of interface
             config (dict): Problem description (input file)
             approximation_name (str): Name of approximation model in config
             variables (dict):  Dictionary with variables
-
         """
         self.name = interface_name
         self.variables = variables
@@ -42,7 +43,7 @@ class ApproximationInterface(Interface):
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config, driver_name):
-        """ Create interface from config dictionary
+        """Create interface from config dictionary.
 
         Args:
             interface_name (str):   Name of interface
@@ -62,8 +63,8 @@ class ApproximationInterface(Interface):
         return cls(interface_name, config, approximation_name, parameters)
 
     def map(self, samples):
-        """ Mapping function which calls the regression approximation
-            Prediction with the regression model
+        """Mapping function which calls the regression approximation Prediction
+        with the regression model.
 
         Args:
             samples (list):         list of variables objects
@@ -86,7 +87,7 @@ class ApproximationInterface(Interface):
         return output
 
     def build_approximation(self, x_train, y_train):
-        """ Build and train underlying regression model
+        """Build and train underlying regression model.
 
         Args:
             x_train (np.array):  Training inputs
@@ -99,11 +100,11 @@ class ApproximationInterface(Interface):
         self.approximation_init = True
 
     def is_initialized(self):
-        """ Is the approximation properly initialized """
+        """Is the approximation properly initialized."""
         return self.approximation_init
 
     def cross_validate(self, x_train, y_train, folds):
-        """ Cross validation function which calls the regression approximation
+        """Cross validation function which calls the regression approximation.
 
         Args:
             x_train (np.array):   Array of inputs

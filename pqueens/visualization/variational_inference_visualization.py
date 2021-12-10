@@ -1,7 +1,8 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import os
 import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 """
 A module that provides utilities and a class for visualization in VI It is designed such that the 
@@ -23,9 +24,8 @@ this.vi_visualization_instance = None
 
 
 def from_config_create(config):
-    """
-    Module function that calls the class function `from_config_create` and creates instance of the
-    Visualization class from the problem description.
+    """Module function that calls the class function `from_config_create` and
+    creates instance of the Visualization class from the problem description.
 
     Args:
         config (dict): Dictionary created from the input file, containing the problem description
@@ -34,9 +34,8 @@ def from_config_create(config):
 
 
 class VIVisualization(object):
-    """
-    Visualization class for VI that containts several plotting, storing and visualization
-    methods that can be used anywhere in QUEENS.
+    """Visualization class for VI that containts several plotting, storing and
+    visualization methods that can be used anywhere in QUEENS.
 
     Attributes:
        path (str): Paths to save the plots.
@@ -81,23 +80,21 @@ class VIVisualization(object):
         return cls(path, save_bool, plot_boolean, axs_convergence_plots, fig_convergence_plots)
 
     def plot_convergence(self, iteration, variational_params_array, elbo, relative_change):
-        """
-        Plots for VI over iterations. Consists of 3 subplots:
+        """Plots for VI over iterations. Consists of 3 subplots:
 
             1. ELBO
             2. Variational parameters
             3. Relative change in variational parameters
 
         Args:
-            iteration (int): Current iteration 
-            variational_params_array (np.array): Column-wise variational parameters of the 
+            iteration (int): Current iteration
+            variational_params_array (np.array): Column-wise variational parameters of the
                                                  iterations
             elbo (np.array): Rowvector elbo values over iterations
             relative_change (np.array): Column-wise Relative change for the variational parameters
 
         Returns:
             None
-
         """
         iterations = np.arange(iteration + 1)
         if self.plot_boolean:
@@ -136,8 +133,7 @@ class VIVisualization(object):
             plt.pause(0.0005)
 
     def save_plots(self):
-        """
-        Save the plot to specified path.
+        """Save the plot to specified path.
 
         Args:
             save_bool (bool): Flag to decide whether saving option is triggered.
@@ -145,7 +141,6 @@ class VIVisualization(object):
 
         Returns:
             None
-
         """
         if self.save_bool:
             self.fig_convergence_plots.savefig(self.path, dpi=300)

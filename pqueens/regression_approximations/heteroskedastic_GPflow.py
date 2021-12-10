@@ -1,13 +1,14 @@
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
-import numpy as np
 import logging
 import os
 
+import gpflow as gpf
+import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-import gpflow as gpf
-from sklearn.cluster import KMeans
 from gpflow.utilities import print_summary
+from sklearn.cluster import KMeans
+
+from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 _logger = logging.getLogger(__name__)
@@ -15,7 +16,8 @@ tf.get_logger().setLevel(logging.ERROR)
 
 
 class HeteroskedasticGP(RegressionApproximation):
-    """ Class for creating heteroskedastic GP based regression model based on GPFlow
+    """Class for creating heteroskedastic GP based regression model based on
+    GPFlow.
 
     This class constructs a GP regression, currently using a GPFlow model.
     Currently, a lot of parameters are still hard coded, which will be
@@ -44,7 +46,6 @@ class HeteroskedasticGP(RegressionApproximation):
              Chained gaussian processes. In Artificial Intelligence and Statistics (pp. 1431-1440).
         [3]: Hensman, J., Fusi, N., & Lawrence, N. D. (2013). Gaussian processes for big data.
              arXiv preprint arXiv:1309.6835.
-
     """
 
     def __init__(
@@ -60,8 +61,7 @@ class HeteroskedasticGP(RegressionApproximation):
         num_samples_stats,
         posterior_cov_mat_y,
     ):
-        """
-        Initialize an instance of the Heteroskedastic GPflow class
+        """Initialize an instance of the Heteroskedastic GPflow class.
 
         Args:
             x_train (np.array): Training inputs
@@ -79,7 +79,6 @@ class HeteroskedasticGP(RegressionApproximation):
 
         Returns:
             None
-
         """
 
         self.x_train = x_train
@@ -95,7 +94,7 @@ class HeteroskedasticGP(RegressionApproximation):
 
     @classmethod
     def from_config_create(cls, config, approx_name, x_train, y_train):
-        """ Create approximation from options dictionary
+        """Create approximation from options dictionary.
 
         Args:
             config (dict): Dictionary with problem description (input file)
@@ -105,7 +104,6 @@ class HeteroskedasticGP(RegressionApproximation):
 
         Returns:
             gpflow heteroskedastic GP object
-
         """
         approx_options = config[approx_name]
         num_posterior_samples = approx_options.get('num_posterior_samples', None)
@@ -144,7 +142,8 @@ class HeteroskedasticGP(RegressionApproximation):
         )
 
     def train(self):
-        """ Train the variational by minimizing the variational loss in variational EM step"""
+        """Train the variational by minimizing the variational loss in
+        variational EM step."""
         np.random.seed(self.random_seed)
         print("# ---- Train the GPFlow model ----- #\n")
         for epoch in range(1, self.num_epochs + 1):
@@ -158,8 +157,8 @@ class HeteroskedasticGP(RegressionApproximation):
                 )
 
     def predict(self, x_test, support=None, full_cov=False):
-        """
-        Predict the posterior distribution at Xnew with respect to the data 'y'.
+        """Predict the posterior distribution at Xnew with respect to the data
+        'y'.
 
         Args:
             support (str): Predict wrt to latent variable f or y; not needed here as only y makes
@@ -177,8 +176,8 @@ class HeteroskedasticGP(RegressionApproximation):
         return output
 
     def predict_y(self, x_test, full_cov=False):
-        """
-        Compute the posterior distribution at x_test with respect to the data 'y'
+        """Compute the posterior distribution at x_test with respect to the
+        data 'y'.
 
         Args:
             x_test (np.array): Inputs at which to evaluate latent function f
@@ -216,15 +215,15 @@ class HeteroskedasticGP(RegressionApproximation):
         return output
 
     def predict_f_samples(self, x_test, num_samples):
-        """ Produce samples from the posterior latent function Xnew
+        """Produce samples from the posterior latent function Xnew.
 
-            Args:
-                x_test (np.array):  Inputs at which to evaluate latent function f
-                num_samples (int):  Number of posterior realizations of GP
+        Args:
+            x_test (np.array):  Inputs at which to evaluate latent function f
+            num_samples (int):  Number of posterior realizations of GP
 
-            Returns:
-                post_samples (np.array): Posterior samples of latent functions at x_test,
-                                         (the latter might be a vector/matrix of points)
+        Returns:
+            post_samples (np.array): Posterior samples of latent functions at x_test,
+                                     (the latter might be a vector/matrix of points)
         """
         np.random.seed(self.random_seed)
         post_samples = self.model.predict_f_samples(x_test, num_samples).numpy()
@@ -233,8 +232,7 @@ class HeteroskedasticGP(RegressionApproximation):
 
     @classmethod
     def _build_model(cls, num_inducing_points, x_train):
-        """
-        Build the GPflow heteroskedastic GP model
+        """Build the GPflow heteroskedastic GP model.
 
         Args:
             num_inducing_points (int): Number of inducing points used for variational GP
@@ -244,7 +242,6 @@ class HeteroskedasticGP(RegressionApproximation):
 
         Returns:
             gpf_model (obj): Instance of a GPflow heteroskedastic model
-
         """
         # heteroskedastic conditional likelihood
         likelihood = gpf.likelihoods.HeteroskedasticTFPConditional(
@@ -319,12 +316,11 @@ class HeteroskedasticGP(RegressionApproximation):
         # here we conduct a two step optimization
         @tf.function
         def optimization_step_fun():
-            """
-            Two step variational Expectation-Maximization routine for latent variable GPs
+            """Two step variational Expectation-Maximization routine for latent
+            variable GPs.
 
             Returns:
                 None
-
             """
             natgrad_opt.minimize(loss_fn, variational_vars)
             adam_opt.minimize(loss_fn, adam_vars)

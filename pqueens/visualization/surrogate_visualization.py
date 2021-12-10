@@ -1,13 +1,14 @@
 import os
 import sys
+
 import GPy
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.style as style
-from matplotlib.cm import ScalarMappable
-import seaborn as sns
 import numpy as np
+import seaborn as sns
 from GPy.models.gp_regression import GPRegression
+from matplotlib.cm import ScalarMappable
 
 matplotlib.use('agg')
 cycle_colors = sns.color_palette()
@@ -18,12 +19,12 @@ A module that provides utilities and a class for visualization of surrogate mode
 It is designed such that the SurrogateVisualization class needs only to be initialized once
 and can then be accessed and modified in the entire project.
 
-In this context "this" is a pointer to the module object instance itself and can be compared to the 
+In this context "this" is a pointer to the module object instance itself and can be compared to the
 "self" keyword in classes.
 
 Attributes:
     surrogate_visualization_instance (obj): Instance of the SAVisualization class
-    
+
 Returns:
     None
 """
@@ -33,9 +34,9 @@ this.surrogate_visualization_instance = None
 
 
 def from_config_create(config, model_name=None):
-    """
-    Module function that calls the class function `from_config_create` and creates instance of the
-    SurrogateVisualization class from the problem description.
+    """Module function that calls the class function `from_config_create` and
+    creates instance of the SurrogateVisualization class from the problem
+    description.
 
     Args:
         config (dict): Dictionary containing the problem description
@@ -47,8 +48,7 @@ def from_config_create(config, model_name=None):
 
 
 def convert_to_dict(values):
-    """
-    Convert values to dictionary with plot keys
+    """Convert values to dictionary with plot keys.
 
     Args:
         values (list): values for 1d and 2d plot
@@ -63,9 +63,8 @@ def convert_to_dict(values):
 
 
 class SurrogateVisualization(object):
-    """
-    Visualization class for surrogate models that contains several plotting, storing and
-    visualization methods that can be used anywhere in QUEENS.
+    """Visualization class for surrogate models that contains several plotting,
+    storing and visualization methods that can be used anywhere in QUEENS.
 
     Attributes:
        saving_paths (dict): Dict of paths where to save the plots.
@@ -131,8 +130,7 @@ class SurrogateVisualization(object):
         return cls(saving_paths, save_plot, display_plot)
 
     def plot(self, interface):
-        """
-        Call plotting methods for surrogate model
+        """Call plotting methods for surrogate model.
 
         Args:
             interface (ApproximationInterface object): approximation interface
@@ -154,8 +152,7 @@ class SurrogateVisualization(object):
             self._display_plots()
 
     def _display_plots(self):
-        """
-        Show plots according to input plot_booleans
+        """Show plots according to input plot_booleans.
 
         Return:
             Displays plots.
@@ -167,8 +164,7 @@ class SurrogateVisualization(object):
         plt.show()
 
     def plot_1d(self, gp_approximation):
-        """
-        Plot 1D projection of Gaussian process
+        """Plot 1D projection of Gaussian process.
 
         Args:
             gp_approximation (RegressionApproximation object): surrogate that holds GP model and
@@ -187,8 +183,7 @@ class SurrogateVisualization(object):
                     fig.savefig(self.saving_paths["1d"] + "_" + parameter_name + ".png", dpi=200)
 
     def plot_gp_from_gpy(self, gp_approximation, free_idx):
-        """
-        Plot 1D Gaussian process with GPy library (based on plotly)
+        """Plot 1D Gaussian process with GPy library (based on plotly)
 
         Args:
             gp_approximation (RegressionApproximation object): surrogate that holds GP model and
@@ -211,8 +206,7 @@ class SurrogateVisualization(object):
         return figs[0]
 
     def plot_gp_from_gpflow(self, gp_approximation, free_idx):
-        """
-        Plot 1D Gaussian process from GPFlow
+        """Plot 1D Gaussian process from GPFlow.
 
         Args:
             gp_approximation (RegressionApproximation object): surrogate that holds GP model and
@@ -248,8 +242,7 @@ class SurrogateVisualization(object):
         return fig
 
     def plot_2d(self, gp_approximation):
-        """
-        Plot Gaussian process in 2D with training data points
+        """Plot Gaussian process in 2D with training data points.
 
         Args:
             gp_approximation (RegressionApproximation object): surrogate that holds GP model and
@@ -278,8 +271,7 @@ class SurrogateVisualization(object):
             self._plot_3d_view(mean, x_train, y_train, xx, yy, v_min, v_max)
 
     def _plot_3d_view(self, mean, x_train, y_train, xx, yy, v_min, v_max):
-        """
-        Plot 3D view of Gaussian process
+        """Plot 3D view of Gaussian process.
 
         Args:
             mean (ndarray): mean of GP
@@ -295,21 +287,14 @@ class SurrogateVisualization(object):
             xx, yy, mean.reshape(*xx.shape), cmap='RdBu_r', linewidth=0, antialiased=False
         )
         ax.scatter(
-            x_train[:, 0],
-            x_train[:, 1],
-            y_train,
-            c=y_train,
-            cmap='RdBu_r',
-            vmin=v_min,
-            vmax=v_max,
+            x_train[:, 0], x_train[:, 1], y_train, c=y_train, cmap='RdBu_r', vmin=v_min, vmax=v_max,
         )
         ax.set_xlabel(self.parameter_names[0])
         ax.set_ylabel(self.parameter_names[1])
         fig.savefig(self.saving_paths["2d"] + '_3d_view.png', dpi=200)
 
     def _plot_2d_view(self, mean, x_train, y_train, xx, yy, v_min, v_max):
-        """
-        Plot 2D view of Gaussian process
+        """Plot 2D view of Gaussian process.
 
         Args:
             mean (ndarray): mean of GP
@@ -363,8 +348,7 @@ class SurrogateVisualization(object):
 
     @staticmethod
     def _generate_fixed_inputs(free_idx, number_of_parameters):
-        """
-        Generate list of fixed inputs for GPy plotting
+        """Generate list of fixed inputs for GPy plotting.
 
         Args:
             free_idx (int): free index for plot

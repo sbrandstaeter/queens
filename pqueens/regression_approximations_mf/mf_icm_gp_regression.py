@@ -1,9 +1,9 @@
-import numpy as np
 import GPy
+import numpy as np
 
 
 class MF_ICM_GP_Regression(object):
-    """ Class for creating multi-fidelity GP based emulator
+    """Class for creating multi-fidelity GP based emulator.
 
     This class constructs a multi-fidelity GP emulator, currently using a GPy
     model. Based on this emulator various statistical summarys can be
@@ -16,12 +16,11 @@ class MF_ICM_GP_Regression(object):
             list of arrays of values at desing points
         m (Gpy.model):
             GPy based Gaussian process model
-
     """
 
     @classmethod
     def from_options(cls, approx_options, Xtrain, ytrain):
-        """ Create approxiamtion from options dictionary
+        """Create approxiamtion from options dictionary.
 
         Args:
             approx_options (dict): Dictionary with approximation options
@@ -68,7 +67,7 @@ class MF_ICM_GP_Regression(object):
         self.m = GPy.models.GPCoregionalizedRegression(self.Xtrain, self.ytrain, kernel=icm)
 
     def train(self):
-        """ Train the GP by maximizing the likelihood """
+        """Train the GP by maximizing the likelihood."""
 
         # #For this kernel, B.kappa encodes the variance now.
         self.m['.*rbf.var'].constrain_fixed(1.0)
@@ -83,7 +82,7 @@ class MF_ICM_GP_Regression(object):
         self.m.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
 
     def predict(self, Xnew):
-        """ Compute latent function at Xnew
+        """Compute latent function at Xnew.
 
         Args:
             Xnew (np.array): Inputs at which to evaluate latent function f
@@ -91,7 +90,6 @@ class MF_ICM_GP_Regression(object):
         Returns:
             dict: Dictionary with mean, variance and possibly
                   posterior samples of latent function at Xnew
-
         """
         output = {}
         mean, variance = self.predict_f(Xnew)
@@ -103,7 +101,7 @@ class MF_ICM_GP_Regression(object):
         return output
 
     def predict_f(self, Xnew, level=None):
-        """ Compute the mean and variance of the latent function at Xnew
+        """Compute the mean and variance of the latent function at Xnew.
 
         Args:
             Xnew (np.array): Inputs at which to evaluate latent function f
@@ -111,7 +109,6 @@ class MF_ICM_GP_Regression(object):
 
         Returns:
             np.array, np.array: mean and varaince of latent function at Xnew
-
         """
         dim_x = Xnew.shape[1]
         if dim_x is not self.Xtrain[0].shape[1]:
@@ -136,16 +133,16 @@ class MF_ICM_GP_Regression(object):
         return my_mean.reshape((-1, 1)), my_var.reshape((-1, 1))
 
     def predict_f_samples(self, Xnew, num_samples, level=None):
-        """ Produce samples from the posterior latent funtion Xnew
+        """Produce samples from the posterior latent funtion Xnew.
 
-            Args:
-                Xnew (np.array):    Inputs at which to evaluate latent function f
-                num_samples (int):  Number of posterior field_realizations of GP
-                level (int): level for which to make prediction
+        Args:
+            Xnew (np.array):    Inputs at which to evaluate latent function f
+            num_samples (int):  Number of posterior field_realizations of GP
+            level (int): level for which to make prediction
 
 
-            Returns:
-                np.array: samples of latent function at Xnew
+        Returns:
+            np.array: samples of latent function at Xnew
         """
         if level is None:
             level = self.num_fidelity_levels

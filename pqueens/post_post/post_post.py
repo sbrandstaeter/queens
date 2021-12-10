@@ -6,8 +6,7 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 
 class PostPost(metaclass=abc.ABCMeta):
-    """
-    Base class for post post processing
+    """Base class for post post processing.
 
     Attributes:
         delete_data_flag (bool):  Delete files after processing
@@ -15,17 +14,14 @@ class PostPost(metaclass=abc.ABCMeta):
         error ():
         output_dir (str): Path to result files
         result (np.array): Array containing the quantities of interest
-
     """
 
     def __init__(self, delete_data_flag, post_post_file_name_prefix_lst):
-        """
-        Init post post class
+        """Init post post class.
 
         Args:
             delete_data_flag (bool): Delete files after processing
             post_post_file_name_prefix_lst (lst): List with prefixes of result files
-
         """
 
         self.delete_data_flag = delete_data_flag
@@ -37,8 +33,7 @@ class PostPost(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_post_post(cls, config, driver_name=None):
-        """
-        Create PostPost object from problem description
+        """Create PostPost object from problem description.
 
         Args:
             config (dict): input json file with problem description
@@ -86,10 +81,8 @@ class PostPost(metaclass=abc.ABCMeta):
         return post_post
 
     def copy_post_files(self, files_of_interest, remote_connect, remote_output_dir):
-        """
-        Copy identified post-processed files from "local" output directory
-        to "remote" output directory in case of remote scheduling
-        """
+        """Copy identified post-processed files from "local" output directory
+        to "remote" output directory in case of remote scheduling."""
 
         remote_file_name = os.path.join(remote_output_dir, '.')
         command_list = [
@@ -111,8 +104,7 @@ class PostPost(metaclass=abc.ABCMeta):
             )
 
     def error_handling(self, output_dir):
-        """
-        Mark failed simulation and set results appropriately
+        """Mark failed simulation and set results appropriately.
 
         What does this function do?? This is super unclear
         """
@@ -138,7 +130,7 @@ class PostPost(metaclass=abc.ABCMeta):
             _, _, _, _ = run_subprocess(command_string)
 
     def delete_field_data(self, output_dir, remote_connect):
-        """ Delete output files except files with given prefix """
+        """Delete output files except files with given prefix."""
 
         inverse_prefix_expr = r"*[!" + self.post_post_file_name_prefix_lst + r"]*"
         files_of_interest = os.path.join(output_dir, inverse_prefix_expr)
@@ -168,8 +160,7 @@ class PostPost(metaclass=abc.ABCMeta):
                 os.remove(filename)
 
     def postpost_main(self, local_output_dir, remote_connect, remote_output_dir):
-        """
-        Main routine for managing post-post-processing
+        """Main routine for managing post-post-processing.
 
         Args:
             local_output_dir (str): Path to "local" output directory
@@ -181,7 +172,6 @@ class PostPost(metaclass=abc.ABCMeta):
         Returns:
             result (np.array): Result of the post-post operation which is the current value
                                of the quantities of interest
-
         """
 
         # identify post-processed files containing data of interest in "local" output directory
@@ -219,5 +209,5 @@ class PostPost(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def read_post_files(self, file_names, **kwargs):
-        """ This method has to be implemented by all child classes """
+        """This method has to be implemented by all child classes."""
         pass

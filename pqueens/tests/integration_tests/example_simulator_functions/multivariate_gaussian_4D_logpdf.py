@@ -17,7 +17,7 @@ gaussian = mcmc_utils.create_proposal_distribution(distr_dict)
 
 
 def gaussian_logpdf(x1, x2, x3, x4):
-    """ 4D Gaussian likelihood model
+    """4D Gaussian likelihood model.
 
     Used as a basic test function for SMC.
 
@@ -46,7 +46,7 @@ def gaussian_logpdf(x1, x2, x3, x4):
 
 
 def main(job_id, params):
-    """ Interface to 1D Guassian model
+    """Interface to 1D Guassian model.
 
     Args:
         job_id (int):  ID of job

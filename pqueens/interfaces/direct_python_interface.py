@@ -1,7 +1,7 @@
-import os
 import importlib.util
-from multiprocessing import Pool
+import os
 import sys
+from multiprocessing import Pool
 
 import numpy as np
 from tqdm import tqdm
@@ -10,7 +10,7 @@ from .interface import Interface
 
 
 class DirectPythonInterface(Interface):
-    """ Class for mapping input variables to responses using a python function
+    """Class for mapping input variables to responses using a python function.
 
         The DirectPythonInterface class maps input variables to outputs,
         i.e. responses by making direct calls to a python function. The function
@@ -23,18 +23,16 @@ class DirectPythonInterface(Interface):
         name (string):                  name of interface
         variables (dict):               dictionary with variables
         function (function object):     address of database to use
-
     """
 
     def __init__(self, interface_name, function_file, variables, num_workers=1):
-        """ Create interface
+        """Create interface.
 
         Args:
             interface_name (string):    name of interface
             function_file (string):     function file name (including path)
                                         to be executed
             variables (dict):           dictionary with variables
-
         """
 
         self.name = interface_name
@@ -76,7 +74,7 @@ class DirectPythonInterface(Interface):
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config, driver_name):
-        """ Create interface from config dictionary
+        """Create interface from config dictionary.
 
         Args:
             interface_name (str):   name of interface
@@ -97,7 +95,7 @@ class DirectPythonInterface(Interface):
         return cls(interface_name, function_file, parameters, num_workers)
 
     def map(self, samples):
-        """ Mapping function which orchestrates call to simulator function
+        """Mapping function which orchestrates call to simulator function.
 
         Args:
             samples (list):         list of Variables objects

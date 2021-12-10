@@ -84,7 +84,7 @@ build_conda_env:
   script:
     - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - source activate queens-$CI_PIPELINE_ID
-    - conda env export > pipeline_conda_environment.yml 
+    - conda env export > pipeline_conda_environment.yml
   artifacts:
     name: "conda_env-$CI_PIPELINE_ID.yml"
     paths:
@@ -124,16 +124,22 @@ build_singularity:
 # Jobs of stage: codechecks
 #---------------------------------------------------------------------------------------------------
 code_analysis:
-  # code analysis with pylint
+  # code analysis
   extends:
     - .codechecks_settings
   stage: codechecks
   script:
+    - vulture pqueens > track_vulture.txt
     - pylint --output-format=parseable pqueens | tee track_pylint.txt
+    - isort --check-only pqueens/ > track_isort.txt
+    - black --check pqueens > track_black.txt
   artifacts:
     name: "$CI_JOB_NAME-$CI_JOB_ID"
     paths:
       - track_pylint.txt
+      - track_vulture.txt
+      - track_isort.txt
+      - track_black.txt
     when: on_failure
     expire_in: 4 weeks
   needs:

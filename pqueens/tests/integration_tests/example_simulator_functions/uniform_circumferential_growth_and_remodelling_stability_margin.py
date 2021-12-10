@@ -5,8 +5,7 @@ import pqueens.tests.integration_tests.example_simulator_functions.uniform_circu
 
 
 def main(job_id, params):
-    """
-    Interface to stability margin of GnR model.
+    """Interface to stability margin of GnR model.
 
     UNITS:
     - length [m]

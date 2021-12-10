@@ -1,8 +1,10 @@
 import numpy as np
 import pytest
+
+from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.bmfmc_iterator import BMFMCIterator
 from pqueens.models.bmfmc_model import BMFMCModel
-from pqueens.interfaces.bmfmc_interface import BmfmcInterface
+
 
 # ------ general input fixture ---------------------------------------
 @pytest.fixture()

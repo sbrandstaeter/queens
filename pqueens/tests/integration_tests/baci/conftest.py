@@ -6,8 +6,7 @@ import pytest
 
 @pytest.fixture(autouse=True)
 def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for_gitlab_runner):
-    """
-    Set-up of BACI symoblic links
+    """Set-up of BACI symoblic links.
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -16,8 +15,6 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
         config_dir (str): Path to the config directory of QUEENS containing BACI executables
         set_baci_links_for_gitlab_runner (str): Several paths that are needed to build symbolic
                                                 links to executables
-
-
     """
     (
         dst_baci_release,

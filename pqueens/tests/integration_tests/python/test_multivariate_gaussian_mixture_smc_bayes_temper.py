@@ -1,31 +1,28 @@
 import os
 import pickle
-import pandas as pd
+
 import numpy as np
+import pandas as pd
 import pytest
 from mock import patch
-from pqueens.utils import injector
 
-# fmt: off
-from pqueens.tests.integration_tests.example_simulator_functions\
-    .multivariate_gaussian_mixture_logpdf\
-    import (
-    gaussian1,
-)
-from pqueens.tests.integration_tests.example_simulator_functions\
-    .multivariate_gaussian_mixture_logpdf\
-    import (
-    gaussian_mixture_logpdf,
-)
+from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
+
 # fmt: on
 from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
-from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from pqueens.main import main
+
+# fmt: off
+from pqueens.tests.integration_tests.example_simulator_functions.multivariate_gaussian_mixture_logpdf import (
+    gaussian1,
+    gaussian_mixture_logpdf,
+)
+from pqueens.utils import injector
 
 
 @pytest.mark.integration_tests
 def test_multivariate_gaussian_mixture_smc_bayes_temper(inputdir, tmpdir, dummy_data):
-    """ Test SMC with a multivariate Gaussian mixture (multimodal). """
+    """Test SMC with a multivariate Gaussian mixture (multimodal)."""
     template = os.path.join(inputdir, "multivariate_gaussian_mixture_smc_bayes_temper.json")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}

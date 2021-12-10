@@ -1,6 +1,7 @@
 import logging
 
 import numpy as np
+
 import pqueens.visualization.bmfia_visualization as qvis
 from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.iterators.iterator import Iterator
@@ -12,8 +13,8 @@ _logger = logging.getLogger(__name__)
 
 
 class BMFGaussianStaticModel(LikelihoodModel):
-    """
-    Multi-fidelity likelihood of the Bayesian multi-fidelity inverse analysis scheme [1, 2].
+    """Multi-fidelity likelihood of the Bayesian multi-fidelity inverse
+    analysis scheme [1, 2].
 
     Args:
         model_name (str): Name of the likelihood model in the config file
@@ -154,7 +155,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         # get specifics of gaussian static likelihood model
         likelihood_noise_type = model_options["likelihood_noise_type"]
         fixed_likelihood_noise_value = model_options.get("fixed_likelihood_noise_value")
-        nugget_noise_var = model_options.get("nugget_noise_var", 1E-9)
+        nugget_noise_var = model_options.get("nugget_noise_var", 1e-9)
         noise_upper_bound = model_options.get("noise_upper_bound")
 
         # ---------- multi-fidelity settings ---------------------------------------------------
@@ -210,13 +211,11 @@ class BMFGaussianStaticModel(LikelihoodModel):
         )
 
     def evaluate(self):
-        """
-        Evaluate multi-fidelity likelihood with current set of variables which are an attribute
-        of the underlying low-fidelity simulation model
+        """Evaluate multi-fidelity likelihood with current set of variables
+        which are an attribute of the underlying low-fidelity simulation model.
 
         Returns:
             mf_log_likelihood (np.array): Vector of log-likelihood values per model input.
-
         """
         # Initialize underlying models in the first call
         if self.z_train is None:
@@ -246,8 +245,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         return mf_log_likelihood
 
     def _evaluate_mf_likelihood(self, y_lf_mat, x_batch):
-        """
-        Evaluate the Bayesian multi-fidelity likelihood as described in [1].
+        """Evaluate the Bayesian multi-fidelity likelihood as described in [1].
 
         Args:
             y_lf_mat (np.array): Response matrix of the low-fidelity model; Row-wise corresponding
@@ -264,7 +262,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
             [1] Nitzler, J., Biehler, J., Fehn, N., Koutsourelakis, P.-S. and Wall, W.A. (2020),
                 "A Generalized Probabilistic Learning Approach for Multi-Fidelity Uncertainty
                 Propagation in Complex Physical Simulations", arXiv:2001.02892
-
         """
         # construct LF feature matrix
         z_mat = self._get_feature_mat(y_lf_mat, x_batch, self.coords_mat[: y_lf_mat.shape[0]])
@@ -277,9 +274,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         if self.likelihood_noise_type == "fixed":
             self.noise_var = max(self.fixed_likelihood_noise_value, self.nugget_noise_var)
         elif self.likelihood_noise_type == "jeffreys_prior":
-            self.noise_var = np.sum(diff_mat ** 2) / (
-                1 + (diff_mat.shape[0] * diff_mat.shape[1])
-            )
+            self.noise_var = np.sum(diff_mat ** 2) / (1 + (diff_mat.shape[0] * diff_mat.shape[1]))
             self.noise_var = max(self.noise_var, self.nugget_noise_var)
             _logger.info(f"Calculated ML-estimate for likelihood noise: {self.noise_var}")
 
@@ -296,8 +291,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         return log_lik_mf
 
     def _log_likelihood_fun(self, variance_vec, num_obs, diff_vec):
-        """
-        Multi-fidelity log-likelihood function.
+        """Multi-fidelity log-likelihood function.
 
         Args:
             variance_vec (np.array): Vector of predicted posterior variance values of
@@ -308,7 +302,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
         Retruns:
             log_lik_mf (np.array): Value of log-likelihood function
                                    for difference vector
-
         """
         inv_variance_vec = 1 / variance_vec
         log_lik_mf = (
@@ -324,10 +317,8 @@ class BMFGaussianStaticModel(LikelihoodModel):
         return np.array(log_lik_mf)
 
     def _get_feature_mat(self, y_LF_vec, x_vec, coords_mat):
-        """ 
-        Compose the low-fidelity feature matrix that consists of the low-fidelity
-        model outputs and the low-fidelity informative features.
-
+        """Compose the low-fidelity feature matrix that consists of the low-
+        fidelity model outputs and the low-fidelity informative features.
 
             y_LF_vec (np.array): Low-fidelity output vector
             x_vec (np.array): Input vector for the simulation model
@@ -336,7 +327,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
         Retruns:
             z_mat (np.array): Extended low-fidelity matrix containing
                               informative feature dimensions
-
         """
         y_LF_vec = np.atleast_2d(y_LF_vec).T
         x_vec = np.atleast_2d(x_vec)
@@ -391,12 +381,10 @@ class BMFGaussianStaticModel(LikelihoodModel):
         return z_mat
 
     def _initialize(self):
-        """
-        Initialize the multi-fidelity likelihood model.
+        """Initialize the multi-fidelity likelihood model.
 
         Returns:
             None
-
         """
         _logger.info("---------------------------------------------------------------------")
         _logger.info("Speed-up through Bayesian multi-fidelity inverse analysis (BMFIA)!")
@@ -409,13 +397,12 @@ class BMFGaussianStaticModel(LikelihoodModel):
         self._build_approximation()
 
     def _build_approximation(self):
-        """
-        Construct the probabilistic surrogate / mapping based on the provided training-data and
-        optimize the hyper-parameters by maximizing the data's evidence or its lower bound (ELBO).
+        """Construct the probabilistic surrogate / mapping based on the
+        provided training-data and optimize the hyper-parameters by maximizing
+        the data's evidence or its lower bound (ELBO).
 
         Returns:
             None
-
         """
         # Start the bmfia (sub)iterator to create the training data for the probabilistic mapping
         self.z_train, self.y_hf_train = self.bmfia_subiterator.core_run()
@@ -432,8 +419,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
 
     # ------- TODO: below not needed atm but something similar might be of interest lateron -----
     def input_dim_red(self):
-        """
-        Compression of the input array of the simulation.
+        """Compression of the input array of the simulation.
 
         Returns:
             None
@@ -442,10 +428,9 @@ class BMFGaussianStaticModel(LikelihoodModel):
         # TODO: more to come...
 
     def get_random_fields_and_truncated_basis(self, explained_var=95.0):
-        """
-        Get the random fields and their description from the data files (pickle-files) and
-        return their truncated basis. The truncation is determined based on the explained
-        variance threshold (explained_var).
+        """Get the random fields and their description from the data files
+        (pickle-files) and return their truncated basis. The truncation is
+        determined based on the explained variance threshold (explained_var).
 
         Args:
             explained_var (float): Threshold for truncation in percent.
@@ -455,30 +440,19 @@ class BMFGaussianStaticModel(LikelihoodModel):
                                              as well as their truncated basis.
             x_uncorr (np.array): Array containing the samples of remaining uncorrelated random
                                  variables
-
         """
         raise NotImplementedError(
             "Implementation of the method "
             "'get_random_fields_and_truncated_basis' is not finished."
             "The method cannot be used at the moment. Abort..."
         )
-        # determine uncorrelated random variables
-        num_random_var = len(self.uncertain_parameters.get("random_variables"))
-        x_uncorr = self.X_mc[:, 0:num_random_var]
-
-        # iterate over all random fields
-        if self.uncertain_parameters.get("random_fields") is not None:
-            # TODO get information of random fields and conduct dim reduction
-            pass
 
     def _update_and_evaluate_forward_model(self):
-        """
-        Pass the variables update to subordinate simulation model and then evaluate the
-        simulation model.
+        """Pass the variables update to subordinate simulation model and then
+        evaluate the simulation model.
 
         Returns:
            Y_mat (np.array): Simulation output (row-wise) that corresponds to input batch X_batch
-
         """
         # Note that the wrapper of the model update needs to called externally such that
         # self.variables is updated
@@ -490,10 +464,10 @@ class BMFGaussianStaticModel(LikelihoodModel):
     # --------------------------- functions ------------------------------------------------------
     @staticmethod
     def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
-        """
-        Project the high-dimensional samples of the random field on the truncated bases to yield the
-        projection coefficients of the series expansion that serve as a new reduced representation
-        of the random fields
+        """Project the high-dimensional samples of the random field on the
+        truncated bases to yield the projection coefficients of the series
+        expansion that serve as a new reduced representation of the random
+        fields.
 
         Args:
             truncated_basis_dict (dic): Dictionary containing random field samples and truncated
@@ -503,7 +477,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
         Returns:
             coefs_mat (np.array): Matrix containing the reduced representation of all random fields
                                 stacked together along the columns
-
         """
         # TODO: not yet used at the moment but will follow soon
         coefs_mat = np.empty((num_samples, 0))

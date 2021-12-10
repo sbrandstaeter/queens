@@ -3,14 +3,15 @@ import glob
 import numpy as np
 import pandas as pd
 import vtk
+from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
+
 import pqueens.database.database as DB_module
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 from pqueens.post_post.post_post import PostPost
-from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
 
 class PostPostBACIEnsight(PostPost):
-    """ Class for post-post-processing BACI Ensight output
+    """Class for post-post-processing BACI Ensight output.
 
     Attributes:
         field_specification_dict (dict): Dictionary containing description of the output
@@ -23,7 +24,6 @@ class PostPostBACIEnsight(PostPost):
                                                 of the experimental data set
         output_label_experimental (str): Output label of the experimental data set
         time_label_experimental (str): Time label of the experimental data set
-
     """
 
     def __init__(
@@ -39,8 +39,7 @@ class PostPostBACIEnsight(PostPost):
         time_label_experimental,
         external_geometry_obj,
     ):
-        """
-        Init method for ensight post-post object.
+        """Init method for ensight post-post object.
 
         Args:
             delete_data_flag (bool):  Delete files after processing
@@ -58,7 +57,6 @@ class PostPostBACIEnsight(PostPost):
 
         Returns:
             Instance of PostPostBACIEnsight class (obj)
-
         """
         super(PostPostBACIEnsight, self).__init__(delete_data_flag, post_post_file_name_prefix_lst)
         self.field_specification_dict = field_specification_dict
@@ -72,14 +70,13 @@ class PostPostBACIEnsight(PostPost):
 
     @classmethod
     def from_config_create_post_post(cls, options):
-        """ Create post_post routine from problem description
+        """Create post_post routine from problem description.
 
         Args:
             options (dict): input options
 
         Returns:
             post_post: PostPostBACIEnsight object
-
         """
         post_post_options = options['options']
         delete_data_flag = post_post_options['delete_field_data']
@@ -130,10 +127,10 @@ class PostPostBACIEnsight(PostPost):
         )
 
     def read_post_files(self, files_of_interest, **kwargs):
-        """
-        Read-in EnSight files and interpolate fields to specified coordinates (e.g., of the
-        underlying experimental data).
-        Return then only the interpolated field values at these locations in form of an array.
+        """Read-in EnSight files and interpolate fields to specified
+        coordinates (e.g., of the underlying experimental data). Return then
+        only the interpolated field values at these locations in form of an
+        array.
 
         Args:
             files_of_interest (lst): List of file paths that should be read-in
@@ -141,7 +138,6 @@ class PostPostBACIEnsight(PostPost):
 
         Returns:
             None
-
         """
         index = kwargs.get('idx')
         try:
@@ -225,8 +221,7 @@ class PostPostBACIEnsight(PostPost):
         geometric_target,
         time_value,
     ):
-        """
-        Interpolate the vtk field to the coordinates from experimental data
+        """Interpolate the vtk field to the coordinates from experimental data.
 
         Args:
             vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
@@ -253,7 +248,6 @@ class PostPostBACIEnsight(PostPost):
         Returns:
             interpolated_data (np.array): Array of field values at specified coordinates/geometric
                                           sets
-
         """
         if geometric_target[0] == "experimental_data":
             response_data = self._get_data_from_experimental_coordinates(
@@ -278,8 +272,7 @@ class PostPostBACIEnsight(PostPost):
     def _get_data_from_experimental_coordinates(
         self, vtk_post_data_obj, vtk_array_type, vtk_field_label, vtk_field_components, time_value
     ):
-        """
-        Interpolate the ensight/vtk field to experimental coordinates
+        """Interpolate the ensight/vtk field to experimental coordinates.
 
         Args:
             vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
@@ -293,7 +286,6 @@ class PostPostBACIEnsight(PostPost):
         Returns:
             interpolated_data (np.array): Array of field values interpolated to coordinates
                                           of experimental data
-
         """
         experimental_coordinates_for_snapshot = []
         if self.time_label_experimental:
@@ -331,8 +323,8 @@ class PostPostBACIEnsight(PostPost):
         vtk_field_components,
         geometric_set,
     ):
-        """
-        Get entire fields for desired components at all nodes of desired geometric set.
+        """Get entire fields for desired components at all nodes of desired
+        geometric set.
 
         Args:
             vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
@@ -345,7 +337,6 @@ class PostPostBACIEnsight(PostPost):
 
         Returns:
             data (np.array): Array of field values for nodes of geometric set
-
         """
         geometric_set_data = self.db.load(self.experiment_name, 1, 'geometric_sets')
         if geometric_set_data is None:
@@ -392,8 +383,7 @@ class PostPostBACIEnsight(PostPost):
     def _interpolate_vtk(
         coordinates, vtk_post_data_obj, vtk_array_type, vtk_field_label, vtk_field_components
     ):
-        """
-        Interpolate the vtk solution field to given coordinates.
+        """Interpolate the vtk solution field to given coordinates.
 
         Args:
             coordinates (np.array): Coordinates at which the vtk solution field should be
@@ -408,7 +398,6 @@ class PostPostBACIEnsight(PostPost):
         Returns:
             interpolated_data (np.array): Numpy array with solution data interpolated to
                                           respective coordinates.
-
         """
 
         # -- create vtk point object from experimental coordinates --
@@ -458,8 +447,7 @@ class PostPostBACIEnsight(PostPost):
         return interpolated_data
 
     def _vtk_from_ensight(self, vtk_reader_obj, target_time, time_tol):
-        """
-        Load a vtk-object from the ensight BACI file.
+        """Load a vtk-object from the ensight BACI file.
 
         Args:
             vtk_reader_obj (obj): VTK reader object that contains data of interest
@@ -468,7 +456,6 @@ class PostPostBACIEnsight(PostPost):
 
         Retruns:
             vtk_solution_field (obj)
-
         """
         # Ensight contains different "timesets" which are containers for the actual data
         number_of_timesets = vtk_reader_obj.GetTimeSets().GetNumberOfItems()
@@ -501,12 +488,11 @@ class PostPostBACIEnsight(PostPost):
         return vtk_solution_field
 
     def write_geometry_coordinates_to_db(self):
-        """
-        Write geometry of interest to the database using QUEENS external geometry module.
+        """Write geometry of interest to the database using QUEENS external
+        geometry module.
 
         Returns:
             None
-
         """
         # read in the external geometry
         self.external_geometry_obj.main_run()

@@ -1,20 +1,20 @@
 import glob
 import os
-import numpy as np
 import re
+
+import numpy as np
 import vtk
 from vtk.util.numpy_support import vtk_to_numpy
+
 from pqueens.utils.run_subprocess import run_subprocess
 
 from .post_post import PostPost
 
 
 class PostPostBACIShape(PostPost):
-    """
-    class for distance to surface measurement post_post evaluation
-    this post_post class uses full ensight result in vtk to measure distance of surface from
-    simulations to experiment
-    """
+    """class for distance to surface measurement post_post evaluation this
+    post_post class uses full ensight result in vtk to measure distance of
+    surface from simulations to experiment."""
 
     def __init__(
         self,
@@ -27,7 +27,7 @@ class PostPostBACIShape(PostPost):
         displacement_fields,
         problem_dimension,
     ):
-        """Initialize post_post_baci_shape class
+        """Initialize post_post_baci_shape class.
 
         Args:
             path_ref_data (string): experimental data in monitor format
@@ -54,7 +54,7 @@ class PostPostBACIShape(PostPost):
 
     @classmethod
     def from_config_create_post_post(cls, base_settings):
-        """Create post_post routine from problem description
+        """Create post_post routine from problem description.
 
         Args:
             base_settings (list): input read from json input file
@@ -84,11 +84,10 @@ class PostPostBACIShape(PostPost):
 
     # ------------------------ COMPULSORY CHILDREN METHODS ------------------------
     def read_post_files(self, file_names, **kwargs):
-        """
-        main evaluation routine of post and post_post are located here
-        residual vector has signed scalar entries for distances between surface compared to
-        experiment surface defined via *.monitor file. *.monitor file is given in BACI heritage
-        format, so it is reusable.
+        """main evaluation routine of post and post_post are located here
+        residual vector has signed scalar entries for distances between surface
+        compared to experiment surface defined via *.monitor file. *.monitor
+        file is given in BACI heritage format, so it is reusable.
 
         write residual to self.result.
 
@@ -110,12 +109,10 @@ class PostPostBACIShape(PostPost):
         self.result = post_out
 
     def delete_field_data(self):
-        """
-        Delete output files except files with given prefix
+        """Delete output files except files with given prefix.
 
         Returns:
              None
-
         """
 
         inverse_prefix_expr = r"[!" + self.file_prefix + r"]*"
@@ -128,15 +125,13 @@ class PostPostBACIShape(PostPost):
 
     def error_handling(self, output_dir):
 
-        """
-        error handling function
+        """error handling function.
 
         Args:
             output_dir (string): location to copy failed input files to
 
         Returns:
             None
-
         """
         # TODO  ### Error Types ###
         # No QoI file
@@ -158,9 +153,8 @@ class PostPostBACIShape(PostPost):
             _, _, _, _ = run_subprocess(command_string)
 
     def read_monitorfile(self):
-        """
-        Read Monitor file
-        The Monitor File contains measurements from the experiments. It is formatted like for BACI.
+        """Read Monitor file The Monitor File contains measurements from the
+        experiments. It is formatted like for BACI.
 
         Returns:
             monfile_data (list): data from monitor file in numbers
@@ -230,10 +224,9 @@ class PostPostBACIShape(PostPost):
 
     def create_mesh_and_intersect_vtk(self, path):
 
-        """
-        Create vtk representation of deformed external_geometry_obj and evaluate surface distance
-        measurement for every given timestep from the experiment. (More than one for example for
-        viscous behaviour)
+        """Create vtk representation of deformed external_geometry_obj and
+        evaluate surface distance measurement for every given timestep from the
+        experiment. (More than one for example for viscous behaviour)
 
         Args:
             ref_data (list): formatted list from monitor file
@@ -241,7 +234,6 @@ class PostPostBACIShape(PostPost):
 
         Returns:
             residual (list): full residual from this post_post class
-
         """
         residual = []
         # get visual feedback for the intersection problems
@@ -394,8 +386,8 @@ class PostPostBACIShape(PostPost):
         return residual
 
     def stretch_vector(self, vec1, vec2, scalar):
-        """
-        short utility function to extend a vector by scalar factor on both ends.
+        """short utility function to extend a vector by scalar factor on both
+        ends.
 
         Args:
             vec1 (list): root point coordinates
@@ -415,9 +407,8 @@ class PostPostBACIShape(PostPost):
         return vec
 
     def compute_distance(self, intersection_points, measured_points):
-        """
-        short utility function to find the furthest outwards laying point for a set of
-        intersection points
+        """short utility function to find the furthest outwards laying point
+        for a set of intersection points.
 
         Args:
             intersection_points (list): intersection point coordinates
@@ -445,9 +436,8 @@ class PostPostBACIShape(PostPost):
 
     def create_UnstructuredGridFromEnsight(self, path, time):
 
-        """
-        read ensight file from post_processor and warpbyvector by displacement of *structure* result
-        in case files
+        """read ensight file from post_processor and warpbyvector by
+        displacement of *structure* result in case files.
 
         Args:
             path (string): experiment directory

@@ -1,12 +1,14 @@
+import os
+
+import gpflow as gpf
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-import gpflow as gpf
-from sklearn.preprocessing import StandardScaler
 from gpflow.utilities import print_summary, set_trainable
+from sklearn.preprocessing import StandardScaler
+
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
-from pqueens.utils.gpf_utils import set_transform_function, extract_block_diag, init_scaler
-import os
+from pqueens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # suppress warnings
 
@@ -18,7 +20,7 @@ else:
 
 
 class GPFlowRegression(RegressionApproximation):
-    """Class for creating GP regression model based on GPFlow
+    """Class for creating GP regression model based on GPFlow.
 
     This class constructs a GP regression, using a GPFlow model.
 
@@ -35,7 +37,6 @@ class GPFlowRegression(RegressionApproximation):
         dimension_lengthscales (int): Dimension of lengthscales
         scaler_x (sklearn scaler object): Scaler for inputs
         scaler_y (sklearn scaler object): Scaler for outputs
-
     """
 
     def __init__(
@@ -51,7 +52,7 @@ class GPFlowRegression(RegressionApproximation):
         number_training_iterations,
         dimension_lengthscales,
         scaler_x,
-        scaler_y
+        scaler_y,
     ):
         """
         Args:
@@ -84,7 +85,7 @@ class GPFlowRegression(RegressionApproximation):
 
     @classmethod
     def from_config_create(cls, config, approx_name, x_train, y_train):
-        """Create approximation from options dictionary
+        """Create approximation from options dictionary.
 
         Args:
             config (dict):         Dictionary with options
@@ -147,13 +148,11 @@ class GPFlowRegression(RegressionApproximation):
             number_training_iterations,
             dimension_lengthscales,
             scaler_x,
-            scaler_y
+            scaler_y,
         )
 
     def train(self):
-        """
-        Train the GP by maximizing the likelihood
-        """
+        """Train the GP by maximizing the likelihood."""
 
         opt = gpf.optimizers.Scipy()
 
@@ -166,7 +165,7 @@ class GPFlowRegression(RegressionApproximation):
                     [dimension_hyperparameters],
                     minval=self.restart_min_value,
                     maxval=self.restart_max_value,
-                    seed=i
+                    seed=i,
                 )
                 self.assign_hyperparameters(hyperparameters, transform=False)
             try:
@@ -189,8 +188,7 @@ class GPFlowRegression(RegressionApproximation):
         print_summary(self.model)
 
     def predict(self, x_test, support='y', full_cov=False):
-        """
-        Predict the posterior distribution at x_new
+        """Predict the posterior distribution at x_new.
 
         Options:
             'f(x_test)': predict the latent function values
@@ -241,8 +239,7 @@ class GPFlowRegression(RegressionApproximation):
         return output
 
     def assign_hyperparameters(self, hyperparameters, transform=False):
-        """
-        Assign untransformed (constrained) hyperparameters to model
+        """Assign untransformed (constrained) hyperparameters to model.
 
         Args:
             hyperparameters (np.ndarray):   hyperparameters of GP
@@ -254,12 +251,12 @@ class GPFlowRegression(RegressionApproximation):
         if transform:
             hyperparameters = self.transform_hyperparameters(hyperparameters)
 
-        self.model.kernel.lengthscales.assign(hyperparameters[0:self.dimension_lengthscales])
+        self.model.kernel.lengthscales.assign(hyperparameters[0 : self.dimension_lengthscales])
         self.model.kernel.variance.assign(hyperparameters[self.dimension_lengthscales])
 
     def transform_hyperparameters(self, hyperparameters):
-        """
-        Transform hyperparameters from unconstrained to constrained representation
+        """Transform hyperparameters from unconstrained to constrained
+        representation.
 
         Args:
             hyperparameters (np.ndarray):   unconstrained representation of hyperparameters
@@ -269,7 +266,7 @@ class GPFlowRegression(RegressionApproximation):
         hyperparameters = tf.convert_to_tensor(hyperparameters)
 
         lengthscales = self.model.kernel.lengthscales.transform.forward(
-            hyperparameters[0:self.dimension_lengthscales]
+            hyperparameters[0 : self.dimension_lengthscales]
         )
         variances = tf.reshape(
             self.model.kernel.variance.transform.forward(
@@ -283,8 +280,7 @@ class GPFlowRegression(RegressionApproximation):
         return hyperparameters
 
     def get_dimension_hyperparameters(self):
-        """
-        Return the dimension of the hyperparameters
+        """Return the dimension of the hyperparameters.
 
         Returns:
             dimension_hyperparameters (int):   dimension of hyperparameters

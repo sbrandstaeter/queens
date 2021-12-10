@@ -1,15 +1,11 @@
-"""
-Module supplies functions for printing out information at the
-beginning of each QUEENS run.
-"""
+"""Module supplies functions for printing out information at the beginning of
+each QUEENS run."""
 
 import sys
 
 
 def print_scheduling_information(scheduler_type, remote, remote_connect, singularity):
-    """
-    Print out information on chosen scheduling
-    """
+    """Print out information on chosen scheduling."""
     # determine scheduler name
     scheduler_dict = {
         'standard': 'standard',
@@ -44,9 +40,7 @@ def print_scheduling_information(scheduler_type, remote, remote_connect, singula
 def print_driver_information(
     driver_type, cae_software_version, post_post_file_prefix, docker_image
 ):
-    """
-    Print out information on chosen driver
-    """
+    """Print out information on chosen driver."""
     # determine name of driver
     driver_dict = {
         'baci': 'BACI',

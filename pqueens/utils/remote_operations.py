@@ -1,14 +1,10 @@
-"""
-Module supplies functions to conduct operation on remote resource.
-"""
+"""Module supplies functions to conduct operation on remote resource."""
 
 from pqueens.utils.run_subprocess import run_subprocess
 
 
 def make_directory_on_remote(remote_connect, directory):
-    """ 
-    Make (empty) directory on remote resource
-    """
+    """Make (empty) directory on remote resource."""
     command_list = [
         'ssh',
         remote_connect,
@@ -22,15 +18,12 @@ def make_directory_on_remote(remote_connect, directory):
     # detection of failed command
     if stderr:
         raise RuntimeError(
-            "\nDirectory could not be made on remote machine!\nStderr from remote:"
-            f"\n{stderr}"
+            "\nDirectory could not be made on remote machine!\nStderr from remote:" f"\n{stderr}"
         )
 
 
 def copy_directory_to_remote(remote_connect, local_dir, remote_dir):
-    """ 
-    Copy (local) directory to remote resource
-    """
+    """Copy (local) directory to remote resource."""
     command_list = [
         "scp -r ",
         local_dir,
@@ -45,6 +38,5 @@ def copy_directory_to_remote(remote_connect, local_dir, remote_dir):
     # detection of failed command
     if stderr:
         raise RuntimeError(
-            "\nDirectory could not be copied to remote machine!\nStderr from remote:"
-            f"\n{stderr}"
+            "\nDirectory could not be copied to remote machine!\nStderr from remote:" f"\n{stderr}"
         )

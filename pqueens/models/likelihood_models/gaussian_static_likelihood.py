@@ -4,8 +4,7 @@ from .likelihood_model import LikelihoodModel
 
 
 class GaussianStaticLikelihood(LikelihoodModel):
-    """
-    Gaussian likelihood model with static noise (one hyperparameter).
+    """Gaussian likelihood model with static noise (one hyperparameter).
 
     Attributes:
         noise_var (float): Current value of the likelihood noise parameter
@@ -17,7 +16,6 @@ class GaussianStaticLikelihood(LikelihoodModel):
 
     Returns:
         Instance of GaussianStaticLikelihood Class
-
     """
 
     def __init__(
@@ -62,8 +60,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
         output_label,
         coord_labels,
     ):
-        """
-        Create Gaussian static likelihood model from problem description
+        """Create Gaussian static likelihood model from problem description.
 
         Args:
             model_name (str): Name of the likelihood model
@@ -78,7 +75,6 @@ class GaussianStaticLikelihood(LikelihoodModel):
 
         Returns:
             instance of GaussianStaticLikelihood class
-
         """
         # get options
         model_options = config[model_name]
@@ -103,13 +99,11 @@ class GaussianStaticLikelihood(LikelihoodModel):
         )
 
     def evaluate(self):
-        """
-        Evaluate likelihood with current set of variables which are an attribute of the
-        underlying simulation model
+        """Evaluate likelihood with current set of variables which are an
+        attribute of the underlying simulation model.
 
         Returns:
             log_likelihood (np.array): Vector of log-likelihood values per model input.
-
         """
         Y_mat = self._update_and_evaluate_forward_model()
 
@@ -136,9 +130,9 @@ class GaussianStaticLikelihood(LikelihoodModel):
         return log_likelihood
 
     def _update_noise_var(self, num_obs, Y_mat):
-        """
-        Potentially update the static noise variance of the likelihood model with a Jeffreys
-        prior MAP estimate or just keep it fixed at desired value
+        """Potentially update the static noise variance of the likelihood model
+        with a Jeffreys prior MAP estimate or just keep it fixed at desired
+        value.
 
         Args:
             num_obs (int): Number of experimental observations (length of y_obs)
@@ -147,7 +141,6 @@ class GaussianStaticLikelihood(LikelihoodModel):
 
         Returns:
             None
-
         """
         # either keep noise level fixed or regulate it with a Jeffreys prior
         if self.likelihood_noise_type == "fixed":
@@ -177,13 +170,11 @@ class GaussianStaticLikelihood(LikelihoodModel):
             self.noise_var = self.nugget_noise_var
 
     def _update_and_evaluate_forward_model(self):
-        """
-        Pass the variables update to subordinate simulation model and then evaluate the
-        simulation model.
+        """Pass the variables update to subordinate simulation model and then
+        evaluate the simulation model.
 
         Returns:
            Y_mat (np.array): Simulation output (row-wise) that corresponds to input batch X_batch
-
         """
         # Note that the wrapper of the model update needs to called externally such that
         # self.variables is updated

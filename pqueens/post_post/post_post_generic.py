@@ -1,19 +1,20 @@
 import glob
+import logging
 
 import numpy as np
 import pandas as pd
+
 from pqueens.post_post.post_post import PostPost
-import logging
+
 _logger = logging.getLogger(__name__)
 
 
 class PostPostGeneric(PostPost):
-    """ Class for post-post-processing output from a csv file
+    """Class for post-post-processing output from a csv file.
 
-        Attributes:
-            use_col_lst (lst):   List of lists (per result file path) with columns to extract
-            use_row_lst (lst):  List of lists (per result file path) with Index of rows to extract
-
+    Attributes:
+        use_col_lst (lst):   List of lists (per result file path) with columns to extract
+        use_row_lst (lst):  List of lists (per result file path) with Index of rows to extract
     """
 
     def __init__(
@@ -24,7 +25,7 @@ class PostPostGeneric(PostPost):
         delete_data_flag,
         post_post_file_name_prefix_lst,
     ):
-        """ Init PostPost object
+        """Init PostPost object.
 
         Args:
             skip_rows_lst (lst):          List with number of header rows to skip per file prefix
@@ -32,7 +33,6 @@ class PostPostGeneric(PostPost):
             use_row_lst (lst):            List with indices of column to extract per file prefix
             delete_data_flag (bool):      Delete files after processing
             post_post_file_name_prefix_lst (lst):        List with prefixes of result files
-
         """
         super(PostPostGeneric, self).__init__(delete_data_flag, post_post_file_name_prefix_lst)
 
@@ -42,7 +42,7 @@ class PostPostGeneric(PostPost):
 
     @classmethod
     def from_config_create_post_post(cls, options):
-        """ Create post_post routine from problem description
+        """Create post_post routine from problem description.
 
         Args:
             options (dict): input options
@@ -77,15 +77,13 @@ class PostPostGeneric(PostPost):
         )
 
     def read_post_files(self, file_names, **kwargs):
-        """
-        Loop over post files in given output directory
+        """Loop over post files in given output directory.
 
         Args:
             file_names (str): Path with filenames without specific extension
 
         Returns:
             None
-
         """
         idx = kwargs.get('idx')
 

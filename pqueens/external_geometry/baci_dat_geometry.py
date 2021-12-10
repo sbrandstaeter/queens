@@ -10,8 +10,7 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 
 class BaciDatExternalGeometry(ExternalGeometry):
-    """
-    Class to read in external geometries based on BACI-dat files.
+    """Class to read in external geometries based on BACI-dat files.
 
     Args:
         path_to_dat_file (str): Path to dat file from which the external_geometry_obj should be
@@ -72,7 +71,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
     Returns:
         geometry_obj (obj): Instance of BaciDatExternalGeometry class
-
     """
 
     dat_sections = [
@@ -151,15 +149,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
     @classmethod
     def from_config_create_external_geometry(cls, config):
-        """
-        Create BaciDatExternalGeometry object from problem description
+        """Create BaciDatExternalGeometry object from problem description.
 
         Args:
             config (dict): Problem description
 
         Returns:
             geometric_obj (obj): Instance of BaciDatExternalGeometry
-
         """
         interface_name = config['model'].get('interface')
         if interface_name is None:
@@ -203,27 +199,26 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
     # --------------- child methods that must be implemented --------------------------------------
     def read_external_data(self):
-        """Read the external input file with geometric data"""
+        """Read the external input file with geometric data."""
         self._read_geometry_from_dat_file()
 
     def organize_sections(self):
-        """Organize the sections of the external external_geometry_obj"""
+        """Organize the sections of the external external_geometry_obj."""
         self._get_desired_dat_sections()
 
     def finish_and_clean(self):
-        """Finish and clean the analysis for external external_geometry_obj extraction"""
+        """Finish and clean the analysis for external external_geometry_obj
+        extraction."""
         self._sort_node_coordinates()
         self._get_element_centers()
 
     # -------------- helper methods ---------------------------------------------------------------
     def _read_geometry_from_dat_file(self):
-        """
-        Read the dat-file line by line to be memory efficient.
-        Only save desired information.
+        """Read the dat-file line by line to be memory efficient. Only save
+        desired information.
 
         Returns:
             None
-
         """
         with open(self.path_to_dat_file) as my_dat:
             # read dat file line-wise
@@ -248,12 +243,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     self._get_elements_belonging_to_desired_material(line)
 
     def _get_element_centers(self):
-        """
-        Calculate the geometric center of each finite element
+        """Calculate the geometric center of each finite element.
 
         Returns:
             None
-
         """
         element_centers = []
         # TODO atm we only take first element of the list and dont loop over several random fields
@@ -269,17 +262,15 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self.element_centers = np.array(element_centers)
 
     def _get_current_dat_section(self, line):
-        """
-        Check if the current line starts a new section in the dat-file.
-        Update self.current_dat_section if new section was found. If the current line is the
-        actual section identifier, return a True boolean.
+        """Check if the current line starts a new section in the dat-file.
+        Update self.current_dat_section if new section was found. If the
+        current line is the actual section identifier, return a True boolean.
 
         Args:
             line (str): Current line of the dat-file
 
         Returns:
             bool (boolean): True or False depending if current line is the section match
-
         """
         # regex for the sections
         section_name_re = re.compile('^-+([^-].+)$')
@@ -303,12 +294,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
             return False
 
     def _check_if_in_desired_dat_section(self):
-        """
-        Return True if we are in a dat-section that contains the desired geometric set.
+        """Return True if we are in a dat-section that contains the desired
+        geometric set.
 
         Returns:
             Boolean
-
         """
         if self.current_dat_section in self.desired_dat_sections.keys():
             return True
@@ -316,12 +306,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
             return False
 
     def _get_desired_dat_sections(self):
-        """
-        Get the dat-sections (and its identifier) that contain the desired geometric sets.
+        """Get the dat-sections (and its identifier) that contain the desired
+        geometric sets.
 
         Returns:
             None
-
         """
         # initialize keys with empty lists
         for geo_set in self.list_geometric_sets:
@@ -343,21 +332,20 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 )
 
     def _get_elements_belonging_to_desired_material(self, line):
-        """
-        Get finite element_topology that belongs to the material definition of interest from BACI
-        element description in dat-file. Note that we assume that the geometric set of interest
-        also has its own material name. This speeds-up the element-topology mapping significantly as
-        we do not have to find which element belongs to which geometric set by performing a large
-        node membership search per element and for all nodes of the element. On the other hand
-        this assumption requires that the analyst provides a dat-file in the correct format.
-
+        """Get finite element_topology that belongs to the material definition
+        of interest from BACI element description in dat-file. Note that we
+        assume that the geometric set of interest also has its own material
+        name. This speeds-up the element-topology mapping significantly as we
+        do not have to find which element belongs to which geometric set by
+        performing a large node membership search per element and for all nodes
+        of the element. On the other hand this assumption requires that the
+        analyst provides a dat-file in the correct format.
 
         Args:
             line (str): Current line in the dat-file
 
         Returns:
             None
-
         """
         # Note that the latter applies to all element sections!
         if "ELEMENTS" in self.current_dat_section and self.list_associated_material_numbers:
@@ -380,30 +368,27 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 self.element_topology[0]['material'].append(material_number)
 
     def _get_materials(self, line):
-        """
-        Get the different material definitions from the dat file
+        """Get the different material definitions from the dat file.
 
         Args:
             line (str): Current line of the dat file
 
         Returns:
             None
-
         """
         if self.current_dat_section == "MATERIALS":
             self.original_materials_in_dat.append(int(line.split()[1]))
 
     def _get_topology(self, line):
-        """
-        Get the geometric topology by extracting and grouping (mesh) nodes that
-        belong to the desired geometric sets and save them to their topology class.
+        """Get the geometric topology by extracting and grouping (mesh) nodes
+        that belong to the desired geometric sets and save them to their
+        topology class.
 
         Args:
             line (str): Current line of the dat-file
 
         Returns:
             None
-
         """
         topology_name = ' '.join(line.split()[2:4])
         node_list = line.split()
@@ -480,15 +465,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     self.volume_topology.extend(new_volume_topology_dict)
 
     def _get_design_description(self, line):
-        """
-        Extract a short geometric description from the dat-file
+        """Extract a short geometric description from the dat-file.
 
         Args:
             line (str): Current line of the dat-file
 
         Returns:
             None
-
         """
         # get the overall design description of the problem at hand
         if self.current_dat_section == 'DESIGN DESCRIPTION':
@@ -505,16 +488,15 @@ class BaciDatExternalGeometry(ExternalGeometry):
             self.design_description[design_list[0]] = design_list[1]
 
     def _get_only_desired_topology(self, line):
-        """
-        Check if the current dat-file sections contains desired geometric sets. Skip the topology
-        extraction if the current section does not contain a desired geometric set, anyways.
+        """Check if the current dat-file sections contains desired geometric
+        sets. Skip the topology extraction if the current section does not
+        contain a desired geometric set, anyways.
 
         Args:
             line (str): Current line of the dat-file
 
         Returns:
             None
-
         """
         # skip lines that are not part of a desired section
         desired_section_boolean = self._check_if_in_desired_dat_section()
@@ -526,15 +508,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
             self._get_topology(line)
 
     def _get_only_desired_coordinates(self, line):
-        """
-        Get coordinates of nodes that belong to a desired geometric set.
+        """Get coordinates of nodes that belong to a desired geometric set.
 
         Args:
             line (str): Current line of the dat-file
 
         Returns:
             None
-
         """
         if self.current_dat_section == 'NODE COORDS':
             node_list = line.split()
@@ -546,28 +526,25 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     self._get_coordinates_of_desired_geometric_sets(node_list)
 
     def _get_coordinates_of_desired_geometric_sets(self, node_list):
-        """
-        Extract node and coordinate information of the current dat-file line.
+        """Extract node and coordinate information of the current dat-file
+        line.
 
         Args:
             node_list (list): Current line of the dat-file
 
         Returns:
             None
-
         """
         self.node_coordinates['node_mesh'].append(int(node_list[1]))
         nodes_as_float_list = [float(value) for value in node_list[3:6]]
         self.node_coordinates['coordinates'].append(nodes_as_float_list)
 
     def _get_nodes_of_interest(self):
-        """
-        Based on the extracted topology, get a unique list of all (mesh) nodes that are part of
-        the extracted topology.
+        """Based on the extracted topology, get a unique list of all (mesh)
+        nodes that are part of the extracted topology.
 
         Returns:
             None
-
         """
         node_mesh_nodes = []
         for node_topo in self.node_topology:
@@ -612,8 +589,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
     # -------------- write random fields to dat file ----------------------------------------------
     def write_random_fields_to_dat(self, random_fields_lst, job_id):
-        """
-        Write the realized random fields to the dat file/overwrite the old problem description
+        """Write the realized random fields to the dat file/overwrite the old
+        problem description.
 
         Args:
             random_fields_lst (lst): List of descriptions for involved random fields whose
@@ -621,7 +598,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
             job_id (int): Number of the current job
 
         Returns: specific name the random fields
-
         """
         # copy the dat file as a new file to a tmp-dir using the "mktemp" command
         filename_path, file_extension = os.path.splitext(self.path_to_dat_file)
@@ -759,13 +735,12 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
     # ------ write random material fields -----------------------------------------------
     def _organize_new_material_definitions(self):
-        """
-        Organize the material definitions and generate the new material naming by continuing from
-        the maximum material number that was found in the dat file.
+        """Organize the material definitions and generate the new material
+        naming by continuing from the maximum material number that was found in
+        the dat file.
 
         Returns:
             None
-
         """
         # Material definitions -> these are the mat numbers
         # note that this is a list of lists
@@ -819,13 +794,12 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 )
 
     def _assign_elementwise_material_to_structure_ele(self, line):
-        """
-        Assign and write the new material definitions (per element in desired geometric set) to
-        the associated structure element under the dat section `STRUCTURE ELEMENTS`
+        """Assign and write the new material definitions (per element in
+        desired geometric set) to the associated structure element under the
+        dat section `STRUCTURE ELEMENTS`
 
         Returns:
             None
-
         """
         # TODO below we take the first list entry and dont loop for now over lists of list.
         # The first material in the sublist is assumed to be the base material, the following
@@ -855,9 +829,9 @@ class BaciDatExternalGeometry(ExternalGeometry):
             print(line)
 
     def _write_elementwise_materials(self, line, random_field_lst):
-        """
-        Write the new material definitions under `MATERIALS` such that we have one new material
-        per element that is part of the geometric set where the random field is defined on.
+        """Write the new material definitions under `MATERIALS` such that we
+        have one new material per element that is part of the geometric set
+        where the random field is defined on.
 
         Args:
             line (str): Current line in the dat-file
@@ -866,7 +840,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         Returns:
             None
-
         """
         current_material_number = int(line.split()[1])
 
@@ -897,10 +870,9 @@ class BaciDatExternalGeometry(ExternalGeometry):
             print(line)
 
     def _write_base_materials(self, current_material_number, line, material_fields):
-        """
-        Write the base materials field elementwise, respectively materials without nested
-        dependencies.
-        
+        """Write the base materials field elementwise, respectively materials
+        without nested dependencies.
+
         Args:
             current_material_number (int): Old/current material number
             line (str): Current line in the dat-file
@@ -908,7 +880,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         Returns:
             None
-
         """
         # Add new material definitions
         # TODO Note: new_material numbers is atm just a list for the first topology
@@ -950,8 +921,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 )
 
     def _write_nested_materials(self, line, material_fields):
-        """
-        Write the nested materials field elementwise.
+        """Write the nested materials field elementwise.
 
         Args:
             line (str): Current line in the dat-file
@@ -959,7 +929,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         Returns:
             None
-
         """
         # below we loop over numbers of nested materials
         for idx, material_num in enumerate(self.new_material_numbers[1]):
@@ -980,18 +949,17 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
     @staticmethod
     def _parse_material_value_dependent_on_element_center(line, realization_index, material_fields):
-        """
-        Parse the material value in case the line contains the material parameter name
+        """Parse the material value in case the line contains the material
+        parameter name.
 
         Args:
             line (str): Current line of the dat-input file
-            realization_index (int): Index of field value that corresponds to current element / 
+            realization_index (int): Index of field value that corresponds to current element /
                                      line which should be changed
             material_fields (lst): List containing the random field descriptions and realizations
 
         Returns:
             line_new (str): New updated line that contains material value of field realization
-
         """
         # TODO atm we only assume one random material field (see [0]). This should be generalized!
         mat_param_name = material_fields[0]["name"]  # TODO see if name is correct here
@@ -1007,9 +975,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
     # ---- write new random boundary conditions (point wise) -----------------------------------
     def _write_update_design_description(self, old_line, random_fields_lst):
-        """
-        Overwrite the design description in the dat-file such that the new random field BCs are
-        considered.
+        """Overwrite the design description in the dat-file such that the new
+        random field BCs are considered.
 
         Args:
             old_line (str): Current/former line in the dat-file
@@ -1017,7 +984,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         Returns:
             None
-
         """
         # Some clean-up of the line string
         line = old_line.strip()
@@ -1067,9 +1033,9 @@ class BaciDatExternalGeometry(ExternalGeometry):
         pass
 
     def _write_design_point_dirichlet_conditions(self, realized_random_fields_lst, line):
-        """
-        Convert the random fields, defined on the geometric set of interest, into design point
-        dirichlet BCs such that each dpoint contains a discrete value of the random field
+        """Convert the random fields, defined on the geometric set of interest,
+        into design point dirichlet BCs such that each dpoint contains a
+        discrete value of the random field.
 
         Args:
             realized_random_fields_lst (lst): List containing the design description of the
@@ -1078,7 +1044,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         Returns:
             None
-
         """
 
         # random fields for these sets if dirichlet
@@ -1154,23 +1119,21 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
     @staticmethod
     def _get_old_num_design_point_dirichlet_conditions(line):
-        """
-        Return the former number of dirichlet point conditions
+        """Return the former number of dirichlet point conditions.
 
         Args:
             line (str): String of current dat-file line
 
         Returns:
             old_num (int): old number of dirichlet point conditions
-
         """
         old_num = int(line.split()[1])
 
         return old_num
 
     def _overwrite_num_design_point_dirichlet_conditions(self, realized_random_fields_lst, old_num):
-        """
-        Write the new number of design point dirichlet conditions to the design description.
+        """Write the new number of design point dirichlet conditions to the
+        design description.
 
         Args:
             realized_random_fields_lst (lst): List containing vectors with the values of the
@@ -1179,7 +1142,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         Returns:
             None
-
         """
         # loop over all dirichlet nodes
         field_values = []
@@ -1268,10 +1230,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
         fun_2,
         fun_3,
     ):
-        """
-        Adopt and write the constant or determinsitic DOFs of the Dirichlet point conditions.
-        These conditions did not exist before but only one DOF at each discrete point might be
-        drawn form a random field; the other DOFs might be a constant value, e.g., 0.
+        """Adopt and write the constant or determinsitic DOFs of the Dirichlet
+        point conditions. These conditions did not exist before but only one
+        DOF at each discrete point might be drawn form a random field; the
+        other DOFs might be a constant value, e.g., 0.
 
         Args:
             fields_dirich_on_geo_set (lst): List containing the descriptions and a
@@ -1320,7 +1282,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
             fun_3 (np.array): Array containing integer identifiers for functions that are applied to
                               associated dimension of the random field. This is a BACI specific
                               function that might, e.g., vary in time.
-
         """
         # TODO see how this behaves for several fields
         set_shape = fields_dirich_on_geo_set[0]['values'].shape
@@ -1379,16 +1340,14 @@ class BaciDatExternalGeometry(ExternalGeometry):
         )
 
     def _get_my_topology(self, geo_set_name_type):
-        """
-        Get the topology of a geometric set, meaning its node mappings, based on the type of the
-        geometric set.
+        """Get the topology of a geometric set, meaning its node mappings,
+        based on the type of the geometric set.
 
         Args:
             geo_set_name_type:
 
         Returns:
             my_topology (lst): List with desired geometric topology
-
         """
         # TODO this is problematic as topology has not been read it for the new object
         if geo_set_name_type == 'DNODE':
@@ -1407,16 +1366,15 @@ class BaciDatExternalGeometry(ExternalGeometry):
         return my_topology
 
     def _create_new_node_sets(self, random_fields_lst):
-        """
-        From a given geometric set of interest: Identify associated nodes and add them as a new
-        node-set to the geometric set-description of the external external_geometry_obj.
+        """From a given geometric set of interest: Identify associated nodes
+        and add them as a new node-set to the geometric set-description of the
+        external external_geometry_obj.
 
         Args:
             random_fields_lst (lst): List containing descriptions of involved random fields
 
         Returns:
             None
-
         """
         # iterate through all random fields that encode BCs
         BCs_random_fields = (
@@ -1464,12 +1422,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self.new_nodes_lst = nodes_mesh_lst
 
     def _write_new_node_sets(self):
-        """
-        Write the new node sets to the dat-file as individual dnodes.
+        """Write the new node sets to the dat-file as individual dnodes.
 
         Returns:
             None
-
         """
         for node_set in self.new_nodes_lst:
             for mesh_node, topo_node in zip(node_set['node_mesh'], node_set['topo_dnodes']):

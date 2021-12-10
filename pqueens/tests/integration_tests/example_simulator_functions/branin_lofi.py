@@ -2,7 +2,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.branin_medfi im
 
 
 def branin_lofi(x1, x2):
-    """ Low-fidelity fidelity Branin function
+    """Low-fidelity fidelity Branin function.
 
     Compute value of medium-fidelity version of Branin function as described
     in [1]. The corresponding high- and low-fidelity versions are implemented

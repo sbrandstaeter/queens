@@ -3,8 +3,8 @@ import numpy as np
 
 
 def gnuplot_gp_convergence(iter_lst, fun_value_lst):
-    """
-    Make some convergence plots for Gaussian Process optimization and convergence.
+    """Make some convergence plots for Gaussian Process optimization and
+    convergence.
 
     Args:
         iter_lst (lst): List with iteration numbers up to now
@@ -12,7 +12,6 @@ def gnuplot_gp_convergence(iter_lst, fun_value_lst):
 
     Returns:
         None
-
     """
     gnp.plot(
         np.array(iter_lst).reshape(1, -1),

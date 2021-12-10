@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import pytest
+
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 from pqueens.main import get_options
 from pqueens.utils import injector

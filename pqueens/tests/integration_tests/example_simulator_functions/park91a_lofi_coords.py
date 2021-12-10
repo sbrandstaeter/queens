@@ -1,4 +1,5 @@
 import numpy as np
+
 from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi import park91a_hifi
 
 
@@ -33,7 +34,7 @@ def park91a_lofi_coords(x1, x2, x3, x4):
 
 
 def main(job_id, params):
-    """ Interface to Park91a test fuction
+    """Interface to Park91a test fuction.
 
     Args:
         job_id (int):  ID of job

@@ -1,12 +1,12 @@
-import logging
-import sys
 import io
+import logging
 import re
+import sys
 import time
 
 
 class LogFilter(logging.Filter):
-    """Filters (lets through) all messages with level <= LEVEL"""
+    """Filters (lets through) all messages with level <= LEVEL."""
 
     def __init__(self, level):
         super().__init__()
@@ -17,8 +17,7 @@ class LogFilter(logging.Filter):
 
 
 def setup_basic_logging(output_dir, experiment_name):
-    """
-    Setup basic logging
+    """Setup basic logging.
 
     Args:
         output_dir (Path): output directory where to save the log-file
@@ -65,8 +64,7 @@ def setup_basic_logging(output_dir, experiment_name):
 
 
 def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False):
-    """
-    Setup job logging and get job logger
+    """Setup job logging and get job logger.
 
     Args:
         logger_name (str): logger name
@@ -115,8 +113,7 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
 
 
 def job_logging(command_string, process, joblogger, terminate_expr):
-    """
-    Actual logging of job
+    """Actual logging of job.
 
     Args:
         process (obj): subprocess object
@@ -166,10 +163,8 @@ def job_logging(command_string, process, joblogger, terminate_expr):
 
 
 def finish_job_logger(joblogger, lfh, efh, sh):
-    """
-    Close and remove file handlers
-    (to prevent OSError: [Errno 24] Too many open files)
-    """
+    """Close and remove file handlers (to prevent OSError: [Errno 24] Too many
+    open files)"""
     # we need to close the FileHandlers to
     lfh.close()
     efh.close()
@@ -181,8 +176,7 @@ def finish_job_logger(joblogger, lfh, efh, sh):
 
 
 def log_through_print(logger, command):
-    """
-    Parse print output to logger
+    """Parse print output to logger.
 
     This can be used e.g. for printing a GP kernel or a pandas DataFrame.
     It works for all objects that implement a print method.

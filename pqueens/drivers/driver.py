@@ -9,8 +9,7 @@ from pqueens.external_geometry.external_geometry import ExternalGeometry
 
 
 class Driver(metaclass=abc.ABCMeta):
-    """
-     Abstract base class for drivers in QUEENS.
+    """Abstract base class for drivers in QUEENS.
 
     The driver manages simulation runs in QUEENS on local or remote computing resources
     with or without Singularity containers depending on the chosen CAE software (see also
@@ -71,7 +70,6 @@ class Driver(metaclass=abc.ABCMeta):
 
     Returns:
         driver (obj):         instance of driver class
-
     """
 
     def __init__(self, base_settings):
@@ -134,8 +132,7 @@ class Driver(metaclass=abc.ABCMeta):
         workdir=None,
         cluster_options=None,
     ):
-        """
-        Create driver from problem description
+        """Create driver from problem description.
 
         Args:
             config (dict):  Dictionary containing configuration from QUEENS input file
@@ -148,7 +145,6 @@ class Driver(metaclass=abc.ABCMeta):
 
         Returns:
             driver (obj):   Driver object
-
         """
         from pqueens.drivers.baci_driver import BaciDriver
         from pqueens.post_post.post_post import PostPost
@@ -314,36 +310,30 @@ class Driver(metaclass=abc.ABCMeta):
 
     # ------ Core methods ----------------------------------------------------- #
     def pre_job_run_and_run_job(self):
-        """
-        Prepare and execute job run
+        """Prepare and execute job run.
 
         Returns:
             None
-
         """
         self.pre_job_run()
         self.run_job()
 
     def pre_job_run(self):
-        """
-        Prepare job run
+        """Prepare job run.
 
         Returns:
             None
-
         """
         if self.job is None:
             self.initialize_job_in_db()
         self.prepare_input_files()
 
     def post_job_run(self):
-        """
-        Post-process (if required), post-post process (if required) and
-        finalize job in database
+        """Post-process (if required), post-post process (if required) and
+        finalize job in database.
 
         Returns:
             None
-
         """
         if self.do_postprocessing is not None:
             self.postprocess_job()
@@ -365,12 +355,10 @@ class Driver(metaclass=abc.ABCMeta):
 
     # ------ Base class methods ------------------------------------------------ #
     def initialize_job_in_db(self):
-        """
-        Initialize job in database
+        """Initialize job in database.
 
         Returns:
             None
-
         """
         # load job from database
         self.job = self.database.load(
@@ -394,12 +382,11 @@ class Driver(metaclass=abc.ABCMeta):
         )
 
     def postpostprocessing(self):
-        """
-        Extract data of interest from post-processed files and save them to database
+        """Extract data of interest from post-processed files and save them to
+        database.
 
         Returns:
             None
-
         """
 
         # load job from database if existent
@@ -434,12 +421,10 @@ class Driver(metaclass=abc.ABCMeta):
             sys.stdout.write("Got result %s\n" % (self.result))
 
     def finalize_job_in_db(self):
-        """
-        Finalize job in database
+        """Finalize job in database.
 
         Returns:
             None
-
         """
 
         if self.result is None:
@@ -484,11 +469,10 @@ class Driver(metaclass=abc.ABCMeta):
 
     # ---------------- COMMAND-ASSEMBLY METHODS ----------------------------------
     def assemble_remote_run_cmd(self, run_cmd):
-        """  Assemble command for remote run
+        """Assemble command for remote run.
 
-            Returns:
-                remote run command
-
+        Returns:
+            remote run command
         """
         command_list = [
             'ssh',
@@ -503,11 +487,10 @@ class Driver(metaclass=abc.ABCMeta):
         return ' '.join(filter(None, command_list))
 
     def assemble_docker_run_cmd(self, run_cmd):
-        """  Assemble command for run in Docker container
+        """Assemble command for run in Docker container.
 
-            Returns:
-                Docker run command
-
+        Returns:
+            Docker run command
         """
         command_list = [
             #            self.sudo,
@@ -530,8 +513,7 @@ class Driver(metaclass=abc.ABCMeta):
     # ---------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod
     def prepare_input_files(self):
-        """
-        Abstract method for preparing input file(s)
+        """Abstract method for preparing input file(s)
 
         Returns:
             None
@@ -540,22 +522,18 @@ class Driver(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def run_job(self):
-        """
-        Abstract method for running job
+        """Abstract method for running job.
 
         Returns:
             None
-
         """
         pass
 
     @abc.abstractmethod
     def postprocess_job(self):
-        """
-        Abstract method for post-processing of job
+        """Abstract method for post-processing of job.
 
         Returns:
             None
-
         """
         pass

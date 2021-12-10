@@ -1,13 +1,15 @@
 import os
 import pickle
-import pytest
+
 import numpy as np
+import pytest
+
 from pqueens.main import main
 
 
 @pytest.mark.integration_tests
 def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
-    """ Integration test for the grid iterator """
+    """Integration test for the grid iterator."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'grid_iterator_local.json'),
         '--output=' + str(tmpdir),

@@ -1,14 +1,13 @@
-'''
-Created on April 19th 2017
-@author: jbi
+"""Created on April 19th 2017.
 
-'''
+@author: jbi
+"""
 
 import unittest
+
 import numpy as np
 import pytest
-from scipy.stats import norm
-from scipy.stats import beta
+from scipy.stats import beta, norm
 
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,

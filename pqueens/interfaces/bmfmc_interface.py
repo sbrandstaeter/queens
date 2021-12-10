@@ -1,11 +1,11 @@
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+
 from .interface import Interface
 
 
 class BmfmcInterface(Interface):
-    """
-    Interface for grouping the outputs of several simulation with identical input to
-    one data point. The BmfmcInterface is basically a version of the
+    """Interface for grouping the outputs of several simulation with identical
+    input to one data point. The BmfmcInterface is basically a version of the
     approximation_interface class that allows for vectorized mapping and
     implicit function relationships.
 
@@ -19,7 +19,6 @@ class BmfmcInterface(Interface):
 
     Returns:
         BMFMCInterface (obj): Instance of the BMFMCInterface
-
     """
 
     def __init__(self, config, approx_name, variables=None):
@@ -30,9 +29,8 @@ class BmfmcInterface(Interface):
         self.probabilistic_mapping_obj = None
 
     def map(self, Z_LF, support='y', full_cov=False):
-        """
-        Calls the probabilistic mapping and predicts the mean and variance
-        for the high-fidelity model, given the inputs Z_LF
+        """Calls the probabilistic mapping and predicts the mean and variance
+        for the high-fidelity model, given the inputs Z_LF.
 
         Args:
             Z_LF (np.array): low-fidelity feature vector that contains the corresponding Monte-Carlo
@@ -46,7 +44,6 @@ class BmfmcInterface(Interface):
             var_Y_HF_given_Z_LF (np.array): Vector of variance predictions :math:`\\mathbb{V}_{
                                             f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\\mathcal{D}_{f})]` for the
                                             HF model given the low-fidelity feature input
-
         """
 
         if self.probabilistic_mapping_obj is None:
@@ -60,9 +57,8 @@ class BmfmcInterface(Interface):
         return mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF
 
     def build_approximation(self, Z_LF_train, Y_HF_train):
-        """
-        Build and train the probabilistic mapping based on the training inputs :math:`\\mathcal{
-        D}_f={Y_{HF},Z_{LF}}`
+        """Build and train the probabilistic mapping based on the training
+        inputs :math:`\\mathcal{ D}_f={Y_{HF},Z_{LF}}`
 
         Args:
             Z_LF_train (np.array): Training inputs for probabilistic mapping
@@ -70,7 +66,6 @@ class BmfmcInterface(Interface):
 
         Returns:
             None
-
         """
         self.probabilistic_mapping_obj = RegressionApproximation.from_config_create(
             self.config, self.approx_name, Z_LF_train, Y_HF_train

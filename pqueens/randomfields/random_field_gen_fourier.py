@@ -1,9 +1,10 @@
-from pqueens.randomfields.univariate_random_field_generator import UnivariateRandomFieldSimulator
 import numpy as np
+
+from pqueens.randomfields.univariate_random_field_generator import UnivariateRandomFieldSimulator
 
 
 class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
-    """Fourier series based random field generator
+    """Fourier series based random field generator.
 
     Random field generator for univariate random fields based on a  Fourier
     series expansion as described in [#f2]_
@@ -20,7 +21,6 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
         largest_length (float): length of random field (for now equal in all
                                 dimensions based on largest dimension of bounding box)
         corr_length  (float):   correlation length of field (so far only isotropic fields)
-
     """
 
     def __init__(
@@ -96,7 +96,7 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
         self.corr_length = corr_length
 
     def compute_expansion_coefficient(self, k, length_of_field, corr_length):
-        """ Compute expansion coeffiecients of Fourier series.
+        """Compute expansion coeffiecients of Fourier series.
 
         Args:
             k (int):
@@ -105,7 +105,6 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
 
         Returns:
             float: expansion coeffiecient
-
         """
         if k == 0:
             coeff = corr_length * np.sqrt(np.pi) / (2 * length_of_field)

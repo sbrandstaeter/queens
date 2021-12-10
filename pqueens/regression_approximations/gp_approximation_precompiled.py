@@ -1,3 +1,9 @@
+import logging
+
+import numpy as np
+from numba import jit
+from numpy.linalg.linalg import cholesky
+
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from pqueens.utils.random_process_scaler import Scaler
 from pqueens.utils.stochastic_optimizer import StochasticOptimizer
@@ -6,25 +12,20 @@ try:
     from pqueens.visualization.gnuplot_vis import gnuplot_gp_convergence
 except:
 
-    def print_import_warning(*args, **kargs):
+    def print_import_warning(*args, **kwargs):
         print("Cannot import gnuplotlib! No terminal plots available...")
 
     gnuplot_gp_convergence = print_import_warning
-
-import logging
-import numpy as np
-from numba import jit
-from numpy.linalg.linalg import cholesky
 
 
 _logger = logging.getLogger(__name__)
 
 
 class GPPrecompiled(RegressionApproximation):
-    """
-    A custom Gaussian process implementation using numba for precompiling linear algebra
-    operations. The GP also allows to specify a Gamma hyper-prior or the length scale but only
-    computes the MAP estimate and does not marginalize the hyper-parameters.
+    """A custom Gaussian process implementation using numba for precompiling
+    linear algebra operations. The GP also allows to specify a Gamma hyper-
+    prior or the length scale but only computes the MAP estimate and does not
+    marginalize the hyper-parameters.
 
     Attributes:
         x_test_vec (np.array): Testing input points for the GP
@@ -50,7 +51,6 @@ class GPPrecompiled(RegressionApproximation):
         sigma_n_sq (float): Noise variance of the RBF kernel
         noise_var_lb (float): Lower bound for Gaussian noise variance in RBF kernel
         plot_refresh_rate (int): Refresh rate of the plot (every n-iterations)
-
     """
 
     def __init__(
@@ -101,8 +101,7 @@ class GPPrecompiled(RegressionApproximation):
 
     @classmethod
     def from_config_create(cls, config, approx_name, x_train, y_train):
-        """
-        Instantiate class GPPrecompiled from problem description.
+        """Instantiate class GPPrecompiled from problem description.
 
         Args:
             config (dict): Problem description of the QUEENS analysis
@@ -112,7 +111,6 @@ class GPPrecompiled(RegressionApproximation):
 
         Returns:
             Instance of GPPrecompiled class
-
         """
         # get the initial hyperparameters
         sigma_0_sq = config[approx_name].get("sigma_0_sq")
@@ -238,10 +236,10 @@ class GPPrecompiled(RegressionApproximation):
     @staticmethod
     @jit(nopython=True)
     def pre_compile_linalg_gp(x_train_mat, sigma_0_sq, l_scale_sq, sigma_n_sq):
-        """
-        Pre-compile covariance matrix, its inversion and cholesky decomposition using numba.
-        Also compute/pre-compile necessary derivatives for finding the MAP estimate
-        of the GP. The covariance function here is the squared exponential covariance function.
+        """Pre-compile covariance matrix, its inversion and cholesky
+        decomposition using numba. Also compute/pre-compile necessary
+        derivatives for finding the MAP estimate of the GP. The covariance
+        function here is the squared exponential covariance function.
 
         Args:
             x_train_mat (np.array): Training input points for the GP. Row-wise samples are stored,
@@ -258,7 +256,6 @@ class GPPrecompiled(RegressionApproximation):
             partial_sigma_0_sq (np.array): Derivative of the covariance function w.r.t. sigma_0**2
             partial_l_scale_sq (np.array): Derivative of the covariance function w.r.t. l_scale**2
             partial_sigma_n_sq (np.array): Derivative of the covariance function w.r.t. sigma_n**2
-
         """
         k_mat = np.zeros((x_train_mat.shape[0], x_train_mat.shape[0]), dtype=np.float64)
         partial_l_scale_sq = np.zeros(
@@ -310,8 +307,8 @@ class GPPrecompiled(RegressionApproximation):
         l_scale_sq,
         prior_mean_function_type,
     ):
-        """
-        Precompile the posterior mean function of the Gaussian Process using numba.
+        """Precompile the posterior mean function of the Gaussian Process using
+        numba.
 
         Args:
             k_mat_inv (np.array): Inverse of the assembled covariance matrix
@@ -327,7 +324,6 @@ class GPPrecompiled(RegressionApproximation):
 
         Returns:
             mu_vec (np.array): Posterior mean vector of the Gaussian Process evaluated at x_test_vec
-
         """
         k_vec = np.zeros((x_train_mat.shape[0], x_test_mat.shape[0]), dtype=np.float64)
         for j, x_test in enumerate(x_test_mat):
@@ -355,8 +351,8 @@ class GPPrecompiled(RegressionApproximation):
     def posterior_var(
         k_mat_inv, x_test_mat, x_train_mat, sigma_0_sq, l_scale_sq, sigma_n_sq, support,
     ):
-        """
-        Precompile the posterior variance function of the Gaussian Process using numba.
+        """Precompile the posterior variance function of the Gaussian Process
+        using numba.
 
         Args:
             k_mat_inv (np.array): Inverse of the assembled covariance matrix
@@ -373,7 +369,6 @@ class GPPrecompiled(RegressionApproximation):
         Returns:
             posterior_variance_vec (np.array): Posterior variance vector of the GP evaluated
                                             at the testing points x_test_vec
-
         """
         k_mat_test_train = np.zeros((x_train_mat.shape[0], x_test_mat.shape[0]), dtype=np.float64)
         for j, x_test in enumerate(x_test_mat):
@@ -407,9 +402,9 @@ class GPPrecompiled(RegressionApproximation):
         partial_l_scale_sq,
         partial_sigma_n_sq,
     ):
-        """
-    Gradient of the log evidence function of the GP w.r.t. the variational hyperparameters.
-    The latter might be a transformed representation of the actual hyperparameters
+        """Gradient of the log evidence function of the GP w.r.t. the
+        variational hyperparameters. The latter might be a transformed
+        representation of the actual hyperparameters.
 
         Args:
             param_vec (np.array): Vector containing values of hyper-parameters.
@@ -428,7 +423,6 @@ class GPPrecompiled(RegressionApproximation):
         Returns:
             grad (np.array): Gradient vector of the evidence w.r.t. the parameterization
                              of the hyperparameters
-
         """
         sigma_0_sq_param, l_scale_sq_param, sigma_n_sq_param = param_vec
         data_minus_prior_mean = y_train_vec - x_train_vec
@@ -450,13 +444,11 @@ class GPPrecompiled(RegressionApproximation):
         return grad
 
     def log_evidence(self):
-        """
-        Log evidence / log marginal likelihood of the GP.
+        """Log evidence / log marginal likelihood of the GP.
 
         Returns:
             evidence_eff (float): Evidence of the GP for current choice of
                                   hyperparameters
-
         """
         # decide which mean prior formulaton shall be used
         y_dim = self.y_train_vec.flatten().size
@@ -496,13 +488,11 @@ class GPPrecompiled(RegressionApproximation):
         return evidence_eff.flatten()
 
     def train(self):
-        """
-        Train the GP by maximizing the evidence / marginal likelihood by minimizing the negative
-        log evidence.
+        """Train the GP by maximizing the evidence / marginal likelihood by
+        minimizing the negative log evidence.
 
         Returns:
             None
-
         """
         # initialize hyperparameters and associated linear algebra
         sigma_0_sq_param_init = np.log(self.sigma_0_sq)
@@ -600,8 +590,7 @@ class GPPrecompiled(RegressionApproximation):
         _logger.info("GP model trained sucessfully!")
 
     def predict(self, x_test_mat, support='f', full_cov=False):
-        """
-        Predict the posterior distribution of the trained GP at x_test.
+        """Predict the posterior distribution of the trained GP at x_test.
 
         Args:
             x_test_mat (np.array): Testing matrix for GP with row-wise (vector-valued)
@@ -614,7 +603,6 @@ class GPPrecompiled(RegressionApproximation):
 
         Returns:
             output (dict): Output dictionary containing the posterior of the GP
-
         """
         dim_y = self.y_train_vec.size
         dim_x = self.x_train_vec.reshape(dim_y, -1).shape[1]

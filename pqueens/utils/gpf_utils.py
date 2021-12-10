@@ -1,11 +1,10 @@
-import numpy as np
 import gpflow as gpf
+import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 
 def init_scaler(unscaled_data):
-    """
-    Initialize StandardScaler and scale data
+    """Initialize StandardScaler and scale data.
 
     Standardize features by removing the mean and scaling to unit variance
 
@@ -25,8 +24,7 @@ def init_scaler(unscaled_data):
 
 
 def set_transform_function(data, transform):
-    """
-    Set transform function
+    """Set transform function.
 
     Args:
         data (gpf.Parameter): data to be transformed
@@ -35,15 +33,11 @@ def set_transform_function(data, transform):
     Returns:
         gpf.Parameter with transform
     """
-    return gpf.Parameter(
-        data,
-        name=data.name.split(":")[0],
-        transform=transform,
-    )
+    return gpf.Parameter(data, name=data.name.split(":")[0], transform=transform,)
 
 
 def extract_block_diag(array, block_size):
-    """Extract block diagonals of square 2D Array
+    """Extract block diagonals of square 2D Array.
 
     Args:
         array (np.ndarray): square 2D array

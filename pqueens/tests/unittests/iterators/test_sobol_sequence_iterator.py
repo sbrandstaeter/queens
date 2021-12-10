@@ -1,9 +1,10 @@
-import pytest
 import numpy as np
+import pytest
+
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
+from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.variables.variables import Variables
-from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 
 
 @pytest.fixture()
@@ -69,7 +70,7 @@ def default_qmc_iterator(default_model, global_settings):
 
 @pytest.mark.unit_tests
 def test_correct_sampling(default_qmc_iterator):
-    """ Test if we get correct samples"""
+    """Test if we get correct samples."""
 
     default_qmc_iterator.pre_run()
 
@@ -93,7 +94,7 @@ def test_correct_sampling(default_qmc_iterator):
 
 @pytest.mark.unit_tests
 def test_correct_results(default_qmc_iterator):
-    """ Test if we get correct results"""
+    """Test if we get correct results."""
     default_qmc_iterator.pre_run()
     default_qmc_iterator.core_run()
 

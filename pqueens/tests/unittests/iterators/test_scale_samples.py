@@ -1,11 +1,12 @@
-'''
-Created on November 20th  2017
-@author: jbi
+"""Created on November 20th  2017.
 
-'''
+@author: jbi
+"""
 import unittest
+
 import numpy as np
 import pytest
+
 from pqueens.utils.scale_samples import scale_samples
 
 
@@ -62,7 +63,7 @@ class TestScaleSamples(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_correct_sample_scaling(self):
-        """ Test if scaling works correctly """
+        """Test if scaling works correctly."""
 
         ref_vals = np.array(
             [
@@ -80,8 +81,8 @@ class TestScaleSamples(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_wrong_distribution_parameters(self):
-        """ Test if scale samples trows error if we pass unadmissible distribution
-            parameters """
+        """Test if scale samples trows error if we pass unadmissible
+        distribution parameters."""
 
         with self.assertRaises(ValueError):
             scale_samples(self.samples, self.wrong_uniform_distribution_list)
@@ -92,8 +93,8 @@ class TestScaleSamples(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_non_matching_inputs(self):
-        """ Test if we get error when the number os distributions doas not match
-            the number of parameters """
+        """Test if we get error when the number os distributions doas not match
+        the number of parameters."""
 
         with self.assertRaises(ValueError):
             scale_samples(self.samples, self.distribution_info_to_small)

@@ -5,16 +5,18 @@ import numpy as np
 import pandas as pd
 import plotly
 import plotly.graph_objs as go
-from SALib.sample import saltelli
 from SALib.analyze import sobol
+from SALib.sample import saltelli
 
-from .iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import write_results
 
+from .iterator import Iterator
+
+
 # TODO deal with non-uniform input distribution
 class SaltelliSALibIterator(Iterator):
-    """ Saltelli SALib iterator
+    """Saltelli SALib iterator.
 
         This class essentially provides a wrapper around the SALib librabry
 
@@ -44,7 +46,7 @@ class SaltelliSALibIterator(Iterator):
         result_description,
         global_settings,
     ):
-        """ Initialize Saltelli SALib iterator object
+        """Initialize Saltelli SALib iterator object.
 
         Args:
             seed (int):                     Seed for random number generation
@@ -72,7 +74,7 @@ class SaltelliSALibIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, model=None):
-        """ Create Saltelli SALib iterator from problem description
+        """Create Saltelli SALib iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -80,7 +82,6 @@ class SaltelliSALibIterator(Iterator):
 
         Returns:
             iterator: Saltelli SALib iterator object
-
         """
         method_options = config["method"]["method_options"]
 
@@ -100,11 +101,11 @@ class SaltelliSALibIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate the model """
+        """Evaluate the model."""
         return self.model.evaluate()
 
     def pre_run(self):
-        """ Generate samples for subsequent analysis and update model """
+        """Generate samples for subsequent analysis and update model."""
         np.random.seed(self.seed)
         random.seed(self.seed)
         parameter_info = self.model.get_parameter()
@@ -150,11 +151,11 @@ class SaltelliSALibIterator(Iterator):
         )
 
     def get_all_samples(self):
-        """ Return all samples """
+        """Return all samples."""
         return self.samples
 
     def core_run(self):
-        """ Run Analysis on model """
+        """Run Analysis on model."""
 
         print("Evaluate model...")
         self.model.update_model_from_sample_batch(self.samples)
@@ -172,7 +173,7 @@ class SaltelliSALibIterator(Iterator):
         )
 
     def post_run(self):
-        """ Analyze the results """
+        """Analyze the results."""
         results = self.process_results()
         if self.result_description is not None:
             if self.result_description["write_results"] is True:
@@ -186,7 +187,7 @@ class SaltelliSALibIterator(Iterator):
                 self.plot_results(results)
 
     def print_results(self, results):
-        """ Function to print results """
+        """Function to print results."""
         S = results["sensitivity_indices"]
 
         parameter_names = results["parameter_names"]
@@ -239,7 +240,7 @@ class SaltelliSALibIterator(Iterator):
         print(str_higher_order_interactions)
 
     def __get_sa_lib_distribution_name(self, distribution_name):
-        """ Convert QUEENS distribution name to SALib distribution name
+        """Convert QUEENS distribution name to SALib distribution name.
 
         Args:
             distribution_name (string): Name of distribution
@@ -261,7 +262,7 @@ class SaltelliSALibIterator(Iterator):
         return sa_lib_distribution_name
 
     def process_results(self):
-        """ Write all results to self contained dictionary """
+        """Write all results to self contained dictionary."""
 
         results = {}
         results["parameter_names"] = self.parameter_names
@@ -274,10 +275,10 @@ class SaltelliSALibIterator(Iterator):
         return results
 
     def plot_results(self, results):
-        """ Create bar graph of first order sensitivity indices
+        """Create bar graph of first order sensitivity indices.
 
-            Args:
-                results   (dict):    Dictionary with results
+        Args:
+            results   (dict):    Dictionary with results
         """
         experiment_name = self.global_settings["experiment_name"]
 

@@ -1,5 +1,4 @@
-"""
-Test-module for tempering functionality of smc_utils module
+"""Test-module for tempering functionality of smc_utils module.
 
 @author: Sebastian Brandstaeter
 """
@@ -19,31 +18,31 @@ from pqueens.utils import smc_utils
     ],
 )
 def temper_keyword_and_temper_type(request):
-    """ Return a set of valid keyword and corresponding temper type. """
+    """Return a set of valid keyword and corresponding temper type."""
     return request.param
 
 
 @pytest.fixture(scope='module', params=[0.0, 1e-4, 0.9, 1.0])
 def temper_parameter(request):
-    """ Return a valid temper parameter. """
+    """Return a valid temper parameter."""
     return request.param
 
 
 @pytest.fixture(scope='module', params=[-np.inf, -1e8, 0.0, 1e10])
 def logpdf0(request):
-    """ Return a valid logpdf. """
+    """Return a valid logpdf."""
     return request.param
 
 
 @pytest.fixture(scope='module', params=[-np.inf, -1e8, 0.0, 1e10])
 def logpdf1(request):
-    """ Return a valid logpdf. """
+    """Return a valid logpdf."""
     return request.param
 
 
 @pytest.mark.unit_tests
 def test_temper_factory(temper_keyword_and_temper_type):
-    """ Test the function factory for valid tempering functions. """
+    """Test the function factory for valid tempering functions."""
 
     temper, temper_type_sol = temper_keyword_and_temper_type
     temper_type = smc_utils.temper_factory(temper)
@@ -53,7 +52,7 @@ def test_temper_factory(temper_keyword_and_temper_type):
 
 @pytest.mark.unit_tests
 def test_temper_factory_invalid():
-    """ Test the function factory for invalid keyword. """
+    """Test the function factory for invalid keyword."""
 
     temper = "invalid"
     with pytest.raises(ValueError, match=r'Unknown type.*'):
@@ -62,7 +61,7 @@ def test_temper_factory_invalid():
 
 @pytest.mark.unit_tests
 def test_temper_logpdf_bayes(logpdf0, logpdf1, temper_parameter):
-    """ Test the bayesian tempering function. """
+    """Test the bayesian tempering function."""
 
     sum1 = temper_parameter * logpdf1
     if math.isclose(temper_parameter, 0.0, abs_tol=1e-8):
@@ -75,7 +74,7 @@ def test_temper_logpdf_bayes(logpdf0, logpdf1, temper_parameter):
 
 @pytest.mark.unit_tests
 def test_temper_logpdf_bayes_posinf_invalid(logpdf0, temper_parameter):
-    """ Test the bayesian tempering function is invalid for infinity. """
+    """Test the bayesian tempering function is invalid for infinity."""
 
     with pytest.raises(ValueError):
         smc_utils.temper_logpdf_bayes(np.inf, logpdf0, temper_parameter)
@@ -85,7 +84,7 @@ def test_temper_logpdf_bayes_posinf_invalid(logpdf0, temper_parameter):
 
 @pytest.mark.unit_tests
 def test_temper_logpdf_generic(logpdf0, logpdf1, temper_parameter):
-    """ Test the generic tempering function. """
+    """Test the generic tempering function."""
 
     if math.isclose(temper_parameter, 0.0, abs_tol=1e-8):
         tempered_logpdf_sol = logpdf0
@@ -100,7 +99,7 @@ def test_temper_logpdf_generic(logpdf0, logpdf1, temper_parameter):
 
 @pytest.mark.unit_tests
 def test_temper_logpdf_generic_posinf_invalid(logpdf0, temper_parameter):
-    """ Test the generic tempering function is invalid for infinity. """
+    """Test the generic tempering function is invalid for infinity."""
 
     with pytest.raises(ValueError):
         smc_utils.temper_logpdf_generic(np.inf, logpdf0, temper_parameter)

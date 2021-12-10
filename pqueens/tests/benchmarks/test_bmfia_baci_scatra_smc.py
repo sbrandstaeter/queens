@@ -1,16 +1,18 @@
-from pqueens.main import main
-from pqueens.utils import injector
-import pqueens.visualization.bmfia_visualization as qvis
-
 import os
 import pickle
+
 import numpy as np
 import pytest
+
+import pqueens.visualization.bmfia_visualization as qvis
+from pqueens.main import main
+from pqueens.utils import injector
 
 
 @pytest.mark.benchmark
 def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir):
-    """ Integration test for smc with a simple diffusion problem (scatra) in baci """
+    """Integration test for smc with a simple diffusion problem (scatra) in
+    baci."""
 
     # generate json input file from template
     third_party_input_file_hf = os.path.join(

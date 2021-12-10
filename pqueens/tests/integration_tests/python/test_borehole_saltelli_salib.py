@@ -8,7 +8,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_borehole_saltelli(inputdir, tmpdir):
-    """ Test case for SA_lib saltelli iterator """
+    """Test case for SA_lib saltelli iterator."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'borehole_salib_saltelli.json'),
         '--output=' + str(tmpdir),

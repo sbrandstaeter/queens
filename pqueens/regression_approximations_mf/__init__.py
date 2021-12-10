@@ -10,5 +10,4 @@ models external third party libraries are used, such as `GPy`_, `GPFlow`_.
      https://github.com/SheffieldML/GPy
  .. _GPFlow:
      https://github.com/GPflow/GPflow
-
 """

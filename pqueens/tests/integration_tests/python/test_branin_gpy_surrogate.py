@@ -1,5 +1,6 @@
 import os
 import pickle
+
 import numpy as np
 import pytest
 
@@ -8,7 +9,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_branin_gpy_surrogate(inputdir, tmpdir, expected_pdf):
-    """ Test case for GP based surrogate model """
+    """Test case for GP based surrogate model."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'branin_gpy_surrogate.json'),
         '--output=' + str(tmpdir),

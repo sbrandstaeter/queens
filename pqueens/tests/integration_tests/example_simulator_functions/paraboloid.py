@@ -1,5 +1,5 @@
 def paraboloid(x1, x2):
-    """ A paraboloid
+    """A paraboloid.
 
     see  https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
 
@@ -17,7 +17,7 @@ def paraboloid(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to Paraboloid function
+    """Interface to Paraboloid function.
 
     Args:
         job_id (int):   ID of job

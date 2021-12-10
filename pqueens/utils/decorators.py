@@ -1,13 +1,16 @@
-"""
-Collection of decorators.
-"""
+import logging
+
+_logger = logging.getLogger(__name__)
+
+"""Collection of decorators."""
 
 
 def safe_mongodb_operation(fun):
-    """
-    Method decorator in order to process QUEENS MongoDB wrapper methods safely.
-    Do **not** use this decorator on functions with @classmethod decorators! (As we extract the 
-    self argument which does not exist for @classmethod functions)
+    """Method decorator in order to process QUEENS MongoDB wrapper methods
+    safely. Do **not** use this decorator on functions with @classmethod
+    decorators! (As we extract the self argument which does not exist for.
+
+    @classmethod functions)
 
     The safe procedure consists of:
         - Catching and logging exceptions
@@ -21,10 +24,10 @@ def safe_mongodb_operation(fun):
     """
 
     def wrapper(*args, **kwargs):
-        """
-        Function in which the method `fun` is wrapped in. In here exceptions are caught and the
-        operation is retried up to `self.max_number_of_attempts` times
-        
+        """Function in which the method `fun` is wrapped in. In here exceptions
+        are caught and the operation is retried up to
+        `self.max_number_of_attempts` times.
+
         Returns:
             A safe `fun` call.
         """
@@ -35,9 +38,8 @@ def safe_mongodb_operation(fun):
         for attempt in range(1, self.max_number_of_attempts + 1):
             try:
                 return fun(*args, **kwargs)
-                break
             except Exception as error:
-                if attempt <= self.max_number_of_attempts:
+                if attempt < self.max_number_of_attempts:
                     _logger.warning(
                         f"Function {fun.__name__}: Attempt number {attempt}/"
                         f"{self.max_number_of_attempts} to '{self.db_address}' failed!"

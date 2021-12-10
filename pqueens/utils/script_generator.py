@@ -1,8 +1,8 @@
-"""
-Generator module supplies function to generate a job or task script for submission.
-"""
+"""Generator module supplies function to generate a job or task script for
+submission."""
 
 import os
+
 from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -10,10 +10,10 @@ from pqueens.utils.run_subprocess import run_subprocess
 def generate_submission_script(
     script_options, submission_script_path, submission_script_template, connect_to_resource=None
 ):
-    """
-    Generate a submission script for either a task definition on AWS based on a task-script
-    template or the simulation based on a job-script template (with the latter either local
-    or remote).
+    """Generate a submission script for either a task definition on AWS based
+    on a task-script template or the simulation based on a job-script template
+    (with the latter either local or remote).
+
     Args:
          job_id (int): Internal QUEENS job-ID that is used to enumerate the simulations
     Returns:

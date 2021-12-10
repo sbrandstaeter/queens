@@ -1,17 +1,14 @@
-"""
-for distance to surface measurement post_post evaluation
+"""for distance to surface measurement post_post evaluation."""
 
-"""
+import os
 
 import numpy as np
-import os
 import pytest
-
 import vtk
 
 import pqueens.post_post.post_post_baci_shape
-
 from pqueens.post_post.post_post_baci_shape import PostPostBACIShape
+
 
 ############## fixtures
 @pytest.fixture(scope='module', params=['2d', '3d'])

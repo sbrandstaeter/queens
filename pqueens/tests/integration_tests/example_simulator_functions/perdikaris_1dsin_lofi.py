@@ -2,7 +2,7 @@ import numpy as np
 
 
 def perdikaris_1dsin_lofi(x):
-    """ Low-fidelity version of simple 1-d test function
+    """Low-fidelity version of simple 1-d test function.
 
     Low-fideltiy version of simple 1-dimensional benchmark function as
     proposed in [1] and defined as:
@@ -29,7 +29,7 @@ def perdikaris_1dsin_lofi(x):
 
 
 def main(job_id, params):
-    """ Interface to Perdikaris test fuction
+    """Interface to Perdikaris test fuction.
 
     Args:
         job_id (int):  ID of job

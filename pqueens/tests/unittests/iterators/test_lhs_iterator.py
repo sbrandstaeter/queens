@@ -1,19 +1,20 @@
-'''
-Created on November 23th  2017
-@author: jbi
+"""Created on November 23th  2017.
 
-'''
+@author: jbi
+"""
 import unittest
+
 import numpy as np
 import pytest
+
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
+from pqueens.iterators.lhs_iterator import LHSIterator
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.variables.variables import Variables
-from pqueens.iterators.lhs_iterator import LHSIterator
 
 
 class TestLHSIterator(unittest.TestCase):
-    """ Test LHS Iterator """
+    """Test LHS Iterator."""
 
     def setUp(self):
         random_variables = {}
@@ -65,7 +66,7 @@ class TestLHSIterator(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_correct_sampling(self):
-        """ Test if we get correct samples"""
+        """Test if we get correct samples."""
 
         # np.set_printoptions(precision=10)
         # print("Samples first row {}".format(self.my_iterator.samples[0,:]))
@@ -92,7 +93,7 @@ class TestLHSIterator(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_correct_results(self):
-        """ Test if we get correct results"""
+        """Test if we get correct results."""
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
 

@@ -1,11 +1,13 @@
 import abc
 from copy import deepcopy
+
 import numpy as np
+
 from pqueens.variables.variables import Variables
 
 
 class Model(metaclass=abc.ABCMeta):
-    """ Base class of model hierarchy
+    """Base class of model hierarchy.
 
         The model hierarchy contains a set of variables, an interface,
         and a set of responses. An iterator operates on the model to map
@@ -23,7 +25,7 @@ class Model(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, name=None, uncertain_parameters=None, data_flag=None):
-        """ Init model object
+        """Init model object.
 
         Args:
             name (string):                  Name of model
@@ -41,7 +43,7 @@ class Model(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
-        """ Create model from problem description
+        """Create model from problem description.
 
         Args:
             model_name (string):    Name of model
@@ -49,14 +51,13 @@ class Model(metaclass=abc.ABCMeta):
 
         Returns:
             model: Instance of model class
-
         """
-        from .simulation_model import SimulationModel
+        from .bmfmc_model import BMFMCModel
         from .data_fit_surrogate_model import DataFitSurrogateModel
         from .data_fit_surrogate_model_mf import MFDataFitSurrogateModel
-        from .multifidelity_model import MultifidelityModel
-        from .bmfmc_model import BMFMCModel
         from .likelihood_models.likelihood_model import LikelihoodModel
+        from .multifidelity_model import MultifidelityModel
+        from .simulation_model import SimulationModel
 
         model_dict = {
             'simulation_model': SimulationModel,
@@ -73,24 +74,22 @@ class Model(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def evaluate(self):
-        """ Evaluate model with current set of variables """
+        """Evaluate model with current set of variables."""
         pass
 
     def get_parameter(self):
-        """ Get complete parameter dictionary
+        """Get complete parameter dictionary.
 
         Return:
             dict: Dictionary with all parameters
-
         """
         return self.uncertain_parameters
 
     def update_model_from_sample(self, data_vector):
-        """ Update model variables
+        """Update model variables.
 
         Args:
             data_vector (np.array): Vector with variable values
-
         """
         if len(self.variables) != 1:
             self.variables = deepcopy([self.variables[0]])
@@ -98,11 +97,10 @@ class Model(metaclass=abc.ABCMeta):
         self.variables[0].update_variables_from_vector(data_vector)
 
     def update_model_from_sample_batch(self, data):
-        """ Update model variables
+        """Update model variables.
 
         Args:
             data (np.array): 2d array with variable values
-
         """
         # temp_variable = deepcopy(self.variables[0])
         # self.variables = []
@@ -129,15 +127,15 @@ class Model(metaclass=abc.ABCMeta):
             self.variables[i].update_variables_from_vector(data[i, :])
 
     def convert_array_to_model_variables(self, data):
-        """ Convert input data to model variables
+        """Convert input data to model variables.
 
-            Args:
-                data (np.array): 2d array with variable values
+        Args:
+            data (np.array): 2d array with variable values
 
-            Returns:
-                queens.variables: Converted array
+        Returns:
+            queens.variables: Converted array
 
-            Raises:
+        Raises:
         """
         temp = deepcopy(self.variables[0])
         variables = []
@@ -150,15 +148,13 @@ class Model(metaclass=abc.ABCMeta):
         return variables
 
     def check_for_precalculated_response_of_sample_batch(self, sample_batch):
-        """
-        Check if the batch of samples has already been evaluated.
+        """Check if the batch of samples has already been evaluated.
 
         Args:
         sample_batch (2d numpy.ndarray): each row corresponds to a sample
 
         Returns:
         precalculated (bool): True: batch of samples was already calculated
-
         """
 
         precalculated = True
