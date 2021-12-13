@@ -1,16 +1,14 @@
 import os
 import pickle
-
 import pytest
 
 from pqueens.main import main
 
 
-@pytest.mark.integration_tests
-def test_borehole_saltelli(inputdir, tmpdir):
-    """Test case for SA_lib saltelli iterator."""
+def test_sobol_indices_borehole(inputdir, tmpdir):
+    """ Test case for Sobol Index iterator """
     arguments = [
-        '--input=' + os.path.join(inputdir, 'borehole_salib_saltelli.json'),
+        '--input=' + os.path.join(inputdir, 'sobol_indices_borehole.json'),
         '--output=' + str(tmpdir),
     ]
 
@@ -18,9 +16,6 @@ def test_borehole_saltelli(inputdir, tmpdir):
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
-    # print("results {}".format(results))
-    # print("Parameter Names {}".format(results["parameter_names"]))
-    # print("sensitivity_indices][S1] {}".format(results["sensitivity_indices"]["S1"]))
 
     assert results["sensitivity_indices"]["S1"][0] == pytest.approx(8.24597209e-01)
     assert results["sensitivity_indices"]["S1"][1] == pytest.approx(6.09543158e-05)

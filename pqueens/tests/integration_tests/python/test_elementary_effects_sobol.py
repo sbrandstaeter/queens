@@ -1,18 +1,14 @@
 import os
 import pickle
-
 import numpy as np
-import pytest
 
 from pqueens.main import main
 
 
-# TODO fix these test, because as of now these test produce platform dependent results
-@pytest.mark.integration_tests
-def test_ishigami_morris_salib(inputdir, tmpdir):
-    """Test case for salib based morris iterator."""
+def test_elementary_effects_sobol(inputdir, tmpdir):
+    """ Test case for elementary effects on Sobol's G-function """
     arguments = [
-        '--input=' + os.path.join(inputdir, 'sobol_morris_salib.json'),
+        '--input=' + os.path.join(inputdir, 'elementary_effects_sobol.json'),
         '--output=' + str(tmpdir),
     ]
 
@@ -21,7 +17,6 @@ def test_ishigami_morris_salib(inputdir, tmpdir):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    # print(results)
     expected_result_mu = np.array(
         [
             25.8299150077341,

@@ -1,59 +1,48 @@
-import random
+"""Elementary Effects iterator module.
+
+Elementary Effects also called Morris method is a global sensitivity
+analysis method which can be used for parameter fixing (ranking).
+"""
+
+import logging
 
 import matplotlib as mpl
 import numpy as np
-import pandas as pd
-from matplotlib import pyplot as plt
 from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
 
 import pqueens.visualization.sa_visualization as qvis
+from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import write_results
-
-from .iterator import Iterator
 
 if not mpl.get_backend().lower() == 'agg':
     mpl.use('TkAgg')
 
+_logger = logging.getLogger(__name__)
 
-class MorrisSALibIterator(Iterator):
-    """Morris SAlib Wrapper Iterator to compute elementary effects.
+
+class ElementaryEffectsIterator(Iterator):
+    """Iterator to compute Elementary Effects (Morris method).
 
     Attributes:
-
-        num_trajectories (int):     The number of trajectories to generate
-
-        local_optimization (bool):  Flag whether to use local optimization
-                                    according to Ruano et al. (2012)
-                                    Speeds up the process tremendously for larger
-                                    number of trajectories and num_levels.
-                                    If set to ``False`` brute force method is used.
-
-        num_optimal_trajectories (int): The number of optimal trajectories to
-                                        sample (between 2 and N)
-
-        num_levels (int):             The number of grid levels
-
-        seed (int):                   Seed for random number generation
-
-        confidence_level (float):     Size of confidence interval
-
-        num_bootstrap_samples (int):  Number of bootstrap samples used to
-                                      compute confidence intervals for
-                                      sensitivity measures
-
-        num_params (int):           Number of model parameters
-
-        parameter_names (list):     List with parameter names
-
-        samples (np.array):         Samples at which model is evaluated
-
-        output (np.array):          Results at samples
-
-        salib_problem (dict):       Dictionary with SALib problem description
-
-        sensitivity_indices (dict): Dictionary with all sensitivity indices
+        num_trajectories (int): number of trajectories to generate
+        local_optimization (bool):  flag whether to use local optimization according to Ruano et
+                                    al. (2012). Speeds up the process tremendously for larger number
+                                    of trajectories and num_levels. If set to ``False`` brute force
+                                    method is used.
+        num_optimal_trajectories (int): number of optimal trajectories to sample (between 2 and N)
+        num_levels (int): number of grid levels
+        seed (int): seed for random number generation
+        confidence_level (float): size of confidence interval
+        num_bootstrap_samples (int): number of bootstrap samples used to compute confidence
+                                     intervals for sensitivity measures
+        num_params (int): number of model parameters
+        parameter_names (list): list with parameter names
+        samples (np.array): samples at which model is evaluated
+        output (np.array): results at samples
+        salib_problem (dict): dictionary with SALib problem description
+        si (dict): Dictionary with all sensitivity indices
     """
 
     def __init__(
@@ -62,7 +51,6 @@ class MorrisSALibIterator(Iterator):
         num_trajectories,
         local_optimization,
         num_optimal_trajectories,
-        grid_jump,
         num_levels,
         seed,
         confidence_level,
@@ -70,34 +58,26 @@ class MorrisSALibIterator(Iterator):
         result_description,
         global_settings,
     ):
-        """Initialize MorrisSALibIterator.
+        """Initialize ElementaryEffectsIterator.
 
         Args:
-            model (model):             QUEENS model to evaluate
-
-            num_trajectories (int):     The number of trajectories to generate
-
-            local_optimization (bool):  Flag whether to use local optimization
-                                        according to Ruano et al. (2012)
-                                        Speeds up the process tremendously for larger
-                                        number of trajectories and num_levels.
-                                        If set to ``False`` brute force method is used.
-
-            num_optimal_trajectories (int): The number of optimal trajectories to
-                                            sample (between 2 and N)
-
-            num_levels (int):             The number of grid levels
-
-            seed (int):                   Seed for random number generation
-
-            confidence_level (float):     Size of confidence interval
-
-            num_bootstrap_samples (int):  Number of bootstrap samples used to
-                                          compute confidence intervals for
-                                          sensitivity measures
-            result_description (dict):      Dictionary with desired result description
+            model (model): QUEENS model to evaluate
+            num_trajectories (int): number of trajectories to generate
+            local_optimization (bool): flag whether to use local optimization according to Ruano
+                                       et al. (2012). Speeds up the process tremendously for
+                                       larger number of trajectories and num_levels. If set to
+                                       ``False`` brute force method is used.
+            num_optimal_trajectories (int): number of optimal trajectories to sample (between 2
+                                            and N)
+            num_levels (int): number of grid levels
+            seed (int): seed for random number generation
+            confidence_level (float): size of confidence interval
+            num_bootstrap_samples (int): number of bootstrap samples used to compute confidence
+                                         intervals for sensitivity measures
+            result_description (dict): dictionary with desired result description
+            global_settings (dict): dictionary with global (all) settings of the analysis
         """
-        super(MorrisSALibIterator, self).__init__(model, global_settings)
+        super(ElementaryEffectsIterator, self).__init__(model, global_settings)
         self.num_trajectories = num_trajectories
         self.local_optimization = local_optimization
         self.num_optimal_trajectories = num_optimal_trajectories
@@ -105,7 +85,6 @@ class MorrisSALibIterator(Iterator):
         self.seed = seed
         self.confidence_level = confidence_level
         self.num_bootstrap_samples = num_bootstrap_samples
-        self.grid_jump = grid_jump
         self.result_description = result_description
 
         self.num_params = None
@@ -116,25 +95,30 @@ class MorrisSALibIterator(Iterator):
         self.si = {}
 
     @classmethod
-    def from_config_create_iterator(cls, config, model=None):
-        """Create MorrisSALibIterator iterator from problem description.
+    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+        """Create ElementaryEffectsIterator iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
+            iterator_name (str): Name of iterator to identify right section
+                                 in options dict (optional)
             model (model): Model to iterate (optional)
 
         Returns:
-            iterator: MorrisSALibIterator iterator object
+            iterator: ElementaryEffectsIterator iterator object
         """
         qvis.from_config_create(config)
 
-        method_options = config["method"]["method_options"]
+        if iterator_name is None:
+            method_options = config['method']['method_options']
+        else:
+            method_options = config[iterator_name]['method_options']
 
         if model is None:
             model_name = method_options["model"]
             model = Model.from_config_create_model(model_name, config)
 
-        if not "num_traj_chosen" in method_options:
+        if "num_traj_chosen" not in method_options:
             method_options["num_traj_chosen"] = None
 
         return cls(
@@ -142,7 +126,6 @@ class MorrisSALibIterator(Iterator):
             method_options["num_trajectories"],
             method_options["local_optimization"],
             method_options["num_optimal_trajectories"],
-            method_options["grid_jump"],
             method_options["number_of_levels"],
             method_options["seed"],
             method_options["confidence_level"],
@@ -157,10 +140,6 @@ class MorrisSALibIterator(Iterator):
 
     def pre_run(self):
         """Generate samples for subsequent analysis and update model."""
-        random.seed(self.seed)
-        np.random.seed(self.seed)
-        np.random.RandomState(seed=self.seed)
-
         parameter_info = self.model.get_parameter()
 
         # setup SALib problem dict
@@ -193,11 +172,11 @@ class MorrisSALibIterator(Iterator):
             num_levels=self.num_levels,
             optimal_trajectories=self.num_optimal_trajectories,
             local_optimization=self.local_optimization,
+            seed=self.seed,
         )
 
     def core_run(self):
         """Run Analysis on model."""
-
         self.model.update_model_from_sample_batch(self.samples)
 
         self.output = self.eval_model()
@@ -210,6 +189,7 @@ class MorrisSALibIterator(Iterator):
             conf_level=self.confidence_level,
             print_to_console=False,
             num_levels=self.num_levels,
+            seed=self.seed,
         )
 
     def post_run(self):
@@ -229,24 +209,20 @@ class MorrisSALibIterator(Iterator):
 
     def process_results(self):
         """Write all results to self contained dictionary."""
-
-        results = {}
-        results["parameter_names"] = self.parameter_names
-        results["sensitivity_indices"] = self.si
+        results = {"parameter_names": self.parameter_names, "sensitivity_indices": self.si}
         return results
 
     def print_results(self, results):
-        """Print results to screen."""
-
-        print(
-            "{0:<30} {1:>10} {2:>10} {3:>15} {4:>10}".format(
+        """Print results to log."""
+        _logger.info(
+            "{0:<20} {1:>10} {2:>10} {3:>15} {4:>10}".format(
                 "Parameter", "Mu_Star", "Mu", "Mu_Star_Conf", "Sigma"
             )
         )
 
         for j in range(self.num_params):
-            print(
-                "{0!s:30} {1!s:10} {2!s:10} {3!s:15} {4!s:10}".format(
+            _logger.info(
+                "{0!s:20} {1!s:10} {2!s:10} {3!s:15} {4!s:10}".format(
                     results['sensitivity_indices']['names'][j],
                     results['sensitivity_indices']['mu_star'][j],
                     results['sensitivity_indices']['mu'][j],
@@ -254,23 +230,3 @@ class MorrisSALibIterator(Iterator):
                     results['sensitivity_indices']['sigma'][j],
                 )
             )
-
-    def plot_results(self, results):
-        fig, ax = plt.subplots()
-        ax.bar(
-            results['sensitivity_indices']['names'],
-            results['sensitivity_indices']['mu_star'],
-            yerr=results['sensitivity_indices']['sigma'],
-            align='center',
-            alpha=0.6,
-            ecolor='black',
-            capsize=10,
-        )
-        ax.set_xlabel('Factors')
-        ax.set_ylabel('$\mu^*_i$ (blue bars) and $\sigma_i$ (black confidence intervals)')
-        ax.set_title('Elementary Effects Analysis')
-        ax.yaxis.grid(True)
-        plt.show(block=False)
-        figure_file_name = self.global_settings['experiment_name'] + '_result.png'
-        figure_file_path = os.path.join(self.global_settings['output_dir'], figure_file_name)
-        plt.savefig(figure_file_path)
