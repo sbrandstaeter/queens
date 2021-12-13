@@ -37,17 +37,16 @@ class Iterator(metaclass=abc.ABCMeta):
         from .bmfia_iterator import BMFIAIterator
         from .bmfmc_iterator import BMFMCIterator
         from .data_iterator import DataIterator
+        from .elementary_effects_iterator import ElementaryEffectsIterator
         from .grid_iterator import GridIterator
         from .lhs_iterator import LHSIterator
         from .lhs_iterator_mf import MF_LHSIterator
         from .metropolis_hastings_iterator import MetropolisHastingsIterator
         from .monte_carlo_iterator import MonteCarloIterator
-        from .morris_salib_wrapper_iterator import MorrisSALibIterator
         from .optimization_iterator import OptimizationIterator
-        from .saltelli_iterator import SaltelliIterator
-        from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
         from .single_sim_run_iterator import SingleSimRunIterator
+        from .sobol_index_iterator import SobolIndexIterator
         from .sobol_sequence_iterator import SobolSequenceIterator
         from .variational_inference_reparameterization import VIRPIterator
 
@@ -58,9 +57,8 @@ class Iterator(metaclass=abc.ABCMeta):
             'monte_carlo': MonteCarloIterator,
             'optimization': OptimizationIterator,
             'read_data_from_file': DataIterator,
-            'sa_morris_salib': MorrisSALibIterator,
-            'sa_saltelli': SaltelliIterator,
-            'sa_saltelli_salib': SaltelliSALibIterator,
+            'elementary_effects': ElementaryEffectsIterator,
+            'sobol_indices': SobolIndexIterator,
             'smc': SequentialMonteCarloIterator,
             'sobol_sequence': SobolSequenceIterator,
             'sing_sim_run': SingleSimRunIterator,
