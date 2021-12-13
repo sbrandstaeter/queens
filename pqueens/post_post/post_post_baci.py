@@ -1,3 +1,4 @@
+"""Postpost class for BACI csv files."""
 import glob
 import logging
 
@@ -100,7 +101,6 @@ class PostPostBACI(PostPost):
             None
         """
         idx = kwargs.get('idx')
-
         post_files_list = glob.glob(file_names)
         # glob returns arbitrary list -> need to sort the list before using
         post_files_list.sort()
@@ -120,21 +120,37 @@ class PostPostBACI(PostPost):
                 self.result = None
                 break
 
+            # Helper variable to indicate which rows containt the desired time data
+            identifier = np.zeros(post_data.iloc[:, 0].shape, dtype=bool)
+
+            # Helper function generating an array with booleans to select a time
+            identification = (
+                lambda target_time, time_tol: abs(post_data.iloc[:, 0] - target_time) < time_tol
+            )
             if self.target_time_lst[idx] == 'last':
                 identifier = post_data.iloc[:, 0] == post_data.iloc[-1, 0]
 
+            # in case of a single timestep
+            elif isinstance(self.target_time_lst[idx], (int, float)):
+                identifier = identification(self.target_time_lst[idx], self.time_tol_lst[idx])
+
+            # in case of multiple timesteps
+            elif isinstance(self.target_time_lst[idx], list):
+                for time, tol in zip(self.target_time_lst[idx], self.time_tol_lst[idx]):
+                    identifier = np.logical_or(identification(time, tol), identifier)
+
             else:
-                identifier = (
-                    abs(post_data.iloc[:, 0] - self.target_time_lst[idx]) < self.time_tol_lst[idx]
-                )
+                _logger.warning(f"Non valid target_time_lst: {self.target_time_lst[idx]}")
+                self.error = True
+                self.result = None
 
             if not np.any(identifier):
-                _logger.info("target_time not found.")
+                _logger.warning("target_time not found.")
                 self.error = True
                 self.result = None
                 break
 
-            quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
+            quantity_of_interest = post_data.loc[identifier].iloc[:, 1:]
             post_out = np.append(post_out, quantity_of_interest)
 
         self.error = False
