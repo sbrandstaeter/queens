@@ -1,12 +1,14 @@
 import os
 import pickle
+
 import pytest
 
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_sobol_indices_borehole(inputdir, tmpdir):
-    """ Test case for Sobol Index iterator """
+    """Test case for Sobol Index iterator."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'sobol_indices_borehole.json'),
         '--output=' + str(tmpdir),

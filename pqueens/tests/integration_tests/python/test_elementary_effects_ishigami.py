@@ -1,12 +1,14 @@
 import os
 import pickle
+
 import pytest
 
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_elementary_effects_ishigami(inputdir, tmpdir):
-    """ Test case for elementary effects iterator """
+    """Test case for elementary effects iterator."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'elementary_effects_ishigami.json'),
         '--output=' + str(tmpdir),
