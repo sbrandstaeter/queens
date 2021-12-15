@@ -31,3 +31,5 @@ cc3631dad3d788a1827a7e979261f9d4238da5db
 15ca4c0c36e83bd4ad0634981a095b53997c2285
 # Black formatter
 6bfd09f725aeacad532dce0a3de6c1f1d24c517e
+# Black formatter (new version), isort, docformatter
+edd78822daaa1638b5efd8477e131088c0942a7d
