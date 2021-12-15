@@ -1,10 +1,13 @@
 import os
 import pickle
+
 import numpy as np
+import pytest
 
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_sobol_indices_sobol(inputdir, tmpdir):
     """
     Test Sobol Index iterator with Sobol G function.

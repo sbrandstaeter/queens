@@ -1,12 +1,15 @@
 import os
 import pickle
+
 import numpy as np
+import pytest
 
 from pqueens.main import main
 
 
+@pytest.mark.integration_tests
 def test_elementary_effects_sobol(inputdir, tmpdir):
-    """ Test case for elementary effects on Sobol's G-function """
+    """Test case for elementary effects on Sobol's G-function"""
     arguments = [
         '--input=' + os.path.join(inputdir, 'elementary_effects_sobol.json'),
         '--output=' + str(tmpdir),

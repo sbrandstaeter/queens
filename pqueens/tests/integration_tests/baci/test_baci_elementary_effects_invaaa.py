@@ -3,15 +3,17 @@ Test suite for integration tests for the Morris-Salib Iterator (Elementary Effec
 simulations with BACI using the INVAAA minimal model.
 """
 
+import json
 import os
-import numpy as np
 import pickle
-from pqueens.utils.manage_singularity import hash_files
-from pqueens.utils.run_subprocess import run_subprocess
+
+import numpy as np
+import pytest
+
 from pqueens.main import main
 from pqueens.utils import injector
-import pytest
-import json
+from pqueens.utils.manage_singularity import hash_files
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.fixture(params=[True, False])
@@ -88,7 +90,7 @@ def remove_job_output_directory(experiment_directory, jobid):
     _, _, _, stderr = run_subprocess(rm_cmd)
 
 
-@pytest.mark.baci
+@pytest.mark.integration_tests_baci
 def test_baci_elementary_effects(
     inputdir, third_party_inputs, baci_link_paths, singularity_bool, experiment_directory
 ):
@@ -195,7 +197,6 @@ def test_baci_elementary_effects(
     )
 
 
-@pytest.mark.baci
 def test_restart_from_output_folders_baci(
     inputdir,
     tmpdir,
@@ -267,7 +268,7 @@ def test_restart_from_output_folders_baci(
     )
 
 
-@pytest.mark.baci
+@pytest.mark.integration_tests_baci
 def test_block_restart_baci(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, output_directory_forward
 ):
@@ -338,7 +339,7 @@ def test_block_restart_baci(
     )
 
 
-@pytest.mark.baci
+@pytest.mark.integration_tests_baci
 def test_restart_from_db_baci(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, output_directory_forward
 ):
