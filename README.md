@@ -65,6 +65,12 @@ and your email address to your institute email address with the following comman
 
     > **Note:** Another popular choice is `kwrite`.
 
+1. Configure [`git blame`](https://git-scm.com/docs/git-blame) to automatically ignore uninteresting revisions by running:
+
+    ```bash
+    git config blame.ignoreRevsFile .git-blame-ignore-revs
+    ```
+
 1. Configure our `git-hooks`. We use the the [pre-commit](https://pre-commit.com/) package to manage all our git hooks, automatically. Please note, that we also have guidelines in place to structure our commit messages. Here we use the [convential commits guidlines](https://www.conventionalcommits.org/en/v1.0.0/) which are enforced by our commit-msg hook (managed by [commitizen](https://github.com/commitizen-tools/commitizen)). After [cloning the repository](#clone-the-repository) into the directory `<someBaseDir>/<sourceDir>` and with an [activated QUEENS conda environment](#anaconda) run:
 
     ```bash
@@ -266,8 +272,9 @@ If you have performed the aforementioned step, yet you are still asked for your 
 
 ### LNM-specific issues
 In case you want to run simulations on remote computing machines (e.g., cluster), you need enable access
-from theremotetothelocalhostat`port27017`.Bydefault import \
-    thefirewallsoftware`firewalld`blockseveryincoming
+from theremotetothelocalhostat`port27017`.Bydefault import (
+    thefirewallsoftware`firewalld`blockseveryincoming,
+)
 
 request. Hence, to enable a connections, we have
 add so called rules to `firewalld` in order to connect to the database.
