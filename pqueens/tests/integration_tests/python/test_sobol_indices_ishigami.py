@@ -8,7 +8,7 @@ from pqueens.main import main
 
 @pytest.mark.integration_tests
 def test_sobol_indices_ishigami(inputdir, tmpdir):
-    """Test case for salib based saltelli iterator"""
+    """Test case for salib based saltelli iterator."""
     arguments = [
         '--input=' + os.path.join(inputdir, 'sobol_indices_ishigami.json'),
         '--output=' + str(tmpdir),

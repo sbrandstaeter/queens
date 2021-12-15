@@ -1,7 +1,5 @@
-"""
-Test suite for integration tests for the Morris-Salib Iterator (Elementary Effects) for local
-simulations with BACI using the INVAAA minimal model.
-"""
+"""Test suite for integration tests for the Morris-Salib Iterator (Elementary
+Effects) for local simulations with BACI using the INVAAA minimal model."""
 
 import json
 import os
@@ -23,9 +21,8 @@ def singularity_bool(request):
 
 @pytest.fixture(scope="session")
 def output_directory_forward(tmpdir_factory):
-    """
-    Create two temporary output directories for test runs with singularity (<...>_true) and
-    without singularity (<...>_false)
+    """Create two temporary output directories for test runs with singularity
+    (<...>_true) and without singularity (<...>_false)
 
     Args:
         tmpdir_factory: fixture used to create arbitrary temporary directories
@@ -33,7 +30,6 @@ def output_directory_forward(tmpdir_factory):
     Returns:
         output_directory_forward (dict): temporary output directories for simulation without and
                                          with singularity
-
     """
     path_singularity_true = tmpdir_factory.mktemp("test_baci_elementary_effects_true")
     path_singularity_false = tmpdir_factory.mktemp("test_baci_elementary_effects_false")
@@ -43,8 +39,7 @@ def output_directory_forward(tmpdir_factory):
 
 @pytest.fixture()
 def experiment_directory(output_directory_forward, singularity_bool):
-    """
-    Return experiment directory depending on singularity_bool
+    """Return experiment directory depending on singularity_bool.
 
     Returns:
         experiment_directory (LocalPath): experiment directory depending on singularity_bool
@@ -54,8 +49,7 @@ def experiment_directory(output_directory_forward, singularity_bool):
 
 @pytest.fixture()
 def check_experiment_directory(experiment_directory):
-    """
-    Check if experiment directory contains subdirectories
+    """Check if experiment directory contains subdirectories.
 
     Raises:
         AssertionError: If experiment directory does not contain subdirectories.
@@ -68,8 +62,7 @@ def check_experiment_directory(experiment_directory):
 
 
 def count_subdirectories(current_directory):
-    """
-    Count subdirectories in current_directory
+    """Count subdirectories in current_directory.
 
     Returns:
         number_subdirectories (int): number of subdirectories
@@ -83,9 +76,7 @@ def count_subdirectories(current_directory):
 
 
 def remove_job_output_directory(experiment_directory, jobid):
-    """
-    Remove output directory of job #jobid from experiment_directory
-    """
+    """Remove output directory of job #jobid from experiment_directory."""
     rm_cmd = "rm -r " + str(experiment_directory) + "/" + str(jobid)
     _, _, _, stderr = run_subprocess(rm_cmd)
 
@@ -94,10 +85,9 @@ def remove_job_output_directory(experiment_directory, jobid):
 def test_baci_elementary_effects(
     inputdir, third_party_inputs, baci_link_paths, singularity_bool, experiment_directory
 ):
-    """
-    Integration test for the Elementary Effects Iterator together with BACI. The test runs a local
-    native
-    BACI simulation as well as a local Singularity based BACI simulation for elementary effects.
+    """Integration test for the Elementary Effects Iterator together with BACI.
+    The test runs a local native BACI simulation as well as a local Singularity
+    based BACI simulation for elementary effects.
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -108,7 +98,6 @@ def test_baci_elementary_effects(
 
     Returns:
         None
-
     """
     template = os.path.join(inputdir, "elementary_effects_baci_local_invaaa_template.json")
     input_file = os.path.join(experiment_directory, "elementary_effects_baci_local_invaaa.json")
@@ -206,8 +195,9 @@ def test_restart_from_output_folders_baci(
     experiment_directory,
     check_experiment_directory,
 ):
-    """
-    Integration test for the restart functionality for restart from results in output folders
+    """Integration test for the restart functionality for restart from results
+    in output folders.
+
     - test with and without singularity
     - drop_database_boolean = true
 
@@ -224,7 +214,6 @@ def test_restart_from_output_folders_baci(
 
     Returns:
         None
-
     """
     template = os.path.join(inputdir, "elementary_effects_baci_local_invaaa_restart_template.json")
     input_file = os.path.join(tmpdir, "elementary_effects_baci_local_invaaa_restart.json")
@@ -272,9 +261,8 @@ def test_restart_from_output_folders_baci(
 def test_block_restart_baci(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, output_directory_forward
 ):
-    """
-    Integration test for the block-restart functionality: Delete last results and block-restart
-    those results (only without singularity).
+    """Integration test for the block-restart functionality: Delete last
+    results and block-restart those results (only without singularity).
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -286,7 +274,6 @@ def test_block_restart_baci(
 
     Returns:
         None
-
     """
     # Test without singularity:
     singularity_bool = False
@@ -343,8 +330,9 @@ def test_block_restart_baci(
 def test_restart_from_db_baci(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, output_directory_forward
 ):
-    """
-    Integration test for the restart functionality for restart from results in database
+    """Integration test for the restart functionality for restart from results
+    in database.
+
     - test only without singularity
     - drop_database_boolean = false
 
@@ -358,7 +346,6 @@ def test_restart_from_db_baci(
 
     Returns:
         None
-
     """
     # This test itself does not submit jobs and thus does not depend on singularity.
     # Set singularity_boolean for database reference only.
