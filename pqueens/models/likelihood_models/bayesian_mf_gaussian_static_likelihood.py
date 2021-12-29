@@ -138,7 +138,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         output_label,
         coord_labels,
     ):
-        """Configure multi-fidelit likelihood class from problem description.
+        """Configure multi-fidelity likelihood class from problem description.
 
         Returns:
             BMFGaussianStaticModel (obj): A BMFGaussianStaticModel object
