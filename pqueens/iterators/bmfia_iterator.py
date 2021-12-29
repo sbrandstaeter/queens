@@ -45,7 +45,6 @@ class BMFIAIterator(Iterator):
                                         multi-fidelity mapping
         db (obj): Database object
         external_geometry_obj (obj): External geometry object
-        gammas_train (np.array): Informative features evaluated at the training inputs
 
     Returns:
        BMFIAIterator (obj): Instance of the BMFIAIterator
@@ -70,7 +69,6 @@ class BMFIAIterator(Iterator):
         coords_experimental_data,
         time_vec,
         y_obs_vec,
-        gammas_train,
     ):
         """Instantiate the BMFIAIterator object."""
         super(BMFIAIterator, self).__init__(
@@ -93,7 +91,6 @@ class BMFIAIterator(Iterator):
         self.settings_probab_mapping = settings_probab_mapping
         self.db = db
         self.external_geometry_obj = external_geometry_obj
-        self.gammas_train = gammas_train
 
     @classmethod
     def from_config_create_iterator(cls, config, _=None, __=None):
@@ -142,7 +139,6 @@ class BMFIAIterator(Iterator):
         coords_experimental_data = None
         time_vec = None
         y_obs_vec = None
-        gammas_train = None
 
         return cls(
             result_description,
@@ -162,7 +158,6 @@ class BMFIAIterator(Iterator):
             coords_experimental_data,
             time_vec,
             y_obs_vec,
-            gammas_train,
         )
 
     @classmethod

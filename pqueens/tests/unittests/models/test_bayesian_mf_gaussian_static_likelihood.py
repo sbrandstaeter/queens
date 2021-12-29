@@ -2,7 +2,6 @@
 
 import numpy as np
 import pytest
-from sklearn.preprocessing import StandardScaler
 
 from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.iterators.bmfia_iterator import BMFIAIterator
@@ -119,8 +118,6 @@ def default_bmfia_iterator(result_description, global_settings, dummy_model):
     coords_experimental_data = np.array([[1, 2], [3, 4]])
     time_vec = np.array([1, 3])
     y_obs_vec = np.array([[2.1], [3.1]])
-    gammas_train = None
-    scaler_gamma = StandardScaler
 
     iterator = BMFIAIterator(
         result_description,
@@ -140,8 +137,6 @@ def default_bmfia_iterator(result_description, global_settings, dummy_model):
         coords_experimental_data,
         time_vec,
         y_obs_vec,
-        gammas_train,
-        scaler_gamma,
     )
 
     return iterator
@@ -170,7 +165,6 @@ def default_mf_likelihood(
     x_train = np.array([[1, 2], [3, 4]])
     y_hf_train = None
     y_lfs_train = None
-    gammas_train = None
     z_train = None
     eigenfunc_random_fields = None
     eigenvals = None
@@ -197,7 +191,6 @@ def default_mf_likelihood(
         x_train,
         y_hf_train,
         y_lfs_train,
-        gammas_train,
         z_train,
         eigenfunc_random_fields,
         eigenvals,
@@ -267,7 +260,6 @@ def test_init(
     x_train = None
     y_hf_train = None
     y_lfs_train = None
-    gammas_train = None
     z_train = None
     eigenfunc_random_fields = None
     eigenvals = None
@@ -294,7 +286,6 @@ def test_init(
         x_train,
         y_hf_train,
         y_lfs_train,
-        gammas_train,
         z_train,
         eigenfunc_random_fields,
         eigenvals,
@@ -318,7 +309,6 @@ def test_init(
     assert model.x_train is None
     assert model.y_hf_train is None
     assert model.y_lfs_train is None
-    assert model.gammas_train is None
     assert model.z_train is None
     assert model.eigenfunc_random_fields is None
     assert model.eigenvals is None
@@ -409,7 +399,6 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
 
 @pytest.mark.unit_tests
 def test_calculate_distance_vector_and_var_y(default_mf_likelihood, mocker):
-    # TODO adjust the test
     """Test the calculation of the distance vector."""
     x_batch = np.array([[0, 0], [0, 1]])  # make points have distance 1
     y_lf_mat = np.array([[1, 1], [2, 2]])  # three dim output per point x in x_batch (row-wise)
@@ -419,16 +408,13 @@ def test_calculate_distance_vector_and_var_y(default_mf_likelihood, mocker):
     coords_mat = default_mf_likelihood.coords_mat[: y_lf_mat.shape[0]]
     diff_mat_exp = np.array([[1, 0], [0, -1]])
 
-    # pylint: disable=line-too-long
     mp1 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_static_likelihood.BMFGaussianStaticModel._get_feature_mat',
-        return_value=z_mat,
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator._set_feature_strategy', return_value=z_mat,
     )
     mp2 = mocker.patch(
         'pqueens.interfaces.bmfia_interface.BmfiaInterface.map',
         return_value=(m_f_mat, var_y_mat_exp),
     )
-    # pylint: enable=line-too-long
 
     diff_mat_out, var_y_mat_out = default_mf_likelihood._calculate_distance_vector_and_var_y(
         y_lf_mat, x_batch
@@ -551,126 +537,6 @@ def test_log_likelihood_fun(default_mf_likelihood):
     diff_vec = np.array([[1], [1], [1]])
     with pytest.raises(AssertionError):
         log_mf_lik = default_mf_likelihood._log_likelihood_fun(mf_variance_vec, diff_vec)
-
-
-@pytest.mark.unit_tests
-def test_get_feature_mat(default_mf_likelihood, mocker):
-    """Test the generation of low fidelity informative feautres."""
-    # test wrong input dimensions 1) of y_lf_mat
-    y_lf_mat = np.array([1, 2, 3])
-    x_mat = np.array([[4, 5, 6]])
-    coords_mat = np.array([[7, 8, 9]])
-    with pytest.raises(AssertionError):
-        z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-
-    # test wrong input dimensions 2) of y_x_mat
-    y_lf_mat = np.array([[1, 2, 3]])
-    x_mat = np.array([4, 5, 6])
-    coords_mat = np.array([[7, 8, 9]])
-
-    with pytest.raises(AssertionError):
-        z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-
-    # test wrong input dimensions 3) of coords_mat
-    y_lf_mat = np.array([[1, 2, 3]])
-    x_mat = np.array([[4, 5, 6]])
-    coords_mat = np.array([7, 8, 9])
-
-    with pytest.raises(AssertionError):
-        z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-
-    # test wrong features_config
-    y_lf_mat = np.array([[1, 2, 3]])
-    x_mat = np.array([[4, 5, 6]])
-    coords_mat = np.array([[7, 8, 9]])
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping["features_config"] = "dummy"
-    with pytest.raises(IOError):
-        z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-
-    # test man_features without specifing 'X_cols' --> KeyError
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping[
-        "features_config"
-    ] = "man_features"
-    with pytest.raises(KeyError):
-        z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-
-    # test man_features with correct configuration
-    expected_z_mat = np.array(
-        [[[1, 2, 3], [1, 2, 3], [1, 2, 3]], [[4, 4, 4], [4, 4, 4], [4, 4, 4]]]
-    )
-    y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
-    x_mat = np.array([[4, 5, 6], [4, 5, 6], [4, 5, 6]])
-    coords_mat = np.array([[7, 8, 9], [10, 11, 12], [13, 14, 15]])
-
-    mocker.patch(
-        'sklearn.preprocessing.StandardScaler.transform', return_value=np.atleast_2d(x_mat[:, 0]).T,
-    )
-
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping[
-        "features_config"
-    ] = "man_features"
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping['X_cols'] = 0
-    z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-    np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
-
-    # test opt_features
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping[
-        "features_config"
-    ] = "opt_features"
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping["num_features"] = 1
-    with pytest.raises(NotImplementedError):
-        z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-
-    # test opt_features with num features < 1 --> error
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping[
-        "features_config"
-    ] = "opt_features"
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping["num_features"] = 0
-    with pytest.raises(AssertionError):
-        z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-
-    # test opt_features with num features None --> error
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping[
-        "features_config"
-    ] = "opt_features"
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping["num_features"] = None
-    with pytest.raises(AssertionError):
-        z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-
-    # test coord_features without specifing 'coord_cols' --> KeyError
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping[
-        "features_config"
-    ] = "coord_features"
-    with pytest.raises(KeyError):
-        z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-
-    # test coord_features with correct configuration
-    expected_z_mat = np.array(
-        [[[1, 2, 3], [1, 2, 3], [1, 2, 3]], [[7, 7, 7], [10, 10, 10], [13, 13, 13]]]
-    )
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping[
-        "features_config"
-    ] = "coord_features"
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping['coords_cols'] = 0
-    z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-    np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
-
-    # test no_features
-    expected_z_mat = y_lf_mat
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping[
-        "features_config"
-    ] = "no_features"
-    z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-    np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
-
-    # test time_features
-    expected_z_mat = np.array([[1, 2, 3, 1], [1, 2, 3, 2.5], [1, 2, 3, 4]])
-    default_mf_likelihood.bmfia_subiterator.settings_probab_mapping[
-        "features_config"
-    ] = "time_features"
-    default_mf_likelihood.time_vec = np.linspace(0, 10, y_lf_mat.shape[1])
-    z_mat = default_mf_likelihood._get_feature_mat(y_lf_mat, x_mat, coords_mat)
-    np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
 
 
 @pytest.mark.unit_tests
