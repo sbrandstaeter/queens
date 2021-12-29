@@ -323,9 +323,16 @@ class BMFIAIterator(Iterator):
         # ------ configure manual informative features ------------------------------------------
         if self.settings_probab_mapping['features_config'] == "man_features":
             try:
-                idx_vec = self.settings_probab_mapping['X_cols']
-                gamma_mat = np.atleast_2d(x_mat[:, idx_vec])
-
+                idx_lst = self.settings_probab_mapping['X_cols']
+                # Catch wrong data type
+                assert isinstance(
+                    idx_lst, list
+                ), "Entries of X_cols must be in list format! Abort..."
+                # Catch empty list
+                assert (
+                    idx_lst != []
+                ), "The index list for selection of manual features must not be empty!, Abort..."
+                gamma_mat = x_mat[:, idx_lst]
                 assert (
                     gamma_mat.shape[0] == y_lf_mat.shape[0]
                 ), "Dimensions of gamma_mat and y_lf_mat do not agree! Abort..."
@@ -359,13 +366,22 @@ class BMFIAIterator(Iterator):
         # ----- configure informative features from (spatial) coordinates ----------------------
         elif self.settings_probab_mapping['features_config'] == "coord_features":
             try:
-                idx_vec = self.settings_probab_mapping['coords_cols']
-                z_lst = []
-                coord_feature = np.atleast_2d(coords_mat[:, idx_vec]).T
+                idx_lst = self.settings_probab_mapping['coords_cols']
+                # Catch wrong data type
+                assert isinstance(
+                    idx_lst, list
+                ), "Entries of coord_cols must be in list format! Abort..."
+                # Catch empty list
+                assert (
+                    idx_lst != []
+                ), "The index list for selection of manual features must not be empty!, Abort..."
+
+                coord_feature = coords_mat[:, idx_lst]
                 assert (
                     coord_feature.shape[0] == y_lf_mat.shape[0]
                 ), "Dimensions of coords_feature and y_lf_mat do not agree! Abort..."
 
+                z_lst = []
                 for y_per_coordinate in y_lf_mat.T:
                     z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), coord_feature]))
 
@@ -428,18 +444,3 @@ class BMFIAIterator(Iterator):
         _logger.info('-------------------------------------------------------------------')
         _logger.info('Successfully calculated the high-fidelity training points!')
         _logger.info('-------------------------------------------------------------------')
-
-    # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
-    def post_run(self):
-        """Saving and plotting of the results.
-
-        Returns:
-            None
-        """
-        if self.result_description['write_results'] is True:
-            results = process_ouputs(self.output, self.result_description)
-            write_results(
-                results,
-                self.global_settings["output_dir"],
-                self.global_settings["experiment_name"],
-            )
