@@ -409,6 +409,7 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
 
 @pytest.mark.unit_tests
 def test_calculate_distance_vector_and_var_y(default_mf_likelihood, mocker):
+    # TODO adjust the test
     """Test the calculation of the distance vector."""
     x_batch = np.array([[0, 0], [0, 1]])  # make points have distance 1
     y_lf_mat = np.array([[1, 1], [2, 2]])  # three dim output per point x in x_batch (row-wise)

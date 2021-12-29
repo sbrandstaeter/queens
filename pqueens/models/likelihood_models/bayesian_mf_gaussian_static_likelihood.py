@@ -44,8 +44,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
                                regression model
         y_lfs_train (np.array): Low-fidelity training outputs for probabilistic regression
                                 models
-        gammas_ext_train (np.array): Low-fidelity training features for probabilistic
-                                     regression model
         z_train (np.array): Combined low-fidelity training vector for probabilistic
                             regression model
         eigenfunc_random_fields (np.array):
@@ -90,7 +88,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
         x_train,
         y_hf_train,
         y_lfs_train,
-        gammas_train,
         z_train,
         eigenfunc_random_fields,
         eigenvals,
@@ -115,7 +112,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
         self.x_train = x_train
         self.y_hf_train = y_hf_train
         self.y_lfs_train = y_lfs_train
-        self.gammas_train = gammas_train
         self.z_train = z_train
         self.eigenfunc_random_fields = eigenfunc_random_fields
         self.eigenvals = eigenvals
@@ -177,7 +173,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
         x_train = None
         y_hf_train = None
         y_lfs_train = None
-        gammas_ext_train = None
         z_train = None
         eigenfunc_random_fields = None  # TODO this should be moved to the variable class!
         eigenvals = None
@@ -204,7 +199,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
             x_train,
             y_hf_train,
             y_lfs_train,
-            gammas_ext_train,
             z_train,
             eigenfunc_random_fields,
             eigenvals,
@@ -304,10 +298,11 @@ class BMFGaussianStaticModel(LikelihoodModel):
                                   high-fidelity predictions.
         """
         # construct LF feature matrix
-        z_mat = self._get_feature_mat(y_lf_mat, x_batch, self.coords_mat[: y_lf_mat.shape[0]])
+        z_mat = self.bmfia_subiterator._set_feature_strategy(
+            y_lf_mat, x_batch, self.coords_mat[: y_lf_mat.shape[0]]
+        )
         # Get the response matrices of the multi-fidelity mapping
-        # TODO full_cov is misleading and not used here
-        m_f_mat, var_y_mat = self.mf_interface.map(z_mat, full_cov=True)
+        m_f_mat, var_y_mat = self.mf_interface.map(z_mat)
 
         assert np.array_equal(
             m_f_mat.shape[1], np.atleast_2d(self.y_obs_vec).shape[1]
@@ -439,116 +434,6 @@ class BMFGaussianStaticModel(LikelihoodModel):
             )
 
         return np.array(log_lik_mf)
-
-    def _get_feature_mat(self, y_lf_mat, x_mat, coords_mat):
-        """Get the low-fidelity feature matrix.
-
-        Compose the low-fidelity feature matrix that consists of the low-
-        fidelity model outputs and the low-fidelity informative features.
-
-            y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
-                                 Columns are different dimensions of the output.
-            x_mat (np.array): Input matrix for the simulation model with row-wise input points,
-                              and colum-wise variable dimensions.
-            coords_mat (np.array): Coordinate matrix for the observations with row-wise coordinate
-                                   points and different dimensions per column.
-
-        Retruns:
-            z_mat (np.array): Extended low-fidelity matrix containing
-                              informative feature dimensions. Every row is one data point with
-                              dimensions per column.
-        """
-        # check dimensions of the input
-        assert (
-            y_lf_mat.ndim == 2
-        ), f"Dimension of y_lf_mat must be 2 but you provided dim={y_lf_mat.ndim}. Abort..."
-        assert (
-            x_mat.ndim == 2
-        ), f"Dimension of x_mat must be 2 but you provided dim={x_mat.ndim}. Abort..."
-        assert (
-            coords_mat.ndim == 2
-        ), f"Dimension of coords_mat must be 2 but you provided dim={coords_mat.ndim}. Abort..."
-
-        # ------ configure manual informative features ------------------------------------------
-        if self.bmfia_subiterator.settings_probab_mapping['features_config'] == "man_features":
-            try:
-                idx_vec = self.bmfia_subiterator.settings_probab_mapping['X_cols']
-                gamma_mat = np.atleast_2d(x_mat[:, idx_vec])
-                # data scaling
-                gamma_mat = self.bmfia_subiterator.scaler_gamma.transform(gamma_mat)
-                assert (
-                    gamma_mat.shape[0] == y_lf_mat.shape[0]
-                ), "Dimensions of gamma_mat and y_lf_mat do not agree! Abort..."
-
-                z_lst = []
-                for y_per_coordinate in y_lf_mat.T:
-                    z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), gamma_mat]))
-
-                z_mat = np.array(z_lst).squeeze().T
-                assert (
-                    z_mat.ndim == 3
-                ), "z_mat should be a 3d tensor if man features are used! Abort..."
-
-            except KeyError:
-                raise KeyError(
-                    "The settings for the probabilistic mapping need a key 'X_cols' if "
-                    "you want to use the feature configuration 'man_features'! Abort..."
-                )
-
-        # ------ configure optimal informative features with highest sensitivity -------------
-        elif self.bmfia_subiterator.settings_probab_mapping['features_config'] == "opt_features":
-            assert isinstance(
-                self.bmfia_subiterator.settings_probab_mapping['num_features'], int
-            ), "Number of informative features must be an integer! Abort..."
-            assert (
-                self.bmfia_subiterator.settings_probab_mapping['num_features'] >= 1
-            ), "Number of informative features must be an integer greater than one! Abort..."
-
-            z_mat = self.bmfia_subiterator._update_probabilistic_mapping_with_features()
-
-        # ----- configure informative features from (spatial) coordinates ----------------------
-        elif self.bmfia_subiterator.settings_probab_mapping['features_config'] == "coord_features":
-            try:
-                idx_vec = self.bmfia_subiterator.settings_probab_mapping['coords_cols']
-                z_lst = []
-                coord_feature = np.atleast_2d(coords_mat[:, idx_vec]).T
-                assert (
-                    coord_feature.shape[0] == y_lf_mat.shape[0]
-                ), "Dimensions of coords_feature and y_lf_mat do not agree! Abort..."
-
-                for y_per_coordinate in y_lf_mat.T:
-                    z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), coord_feature]))
-
-                z_mat = np.array(z_lst).squeeze().T
-                assert (
-                    z_mat.ndim == 3
-                ), "z_mat should be a 3d tensor if coord_features are used! Abort..."
-
-            except KeyError:
-                raise KeyError(
-                    "The settings for the probabilistic mapping need a key 'coord_cols' "
-                    "if you want to use the feature configuration 'coord_features'! Abort..."
-                )
-
-        # ----- configure no additional informative features ------------------------------------
-        elif self.bmfia_subiterator.settings_probab_mapping['features_config'] == "no_features":
-            z_mat = y_lf_mat
-
-        # ----- configure informative features based on time coordinate --------------------------
-        elif self.bmfia_subiterator.settings_probab_mapping['features_config'] == "time_features":
-            time_repeat = int(y_lf_mat.shape[0] / self.time_vec.size)
-            time_vec = np.repeat(self.time_vec.reshape(-1, 1), repeats=time_repeat, axis=0)
-
-            # normalization
-            time_vec = time_vec / np.max(time_vec) * (
-                np.max(self.y_obs_vec) - np.min(self.y_obs_vec)
-            ) + np.min(self.y_obs_vec)
-
-            z_mat = np.hstack([y_lf_mat, time_vec])
-        else:
-            raise IOError("Feature space method specified in input file is unknown!")
-
-        return z_mat
 
     def _initialize(self):
         """Initialize the multi-fidelity likelihood model.
