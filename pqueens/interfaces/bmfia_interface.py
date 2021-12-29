@@ -1,3 +1,5 @@
+"""Interface for Bayesian multi-fidelity inverse analysis."""
+
 import logging
 
 import numpy as np
@@ -10,12 +12,11 @@ _logger = logging.getLogger(__name__)
 
 
 class BmfiaInterface(Interface):
-    """Interface for grouping the outputs of several simulation models with
-    identical model inputs to one multi-fidelity data point in the multi-
-    fidelity space:
+    """Interface class for Bayesian multi-fidelity inverse analysis.
 
-    .. math::
-        \\Omega: y_{hf} x y_{lf} x \\gamma_{i}
+    Interface for grouping the outputs of several simulation models with
+    identical model inputs to one multi-fidelity data point in the multi-
+    fidelity space.
 
     The BmfiaInterface is basically a version of the
     approximation_interface class that allows for vectorized mapping and
@@ -36,13 +37,15 @@ class BmfiaInterface(Interface):
     """
 
     def __init__(self, config, approx_name):
-        # TODO we should think about using the parent class interface here
+        """Instantiate a BMFIA interface."""
         self.config = config
         self.approx_name = approx_name
         self.probabilistic_mapping_obj_lst = []
 
     def map(self, Z_LF, support='y', full_cov=False):
-        """Calls the probabilistic mapping and predicts the mean and variance,
+        r"""Map the lf features to a probabilistic response for the hf model.
+
+        Calls the probabilistic mapping and predicts the mean and variance,
         respectively covariance, for the high-fidelity model, given the inputs
         Z_LF.
 
@@ -62,20 +65,20 @@ class BmfiaInterface(Interface):
 
         Returns:
             mean_Y_HF_given_Z_LF (np.array): Vector of mean predictions
-                                             :math:`\\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,
-                                             \\mathcal{D}_{f})]` for the HF model given the
+                                             :math:`\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,
+                                             \mathcal{D}_{f})]` for the HF model given the
                                              low-fidelity feature input. Different HF predictions
                                              per row. Each row corresponds to one multi-fidelity
                                              input vector in
-                                             :math:`\\Omega_{y_{lf}\\times\\gamma_i}`.
+                                             :math:`\Omega_{y_{lf}\times\gamma_i}`.
 
-            var_Y_HF_given_Z_LF (np.array): Vector of variance predictions :math:`\\mathbb{V}_{
-                                            f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\\mathcal{D}_{f})]` for the
+            var_Y_HF_given_Z_LF (np.array): Vector of variance predictions :math:`\mathbb{V}_{
+                                            f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\mathcal{D}_{f})]` for the
                                             HF model given the low-fidelity feature input.
                                             Different HF predictions
                                             per row. Each row corresponds to one multi-fidelity
                                             input vector in
-                                            :math:`\\Omega_{y_{lf}\\times\\gamma_i}`.
+                                            :math:`\Omega_{y_{lf}\times\gamma_i}`.
         """
         if not self.probabilistic_mapping_obj_lst:
             raise RuntimeError(
@@ -103,8 +106,10 @@ class BmfiaInterface(Interface):
         return mean, variance
 
     def build_approximation(self, Z_LF_train, Y_HF_train):
-        """Build and train the probabilistic mapping objects based on the
-        training inputs :math:`\\mathcal{D}_f={Y_{HF},Z_{LF}}` per coordinate
+        r"""Build the probabilistic regression models.
+
+        Build and train the probabilistic mapping objects based on the
+        training inputs :math:`\mathcal{D}_f={Y_{HF},Z_{LF}}` per coordinate
         point / measurement point in the inverse problem.
 
         Args:
