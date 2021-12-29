@@ -8,15 +8,15 @@ from pqueens.main import main
 
 
 @pytest.mark.integration_tests
-def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
-    """Test Saltelli SALib iterator with Sobol G function.
+def test_sobol_indices_sobol(inputdir, tmpdir):
+    """Test Sobol Index iterator with Sobol G function.
 
     Including first, second and total order indices. The test should
     converge to the analytical solution defined in the Sobol G function
-    implementaion (see sobol.py).
+    implementation (see sobol.py).
     """
     arguments = [
-        '--input=' + os.path.join(inputdir, 'sobol_saltelli_salib_2nd_order.json'),
+        '--input=' + os.path.join(inputdir, 'sobol_indices_sobol.json'),
         '--output=' + str(tmpdir),
     ]
 
@@ -41,21 +41,21 @@ def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
             0.004890095900063113,
         ]
     )
-
     expected_result["S1_conf"] = np.array(
         [
-            0.10986792487961591,
-            0.25000599956728076,
-            0.11024277529867381,
-            0.06149594923578095,
-            0.06918635500808559,
-            0.021478128416154076,
-            0.06354361408306426,
-            0.015569627261478092,
-            0.02128151875504991,
-            0.013440584808635126,
+            0.0267367056,
+            0.1614473756,
+            0.0446664140,
+            0.1030576095,
+            0.0715392455,
+            0.0743431043,
+            0.0757356440,
+            0.0176071872,
+            0.0236584394,
+            0.0051844290,
         ]
     )
+
     expected_result["ST"] = np.array(
         [
             0.8706049386700344,
@@ -73,16 +73,16 @@ def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
 
     expected_result["ST_conf"] = np.array(
         [
-            0.755350667792397,
-            4.157520166210199,
-            0.20572184906089488,
-            0.20173027454674597,
-            0.5049730031271076,
-            0.19954486390417944,
-            0.8117165298764414,
-            0.04441454378912035,
-            0.043441521771785424,
-            0.027068615078419605,
+            0.4359593595,
+            3.4830312608,
+            0.1600557592,
+            0.2731329567,
+            0.3505338739,
+            0.2773761454,
+            0.7057099402,
+            0.0190672368,
+            0.0295136874,
+            0.0277708321,
         ]
     )
 
@@ -204,63 +204,51 @@ def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
         [
             [
                 np.nan,
-                0.1967466913123026,
-                0.09565629386983263,
-                0.06000822931018138,
-                0.6837761105291199,
-                0.2475368991335622,
-                0.2547257094941949,
-                0.11106811220019396,
-                0.11807055333364978,
-                0.10155559221245174,
+                0.2302033993,
+                0.1767744071,
+                0.0727004660,
+                0.5715173997,
+                0.1981648654,
+                0.2292276020,
+                0.1291920907,
+                0.1917071250,
+                0.1787768697,
             ],
             [
                 np.nan,
                 np.nan,
-                0.3985842438995974,
-                1.2580664159711359,
-                0.6259599962105775,
-                0.32053683219916534,
-                0.5692214310081142,
-                0.5572583283528845,
-                0.35124861465874685,
-                0.4001331058829118,
-            ],
-            [
-                np.nan,
-                np.nan,
-                np.nan,
-                0.10173701407184092,
-                0.2646590272333874,
-                0.15756584781356767,
-                0.07611662684699781,
-                0.08400677379232034,
-                0.06960740860683465,
-                0.08386421598287554,
+                0.3769790878,
+                0.8082964090,
+                0.3153796763,
+                0.3830562431,
+                0.6861041390,
+                0.4140223269,
+                0.4013110877,
+                0.4321964362,
             ],
             [
                 np.nan,
                 np.nan,
                 np.nan,
-                np.nan,
-                0.28222395700947905,
-                0.26897274076034905,
-                0.09855318755961003,
-                0.1488129387029852,
-                0.1125570457017122,
-                0.11781893215648177,
+                0.0521460071,
+                0.0934262116,
+                0.0675665076,
+                0.0503032832,
+                0.0460493846,
+                0.0394698900,
+                0.0493946655,
             ],
             [
                 np.nan,
                 np.nan,
                 np.nan,
                 np.nan,
-                np.nan,
-                0.12085394747459759,
-                0.06926255643877466,
-                0.08249544718780262,
-                0.06400291986713515,
-                0.06201060403343306,
+                0.4261374303,
+                0.1481089941,
+                0.1472484464,
+                0.1434691665,
+                0.2108224367,
+                0.1877406256,
             ],
             [
                 np.nan,
@@ -268,11 +256,11 @@ def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
                 np.nan,
                 np.nan,
                 np.nan,
-                np.nan,
-                0.05601453092006938,
-                0.13270846731234276,
-                0.10230366474274967,
-                0.09697215881808433,
+                0.1296112773,
+                0.0901383559,
+                0.1073482468,
+                0.1060688378,
+                0.1006672459,
             ],
             [
                 np.nan,
@@ -281,10 +269,10 @@ def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
                 np.nan,
                 np.nan,
                 np.nan,
-                np.nan,
-                0.0835121759225804,
-                0.07726586432600173,
-                0.08457703041833556,
+                0.0971184412,
+                0.0777429467,
+                0.0745773590,
+                0.0809483392,
             ],
             [
                 np.nan,
@@ -294,9 +282,9 @@ def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
                 np.nan,
                 np.nan,
                 np.nan,
-                np.nan,
-                0.03232346368831656,
-                0.038049159818777614,
+                0.0315764492,
+                0.0334681878,
+                0.0338116736,
             ],
             [
                 np.nan,
@@ -307,9 +295,10 @@ def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
                 np.nan,
                 np.nan,
                 np.nan,
-                np.nan,
-                0.0489285763078056,
+                0.0273391091,
+                0.0248472949,
             ],
+            [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, 0.0482628341],
             [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
         ]
     )
@@ -317,10 +306,12 @@ def test_sobol_saltelli_salib_2nd_order(inputdir, tmpdir):
     np.testing.assert_allclose(
         results["sensitivity_indices"]["S1_conf"], expected_result["S1_conf"]
     )
+
     np.testing.assert_allclose(results["sensitivity_indices"]["ST"], expected_result["ST"])
     np.testing.assert_allclose(
         results["sensitivity_indices"]["ST_conf"], expected_result["ST_conf"]
     )
+
     np.testing.assert_allclose(results["sensitivity_indices"]["S2"], expected_result["S2"])
     np.testing.assert_allclose(
         results["sensitivity_indices"]["S2_conf"], expected_result["S2_conf"]

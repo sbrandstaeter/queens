@@ -1,24 +1,21 @@
 import os
-import random
 
 import numpy as np
 import pandas as pd
-import plotly
 import plotly.graph_objs as go
 from SALib.analyze import sobol
 from SALib.sample import saltelli
 
+from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import write_results
 
-from .iterator import Iterator
-
 
 # TODO deal with non-uniform input distribution
-class SaltelliSALibIterator(Iterator):
-    """Saltelli SALib iterator.
+class SobolIndexIterator(Iterator):
+    """Sobol Index Iterator.
 
-        This class essentially provides a wrapper around the SALib librabry
+    This class essentially provides a wrapper around the SALib library
 
     Attributes:
         seed (int):                         Seed for random number generator
@@ -56,7 +53,7 @@ class SaltelliSALibIterator(Iterator):
             confidence_level (float):       The confidence interval level
             result_description (dict):      Dictionary with desired result description
         """
-        super(SaltelliSALibIterator, self).__init__(model, global_settings)
+        super(SobolIndexIterator, self).__init__(model, global_settings)
 
         self.seed = seed
         self.num_samples = num_samples
@@ -73,11 +70,13 @@ class SaltelliSALibIterator(Iterator):
         self.sensitivity_indices = None
 
     @classmethod
-    def from_config_create_iterator(cls, config, model=None):
+    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
         """Create Saltelli SALib iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
+            iterator_name (str): Name of iterator to identify right section
+                     in options dict (optional)
             model (model): Model to iterate (optional)
 
         Returns:
@@ -106,8 +105,6 @@ class SaltelliSALibIterator(Iterator):
 
     def pre_run(self):
         """Generate samples for subsequent analysis and update model."""
-        np.random.seed(self.seed)
-        random.seed(self.seed)
         parameter_info = self.model.get_parameter()
 
         # setup SALib problem dict
@@ -170,6 +167,7 @@ class SaltelliSALibIterator(Iterator):
             num_resamples=self.num_bootstrap_samples,
             conf_level=self.confidence_level,
             print_to_console=False,
+            seed=self.seed,
         )
 
     def post_run(self):

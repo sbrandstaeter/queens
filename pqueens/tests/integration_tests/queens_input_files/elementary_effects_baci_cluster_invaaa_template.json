@@ -6,16 +6,15 @@
     "address": "localhost:27017"
   },
   "method": {
-    "method_name": "sa_morris_salib",
+    "method_name": "elementary_effects",
     "method_options": {
       "seed": 2,
       "model": "model",
       "num_trajectories": 15,
       "num_optimal_trajectories": 5,
-      "grid_jump": 0.5,
       "number_of_levels": 2,
       "confidence_level": 0.95,
-      "local_optimization": "True",
+      "local_optimization": true,
       "num_bootstrap_samples": 15,
       "result_description": {
         "write_results": true,

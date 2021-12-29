@@ -1,5 +1,7 @@
-"""Test suite for integration tests for the Morris-Salib Iterator (Elementary
-Effects) for local simulations with BACI using the INVAAA minimal model."""
+"""
+Test suite for integration tests for the Elementary Effects for local
+simulations with BACI using the INVAAA minimal model.
+"""
 
 import pathlib
 import pickle
@@ -13,11 +15,12 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.mark.benchmark
-def test_cluster_morris_salib(
+@pytest.mark.lnm_cluster
+def test_cluster_elementary_effects(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):
-    """Integration test for the Salib Morris Iterator on the clusters together
-    with BACI.
+    """
+    Integration test for the Elementary Effects Iterator on the clusters together with BACI.
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -48,7 +51,7 @@ def test_cluster_morris_salib(
     # unique experiment name
     experiment_name = cluster + "_morris_salib"
 
-    template = pathlib.Path(inputdir, "morris_baci_cluster_invaaa_template.json")
+    template = pathlib.Path(inputdir, "elementary_effects_baci_cluster_invaaa_template.json")
     input_file = pathlib.Path(tmpdir, f"morris_{cluster}_deep_invaaa.json")
 
     # specific folder for this test

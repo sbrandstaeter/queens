@@ -31,8 +31,8 @@ def output_directory_forward(tmpdir_factory):
         output_directory_forward (dict): temporary output directories for simulation without and
                                          with singularity
     """
-    path_singularity_true = tmpdir_factory.mktemp("test_baci_morris_salib_true")
-    path_singularity_false = tmpdir_factory.mktemp("test_baci_morris_salib_false")
+    path_singularity_true = tmpdir_factory.mktemp("test_baci_elementary_effects_true")
+    path_singularity_false = tmpdir_factory.mktemp("test_baci_elementary_effects_false")
 
     return {True: path_singularity_true, False: path_singularity_false}
 
@@ -56,7 +56,9 @@ def check_experiment_directory(experiment_directory):
     """
     number_subdirectories = count_subdirectories(experiment_directory)
 
-    assert number_subdirectories != 0, "Empty output directory. Run test_baci_morris_salib first."
+    assert (
+        number_subdirectories != 0
+    ), "Empty output directory. Run test_baci_elementary_effects first."
 
 
 def count_subdirectories(current_directory):
@@ -80,11 +82,11 @@ def remove_job_output_directory(experiment_directory, jobid):
 
 
 @pytest.mark.integration_tests_baci
-def test_baci_morris_salib(
+def test_baci_elementary_effects(
     inputdir, third_party_inputs, baci_link_paths, singularity_bool, experiment_directory
 ):
-    """Integration test for the Salib Morris Iterator together with BACI. The
-    test runs a local native BACI simulation as well as a local Singularity
+    """Integration test for the Elementary Effects Iterator together with BACI.
+    The test runs a local native BACI simulation as well as a local Singularity
     based BACI simulation for elementary effects.
 
     Args:
@@ -97,8 +99,8 @@ def test_baci_morris_salib(
     Returns:
         None
     """
-    template = os.path.join(inputdir, "morris_baci_local_invaaa_template.json")
-    input_file = os.path.join(experiment_directory, "morris_baci_local_invaaa.json")
+    template = os.path.join(inputdir, "elementary_effects_baci_local_invaaa_template.json")
+    input_file = os.path.join(experiment_directory, "elementary_effects_baci_local_invaaa.json")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 
@@ -180,11 +182,10 @@ def test_baci_morris_salib(
         results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3
+        results["sensitivity_indices"]["mu_star_conf"], np.array([0.136631, 0.140794]), rtol=1.0e-3
     )
 
 
-@pytest.mark.integration_tests_baci
 def test_restart_from_output_folders_baci(
     inputdir,
     tmpdir,
@@ -200,7 +201,7 @@ def test_restart_from_output_folders_baci(
     - test with and without singularity
     - drop_database_boolean = true
 
-    Restart based on results of previous tests "test_baci_morris_salib".
+    Restart based on results of previous tests "test_baci_elementary_effects".
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -214,8 +215,8 @@ def test_restart_from_output_folders_baci(
     Returns:
         None
     """
-    template = os.path.join(inputdir, "morris_baci_local_invaaa_restart_template.json")
-    input_file = os.path.join(tmpdir, "morris_baci_local_invaaa_restart.json")
+    template = os.path.join(inputdir, "elementary_effects_baci_local_invaaa_restart_template.json")
+    input_file = os.path.join(tmpdir, "elementary_effects_baci_local_invaaa_restart.json")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 
@@ -252,7 +253,7 @@ def test_restart_from_output_folders_baci(
         results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3
+        results["sensitivity_indices"]["mu_star_conf"], np.array([0.136631, 0.140794]), rtol=1.0e-3
     )
 
 
@@ -284,8 +285,8 @@ def test_block_restart_baci(
     for jobid in range(number_of_output_directories - 4, number_of_output_directories + 1):
         remove_job_output_directory(output_directory, jobid)
 
-    template = os.path.join(inputdir, "morris_baci_local_invaaa_restart_template.json")
-    input_file = os.path.join(tmpdir, "morris_baci_local_invaaa_restart.json")
+    template = os.path.join(inputdir, "elementary_effects_baci_local_invaaa_restart_template.json")
+    input_file = os.path.join(tmpdir, "elementary_effects_baci_local_invaaa_restart.json")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
@@ -321,7 +322,7 @@ def test_block_restart_baci(
         results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3
+        results["sensitivity_indices"]["mu_star_conf"], np.array([0.136631, 0.140794]), rtol=1.0e-3
     )
 
 
@@ -358,8 +359,8 @@ def test_restart_from_db_baci(
     for jobid in range(1, number_of_output_directories + 1):
         remove_job_output_directory(output_directory, jobid)
 
-    template = os.path.join(inputdir, "morris_baci_local_invaaa_restart_template.json")
-    input_file = os.path.join(tmpdir, "morris_baci_local_invaaa_restart.json")
+    template = os.path.join(inputdir, "elementary_effects_baci_local_invaaa_restart_template.json")
+    input_file = os.path.join(tmpdir, "elementary_effects_baci_local_invaaa_restart.json")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
@@ -395,5 +396,5 @@ def test_restart_from_db_baci(
         results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
     )
     np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.11853, 0.146817]), rtol=1.0e-3
+        results["sensitivity_indices"]["mu_star_conf"], np.array([0.136631, 0.140794]), rtol=1.0e-3
     )

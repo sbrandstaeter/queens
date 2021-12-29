@@ -57,7 +57,7 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 <!---
 If there's anyone particular you think should be notified, feel free to @mention them here.
 -->
-@queens_community/QUEENS_developer, @queens_community/QUEENS_maintainer
+@queens_community/QUEENS_contributers, @queens_community/QUEENS_maintainers
 
 ## For newbies
 We bombarded you with a lot of information and we know that it can be overwhelming, especially if you are new to python, git, gitlab and etc. 
