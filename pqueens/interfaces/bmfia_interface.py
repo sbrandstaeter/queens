@@ -1,6 +1,8 @@
 """Interface for Bayesian multi-fidelity inverse analysis."""
 
 import logging
+import multiprocessing as mp
+from multiprocessing import Pool
 
 import numpy as np
 
@@ -88,14 +90,24 @@ class BmfiaInterface(Interface):
         mean_Y_HF_given_Z_LF = []
         var_Y_HF_given_Z_LF = []
 
-        for z_test, probabilistic_mapping_obj in zip(Z_LF.T, self.probabilistic_mapping_obj_lst):
-            if z_test.ndim > 1:
+        assert len(self.probabilistic_mapping_obj_lst) == Z_LF.T.shape[0], (
+            "The length of the list with probabilistic mapping objects "
+            "must agree with the row numbers in Z_LF.T (coordinate dimension)! Abort..."
+        )
+
+        # Note: Z_LF might be a 3d tensor here
+        # Dims Z_LF: gamma_dim x num_samples x coord_dim
+        # Dims Z_LF.T: coord_dim x num_samples x gamma_dim --> iterate over coord_dim
+        for z_test_per_coordinate, probabilistic_mapping_obj in zip(
+            Z_LF.T, self.probabilistic_mapping_obj_lst
+        ):
+            if z_test_per_coordinate.ndim > 1:
                 output = probabilistic_mapping_obj.predict(
-                    np.atleast_2d(z_test), support=support, full_cov=full_cov
+                    z_test_per_coordinate, support=support, full_cov=full_cov
                 )
             else:
                 output = probabilistic_mapping_obj.predict(
-                    np.atleast_2d(z_test).T, support=support, full_cov=full_cov
+                    np.atleast_2d(z_test_per_coordinate).T, support=support, full_cov=full_cov
                 )
 
             mean_Y_HF_given_Z_LF.append(output["mean"].squeeze())
@@ -121,12 +133,52 @@ class BmfiaInterface(Interface):
         Returns:
             None
         """
-        # TODO: make this parallel!
-        for num, (z_lf, y_hf) in enumerate(zip(Z_LF_train.T, Y_HF_train.T)):
-            _logger.info(f'Training model {num + 1} of {Z_LF_train.T.shape[0]}.')
-            self.probabilistic_mapping_obj_lst.append(
-                RegressionApproximation.from_config_create(
-                    self.config, self.approx_name, np.atleast_2d(z_lf), np.atleast_2d(y_hf).T
-                )
+        assert (
+            Z_LF_train.T.shape[0] == Y_HF_train.T.shape[0]
+        ), "Dimension of Z_LF_train and Y_HF_train do not agree! Abort ..."
+
+        # Instantiate list of probabilistic mapping
+        self.probabilistic_mapping_obj_lst = [
+            RegressionApproximation.from_config_create(
+                self.config, self.approx_name, np.atleast_2d(z_lf), np.atleast_2d(y_hf).T
             )
-            self.probabilistic_mapping_obj_lst[-1].train()
+            for (z_lf, y_hf) in (zip(Z_LF_train.T, Y_HF_train.T))
+        ]
+
+        # prepare parallel pool for training
+        num_processors_available = mp.cpu_count()
+        num_coords = Z_LF_train.T.shape[0]
+        num_processors_for_job = min(num_processors_available, num_coords)
+
+        _logger.info(
+            "Run generation and training of probabilistic surrogates in parallel "
+            f"on {num_processors_for_job} processors..."
+        )
+
+        # Init multi-processing pool
+        with Pool(processes=num_processors_for_job) as pool:
+            # Actual parallel training of the models
+            optimized_hyper_params_lst = pool.map(
+                _optimize_hyper_params, self.probabilistic_mapping_obj_lst
+            )
+
+        # set the optimized hyper-parameters for probabilistic regression model
+        for optimized_state_dict, mapping in zip(
+            optimized_hyper_params_lst, self.probabilistic_mapping_obj_lst
+        ):
+            mapping.set_state(optimized_state_dict)
+
+
+def _optimize_hyper_params(probabilistic_mapping):
+    """Train one probabilistic surrogate model.
+
+    Args:
+        probabilsitic_mapping (obj): Instantiated but untrained probabilistic mapping
+
+    Returns:
+        optimized_mapping_state_dict (dict): Dictionary with optimized state of the trained
+                                             probabilsitic regression model
+    """
+    probabilistic_mapping.train()
+    optimized_mapping_state_dict = probabilistic_mapping.get_state()
+    return optimized_mapping_state_dict

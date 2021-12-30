@@ -81,7 +81,7 @@ class GPPrecompiled(RegressionApproximation):
         noise_var_lb,
         plot_refresh_rate,
     ):
-        """Instanciate the precompiled Gaussian Process."""
+        """Instantiate the precompiled Gaussian Process."""
         self.x_train_vec = x_train_vec
         self.y_train_vec = y_train_vec
         self.k_mat_inv = k_mat_inv
@@ -588,12 +588,18 @@ class GPPrecompiled(RegressionApproximation):
             if log_ev > log_ev_max:
                 log_ev_max = log_ev
                 params_ev_max = params
+                k_mat_ev_max = self.k_mat
+                k_mat_inv_ev_max = self.k_mat_inv
+                cholesky_k_mat_ev_max = self.cholesky_k_mat
 
         # use the params that yielded the max log evidence
         sigma_0_sq_param, l_scale_sq_param, sigma_n_sq_param = params_ev_max
         self.sigma_0_sq = np.exp(sigma_0_sq_param)
         self.l_scale_sq = np.exp(l_scale_sq_param)
         self.sigma_n_sq = max(np.exp(sigma_n_sq_param), self.noise_var_lb)
+        self.k_mat = k_mat_ev_max
+        self.k_mat_inv = k_mat_inv_ev_max
+        self.cholesky_k_mat = cholesky_k_mat_ev_max
 
         _logger.info("GP model trained sucessfully!")
 
@@ -644,3 +650,53 @@ class GPPrecompiled(RegressionApproximation):
         output["variance"] = self.scaler_y.inverse_transform_std(np.sqrt(var)) ** 2
 
         return output
+
+    def get_state(self):
+        """Get the current hyper-parameters of the model.
+
+        Returns:
+            state_dict (dict): Dictionary with the current state settings
+                               of the probabilistic mapping object
+        """
+        hyper_params_dict = {
+            'sigma_0_sq': self.sigma_0_sq,
+            'l_scale_sq': self.l_scale_sq,
+            'sigma_n_sq': self.sigma_n_sq,
+            'k_mat': self.k_mat,
+            'k_mat_inv': self.k_mat_inv,
+            'cholesky_k_mat': self.cholesky_k_mat,
+        }
+        return hyper_params_dict
+
+    def set_state(self, state_dict):
+        """Update and set new hyper-parameters for the model.
+
+        Args:
+            state_dict (dict): Dictionary with the current state settings
+                               of the probabilistic mapping object
+
+        Returns:
+            None
+        """
+        # conduct some checks
+        valid_keys = [
+            'sigma_0_sq',
+            'l_scale_sq',
+            'sigma_n_sq',
+            'k_mat',
+            'k_mat_inv',
+            'cholesky_k_mat',
+        ]
+        assert isinstance(
+            state_dict, dict
+        ), "The provided state_dict must be a dictionary! Abort..."
+        keys = list(state_dict.keys())
+        assert keys == valid_keys, "The provided dictionary does not contain valid keys! Abort..."
+
+        # Actually set the new state of the object
+        self.sigma_0_sq = state_dict['sigma_0_sq']
+        self.l_scale_sq = state_dict['l_scale_sq']
+        self.sigma_n_sq = state_dict['sigma_n_sq']
+        self.k_mat = state_dict['k_mat']
+        self.k_mat_inv = state_dict['k_mat_inv']
+        self.cholesky_k_mat = state_dict['cholesky_k_mat']
