@@ -138,6 +138,26 @@ class BmfiaInterface(Interface):
         ), "Dimension of Z_LF_train and Y_HF_train do not agree! Abort ..."
 
         # Instantiate list of probabilistic mapping
+        self._instantiate_probabilistic_mappings(Z_LF_train, Y_HF_train)
+
+        # Conduct training of probabilistic mappings in parallel
+        optimized_mapping_states_lst = self._train_probabilistic_mappings_in_parallel(Z_LF_train)
+
+        # Set the optimized hyper-parameters for probabilistic regression model
+        self._set_optimized_state_of_probabilistic_mappings(optimized_mapping_states_lst)
+
+    def _instantiate_probabilistic_mappings(self, Z_LF_train, Y_HF_train):
+        """Instantitate all probabilistic mappings.
+
+        Args:
+            Z_LF_train (np.array): Training inputs for probabilistic mapping.
+                                   Rows: Samples, Columns: Coordinates
+            Y_HF_train (np.array): Training outputs for probabilistic mapping.
+                                   Rows: Samples, Columns: Coordinates
+
+        Returns:
+            None
+        """
         self.probabilistic_mapping_obj_lst = [
             RegressionApproximation.from_config_create(
                 self.config, self.approx_name, np.atleast_2d(z_lf), np.atleast_2d(y_hf).T
@@ -145,6 +165,20 @@ class BmfiaInterface(Interface):
             for (z_lf, y_hf) in (zip(Z_LF_train.T, Y_HF_train.T))
         ]
 
+    def _train_probabilistic_mappings_in_parallel(self, Z_LF_train):
+        """Train the probabilistic regression models in parallel.
+
+        We use a multi-processing tool to conduct the training of the
+        probabilistic regression models in parallel.
+
+        Args:
+            Z_LF_train (np.array): Training inputs for probabilistic mapping.
+                                   Rows: Samples, Columns: Coordinates
+
+        Returns:
+            optimized_mapping_states_lst (lst): List of updated / trained states for
+                                                the probabilistic regression models.
+        """
         # prepare parallel pool for training
         num_processors_available = mp.cpu_count()
         num_coords = Z_LF_train.T.shape[0]
@@ -158,27 +192,37 @@ class BmfiaInterface(Interface):
         # Init multi-processing pool
         with Pool(processes=num_processors_for_job) as pool:
             # Actual parallel training of the models
-            optimized_hyper_params_lst = pool.map(
-                _optimize_hyper_params, self.probabilistic_mapping_obj_lst
+            optimized_mapping_states_lst = pool.map(
+                BmfiaInterface._optimize_hyper_params, self.probabilistic_mapping_obj_lst
             )
+        return optimized_mapping_states_lst
 
-        # set the optimized hyper-parameters for probabilistic regression model
+    def _set_optimized_state_of_probabilistic_mappings(self, optimized_mapping_states_lst):
+        """Set the new states of the trained probabilistic mappings.
+
+        Args:
+            optimized_mapping_states_lst (lst): List of updated / trained states for
+                                                the probabilistic regression models.
+
+        Returns:
+            None
+        """
         for optimized_state_dict, mapping in zip(
-            optimized_hyper_params_lst, self.probabilistic_mapping_obj_lst
+            optimized_mapping_states_lst, self.probabilistic_mapping_obj_lst
         ):
             mapping.set_state(optimized_state_dict)
 
+    @staticmethod
+    def _optimize_hyper_params(probabilistic_mapping):
+        """Train one probabilistic surrogate model.
 
-def _optimize_hyper_params(probabilistic_mapping):
-    """Train one probabilistic surrogate model.
+        Args:
+            probabilistic_mapping (obj): Instantiated but untrained probabilistic mapping
 
-    Args:
-        probabilsitic_mapping (obj): Instantiated but untrained probabilistic mapping
-
-    Returns:
-        optimized_mapping_state_dict (dict): Dictionary with optimized state of the trained
-                                             probabilsitic regression model
-    """
-    probabilistic_mapping.train()
-    optimized_mapping_state_dict = probabilistic_mapping.get_state()
-    return optimized_mapping_state_dict
+        Returns:
+            optimized_mapping_state_dict (dict): Dictionary with optimized state of the trained
+                                                 probabilistic regression model
+        """
+        probabilistic_mapping.train()
+        optimized_mapping_state_dict = probabilistic_mapping.get_state()
+        return optimized_mapping_state_dict
