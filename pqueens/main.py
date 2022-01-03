@@ -34,15 +34,20 @@ def main(args):
     result = pyfiglet.figlet_format("QUEENS", font="banner3-D")
     print(result)
     result = """
- A general purpose framework for Uncertainty Quantification,
- Physics-Informed Machine Learning,
- Bayesian Optimization, Inverse Problems and Simulation Analytics
+ A general purpose framework for Uncertainty Quantification, 
+  Physics-Informed Machine Learning, Bayesian Optimization, 
+         Inverse Problems and Simulation Analytics
 """
     print(result)
 
     # read input
     start_time_input = time.time()
     options = get_options(args)
+
+    # stop here if no options are provided
+    if options is None:
+        return
+
     setup_basic_logging(
         pathlib.Path(options["global_settings"]["output_dir"]),
         options["global_settings"]["experiment_name"],
@@ -86,20 +91,29 @@ def get_options(args):
     """
 
     parser = argparse.ArgumentParser(description="QUEENS")
+    parser.add_argument('--input', type=str, default=None, help='Input file in .json format.')
     parser.add_argument(
-        '--input', type=str, default='input.json', help='Input file in .json format.'
+        '--output_dir', type=str, default=None, help='Output directory to write results to.'
     )
-    parser.add_argument('--output_dir', type=str, help='Output directory to write resutls to.')
     parser.add_argument('--debug', type=str, default='no', help='debug mode yes/no')
 
     args = parser.parse_args(args)
 
-    input_file = os.path.realpath(os.path.expanduser(args.input))
-    try:
-        with open(input_file, 'r') as f:
-            options = json.load(f, object_pairs_hook=OrderedDict)
-    except:
-        raise FileNotFoundError("config.json did not load properly.")
+    # if no options are provided print a greeding message
+    if args.input is None and args.output_dir is None:
+        print("\t\t Welcome to the royal family!")
+        print("\nTo use QUEENS run:\n")
+        print("queens --input <inputfile> --output_dir <output_dir>\n")
+        print("or\n")
+        print("python -m pqueens.main --input <inputfile> --output_dir <output_dir>\n")
+        print("or\n")
+        print(
+            "python path_to_queens/pqueens/main.py --input <inputfile> --output_dir <output_dir>\n"
+        )
+        return None
+
+    if args.input is None:
+        raise Exception("No json input file was provided.")
 
     if args.output_dir is None:
         raise Exception("No output directory was given.")
@@ -107,6 +121,13 @@ def get_options(args):
     output_dir = os.path.realpath(os.path.expanduser(args.output_dir))
     if not os.path.isdir(output_dir):
         raise Exception("Output directory does not exist.")
+
+    input_file = os.path.realpath(os.path.expanduser(args.input))
+    try:
+        with open(input_file, 'r') as f:
+            options = json.load(f, object_pairs_hook=OrderedDict)
+    except:
+        raise FileNotFoundError("config.json did not load properly.")
 
     if args.debug == 'yes':
         debug = True

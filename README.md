@@ -4,18 +4,20 @@ Physics-Informed Machine Learning, Bayesian Optimization, Inverse Problems and S
 systems.
 
 ## Contents
-1. [Prerequisites](#prerequisites)
-    1. [Git](#git)
-    1. [Anaconda](#anaconda)
-    1. [MongoDB](#mongodb)
-    1. [Optional: Singularity](#optional-singularity)
-1. [Installation](#installation)
-1. [Further Topics](#further-topics)
-   1. [Remote computing](#remote-computing)
-   1. [LNM-specific issues](#lnm-specific-issues)
-   1. [Documentation](#documentation)
-   1. [Run Test Suite](#run-test-suite)
-   1. [GitLab Test Machine](#gitlab-test-machine)
+- [QUEENS](#queens)
+  - [Contents](#contents)
+  - [Prerequisites](#prerequisites)
+    - [Anaconda](#anaconda)
+    - [Git](#git)
+    - [MongoDB](#mongodb)
+    - [Optional: Singularity](#optional-singularity)
+  - [Installation](#installation)
+  - [Further Topics](#further-topics)
+    - [Remote Computing](#remote-computing)
+    - [LNM-specific issues](#lnm-specific-issues)
+  - [Documentation](#documentation)
+  - [Run Test Suite](#run-test-suite)
+    - [GitLab Test Machine](#gitlab-test-machine)
 
 
 ## Prerequisites
@@ -204,14 +206,19 @@ export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
     ```
     conda activate queens
     ```
-1. Install QUEENS inside the environment (Note: If you encounter any problems try using the --user flag):
-    ```
-    python <your-path-to-QUEENS>/setup.py develop
-    ```
+1. Install QUEENS inside the environment:
+     - For simple use (in the QUEENS directory):
+        ```
+        pip install -e .
+        ```
+    - For developers (in the QUEENS directory):
+        ```
+        pip install -e .[develop]
+        ```
 
 1. If required, uninstall QUEENS within the activated environment:
     ```
-    python <your-path-to-QUEENS>/setup.py develop --uninstall
+    python uninstall queens
     ```
 
 Updates from time to time are recommended:
@@ -271,12 +278,7 @@ If you have performed the aforementioned step, yet you are still asked for your 
 [↑ Contents](#contents)
 
 ### LNM-specific issues
-In case you want to run simulations on remote computing machines (e.g., cluster), you need enable access
-from theremotetothelocalhostat`port27017`.Bydefault import (
-    thefirewallsoftware`firewalld`blockseveryincoming,
-)
-
-request. Hence, to enable a connections, we have
+In case you want to run simulations on remote computing machines (e.g., cluster), you need enable access from the remote to the localhost at `port27017`.By default the firewall software `firewalld` blocks every incoming request. Hence, to enable a connections, we have
 add so called rules to `firewalld` in order to connect to the database.
 1.  First check the current firewall rules by typing:
     ```bash

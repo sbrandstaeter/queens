@@ -79,15 +79,30 @@ class UniVarRandomFieldGeneratorFactory(object):
         elif corrstruct == 'squared_exp':
             if spatial_dimension == 1:
                 rf = RandomFieldGenFourier1D(
-                    marg_pdf, corr_length, energy_frac, field_bbox, num_terms_per_dim, total_terms,
+                    marg_pdf,
+                    corr_length,
+                    energy_frac,
+                    field_bbox,
+                    num_terms_per_dim,
+                    total_terms,
                 )
             elif spatial_dimension == 2:
                 rf = RandomFieldGenFourier2D(
-                    marg_pdf, corr_length, energy_frac, field_bbox, num_terms_per_dim, total_terms,
+                    marg_pdf,
+                    corr_length,
+                    energy_frac,
+                    field_bbox,
+                    num_terms_per_dim,
+                    total_terms,
                 )
             elif spatial_dimension == 3:
                 rf = RandomFieldGenFourier3D(
-                    marg_pdf, corr_length, energy_frac, field_bbox, num_terms_per_dim, total_terms,
+                    marg_pdf,
+                    corr_length,
+                    energy_frac,
+                    field_bbox,
+                    num_terms_per_dim,
+                    total_terms,
                 )
             else:
                 raise ValueError(

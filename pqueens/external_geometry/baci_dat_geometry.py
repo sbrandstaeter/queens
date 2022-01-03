@@ -968,7 +968,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
         if mat_param_name in line:
             string_to_replace = "{" + mat_param_name + "}"
             line_new = line.replace(
-                string_to_replace, str(material_fields[0]["values"][realization_index]),
+                string_to_replace,
+                str(material_fields[0]["values"][realization_index]),
             )  # TODO key field realization prob wrong
 
         return line_new

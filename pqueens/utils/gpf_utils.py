@@ -33,7 +33,11 @@ def set_transform_function(data, transform):
     Returns:
         gpf.Parameter with transform
     """
-    return gpf.Parameter(data, name=data.name.split(":")[0], transform=transform,)
+    return gpf.Parameter(
+        data,
+        name=data.name.split(":")[0],
+        transform=transform,
+    )
 
 
 def extract_block_diag(array, block_size):

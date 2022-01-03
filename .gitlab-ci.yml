@@ -36,7 +36,7 @@ stages:
     - apt-get install libtbb2 -y
     - conda env create -f environment.yml -n queens
     - source activate queens
-    - python setup.py develop
+    - pip install -e .[develop]
   only:
     variables:
       - $DOCKER_TESTS == "1"
@@ -84,6 +84,7 @@ build_conda_env:
   script:
     - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - source activate queens-$CI_PIPELINE_ID
+    - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
   artifacts:
     name: "conda_env-$CI_PIPELINE_ID.yml"
@@ -170,8 +171,7 @@ license_check:
     - .codechecks_settings
   stage: codechecks
   script:
-    - ./parse_env_for_liccheck.sh
-    - liccheck -s lic_strategy.ini  -r requirements.tmp
+    - liccheck -s lic_strategy.ini  -r requirements.txt
   needs:
     - build_conda_env
 
@@ -197,7 +197,6 @@ centos_full_test_suite_develop:
     - .centos_settings
   script:
     - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
-    - python setup.py develop
     - pytest -m "unit_tests or integration_tests or integration_tests_baci" $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - build_conda_env
@@ -217,7 +216,6 @@ centos_full_test_suite_master:
     - .centos_settings
   script:
     - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
-    - python setup.py develop
     - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   artifacts:
     name: coverage_report
@@ -240,7 +238,6 @@ cluster_tests:
     - .centos_settings
   script:
     - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
-    - python setup.py develop
     - pytest -m lnm_cluster
   needs:
     - build_conda_env
@@ -255,7 +252,6 @@ benchmarks:
     - .centos_settings
   script:
     - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
-    - python setup.py develop
     - pytest -m benchmark
   needs:
     - build_conda_env

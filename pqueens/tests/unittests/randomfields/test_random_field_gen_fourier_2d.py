@@ -31,15 +31,17 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
         self.seed = 42
 
         # pylint: disable=line-too-long
-        self.my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-            marg_pdf=self.marginal_pdf,
-            spatial_dimension=self.dimension,
-            corrstruct=self.corrstruct,
-            corr_length=self.corr_length,
-            energy_frac=self.energy_frac,
-            field_bbox=self.field_bbox,
-            num_terms_per_dim=self.num_terms_per_dim,
-            total_terms=self.total_terms,
+        self.my_field_generator = (
+            UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+                marg_pdf=self.marginal_pdf,
+                spatial_dimension=self.dimension,
+                corrstruct=self.corrstruct,
+                corr_length=self.corr_length,
+                energy_frac=self.energy_frac,
+                field_bbox=self.field_bbox,
+                num_terms_per_dim=self.num_terms_per_dim,
+                total_terms=self.total_terms,
+            )
         )
         # pylint: enable=line-too-long
 

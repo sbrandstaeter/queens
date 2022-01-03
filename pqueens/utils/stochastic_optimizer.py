@@ -167,10 +167,10 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
     def do_single_iteration(self, gradient):
         """
         Iteration step for a given gradient :math:`g`:
-            :math:`p^{(i+1)}=p^{(i)}+\\beta \\alpha g`        
-        where :math:`beta=-1` for minimization and +1 for maximization and :math:`\\alpha` is 
-        the learning rate.    
-    
+            :math:`p^{(i+1)}=p^{(i)}+\\beta \\alpha g`
+        where :math:`beta=-1` for minimization and +1 for maximization and :math:`\\alpha` is
+        the learning rate.
+
         Args:
             gradient (np.array): Current gradient
 

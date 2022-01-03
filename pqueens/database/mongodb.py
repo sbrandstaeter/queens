@@ -349,7 +349,7 @@ class MongoDB(Database):
 
     @staticmethod
     def _split_output(result):
-        """" Split output into (multi-)index and data.
+        """Split output into (multi-)index and data.
 
         Args:
             result (list): result as list with first row = header

@@ -844,12 +844,13 @@ def calculate_grad_log_variational_distr_variational_params(
         log-variational distribution w.r.t. variational parameters
     """
     # pylint: disable=line-too-long
-    grad_log_variational_distr_variational_params = grad_reparameterization_variational_params.reshape(
-        -1, 1
-    ) * np.vstack(
-        (
-            grad_log_variational_distr_params.reshape(-1, 1),
-            grad_log_variational_distr_params.reshape(-1, 1),
+    grad_log_variational_distr_variational_params = (
+        grad_reparameterization_variational_params.reshape(-1, 1)
+        * np.vstack(
+            (
+                grad_log_variational_distr_params.reshape(-1, 1),
+                grad_log_variational_distr_params.reshape(-1, 1),
+            )
         )
     )
     # pyplint: enable=line-too-long

@@ -19,6 +19,7 @@
 #
 import os
 import sys
+
 # sys.path.insert(0, os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('../../'))
 
@@ -92,7 +93,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = []
+exclude_patterns = ["notebooks/firststeps.ipynb"]
 
 # The reST default role (used for this markup: `text`) to use for all
 # documents.
@@ -131,7 +132,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-#html_theme = 'alabaster'
+# html_theme = 'alabaster'
 html_theme = 'bizstyle'
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -251,29 +252,25 @@ htmlhelp_basename = 'pqueensdoc'
 # -- Options for LaTeX output ---------------------------------------------
 
 latex_elements = {
-     # The paper size ('letterpaper' or 'a4paper').
-     #
-     # 'papersize': 'letterpaper',
-
-     # The font size ('10pt', '11pt' or '12pt').
-     #
-     # 'pointsize': '10pt',
-
-     # Additional stuff for the LaTeX preamble.
-     #
-     # 'preamble': '',
-
-     # Latex figure (float) alignment
-     #
-     # 'figure_align': 'htbp',
+    # The paper size ('letterpaper' or 'a4paper').
+    #
+    # 'papersize': 'letterpaper',
+    # The font size ('10pt', '11pt' or '12pt').
+    #
+    # 'pointsize': '10pt',
+    # Additional stuff for the LaTeX preamble.
+    #
+    # 'preamble': '',
+    # Latex figure (float) alignment
+    #
+    # 'figure_align': 'htbp',
 }
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'pqueens.tex', 'pqueens Documentation',
-     'Jonas Biehler', 'manual'),
+    (master_doc, 'pqueens.tex', 'pqueens Documentation', 'Jonas Biehler', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -313,10 +310,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'pqueens', 'pqueens Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, 'pqueens', 'pqueens Documentation', [author], 1)]
 
 # If true, show URL addresses after external links.
 #
@@ -329,9 +323,15 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'pqueens', 'pqueens Documentation',
-     author, 'pqueens', 'One line description of project.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        'pqueens',
+        'pqueens Documentation',
+        author,
+        'pqueens',
+        'One line description of project.',
+        'Miscellaneous',
+    ),
 ]
 
 # Documents to append as an appendix to all manuals.

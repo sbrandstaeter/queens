@@ -666,12 +666,12 @@ class BBVIIterator(Iterator):
 
     def _initialize_variational_params(self):
         """
-        Initialize the variational parameters. There are two possibilities: 
-            1. Random initialization: 
+        Initialize the variational parameters. There are two possibilities:
+            1. Random initialization:
                 Is handeled by the variational distribution object
             2. Initialization based on the prior modeling (only for normal distributions!)
                 Extract the prior moments and initialize the parameters based on them
-        
+
         Returns:
             None
 
@@ -810,7 +810,10 @@ class BBVIIterator(Iterator):
             )
             if self.memory > 0:
                 result_description.update(
-                    {"ESS": self.ess_list, "memory": self.memory,}
+                    {
+                        "ESS": self.ess_list,
+                        "memory": self.memory,
+                    }
                 )
 
         distribution_dict = self.variational_distribution_obj.export_dict(self.variational_params)
@@ -978,9 +981,9 @@ class BBVIIterator(Iterator):
         computation (if enabled). This includes:
             1. Store samples, variational parameters and probabilistic model evaluations
             2. Update variables samples and log_posterior_unnormalized
-            3. Compute autonormalized weights and the normalizing constant 
+            3. Compute autonormalized weights and the normalizing constant
 
-        The normalizing constant is a constant in order to recover the proper weights values. The 
+        The normalizing constant is a constant in order to recover the proper weights values. The
         gradient estimation is multiplied with this constant in order to avoid a bias. This can
         be done since for any constant :math:`a`:
         # :math:`\\int_x h(x) p(x) dx = a \\int_x h(x) \\frac{1}{a}p(x) dx`
@@ -991,7 +994,7 @@ class BBVIIterator(Iterator):
         Returns:
             selfnormalized_weights (np.array): Row-vector with selfnormalized weights
             normalizing_constant (int): Normalizing constant
-            samples (np.array): Eventually extended row-wise samples 
+            samples (np.array): Eventually extended row-wise samples
 
         """
         # Values if no IS is used or for the first iteration

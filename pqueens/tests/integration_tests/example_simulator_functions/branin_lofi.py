@@ -28,7 +28,7 @@ def branin_lofi(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to low-fidelity Branin function
+    """Interface to low-fidelity Branin function
     Args:
         job_id (int):  ID of job
         params (dict): Dictionary with parameters

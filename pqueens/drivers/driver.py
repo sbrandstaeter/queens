@@ -392,7 +392,10 @@ class Driver(metaclass=abc.ABCMeta):
         # load job from database if existent
         if self.job is None:
             self.job = self.database.load(
-                self.experiment_name, self.batch, 'jobs_' + self.driver_name, {'id': self.job_id},
+                self.experiment_name,
+                self.batch,
+                'jobs_' + self.driver_name,
+                {'id': self.job_id},
             )
 
         # get (from the point of view of the location of the post-processed files)

@@ -24,7 +24,13 @@ class GridIterator(Iterator):
     """
 
     def __init__(
-        self, model, result_description, global_settings, grid_dict, parameters, num_parameters,
+        self,
+        model,
+        result_description,
+        global_settings,
+        grid_dict,
+        parameters,
+        num_parameters,
     ):
         super(GridIterator, self).__init__(model, global_settings)
         self.grid_dict = grid_dict
@@ -119,7 +125,11 @@ class GridIterator(Iterator):
             if axis_type == 'lin':
                 grid_point_list.append(
                     np.linspace(
-                        start_value, stop_value, num=num_grid_points, endpoint=True, retstep=False,
+                        start_value,
+                        stop_value,
+                        num=num_grid_points,
+                        endpoint=True,
+                        retstep=False,
                     )
                 )
 
@@ -202,5 +212,8 @@ class GridIterator(Iterator):
 
         # plot QoI over grid
         qvis.grid_iterator_visualization_instance.plot_QoI_grid(
-            self.output, self.samples, self.num_parameters, self.num_grid_points_per_axis,
+            self.output,
+            self.samples,
+            self.num_parameters,
+            self.num_grid_points_per_axis,
         )

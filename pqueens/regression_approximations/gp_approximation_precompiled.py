@@ -349,7 +349,13 @@ class GPPrecompiled(RegressionApproximation):
     @staticmethod
     @jit(nopython=True)
     def posterior_var(
-        k_mat_inv, x_test_mat, x_train_mat, sigma_0_sq, l_scale_sq, sigma_n_sq, support,
+        k_mat_inv,
+        x_test_mat,
+        x_train_mat,
+        sigma_0_sq,
+        l_scale_sq,
+        sigma_n_sq,
+        support,
     ):
         """Precompile the posterior variance function of the Gaussian Process
         using numba.
@@ -546,7 +552,10 @@ class GPPrecompiled(RegressionApproximation):
                 self.partial_l_scale_sq,
                 self.partial_sigma_n_sq,
             ) = GPPrecompiled.pre_compile_linalg_gp(
-                self.x_train_vec, self.sigma_0_sq, self.l_scale_sq, self.sigma_n_sq,
+                self.x_train_vec,
+                self.sigma_0_sq,
+                self.l_scale_sq,
+                self.sigma_n_sq,
             )
             self.stochastic_optimizer.gradient = lambda param_vec: GPPrecompiled.grad_log_evidence(
                 param_vec,
