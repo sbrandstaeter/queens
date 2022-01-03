@@ -110,7 +110,13 @@ class BMFIAIterator(Iterator):
 
         # get mf approx settings
         mf_approx_settings = config[model_name].get("mf_approx_settings")
-        features_config = mf_approx_settings["features_config"]
+        try:
+            features_config = mf_approx_settings["features_config"]
+        except KeyError:
+            raise KeyError(
+                "The key 'features_config' was not available in the approximation settings! "
+                "Abort..."
+            )
 
         # get the mf subiterator settings
         bmfia_iterator_name = mf_approx_settings["mf_subiterator"]
@@ -340,7 +346,7 @@ class BMFIAIterator(Iterator):
             z_mat = feature_fun(x_mat, y_lf_mat, coords_mat)
         else:
             raise IOError(
-                "Feature space method specified in 'features_config' is not valid!"
+                "Feature space method specified in 'features_config' is not valid! "
                 f"You provided: {self.settings_probab_mapping['features_config']} "
                 f"but valid options are: {feature_dict.keys()}."
             )
