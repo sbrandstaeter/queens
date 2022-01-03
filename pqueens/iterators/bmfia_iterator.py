@@ -1,6 +1,7 @@
 """Iterator for Bayesian multi-fidelity inverse analysis."""
 
 import logging
+from typing import IO
 
 import numpy as np
 
@@ -9,7 +10,6 @@ from pqueens.external_geometry.external_geometry import ExternalGeometry
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.models.model import Model
-from pqueens.utils.process_outputs import process_ouputs, write_results
 
 _logger = logging.getLogger(__name__)
 
@@ -320,93 +320,173 @@ class BMFIAIterator(Iterator):
             coords_mat.ndim == 2
         ), f"Dimension of coords_mat must be 2 but you provided dim={coords_mat.ndim}. Abort..."
 
-        # ------ configure manual informative features ------------------------------------------
-        if self.settings_probab_mapping['features_config'] == "man_features":
-            try:
-                idx_lst = self.settings_probab_mapping['X_cols']
-                # Catch wrong data type
-                assert isinstance(
-                    idx_lst, list
-                ), "Entries of X_cols must be in list format! Abort..."
-                # Catch empty list
-                assert (
-                    idx_lst != []
-                ), "The index list for selection of manual features must not be empty!, Abort..."
-                gamma_mat = x_mat[:, idx_lst]
-                assert (
-                    gamma_mat.shape[0] == y_lf_mat.shape[0]
-                ), "Dimensions of gamma_mat and y_lf_mat do not agree! Abort..."
+        feature_dict = {
+            'man_features': self._get_man_features,
+            'opt_features': self._get_opt_features,
+            'coord_features': self._get_coord_features,
+            'no_features': self._get_no_features,
+            'time_features': self._get_time_features,
+        }
 
-                z_lst = []
-                for y_per_coordinate in y_lf_mat.T:
-                    z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), gamma_mat]))
+        try:
+            feature_fun = feature_dict.get(self.settings_probab_mapping['features_config'], None)
+        except KeyError:
+            raise KeyError(
+                "The key 'features_config' was not available in the dictionary "
+                "'settings_probab_mapping'! Abort..."
+            )
 
-                z_mat = np.array(z_lst).squeeze().T
-                assert (
-                    z_mat.ndim == 3
-                ), "z_mat should be a 3d tensor if man features are used! Abort..."
-
-            except KeyError:
-                raise KeyError(
-                    "The settings for the probabilistic mapping need a key 'X_cols' if "
-                    "you want to use the feature configuration 'man_features'! Abort..."
-                )
-
-        # ------ configure optimal informative features with highest sensitivity -------------
-        elif self.settings_probab_mapping['features_config'] == "opt_features":
-            assert isinstance(
-                self.settings_probab_mapping['num_features'], int
-            ), "Number of informative features must be an integer! Abort..."
-            assert (
-                self.settings_probab_mapping['num_features'] >= 1
-            ), "Number of informative features must be an integer greater than one! Abort..."
-
-            z_mat = self._update_probabilistic_mapping_with_features()
-
-        # ----- configure informative features from (spatial) coordinates ----------------------
-        elif self.settings_probab_mapping['features_config'] == "coord_features":
-            try:
-                idx_lst = self.settings_probab_mapping['coords_cols']
-                # Catch wrong data type
-                assert isinstance(
-                    idx_lst, list
-                ), "Entries of coord_cols must be in list format! Abort..."
-                # Catch empty list
-                assert (
-                    idx_lst != []
-                ), "The index list for selection of manual features must not be empty!, Abort..."
-
-                coord_feature = coords_mat[:, idx_lst]
-                assert (
-                    coord_feature.shape[0] == y_lf_mat.shape[0]
-                ), "Dimensions of coords_feature and y_lf_mat do not agree! Abort..."
-
-                z_lst = []
-                for y_per_coordinate in y_lf_mat.T:
-                    z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), coord_feature]))
-
-                z_mat = np.array(z_lst).squeeze().T
-                assert (
-                    z_mat.ndim == 3
-                ), "z_mat should be a 3d tensor if coord_features are used! Abort..."
-
-            except KeyError:
-                raise KeyError(
-                    "The settings for the probabilistic mapping need a key 'coord_cols' "
-                    "if you want to use the feature configuration 'coord_features'! Abort..."
-                )
-        # ----- configure no additional informative features ------------------------------------
-        elif self.settings_probab_mapping['features_config'] == "no_features":
-            z_mat = y_lf_mat
-
-        # ----- configure informative features based on time coordinate --------------------------
-        elif self.settings_probab_mapping['features_config'] == "time_features":
-            time_repeat = int(y_lf_mat.shape[0] / self.time_vec.size)
-            time_vec = np.repeat(self.time_vec.reshape(-1, 1), repeats=time_repeat, axis=0)
-
-            z_mat = np.hstack([y_lf_mat, time_vec])
+        if feature_fun:
+            z_mat = feature_fun(x_mat, y_lf_mat, coords_mat)
         else:
-            raise IOError("Feature space method specified in input file is unknown!")
+            raise IOError(
+                "Feature space method specified in 'features_config' is not valid!"
+                f"You provided: {self.settings_probab_mapping['features_config']} "
+                f"but valid options are: {feature_dict.keys()}."
+            )
+
+        return z_mat
+
+    def _get_man_features(self, x_mat, y_lf_mat, _):
+        """Get the low-fidelity feature matrix with manual features.
+
+        Args:
+            x_mat (np.array): Input matrix for the simulation model with row-wise input points,
+                              and colum-wise variable dimensions.
+            y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
+                                 Columns are different dimensions of the output.
+
+        Returns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
+        """
+        try:
+            idx_lst = self.settings_probab_mapping['X_cols']
+            # Catch wrong data type
+            assert isinstance(idx_lst, list), "Entries of X_cols must be in list format! Abort..."
+            # Catch empty list
+            assert (
+                idx_lst != []
+            ), "The index list for selection of manual features must not be empty!, Abort..."
+            gamma_mat = x_mat[:, idx_lst]
+            assert (
+                gamma_mat.shape[0] == y_lf_mat.shape[0]
+            ), "Dimensions of gamma_mat and y_lf_mat do not agree! Abort..."
+
+            z_lst = []
+            for y_per_coordinate in y_lf_mat.T:
+                z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), gamma_mat]))
+
+            z_mat = np.array(z_lst).squeeze().T
+            assert z_mat.ndim == 3, "z_mat should be a 3d tensor if man features are used! Abort..."
+
+        except KeyError:
+            raise KeyError(
+                "The settings for the probabilistic mapping need a key 'X_cols' if "
+                "you want to use the feature configuration 'man_features'! Abort..."
+            )
+
+        return z_mat
+
+    def _get_opt_features(self, *_):
+        """Get the low-fidelity feature matrix with optimal features.
+
+        Returns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
+        """
+        assert isinstance(
+            self.settings_probab_mapping['num_features'], int
+        ), "Number of informative features must be an integer! Abort..."
+        assert (
+            self.settings_probab_mapping['num_features'] >= 1
+        ), "Number of informative features must be an integer greater than one! Abort..."
+
+        z_mat = self._update_probabilistic_mapping_with_features()
+
+        return z_mat
+
+    def _get_coord_features(self, _, y_lf_mat, coords_mat):
+        """Get the low-fidelity feature matrix with coordinate features.
+
+        Args:
+            x_mat (np.array): Input matrix for the simulation model with row-wise input points,
+                              and colum-wise variable dimensions.
+            y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
+                                 Columns are different dimensions of the output.
+
+        Returns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
+        """
+        try:
+            idx_lst = self.settings_probab_mapping['coords_cols']
+            # Catch wrong data type
+            assert isinstance(
+                idx_lst, list
+            ), "Entries of coord_cols must be in list format! Abort..."
+            # Catch empty list
+            assert (
+                idx_lst != []
+            ), "The index list for selection of manual features must not be empty!, Abort..."
+
+            coord_feature = coords_mat[:, idx_lst]
+            assert (
+                coord_feature.shape[0] == y_lf_mat.shape[0]
+            ), "Dimensions of coords_feature and y_lf_mat do not agree! Abort..."
+
+            z_lst = []
+            for y_per_coordinate in y_lf_mat.T:
+                z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), coord_feature]))
+
+            z_mat = np.array(z_lst).squeeze().T
+            assert (
+                z_mat.ndim == 3
+            ), "z_mat should be a 3d tensor if coord_features are used! Abort..."
+
+        except KeyError:
+            raise KeyError(
+                "The settings for the probabilistic mapping need a key 'coord_cols' "
+                "if you want to use the feature configuration 'coord_features'! Abort..."
+            )
+
+        return z_mat
+
+    def _get_no_features(self, _, y_lf_mat, __):
+        """Get the low-fidelity feature matrix without additional features.
+
+        Args:
+            y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
+                                 Columns are different dimensions of the output.
+
+        Returns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
+        """
+        z_mat = y_lf_mat
+
+        return z_mat
+
+    def _get_time_features(self, _, y_lf_mat, __):
+        """Get the low-fidelity feature matrix with time features.
+
+         Args:
+            y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
+                                 Columns are different dimensions of the output.
+
+        Returns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
+        """
+        time_repeat = int(y_lf_mat.shape[0] / self.time_vec.size)
+        time_vec = np.repeat(self.time_vec.reshape(-1, 1), repeats=time_repeat, axis=0)
+
+        z_mat = np.hstack([y_lf_mat, time_vec])
 
         return z_mat
 
