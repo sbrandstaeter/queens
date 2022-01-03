@@ -222,8 +222,8 @@ class BMFGaussianStaticModel(LikelihoodModel):
 
         # get x_batch from variable object
         x_batch = []
-        for j, _ in enumerate(self.variables):
-            x_batch.append(np.array([i[1]['value'] for i in self.variables[j].variables.items()]))
+        for variable in self.variables:
+            x_batch.append(np.array([i[1]['value'] for i in variable.variables.items()]))
 
         x_batch = np.array(x_batch)
         x_batch = np.atleast_2d(x_batch)

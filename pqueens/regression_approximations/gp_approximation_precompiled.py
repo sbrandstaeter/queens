@@ -10,18 +10,17 @@ from pqueens.regression_approximations.regression_approximation import Regressio
 from pqueens.utils.random_process_scaler import Scaler
 from pqueens.utils.stochastic_optimizer import StochasticOptimizer
 
+_logger = logging.getLogger(__name__)
+
 try:
     from pqueens.visualization.gnuplot_vis import gnuplot_gp_convergence
 except:
 
     def print_import_warning(*_, **__):
         """Warning for gnuplotlib."""
-        print("Cannot import gnuplotlib! No terminal plots available...")
+        _logger.warning("Cannot import gnuplotlib! No terminal plots available...")
 
     gnuplot_gp_convergence = print_import_warning
-
-
-_logger = logging.getLogger(__name__)
 
 
 class GPPrecompiled(RegressionApproximation):

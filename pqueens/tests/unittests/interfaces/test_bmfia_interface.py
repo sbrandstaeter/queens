@@ -1,7 +1,6 @@
 """Unittests for the Bayesian multi-fidelity inverse analysis interface."""
 
 import time
-from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -53,7 +52,7 @@ def dummy_reg_obj():
 @pytest.fixture
 def default_probabilistic_obj_lst(dummy_reg_obj):
     """Fixture for probabilistic mapping objects."""
-    dummy_lst = [dummy_reg_obj, dummy_reg_obj, dummy_reg_obj]
+    dummy_lst = [dummy_reg_obj] * 3
     return dummy_lst
 
 
@@ -142,14 +141,14 @@ def test_build_approximation(default_bmfia_interface, mocker):
     dummy_lst = [1, 2, 3]
 
     # pylint: disable=line-too-long
-    mo_1 = mocker.patch(
+    mock_instantiate = mocker.patch(
         'pqueens.interfaces.bmfia_interface.BmfiaInterface._instantiate_probabilistic_mappings'
     )
-    mo_2 = mocker.patch(
+    mock_train_parallel = mocker.patch(
         'pqueens.interfaces.bmfia_interface.BmfiaInterface._train_probabilistic_mappings_in_parallel',
         return_value=dummy_lst,
     )
-    mo_3 = mocker.patch(
+    mock_optimize_state = mocker.patch(
         'pqueens.interfaces.bmfia_interface.BmfiaInterface._set_optimized_state_of_probabilistic_mappings'
     )
     # pylint: disable=line-too-long
@@ -163,14 +162,14 @@ def test_build_approximation(default_bmfia_interface, mocker):
     default_bmfia_interface.build_approximation(Z_LF_train, Y_HF_train)
 
     # -- Actual assert / tests ---
-    assert mo_1.call_once()
-    assert mo_2.call_once()
-    assert mo_3.call_once()
+    assert mock_instantiate.call_once()
+    assert mock_train_parallel.call_once()
+    assert mock_optimize_state.call_once()
 
-    np.testing.assert_array_equal(mo_1.call_args[0][0], Z_LF_train)
-    np.testing.assert_array_equal(mo_1.call_args[0][1], Y_HF_train)
-    np.testing.assert_array_equal(mo_2.call_args[0][0], Z_LF_train)
-    np.testing.assert_array_equal(mo_3.call_args[0][0], dummy_lst)
+    np.testing.assert_array_equal(mock_instantiate.call_args[0][0], Z_LF_train)
+    np.testing.assert_array_equal(mock_instantiate.call_args[0][1], Y_HF_train)
+    np.testing.assert_array_equal(mock_train_parallel.call_args[0][0], Z_LF_train)
+    np.testing.assert_array_equal(mock_optimize_state.call_args[0][0], dummy_lst)
 
 
 @pytest.mark.unit_tests
