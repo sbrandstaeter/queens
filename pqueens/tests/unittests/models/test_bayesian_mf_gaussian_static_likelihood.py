@@ -645,7 +645,7 @@ def test_update_and_evaluate_forward_model(default_mf_likelihood, mock_model):
 
 
 @pytest.mark.unit_tests
-def test_project_samples_on_truncated_basis(default_mf_likelihood, mocker):
+def test_project_samples_on_truncated_basis(default_mf_likelihood):
     """Test projection of samples on the truncated basis for random fields."""
     expected_coefs_mat = np.array([[12, 18], [30, 45]])
     truncated_basis_dict = {
