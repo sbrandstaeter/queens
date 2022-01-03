@@ -93,11 +93,13 @@ class BMFIAIterator(Iterator):
         self.external_geometry_obj = external_geometry_obj
 
     @classmethod
-    def from_config_create_iterator(cls, config, _=None, __=None):
+    def from_config_create_iterator(cls, config, _iterator_name=None, _model_name=None):
         """Build a BMFIAIterator object from the problem description.
 
         Args:
             config (dict): Configuration / input file for QUEENS as dictionary
+            _iterator_name (str): Name of the Iterator (here not used)
+            _model_name(str): Name of the underlying model (here not used)
 
         Returns:
             iterator (obj): BMFIAIterator object
