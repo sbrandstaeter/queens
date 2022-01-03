@@ -12,11 +12,8 @@ variables at runtime.
 
 %files
   ../pqueens /
-  ../setup_remote.py /
-
-%labels
-  Maintainer Jonas Nitzler
-  Date 27.07.2020
+  ../setup_remote.py /setup_remote.py
+  ../environment.yml /environment.yml
 
 %post
   yum install -y wget
@@ -32,20 +29,11 @@ variables at runtime.
   # set anaconda path
   export PATH="/usr/local/anaconda/bin:$PATH"
   conda update -y conda
-  conda create -y -n QUEENS python=3.8 cython numpy pymongo=3.12.0 matplotlib plotly pandas vtk xarray scipy -c conda-forge
-  /usr/local/anaconda/envs/QUEENS/bin/pip install docker netcdf4
+  conda env create -f environment.yml -n QUEENS
+  /usr/local/anaconda/envs/QUEENS/bin/python setup_remote.py develop
   cd /
   mkdir scratch
-  /usr/local/anaconda/envs/QUEENS/bin/python setup_remote.py develop
   chmod -R +xr /pqueens
-  chmod -R +xr /pqueens/drivers
-  chmod -R +xr /pqueens/database
-  chmod -R +xr /pqueens/utils
-  chmod -R +xr /pqueens/external_geometry
-  chmod -R +xr /pqueens/randomfields
-  chmod -R +xr /setup_remote.py
-  chmod -R +xr /pqueens/remote_main.py
-  yum clean all
 
 %runscript
   exec /usr/local/anaconda/envs/QUEENS/bin/python /pqueens/remote_main.py $@

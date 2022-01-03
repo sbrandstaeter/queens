@@ -215,7 +215,9 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
                     y=z_train[1, :, num_coord].flatten(),
                     z=y_hf_train[:, num_coord].flatten(),
                     mode='markers',
-                    marker=dict(size=3,),
+                    marker=dict(
+                        size=3,
+                    ),
                 ),
                 row=row,
                 col=col,

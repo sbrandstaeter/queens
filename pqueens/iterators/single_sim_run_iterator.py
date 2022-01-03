@@ -46,7 +46,10 @@ class SingleSimRunIterator(Iterator):
 
         global_settings = config.get('global_settings', None)
 
-        return cls(model, global_settings,)
+        return cls(
+            model,
+            global_settings,
+        )
 
     def eval_model(self):
         """Evaluate the model."""

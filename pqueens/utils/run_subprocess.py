@@ -136,16 +136,16 @@ def _run_subprocess_simulation(command_string, **kwargs):
 
 def _run_subprocess_submit_job(command_string, **kwargs):
     """
-        submit a system command outside of the Python script drop errors and
-        stdout-return
-        Args:
-            command_string (str): command, that will be run in subprocess
-        Returns:
-            process_returncode (int): always None here. this function does not wait for
-                                        subprocess to finish.
-            process_id (int): unique process id, the subprocess was assigned on computing machine
-            stdout (str): always None
-            stderr (str): always None
+    submit a system command outside of the Python script drop errors and
+    stdout-return
+    Args:
+        command_string (str): command, that will be run in subprocess
+    Returns:
+        process_returncode (int): always None here. this function does not wait for
+                                    subprocess to finish.
+        process_id (int): unique process id, the subprocess was assigned on computing machine
+        stdout (str): always None
+        stderr (str): always None
 
     """
 

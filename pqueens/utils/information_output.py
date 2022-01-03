@@ -68,7 +68,7 @@ def print_driver_information(
 
 
 def print_database_information(db, restart=False):
-    """ Print out information on existing and newly established databases
+    """Print out information on existing and newly established databases
     Args:
         restart (bool): Flag for the restart option of QUEENS
 

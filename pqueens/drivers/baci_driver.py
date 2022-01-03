@@ -288,14 +288,16 @@ class BaciDriver(Driver):
             self.external_geometry_obj.main_run()
             # realize random field sample form decomposition here
             # pylint: disable=line-too-long
-            self.random_fields_realized_lst = UniVarRandomFieldGeneratorFactory.calculate_one_truncated_realization_of_all_fields(
-                self.database,
-                self.job_id,
-                self.experiment_name,
-                self.batch,
-                self.experiment_dir,
-                self.random_fields_lst,
-                self.driver_name,
+            self.random_fields_realized_lst = (
+                UniVarRandomFieldGeneratorFactory.calculate_one_truncated_realization_of_all_fields(
+                    self.database,
+                    self.job_id,
+                    self.experiment_name,
+                    self.batch,
+                    self.experiment_dir,
+                    self.random_fields_lst,
+                    self.driver_name,
+                )
             )
             # pylint: enable=line-too-long
             self._manipulate_dat_file()
@@ -355,7 +357,8 @@ class BaciDriver(Driver):
 
         # run BACI via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(
-            command_string, subprocess_type=subprocess_type,
+            command_string,
+            subprocess_type=subprocess_type,
         )
         # redirect stdout/stderr output to log and error file, respectively,
         # for Slurm, PBS (CAE stdout/stderr on remote for A-II, submission

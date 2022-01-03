@@ -21,7 +21,8 @@ def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
         results = pickle.load(handle)
 
     np.testing.assert_array_equal(
-        results["raw_output_data"]["mean"], expected_response,
+        results["raw_output_data"]["mean"],
+        expected_response,
     )
 
     np.testing.assert_allclose(results["input_data"], expected_grid, rtol=1.0e-3)

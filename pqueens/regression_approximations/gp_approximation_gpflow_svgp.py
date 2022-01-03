@@ -301,7 +301,8 @@ class GPflowSVGP(RegressionApproximation):
                 set_trainable(model[i].likelihood.variance, False)
 
             model[i].kernel.lengthscales = set_transform_function(
-                model[i].kernel.lengthscales, tfp.bijectors.Exp(),
+                model[i].kernel.lengthscales,
+                tfp.bijectors.Exp(),
             )
             model[i].kernel.variance = set_transform_function(
                 model[i].kernel.variance, tfp.bijectors.Exp()

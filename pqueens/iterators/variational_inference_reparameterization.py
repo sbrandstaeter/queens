@@ -395,7 +395,10 @@ class VIRPIterator(Iterator):
 
                 # evaluate the reparameterized gradient of the model w.r.t to the parameters at the
                 # sample location
-                for num, sample_dim, in enumerate(sample):
+                for (
+                    num,
+                    sample_dim,
+                ) in enumerate(sample):
                     var_params_sample_dim = np.array([mu_params[num], sigma_params[num]])
                     params.append(
                         variational_inference_utils.conduct_reparameterization(
@@ -417,8 +420,10 @@ class VIRPIterator(Iterator):
                 grad_log_prior = self.calculate_grad_log_prior_params(params)
                 log_prior = self.get_log_prior(params)
                 # pylint: disable=line-too-long
-                grad_variational = variational_inference_utils.calculate_grad_log_variational_distr_params(
-                    self.grad_log_variational_distr_params, params, variational_params
+                grad_variational = (
+                    variational_inference_utils.calculate_grad_log_variational_distr_params(
+                        self.grad_log_variational_distr_params, params, variational_params
+                    )
                 )
                 # pylint: enable=line-too-long
 
@@ -768,7 +773,7 @@ class VIRPIterator(Iterator):
                 Is handeled by the variational distribution object
             2. Initialization based on the prior modeling (only for normal distributions!)
                 Extract the prior moments and initialize the parameters based on them
-        
+
         Returns:
             None
 
