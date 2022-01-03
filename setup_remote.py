@@ -18,7 +18,7 @@ def read(fname):
 
 setup(
     name="pqueens-remote",
-    version="1.0",
+    version="1.1",
     description=("A package for Uncertainty Quantification and Bayesian optimization"),
     keywords="Gaussian Processes, Uncertainty Quantification",
     packages=[
