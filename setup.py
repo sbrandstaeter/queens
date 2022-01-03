@@ -78,7 +78,7 @@ copyfile('pqueens/main.py', os.path.join(os.path.dirname(__file__), 'queens'))
 # Actual setup process
 setup(
     name="queens",
-    version="1.0",
+    version="1.1",
     author="QUEENS developers",
     description=(queens_description),
     keywords=keywords,
