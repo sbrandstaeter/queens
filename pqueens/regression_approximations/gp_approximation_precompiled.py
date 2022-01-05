@@ -16,7 +16,7 @@ try:
     from pqueens.visualization.gnuplot_vis import gnuplot_gp_convergence
 except:
 
-    def print_import_warning(*_, **__):
+    def print_import_warning(*_dummy_args):
         """Warning for gnuplotlib."""
         _logger.warning("Cannot import gnuplotlib! No terminal plots available...")
 
@@ -611,7 +611,7 @@ class GPPrecompiled(RegressionApproximation):
 
         _logger.info("GP model trained sucessfully!")
 
-    def predict(self, x_test_mat, support='f', **_):
+    def predict(self, x_test_mat, support='f'):
         """Predict the posterior distribution of the trained GP at x_test.
 
         Args:
