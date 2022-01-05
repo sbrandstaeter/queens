@@ -6,17 +6,33 @@
     "reset_database": true
   },
   "method": {
-    "method_name": "smc",
+    "method_name": "grid",
     "method_options": {
-      "seed": 41,
-      "num_particles": 50,
       "model": "model",
-      "temper_type": "bayes",
-      "plot_trace_every": 0,
+      "grid_design": {
+        "x_s": {
+          "num_grid_points": 10,
+          "axis_type": "lin"
+        },
+        "y_s": {
+          "num_grid_points": 10,
+          "axis_type": "lin"
+        }
+      },
       "result_description": {
         "write_results": true,
-        "plot_results": false,
-        "cov": true
+        "plotting_options": {
+          "plot_booleans": [
+            false
+          ],
+          "plotting_dir": "dummy",
+          "plot_names": [
+            "grid_plot.png"
+          ],
+          "save_bool": [
+            false
+          ]
+        }
       }
     }
   },
@@ -27,7 +43,7 @@
       "type": "gp_precompiled",
       "num_processors_multi_processing": 4,
       "stochastic_optimizer": "Adam",
-      "learning_rate": 0.01,
+      "learning_rate": 0.008,
       "optimization_type": "max",
       "max_iterations": 1000,
       "plot_refresh_rate": 10,
@@ -45,7 +61,7 @@
         "fraction_standard_deviation": 0.15,
         "fraction_mean_value": 0.25
       },
-      "prior_mean_function_type": "identity",
+      "prior_mean_function_type": "lf-identity",
       "random_seed": 1,
       "features_config": "no_features",
       "X_cols": [
@@ -71,7 +87,7 @@
     ],
     "parameters": "parameters",
     "plotting_options": {
-      "plotting_dir": "{plot_dir}",
+      "plotting_dir": "/home/nitzler/workspace/QUEENS_Rep/queens",
       "plot_names": [
         "conditional_plot.png",
         "mf_posterior.png"
@@ -84,15 +100,6 @@
         true,
         true
       ]
-    }
-  },
-  "MCMC_Kernel": {
-    "method_name": "metropolis-hastings",
-    "method_options": {
-      "as_mcmc_kernel": true,
-      "num_chains": 50,
-      "num_samples": 3,
-      "proposal_distribution": "normal_proposal"
     }
   },
   "bmfia_iterator": {

@@ -8,7 +8,7 @@
     "method_name": "smc",
     "method_options": {
       "seed": 41,
-      "num_particles": 200,
+      "num_particles": 100,
       "model": "model",
       "temper_type": "bayes",
       "plot_trace_every": 0,
@@ -23,13 +23,34 @@
     "type": "likelihood_model",
     "subtype": "bmf_gaussian_static",
     "mf_approx_settings": {
-      "type": "gp_approximation_gpy",
-      "features_config": "coord_features",
+      "type": "gp_precompiled",
+      "num_processors_multi_processing": 4,
+      "stochastic_optimizer": "Adam",
+      "learning_rate": 0.008,
+      "optimization_type": "max",
+      "max_iterations": 1000,
+      "plot_refresh_rate": 10,
+      "rel_L1_change_threshold": 4E-2,
+      "rel_L2_change_threshold": 4E-2,
+      "noise_var_lb": 1E-6,
+      "data_scaling": {
+        "type": "standard_scaler"
+      },
+      "sigma_0_sq": 0.05,
+      "l_scale_sq": 1.0,
+      "sigma_n_sq": 0.05,
+      "hyper_prior_lengthscale": {
+        "hyper_prior_bool": false,
+        "fraction_standard_deviation": 0.15,
+        "fraction_mean_value": 0.25
+      },
+      "prior_mean_function_type": "lf-identity",
+      "random_seed": 1,
+      "features_config": "man_features",
       "X_cols": [
-        0,
-        1
+        0
       ],
-      "num_features": 2,
+      "num_features": 1,
       "mf_subiterator": "bmfia_iterator"
     },
     "forward_model": "lf_model",
@@ -45,7 +66,22 @@
     "experimental_csv_data_base_dirs": [
       "{experimental_data_path}"
     ],
-    "parameters": "parameters"
+    "parameters": "parameters",
+    "plotting_options": {
+      "plotting_dir": "{plot_dir}",
+      "plot_names": [
+        "bmfia_plot.png",
+        "posterior.png"
+      ],
+      "save_bool": [
+        false,
+        false
+      ],
+      "plot_booleans": [
+        false,
+        false
+      ]
+    }
   },
   "MCMC_Kernel": {
     "method_name": "metropolis-hastings",
@@ -60,10 +96,11 @@
     "method_name": "bmfia",
     "low_fidelity_model": "lf_model",
     "high_fidelity_model": "hf_model",
-    "num_HF_eval": 200,
-    "num_bins": 20,
-    "initial_design": "random",
-    "seed": 1
+    "initial_design": {
+      "type": "random",
+      "seed": 1,
+      "num_HF_eval": 200
+    }
   },
   "lf_model": {
     "type": "simulation_model",

@@ -25,9 +25,8 @@
     "subtype": "bmf_gaussian_static",
     "mf_approx_settings": {
       "type": "gp_precompiled",
-      "num_processors_multi_processing": 4,
       "stochastic_optimizer": "Adam",
-      "learning_rate": 0.01,
+      "learning_rate": 0.008,
       "optimization_type": "max",
       "max_iterations": 1000,
       "plot_refresh_rate": 10,
@@ -45,7 +44,7 @@
         "fraction_standard_deviation": 0.15,
         "fraction_mean_value": 0.25
       },
-      "prior_mean_function_type": "identity",
+      "prior_mean_function_type": "lf-identity",
       "random_seed": 1,
       "features_config": "no_features",
       "X_cols": [
@@ -71,7 +70,7 @@
     ],
     "parameters": "parameters",
     "plotting_options": {
-      "plotting_dir": "{plot_dir}",
+      "plotting_dir": "/home/nitzler/workspace/QUEENS_Rep/queens",
       "plot_names": [
         "conditional_plot.png",
         "mf_posterior.png"
@@ -101,7 +100,7 @@
     "high_fidelity_model": "hf_model",
     "initial_design": {
       "type": "random",
-      "num_HF_eval": 100,
+      "num_HF_eval": 50,
       "seed": 1
     }
   },

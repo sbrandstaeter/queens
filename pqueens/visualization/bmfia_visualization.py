@@ -97,17 +97,17 @@ class BMFIAVisualization(object):
         Returns:
             Plots of the probabilistic manifold
         """
-        if self.plot_booleans[0]:
+        if self.plot_booleans[0] is True:
             plot_model_dependency(z_train, Y_HF_train, regression_obj_lst)
             if self.save_bools[0] is not None:
                 _save_plot(self.save_bools[0], self.paths[0])
 
     def plot_posterior_from_samples(self, samples, weights, dim_labels_lst):
-        """Visualize the multi-fideltiy posterior distribution (up to 2D) or
+        """Visualize the multi-fidelity posterior distribution (up to 2D) or
         its marginals for higher dimensional posteriors.
 
         Args:
-            samples (np.array): Samples of the posterior. Each row is a differnt sample-vector.
+            samples (np.array): Samples of the posterior. Each row is a different sample-vector.
                                 Different columns represent the different dimensions of the
                                 posterior.
             weights (np.array): Weights of the posterior samples. One weight for each sample row.
@@ -117,7 +117,7 @@ class BMFIAVisualization(object):
         Returns:
             None
         """
-        if self.plot_booleans[1]:
+        if self.plot_booleans[1] is True:
 
             if samples.shape[1] > 2:
                 RuntimeError(
@@ -175,7 +175,7 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
         z_train (np.array): Array of low-fidelity model output and informative features.
                             One sample per row
         y_hf_train (np.array): Array of high-fidelity model outputs. One sample per row.
-        regression_obj_lst (np.aray): List with regression models
+        regression_obj_lst (np.array): List with regression models
 
     Returns:
         None
@@ -281,7 +281,7 @@ def _plot_2d_dependency(z_train, Y_HF_train, regression_obj_lst):
         z_train (np.array): Array of low-fidelity model output and informative features.
                             One sample per row
         Y_HF_train (np.array): Array of high-fidelity model outputs. One sample per row.
-        regression_obj_lst (np.aray): List with regression models
+        regression_obj_lst (np.array): List with regression models
 
     Returns:
         None

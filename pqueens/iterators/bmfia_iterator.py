@@ -1,20 +1,22 @@
+"""Iterator for Bayesian multi-fidelity inverse analysis."""
+
 import logging
 
 import numpy as np
-from sklearn.preprocessing import StandardScaler
 
 import pqueens.database.database as DB_module
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.models.model import Model
-from pqueens.utils.process_outputs import process_ouputs, write_results
 
 _logger = logging.getLogger(__name__)
 
 
 class BMFIAIterator(Iterator):
-    """Iterator for Bayesian multi-fidelity inverse analysis. Here, we build
+    """Bayesian multi-fidelity inverse analysis iterator.
+
+    Iterator for Bayesian multi-fidelity inverse analysis. Here, we build
     the multi-fidelity probabilistic surrogate, determine optimal training
     points X_train and evaluate the low- and high-fidelity model for these
     training inputs to yield Y_LF_train and Y_HF_train. training data. The
@@ -42,9 +44,6 @@ class BMFIAIterator(Iterator):
                                         multi-fidelity mapping
         db (obj): Database object
         external_geometry_obj (obj): External geometry object
-        gammas_train (np.array): Informative features evaluated at the training inputs
-        scaler_gamma (obj): Scaler object for the informative features gamma
-
 
     Returns:
        BMFIAIterator (obj): Instance of the BMFIAIterator
@@ -69,9 +68,8 @@ class BMFIAIterator(Iterator):
         coords_experimental_data,
         time_vec,
         y_obs_vec,
-        gammas_train,
-        scaler_gamma,
     ):
+        """Instantiate the BMFIAIterator object."""
         super(BMFIAIterator, self).__init__(
             None, global_settings
         )  # Input prescribed by iterator.py
@@ -92,17 +90,15 @@ class BMFIAIterator(Iterator):
         self.settings_probab_mapping = settings_probab_mapping
         self.db = db
         self.external_geometry_obj = external_geometry_obj
-        self.gammas_train = gammas_train
-        self.scaler_gamma = scaler_gamma
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+    def from_config_create_iterator(cls, config, _iterator_name=None, _model_name=None):
         """Build a BMFIAIterator object from the problem description.
 
         Args:
             config (dict): Configuration / input file for QUEENS as dictionary
-            iterator_name (str): Iterator name (optional)
-            model (str): Model name (optional)
+            _iterator_name (str): Name of the Iterator (here not used)
+            _model_name(str): Name of the underlying model (here not used)
 
         Returns:
             iterator (obj): BMFIAIterator object
@@ -115,7 +111,13 @@ class BMFIAIterator(Iterator):
 
         # get mf approx settings
         mf_approx_settings = config[model_name].get("mf_approx_settings")
-        features_config = mf_approx_settings["features_config"]
+        try:
+            features_config = mf_approx_settings["features_config"]
+        except KeyError:
+            raise KeyError(
+                "The key 'features_config' was not available in the approximation settings! "
+                "Abort..."
+            )
 
         # get the mf subiterator settings
         bmfia_iterator_name = mf_approx_settings["mf_subiterator"]
@@ -144,8 +146,6 @@ class BMFIAIterator(Iterator):
         coords_experimental_data = None
         time_vec = None
         y_obs_vec = None
-        gammas_train = None
-        scaler_gamma = StandardScaler()
 
         return cls(
             result_description,
@@ -165,13 +165,13 @@ class BMFIAIterator(Iterator):
             coords_experimental_data,
             time_vec,
             y_obs_vec,
-            gammas_train,
-            scaler_gamma,
         )
 
     @classmethod
     def _calculate_optimal_x_train(cls, initial_design_dict, external_geometry_obj, model):
-        """Based on the selected design method, determine the optimal set of
+        """Optimal training data set for probabilistic model.
+
+        Based on the selected design method, determine the optimal set of
         input points X_train to run the HF and the LF model on for the
         construction of the probabilistic surrogate.
 
@@ -190,8 +190,10 @@ class BMFIAIterator(Iterator):
 
     @classmethod
     def _get_design_method(cls, initial_design_dict):
-        """Get the design method for selecting the HF data from the LF MC data-
-        set.
+        """Get the design method for inital trainig data.
+
+        Select the method for the generation of the inital training data
+        for the probabilsitic regression model.
 
         Args:
             initial_design_dict (dict): Dictionary with description of initial design.
@@ -199,17 +201,32 @@ class BMFIAIterator(Iterator):
         Returns:
             run_design_method (obj): Design method for selecting the HF training set
         """
+        # check correct inputs
+        assert isinstance(
+            initial_design_dict, dict
+        ), "Input argument 'initial_design_dict' must be of type 'dict'! Abort..."
+
+        assert (
+            'type' in initial_design_dict.keys()
+        ), "No key 'type' found in 'initial_design_dict'. Abort..."
+
         # choose design method
         if initial_design_dict['type'] == 'random':
             run_design_method = cls._random_design
         else:
-            raise NotImplementedError
+            raise NotImplementedError(
+                "The design type you chose for selecting trainig data is not valid! "
+                f"You chose {initial_design_dict['type']} but the only valid options "
+                "is 'radnom'! Abort..."
+            )
 
         return run_design_method
 
     @classmethod
     def _random_design(cls, initial_design_dict, external_geometry_obj, model):
-        """Calculate the HF training points from large LF-MC data-set based on
+        """A uniformly random design strategy.
+
+        Calculate the HF training points from large LF-MC data-set based on
         random selection from bins over y_LF.
 
         Args:
@@ -242,9 +259,10 @@ class BMFIAIterator(Iterator):
 
     # ----------- main methods of the object form here ----------------------------------------
     def core_run(self):
-        """Main or core run of the BMFIA iterator that summarizes the actual
-        evaluation of the HF and LF models for these data and the determination
-        of LF informative features.
+        """Main or core run of the BMFIA iterator.
+
+        It summarizes the actual evaluation of the HF and LF models for these data and the
+        determination of LF informative features.
 
         Returns:
             Z_train (np.array): Matrix with low-fidelity feature training data
@@ -254,7 +272,9 @@ class BMFIAIterator(Iterator):
         self.eval_model()
 
         # ----- Set the feature strategy of the probabilistic mapping (select gammas)
-        self._set_feature_strategy()
+        self.Z_train = self._set_feature_strategy(
+            self.Y_LF_train, self.X_train, self.coords_experimental_data[: self.Y_LF_train.shape[0]]
+        )
 
         return self.Z_train, self.Y_HF_train
 
@@ -282,74 +302,207 @@ class BMFIAIterator(Iterator):
         num_coords = self.coords_experimental_data.shape[0]
         self.Y_HF_train = self.hf_model.evaluate()['mean'].reshape(-1, num_coords)
 
-    def _set_feature_strategy(self):
-        """Depending on the method specified in the input file, set the
-        strategy that will be used to calculate the low-fidelity features
-        :math:`Z_{\\text{LF}}`. Basically this methods gives different options
-        on how to construct informative features :math:`\\gamma_i` from which
-        the low-fidelity feature vector/matrix :math:`Z_{\\text{LF}}` is
-        constructed upon. So far we have the option of:
+    def _set_feature_strategy(self, y_lf_mat, x_mat, coords_mat):
+        """Get the low-fidelity feature matrix.
 
-        -  selecting :math:`\\gamma_i` manually from the input
-        vector (man_features)
-        - automatically determine optimal features from the input vector
-        (opt_features) (not ready yet)
-        - seleting no further informative features (no_features), meaning only
-        the low fidelity model output is considered in the mapping.
-        - Additionally integrate the spatial coordinates as an informative feature
-        (coord_features)
-        - Additionally integrate the time-coordinates as an informative features
-        (time_features)
+        Compose the low-fidelity feature matrix that consists of the low-
+        fidelity model outputs and the low-fidelity informative features.
 
-        Note: At the moment still under heavy development and not finished, yet.
+            y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
+                                 Columns are different dimensions of the output.
+            x_mat (np.array): Input matrix for the simulation model with row-wise input points,
+                              and colum-wise variable dimensions.
+            coords_mat (np.array): Coordinate matrix for the observations with row-wise coordinate
+                                   points and different dimensions per column.
+
+        Retruns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
+        """
+        # check dimensions of the input
+        assert (
+            y_lf_mat.ndim == 2
+        ), f"Dimension of y_lf_mat must be 2 but you provided dim={y_lf_mat.ndim}. Abort..."
+        assert (
+            x_mat.ndim == 2
+        ), f"Dimension of x_mat must be 2 but you provided dim={x_mat.ndim}. Abort..."
+        assert (
+            coords_mat.ndim == 2
+        ), f"Dimension of coords_mat must be 2 but you provided dim={coords_mat.ndim}. Abort..."
+
+        feature_dict = {
+            'man_features': self._get_man_features,
+            'opt_features': self._get_opt_features,
+            'coord_features': self._get_coord_features,
+            'no_features': self._get_no_features,
+            'time_features': self._get_time_features,
+        }
+
+        try:
+            feature_fun = feature_dict.get(self.settings_probab_mapping['features_config'], None)
+        except KeyError:
+            raise KeyError(
+                "The key 'features_config' was not available in the dictionary "
+                "'settings_probab_mapping'! Abort..."
+            )
+
+        if feature_fun:
+            z_mat = feature_fun(x_mat, y_lf_mat, coords_mat)
+        else:
+            raise ValueError(
+                "Feature space method specified in 'features_config' is not valid! "
+                f"You provided: {self.settings_probab_mapping['features_config']} "
+                f"but valid options are: {feature_dict.keys()}."
+            )
+
+        return z_mat
+
+    def _get_man_features(self, x_mat, y_lf_mat, _):
+        """Get the low-fidelity feature matrix with manual features.
+
+        Args:
+            x_mat (np.array): Input matrix for the simulation model with row-wise input points,
+                              and colum-wise variable dimensions.
+            y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
+                                 Columns are different dimensions of the output.
 
         Returns:
-            None
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
         """
-        self.coords_experimental_data = np.tile(
-            self.coords_experimental_data, (self.X_train.shape[0], 1)
-        )
-        if self.settings_probab_mapping['features_config'] == "man_features":
-            idx_vec = self.settings_probab_mapping['X_cols']
-            if len(idx_vec) < 2:
-                gammas_train = np.atleast_2d(self.X_train[:, idx_vec]).T
-            else:
-                gammas_train = np.atleast_2d(self.X_train[:, idx_vec])
-
-            # standardization
-            self.gammas_train = self.scaler_gamma.fit_transform(gammas_train.T).T
+        try:
+            idx_lst = self.settings_probab_mapping['X_cols']
+            # Catch wrong data type
+            assert isinstance(idx_lst, list), "Entries of X_cols must be in list format! Abort..."
+            # Catch empty list
+            assert (
+                idx_lst != []
+            ), "The index list for selection of manual features must not be empty!, Abort..."
+            gamma_mat = x_mat[:, idx_lst]
+            assert (
+                gamma_mat.shape[0] == y_lf_mat.shape[0]
+            ), "Dimensions of gamma_mat and y_lf_mat do not agree! Abort..."
 
             z_lst = []
-            for y in self.Y_LF_train.T:
-                z_lst.append(np.hstack([np.atleast_2d(y).T, np.atleast_2d(self.gammas_train).T]))
+            for y_per_coordinate in y_lf_mat.T:
+                z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), gamma_mat]))
 
-            self.Z_train = np.array(z_lst).T
+            z_mat = np.array(z_lst).squeeze().T
+            assert z_mat.ndim == 3, "z_mat should be a 3d tensor if man features are used! Abort..."
 
-        elif self.settings_probab_mapping['features_config'] == "opt_features":
-            if self.settings_probab_mapping['num_features'] < 1:
-                raise ValueError(
-                    f"You selected "
-                    f"'num_features={self.settings_probab_mapping['num_features']}' optimal"
-                    f"informative features. This is not a valid choice for the number of "
-                    f"informative features! Abort..."
-                )
-            self._update_probabilistic_mapping_with_features()
-        elif self.settings_probab_mapping['features_config'] == "coord_features":
-            self.Z_train = np.hstack([self.Y_LF_train, self.coords_experimental_data])
-        elif self.settings_probab_mapping['features_config'] == "no_features":
-            self.Z_train = self.Y_LF_train
-        elif self.settings_probab_mapping['features_config'] == "time_features":
-            time_repeat = int(self.coords_experimental_data.shape[0] / self.time_vec.size)
-            self.time_vec = np.repeat(self.time_vec.reshape(-1, 1), repeats=time_repeat, axis=0)
-            self.time_vec = self.time_vec / np.max(self.time_vec) * (
-                np.max(self.y_obs_vec) - np.min(self.y_obs_vec)
-            ) + np.min(self.y_obs_vec)
+        except KeyError:
+            raise KeyError(
+                "The settings for the probabilistic mapping need a key 'X_cols' if "
+                "you want to use the feature configuration 'man_features'! Abort..."
+            )
 
-            self.Z_train = np.hstack([self.Y_LF_train, self.time_vec])
-        else:
-            raise IOError("Feature space method specified in input file is unknown!")
+        return z_mat
+
+    def _get_opt_features(self, *_):
+        """Get the low-fidelity feature matrix with optimal features.
+
+        Returns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
+        """
+        assert isinstance(
+            self.settings_probab_mapping['num_features'], int
+        ), "Number of informative features must be an integer! Abort..."
+        assert (
+            self.settings_probab_mapping['num_features'] >= 1
+        ), "Number of informative features must be an integer greater than one! Abort..."
+
+        z_mat = self._update_probabilistic_mapping_with_features()
+
+        return z_mat
+
+    def _get_coord_features(self, _, y_lf_mat, coords_mat):
+        """Get the low-fidelity feature matrix with coordinate features.
+
+        Args:
+            x_mat (np.array): Input matrix for the simulation model with row-wise input points,
+                              and colum-wise variable dimensions.
+            y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
+                                 Columns are different dimensions of the output.
+
+        Returns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
+        """
+        try:
+            idx_lst = self.settings_probab_mapping['coords_cols']
+            # Catch wrong data type
+            assert isinstance(
+                idx_lst, list
+            ), "Entries of coord_cols must be in list format! Abort..."
+            # Catch empty list
+            assert (
+                idx_lst != []
+            ), "The index list for selection of manual features must not be empty!, Abort..."
+
+            coord_feature = coords_mat[:, idx_lst]
+            assert (
+                coord_feature.shape[0] == y_lf_mat.shape[0]
+            ), "Dimensions of coords_feature and y_lf_mat do not agree! Abort..."
+
+            z_lst = []
+            for y_per_coordinate in y_lf_mat.T:
+                z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), coord_feature]))
+
+            z_mat = np.array(z_lst).squeeze().T
+            assert (
+                z_mat.ndim == 3
+            ), "z_mat should be a 3d tensor if coord_features are used! Abort..."
+
+        except KeyError:
+            raise KeyError(
+                "The settings for the probabilistic mapping need a key 'coord_cols' "
+                "if you want to use the feature configuration 'coord_features'! Abort..."
+            )
+
+        return z_mat
+
+    def _get_no_features(self, _, y_lf_mat, __):
+        """Get the low-fidelity feature matrix without additional features.
+
+        Args:
+            y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
+                                 Columns are different dimensions of the output.
+
+        Returns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
+        """
+        z_mat = y_lf_mat
+
+        return z_mat
+
+    def _get_time_features(self, _, y_lf_mat, __):
+        """Get the low-fidelity feature matrix with time features.
+
+         Args:
+            y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
+                                 Columns are different dimensions of the output.
+
+        Returns:
+            z_mat (np.array): Extended low-fidelity matrix containing
+                              informative feature dimensions. Every row is one data point with
+                              dimensions per column.
+        """
+        time_repeat = int(y_lf_mat.shape[0] / self.time_vec.size)
+        time_vec = np.repeat(self.time_vec.reshape(-1, 1), repeats=time_repeat, axis=0)
+
+        z_mat = np.hstack([y_lf_mat, time_vec])
+
+        return z_mat
 
     def _update_probabilistic_mapping_with_features(self):
+        """Update multi-fideliy mapping with optimal lf-features."""
         raise NotImplementedError(
             "Optimal features for inverse problems are not yet implemented! Abort..."
         )
@@ -382,18 +535,3 @@ class BMFIAIterator(Iterator):
         _logger.info('-------------------------------------------------------------------')
         _logger.info('Successfully calculated the high-fidelity training points!')
         _logger.info('-------------------------------------------------------------------')
-
-    # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
-    def post_run(self):
-        """Saving and plotting of the results.
-
-        Returns:
-            None
-        """
-        if self.result_description['write_results'] is True:
-            results = process_ouputs(self.output, self.result_description)
-            write_results(
-                results,
-                self.global_settings["output_dir"],
-                self.global_settings["experiment_name"],
-            )

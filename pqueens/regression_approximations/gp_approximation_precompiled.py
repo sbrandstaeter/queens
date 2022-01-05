@@ -1,3 +1,5 @@
+"""A precompiled version of Gaussian Process regression."""
+
 import logging
 
 import numpy as np
@@ -8,22 +10,23 @@ from pqueens.regression_approximations.regression_approximation import Regressio
 from pqueens.utils.random_process_scaler import Scaler
 from pqueens.utils.stochastic_optimizer import StochasticOptimizer
 
+_logger = logging.getLogger(__name__)
+
 try:
     from pqueens.visualization.gnuplot_vis import gnuplot_gp_convergence
 except:
 
-    def print_import_warning(*args, **kwargs):
-        print("Cannot import gnuplotlib! No terminal plots available...")
+    def print_import_warning(*_dummy_args):
+        """Warning for gnuplotlib."""
+        _logger.warning("Cannot import gnuplotlib! No terminal plots available...")
 
     gnuplot_gp_convergence = print_import_warning
 
 
-_logger = logging.getLogger(__name__)
-
-
 class GPPrecompiled(RegressionApproximation):
-    """A custom Gaussian process implementation using numba for precompiling
-    linear algebra operations. The GP also allows to specify a Gamma hyper-
+    """A custom Gaussian process implementation using numba.
+
+    It precompiles linear algebra operations. The GP also allows to specify a Gamma hyper-
     prior or the length scale but only computes the MAP estimate and does not
     marginalize the hyper-parameters.
 
@@ -77,6 +80,7 @@ class GPPrecompiled(RegressionApproximation):
         noise_var_lb,
         plot_refresh_rate,
     ):
+        """Instantiate the precompiled Gaussian Process."""
         self.x_train_vec = x_train_vec
         self.y_train_vec = y_train_vec
         self.k_mat_inv = k_mat_inv
@@ -236,8 +240,9 @@ class GPPrecompiled(RegressionApproximation):
     @staticmethod
     @jit(nopython=True)
     def pre_compile_linalg_gp(x_train_mat, sigma_0_sq, l_scale_sq, sigma_n_sq):
-        """Pre-compile covariance matrix, its inversion and cholesky
-        decomposition using numba. Also compute/pre-compile necessary
+        """Pre-compile the generation of the covariance matrix.
+
+        Also compute/pre-compile necessary
         derivatives for finding the MAP estimate of the GP. The covariance
         function here is the squared exponential covariance function.
 
@@ -307,8 +312,7 @@ class GPPrecompiled(RegressionApproximation):
         l_scale_sq,
         prior_mean_function_type,
     ):
-        """Precompile the posterior mean function of the Gaussian Process using
-        numba.
+        """Precompile the posterior mean function of the Gaussian Process.
 
         Args:
             k_mat_inv (np.array): Inverse of the assembled covariance matrix
@@ -357,8 +361,7 @@ class GPPrecompiled(RegressionApproximation):
         sigma_n_sq,
         support,
     ):
-        """Precompile the posterior variance function of the Gaussian Process
-        using numba.
+        """Precompile the posterior variance function of the Gaussian Process.
 
         Args:
             k_mat_inv (np.array): Inverse of the assembled covariance matrix
@@ -374,7 +377,7 @@ class GPPrecompiled(RegressionApproximation):
 
         Returns:
             posterior_variance_vec (np.array): Posterior variance vector of the GP evaluated
-                                            at the testing points x_test_vec
+                                               at the testing points x_test_vec
         """
         k_mat_test_train = np.zeros((x_train_mat.shape[0], x_test_mat.shape[0]), dtype=np.float64)
         for j, x_test in enumerate(x_test_mat):
@@ -408,7 +411,9 @@ class GPPrecompiled(RegressionApproximation):
         partial_l_scale_sq,
         partial_sigma_n_sq,
     ):
-        """Gradient of the log evidence function of the GP w.r.t. the
+        """Calculate gradient of log-evidence.
+
+        Gradient of the log evidence function of the GP w.r.t. the
         variational hyperparameters. The latter might be a transformed
         representation of the actual hyperparameters.
 
@@ -494,7 +499,9 @@ class GPPrecompiled(RegressionApproximation):
         return evidence_eff.flatten()
 
     def train(self):
-        """Train the GP by maximizing the evidence / marginal likelihood by
+        """Train the Gaussian Process.
+
+        Training is conducted by maximizing the evidence / marginal likelihood by
         minimizing the negative log evidence.
 
         Returns:
@@ -589,16 +596,22 @@ class GPPrecompiled(RegressionApproximation):
             if log_ev > log_ev_max:
                 log_ev_max = log_ev
                 params_ev_max = params
+                k_mat_ev_max = self.k_mat
+                k_mat_inv_ev_max = self.k_mat_inv
+                cholesky_k_mat_ev_max = self.cholesky_k_mat
 
         # use the params that yielded the max log evidence
         sigma_0_sq_param, l_scale_sq_param, sigma_n_sq_param = params_ev_max
         self.sigma_0_sq = np.exp(sigma_0_sq_param)
         self.l_scale_sq = np.exp(l_scale_sq_param)
         self.sigma_n_sq = max(np.exp(sigma_n_sq_param), self.noise_var_lb)
+        self.k_mat = k_mat_ev_max
+        self.k_mat_inv = k_mat_inv_ev_max
+        self.cholesky_k_mat = cholesky_k_mat_ev_max
 
         _logger.info("GP model trained sucessfully!")
 
-    def predict(self, x_test_mat, support='f', full_cov=False):
+    def predict(self, x_test_mat, support='f'):
         """Predict the posterior distribution of the trained GP at x_test.
 
         Args:
@@ -608,7 +621,6 @@ class GPPrecompiled(RegressionApproximation):
                             - 'f': Posterior w.r.t. the latent function f
                             - 'y': Latent function is marginalized such that posterior is defined
                                    w.r.t. the output y (intoduces extra variance)
-            full_cov (bool): Boolean for full posterior covariance (false at the moment)
 
         Returns:
             output (dict): Output dictionary containing the posterior of the GP
@@ -626,13 +638,10 @@ class GPPrecompiled(RegressionApproximation):
             self.prior_mean_function_type,
         )
 
-        y_dim = self.y_train_vec.size
-        x_dim = self.x_train_vec.reshape(y_dim, -1).shape[1]
-
         var = GPPrecompiled.posterior_var(
             self.k_mat_inv,
-            self.scaler_x.transform(x_test_mat.reshape(-1, x_dim)),
-            self.x_train_vec.reshape(y_dim, -1),
+            self.scaler_x.transform(x_test_mat.reshape(-1, dim_x)),
+            self.x_train_vec.reshape(dim_y, -1),
             self.sigma_0_sq,
             self.l_scale_sq,
             self.sigma_n_sq,
@@ -644,8 +653,58 @@ class GPPrecompiled(RegressionApproximation):
             'Abort....'
         )
 
-        output = {"x_test": x_test_mat.reshape(-1, x_dim)}
+        output = {"x_test": x_test_mat.reshape(-1, dim_x)}
         output["mean"] = self.scaler_y.inverse_transform_mean(posterior_mean_test_vec)
         output["variance"] = self.scaler_y.inverse_transform_std(np.sqrt(var)) ** 2
 
         return output
+
+    def get_state(self):
+        """Get the current hyper-parameters of the model.
+
+        Returns:
+            state_dict (dict): Dictionary with the current state settings
+                               of the probabilistic mapping object
+        """
+        hyper_params_dict = {
+            'sigma_0_sq': self.sigma_0_sq,
+            'l_scale_sq': self.l_scale_sq,
+            'sigma_n_sq': self.sigma_n_sq,
+            'k_mat': self.k_mat,
+            'k_mat_inv': self.k_mat_inv,
+            'cholesky_k_mat': self.cholesky_k_mat,
+        }
+        return hyper_params_dict
+
+    def set_state(self, state_dict):
+        """Update and set new hyper-parameters for the model.
+
+        Args:
+            state_dict (dict): Dictionary with the current state settings
+                               of the probabilistic mapping object
+
+        Returns:
+            None
+        """
+        # conduct some checks
+        valid_keys = [
+            'sigma_0_sq',
+            'l_scale_sq',
+            'sigma_n_sq',
+            'k_mat',
+            'k_mat_inv',
+            'cholesky_k_mat',
+        ]
+        assert isinstance(
+            state_dict, dict
+        ), "The provided state_dict must be a dictionary! Abort..."
+        keys = list(state_dict.keys())
+        assert keys == valid_keys, "The provided dictionary does not contain valid keys! Abort..."
+
+        # Actually set the new state of the object
+        self.sigma_0_sq = state_dict['sigma_0_sq']
+        self.l_scale_sq = state_dict['l_scale_sq']
+        self.sigma_n_sq = state_dict['sigma_n_sq']
+        self.k_mat = state_dict['k_mat']
+        self.k_mat_inv = state_dict['k_mat_inv']
+        self.cholesky_k_mat = state_dict['cholesky_k_mat']
