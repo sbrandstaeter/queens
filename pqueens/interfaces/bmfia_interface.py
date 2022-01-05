@@ -47,7 +47,7 @@ class BmfiaInterface(Interface):
         self.num_processors_multi_processing = num_processors_multi_processing
         self.probabilistic_mapping_obj_lst = []
 
-    def map(self, Z_LF, support='y', full_cov=False):
+    def map(self, Z_LF, support='y'):
         r"""Map the lf features to a probabilistic response for the hf model.
 
         Calls the probabilistic mapping and predicts the mean and variance,
@@ -60,8 +60,6 @@ class BmfiaInterface(Interface):
                              Dimensions: Rows: different multi-fidelity vector/points
                              (each row is one multi-fidelity point).
                              Columns: different model outputs/informative features.
-            full_cov (bool): Boolean that returns full covariance matrix (True) or variance (False)
-                             along with the mean prediction
             support (str): Support/variable for which we predict the mean and (co)variance. For
                             `support=f` the Gaussian process predicts w.r.t. the latent function
                             `f`. For the choice of `support=y` we predict w.r.t. to the
@@ -105,12 +103,10 @@ class BmfiaInterface(Interface):
             Z_LF.T, self.probabilistic_mapping_obj_lst
         ):
             if z_test_per_coordinate.ndim > 1:
-                output = probabilistic_mapping_obj.predict(
-                    z_test_per_coordinate, support=support, full_cov=full_cov
-                )
+                output = probabilistic_mapping_obj.predict(z_test_per_coordinate, support=support)
             else:
                 output = probabilistic_mapping_obj.predict(
-                    np.atleast_2d(z_test_per_coordinate).T, support=support, full_cov=full_cov
+                    np.atleast_2d(z_test_per_coordinate).T, support=support
                 )
 
             mean_Y_HF_given_Z_LF.append(output["mean"].squeeze())
