@@ -287,7 +287,13 @@ class SurrogateVisualization(object):
             xx, yy, mean.reshape(*xx.shape), cmap='RdBu_r', linewidth=0, antialiased=False
         )
         ax.scatter(
-            x_train[:, 0], x_train[:, 1], y_train, c=y_train, cmap='RdBu_r', vmin=v_min, vmax=v_max,
+            x_train[:, 0],
+            x_train[:, 1],
+            y_train,
+            c=y_train,
+            cmap='RdBu_r',
+            vmin=v_min,
+            vmax=v_max,
         )
         ax.set_xlabel(self.parameter_names[0])
         ax.set_ylabel(self.parameter_names[1])

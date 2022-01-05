@@ -152,7 +152,10 @@ def test_baci_lm_shape(
     result_file_name = experiment_name + ".csv"
     result_file = os.path.join(experiment_directory, result_file_name)
 
-    result_data = pd.read_csv(result_file, sep='\t',)
+    result_data = pd.read_csv(
+        result_file,
+        sep='\t',
+    )
 
     np.testing.assert_equal(result_data['iter'][1], 1)
     np.testing.assert_allclose(result_data['resnorm'][1], 1.42069484e-02, 1.0e-5)

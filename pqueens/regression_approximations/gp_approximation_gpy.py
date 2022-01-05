@@ -99,7 +99,12 @@ class GPGPyRegression(RegressionApproximation):
         kernel = cls._setup_kernel(
             kernel_type, number_input_dimensions, variance_0, lengthscale_0, ard
         )
-        model = GPy.models.GPRegression(x_train, y_train, kernel=kernel, normalizer=normalize_y,)
+        model = GPy.models.GPRegression(
+            x_train,
+            y_train,
+            kernel=kernel,
+            normalizer=normalize_y,
+        )
         log_through_print(_logger, model)
 
         return cls(

@@ -36,7 +36,10 @@ def test_exit_conditions_remote_main(mocker, monkeypatch, finalize_fail, port):
     def json_load_response(*args, **kwargs):
         dummy_dict = {
             "experiment_name": "entry",
-            "database": {"type": "mongodb", "name": "test_remote_main",},
+            "database": {
+                "type": "mongodb",
+                "name": "test_remote_main",
+            },
             "scheduler": {"singularity_settings": {"remote_ip": "localhost"}},
         }
         return dummy_dict

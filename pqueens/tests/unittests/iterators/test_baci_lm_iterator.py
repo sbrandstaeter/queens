@@ -79,10 +79,15 @@ def default_baci_lm_iterator():
         ),
         'debug': False,
         'input_file': 'dummy_input',
-        'global_settings': {'output_dir': 'dummy_output', 'experiment_name': 'OptimizeLM',},
+        'global_settings': {
+            'output_dir': 'dummy_output',
+            'experiment_name': 'OptimizeLM',
+        },
     }
 
-    baci_lm_i = BaciLMIterator.from_config_create_iterator(config,)
+    baci_lm_i = BaciLMIterator.from_config_create_iterator(
+        config,
+    )
 
     return baci_lm_i
 
@@ -95,7 +100,12 @@ def fix_true_false_param(request):
 @pytest.fixture(scope='module')
 def fix_plotly_fig():
     data = pd.DataFrame({'x': [1.0, 2.0], 'y': [1.1, 2.1], 'z': [1.2, 2.2]})
-    fig = px.line_3d(data, x='x', y='y', z='z',)
+    fig = px.line_3d(
+        data,
+        x='x',
+        y='y',
+        z='z',
+    )
     return fig
 
 
@@ -180,7 +190,10 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
             [('type', 'simulation_model'), ('interface', 'interface'), ('parameters', 'parameters')]
         ),
         'input_file': 'input_path',
-        'global_settings': {'output_dir': 'output_path', 'experiment_name': 'experimentname',},
+        'global_settings': {
+            'output_dir': 'output_path',
+            'experiment_name': 'experimentname',
+        },
     }
 
     mp = mocker.patch(
@@ -248,7 +261,8 @@ def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
     )
 
     m4 = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.eval_model', return_value=None,
+        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.eval_model',
+        return_value=None,
     )
 
     default_baci_lm_iterator.model.response = {'mean': np.array([[3.0, 4.2], [99.9, 99.9]])}
@@ -289,7 +303,8 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
     )
 
     m4 = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.eval_model', return_value=None,
+        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.eval_model',
+        return_value=None,
     )
 
     default_baci_lm_iterator.model.response = {'mean': np.array([[3.0, 4.2], [99.9, 99.9]])}
@@ -323,7 +338,9 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
 def test_initialize_run(mocker, fix_true_false_param, default_baci_lm_iterator):
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
-    m1 = mocker.patch('builtins.open',)
+    m1 = mocker.patch(
+        'builtins.open',
+    )
     m2 = mocker.patch('pandas.core.generic.NDFrame.to_csv')
 
     default_baci_lm_iterator.initialize_run()
@@ -519,7 +536,9 @@ def test_get_positions_raw_2pointperturb(default_baci_lm_iterator):
 def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
-    m1 = mocker.patch('builtins.open',)
+    m1 = mocker.patch(
+        'builtins.open',
+    )
     m2 = mocker.patch('pandas.core.generic.NDFrame.to_csv')
 
     default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))

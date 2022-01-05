@@ -127,7 +127,7 @@ class MultiVariateRandomFieldGenerator(object):
         return self.stoch_dim
 
     def evaluate_field_at_location(self, x, xi):
-        """ Generate realization of random field at evaluate it at location
+        """Generate realization of random field at evaluate it at location
         Args:
             x (np.array):  locations at which to evaluate random field
             xi (np.array): random phase angles to compute realization of

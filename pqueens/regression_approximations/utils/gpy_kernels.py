@@ -91,7 +91,11 @@ def setup_sum_matern(input_dim, variance_0, lengthscale_0, ard):
     """
     k_list = [
         GPy.kern.Matern52(
-            input_dim=1, variance=variance_0, lengthscale=lengthscale_0, ARD=ard, active_dims=[dim],
+            input_dim=1,
+            variance=variance_0,
+            lengthscale=lengthscale_0,
+            ARD=ard,
+            active_dims=[dim],
         )
         for dim in range(input_dim)
     ]
@@ -116,7 +120,11 @@ def setup_prod_matern(input_dim, variance_0, lengthscale_0, ard):
     """
     k_list = [
         GPy.kern.Matern52(
-            input_dim=1, variance=variance_0, lengthscale=lengthscale_0, ARD=ard, active_dims=[dim],
+            input_dim=1,
+            variance=variance_0,
+            lengthscale=lengthscale_0,
+            ARD=ard,
+            active_dims=[dim],
         )
         for dim in range(input_dim)
     ]
@@ -141,7 +149,11 @@ def setup_sum_rbf(input_dim, variance_0, lengthscale_0, ard):
     """
     k_list = [
         GPy.kern.RBF(
-            input_dim=1, variance=variance_0, lengthscale=lengthscale_0, ARD=ard, active_dims=[dim],
+            input_dim=1,
+            variance=variance_0,
+            lengthscale=lengthscale_0,
+            ARD=ard,
+            active_dims=[dim],
         )
         for dim in range(input_dim)
     ]
@@ -166,7 +178,11 @@ def setup_prod_rbf(input_dim, variance_0, lengthscale_0, ard):
     """
     k_list = [
         GPy.kern.RBF(
-            input_dim=1, variance=variance_0, lengthscale=lengthscale_0, ARD=ard, active_dims=[dim],
+            input_dim=1,
+            variance=variance_0,
+            lengthscale=lengthscale_0,
+            ARD=ard,
+            active_dims=[dim],
         )
         for dim in range(input_dim)
     ]

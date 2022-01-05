@@ -1,10 +1,11 @@
 import unittest
+
 import numpy as np
 
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
+from pqueens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.variables.variables import Variables
-from pqueens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
 
 
 class TestElementaryEffectsIshigami(unittest.TestCase):
@@ -46,7 +47,7 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
         )
 
     def test_correct_sampling(self):
-        """ Test if sampling works correctly """
+        """Test if sampling works correctly."""
         self.my_iterator.pre_run()
 
         ref_vals = np.array(
@@ -73,7 +74,7 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
         np.testing.assert_allclose(self.my_iterator.samples, ref_vals, 1e-07, 1e-07)
 
     def test_correct_sensitivity_indices(self):
-        """Test correct results"""
+        """Test correct results."""
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
         si = self.my_iterator.si

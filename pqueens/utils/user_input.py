@@ -11,7 +11,7 @@ signal.signal(signal.SIGALRM, interrupted)
 
 
 def request_user_input(default, timeout):
-    """ Request an input from the user
+    """Request an input from the user
     Args:
         default: (string) default value returned in case of timeout
         timeout: (float) time until interuption is called and default value returen (in seconds)

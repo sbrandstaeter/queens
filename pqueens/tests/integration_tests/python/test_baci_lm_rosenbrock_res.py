@@ -18,7 +18,10 @@ def test_baci_lm_rosenbrock_res(inputdir, tmpdir):
     main(arguments)
     result_file = os.path.join(tmpdir, 'OptimizeLM.csv')
 
-    data = pd.read_csv(result_file, sep='\t',)
+    data = pd.read_csv(
+        result_file,
+        sep='\t',
+    )
 
     params = data.get('params').tail(1)
     dfparams = params.str.extractall(r'([+-]?\d+\.\d*e?[+-]?\d*)')

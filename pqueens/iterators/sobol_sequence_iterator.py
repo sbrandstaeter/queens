@@ -27,7 +27,13 @@ class SobolSequenceIterator(Iterator):
     """
 
     def __init__(
-        self, model, seed, number_of_samples, randomize, result_description, global_settings,
+        self,
+        model,
+        seed,
+        number_of_samples,
+        randomize,
+        result_description,
+        global_settings,
     ):
         super(SobolSequenceIterator, self).__init__(model, global_settings)
         self.seed = seed
@@ -65,7 +71,14 @@ class SobolSequenceIterator(Iterator):
         result_description = method_options.get("result_description", None)
         global_settings = config.get("global_settings", None)
 
-        return cls(model, seed, number_of_samples, randomize, result_description, global_settings,)
+        return cls(
+            model,
+            seed,
+            number_of_samples,
+            randomize,
+            result_description,
+            global_settings,
+        )
 
     def eval_model(self):
         """Evaluate the model."""

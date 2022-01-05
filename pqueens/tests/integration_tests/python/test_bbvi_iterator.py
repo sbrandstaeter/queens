@@ -18,7 +18,11 @@ from pqueens.utils import injector, variational_inference_utils
 
 @pytest.mark.integration_tests
 def test_bbvi_density_match(
-    mocker, inputdir, tmpdir, dummy_bbvi_instance, visualization_obj,
+    mocker,
+    inputdir,
+    tmpdir,
+    dummy_bbvi_instance,
+    visualization_obj,
 ):
     # fix the random seed
     np.random.seed(1)
@@ -193,7 +197,9 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
 
 def target_density(self, x=None, pdf=False):
     output_array = []
-    mean = (np.array([0.5, 0.2, 0.6, 0.1, 0.2])).reshape(-1,)
+    mean = (np.array([0.5, 0.2, 0.6, 0.1, 0.2])).reshape(
+        -1,
+    )
     std_vec = np.array([0.1, 0.2, 0.01, 0.3, 0.1])
     cov = np.diag(std_vec ** 2)
     if pdf is False:

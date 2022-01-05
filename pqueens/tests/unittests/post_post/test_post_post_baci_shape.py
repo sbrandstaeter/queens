@@ -225,21 +225,27 @@ def test_read_post_files(mocker):
 def test_delete_field_data(mocker, default_ppbacishapeclass):
 
     mp = mocker.patch(
-        'pqueens.post_post.post_post_baci_shape.run_subprocess', return_value=[1, 2, 'out', 'err'],
+        'pqueens.post_post.post_post_baci_shape.run_subprocess',
+        return_value=[1, 2, 'out', 'err'],
     )
     mocker.patch('os.path.join', return_value='files_search')
     mocker.patch('glob.glob', return_value=['file1', 'file2'])
 
     default_ppbacishapeclass.delete_field_data()
 
-    mp.assert_any_call('rm file1',)
-    mp.assert_any_call('rm file2',)
+    mp.assert_any_call(
+        'rm file1',
+    )
+    mp.assert_any_call(
+        'rm file2',
+    )
 
 
 @pytest.mark.unit_tests
 def test_error_handling(mocker, default_ppbacishapeclass):
     mp = mocker.patch(
-        'pqueens.post_post.post_post_baci_shape.run_subprocess', return_value=[1, 2, 'out', 'err'],
+        'pqueens.post_post.post_post_baci_shape.run_subprocess',
+        return_value=[1, 2, 'out', 'err'],
     )
     default_ppbacishapeclass.error = True
     default_ppbacishapeclass.output_dir = 'None'
@@ -250,7 +256,9 @@ def test_error_handling(mocker, default_ppbacishapeclass):
 
 
 @pytest.mark.unit_tests
-def test_read_monitorfile(mocker,):
+def test_read_monitorfile(
+    mocker,
+):
 
     # monitor_string will be used to mock the content of a monitor file that is linked at
     # path_to_ref_data whereas the indentation is compulsory
@@ -324,8 +332,20 @@ def test_create_mesh_and_intersect_vtk(
         return_value=vtkUnstructuredGridExample2d,
     )
     default_ppbacishapeclass.ref_data = [
-        [1.0, [[[1.0, 1.0, 0], [3.0, 1.0, 0]], [[0.5, 4.0, 0], [0.5, 3.0, 0]],],],
-        [2.0, [[[1.0, 1.0, 0], [3.0, 1.0, 0]], [[0.5, 4.0, 0], [0.5, 3.0, 0]],],],
+        [
+            1.0,
+            [
+                [[1.0, 1.0, 0], [3.0, 1.0, 0]],
+                [[0.5, 4.0, 0], [0.5, 3.0, 0]],
+            ],
+        ],
+        [
+            2.0,
+            [
+                [[1.0, 1.0, 0], [3.0, 1.0, 0]],
+                [[0.5, 4.0, 0], [0.5, 3.0, 0]],
+            ],
+        ],
     ]
 
     assert default_ppbacishapeclass.create_mesh_and_intersect_vtk('dummypath') == [
