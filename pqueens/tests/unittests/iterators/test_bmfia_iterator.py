@@ -297,7 +297,9 @@ def test_core_run(default_bmfia_iterator, mocker):
 def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
     """Test evaluation of LF model with test data."""
     with patch.object(
-        default_bmfia_iterator.lf_model, 'update_model_from_sample_batch', return_value=None,
+        default_bmfia_iterator.lf_model,
+        'update_model_from_sample_batch',
+        return_value=None,
     ) as mo_1:
         with patch.object(
             default_bmfia_iterator.lf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
@@ -315,7 +317,9 @@ def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
 def test_evaluate_HF_model_for_X_train(default_bmfia_iterator):
     """Test evaluation of HF model with test data."""
     with patch.object(
-        default_bmfia_iterator.hf_model, 'update_model_from_sample_batch', return_value=None,
+        default_bmfia_iterator.hf_model,
+        'update_model_from_sample_batch',
+        return_value=None,
     ) as mo_1:
         with patch.object(
             default_bmfia_iterator.hf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
@@ -360,7 +364,7 @@ def test_set_feature_strategy(default_bmfia_iterator, mocker):
     x_mat = np.array([[4, 5, 6]])
     coords_mat = np.array([[7, 8, 9]])
     default_bmfia_iterator.settings_probab_mapping["features_config"] = "dummy"
-    with pytest.raises(IOError):
+    with pytest.raises(ValueError):
         default_bmfia_iterator._set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
     # test correct settings for all options

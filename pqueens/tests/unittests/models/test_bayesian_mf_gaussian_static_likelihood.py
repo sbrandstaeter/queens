@@ -69,6 +69,7 @@ def config():
     config = {
         "joint_density_approx": {
             "type": "gp_approximation_gpy",
+            "num_processors_multi_processing": 2,
             "features_config": "opt_features",
             "num_features": 1,
             "X_cols": 1,
@@ -87,7 +88,8 @@ def approximation_name():
 @pytest.fixture()
 def default_interface(config, approximation_name):
     """Dummy BMFIA interface for testing."""
-    interface = BmfiaInterface(config, approximation_name)
+    num_processors_multi_processing = 2
+    interface = BmfiaInterface(config, approximation_name, num_processors_multi_processing)
     return interface
 
 
@@ -99,7 +101,7 @@ def settings_probab_mapping(config, approximation_name):
 
 
 @pytest.fixture()
-def default_bmfia_iterator(result_description, global_settings, dummy_model):
+def default_bmfia_iterator(result_description, global_settings):
     """Dummy iterator for testing."""
     result_description = result_description
     global_settings = global_settings

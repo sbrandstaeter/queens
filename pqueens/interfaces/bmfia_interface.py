@@ -33,15 +33,18 @@ class BmfiaInterface(Interface):
                                              low-fidelity models and informative input features for
                                              each coordinate tuple of
                                              :math: `y_{lf} x y_{hf} x gamma_i` individually.
+        num_processors_multi_processing (int): Number of processors that should be used in the
+                                               multi-processing pool.
 
     Returns:
         BMFMCInterface (obj): Instance of the BMFMCInterface
     """
 
-    def __init__(self, config, approx_name):
+    def __init__(self, config, approx_name, num_processors_multi_processing):
         """Instantiate a BMFIA interface."""
         self.config = config
         self.approx_name = approx_name
+        self.num_processors_multi_processing = num_processors_multi_processing
         self.probabilistic_mapping_obj_lst = []
 
     def map(self, Z_LF, support='y', full_cov=False):
@@ -182,7 +185,28 @@ class BmfiaInterface(Interface):
         # prepare parallel pool for training
         num_processors_available = mp.cpu_count()
         num_coords = Z_LF_train.T.shape[0]
-        num_processors_for_job = min(num_processors_available, num_coords)
+
+        if (
+            self.num_processors_multi_processing is None
+            or self.num_processors_multi_processing == 0
+            or not isinstance(self.num_processors_multi_processing, int)
+        ):
+            raise RuntimeError(
+                "You have to specify a valid number of processors for the "
+                "multi-processing pool in the bmfia-interface! You specified "
+                f"{self.num_processors_multi_processing}, number of processors, which is not a "
+                "valid choice. A valid choice is an integer between 0 and the "
+                "number of available processors on your ressource. Abort..."
+            )
+        elif self.num_processors_multi_processing > num_processors_available:
+            raise RuntimeError(
+                f"You specified {self.num_processors_multi_processing} for the multi-processing "
+                f"pool but the system only has {num_processors_available}! "
+                f"Please specify a number of processors that is smaller or equal "
+                f"to {num_processors_available}! Abort..."
+            )
+
+        num_processors_for_job = min(self.num_processors_multi_processing, num_coords)
 
         _logger.info(
             "Run generation and training of probabilistic surrogates in parallel "

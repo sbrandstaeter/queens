@@ -160,7 +160,12 @@ class BMFGaussianStaticModel(LikelihoodModel):
         # ---------- multi-fidelity settings ---------------------------------------------------
         settings_probab_mapping = {"mf_approx_settings": model_options.get("mf_approx_settings")}
         approximation_settings_name = "mf_approx_settings"
-        mf_interface = BmfiaInterface(settings_probab_mapping, approximation_settings_name)
+        num_processors_multi_processing = settings_probab_mapping['mf_approx_settings'].get(
+            "num_processors_multi_processing"
+        )
+        mf_interface = BmfiaInterface(
+            settings_probab_mapping, approximation_settings_name, num_processors_multi_processing
+        )
 
         # ----------------------- create subordinate bmfia iterator ------------------------------
         bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator"]

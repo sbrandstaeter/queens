@@ -1,7 +1,6 @@
 """Iterator for Bayesian multi-fidelity inverse analysis."""
 
 import logging
-from typing import IO
 
 import numpy as np
 
@@ -215,7 +214,11 @@ class BMFIAIterator(Iterator):
         if initial_design_dict['type'] == 'random':
             run_design_method = cls._random_design
         else:
-            raise NotImplementedError
+            raise NotImplementedError(
+                "The design type you chose for selecting trainig data is not valid! "
+                f"You chose {initial_design_dict['type']} but the only valid options "
+                "is 'radnom'! Abort..."
+            )
 
         return run_design_method
 
@@ -347,7 +350,7 @@ class BMFIAIterator(Iterator):
         if feature_fun:
             z_mat = feature_fun(x_mat, y_lf_mat, coords_mat)
         else:
-            raise IOError(
+            raise ValueError(
                 "Feature space method specified in 'features_config' is not valid! "
                 f"You provided: {self.settings_probab_mapping['features_config']} "
                 f"but valid options are: {feature_dict.keys()}."

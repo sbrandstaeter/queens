@@ -14,7 +14,8 @@ def default_bmfia_interface():
     """Fixture for a dummy bmfia interface."""
     config = {}
     approx_name = 'bmfia'
-    default_interface = BmfiaInterface(config, approx_name)
+    num_processors_multi_processing = 2
+    default_interface = BmfiaInterface(config, approx_name, num_processors_multi_processing)
     return default_interface
 
 
@@ -92,11 +93,13 @@ def test__init__():
     """Test the instantiation of the interface object."""
     config = {'test': 'test'}
     approx_name = 'bmfia'
-    interface = BmfiaInterface(config, approx_name)
+    num_processors_multi_processing = 3
+    interface = BmfiaInterface(config, approx_name, num_processors_multi_processing)
 
     assert interface.config == config
     assert interface.approx_name == approx_name
     assert interface.probabilistic_mapping_obj_lst == []
+    assert interface.num_processors_multi_processing == 3
 
 
 @pytest.mark.unit_tests
@@ -206,6 +209,9 @@ def test_train_probabilistic_mappings_in_parallel(
     default_bmfia_interface.probabilistic_mapping_obj_lst = default_probabilistic_obj_lst
     mocker.patch('pqueens.interfaces.bmfia_interface.Pool', MyContextManagerPool)
     mo_2 = mocker.patch(__name__ + '.MyContextManagerPool.map', return_value=my_state_lst)
+
+    # test with valid configuration
+    default_bmfia_interface.num_processors_multi_processing = 3
     return_state_list = default_bmfia_interface._train_probabilistic_mappings_in_parallel(
         Z_LF_train
     )
@@ -214,6 +220,31 @@ def test_train_probabilistic_mappings_in_parallel(
     assert mo_2.called_once()
     assert mo_2.call_args[0][0] == BmfiaInterface._optimize_hyper_params
     assert mo_2.call_args[0][1] == default_probabilistic_obj_lst
+
+    # test with no specification for processors
+    default_bmfia_interface.num_processors_multi_processing = None
+    with pytest.raises(RuntimeError):
+        default_bmfia_interface._train_probabilistic_mappings_in_parallel(Z_LF_train)
+
+    # test with 0 as a specification for processors
+    default_bmfia_interface.num_processors_multi_processing = 0
+    with pytest.raises(RuntimeError):
+        default_bmfia_interface._train_probabilistic_mappings_in_parallel(Z_LF_train)
+
+    # test with float as a specification for processors
+    default_bmfia_interface.num_processors_multi_processing = 1.3
+    with pytest.raises(RuntimeError):
+        default_bmfia_interface._train_probabilistic_mappings_in_parallel(Z_LF_train)
+
+    # test with str as a specification for processors
+    default_bmfia_interface.num_processors_multi_processing = 'blabla'
+    with pytest.raises(RuntimeError):
+        default_bmfia_interface._train_probabilistic_mappings_in_parallel(Z_LF_train)
+
+    # test with too large number of processors
+    default_bmfia_interface.num_processors_multi_processing = 99999999
+    with pytest.raises(RuntimeError):
+        default_bmfia_interface._train_probabilistic_mappings_in_parallel(Z_LF_train)
 
 
 @pytest.mark.unit_tests
