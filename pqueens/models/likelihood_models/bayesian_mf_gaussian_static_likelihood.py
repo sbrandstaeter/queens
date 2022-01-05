@@ -405,7 +405,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
             f"provided the shape {diff_vec.shape}. Abort..."
         )
 
-        num_obs = diff_vec.size  # number of observations
+        num_obs = self.y_obs_vec.size  # number of observations
         # Note we assume here only a diagonal covariance matrix, can be generalized in the future
         inv_mf_variance_vec = (
             1 / mf_variance_vec
@@ -413,15 +413,11 @@ class BMFGaussianStaticModel(LikelihoodModel):
 
         # calculate the log determinate of the inverse covariance matrix (for now diag vector)
         # note: we use the sum log trick here for better numerical behavior
-        log_det_inv_k_mf = np.sum(np.log(inv_mf_variance_vec))
+        log_det_k_mf = np.sum(np.log(mf_variance_vec))
         inner_prod_rkhs = self._calculate_rkhs_inner_prod(diff_vec, inv_mf_variance_vec)
 
         if self.likelihood_noise_type == "fixed" or self.likelihood_noise_type == "jeffreys_prior":
-            log_lik_mf = (
-                -num_obs / 2 * np.log(2 * np.pi)
-                + 1 / 2 * log_det_inv_k_mf
-                - 1 / 2 * inner_prod_rkhs
-            )
+            log_lik_mf = -1 / 2 * (num_obs * np.log(2 * np.pi) + log_det_k_mf + inner_prod_rkhs)
 
             # potentially extend likelihood by Jeffreys prior
             if self.likelihood_noise_type == "jeffreys_prior":
