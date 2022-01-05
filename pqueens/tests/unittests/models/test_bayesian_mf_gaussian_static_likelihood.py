@@ -409,7 +409,8 @@ def test_calculate_distance_vector_and_var_y(default_mf_likelihood, mocker):
     diff_mat_exp = np.array([[1, 0], [0, -1]])
 
     mp1 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._set_feature_strategy', return_value=z_mat,
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator._set_feature_strategy',
+        return_value=z_mat,
     )
     mp2 = mocker.patch(
         'pqueens.interfaces.bmfia_interface.BmfiaInterface.map',
@@ -483,8 +484,8 @@ def test_log_likelihood_fun(default_mf_likelihood):
     At the moment we assume that we only consider the variance of
     vectorized output and not the entire covariance structure.
     """
-    expected_fixed = np.array([[-69.302937]])
-    expected_jeffreys = np.array([[-67.8051]])
+    expected_fixed = np.array([[-70.2219]])
+    expected_jeffreys = np.array([[-68.724]])
     mf_variance_vec = np.array([[0.1, 0.1, 0.1]])
     diff_vec = np.array([[1, 2, 3]])
 
@@ -588,7 +589,8 @@ def test_build_approximation(default_mf_likelihood, mocker):
         return_value=(z_train, y_hf_train),
     )
     mo_2 = mocker.patch(
-        'pqueens.interfaces.bmfia_interface.BmfiaInterface.build_approximation', return_value=None,
+        'pqueens.interfaces.bmfia_interface.BmfiaInterface.build_approximation',
+        return_value=None,
     )
     mocker.patch(
         'pqueens.models.likelihood_models.bayesian_mf_gaussian_static_likelihood.qvis.bmfia_visualization_instance',
