@@ -69,8 +69,8 @@ stages:
     - .centos_settings
   stage: codechecks
   except:
-    - $CLUSTER_TESTS==1
-    - $BENCHMARKS==1
+    - $CLUSTER_TESTS == "1"
+    - $BENCHMARKS == "1"
   tags:
     - codechecks
 
@@ -203,8 +203,8 @@ centos_full_test_suite_develop:
     - build_singularity
   except:
     variables:
-      - $CLUSTER_TESTS=="1"
-      - $BENCHMARKS=="1"
+      - $CLUSTER_TESTS == "1"
+      - $BENCHMARKS == "1"
     refs:
       - master
 #----------------------------------------------------------------------------------------------
@@ -229,6 +229,9 @@ centos_full_test_suite_master:
   only:
     refs:
       - master
+  except:
+    - $CLUSTER_TESTS == "1"
+    - $BENCHMARKS == "1"
 #----------------------------------------------------------------------------------------------
 # Weekly tests
 #---------------------------------------------------------------------------------------------------
@@ -244,7 +247,7 @@ cluster_tests:
     - build_singularity
   only:
     variables:
-    - $CLUSTER_TESTS=="1"
+    - $CLUSTER_TESTS == "1"
 #---------------------------------------------------------------------------------------------------
 benchmarks:
   stage: tests
@@ -258,7 +261,7 @@ benchmarks:
     - build_singularity
   only:
     variables:
-    - $BENCHMARKS=="1"
+    - $BENCHMARKS == "1"
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: pages
@@ -293,3 +296,6 @@ pages:
   only:
     refs:
       - master
+  except:
+    - $CLUSTER_TESTS == "1"
+    - $BENCHMARKS == "1"
