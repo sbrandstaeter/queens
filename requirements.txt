@@ -321,8 +321,10 @@ threadpoolctl==3.0.0
     # via scikit-learn
 toml==0.10.2
     # via pytest
-tomli==2.0.0
-    # via coverage
+tomli==1.2.3
+    # via
+    #   -r requirements.in
+    #   coverage
 torch==1.10.1
     # via -r requirements.in
 tqdm==4.62.3
