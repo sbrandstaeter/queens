@@ -69,8 +69,9 @@ stages:
     - .centos_settings
   stage: codechecks
   except:
-    - $CLUSTER_TESTS == "1"
-    - $BENCHMARKS == "1"
+    variables:
+      - $CLUSTER_TESTS == "1"
+      - $BENCHMARKS == "1"
   tags:
     - codechecks
 
@@ -230,8 +231,9 @@ centos_full_test_suite_master:
     refs:
       - master
   except:
-    - $CLUSTER_TESTS == "1"
-    - $BENCHMARKS == "1"
+    variables:
+      - $CLUSTER_TESTS == "1"
+      - $BENCHMARKS == "1"
 #----------------------------------------------------------------------------------------------
 # Weekly tests
 #---------------------------------------------------------------------------------------------------
@@ -297,5 +299,6 @@ pages:
     refs:
       - master
   except:
-    - $CLUSTER_TESTS == "1"
-    - $BENCHMARKS == "1"
+    variables:
+      - $CLUSTER_TESTS == "1"
+      - $BENCHMARKS == "1"
