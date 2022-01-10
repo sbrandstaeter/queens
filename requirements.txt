@@ -17,9 +17,9 @@ arviz==0.11.4
     # via -r requirements.in
 astunparse==1.6.3
     # via tensorflow
-async-timeout==4.0.1
+async-timeout==4.0.2
     # via aiohttp
-attrs==21.2.0
+attrs==21.4.0
     # via
     #   aiohttp
     #   pytest
@@ -31,7 +31,7 @@ certifi==2021.10.8
     # via requests
 cftime==1.5.1.1
     # via netcdf4
-charset-normalizer==2.0.9
+charset-normalizer==2.0.10
     # via
     #   aiohttp
     #   requests
@@ -41,13 +41,13 @@ coverage[toml]==6.2
     # via pytest-cov
 cycler==0.11.0
     # via matplotlib
-cython==0.29.25
+cython==0.29.26
     # via
     #   -r requirements.in
     #   gpy
 dataclasses==0.6
     # via gpflow
-decorator==5.1.0
+decorator==5.1.1
     # via
     #   paramz
     #   tensorflow-probability
@@ -65,7 +65,7 @@ execnet==1.9.0
     # via pytest-xdist
 flatbuffers==2.0
     # via tensorflow
-fonttools==4.28.3
+fonttools==4.28.5
     # via matplotlib
 frozenlist==1.2.0
     # via
@@ -91,7 +91,7 @@ gpflow==2.3.0
     # via -r requirements.in
 gpy==1.10.0
     # via -r requirements.in
-grpcio==1.42.0
+grpcio==1.43.0
     # via
     #   tensorboard
     #   tensorflow
@@ -101,7 +101,7 @@ idna==3.3
     # via
     #   requests
     #   yarl
-importlib-metadata==4.8.2
+importlib-metadata==4.10.0
     # via markdown
 iniconfig==1.1.1
     # via pytest
@@ -119,7 +119,7 @@ llvmlite==0.36.0
     # via numba
 markdown==3.3.6
     # via tensorboard
-matplotlib==3.5.0
+matplotlib==3.5.1
     # via
     #   -r requirements.in
     #   arviz
@@ -179,7 +179,6 @@ packaging==21.3
     #   gpflow
     #   matplotlib
     #   pytest
-    #   setuptools-scm
 pandas==1.2.4
     # via
     #   -r requirements.in
@@ -191,9 +190,9 @@ paramz==0.9.5
     # via gpy
 pathos==0.2.8
     # via salib
-pillow==8.4.0
+pillow==9.0.0
     # via matplotlib
-plotly==5.4.0
+plotly==5.5.0
     # via -r requirements.in
 pluggy==1.0.0
     # via pytest
@@ -221,7 +220,7 @@ pydoe==0.3.8
     # via -r requirements.in
 pyfiglet==0.8.post1
     # via -r requirements.in
-pymongo==3.8.0
+pymongo==3.12.0
     # via -r requirements.in
 pyparsing==3.0.6
     # via
@@ -239,11 +238,11 @@ pytest-codestyle==2.0.1
     # via -r requirements.in
 pytest-cov==3.0.0
     # via -r requirements.in
-pytest-forked==1.3.0
+pytest-forked==1.4.0
     # via pytest-xdist
 pytest-mock==3.6.1
     # via -r requirements.in
-pytest-xdist==2.4.0
+pytest-xdist==2.5.0
     # via -r requirements.in
 python-dateutil==2.8.2
     # via
@@ -251,7 +250,7 @@ python-dateutil==2.8.2
     #   pandas
 pytz==2021.3
     # via pandas
-requests==2.26.0
+requests==2.27.1
     # via
     #   requests-oauthlib
     #   tensorboard
@@ -263,7 +262,7 @@ salib==1.4.5
     # via -r requirements.in
 scikit-learn==1.0.1
     # via -r requirements.in
-scipy==1.7.1
+scipy==1.7.3
     # via
     #   -r requirements.in
     #   arviz
@@ -277,8 +276,6 @@ scipy==1.7.1
     #   seaborn
 seaborn==0.11.2
     # via -r requirements.in
-setuptools-scm==6.3.2
-    # via matplotlib
 six==1.16.0
     # via
     #   absl-py
@@ -304,7 +301,7 @@ tensorboard==2.7.0
     # via tensorflow
 tensorboard-data-server==0.6.1
     # via tensorboard
-tensorboard-plugin-wit==1.8.0
+tensorboard-plugin-wit==1.8.1
     # via tensorboard
 tensorflow==2.7.0
     # via
@@ -312,7 +309,7 @@ tensorflow==2.7.0
     #   gpflow
 tensorflow-estimator==2.7.0
     # via tensorflow
-tensorflow-io-gcs-filesystem==0.22.0
+tensorflow-io-gcs-filesystem==0.23.1
     # via tensorflow
 tensorflow-probability==0.15.0
     # via
@@ -324,28 +321,27 @@ threadpoolctl==3.0.0
     # via scikit-learn
 toml==0.10.2
     # via pytest
-tomli==1.2.2
+tomli==1.2.3
     # via
+    #   -r requirements.in
     #   coverage
-    #   setuptools-scm
-torch==1.10.0
+torch==1.10.1
     # via -r requirements.in
 tqdm==4.62.3
     # via -r requirements.in
 typing-extensions==3.10.0.2
     # via
     #   arviz
-    #   async-timeout
     #   gpflow
     #   tensorflow
     #   torch
-urllib3==1.26.7
+urllib3==1.26.8
     # via requests
 vtk==9.1.0
     # via -r requirements.in
 werkzeug==2.0.2
     # via tensorboard
-wheel==0.37.0
+wheel==0.37.1
     # via
     #   astunparse
     #   salib
@@ -355,15 +351,15 @@ wrapt==1.13.3
     # via
     #   deprecated
     #   tensorflow
-wslink==1.2.0
+wslink==1.3.1
     # via vtk
-xarray==0.20.1
+xarray==0.20.2
     # via
     #   -r requirements.in
     #   arviz
 yarl==1.7.2
     # via aiohttp
-zipp==3.6.0
+zipp==3.7.0
     # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
