@@ -243,7 +243,7 @@ cluster_tests:
     - .centos_settings
   script:
     - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
-    - pytest -m lnm_cluster
+    - pytest -m lnm_cluster --no-cov
   needs:
     - build_conda_env
     - build_singularity
@@ -257,7 +257,7 @@ benchmarks:
     - .centos_settings
   script:
     - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
-    - pytest -m benchmark
+    - pytest -m benchmark --no-cov
   needs:
     - build_conda_env
     - build_singularity
