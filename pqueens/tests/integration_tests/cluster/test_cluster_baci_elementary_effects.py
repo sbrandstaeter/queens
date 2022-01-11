@@ -1,6 +1,6 @@
-"""
-Test suite for integration tests for the Elementary Effects for local
-simulations with BACI using the INVAAA minimal model.
+"""Test suite for integration tests with the cluster.
+
+Elementary Effects simulations with BACI using the INVAAA minimal model.
 """
 
 import pathlib
@@ -14,13 +14,11 @@ from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess
 
 
-@pytest.mark.benchmark
 @pytest.mark.lnm_cluster
 def test_cluster_elementary_effects(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):
-    """
-    Integration test for the Elementary Effects Iterator on the clusters together with BACI.
+    """Test for the Elementary Effects Iterator on the clusters with BACI.
 
     Args:
         inputdir (str): Path to the JSON input file
