@@ -1,3 +1,5 @@
+"""Estimate Sobol indices."""
+import logging
 import os
 
 import numpy as np
@@ -9,6 +11,8 @@ from SALib.sample import saltelli
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils.process_outputs import write_results
+
+_logger = logging.getLogger(__name__)
 
 
 # TODO deal with non-uniform input distribution
@@ -46,12 +50,14 @@ class SobolIndexIterator(Iterator):
         """Initialize Saltelli SALib iterator object.
 
         Args:
-            seed (int):                     Seed for random number generation
-            num_samples (int):              Number of desired (random) samples
-            calc_second_order (bool):       Calculate second-order sensitivities
-            num_bootstrap_samples (int):    Number of bootstrap samples
-            confidence_level (float):       The confidence interval level
-            result_description (dict):      Dictionary with desired result description
+            model (model): Model to be evaluated by iterator
+            seed (int): Seed for random number generation
+            num_samples (int): Number of desired (random) samples
+            calc_second_order (bool): Calculate second-order sensitivities
+            num_bootstrap_samples (int): Number of bootstrap samples
+            confidence_level (float): The confidence interval level
+            result_description (dict): Dictionary with desired result description
+            global_settings (dict): Dictionary with global settings for the analysis
         """
         super(SobolIndexIterator, self).__init__(model, global_settings)
 
@@ -82,7 +88,10 @@ class SobolIndexIterator(Iterator):
         Returns:
             iterator: Saltelli SALib iterator object
         """
-        method_options = config["method"]["method_options"]
+        if iterator_name is None:
+            method_options = config["method"]["method_options"]
+        else:
+            method_options = config[iterator_name]["method_options"]
 
         if model is None:
             model_name = method_options["model"]
@@ -118,12 +127,12 @@ class SobolIndexIterator(Iterator):
 
             # in queens normal distributions are parameterized with mean and var
             # in salib normal distributions are parameterized via mean and std
-            # -> we need to reparamteterize normal distributions
+            # -> we need to reparameterize normal distributions
             if value['distribution'] in ['normal']:
                 max_temp = np.sqrt(max_temp)
 
             bounds.append([min_temp, max_temp])
-            dist = self.__get_sa_lib_distribution_name(value["distribution"])
+            dist = self._get_sa_lib_distribution_name(value["distribution"])
             dists.append(dist)
             self.num_params += 1
 
@@ -139,13 +148,15 @@ class SobolIndexIterator(Iterator):
             'bounds': bounds,
             'dists': dists,
         }
-        print("Draw samples...")
+
+        _logger.info(f"Draw {self.num_samples} samples...")
         self.samples = saltelli.sample(
             self.salib_problem,
             self.num_samples,
             calc_second_order=self.calc_second_order,
-            skip_values=1000,
+            skip_values=1024,
         )
+        _logger.debug(self.samples)
 
     def get_all_samples(self):
         """Return all samples."""
@@ -153,13 +164,11 @@ class SobolIndexIterator(Iterator):
 
     def core_run(self):
         """Run Analysis on model."""
-
-        print("Evaluate model...")
+        _logger.info("Evaluate model...")
         self.model.update_model_from_sample_batch(self.samples)
         self.output = self.eval_model()
 
-        # do actual sensitivity analysis
-        print("Calculate Sensitivity Indices...")
+        _logger.info("Calculate Sensitivity Indices...")
         self.sensitivity_indices = sobol.analyze(
             self.salib_problem,
             np.reshape(self.output['mean'], (-1)),
@@ -185,14 +194,25 @@ class SobolIndexIterator(Iterator):
                 self.plot_results(results)
 
     def print_results(self, results):
-        """Function to print results."""
-        S = results["sensitivity_indices"]
+        """Print results.
 
+        Args:
+            results (dict): dictionary with sobol indices and confidence intervals
+        """
+        S = results["sensitivity_indices"]
         parameter_names = results["parameter_names"]
 
         additivity = np.sum(S["S1"])
         higher_interactions = 1 - additivity
-        str_second_order_interactions = ''
+        S_df = pd.DataFrame(
+            {key: value for (key, value) in S.items() if key not in ["S2", "S2_conf"]},
+            index=parameter_names,
+        )
+        _logger.info("Main and Total Effects:")
+        _logger.info(S_df)
+        _logger.info("Additivity, sum of main effects (for independent variables):")
+        _logger.info(f'S_i = {additivity}')
+
         if self.calc_second_order:
             S2 = S["S2"]
             S2_conf = S["S2_conf"]
@@ -206,69 +226,40 @@ class SobolIndexIterator(Iterator):
             S2_df = pd.DataFrame(S2, columns=parameter_names, index=parameter_names)
             S2_conf_df = pd.DataFrame(S2_conf, columns=parameter_names, index=parameter_names)
 
+            _logger.info("Second Order Indices (diagonal entries are main effects):")
+            _logger.info(S2_df)
+            _logger.info("Confidence Second Order Indices:")
+            _logger.info(S2_conf_df)
+
             # we extract the upper triangular matrix which includes the diagonal entries
             # therefore we have to subtract the trace
             second_order_interactions = np.sum(np.triu(S2, k=1))
             higher_interactions = higher_interactions - second_order_interactions
             str_second_order_interactions = f'S_ij = {second_order_interactions}'
+
+            _logger.info("Sum of second order interactions:")
+            _logger.info(str_second_order_interactions)
+
             str_higher_order_interactions = f'1 - S_i - S_ij = {higher_interactions}'
         else:
             str_higher_order_interactions = f'1 - S_i = {higher_interactions}'
 
-        S_df = pd.DataFrame(
-            {key: value for (key, value) in S.items() if key not in ["S2", "S2_conf"]},
-            index=parameter_names,
-        )
-
-        print("Main and Total Effects:")
-        print(S_df)
-        if self.calc_second_order:
-            print("\nSecond Order Indices (diagonal entries are main effects):")
-            print(S2_df)
-            print("\nConfidence Second Order Indices:")
-            print(S2_conf_df)
-
-        print("\n")
-        print("Additivity, sum of main effects (for independent variables):")
-        print(f'S_i = {additivity}')
-        if self.calc_second_order:
-            print("Sum of second order interactions:")
-            print(str_second_order_interactions)
-        print("Higher order interactions:")
-        print(str_higher_order_interactions)
-
-    def __get_sa_lib_distribution_name(self, distribution_name):
-        """Convert QUEENS distribution name to SALib distribution name.
-
-        Args:
-            distribution_name (string): Name of distribution
-
-        Returns:
-            string: Name of distribution in SALib
-        """
-        sa_lib_distribution_name = ''
-
-        if distribution_name == 'uniform':
-            sa_lib_distribution_name = 'unif'
-        elif distribution_name == 'normal':
-            sa_lib_distribution_name = 'norm'
-        elif distribution_name == 'lognormal':
-            sa_lib_distribution_name = 'lognorm'
-        else:
-            valid_dists = ['uniform', 'normal', 'lognormal']
-            raise ValueError('Distributions: choose one of %s' % ", ".join(valid_dists))
-        return sa_lib_distribution_name
+        _logger.info("Higher order interactions:")
+        _logger.info(str_higher_order_interactions)
 
     def process_results(self):
-        """Write all results to self contained dictionary."""
+        """Write all results to self contained dictionary.
 
-        results = {}
-        results["parameter_names"] = self.parameter_names
-        results["sensitivity_indices"] = self.sensitivity_indices
-        results["second_order"] = self.calc_second_order
-
-        results["samples"] = self.samples
-        results["output"] = self.output
+        Returns:
+            results (dict): dictionary with sobol indices and confidence intervals
+        """
+        results = {
+            "parameter_names": self.parameter_names,
+            "sensitivity_indices": self.sensitivity_indices,
+            "second_order": self.calc_second_order,
+            "samples": self.samples,
+            "output": self.output,
+        }
 
         return results
 
@@ -276,7 +267,7 @@ class SobolIndexIterator(Iterator):
         """Create bar graph of first order sensitivity indices.
 
         Args:
-            results   (dict):    Dictionary with results
+            results (dict): dictionary with sobol indices and confidence intervals
         """
         experiment_name = self.global_settings["experiment_name"]
 
@@ -349,3 +340,24 @@ class SobolIndexIterator(Iterator):
 
             fig = go.Figure(data=data, layout=layout)
             fig.write_html(chart_path)
+
+    @staticmethod
+    def _get_sa_lib_distribution_name(distribution_name):
+        """Convert QUEENS distribution name to SALib distribution name.
+
+        Args:
+            distribution_name (string): distribution type
+
+        Returns:
+            sa_lib_distribution_name (string): name of distribution in SALib
+        """
+        if distribution_name == 'uniform':
+            sa_lib_distribution_name = 'unif'
+        elif distribution_name == 'normal':
+            sa_lib_distribution_name = 'norm'
+        elif distribution_name == 'lognormal':
+            sa_lib_distribution_name = 'lognorm'
+        else:
+            valid_dists = ['uniform', 'normal', 'lognormal']
+            raise ValueError('Distributions: choose one of %s' % ", ".join(valid_dists))
+        return sa_lib_distribution_name
