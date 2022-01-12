@@ -194,7 +194,11 @@ class SobolIndexIterator(Iterator):
                 self.plot_results(results)
 
     def print_results(self, results):
-        """Function to print results."""
+        """Print results.
+
+        Args:
+            results (dict): dictionary with sobol indices and confidence intervals
+        """
         S = results["sensitivity_indices"]
         parameter_names = results["parameter_names"]
 
@@ -243,29 +247,12 @@ class SobolIndexIterator(Iterator):
         _logger.info("Higher order interactions:")
         _logger.info(str_higher_order_interactions)
 
-    @staticmethod
-    def _get_sa_lib_distribution_name(distribution_name):
-        """Convert QUEENS distribution name to SALib distribution name.
-
-        Args:
-            distribution_name (string): Name of distribution
+    def process_results(self):
+        """Write all results to self contained dictionary.
 
         Returns:
-            string: Name of distribution in SALib
+            results (dict): dictionary with sobol indices and confidence intervals
         """
-        if distribution_name == 'uniform':
-            sa_lib_distribution_name = 'unif'
-        elif distribution_name == 'normal':
-            sa_lib_distribution_name = 'norm'
-        elif distribution_name == 'lognormal':
-            sa_lib_distribution_name = 'lognorm'
-        else:
-            valid_dists = ['uniform', 'normal', 'lognormal']
-            raise ValueError('Distributions: choose one of %s' % ", ".join(valid_dists))
-        return sa_lib_distribution_name
-
-    def process_results(self):
-        """Write all results to self contained dictionary."""
         results = {
             "parameter_names": self.parameter_names,
             "sensitivity_indices": self.sensitivity_indices,
@@ -280,7 +267,7 @@ class SobolIndexIterator(Iterator):
         """Create bar graph of first order sensitivity indices.
 
         Args:
-            results   (dict):    Dictionary with results
+            results (dict): dictionary with sobol indices and confidence intervals
         """
         experiment_name = self.global_settings["experiment_name"]
 
@@ -353,3 +340,24 @@ class SobolIndexIterator(Iterator):
 
             fig = go.Figure(data=data, layout=layout)
             fig.write_html(chart_path)
+
+    @staticmethod
+    def _get_sa_lib_distribution_name(distribution_name):
+        """Convert QUEENS distribution name to SALib distribution name.
+
+        Args:
+            distribution_name (string): distribution type
+
+        Returns:
+            sa_lib_distribution_name (string): name of distribution in SALib
+        """
+        if distribution_name == 'uniform':
+            sa_lib_distribution_name = 'unif'
+        elif distribution_name == 'normal':
+            sa_lib_distribution_name = 'norm'
+        elif distribution_name == 'lognormal':
+            sa_lib_distribution_name = 'lognorm'
+        else:
+            valid_dists = ['uniform', 'normal', 'lognormal']
+            raise ValueError('Distributions: choose one of %s' % ", ".join(valid_dists))
+        return sa_lib_distribution_name

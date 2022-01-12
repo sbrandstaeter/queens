@@ -2,6 +2,7 @@
 import os
 import pickle
 
+import numpy as np
 import pytest
 
 from pqueens.main import main
@@ -20,26 +21,47 @@ def test_sobol_indices_ishigami(inputdir, tmpdir):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    assert results["sensitivity_indices"]['S1'][0] == pytest.approx(0.12572757495660558)
-    assert results["sensitivity_indices"]['S1'][1] == pytest.approx(0.3888444532476749)
-    assert results["sensitivity_indices"]['S1'][2] == pytest.approx(-0.1701023677236496)
+    expected_result = dict()
 
-    assert results["sensitivity_indices"]['S1_conf'][0] == pytest.approx(0.3935803586836114)
-    assert results["sensitivity_indices"]['S1_conf'][1] == pytest.approx(0.6623091120357786)
-    assert results["sensitivity_indices"]['S1_conf'][2] == pytest.approx(0.2372589075839736)
+    expected_result["S1"] = np.array([0.12572757495660558, 0.3888444532476749, -0.1701023677236496])
 
-    assert results["sensitivity_indices"]['ST'][0] == pytest.approx(0.32520201992825987)
-    assert results["sensitivity_indices"]['ST'][1] == pytest.approx(0.5263552164769918)
-    assert results["sensitivity_indices"]['ST'][2] == pytest.approx(0.1289289258091274)
+    expected_result["S1_conf"] = np.array(
+        [0.3935803586836114, 0.6623091120357786, 0.2372589075839736]
+    )
 
-    assert results["sensitivity_indices"]['ST_conf'][0] == pytest.approx(0.24575185898081872)
-    assert results["sensitivity_indices"]['ST_conf'][1] == pytest.approx(0.5535870474744364)
-    assert results["sensitivity_indices"]['ST_conf'][2] == pytest.approx(0.15792828597131078)
+    expected_result["ST"] = np.array([0.32520201992825987, 0.5263552164769918, 0.1289289258091274])
 
-    assert results["sensitivity_indices"]['S2'][0, 1] == pytest.approx(0.6350854922111611)
-    assert results["sensitivity_indices"]['S2'][0, 2] == pytest.approx(1.0749774123116016)
-    assert results["sensitivity_indices"]['S2'][1, 2] == pytest.approx(0.32907368546743065)
+    expected_result["ST_conf"] = np.array(
+        [0.24575185898081872, 0.5535870474744364, 0.15792828597131078]
+    )
 
-    assert results["sensitivity_indices"]['S2_conf'][0, 1] == pytest.approx(0.840605849268133)
-    assert results["sensitivity_indices"]['S2_conf'][0, 2] == pytest.approx(1.2064077218919202)
-    assert results["sensitivity_indices"]['S2_conf'][1, 2] == pytest.approx(0.5803799668636836)
+    expected_result["S2"] = np.array(
+        [
+            [np.nan, 0.6350854922111611, 1.0749774123116016],
+            [np.nan, np.nan, 0.32907368546743065],
+            [np.nan, np.nan, np.nan],
+        ]
+    )
+
+    expected_result["S2_conf"] = np.array(
+        [
+            [np.nan, 0.840605849268133, 1.2064077218919202],
+            [np.nan, np.nan, 0.5803799668636836],
+            [np.nan, np.nan, np.nan],
+        ]
+    )
+
+    np.testing.assert_allclose(results["sensitivity_indices"]["S1"], expected_result["S1"])
+    np.testing.assert_allclose(
+        results["sensitivity_indices"]["S1_conf"], expected_result["S1_conf"]
+    )
+
+    np.testing.assert_allclose(results["sensitivity_indices"]["ST"], expected_result["ST"])
+    np.testing.assert_allclose(
+        results["sensitivity_indices"]["ST_conf"], expected_result["ST_conf"]
+    )
+
+    np.testing.assert_allclose(results["sensitivity_indices"]["S2"], expected_result["S2"])
+    np.testing.assert_allclose(
+        results["sensitivity_indices"]["S2_conf"], expected_result["S2_conf"]
+    )
