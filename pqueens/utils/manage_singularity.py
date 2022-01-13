@@ -430,19 +430,21 @@ class SingularityManager:
         _, _, username, _ = run_subprocess('whoami')
         command_string = "ps -aux | grep 'ssh -f -N -L 9001:' | grep ':22 " + username + "@'"
         _, _, active_ssh, _ = run_subprocess(command_string)
-        # skip entries that contain "grep" as this is the current command
-        try:
-            active_ssh_ids = [
-                line.split()[1] for line in active_ssh.splitlines() if not 'grep' in line
-            ]
-        except IndexError:
-            pass
 
-        if active_ssh_ids != '':
-            for ssh_id in active_ssh_ids:
-                command_string = 'kill -9 ' + ssh_id
-                _, _, _, _ = run_subprocess(command_string)
-            print('Active QUEENS local to remote port-forwardings were closed successfully!')
+        if active_ssh:
+            active_ssh_ids = []
+            try:
+                active_ssh_ids = [
+                    line.split()[1] for line in active_ssh.splitlines() if not 'grep' in line
+                ]
+            except IndexError:
+                pass
+
+            if active_ssh_ids:
+                for ssh_id in active_ssh_ids:
+                    command_string = 'kill -9 ' + ssh_id
+                    _, _, _, _ = run_subprocess(command_string)
+                print('Active QUEENS local to remote port-forwardings were closed successfully!')
 
     def close_remote_port(self, port):
         """Closes the ports used in the current QUEENS simulation.
