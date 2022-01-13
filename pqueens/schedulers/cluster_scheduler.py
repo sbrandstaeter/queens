@@ -1,3 +1,4 @@
+"""Cluster scheduler for QUEENS runs."""
 import atexit
 import os
 import sys
@@ -15,6 +16,12 @@ class ClusterScheduler(Scheduler):
     """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS."""
 
     def __init__(self, base_settings):
+        """Init method for the cluster scheduler.
+
+        Args:
+            base_settings (dict): dictionary containing settings from base class for
+                                  further use and completion in this child class
+        """
         super(ClusterScheduler, self).__init__(base_settings)
 
         # Close the ssh ports at when exiting after the queens run
@@ -143,13 +150,13 @@ class ClusterScheduler(Scheduler):
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
-        """Pre-run routine for local and remote computing with Singularity,
-        such as automated port-forwarding and copying files/folders.
+        """Pre-run routine for local and remote computing with Singularity.
+
+        Do automated port-forwarding and copying files/folders.
 
         Returns:
             None
         """
-
         # pre-run routines required when using Singularity both local and remote
         if self.singularity is True:
             self.singularity_manager.check_singularity_system_vars()
@@ -342,5 +349,6 @@ class ClusterScheduler(Scheduler):
             None
         """
         if self.remote and self.singularity:
+            self.singularity_manager.close_local_port_forwarding()
             self.singularity_manager.close_remote_port(self.port)
             print('All port-forwardings were closed again.')
