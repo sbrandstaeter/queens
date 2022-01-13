@@ -100,6 +100,17 @@ def cluster_bind(cluster):
 
 
 @pytest.fixture(scope="session")
+def cluster_singularity_ip(cluster):
+    if cluster == "deep":
+        cluster_singularity_ip = '129.187.58.20'
+    elif cluster == "bruteforce":
+        cluster_singularity_ip = '10.10.0.1'
+    else:
+        cluster_singularity_ip = None
+    return cluster_singularity_ip
+
+
+@pytest.fixture(scope="session")
 def scheduler_type(cluster):
     """Switch type of scheduler according to cluster."""
     if cluster == "deep":
@@ -187,10 +198,11 @@ def prepare_singularity(
 
     remote_flag = True
     singularity_manager = SingularityManager(
-        remote_flag=remote_flag,
-        connect_to_resource=connect_to_resource,
-        cluster_bind=cluster_bind,
-        path_to_singularity=str(cluster_path_to_singularity),
+        remote=remote_flag,
+        remote_connect=connect_to_resource,
+        singularity_bind=cluster_bind,
+        singularity_path=str(cluster_path_to_singularity),
+        input_file=None,
     )
     singularity_manager.check_singularity_system_vars()
     singularity_manager.prepare_singularity_files()
@@ -208,6 +220,7 @@ def cluster_testsuite_settings(
     cluster_path_to_singularity,
     prepare_singularity,
     scheduler_type,
+    cluster_singularity_ip,
 ):
     """Collection of settings needed for all cluster tests."""
     if not prepare_singularity:
@@ -224,6 +237,7 @@ def cluster_testsuite_settings(
     cluster_testsuite_settings["cluster_queens_testing_folder"] = cluster_queens_testing_folder
     cluster_testsuite_settings["cluster_path_to_singularity"] = cluster_path_to_singularity
     cluster_testsuite_settings["scheduler_type"] = scheduler_type
+    cluster_testsuite_settings["singularity_remote_ip"] = cluster_singularity_ip
 
     return cluster_testsuite_settings
 
@@ -231,9 +245,19 @@ def cluster_testsuite_settings(
 @pytest.fixture(scope="session")
 def baci_cluster_paths(cluster_user, cluster_address):
     path_to_executable = pathlib.Path("/home", cluster_user, "workspace", "build", "baci-release")
-    path_to_postprocessor = pathlib.Path(
+
+    path_to_drt_monitor = pathlib.Path(
         "/home", cluster_user, "workspace", "build", "post_drt_monitor"
     )
+
+    path_to_post_processor = pathlib.Path(
+        "/home", cluster_user, "workspace", "build", "post_processor"
+    )
+
+    path_to_drt_ensight = pathlib.Path(
+        "/home", cluster_user, "workspace", "build", "post_drt_ensight"
+    )
+
     command_string = f'test -f {path_to_executable}'
     returncode, _, stdout, stderr = run_subprocess(
         command_string=command_string,
@@ -247,7 +271,7 @@ def baci_cluster_paths(cluster_user, cluster_address):
             f"Was looking here: {path_to_executable}"
         )
 
-    command_string = f'test -f {path_to_postprocessor}'
+    command_string = f'test -f {path_to_drt_monitor}'
     returncode, _, stdout, stderr = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
@@ -257,9 +281,39 @@ def baci_cluster_paths(cluster_user, cluster_address):
     if returncode:
         raise RuntimeError(
             f"Could not find postprocessor on {cluster_address}.\n"
-            f"Was looking here: {path_to_postprocessor}"
+            f"Was looking here: {path_to_drt_monitor}"
         )
+
+    command_string = f'test -f {path_to_drt_ensight}'
+    returncode, _, stdout, stderr = run_subprocess(
+        command_string=command_string,
+        subprocess_type='remote',
+        remote_user=cluster_user,
+        remote_address=cluster_address,
+    )
+    if returncode:
+        raise RuntimeError(
+            f"Could not find postprocessor on {cluster_address}.\n"
+            f"Was looking here: {path_to_drt_ensight}"
+        )
+
+    command_string = f'test -f {path_to_post_processor}'
+    returncode, _, stdout, stderr = run_subprocess(
+        command_string=command_string,
+        subprocess_type='remote',
+        remote_user=cluster_user,
+        remote_address=cluster_address,
+    )
+    if returncode:
+        raise RuntimeError(
+            f"Could not find postprocessor on {cluster_address}.\n"
+            f"Was looking here: {path_to_post_processor}"
+        )
+
     baci_cluster_paths = dict(
-        path_to_executable=path_to_executable, path_to_postprocessor=path_to_postprocessor
+        path_to_executable=path_to_executable,
+        path_to_drt_monitor=path_to_drt_monitor,
+        path_to_drt_ensight=path_to_drt_ensight,
+        path_to_post_processor=path_to_post_processor,
     )
     return baci_cluster_paths
