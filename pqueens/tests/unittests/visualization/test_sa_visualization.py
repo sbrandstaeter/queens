@@ -1,12 +1,13 @@
-import pytest
 import os
+
+import pytest
+
 from pqueens.visualization.sa_visualization import SAVisualization
 
 
 @pytest.fixture()
 def dummy_vis(tmpdir):
-    """
-    Generate dummy instance of class SAVisualization
+    """Generate dummy instance of class SAVisualization.
 
     Args:
         tmpdir (str): Temporary directory in which the tests are run
@@ -26,9 +27,9 @@ def dummy_vis(tmpdir):
     return sa_vis
 
 
+@pytest.mark.unit_tests
 def test_init(tmpdir, dummy_vis):
-    """
-    Test initialization of SAVisualization
+    """Test initialization of SAVisualization.
 
     Raises:
         AssertionError: If not correctly initialized.
@@ -49,8 +50,7 @@ def test_init(tmpdir, dummy_vis):
 
 @pytest.fixture()
 def dummy_sensitivity_indices():
-    """
-    Generate dummy output data
+    """Generate dummy output data.
 
     Returns:
         results (dict): Contains dummy sensitivity indices (names, mu, mu_star, sigma, mu_star_conf)
@@ -64,9 +64,10 @@ def dummy_sensitivity_indices():
     return results
 
 
+@pytest.mark.unit_tests
 def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
-    """
-    Test whether bar plot of sensitivity indices is plotting and saving the plot as a file
+    """Test whether bar plot of sensitivity indices is plotting and saving the
+    plot as a file.
 
     Raises:
         AssertionError: If no file was saved.
@@ -77,9 +78,10 @@ def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
     assert os.path.isfile(path_output_image)
 
 
+@pytest.mark.unit_tests
 def test_sa_visualization_scatter(tmpdir, dummy_vis, dummy_sensitivity_indices):
-    """
-    Test whether scatter plot of sensitivity indices is plotting and saving the plot as a file
+    """Test whether scatter plot of sensitivity indices is plotting and saving
+    the plot as a file.
 
     Raises:
         AssertionError: If no file was saved.

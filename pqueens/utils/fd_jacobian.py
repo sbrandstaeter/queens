@@ -1,6 +1,5 @@
-"""
-Calculate finite difference based approximation of Jacobian of
-vector-valued functions
+"""Calculate finite difference based approximation of Jacobian of vector-valued
+functions.
 
 NOTE:
 Implementation is heavily based on the scipy.optimize._numdiff module.
@@ -23,14 +22,15 @@ For expensive function the exploitation ensures significant speed up.
 """
 
 import numpy as np
-from scipy.optimize._numdiff import _adjust_scheme_to_bounds
-from scipy.optimize._numdiff import _compute_absolute_step
-from scipy.optimize._numdiff import _prepare_bounds
+from scipy.optimize._numdiff import (
+    _adjust_scheme_to_bounds,
+    _compute_absolute_step,
+    _prepare_bounds,
+)
 
 
 def compute_step_with_bounds(x0, method, rel_step, bounds):
-    """
-    Compute step sizes of finite difference scheme adjusted to bounds
+    """Compute step sizes of finite difference scheme adjusted to bounds.
 
     Args:
         x0 (ndarray, shape(n,)):
@@ -92,9 +92,8 @@ def compute_step_with_bounds(x0, method, rel_step, bounds):
 
 
 def get_positions(x0, method, rel_step, bounds):
-    """
-    Compute all positions needed for the finite difference approximation
-    of the Jacobian of a vector-valued function at a given position.
+    """Compute all positions needed for the finite difference approximation of
+    the Jacobian of a vector-valued function at a given position.
 
     Note: the implementation is supposed to remain very closed to
     scipy._numdiff.approx_derivative
@@ -155,8 +154,7 @@ def get_positions(x0, method, rel_step, bounds):
 
 
 def fd_jacobian(f0, f_perturbed, dx, use_one_sided, method):
-    """
-    Calculate finite difference approximation of Jacobian of f at x0
+    """Calculate finite difference approximation of Jacobian of f at x0.
 
     the necessary function evaluation have been pre-calculated and are
     supplied via f0 and the f_perturbed vector.

@@ -1,31 +1,31 @@
+import logging
 import time
+
 import numpy as np
 
+import pqueens.database.database as DB_module
+import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
+from pqueens.utils import mcmc_utils, variational_inference_utils
 from pqueens.utils.process_outputs import write_results
-from pqueens.database.mongodb import MongoDB
-from pqueens.utils import variational_inference_utils
-from pqueens.utils import mcmc_utils
-import pqueens.visualization.variational_inference_visualization as vis
-import logging
 
 _logger = logging.getLogger(__name__)
 
 
 class BBVIIterator(Iterator):
-    """
-    Black box variational inference (BBVI) iterator for Bayesian inverse problems. 
-    BBVI does not require model gradients and can hence be used with any simulation model and 
-    without the need for adjoints implementations. The algorithm is based on [1]. The
-    expectations for the gradient computations are computed using an importance sampling approach
-    where the IS-distribution is constructed as a mixture of the variational distribution from 
-    previous iterations (similar as in [2]). 
+    """Black box variational inference (BBVI) iterator for Bayesian inverse
+    problems. BBVI does not require model gradients and can hence be used with
+    any simulation model and without the need for adjoints implementations. The
+    algorithm is based on [1]. The expectations for the gradient computations
+    are computed using an importance sampling approach where the IS-
+    distribution is constructed as a mixture of the variational distribution
+    from previous iterations (similar as in [2]).
 
     Keep in mind:
         This algorithm requires the logpdf of the variational distribution to be differentiable w.r.
-        t. the variational parameters. This is not the case for certain distributions, e.g. uniform 
-        distribution, and can therefore not be used in combination with this algorithm (see [3] 
+        t. the variational parameters. This is not the case for certain distributions, e.g. uniform
+        distribution, and can therefore not be used in combination with this algorithm (see [3]
         page 13)!
 
     References:
@@ -35,8 +35,8 @@ class BBVIIterator(Iterator):
         [2]: Arenz, Neumann & Zhong. "Efficient Gradient-Free Variational Inference using Policy
              Search." Proceedings of the 35th International Conference on Machine Learning (2018) in
              PMLR 80:234-243
-        [3]: Mohamed et al. "Monte Carlo Gradient Estimation in Machine Learning". Journal of 
-             Machine Learning Research. 21(132):1−62, 2020. 
+        [3]: Mohamed et al. "Monte Carlo Gradient Estimation in Machine Learning". Journal of
+             Machine Learning Research. 21(132):1−62, 2020.
 
     Attributes:
         global_settings (dict): Global settings of the QUEENS simulations
@@ -48,7 +48,7 @@ class BBVIIterator(Iterator):
                                                              the variational parameters in order
                                                              to reach convergence
         variational_family (str): Density type for variatonal approximation
-        variational_params_initialization_approach (str): Flag to decide how to initialize the  
+        variational_params_initialization_approach (str): Flag to decide how to initialize the
                                                           variational paramaters
         learning_rate (float): Learning rate of the ADAMS stochastic decent optimizer
         n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration to
@@ -56,7 +56,7 @@ class BBVIIterator(Iterator):
         variational_transformation (str): String encoding the transformation that will be applied to
                                           the variational density
         random_seed (int): Seed for the random number generators
-        max_feval (int): Maximum number of simulation runs for this analysis        
+        max_feval (int): Maximum number of simulation runs for this analysis
         num_variables (int): Actual number of model input variables that should be calibrated
         memory (int): Number of previous iterations that should be included in the MC ELBO
                       gradient estimations. For memory=0 the algorithm reduces to standard the
@@ -69,7 +69,7 @@ class BBVIIterator(Iterator):
         fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
         fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
         num_iter_average_convergence (float): Number of iteration used in assesing convergence
-        export_quantities_over_iter (boolean): True if data (variational_params, elbo, ESS) should 
+        export_quantities_over_iter (boolean): True if data (variational_params, elbo, ESS) should
                                                be exported in the pickle file
         control_variates_scaling_type (str): Flag to decide how to compute control variate scaling
         loo_cv_bool (boolean): True if leave-one-out procedure is used for the control variate
@@ -83,7 +83,7 @@ class BBVIIterator(Iterator):
         f_mat (np.array): Column-wise ELBO gradient samples
         h_mat (np.array): Column-wise control variate
         elbo_list (list): ELBO value of every iteration
-        grad_elbo (np.array): ELBO gradient (Columnvector) 
+        grad_elbo (np.array): ELBO gradient (Columnvector)
         log_variational_mat (np.array): Logpdf evaluations of the variational distribution
         grad_params_log_variational_mat (np.array): Column-wise grad params logpdf (score function)
                                                     of the variational distribution
@@ -94,16 +94,15 @@ class BBVIIterator(Iterator):
                                the input file
         samples_list (list): List of samples from previous iterations for the ISMC gradient
         parameter_list (list): List of parameters from previous iterations for the ISMC gradient
-        log_posterior_unnormalized_list (list): List of probabilistic model evaluations from 
+        log_posterior_unnormalized_list (list): List of probabilistic model evaluations from
                                                 previous iterations for the ISMC gradient
         ess_list (list): List containing the effective sample size for every iteration (in case IS
-                         is used)            
+                         is used)
         noise_list (list): Gaussian likelihood noise variance values.
         variational_params_array (np.array): Column-wise parameters from first to last iteration
 
     Returns:
         bbvi_obj (obj): Instance of the BBVIIterator
-
     """
 
     def __init__(
@@ -207,8 +206,8 @@ class BBVIIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """
-        Create black box variational inference iterator from problem description
+        """Create black box variational inference iterator from problem
+        description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -217,7 +216,6 @@ class BBVIIterator(Iterator):
 
         Returns:
             iterator (obj): BBVI object
-            
         """
 
         if iterator_name is None:
@@ -231,13 +229,14 @@ class BBVIIterator(Iterator):
         result_description = method_options.get('result_description', None)
         global_settings = config.get('global_settings', None)
 
-        db = MongoDB.from_config_create_database(config)
+        db = DB_module.database
         experiment_name = config['global_settings']['experiment_name']
         relative_change_variational_params = method_options.get(
             'min_relative_change_variational_params', 0.01
         )
         num_variables = len(model.variables[0].variables)
 
+        # set-up of the variational distribution
         variational_distribution_description = method_options.get("variational_distribution")
         # TODO this may have to be changed in the future
         variational_distribution_description.update({"dimension": num_variables})
@@ -346,9 +345,7 @@ class BBVIIterator(Iterator):
         )
 
     def core_run(self):
-        """
-        Core run for black-box variational inference
-        """
+        """Core run for black-box variational inference."""
         _logger.info('Starting black box Bayesian variational inference...')
         start = time.time()
         # --------------------------------------------------------------------
@@ -378,12 +375,10 @@ class BBVIIterator(Iterator):
         _logger.info(f"Post run: Finishing, saving and cleaning...")
 
     def _check_convergence(self):
-        """
-        Check the convergence criterion for the BBVI iterator.
+        """Check the convergence criterion for the BBVI iterator.
 
         Returns:
             convergence_bool (bool): True if not yet converged. False if converged
-
         """
         if self.optimization_iteration > self.num_iter_average_convergence:
             convergence_bool = (
@@ -410,12 +405,11 @@ class BBVIIterator(Iterator):
         return convergence_bool
 
     def _catch_non_converging_simulations(self):
-        """
-        Reset variational parameters in case of non-converging simulation runs
+        """Reset variational parameters in case of non-converging simulation
+        runs.
 
         Returns:
             None
-
         """
         if len(self.relative_change_variational_params) > 0:
             if np.any(np.isnan(self.relative_change_variational_params[-1])):
@@ -425,24 +419,21 @@ class BBVIIterator(Iterator):
                 )
 
     def initialize_run(self):
-        """
-        Initialize the prior model and variational parameters
+        """Initialize the prior model and variational parameters.
 
         Returns:
             None
-
         """
         _logger.info("Initialize Optimization run.")
         self._initialize_prior_model()
         self._initialize_variational_params()
 
     def post_run(self):
-        """
-        Write results and potentially visualize them using the visualization module.
+        """Write results and potentially visualize them using the visualization
+        module.
 
         Returns:
             None
-
         """
         if self.result_description["write_results"]:
             result_dict = self._prepare_result_description()
@@ -454,23 +445,20 @@ class BBVIIterator(Iterator):
         vis.vi_visualization_instance.save_plots()
 
     def eval_model(self):
-        """
-        Evaluate model for the sample batch
+        """Evaluate model for the sample batch.
 
         Returns:
            result_dict (dict): Dictionary containing model response for sample batch
-
         """
         result_dict = self.model.evaluate()
         return result_dict
 
     def _initialize_prior_model(self):
-        """
-        Initialize the prior model of the inverse problem form the problem description.
+        """Initialize the prior model of the inverse problem form the problem
+        description.
 
         Returns:
             None
-
         """
         # Read design of prior
         input_dict = self.model.get_parameter()
@@ -489,10 +477,10 @@ class BBVIIterator(Iterator):
             self.prior_obj_list.append(mcmc_utils.create_proposal_distribution(rv_options))
 
     def eval_log_likelihood(self, sample_batch):
-        """
-        Calculate the log-likelihood of the observation data. Evaluation of the likelihood model
-        for all inputs of the sample batch will trigger the actual forward simulation
-        (can be executed in parallel as batch-sequential procedure)
+        """Calculate the log-likelihood of the observation data. Evaluation of
+        the likelihood model for all inputs of the sample batch will trigger
+        the actual forward simulation (can be executed in parallel as batch-
+        sequential procedure)
 
         Args:
             sample_batch (np.array): Sample-batch with samples row-wise
@@ -500,7 +488,6 @@ class BBVIIterator(Iterator):
         Returns:
             log_likelihood (np.array): Vector of the log-likelihood function for all input
                                        samples of the current batch
-
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)--> data is saved to DB
@@ -511,16 +498,15 @@ class BBVIIterator(Iterator):
         return log_likelihood.flatten()
 
     def get_log_prior(self, sample_batch):
-        """
-        Construct and evaluate the log prior of the model for current sample batch.
-        The samples are transformed according to the selected transformation.
+        """Construct and evaluate the log prior of the model for current sample
+        batch. The samples are transformed according to the selected
+        transformation.
 
         Args:
             sample_batch (np.array): Sample batch for which the model should be evaluated
 
         Returns:
             log_prior (np.array): log-prior vector evaluated for current sample batch
-
         """
         log_prior_vec = np.zeros((self.n_samples_per_iter, 1))
         for dim, prior_distr in enumerate(self.prior_obj_list):
@@ -529,8 +515,8 @@ class BBVIIterator(Iterator):
         return log_prior_vec.flatten()
 
     def get_log_posterior_unnormalized(self, sample_batch):
-        """
-        Calculate the unnormalized log posterior joint for all samples in batch
+        """Calculate the unnormalized log posterior joint for all samples in
+        batch.
 
         Args:
             sample_batch (np.array): Sample batch for which the model should be evaluated
@@ -538,7 +524,6 @@ class BBVIIterator(Iterator):
         Returns:
             unnormalized_log_posterior (np.array): Values of unnormalized log posterior
                                                    distribution at positions of sample batch
-
         """
         # Transform the samples
         sample_batch = self._transform_samples(sample_batch)
@@ -548,12 +533,10 @@ class BBVIIterator(Iterator):
         return log_posterior_unnormalized.flatten()
 
     def _verbose_output(self):
-        """
-        Give some informative outputs during the BBVI iterations
+        """Give some informative outputs during the BBVI iterations.
 
         Returns:
             None
-
         """
         if self.optimization_iteration % 10 == 0:
             mean_change = np.mean(np.abs(self.relative_change_variational_params[-1]), axis=0) * 100
@@ -600,10 +583,9 @@ class BBVIIterator(Iterator):
                 )
 
     def stochastic_ascent_adam(self, gradient_estimate_x, x_vec, b1=0.9, b2=0.999, eps=10 ** -8):
-        """
-        Stochastic gradient ascent algorithm ADAM.
-        Adam as described in http://arxiv.org/pdf/1412.6980.pdf.
-        It's basically RMSprop with momentum and some correction terms.
+        """Stochastic gradient ascent algorithm ADAM. Adam as described in
+        http://arxiv.org/pdf/1412.6980.pdf. It's basically RMSprop with
+        momentum and some correction terms.
 
         Args:
             gradient_estimate_x (np.array): (Noisy) Monte-Carlo estimate of a gradient
@@ -615,7 +597,6 @@ class BBVIIterator(Iterator):
 
         Returns:
             x_vec_new (list): Updated vector/point in the latent design space
-
         """
         x_vec = x_vec.reshape(-1, 1)
         g = gradient_estimate_x
@@ -631,13 +612,12 @@ class BBVIIterator(Iterator):
         return x_vec_new.flatten()
 
     def _update_variational_params(self):
-        """
-        Update the variational parameters of the variational distribution based on learning rate
-        and the ELBO gradient estimate. If enabled, the natural gradient is created and clipped. 
+        """Update the variational parameters of the variational distribution
+        based on learning rate and the ELBO gradient estimate. If enabled, the
+        natural gradient is created and clipped.
 
         Returns:
             None
-
         """
         self.variational_params_array = np.hstack(
             (self.variational_params_array, self.variational_params.reshape(-1, 1))
@@ -662,15 +642,14 @@ class BBVIIterator(Iterator):
         self._get_percentage_change_params(old_variational_params)
 
     def _get_percentage_change_params(self, old_variational_params):
-        """
-        Calculate L2 norm of the percentage change of the variational parameters
+        """Calculate L2 norm of the percentage change of the variational
+        parameters.
 
         Args:
             old_variational_params (np.array): Array of variational parameters
 
         Returns:
             None
-
         """
         rel_distance_vec = np.divide(
             (self.variational_params.flatten() - old_variational_params.flatten()),
@@ -687,12 +666,12 @@ class BBVIIterator(Iterator):
 
     def _initialize_variational_params(self):
         """
-        Initialize the variational parameters. There are two possibilities: 
-            1. Random initialization: 
+        Initialize the variational parameters. There are two possibilities:
+            1. Random initialization:
                 Is handeled by the variational distribution object
             2. Initialization based on the prior modeling (only for normal distributions!)
                 Extract the prior moments and initialize the parameters based on them
-        
+
         Returns:
             None
 
@@ -723,10 +702,10 @@ class BBVIIterator(Iterator):
         self.variational_params_array = np.empty((len(self.variational_params), 0))
 
     def _initialize_variational_params_from_prior(self, random_variables):
-        """
-        Initializes the variational parameters based on the prior definition. The variational 
-        distribution might be transformed in a second step such that the actual
-        variational distribution is of a different family. Only is used for normal distributions.
+        """Initializes the variational parameters based on the prior
+        definition. The variational distribution might be transformed in a
+        second step such that the actual variational distribution is of a
+        different family. Only is used for normal distributions.
 
         Args:
             random_variables (dict): Dictionary containing the prior probabilistic description of
@@ -734,7 +713,6 @@ class BBVIIterator(Iterator):
 
         Returns:
             None
-
         """
         # Get the first and second moments of the prior distributions
         mean_list_prior = []
@@ -781,16 +759,14 @@ class BBVIIterator(Iterator):
         return np.array(mean_list_variational), np.diag(std_list_variational) ** 2
 
     def _transform_samples(self, x_mat):
-        """
-        Transform samples of the variational distribution according to the specified transformation
-        mapping
+        """Transform samples of the variational distribution according to the
+        specified transformation mapping.
 
         Args:
             x_mat (np.array): Samples of the variational distribution
 
         Returns:
             x_mat_trans (np.array): Transformed samples of variational distribution
-
         """
         if self.variational_transformation == 'exp':
             x_mat_trans = np.exp(x_mat)
@@ -805,12 +781,10 @@ class BBVIIterator(Iterator):
         return x_mat_trans
 
     def _prepare_result_description(self):
-        """
-        Creates the dictionnary for the result pickle file.
+        """Creates the dictionary for the result pickle file.
 
         Returns:
             result_description (dict): Dictionary with result summary of the analysis
-
         """
         result_description = {
             "final_elbo": self.elbo_list[-1],
@@ -836,7 +810,10 @@ class BBVIIterator(Iterator):
             )
             if self.memory > 0:
                 result_description.update(
-                    {"ESS": self.ess_list, "memory": self.memory,}
+                    {
+                        "ESS": self.ess_list,
+                        "memory": self.memory,
+                    }
                 )
 
         distribution_dict = self.variational_distribution_obj.export_dict(self.variational_params)
@@ -849,9 +826,8 @@ class BBVIIterator(Iterator):
         return result_description
 
     def _averaged_control_variates_scalings(self, f_mat, h_mat):
-        """
-        This function computes the control variate scaling averaged over the components of the 
-        control variate.
+        """This function computes the control variate scaling averaged over the
+        components of the control variate.
 
         Args:
             f_mat (np.array): Column-wise MC gradient samples
@@ -859,7 +835,6 @@ class BBVIIterator(Iterator):
 
         Returns:
             cv_scaling (np.array): Columnvector with control variate scalings
-
         """
         dim = len(h_mat)
         cov_sum = 0
@@ -872,16 +847,14 @@ class BBVIIterator(Iterator):
         return cv_scaling
 
     def _componentwise_control_variates_scalings(self, f_mat, h_mat):
-        """
-        This function computes the control variates scaling for every component of the control 
-        variate separately.
-        
+        """This function computes the control variates scaling for every
+        component of the control variate separately.
+
         Args:
             f_mat (np.array): Column-wise MC gradient samples
             h_mat (np.array): Column-wise control variate samples
         Returns:
             cv_scaling (np.array): Columnvector with control variate scalings
-
         """
         dim = len(h_mat)
         cv_scaling = np.ones((dim, 1))
@@ -891,12 +864,11 @@ class BBVIIterator(Iterator):
         return cv_scaling
 
     def _loo_control_variates_scalings(self, cv_obj, f_mat, h_mat):
-        """
-        To reduce bias in the MC and control variate saling estimation Ranganath proposed a 
-        leave-one-out procedure to estimate the control variate scalings. Each sample has its own
-         scaling that is computed using f_mat and h_mat without the values related to itself.
-        (see http://arks.princeton.edu/ark:/88435/dsp01pr76f608w) 
-        Is slow!
+        """To reduce bias in the MC and control variate saling estimation
+        Ranganath proposed a leave-one-out procedure to estimate the control
+        variate scalings. Each sample has its own scaling that is computed
+        using f_mat and h_mat without the values related to itself. (see
+        http://arks.princeton.edu/ark:/88435/dsp01pr76f608w) Is slow!
 
         Args:
             cv_obj (control variate function): A control variate scaling function
@@ -905,7 +877,6 @@ class BBVIIterator(Iterator):
 
         Returns:
             cv_scaling (np.array): Colum-wise control variate scalings for the different samples
-
         """
         cv_scaling = []
         for i in range(f_mat.shape[1]):
@@ -915,12 +886,10 @@ class BBVIIterator(Iterator):
         return cv_scaling
 
     def _get_control_variates_scalings(self):
-        """
-        Calculate the control variate scalings.
+        """Calculate the control variate scalings.
 
         Returns:
             cv_scaling (np.array): Scaling for the control variate
-
         """
         if self.control_variates_scaling_type == "componentwise":
             cv_scaling_obj = self._componentwise_control_variates_scalings
@@ -938,14 +907,13 @@ class BBVIIterator(Iterator):
         return cv_scaling
 
     def _calculate_elbo_gradient(self):
-        """
-        Estimate the ELBO gradient expression using MC with importance sampling with the 
-        samples of previous iterations if desired. The score function is used as a 
-        control variate. No Rao-Blackwellization scheme is used.
+        """Estimate the ELBO gradient expression using MC with importance
+        sampling with the samples of previous iterations if desired. The score
+        function is used as a control variate. No Rao-Blackwellization scheme
+        is used.
 
         Returns:
             None
-
         """
         # Increase model call counter
         self.n_sims += self.n_samples_per_iter
@@ -994,8 +962,7 @@ class BBVIIterator(Iterator):
         self.grad_elbo = np.nan_to_num(self.grad_elbo)
 
     def _calculate_elbo(self, samples, log_posterior_unnormalized):
-        """
-        Calculate the ELBO
+        """Calculate the ELBO.
 
         Args:
             samples (np.array): Row-wise samples of the variational distribution
@@ -1003,7 +970,6 @@ class BBVIIterator(Iterator):
 
         Returns:
             None
-
         """
         logpdf = self.variational_distribution_obj.logpdf(self.variational_params, samples)
         instant_elbo = log_posterior_unnormalized - logpdf
@@ -1015,9 +981,9 @@ class BBVIIterator(Iterator):
         computation (if enabled). This includes:
             1. Store samples, variational parameters and probabilistic model evaluations
             2. Update variables samples and log_posterior_unnormalized
-            3. Compute autonormalized weights and the normalizing constant 
+            3. Compute autonormalized weights and the normalizing constant
 
-        The normalizing constant is a constant in order to recover the proper weights values. The 
+        The normalizing constant is a constant in order to recover the proper weights values. The
         gradient estimation is multiplied with this constant in order to avoid a bias. This can
         be done since for any constant :math:`a`:
         # :math:`\\int_x h(x) p(x) dx = a \\int_x h(x) \\frac{1}{a}p(x) dx`
@@ -1028,7 +994,7 @@ class BBVIIterator(Iterator):
         Returns:
             selfnormalized_weights (np.array): Row-vector with selfnormalized weights
             normalizing_constant (int): Normalizing constant
-            samples (np.array): Eventually extended row-wise samples 
+            samples (np.array): Eventually extended row-wise samples
 
         """
         # Values if no IS is used or for the first iteration
@@ -1064,9 +1030,9 @@ class BBVIIterator(Iterator):
         return selfnormalized_weights, normalizing_constant, samples
 
     def get_importance_sampling_weights(self, variational_params_list, samples):
-        """
-        Get the importance sampling weights for the MC gradient estimation. Uses a special
-        computation of the weights using the logpdfs to reduce numerical issues:
+        """Get the importance sampling weights for the MC gradient estimation.
+        Uses a special computation of the weights using the logpdfs to reduce
+        numerical issues:
 
         :math: `w=\\frac{q_i}{\\sum_{j=0}^{memory+1} \\frac{1}{memory+1}q_j}=\\frac{(memory +1)}
         {1+\\sum_{j=0}^{memory}exp(lnq_j-lnq_i)}`
@@ -1078,9 +1044,8 @@ class BBVIIterator(Iterator):
                                             desired previous iterations
             samples (np.array): Row-wise samples for the MC gradient estimation
 
-        Returns: 
+        Returns:
             weights (np.array): (Unnormalized) weights for the ISMC evaluated for the given samples
-
         """
         weights = 1
         n_mixture = len(variational_params_list)
@@ -1096,14 +1061,13 @@ class BBVIIterator(Iterator):
         return weights
 
     def evaluate_variational_distribution_for_batch(self, samples):
-        """
-        Evaluate logpdf and grad params logpdf function of the variational distribution
+        """Evaluate logpdf and grad params logpdf function of the variational
+        distribution.
 
         Args:
             samples (np.array): Row-wise samples
 
         Returns: None
-
         """
 
         self.log_variational_mat = self.variational_distribution_obj.logpdf(
@@ -1120,12 +1084,11 @@ class BBVIIterator(Iterator):
         self.grad_params_log_variational_mat = np.nan_to_num(self.grad_params_log_variational_mat)
 
     def _filter_failed_simulations(self):
-        """
-        Filter samples and expressions that are associated with failed simulations
+        """Filter samples and expressions that are associated with failed
+        simulations.
 
         Returns:
             None
-
         """
         # Indices where the log joint is a nan
         idx = np.where(~np.isnan(self.log_posterior_unnormalized))[0]
@@ -1139,12 +1102,11 @@ class BBVIIterator(Iterator):
         self.log_posterior_unnormalized = self.log_posterior_unnormalized[idx]
 
     def _clearing_and_plots(self):
-        """
-        Pass data to the visualization object and clear some internal variables
+        """Pass data to the visualization object and clear some internal
+        variables.
 
         Returns:
             None
-
         """
 
         # clear internal variables
@@ -1161,12 +1123,11 @@ class BBVIIterator(Iterator):
         )
 
     def _get_fim(self):
-        """
-        Get the FIM for the current variational distribution and add dampening if desired
-        
+        """Get the FIM for the current variational distribution and add
+        dampening if desired.
+
         Returns:
             fisher (np.array): fisher information matrix of the variational distribution
-
         """
         FIM = self.variational_distribution_obj.fisher_information_matrix(self.variational_params)
         if self.fim_dampening_bool:
@@ -1180,4 +1141,3 @@ class BBVIIterator(Iterator):
                 dampening_coefficient = self.fim_dampening_coefficient
             FIM = FIM + np.eye(len(FIM)) * dampening_coefficient
         return FIM
-

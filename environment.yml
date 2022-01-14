@@ -1,60 +1,18 @@
-name: queens 
+name: queens
 channels:
   - defaults
   - conda-forge
 dependencies:
 ###### use requirements without version fixed specifier where possible ######
   - python==3.8
-  - cython
-  - scipy>=1.2.1
-  - scikit-learn
-  - arviz
-  - xarray
-# for database interfacing
-  - pymongo
-# for design of experiments
-  - pyDOE
-# for Gaussian Processes
-  - gpy
-# for documentation
-  - sphinx
-  - markupsafe<2.0
-  - nbsphinx
-  - jupyter
-  - pandoc
-# making fancy plots
-  - matplotlib
-  - seaborn
-  - plotly
-# testing framework
-  - pytest>=3.0.0
-  - pytest-codestyle
-  - pytest-cov
-  - pytest-mock
-# for running tests in parallel
-  - pytest-xdist
-# create mock objects for unit testing
-  - mock
-# linting, check code  -style (PEP8)
-  - astroid>=2.5.1
-  - pylint>=2.5.1
-  - isort<5
-# make ascii  -art printsc
-  - pyfiglet
-# code formatter
-  - black
-# a smart progress meter for loops
-  - tqdm
-# visualization toolkit that can manage mesh data
-  - vtk
-# enforce package compliance of parso package
-  - parso>=0.8.0
-# wrapper around numpy for automated differentiation
-  - autograd
-# multiprocessing with more complex python objects
-  - pathos
-# it's recommended to list pip explicitly
+  - cython==0.29.26
+  - numpy==1.21.2
+  - scipy==1.7.3
+  - numba==0.53.1
+  - scikit-learn==1.0.1
+  - pandas==1.2.4
   - pip
+<<<<<<< HEAD
   - pip:
     - numpy
     - pandas
@@ -80,3 +38,6 @@ dependencies:
     - torch
 # for Chopin SMC
     - particles
+=======
+  - gpy==1.10.0
+>>>>>>> master

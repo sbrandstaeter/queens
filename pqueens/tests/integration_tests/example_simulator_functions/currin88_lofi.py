@@ -1,9 +1,10 @@
 import numpy as np
+
 from pqueens.tests.integration_tests.example_simulator_functions.currin88_hifi import currin88_hifi
 
 
 def currin88_lofi(x1, x2):
-    """ low-fidelity version of the Currin88 benchmark function
+    """low-fidelity version of the Currin88 benchmark function.
 
     Simple two-dimensional example which appears several
     times in the literature, see, e.g., [1]-[3].
@@ -52,7 +53,7 @@ def currin88_lofi(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to currin88 function
+    """Interface to currin88 function.
 
     Args:
         job_id (int):  ID of job

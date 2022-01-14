@@ -1,11 +1,12 @@
 import numpy as np
 
 from pqueens.models.model import Model
+
 from .iterator import Iterator
 
 
 class SingleSimRunIterator(Iterator):
-    """ Iterator for single simulation run
+    """Iterator for single simulation run.
 
     Attributes:
         model (model):              Model to be evaluated by iterator
@@ -24,7 +25,7 @@ class SingleSimRunIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """ Create iterator for single simulation run from problem description
+        """Create iterator for single simulation run from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -34,7 +35,6 @@ class SingleSimRunIterator(Iterator):
 
         Returns:
             iterator: MonteCarloIterator object
-
         """
         if iterator_name is None:
             method_options = config['method']['method_options']
@@ -46,20 +46,23 @@ class SingleSimRunIterator(Iterator):
 
         global_settings = config.get('global_settings', None)
 
-        return cls(model, global_settings,)
+        return cls(
+            model,
+            global_settings,
+        )
 
     def eval_model(self):
-        """ Evaluate the model """
+        """Evaluate the model."""
         return self.model.evaluate()
 
     def pre_run(self):
-        """ Generate samples for subsequent MC analysis and update model """
+        """Generate samples for subsequent MC analysis and update model."""
         pass
 
     def core_run(self):
-        """  Run single simulation """
+        """Run single simulation."""
         self.output = self.eval_model()
 
     def post_run(self):
-        """ Not required here """
+        """Not required here."""
         pass

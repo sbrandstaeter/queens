@@ -1,5 +1,4 @@
-"""
-Test-module for abstract Model class
+"""Test-module for abstract Model class.
 
 @author: Sebastian Brandstaeter
 """
@@ -12,7 +11,7 @@ from pqueens.models.model import Model
 
 @pytest.fixture(scope='module')
 def uncertain_parameters():
-    """ Possible uncertain parameters dictionary. """
+    """Possible uncertain parameters dictionary."""
 
     uncertain_parameters = dict()
     uncertain_parameters['random_variables'] = dict()
@@ -33,14 +32,14 @@ def uncertain_parameters():
 
 @pytest.fixture(scope='module')
 def model_name():
-    """ Model name as string. """
+    """Model name as string."""
 
     return 'test_model'
 
 
 @pytest.fixture()
 def model(model_name, uncertain_parameters, mocker):
-    """ An instance of an empty Model class. """
+    """An instance of an empty Model class."""
     # make abstract call Model instantiable
     mocker.patch.object(Model, '__abstractmethods__', new=set())
 
@@ -49,7 +48,7 @@ def model(model_name, uncertain_parameters, mocker):
 
 @pytest.fixture(scope='module')
 def data_vector():
-    """ Possible data vector compatible with uncertain_parameters. """
+    """Possible data vector compatible with uncertain_parameters."""
 
     # total size is sum of size values of uncertain_parameters
     data_vector = np.zeros(3)
@@ -63,7 +62,7 @@ def data_vector():
 
 @pytest.fixture(scope='module')
 def data_batch(data_vector):
-    """ Possible data batch compatible with uncertain_parameters.
+    """Possible data batch compatible with uncertain_parameters.
 
     A data batch is a collection of data vectors.
     """
@@ -74,7 +73,7 @@ def data_batch(data_vector):
 
 @pytest.fixture(scope='module')
 def responses():
-    """ Possible responses for vector valued model. """
+    """Possible responses for vector valued model."""
 
     responses = dict()
     responses['mean'] = np.array([[1.0, 1.0], [2.0, 2.0]])
@@ -82,15 +81,15 @@ def responses():
     return responses
 
 
+@pytest.mark.unit_tests
 def test_get_parameters(model, model_name, uncertain_parameters):
-    """
-    Test get_parameters
-    """
+    """Test get_parameters."""
     assert model.get_parameter() is uncertain_parameters
 
 
+@pytest.mark.unit_tests
 def test_update_model_from_sample(data_vector, model):
-    """ Test if the model variables can be updated from ndarray. """
+    """Test if the model variables can be updated from ndarray."""
 
     model.update_model_from_sample(data_vector)
 
@@ -99,8 +98,9 @@ def test_update_model_from_sample(data_vector, model):
     np.testing.assert_allclose(model.variables[0].variables['x2']['value'], data_vector[1:])
 
 
+@pytest.mark.unit_tests
 def test_update_model_from_sample_batch(data_batch, model):
-    """ Test if model variables can be updated from multiple ndarrays. """
+    """Test if model variables can be updated from multiple ndarrays."""
     model.update_model_from_sample_batch(data_batch)
 
     assert len(model.variables) == 2
@@ -110,8 +110,9 @@ def test_update_model_from_sample_batch(data_batch, model):
         np.testing.assert_allclose(variables.variables['x2']['value'], data_batch[i, 1:])
 
 
+@pytest.mark.unit_tests
 def test_convert_array_to_model_variables(data_batch, model):
-    """ Based on batch of data vectors return instance of variables. """
+    """Based on batch of data vectors return instance of variables."""
 
     variables = model.convert_array_to_model_variables(data_batch)
 
@@ -122,8 +123,9 @@ def test_convert_array_to_model_variables(data_batch, model):
         np.testing.assert_allclose(variable.variables['x2']['value'], data_batch[i, 1:])
 
 
+@pytest.mark.unit_tests
 def test_check_for_precalculated_response_of_sample_batch(data_batch, model, mocker):
-    """ check if sample batch as already been evaluated. """
+    """check if sample batch as already been evaluated."""
 
     # emulate the evaluation of the data_batch
     model.update_model_from_sample_batch(data_batch)
@@ -134,8 +136,9 @@ def test_check_for_precalculated_response_of_sample_batch(data_batch, model, moc
     assert precalculated is True
 
 
+@pytest.mark.unit_tests
 def test_check_for_precalculated_response_of_sample_batch_wrong_data(data_batch, model):
-    """ Batch was NOT precalculated. """
+    """Batch was NOT precalculated."""
 
     # emulate the evaluation of a different data_batch
     model.update_model_from_sample_batch(2 * data_batch)
@@ -146,8 +149,9 @@ def test_check_for_precalculated_response_of_sample_batch_wrong_data(data_batch,
     assert precalculated is False
 
 
+@pytest.mark.unit_tests
 def test_check_for_precalculated_response_of_sample_batch_wrong_size(data_batch, model):
-    """ Requested batch size does not match current variables size. """
+    """Requested batch size does not match current variables size."""
 
     precalculated = model.check_for_precalculated_response_of_sample_batch(data_batch)
 

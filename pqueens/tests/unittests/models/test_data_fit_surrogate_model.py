@@ -1,11 +1,13 @@
-'''
-Created on January 18th  2018
-@author: jbi
+"""Created on January 18th  2018.
 
-'''
+@author: jbi
+"""
 
 import unittest
+
 import mock
+import pytest
+
 from pqueens.models.data_fit_surrogate_model import DataFitSurrogateModel
 
 
@@ -35,6 +37,7 @@ class TestDataFitSurrogateModel(unittest.TestCase):
             },
         }
 
+    @pytest.mark.unit_tests
     @mock.patch('pqueens.iterators.iterator.Iterator.from_config_create_iterator')
     @mock.patch('pqueens.interfaces.interface.Interface.from_config_create_interface')
     @mock.patch('pqueens.models.model.Model.from_config_create_model')

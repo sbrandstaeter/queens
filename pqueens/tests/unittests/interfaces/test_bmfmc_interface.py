@@ -1,5 +1,6 @@
-import pytest
 import numpy as np
+import pytest
+
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 
 
@@ -53,6 +54,7 @@ def approx_name():
 
 
 # --------- actual unittests ---------------------------
+@pytest.mark.unit_tests
 def test_init(config, approx_name):
 
     interface = BmfmcInterface(config, approx_name, variables=None)
@@ -63,6 +65,7 @@ def test_init(config, approx_name):
     assert interface.probabilistic_mapping_obj is None
 
 
+@pytest.mark.unit_tests
 def test_map(mocker, default_interface, probabilistic_mapping_obj, map_output_dict):
     mocker.patch(
         "pqueens.regression_approximations.regression_approximation.RegressionApproximation",
@@ -87,6 +90,7 @@ def test_map(mocker, default_interface, probabilistic_mapping_obj, map_output_di
     np.testing.assert_array_almost_equal(var_Y_HF_given_Z_LF, expected_Y_HF_var, decimal=6)
 
 
+@pytest.mark.unit_tests
 def test_build_approximation(mocker, default_interface):
     Z = np.atleast_2d(np.linspace(0.0, 1.0, 10))
     Y = np.atleast_2d(np.linspace(1.0, 2.0, 10))

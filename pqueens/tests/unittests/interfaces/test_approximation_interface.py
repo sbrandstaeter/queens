@@ -1,10 +1,12 @@
-'''
-Created on Dezember 11th  2017
-@author: jbi
+"""Created on Dezember 11th  2017.
 
-'''
+@author: jbi
+"""
 import unittest
+
 import mock
+import pytest
+
 from pqueens.interfaces.approximation_interface import ApproximationInterface
 from pqueens.interfaces.interface import Interface
 
@@ -34,6 +36,7 @@ class TestApproximationInterface(unittest.TestCase):
         self.config['parameters'] = uncertain_parameters
         self.config['dummy_approximation'] = 'some_stuff'
 
+    @pytest.mark.unit_tests
     def test_construction(self):
         interface = Interface.from_config_create_interface('test_interface', self.config)
         # ensure correct type

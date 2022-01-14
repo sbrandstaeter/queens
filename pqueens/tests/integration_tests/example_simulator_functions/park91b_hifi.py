@@ -2,7 +2,7 @@ import numpy as np
 
 
 def park91b_hifi(x1, x2, x3, x4):
-    """High-fidelity version of Park91b benchmark function
+    """High-fidelity version of Park91b benchmark function.
 
     Simple four dimensional benchmark function as proposed in [1] to mimic
     a computer model. The high-fidelity version is defined as:
@@ -39,7 +39,7 @@ def park91b_hifi(x1, x2, x3, x4):
 
 
 def main(job_id, params):
-    """ Interface to Park91b test fuction
+    """Interface to Park91b test fuction.
 
     Args:
         job_id (int):  ID of job

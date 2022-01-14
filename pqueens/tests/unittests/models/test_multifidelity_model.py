@@ -1,11 +1,13 @@
-'''
-Created on January 18th  2018
-@author: jbi
+"""Created on January 18th  2018.
 
-'''
+@author: jbi
+"""
 
 import unittest
+
 import mock
+import pytest
+
 from pqueens.models.multifidelity_model import MultifidelityModel
 
 
@@ -33,6 +35,7 @@ class TestMultiFidelityModel(unittest.TestCase):
             },
         }
 
+    @pytest.mark.unit_tests
     @mock.patch('pqueens.interfaces.interface.Interface.from_config_create_interface')
     @mock.patch('pqueens.models.multifidelity_model.SimulationModel')
     def test_from_config_function(self, mock_submodel, mock_interface):

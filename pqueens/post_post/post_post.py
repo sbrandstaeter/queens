@@ -1,28 +1,27 @@
 import abc
-import os
 import glob
+import os
+
 from pqueens.utils.run_subprocess import run_subprocess
 
 
 class PostPost(metaclass=abc.ABCMeta):
-    """ Base class for post post processing
+    """Base class for post post processing.
 
-        Attributes:
-            delete_data_flag (bool):  Delete files after processing
-            post_post_file_name_prefix_lst (lst): List with prefixes of post-processed files
-            error ():
-            output_dir (str): Path to result files
-            result (np.array): Array containing the quantities of interest
-
+    Attributes:
+        delete_data_flag (bool):  Delete files after processing
+        post_post_file_name_prefix_lst (lst): List with prefixes of post-processed files
+        error ():
+        output_dir (str): Path to result files
+        result (np.array): Array containing the quantities of interest
     """
 
     def __init__(self, delete_data_flag, post_post_file_name_prefix_lst):
-        """ Init post post class
+        """Init post post class.
 
-            Args:
-                delete_data_flag (bool): Delete files after processing
-                post_post_file_name_prefix_lst (lst): List with prefixes of result files
-
+        Args:
+            delete_data_flag (bool): Delete files after processing
+            post_post_file_name_prefix_lst (lst): List with prefixes of result files
         """
 
         self.delete_data_flag = delete_data_flag
@@ -33,65 +32,42 @@ class PostPost(metaclass=abc.ABCMeta):
         self.result = None
 
     @classmethod
-    def from_config_create_post_post(cls, config):
-        """
-        Create PostPost object from problem description
+    def from_config_create_post_post(cls, config, driver_name=None):
+        """Create PostPost object from problem description.
 
         Args:
             config (dict): input json file with problem description
+            driver_name (str): Name of driver that should be used in this job-submission
 
         Returns:
             post_post: post_post object
-
         """
 
-        from .post_post_ansys import PostPostANSYS
         from .post_post_baci import PostPostBACI
-        from .post_post_deal import PostPostDEAL
-        from .post_post_generic import PostPostGeneric
-        from .post_post_openfoam import PostPostOpenFOAM
-        from .post_post_baci_shape import PostPostBACIShape
-        from .post_post_net_cdf import PostPostNetCDF
-        from .post_post_baci_vectorized import PostPostBACIVector
         from .post_post_baci_ensight import PostPostBACIEnsight
+        from .post_post_baci_shape import PostPostBACIShape
+        from .post_post_baci_vectorized import PostPostBACIVector
+        from .post_post_generic import PostPostGeneric
 
         post_post_dict = {
-            'ansys': PostPostANSYS,
             'baci': PostPostBACI,
             'baci_vector': PostPostBACIVector,
             'baci_ensight': PostPostBACIEnsight,
-            'deal': PostPostDEAL,
             'generic': PostPostGeneric,
-            'openfoam': PostPostOpenFOAM,
             'baci_shape': PostPostBACIShape,
-            'netCDF': PostPostNetCDF,
         }
 
         # determine which object to create
         # TODO this is not a reliable approach? What if we have multiple drivers?
         # However, this cannot be fixed by itself here, but we need to
         # cleanup the whole input parameter handling to fix this.
-        post_post_options = config['driver']['driver_params']['post_post']
-
-        if post_post_options['post_post_approach_sel'] == 'ansys':
-            post_post_version = 'ansys'
-        elif post_post_options['post_post_approach_sel'] == 'baci':
-            post_post_version = 'baci'
-        elif post_post_options['post_post_approach_sel'] == 'baci_ensight':
-            post_post_version = 'baci_ensight'
-        elif post_post_options['post_post_approach_sel'] == 'baci_vector':
-            post_post_version = 'baci_vector'
-        elif post_post_options['post_post_approach_sel'] == 'deal':
-            post_post_version = 'deal'
-        elif post_post_options['post_post_approach_sel'] == 'generic':
-            post_post_version = 'generic'
-        elif post_post_options['post_post_approach_sel'] == 'baci_shape':
-            post_post_version = 'baci_shape'
-        elif post_post_options['post_post_approach_sel'] == 'openfoam':
-            post_post_version = 'openfoam'
-        elif post_post_options['post_post_approach_sel'] == 'netCDF':
-            post_post_version = 'netCDF'
+        if driver_name:
+            post_post_options = config[driver_name]['driver_params']['post_post']
         else:
+            post_post_options = config['driver']['driver_params']['post_post']
+
+        post_post_version = post_post_options.get('post_post_approach_sel', None)
+        if post_post_version not in post_post_dict.keys():
             raise RuntimeError("post_post_approach_sel not set, fix your input file")
 
         post_post_class = post_post_dict[post_post_version]
@@ -100,17 +76,13 @@ class PostPost(metaclass=abc.ABCMeta):
         base_settings = {}
         base_settings['options'] = post_post_options
 
-        # overwrite database settings so that we dont delete the existing dbs
-        config['database']['reset_database'] = False
-        config['database']['drop_all_existing_dbs'] = False
-
         base_settings['config'] = config
         post_post = post_post_class.from_config_create_post_post(base_settings)
         return post_post
 
     def copy_post_files(self, files_of_interest, remote_connect, remote_output_dir):
-        """ Copy identified post-processed files from "local" output directory
-            to "remote" output directory in case of remote scheduling """
+        """Copy identified post-processed files from "local" output directory
+        to "remote" output directory in case of remote scheduling."""
 
         remote_file_name = os.path.join(remote_output_dir, '.')
         command_list = [
@@ -132,9 +104,9 @@ class PostPost(metaclass=abc.ABCMeta):
             )
 
     def error_handling(self, output_dir):
-        """ Mark failed simulation and set results appropriately
+        """Mark failed simulation and set results appropriately.
 
-            What does this function do?? This is super unclear
+        What does this function do?? This is super unclear
         """
         # TODO  ### Error Types ###
         # No QoI file
@@ -158,7 +130,7 @@ class PostPost(metaclass=abc.ABCMeta):
             _, _, _, _ = run_subprocess(command_string)
 
     def delete_field_data(self, output_dir, remote_connect):
-        """ Delete output files except files with given prefix """
+        """Delete output files except files with given prefix."""
 
         inverse_prefix_expr = r"*[!" + self.post_post_file_name_prefix_lst + r"]*"
         files_of_interest = os.path.join(output_dir, inverse_prefix_expr)
@@ -188,19 +160,18 @@ class PostPost(metaclass=abc.ABCMeta):
                 os.remove(filename)
 
     def postpost_main(self, local_output_dir, remote_connect, remote_output_dir):
-        """ Main routine for managing post-post-processing
+        """Main routine for managing post-post-processing.
 
-            Args:
-                local_output_dir (str): Path to "local" output directory
-                remote_connect (str):  address of remote computing resource (only for remote
-                scheduling)
-                remote_output_dir (str): Path to "remote" output directory
-                (from the point of view of the location of the post-processed files)
+        Args:
+            local_output_dir (str): Path to "local" output directory
+            remote_connect (str):  address of remote computing resource (only for remote
+            scheduling)
+            remote_output_dir (str): Path to "remote" output directory
+            (from the point of view of the location of the post-processed files)
 
-            Returns:
-                result (np.array): Result of the post-post operation which is the current value
-                                   of the quantities of interest
-
+        Returns:
+            result (np.array): Result of the post-post operation which is the current value
+                               of the quantities of interest
         """
 
         # identify post-processed files containing data of interest in "local" output directory
@@ -238,5 +209,5 @@ class PostPost(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def read_post_files(self, file_names, **kwargs):
-        """ This method has to be implemented by all child classes """
+        """This method has to be implemented by all child classes."""
         pass

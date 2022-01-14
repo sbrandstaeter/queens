@@ -1,16 +1,15 @@
 import abc
-import sys
-import os
 import getpass
+import os
+import sys
 import time
 
-from pqueens.database.mongodb import MongoDB
+import pqueens.database.database as DB_module
 from pqueens.external_geometry.external_geometry import ExternalGeometry
 
 
 class Driver(metaclass=abc.ABCMeta):
-    """
-     Abstract base class for drivers in QUEENS.
+    """Abstract base class for drivers in QUEENS.
 
     The driver manages simulation runs in QUEENS on local or remote computing resources
     with or without Singularity containers depending on the chosen CAE software (see also
@@ -21,6 +20,8 @@ class Driver(metaclass=abc.ABCMeta):
                                    potential further use and completion in child classes
 
     Attributes:
+        driver_name (str):         Name of the driver used for the analysis. The name is
+                                   specified in the json-input file.
         experiment_name (str):     name of QUEENS experiment
         global_output_dir (str):   path to global output directory provided when launching
         port (int):                (only for remote scheduling with Singularity) port of
@@ -43,7 +44,7 @@ class Driver(metaclass=abc.ABCMeta):
         simulation_input_t. (str): path to template for simulation input file
         executable (str):          path to main executable of respective CAE software
         custom_executable (str):   (if required) path to potential additional customized
-                                   executable of respective CAE software (e.g., for ANSYS)
+                                   executable of respective CAE software
         cae_software_vers. (str):  (if required) version of CAE software
         result (np.array):         simulation result to be stored in database
         do_postprocessing (str):   string for identifying either local post-processing
@@ -69,10 +70,10 @@ class Driver(metaclass=abc.ABCMeta):
 
     Returns:
         driver (obj):         instance of driver class
-
     """
 
     def __init__(self, base_settings):
+        self.driver_name = base_settings['driver_name']
         self.experiment_name = base_settings['experiment_name']
         self.global_output_dir = base_settings['global_output_dir']
         self.port = base_settings['port']
@@ -121,10 +122,17 @@ class Driver(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_driver(
-        cls, config, job_id, batch, port=None, abs_path=None, workdir=None, cluster_options=None
+        cls,
+        config,
+        job_id,
+        batch,
+        driver_name,
+        port=None,
+        abs_path=None,
+        workdir=None,
+        cluster_options=None,
     ):
-        """
-        Create driver from problem description
+        """Create driver from problem description.
 
         Args:
             config (dict):  Dictionary containing configuration from QUEENS input file
@@ -133,42 +141,18 @@ class Driver(metaclass=abc.ABCMeta):
             port (int):     Port for data forwarding from/to remote resource
             abs_path (str): Absolute path to post-post module on remote resource
             workdir (str):  Path to working directory on remote resource
+            driver_name (str): Name of driver instance that should be realized
 
         Returns:
             driver (obj):   Driver object
-
         """
-        from pqueens.drivers.ansys_driver import ANSYSDriver
         from pqueens.drivers.baci_driver import BaciDriver
-        from pqueens.drivers.dealII_navierstokes_driver import DealIINavierStokesDriver
-        from pqueens.drivers.openfoam_driver import OpenFOAMDriver
-
-        # import post-post module depending on whether absolute path is given
-        # (in case of using Singularity on remote machine) or not
-        if abs_path is None:
-            # FIXME singularity doesnt load post_post from path but rather
-            # uses image module
-            from pqueens.post_post.post_post import PostPost
-        else:
-            import importlib.util
-
-            spec = importlib.util.spec_from_file_location("post_post", abs_path)
-            post_post = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(post_post)
-            try:
-                from post_post.post_post import PostPost
-            except ImportError:
-                raise ImportError('Could not import post-post module!')
+        from pqueens.post_post.post_post import PostPost
 
         # determine Driver class
         driver_dict = {
-            'ansys': ANSYSDriver,
             'baci': BaciDriver,
-            'dealII_navierstokes': DealIINavierStokesDriver,
-            'openfoam': OpenFOAMDriver,
         }
-        driver_version = config['driver']['driver_type']
-        driver_class = driver_dict[driver_version]
 
         # ---------------------------- CREATE BASE SETTINGS ---------------------------
         # initialize empty dictionary
@@ -177,6 +161,7 @@ class Driver(metaclass=abc.ABCMeta):
         # 1) general settings
         base_settings['experiment_name'] = config['global_settings'].get('experiment_name')
         base_settings['global_output_dir'] = config['global_settings'].get('output_dir')
+        base_settings['driver_name'] = driver_name
 
         # 2) scheduler settings
         first = list(config['resources'])[0]
@@ -202,9 +187,7 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['direct_scheduling'] = False
         if not base_settings['singularity']:
             if (
-                base_settings['scheduler_type'] == 'ecs_task'
-                or base_settings['scheduler_type'] == 'nohup'
-                or base_settings['scheduler_type'] == 'pbs'
+                base_settings['scheduler_type'] == 'pbs'
                 or base_settings['scheduler_type'] == 'slurm'
                 or (base_settings['scheduler_type'] == 'standard' and base_settings['remote'])
             ):
@@ -218,27 +201,11 @@ class Driver(metaclass=abc.ABCMeta):
 
         # 3) database settings
         base_settings['port'] = port
-        # add port to IP address in input file for database connection if remote
-        # Singularity, else get database address, with default being localhost
-        if base_settings['singularity'] and base_settings['remote']:
-            database_address = (
-                scheduler_options['singularity_settings']['remote_ip']
-                + ':'
-                + str(base_settings['port'])
-            )
-        else:
-            database_address = config['database'].get('address', 'localhost:27017')
-        database_config = dict(
-            global_settings=config["global_settings"],
-            database=dict(
-                address=database_address, drop_all_existing_dbs=False, reset_database=False
-            ),
-        )
-        db = MongoDB.from_config_create_database(database_config)
-        base_settings['database'] = db
-
+        base_settings['database'] = DB_module.database
         # 4) general driver settings
-        driver_options = config['driver']['driver_params']
+
+        # load correct driver settings
+        driver_options = config[driver_name]['driver_params']
         base_settings['batch'] = batch
         base_settings['job_id'] = job_id
         base_settings['job'] = None
@@ -288,7 +255,9 @@ class Driver(metaclass=abc.ABCMeta):
         if base_settings['do_postpostprocessing'] is not None:
             # TODO "hiding" a complete object in the base settings dict is unbelieveably ugly
             # and should be fixed ASAP
-            base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(config)
+            base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(
+                config, driver_name=driver_name
+            )
             base_settings['cae_output_streaming'] = False
         else:
             base_settings['postpostprocessor'] = None
@@ -328,43 +297,43 @@ class Driver(metaclass=abc.ABCMeta):
         else:
             base_settings["random_fields_lst"] = None
 
-        # generate specific driver class
+        # generate specific driver class / base_settings are already set for this driver name
+        if driver_name:
+            driver_version = config[driver_name]['driver_type']
+        else:
+            driver_version = config['driver']['driver_type']
+
+        driver_class = driver_dict[driver_version]
         driver = driver_class.from_config_create_driver(base_settings, workdir)
 
         return driver
 
     # ------ Core methods ----------------------------------------------------- #
     def pre_job_run_and_run_job(self):
-        """
-        Prepare and execute job run
+        """Prepare and execute job run.
 
         Returns:
             None
-
         """
         self.pre_job_run()
         self.run_job()
 
     def pre_job_run(self):
-        """
-        Prepare job run
+        """Prepare job run.
 
         Returns:
             None
-
         """
         if self.job is None:
             self.initialize_job_in_db()
         self.prepare_input_files()
 
     def post_job_run(self):
-        """
-        Post-process (if required), post-post process (if required) and
-        finalize job in database
+        """Post-process (if required), post-post process (if required) and
+        finalize job in database.
 
         Returns:
             None
-
         """
         if self.do_postprocessing is not None:
             self.postprocess_job()
@@ -376,25 +345,26 @@ class Driver(metaclass=abc.ABCMeta):
             self.result = 'no post-post-processed result'
             if self.job is None:
                 self.job = self.database.load(
-                    self.experiment_name, self.batch, 'jobs', {'id': self.job_id}
+                    self.experiment_name,
+                    self.batch,
+                    'jobs_' + self.driver_name,
+                    {'id': self.job_id},
                 )
 
         self.finalize_job_in_db()
 
     # ------ Base class methods ------------------------------------------------ #
     def initialize_job_in_db(self):
-        """
-        Initialize job in database
+        """Initialize job in database.
 
         Returns:
             None
-
         """
         # load job from database
         self.job = self.database.load(
             self.experiment_name,
             self.batch,
-            'jobs',
+            'jobs_' + self.driver_name,
             {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
         )
 
@@ -406,24 +376,26 @@ class Driver(metaclass=abc.ABCMeta):
         self.database.save(
             self.job,
             self.experiment_name,
-            'jobs',
+            'jobs_' + self.driver_name,
             str(self.batch),
             {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
         )
 
     def postpostprocessing(self):
-        """
-        Extract data of interest from post-processed files and save them to database
+        """Extract data of interest from post-processed files and save them to
+        database.
 
         Returns:
             None
-
         """
 
         # load job from database if existent
         if self.job is None:
             self.job = self.database.load(
-                self.experiment_name, self.batch, 'jobs', {'id': self.job_id}
+                self.experiment_name,
+                self.batch,
+                'jobs_' + self.driver_name,
+                {'id': self.job_id},
             )
 
         # get (from the point of view of the location of the post-processed files)
@@ -452,12 +424,10 @@ class Driver(metaclass=abc.ABCMeta):
             sys.stdout.write("Got result %s\n" % (self.result))
 
     def finalize_job_in_db(self):
-        """
-        Finalize job in database
+        """Finalize job in database.
 
         Returns:
             None
-
         """
 
         if self.result is None:
@@ -468,7 +438,7 @@ class Driver(metaclass=abc.ABCMeta):
             self.database.save(
                 self.job,
                 self.experiment_name,
-                'jobs',
+                'jobs_' + self.driver_name,
                 str(self.batch),
                 {
                     'id': self.job_id,
@@ -491,7 +461,7 @@ class Driver(metaclass=abc.ABCMeta):
             self.database.save(
                 self.job,
                 self.experiment_name,
-                'jobs',
+                'jobs_' + self.driver_name,
                 str(self.batch),
                 {
                     'id': self.job_id,
@@ -501,31 +471,11 @@ class Driver(metaclass=abc.ABCMeta):
             )
 
     # ---------------- COMMAND-ASSEMBLY METHODS ----------------------------------
-    def assemble_nohup_run_cmd(self, run_cmd, log_file, err_file):
-        """  Assemble command for nohup run
-
-            Returns:
-                nohup run command
-
-        """
-        command_list = [
-            "nohup",
-            run_cmd,
-            ">",
-            log_file,
-            "2>",
-            err_file,
-            "< /dev/null &",
-        ]
-
-        return ' '.join(filter(None, command_list))
-
     def assemble_remote_run_cmd(self, run_cmd):
-        """  Assemble command for remote (nohup) run
+        """Assemble command for remote run.
 
-            Returns:
-                remote (nohup) run command
-
+        Returns:
+            remote run command
         """
         command_list = [
             'ssh',
@@ -540,11 +490,10 @@ class Driver(metaclass=abc.ABCMeta):
         return ' '.join(filter(None, command_list))
 
     def assemble_docker_run_cmd(self, run_cmd):
-        """  Assemble command for run in Docker container
+        """Assemble command for run in Docker container.
 
-            Returns:
-                Docker run command
-
+        Returns:
+            Docker run command
         """
         command_list = [
             #            self.sudo,
@@ -564,31 +513,10 @@ class Driver(metaclass=abc.ABCMeta):
 
         return ''.join(filter(None, command_list))
 
-    def assemble_ecs_task_run_cmd(self, run_cmd):
-        """  Assemble command for run as ECS task
-
-            Returns:
-                ECS task run command
-
-        """
-        command_list = [
-            "aws ecs run-task ",
-            "--cluster worker-queens-cluster ",
-            "--task-definition docker-queens ",
-            "--count 1 ",
-            "--overrides '{ \"containerOverrides\": [ {\"name\": \"docker-queens-container\", ",
-            "\"command\": [\"",
-            run_cmd,
-            "\"] } ] }'",
-        ]
-
-        return ''.join(filter(None, command_list))
-
     # ---------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod
     def prepare_input_files(self):
-        """
-        Abstract method for preparing input file(s)
+        """Abstract method for preparing input file(s)
 
         Returns:
             None
@@ -597,22 +525,18 @@ class Driver(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def run_job(self):
-        """
-        Abstract method for running job
+        """Abstract method for running job.
 
         Returns:
             None
-
         """
         pass
 
     @abc.abstractmethod
     def postprocess_job(self):
-        """
-        Abstract method for post-processing of job
+        """Abstract method for post-processing of job.
 
         Returns:
             None
-
         """
         pass

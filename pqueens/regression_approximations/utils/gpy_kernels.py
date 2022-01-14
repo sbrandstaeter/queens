@@ -1,5 +1,5 @@
-import numpy as np
 import GPy
+import numpy as np
 
 
 def get_gpy_kernel_type(kernel_type):
@@ -22,8 +22,8 @@ def get_gpy_kernel_type(kernel_type):
 
 
 def setup_rbf(input_dim, variance_0, lengthscale_0, ard):
-    """
-    Radial Basis Function (RBF) kernel (aka squared-exponential or Gaussian kernel)
+    """Radial Basis Function (RBF) kernel (aka squared-exponential or Gaussian
+    kernel)
 
     .. math::
 
@@ -50,8 +50,8 @@ def setup_rbf(input_dim, variance_0, lengthscale_0, ard):
 
 
 def setup_matern(input_dim, variance_0, lengthscale_0, ard):
-    """
-    Radial Basis Function (RBF) kernel (aka squared-exponential or Gaussian kernel)
+    """Radial Basis Function (RBF) kernel (aka squared-exponential or Gaussian
+    kernel)
 
     .. math::
 
@@ -78,8 +78,7 @@ def setup_matern(input_dim, variance_0, lengthscale_0, ard):
 
 
 def setup_sum_matern(input_dim, variance_0, lengthscale_0, ard):
-    """
-    Sum of Matern 5/2 kernels
+    """Sum of Matern 5/2 kernels.
 
     Args:
         input_dim (int): number of input dimensions
@@ -108,8 +107,7 @@ def setup_sum_matern(input_dim, variance_0, lengthscale_0, ard):
 
 
 def setup_prod_matern(input_dim, variance_0, lengthscale_0, ard):
-    """
-    Product of Matern 5/2 kernels
+    """Product of Matern 5/2 kernels.
 
     Args:
         input_dim (int): number of input dimensions
@@ -138,8 +136,7 @@ def setup_prod_matern(input_dim, variance_0, lengthscale_0, ard):
 
 
 def setup_sum_rbf(input_dim, variance_0, lengthscale_0, ard):
-    """
-    Sum of RBF kernels
+    """Sum of RBF kernels.
 
     Args:
         input_dim (int): number of input dimensions
@@ -168,8 +165,7 @@ def setup_sum_rbf(input_dim, variance_0, lengthscale_0, ard):
 
 
 def setup_prod_rbf(input_dim, variance_0, lengthscale_0, ard):
-    """
-    Product of RBF kernels
+    """Product of RBF kernels.
 
     Args:
         input_dim (int): number of input dimensions

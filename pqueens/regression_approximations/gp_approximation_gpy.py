@@ -1,16 +1,18 @@
-import numpy as np
-import GPy
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
-from sklearn.preprocessing import StandardScaler
-from pqueens.regression_approximations.utils.gpy_kernels import get_gpy_kernel_type
 import logging
+
+import GPy
+import numpy as np
+from sklearn.preprocessing import StandardScaler
+
+from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from pqueens.regression_approximations.utils.gpy_kernels import get_gpy_kernel_type
 from pqueens.utils.logger_settings import log_through_print
 
 _logger = logging.getLogger(__name__)
 
 
 class GPGPyRegression(RegressionApproximation):
-    """Class for creating GP based regression model based on GPy
+    """Class for creating GP based regression model based on GPy.
 
     This class constructs a GP regression using a GPy model.
 
@@ -22,7 +24,6 @@ class GPGPyRegression(RegressionApproximation):
         model (Gpy.model): GPy based Gaussian process model
         seed_optimizer (int): seed for optimizer for training the GP
         seed_posterior_samples (int): seed for posterior samples
-
     """
 
     def __init__(
@@ -52,7 +53,7 @@ class GPGPyRegression(RegressionApproximation):
 
     @classmethod
     def from_config_create(cls, config, approx_name, x_train, y_train):
-        """Create approximation from options dictionary
+        """Create approximation from options dictionary.
 
         Args:
             config (dict):         Dictionary with problem description (input file)
@@ -98,7 +99,12 @@ class GPGPyRegression(RegressionApproximation):
         kernel = cls._setup_kernel(
             kernel_type, number_input_dimensions, variance_0, lengthscale_0, ard
         )
-        model = GPy.models.GPRegression(x_train, y_train, kernel=kernel, normalizer=normalize_y)
+        model = GPy.models.GPRegression(
+            x_train,
+            y_train,
+            kernel=kernel,
+            normalizer=normalize_y,
+        )
         log_through_print(_logger, model)
 
         return cls(
@@ -115,7 +121,7 @@ class GPGPyRegression(RegressionApproximation):
         )
 
     def train(self):
-        """ Train the GP by maximizing the likelihood """
+        """Train the GP by maximizing the likelihood."""
         # fix seed for randomize in restarts
         np.random.seed(self.seed_optimizer)
         self.model.optimize_restarts(
@@ -126,9 +132,8 @@ class GPGPyRegression(RegressionApproximation):
         log_through_print(_logger, self.model)
 
     def predict(self, x_test, support='y', full_cov=False):
-        """
-        Predict the posterior distribution at x_test with respect to the data 'y' or the latent
-        function 'f'.
+        """Predict the posterior distribution at x_test with respect to the
+        data 'y' or the latent function 'f'.
 
         Args:
             x_test (np.array): Inputs at which to evaluate latent function f
@@ -161,8 +166,8 @@ class GPGPyRegression(RegressionApproximation):
         return output
 
     def predict_y(self, x_test, full_cov=False):
-        """
-        Compute the posterior distribution at x_test with respect to the data 'y'
+        """Compute the posterior distribution at x_test with respect to the
+        data 'y'.
 
         Args:
             x_test (np.array): Inputs at which to evaluate latent function f
@@ -181,8 +186,7 @@ class GPGPyRegression(RegressionApproximation):
         return output
 
     def predict_f(self, x_test, full_cov=False):
-        """
-        Compute the mean and variance of the latent function at x_test
+        """Compute the mean and variance of the latent function at x_test.
 
         Args:
             x_test (np.array): Inputs at which to evaluate latent function f
@@ -199,7 +203,7 @@ class GPGPyRegression(RegressionApproximation):
         return output
 
     def predict_f_samples(self, x_test, num_samples):
-        """Produce samples from the posterior latent function x_test
+        """Produce samples from the posterior latent function x_test.
 
         Args:
             x_test (np.array):    Inputs at which to evaluate latent function f
@@ -221,8 +225,7 @@ class GPGPyRegression(RegressionApproximation):
 
     @classmethod
     def _setup_kernel(cls, kernel_type, input_dim, variance_0, lengthscale_0, ard):
-        """
-        Choose the correct kernel setup method and setup kernel
+        """Choose the correct kernel setup method and setup kernel.
 
         Args:
             kernel_type (str): kernel type to setup
@@ -233,7 +236,6 @@ class GPGPyRegression(RegressionApproximation):
 
         Returns:
             kernel (GPy.kern object): kernel for Gaussian Process
-
         """
 
         setup_specific_kernel = get_gpy_kernel_type(kernel_type)
@@ -241,4 +243,3 @@ class GPGPyRegression(RegressionApproximation):
         log_through_print(_logger, kernel)
 
         return kernel
-

@@ -1,8 +1,7 @@
-'''
-Created on February 6th  2018
-@author: jbi
+"""Created on February 6th  2018.
 
-'''
+@author: jbi
+"""
 # import numpy as np
 # import unittest
 # import mock

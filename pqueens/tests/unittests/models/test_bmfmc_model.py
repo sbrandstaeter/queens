@@ -1,11 +1,12 @@
-import pytest
 import numpy as np
+import pytest
 from mock import patch
-from pqueens.models.bmfmc_model import BMFMCModel
-from pqueens.models.simulation_model import SimulationModel
+
 import pqueens.models.bmfmc_model as bmfmc_model
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator
+from pqueens.models.bmfmc_model import BMFMCModel
+from pqueens.models.simulation_model import SimulationModel
 
 
 # ------------ fixtures --------------------------
@@ -148,6 +149,7 @@ def mock_visualization():
 
 
 # ------------ unittests -------------------------
+@pytest.mark.unit_tests
 def test_init(mocker, settings_probab_mapping, default_interface):
     y_pdf_support = np.linspace(-1, 1, 10)
 
@@ -197,6 +199,7 @@ def test_init(mocker, settings_probab_mapping, default_interface):
     assert model.training_indices is None
 
 
+@pytest.mark.unit_tests
 def test_evaluate(mocker, default_bmfmc_model):
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.compute_pymc_reference')
     mp2 = mocker.patch(
@@ -242,6 +245,7 @@ def test_evaluate(mocker, default_bmfmc_model):
     assert output == expected_output
 
 
+@pytest.mark.unit_tests
 def test_run_BMFMC(mocker, default_bmfmc_model):
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.build_approximation')
     mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.compute_pyhf_statistics')
@@ -256,6 +260,7 @@ def test_run_BMFMC(mocker, default_bmfmc_model):
     assert mp3.call_count == 2
 
 
+@pytest.mark.unit_tests
 def test_run_BMFMC_without_features(mocker, default_bmfmc_model):
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.build_approximation')
     mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.compute_pyhf_statistics')
@@ -270,6 +275,7 @@ def test_run_BMFMC_without_features(mocker, default_bmfmc_model):
     assert mp3.call_count == 2
 
 
+@pytest.mark.unit_tests
 def test_load_sampling_data(mocker, default_bmfmc_model, default_data_iterator, dummy_MC_data):
     mp1 = mocker.patch(
         'pqueens.iterators.data_iterator.DataIterator.read_pickle_file', return_value=dummy_MC_data
@@ -295,6 +301,7 @@ def test_load_sampling_data(mocker, default_bmfmc_model, default_data_iterator, 
     )
 
 
+@pytest.mark.unit_tests
 def test_get_hf_training_data(mocker, default_bmfmc_model, dummy_high_fidelity_model):
     mp1 = mocker.patch(
         'pqueens.models.simulation_model.SimulationModel' '.update_model_from_sample_batch'
@@ -331,6 +338,7 @@ def test_get_hf_training_data(mocker, default_bmfmc_model, dummy_high_fidelity_m
         default_bmfmc_model.get_hf_training_data()
 
 
+@pytest.mark.unit_tests
 def test_build_approximation(mocker, default_bmfmc_model):
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.get_hf_training_data')
     mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.set_feature_strategy')
@@ -344,6 +352,7 @@ def test_build_approximation(mocker, default_bmfmc_model):
     mp3.assert_called_once()
 
 
+@pytest.mark.unit_tests
 def test_compute_pyhf_statistics(mocker, default_bmfmc_model):
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel._calculate_p_yhf_mean')
     mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel._calculate_p_yhf_var')
@@ -358,6 +367,7 @@ def test_compute_pyhf_statistics(mocker, default_bmfmc_model):
     assert default_bmfmc_model.p_yhf_var is None
 
 
+@pytest.mark.unit_tests
 def test_calculate_p_yhf_mean(default_bmfmc_model):
     default_bmfmc_model.var_y_mc = np.ones((10, 1))
     default_bmfmc_model.y_pdf_support = np.linspace(-1.0, 1.0, 10)
@@ -384,6 +394,7 @@ def test_calculate_p_yhf_mean(default_bmfmc_model):
     )
 
 
+@pytest.mark.unit_tests
 def test_calculate_p_yhf_var(mocker, default_bmfmc_model):
     np.random.seed(1)
     K = np.random.rand(10, 10)
@@ -429,6 +440,7 @@ def test_calculate_p_yhf_var(mocker, default_bmfmc_model):
     np.testing.assert_array_almost_equal(default_bmfmc_model.p_yhf_var, expected_var, decimal=8)
 
 
+@pytest.mark.unit_tests
 def test_compute_pymc_reference(mocker, default_bmfmc_model):
     mp1 = mocker.patch('pqueens.utils.pdf_estimation.estimate_bandwidth_for_kde', return_value=1.0)
     mp2 = mocker.patch('pqueens.utils.pdf_estimation.estimate_pdf', return_value=(1.0, None))
@@ -441,6 +453,7 @@ def test_compute_pymc_reference(mocker, default_bmfmc_model):
     mp2.assert_called_once()
 
 
+@pytest.mark.unit_tests
 def test_set_feature_strategy(mocker, default_bmfmc_model):
     mp1 = mocker.patch('pqueens.models.bmfmc_model.update_model_variables')
     mp2 = mocker.patch(
@@ -488,6 +501,7 @@ def test_set_feature_strategy(mocker, default_bmfmc_model):
     assert mp1.call_count == 3
 
 
+@pytest.mark.unit_tests
 def test_calculate_extended_gammas(mocker, default_bmfmc_model):
     np.random.seed(2)
     y_LFS_mc_stdized = np.random.random((20, 1))
@@ -527,6 +541,7 @@ def test_calculate_extended_gammas(mocker, default_bmfmc_model):
         )
 
 
+@pytest.mark.unit_tests
 def test_update_probabilistic_mapping_with_features(mocker, default_bmfmc_model):
     mp1 = mocker.patch('pqueens.interfaces.bmfmc_interface.BmfmcInterface.build_approximation')
     mp2 = mocker.patch(
@@ -546,6 +561,7 @@ def test_update_probabilistic_mapping_with_features(mocker, default_bmfmc_model)
     assert default_bmfmc_model.Z_mc.shape[1] == 2
 
 
+@pytest.mark.unit_tests
 def test_input_dim_red(mocker, default_bmfmc_model):
     mp1 = mocker.patch(
         'pqueens.models.bmfmc_model.BMFMCModel.get_random_fields_and_truncated_basis',
@@ -562,6 +578,7 @@ def test_input_dim_red(mocker, default_bmfmc_model):
     mp3.assert_called_once()
 
 
+@pytest.mark.unit_tests
 def test_get_random_fields_and_truncated_basis(default_bmfmc_model):
 
     np.random.seed(1)
@@ -594,6 +611,7 @@ def test_get_random_fields_and_truncated_basis(default_bmfmc_model):
         default_bmfmc_model.get_random_fields_and_truncated_basis(explained_var=95.0)
 
 
+@pytest.mark.unit_tests
 def test_project_samples_on_truncated_basis():
     np.random.seed(1)
     num_samples = 5
@@ -617,6 +635,7 @@ def test_project_samples_on_truncated_basis():
     np.testing.assert_array_almost_equal(coef_mat, expected_coef_mat, decimal=6)
 
 
+@pytest.mark.unit_tests
 def test_update_model_variables(default_bmfmc_model):
     # np.random.seed(1)
     # Z_LFs_train = np.random.random((5, 2))
@@ -629,6 +648,7 @@ def test_update_model_variables(default_bmfmc_model):
     pass
 
 
+@pytest.mark.unit_tests
 def test_linear_scale_a_to_b():
     a_vec = np.linspace(0.0, 1.0, 10)
     b_vec = np.linspace(-5.0, 5.0, 10)
@@ -638,6 +658,7 @@ def test_linear_scale_a_to_b():
     np.testing.assert_array_almost_equal(scaled_a_vec, expected_scaled_a_vec, decimal=6)
 
 
+@pytest.mark.unit_tests
 def test_assemble_x_red_stdizd():
     x_uncorr = np.atleast_2d(np.linspace(0.0, 10.0, 5)).T
     coef_mat = x_uncorr

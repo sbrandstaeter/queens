@@ -1,5 +1,4 @@
-"""
-Test-module for mh_select function of mcmc_utils module
+"""Test-module for mh_select function of mcmc_utils module.
 
 @author: Sebastian Brandstaeter
 """
@@ -12,19 +11,19 @@ from pqueens.utils.mcmc_utils import mh_select
 
 @pytest.fixture(scope='module')
 def acceptance_probability():
-    """ Possible acceptance probability. """
+    """Possible acceptance probability."""
     return 0.3
 
 
 @pytest.fixture(scope='module')
 def num_chains():
-    """ Number of parallel chains. """
+    """Number of parallel chains."""
     return 2
 
 
 @pytest.fixture(scope='module')
 def log_acceptance_probability(acceptance_probability, num_chains):
-    """ Possible natural logarithm of acceptance probability. """
+    """Possible natural logarithm of acceptance probability."""
 
     acceptance_probability = np.array([[acceptance_probability]] * num_chains)
     log_acceptance_probability = np.log(acceptance_probability)
@@ -33,24 +32,24 @@ def log_acceptance_probability(acceptance_probability, num_chains):
 
 @pytest.fixture(scope='module')
 def current_sample(num_chains):
-    """ A potential current sample of an MCMC chain. """
+    """A potential current sample of an MCMC chain."""
 
     return np.array([[3.0, 4.0]] * num_chains)
 
 
 @pytest.fixture(scope='module')
 def proposed_sample(current_sample):
-    """ A potentially proposed sample of an MCMC algorithm. """
+    """A potentially proposed sample of an MCMC algorithm."""
 
     return 2.0 * current_sample
 
 
+@pytest.mark.unit_tests
 def test_mh_select(
     acceptance_probability, log_acceptance_probability, current_sample, proposed_sample, mocker
 ):
-    """
-    Test rejection and acceptance of proposal based on given acceptance probability.
-    """
+    """Test rejection and acceptance of proposal based on given acceptance
+    probability."""
 
     mocker.patch(
         'numpy.random.uniform',
@@ -67,10 +66,9 @@ def test_mh_select(
     assert accepted[1] == True
 
 
+@pytest.mark.unit_tests
 def test_mh_select_accept_prob_1(current_sample, proposed_sample, num_chains):
-    """
-    Test acceptance of proposal based on acceptance probability >= 1.0.
-    """
+    """Test acceptance of proposal based on acceptance probability >= 1.0."""
 
     acceptance_probability = np.ones((num_chains, 1))
     log_acceptance_probability = np.log(acceptance_probability)
@@ -82,6 +80,7 @@ def test_mh_select_accept_prob_1(current_sample, proposed_sample, num_chains):
     assert np.all(accepted)
 
 
+@pytest.mark.unit_tests
 def test_mh_select_accept_prob_0(current_sample, proposed_sample, num_chains):
     """
     Test rejection of proposal based on acceptance probability = 0.0.

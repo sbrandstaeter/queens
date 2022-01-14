@@ -1,17 +1,14 @@
-"""
-for distance to surface measurement post_post evaluation
+"""for distance to surface measurement post_post evaluation."""
 
-"""
+import os
 
 import numpy as np
-import os
 import pytest
-
 import vtk
 
 import pqueens.post_post.post_post_baci_shape
-
 from pqueens.post_post.post_post_baci_shape import PostPostBACIShape
+
 
 ############## fixtures
 @pytest.fixture(scope='module', params=['2d', '3d'])
@@ -103,6 +100,7 @@ def vtkUnstructuredGridExample3d():
 ############## actual tests
 
 
+@pytest.mark.unit_tests
 def test_init(mocker):
 
     path_ref_data = 'dummypath'
@@ -143,6 +141,7 @@ def test_init(mocker):
     assert my_postpost.problem_dimension == problem_dimension
 
 
+@pytest.mark.unit_tests
 def test_from_config_create_post_post(mocker):
     mp = mocker.patch(
         'pqueens.post_post.post_post_baci_shape.PostPostBACIShape.__init__', return_value=None
@@ -173,6 +172,7 @@ def test_from_config_create_post_post(mocker):
     )
 
 
+@pytest.mark.unit_tests
 def test_read_post_files(mocker):
 
     mocker.patch(
@@ -221,6 +221,7 @@ def test_read_post_files(mocker):
         pp.read_post_files(files_of_interest)
 
 
+@pytest.mark.unit_tests
 def test_delete_field_data(mocker, default_ppbacishapeclass):
 
     mp = mocker.patch(
@@ -240,6 +241,7 @@ def test_delete_field_data(mocker, default_ppbacishapeclass):
     )
 
 
+@pytest.mark.unit_tests
 def test_error_handling(mocker, default_ppbacishapeclass):
     mp = mocker.patch(
         'pqueens.post_post.post_post_baci_shape.run_subprocess',
@@ -253,6 +255,7 @@ def test_error_handling(mocker, default_ppbacishapeclass):
     )
 
 
+@pytest.mark.unit_tests
 def test_read_monitorfile(
     mocker,
 ):
@@ -317,6 +320,7 @@ steps 2 npoints 4
         pp.read_monitorfile()
 
 
+@pytest.mark.unit_tests
 def test_create_mesh_and_intersect_vtk(
     mocker, default_ppbacishapeclass, vtkUnstructuredGridExample2d, vtkUnstructuredGridExample3d
 ):
@@ -374,6 +378,7 @@ def test_create_mesh_and_intersect_vtk(
     )
 
 
+@pytest.mark.unit_tests
 def test_stretch_vector(default_ppbacishapeclass):
 
     assert default_ppbacishapeclass.stretch_vector([1, 2, 3], [2, 4, 6], 2) == [
@@ -382,6 +387,7 @@ def test_stretch_vector(default_ppbacishapeclass):
     ]
 
 
+@pytest.mark.unit_tests
 def test_compute_distance(default_ppbacishapeclass):
 
     assert default_ppbacishapeclass.compute_distance(
@@ -389,6 +395,7 @@ def test_compute_distance(default_ppbacishapeclass):
     ) == pytest.approx(np.sqrt(14), abs=10e-12)
 
 
+@pytest.mark.unit_tests
 def test_create_UnstructuredGridFromEnsight(default_ppbacishapeclass):
     # this method is basically vtk functions only. not really testable unless we mock every line
     pass

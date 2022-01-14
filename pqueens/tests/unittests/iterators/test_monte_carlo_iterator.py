@@ -1,14 +1,16 @@
-'''
-Created on November 23th  2017
-@author: jbi
+"""Created on November 23th  2017.
 
-'''
+@author: jbi
+"""
 import unittest
+
 import numpy as np
+import pytest
+
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
+from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.variables.variables import Variables
-from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 
 
 class TestMCIterator(unittest.TestCase):
@@ -61,8 +63,9 @@ class TestMCIterator(unittest.TestCase):
             db=dummy_db,
         )
 
+    @pytest.mark.unit_tests
     def test_correct_sampling(self):
-        """ Test if we get correct samples"""
+        """Test if we get correct samples."""
 
         self.my_iterator.pre_run()
 
@@ -83,8 +86,9 @@ class TestMCIterator(unittest.TestCase):
             self.my_iterator.samples[0, :], ref_sample_first_row, 1e-07, 1e-07
         )
 
+    @pytest.mark.unit_tests
     def test_correct_results(self):
-        """ Test if we get correct results"""
+        """Test if we get correct results."""
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
 

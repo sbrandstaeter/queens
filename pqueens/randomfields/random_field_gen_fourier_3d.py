@@ -1,9 +1,10 @@
 import numpy as np
+
 from pqueens.randomfields.random_field_gen_fourier import RandomFieldGenFourier
 
 
 class RandomFieldGenFourier3D(RandomFieldGenFourier):
-    """ Fourier series based 3-d random field generator.
+    """Fourier series based 3-d random field generator.
 
     Generator for 3-dimensional random fields based on a Fourier series
     expansion.
@@ -17,9 +18,6 @@ class RandomFieldGenFourier3D(RandomFieldGenFourier):
         field_bbox (np.array): bouding box for field
         num_ex_term_per_dim (int): number of expansion temrm per dimension
         num_terms (int): number of terms in expansion
-
-
-
     """
 
     def __init__(
@@ -91,7 +89,7 @@ class RandomFieldGenFourier3D(RandomFieldGenFourier):
         # print('stoch_dim {}'.format(self.stoch_dim))
 
     def gen_sample_gauss_field(self, loc, phase_angles):
-        """ Generate sample of Gaussian field.
+        """Generate sample of Gaussian field.
 
         Compute realization of standard Gaussian field based on passed phase
         angles phase_angles and return values of the realization at loc.

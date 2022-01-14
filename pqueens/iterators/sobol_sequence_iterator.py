@@ -1,17 +1,18 @@
+import logging
+
+from torch.quasirandom import SobolEngine
+
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
-from pqueens.utils.process_outputs import process_ouputs
-from pqueens.utils.process_outputs import write_results
-from pqueens.utils.scale_samples import scale_samples
 from pqueens.utils.get_random_variables import get_random_variables
-from torch.quasirandom import SobolEngine
-import logging
+from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.scale_samples import scale_samples
 
 _logger = logging.getLogger(__name__)
 
 
 class SobolSequenceIterator(Iterator):
-    """Sobol sequence in multiple dimensions
+    """Sobol sequence in multiple dimensions.
 
     Attributes:
         model (model):        Model to be evaluated by iterator
@@ -23,7 +24,6 @@ class SobolSequenceIterator(Iterator):
         result_description (dict):  Description of desired results
         samples (np.array):   Array with all samples
         output (np.array):   Array with all model outputs
-
     """
 
     def __init__(
@@ -45,8 +45,7 @@ class SobolSequenceIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """Create sobol sequence iterator from problem description
-
+        """Create sobol sequence iterator from problem description.
 
         Args:
             config (dict):       Dictionary with QUEENS problem description
@@ -56,7 +55,6 @@ class SobolSequenceIterator(Iterator):
 
         Returns:
             iterator: SobolSequenceIterator object
-
         """
         if iterator_name is None:
             method_options = config["method"]["method_options"]
@@ -83,11 +81,11 @@ class SobolSequenceIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate the model """
+        """Evaluate the model."""
         return self.model.evaluate()
 
     def pre_run(self):
-        """ Generate samples for subsequent sobol sequence analysis """
+        """Generate samples for subsequent sobol sequence analysis."""
 
         _, _, number_input_dimensions, distribution_info = get_random_variables(self.model)
 
@@ -106,14 +104,14 @@ class SobolSequenceIterator(Iterator):
         self.samples = scale_samples(qmc_samples.numpy().astype('float64'), distribution_info)
 
     def core_run(self):
-        """ Run sobol sequence analysis on model """
+        """Run sobol sequence analysis on model."""
 
         self.model.update_model_from_sample_batch(self.samples)
 
         self.output = self.eval_model()
 
     def post_run(self):
-        """ Analyze the results """
+        """Analyze the results."""
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description, input_data=self.samples)
             if self.result_description["write_results"] is True:

@@ -1,14 +1,15 @@
-'''
-Created on April 21th 2017
-@author: jbi
+"""Created on April 21th 2017.
 
-'''
+@author: jbi
+"""
 
 import unittest
-import numpy as np
 
+import numpy as np
+import pytest
 from scipy import stats
 from scipy.stats import norm
+
 from pqueens.randomfields.random_field_gen_KLE_1d import RandomFieldGenKLE1D
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,
@@ -30,21 +31,24 @@ class TestRandomFieldGeneratorKLE1D(unittest.TestCase):
         self.seed = 42
 
         # pylint: disable=line-too-long
-        self.my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-            marg_pdf=self.marginal_pdf,
-            spatial_dimension=self.dimension,
-            corrstruct=self.corrstruct,
-            corr_length=self.corr_length,
-            energy_frac=self.energy_frac,
-            field_bbox=self.field_bbox,
-            num_terms_per_dim=self.num_terms_per_dim,
-            total_terms=self.total_terms,
+        self.my_field_generator = (
+            UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+                marg_pdf=self.marginal_pdf,
+                spatial_dimension=self.dimension,
+                corrstruct=self.corrstruct,
+                corr_length=self.corr_length,
+                energy_frac=self.energy_frac,
+                field_bbox=self.field_bbox,
+                num_terms_per_dim=self.num_terms_per_dim,
+                total_terms=self.total_terms,
+            )
         )
         # pylint: enable=line-too-long
 
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
 
     # should trigger error because desired energy fraction not reached
+    @pytest.mark.unit_tests
     def test_not_enough_fourier_terms(self):
         with self.assertRaises(RuntimeError):
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -60,6 +64,7 @@ class TestRandomFieldGeneratorKLE1D(unittest.TestCase):
 
     # should trigger error because number of phase angles do not match stochastic
     # dimension
+    @pytest.mark.unit_tests
     def test_wrong_number_phase_angles(self):
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
@@ -74,6 +79,7 @@ class TestRandomFieldGeneratorKLE1D(unittest.TestCase):
             )
             mystuff.gen_sample_gauss_field(10, np.array((4, 4)))
 
+    @pytest.mark.unit_tests
     def test_values_at_location(self):
         loc = np.array([[0], [25], [50], [100]])
         np.random.seed(self.seed)
@@ -97,6 +103,7 @@ class TestRandomFieldGeneratorKLE1D(unittest.TestCase):
         # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
         # print(my_vals)
 
+    @pytest.mark.unit_tests
     def test_correlation(self):
         loc = np.array([[0], [10], [25], [100]])
         my_vals = np.zeros((loc.shape[0], 200))
@@ -139,6 +146,7 @@ class TestRandomFieldGeneratorKLE1D(unittest.TestCase):
             'Correlation for distance 100 is not correct.',
         )
 
+    @pytest.mark.unit_tests
     def test_marginal_distribution(self):
         my_vals = np.zeros((1, 200))
         np.random.seed(self.seed)

@@ -17,5 +17,4 @@ Todo:
      https://github.com/GPflow/GPflow
  .. _TensorFlow:
      https://www.tensorflow.org/
-
 """

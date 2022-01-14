@@ -3,12 +3,10 @@ import logging
 import os
 import pathlib
 
-import numpy as np
-
 from pqueens.drivers.driver import Driver
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,
-)  # TODO we should create a unified interface for rf
+)
 from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.injector import inject
 from pqueens.utils.numpy_array_encoder import NumpyArrayEncoder
@@ -21,8 +19,7 @@ _logger = logging.getLogger(__name__)
 
 
 class BaciDriver(Driver):
-    """
-    Driver to run BACI
+    """Driver to run BACI.
 
     Attributes:
         workdir (str): Path to the working directory of QUEENS experiment
@@ -41,9 +38,8 @@ class BaciDriver(Driver):
 
     @classmethod
     def from_config_create_driver(cls, base_settings, workdir=None):
-        """
-        Create Driver to run BACI from input configuration
-        and set up required directories and files
+        """Create Driver to run BACI from input configuration and set up
+        required directories and files.
 
         Args:
             base_settings (dict): dictionary with base settings of parent class
@@ -52,7 +48,6 @@ class BaciDriver(Driver):
 
         Returns:
             BaciDriver (obj): instance of BaciDriver class
-
         """
         # potentially create an external external_geometry_obj object for dat-file manipulation
         external_geometry_obj = base_settings["external_geometry_obj"]
@@ -116,10 +111,8 @@ class BaciDriver(Driver):
 
     # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def prepare_input_files(self):
-        """
-        Prepare input file on remote machine in case of remote
-        scheduling without Singularity or in all other cases
-        """
+        """Prepare input file on remote machine in case of remote scheduling
+        without Singularity or in all other cases."""
         if self.remote and not self.singularity:
             self.prepare_input_file_on_remote()
         else:
@@ -136,9 +129,8 @@ class BaciDriver(Driver):
             _, _, _, stderr = run_subprocess(cmd_str)
 
     def run_job(self):
-        """
-        Run BACI with the following scheduling options overall:
-        
+        """Run BACI with the following scheduling options overall:
+
         A) with Singularity containers
         B) without Singularity containers
 
@@ -149,8 +141,7 @@ class BaciDriver(Driver):
         2) nohup (not required in combination with A)
         3) Slurm
         4) PBS
-        5) ECS task 
-        
+        5) ECS task
         """
         if (
             self.scheduler_type == 'pbs'
@@ -171,7 +162,7 @@ class BaciDriver(Driver):
             self.database.save(
                 self.job,
                 self.experiment_name,
-                'jobs',
+                'jobs_' + self.driver_name,
                 str(self.batch),
                 {
                     'id': self.job_id,
@@ -181,9 +172,7 @@ class BaciDriver(Driver):
             )
 
     def postprocess_job(self):
-        """
-        Post-process BACI job
-        """
+        """Post-process BACI job."""
 
         # set output and core of target file opt
         output_file_opt = '--file=' + self.output_file
@@ -201,9 +190,7 @@ class BaciDriver(Driver):
 
     # ----- METHODS FOR PREPARATIVE TASKS ON REMOTE MACHINE ---------------------
     def prepare_input_file_on_remote(self):
-        """ 
-        Prepare input file on remote machine
-        """
+        """Prepare input file on remote machine."""
         # generate a JSON file containing parameter dictionary
         params_json_name = 'params_dict.json'
         params_json_path = os.path.join(self.global_output_dir, params_json_name)
@@ -288,13 +275,12 @@ class BaciDriver(Driver):
     # ----- RUN METHODS ---------------------------------------------------------
     # overload the parent pre_job_run method
     def pre_job_run(self):
-        """
-        Runtime manipulations on the dat-file that need to be performed before the actual
-        simulation run. This method overloads the same-named parent method.
+        """Runtime manipulations on the dat-file that need to be performed
+        before the actual simulation run. This method overloads the same-named
+        parent method.
 
         Returns:
             None
-
         """
         if (self.external_geometry_obj is not None) and self.random_fields_lst:
             # TODO currently we have to perform the main run here a second time
@@ -302,25 +288,27 @@ class BaciDriver(Driver):
             self.external_geometry_obj.main_run()
             # realize random field sample form decomposition here
             # pylint: disable=line-too-long
-            self.random_fields_realized_lst = UniVarRandomFieldGeneratorFactory.calculate_one_truncated_realization_of_all_fields(
-                self.database,
-                self.job_id,
-                self.experiment_name,
-                self.batch,
-                self.experiment_dir,
-                self.random_fields_lst,
+            self.random_fields_realized_lst = (
+                UniVarRandomFieldGeneratorFactory.calculate_one_truncated_realization_of_all_fields(
+                    self.database,
+                    self.job_id,
+                    self.experiment_name,
+                    self.batch,
+                    self.experiment_dir,
+                    self.random_fields_lst,
+                    self.driver_name,
+                )
             )
             # pylint: enable=line-too-long
             self._manipulate_dat_file()
         super(BaciDriver, self).pre_job_run()
 
     def _manipulate_dat_file(self):
-        """
-        Helper method that calls the dat-file manipulation method from the external_geometry_obj.
+        """Helper method that calls the dat-file manipulation method from the
+        external_geometry_obj.
 
         Returns:
             None
-
         """
         # set also new name for copied dat-file
         if self.random_fields_lst is not None:
@@ -329,9 +317,8 @@ class BaciDriver(Driver):
             )
 
     def run_job_via_script(self):
-        """
-        Run BACI with the following scheduling options:
-        
+        """Run BACI with the following scheduling options:
+
         A) with Singularity containers
         B) without Singularity containers
 
@@ -340,8 +327,7 @@ class BaciDriver(Driver):
 
         3) Slurm
         4) PBS
-        5) ECS task 
-        
+        5) ECS task
         """
         # assemble run command for Slurm and PBS scheduler with Singularity (A-II-3
         # and A-II-4) and without Singularity (B-I-3, B-I-4, B-II-3, and B-II-4)
@@ -371,7 +357,8 @@ class BaciDriver(Driver):
 
         # run BACI via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(
-            command_string, subprocess_type=subprocess_type,
+            command_string,
+            subprocess_type=subprocess_type,
         )
         # redirect stdout/stderr output to log and error file, respectively,
         # for Slurm, PBS (CAE stdout/stderr on remote for A-II, submission
@@ -396,9 +383,8 @@ class BaciDriver(Driver):
         return returncode
 
     def run_job_via_run_cmd(self):
-        """
-        Run BACI with the following scheduling options:
-        
+        """Run BACI with the following scheduling options:
+
         A) with Singularity containers
         B) without Singularity containers
 
@@ -407,7 +393,6 @@ class BaciDriver(Driver):
 
         1) standard
         2) nohup (not required in combination with A)
-        
         """
         # initialize various arguments for subprocess to None and
         # merely change below, if required
@@ -480,9 +465,7 @@ class BaciDriver(Driver):
         return returncode
 
     def run_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
-        """ 
-        Run command for postprocessing
-        """
+        """Run command for postprocessing."""
         # assemble post-processing command with three options:
         # 1) post-processing with Singularity container on cluster with Slurm or PBS
         # 2) local post-processing
@@ -510,11 +493,10 @@ class BaciDriver(Driver):
 
     # ----- COMMAND-ASSEMBLY METHODS ---------------------------------------------
     def assemble_sing_baci_cluster_job_cmd(self):
-        """  Assemble command for Slurm- or PBS-based BACI run with Singularity
+        """Assemble command for Slurm- or PBS-based BACI run with Singularity.
 
-            Returns:
-                Slurm- or PBS-based BACI run command with Singularity
-
+        Returns:
+            Slurm- or PBS-based BACI run command with Singularity
         """
         command_list = [
             'cd',
@@ -528,11 +510,10 @@ class BaciDriver(Driver):
         return ' '.join(filter(None, command_list))
 
     def assemble_baci_cluster_job_cmd(self):
-        """  Assemble command for Slurm- or PBS-based BACI run
+        """Assemble command for Slurm- or PBS-based BACI run.
 
-            Returns:
-                Slurm- or PBS-based BACI run command
-
+        Returns:
+            Slurm- or PBS-based BACI run command
         """
         # set options for jobscript
         self.cluster_options['job_name'] = '{}_{}_{}'.format(
@@ -606,11 +587,10 @@ class BaciDriver(Driver):
         return ' '.join(filter(None, command_list))
 
     def assemble_baci_run_cmd(self):
-        """  Assemble command for BACI run
+        """Assemble command for BACI run.
 
-            Returns:
-                BACI run command
-
+        Returns:
+            BACI run command
         """
         # set MPI command
         if self.docker_image is not None:
@@ -629,11 +609,10 @@ class BaciDriver(Driver):
         return ' '.join(filter(None, command_list))
 
     def assemble_nohup_baci_run_cmd(self, baci_run_cmd):
-        """  Assemble command for nohup run of BACI
+        """Assemble command for nohup run of BACI.
 
-            Returns:
-                nohup BACI run command
-
+        Returns:
+            nohup BACI run command
         """
         # assemble command string for nohup BACI run
         nohup_baci_run_cmd = self.assemble_nohup_run_cmd(
@@ -648,8 +627,7 @@ class BaciDriver(Driver):
         return final_nohup_baci_run_cmd
 
     def assemble_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
-        """
-        Assemble command for postprocessing
+        """Assemble command for postprocessing.
 
         Args:
             output_file_opt (str): Path (with name) to the simulation output files without the
@@ -660,7 +638,6 @@ class BaciDriver(Driver):
 
         Returns:
             postprocessing command
-
         """
         # set MPI command
         if self.docker_image is not None:
@@ -680,11 +657,10 @@ class BaciDriver(Driver):
         return ' '.join(filter(None, command_list))
 
     def assemble_sing_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
-        """  Assemble command for postprocessing in Singularity container
+        """Assemble command for postprocessing in Singularity container.
 
-            Returns:
-                Singularity postprocessing command
-
+        Returns:
+            Singularity postprocessing command
         """
         command_list = [
             self.postprocessor,
@@ -696,11 +672,10 @@ class BaciDriver(Driver):
         return ' '.join(filter(None, command_list))
 
     def assemble_remote_postprocessing_cmd(self, postprocess_cmd):
-        """  Assemble command for remote postprocessing
+        """Assemble command for remote postprocessing.
 
-            Returns:
-                remote postprocessing command
-
+        Returns:
+            remote postprocessing command
         """
         command_list = [
             'ssh',

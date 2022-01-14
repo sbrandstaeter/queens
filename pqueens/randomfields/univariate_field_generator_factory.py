@@ -1,24 +1,22 @@
-from pqueens.randomfields.generic_external_random_field import GenericExternalRandomField
+import numpy as np
 
+from pqueens.randomfields.generic_external_random_field import GenericExternalRandomField
 from pqueens.randomfields.random_field_gen_fourier_1d import RandomFieldGenFourier1D
 from pqueens.randomfields.random_field_gen_fourier_2d import RandomFieldGenFourier2D
 from pqueens.randomfields.random_field_gen_fourier_3d import RandomFieldGenFourier3D
-
 from pqueens.randomfields.random_field_gen_KLE_1d import RandomFieldGenKLE1D
 from pqueens.randomfields.random_field_gen_KLE_2d import RandomFieldGenKLE2D
 from pqueens.randomfields.random_field_gen_KLE_3d import RandomFieldGenKLE3D
-import numpy as np
 
 
 class UniVarRandomFieldGeneratorFactory(object):
-    """
-    Class that is currently used for the generation of random fields and which gets called in
-    other modules such as the monte_carlo_iterator. This class is basically a wrapper for
-    different existing random field definitions.
+    """Class that is currently used for the generation of random fields and
+    which gets called in other modules such as the monte_carlo_iterator. This
+    class is basically a wrapper for different existing random field
+    definitions.
 
     Returns:
         rf (obj): Instance of a random field class
-
     """
 
     # TODO: we should clean this up and update the rfs to the QUEENS coding style and architecture
@@ -40,8 +38,7 @@ class UniVarRandomFieldGeneratorFactory(object):
         external_definition=None,
         dimension=None,
     ):
-        """
-        Create random field generator based on arguments
+        """Create random field generator based on arguments.
 
         Args:
             marg_pdf (obj): Marginal probability distribution of the random field (for spectral
@@ -66,7 +63,6 @@ class UniVarRandomFieldGeneratorFactory(object):
 
         Returns:
             rf (obj): Instance of a random field generator class
-
         """
         if corrstruct == 'generic_external_random_field':
             rf = GenericExternalRandomField(
@@ -83,15 +79,30 @@ class UniVarRandomFieldGeneratorFactory(object):
         elif corrstruct == 'squared_exp':
             if spatial_dimension == 1:
                 rf = RandomFieldGenFourier1D(
-                    marg_pdf, corr_length, energy_frac, field_bbox, num_terms_per_dim, total_terms,
+                    marg_pdf,
+                    corr_length,
+                    energy_frac,
+                    field_bbox,
+                    num_terms_per_dim,
+                    total_terms,
                 )
             elif spatial_dimension == 2:
                 rf = RandomFieldGenFourier2D(
-                    marg_pdf, corr_length, energy_frac, field_bbox, num_terms_per_dim, total_terms,
+                    marg_pdf,
+                    corr_length,
+                    energy_frac,
+                    field_bbox,
+                    num_terms_per_dim,
+                    total_terms,
                 )
             elif spatial_dimension == 3:
                 rf = RandomFieldGenFourier3D(
-                    marg_pdf, corr_length, energy_frac, field_bbox, num_terms_per_dim, total_terms,
+                    marg_pdf,
+                    corr_length,
+                    energy_frac,
+                    field_bbox,
+                    num_terms_per_dim,
+                    total_terms,
                 )
             else:
                 raise ValueError(
@@ -146,13 +157,13 @@ class UniVarRandomFieldGeneratorFactory(object):
 
     @staticmethod
     def calculate_one_truncated_realization_of_all_fields(
-        database, job_id, experiment_name, batch, experiment_dir, random_fields_lst
+        database, job_id, experiment_name, batch, experiment_dir, random_fields_lst, driver_name
     ):
-        """
-        This method gets called in the driver and calculated one realization of all involved
-        random fields from the in the db stored truncated basis, the random coefficients matrix
-        and the current job number. (Driver realizes one input sample, such that the job_id is
-        used to identify the current sample from the sample matrix.)
+        """This method gets called in the driver and calculated one realization
+        of all involved random fields from the in the db stored truncated
+        basis, the random coefficients matrix and the current job number.
+        (Driver realizes one input sample, such that the job_id is used to
+        identify the current sample from the sample matrix.)
 
         Args:
             database (obj): Database instance
@@ -161,11 +172,11 @@ class UniVarRandomFieldGeneratorFactory(object):
             batch (int): Batch number
             random_fields_lst (lst): List of random field definitions
             experiment_dir (str): Path to QUEENS experiment directory
+            driver_name (str): Name of the driver for current analysis
 
         Returns:
             realized_random_fields_lst (lst): List containing field_realizations of involved random
                                               fields
-
         """
         # load random field representation
         truncated_random_field_representation_dict = database.load(
@@ -176,7 +187,7 @@ class UniVarRandomFieldGeneratorFactory(object):
         job = database.load(
             experiment_name,
             batch,
-            'jobs',
+            'jobs_' + driver_name,
             {'id': job_id, 'expt_dir': experiment_dir, 'expt_name': experiment_name},
         )
 

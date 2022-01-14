@@ -1,21 +1,23 @@
+"""Postpost class for BACI csv files."""
 import glob
+import logging
+
 import numpy as np
 import pandas as pd
+
 from pqueens.post_post.post_post import PostPost
-import logging
 
 _logger = logging.getLogger(__name__)
 
 
 class PostPostBACI(PostPost):
-    """ Class for post-post-processing BACI output
+    """Class for post-post-processing BACI output.
 
-        Attributes:
-            time_tol_lst (lst):     List with tolerances if desired time can not be matched
-                                    exactly. Entries relate to files that are post-post processed
-            target_time_lst (lst):  Time at which to evaluate QoI
-            skip_rows_lst (lst):    List with number of header rows to skip per post-processed file
-
+    Attributes:
+        time_tol_lst (lst):     List with tolerances if desired time can not be matched
+                                exactly. Entries relate to files that are post-post processed
+        target_time_lst (lst):  Time at which to evaluate QoI
+        skip_rows_lst (lst):    List with number of header rows to skip per post-processed file
     """
 
     def __init__(
@@ -27,7 +29,7 @@ class PostPostBACI(PostPost):
         delete_data_flag,
         post_post_file_name_prefix_lst,
     ):
-        """ Init PostPost object
+        """Init PostPost object.
 
         Args:
             time_tol_lst (lst):    List with tolerances if desired time can not be matched
@@ -39,7 +41,6 @@ class PostPostBACI(PostPost):
                                       entry corresponds to files in post_post_file_name_prefix_lst
             delete_data_flag (bool):  Delete files after processing
             post_post_file_name_prefix_lst (lst): List with prefixes of result files
-
         """
 
         super(PostPostBACI, self).__init__(delete_data_flag, post_post_file_name_prefix_lst)
@@ -50,7 +51,7 @@ class PostPostBACI(PostPost):
 
     @classmethod
     def from_config_create_post_post(cls, options):
-        """ Create post_post routine from problem description
+        """Create post_post routine from problem description.
 
         Args:
             options (dict): input options
@@ -91,23 +92,19 @@ class PostPostBACI(PostPost):
         )
 
     def read_post_files(self, file_names, **kwargs):
-        """
-        Loop over post files in given output directory
+        """Loop over post files in given output directory.
 
         Args:
             file_names (str): Path with filenames without specific extension
 
         Returns:
             None
-
         """
         idx = kwargs.get('idx')
-
         post_files_list = glob.glob(file_names)
         # glob returns arbitrary list -> need to sort the list before using
         post_files_list.sort()
         post_out = np.empty(shape=0)
-
         for filename in post_files_list:
             try:
                 post_data = pd.read_csv(
@@ -123,21 +120,37 @@ class PostPostBACI(PostPost):
                 self.result = None
                 break
 
+            # Helper variable to indicate which rows containt the desired time data
+            identifier = np.zeros(post_data.iloc[:, 0].shape, dtype=bool)
+
+            # Helper function generating an array with booleans to select a time
+            identification = (
+                lambda target_time, time_tol: abs(post_data.iloc[:, 0] - target_time) < time_tol
+            )
             if self.target_time_lst[idx] == 'last':
                 identifier = post_data.iloc[:, 0] == post_data.iloc[-1, 0]
 
+            # in case of a single timestep
+            elif isinstance(self.target_time_lst[idx], (int, float)):
+                identifier = identification(self.target_time_lst[idx], self.time_tol_lst[idx])
+
+            # in case of multiple timesteps
+            elif isinstance(self.target_time_lst[idx], list):
+                for time, tol in zip(self.target_time_lst[idx], self.time_tol_lst[idx]):
+                    identifier = np.logical_or(identification(time, tol), identifier)
+
             else:
-                identifier = (
-                    abs(post_data.iloc[:, 0] - self.target_time_lst[idx]) < self.time_tol_lst[idx]
-                )
+                _logger.warning(f"Non valid target_time_lst: {self.target_time_lst[idx]}")
+                self.error = True
+                self.result = None
 
             if not np.any(identifier):
-                _logger.info("target_time not found.")
+                _logger.warning("target_time not found.")
                 self.error = True
                 self.result = None
                 break
 
-            quantity_of_interest = post_data.loc[identifier].iloc[0, 1]
+            quantity_of_interest = post_data.loc[identifier].iloc[:, 1:]
             post_out = np.append(post_out, quantity_of_interest)
 
         self.error = False

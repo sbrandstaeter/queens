@@ -1,10 +1,16 @@
-import logging
-import sys
 import io
+import logging
+import re
+import sys
+import time
 
 
 class LogFilter(logging.Filter):
+<<<<<<< HEAD
     """Filters (lets through) all messages with level <= LEVEL"""
+=======
+    """Filters (lets through) all messages with level <= LEVEL."""
+>>>>>>> master
 
     def __init__(self, level):
         super().__init__()
@@ -14,9 +20,8 @@ class LogFilter(logging.Filter):
         return record.levelno <= self.level
 
 
-def setup_logging(output_dir, experiment_name):
-    """
-    Setup basic logging
+def setup_basic_logging(output_dir, experiment_name):
+    """Setup basic logging.
 
     Args:
         output_dir (Path): output directory where to save the log-file
@@ -63,9 +68,120 @@ def setup_logging(output_dir, experiment_name):
     logging.getLogger('numba').setLevel(logging.CRITICAL)
 
 
-def log_through_print(logger, command):
+def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False):
+    """Setup job logging and get job logger.
+
+    Args:
+        logger_name (str): logger name
+        log_file (path): path to log file
+        error_file (path): path to error file
+        streaming (bool): flag for additional streaming to given stream
+        propagate (bool): flag for propagation of stream (default: false)
     """
-    Parse print output to logger
+    # get job logger
+    joblogger = logging.getLogger(logger_name)
+
+    # define formatter
+    ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    # set level
+    joblogger.setLevel(logging.INFO)
+
+    # set option to propagate (default: false)
+    joblogger.propagate = propagate
+
+    # add handlers for log and error file (remark: python code is run in parallel
+    # for cluster runs with singularity; thus, each processor logs his own file.)
+    lfh = logging.FileHandler(log_file, mode='w', delay=False)
+    lfh.setLevel(logging.INFO)
+    lfh.terminator = ''
+    lfh.setFormatter(ff)
+    joblogger.addHandler(lfh)
+    efh = logging.FileHandler(error_file, mode='w', delay=False)
+    efh.setLevel(logging.ERROR)
+    efh.terminator = ''
+    efh.setFormatter(ff)
+    joblogger.addHandler(efh)
+
+    # add handler for additional streaming to given stream, if required
+    if streaming:
+        sh = logging.StreamHandler(stream=sys.stdout)
+        sh.setLevel(logging.INFO)
+        sh.terminator = ''
+        sh.setFormatter(fmt=None)
+        joblogger.addHandler(sh)
+    else:
+        sh = None
+
+    # return job logger and handlers
+    return joblogger, lfh, efh, sh
+
+
+def job_logging(command_string, process, joblogger, terminate_expr):
+    """Actual logging of job.
+
+    Args:
+        process (obj): subprocess object
+        joblogger (obj): job logger object
+        terminate_expr (str): expression on which to terminate
+    """
+    # initialize stderr to None
+    stderr = None
+
+    # start logging
+    joblogger.info('run_subprocess started with:\n')
+    joblogger.info(command_string + '\n')
+    for line in iter(process.stdout.readline, b''):  # b'\n'-separated lines
+        if line == '' and process.poll() is not None:
+            joblogger.info(
+                'subprocess.Popen() -info: stdout is finished and process.poll() not None.\n'
+            )
+            # This line waits for termination and puts together stdout not yet consumed from the
+            # stream by the logger and finally the stderr.
+            stdout, stderr = process.communicate()
+            # following line should never really do anything. We want to log all that was
+            # written to stdout even after program was terminated.
+            joblogger.info(stdout + '\n')
+            if stderr:
+                joblogger.error('error message (if provided) follows:\n')
+                for errline in io.StringIO(stderr):
+                    joblogger.error(errline)
+            break
+        if terminate_expr:
+            # two seconds in time.sleep(2) are arbitrary. Feel free to tune it to your needs.
+            if re.search(terminate_expr, line):
+                joblogger.warning('run_subprocess detected terminate expression:\n')
+                joblogger.error(line)
+                # give program the chance to terminate by itself, because terminate expression
+                # will be found also if program terminates itself properly
+                time.sleep(2)
+                if process.poll() is None:
+                    # log terminate command
+                    joblogger.warning('running job will be terminated by QUEENS.\n')
+                    process.terminate()
+                    # wait before communicate call which gathers all the output
+                    time.sleep(2)
+                continue
+        joblogger.info(line)
+
+    return stderr
+
+
+def finish_job_logger(joblogger, lfh, efh, sh):
+    """Close and remove file handlers (to prevent OSError: [Errno 24] Too many
+    open files)"""
+    # we need to close the FileHandlers to
+    lfh.close()
+    efh.close()
+    joblogger.removeHandler(lfh)
+    joblogger.removeHandler(efh)
+    if sh is not None:
+        sh.close()
+        joblogger.removeHandler(sh)
+
+
+def log_through_print(logger, command):
+    """Parse print output to logger.
 
     This can be used e.g. for printing a GP kernel or a pandas DataFrame.
     It works for all objects that implement a print method.

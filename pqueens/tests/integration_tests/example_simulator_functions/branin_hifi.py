@@ -2,7 +2,7 @@ import numpy as np
 
 
 def branin_hifi(x1, x2):
-    """ High-fidelity Branin function
+    """High-fidelity Branin function.
 
     Compute value of high fidelity version of Branin function as described
     in [1]. The corresponding medium- and low-fidelity versions are implemented
@@ -32,7 +32,7 @@ def branin_hifi(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to high-fidelity Branin function
+    """Interface to high-fidelity Branin function.
 
     Args:
         job_id (int):  ID of job

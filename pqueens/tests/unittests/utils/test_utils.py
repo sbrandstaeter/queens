@@ -1,15 +1,15 @@
-'''
-Created on January 18th  2018
+"""Created on January 18th  2018.
+
 @author: jbi
-
-'''
-import mock
+"""
 import unittest
-import numpy as np
-from sklearn.neighbors import KernelDensity
-from pqueens.utils.pdf_estimation import estimate_bandwidth_for_kde
-from pqueens.utils.pdf_estimation import estimate_pdf
 
+import mock
+import numpy as np
+import pytest
+from sklearn.neighbors import KernelDensity
+
+from pqueens.utils.pdf_estimation import estimate_bandwidth_for_kde, estimate_pdf
 
 # class TestInjector(unittest.TestCase):
 #     def setUp(self):
@@ -24,12 +24,14 @@ class TestPDFEstimation(unittest.TestCase):
         self.samples = np.random.randn(100)
         self.bandwidth = 0.4
 
+    @pytest.mark.unit_tests
     def test_compute_kernel_bandwidth(self):
         min_samples = -3
         max_samples = 3
         bandwidth = estimate_bandwidth_for_kde(self.samples, min_samples, max_samples)
         np.testing.assert_almost_equal(bandwidth, 0.987693684111131, 7)
 
+    @pytest.mark.unit_tests
     def test_density_estimation(self):
         supp_points = np.linspace(-1, 1, 10)
         # test with support points

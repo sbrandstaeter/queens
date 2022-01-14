@@ -1,10 +1,10 @@
-from .likelihood_model import LikelihoodModel
 import numpy as np
+
+from .likelihood_model import LikelihoodModel
 
 
 class GaussianStaticLikelihood(LikelihoodModel):
-    """
-    Gaussian likelihood model with static noise (one hyperparameter).
+    """Gaussian likelihood model with static noise (one hyperparameter).
 
     Attributes:
         noise_var (float): Current value of the likelihood noise parameter
@@ -16,7 +16,6 @@ class GaussianStaticLikelihood(LikelihoodModel):
 
     Returns:
         Instance of GaussianStaticLikelihood Class
-
     """
 
     def __init__(
@@ -26,6 +25,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
         nugget_noise_var,
         forward_model,
         coords_mat,
+        time_vec,
         y_obs_vec,
         likelihood_noise_type,
         fixed_likelihood_noise_value,
@@ -37,6 +37,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
             model_parameters,
             forward_model,
             coords_mat,
+            time_vec,
             y_obs_vec,
             output_label,
             coord_labels,
@@ -54,12 +55,12 @@ class GaussianStaticLikelihood(LikelihoodModel):
         model_parameters,
         forward_model,
         coords_mat,
+        time_vec,
         y_obs_vec,
         output_label,
         coord_labels,
     ):
-        """
-        Create Gaussian static likelihood model from problem description
+        """Create Gaussian static likelihood model from problem description.
 
         Args:
             model_name (str): Name of the likelihood model
@@ -67,13 +68,13 @@ class GaussianStaticLikelihood(LikelihoodModel):
             model_parameters (dict): Dictionary containing description of model parameters
             forward_model (obj): Forward model on which the likelihood model is based
             coords_mat (np.array): Row-wise coordinates at which the observations were recorded
+            time_vec (np.array): Vector of observation times
             y_obs_vec (np.array): Corresponding experimental data vector to coords_mat
             output_label (str): Name of the experimental outputs (column label in csv-file)
             coord_labels (lst): List with coordinate labels for (column labels in csv-file)
 
         Returns:
             instance of GaussianStaticLikelihood class
-
         """
         # get options
         model_options = config[model_name]
@@ -89,6 +90,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
             nugget_noise_var,
             forward_model,
             coords_mat,
+            time_vec,
             y_obs_vec,
             likelihood_noise_type,
             fixed_likelihood_noise_value,
@@ -97,23 +99,20 @@ class GaussianStaticLikelihood(LikelihoodModel):
         )
 
     def evaluate(self):
-        """
-        Evaluate likelihood with current set of variables which are an attribute of the
-        underlying simulation model
+        """Evaluate likelihood with current set of variables which are an
+        attribute of the underlying simulation model.
 
         Returns:
             log_likelihood (np.array): Vector of log-likelihood values per model input.
-
         """
-
         Y_mat = self._update_and_evaluate_forward_model()
 
         n = self.y_obs_vec.size
         self._update_noise_var(n, Y_mat)
 
         log_likelihood = []
-
         for y_vec in Y_mat:
+
             dist = np.atleast_2d(self.y_obs_vec - y_vec)
             dist_squared = (dist ** 2).reshape(1, -1)  # squared distances as row vector
             log_likelihood.append(
@@ -131,9 +130,9 @@ class GaussianStaticLikelihood(LikelihoodModel):
         return log_likelihood
 
     def _update_noise_var(self, num_obs, Y_mat):
-        """
-        Potentially update the static noise variance of the likelihood model with a Jeffreys
-        prior MAP estimate or just keep it fixed at desired value
+        """Potentially update the static noise variance of the likelihood model
+        with a Jeffreys prior MAP estimate or just keep it fixed at desired
+        value.
 
         Args:
             num_obs (int): Number of experimental observations (length of y_obs)
@@ -142,7 +141,6 @@ class GaussianStaticLikelihood(LikelihoodModel):
 
         Returns:
             None
-
         """
         # either keep noise level fixed or regulate it with a Jeffreys prior
         if self.likelihood_noise_type == "fixed":
@@ -172,18 +170,16 @@ class GaussianStaticLikelihood(LikelihoodModel):
             self.noise_var = self.nugget_noise_var
 
     def _update_and_evaluate_forward_model(self):
-        """
-        Pass the variables update to subordinate simulation model and then evaluate the
-        simulation model.
+        """Pass the variables update to subordinate simulation model and then
+        evaluate the simulation model.
 
         Returns:
            Y_mat (np.array): Simulation output (row-wise) that corresponds to input batch X_batch
-
         """
         # Note that the wrapper of the model update needs to called externally such that
         # self.variables is updated
         self.forward_model.variables = self.variables
         n_samples_batch = len(self.variables)  # TODO check if this is generally true
-        Y_mat = self.forward_model.evaluate()['mean']  # [-n_samples_batch:]  # TODO check this
+        Y_mat = self.forward_model.evaluate()['mean'][-n_samples_batch:]  # TODO check this
 
         return Y_mat

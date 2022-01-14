@@ -1,11 +1,14 @@
+import os
+
+import gpflow as gpf
 import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
-import gpflow as gpf
-from sklearn.preprocessing import StandardScaler
 from gpflow.utilities import print_summary, set_trainable
+from sklearn.preprocessing import StandardScaler
+
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
-import os
+from pqueens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # suppress warnings
 
@@ -17,7 +20,7 @@ else:
 
 
 class GPFlowRegression(RegressionApproximation):
-    """Class for creating GP regression model based on GPFlow
+    """Class for creating GP regression model based on GPFlow.
 
     This class constructs a GP regression, using a GPFlow model.
 
@@ -34,7 +37,6 @@ class GPFlowRegression(RegressionApproximation):
         dimension_lengthscales (int): Dimension of lengthscales
         scaler_x (sklearn scaler object): Scaler for inputs
         scaler_y (sklearn scaler object): Scaler for outputs
-
     """
 
     def __init__(
@@ -50,7 +52,7 @@ class GPFlowRegression(RegressionApproximation):
         number_training_iterations,
         dimension_lengthscales,
         scaler_x,
-        scaler_y
+        scaler_y,
     ):
         """
         Args:
@@ -83,7 +85,7 @@ class GPFlowRegression(RegressionApproximation):
 
     @classmethod
     def from_config_create(cls, config, approx_name, x_train, y_train):
-        """Create approximation from options dictionary
+        """Create approximation from options dictionary.
 
         Args:
             config (dict):         Dictionary with options
@@ -110,14 +112,8 @@ class GPFlowRegression(RegressionApproximation):
         restart_min_value = config[approx_name].get('restart_min_value', 0)
         restart_max_value = config[approx_name].get('restart_max_value', 5)
 
-        # scaling
-        scaler_x = StandardScaler()
-        scaler_x.fit(x_train)
-        x_train = scaler_x.transform(x_train)
-
-        scaler_y = StandardScaler()
-        scaler_y.fit(y_train)
-        y_train = scaler_y.transform(y_train)
+        scaler_x, x_train = init_scaler(x_train)
+        scaler_y, y_train = init_scaler(y_train)
 
         # initialize hyperparameters
         dimension_lengthscales = config[approx_name].get('dimension_lengthscales', None)
@@ -127,7 +123,7 @@ class GPFlowRegression(RegressionApproximation):
         # choose kernel
         kernel = gpf.kernels.RBF(lengthscales=lengthscales_0, variance=variances_0)
 
-        # # initialize model
+        # initialize model
         model = gpf.models.GPR(data=(x_train, y_train), kernel=kernel, mean_function=None)
 
         train_likelihood_variance = config[approx_name].get('train_likelihood_variance', True)
@@ -135,17 +131,10 @@ class GPFlowRegression(RegressionApproximation):
             model.likelihood.variance.assign(1.1e-6)  # small value for numerical stability
             set_trainable(model.likelihood.variance, False)
 
-        # set transform function to exp()
-        model.kernel.lengthscales = gpf.Parameter(
-            model.kernel.lengthscales,
-            name=model.kernel.lengthscales.name.split(":")[0],
-            transform=tfp.bijectors.Exp(),
+        model.kernel.lengthscales = set_transform_function(
+            model.kernel.lengthscales, tfp.bijectors.Exp()
         )
-        model.kernel.variance = gpf.Parameter(
-            model.kernel.variance,
-            name=model.kernel.variance.name.split(":")[0],
-            transform=tfp.bijectors.Exp(),
-        )
+        model.kernel.variance = set_transform_function(model.kernel.variance, tfp.bijectors.Exp())
 
         return cls(
             x_train,
@@ -159,13 +148,11 @@ class GPFlowRegression(RegressionApproximation):
             number_training_iterations,
             dimension_lengthscales,
             scaler_x,
-            scaler_y
+            scaler_y,
         )
 
     def train(self):
-        """
-        Train the GP by maximizing the likelihood
-        """
+        """Train the GP by maximizing the likelihood."""
 
         opt = gpf.optimizers.Scipy()
 
@@ -178,7 +165,7 @@ class GPFlowRegression(RegressionApproximation):
                     [dimension_hyperparameters],
                     minval=self.restart_min_value,
                     maxval=self.restart_max_value,
-                    seed=i
+                    seed=i,
                 )
                 self.assign_hyperparameters(hyperparameters, transform=False)
             try:
@@ -201,8 +188,7 @@ class GPFlowRegression(RegressionApproximation):
         print_summary(self.model)
 
     def predict(self, x_test, support='y', full_cov=False):
-        """
-        Predict the posterior distribution at x_new
+        """Predict the posterior distribution at x_new.
 
         Options:
             'f(x_test)': predict the latent function values
@@ -237,7 +223,7 @@ class GPFlowRegression(RegressionApproximation):
         output = {'mean': mean.reshape(number_test_samples, -1), 'x_test': x_test}
         if support == 'f' and full_cov is True:
             output['variance'] = np.squeeze(var, axis=0)
-            output['variance_diagonal'] = self.extract_block_diag(
+            output['variance_diagonal'] = extract_block_diag(
                 np.squeeze(var, axis=0), output['mean'].shape[1]
             )
         else:
@@ -253,8 +239,7 @@ class GPFlowRegression(RegressionApproximation):
         return output
 
     def assign_hyperparameters(self, hyperparameters, transform=False):
-        """
-        Assign untransformed (constrained) hyperparameters to model
+        """Assign untransformed (constrained) hyperparameters to model.
 
         Args:
             hyperparameters (np.ndarray):   hyperparameters of GP
@@ -266,12 +251,12 @@ class GPFlowRegression(RegressionApproximation):
         if transform:
             hyperparameters = self.transform_hyperparameters(hyperparameters)
 
-        self.model.kernel.lengthscales.assign(hyperparameters[0:self.dimension_lengthscales])
+        self.model.kernel.lengthscales.assign(hyperparameters[0 : self.dimension_lengthscales])
         self.model.kernel.variance.assign(hyperparameters[self.dimension_lengthscales])
 
     def transform_hyperparameters(self, hyperparameters):
-        """
-        Transform hyperparameters from unconstrained to constrained representation
+        """Transform hyperparameters from unconstrained to constrained
+        representation.
 
         Args:
             hyperparameters (np.ndarray):   unconstrained representation of hyperparameters
@@ -281,7 +266,7 @@ class GPFlowRegression(RegressionApproximation):
         hyperparameters = tf.convert_to_tensor(hyperparameters)
 
         lengthscales = self.model.kernel.lengthscales.transform.forward(
-            hyperparameters[0:self.dimension_lengthscales]
+            hyperparameters[0 : self.dimension_lengthscales]
         )
         variances = tf.reshape(
             self.model.kernel.variance.transform.forward(
@@ -295,8 +280,7 @@ class GPFlowRegression(RegressionApproximation):
         return hyperparameters
 
     def get_dimension_hyperparameters(self):
-        """
-        Return the dimension of the hyperparameters
+        """Return the dimension of the hyperparameters.
 
         Returns:
             dimension_hyperparameters (int):   dimension of hyperparameters
@@ -308,21 +292,3 @@ class GPFlowRegression(RegressionApproximation):
         dimension_hyperparameters = hyperparameters.shape.dims[0]
 
         return dimension_hyperparameters
-
-    @staticmethod
-    def extract_block_diag(a, n):
-        """Extract block diagonals of square 2D Array
-
-        Args:
-            a (np.ndarray):      square 2D array
-            n (int):             block size
-
-        Returns: 3D Array containing block diagonals
-        """
-
-        n_blocks = a.shape[0] // n
-
-        new_shape = (n_blocks, n, n)
-        new_strides = (n * a.strides[0] + n * a.strides[1], a.strides[0], a.strides[1])
-
-        return np.lib.stride_tricks.as_strided(a, new_shape, new_strides)

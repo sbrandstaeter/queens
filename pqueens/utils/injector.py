@@ -1,12 +1,11 @@
-"""
-Injector module supplies function to inject parameter values into a template text file.
-"""
+"""Injector module supplies function to inject parameter values into a template
+text file."""
 
 import json
 
 
 def inject(params, file_template, output_file):
-    """ Injector function to insert parameters into file templates
+    """Injector function to insert parameters into file templates.
 
     Args:
         params (dict):          dict with parameters to inject
@@ -26,7 +25,8 @@ def inject(params, file_template, output_file):
 
 
 def inject_remote(path_to_params_json, file_template, output_file):
-    """ Injector function to insert parameters into file templates on remote machine
+    """Injector function to insert parameters into file templates on remote
+    machine.
 
     Args:
         path_to_params_json (str):  path to JSON file containing dict to inject

@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from pqueens.iterators.grid_iterator import GridIterator
 from pqueens.models.simulation_model import SimulationModel
 
@@ -150,6 +151,7 @@ def default_grid_iterator(
 
 
 # -------------- actual unittests --------------------------------------------------
+@pytest.mark.unit_tests
 def test_init(
     mocker, global_settings, grid_dict_two, parameters_two, default_model, result_description
 ):
@@ -179,12 +181,14 @@ def test_init(
     assert my_grid_iterator.scale_type == []
 
 
+@pytest.mark.unit_tests
 def test_eval_model(default_grid_iterator, mocker):
     mp = mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate', return_value=None)
     default_grid_iterator.eval_model()
     mp.assert_called_once()
 
 
+@pytest.mark.unit_tests
 def test_pre_run_one(
     grid_dict_one,
     parameters_one,
@@ -206,6 +210,7 @@ def test_pre_run_one(
     np.testing.assert_array_equal(grid_iterator.samples, expected_samples_one)
 
 
+@pytest.mark.unit_tests
 def test_pre_run_two(
     grid_dict_two, parameters_two, expected_samples_two, default_model, global_settings
 ):
@@ -222,6 +227,7 @@ def test_pre_run_two(
     np.testing.assert_array_equal(grid_iterator.samples, expected_samples_two)
 
 
+@pytest.mark.unit_tests
 def test_pre_run_three(
     grid_dict_three,
     parameters_three,
@@ -243,6 +249,7 @@ def test_pre_run_three(
     np.testing.assert_array_equal(grid_iterator.samples, expected_samples_three)
 
 
+@pytest.mark.unit_tests
 def test_pre_run_four(
     grid_dict_four, parameters_four, result_description, default_model, global_settings
 ):
@@ -260,6 +267,7 @@ def test_pre_run_four(
     assert str(e.value) == "More than 3 grid parameters are currently not supported! Abort..."
 
 
+@pytest.mark.unit_tests
 def test_core_run(mocker, default_grid_iterator, expected_samples_two):
     mocker.patch('pqueens.iterators.grid_iterator.GridIterator.eval_model', return_value=2)
     default_grid_iterator.samples = expected_samples_two
@@ -283,6 +291,7 @@ def mock_visualization():
     return my_mock
 
 
+@pytest.mark.unit_tests
 def test_post_run(mocker, default_grid_iterator, mock_visualization):
     # test if save results is called
     mp1 = mocker.patch('pqueens.iterators.grid_iterator.write_results', return_value=None)

@@ -1,4 +1,4 @@
-""" Fixtures needed across all unittests. """
+"""Fixtures needed across all unittests."""
 import pytest
 
 

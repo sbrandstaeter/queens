@@ -1,24 +1,40 @@
 import numpy as np
-import math
+
 from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi import park91a_hifi
 
 
 def park91a_lofi_coords(x1, x2, x3, x4):
+    # catch values outside of definition
+    if x1 <= 0:
+        x1 = 0.01
+    elif x1 >= 1:
+        x1 = 0.99
+
+    if x2 <= 0:
+        x2 = 0.01
+    elif x2 >= 1:
+        x2 = 0.99
+
+    if x3 <= 0:
+        x3 = 0.01
+    elif x3 >= 1:
+        x3 = 0.99
+
+    if x4 <= 0:
+        x4 = 0.01
+    elif x4 >= 1:
+        x4 = 0.99
+
     yh = park91a_hifi(x1, x2, x3, x4)
     term1 = (1 + np.sin(x1) / 10) * yh
     term2 = -2 * x1 + x2 ** 2 + x3 ** 2
     y = term1 + term2 + 0.5
-    # catch non-numeric values in case x is outside of allowed design space
-    if math.isnan(y):
-        y = 100
-    if math.isinf(y):
-        y = 100
 
     return y
 
 
 def main(job_id, params):
-    """ Interface to Park91a test fuction
+    """Interface to Park91a test fuction.
 
     Args:
         job_id (int):  ID of job

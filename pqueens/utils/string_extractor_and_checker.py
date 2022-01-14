@@ -1,11 +1,9 @@
-"""
-Module supplies functions to extract string from output
-and to check if string is contained in file.
-"""
+"""Module supplies functions to extract string from output and to check if
+string is contained in file."""
 
 
 def extract_string_from_output(search_string, output):
-    """ Extractor function to to extract string from output.
+    """Extractor function to to extract string from output.
 
     Args:
         search_string (str):    string to be searched for
@@ -26,7 +24,7 @@ def extract_string_from_output(search_string, output):
 
 
 def check_if_string_in_file(file_name, string_to_search):
-    """ Check if any line in the file contains given string """
+    """Check if any line in the file contains given string."""
     # Open the file in read only mode
     with open(file_name, 'r') as read_obj:
         # Read all lines in the file one by one

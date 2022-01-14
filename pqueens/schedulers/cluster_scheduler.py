@@ -1,32 +1,42 @@
-import sys
+"""Cluster scheduler for QUEENS runs."""
+import atexit
 import os
+import sys
+
 import numpy as np
-from .scheduler import Scheduler
+
+from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
-from pqueens.utils.cluster_utils import get_cluster_job_id
+
+from .scheduler import Scheduler
 
 
 class ClusterScheduler(Scheduler):
-    """
-    Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS.
-    """
+    """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS."""
 
     def __init__(self, base_settings):
-        super(ClusterScheduler, self).__init__(base_settings)
-
-    @classmethod
-    def create_scheduler_class(cls, base_settings):
-        """
-        Create cluster scheduler (Slurm or Torque/PBS) class for QUEENS.
+        """Init method for the cluster scheduler.
 
         Args:
             base_settings (dict): dictionary containing settings from base class for
-                                  further use and completion in this child class 
+                                  further use and completion in this child class
+        """
+        super(ClusterScheduler, self).__init__(base_settings)
+
+        # Close the ssh ports at when exiting after the queens run
+        atexit.register(self.post_run)
+
+    @classmethod
+    def create_scheduler_class(cls, base_settings):
+        """Create cluster scheduler (Slurm or Torque/PBS) class for QUEENS.
+
+        Args:
+            base_settings (dict): dictionary containing settings from base class for
+                                  further use and completion in this child class
 
         Returns:
             scheduler (obj):      instance of scheduler class
-
         """
         # get input options for scheduler in general and cluster in
         # particular from base settings
@@ -136,22 +146,17 @@ class ClusterScheduler(Scheduler):
             base_settings['cluster_options']['singularity_bind'] = None
             base_settings['cluster_options']['POSTPOSTPROCESSFLAG'] = 'false'
 
-        # initalize sub-dictionary for ECS task options within base settings to None
-        base_settings['ecs_task_options'] = None
-
         return cls(base_settings)
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
-        """
-        Pre-run routine for local and remote computing with Singularity, such as
-        automated port-forwarding and copying files/folders
+        """Pre-run routine for local and remote computing with Singularity.
+
+        Do automated port-forwarding and copying files/folders.
 
         Returns:
             None
-
         """
-
         # pre-run routines required when using Singularity both local and remote
         if self.singularity is True:
             self.singularity_manager.check_singularity_system_vars()
@@ -173,7 +178,7 @@ class ClusterScheduler(Scheduler):
                 self.singularity_manager.copy_post_post()
 
     def _submit_singularity(self, job_id, batch, restart):
-        """Submit job remotely to Singularity
+        """Submit job remotely to Singularity.
 
         Args:
             job_id (int):    ID of job to submit
@@ -181,7 +186,6 @@ class ClusterScheduler(Scheduler):
 
         Returns:
             int:            process ID
-
         """
         if self.remote:
             # "normal" submission
@@ -191,11 +195,17 @@ class ClusterScheduler(Scheduler):
                 self.cluster_options['job_name'] = '{}_{}_{}'.format(
                     self.experiment_name, 'queens', job_id
                 )
+                # pylint: disable=line-too-long
                 self.cluster_options[
                     'INPUT'
-                ] = '--job_id={} --batch={} --port={} --path_json={} --workdir '.format(
-                    job_id, batch, self.port, self.cluster_options['singularity_path']
+                ] = '--job_id={} --batch={} --port={} --path_json={} --driver_name={} --workdir '.format(
+                    job_id,
+                    batch,
+                    self.port,
+                    self.cluster_options['singularity_path'],
+                    self.driver_name,
                 )
+                # pylint: enable=line-too-long
                 self.cluster_options['DESTDIR'] = os.path.join(
                     str(self.experiment_dir), str(job_id), 'output'
                 )
@@ -246,8 +256,12 @@ class ClusterScheduler(Scheduler):
                 )
                 self.cluster_options[
                     'INPUT'
-                ] = '--job_id={} --batch={} --port={} --path_json={}'.format(
-                    job_id, batch, self.port, self.cluster_options['singularity_path']
+                ] = '--job_id={} --batch={} --port={} --path_json={} --driver_name={}'.format(
+                    job_id,
+                    batch,
+                    self.port,
+                    self.cluster_options['singularity_path'],
+                    self.driver_name,
                 )
                 command_list = [
                     'singularity run',
@@ -272,98 +286,13 @@ class ClusterScheduler(Scheduler):
         else:
             raise ValueError("\nSingularity cannot yet be used locally on computing clusters!")
 
-    def alive(self, process_id):  # TODO method might me depreciated!
-        """ Check whether job is alive
-        The function checks if job is alive. If it is not i.e., the job is
-        either on hold or suspended the function will attempt to kill it
-
-        Args:
-            process_id (int): id of process associated with job
-
-        Returns:
-            bool: is job alive or dead
-
-        """
-
-        # initialize alive flag to False
-        alive = False
-
-        # set check command, check location and delete command for PBS or SLURM
-        if self.scheduler_type == 'pbs':
-            check_cmd = 'qstat'
-            check_loc = -2
-            del_cmd = 'qdel'
-        else:
-            check_cmd = 'squeue --job'
-            check_loc = -4
-            del_cmd = 'scancel'
-
-        try:
-            # generate check command
-            command_list = [
-                'ssh',
-                self.remote_connect,
-                '"',
-                check_cmd,
-                str(process_id),
-                '"',
-            ]
-            command_string = ' '.join(command_list)
-            _, _, stdout, _ = run_subprocess(command_string)
-
-            # split output string
-            output2 = stdout.split()
-
-            # second/fourth to last entry should be job status
-            # TODO: Check if that still holds
-            status = output2[check_loc]
-        except ValueError:
-            # job not found
-            status = -1
-            sys.stdout.write("EXC: %s\n" % str(sys.exc_info()[0]))
-            sys.stdout.write("Could not find job for process id %d\n" % process_id)
-
-        if status == 'Q':
-            sys.stdout.write("Job %d waiting in queue.\n" % (process_id))
-            alive = True
-        elif status == 'R':
-            sys.stdout.write("Job %d running.\n" % (process_id))
-            alive = True
-        elif status in ['H', 'S']:
-            sys.stdout.write("Job %d held or suspended.\n" % (process_id))
-            alive = False
-
-        if not alive:
-            try:
-                # generate delete command
-                command_list = [
-                    'ssh',
-                    self.remote_connect,
-                    '"',
-                    del_cmd,
-                    str(process_id),
-                    '"',
-                ]
-                command_string = ' '.join(command_list)
-                _, _, stdout, stderr = run_subprocess(command_string)
-
-                sys.stdout.write("Killed job %d.\n" % (process_id))
-            except ValueError:
-                sys.stdout.write("Failed to kill job %d.\n" % (process_id))
-
-            return False
-        else:
-            return True
-
     # TODO this method needs to be replaced by job_id/scheduler_id check
     #  we can only check here if job was completed but might still be failed though
     def check_job_completion(self, job):
-        """
-        Check whether this job has been completed
+        """Check whether this job has been completed.
 
         Returns:
             None
-
         """
         # initialize completion and failure flags to false
         # (Note that failure is not checked for cluster scheduler
@@ -414,13 +343,12 @@ class ClusterScheduler(Scheduler):
         return completed, failed
 
     def post_run(self):
-        """
-        Post-run routine for remote computing with Singularity: close ports
+        """Post-run routine for remote computing with Singularity: close ports.
 
         Returns:
             None
-
         """
         if self.remote and self.singularity:
+            self.singularity_manager.close_local_port_forwarding()
             self.singularity_manager.close_remote_port(self.port)
             print('All port-forwardings were closed again.')

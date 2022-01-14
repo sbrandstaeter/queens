@@ -1,22 +1,16 @@
-"""
-Module supplies functions for printing out information at the
-beginning of each QUEENS run.
-"""
+"""Module supplies functions for printing out information at the beginning of
+each QUEENS run."""
 
 import sys
 
 
 def print_scheduling_information(scheduler_type, remote, remote_connect, singularity):
-    """
-    Print out information on chosen scheduling
-    """
+    """Print out information on chosen scheduling."""
     # determine scheduler name
     scheduler_dict = {
         'standard': 'standard',
-        'nohup': 'nohup',
         'slurm': 'Slurm',
         'pbs': 'PBS/Torque',
-        'ecs_task': 'ECS task',
     }
     scheduler_name = scheduler_dict[scheduler_type]
 
@@ -46,15 +40,10 @@ def print_scheduling_information(scheduler_type, remote, remote_connect, singula
 def print_driver_information(
     driver_type, cae_software_version, post_post_file_prefix, docker_image
 ):
-    """
-    Print out information on chosen driver
-    """
+    """Print out information on chosen driver."""
     # determine name of driver
     driver_dict = {
-        'ansys': 'ANSYS',
         'baci': 'BACI',
-        'dealII_navierstokes': 'deal.II Navier-Stokes code',
-        'openfoam': 'OpenFOAM',
     }
     driver_name = driver_dict[driver_type]
 
@@ -79,7 +68,7 @@ def print_driver_information(
 
 
 def print_database_information(db, restart=False):
-    """ Print out information on existing and newly established databases
+    """Print out information on existing and newly established databases
     Args:
         restart (bool): Flag for the restart option of QUEENS
 

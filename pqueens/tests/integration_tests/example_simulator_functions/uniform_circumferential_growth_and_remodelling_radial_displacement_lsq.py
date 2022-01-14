@@ -34,7 +34,7 @@ DR_MEAS = DR_MEAS + NOISE
 
 
 def main(job_id, params):
-    """ Interface to least squares of GnR model
+    """Interface to least squares of GnR model.
 
     UNITS:
     - length [m]

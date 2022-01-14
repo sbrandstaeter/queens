@@ -1,5 +1,4 @@
-"""
-Test-module for calculation of effective sample size of smc_utils module
+"""Test-module for calculation of effective sample size of smc_utils module.
 
 @author: Sebastian Brandstaeter
 """
@@ -11,16 +10,17 @@ from pqueens.utils import smc_utils
 
 @pytest.fixture(scope='module', params=[1, 10])
 def num_particles(request):
-    """ Return possible number of weights. """
+    """Return possible number of weights."""
 
     return request.param
 
 
+@pytest.mark.unit_tests
 def test_calc_ess_equal_weights(num_particles):
-    """
-    Test special case of resampled particles.
+    """Test special case of resampled particles.
 
-    For N resampled particles the weights are all equal (=1/N) and the ESS=N
+    For N resampled particles the weights are all equal (=1/N) and the
+    ESS=N
     """
     weights = np.array([1.0 / num_particles] * num_particles)
     ess_sol = num_particles
@@ -29,9 +29,9 @@ def test_calc_ess_equal_weights(num_particles):
     assert np.isclose(ess, ess_sol)
 
 
+@pytest.mark.unit_tests
 def test_calc_ess():
-    """
-    Test ESS=0.5*N
+    """Test ESS=0.5*N.
 
     The ess is a measure for the amount of potent particles.
     The higher the weight of a particle the more potent it is.

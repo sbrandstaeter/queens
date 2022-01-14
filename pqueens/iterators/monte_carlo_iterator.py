@@ -1,24 +1,26 @@
-import numpy as np
-import matplotlib.pyplot as plt
-from pqueens.models.model import Model
-from pqueens.utils.process_outputs import process_ouputs
-from pqueens.utils.process_outputs import write_results
-from pqueens.randomfields.univariate_field_generator_factory import (
-    UniVarRandomFieldGeneratorFactory,  # TODO we should create a unified interface for rf
-)
-from pqueens.utils import mcmc_utils
-from pqueens.utils.input_to_random_variable import get_random_samples
-from .iterator import Iterator
-from pqueens.external_geometry.external_geometry import ExternalGeometry
-from pqueens.database.mongodb import MongoDB
 import copy
 import logging
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+import pqueens.database.database as DB_module
+from pqueens.external_geometry.external_geometry import ExternalGeometry
+from pqueens.models.model import Model
+from pqueens.randomfields.univariate_field_generator_factory import (
+    UniVarRandomFieldGeneratorFactory,
+)
+from pqueens.utils import mcmc_utils
+from pqueens.utils.get_random_variables import get_random_samples
+from pqueens.utils.process_outputs import process_ouputs, write_results
+
+from .iterator import Iterator
 
 _logger = logging.getLogger(__name__)
 
 
 class MonteCarloIterator(Iterator):
-    """ Basic Monte Carlo Iterator to enable MC sampling
+    """Basic Monte Carlo Iterator to enable MC sampling.
 
     Attributes:
         model (model):              Model to be evaluated by iterator
@@ -30,7 +32,6 @@ class MonteCarloIterator(Iterator):
         external_geometry_obj (obj): External external_geometry_obj object containing node and
                                      mesh information
         db (obj):                   Data base object
-
     """
 
     def __init__(
@@ -54,7 +55,7 @@ class MonteCarloIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """ Create MC iterator from problem description
+        """Create MC iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -64,7 +65,6 @@ class MonteCarloIterator(Iterator):
 
         Returns:
             iterator: MonteCarloIterator object
-
         """
         print(config.get('experiment_name'))
         if iterator_name is None:
@@ -82,7 +82,7 @@ class MonteCarloIterator(Iterator):
         else:
             external_geometry_obj = None
 
-        db = MongoDB.from_config_create_database(config)
+        db = DB_module.database
 
         return cls(
             model,
@@ -95,11 +95,11 @@ class MonteCarloIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate the model """
+        """Evaluate the model."""
         return self.model.evaluate()
 
     def pre_run(self):
-        """ Generate samples for subsequent MC analysis and update model """
+        """Generate samples for subsequent MC analysis and update model."""
         np.random.seed(self.seed)
 
         parameters = self.model.get_parameter()
@@ -171,8 +171,10 @@ class MonteCarloIterator(Iterator):
                     random_field_opt['num_terms_per_dim'] = rf.get("num_terms_per_dim")
                     random_field_opt['total_terms'] = rf.get("total_terms")
                 # pylint: disable=line-too-long
-                my_field_generator = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                    mcmc_utils.create_proposal_distribution(rf), **random_field_opt
+                my_field_generator = (
+                    UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
+                        mcmc_utils.create_proposal_distribution(rf), **random_field_opt
+                    )
                 )
                 # pylint: enable=line-too-long
                 # eval_locations_list = rf.get("eval_locations", None)
@@ -225,12 +227,12 @@ class MonteCarloIterator(Iterator):
                 field_num += 1
 
     def core_run(self):
-        """  Run Monte Carlo Analysis on model """
+        """Run Monte Carlo Analysis on model."""
         self.model.update_model_from_sample_batch(self.samples)
         self.output = self.eval_model()
 
     def post_run(self):
-        """ Analyze the results """
+        """Analyze the results."""
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description, self.samples)
             if self.result_description["write_results"] is True:

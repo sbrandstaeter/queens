@@ -1,10 +1,10 @@
-import numpy as np
-import pytest
-import pandas as pd
 import os
-import plotly.express as px
-
 from collections import OrderedDict
+
+import numpy as np
+import pandas as pd
+import plotly.express as px
+import pytest
 
 from pqueens.iterators.baci_lm_iterator import BaciLMIterator
 
@@ -109,6 +109,7 @@ def fix_plotly_fig():
     return fig
 
 
+@pytest.mark.unit_tests
 def test_init(mocker):
 
     global_settings = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
@@ -156,6 +157,7 @@ def test_init(mocker):
     assert my_baci_lm_iterator.verbose_output == verbose_output
 
 
+@pytest.mark.unit_tests
 def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
 
     config = {
@@ -231,6 +233,7 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
     assert callargs['verbose_output'] == False
 
 
+@pytest.mark.unit_tests
 def test_eval_model(default_baci_lm_iterator, mocker):
 
     mp = mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate', return_value=None)
@@ -238,6 +241,7 @@ def test_eval_model(default_baci_lm_iterator, mocker):
     mp.assert_called_once()
 
 
+@pytest.mark.unit_tests
 def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
 
     m1 = mocker.patch(
@@ -277,6 +281,7 @@ def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
     m2.assert_called_once()
 
 
+@pytest.mark.unit_tests
 def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
     m1 = mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
@@ -329,6 +334,7 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
             jac = default_baci_lm_iterator.jacobian(np.array([0.1]))
 
 
+@pytest.mark.unit_tests
 def test_initialize_run(mocker, fix_true_false_param, default_baci_lm_iterator):
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
@@ -350,6 +356,7 @@ def test_initialize_run(mocker, fix_true_false_param, default_baci_lm_iterator):
         default_baci_lm_iterator.initialize_run()
 
 
+@pytest.mark.unit_tests
 def test_core_run(default_baci_lm_iterator, mocker, fix_update_reg, fix_tolerance):
     m1 = mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.jacobian',
@@ -387,6 +394,7 @@ def test_core_run(default_baci_lm_iterator, mocker, fix_update_reg, fix_toleranc
             )
 
 
+@pytest.mark.unit_tests
 def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator, fix_plotly_fig):
 
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
@@ -431,6 +439,7 @@ def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator,
         m4.assert_not_called()
 
 
+@pytest.mark.unit_tests
 def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig):
 
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
@@ -469,6 +478,7 @@ def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig):
     m6.assert_called_once()
 
 
+@pytest.mark.unit_tests
 def test_post_run_3param(mocker, default_baci_lm_iterator):
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
@@ -495,6 +505,7 @@ def test_post_run_3param(mocker, default_baci_lm_iterator):
     m4.assert_not_called()
 
 
+@pytest.mark.unit_tests
 def test_post_run_0param(mocker, default_baci_lm_iterator, fix_plotly_fig):
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
@@ -505,6 +516,7 @@ def test_post_run_0param(mocker, default_baci_lm_iterator, fix_plotly_fig):
         default_baci_lm_iterator.post_run()
 
 
+@pytest.mark.unit_tests
 def test_get_positions_raw_2pointperturb(default_baci_lm_iterator):
     x = np.array([1.1, 2.5])
     pos, delta_pos = default_baci_lm_iterator.get_positions_raw_2pointperturb(x)
@@ -520,6 +532,7 @@ def test_get_positions_raw_2pointperturb(default_baci_lm_iterator):
     np.testing.assert_almost_equal(delta_posb, np.array([[0.001011], [-0.001025]]), 8)
 
 
+@pytest.mark.unit_tests
 def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
@@ -548,6 +561,7 @@ def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
         default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
 
 
+@pytest.mark.unit_tests
 def test_checkbounds(mocker, default_baci_lm_iterator):
 
     default_baci_lm_iterator.bounds = np.array([[0.0, 0.0], [5.0, 2.0]])

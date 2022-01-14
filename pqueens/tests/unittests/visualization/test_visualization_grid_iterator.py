@@ -1,7 +1,9 @@
-import numpy as np
 import os
-import pytest
 import re
+
+import numpy as np
+import pytest
+
 import pqueens.visualization.grid_iterator_visualization as qvis
 from pqueens.visualization.grid_iterator_visualization import GridIteratorVisualization
 
@@ -21,6 +23,7 @@ def dummy_vis(tmpdir):
 
 
 # -------------------------------- actual unittests ---------------------------------------------
+@pytest.mark.unit_tests
 def test_init(tmpdir):
     # expected attributes
     paths = [os.path.join(tmpdir, 'myplot.png')]
@@ -42,6 +45,7 @@ def test_init(tmpdir):
     assert grid_vis.var_names_list == var_names_list
 
 
+@pytest.mark.unit_tests
 def test_plot_QoI_grid(tmpdir, dummy_vis):
     # set arguments
     output = {"mean": np.array([1.0, 2.0, 3.0, 4.0])}
@@ -53,6 +57,7 @@ def test_plot_QoI_grid(tmpdir, dummy_vis):
     assert os.path.isfile(filepath)
 
 
+@pytest.mark.unit_tests
 def test_get_plotter_one(dummy_vis):
     num_params = 1
     plotter = qvis.grid_iterator_visualization_instance._get_plotter(num_params)
@@ -60,6 +65,7 @@ def test_get_plotter_one(dummy_vis):
     assert "_plot_one_d" == expected_str
 
 
+@pytest.mark.unit_tests
 def test_get_plotter_one(dummy_vis):
     num_params = 2
     plotter = qvis.grid_iterator_visualization_instance._get_plotter(num_params)
@@ -67,6 +73,7 @@ def test_get_plotter_one(dummy_vis):
     assert "_plot_two_d" == expected_str
 
 
+@pytest.mark.unit_tests
 def test_higher_d(dummy_vis):
     num_params = 3
     with pytest.raises(NotImplementedError) as e:
@@ -74,6 +81,7 @@ def test_higher_d(dummy_vis):
     assert str(e.value) == 'Grid plot only possible up to 2 parameters'
 
 
+@pytest.mark.unit_tests
 def test_plot_one_d(dummy_vis):
     output = {'mean': np.array([0.0, 1.0])}
     samples = np.array([0.0, 1.0])
@@ -82,6 +90,7 @@ def test_plot_one_d(dummy_vis):
     assert return_value is None
 
 
+@pytest.mark.unit_tests
 def test_plot_two_d(dummy_vis):
     samples = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
     output = {'mean': np.array([0.0, 1.0, 0.0, 1.0])}

@@ -2,7 +2,7 @@ import abc
 
 
 class Iterator(metaclass=abc.ABCMeta):
-    """ Base class for Iterator hierarchy
+    """Base class for Iterator hierarchy.
 
     This Iterator class is the base class for one of the primary class
     hierarchies in QUEENS.The job of the iterator hierarchy is to coordinate
@@ -13,7 +13,6 @@ class Iterator(metaclass=abc.ABCMeta):
 
     Attributes:
         model (model): Model to be evaluated by iterator
-
     """
 
     def __init__(self, model=None, global_settings=None):
@@ -22,7 +21,7 @@ class Iterator(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """ Create iterator from problem description
+        """Create iterator from problem description.
 
         Args:
             config (dict):       Dictionary with QUEENS problem description
@@ -32,46 +31,51 @@ class Iterator(metaclass=abc.ABCMeta):
 
         Returns:
             iterator: Iterator object
-
         """
         from .baci_lm_iterator import BaciLMIterator
         from .black_box_variational_bayes import BBVIIterator
         from .bmfia_iterator import BMFIAIterator
         from .bmfmc_iterator import BMFMCIterator
         from .data_iterator import DataIterator
+        from .elementary_effects_iterator import ElementaryEffectsIterator
         from .grid_iterator import GridIterator
         from .lhs_iterator import LHSIterator
         from .lhs_iterator_mf import MF_LHSIterator
         from .metropolis_hastings_iterator import MetropolisHastingsIterator
         from .monte_carlo_iterator import MonteCarloIterator
-        from .morris_salib_wrapper_iterator import MorrisSALibIterator
         from .optimization_iterator import OptimizationIterator
-        from .saltelli_iterator import SaltelliIterator
-        from .saltelli_salib_wrapper_iterator import SaltelliSALibIterator
-        from .single_sim_run_iterator import SingleSimRunIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+<<<<<<< HEAD
         from .sequential_monte_carlo_chopin_iterator import SequentialMonteCarloChopinIterator
+=======
+        from .single_sim_run_iterator import SingleSimRunIterator
+        from .sobol_index_iterator import SobolIndexIterator
+>>>>>>> master
         from .sobol_sequence_iterator import SobolSequenceIterator
+        from .variational_inference_reparameterization import VIRPIterator
 
         method_dict = {
             'lhs': LHSIterator,
             'lhs_mf': MF_LHSIterator,
-            'sobol_sequence': SobolSequenceIterator,
             'metropolis_hastings': MetropolisHastingsIterator,
             'monte_carlo': MonteCarloIterator,
             'optimization': OptimizationIterator,
             'read_data_from_file': DataIterator,
-            'sa_morris_salib': MorrisSALibIterator,
-            'sa_saltelli': SaltelliIterator,
-            'sa_saltelli_salib': SaltelliSALibIterator,
+            'elementary_effects': ElementaryEffectsIterator,
+            'sobol_indices': SobolIndexIterator,
             'smc': SequentialMonteCarloIterator,
+<<<<<<< HEAD
             'smc_chopin': SequentialMonteCarloChopinIterator,
+=======
+            'sobol_sequence': SobolSequenceIterator,
+>>>>>>> master
             'sing_sim_run': SingleSimRunIterator,
             'bmfmc': BMFMCIterator,
             'grid': GridIterator,
             'baci_lm': BaciLMIterator,
             'bbvi': BBVIIterator,
             'bmfia': BMFIAIterator,
+            'virp': VIRPIterator,
         }
 
         if iterator_name is None:
@@ -82,40 +86,42 @@ class Iterator(metaclass=abc.ABCMeta):
             method_name = config[iterator_name]['method_name']
             iterator_class = method_dict[method_name]
             iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
+
         return iterator
 
     def initialize_run(self):
-        """ Optional setup step """
+        """Optional setup step."""
         pass
 
     def pre_run(self):
-        """ Optional pre-run portion of run
+        """Optional pre-run portion of run.
 
-            Implemented by Iterators which can generate all Variables
-            a priori
+        Implemented by Iterators which can generate all Variables a
+        priori
         """
         pass
 
     @abc.abstractmethod
     def core_run(self):
-        """ Core part of the run, implemented by all derived classes """
+        """Core part of the run, implemented by all derived classes."""
         pass
 
     def post_run(self):
-        """ Optional post-run portion of run, e.g., for doing some post processing """
+        """Optional post-run portion of run, e.g., for doing some post
+        processing."""
         pass
 
     def finalize_run(self):
-        """ Optional cleanup step """
+        """Optional cleanup step."""
         pass
 
     @abc.abstractmethod
     def eval_model(self):
-        """ Call the underlying model, implemented by all derived classes  """
+        """Call the underlying model, implemented by all derived classes."""
         pass
 
     def run(self):
-        """ Orchestrate initialize/pre/core/post/finalize phases """
+        """Orchestrate initialize/pre/core/post/finalize phases."""
         self.initialize_run()
         self.pre_run()
         self.core_run()

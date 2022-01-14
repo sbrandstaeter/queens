@@ -1,5 +1,8 @@
+from pqueens.utils.mcmc_utils import create_proposal_distribution
+
+
 def get_random_variables(model):
-    """Get random variables and fields from model
+    """Get random variables and fields from model.
 
     Args:
         model (model): instance of model class
@@ -27,7 +30,7 @@ def get_random_variables(model):
 
 
 def get_distribution_info(random_variables):
-    """Get distribution info
+    """Get distribution info.
 
     Args:
         random_variables (dict): random variables
@@ -43,3 +46,21 @@ def get_distribution_info(random_variables):
         }
         distribution_info.append(temp)
     return distribution_info
+
+
+def get_random_samples(description, num_samples):
+    """Get random samples based on QUEENS description of distribution.
+
+    Args:
+        description (dict):         Dictionary containing QUEENS distribution
+                                    description
+        num_samples (int):          Number of samples to generate
+
+    Returns:
+        np.array:                   Array with samples
+    """
+
+    distribution = create_proposal_distribution(description)
+    samples = distribution.draw(num_draws=num_samples)
+
+    return samples

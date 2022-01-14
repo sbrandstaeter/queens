@@ -1,31 +1,29 @@
-"""
-Main module of QUEENS containing the high-level control routine.
+"""Main module of QUEENS containing the high-level control routine.
 
-Handles input parsing.
-Controls and runs the analysis.
+Handles input parsing. Controls and runs the analysis.
 """
 import argparse
-from collections import OrderedDict
 import os
+import pathlib
 import sys
 import time
-import pathlib
+from collections import OrderedDict
+
 import pyfiglet
 
-from pqueens.utils.logger_settings import setup_logging
+import pqueens.database.database as DB_module
+from pqueens.iterators.iterator import Iterator
 from pqueens.utils import ascii_art
+from pqueens.utils.logger_settings import setup_basic_logging
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from pqueens.iterators.iterator import Iterator
-
 
 def main(args):
-    """
-    Main function of QUEENS
+    """Main function of QUEENS.
 
     controls and runs the analysis.
 
@@ -36,37 +34,45 @@ def main(args):
     result = pyfiglet.figlet_format("QUEENS", font="banner3-D")
     print(result)
     result = """
- A general purpose framework for Uncertainty Quantification,
- Physics-Informed Machine Learning,
- Bayesian Optimization, Inverse Problems and Simulation Analytics
+ A general purpose framework for Uncertainty Quantification, 
+  Physics-Informed Machine Learning, Bayesian Optimization, 
+         Inverse Problems and Simulation Analytics
 """
     print(result)
 
     # read input
     start_time_input = time.time()
     options = get_options(args)
-    setup_logging(
+
+    # stop here if no options are provided
+    if options is None:
+        return
+
+    setup_basic_logging(
         pathlib.Path(options["global_settings"]["output_dir"]),
-        options["global_settings"]["experiment_name"]
+        options["global_settings"]["experiment_name"],
     )
+    DB_module.from_config_create_database(options)
 
-    # build iterator
-    my_iterator = Iterator.from_config_create_iterator(options)
+    with DB_module.database as db:
 
-    end_time_input = time.time()
+        # build iterator
+        my_iterator = Iterator.from_config_create_iterator(options)
 
-    print("")
-    print(f"Time for INPUT: {end_time_input - start_time_input} s")
-    print("")
+        end_time_input = time.time()
 
-    start_time_calc = time.time()
+        print("")
+        print(f"Time for INPUT: {end_time_input - start_time_input} s")
+        print("")
 
-    print("")
-    print("Starting Analysis...")
-    print("")
+        start_time_calc = time.time()
 
-    # perform analysis
-    my_iterator.run()
+        print("")
+        print("Starting Analysis...")
+        print("")
+
+        # perform analysis
+        my_iterator.run()
 
     end_time_calc = time.time()
     print("")
@@ -75,8 +81,7 @@ def main(args):
 
 
 def get_options(args):
-    """
-    Parse options from command line and input file.
+    """Parse options from command line and input file.
 
     Args:
         args (list): list of arguments to be parsed
@@ -86,20 +91,29 @@ def get_options(args):
     """
 
     parser = argparse.ArgumentParser(description="QUEENS")
+    parser.add_argument('--input', type=str, default=None, help='Input file in .json format.')
     parser.add_argument(
-        '--input', type=str, default='input.json', help='Input file in .json format.'
+        '--output_dir', type=str, default=None, help='Output directory to write results to.'
     )
-    parser.add_argument('--output_dir', type=str, help='Output directory to write resutls to.')
     parser.add_argument('--debug', type=str, default='no', help='debug mode yes/no')
 
     args = parser.parse_args(args)
 
-    input_file = os.path.realpath(os.path.expanduser(args.input))
-    try:
-        with open(input_file, 'r') as f:
-            options = json.load(f, object_pairs_hook=OrderedDict)
-    except:
-        raise FileNotFoundError("config.json did not load properly.")
+    # if no options are provided print a greeding message
+    if args.input is None and args.output_dir is None:
+        print("\t\t Welcome to the royal family!")
+        print("\nTo use QUEENS run:\n")
+        print("queens --input <inputfile> --output_dir <output_dir>\n")
+        print("or\n")
+        print("python -m pqueens.main --input <inputfile> --output_dir <output_dir>\n")
+        print("or\n")
+        print(
+            "python path_to_queens/pqueens/main.py --input <inputfile> --output_dir <output_dir>\n"
+        )
+        return None
+
+    if args.input is None:
+        raise Exception("No json input file was provided.")
 
     if args.output_dir is None:
         raise Exception("No output directory was given.")
@@ -107,6 +121,13 @@ def get_options(args):
     output_dir = os.path.realpath(os.path.expanduser(args.output_dir))
     if not os.path.isdir(output_dir):
         raise Exception("Output directory does not exist.")
+
+    input_file = os.path.realpath(os.path.expanduser(args.input))
+    try:
+        with open(input_file, 'r') as f:
+            options = json.load(f, object_pairs_hook=OrderedDict)
+    except:
+        raise FileNotFoundError("config.json did not load properly.")
 
     if args.debug == 'yes':
         debug = True

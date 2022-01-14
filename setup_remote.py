@@ -1,22 +1,44 @@
-
+"""QUEENS setup file for remote runs."""
 import os
+
 from setuptools import setup
 
-# Utility function to read the README file.
-# Used for the long_description.  It's nice, because now 1) we have a top level
-# README file and 2) it's easier to type in the README file than to put a raw
-# string in below ...
+
 def read(fname):
+    """Function to read the README file.
+
+    Args:
+        fname (str): File name to be read
+
+    Returns:
+        The content of the file fname
+    """
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+
 setup(
-    name = "pqueens",
-    version = "0.1",
-    author = "Jonas Nitzler",
-    author_email = "nitzler@lnm.mw.tum.de",
-    description = ("A package for Uncertainty Quantification and Bayesian optimization"),
-    keywords = "Gaussian Processes, Uncertainty Quantification",
-    packages=['pqueens',
-              'pqueens.database',
-              'pqueens.drivers',
-              'pqueens.utils'])
+    name="pqueens-remote",
+    version="1.1",
+    description=("A package for Uncertainty Quantification and Bayesian optimization"),
+    keywords="Gaussian Processes, Uncertainty Quantification",
+    packages=[
+        'pqueens',
+        'pqueens.database',
+        'pqueens.drivers',
+        'pqueens.utils',
+        'pqueens.external_geometry',
+    ],
+    install_requires=[
+        "docker",
+        "netcdf4",
+        "cython",
+        "numpy",
+        "pymongo==3.12.0",
+        "matplotlib",
+        "plotly",
+        "pandas",
+        "vtk",
+        "xarray",
+        "scipy",
+    ],
+)

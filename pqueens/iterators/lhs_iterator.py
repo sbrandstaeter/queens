@@ -1,18 +1,19 @@
+import logging
+
 import numpy as np
 from pyDOE import lhs
+
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
-from pqueens.utils.process_outputs import process_ouputs
-from pqueens.utils.process_outputs import write_results
-from pqueens.utils.scale_samples import scale_samples
 from pqueens.utils.get_random_variables import get_random_variables
-import logging
+from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.scale_samples import scale_samples
 
 _logger = logging.getLogger(__name__)
 
 
 class LHSIterator(Iterator):
-    """Basic LHS Iterator to enable Latin Hypercube sampling
+    """Basic LHS Iterator to enable Latin Hypercube sampling.
 
     Attributes:
         model (model):        Model to be evaluated by iterator
@@ -23,7 +24,6 @@ class LHSIterator(Iterator):
         seed (int): Seed for numpy random number generator
         samples (np.array):   Array with all samples
         output (np.array):   Array with all model outputs
-
     """
 
     def __init__(
@@ -47,7 +47,7 @@ class LHSIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """Create LHS iterator from problem description
+        """Create LHS iterator from problem description.
 
         Args:
             config (dict):       Dictionary with QUEENS problem description
@@ -57,7 +57,6 @@ class LHSIterator(Iterator):
 
         Returns:
             iterator: LHSIterator object
-
         """
         if iterator_name is None:
             method_options = config["method"]["method_options"]
@@ -81,11 +80,11 @@ class LHSIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate the model """
+        """Evaluate the model."""
         return self.model.evaluate()
 
     def pre_run(self):
-        """ Generate samples for subsequent LHS analysis """
+        """Generate samples for subsequent LHS analysis."""
         np.random.seed(self.seed)
 
         random_variables, random_fields, num_inputs, distribution_info = get_random_variables(
@@ -110,14 +109,14 @@ class LHSIterator(Iterator):
         self.samples = scale_samples(hypercube_samples, distribution_info)
 
     def core_run(self):
-        """ Run LHS Analysis on model """
+        """Run LHS Analysis on model."""
 
         self.model.update_model_from_sample_batch(self.samples)
 
         self.output = self.eval_model()
 
     def post_run(self):
-        """ Analyze the results """
+        """Analyze the results."""
         if self.result_description is not None:
             results = process_ouputs(self.output, self.result_description)
             if self.result_description["write_results"] is True:

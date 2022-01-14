@@ -1,28 +1,51 @@
 # QUEENS
 This repository contains the code of *QUEENS*, a general purpose framework for Uncertainty Quantification,
-Physics-Informed Machine Learning, Bayesian Optimization, Inverse Problems and Simulation Analytics on distributed computer 
+Physics-Informed Machine Learning, Bayesian Optimization, Inverse Problems and Simulation Analytics on distributed computer
 systems.
 
 ## Contents
-1. [Prerequisites](#prerequisites)
-    1. [Git](#git)
-    1. [Anaconda](#anaconda)
-    1. [MongoDB](#mongodb)
-    1. [Optional: Singularity](#optional-singularity)
-1. [Installation](#installation)
-1. [Further Topics](#further-topics)
-   1. [Remote computing](#remote-computing)
-   1. [LNM-specific issues](#lnm-specific-issues)
-   1. [Documentation](#documentation)
-   1. [Run Test Suite](#run-test-suite)
-   1. [GitLab Test Machine](#gitlab-test-machine)
+- [QUEENS](#queens)
+  - [Contents](#contents)
+  - [Prerequisites](#prerequisites)
+    - [Anaconda](#anaconda)
+    - [Git](#git)
+    - [MongoDB](#mongodb)
+    - [Optional: Singularity](#optional-singularity)
+  - [Installation](#installation)
+  - [Further Topics](#further-topics)
+    - [Remote Computing](#remote-computing)
+    - [LNM-specific issues](#lnm-specific-issues)
+  - [Documentation](#documentation)
+  - [Run Test Suite](#run-test-suite)
+    - [GitLab Test Machine](#gitlab-test-machine)
 
 
 ## Prerequisites
 There are various prerequisites for QUEENS such as (an appropriately configured) Git, Anaconda, and MongoDB.
 
 [↑ Contents](#contents)
-### Git 
+
+### Anaconda
+[Install](http://docs.anaconda.com/anaconda/install/linux/) the latest version of [Anaconda](https://www.anaconda.com/) with Python 3.x.
+ *Anaconda* is an open-source Python distribution and provides a [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) with many popular data science Python packages. In the following, we will provide some of the most important commands when using Anaconda.
+
+- Create a new Anaconda environment, e.g., using Python 3.8:
+```
+conda create -n <name_of_your_environment> python=3.8
+```
+
+- List all packages linked into an Anaconda environment:
+```
+conda list -n <name_of_your_environment>
+```
+
+- Activate an environment:
+```
+source activate <name_of_your_environment>
+```
+[↑ Contents](#contents)
+
+### Git
 > **Note** this can be skipped if you have already configured Git for other projects
 
 A Git version >= 2.9 is required. <!-- We need at least this version to be able to configure the path to the git-hooks as outlined below. -->
@@ -44,17 +67,24 @@ and your email address to your institute email address with the following comman
 
     > **Note:** Another popular choice is `kwrite`.
 
-1. Set path to our common set of `git-hooks`. After [cloning the repository](#clone-the-repository) into the directory `<someBaseDir>/<sourceDir>`, run
+1. Configure [`git blame`](https://git-scm.com/docs/git-blame) to automatically ignore uninteresting revisions by running:
 
     ```bash
-    cd <someBaseDir>/<sourceDir>
-    git config core.hooksPath ./utilities/code_checks/
+    git config blame.ignoreRevsFile .git-blame-ignore-revs
     ```
-   
-1. In case you are using GitLab for the first time on your machine: Add your public SSH key to your GitLab 
+
+1. Configure our `git-hooks`. We use the the [pre-commit](https://pre-commit.com/) package to manage all our git hooks, automatically. Please note, that we also have guidelines in place to structure our commit messages. Here we use the [convential commits guidlines](https://www.conventionalcommits.org/en/v1.0.0/) which are enforced by our commit-msg hook (managed by [commitizen](https://github.com/commitizen-tools/commitizen)). After [cloning the repository](#clone-the-repository) into the directory `<someBaseDir>/<sourceDir>` and with an [activated QUEENS conda environment](#anaconda) run:
+
+    ```bash
+    pre-commit install --install-hooks --overwrite
+    pre-commit install --hook-type commit-msg
+    pre-commit install --hook-type prepare-commit-msg
+    ```
+
+1. In case you are using GitLab for the first time on your machine: Add your public SSH key to your GitLab
 user profile under the section `User settings - SSH keys`
-    1. Check for an existing SSH key pair using: 
-        ```bash 
+    1. Check for an existing SSH key pair using:
+        ```bash
         cat ~/.ssh/id_rsa.pub
         ```
     1. In case of an empty response, a new key pair can be generated using:
@@ -63,27 +93,7 @@ user profile under the section `User settings - SSH keys`
         ```
     1. For further instruction on how to configure your SSH key correctly please have a look at the
      [GitLab documentation](https://gitlab.lrz.de/help/ssh/README).
-     
-[↑ Contents](#contents)
 
-### Anaconda
-[Install](http://docs.anaconda.com/anaconda/install/linux/) the latest version of [Anaconda](https://www.anaconda.com/) with Python 3.x.
- *Anaconda* is an open-source Python distribution and provides a [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) with many popular data science Python packages. In the following, we will provide some of the most important commands when using Anaconda.
-
-- Create a new Anaconda environment, e.g., using Python 3.8:  
-```
-conda create -n <name_of_your_environment> python=3.8
-```
-
-- List all packages linked into an Anaconda environment:
-```
-conda list -n <name_of_your_environment>
-```
-
-- Activate an environment:
-```
-source activate <name_of_your_environment>
-```
 [↑ Contents](#contents)
 
 ### MongoDB
@@ -98,7 +108,7 @@ For installation on various OS, the following hints might be useful:
 sudo yum install mongodb-org
 ```
 
-- Installation instructions for **Ubuntu** can be found [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/). 
+- Installation instructions for **Ubuntu** can be found [here](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-ubuntu/).
 
 - Installation instructions for **Fedora 22** can be found [here](https://blog.bensoer.com/install-mongodb-3-0-on-fedora-22/).
 
@@ -107,29 +117,29 @@ The commands for starting and potentially stopping MongoDB read as follows:
 - Start MongoDB:
     ```
     sudo systemctl start mongod
-    ``` 
+    ```
 
 - If required, stop MongoDB:
     ```
     sudo systemctl stop mongod
-    ```  
+    ```
 
 - And then potentially restart again:
     ```
     sudo systemctl restart mongod
-    ```  
+    ```
 
-- (Optional) For MacOS, you have to run: 
-    ``` 
+- (Optional) For MacOS, you have to run:
+    ```
     mongod --dbpath <path_to_your_database>`
     ```
     > Note: It might be required to edit the sudoers file `/etc/sudoers.d/` (together with your administrator) to get execution rights.
 
 
 
-Note that the MongoDB config file might be edited such that it allows for connections from anywhere (probably not the safest option, but ok for now). If you followed the standard installation instructions, you should edit the config file using  
+Note that the MongoDB config file might be edited such that it allows for connections from anywhere (probably not the safest option, but ok for now). If you followed the standard installation instructions, you should edit the config file using
 ```
-sudo vim /etc/mongod.conf  
+sudo vim /etc/mongod.conf
 ```
 And comment out the `bindIp` like shown
 ```
@@ -149,7 +159,7 @@ Singularity containers are well suited for being used with QUEENS. If you are in
 ```
 sudo yum install singularity
 ```
-After the installation, execute the following command once on your workstation: 
+After the installation, execute the following command once on your workstation:
 ```
 sudo singularity config fakeroot --add <your_username>
 ```
@@ -163,53 +173,65 @@ To check that the command was successful, you can
     ```bash
     cat /etc/subgid
     ```
-    which should return something like `1000:4294836224:65536`.  
-For more information please refer to the singularity documentation for [user](https://sylabs.io/guides/3.5/user-guide/fakeroot.html) and [admin](https://sylabs.io/guides/3.5/admin-guide/user_namespace.html#config-fakeroot) on the fakeroot option of singularity.  
+    which should return something like `1000:4294836224:65536`.
+For more information please refer to the singularity documentation for [user](https://sylabs.io/guides/3.5/user-guide/fakeroot.html) and [admin](https://sylabs.io/guides/3.5/admin-guide/user_namespace.html#config-fakeroot) on the fakeroot option of singularity.
 
+Make sure that after the installation process your `.bashrc` file contains
+```
+export SINGULARITY_BIND=/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm
+export SINGULARITYENV_APPEND_PATH=$PATH
+export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+```
+(Generally this should be generated automatically. Without `lnm` on external PCs.)
 [↑ Contents](#contents)
 
 
 ## Installation
 *QUEENS* needs only to be installed once on the local machine, allowing already for both local and remote computing.
 
-1. After having [Git](#configuration-of-git) availabe and appropriately configured, this repository might be cloned to your local machine:  
+1. After having [Git](#configuration-of-git) availabe and appropriately configured, this repository might be cloned to your local machine:
     ```
-    git clone git@gitlab.com:adco-engineering-gw/queens/queens.git <target-directory>
+    git clone git@gitlab.lrz.de:queens_community/queens.git <target-directory>
     ```
 1. Assuming that Anaconda is installed on your local machine, create a QUEENS environment:
     ```
     cd <your-path-to-QUEENS>
-    conda env create  
+    conda env create
     ```
     With this, all required third party libraries will be installed.
-    
-    advanced: for a custom environment name  
+
+    advanced: for a custom environment name
     `conda env create -f  <your-path-to-QUEENS>/environment.yml --name <your-custom-queens-env-name>`
-1. Activate this newly created environment:  
+1. Activate this newly created environment:
     ```
     conda activate queens
     ```
-1. Install QUEENS inside the environment (Note: If you encounter any problems try using the --user flag):  
-    ```
-    python <your-path-to-QUEENS>/setup.py develop
-    ```
+1. Install QUEENS inside the environment:
+     - For simple use (in the QUEENS directory):
+        ```
+        pip install -e .
+        ```
+    - For developers (in the QUEENS directory):
+        ```
+        pip install -e .[develop]
+        ```
 
-1. If required, uninstall QUEENS within the activated environment:    
+1. If required, uninstall QUEENS within the activated environment:
     ```
-    python <your-path-to-QUEENS>/setup.py develop --uninstall
+    python uninstall queens
     ```
 
 Updates from time to time are recommended:
 
 - Update your Python packages the easy (default) way:
    ```
-   cd <your-path-to-QUEENS> 
+   cd <your-path-to-QUEENS>
   conda env update
    ```
 - Update your Python packages in a more advanced way:
    ```
-   conda env update --verbose --name <your-custom-queens-env-name> -f <your-path-to-QUEENS>/environment.yml 
-   ```  
+   conda env update --verbose --name <your-custom-queens-env-name> -f <your-path-to-QUEENS>/environment.yml
+   ```
 
 - Update Python version of your Conda environment: to be in sync with the latest Python version recommended for QUEENS, act in sync with the latest changes on the  `master` branch and follow the normal update procedure described above. This will keep both your environment-related file `environment.yml` and your environment up to date.
 
@@ -219,7 +241,7 @@ Furthermore, you might be interested in using Jupyter notebooks:
 
    ```
    conda install nb_conda_kernels
-   ```  
+   ```
 
 [↑ Contents](#contents)
 
@@ -237,11 +259,11 @@ In case you do not have a `id_rsa.pub`-key on one of the machines, you can gener
 ```batch
 ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa
 ```
-To learn more about how ssh-port forwarding works click 
+To learn more about how ssh-port forwarding works click
 [here](https://chamibuddhika.wordpress.com/2012/03/21/ssh-tunnelling-explained/).
 
 If you have performed the aforementioned step, yet you are still asked for your password, this might be due to the following reasons:
- * permissions of the directory `~/.ssh` are incorrect. They have to be 700, so only the user itself is allowed to access the directory and the files in there.  
+ * permissions of the directory `~/.ssh` are incorrect. They have to be 700, so only the user itself is allowed to access the directory and the files in there.
    To set the permissions correctly, use the following command:
    ```batch
    chmod -R 700 ~/.ssh
@@ -250,30 +272,28 @@ If you have performed the aforementioned step, yet you are still asked for your 
    One possible way to set the permissions correctly is logging into the remote machine and using the following command:
    ```batch
    chmod 700 ~
-   ```  
+   ```
    Note that there are other valid choices. Refer to the manual of chmod for details.
 
 [↑ Contents](#contents)
 
 ### LNM-specific issues
-In case you want to run simulations on remote computing machines (e.g., cluster), you need enable access 
-from the remote to the localhost at `port 27017`. By default, the fire wall software `firewalld` blocks every incoming 
-request. Hence, to enable a connections, we have 
+In case you want to run simulations on remote computing machines (e.g., cluster), you need enable access from the remote to the localhost at `port27017`.By default the firewall software `firewalld` blocks every incoming request. Hence, to enable a connections, we have
 add so called rules to `firewalld` in order to connect to the database.
 1.  First check the current firewall rules by typing:
-    ```bash 
+    ```bash
     sudo firewall-cmd --list-all
     ```
 1. If there is no rule in place which allows you to connect to port 27017, you have to add an exception for the *master-node* of the clusters you want work with:
     ```bash
-    sudo firewall-cmd --zone=work --add-rich-rule 'rule family=ipv4 source address=<IP-address-of-cluster-master-node> port port=27017 protocol=tcp accept' --permanent        
+    sudo firewall-cmd --zone=work --add-rich-rule 'rule family=ipv4 source address=<IP-address-of-cluster-master-node> port port=27017 protocol=tcp accept' --permanent
     ```
     Some LNM specific IP addresses are:
     - Schmarrn: 129.187.58.24
     - Bruteforce (master node global IP): 129.187.58.13
     - Deep (master node global IP): 129.187.58.20
-    
-1. To apply the changes run: 
+
+1. To apply the changes run:
     ```
     sudo firewall-cmd --reload
     ```
@@ -282,7 +302,7 @@ add so called rules to `firewalld` in order to connect to the database.
     ```
     cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
     ```
-  
+
 In case you want to use queens with `bruteforce` at the beginning of the first execution of queens on `bruteforce` your `.bashrc`-file is manipulated. Three lines with:
 ```
 export SINGULARITY*
@@ -296,19 +316,19 @@ and replace the `/something/has/been/added/automatically` by the output of:
 echo $LD_LIBRARY_PATH
 ```
 while you are regularly logged in on bruteforce with your account.
-  
+
 [↑ Contents](#contents)
 ## Documentation
 QUEENS uses [SPHINX](https://www.sphinx-doc.org/en/master/) to automatically build a html-documentation from docstring.
-To build it, navigate into the doc folder with:   
+To build it, navigate into the doc folder with:
 ```bash
 cd <queens-base_dir>/doc
-```  
+```
 and run:
 ```bash
 make html
 ```
-After adding new modules or classes to QUEENS, one needs to rebuild the autodoc index by running:  
+After adding new modules or classes to QUEENS, one needs to rebuild the autodoc index by running:
 ```bash
 sphinx-apidoc -o doc/source pqueens -f -M
 ```
@@ -328,9 +348,9 @@ ln -s <your/path/to/post_drt_monitor> <QUEENS_BaseDir>/config/post_drt_monitor
 ln -s <your/path/to/post_drt_ensight> <QUEENS_BaseDir>/config/post_drt_ensight
 ln -s <your/path/to/post_processor> <QUEENS_BaseDir>/config/post_processor
 ```
-The testing strategy is more closely described in [TESTING.md](TESTING.md) 
+The testing strategy is more closely described in [TESTING.md](TESTING.md)
 To run the test suite type:
-```bash  
+```bash
 pytest pqueens/tests -W ignore::DeprecationWarning
 ```
 For more info see the [pytest documentation](https://docs.pytest.org/en/latest/warnings.html).
@@ -347,7 +367,7 @@ The steps are as follows:
     ```bash
     curl -L https://packages.gitlab.com/install/repositories/runner/gitlab-runner/script.rpm.sh | sudo bash
     ```
-1. To install run:  
+1. To install run:
     ```bash
     sudo yum install gitlab-runner
     ```

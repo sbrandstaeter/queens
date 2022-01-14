@@ -3,15 +3,15 @@ import scipy as sp
 
 
 class GenericExternalRandomField:
-    """
-    Generic random field class for random fields on externally defined geometries.
+    """Generic random field class for random fields on externally defined
+    geometries.
 
     Attributes:
         corr_length (float): Hyperparameter for the correlation length (a.t.m. only one)
         std_hyperparam_rf (float): Hyperparameter for standard-deviation of random field
         mean_fun_params (lst): List of parameters for mean function parameterization of
                                random field
-        num_samples (int): Number of samples/realizations of the random field                              
+        num_samples (int): Number of samples/realizations of the random field
         num_points (int): Number of discretization points of the random field
         mean (np.array): Vector that contains the discretized mean function of the
                                    random field
@@ -27,15 +27,14 @@ class GenericExternalRandomField:
         external_definition (dict): External definition of the random field
         random_field_coordinates (np.array): Matrix with row-wise coordinate values of the
                                              random field discretization
-        eigen_vecs_mat (np.array): Eigenvector matrix of covariance 
+        eigen_vecs_mat (np.array): Eigenvector matrix of covariance
         eigen_vals_vec (np.array): Vector of eigenvalues of covariance matrix
-        weighted_eigen_val_mat_truncated (np.array): Truncated and with eigenvalues weighted 
-                                                     eigen representation of the covariance 
+        weighted_eigen_val_mat_truncated (np.array): Truncated and with eigenvalues weighted
+                                                     eigen representation of the covariance
                                                      matrix
 
     Returns:
         Instance of GenericExternalRandomField class
-
     """
 
     def __init__(
@@ -70,14 +69,12 @@ class GenericExternalRandomField:
         self.dimension = dimension
 
     def main_run(self):
-        """
-        Main run of the external random field class that finds a lower dim representation for the
-        random field and returns the basis and lower dim (truncated) coeff. vector of the field
-        representation.
+        """Main run of the external random field class that finds a lower dim
+        representation for the random field and returns the basis and lower dim
+        (truncated) coeff. vector of the field representation.
 
         Returns:
             None
-
         """
         self.calculate_mean_fun()
         self.calculate_covariance_matrix_and_cholseky()
@@ -85,12 +82,11 @@ class GenericExternalRandomField:
 
     # ----------------------------- AUXILIARY METHODS -----------------------------
     def calculate_mean_fun(self):
-        """
-        Calculate the mean function of the random field and store the discretized representation.
+        """Calculate the mean function of the random field and store the
+        discretized representation.
 
         Returns:
             None
-
         """
         if self.mean_fun_type == 'inflow_parabola':
             self.fixed_one_dim_coords_vector = np.linspace(0, 1, self.num_points, endpoint=True)
@@ -148,13 +144,12 @@ class GenericExternalRandomField:
             raise RuntimeError('Only inflow parabola and constant implemented at the moment!')
 
     def calculate_covariance_matrix_and_cholseky(self):
-        """
-        Based on the kernel description of the random field, build its covariance matrix using
-        the external geometry and coordinates. Afterwards, calculate the Cholesky decomposition.
+        """Based on the kernel description of the random field, build its
+        covariance matrix using the external geometry and coordinates.
+        Afterwards, calculate the Cholesky decomposition.
 
         Returns:
             None
-
         """
         K_mat = np.zeros((self.num_points, self.num_points))
         # here we assume a specific kernel, namely a rbf kernel
@@ -171,13 +166,11 @@ class GenericExternalRandomField:
         self._decompose_and_truncate_random_field()
 
     def _decompose_and_truncate_random_field(self):
-        """
-        Decompose and then truncate the random field according to desired variance fraction that
-        should be covered/explained by the truncation.
+        """Decompose and then truncate the random field according to desired
+        variance fraction that should be covered/explained by the truncation.
 
         Returns:
             None
-
         """
         # compute eigendecomposition
         # TODO we should use the information about the Cholesky decomp
@@ -210,14 +203,12 @@ class GenericExternalRandomField:
         )
 
     def calculate_random_coef_matrix(self):
-        """
-        Provide the random coefficients of the truncated field representation. The actual
-        field is not build here but will be reconstructed from the coefficient matrix and the
-        truncated basis
+        """Provide the random coefficients of the truncated field
+        representation. The actual field is not build here but will be
+        reconstructed from the coefficient matrix and the truncated basis.
 
         Returns:
             None
-
         """
         # TODO this should be changed to new truncated version (code already goes in this method)
         # TODO copy here content of `univariate_field_generator_factory` staticmethod

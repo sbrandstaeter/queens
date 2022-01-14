@@ -1,14 +1,16 @@
 import numpy as np
+
 from pqueens.regression_approximations_mf.regression_approximation_mf import (
     RegressionApproximationMF,
 )
+
 from .interface import Interface
 
 # TODO add tests
 
 
 class ApproximationInterfaceMF(Interface):
-    """ Class for mapping input variables to responses using a MF approximation
+    """Class for mapping input variables to responses using a MF approximation.
 
         The ApproximationInterface uses a so-called regression approximation,
         which just another name for a regression model that is used in this context
@@ -27,13 +29,12 @@ class ApproximationInterfaceMF(Interface):
     """
 
     def __init__(self, interface_name, approximation_config, variables):
-        """ Create interface
+        """Create interface.
 
         Args:
             interface_name (string):     Name of interface
             approximation_config (dict): Config options for approximation
             variables (dict):            Dictionary with variables
-
         """
         self.name = interface_name
         self.variables = variables
@@ -43,7 +44,7 @@ class ApproximationInterfaceMF(Interface):
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
-        """ Create interface from config dictionary
+        """Create interface from config dictionary.
 
         Args:
             interface_name (str):   Name of interface
@@ -62,7 +63,7 @@ class ApproximationInterfaceMF(Interface):
 
     # TODO think about intruducing general mf-interface ?
     def map(self, samples, level=None):
-        """ Mapping function which calls the regression approximation
+        """Mapping function which calls the regression approximation.
 
         Args:
             samples (list):         list of variables objects
@@ -88,7 +89,7 @@ class ApproximationInterfaceMF(Interface):
         return output
 
     def build_approximation(self, Xtrain, Ytrain):
-        """ Build and train underlying regression model
+        """Build and train underlying regression model.
 
         Args:
             Xtrain (list):      List of arrays of Training inputs
@@ -101,5 +102,5 @@ class ApproximationInterfaceMF(Interface):
         self.approx_init = True
 
     def is_initialized(self):
-        """ Is the approximation properly initialzed """
+        """Is the approximation properly initialzed."""
         return self.approx_init

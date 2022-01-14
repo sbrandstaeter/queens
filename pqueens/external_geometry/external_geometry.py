@@ -5,14 +5,12 @@ _logger = logging.getLogger(__name__)
 
 
 class ExternalGeometry(metaclass=abc.ABCMeta):
-    """
-    Abstract base class to read in external external_geometry_obj formats into QUEENS.
-    The class enables, e.g., external_geometry_obj based construction of random fields or post
-    processing routines
+    """Abstract base class to read in external external_geometry_obj formats
+    into QUEENS. The class enables, e.g., external_geometry_obj based
+    construction of random fields or post processing routines.
 
     Returns:
         geometry_obj (obj): Instance of the ExternalGeometry class.
-
     """
 
     def __init__(self):
@@ -20,15 +18,14 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_external_geometry(cls, config):
-        """
-        Construct the external_geometry_obj object from the problem description.
+        """Construct the external_geometry_obj object from the problem
+        description.
 
         Args:
             config (dict): Dictionary containing the problem description of the QUEENS simulation
 
         Returns:
             geometry_obj (obj): Instance of the ExternalGeometry class.
-
         """
 
         from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
@@ -49,12 +46,10 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
         return geometry_obj
 
     def main_run(self):
-        """
-        Main routine of external_geometry_obj object
+        """Main routine of external_geometry_obj object.
 
         Returns:
             None
-
         """
         _logger.info('Start reading external geometry from file...')
         self.organize_sections()
@@ -64,21 +59,17 @@ class ExternalGeometry(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def read_external_data(self):
-        """
-        Method that reads in external files containing a external_geometry_obj definition
-        """
+        """Method that reads in external files containing a
+        external_geometry_obj definition."""
         pass
 
     @abc.abstractmethod
     def organize_sections(self):
-        """
-        Organizes (geometric) sections in external file to read in geometric data efficiently
-        """
+        """Organizes (geometric) sections in external file to read in geometric
+        data efficiently."""
         pass
 
     @abc.abstractmethod
     def finish_and_clean(self):
-        """
-        Finishing, postprocessing and cleaning
-        """
+        """Finishing, postprocessing and cleaning."""
         pass

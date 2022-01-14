@@ -1,11 +1,11 @@
-import pytest
 import numpy as np
+import pytest
 from mock import patch
 from scipy.stats import multivariate_normal as mvn
-from pqueens.utils import mcmc_utils
-from pqueens.utils import variational_inference_utils
-from pqueens.iterators.black_box_variational_bayes import BBVIIterator
+
 import pqueens.visualization.variational_inference_visualization as vis
+from pqueens.iterators.black_box_variational_bayes import BBVIIterator
+from pqueens.utils import mcmc_utils, variational_inference_utils
 
 
 @pytest.mark.benchmark

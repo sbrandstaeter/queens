@@ -7,7 +7,7 @@ import pqueens.tests.integration_tests.example_simulator_functions.uniform_circu
 
 
 def main(job_id, params):
-    """ Interface to log of Gaussian likelihood of GnR model
+    """Interface to log of Gaussian likelihood of GnR model.
 
     UNITS:
     - length [m]

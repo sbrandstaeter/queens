@@ -1,27 +1,29 @@
-import numpy as np
-import os
+import abc
 import glob
+import os
 import pprint
+
+import numpy as np
 import pandas as pd
+
+import pqueens.database.database as DB_module
 from pqueens.models.model import Model
-from pqueens.database.mongodb import MongoDB
 
 
 class LikelihoodModel(Model):
-    """
-    Base class for likelihood models that unifies interfaces of likelihood models
-    used in inverse analysis.
+    """Base class for likelihood models that unifies interfaces of likelihood
+    models used in inverse analysis.
 
     Attributes:
         forward_model (obj): Forward model on which the likelihood model is based
         coords_mat (np.array): Row-wise coordinates at which the observations were recorded
+        time_vec (np.array): Vector of observation times
         y_obs_vec (np.array): Corresponding experimental data vector to coords_mat
         output_label (str): Name of the experimental outputs (column label in csv-file)
         coord_labels (lst): List with coordinate labels for (column labels in csv-file)
 
     Returns:
         Instance of LikelihoodModel class
-
     """
 
     def __init__(
@@ -30,6 +32,7 @@ class LikelihoodModel(Model):
         model_parameters,
         forward_model,
         coords_mat,
+        time_vec,
         y_obs_vec,
         output_label,
         coord_labels,
@@ -39,12 +42,12 @@ class LikelihoodModel(Model):
         self.coords_mat = coords_mat
         self.y_obs_vec = y_obs_vec
         self.output_label = output_label
+        self.time_vec = time_vec
         self.coord_labels = coord_labels
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
-        """
-        Create a likelihood model from the problem description
+        """Create a likelihood model from the problem description.
 
         Args:
             model_name (str): Name of the model
@@ -52,11 +55,10 @@ class LikelihoodModel(Model):
 
         Returns:
             Instance of likelihood_model class
-
         """
         # get child likelihood classes
-        from .gaussian_static_likelihood import GaussianStaticLikelihood
         from .bayesian_mf_gaussian_static_likelihood import BMFGaussianStaticModel
+        from .gaussian_static_likelihood import GaussianStaticLikelihood
 
         model_dict = {
             'gaussian_static': GaussianStaticLikelihood,
@@ -76,14 +78,15 @@ class LikelihoodModel(Model):
         # get further model options
         output_label = model_options.get('output_label')
         coord_labels = model_options.get('coordinate_labels')
-        db = MongoDB.from_config_create_database(config)
+        time_label = model_options.get('time_label')
+        db = DB_module.database
         global_settings = config.get('global_settings', None)
         experimental_data_path_list = model_options.get("experimental_csv_data_base_dirs")
         experiment_name = global_settings["experiment_name"]
 
         # call classmethod to load experimental data
-        y_obs_vec, coords_mat = cls._get_experimental_data_and_write_to_db(
-            experimental_data_path_list, experiment_name, db, coord_labels, output_label
+        y_obs_vec, coords_mat, time_vec = cls._get_experimental_data_and_write_to_db(
+            experimental_data_path_list, experiment_name, db, coord_labels, time_label, output_label
         )
 
         return model_class.from_config_create_likelihood(
@@ -92,6 +95,7 @@ class LikelihoodModel(Model):
             model_parameters,
             forward_model,
             coords_mat,
+            time_vec,
             y_obs_vec,
             output_label,
             coord_labels,
@@ -99,10 +103,16 @@ class LikelihoodModel(Model):
 
     @classmethod
     def _get_experimental_data_and_write_to_db(
-        cls, experimental_data_path_list, experiment_name, db, coordinate_labels, output_label
+        cls,
+        experimental_data_path_list,
+        experiment_name,
+        db,
+        coordinate_labels,
+        time_label,
+        output_label,
     ):
-        """
-        Load all experimental data into QUEENS and conduct some preprocessing and cleaning.
+        """Load all experimental data into QUEENS and conduct some
+        preprocessing and cleaning.
 
         Args:
             experimental_data_path_list (lst): List containing paths to base directories of
@@ -110,6 +120,7 @@ class LikelihoodModel(Model):
             experiment_name (str): Name of the current experiment in QUEENS
             db (obj): Database object
             coordinate_labels (lst): List of column-wise coordinate labels in csv files
+            time_label (str): Name of the time variable in csv file
             output_label (str): Label that marks the output quantity in the csv file
 
         Returns:
@@ -117,8 +128,7 @@ class LikelihoodModel(Model):
                                   observation coordinates
             experimental_coordinates (np.array): Matrix with observation coordinates. One row
                                                  corresponds to one coordinate point.
-
-         """
+        """
         if experimental_data_path_list is not None:
 
             # iteratively load all csv files in specified directory
@@ -168,14 +178,22 @@ class LikelihoodModel(Model):
             experimental_coordinates = (
                 np.array([experimental_data_dict[coordinate] for coordinate in coordinate_labels]),
             )[0].T
+
+            # get a unique vector of observation times
+            if time_label:
+                time_vec = np.sort(list(set(experimental_data_dict[time_label])))
+            else:
+                time_vec = None
+
             # get the experimental outputs
             y_obs_vec = np.array(experimental_data_dict[output_label]).squeeze()
 
-            return y_obs_vec, experimental_coordinates
+            return y_obs_vec, experimental_coordinates, time_vec
 
         else:
             raise IOError("You did not specify any experimental data!")
 
+    @abc.abstractmethod
     def evaluate(self):
-        """ Evaluate model with current set of variables """
+        """Evaluate model with current set of variables."""
         pass

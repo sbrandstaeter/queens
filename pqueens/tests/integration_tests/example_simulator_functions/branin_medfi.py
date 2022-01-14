@@ -1,9 +1,10 @@
-from pqueens.tests.integration_tests.example_simulator_functions.branin_hifi import branin_hifi
 import numpy as np
+
+from pqueens.tests.integration_tests.example_simulator_functions.branin_hifi import branin_hifi
 
 
 def branin_medfi(x1, x2):
-    """ Medium fidelity Branin function
+    """Medium fidelity Branin function.
 
     Compute value of medium-fidelity version of Branin function as described
     in [1]. The corresponding high- and low-fidelity versions are implemented
@@ -33,7 +34,7 @@ def branin_medfi(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to medium fidelity Branin function
+    """Interface to medium fidelity Branin function.
 
     Args:
         job_id (int):  ID of job

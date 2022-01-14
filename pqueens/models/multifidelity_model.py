@@ -1,11 +1,13 @@
 import numpy as np
+
 from pqueens.interfaces.interface import Interface
+
 from .model import Model
 from .simulation_model import SimulationModel
 
 
 class MultifidelityModel(Model):
-    """ Multi-fidelity model class
+    """Multi-fidelity model class.
 
     The multi-fidelity model class holds a sequence of simulation models for
     multi-fidelity sampling schemes.
@@ -23,14 +25,13 @@ class MultifidelityModel(Model):
     """
 
     def __init__(self, model_name, model_parameters, model_sequence, eval_cost_per_level):
-        """ Initialize multi-fidelity model
+        """Initialize multi-fidelity model.
 
         Args:
             model_name (string):        Name of model
             model_parameters (dict):    Model parameters
             model_sequence (list):      List with SimulationModels
             eval_cost_per_level (list): List with model evaluation cost
-
         """
         super(MultifidelityModel, self).__init__(model_name, model_parameters)
 
@@ -49,7 +50,7 @@ class MultifidelityModel(Model):
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
-        """  Create multi-fidelity model from problem description
+        """Create multi-fidelity model from problem description.
 
         Args:
             model_name (string): Name of model
@@ -57,7 +58,6 @@ class MultifidelityModel(Model):
 
         Returns:
             multifidelity_model:   Instance of MultifidelityModel
-
         """
         # get options
         model_options = config[model_name]
@@ -83,7 +83,7 @@ class MultifidelityModel(Model):
         return cls(model_name, model_parameters, sub_models, model_evaluation_cost)
 
     def evaluate(self):
-        """ Evaluate model with current set of variables """
+        """Evaluate model with current set of variables."""
         # switch according to response mode
         if self.response_mode == 'uncorrected_lofi':
             self.response = self._lofi_model().interface.map(self.variables)
@@ -100,34 +100,34 @@ class MultifidelityModel(Model):
         return self.response
 
     def set_response_mode(self, new_response_mode):
-        """ Set response mode of multi-fidelity model """
+        """Set response mode of multi-fidelity model."""
         if new_response_mode in self.__admissible_response_modes:
             self.response_mode = new_response_mode
         else:
             raise ValueError("Unsupported response mode")
 
     def solution_level_cost(self):
-        """ Return solution cost for each model level """
+        """Return solution cost for each model level."""
         return self.eval_cost_per_level
 
     def set_hifi_model_index(self, hifi_index):
-        """ Choose which model is used as hi-fi model """
+        """Choose which model is used as hi-fi model."""
         if hifi_index > len(self.__model_sequence):
             raise ValueError("Index for hi-fi model is out of range")
         else:
             self.__active_hf_model_ind = hifi_index
 
     def set_lofi_model_index(self, lofi_index):
-        """ Choose which model is used as lo-fi model """
+        """Choose which model is used as lo-fi model."""
         if lofi_index > len(self.__model_sequence):
             raise ValueError("Index for lo-fi model is out of range")
         else:
             self.__active_lf_model_ind = lofi_index
 
     def _lofi_model(self):
-        """ Get current low-fidelity model """
+        """Get current low-fidelity model."""
         return self.__model_sequence[self.__active_lf_model_ind]
 
     def _hifi_model(self):
-        """ Get current high-fidelity model """
+        """Get current high-fidelity model."""
         return self.__model_sequence[self.__active_hf_model_ind]

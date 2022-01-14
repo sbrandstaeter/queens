@@ -1,16 +1,17 @@
 {
-  "experiment_name" : "xxx",
-  "database"  :{
-    "address"   : "localhost:27017"
+  "experiment_name": "xxx",
+  "database": {
+    "type": "mongodb",
+    "address": "localhost:27017"
   },
   "method": {
     "method_name": "read_data_from_file",
-    "method_options" :{
-      "path_to_data" : "/path_to_data/some_data.pickle",
-      "result_description" : {
-          "write_results" : true,
-          "plot_results" : false,
-          "num_support_points" : 5
+    "method_options": {
+      "path_to_data": "/path_to_data/some_data.pickle",
+      "result_description": {
+        "write_results": true,
+        "plot_results": false,
+        "num_support_points": 5
       }
     }
   }

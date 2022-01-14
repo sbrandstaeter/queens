@@ -1,11 +1,12 @@
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import numpy as np
-from matplotlib import cm
-import matplotlib.ticker as mticker
-from matplotlib.ticker import LinearLocator, FormatStrFormatter
 import os
 import sys
+
+import matplotlib.pyplot as plt
+import matplotlib.ticker as mticker
+import numpy as np
+from matplotlib import cm
+from matplotlib.ticker import FormatStrFormatter, LinearLocator
+from mpl_toolkits.mplot3d import Axes3D
 
 """
 A module that provides utilities and a class for visualization in the grid iterator.
@@ -28,9 +29,9 @@ this.grid_iterator_visualization_instance = None
 
 
 def from_config_create(config, iterator_name=None):
-    """
-    Module function that calls the class function `from_config_create` and creates instance of the
-    GridIteratorVisualization class from the problem description.
+    """Module function that calls the class function `from_config_create` and
+    creates instance of the GridIteratorVisualization class from the problem
+    description.
 
     Args:
         config (dict): Dictionary created from the input file, containing the problem description
@@ -42,53 +43,46 @@ def from_config_create(config, iterator_name=None):
 
 
 def _log_tick_formatter(val):
-    """
-    Tick formatter for 10-logarithmic scaling
+    """Tick formatter for 10-logarithmic scaling.
 
     Args:
         val (np.array): Values of grid variable
 
     Returns:
         Formatted tick values
-
     """
     return "{:.2e}".format(10 ** val)
 
 
 def _ln_tick_formatter(val):
-    """
-    Tick formatter for natural logarithmic scaling
+    """Tick formatter for natural logarithmic scaling.
 
     Args:
         val (np.array): Values of grid variable
 
     Returns:
         Formatted tick values
-
     """
 
     return "{:.2e}".format(np.e ** val)
 
 
 def _linear_tick_formatter(val):
-    """
-    Tick formatter for linear scaling
+    """Tick formatter for linear scaling.
 
     Args:
         val (np.array): Values of grid variable
 
     Returns:
         Formatted tick values
-
     """
 
     return "{:.2e}".format(val)
 
 
 class GridIteratorVisualization(object):
-    """
-    Visualization class for GridIterator that contains several plotting, storing and visualization
-    methods that can be used anywhere in QUEENS.
+    """Visualization class for GridIterator that contains several plotting,
+    storing and visualization methods that can be used anywhere in QUEENS.
 
     Attributes:
         saving_paths_list (list): List with saving_paths_list to save the plots.
@@ -151,15 +145,13 @@ class GridIteratorVisualization(object):
         return cls(paths, save_bools, plot_booleans, scale_types_list, var_names_list)
 
     def plot_QoI_grid(self, output, samples, num_params, n_grid_p):
-        """
-        Plot Quantity of Interest over grid (so far support up to 2D grid)
+        """Plot Quantity of Interest over grid (so far support up to 2D grid)
 
         args:
             output (dict):       QoI obtained from simulation
             samples (np.array):  Grid coordinates flattened 1D arrays as columns of 2D samples array
             num_params (int):                 Number of parameters varied
             n_grid_p (np.array): Array containing number of grid points for each parameter
-
         """
         if self.plot_booleans[0] is True or self.save_bools[0] is True:
             plotter = self._get_plotter(num_params)
@@ -170,15 +162,14 @@ class GridIteratorVisualization(object):
             plt.show()
 
     def _get_plotter(self, num_params):
-        """
-        Get the correct plotting function depending on the dimension of the grid
+        """Get the correct plotting function depending on the dimension of the
+        grid.
 
         Args:
             num_params (int): Number of grid-dimensions
 
         Returns:
             Plotting function for corresponding dimension (obj)
-
         """
         if num_params == 1:
             return self._plot_one_d
@@ -188,8 +179,7 @@ class GridIteratorVisualization(object):
             raise NotImplementedError('Grid plot only possible up to 2 parameters')
 
     def _plot_one_d(self, output, samples, n_grid_p):
-        """
-        Plotting method for one dimensional grid
+        """Plotting method for one dimensional grid.
 
         Args:
             output (np.array): Simulation output
@@ -198,7 +188,6 @@ class GridIteratorVisualization(object):
 
         Returns:
             None
-
         """
         fig, ax = plt.subplots()
 
@@ -225,8 +214,7 @@ class GridIteratorVisualization(object):
         ax.set(xlim=(min_x, max_x), ylim=(min_y, max_y))
 
     def _plot_two_d(self, output, samples, n_grid_p):
-        """
-        Plotting method for two dimensional grid
+        """Plotting method for two dimensional grid.
 
         Args:
             output (np.array): Simulation output
@@ -235,7 +223,6 @@ class GridIteratorVisualization(object):
 
         Returns:
             None
-
         """
         fig = plt.figure()
         ax = plt.axes(projection='3d')
@@ -273,16 +260,14 @@ class GridIteratorVisualization(object):
         fig.colorbar(surf, shrink=0.5, aspect=5)
 
     def _get_tick_formatter(self, axis_str):
-        """
-        Depending on the scaling of the grid axis, return an appropriate formatter for the
-        axes ticks
+        """Depending on the scaling of the grid axis, return an appropriate
+        formatter for the axes ticks.
 
         Args:
             axis_str (str): Identifier for either "x" or "y" axis of the grid
 
         Returns:
             tick_formatter (obj): Tick-formatter object
-
         """
         if axis_str == 'x':
             idx = 0
@@ -305,8 +290,7 @@ class GridIteratorVisualization(object):
 
 
 def _save_plot(save_bool, path):
-    """
-    Save the plot to specified path.
+    """Save the plot to specified path.
 
     Args:
         save_bool (bool): Flag to decide whether saving option is triggered.
@@ -314,7 +298,6 @@ def _save_plot(save_bool, path):
 
     Returns:
         Saved plot.
-
     """
     if save_bool is True:
         plt.savefig(path, dpi=300)

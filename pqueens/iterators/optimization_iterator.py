@@ -1,5 +1,4 @@
-"""
-Deterministic optimization toolbox
+"""Deterministic optimization toolbox.
 
 based on the scipy.optimize optimization toolbox [1]
 
@@ -10,27 +9,24 @@ References:
 """
 
 import glob
-import numpy as np
 import os
 import pprint
 import time
 
+import numpy as np
 import pandas as pd
 import scipy.optimize
 from scipy.optimize import curve_fit
 
+import pqueens.database.database as DB_module
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
-from pqueens.utils.fd_jacobian import compute_step_with_bounds
-from pqueens.utils.fd_jacobian import get_positions
-from pqueens.utils.fd_jacobian import fd_jacobian
+from pqueens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
 from pqueens.utils.process_outputs import write_results
-from pqueens.database.mongodb import MongoDB
 
 
 class OptimizationIterator(Iterator):
-    """
-    Iterator for deterministic optimization problems
+    """Iterator for deterministic optimization problems.
 
     Attributes:
         initial_guess (np.array): initial guess, i.e. start point of
@@ -85,7 +81,6 @@ class OptimizationIterator(Iterator):
 
     Returns:
         OptimizationIterator (obj): Instance of the OptimizationIterator
-
     """
 
     def __init__(
@@ -138,8 +133,7 @@ class OptimizationIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """
-        Create Optimization iterator from problem description
+        """Create Optimization iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -193,7 +187,7 @@ class OptimizationIterator(Iterator):
         experimental_data_path_list = method_options.get('experimental_csv_data_base_dirs', None)
         output_column = method_options.get('output_observation_column_in_csv')
         if experimental_data_path_list is not None:
-            db = MongoDB.from_config_create_database(config)
+            db = DB_module.database
         else:
             db = None
         experiment_name = config['global_settings']['experiment_name']
@@ -230,14 +224,13 @@ class OptimizationIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate model at current point. """
+        """Evaluate model at current point."""
 
         result_dict = self.model.evaluate()
         return result_dict
 
     def objective_function(self, x_vec, coordinates=None):
-        """
-        Evaluate objective function at x_vec (in this sense the parameters)
+        """Evaluate objective function at x_vec (in this sense the parameters)
 
         Args:
             x_vec (np.array): input vector for model/objective function. The variable x_vec
@@ -253,7 +246,6 @@ class OptimizationIterator(Iterator):
 
         Returns:
             f_value (float): Response of objective function or model
-
         """
         if self.eval_jacobian:
             x_batch, _ = get_positions(
@@ -284,9 +276,7 @@ class OptimizationIterator(Iterator):
         return f_value
 
     def jacobian(self, x0):
-        """
-        Evaluate Jacobian of objective function at x0.
-        """
+        """Evaluate Jacobian of objective function at x0."""
 
         positions, delta_positions = get_positions(
             x0, method=self.jac_method, rel_step=self.jac_rel_step, bounds=self.bounds
@@ -323,14 +313,12 @@ class OptimizationIterator(Iterator):
         return J
 
     def initialize_run(self):
-        """ Get initial guess. """
+        """Get initial guess."""
         print("Initialize Optimization run.")
         self._get_experimental_data_and_write_to_db()
 
     def core_run(self):
-        """
-        Core run of Optimization iterator
-        """
+        """Core run of Optimization iterator."""
 
         print('Welcome to Optimization core run.')
         start = time.time()
@@ -420,7 +408,7 @@ class OptimizationIterator(Iterator):
         print(f"Optimization took {end-start} seconds.")
 
     def post_run(self):
-        """ Analyze the resulting optimum. """
+        """Analyze the resulting optimum."""
 
         if self.algorithm == 'LM':
             parameter_list = self.model.uncertain_parameters['random_variables'].keys()
@@ -443,7 +431,7 @@ class OptimizationIterator(Iterator):
 
     # -------------- private helper functions --------------------------
     def _get_experimental_data_and_write_to_db(self):
-        """ Loop over post files in given output directory """
+        """Loop over post files in given output directory."""
 
         if self.experimental_data_path_list is not None:
             # iteratively load all csv files in specified directory

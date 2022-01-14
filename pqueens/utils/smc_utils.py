@@ -1,15 +1,12 @@
-"""
-collection of utility functions and classes for Sequential Monte Carlo
-(SMC) algorithms.
-"""
+"""collection of utility functions and classes for Sequential Monte Carlo (SMC)
+algorithms."""
 import math
 
 import numpy as np
 
 
 def temper_logpdf_bayes(log_prior, log_like, tempering_parameter=1.0):
-    """
-    Bayesian tempering function.
+    """Bayesian tempering function.
 
     It phases from the prior to the posterior = like * prior.
     Special cases are:
@@ -23,7 +20,7 @@ def temper_logpdf_bayes(log_prior, log_like, tempering_parameter=1.0):
         We know that -inf is likely to occur, e.g., in uniform priors.
         On the other hand, +inf is rather unlikely to be a reasonable
         value. Therefore, we chose to exclude it here.
-     """
+    """
     # if either logpdf is positive infinite throw an error
     if np.isposinf(log_prior).any() or np.isposinf(log_like).any():
         raise ValueError("Positive infinite logpdf not supported.")
@@ -36,8 +33,7 @@ def temper_logpdf_bayes(log_prior, log_like, tempering_parameter=1.0):
 
 
 def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
-    """
-    Generic tempering function.
+    """Generic tempering function.
 
     It phases from one distribution (pdf0) to another (pdf1).
     initial distribution: pdf0
@@ -75,8 +71,7 @@ def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
 
 
 def temper_factory(temper_type):
-    """
-    Switch type of tempering function.
+    """Switch type of tempering function.
 
     return the respective tempering function
     """
@@ -93,9 +88,12 @@ def temper_factory(temper_type):
 
 
 def calc_ess(weights):
-    """ Calculate Effective Sample Size from current weights. """
+    """Calculate Effective Sample Size from current weights.
 
-    ess = np.sum(weights) ** 2 / (np.sum(np.power(weights, 2)))
+    We use the exp-log trick here to avoid numerical problems.
+    """
+
+    ess = np.exp(np.log(np.sum(weights) ** 2) - np.log(np.sum(weights ** 2)))
     return ess
 
 

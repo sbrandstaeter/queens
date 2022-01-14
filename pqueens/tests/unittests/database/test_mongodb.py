@@ -1,20 +1,19 @@
-'''
-Created on June 22nd 2017
-@author: jbi
+"""Created on June 22nd 2017.
 
-'''
-from pymongo.errors import ServerSelectionTimeoutError
-import pytest
-import pandas as pd
+@author: jbi
+"""
 import numpy as np
+import pandas as pd
+import pytest
 import xarray as xr
+from pymongo.errors import ServerSelectionTimeoutError
 
 from pqueens.database.mongodb import MongoDB
 
 
 @pytest.fixture(scope='module')
 def dummy_job():
-    """ A dummy job for the database. """
+    """A dummy job for the database."""
     dummy_job = {}
     dummy_job['dummy_field1'] = 'garbage'
     dummy_job['dummy_field2'] = 'rubbish'
@@ -48,7 +47,7 @@ def dummy_output_multi_index():
 
 @pytest.fixture(scope='module')
 def dummy_job_with_result(dummy_output_multi_index):
-    """ A dummy job for the database. """
+    """A dummy job for the database."""
     dummy_job_with_result = {0: {}, 1: {}}
     dummy_job_with_result[0]['dummy_field1'] = 'garbage'
     dummy_job_with_result[0]['dummy_field2'] = 'rubbish'
@@ -62,7 +61,7 @@ def dummy_job_with_result(dummy_output_multi_index):
 
 @pytest.fixture(scope='module')
 def dummy_job_with_list(dummy_output_multi_index):
-    """ A dummy job with real list as result for the database. """
+    """A dummy job with real list as result for the database."""
     dummy_job_with_list = {0: {}}
     dummy_job_with_list[0]['dummy_field1'] = 'garbage'
     dummy_job_with_list[0]['dummy_field2'] = 'rubbish'
@@ -105,7 +104,7 @@ def data_xarray_dataarray():
 
 @pytest.fixture(scope='module')
 def dummy_doc_with_pandas_multi(data_pandas_multi_index):
-    """ A dummy doc for the database. """
+    """A dummy doc for the database."""
     dummy_doc_with_pandas_multi = {
         'dummy_field1': 'garbage',
         'dummy_field2': 'rubbish',
@@ -117,7 +116,7 @@ def dummy_doc_with_pandas_multi(data_pandas_multi_index):
 
 @pytest.fixture(scope='module')
 def dummy_doc_with_pandas_simple(data_pandas_simple_index):
-    """ A dummy doc for the database. """
+    """A dummy doc for the database."""
     dummy_doc_with_pandas_simple = {
         'dummy_field1': 'garbage',
         'dummy_field2': 'rubbish',
@@ -129,7 +128,7 @@ def dummy_doc_with_pandas_simple(data_pandas_simple_index):
 
 @pytest.fixture(scope='module')
 def dummy_doc_with_xarray_dataarray(data_xarray_dataarray):
-    """ A dummy doc for the database. """
+    """A dummy doc for the database."""
     dummy_doc_with_xarray_dataarray = {
         'dummy_field1': 'garbage',
         'dummy_field2': 'rubbish',
@@ -161,23 +160,21 @@ def batch_id_2():
 
 @pytest.fixture(scope="session")
 def username(session_mocker):
-    """
-    Make sure username returned by getuser is a dummy test username.
+    """Make sure username returned by getuser is a dummy test username.
 
-    This is necessary to ensure that the database tests do not interfere with the actual databases
-    of the user calling the tests.
+    This is necessary to ensure that the database tests do not interfere
+    with the actual databases of the user calling the tests.
     """
     username = "pytest"
     session_mocker.patch('getpass.getuser', return_value=username)
 
 
+@pytest.mark.unit_tests
 def test_connection(username):
-    """
-    Test connection to mongodb service.
+    """Test connection to mongodb service.
 
     Args:
         username: mock username for safety reasons
-
     """
 
     try:
@@ -189,23 +186,24 @@ def test_connection(username):
     assert isinstance(db, MongoDB)
 
 
+@pytest.mark.unit_tests
 def test_connection_fails(username):
-    """
-    Test for correct exception in case of failing connection to MongoDB service.
+    """Test for correct exception in case of failing connection to MongoDB
+    service.
 
     Args:
         username: mock username for safety reasons
 
     Returns:
-
     """
     with pytest.raises(ServerSelectionTimeoutError):
-        MongoDB.from_config_create_database({"database": {"address": "localhos:2016"}})
+        db = MongoDB.from_config_create_database({"database": {"address": "localhos:2016"}})
+        db._connect()
 
 
+@pytest.mark.unit_tests
 def test_read_write_delete(username, dummy_job, experiment_name, batch_id_1, job_id):
-    """
-    Test reading and writing to the database
+    """Test reading and writing to the database.
 
     Args:
         username: mock username for safety reasons
@@ -215,7 +213,6 @@ def test_read_write_delete(username, dummy_job, experiment_name, batch_id_1, job
         job_id: (int) id of the dummy_job needed for database name and database interaction
 
     Returns:
-
     """
     try:
         db = MongoDB.from_config_create_database(
@@ -232,55 +229,59 @@ def test_read_write_delete(username, dummy_job, experiment_name, batch_id_1, job
                 "database": {"address": "mongodb:27017", "drop_all_existing_dbs": True},
             }
         )
+    with db:
+        # save some dummy data
+        # save non-existing job with field_filter that will not match any entry -> insert new
+        # document
+        db.save(dummy_job, experiment_name, 'jobs', batch_id_1, {'id': job_id})
+        # empty field_filter will result in the insertion of a new document
+        # after this there will be two documents in the collection
+        db.save(dummy_job, experiment_name, 'jobs', batch_id_1)
 
-    # save some dummy data
-    # save non-existing job with field_filter that will not match any entry -> insert new document
-    db.save(dummy_job, experiment_name, 'jobs', batch_id_1, {'id': job_id})
-    # empty field_filter will result in the insertion of a new document
-    # after this there will be two documents in the collection
-    db.save(dummy_job, experiment_name, 'jobs', batch_id_1)
+        # try to retrieve it
+        jobs = db.load(experiment_name, batch_id_1, 'jobs')
+        if isinstance(jobs, dict):
+            jobs = [jobs]
 
-    # try to retrieve it
-    jobs = db.load(experiment_name, batch_id_1, 'jobs')
-    if isinstance(jobs, dict):
-        jobs = [jobs]
+        test = jobs[0]['dummy_field1']
+        assert test == 'garbage'
 
-    test = jobs[0]['dummy_field1']
-    assert test == 'garbage'
-
-    # remove dummy data
-    db.remove(experiment_name, 'jobs', batch_id_1)
-    jobs = db.load(experiment_name, batch_id_1, 'jobs')
-    # assert that jobs is empty
-    assert not jobs
+        # remove dummy data
+        db.remove(experiment_name, 'jobs', batch_id_1)
+        jobs = db.load(experiment_name, batch_id_1, 'jobs')
+        # assert that jobs is empty
+        assert not jobs
 
 
+@pytest.mark.unit_tests
 def test_write_multiple_entries(username, dummy_job, experiment_name, batch_id_2, job_id):
 
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "localhost:27017", "reset_existing_db": True}}
         )
     except:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "mongodb:27017", "reset_existing_db": True}}
         )
 
-    # save some dummy data
-    db.save(dummy_job, experiment_name, 'jobs', batch_id_2)
-    db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {'id': job_id})
+    with db:
+        # save some dummy data
+        db.save(dummy_job, experiment_name, 'jobs', batch_id_2)
+        db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {'id': job_id})
 
-    jobs = db.load(experiment_name, batch_id_2, 'jobs')
-    if isinstance(jobs, dict):
-        jobs = [jobs]
-    assert len(jobs) == 2
+        jobs = db.load(experiment_name, batch_id_2, 'jobs')
+        if isinstance(jobs, dict):
+            jobs = [jobs]
+        assert len(jobs) == 2
 
-    # should cause problems
-    with pytest.raises(Exception):
-        db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {"dummy_field1": "garbage"})
+        # should cause problems
+        with pytest.raises(Exception):
+            db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {"dummy_field1": "garbage"})
 
 
+@pytest.mark.unit_tests
 def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):
     try:
         db = MongoDB.from_config_create_database(
@@ -292,23 +293,25 @@ def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):
             {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
         )
 
-    db._pack_pandas_dataframe(dummy_doc_with_pandas_multi)
-    db.save(dummy_doc_with_pandas_multi, 'dummy', 'jobs', 1)
-    assert isinstance(dummy_doc_with_pandas_multi['result'], list)
+    with db:
+        db._pack_pandas_dataframe(dummy_doc_with_pandas_multi)
+        db.save(dummy_doc_with_pandas_multi, 'dummy', 'jobs', 1)
+        assert isinstance(dummy_doc_with_pandas_multi['result'], list)
 
-    expected_format = np.array(
-        [
-            [2, 'pd.DataFrame', None],
-            ['first', 'second', 0],
-            ['bar', 'one', 1.6243453636632417],
-            ['bar', 'two', -0.6117564136500754],
-        ]
-    )
-    np.testing.assert_array_equal(
-        np.array(dummy_doc_with_pandas_multi['result'][:4]), expected_format
-    )
+        expected_format = np.array(
+            [
+                [2, 'pd.DataFrame', None],
+                ['first', 'second', 0],
+                ['bar', 'one', 1.6243453636632417],
+                ['bar', 'two', -0.6117564136500754],
+            ]
+        )
+        np.testing.assert_array_equal(
+            np.array(dummy_doc_with_pandas_multi['result'][:4]), expected_format
+        )
 
 
+@pytest.mark.unit_tests
 def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
     try:
         db = MongoDB.from_config_create_database(
@@ -320,17 +323,24 @@ def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
             {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
         )
 
-    db._pack_pandas_dataframe(dummy_doc_with_pandas_simple)
-    db.save(dummy_doc_with_pandas_simple, 'dummy', 'jobs', 1)
-    assert isinstance(dummy_doc_with_pandas_simple['result'], list)
-    expected_format = np.array(
-        [[1, 'pd.DataFrame', None, None], ['index', 0, 1, 2], ['a', 1, 2, 3], ['b', 4, 5, 6],]
-    )
-    np.testing.assert_array_equal(
-        np.array(dummy_doc_with_pandas_simple['result'][:4]), expected_format
-    )
+    with db:
+        db._pack_pandas_dataframe(dummy_doc_with_pandas_simple)
+        db.save(dummy_doc_with_pandas_simple, 'dummy', 'jobs', 1)
+        assert isinstance(dummy_doc_with_pandas_simple['result'], list)
+        expected_format = np.array(
+            [
+                [1, 'pd.DataFrame', None, None],
+                ['index', 0, 1, 2],
+                ['a', 1, 2, 3],
+                ['b', 4, 5, 6],
+            ]
+        )
+        np.testing.assert_array_equal(
+            np.array(dummy_doc_with_pandas_simple['result'][:4]), expected_format
+        )
 
 
+@pytest.mark.unit_tests
 def test_pack_xarrays(dummy_doc_with_xarray_dataarray):
     try:
         db = MongoDB.from_config_create_database(
@@ -347,6 +357,7 @@ def test_pack_xarrays(dummy_doc_with_xarray_dataarray):
         db._pack_labeled_data(dummy_doc_with_xarray_dataarray, 'dummy', 'jobs', 1)
 
 
+@pytest.mark.unit_tests
 def test_unpack_labeled_data(dummy_job_with_result):
     try:
         db = MongoDB.from_config_create_database(
@@ -363,6 +374,7 @@ def test_unpack_labeled_data(dummy_job_with_result):
     assert isinstance(dummy_job_with_result[1]['result'], pd.DataFrame)
 
 
+@pytest.mark.unit_tests
 def test_unpack_list(dummy_job_with_list):
     try:
         db = MongoDB.from_config_create_database(
@@ -378,6 +390,7 @@ def test_unpack_list(dummy_job_with_list):
     assert isinstance(dummy_job_with_list[0]['result'], list)
 
 
+@pytest.mark.unit_tests
 def test_split_output_no_index():
 
     output_no_index = [
@@ -392,6 +405,7 @@ def test_split_output_no_index():
         MongoDB._split_output(output_no_index)
 
 
+@pytest.mark.unit_tests
 def test_split_output_simple_index(dummy_output_simple_index):
 
     data, index = MongoDB._split_output(dummy_output_simple_index)
@@ -399,6 +413,7 @@ def test_split_output_simple_index(dummy_output_simple_index):
     np.testing.assert_array_equal(data, expected_data)
 
 
+@pytest.mark.unit_tests
 def test_split_output_multi_index(dummy_output_multi_index):
 
     data, index = MongoDB._split_output(dummy_output_multi_index)

@@ -1,0 +1,169 @@
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    25
+//NODES       36
+DIM           3
+-----------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     1
+--------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Scalar_Transport
+RESTART                         0
+SHAPEFCT                        Polynomial
+-----------------------------------------------------------------IO
+OUTPUT_BIN                      Yes
+FLUID_SOL                       Yes
+FILESTEPS                       1000
+----------------------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   1
+SOLVERTYPE                      linear_full
+TIMEINTEGR                      One_Step_Theta
+RESULTSEVRY                           1
+RESTARTEVRY                     20
+NUMSTEP                         60
+MAXTIME                         0.3
+TIMESTEP                        0.005
+THETA                           0.5
+VELOCITYFIELD                   zero
+VELFUNCNO                       -1
+INITIALFIELD                    zero_field
+
+FSSUGRDIFF                      No
+CALCERROR                       No
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        SUPG //SUPG
+SUGRVEL                         no
+ASSUGRDIFF                      no
+DEFINITION_TAU                  Franca_Valentin
+CHARELELENGTH                   streamlength
+DEFINITION_ASSGD                artificial_linear
+EVALUATION_TAU                  integration_point
+EVALUATION_MAT                  integration_point
+CONSISTENCY                     no
+-------------------------------------------------------------------SOLVER 1
+NAME                            Sca_Tra_Solver
+SOLVER                          Aztec_MSR      // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0              // output every so often, 0 no output
+AZSOLVE                         GMRES          // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          MLFLUID2       // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE                         0              // how often to recompute some preconditioners
+AZDROP                          0.0            // drop tolerance for ILUT
+IFPACKFILL                      1.0            // fill-in for ILUT
+IFPACKGFILL                     0              // graph fill for ILU
+AZTOL                           1.0E-9         // tolerance in (un)scaled residual
+AZITER                          1000           // max iterations
+AZSUB                           25             // size of krylov space for gmres
+AZOMEGA                         1.0            // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH                         1              // unused
+AZPOLY                          1              // polynomial order for Neumann
+IFPACKOVERLAP                   0              // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          none           // none sym infnorm scaling of the system
+AZCONV                          AZ_r0          // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+DWINDTAU                        2.5            // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
+ML_PRINT                        0              // ML print-out level (0-10)
+ML_MAXCOARSESIZE                5000           // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     5              // ML max number of levels
+ML_COARSEN                      UC             // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27             // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0            // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES                0.0            // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 SGS            // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU            // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               KLU            // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES                     2 0 0 0 1      // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.67           // damping fine grid
+ML_DAMPMED                      1.0            // damping med grids
+ML_DAMPCOARSE                   1.0            // damping coarse grid
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_matlist_reactions LOCAL No NUMMAT 1 MATIDS 10 NUMREAC 1 REACIDS 20 END //collect Concentrations
+MAT 10 MAT_scatra DIFFUSIVITY 1.00
+MAT 20 MAT_scatra_reaction NUMSCAL 1 STOICH 1 REACCOEFF 1.0 COUPLING by_function ROLE 1
+----------------------------------------------------------------------FUNCT1
+VARFUNCTION 1/(pi*rho)*exp(-((x-x_s)^2+(y-y_s)^2)/(2*rho^2))*heaviside(0.3-t) NUMCONSTANTS 3 CONSTANTS rho 0.05 x_s {x_s} y_s {y_s}
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 0
+NDLINE  0
+NDSURF  0
+NDVOL   0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+-----------------------------------------------DLINE-NODE TOPOLOGY
+-----------------------------------------------DSURF-NODE TOPOLOGY
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE         1 COORD  1.0000000000000000e+00  1.0000000000000000e+00  0.0000000000000000e+00
+NODE         2 COORD  8.0000000000000004e-01  1.0000000000000000e+00  0.0000000000000000e+00
+NODE         3 COORD  8.0000000000000004e-01  8.0000000000000004e-01  0.0000000000000000e+00
+NODE         4 COORD  1.0000000000000000e+00  8.0000000000000004e-01  0.0000000000000000e+00
+NODE         5 COORD  5.9999999999999998e-01  1.0000000000000000e+00  0.0000000000000000e+00
+NODE         6 COORD  6.0000000000000009e-01  8.0000000000000004e-01  0.0000000000000000e+00
+NODE         7 COORD  3.9999999999999991e-01  1.0000000000000000e+00  0.0000000000000000e+00
+NODE         8 COORD  3.9999999999999997e-01  8.0000000000000004e-01  0.0000000000000000e+00
+NODE         9 COORD  1.9999999999999996e-01  1.0000000000000000e+00  0.0000000000000000e+00
+NODE        10 COORD  1.9999999999999996e-01  8.0000000000000004e-01  0.0000000000000000e+00
+NODE        11 COORD  0.0000000000000000e+00  1.0000000000000000e+00  0.0000000000000000e+00
+NODE        12 COORD  0.0000000000000000e+00  8.0000000000000004e-01  0.0000000000000000e+00
+NODE        13 COORD  8.0000000000000004e-01  6.0000000000000009e-01  0.0000000000000000e+00
+NODE        14 COORD  1.0000000000000000e+00  6.0000000000000009e-01  0.0000000000000000e+00
+NODE        15 COORD  6.0000000000000009e-01  6.0000000000000009e-01  0.0000000000000000e+00
+NODE        16 COORD  3.9999999999999997e-01  6.0000000000000009e-01  0.0000000000000000e+00
+NODE        17 COORD  1.9999999999999996e-01  6.0000000000000009e-01  0.0000000000000000e+00
+NODE        18 COORD  0.0000000000000000e+00  5.9999999999999998e-01  0.0000000000000000e+00
+NODE        19 COORD  8.0000000000000004e-01  4.0000000000000002e-01  0.0000000000000000e+00
+NODE        20 COORD  1.0000000000000000e+00  4.0000000000000002e-01  0.0000000000000000e+00
+NODE        21 COORD  6.0000000000000009e-01  3.9999999999999997e-01  0.0000000000000000e+00
+NODE        22 COORD  4.0000000000000002e-01  3.9999999999999991e-01  0.0000000000000000e+00
+NODE        23 COORD  1.9999999999999979e-01  3.9999999999999997e-01  0.0000000000000000e+00
+NODE        24 COORD  0.0000000000000000e+00  3.9999999999999991e-01  0.0000000000000000e+00
+NODE        25 COORD  8.0000000000000004e-01  1.9999999999999996e-01  0.0000000000000000e+00
+NODE        26 COORD  1.0000000000000000e+00  2.0000000000000001e-01  0.0000000000000000e+00
+NODE        27 COORD  6.0000000000000009e-01  1.9999999999999990e-01  0.0000000000000000e+00
+NODE        28 COORD  3.9999999999999997e-01  1.9999999999999996e-01  0.0000000000000000e+00
+NODE        29 COORD  1.9999999999999996e-01  1.9999999999999996e-01  0.0000000000000000e+00
+NODE        30 COORD  0.0000000000000000e+00  1.9999999999999996e-01  0.0000000000000000e+00
+NODE        31 COORD  8.0000000000000004e-01  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        32 COORD  1.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        33 COORD  6.0000000000000009e-01  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        34 COORD  4.0000000000000002e-01  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        35 COORD  2.0000000000000001e-01  0.0000000000000000e+00  0.0000000000000000e+00
+NODE        36 COORD  0.0000000000000000e+00  0.0000000000000000e+00  0.0000000000000000e+00
+------------------------------------------------STRUCTURE ELEMENTS
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------LUBRICATION ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+   1 TRANSP QUAD4  1 2 3 4    MAT 1 TYPE AdvReac
+   2 TRANSP QUAD4  2 5 6 3    MAT 1 TYPE AdvReac
+   3 TRANSP QUAD4  5 7 8 6    MAT 1 TYPE AdvReac
+   4 TRANSP QUAD4  7 9 10 8    MAT 1 TYPE AdvReac
+   5 TRANSP QUAD4  9 11 12 10    MAT 1 TYPE AdvReac
+   6 TRANSP QUAD4  4 3 13 14    MAT 1 TYPE AdvReac
+   7 TRANSP QUAD4  3 6 15 13    MAT 1 TYPE AdvReac
+   8 TRANSP QUAD4  6 8 16 15    MAT 1 TYPE AdvReac
+   9 TRANSP QUAD4  8 10 17 16    MAT 1 TYPE AdvReac
+   10 TRANSP QUAD4  10 12 18 17    MAT 1 TYPE AdvReac
+   11 TRANSP QUAD4  14 13 19 20    MAT 1 TYPE AdvReac
+   12 TRANSP QUAD4  13 15 21 19    MAT 1 TYPE AdvReac
+   13 TRANSP QUAD4  15 16 22 21    MAT 1 TYPE AdvReac
+   14 TRANSP QUAD4  16 17 23 22    MAT 1 TYPE AdvReac
+   15 TRANSP QUAD4  17 18 24 23    MAT 1 TYPE AdvReac
+   16 TRANSP QUAD4  20 19 25 26    MAT 1 TYPE AdvReac
+   17 TRANSP QUAD4  19 21 27 25    MAT 1 TYPE AdvReac
+   18 TRANSP QUAD4  21 22 28 27    MAT 1 TYPE AdvReac
+   19 TRANSP QUAD4  22 23 29 28    MAT 1 TYPE AdvReac
+   20 TRANSP QUAD4  23 24 30 29    MAT 1 TYPE AdvReac
+   21 TRANSP QUAD4  26 25 31 32    MAT 1 TYPE AdvReac
+   22 TRANSP QUAD4  25 27 33 31    MAT 1 TYPE AdvReac
+   23 TRANSP QUAD4  27 28 34 33    MAT 1 TYPE AdvReac
+   24 TRANSP QUAD4  28 29 35 34    MAT 1 TYPE AdvReac
+   25 TRANSP QUAD4  29 30 36 35    MAT 1 TYPE AdvReac
+------------------------------------------------TRANSPORT2 ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------CELL ELEMENTS
+---------------------------------------------------CELLSCATRA ELEMENTS
+---------------------------------------------------ELECTROMAGNETIC ELEMENTS
+-------------------------------------------------------ARTERY ELEMENTS
+---------------------------------------------------------------END
+// END

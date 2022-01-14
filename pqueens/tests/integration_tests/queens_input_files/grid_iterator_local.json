@@ -1,8 +1,8 @@
 {
-  "experiment_name" : "grid_iterator_local",
-  "database"  :{
-    "address"   : "localhost:27017",
-    "drop_all_existing_dbs" : true
+  "experiment_name": "grid_iterator_local",
+  "database": {
+    "type": "mongodb",
+    "address": "localhost:27017"
   },
   "method": {
     "method_name": "grid",
@@ -21,37 +21,43 @@
       "result_description": {
         "write_results": true,
         "plotting_options": {
-          "plot_booleans": [false],
+          "plot_booleans": [
+            true
+          ],
           "plotting_dir": "some/plotting/dir",
-          "plot_names": ["grid_plot.eps"],
-          "save_bool": [false]
+          "plot_names": [
+            "grid_plot.eps"
+          ],
+          "save_bool": [
+            false
+          ]
         }
       }
     }
   },
-  "model" : {
-    "type" : "simulation_model",
-    "interface" : "interface",
-    "parameters" : "parameters"
+  "model": {
+    "type": "simulation_model",
+    "interface": "interface",
+    "parameters": "parameters"
   },
-  "interface" : {
-    "type" : "direct_python_interface",
+  "interface": {
+    "type": "direct_python_interface",
     "main_file": "rosenbrock.py"
   },
-  "parameters" : {
-    "random_variables" :{
-      "x1" : {
-        "type" : "FLOAT",
-        "size" : 1,
-        "min"  : -2.0,
-        "max"  : 2.0
+  "parameters": {
+    "random_variables": {
+      "x1": {
+        "type": "FLOAT",
+        "size": 1,
+        "min": -2.0,
+        "max": 2.0
       },
-      "x2" : {
-        "type" : "FLOAT",
-        "size" : 1,
-        "min"  : -2.0,
-        "max"  : 2.0
+      "x2": {
+        "type": "FLOAT",
+        "size": 1,
+        "min": -2.0,
+        "max": 2.0
       }
     }
-  } 
+  }
 }

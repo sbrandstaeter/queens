@@ -9,7 +9,7 @@ from pqueens.randomfields.univariate_field_generator_factory import (
 
 
 class MultiVariateRandomFieldGenerator(object):
-    """ Generator of samples of multivariate cross-correlated random fields
+    """Generator of samples of multivariate cross-correlated random fields.
 
     Class for the generation of samples from Gaussian and
     and non-Gaussian multi variate random fields using translation process
@@ -29,7 +29,6 @@ class MultiVariateRandomFieldGenerator(object):
         pre_factor (linalg.block_diag):  factor to multiply independent random
                                          phase angles with (product of eigenvector
                                          and values of cross-correlation matrix)
-
     """
 
     def __init__(
@@ -120,16 +119,15 @@ class MultiVariateRandomFieldGenerator(object):
         self.pre_factor = np.dot(phi_d, (lambda_d ** (1 / 2)))
 
     def get_stoch_dim(self):
-        """ Return stochastic dimension of multi-variate field
+        """Return stochastic dimension of multi-variate field.
 
         Returns:
             (int): stochastic dimension
-
         """
         return self.stoch_dim
 
     def evaluate_field_at_location(self, x, xi):
-        """ Generate realization of random field at evaluate it at location
+        """Generate realization of random field at evaluate it at location
         Args:
             x (np.array):  locations at which to evaluate random field
             xi (np.array): random phase angles to compute realization of

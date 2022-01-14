@@ -1,10 +1,11 @@
-import numpy as np
 import math
+
+import numpy as np
 
 
 def park91a_hifi_coords(x1, x2, x3, x4):
-    """ High-fidelity Park91a function with x3 and x4 as fixed coordinates. Coordinates are
-    prescribed in the main function of this module.
+    """High-fidelity Park91a function with x3 and x4 as fixed coordinates.
+    Coordinates are prescribed in the main function of this module.
 
     Simple four dimensional benchmark function as proposed in [1] to mimic
     a computer model. For the purpose of multi-fidelity simulation, [3]
@@ -37,8 +38,27 @@ def park91a_hifi_coords(x1, x2, x3, x4):
         [3] Xiong, S., Qian, P., & Wu, C. (2013). Sequential design and analysis of
             high-accuracy and low-accuracy computer codes. Technometrics.
             http://doi.org/10.1080/00401706.2012.723572
-
     """
+    # catch values outside of definition
+    if x1 <= 0:
+        x1 = 0.01
+    elif x1 >= 1:
+        x1 = 0.99
+
+    if x2 <= 0:
+        x2 = 0.01
+    elif x2 >= 1:
+        x2 = 0.99
+
+    if x3 <= 0:
+        x3 = 0.01
+    elif x3 >= 1:
+        x3 = 0.99
+
+    if x4 <= 0:
+        x4 = 0.01
+    elif x4 >= 1:
+        x4 = 0.99
 
     term1a = x1 / 2
     term1b = np.sqrt(1 + (x2 + x3 ** 2) * x4 / (x1 ** 2)) - 1
@@ -50,17 +70,11 @@ def park91a_hifi_coords(x1, x2, x3, x4):
 
     y = term1 + term2
 
-    # catch non-numeric values in case x is outside of allowed design space
-    if math.isnan(y):
-        y = 100
-    if math.isinf(y):
-        y = 100
-
     return y
 
 
 def main(job_id, params):
-    """ Interface to Park91a test fuction
+    """Interface to Park91a test fuction.
 
     Args:
         job_id (int):  ID of job

@@ -1,5 +1,4 @@
-"""
-Metropolis-Hastings algorithm
+"""Metropolis-Hastings algorithm.
 
 "The Metropolis-Hastings algorithm is a Markov Chain Monte Carlo (MCMC)
 method for obtaining a sequence of random samples from a probability
@@ -7,7 +6,6 @@ distribution from which direct sampling is difficult." [1]
 
 References:
     [1]: https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm
-
 """
 
 import arviz as az
@@ -16,15 +14,12 @@ import numpy as np
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
-from pqueens.utils import mcmc_utils
-from pqueens.utils import smc_utils
-from pqueens.utils.process_outputs import process_ouputs
-from pqueens.utils.process_outputs import write_results
+from pqueens.utils import mcmc_utils, smc_utils
+from pqueens.utils.process_outputs import process_ouputs, write_results
 
 
 class MetropolisHastingsIterator(Iterator):
-    """
-    Iterator based on Metropolis-Hastings algorithm
+    """Iterator based on Metropolis-Hastings algorithm.
 
     The Metropolis-Hastings algorithm can be considered the benchmark
     Markov Chain Monte Carlo (MCMC) algorithm. It may be used to sample
@@ -56,7 +51,6 @@ class MetropolisHastingsIterator(Iterator):
         tune (bool): Tune the scale of covariance
         tune_interval (int): Tune the scale of the covariance every
                              tune_interval-th step
-
     """
 
     def __init__(
@@ -142,8 +136,7 @@ class MetropolisHastingsIterator(Iterator):
     def from_config_create_iterator(
         cls, config, iterator_name=None, model=None, temper_type='bayes'
     ):
-        """
-        Create Metropolis-Hastings iterator from problem description
+        """Create Metropolis-Hastings iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -152,7 +145,6 @@ class MetropolisHastingsIterator(Iterator):
 
         Returns:
             iterator: MetropolisHastingsIterator object
-
         """
 
         print(
@@ -217,17 +209,15 @@ class MetropolisHastingsIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate model at current samples of chains. """
+        """Evaluate model at current samples of chains."""
         result_dict = self.model.evaluate()
         return result_dict
 
     def eval_log_prior(self, chains):
-        """
-        Evaluate natural logarithm of prior at samples of chains.
+        """Evaluate natural logarithm of prior at samples of chains.
 
         Note: we assume a multiplicative split of prior pdf
         """
-
         log_prior = np.zeros((self.num_chains, 1))
         self.model.update_model_from_sample_batch(chains)
         for i in range(chains.shape[0]):
@@ -239,19 +229,20 @@ class MetropolisHastingsIterator(Iterator):
         return log_prior
 
     def eval_log_likelihood(self, chains):
-        """ Evaluate natural logarithm of likelihood at samples of chains. """
-
+        """Evaluate natural logarithm of likelihood at samples of chains."""
         self.model.update_model_from_sample_batch(chains)
         log_likelihood = self.eval_model()
 
         return log_likelihood
 
     def do_mh_step(self, step_id):
-        """ Metropolis (Hastings) step. """
+        """Metropolis (Hastings) step."""
 
         # tune covariance of proposal
         if not step_id % self.tune_interval and self.tune:
-            accept_rate_interval = self.accepted_interval / self.tune_interval
+            accept_rate_interval = np.exp(
+                np.log(self.accepted_interval) - np.log(self.tune_interval)
+            )
             if not self.as_mcmc_kernel:
                 print(f"Current acceptance rate: {accept_rate_interval}.")
             self.scale_covariance = mcmc_utils.tune_scale_covariance(
@@ -294,7 +285,7 @@ class MetropolisHastingsIterator(Iterator):
         gamma=1.0,
         cov_mat=None,
     ):
-        """ Draw initial sample. """
+        """Draw initial sample."""
 
         if not self.as_mcmc_kernel:
             print("Initialize Metropolis-Hastings run.")
@@ -329,8 +320,7 @@ class MetropolisHastingsIterator(Iterator):
         self.log_posterior[0] = self.temper(self.log_prior[0], self.log_likelihood[0], self.gamma)
 
     def core_run(self):
-        """
-        Core run of Metropolis-Hastings iterator
+        """Core run of Metropolis-Hastings iterator.
 
         1.) Burn-in phase
         2.) Sampling phase
@@ -343,7 +333,7 @@ class MetropolisHastingsIterator(Iterator):
             self.do_mh_step(i)
 
         if self.num_burn_in:
-            burn_in_accept_rate = self.accepted / self.num_burn_in
+            burn_in_accept_rate = np.exp(np.log(self.accepted) - np.log(self.num_burn_in))
             print("Acceptance rate during burn in: {0}".format(burn_in_accept_rate))
         # reset number of accepted samples
         self.accepted = np.zeros((self.num_chains, 1))
@@ -354,9 +344,11 @@ class MetropolisHastingsIterator(Iterator):
             self.do_mh_step(i)
 
     def post_run(self):
-        """ Analyze the resulting chain. """
+        """Analyze the resulting chain."""
 
-        avg_accept_rate = np.sum(self.accepted) / (self.num_samples * self.num_chains)
+        avg_accept_rate = np.exp(
+            np.log(np.sum(self.accepted)) - np.log((self.num_samples * self.num_chains))
+        )
         if self.as_mcmc_kernel:
             # the iterator is used as MCMC kernel for the Sequential Monte Carlo iterator
             return [
@@ -371,7 +363,7 @@ class MetropolisHastingsIterator(Iterator):
             chain_burn_in = self.chains[1 : self.num_burn_in + 1]
             chain_core = self.chains[self.num_burn_in + 1 : self.num_samples + self.num_burn_in + 1]
 
-            accept_rate = self.accepted / self.num_samples
+            accept_rate = np.exp(np.log(self.accepted) - np.log(self.num_samples))
 
             # process output takes a dict as input with key 'mean'
             results = process_ouputs(

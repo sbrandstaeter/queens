@@ -1,13 +1,15 @@
-'''
-Created on Dezember 11th  2017
-@author: jbi
+"""Created on Dezember 11th  2017.
 
-'''
+@author: jbi
+"""
 import unittest
+
 import mock
-from pqueens.interfaces.job_interface import JobInterface
-from pqueens.interfaces.interface import Interface
+import pytest
+
 from pqueens.database.mongodb import MongoDB
+from pqueens.interfaces.interface import Interface
+from pqueens.interfaces.job_interface import JobInterface
 
 
 class TestJobInterface(unittest.TestCase):
@@ -38,6 +40,8 @@ class TestJobInterface(unittest.TestCase):
             'max-concurrent': 1,
             'max-finished-jobs': 100,
         }
+        self.config['restart'] = False
+
         self.config['database'] = {}
         self.config['database']['address'] = 'localhost:27017'
         self.config['database']['drop_all_existing_dbs'] = True
@@ -51,7 +55,6 @@ class TestJobInterface(unittest.TestCase):
         self.config['my_local_scheduler']['scheduler_type'] = 'standard'
         self.config['my_local_scheduler']['remote'] = False
         self.config['my_local_scheduler']['singularity'] = False
-        self.config['my_local_scheduler']['restart'] = False
 
         self.config['driver'] = {}
         self.config['driver']['driver_type'] = 'baci'
@@ -68,6 +71,7 @@ class TestJobInterface(unittest.TestCase):
 
     db_fake = FakeDB()
 
+    @pytest.mark.unit_tests
     @mock.patch(
         'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=db_fake
     )

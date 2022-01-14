@@ -2,7 +2,7 @@ import numpy as np
 
 
 def currin88_hifi(x1, x2):
-    """ High-fidelity version of the Currin88 benchmark function
+    """High-fidelity version of the Currin88 benchmark function.
 
     Simple two-dimensional example which appears several
     times in the literature, see, e.g., [1]-[3].
@@ -52,7 +52,7 @@ def currin88_hifi(x1, x2):
 
 
 def main(job_id, params):
-    """ Interface to currin88 function
+    """Interface to currin88 function.
 
     Args:
         job_id (int):  ID of job

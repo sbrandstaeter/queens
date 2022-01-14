@@ -1,8 +1,9 @@
 {
   "experiment_name": "baci_ensight",
+  "restart": false,
   "database": {
-    "address": "localhost:27017",
-    "drop_all_existing_dbs": true
+    "type": "mongodb",
+    "address": "localhost:27017"
   },
   "method": {
     "method_name": "monte_carlo",
@@ -16,9 +17,11 @@
       }
     }
   },
-  "external_geometry":{
+  "external_geometry": {
     "type": "baci_dat",
-    "list_geometric_sets": ["DSURFACE 4"],
+    "list_geometric_sets": [
+      "DSURFACE 4"
+    ],
     "queens_tmp_dir": "{experiment_dir}"
   },
   "model": {
@@ -57,12 +60,27 @@
             ]
           ],
           "physical_field_dict": {
-            "vtk_field_type": ["structure"],
-            "vtk_array_type": ["point_array"],
-            "vtk_field_label": ["displacement"],
-            "field_components": [[0,1]]
+            "vtk_field_type": [
+              "structure"
+            ],
+            "vtk_array_type": [
+              "point_array"
+            ],
+            "vtk_field_label": [
+              "displacement"
+            ],
+            "field_components": [
+              [
+                0,
+                1
+              ]
+            ]
           },
-          "target_time": ["last"]
+          "target_time": [
+            [
+              "last"
+            ]
+          ]
         }
       }
     }
@@ -75,7 +93,6 @@
     }
   },
   "local_scheduler": {
-    "restart": false,
     "scheduler_type": "standard",
     "experiment_dir": "{experiment_dir}",
     "num_procs": 1,
