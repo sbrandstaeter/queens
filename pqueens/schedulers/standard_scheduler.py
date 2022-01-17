@@ -1,3 +1,4 @@
+"""Standard scheduler."""
 import os
 import sys
 
@@ -11,6 +12,12 @@ class StandardScheduler(Scheduler):
     """Standard scheduler class for QUEENS."""
 
     def __init__(self, base_settings):
+        """Initialize Standard scheduler.
+
+        Args:
+            base_settings (dict): dictionary containing settings from base class for
+                                  further use and completion in this child class
+        """
         super(StandardScheduler, self).__init__(base_settings)
 
     @classmethod
@@ -33,13 +40,13 @@ class StandardScheduler(Scheduler):
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
-        """Pre-run routine for remote computing: copying checker file to remote
-        machine.
+        """Pre-run routine for remote computing.
+
+        Copy checker file to remote machine.
 
         Returns:
             None
         """
-
         pass
 
     def _submit_singularity(self, job_id, batch, restart):
@@ -58,7 +65,7 @@ class StandardScheduler(Scheduler):
                 job_id, batch, '000', local_path_json, self.driver_name
             )
             script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-            rel_path = '../../driver.simg'
+            rel_path = '../../image.sif'
             local_singularity_path = os.path.join(script_dir, rel_path)
             if restart:
                 cmdlist_remote_main = [
@@ -83,8 +90,9 @@ class StandardScheduler(Scheduler):
             raise ValueError("\nSingularity cannot yet be used remotely with standard scheduling!")
 
     def get_cluster_job_id(self):
-        """Not necessary for standard scheduler but mandatory for parent class
-        initialization.
+        """Not necessary for standard scheduler.
+
+         This is mandatory for parent class initialization.
 
         Returns:
             None
@@ -143,8 +151,9 @@ class StandardScheduler(Scheduler):
         return completed, failed
 
     def post_run(self):
-        """Post-run routine for remote computing: removing checker file from
-        remote machine.
+        """Post-run routine for remote computing.
+
+         Removing checker file from remote machine.
 
         Returns:
             None

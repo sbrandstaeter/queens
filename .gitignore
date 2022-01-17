@@ -24,7 +24,7 @@ pqueens.egg-info
 .pytest_cache/
 
 # singularity images
-driver.simg
+image.sif
 hashfile.txt
 
 # windows pycharm idea files
@@ -33,11 +33,11 @@ hashfile.txt
 # ignore egg package files
 .eggs/
 
-# ignore config folder 
+# ignore config folder
 config/
 
 
-# ignore temporarily created requirements file 
+# ignore temporarily created requirements file
 requirements.tmp
 
 # vscode config files

@@ -98,7 +98,7 @@ remove_conda_env_and_singularity_image:
   stage: cleanup
   script:
     - conda env remove -n queens-$CI_PIPELINE_ID
-    - rm /tmp/driver.simg-$CI_PIPELINE_ID
+    - rm /tmp/image.sif-$CI_PIPELINE_ID
   when: always
   variables:
     GIT_STRATEGY: none
@@ -113,9 +113,9 @@ build_singularity:
   script:
     - cd pqueens/
     - /usr/bin/singularity --version
-    - /usr/bin/singularity build --fakeroot ../driver.simg ../singularity_recipe
-    - du -sh ../driver.simg
-    - mv ../driver.simg /tmp/driver.simg-$CI_PIPELINE_ID
+    - /usr/bin/singularity build --fakeroot ../image.sif ../singularity_recipe.def
+    - du -sh ../image.sif
+    - mv ../image.sif /tmp/image.sif-$CI_PIPELINE_ID
   only:
     variables:
       - $CENTOS_TESTS == "1"
@@ -197,7 +197,7 @@ centos_full_test_suite_develop:
   extends:
     - .centos_settings
   script:
-    - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
+    - cp /tmp/image.sif-$CI_PIPELINE_ID  image.sif
     - pytest -m "unit_tests or integration_tests or integration_tests_baci" $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - build_conda_env
@@ -216,7 +216,7 @@ centos_full_test_suite_master:
   extends:
     - .centos_settings
   script:
-    - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
+    - cp /tmp/image.sif-$CI_PIPELINE_ID  image.sif
     - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   artifacts:
     name: coverage_report
@@ -242,7 +242,7 @@ cluster_tests:
   extends:
     - .centos_settings
   script:
-    - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
+    - cp /tmp/image.sif-$CI_PIPELINE_ID  image.sif
     - pytest -m lnm_cluster --no-cov
   needs:
     - build_conda_env
@@ -256,7 +256,7 @@ benchmarks:
   extends:
     - .centos_settings
   script:
-    - cp /tmp/driver.simg-$CI_PIPELINE_ID  driver.simg
+    - cp /tmp/image.sif-$CI_PIPELINE_ID  image.sif
     - pytest -m benchmark --no-cov
   needs:
     - build_conda_env
