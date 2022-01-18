@@ -15,6 +15,9 @@ variables at runtime.
   ../setup_remote.py /setup_remote.py
   ../environment.yml /environment.yml
 
+%setup
+mkdir $SINGULARITY_ROOTFS/lnm
+
 %post
   yum install -y wget
   yum install -y gcc

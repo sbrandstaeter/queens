@@ -155,7 +155,7 @@ port: 27017
 
 ### Optional: Singularity
 
-Singularity containers are well suited for being used with QUEENS. If you are interested in using Singularity containers for your computations,  please make sure you either have an existing Singularity image `driver.simg` available or `Singularity` installed on your local machine. For instance, in CentOs7, singularity can directly be installed from the repository via:
+Singularity containers are well suited for being used with QUEENS. If you are interested in using Singularity containers for your computations,  please make sure you either have an existing Singularity image `image.sif` available or `Singularity` installed on your local machine. For instance, in CentOs7, singularity can directly be installed from the repository via:
 ```
 sudo yum install singularity
 ```
