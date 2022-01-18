@@ -24,7 +24,7 @@ pqueens.egg-info
 .pytest_cache/
 
 # singularity images
-image.sif
+singularity_image.sif
 hashfile.txt
 
 # windows pycharm idea files

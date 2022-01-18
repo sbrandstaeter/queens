@@ -128,7 +128,9 @@ class ClusterScheduler(Scheduler):
             # also already as executable for jobscript
             singularity_path = singularity_input_options['cluster_path']
             base_settings['cluster_options']['singularity_path'] = singularity_path
-            base_settings['cluster_options']['EXE'] = os.path.join(singularity_path, 'image.sif')
+            base_settings['cluster_options']['EXE'] = os.path.join(
+                singularity_path, 'singularity_image.sif'
+            )
 
             # set cluster bind for Singularity
             base_settings['cluster_options']['singularity_bind'] = singularity_input_options[
@@ -252,7 +254,7 @@ class ClusterScheduler(Scheduler):
             # restart submission
             else:
                 self.cluster_options['EXE'] = (
-                    self.cluster_options['singularity_path'] + '/image.sif'
+                    self.cluster_options['singularity_path'] + '/singularity_image.sif'
                 )
                 self.cluster_options[
                     'INPUT'

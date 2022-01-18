@@ -134,14 +134,14 @@ def test_baci_elementary_effects(
     if singularity_bool is True:
         # check existence of local singularity image
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../../../../image.sif'
+        rel_path = '../../../../singularity_image.sif'
         abs_path = os.path.join(script_dir, rel_path)
         assert os.path.isfile(abs_path), (
             "No singularity image existent! Please provide an up-to-date "
             "singularity image for the testing framework. Being in the "
             "directory `pqueens` you can run the command:\n"
             "----------------------------------------------------\n"
-            "sudo /usr/bin/singularity build ../image.sif "
+            "sudo /usr/bin/singularity build ../singularity_image.sif "
             "../singularity_recipe.def\n"
             "----------------------------------------------------\n"
             "to build a fresh image."
@@ -172,7 +172,7 @@ def test_baci_elementary_effects(
             "deviate! Please provide and up-to-date "
             "singularity image by running:\n"
             "----------------------------------------------------\n"
-            "sudo /usr/bin/singularity build ../image.sif "
+            "sudo /usr/bin/singularity build ../singularity_image.sif "
             "../singularity_recipe.def\n"
             "----------------------------------------------------\n"
         )
