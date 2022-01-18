@@ -23,7 +23,7 @@ def create_singularity_image():
         raise RuntimeError(f'Singularity could not be executed! The error message was: {stderr}')
 
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-    rel_path1 = '../../image.sif'
+    rel_path1 = '../../singularity_image.sif'
     rel_path2 = '../../singularity_recipe.def'
     abs_path1 = os.path.join(script_dir, rel_path1)
     abs_path2 = os.path.join(script_dir, rel_path2)
@@ -40,7 +40,7 @@ def create_singularity_image():
     returncode, _, stdout, stderr = run_subprocess(command_string)
 
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-    rel_path = '../../image.sif'
+    rel_path = '../../singularity_image.sif'
     abs_path = os.path.join(script_dir, rel_path)
     if returncode or not os.path.isfile(abs_path):
         print('Build of local singularity image failed!')
@@ -175,7 +175,7 @@ class SingularityManager:
         """
         # check existence local
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../../image.sif'
+        rel_path = '../../singularity_image.sif'
         abs_path = os.path.join(script_dir, rel_path)
         if os.path.isfile(abs_path):
             # check singularity status local
@@ -212,7 +212,7 @@ class SingularityManager:
                 if self.remote:
                     print("Updating remote image from local image...")
                     print("(This might take a couple of seconds, but needs only to be done once)")
-                    rel_path = "../../image.sif"
+                    rel_path = "../../singularity_image.sif"
                     abs_path = os.path.join(script_dir, rel_path)
                     command_list = [
                         "scp",
@@ -233,7 +233,7 @@ class SingularityManager:
                     'ssh -T',
                     self.remote_connect,
                     'test -f',
-                    self.singularity_path + "/image.sif && echo 'Y' || echo 'N'",
+                    self.singularity_path + "/singularity_image.sif && echo 'Y' || echo 'N'",
                 ]
                 command_string = ' '.join(command_list)
                 _, _, stdout, _ = run_subprocess(command_string)
@@ -244,7 +244,7 @@ class SingularityManager:
                         "Updating remote image from local image..."
                     )
                     print("(This might take a couple of seconds, but needs only to be done once)")
-                    rel_path = "../../image.sif"
+                    rel_path = "../../singularity_image.sif"
                     abs_path = os.path.join(script_dir, rel_path)
                     command_list = [
                         "scp",
@@ -274,7 +274,7 @@ class SingularityManager:
             if self.remote:
                 print("Updating now remote image from local image...")
                 print("(This might take a couple of seconds, but needs only to be done once)")
-                rel_path = "../../image.sif"
+                rel_path = "../../singularity_image.sif"
                 abs_path = os.path.join(script_dir, rel_path)
                 command_list = [
                     "scp",

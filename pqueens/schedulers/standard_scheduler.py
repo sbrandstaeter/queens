@@ -65,7 +65,7 @@ class StandardScheduler(Scheduler):
                 job_id, batch, '000', local_path_json, self.driver_name
             )
             script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-            rel_path = '../../image.sif'
+            rel_path = '../../singularity_image.sif'
             local_singularity_path = os.path.join(script_dir, rel_path)
             if restart:
                 cmdlist_remote_main = [
