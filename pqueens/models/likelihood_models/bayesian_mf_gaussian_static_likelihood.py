@@ -307,7 +307,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
             y_lf_mat, x_batch, self.coords_mat[: y_lf_mat.shape[0]]
         )
         # Get the response matrices of the multi-fidelity mapping
-        m_f_mat, var_y_mat = self.mf_interface.map(z_mat)
+        m_f_mat, var_y_mat = self.mf_interface.evaluate(z_mat)
 
         assert np.array_equal(
             m_f_mat.shape[1], np.atleast_2d(self.y_obs_vec).shape[1]

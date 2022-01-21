@@ -1,3 +1,4 @@
+"""Job interface class."""
 import sys
 import time
 
@@ -26,13 +27,10 @@ class JobInterface(Interface):
         interface_name (string):                 name of interface
         resources (dict):                        dictionary with resources
         experiment_name (string):                name of experiment
-        db_address (string):                     address of database to use
         db (mongodb):                            mongodb to store results and job info
         polling_time (int):                      how frequently do we check if jobs are done
         output_dir (string):                     directory to write output to
-        restart_from_finished_simulation (bool): true if restart option is chosen
         parameters (dict):                       dictionary with parameters
-        connect (string):                        connection to computing resource
         time_for_data_copy (float): Time (s) to wait such that copying process of simulation
                                     input file can finish and we do not overload the network
     """
@@ -63,9 +61,12 @@ class JobInterface(Interface):
             db (mongodb):               mongodb to store results and job info
             polling_time (int):         how frequently do we check if jobs are done
             output_dir (string):        directory to write output to
+            restart (bool):             true if restart option is chosen
             parameters (dict):          dictionary with parameters
-            restart_flag (bool):        true if restart option is chosen
-            remote_connect (string):    connection to computing resource
+            remote (bool):              true of remote computation
+            remote_connect (str):       connection to computing resource
+            scheduler_type (str):       scheduler type
+            direct_scheduling (bool):   true if direct scheduling
             time_for_data_copy (float): Time (s) to wait such that copying process of simulation
                                         input file can finish and we do not overload the network
             driver_name (str):          Name of the associated driver for the current interface
@@ -168,18 +169,16 @@ class JobInterface(Interface):
             driver_name,
         )
 
-    def map(self, samples):
-        """Mapping function which orchestrates call to external simulation
-        software.
+    def evaluate(self, samples):
+        """Orchestrate call to external simulation software.
 
         Second variant which takes the input samples as argument
 
         Args:
-            samples (list):         realization/samples of QUEENS simulation input variables
+            samples (list): realization/samples of QUEENS simulation input variables
 
         Returns:
-            np.array,np.array       two arrays containing the inputs from the
-                                    suggester, as well as the corresponding outputs
+            output(dict): output data
         """
         self.batch_number += 1
 
@@ -208,7 +207,8 @@ class JobInterface(Interface):
                     time.sleep(self.polling_time)
 
         # get sample and response data
-        return self.get_output_data()
+        output = self.get_output_data()
+        return output
 
     def get_job_manager(self):
         """Decide whether or not restart is performed.
@@ -580,8 +580,9 @@ class JobInterface(Interface):
                         print('>> Try again!')
 
     def _check_jobs_in_db(self):
-        """Check jobs in database and find the job with the smallest job ID in
-        the database.
+        """Check jobs in database.
+
+        Find the job with the smallest job ID in the database.
 
         Returns:
             is_every_job_in_db (boolean):   true if smallest job ID in database is 1
@@ -752,7 +753,6 @@ class JobInterface(Interface):
             samples (DataFrame):     realization/samples of QUEENS simulation input variables
             jobid_range (range):     range of job IDs which are submitted
         """
-
         for jobid in jobid_range:
             processed_suggestion = False
             while not processed_suggestion:
@@ -809,8 +809,9 @@ class JobInterface(Interface):
         return
 
     def _get_current_restart_job(self, jobid, resource, resource_name, samples):
-        """Get the current job with ID (job_id) from database or from output
-        directory.
+        """Get the current job from database.
+
+        Get job with ID (job_id) from database or from output directory.
 
         Args:
             jobid (int):      job ID
@@ -821,7 +822,6 @@ class JobInterface(Interface):
         Returns:
             current job (dict):    current job with ID (job_id)
         """
-
         # try to load existing job (with same jobid) from the database
         current_job = self.load_jobs(
             field_filters={
