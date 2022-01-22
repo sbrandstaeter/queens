@@ -1,5 +1,8 @@
 """Wrapped functions of subprocess stdlib module."""
+import logging
 import subprocess
+
+_logger = logging.getLogger(__name__)
 
 from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
 
@@ -71,9 +74,19 @@ def _run_subprocess_simple(command_string, **kwargs):
         shell=True,
         universal_newlines=True,
     )
+    raise_error = kwargs.get('raise_error', True)
     stdout, stderr = process.communicate()
     process_id = process.pid
     process_returncode = process.returncode
+    if stderr:
+        subprocess_error = SubprocessError.construct_error_from_command(
+            command_string, stdout, stderr
+        )
+        if raise_error:
+            raise subprocess_error
+        else:
+            _logger.warning(subprocess_error.message)
+
     return process_returncode, process_id, stdout, stderr
 
 
@@ -128,7 +141,15 @@ def _run_subprocess_simulation(command_string, **kwargs):
 
     # close and remove file handlers (to prevent OSError: [Errno 24] Too many open files)
     finish_job_logger(joblogger, lfh, efh, sh)
-
+    raise_error = kwargs.get('raise_error', True)
+    if stderr:
+        subprocess_error = SubprocessError.construct_error_from_command(
+            command_string, stdout, stderr
+        )
+        if raise_error:
+            raise subprocess_error
+        else:
+            _logger.warning(subprocess_error.message)
     return process_returncode, process_id, stdout, stderr
 
 
@@ -178,11 +199,11 @@ def _run_subprocess_remote(command_string, **kwargs):
     """
     remote_user = kwargs.get("remote_user", None)
     if not remote_user:
-        raise ValueError("Remote commands need remote username.")
+        raise SubprocessError("Remote commands need remote username.")
 
     remote_address = kwargs.get("remote_address", None)
     if not remote_user:
-        raise ValueError("Remote commands needs remote machine address.")
+        raise SubprocessError("Remote commands needs remote machine address.")
 
     command_string = f'ssh {remote_user}@{remote_address} "{command_string}"'
     process = subprocess.Popen(
@@ -196,6 +217,15 @@ def _run_subprocess_remote(command_string, **kwargs):
     stdout, stderr = process.communicate()
     process_id = process.pid
     process_returncode = process.returncode
+    raise_error = kwargs.get('raise_error', True)
+    if stderr:
+        subprocess_error = SubprocessError.construct_error_from_command(
+            command_string, stdout, stderr
+        )
+        if raise_error:
+            raise subprocess_error
+        else:
+            _logger.warning(subprocess_error.message)
     return process_returncode, process_id, stdout, stderr
 
 
@@ -271,7 +301,7 @@ class SubprocessError(Exception):
         message = "\n\nQUEENS' subprocess wrapper caught the following error:\n"
         message += error_message
         message += "\n\n\nwith commandline output:\n"
-        message += command_output
+        message += str(command_output)
         message += "\n\n\nwhile executing the command:\n" + command
         if additional_message:
             message += '\n\n' + additional_message
