@@ -29,7 +29,4 @@ def test_subprocess_correct_message_construction():
 def test_subprocess_raises_error():
     """Check if non existing command raises an SubprocessError."""
     with pytest.raises(SubprocessError):
-        # Temporary solution
-        raise SubprocessError("no message")
-        # Actual test once the error is thrown
-        # _run_subprocess_simple("NonExistingCommand")
+        _run_subprocess_simple("NonExistingCommand")

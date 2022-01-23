@@ -65,26 +65,22 @@ def test_cluster_elementary_effects(
     experiment_dir = cluster_experiment_dir.joinpath("output")
 
     command_string = f'mkdir -v -p {path_to_input_file_cluster}'
-    returncode, pid, stdout, stderr = run_subprocess(
+    _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_user=cluster_user,
         remote_address=cluster_address,
     )
     print(stdout)
-    if returncode:
-        raise Exception(stderr)
 
     command_string = f'mkdir -v -p {experiment_dir}'
-    returncode, pid, stdout, stderr = run_subprocess(
+    _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_user=cluster_user,
         remote_address=cluster_address,
     )
     print(stdout)
-    if returncode:
-        raise Exception(stderr)
 
     # copy input file to cluster
     command = ' '.join(
@@ -94,10 +90,8 @@ def test_cluster_elementary_effects(
             connect_to_resource + ':' + str(input_file_cluster),
         ]
     )
-    returncode, pid, stdout, stderr = run_subprocess(command)
+    _, _, stdout, _ = run_subprocess(command)
     print(stdout)
-    if returncode:
-        raise Exception(stderr)
 
     dir_dict = {
         'experiment_name': str(experiment_name),

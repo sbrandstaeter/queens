@@ -18,9 +18,7 @@ def create_singularity_image():
     """
     # create the actual image
     command_string = '/usr/bin/singularity --version'
-    _, _, _, stderr = run_subprocess(command_string)
-    if stderr:
-        raise RuntimeError(f'Singularity could not be executed! The error message was: {stderr}')
+    run_subprocess(command_string, additional_error_message='Singularity could not be executed!')
 
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
     rel_path1 = '../../singularity_image.sif'
@@ -37,17 +35,15 @@ def create_singularity_image():
         abs_path2,
     ]
     command_string = ' '.join(command_list)
-    returncode, _, stdout, stderr = run_subprocess(command_string)
+    run_subprocess(
+        command_string, additional_error_message='Build of local singularity image failed!'
+    )
 
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
     rel_path = '../../singularity_image.sif'
     abs_path = os.path.join(script_dir, rel_path)
-    if returncode or not os.path.isfile(abs_path):
-        print('Build of local singularity image failed!')
-        print('----------------------------------------------------------------------------------')
-        print(f'The returned stdout message was:\n {stdout}\n')
-        print(f'The returned error message was:\n {stderr}\n')
-        raise RuntimeError(f'The returned error message was: {stderr}, {stdout}')
+    if not os.path.isfile(abs_path):
+        raise FileNotFoundError(f'No singularity image "{abs_path}" found')
 
 
 class SingularityManager:
@@ -102,7 +98,7 @@ class SingularityManager:
                     + "\' >> ~/.bashrc && source ~/.bashrc"
                 ]
         command_string = ' '.join(command_list)
-        _, _, _, _ = run_subprocess(command_string)
+        run_subprocess(command_string)
 
         # Create a Singularity PATH variable that is equal to the host PATH
         if self.remote:
@@ -129,7 +125,7 @@ class SingularityManager:
                     # pylint: enable=line-too-long
                 ]  # noqa
             command_string = ' '.join(command_list)
-            _, _, _, _ = run_subprocess(command_string)
+            run_subprocess(command_string)
 
         # Create a Singulartity LD_LIBRARY_PATH variable that is equal to the host
         # LD_LIBRARY_PATH
@@ -161,7 +157,7 @@ class SingularityManager:
                     # pylint: enable=line-too-long
                 ]  # noqa
             command_string = ' '.join(command_list)
-            _, _, _, _ = run_subprocess(command_string)
+            run_subprocess(command_string)
 
     def prepare_singularity_files(self):
         """Checks if local and remote singularity images are existent.
@@ -181,10 +177,10 @@ class SingularityManager:
             # check singularity status local
             command_list = ['/usr/bin/singularity', 'run', abs_path, '--hash=true']
             command_string = ' '.join(command_list)
-            _, _, old_data, stderr = run_subprocess(command_string)
-
-            if stderr:
-                raise RuntimeError(f'Singularity hash-check return the error: {stderr}. Abort...')
+            _, _, old_data, _ = run_subprocess(
+                command_string,
+                additional_error_message='Singularity hash-check failed',
+            )
 
             hashlist = hash_files()
             # Write local singularity image and remote image
@@ -204,7 +200,7 @@ class SingularityManager:
                 abs_path = os.path.join(script_dir, rel_path)
                 command_list = ['rm', abs_path]
                 command_string = ' '.join(command_list)
-                _, _, _, _ = run_subprocess(command_string)
+                run_subprocess(command_string)
                 create_singularity_image()
                 print("Local singularity image written successfully!")
 
@@ -220,12 +216,10 @@ class SingularityManager:
                         self.remote_connect + ':' + self.singularity_path,
                     ]
                     command_string = ' '.join(command_list)
-                    _, _, _, stderr = run_subprocess(command_string)
-                    if stderr:
-                        raise RuntimeError(
-                            "Error! Was not able to copy local singularity image to remote! "
-                            "Abort..."
-                        )
+                    run_subprocess(
+                        command_string,
+                        additional_error_message="Was not able to copy local singularity image to remote! ",
+                    )
 
             # check existence singularity on remote
             if self.remote:
@@ -252,12 +246,10 @@ class SingularityManager:
                         self.remote_connect + ':' + self.singularity_path,
                     ]
                     command_string = ' '.join(command_list)
-                    _, _, _, stderr = run_subprocess(command_string)
-                    if stderr:
-                        raise RuntimeError(
-                            "Error! Was not able to copy local singularity image to remote! "
-                            "Abort..."
-                        )
+                    run_subprocess(
+                        command_string,
+                        additional_error_message="Was not able to copy local singularity image to remote!",
+                    )
                     print('All singularity images ok! Starting simulation on cluster...')
 
         else:
@@ -282,11 +274,10 @@ class SingularityManager:
                     self.remote_connect + ':' + self.singularity_path,
                 ]
                 command_string = ' '.join(command_list)
-                _, _, _, stderr = run_subprocess(command_string)
-                if stderr:
-                    raise RuntimeError(
-                        "Error! Was not able to copy local singularity image to remote! " "Abort..."
-                    )
+                run_subprocess(
+                    command_string,
+                    additional_error_message="Was not able to copy local singularity image to remote! ",
+                )
                 print('All singularity images ok! Starting simulation on cluster...')
 
     def kill_previous_queens_ssh_remote(self, username):
@@ -340,7 +331,7 @@ class SingularityManager:
                     for ssh_id in ssh_ids:
                         command_list = ['ssh', self.remote_connect, '\'kill -9', ssh_id + '\'']
                         command_string = ' '.join(command_list)
-                        _, _, std, err = run_subprocess(command_string)
+                        run_subprocess(command_string)
                     print('Old QUEENS port-forwardings were successfully terminated!')
                     break
                 elif answer.lower() == 'n':
@@ -429,7 +420,7 @@ class SingularityManager:
         """
         _, _, username, _ = run_subprocess('whoami')
         command_string = "ps -aux | grep 'ssh -f -N -L 9001:' | grep ':22 " + username + "@'"
-        _, _, active_ssh, _ = run_subprocess(command_string)
+        _, _, active_ssh, _ = run_subprocess(command_string, raise_error=False)
 
         if active_ssh:
             active_ssh_ids = []
@@ -443,7 +434,7 @@ class SingularityManager:
             if active_ssh_ids:
                 for ssh_id in active_ssh_ids:
                     command_string = 'kill -9 ' + ssh_id
-                    _, _, _, _ = run_subprocess(command_string)
+                    run_subprocess(command_string, raise_error=False)
                 print('Active QUEENS local to remote port-forwardings were closed successfully!')
 
     def close_remote_port(self, port):
@@ -465,7 +456,7 @@ class SingularityManager:
             str(port) + ':localhost:27017\'',
         ]
         command_string = ' '.join(command_list)
-        _, _, active_ssh, _ = run_subprocess(command_string)
+        _, _, active_ssh, _ = run_subprocess(command_string, raise_error=False)
 
         # skip entries that contain "grep" as this is the current command
         try:
@@ -479,7 +470,7 @@ class SingularityManager:
             for ssh_id in active_ssh_ids:
                 command_list = ['ssh', self.remote_connect, '\'kill -9', ssh_id + '\'']
                 command_string = ' '.join(command_list)
-                _, _, _, _ = run_subprocess(command_string)
+                run_subprocess(command_string)
             print('Active QUEENS remote to local port-forwardings were closed successfully!')
 
     def copy_temp_json(self):
@@ -497,11 +488,10 @@ class SingularityManager:
             self.remote_connect + ':' + self.singularity_path + '/temp.json',
         ]
         command_string = ' '.join(command_list)
-        _, _, _, stderr = run_subprocess(command_string)
-        if stderr:
-            raise RuntimeError(
-                "Error! Was not able to copy temporary input file to remote! Abort..."
-            )
+        run_subprocess(
+            command_string,
+            additional_error_message="Was not able to copy temporary input file to remote!",
+        )
 
     def copy_post_post(self):
         """Copy an instance of the post-post module to the remote.
@@ -522,7 +512,7 @@ class SingularityManager:
             self.singularity_path + '/post_post\'',
         ]
         command_string = ' '.join(command_list)
-        _, _, _, _ = run_subprocess(command_string)
+        run_subprocess(command_string)
 
         # copy new files
         command_list = [
@@ -531,11 +521,10 @@ class SingularityManager:
             self.remote_connect + ':' + self.singularity_path + '/post_post',
         ]
         command_string = ' '.join(command_list)
-        _, _, _, stderr = run_subprocess(command_string)
-        if stderr:
-            raise RuntimeError(
-                "Error! Was not able to copy post_post directory to remote! Abort..."
-            )
+        run_subprocess(
+            command_string,
+            additional_error_message="Was not able to copy post_post directory to remote!",
+        )
 
 
 def hash_files():

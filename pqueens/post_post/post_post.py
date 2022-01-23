@@ -94,14 +94,10 @@ class PostPost(metaclass=abc.ABCMeta):
             remote_file_name,
         ]
         command_string = ''.join(command_list)
-        _, _, _, stderr = run_subprocess(command_string)
-
-        # detection of failed command
-        if stderr:
-            raise RuntimeError(
-                "\nPost-processed file could not be copied from remote machine!"
-                f"\nStderr:\n{stderr}"
-            )
+        run_subprocess(
+            command_string,
+            additional_error_message="Post-processed file could not be copied from remote machine!",
+        )
 
     def error_handling(self, output_dir):
         """Mark failed simulation and set results appropriately.
@@ -127,7 +123,7 @@ class PostPost(metaclass=abc.ABCMeta):
                 + input_file_extention
                 + r" ../postpost_error/"
             )
-            _, _, _, _ = run_subprocess(command_string)
+            run_subprocess(command_string)
 
     def delete_field_data(self, output_dir, remote_connect):
         """Delete output files except files with given prefix."""
@@ -148,14 +144,10 @@ class PostPost(metaclass=abc.ABCMeta):
                     '"',
                 ]
                 command_string = ' '.join(command_list)
-                _, _, _, stderr = run_subprocess(command_string)
-
-                # detection of failed command
-                if stderr:
-                    raise RuntimeError(
-                        "\nPost-processed file could not be removed from remote machine!"
-                        f"\nStderr on remote:\n{stderr}"
-                    )
+                run_subprocess(
+                    command_string,
+                    additional_error_message="Post-processed file could not be removed from remote machine!",
+                )
             else:
                 os.remove(filename)
 

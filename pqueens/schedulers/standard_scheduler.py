@@ -75,7 +75,7 @@ class StandardScheduler(Scheduler):
                     '--post=true',
                 ]
                 cmd_remote_main = ' '.join(cmdlist_remote_main)
-                _, _, _, _ = run_subprocess(cmd_remote_main)
+                run_subprocess(cmd_remote_main)
                 return 0
             else:
                 cmdlist_remote_main = [
@@ -132,14 +132,10 @@ class StandardScheduler(Scheduler):
                 "\"'",
             ]
             command_string = ''.join(command_list)
-            _, _, stdout, stderr = run_subprocess(command_string)
-
-            # detection of failed command
-            if stderr:
-                raise RuntimeError(
-                    "\nString checker file could not be executed on remote machine!"
-                    f"\nStderr on remote:\n{stderr}"
-                )
+            _, _, stdout, _ = run_subprocess(
+                command_string,
+                additional_error_message="String checker file could not be executed on remote machine!",
+            )
 
             # search string present
             if stdout:

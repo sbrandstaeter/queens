@@ -125,8 +125,8 @@ class BaciDriver(Driver):
                 self.simulation_input_template,
                 self.simulation_input_template + '.bak',
             ]
-            cmd_str = ' '.join(cmd_lst)
-            _, _, _, stderr = run_subprocess(cmd_str)
+            cmd_str = ' '.join(cmd_lsubprocessst)
+            run_subprocess(cmd_str)
 
     def run_job(self):
         """Run BACI with the following scheduling options overall:
@@ -214,14 +214,10 @@ class BaciDriver(Driver):
             self.experiment_dir,
         ]
         command_string = ''.join(command_list)
-        _, _, _, stderr = run_subprocess(command_string)
-
-        # detection of failed command
-        if stderr:
-            raise RuntimeError(
-                "\nInjector file and param dict file could not be copied to remote machine!"
-                f"\nStderr:\n{stderr}"
-            )
+        run_subprocess(
+            command_string,
+            additional_error_message="Injector file and param dict file could not be copied to remote machine!",
+        )
 
         # remove local copy of JSON file containing parameter dictionary
         os.remove(params_json_path)
@@ -243,14 +239,10 @@ class BaciDriver(Driver):
             '"',
         ]
         command_string = ' '.join(command_list)
-        _, _, _, stderr = run_subprocess(command_string)
-
-        # detection of failed command
-        if stderr:
-            raise RuntimeError(
-                "\nInjector file could not be executed on remote machine!"
-                f"\nStderr on remote:\n{stderr}"
-            )
+        run_subprocess(
+            command_string,
+            additional_error_message="Injector file could not be executed on remote machine!",
+        )
 
         # generate command for removing 'injector.py' and JSON file containing
         # parameter dictionary from experiment directory on remote machine
@@ -263,14 +255,10 @@ class BaciDriver(Driver):
             '"',
         ]
         command_string = ' '.join(command_list)
-        _, _, _, stderr = run_subprocess(command_string)
-
-        # detection of failed command
-        if stderr:
-            raise RuntimeError(
-                "\nInjector and JSON file could not be removed from remote machine!"
-                f"\nStderr on remote:\n{stderr}"
-            )
+        run_subprocess(
+            command_string,
+            additional_error_message="Injector and JSON file could not be removed from remote machine!",
+        )
 
     # ----- RUN METHODS ---------------------------------------------------------
     # overload the parent pre_job_run method
@@ -357,8 +345,7 @@ class BaciDriver(Driver):
 
         # run BACI via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(
-            command_string,
-            subprocess_type=subprocess_type,
+            command_string, subprocess_type=subprocess_type, raise_error=False
         )
         # redirect stdout/stderr output to log and error file, respectively,
         # for Slurm, PBS (CAE stdout/stderr on remote for A-II, submission
@@ -452,6 +439,7 @@ class BaciDriver(Driver):
             log_file=log_file,
             error_file=error_file,
             streaming=self.cae_output_streaming,
+            raise_error=False,
         )
 
         # redirect stdout/stderr output to log and error file, respectively,
@@ -485,11 +473,7 @@ class BaciDriver(Driver):
                 final_pp_cmd = pp_cmd
 
         # run post-processing command and print potential error messages
-        _, _, _, stderr = run_subprocess(final_pp_cmd)
-
-        # detection of failed command
-        if stderr:
-            _logger.error("\nPost-processing of BACI failed!" f"\nStderr:\n{stderr}")
+        run_subprocess(final_pp_cmd, additional_error_message="Post-processing of BACI failed!")
 
     # ----- COMMAND-ASSEMBLY METHODS ---------------------------------------------
     def assemble_sing_baci_cluster_job_cmd(self):
@@ -559,13 +543,10 @@ class BaciDriver(Driver):
                 self.experiment_dir,
             ]
             command_string = ''.join(command_list)
-            _, _, _, stderr = run_subprocess(command_string)
-
-            # detection of failed command
-            if stderr:
-                raise RuntimeError(
-                    "\nJobscript could not be copied to remote machine!" f"\nStderr:\n{stderr}"
-                )
+            run_subprocess(
+                command_string,
+                additional_error_message="Jobscript could not be copied to remote machine!",
+            )
 
             # remove local copy of submission script and change path
             # to submission script to the one on remote machine
