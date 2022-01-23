@@ -51,7 +51,7 @@ def _get_subprocess(subprocess_type):
     elif subprocess_type == 'remote':
         return _run_subprocess_remote
     else:
-        raise ValueError(f'subprocess_type {subprocess_type} not found.')
+        raise SubprocessError(f'subprocess_type {subprocess_type} not found.')
 
 
 def _run_subprocess_simple(command_string, **kwargs):
@@ -74,19 +74,11 @@ def _run_subprocess_simple(command_string, **kwargs):
         shell=True,
         universal_newlines=True,
     )
-    raise_error = kwargs.get('raise_error', True)
     stdout, stderr = process.communicate()
     process_id = process.pid
     process_returncode = process.returncode
-    if stderr:
-        subprocess_error = SubprocessError.construct_error_from_command(
-            command_string, stdout, stderr
-        )
-        if raise_error:
-            raise subprocess_error
-        else:
-            _logger.warning(subprocess_error.message)
 
+    _raise_or_warn_error(command_string, stdout, stderr, **kwargs)
     return process_returncode, process_id, stdout, stderr
 
 
@@ -141,15 +133,8 @@ def _run_subprocess_simulation(command_string, **kwargs):
 
     # close and remove file handlers (to prevent OSError: [Errno 24] Too many open files)
     finish_job_logger(joblogger, lfh, efh, sh)
-    raise_error = kwargs.get('raise_error', True)
-    if stderr:
-        subprocess_error = SubprocessError.construct_error_from_command(
-            command_string, stdout, stderr
-        )
-        if raise_error:
-            raise subprocess_error
-        else:
-            _logger.warning(subprocess_error.message)
+
+    _raise_or_warn_error(command_string, stdout, stderr, **kwargs)
     return process_returncode, process_id, stdout, stderr
 
 
@@ -217,16 +202,30 @@ def _run_subprocess_remote(command_string, **kwargs):
     stdout, stderr = process.communicate()
     process_id = process.pid
     process_returncode = process.returncode
-    raise_error = kwargs.get('raise_error', True)
+    _raise_or_warn_error(command_string, stdout, stderr, **kwargs)
+    return process_returncode, process_id, stdout, stderr
+
+
+def _raise_or_warn_error(command, stdout, stderr, **kwargs):
+    """Raise or warn eventual exception if subprocess fails.
+
+    Args:
+        command (str): Command string
+        stdout (str): Command output
+        stderr (str): Error of the output
+        raise_error (bool,optional): Raise or warn error defaults to True
+        additional_error_message (str,optional): Additional error message to be displayed
+    """
     if stderr:
+        raise_error = kwargs.get('raise_error', True)
+        additional_message = kwargs.get('additional_error_message', None)
         subprocess_error = SubprocessError.construct_error_from_command(
-            command_string, stdout, stderr
+            command, stdout, stderr, additional_message
         )
         if raise_error:
             raise subprocess_error
         else:
             _logger.warning(subprocess_error.message)
-    return process_returncode, process_id, stdout, stderr
 
 
 class SubprocessError(Exception):
