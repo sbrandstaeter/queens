@@ -114,7 +114,7 @@ def test_map(default_bmfia_interface, default_probabilistic_obj_lst):
     # --- Test empty probabilistic mapping list -----
     default_bmfia_interface.probabilistic_mapping_obj_lst = []
     with pytest.raises(RuntimeError):
-        default_bmfia_interface.map(Z_LF, support='y')
+        default_bmfia_interface.evaluate(Z_LF)
 
     # --- Test for differnt (wrong) dimensions of mapping list and z_lf
     default_bmfia_interface.probabilistic_mapping_obj_lst = default_probabilistic_obj_lst
@@ -122,14 +122,14 @@ def test_map(default_bmfia_interface, default_probabilistic_obj_lst):
     #  --> here: 2 x 3
     Z_LF = np.array([[1, 2], [5, 6]])
     with pytest.raises(AssertionError):
-        default_bmfia_interface.map(Z_LF, support='y')
+        default_bmfia_interface.evaluate(Z_LF)
 
     # --- Test with correct list
     # Dims Z_LF: gamma_dim x num_samples x coord_dim
     #  --> here: 2 x 2 x 3
     Z_LF = np.array([[[1, 2, 3], [4, 5, 6]], [[7, 8, 9], [10, 11, 12]]])
     default_bmfia_interface.probabilistic_mapping_obj_lst = default_probabilistic_obj_lst
-    mean_out, variance_out = default_bmfia_interface.map(Z_LF, support='y')
+    mean_out, variance_out = default_bmfia_interface.evaluate(Z_LF)
 
     # --- asserts / tests -------------
     np.testing.assert_array_equal(mean_in, mean_out)

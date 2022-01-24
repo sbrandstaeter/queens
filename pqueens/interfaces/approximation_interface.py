@@ -1,3 +1,4 @@
+"""Class for mapping input variables to responses using an approximation."""
 import numpy as np
 from sklearn.model_selection import KFold
 
@@ -62,9 +63,8 @@ class ApproximationInterface(Interface):
         # initialize object
         return cls(interface_name, config, approximation_name, parameters)
 
-    def map(self, samples):
-        """Mapping function which calls the regression approximation Prediction
-        with the regression model.
+    def evaluate(self, samples):
+        """Call the regression approximation prediction.
 
         Args:
             samples (list):         list of variables objects

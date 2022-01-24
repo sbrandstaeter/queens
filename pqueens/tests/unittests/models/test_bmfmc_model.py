@@ -1,3 +1,4 @@
+"""Test BMFMC model."""
 import numpy as np
 import pytest
 from mock import patch
@@ -12,12 +13,14 @@ from pqueens.models.simulation_model import SimulationModel
 # ------------ fixtures --------------------------
 @pytest.fixture()
 def result_description():
+    """Create result description."""
     description = {"write_results": True}
     return description
 
 
 @pytest.fixture()
 def dummy_high_fidelity_model(parameters):
+    """Create dummy high-fidelity model."""
     model_name = 'dummy'
     interface = 'my_dummy_interface'
     model_parameters = parameters
@@ -28,12 +31,14 @@ def dummy_high_fidelity_model(parameters):
 
 @pytest.fixture()
 def global_settings():
+    """Create global settings."""
     global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
     return global_set
 
 
 @pytest.fixture()
 def parameters():
+    """Create parameters."""
     params = {
         "random_variables": {
             "x1": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
@@ -59,6 +64,7 @@ def parameters():
 
 @pytest.fixture()
 def config():
+    """Fixture for dummy configuration."""
     config = {
         "joint_density_approx": {
             "type": "gp_approximation_gpy",
@@ -72,24 +78,28 @@ def config():
 
 @pytest.fixture()
 def approximation_name():
+    """Create approximation name."""
     name = 'joint_density_approx'
     return name
 
 
 @pytest.fixture()
 def default_interface(config, approximation_name):
+    """Create default interface."""
     interface = BmfmcInterface(config, approximation_name)
     return interface
 
 
 @pytest.fixture()
 def settings_probab_mapping(config, approximation_name):
+    """Create settings for probability mapping."""
     settings = config[approximation_name]
     return settings
 
 
 @pytest.fixture()
 def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
+    """Create default BMFMC model."""
     y_pdf_support = np.linspace(-1, 1, 10)
 
     model = BMFMCModel(
@@ -117,6 +127,7 @@ def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
 
 @pytest.fixture()
 def default_data_iterator(result_description, global_settings):
+    """Create default data iterator."""
     path_to_data = 'dummy'
     data_iterator = DataIterator(path_to_data, result_description, global_settings)
     return data_iterator
@@ -124,6 +135,7 @@ def default_data_iterator(result_description, global_settings):
 
 @pytest.fixture()
 def dummy_MC_data(parameters):
+    """Create Monte-Carlo data."""
     data_dict = {
         "uncertain_parameters": parameters,
         "input": np.array([[1.0, 1.0]]),
@@ -137,13 +149,17 @@ def dummy_MC_data(parameters):
 
 # custom class to mock the visualization module
 class InstanceMock:
+    """InstanceMock class."""
+
     @staticmethod
     def plot_feature_ranking(self, *args, **kwargs):
+        """Plot feature ranking."""
         return 1
 
 
 @pytest.fixture
 def mock_visualization():
+    """Create visualization."""
     my_mock = InstanceMock()
     return my_mock
 
@@ -151,6 +167,7 @@ def mock_visualization():
 # ------------ unittests -------------------------
 @pytest.mark.unit_tests
 def test_init(mocker, settings_probab_mapping, default_interface):
+    """Test initialization."""
     y_pdf_support = np.linspace(-1, 1, 10)
 
     mp = mocker.patch('pqueens.models.model.Model.__init__')
@@ -201,6 +218,7 @@ def test_init(mocker, settings_probab_mapping, default_interface):
 
 @pytest.mark.unit_tests
 def test_evaluate(mocker, default_bmfmc_model):
+    """Test evaluation of samples."""
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.compute_pymc_reference')
     mp2 = mocker.patch(
         'pqueens.models.bmfmc_model.BMFMCModel.run_BMFMC_without_features', return_value=(1, 1)
@@ -247,9 +265,12 @@ def test_evaluate(mocker, default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_run_BMFMC(mocker, default_bmfmc_model):
+    """Test running BMFMC model."""
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.build_approximation')
     mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.compute_pyhf_statistics')
-    mp3 = mocker.patch('pqueens.interfaces.bmfmc_interface.BmfmcInterface.map', return_value=(1, 1))
+    mp3 = mocker.patch(
+        'pqueens.interfaces.bmfmc_interface.BmfmcInterface.evaluate', return_value=(1, 1)
+    )
 
     default_bmfmc_model.Z_mc = np.array([[1, 1]])
     default_bmfmc_model.Z_train = np.array([[1, 1]])
@@ -262,9 +283,12 @@ def test_run_BMFMC(mocker, default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_run_BMFMC_without_features(mocker, default_bmfmc_model):
+    """Test running BMFMC model without features."""
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.build_approximation')
     mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.compute_pyhf_statistics')
-    mp3 = mocker.patch('pqueens.interfaces.bmfmc_interface.BmfmcInterface.map', return_value=(1, 1))
+    mp3 = mocker.patch(
+        'pqueens.interfaces.bmfmc_interface.BmfmcInterface.evaluate', return_value=(1, 1)
+    )
 
     default_bmfmc_model.Y_LFs_mc = np.array([[1, 1]])
     default_bmfmc_model.Y_LFs_train = np.array([[1, 1]])
@@ -277,6 +301,7 @@ def test_run_BMFMC_without_features(mocker, default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_load_sampling_data(mocker, default_bmfmc_model, default_data_iterator, dummy_MC_data):
+    """Test loading of sampling data."""
     mp1 = mocker.patch(
         'pqueens.iterators.data_iterator.DataIterator.read_pickle_file', return_value=dummy_MC_data
     )
@@ -303,6 +328,7 @@ def test_load_sampling_data(mocker, default_bmfmc_model, default_data_iterator, 
 
 @pytest.mark.unit_tests
 def test_get_hf_training_data(mocker, default_bmfmc_model, dummy_high_fidelity_model):
+    """Test getting of high-fidelity training data."""
     mp1 = mocker.patch(
         'pqueens.models.simulation_model.SimulationModel' '.update_model_from_sample_batch'
     )
@@ -340,6 +366,7 @@ def test_get_hf_training_data(mocker, default_bmfmc_model, dummy_high_fidelity_m
 
 @pytest.mark.unit_tests
 def test_build_approximation(mocker, default_bmfmc_model):
+    """Test training of surrogate model."""
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.get_hf_training_data')
     mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.set_feature_strategy')
     mp3 = mocker.patch('pqueens.interfaces.bmfmc_interface.BmfmcInterface.build_approximation')
@@ -354,6 +381,7 @@ def test_build_approximation(mocker, default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_compute_pyhf_statistics(mocker, default_bmfmc_model):
+    """Test computation of the high-fidelity output density prediction."""
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel._calculate_p_yhf_mean')
     mp2 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel._calculate_p_yhf_var')
     default_bmfmc_model.predictive_var_bool = True
@@ -369,6 +397,7 @@ def test_compute_pyhf_statistics(mocker, default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_calculate_p_yhf_mean(default_bmfmc_model):
+    """Test computation of the posterior mean estimate for the HF density."""
     default_bmfmc_model.var_y_mc = np.ones((10, 1))
     default_bmfmc_model.y_pdf_support = np.linspace(-1.0, 1.0, 10)
     default_bmfmc_model.m_f_mc = np.linspace(0, 10.0, 10)
@@ -396,10 +425,11 @@ def test_calculate_p_yhf_mean(default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_calculate_p_yhf_var(mocker, default_bmfmc_model):
+    """Test calculation of posterior variance of HF density prediction."""
     np.random.seed(1)
     K = np.random.rand(10, 10)
     mp1 = mocker.patch(
-        'pqueens.interfaces.bmfmc_interface.BmfmcInterface.map', return_value=(None, K)
+        'pqueens.interfaces.bmfmc_interface.BmfmcInterface.evaluate', return_value=(None, K)
     )
     default_bmfmc_model.var_y_mc = np.ones((10, 1))
     default_bmfmc_model.y_pdf_support = np.linspace(-1.0, 1.0, 10)
@@ -442,6 +472,7 @@ def test_calculate_p_yhf_var(mocker, default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_compute_pymc_reference(mocker, default_bmfmc_model):
+    """Test computation of reference kernel density estimate."""
     mp1 = mocker.patch('pqueens.utils.pdf_estimation.estimate_bandwidth_for_kde', return_value=1.0)
     mp2 = mocker.patch('pqueens.utils.pdf_estimation.estimate_pdf', return_value=(1.0, None))
 
@@ -455,6 +486,7 @@ def test_compute_pymc_reference(mocker, default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_set_feature_strategy(mocker, default_bmfmc_model):
+    """Test setting feature strategy."""
     mp1 = mocker.patch('pqueens.models.bmfmc_model.update_model_variables')
     mp2 = mocker.patch(
         'pqueens.models.bmfmc_model.BMFMCModel.update_probabilistic_mapping_with_features'
@@ -503,6 +535,7 @@ def test_set_feature_strategy(mocker, default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_calculate_extended_gammas(mocker, default_bmfmc_model):
+    """Test computation of extended input features."""
     np.random.seed(2)
     y_LFS_mc_stdized = np.random.random((20, 1))
 
@@ -543,9 +576,10 @@ def test_calculate_extended_gammas(mocker, default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_update_probabilistic_mapping_with_features(mocker, default_bmfmc_model):
+    """Test update of probabilistic mapping."""
     mp1 = mocker.patch('pqueens.interfaces.bmfmc_interface.BmfmcInterface.build_approximation')
     mp2 = mocker.patch(
-        'pqueens.interfaces.bmfmc_interface.BmfmcInterface.map',
+        'pqueens.interfaces.bmfmc_interface.BmfmcInterface.evaluate',
         return_value=(np.array([1.0, 1.1]), np.array([2.0, 2.1])),
     )
 
@@ -563,6 +597,7 @@ def test_update_probabilistic_mapping_with_features(mocker, default_bmfmc_model)
 
 @pytest.mark.unit_tests
 def test_input_dim_red(mocker, default_bmfmc_model):
+    """Test reduction of the dimensionality of the input space."""
     mp1 = mocker.patch(
         'pqueens.models.bmfmc_model.BMFMCModel.get_random_fields_and_truncated_basis',
         return_value=(1.0, 1.0),
@@ -580,7 +615,7 @@ def test_input_dim_red(mocker, default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_get_random_fields_and_truncated_basis(default_bmfmc_model):
-
+    """Test getting of random fields and their truncated basis."""
     np.random.seed(1)
     random_field = np.random.random((10, 10))
     default_bmfmc_model.eigenfunc_random_fields = {'random_inflow': random_field}
@@ -613,6 +648,7 @@ def test_get_random_fields_and_truncated_basis(default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_project_samples_on_truncated_basis():
+    """Test projection of samples on the truncated basis."""
     np.random.seed(1)
     num_samples = 5
     dim = 4
@@ -637,6 +673,7 @@ def test_project_samples_on_truncated_basis():
 
 @pytest.mark.unit_tests
 def test_update_model_variables(default_bmfmc_model):
+    """Test update of model variables."""
     # np.random.seed(1)
     # Z_LFs_train = np.random.random((5, 2))
     # np.random.seed(2)
@@ -650,6 +687,7 @@ def test_update_model_variables(default_bmfmc_model):
 
 @pytest.mark.unit_tests
 def test_linear_scale_a_to_b():
+    """Test linear scaling."""
     a_vec = np.linspace(0.0, 1.0, 10)
     b_vec = np.linspace(-5.0, 5.0, 10)
 
@@ -660,6 +698,7 @@ def test_linear_scale_a_to_b():
 
 @pytest.mark.unit_tests
 def test_assemble_x_red_stdizd():
+    """Test assembling and standardization of the dimension-reduced input."""
     x_uncorr = np.atleast_2d(np.linspace(0.0, 10.0, 5)).T
     coef_mat = x_uncorr
     expected_X_stdized = np.array(

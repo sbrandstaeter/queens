@@ -1,4 +1,4 @@
-import numpy as np
+"""Multi-fidelity model class."""
 
 from pqueens.interfaces.interface import Interface
 
@@ -86,14 +86,14 @@ class MultifidelityModel(Model):
         """Evaluate model with current set of variables."""
         # switch according to response mode
         if self.response_mode == 'uncorrected_lofi':
-            self.response = self._lofi_model().interface.map(self.variables)
+            self.response = self._lofi_model().interface.evaluate(self.variables)
         elif self.response_mode == 'aggregated_model':
-            self.response = self._lofi_model().interface.map(self.variables)
-            self.response = [self.response, self._hifi_model().interface.map(self.variables)]
+            self.response = self._lofi_model().interface.evaluate(self.variables)
+            self.response = [self.response, self._hifi_model().interface.evaluate(self.variables)]
             # this case needs to be adapted to new output structure
             raise NotImplementedError
         elif self.response_mode == 'bypass_lofi':
-            self.response = self._hifi_model().interface.map(self.variables)
+            self.response = self._hifi_model().interface.evaluate(self.variables)
         else:
             raise RuntimeError("Unknown response type")
 

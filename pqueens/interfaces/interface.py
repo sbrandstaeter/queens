@@ -1,3 +1,4 @@
+"""Interface class to map input variables to simulation outputs."""
 import abc
 
 
@@ -13,7 +14,8 @@ class Interface(metaclass=abc.ABCMeta):
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
-        """
+        """Create Interface from config dictionary.
+
         Args:
             interface_name (str):   name of the interface
             config (dict):          dictionary with problem description
@@ -21,7 +23,6 @@ class Interface(metaclass=abc.ABCMeta):
         Returns:
             interface:              Instance of one of the derived interface classes
         """
-
         # import here to avoid issues with circular inclusion
         import pqueens.interfaces.approximation_interface
         import pqueens.interfaces.approximation_interface_mf
@@ -51,15 +52,13 @@ class Interface(metaclass=abc.ABCMeta):
         )
 
     @abc.abstractmethod
-    def map(self, samples):
-        """Mapping function which orchestrates call to external simulation
+    def evaluate(self, samples):
+        """Evaluate samples.
+
+        Mapping function which orchestrates call to external simulation
         software or approximation.
 
         Args:
             samples (list):  list of variables objects
-
-        Returns:
-            dict:           Dictionary with results. Mean, variance and posterior
-                            samples can be contained in this dict
         """
         pass

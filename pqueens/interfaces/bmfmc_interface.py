@@ -1,10 +1,13 @@
+"""Interface for grouping outputs with inputs."""
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 
 from .interface import Interface
 
 
 class BmfmcInterface(Interface):
-    """Interface for grouping the outputs of several simulation with identical
+    """Interface for grouping outputs with inputs.
+
+    Interface for grouping the outputs of several simulation with identical
     input to one data point. The BmfmcInterface is basically a version of the
     approximation_interface class that allows for vectorized mapping and
     implicit function relationships.
@@ -22,14 +25,23 @@ class BmfmcInterface(Interface):
     """
 
     def __init__(self, config, approx_name, variables=None):
+        """Initialize the interface.
+
+        Args:
+            config (dict): Dictionary with problem description
+            approx_name (str): Name of the approximation model
+            variables (dict): Dictionary with variables
+        """
         # TODO we should think about using the parent class interface here
         self.variables = variables  # TODO: This is not used at the moment!
         self.config = config
         self.approx_name = approx_name
         self.probabilistic_mapping_obj = None
 
-    def map(self, Z_LF, support='y', full_cov=False):
-        """Calls the probabilistic mapping and predicts the mean and variance
+    def evaluate(self, Z_LF, support='y', full_cov=False):
+        r"""Predict on probabilistic mapping.
+
+        Call the probabilistic mapping and predict the mean and variance
         for the high-fidelity model, given the inputs Z_LF.
 
         Args:
@@ -45,7 +57,6 @@ class BmfmcInterface(Interface):
                                             f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\\mathcal{D}_{f})]` for the
                                             HF model given the low-fidelity feature input
         """
-
         if self.probabilistic_mapping_obj is None:
             raise RuntimeError(
                 "The probabilistic mapping has not been properly initialized, cannot continue!"
@@ -57,8 +68,10 @@ class BmfmcInterface(Interface):
         return mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF
 
     def build_approximation(self, Z_LF_train, Y_HF_train):
-        """Build and train the probabilistic mapping based on the training
-        inputs :math:`\\mathcal{ D}_f={Y_{HF},Z_{LF}}`
+        r"""Build and train the probabilistic mapping.
+
+        Based on the training inputs
+        :math:`\\mathcal{ D}_f={Y_{HF},Z_{LF}}`
 
         Args:
             Z_LF_train (np.array): Training inputs for probabilistic mapping
