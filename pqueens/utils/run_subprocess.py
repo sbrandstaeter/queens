@@ -6,6 +6,9 @@ _logger = logging.getLogger(__name__)
 
 from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
 
+# Ubuntu diva
+_ubuntu_whitelisted_errors = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
+
 
 def run_subprocess(command_string, **kwargs):
     """Run a system command outside of the Python script.
@@ -215,7 +218,12 @@ def _raise_or_warn_error(command, stdout, stderr, **kwargs):
         stderr (str): Error of the output
         raise_error (bool,optional): Raise or warn error defaults to True
         additional_error_message (str,optional): Additional error message to be displayed
+        whitelisted_errors (lst,optional): List of strings to be removed from the error message
     """
+    # Check for whitelisted error messages and remove them
+    whitelisted_errors = kwargs.get("whitelisted_errors", [])
+
+    stderr = _remove_whitelist_error(stderr + "\n", whitelisted_errors)
     if stderr:
         raise_error = kwargs.get('raise_error', True)
         additional_message = kwargs.get('additional_error_message', None)
@@ -226,6 +234,29 @@ def _raise_or_warn_error(command, stdout, stderr, **kwargs):
             raise subprocess_error
         else:
             _logger.warning(subprocess_error.message)
+
+
+def _remove_whitelist_error(stderr, whitelisted_messages):
+    """Remove whitelisted error messages from error output.
+
+    Args:
+        stderr (str): Error message
+        whitelisted_messages (lst): Whitelisted error messages
+
+    Returns:
+        stderr (str): Whitelisted error message
+    """
+    # Add known exceptions
+    whitelisted_messages.extend(_ubuntu_whitelisted_errors)
+    # Remove the whitelisted error messages from stderr
+    for em in whitelisted_messages:
+        stderr = stderr.replace(em, "")
+
+    # Remove trailing spaces, tabs and newlines and check if an error message remains
+    if "".join(stderr.split()) == "":
+        stderr = ""
+
+    return stderr
 
 
 class SubprocessError(Exception):
