@@ -125,7 +125,7 @@ class BaciDriver(Driver):
                 self.simulation_input_template,
                 self.simulation_input_template + '.bak',
             ]
-            cmd_str = ' '.join(cmd_lsubprocessst)
+            cmd_str = ' '.join(cmd_lst)
             run_subprocess(cmd_str)
 
     def run_job(self):
@@ -138,16 +138,10 @@ class BaciDriver(Driver):
         II) remote
 
         1) standard
-        2) nohup (not required in combination with A)
         3) Slurm
         4) PBS
-        5) ECS task
         """
-        if (
-            self.scheduler_type == 'pbs'
-            or self.scheduler_type == 'slurm'
-            or self.scheduler_type == 'ecs_task'
-        ):
+        if self.scheduler_type == 'pbs' or self.scheduler_type == 'slurm':
             returncode = self.run_job_via_script()
         else:
             returncode = self.run_job_via_run_cmd()
@@ -315,7 +309,6 @@ class BaciDriver(Driver):
 
         3) Slurm
         4) PBS
-        5) ECS task
         """
         # assemble run command for Slurm and PBS scheduler with Singularity (A-II-3
         # and A-II-4) and without Singularity (B-I-3, B-I-4, B-II-3, and B-II-4)
@@ -328,15 +321,6 @@ class BaciDriver(Driver):
                 # additionally set path to control file
                 self.job['control_file_path'] = self.control_file
 
-        # assemble run command for ECS task scheduler, which is always without
-        # Singularity (B-I-5 and B-II-5)
-        else:
-            # assemble command string for BACI run
-            baci_run_cmd = self.assemble_baci_run_cmd()
-
-            # assemble command string for ECS task
-            command_string = self.assemble_ecs_task_run_cmd(baci_run_cmd)
-
         # set subprocess type 'simple' with stdout/stderr output for
         # script-based jobs (CAE stdout/stderr on remote for A-II,
         # submission stdout/stdderr on local for B-II) redirected to
@@ -345,7 +329,7 @@ class BaciDriver(Driver):
 
         # run BACI via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(
-            command_string, subprocess_type=subprocess_type, raise_error=False
+            command_string, subprocess_type=subprocess_type
         )
         # redirect stdout/stderr output to log and error file, respectively,
         # for Slurm, PBS (CAE stdout/stderr on remote for A-II, submission
@@ -363,9 +347,6 @@ class BaciDriver(Driver):
                 print(stdout, file=text_file)
             with open(self.error_file, "a") as text_file:
                 print(stderr, file=text_file)
-        # extract ECS task ARN from output for transfer to job database
-        elif self.scheduler_type == 'ecs_task':
-            self.job['aws_arn'] = extract_string_from_output("taskArn", stdout)
 
         return returncode
 
@@ -379,7 +360,6 @@ class BaciDriver(Driver):
         II) remote
 
         1) standard
-        2) nohup (not required in combination with A)
         """
         # initialize various arguments for subprocess to None and
         # merely change below, if required
@@ -397,38 +377,26 @@ class BaciDriver(Driver):
         else:
             baci_run_cmd = core_baci_run_cmd
 
-        # assemble (local and remote) run command for nohup scheduler
-        # (B-I-2 and B-II-2)
-        if self.scheduler_type == 'nohup':
-            command_string = self.assemble_nohup_baci_run_cmd(baci_run_cmd)
+        # assemble remote run command for standard scheduler (B-II-1)
+        if not self.singularity and self.remote:
+            command_string = self.assemble_remote_run_cmd(baci_run_cmd)
 
-            # additionally set path to log file
-            self.job['log_file_path'] = self.log_file
+            # set subprocess type 'simple' with stdout/stderr output
+            # redirected to log and error file, respectively, below,
+            # which are stored on local machine, for the time being
+            subprocess_type = 'simple'
 
-            # set subprocess type 'submit' without stdout/stderr output,
-            # since this output will be processed via the nohup command
-            subprocess_type = 'submit'
+        # assemble local run command for standard scheduler (B-I-1)
+        # and run command for Singularity (A)
         else:
-            # assemble remote run command for standard scheduler (B-II-1)
-            if not self.singularity and self.remote:
-                command_string = self.assemble_remote_run_cmd(baci_run_cmd)
+            command_string = baci_run_cmd
 
-                # set subprocess type 'simple' with stdout/stderr output
-                # redirected to log and error file, respectively, below,
-                # which are stored on local machine, for the time being
-                subprocess_type = 'simple'
-
-            # assemble local run command for standard scheduler (B-I-1)
-            # and run command for Singularity (A)
-            else:
-                command_string = baci_run_cmd
-
-                # set subprocess type 'simulation' with stdout/stderr output
-                subprocess_type = 'simulation'
-                terminate_expr = 'PROC.*ERROR'
-                loggername = __name__ + f'_{self.job_id}'
-                log_file = self.log_file
-                error_file = self.error_file
+            # set subprocess type 'simulation' with stdout/stderr output
+            subprocess_type = 'simulation'
+            terminate_expr = 'PROC.*ERROR'
+            loggername = __name__ + f'_{self.job_id}'
+            log_file = self.log_file
+            error_file = self.error_file
 
         # run BACI via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(
@@ -439,7 +407,6 @@ class BaciDriver(Driver):
             log_file=log_file,
             error_file=error_file,
             streaming=self.cae_output_streaming,
-            raise_error=False,
         )
 
         # redirect stdout/stderr output to log and error file, respectively,
@@ -473,7 +440,10 @@ class BaciDriver(Driver):
                 final_pp_cmd = pp_cmd
 
         # run post-processing command and print potential error messages
-        run_subprocess(final_pp_cmd, additional_error_message="Post-processing of BACI failed!")
+        run_subprocess(
+            final_pp_cmd,
+            additional_error_message="Post-processing of BACI failed!",
+        )
 
     # ----- COMMAND-ASSEMBLY METHODS ---------------------------------------------
     def assemble_sing_baci_cluster_job_cmd(self):
@@ -588,24 +558,6 @@ class BaciDriver(Driver):
         ]
 
         return ' '.join(filter(None, command_list))
-
-    def assemble_nohup_baci_run_cmd(self, baci_run_cmd):
-        """Assemble command for nohup run of BACI.
-
-        Returns:
-            nohup BACI run command
-        """
-        # assemble command string for nohup BACI run
-        nohup_baci_run_cmd = self.assemble_nohup_run_cmd(
-            baci_run_cmd, self.log_file, self.error_file
-        )
-
-        if self.remote:
-            final_nohup_baci_run_cmd = self.assemble_remote_run_cmd(nohup_baci_run_cmd)
-        else:
-            final_nohup_baci_run_cmd = nohup_baci_run_cmd
-
-        return final_nohup_baci_run_cmd
 
     def assemble_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
         """Assemble command for postprocessing.
