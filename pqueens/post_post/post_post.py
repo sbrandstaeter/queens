@@ -13,27 +13,37 @@ class PostPost(metaclass=abc.ABCMeta):
     Attributes:
         post_post_files_regex_lst (lst): List with paths to postprocessed files.
                                             The file paths can contain regex expression.
+        file_options_lst (lst): List containing dictionaries with read-in options for
+                                    the post_processed files
         files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                 The paths can contain regex expressions.
         driver_name (str): Name of the associated driver.
-        raw_data_lst (lst): Pre-filtered list of raw-data objects from
-                            postprocessed files.
+        data_lst (lst): Pre-filtered and manipulated clean data
     """
 
-    def __init__(self, post_post_files_regex_lst, files_to_be_deleted_regex_lst, driver_name):
+    def __init__(
+        self,
+        post_post_files_regex_lst,
+        file_options_lst,
+        files_to_be_deleted_regex_lst,
+        driver_name,
+    ):
         """Init post post class.
 
         Args:
             post_post_files_regex_lst (lst): List with paths to postprocessed files.
                                              The file paths can contain regex expression.
+            file_options_lst (lst): List containing dictionaries with read-in options for
+                                    the post_processed files
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
             driver_name (str): Name of the associated driver.
         """
         self.post_post_files_regex_lst = post_post_files_regex_lst
         self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
+        self.file_options_lst = file_options_lst
         self.driver_name = driver_name
-        self.raw_data_lst = []
+        self.data_lst = []
 
     @classmethod
     def from_config_create_post_post(config, driver_name):
@@ -74,7 +84,7 @@ class PostPost(metaclass=abc.ABCMeta):
             )
 
         post_post_class = post_post_dict[post_post_version]
-        post_post = post_post_class.from_config_create_post_post(config, driver_name)
+        post_post = post_post_class.from_config_create_post_post(post_post_options, driver_name)
 
         return post_post
 
@@ -87,11 +97,12 @@ class PostPost(metaclass=abc.ABCMeta):
         Returns:
             None
         """
-        for file_path in self.post_post_files_regex_lst:
+        for file_path, file_options_dict in zip(
+            self.post_post_files_regex_lst, self.file_options_lst
+        ):
             PostPost._check_file_exist(file_path)
-            self._get_raw_data_from_file(file_path)
-            self._check_raw_data()
-            self._manipulate_raw_data()
+            self._get_raw_data_from_file(file_path, file_options_dict)
+            self._filter_and_manipulate_raw_data()
 
         for file_path in self.files_to_be_deleted_regex_lst:
             PostPost._clean_up(file_path)
@@ -112,15 +123,13 @@ class PostPost(metaclass=abc.ABCMeta):
             raise FileNotFoundError(f"The file '{file_path}' does not exist! Abort...")
 
     @abc.abstractmethod
-    def _get_raw_data_from_file(self):
+    def _get_raw_data_from_file(self, file_path):
+        """Get the raw data from the files of interest."""
         pass
 
     @abc.abstractmethod
-    def _check_raw_data(self):
-        pass
-
-    @abc.abstractmethod
-    def _manipulate_raw_data(self):
+    def _filter_and_manipulate_raw_data(self):
+        """Filter and manipulate the raw data."""
         pass
 
     @staticmethod
