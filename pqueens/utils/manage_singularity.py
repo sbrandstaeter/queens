@@ -32,7 +32,7 @@ def create_singularity_image():
         "cd",
         path_to_pqueens,
         "&&",
-        "/usr/bin/singularity build --fakeroot",
+        "/usr/bin/singularity build --force --fakeroot",
         abs_path1,
         abs_path2,
     ]

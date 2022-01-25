@@ -89,4 +89,9 @@ setup(
     long_description=read('README.md'),
     setup_requires='pytest-runner',
     tests_require='pytest',
+    entry_points={
+        'console_scripts': [
+            'queens-sinbuild = pqueens.utils.cli_utils:build_singularity_cli',
+        ],
+    },
 )
