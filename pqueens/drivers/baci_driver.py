@@ -369,13 +369,7 @@ class BaciDriver(Driver):
         error_file = None
 
         # assemble core command string for BACI run
-        core_baci_run_cmd = self.assemble_baci_run_cmd()
-
-        # assemble extended core command string for Docker BACI run
-        if self.docker_image is not None:
-            baci_run_cmd = self.assemble_docker_run_cmd(core_baci_run_cmd)
-        else:
-            baci_run_cmd = core_baci_run_cmd
+        baci_run_cmd = self.assemble_baci_run_cmd()
 
         # assemble remote run command for standard scheduler (B-II-1)
         if not self.singularity and self.remote:
@@ -545,10 +539,7 @@ class BaciDriver(Driver):
             BACI run command
         """
         # set MPI command
-        if self.docker_image is not None:
-            mpi_cmd = '/usr/lib64/openmpi/bin/mpirun --allow-run-as-root -np'
-        else:
-            mpi_cmd = 'mpirun -np'
+        mpi_cmd = 'mpirun -np'
 
         command_list = [
             mpi_cmd,
@@ -574,10 +565,7 @@ class BaciDriver(Driver):
             postprocessing command
         """
         # set MPI command
-        if self.docker_image is not None:
-            mpi_cmd = '/usr/lib64/openmpi/bin/mpirun --allow-run-as-root -np'
-        else:
-            mpi_cmd = 'mpirun -np'
+        mpi_cmd = 'mpirun -np'
 
         command_list = [
             mpi_cmd,
