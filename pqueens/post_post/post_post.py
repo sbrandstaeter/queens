@@ -57,10 +57,10 @@ class PostPost(metaclass=abc.ABCMeta):
         Returns:
             post_post (obj): post_post object
         """
-        from .post_post_baci import PostPostBACI
+        from .post_post_csv_data import PostPostCsv
 
         post_post_dict = {
-            'baci': PostPostBACI,
+            'csv': PostPostCsv,
         }
 
         driver_params = config.get(driver_name)
