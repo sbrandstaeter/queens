@@ -1,3 +1,4 @@
+"""BACI driver."""
 import json
 import logging
 import os
@@ -30,6 +31,14 @@ class BaciDriver(Driver):
     """
 
     def __init__(self, base_settings, workdir, external_geometry_obj, random_fields_lst):
+        """Initialize BaciDriver object.
+
+        Args:
+            base_settings (dict): Base settings
+            workdir (str): Work directory
+            external_geometry_obj (obj): External geometry object
+            random_fields_lst (lst): List of random fields
+        """
         super(BaciDriver, self).__init__(base_settings)
         self.workdir = workdir
         self.external_geometry_obj = external_geometry_obj
@@ -38,8 +47,9 @@ class BaciDriver(Driver):
 
     @classmethod
     def from_config_create_driver(cls, base_settings, workdir=None):
-        """Create Driver to run BACI from input configuration and set up
-        required directories and files.
+        """Create Driver to run BACI from input configuration.
+
+        Also sets up required directories and files.
 
         Args:
             base_settings (dict): dictionary with base settings of parent class
@@ -111,8 +121,11 @@ class BaciDriver(Driver):
 
     # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def prepare_input_files(self):
-        """Prepare input file on remote machine in case of remote scheduling
-        without Singularity or in all other cases."""
+        """Prepare input file on remote machine.
+
+        In case of remote scheduling without Singularity or in all other
+        cases.
+        """
         if self.remote and not self.singularity:
             self.prepare_input_file_on_remote()
         else:
@@ -129,7 +142,9 @@ class BaciDriver(Driver):
             run_subprocess(cmd_str)
 
     def run_job(self):
-        """Run BACI with the following scheduling options overall:
+        """Run BACI.
+
+        The following scheduling options exist:
 
         A) with Singularity containers
         B) without Singularity containers
@@ -167,7 +182,6 @@ class BaciDriver(Driver):
 
     def postprocess_job(self):
         """Post-process BACI job."""
-
         # set output and core of target file opt
         output_file_opt = '--file=' + self.output_file
         target_file_opt_core = '--output=' + self.output_directory
@@ -210,7 +224,8 @@ class BaciDriver(Driver):
         command_string = ''.join(command_list)
         run_subprocess(
             command_string,
-            additional_error_message="Injector file and param dict file could not be copied to remote machine!",
+            additional_error_message="Injector file and param dict file could not be copied to"
+            " remote machine!",
         )
 
         # remove local copy of JSON file containing parameter dictionary
@@ -251,15 +266,17 @@ class BaciDriver(Driver):
         command_string = ' '.join(command_list)
         run_subprocess(
             command_string,
-            additional_error_message="Injector and JSON file could not be removed from remote machine!",
+            additional_error_message="Injector and JSON file could not be removed from remote"
+            " machine!",
         )
 
     # ----- RUN METHODS ---------------------------------------------------------
     # overload the parent pre_job_run method
     def pre_job_run(self):
-        """Runtime manipulations on the dat-file that need to be performed
-        before the actual simulation run. This method overloads the same-named
-        parent method.
+        """Runtime manipulations on the dat-file.
+
+        These are the operation that need to be performed before the actual simulation run. This
+        method overloads the same-named parent method.
 
         Returns:
             None
@@ -286,8 +303,9 @@ class BaciDriver(Driver):
         super(BaciDriver, self).pre_job_run()
 
     def _manipulate_dat_file(self):
-        """Helper method that calls the dat-file manipulation method from the
-        external_geometry_obj.
+        """Helper method that calls the dat-file manipulation method.
+
+        Only needed if random fields are used.
 
         Returns:
             None
@@ -299,7 +317,9 @@ class BaciDriver(Driver):
             )
 
     def run_job_via_script(self):
-        """Run BACI with the following scheduling options:
+        """Run BACI.
+
+        The following scheduling options exist:
 
         A) with Singularity containers
         B) without Singularity containers
@@ -351,7 +371,9 @@ class BaciDriver(Driver):
         return returncode
 
     def run_job_via_run_cmd(self):
-        """Run BACI with the following scheduling options:
+        """Run BACI via subprocess.
+
+        The following scheduling options exist:
 
         A) with Singularity containers
         B) without Singularity containers
@@ -438,6 +460,7 @@ class BaciDriver(Driver):
         run_subprocess(
             final_pp_cmd,
             additional_error_message="Post-processing of BACI failed!",
+            raise_error=False,
         )
 
     # ----- COMMAND-ASSEMBLY METHODS ---------------------------------------------
