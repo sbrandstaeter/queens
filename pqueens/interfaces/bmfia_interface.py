@@ -47,7 +47,7 @@ class BmfiaInterface(Interface):
         self.num_processors_multi_processing = num_processors_multi_processing
         self.probabilistic_mapping_obj_lst = []
 
-    def map(self, Z_LF, support='y'):
+    def evaluate(self, Z_LF, support='y'):
         r"""Map the lf features to a probabilistic response for the hf model.
 
         Calls the probabilistic mapping and predicts the mean and variance,

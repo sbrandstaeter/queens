@@ -1,3 +1,4 @@
+"""Test BMFMC interface."""
 import numpy as np
 import pytest
 
@@ -6,20 +7,26 @@ from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 
 # -------- fixtures -----------------------------------
 class FakeRegression:
+    """FakeRegression class."""
+
     def __init__(self, map_output_dict):
+        """Initialize FakeRegression."""
         self.map_output_dict = map_output_dict
 
     def predict(self, *args, **kwargs):
+        """Predict output."""
         output = self.map_output_dict
         return output
 
     @staticmethod
     def train():
+        """Train surrogate model."""
         pass
 
 
 @pytest.fixture()
 def config():
+    """Create dummy config for testing."""
     config = {
         "type": "gp_approximation_gpy",
         "features_config": "opt_features",
@@ -31,24 +38,28 @@ def config():
 
 @pytest.fixture()
 def default_interface(config, approx_name):
+    """Create default interface."""
     interface = BmfmcInterface(config, approx_name)
     return interface
 
 
 @pytest.fixture()
 def probabilistic_mapping_obj(map_output_dict):
+    """Create probabilistic mapping object."""
     probabilistic_mapping_obj = FakeRegression(map_output_dict)
     return probabilistic_mapping_obj
 
 
 @pytest.fixture()
 def map_output_dict():
+    """Map output dictionary."""
     output = {'mean': np.linspace(1.0, 5.0, 5), 'variance': np.linspace(5.0, 10.0, 5)}
     return output
 
 
 @pytest.fixture()
 def approx_name():
+    """Create approximation name."""
     name = 'some_name'
     return name
 
@@ -56,7 +67,7 @@ def approx_name():
 # --------- actual unittests ---------------------------
 @pytest.mark.unit_tests
 def test_init(config, approx_name):
-
+    """Test initialization."""
     interface = BmfmcInterface(config, approx_name, variables=None)
 
     # asserts / tests
@@ -67,6 +78,7 @@ def test_init(config, approx_name):
 
 @pytest.mark.unit_tests
 def test_map(mocker, default_interface, probabilistic_mapping_obj, map_output_dict):
+    """Test mapping."""
     mocker.patch(
         "pqueens.regression_approximations.regression_approximation.RegressionApproximation",
         return_value=FakeRegression,
@@ -77,14 +89,10 @@ def test_map(mocker, default_interface, probabilistic_mapping_obj, map_output_di
     expected_Y_HF_var = map_output_dict['variance']
 
     with pytest.raises(RuntimeError):
-        mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF = default_interface.map(
-            Z_LF, support='y', full_cov=False
-        )
+        mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF = default_interface.evaluate(Z_LF)
 
     default_interface.probabilistic_mapping_obj = probabilistic_mapping_obj
-    mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF = default_interface.map(
-        Z_LF, support='y', full_cov=False
-    )
+    mean_Y_HF_given_Z_LF, var_Y_HF_given_Z_LF = default_interface.evaluate(Z_LF)
 
     np.testing.assert_array_almost_equal(mean_Y_HF_given_Z_LF, expected_Y_HF_mean, decimal=6)
     np.testing.assert_array_almost_equal(var_Y_HF_given_Z_LF, expected_Y_HF_var, decimal=6)
@@ -92,6 +100,7 @@ def test_map(mocker, default_interface, probabilistic_mapping_obj, map_output_di
 
 @pytest.mark.unit_tests
 def test_build_approximation(mocker, default_interface):
+    """Test training of surrogate model."""
     Z = np.atleast_2d(np.linspace(0.0, 1.0, 10))
     Y = np.atleast_2d(np.linspace(1.0, 2.0, 10))
     mp1 = mocker.patch(

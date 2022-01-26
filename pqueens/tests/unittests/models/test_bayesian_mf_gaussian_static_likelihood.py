@@ -415,7 +415,7 @@ def test_calculate_distance_vector_and_var_y(default_mf_likelihood, mocker):
         return_value=z_mat,
     )
     mp2 = mocker.patch(
-        'pqueens.interfaces.bmfia_interface.BmfiaInterface.map',
+        'pqueens.interfaces.bmfia_interface.BmfiaInterface.evaluate',
         return_value=(m_f_mat, var_y_mat_exp),
     )
 
