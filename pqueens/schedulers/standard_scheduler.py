@@ -134,7 +134,8 @@ class StandardScheduler(Scheduler):
             command_string = ''.join(command_list)
             _, _, stdout, _ = run_subprocess(
                 command_string,
-                additional_error_message="String checker file could not be executed on remote machine!",
+                additional_error_message="String checker file could not be executed on remote"
+                " machine!",
             )
 
             # search string present

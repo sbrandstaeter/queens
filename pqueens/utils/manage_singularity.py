@@ -218,7 +218,8 @@ class SingularityManager:
                     command_string = ' '.join(command_list)
                     run_subprocess(
                         command_string,
-                        additional_error_message="Was not able to copy local singularity image to remote! ",
+                        additional_error_message="Was not able to copy local singularity image to "
+                        "remote! ",
                     )
 
             # check existence singularity on remote
@@ -248,7 +249,8 @@ class SingularityManager:
                     command_string = ' '.join(command_list)
                     run_subprocess(
                         command_string,
-                        additional_error_message="Was not able to copy local singularity image to remote!",
+                        additional_error_message="Was not able to copy local singularity image to"
+                        " remote!",
                     )
                     print('All singularity images ok! Starting simulation on cluster...')
 
@@ -276,7 +278,8 @@ class SingularityManager:
                 command_string = ' '.join(command_list)
                 run_subprocess(
                     command_string,
-                    additional_error_message="Was not able to copy local singularity image to remote! ",
+                    additional_error_message="Was not able to copy local singularity image to "
+                    "remote! ",
                 )
                 print('All singularity images ok! Starting simulation on cluster...')
 
