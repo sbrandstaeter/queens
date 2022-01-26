@@ -198,6 +198,7 @@ def test_baci_elementary_effects(
     )
 
 
+@pytest.mark.integration_tests_baci
 def test_restart_from_output_folders_baci(
     inputdir,
     tmpdir,
