@@ -6,8 +6,8 @@ _logger = logging.getLogger(__name__)
 
 from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
 
-# Ubuntu diva
-_ubuntu_whitelisted_errors = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
+# Currently allowed errors that might appear but have no effect on subprocesses
+_allowed_errors = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
 
 
 def run_subprocess(command_string, **kwargs):
@@ -33,7 +33,6 @@ def run_subprocess(command_string, **kwargs):
     subprocess_type = kwargs.get('subprocess_type', 'simple')
 
     subprocess_specific = _get_subprocess(subprocess_type)
-
     return subprocess_specific(command_string, **kwargs)
 
 
@@ -218,12 +217,12 @@ def _raise_or_warn_error(command, stdout, stderr, **kwargs):
         stderr (str): Error of the output
         raise_error (bool,optional): Raise or warn error defaults to True
         additional_error_message (str,optional): Additional error message to be displayed
-        whitelisted_errors (lst,optional): List of strings to be removed from the error message
+        allowed_errors (lst,optional): List of strings to be removed from the error message
     """
-    # Check for whitelisted error messages and remove them
-    whitelisted_errors = kwargs.get("whitelisted_errors", [])
+    # Check for allowed error messages and remove them
+    allowed_errors = kwargs.get("allowed_errors", [])
 
-    stderr = _remove_whitelist_error(stderr + "\n", whitelisted_errors)
+    stderr = _remove_allowed_errors(stderr + "\n", allowed_errors)
     if stderr:
         raise_error = kwargs.get('raise_error', True)
         additional_message = kwargs.get('additional_error_message', None)
@@ -236,20 +235,20 @@ def _raise_or_warn_error(command, stdout, stderr, **kwargs):
             _logger.warning(subprocess_error.message)
 
 
-def _remove_whitelist_error(stderr, whitelisted_messages):
-    """Remove whitelisted error messages from error output.
+def _remove_allowed_errors(stderr, allowed_errors):
+    """Remove allowed error messages from error output.
 
     Args:
         stderr (str): Error message
-        whitelisted_messages (lst): Whitelisted error messages
+        allowed_errors (lst): Allowed error messages
 
     Returns:
-        stderr (str): Whitelisted error message
+        stderr (str): error message without allowed errors
     """
     # Add known exceptions
-    whitelisted_messages.extend(_ubuntu_whitelisted_errors)
-    # Remove the whitelisted error messages from stderr
-    for em in whitelisted_messages:
+    allowed_errors.extend(_allowed_errors)
+    # Remove the allowed error messages from stderr
+    for em in allowed_errors:
         stderr = stderr.replace(em, "")
 
     # Remove trailing spaces, tabs and newlines and check if an error message remains
