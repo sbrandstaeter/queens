@@ -222,7 +222,7 @@ def _raise_or_warn_error(command, stdout, stderr, **kwargs):
     # Check for allowed error messages and remove them
     allowed_errors = kwargs.get("allowed_errors", [])
 
-    stderr = _remove_allowed_errors(stderr + "\n", allowed_errors)
+    stderr = _remove_allowed_errors(stderr, allowed_errors)
     if stderr:
         raise_error = kwargs.get('raise_error', True)
         additional_message = kwargs.get('additional_error_message', None)
