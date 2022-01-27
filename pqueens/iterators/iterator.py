@@ -1,21 +1,28 @@
+"""Iterator module, i.e. the method/analysis to be performed."""
 import abc
+
+from pqueens.utils.valid_options_utils import get_option
 
 
 class Iterator(metaclass=abc.ABCMeta):
     """Base class for Iterator hierarchy.
 
     This Iterator class is the base class for one of the primary class
-    hierarchies in QUEENS.The job of the iterator hierarchy is to coordinate
-    and execute simulations/function evaluations. The purpose of this base class
-    is twofold. First, it defines the unified interface of the iterator hierarchy.
-    Second, it works as factory which allows unified instantiation of iterator object
-    by calling its classmethods.
-
-    Attributes:
-        model (model): Model to be evaluated by iterator
+    hierarchies in QUEENS.The job of the iterator hierarchy is to
+    coordinate and execute simulations/function evaluations. The purpose
+    of this base class is twofold. First, it defines the unified
+    interface of the iterator hierarchy. Second, it works as factory
+    which allows unified instantiation of iterator object by calling its
+    classmethods.
     """
 
     def __init__(self, model=None, global_settings=None):
+        """Initialise iterator object.
+
+        Args:
+            model (obj, optional): Model to be evaluated by iterator.
+            global_settings (dict, optional): Settings for the QUEENS run.
+        """
         self.model = model
         self.global_settings = global_settings
 
@@ -72,11 +79,11 @@ class Iterator(metaclass=abc.ABCMeta):
 
         if iterator_name is None:
             method_name = config['method']['method_name']
-            iterator_class = method_dict[method_name]
+            iterator_class = get_option(method_dict, method_name, "Could not create iterator!")
             iterator = iterator_class.from_config_create_iterator(config, model)
         else:
             method_name = config[iterator_name]['method_name']
-            iterator_class = method_dict[method_name]
+            iterator_class = get_option(method_dict, method_name, "Could not create iterator!")
             iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
 
         return iterator
@@ -99,8 +106,7 @@ class Iterator(metaclass=abc.ABCMeta):
         pass
 
     def post_run(self):
-        """Optional post-run portion of run, e.g., for doing some post
-        processing."""
+        """Optional post-processing of the run."""
         pass
 
     def finalize_run(self):
