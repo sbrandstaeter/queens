@@ -2,7 +2,7 @@
 import subprocess
 
 from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
-from pqueens.utils.valid_options_switch import get_option
+from pqueens.utils.valid_options_utils import get_option
 
 
 def run_subprocess(command_string, **kwargs):
@@ -48,7 +48,7 @@ def _get_subprocess(subprocess_type):
         'submit': _run_subprocess_submit_job,
         'remote': _run_subprocess_remote,
     }
-    return get_option(subprocess_types, subprocess_type, error_message="Invalid subprocess type")
+    return get_option(subprocess_types, subprocess_type, error_message="Invalid subprocess type!")
 
 
 def _run_subprocess_simple(command_string, **kwargs):
