@@ -1,8 +1,11 @@
 """Module for post-post processing of simulation results."""
 
 import abc
+import glob
 import logging
 import os
+
+import numpy as np
 
 _logger = logging.getLogger(__name__)
 
@@ -11,8 +14,10 @@ class PostPost(metaclass=abc.ABCMeta):
     """Base class for post post processing.
 
     Attributes:
-        post_post_file_path (str): Path to postprocessed files.
-                                    The file path can contain regex expression.
+        post_post_file_name_prefix (str): Prefix for postprocessed files.
+                                          The file prefix can contain regex expression and
+                                          subdirectories.
+        post_post_file_path(str): Actual path to the file of interest
         file_options (dict): Dictionary with read-in options for
                                 the post_processed file
         files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
@@ -23,7 +28,7 @@ class PostPost(metaclass=abc.ABCMeta):
 
     def __init__(
         self,
-        post_post_file_path,
+        post_post_file_name_prefix,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -31,23 +36,25 @@ class PostPost(metaclass=abc.ABCMeta):
         """Init post post class.
 
         Args:
-            post_post_file_path (str): Path to postprocessed files.
-                                       The file path can contain regex expression.
+            post_post_file_name_prefix (str): Prefix for postprocessed files.
+                                            The file prefix can contain regex expression and
+                                            subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
                                       the post_processed file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
             driver_name (str): Name of the associated driver.
         """
-        self.post_post_file_path = post_post_file_path
         self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
         self.file_options_dict = file_options_dict
         self.driver_name = driver_name
-        self.post_post_data = None
+        self.post_post_file_name_prefix = post_post_file_name_prefix
+        self.post_post_file_path = None
+        self.post_post_data = np.empty(shape=0)
         self.raw_file_data = None
 
     @classmethod
-    def from_config_create_post_post(config, driver_name):
+    def from_config_create_post_post(cls, config, driver_name):
         """Create PostPost object from problem description.
 
         Args:
@@ -62,7 +69,6 @@ class PostPost(metaclass=abc.ABCMeta):
         post_post_dict = {
             'csv': PostPostCsv,
         }
-
         driver_params = config.get(driver_name)
         if not driver_params:
             raise ValueError(
@@ -71,22 +77,22 @@ class PostPost(metaclass=abc.ABCMeta):
                 "which could not be found in the problem description. Abort..."
             )
 
-        post_post_options = driver_params.get('post_post')
+        post_post_options = driver_params["driver_params"].get('post_post')
         if not post_post_options:
             raise ValueError(
-                "The 'post_post' options were not found in the driver '{driver_name}'! Abort..."
+                f"The 'post_post' options were not found in the driver '{driver_name}'! Abort..."
             )
 
-        post_post_file_path = post_post_options.get('post_post_file_path')
-        if not post_post_file_path:
+        post_post_file_name_prefix = post_post_options.get('post_post_file_name_prefix')
+        if not post_post_file_name_prefix:
             raise IOError(
-                f"No option 'post_post_files_regex_lst' was provided in {driver_name} driver! "
+                f"No option 'post_post_file_name_prefix' was provided in '{driver_name}' driver! "
                 "PostPost object cannot be instantiated! Abort..."
             )
-        if not isinstance(post_post_file_path, str):
+        if not isinstance(post_post_file_name_prefix, str):
             raise TypeError(
-                "The option 'post_post_file_path' must be of type 'str' "
-                f"but is of type {type(post_post_file_path)}. Abort..."
+                "The option 'post_post_file_name_prefix' must be of type 'str' "
+                f"but is of type {type(post_post_file_name_prefix)}. Abort..."
             )
 
         file_options_dict = post_post_options.get('file_options_dict')
@@ -114,42 +120,91 @@ class PostPost(metaclass=abc.ABCMeta):
                 "The posst_post section did not specify a valid 'post_post_approach_sel'! "
                 f"Valid options are {post_post_dict.keys()}. Abort..."
             )
-
         post_post_class = post_post_dict[post_post_version]
         post_post = post_post_class.from_config_create_post_post(
             driver_name,
-            post_post_file_path,
+            post_post_file_name_prefix,
             file_options_dict,
             files_to_be_deleted_regex_lst,
         )
 
         return post_post
 
-    def get_data_from_post_file(self):
+    def get_data_from_post_file(self, base_dir_post_post_file):
         """Get data of interest from postprocessed file.
 
+        Args:
+            base_dir_post_post_file (str): Path of the base directory that
+                                           contains the file of interest.
+
         Returns:
-            None
+            post_post_data (np.array): Final data from post post module
         """
-        self._check_file_exist()
-        self._get_raw_data_from_file()
-        self._filter_raw_data()
-        self._manipulate_data()
+        if not base_dir_post_post_file:
+            raise ValueError(
+                "The post_post processer requires a base_directory for the post "
+                "processed files to operate on! Your input was empty! Abort..."
+            )
+        if not isinstance(base_dir_post_post_file, str):
+            raise TypeError(
+                "The argument 'base_dir_post_post_file' must be of type 'str' "
+                f"but is of type {type(base_dir_post_post_file)}. Abort..."
+            )
+
+        post_post_file_path_regex = self._generate_path_to_post_post_file(base_dir_post_post_file)
+        file_exists_bool = self._check_file_exist_and_is_unique(post_post_file_path_regex)
+        if file_exists_bool:
+            self._get_raw_data_from_file()
+            self._filter_raw_data()
+            self._manipulate_data()
 
         for file_path in self.files_to_be_deleted_regex_lst:
-            PostPost._clean_up(file_path)
+            self._clean_up(file_path)
 
-    def _check_files_exist(self):
-        """Check if file exists.
+        return self.post_post_data
+
+    def _generate_path_to_post_post_file(self, base_dir_post_post_file):
+        """Generate path to postprocessed file.
+
+        Args:
+            base_dir_post_post_file (str): Path to base directory that contains
+                                           postprocessed file of interest
 
         Returns:
-            None
+            post_post_file_path_regex (str): Path to postprocessed file that still
+                                             contains wildcards or regex expressions
         """
-        file_exists = os.path.isfile(self.post_post_files_path)
-        if not file_exists:
-            raise FileNotFoundError(
-                f"The file '{self.post_post_files_path}' does not exist! Abort..."
+        file_prefix = '*' + self.post_post_file_name_prefix + '*'
+        post_post_file_path_regex = os.path.join(base_dir_post_post_file, file_prefix)
+        return post_post_file_path_regex
+
+    def _check_file_exist_and_is_unique(self, post_post_file_path_regex):
+        """Check if file exists.
+
+        Args:
+            post_post_file_path_regex (str): Path to postprocessed file that still
+                                             contains wildcards or regex expressions
+
+        Returns:
+            file_exists (bool): Boolean determine whether file exists. If true, the file
+                                exists.
+        """
+        file_list = glob.glob(post_post_file_path_regex)
+        if len(file_list) > 1:
+            raise RuntimeError(
+                "The post_post module found several files for the "
+                "provided 'post_post_file_name_prefix'!"
+                "The files are: {file_list}."
+                "The file prefix must lead to a unique file. Abort..."
             )
+        elif len(file_list) == 1:
+            self.post_post_file_path = file_list[0]
+            file_exists = True
+        else:
+            _logger.warning(f"The file '{post_post_file_path_regex}' does not exist!")
+            file_exists = False
+
+        return file_exists
 
     @abc.abstractmethod
     def _get_raw_data_from_file(self):
@@ -166,8 +221,7 @@ class PostPost(metaclass=abc.ABCMeta):
         """Manipulate the post_post data."""
         pass
 
-    @staticmethod
-    def _clean_up(file_path):
+    def _clean_up(self, file_path):
         """Clean-up files in the output directory.
 
         Args:

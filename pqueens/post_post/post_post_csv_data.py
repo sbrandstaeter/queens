@@ -2,6 +2,7 @@
 
 import logging
 
+import numpy as np
 import pandas as pd
 
 from pqueens.post_post.post_post import PostPost
@@ -14,7 +15,7 @@ class PostPostCsv(PostPost):
 
     def __init__(
         self,
-        post_post_file_path,
+        post_post_file_name_prefix,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -22,8 +23,9 @@ class PostPostCsv(PostPost):
         """Instantiate post post class for csv data.
 
         Args:
-            post_post_file_path (str): Path to postprocessed files.
-                                       The file path can contain regex expression.
+            post_post_file_name_prefix (str): Prefix of postprocessed file name
+                                              The file prefic can contain regex expression
+                                              and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
                                       the post_processed file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
@@ -34,20 +36,23 @@ class PostPostCsv(PostPost):
             Instance of PostPostCsv class
         """
         super(PostPostCsv, self).__init__(
-            post_post_file_path, file_options_dict, files_to_be_deleted_regex_lst, driver_name
+            post_post_file_name_prefix,
+            file_options_dict,
+            files_to_be_deleted_regex_lst,
+            driver_name,
         )
 
     @classmethod
     def from_config_create_post_post(
         cls,
         driver_name,
-        post_post_file_path,
+        post_post_file_name_prefix,
         file_options_dict,
         files_to_be_deleted_regex_lst,
     ):
         """Create the class from the problem description."""
         return cls(
-            post_post_file_path,
+            post_post_file_name_prefix,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -60,20 +65,27 @@ class PostPostCsv(PostPost):
             raise ValueError("The option 'use_cols_lst' cannot be empty! Abort...")
 
         header = self.file_options_dict.get('header')
-        skip_rows_lst = self.file_options_dict('skip_rows_lst')
+        skip_rows = self.file_options_dict.get('skip_rows', 0)
+        if not isinstance(skip_rows, int):
+            raise ValueError(
+                "The option 'skip_rows' in the post_post settings must be of type 'int'! "
+                "You provided type '{type(skip_rows)}'. Abort..."
+            )
 
         try:
             self.raw_file_data = pd.read_csv(
                 self.post_post_file_path,
                 sep=r',|\s+',
                 usecols=use_cols_lst,
-                skiprows=skip_rows_lst,
+                skiprows=skip_rows,
                 header=header,
                 engine='python',
             )
             _logger.info(f"Successfully read-in data from {self.post_post_file_path}.")
         except IOError:
-            _logger.warning(f"Could not read postprocessed file {self.post_postfile_path}. Skip...")
+            _logger.warning(
+                f"Could not read postprocessed file {self.post_post_file_path}. Skip..."
+            )
             self.raw_file_data = None
 
     def _filter_raw_data(self):
@@ -86,8 +98,8 @@ class PostPostCsv(PostPost):
             self._filter_based_on_column_values()
         else:
             raise ValueError(
-                "You provided an 'file_options_dict' with invalid keys! "
-                "Valid keys must either contain 'use_rows_lst' but not 'use_rows_lst' "
+                "You provided a 'file_options_dict' with invalid keys! "
+                "Valid keys must either contain 'use_rows_lst' but not 'filter_column' "
                 f"or vice versa. You provided the keys: {option_keys}. Abort..."
             )
 
@@ -107,7 +119,7 @@ class PostPostCsv(PostPost):
 
         if self.raw_file_data:
             try:
-                self.post_post_data = self.raw_file_data.loc[use_rows_lst]
+                self.post_post_data = self.raw_file_data.iloc[use_rows_lst].to_numpy()
             except IndexError:
                 raise IndexError(
                     f"Index list {use_rows_lst} are not contained in raw_file_data. " "Abort..."
@@ -136,13 +148,23 @@ class PostPostCsv(PostPost):
                 "type is wrong or the column does not exist in the csv-data file! "
                 "Abort..."
             )
+        if any(self.raw_file_data):
+            post_post_data = (
+                self.raw_file_data.loc[
+                    (
+                        np.abs(self.raw_file_data.iloc[:, filter_column] - filter_range[0])
+                        <= filter_tol
+                    )
+                    * (
+                        np.abs(self.raw_file_data.iloc[:, filter_column] - filter_range[-1])
+                        <= filter_tol
+                    )
+                ]
+            ).to_numpy()
 
-        if self.raw_file_data:
-            self.post_post_data = self.raw_file_data.loc[
-                ((self.raw_file_data[filter_column] - filter_range[0]) > filter_tol)
-                and ((self.raw_file_data[filter_column] - filter_range[-1]) < filter_tol)
-            ]
-            if not self.post_post_data:
+            # delete the filter column from the data array
+            self.post_post_data = np.delete(post_post_data, filter_column, axis=1)
+            if not np.any(self.post_post_data):
                 _logger.warning(
                     "The filtered data was empty! Adjust your filter tolerance or filter range!"
                 )
