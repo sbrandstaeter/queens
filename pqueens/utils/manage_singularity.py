@@ -27,10 +27,7 @@ def create_singularity_image():
     abs_path2 = os.path.join(script_dir, rel_path2)
     path_to_pqueens = os.path.join(script_dir, '../')
     command_list = [
-        "cd",
-        path_to_pqueens,
-        "&&",
-        "/usr/bin/singularity build --force --fakeroot",
+        "/usr/bin/singularity build --fakeroot",
         abs_path1,
         abs_path2,
     ]
