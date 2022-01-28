@@ -233,15 +233,11 @@ class ClusterScheduler(Scheduler):
                     '"',
                 ]
                 cmd_remote_main = ' '.join(cmdlist_remote_main)
-                _, _, stdout, stderr = run_subprocess(cmd_remote_main)
-
-                # error check
-                if stderr:
-                    raise RuntimeError(
-                        "\nThe file 'remote_main' in remote singularity image "
-                        "could not be executed properly!"
-                        f"\nStderr from remote:\n{stderr}"
-                    )
+                _, _, stdout, _ = run_subprocess(
+                    cmd_remote_main,
+                    additional_message_error="The file 'remote_main' in remote singularity image "
+                    "could not be executed properly!",
+                )
 
                 # check matching of job ID
                 match = get_cluster_job_id(self.scheduler_type, stdout)
@@ -282,7 +278,7 @@ class ClusterScheduler(Scheduler):
                     '"',
                 ]
                 cmd_remote_main = ' '.join(cmdlist_remote_main)
-                _, _, _, _ = run_subprocess(cmd_remote_main)
+                run_subprocess(cmd_remote_main)
 
                 return 0
         else:
@@ -331,7 +327,7 @@ class ClusterScheduler(Scheduler):
             ]
 
         command_string = ' '.join(command_list)
-        _, _, stdout, stderr = run_subprocess(command_string)
+        _, _, stdout, _ = run_subprocess(command_string)
 
         if stdout:
             # split output string

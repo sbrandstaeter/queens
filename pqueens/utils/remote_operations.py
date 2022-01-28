@@ -13,13 +13,9 @@ def make_directory_on_remote(remote_connect, directory):
         '"',
     ]
     command_string = ' '.join(command_list)
-    _, _, _, stderr = run_subprocess(command_string)
-
-    # detection of failed command
-    if stderr:
-        raise RuntimeError(
-            "\nDirectory could not be made on remote machine!\nStderr from remote:" f"\n{stderr}"
-        )
+    run_subprocess(
+        command_string, additional_error_message="Directory could not be made on remote machine!"
+    )
 
 
 def copy_directory_to_remote(remote_connect, local_dir, remote_dir):
@@ -33,10 +29,6 @@ def copy_directory_to_remote(remote_connect, local_dir, remote_dir):
         remote_dir,
     ]
     command_string = ' '.join(command_list)
-    _, _, _, stderr = run_subprocess(command_string)
-
-    # detection of failed command
-    if stderr:
-        raise RuntimeError(
-            "\nDirectory could not be copied to remote machine!\nStderr from remote:" f"\n{stderr}"
-        )
+    run_subprocess(
+        command_string, additional_error_message="Directory could not be copied to remote machine!"
+    )
