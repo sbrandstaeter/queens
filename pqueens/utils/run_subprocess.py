@@ -215,7 +215,7 @@ def _raise_or_warn_error(command, stdout, stderr, **kwargs):
         command (str): Command string
         stdout (str): Command output
         stderr (str): Error of the output
-        raise_error (bool,optional): Raise or warn error defaults to True
+        raise_error_on_subprocess_failure (bool,optional): Raise or warn error defaults to True
         additional_error_message (str,optional): Additional error message to be displayed
         allowed_errors (lst,optional): List of strings to be removed from the error message
     """
@@ -224,12 +224,12 @@ def _raise_or_warn_error(command, stdout, stderr, **kwargs):
 
     stderr = _remove_allowed_errors(stderr, allowed_errors)
     if stderr:
-        raise_error = kwargs.get('raise_error', True)
+        raise_error_on_subprocess_failure = kwargs.get('raise_error_on_subprocess_failure', True)
         additional_message = kwargs.get('additional_error_message', None)
         subprocess_error = SubprocessError.construct_error_from_command(
             command, stdout, stderr, additional_message
         )
-        if raise_error:
+        if raise_error_on_subprocess_failure:
             raise subprocess_error
         else:
             _logger.warning(subprocess_error.message)

@@ -349,7 +349,7 @@ class BaciDriver(Driver):
 
         # run BACI via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(
-            command_string, subprocess_type=subprocess_type, raise_error=False
+            command_string, subprocess_type=subprocess_type, raise_error_on_subprocess_failure=False
         )
         # redirect stdout/stderr output to log and error file, respectively,
         # for Slurm, PBS (CAE stdout/stderr on remote for A-II, submission
@@ -423,7 +423,7 @@ class BaciDriver(Driver):
             log_file=log_file,
             error_file=error_file,
             streaming=self.cae_output_streaming,
-            raise_error=False,
+            raise_error_on_subprocess_failure=False,
         )
 
         # redirect stdout/stderr output to log and error file, respectively,
@@ -460,7 +460,7 @@ class BaciDriver(Driver):
         run_subprocess(
             final_pp_cmd,
             additional_error_message="Post-processing of BACI failed!",
-            raise_error=False,
+            raise_error_on_subprocess_failure=False,
         )
 
     # ----- COMMAND-ASSEMBLY METHODS ---------------------------------------------

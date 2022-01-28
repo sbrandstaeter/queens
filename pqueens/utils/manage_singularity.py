@@ -423,7 +423,9 @@ class SingularityManager:
         """
         _, _, username, _ = run_subprocess('whoami')
         command_string = "ps -aux | grep 'ssh -f -N -L 9001:' | grep ':22 " + username + "@'"
-        _, _, active_ssh, _ = run_subprocess(command_string, raise_error=False)
+        _, _, active_ssh, _ = run_subprocess(
+            command_string, raise_error_on_subprocess_failure=False
+        )
 
         if active_ssh:
             active_ssh_ids = []
@@ -437,7 +439,7 @@ class SingularityManager:
             if active_ssh_ids:
                 for ssh_id in active_ssh_ids:
                     command_string = 'kill -9 ' + ssh_id
-                    run_subprocess(command_string, raise_error=False)
+                    run_subprocess(command_string, raise_error_on_subprocess_failure=False)
                 print('Active QUEENS local to remote port-forwardings were closed successfully!')
 
     def close_remote_port(self, port):
@@ -459,7 +461,9 @@ class SingularityManager:
             str(port) + ':localhost:27017\'',
         ]
         command_string = ' '.join(command_list)
-        _, _, active_ssh, _ = run_subprocess(command_string, raise_error=False)
+        _, _, active_ssh, _ = run_subprocess(
+            command_string, raise_error_on_subprocess_failure=False
+        )
 
         # skip entries that contain "grep" as this is the current command
         try:
