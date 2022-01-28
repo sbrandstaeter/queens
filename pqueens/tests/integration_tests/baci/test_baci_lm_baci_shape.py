@@ -135,17 +135,15 @@ def test_baci_lm_shape(
         # check singularity image hash
         command_list = ['/usr/bin/singularity', 'run', abs_path, '--hash=true']
         command_string = ' '.join(command_list)
-        _, _, singularity_hash_list, stderr = run_subprocess(command_string)
-
-        if stderr:
-            raise RuntimeError(f'Singularity hash-check return the error: {stderr}. Abort...')
-        else:
-            singularity_hash = [
-                ele.replace("\'", "") for ele in singularity_hash_list.strip('][').split(', ')
-            ]
-            singularity_hash = [ele.replace("]", "") for ele in singularity_hash]
-            singularity_hash = [ele.replace("\n", "") for ele in singularity_hash]
-            singularity_hash = ''.join(singularity_hash)
+        _, _, singularity_hash_list, _ = run_subprocess(
+            command_string, additional_error_message="Singularity hash-check failed!"
+        )
+        singularity_hash = [
+            ele.replace("\'", "") for ele in singularity_hash_list.strip('][').split(', ')
+        ]
+        singularity_hash = [ele.replace("]", "") for ele in singularity_hash]
+        singularity_hash = [ele.replace("\n", "") for ele in singularity_hash]
+        singularity_hash = ''.join(singularity_hash)
 
         assert local_hash == singularity_hash, (
             "Local hash key and singularity image hash key "

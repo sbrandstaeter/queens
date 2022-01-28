@@ -90,7 +90,7 @@ def count_subdirectories(current_directory):
 def remove_job_output_directory(experiment_directory, jobid):
     """Remove output directory of job #jobid from experiment_directory."""
     rm_cmd = "rm -r " + str(experiment_directory) + "/" + str(jobid)
-    _, _, _, stderr = run_subprocess(rm_cmd)
+    run_subprocess(rm_cmd)
 
 
 @pytest.mark.integration_tests_baci
@@ -155,17 +155,16 @@ def test_baci_elementary_effects(
         # check singularity image hash
         command_list = ['/usr/bin/singularity', 'run', abs_path, '--hash=true']
         command_string = ' '.join(command_list)
-        _, _, singularity_hash_list, stderr = run_subprocess(command_string)
+        _, _, singularity_hash_list, _ = run_subprocess(
+            command_string, additional_error_message="Singularity hash-check failed!"
+        )
 
-        if stderr:
-            raise RuntimeError(f'Singularity hash-check return the error: {stderr}. Abort...')
-        else:
-            singularity_hash = [
-                ele.replace("\'", "") for ele in singularity_hash_list.strip('][').split(', ')
-            ]
-            singularity_hash = [ele.replace("]", "") for ele in singularity_hash]
-            singularity_hash = [ele.replace("\n", "") for ele in singularity_hash]
-            singularity_hash = ''.join(singularity_hash)
+        singularity_hash = [
+            ele.replace("\'", "") for ele in singularity_hash_list.strip('][').split(', ')
+        ]
+        singularity_hash = [ele.replace("]", "") for ele in singularity_hash]
+        singularity_hash = [ele.replace("\n", "") for ele in singularity_hash]
+        singularity_hash = ''.join(singularity_hash)
 
         assert local_hash == singularity_hash, (
             "Local hash key and singularity image hash key "
@@ -199,6 +198,7 @@ def test_baci_elementary_effects(
     )
 
 
+@pytest.mark.integration_tests_baci
 def test_restart_from_output_folders_baci(
     inputdir,
     tmpdir,
