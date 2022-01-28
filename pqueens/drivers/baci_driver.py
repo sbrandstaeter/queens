@@ -32,13 +32,13 @@ class BaciDriver(Driver):
     """
 
     def __init__(self, base_settings, workdir, external_geometry_obj, random_fields_lst):
-        """Instantiate BaciDriver object.
+        """Initialize BaciDriver object.
 
         Args:
-            base_settings (dict): Dictionary with base settings of the parent class.
-            workdir (str): Path to the working directory.
-            external_geometry_obj (obj): External geometry object.
-            random_fields_lst (lst): List with random fields.
+            base_settings (dict): Base settings
+            workdir (str): Work directory
+            external_geometry_obj (obj): External geometry object
+            random_fields_lst (lst): List of random fields
         """
         super(BaciDriver, self).__init__(base_settings)
         self.workdir = workdir
@@ -113,10 +113,10 @@ class BaciDriver(Driver):
 
     # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def prepare_input_files(self):
-        """Prepare input files.
+        """Prepare input file on remote machine.
 
-        On remote machine in case of remote scheduling without
-        Singularity or in all other cases.
+        In case of remote scheduling without Singularity or in all other
+        cases.
         """
         if self.remote and not self.singularity:
             self.prepare_input_file_on_remote()
@@ -131,10 +131,12 @@ class BaciDriver(Driver):
                 self.simulation_input_template + '.bak',
             ]
             cmd_str = ' '.join(cmd_lst)
-            _, _, _, stderr = run_subprocess(cmd_str)
+            run_subprocess(cmd_str)
 
     def run_job(self):
-        """Run BACI with the following scheduling options overall.
+        """Run BACI.
+
+        The following scheduling options exist:
 
         A) with Singularity containers
         B) without Singularity containers
@@ -143,16 +145,10 @@ class BaciDriver(Driver):
         II) remote
 
         1) standard
-        2) nohup (not required in combination with A)
         3) Slurm
         4) PBS
-        5) ECS task
         """
-        if (
-            self.scheduler_type == 'pbs'
-            or self.scheduler_type == 'slurm'
-            or self.scheduler_type == 'ecs_task'
-        ):
+        if self.scheduler_type == 'pbs' or self.scheduler_type == 'slurm':
             returncode = self.run_job_via_script()
         else:
             returncode = self.run_job_via_run_cmd()
@@ -218,14 +214,11 @@ class BaciDriver(Driver):
             self.experiment_dir,
         ]
         command_string = ''.join(command_list)
-        _, _, _, stderr = run_subprocess(command_string)
-
-        # detection of failed command
-        if stderr:
-            raise RuntimeError(
-                "\nInjector file and param dict file could not be copied to remote machine!"
-                f"\nStderr:\n{stderr}"
-            )
+        run_subprocess(
+            command_string,
+            additional_error_message="Injector file and param dict file could not be copied to"
+            " remote machine!",
+        )
 
         # remove local copy of JSON file containing parameter dictionary
         os.remove(params_json_path)
@@ -247,14 +240,10 @@ class BaciDriver(Driver):
             '"',
         ]
         command_string = ' '.join(command_list)
-        _, _, _, stderr = run_subprocess(command_string)
-
-        # detection of failed command
-        if stderr:
-            raise RuntimeError(
-                "\nInjector file could not be executed on remote machine!"
-                f"\nStderr on remote:\n{stderr}"
-            )
+        run_subprocess(
+            command_string,
+            additional_error_message="Injector file could not be executed on remote machine!",
+        )
 
         # generate command for removing 'injector.py' and JSON file containing
         # parameter dictionary from experiment directory on remote machine
@@ -267,22 +256,19 @@ class BaciDriver(Driver):
             '"',
         ]
         command_string = ' '.join(command_list)
-        _, _, _, stderr = run_subprocess(command_string)
-
-        # detection of failed command
-        if stderr:
-            raise RuntimeError(
-                "\nInjector and JSON file could not be removed from remote machine!"
-                f"\nStderr on remote:\n{stderr}"
-            )
+        run_subprocess(
+            command_string,
+            additional_error_message="Injector and JSON file could not be removed from remote"
+            " machine!",
+        )
 
     # ----- RUN METHODS ---------------------------------------------------------
     # overload the parent pre_job_run method
     def pre_job_run(self):
         """Runtime manipulations on the dat-file.
 
-        The method runs before the actual simulation run.
-        It overloads the same-named parent method.
+        These are the operation that need to be performed before the actual simulation run. This
+        method overloads the same-named parent method.
 
         Returns:
             None
@@ -309,7 +295,9 @@ class BaciDriver(Driver):
         super(BaciDriver, self).pre_job_run()
 
     def _manipulate_dat_file(self):
-        """Calls dat-file manipulation methods.
+        """Helper method that calls the dat-file manipulation method.
+
+        Only needed if random fields are used.
 
         Returns:
             None
@@ -321,7 +309,9 @@ class BaciDriver(Driver):
             )
 
     def run_job_via_script(self):
-        """Run BACI with the following scheduling options.
+        """Run BACI.
+
+        The following scheduling options exist:
 
         A) with Singularity containers
         B) without Singularity containers
@@ -331,7 +321,6 @@ class BaciDriver(Driver):
 
         3) Slurm
         4) PBS
-        5) ECS task
         """
         # assemble run command for Slurm and PBS scheduler with Singularity (A-II-3
         # and A-II-4) and without Singularity (B-I-3, B-I-4, B-II-3, and B-II-4)
@@ -344,15 +333,6 @@ class BaciDriver(Driver):
                 # additionally set path to control file
                 self.job['control_file_path'] = self.control_file
 
-        # assemble run command for ECS task scheduler, which is always without
-        # Singularity (B-I-5 and B-II-5)
-        else:
-            # assemble command string for BACI run
-            baci_run_cmd = self.assemble_baci_run_cmd()
-
-            # assemble command string for ECS task
-            command_string = self.assemble_ecs_task_run_cmd(baci_run_cmd)
-
         # set subprocess type 'simple' with stdout/stderr output for
         # script-based jobs (CAE stdout/stderr on remote for A-II,
         # submission stdout/stdderr on local for B-II) redirected to
@@ -361,8 +341,7 @@ class BaciDriver(Driver):
 
         # run BACI via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(
-            command_string,
-            subprocess_type=subprocess_type,
+            command_string, subprocess_type=subprocess_type, raise_error_on_subprocess_failure=False
         )
         # redirect stdout/stderr output to log and error file, respectively,
         # for Slurm, PBS (CAE stdout/stderr on remote for A-II, submission
@@ -380,14 +359,13 @@ class BaciDriver(Driver):
                 print(stdout, file=text_file)
             with open(self.error_file, "a") as text_file:
                 print(stderr, file=text_file)
-        # extract ECS task ARN from output for transfer to job database
-        elif self.scheduler_type == 'ecs_task':
-            self.job['aws_arn'] = extract_string_from_output("taskArn", stdout)
 
         return returncode
 
     def run_job_via_run_cmd(self):
-        """Run BACI with the following scheduling options.
+        """Run BACI via subprocess.
+
+        The following scheduling options exist:
 
         A) with Singularity containers
         B) without Singularity containers
@@ -396,7 +374,6 @@ class BaciDriver(Driver):
         II) remote
 
         1) standard
-        2) nohup (not required in combination with A)
         """
         # initialize various arguments for subprocess to None and
         # merely change below, if required
@@ -406,46 +383,28 @@ class BaciDriver(Driver):
         error_file = None
 
         # assemble core command string for BACI run
-        core_baci_run_cmd = self.assemble_baci_run_cmd()
+        baci_run_cmd = self.assemble_baci_run_cmd()
 
-        # assemble extended core command string for Docker BACI run
-        if self.docker_image is not None:
-            baci_run_cmd = self.assemble_docker_run_cmd(core_baci_run_cmd)
+        # assemble remote run command for standard scheduler (B-II-1)
+        if not self.singularity and self.remote:
+            command_string = self.assemble_remote_run_cmd(baci_run_cmd)
+
+            # set subprocess type 'simple' with stdout/stderr output
+            # redirected to log and error file, respectively, below,
+            # which are stored on local machine, for the time being
+            subprocess_type = 'simple'
+
+        # assemble local run command for standard scheduler (B-I-1)
+        # and run command for Singularity (A)
         else:
-            baci_run_cmd = core_baci_run_cmd
+            command_string = baci_run_cmd
 
-        # assemble (local and remote) run command for nohup scheduler
-        # (B-I-2 and B-II-2)
-        if self.scheduler_type == 'nohup':
-            command_string = self.assemble_nohup_baci_run_cmd(baci_run_cmd)
-
-            # additionally set path to log file
-            self.job['log_file_path'] = self.log_file
-
-            # set subprocess type 'submit' without stdout/stderr output,
-            # since this output will be processed via the nohup command
-            subprocess_type = 'submit'
-        else:
-            # assemble remote run command for standard scheduler (B-II-1)
-            if not self.singularity and self.remote:
-                command_string = self.assemble_remote_run_cmd(baci_run_cmd)
-
-                # set subprocess type 'simple' with stdout/stderr output
-                # redirected to log and error file, respectively, below,
-                # which are stored on local machine, for the time being
-                subprocess_type = 'simple'
-
-            # assemble local run command for standard scheduler (B-I-1)
-            # and run command for Singularity (A)
-            else:
-                command_string = baci_run_cmd
-
-                # set subprocess type 'simulation' with stdout/stderr output
-                subprocess_type = 'simulation'
-                terminate_expr = 'PROC.*ERROR'
-                loggername = __name__ + f'_{self.job_id}'
-                log_file = self.log_file
-                error_file = self.error_file
+            # set subprocess type 'simulation' with stdout/stderr output
+            subprocess_type = 'simulation'
+            terminate_expr = 'PROC.*ERROR'
+            loggername = __name__ + f'_{self.job_id}'
+            log_file = self.log_file
+            error_file = self.error_file
 
         # run BACI via subprocess
         returncode, self.pid, stdout, stderr = run_subprocess(
@@ -456,6 +415,7 @@ class BaciDriver(Driver):
             log_file=log_file,
             error_file=error_file,
             streaming=self.cae_output_streaming,
+            raise_error_on_subprocess_failure=False,
         )
 
         # redirect stdout/stderr output to log and error file, respectively,
@@ -489,11 +449,11 @@ class BaciDriver(Driver):
                 final_pp_cmd = pp_cmd
 
         # run post-processing command and print potential error messages
-        _, _, _, stderr = run_subprocess(final_pp_cmd)
-
-        # detection of failed command
-        if stderr:
-            _logger.error("\nPost-processing of BACI failed!" f"\nStderr:\n{stderr}")
+        run_subprocess(
+            final_pp_cmd,
+            additional_error_message="Post-processing of BACI failed!",
+            raise_error_on_subprocess_failure=False,
+        )
 
     # ----- COMMAND-ASSEMBLY METHODS ---------------------------------------------
     def assemble_sing_baci_cluster_job_cmd(self):
@@ -563,13 +523,10 @@ class BaciDriver(Driver):
                 self.experiment_dir,
             ]
             command_string = ''.join(command_list)
-            _, _, _, stderr = run_subprocess(command_string)
-
-            # detection of failed command
-            if stderr:
-                raise RuntimeError(
-                    "\nJobscript could not be copied to remote machine!" f"\nStderr:\n{stderr}"
-                )
+            run_subprocess(
+                command_string,
+                additional_error_message="Jobscript could not be copied to remote machine!",
+            )
 
             # remove local copy of submission script and change path
             # to submission script to the one on remote machine
@@ -597,10 +554,7 @@ class BaciDriver(Driver):
             BACI run command
         """
         # set MPI command
-        if self.docker_image is not None:
-            mpi_cmd = '/usr/lib64/openmpi/bin/mpirun --allow-run-as-root -np'
-        else:
-            mpi_cmd = 'mpirun -np'
+        mpi_cmd = 'mpirun -np'
 
         command_list = [
             mpi_cmd,
@@ -611,24 +565,6 @@ class BaciDriver(Driver):
         ]
 
         return ' '.join(filter(None, command_list))
-
-    def assemble_nohup_baci_run_cmd(self, baci_run_cmd):
-        """Assemble command for nohup run of BACI.
-
-        Returns:
-            nohup BACI run command
-        """
-        # assemble command string for nohup BACI run
-        nohup_baci_run_cmd = self.assemble_nohup_run_cmd(
-            baci_run_cmd, self.log_file, self.error_file
-        )
-
-        if self.remote:
-            final_nohup_baci_run_cmd = self.assemble_remote_run_cmd(nohup_baci_run_cmd)
-        else:
-            final_nohup_baci_run_cmd = nohup_baci_run_cmd
-
-        return final_nohup_baci_run_cmd
 
     def assemble_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
         """Assemble command for postprocessing.
@@ -644,10 +580,7 @@ class BaciDriver(Driver):
             postprocessing command
         """
         # set MPI command
-        if self.docker_image is not None:
-            mpi_cmd = '/usr/lib64/openmpi/bin/mpirun --allow-run-as-root -np'
-        else:
-            mpi_cmd = 'mpirun -np'
+        mpi_cmd = 'mpirun -np'
 
         command_list = [
             mpi_cmd,
