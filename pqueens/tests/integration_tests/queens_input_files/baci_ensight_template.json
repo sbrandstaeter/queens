@@ -47,23 +47,26 @@
         "baci_ensight"
       ],
       "post_post": {
-        "post_post_approach_sel": "baci_ensight",
-        "delete_field_data": false,
-        "post_post_file_name_prefix": "baci_ensight",
-        "field_specification": {
+        "post_post_approach_sel": "ensight",
+        "post_post_file_name_prefix": "baci_ensight*structure.case",
+        "file_options_dict": {
+          "delete_field_data": false,
           "geometric_target": [
-            [
-              "geometric_set",
-              "DSURFACE 4"
-            ]
+            "geometric_set",
+            "DSURFACE 4"
           ],
           "physical_field_dict": {
             "vtk_field_type": "structure",
             "vtk_array_type": "point_array",
             "vtk_field_label": "displacement",
-            "field_components": [0,1]
+            "field_components": [
+              0,
+              1
+            ]
           },
-          "target_time": ["last"]
+          "target_time": [
+            "last"
+          ]
         }
       }
     }

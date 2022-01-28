@@ -47,26 +47,22 @@
         "QoI"
       ],
       "post_post": {
-        "post_post_approach_sel": "baci",
-        "delete_field_data": false,
-        "target_time_lst": [
-          5e-1
-        ],
-        "time_tol_lst": [
-          1e-2
-        ],
-        "post_post_file_name_prefix_lst": [
-          "QoI"
-        ],
-        "use_col_lst": [
-          [
+        "post_post_approach_sel": "csv",
+        "post_post_file_name_prefix": "QoI",
+        "file_options_dict": {
+          "delete_field_data": false,
+          "filter_range": [
+            5e-1,
+            5e-1
+          ],
+          "filter_tol": 1e-2,
+          "use_cols_lst": [
             1,
             3
-          ]
-        ],
-        "skip_rows_lst": [
-          4
-        ]
+          ],
+          "filter_column": 0,
+          "skip_rows": 4
+        }
       }
     }
   },

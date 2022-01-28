@@ -53,23 +53,18 @@
         "baci_write_random_field_to_dat"
       ],
       "post_post": {
-        "post_post_approach_sel": "baci",
-        "delete_field_data": false,
-        "target_time_lst": [
-          "last"
-        ],
-        "post_post_file_name_prefix_lst": [
-          "baci_write_random_field_to_dat.mon"
-        ],
-        "use_col_lst": [
-          [
-            1,
+        "post_post_approach_sel": "csv",
+        "post_post_file_name_prefix": "baci_write_random_field_to_dat.mon",
+        "file_options_dict": {
+          "delete_field_data": false,
+          "use_rows_lst": [
+            -1
+          ],
+          "use_cols_lst": [
             3
-          ]
-        ],
-        "skip_rows_lst": [
-          4
-        ]
+          ],
+          "skip_rows": 4
+        }
       }
     }
   },

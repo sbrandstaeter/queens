@@ -118,7 +118,7 @@ class PostPostCsv(PostPost):
                 f"but you provided type '{type(use_rows_lst)}'. Abort..."
             )
 
-        if self.raw_file_data:
+        if any(self.raw_file_data):
             try:
                 self.post_post_data = self.raw_file_data.iloc[use_rows_lst].to_numpy()
             except IndexError:
