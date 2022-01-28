@@ -65,10 +65,10 @@ class PostPost(metaclass=abc.ABCMeta):
             post_post (obj): post_post object
         """
         from .post_post_csv_data import PostPostCsv
+        from .post_post_ensight import PostPostEnsight
 
-        post_post_dict = {
-            'csv': PostPostCsv,
-        }
+        post_post_dict = {'csv': PostPostCsv, 'ensight': PostPostEnsight}
+
         driver_params = config.get(driver_name)
         if not driver_params:
             raise ValueError(
@@ -117,7 +117,7 @@ class PostPost(metaclass=abc.ABCMeta):
         post_post_version = post_post_options.get('post_post_approach_sel')
         if not post_post_version:
             raise ValueError(
-                "The posst_post section did not specify a valid 'post_post_approach_sel'! "
+                "The post_post section did not specify a valid 'post_post_approach_sel'! "
                 f"Valid options are {post_post_dict.keys()}. Abort..."
             )
         post_post_class = post_post_dict[post_post_version]
@@ -126,6 +126,7 @@ class PostPost(metaclass=abc.ABCMeta):
             post_post_file_name_prefix,
             file_options_dict,
             files_to_be_deleted_regex_lst,
+            config,
         )
 
         return post_post
@@ -221,7 +222,8 @@ class PostPost(metaclass=abc.ABCMeta):
         """Manipulate the post_post data."""
         pass
 
-    def _clean_up(self, file_path):
+    @staticmethod
+    def _clean_up(file_path):
         """Clean-up files in the output directory.
 
         Args:

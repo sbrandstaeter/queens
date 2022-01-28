@@ -24,7 +24,7 @@ class PostPostCsv(PostPost):
 
         Args:
             post_post_file_name_prefix (str): Prefix of postprocessed file name
-                                              The file prefic can contain regex expression
+                                              The file prefix can contain regex expression
                                               and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
                                       the post_processed file
@@ -49,6 +49,7 @@ class PostPostCsv(PostPost):
         post_post_file_name_prefix,
         file_options_dict,
         files_to_be_deleted_regex_lst,
+        _config,
     ):
         """Create the class from the problem description."""
         return cls(
