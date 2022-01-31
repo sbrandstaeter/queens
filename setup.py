@@ -88,7 +88,7 @@ setup(
     entry_points={
         'console_scripts': [
             'queens = pqueens.main:main',
-            'queens-sinbuild = pqueens.utils.cli_utils:build_singularity_cli',
+            'queens-build-singularity = pqueens.utils.cli_utils:build_singularity_cli',
         ],
     },
 )
