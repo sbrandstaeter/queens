@@ -89,7 +89,7 @@ class PostPostCsv(PostPost):
             )
             self.raw_file_data = None
 
-    def _filter_raw_data(self):
+    def _filter_and_manipulate_raw_data(self):
         """Filter the pandas data-frame for data in specific time range."""
         option_keys = list(self.file_options_dict.keys())
 
@@ -169,7 +169,3 @@ class PostPostCsv(PostPost):
                 _logger.warning(
                     "The filtered data was empty! Adjust your filter tolerance or filter range!"
                 )
-
-    def _manipulate_data(self):
-        """Manipulate the raw data."""
-        pass

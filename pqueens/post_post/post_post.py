@@ -54,7 +54,7 @@ class PostPost(metaclass=abc.ABCMeta):
         self.raw_file_data = None
 
     @classmethod
-    def from_config_create_post_post(config, driver_name):
+    def from_config_create_post_post(cls, config, driver_name):
         """Create PostPost object from problem description.
 
         Args:
@@ -161,8 +161,8 @@ class PostPost(metaclass=abc.ABCMeta):
         file_exists_bool = self._check_file_exist_and_is_unique(post_post_file_path_regex)
         if file_exists_bool:
             self._get_raw_data_from_file()
-            self._filter_raw_data()
-            self._manipulate_data()
+            self._filter_and_manipulate_raw_data()
+            self._subsequent_data_manipulation()
 
         for file_path in self.files_to_be_deleted_regex_lst:
             self._clean_up(file_path)
@@ -218,13 +218,18 @@ class PostPost(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def _filter_raw_data(self):
+    def _filter_and_manipulate_raw_data(self):
         """Filter or clean the raw data for given criteria."""
         pass
 
-    @abc.abstractmethod
-    def _manipulate_data(self):
-        """Manipulate the post_post data."""
+    def _subsequent_data_manipulation(self):
+        """Subsequent manipulate the post_post data.
+
+        This method can be easily implemented by overloading the empty
+        method in a custom inheritance of a desired child class. Make
+        sure to add the module to the `from_config_create` method in
+        this file.
+        """
         pass
 
     @staticmethod
