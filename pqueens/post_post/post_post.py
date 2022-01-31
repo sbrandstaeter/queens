@@ -54,7 +54,7 @@ class PostPost(metaclass=abc.ABCMeta):
         self.raw_file_data = None
 
     @classmethod
-    def from_config_create_post_post(cls, config, driver_name):
+    def from_config_create_post_post(config, driver_name):
         """Create PostPost object from problem description.
 
         Args:
@@ -66,8 +66,13 @@ class PostPost(metaclass=abc.ABCMeta):
         """
         from .post_post_csv_data import PostPostCsv
         from .post_post_ensight import PostPostEnsight
+        from .post_post_ensight_interface import PostPostEnsightInterfaceDiscrepancy
 
-        post_post_dict = {'csv': PostPostCsv, 'ensight': PostPostEnsight}
+        post_post_dict = {
+            'csv': PostPostCsv,
+            'ensight': PostPostEnsight,
+            'ensight_interface_discrepancy': PostPostEnsightInterfaceDiscrepancy,
+        }
 
         driver_params = config.get(driver_name)
         if not driver_params:
@@ -143,7 +148,7 @@ class PostPost(metaclass=abc.ABCMeta):
         """
         if not base_dir_post_post_file:
             raise ValueError(
-                "The post_post processer requires a base_directory for the post "
+                "The post_post processor requires a base_directory for the post "
                 "processed files to operate on! Your input was empty! Abort..."
             )
         if not isinstance(base_dir_post_post_file, str):

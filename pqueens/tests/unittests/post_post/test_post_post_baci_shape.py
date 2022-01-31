@@ -1,4 +1,4 @@
-"""for distance to surface measurement post_post evaluation."""
+"""Tests for distance to surface measurement post_post evaluation."""
 
 import os
 
@@ -13,11 +13,13 @@ from pqueens.post_post.post_post_baci_shape import PostPostBACIShape
 ############## fixtures
 @pytest.fixture(scope='module', params=['2d', '3d'])
 def all_dimensions(request):
+    """Parameterized fixture to select problem dimension."""
     return request.param
 
 
 @pytest.fixture()
 def default_ppbacishapeclass(mocker):
+    """Default ensight class for upcoming tests."""
     mocker.patch(
         'pqueens.post_post.post_post_baci_shape.PostPostBACIShape.read_monitorfile',
         return_value='None',
@@ -37,7 +39,7 @@ def default_ppbacishapeclass(mocker):
 
 @pytest.fixture()
 def vtkUnstructuredGridExample2d():
-
+    """Exemplary vtk grid."""
     node_coords = [
         [-2, 0, 0],
         [0, 0, 0],
@@ -66,7 +68,7 @@ def vtkUnstructuredGridExample2d():
 
 @pytest.fixture()
 def vtkUnstructuredGridExample3d():
-
+    """Exemplary unstructured 3D vtk grid."""
     node_coords = [
         [0, 0, 0],
         [1, 0, 0],
@@ -102,7 +104,7 @@ def vtkUnstructuredGridExample3d():
 
 @pytest.mark.unit_tests
 def test_init(mocker):
-
+    """Test the init method."""
     path_ref_data = 'dummypath'
     time_tol = 1e-03
     visualization = False
@@ -134,7 +136,7 @@ def test_init(mocker):
 
     assert my_postpost.path_ref_data == path_ref_data
     assert my_postpost.time_tol == time_tol
-    assert my_postpost.visualizationon == visualization
+    assert my_postpost.visualization_bool == visualization
     assert my_postpost.file_prefix == file_prefix
     assert my_postpost.file_postfix == file_postfix
     assert my_postpost.displacement_fields == displacement_fields
@@ -143,6 +145,7 @@ def test_init(mocker):
 
 @pytest.mark.unit_tests
 def test_from_config_create_post_post(mocker):
+    """Test the config method."""
     mp = mocker.patch(
         'pqueens.post_post.post_post_baci_shape.PostPostBACIShape.__init__', return_value=None
     )
@@ -174,7 +177,7 @@ def test_from_config_create_post_post(mocker):
 
 @pytest.mark.unit_tests
 def test_read_post_files(mocker):
-
+    """Test reading of ensight files."""
     mocker.patch(
         'pqueens.post_post.post_post_baci_shape.PostPostBACIShape.read_monitorfile',
         return_value='None',
@@ -222,44 +225,10 @@ def test_read_post_files(mocker):
 
 
 @pytest.mark.unit_tests
-def test_delete_field_data(mocker, default_ppbacishapeclass):
-
-    mp = mocker.patch(
-        'pqueens.post_post.post_post_baci_shape.run_subprocess',
-        return_value=[1, 2, 'out', 'err'],
-    )
-    mocker.patch('os.path.join', return_value='files_search')
-    mocker.patch('glob.glob', return_value=['file1', 'file2'])
-
-    default_ppbacishapeclass.delete_field_data()
-
-    mp.assert_any_call(
-        'rm file1',
-    )
-    mp.assert_any_call(
-        'rm file2',
-    )
-
-
-@pytest.mark.unit_tests
-def test_error_handling(mocker, default_ppbacishapeclass):
-    mp = mocker.patch(
-        'pqueens.post_post.post_post_baci_shape.run_subprocess',
-        return_value=[1, 2, 'out', 'err'],
-    )
-    default_ppbacishapeclass.error = True
-    default_ppbacishapeclass.output_dir = 'None'
-    default_ppbacishapeclass.error_handling('dummy dir')
-    mp.assert_called_once_with(
-        'cd None&& cd ../.. && mkdir -p postpost_error && cd None&& cd .. && mv *.dat ../postpost_error/',
-    )
-
-
-@pytest.mark.unit_tests
 def test_read_monitorfile(
     mocker,
 ):
-
+    """Test reading of monitor file."""
     # monitor_string will be used to mock the content of a monitor file that is linked at
     # path_to_ref_data whereas the indentation is compulsory
     monitor_string = """#somecomment
@@ -293,7 +262,7 @@ steps 2 npoints 4
 
     mp.assert_called_once()
 
-    assert pp.ref_data == [
+    assert pp.experimental_ref_data_lst == [
         [
             4.0,
             [
@@ -324,13 +293,15 @@ steps 2 npoints 4
 def test_create_mesh_and_intersect_vtk(
     mocker, default_ppbacishapeclass, vtkUnstructuredGridExample2d, vtkUnstructuredGridExample3d
 ):
-
+    """Test for vtk mesh intersection."""
     default_ppbacishapeclass.problem_dimension = '2d'
 
+    # pylint: disable=line-too-long error
     mp = mocker.patch(
         'pqueens.post_post.post_post_baci_shape.PostPostBACIShape.create_UnstructuredGridFromEnsight',
         return_value=vtkUnstructuredGridExample2d,
     )
+    # pylint: enable=line-too-long error
     default_ppbacishapeclass.ref_data = [
         [
             1.0,
@@ -357,10 +328,12 @@ def test_create_mesh_and_intersect_vtk(
 
     default_ppbacishapeclass.problem_dimension = '3d'
 
+    # pylint: disable=line-too-long error
     mp = mocker.patch(
         'pqueens.post_post.post_post_baci_shape.PostPostBACIShape.create_UnstructuredGridFromEnsight',
         return_value=vtkUnstructuredGridExample3d,
     )
+    # pylint: enable=line-too-long error
 
     default_ppbacishapeclass.ref_data = [
         [
@@ -380,7 +353,7 @@ def test_create_mesh_and_intersect_vtk(
 
 @pytest.mark.unit_tests
 def test_stretch_vector(default_ppbacishapeclass):
-
+    """Test for stretch vector helpre method."""
     assert default_ppbacishapeclass.stretch_vector([1, 2, 3], [2, 4, 6], 2) == [
         [-1, -2, -3],
         [4, 8, 12],
@@ -389,13 +362,7 @@ def test_stretch_vector(default_ppbacishapeclass):
 
 @pytest.mark.unit_tests
 def test_compute_distance(default_ppbacishapeclass):
-
+    """Test for distance computation."""
     assert default_ppbacishapeclass.compute_distance(
         [[2, 4, 6], [1, 2, 3], [3, 6, 9]], [[0, 0, 0], [0.1, 0.2, 0.3]]
     ) == pytest.approx(np.sqrt(14), abs=10e-12)
-
-
-@pytest.mark.unit_tests
-def test_create_UnstructuredGridFromEnsight(default_ppbacishapeclass):
-    # this method is basically vtk functions only. not really testable unless we mock every line
-    pass
