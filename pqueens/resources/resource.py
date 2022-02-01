@@ -1,16 +1,16 @@
-"""The resource module contains everything that is necessary to manage
-computing resources.
+"""QUEENS resource module.
 
-A computing ressource can be a single machine or a HPC cluster. The
-resource can provide basic status information as well as workload
-capacity. If the workload capacity allows it the computing resource
-accepts jobs and executes them.
+This module contains everything that is necessary to manage computing
+resources.A computing ressource can be a single machine or a HPC
+cluster. The resource can provide basic status information as well as
+workload capacity. If the workload capacity allows it the computing
+resource accepts jobs and executes them.
 """
 import sys
 
 import numpy as np
 
-from pqueens.schedulers.scheduler import Scheduler
+from pqueens.schedulers.scheduler_new import Scheduler
 
 # TODO refactor this method into a class method
 
@@ -25,7 +25,6 @@ def parse_resources_from_configuration(config, driver_name):
     Returns:
         dict: Dictionary with resource objects keyed with resource name
     """
-
     if "resources" in config:
         resources = dict()
         for resource_name, _ in config["resources"].items():
@@ -53,7 +52,6 @@ def resource_factory(resource_name, exp_name, config, driver_name):
         resource:  resource object constructed from the resource name,
                    exp_name, and config dict
     """
-
     # get resource options extract resource info from config
     resource_options = config["resources"][resource_name]
     max_concurrent = resource_options.get('max-concurrent', 1)
@@ -89,7 +87,8 @@ class Resource(object):
     """
 
     def __init__(self, name, exp_name, scheduler, max_concurrent, max_finished_jobs):
-        """
+        """Init the resource instance.
+
         Args:
             name (string):                The name of the resource
             exp_name (string):            The name of the experiment
@@ -184,8 +183,7 @@ class Resource(object):
         return process_id
 
     def check_job_completion(self, job):
-        """Check whether this job is completed using the scheduler of the
-        resource.
+        """Check whether this job is completed using the scheduler.
 
         Args:
             batch (string):         Batch number of job
