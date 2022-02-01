@@ -156,7 +156,7 @@ class PostPostCsv(PostPost):
                         np.abs(self.raw_file_data.iloc[:, filter_column] - filter_range[0])
                         <= filter_tol
                     )
-                    * (
+                    & (
                         np.abs(self.raw_file_data.iloc[:, filter_column] - filter_range[-1])
                         <= filter_tol
                     )
