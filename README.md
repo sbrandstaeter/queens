@@ -169,11 +169,6 @@ To check that the command was successful, you can
     cat /etc/subuid
     ```
     which should return something like `1000:4294836224:65536`.
-1. show the generated `/etc/subgid`
-    ```bash
-    cat /etc/subgid
-    ```
-    which should return something like `1000:4294836224:65536`.
 For more information please refer to the singularity documentation for [user](https://sylabs.io/guides/3.5/user-guide/fakeroot.html) and [admin](https://sylabs.io/guides/3.5/admin-guide/user_namespace.html#config-fakeroot) on the fakeroot option of singularity.
 
 Make sure that after the installation process your `.bashrc` file contains
@@ -183,6 +178,11 @@ export SINGULARITYENV_APPEND_PATH=$PATH
 export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 ```
 (Generally this should be generated automatically. Without `lnm` on external PCs.)
+
+Assuming singularity is already installed, an image for a QUEENS run can be build (in the environment where QUEENS is installed) using the QUEENS CLI with the command:
+```
+queens-build-singularity
+```
 [↑ Contents](#contents)
 
 
@@ -207,7 +207,7 @@ export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
     conda activate queens
     ```
 1. Install QUEENS inside the environment:
-     - For simple use (in the QUEENS directory):
+    - For simple use (in the QUEENS directory):
         ```
         pip install -e .
         ```
@@ -215,7 +215,7 @@ export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
         ```
         pip install -e .[develop]
         ```
-
+    The `-e` option (or `--editable`) ensures that QUEENS can be modified in the current location without the need to reinstall it.
 1. If required, uninstall QUEENS within the activated environment:
     ```
     python uninstall queens
