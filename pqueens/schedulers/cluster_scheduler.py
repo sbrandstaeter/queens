@@ -177,7 +177,7 @@ class ClusterScheduler(Scheduler):
                 )
 
                 self.singularity_manager.copy_temp_json()
-                self.singularity_manager.copy_post_post()
+                # self.singularity_manager.copy_post_post()
 
     def _submit_singularity(self, job_id, batch, restart):
         """Submit job remotely to Singularity.

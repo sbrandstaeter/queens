@@ -131,7 +131,6 @@ class Driver(metaclass=abc.ABCMeta):
         batch,
         driver_name,
         port=None,
-        abs_path=None,
         workdir=None,
         cluster_options=None,
     ):
@@ -142,7 +141,6 @@ class Driver(metaclass=abc.ABCMeta):
             job_id (int):   Job ID as provided in database within range [1, n_jobs]
             batch (int):    Job batch number (multiple batches possible)
             port (int):     Port for data forwarding from/to remote resource
-            abs_path (str): Absolute path to post-post module on remote resource
             workdir (str):  Path to working directory on remote resource
             driver_name (str): Name of driver instance that should be realized
 
