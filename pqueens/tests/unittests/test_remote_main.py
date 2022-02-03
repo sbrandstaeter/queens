@@ -76,7 +76,6 @@ def test_exit_conditions_remote_main(mocker, monkeypatch, finalize_fail, port):
         "--path_json=dummypath",
         "--post=true",
         "--workdir=dummy_workdir",
-        "--hash=false",
     ]
 
     if finalize_fail:
