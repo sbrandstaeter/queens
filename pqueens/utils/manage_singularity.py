@@ -9,6 +9,10 @@ from pprint import pprint
 from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
+path_to_pqueens = os.path.join(os.path.dirname(__file__), "../")
+path_to_queens = os.path.join(os.path.dirname(__file__), "../../")
+abs_singularity_image_path = os.path.join(path_to_queens, "singularity_image.sif")
+
 
 def create_singularity_image():
     """Create pre-designed singularity image for cluster applications.
@@ -21,18 +25,15 @@ def create_singularity_image():
     run_subprocess(command_string, additional_error_message='Singularity could not be executed!')
 
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-    rel_path1 = '../../singularity_image.sif'
-    rel_path2 = '../../singularity_recipe.def'
-    abs_path1 = os.path.join(script_dir, rel_path1)
-    abs_path2 = os.path.join(script_dir, rel_path2)
-    path_to_pqueens = os.path.join(script_dir, '../')
+    definition_path = 'singularity_recipe.def'
+    abs_definition_path = os.path.join(path_to_queens, definition_path)
     command_list = [
         "cd",
-        path_to_pqueens,
-        "&&",
+        path_to_queens,
+        "&& export SINGULARITY_BIND=/opt:/opt/ &&",
         "/usr/bin/singularity build --force --fakeroot",
-        abs_path1,
-        abs_path2,
+        abs_singularity_image_path,
+        abs_definition_path,
     ]
     command_string = ' '.join(command_list)
 
@@ -46,11 +47,8 @@ def create_singularity_image():
         if sp_error.message.find("INFO:    Build complete:") < 0:
             raise sp_error
 
-    script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-    rel_path = '../../singularity_image.sif'
-    abs_path = os.path.join(script_dir, rel_path)
-    if not os.path.isfile(abs_path):
-        raise FileNotFoundError(f'No singularity image "{abs_path}" found')
+    if not os.path.isfile(abs_singularity_image_path):
+        raise FileNotFoundError(f'No singularity image "{abs_singularity_image_path}" found')
 
 
 class SingularityManager:
@@ -166,6 +164,21 @@ class SingularityManager:
             command_string = ' '.join(command_list)
             run_subprocess(command_string)
 
+    def copy_image_to_remote(self):
+        """Copy the local singularity image to the remote recsource."""
+        print("Updating remote image from local image...")
+        print("(This might take a couple of seconds, but needs only to be done once)")
+        command_list = [
+            "scp",
+            abs_singularity_image_path,
+            self.remote_connect + ':' + self.singularity_path,
+        ]
+        command_string = ' '.join(command_list)
+        run_subprocess(
+            command_string,
+            additional_error_message="Was not able to copy local singularity image to " "remote! ",
+        )
+
     def prepare_singularity_files(self):
         """Checks if local and remote singularity images are existent.
 
@@ -176,119 +189,31 @@ class SingularityManager:
         Returns:
             None
         """
-        # check existence local
-        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../../singularity_image.sif'
-        abs_path = os.path.join(script_dir, rel_path)
-        if os.path.isfile(abs_path):
-            # check singularity status local
-            command_list = ['/usr/bin/singularity', 'run', abs_path, '--hash=true']
-            command_string = ' '.join(command_list)
-            _, _, old_data, _ = run_subprocess(
-                command_string,
-                additional_error_message='Singularity hash-check failed',
+        copy_to_remote = False
+        if _check_if_new_image_needed():
+            print(
+                "Local singularity image is not up-to-date with QUEENS! "
+                "Writing new local image..."
             )
-
-            hashlist = hash_files()
-            # Write local singularity image and remote image
-            # convert the string that is returned from the singularity image into a list
-            old_data = [ele.replace("\'", "") for ele in old_data.strip('][').split(', ')]
-            old_data = [ele.replace("]", "") for ele in old_data]
-            old_data = [ele.replace("\n", "") for ele in old_data]
-
-            if ''.join(old_data) != ''.join(hashlist):
-                print(
-                    "Local singularity image is not up-to-date with QUEENS! "
-                    "Writing new local image..."
-                )
-                print("(This will take 3 min or so, but needs only to be done once)")
-                # deleting old image
-                rel_path = '../../driver*'
-                abs_path = os.path.join(script_dir, rel_path)
-                command_list = ['rm', abs_path]
-                command_string = ' '.join(command_list)
-                run_subprocess(command_string)
-                create_singularity_image()
-                print("Local singularity image written successfully!")
-
-                # Update remote image
-                if self.remote:
-                    print("Updating remote image from local image...")
-                    print("(This might take a couple of seconds, but needs only to be done once)")
-                    rel_path = "../../singularity_image.sif"
-                    abs_path = os.path.join(script_dir, rel_path)
-                    command_list = [
-                        "scp",
-                        abs_path,
-                        self.remote_connect + ':' + self.singularity_path,
-                    ]
-                    command_string = ' '.join(command_list)
-                    run_subprocess(
-                        command_string,
-                        additional_error_message="Was not able to copy local singularity image to "
-                        "remote! ",
-                    )
-
-            # check existence singularity on remote
-            if self.remote:
-                command_list = [
-                    'ssh -T',
-                    self.remote_connect,
-                    'test -f',
-                    self.singularity_path + "/singularity_image.sif && echo 'Y' || echo 'N'",
-                ]
-                command_string = ' '.join(command_list)
-                _, _, stdout, _ = run_subprocess(command_string)
-                if 'N' in stdout:
-                    # Update remote image
-                    print(
-                        "Remote singularity image is not existent! "
-                        "Updating remote image from local image..."
-                    )
-                    print("(This might take a couple of seconds, but needs only to be done once)")
-                    rel_path = "../../singularity_image.sif"
-                    abs_path = os.path.join(script_dir, rel_path)
-                    command_list = [
-                        "scp",
-                        abs_path,
-                        self.remote_connect + ':' + self.singularity_path,
-                    ]
-                    command_string = ' '.join(command_list)
-                    run_subprocess(
-                        command_string,
-                        additional_error_message="Was not able to copy local singularity image to"
-                        " remote!",
-                    )
-                    print('All singularity images ok! Starting simulation on cluster...')
-
-        else:
-            # local image was not even existent --> create local and remote image
-            print("No local singularity image found! Building new image...")
             print("(This will take 3 min or so, but needs only to be done once)")
-            print("_______________________________________________________________________________")
-            print("")
-            print("Make sure QUEENS was called from the base directory containing the main.py file")
-            print("to set the correct relative paths for the image; otherwise abort!")
-            print("_______________________________________________________________________________")
             create_singularity_image()
             print("Local singularity image written successfully!")
+
             if self.remote:
-                print("Updating now remote image from local image...")
-                print("(This might take a couple of seconds, but needs only to be done once)")
-                rel_path = "../../singularity_image.sif"
-                abs_path = os.path.join(script_dir, rel_path)
-                command_list = [
-                    "scp",
-                    abs_path,
-                    self.remote_connect + ':' + self.singularity_path,
-                ]
-                command_string = ' '.join(command_list)
-                run_subprocess(
-                    command_string,
-                    additional_error_message="Was not able to copy local singularity image to "
-                    "remote! ",
+                copy_to_remote = True
+
+        if self.remote and not copy_to_remote:
+            try:
+                remote_hash = sha1sum(
+                    self.singularity_path + "/singularity_image.sif", self.remote_connect
                 )
-                print('All singularity images ok! Starting simulation on cluster...')
+                local_hash = sha1sum(abs_singularity_image_path)
+                copy_to_remote = remote_hash != local_hash
+            except:
+                copy_to_remote = True
+
+        if copy_to_remote:
+            self.copy_image_to_remote()
 
     def kill_previous_queens_ssh_remote(self, username):
         """Kill existing ssh-port-forwardings on the remote machine.
@@ -507,111 +432,100 @@ class SingularityManager:
             additional_error_message="Was not able to copy temporary input file to remote!",
         )
 
-    def copy_post_post(self):
-        """Copy an instance of the post-post module to the remote.
 
-        Load the module dynamically during runtime. This enables fast changes in post-post
-        scripts without the need to rebuild the singularity image.
+def _check_if_new_image_needed():
+    """Indicate if a new singularity image needs to be build.
 
-        Returns:
-            None
-        """
-        abs_dirpath_current_file = os.path.dirname(os.path.abspath(__file__))
-        abs_path_post_post = os.path.join(abs_dirpath_current_file, '../post_post')
-        # delete old files
-        command_list = [
-            "ssh",
-            self.remote_connect,
-            '\'rm -r',
-            self.singularity_path + '/post_post\'',
-        ]
-        command_string = ' '.join(command_list)
-        run_subprocess(command_string, raise_error_on_subprocess_failure=False)
-
-        # copy new files
-        command_list = [
-            "scp -r",
-            abs_path_post_post,
-            self.remote_connect + ':' + self.singularity_path + '/post_post',
-        ]
-        command_string = ' '.join(command_list)
-        run_subprocess(
-            command_string,
-            additional_error_message="Was not able to copy post_post directory to remote!",
-        )
-
-
-def hash_files():
-    """Hash all files that are used in the singularity image.
-
-    Also check if some files were changed. This is important to keep the singularity image always
-    up to date with the code base.
+    Before checking if the files changed, a check is performed to see if there is an image first.
 
     Returns:
-        None
+        [bool]: True if new image is needed.
     """
-    hashlist = []
-    hasher = hashlib.md5()
-    # hash all drivers
-    script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-    rel_path = "../drivers"
-    abs_path = os.path.join(script_dir, rel_path)
+    if os.path.exists(abs_singularity_image_path):
+        return _check_if_files_changed()
+    else:
+        return False
+
+
+def _check_if_files_changed():
+    """Indicates if the source files deviate w.r.t. to singularity container.
+
+    Returns:
+        [bool]: if files have changed
+    """
+    # Folders included in the singularity image relevant for a run
+    folders_to_compare_list = ['drivers/', 'post_post/', 'utils/', 'external_geometry/']
+
+    # Specific files in the singularity image relevant for a run
+    files_to_compare_list = [
+        "database/mongodb.py",
+        '../setup_remote.py',
+        'remote_main.py',
+    ]
+    # generate absolute paths
+    files_to_compare_list = [os.path.join(path_to_pqueens, file) for file in files_to_compare_list]
+    folders_to_compare_list = [
+        os.path.join(path_to_pqueens, file) for file in folders_to_compare_list
+    ]
+
+    # Add files from the relevant folders to the list of files
+    for folder in folders_to_compare_list:
+        files_to_compare_list.extend(_get_python_files_in_folder(folder))
+
+    files_changed = False
+    for file in files_to_compare_list:
+        # File path inside the container
+        filepath_in_singularity = '/queens/pqueens/' + file.split("queens/pqueens/")[-1]
+
+        # Compare the queens source files with the ones inside the container
+        command_string = (
+            f"/usr/bin/singularity exec {abs_singularity_image_path} "
+            + "cmp {file} {filepath_in_singularity}"
+        )
+        _, _, stdout, stderr = run_subprocess(command_string)
+
+        # If file is different or missing stop iteration and build the image
+        if stdout or stderr:
+            files_changed = True
+            break
+    return files_changed
+
+
+def _get_python_files_in_folder(relative_path_from_pqueens):
+    """Get list of absolute paths of files in folder.
+
+    Only python files are included.
+
+    Args:
+        relative_path_from_pqueens (str): Relative path to folder from pqueens.
+
+    Returns:
+        file_paths: List of the absolute paths of the python files within the folder.
+    """
+    abs_path = os.path.join(path_to_pqueens, relative_path_from_pqueens)
     elements = os.listdir(abs_path)
     elements.sort()
-    filenames = [
+    file_paths = [
         os.path.join(abs_path, ele) for _, ele in enumerate(elements) if ele.endswith('.py')
     ]
-    for filename in filenames:
-        with open(filename, 'rb') as inputfile:
-            data = inputfile.read()
-            hasher.update(data)
-        hashlist.append(hasher.hexdigest())
+    return file_paths
 
-    # hash mongodb
-    rel_path = "../database/mongodb.py"
-    abs_path = os.path.join(script_dir, rel_path)
-    with open(abs_path, 'rb') as inputfile:
-        data = inputfile.read()
-        hasher.update(data)
-    hashlist.append(hasher.hexdigest())
 
-    # hash utils
-    rel_path = '../utils/injector.py'
-    abs_path = os.path.join(script_dir, rel_path)
-    with open(abs_path, 'rb') as inputfile:
-        data = inputfile.read()
-        hasher.update(data)
-    hashlist.append(hasher.hexdigest())
+def sha1sum(file_path, remote_connect=None):
+    """Hash files using sha1sum.
 
-    rel_path = '../utils/run_subprocess.py'
-    abs_path = os.path.join(script_dir, rel_path)
-    with open(abs_path, 'rb') as inputfile:
-        data = inputfile.read()
-        hasher.update(data)
-    hashlist.append(hasher.hexdigest())
+    Args:
+        file_path (str): Absolute path to the file to hash.
+        remote_connect (str, optional): username@machine in case of remote machines.
 
-    # hash setup_remote
-    rel_path = '../../setup_remote.py'
-    abs_path = os.path.join(script_dir, rel_path)
-    with open(abs_path, 'rb') as inputfile:
-        data = inputfile.read()
-        hasher.update(data)
-    hashlist.append(hasher.hexdigest())
-
-    # hash remote_main
-    rel_path = '../remote_main.py'
-    abs_path = os.path.join(script_dir, rel_path)
-    with open(abs_path, 'rb') as inputfile:
-        data = inputfile.read()
-        hasher.update(data)
-    hashlist.append(hasher.hexdigest())
-
-    # hash postpost files
-    rel_path = '../post_post/post_post.py'
-    abs_path = os.path.join(script_dir, rel_path)
-    with open(abs_path, 'rb') as inputfile:
-        data = inputfile.read()
-        hasher.update(data)
-    hashlist.append(hasher.hexdigest())
-
-    return hashlist
+    Returns:
+        str: the hash of the file
+    """
+    command_string = f"sha1sum {file_path}"
+    if remote_connect:
+        command_string = f"ssh {remote_connect} && " + command_string
+    _, _, output, _ = run_subprocess(
+        command_string,
+        additional_error_message="Was not able to hash the file",
+    )
+    return output.split(" ")[0]
