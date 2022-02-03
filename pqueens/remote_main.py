@@ -15,7 +15,6 @@ from collections import OrderedDict
 
 import pqueens.database.database as DB_module
 from pqueens.drivers.driver import Driver
-from pqueens.utils.manage_singularity import hash_files
 
 try:
     import simplejson as json
@@ -49,11 +48,6 @@ def main(args):
     parser.add_argument("--post", help="option for postprocessing", type=str)
     parser.add_argument("--driver_name", help="name of driver for the current run", type=str)
     parser.add_argument("--workdir", help="working directory", type=str)
-    parser.add_argument(
-        "--hash",
-        help="Boolean that specifies whether the main run should return "
-        "the hash of all copied QUEENS files",
-    )
 
     args = parser.parse_args(args)
     job_id = args.job_id
@@ -65,15 +59,10 @@ def main(args):
 
     driver_obj = None
     try:
-        hash = args.hash
         driver_name = args.driver_name
 
         # return hash of QUEENS files in singularity image
-        if hash == 'true':
-            hashlist = hash_files()
-            print(hashlist)
-
-        elif port == "000":
+        if port == "000":
             try:
                 with open(path_json, 'r') as myfile:
                     config = json.load(myfile, object_pairs_hook=OrderedDict)
