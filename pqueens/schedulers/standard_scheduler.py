@@ -6,7 +6,7 @@ from pqueens.utils.information_output import print_driver_information, print_sch
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.string_extractor_and_checker import check_if_string_in_file
 
-from .scheduler_new import Scheduler
+from .scheduler import Scheduler
 
 
 class StandardScheduler(Scheduler):

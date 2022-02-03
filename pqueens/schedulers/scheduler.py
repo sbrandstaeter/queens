@@ -86,8 +86,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             Scheduler object
         """
         # import here to avoid issues with circular inclusion
-        from .cluster_scheduler_new import ClusterScheduler
-        from .standard_scheduler_new import StandardScheduler
+        from .cluster_scheduler import ClusterScheduler
+        from .standard_scheduler import StandardScheduler
 
         scheduler_dict = {
             'standard': StandardScheduler,
@@ -206,7 +206,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         # TODO we should not create the object here everytime!
         # TODO instead only update the attributes of the instance.
         # TODO we should specify the data base sheet as well
-        print("new new new new d")
         driver_obj = Driver.from_config_create_driver(
             self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
         )

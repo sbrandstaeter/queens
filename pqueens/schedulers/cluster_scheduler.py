@@ -11,7 +11,7 @@ from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
-from .scheduler_new import Scheduler
+from .scheduler import Scheduler
 
 
 class ClusterScheduler(Scheduler):

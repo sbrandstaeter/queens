@@ -10,7 +10,7 @@ import sys
 
 import numpy as np
 
-from pqueens.schedulers.scheduler_new import Scheduler
+from pqueens.schedulers.scheduler import Scheduler
 
 # TODO refactor this method into a class method
 
