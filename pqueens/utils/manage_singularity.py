@@ -480,7 +480,7 @@ def _check_if_files_changed():
         # Compare the queens source files with the ones inside the container
         command_string = (
             f"/usr/bin/singularity exec {abs_singularity_image_path} "
-            + "cmp {file} {filepath_in_singularity}"
+            + f"cmp {file} {filepath_in_singularity}"
         )
         _, _, stdout, stderr = run_subprocess(command_string)
 
