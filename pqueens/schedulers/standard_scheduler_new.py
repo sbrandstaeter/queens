@@ -2,6 +2,7 @@
 import os
 import sys
 
+from pqueens.utils.information_output import print_driver_information, print_scheduling_information
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.string_extractor_and_checker import check_if_string_in_file
 
@@ -100,7 +101,7 @@ class StandardScheduler(Scheduler):
             scheduler_name = "scheduler"
         scheduler_options = config[scheduler_name]
 
-        if not scheduler_options.get("remote", False):
+        if scheduler_options.get("remote", False):
             raise NotImplementedError("Standard scheduler can not be used remotely")
 
         experiment_name = config['global_settings']['experiment_name']
@@ -110,6 +111,15 @@ class StandardScheduler(Scheduler):
         singularity = scheduler_options.get('singularity', False)
         cluster_options = {}
         scheduler_type = scheduler_options["scheduler_type"]
+
+        # TODO move this to a different place
+        # print out scheduling information
+        print_scheduling_information(
+            scheduler_type,
+            False,
+            None,
+            singularity,
+        )
         return cls(
             experiment_name,
             input_file,
@@ -118,7 +128,7 @@ class StandardScheduler(Scheduler):
             driver_name,
             config,
             cluster_options,
-            Singularity,
+            singularity,
             scheduler_type,
         )
 

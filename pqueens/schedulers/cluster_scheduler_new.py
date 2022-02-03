@@ -6,6 +6,7 @@ import sys
 import numpy as np
 
 from pqueens.utils.cluster_utils import get_cluster_job_id
+from pqueens.utils.information_output import print_driver_information, print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
@@ -121,20 +122,28 @@ class ClusterScheduler(Scheduler):
         singularity = scheduler_options.get('singularity', False)
         scheduler_type = scheduler_options["scheduler_type"]
 
-        cluster_options = scheduler_option.get("cluster", {})
+        cluster_options = scheduler_options.get("cluster", {})
+        if scheduler_options.get('remote'):
+            remote = True
+            remote_connect = scheduler_options['remote']['connect']
+        else:
+            remote = False
+            remote_connect = None
 
         if singularity:
-            singularity_input_options = scheduler_options['singularity_settings']
+            singularity_options = scheduler_options['singularity_settings']
             singularity_manager = SingularityManager(
                 remote=remote,
                 remote_connect=remote_connect,
-                singularity_bind=cluster_options['singularity_bind'],
-                singularity_path=cluster_options['singularity_path'],
+                singularity_bind=singularity_options['cluster_bind'],
+                singularity_path=singularity_options['cluster_path'],
                 input_file=input_file,
             )
 
+        # This hurts my brain
         cluster_options['job_name'] = None
-
+        cluster_options['CLUSTERSCRIPT'] = cluster_options.get('script', None)
+        cluster_options['nposttasks'] = scheduler_options.get('num_procs_post', '1')
         num_procs = scheduler_options.get('num_procs', '1')
 
         # set cluster options required specifically for PBS or Slurm
@@ -144,7 +153,7 @@ class ClusterScheduler(Scheduler):
             rel_path = '../utils/jobscript_pbs.sh'
 
             cluster_options['pbs_queue'] = cluster_options.get('pbs_queue', 'batch')
-            ppn = scheduler_options.get('pbs_num_avail_ppn', '16')
+            ppn = scheduler_options.get('pbs_num_avail_ppn', 16)
             if num_procs <= ppn:
                 cluster_options['pbs_nodes'] = '1'
                 cluster_options['pbs_ppn'] = str(num_procs)
@@ -182,12 +191,12 @@ class ClusterScheduler(Scheduler):
         abs_path = os.path.join(script_dir, rel_path)
         cluster_options['jobscript_template'] = abs_path
 
-        if singularity_input_options:
-            singularity_path = singularity_input_options['cluster_path']
+        if singularity_options:
+            singularity_path = singularity_options['cluster_path']
             cluster_options['singularity_path'] = singularity_path
             cluster_options['EXE'] = os.path.join(singularity_path, 'singularity_image.sif')
 
-            cluster_options['singularity_bind'] = singularity_input_options['cluster_bind']
+            cluster_options['singularity_bind'] = singularity_options['cluster_bind']
 
             cluster_options['OUTPUTPREFIX'] = ''
             cluster_options['POSTPROCESSFLAG'] = 'false'
@@ -198,13 +207,14 @@ class ClusterScheduler(Scheduler):
             cluster_options['singularity_bind'] = None
             cluster_options['POSTPOSTPROCESSFLAG'] = 'false'
 
-        if scheduler_options.get('remote'):
-            remote = True
-            remote_connect = scheduler_options['remote']['connect']
-        else:
-            remote = False
-            remote_connect = None
-
+        # TODO move this to a different place
+        # print out scheduling information
+        print_scheduling_information(
+            scheduler_type,
+            remote,
+            remote_connect,
+            singularity,
+        )
         return cls(
             experiment_name,
             input_file,
@@ -217,7 +227,6 @@ class ClusterScheduler(Scheduler):
             scheduler_type,
             singularity_manager,
             remote,
-            port,
             remote_connect,
         )
 
@@ -245,7 +254,6 @@ class ClusterScheduler(Scheduler):
                 )
 
                 self.singularity_manager.copy_temp_json()
-                self.singularity_manager.copy_post_post()
 
     def _submit_singularity(self, job_id, batch, restart):
         """Submit job remotely to Singularity.
@@ -265,11 +273,11 @@ class ClusterScheduler(Scheduler):
                 self.cluster_options['job_name'] = '{}_{}_{}'.format(
                     self.experiment_name, 'queens', job_id
                 )
-                self.cluster_options[
-                    'INPUT'
-                ] = f"--job_id={job_id} --batch={batch} --port={self.port} --path_json="
-                f"{self.cluster_options['singularity_path']} --driver_name={self.driver_name}"
-                f" --workdir"
+                self.cluster_options['INPUT'] = (
+                    f"--job_id={job_id} --batch={batch} --port={self.port} --path_json="
+                    + f"{self.cluster_options['singularity_path']} --driver_name="
+                    + f"{self.driver_name} --workdir"
+                )
 
                 self.cluster_options['DESTDIR'] = os.path.join(
                     str(self.experiment_dir), str(job_id), 'output'
