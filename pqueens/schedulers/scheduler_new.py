@@ -72,15 +72,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.singularity = singularity
         self.process_ids = {}
 
-        # TODO move this to a different place
-        # print out scheduling information
-        print_scheduling_information(
-            scheduler_type,
-            remote,
-            remote_connect,
-            singularity,
-        )
-
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name=None, driver_name=None):
         """Create scheduler from problem configuration.
@@ -95,8 +86,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             Scheduler object
         """
         # import here to avoid issues with circular inclusion
-        from .cluster_scheduler import ClusterScheduler
-        from .standard_scheduler import StandardScheduler
+        from .cluster_scheduler_new import ClusterScheduler
+        from .standard_scheduler_new import StandardScheduler
 
         scheduler_dict = {
             'standard': StandardScheduler,
@@ -215,6 +206,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         # TODO we should not create the object here everytime!
         # TODO instead only update the attributes of the instance.
         # TODO we should specify the data base sheet as well
+        print("new new new new d")
         driver_obj = Driver.from_config_create_driver(
             self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
         )
