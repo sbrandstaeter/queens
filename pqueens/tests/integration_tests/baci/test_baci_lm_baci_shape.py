@@ -14,21 +14,7 @@ import pytest
 
 from pqueens.main import main
 from pqueens.utils import injector
-from pqueens.utils.manage_singularity import hash_files
 from pqueens.utils.run_subprocess import run_subprocess
-
-
-@pytest.fixture(params=[False, True])
-def singularity_bool(request):
-    """Return boolean to run with or without singularity.
-
-    Args:
-        request (SubRequest): true = with singularity; false = without singularity
-
-    Returns:
-        request.param (bool): true = with singularity; false = without singularity
-    """
-    return request.param
 
 
 @pytest.fixture(scope="session")
@@ -110,50 +96,6 @@ def test_baci_lm_shape(
 
     injector.inject(dir_dict, template, input_file)
     arguments = ['--input=' + input_file, '--output=' + str(experiment_directory)]
-
-    if singularity_bool is True:
-        # check existence of local singularity image
-        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../../../../singularity_image.sif'
-        abs_path = os.path.join(script_dir, rel_path)
-        assert os.path.isfile(abs_path), (
-            "No singularity image existent! Please provide an up-to-date "
-            "singularity image for the testing framework. Being in the "
-            "directory `pqueens` you can run the command:\n"
-            "----------------------------------------------------\n"
-            "sudo /usr/bin/singularity build ../singularity_image.sif "
-            "../singularity_recipe.def\n"
-            "----------------------------------------------------\n"
-            "to build a fresh image."
-        )
-
-        # check if hash of singularity image is correct
-        # local hash key
-        hashlist = hash_files()
-        local_hash = ''.join(hashlist)
-
-        # check singularity image hash
-        command_list = ['/usr/bin/singularity', 'run', abs_path, '--hash=true']
-        command_string = ' '.join(command_list)
-        _, _, singularity_hash_list, _ = run_subprocess(
-            command_string, additional_error_message="Singularity hash-check failed!"
-        )
-        singularity_hash = [
-            ele.replace("\'", "") for ele in singularity_hash_list.strip('][').split(', ')
-        ]
-        singularity_hash = [ele.replace("]", "") for ele in singularity_hash]
-        singularity_hash = [ele.replace("\n", "") for ele in singularity_hash]
-        singularity_hash = ''.join(singularity_hash)
-
-        assert local_hash == singularity_hash, (
-            "Local hash key and singularity image hash key "
-            "deviate! Please provide and up-to-date "
-            "singularity image by running:\n"
-            "----------------------------------------------------\n"
-            "sudo /usr/bin/singularity build ../singularity_image.sif "
-            "../singularity_recipe.def\n"
-            "----------------------------------------------------\n"
-        )
 
     main(arguments)
 

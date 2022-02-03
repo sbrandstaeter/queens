@@ -1,3 +1,4 @@
+"Pytest configuration for BACI integration tests."
 import os
 import pathlib
 
@@ -111,3 +112,16 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
             '-------------------------------------------------------------------------\n'
             '...and similar for the other links.'
         )
+
+
+@pytest.fixture(params=[True, False])
+def singularity_bool(request):
+    """Return boolean to run with or without singularity.
+
+    Args:
+        request (SubRequest): true = with singularity; false = without singularity
+
+    Returns:
+        request.param (bool): true = with singularity; false = without singularity
+    """
+    return request.param
