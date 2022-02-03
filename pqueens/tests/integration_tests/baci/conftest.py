@@ -1,4 +1,4 @@
-"Pytest configuration for BACI integration tests."
+"""Pytest configuration for BACI integration tests."""
 import os
 import pathlib
 
