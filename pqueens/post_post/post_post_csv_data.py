@@ -32,7 +32,7 @@ class PostPostCsv(PostPost):
 
     def __init__(
         self,
-        post_file_name_prefix,
+        post_file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -47,9 +47,9 @@ class PostPostCsv(PostPost):
         """Instantiate post post class for csv data.
 
         Args:
-            post_file_name_prefix (str): Prefix of postprocessed file name
-                                         The file prefix can contain regex expression
-                                         and subdirectories.
+            post_file_name_identifier (str): Identifier of postprocessed file name
+                                             The file prefix can contain regex expression
+                                             and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
                                       the post_processed file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
@@ -74,7 +74,7 @@ class PostPostCsv(PostPost):
             Instance of PostPostCsv class
         """
         super(PostPostCsv, self).__init__(
-            post_file_name_prefix,
+            post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -96,7 +96,7 @@ class PostPostCsv(PostPost):
             driver_name (str): Name of driver that is used in this job-submission
         """
         (
-            post_file_name_prefix,
+            post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
         ) = super().from_config_set_base_attributes(config, driver_name)
@@ -155,7 +155,7 @@ class PostPostCsv(PostPost):
                 )
 
         return cls(
-            post_file_name_prefix,
+            post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,

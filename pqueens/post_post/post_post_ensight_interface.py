@@ -27,7 +27,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
 
     def __init__(
         self,
-        post_file_name_prefix,
+        post_file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -40,9 +40,9 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
         """Initialize post_post_ensight_interface class.
 
         Args:
-            post_file_name_prefix (str): Prefix of postprocessed file name.
-                                         The file prefix can contain regex expression
-                                         and subdirectories.
+            post_file_name_identifier (str): Identifier of postprocessed file name.
+                                             The file prefix can contain regex expression
+                                             and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
                                       the post_processed file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
@@ -56,7 +56,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
                                               discrepancy measure is computed.
         """
         super(PostPostEnsightInterfaceDiscrepancy, self).__init__(
-            post_file_name_prefix,
+            post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -76,7 +76,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
             driver_name (str): Name of driver that is used in this job-submission
         """
         (
-            post_file_name_prefix,
+            post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
         ) = super().from_config_set_base_attributes(config, driver_name)
@@ -119,7 +119,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
             )
 
         return cls(
-            post_file_name_prefix,
+            post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,

@@ -14,9 +14,10 @@ class PostPost(metaclass=abc.ABCMeta):
     """Base class for post post processing.
 
     Attributes:
-        post_file_name_prefix (str): Prefix for postprocessed files.
-                                     The file prefix can contain regex expression and
-                                     subdirectories.
+        post_file_name_identifier (str): Identifier for postprocessed files.
+                                         The file prefix can contain BASIC regex expression and
+                                         subdirectories. Examples are wildcards `*` or
+                                         expressions like `[ab]`.
         post_file_path (str): Actual path to the file of interest
         file_options (dict): Dictionary with read-in options for
                                 the post_processed file
@@ -28,7 +29,7 @@ class PostPost(metaclass=abc.ABCMeta):
 
     def __init__(
         self,
-        post_file_name_prefix,
+        post_file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -36,9 +37,9 @@ class PostPost(metaclass=abc.ABCMeta):
         """Init post post class.
 
         Args:
-            post_file_name_prefix (str): Prefix for postprocessed files.
-                                         The file prefix can contain regex expression and
-                                          subdirectories.
+            post_file_name_identifier (str): Identifier for postprocessed files.
+                                             The file prefix can contain regex expression and
+                                            subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
                                       the post_processed file. The respective child class will
                                        implement valid options for this dictionary.
@@ -49,7 +50,7 @@ class PostPost(metaclass=abc.ABCMeta):
         self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
         self.file_options_dict = file_options_dict
         self.driver_name = driver_name
-        self.post_file_name_prefix = post_file_name_prefix
+        self.post_file_name_identifier = post_file_name_identifier
         self.post_file_path = None
         self.post_post_data = np.empty(shape=0)
         self.raw_file_data = None
@@ -109,9 +110,9 @@ class PostPost(metaclass=abc.ABCMeta):
             driver_name (str): Name of driver that is used in this job-submission
 
         Returns:
-            post_file_name_prefix (str): Prefix for postprocessed files.
-                                         The file prefix can contain regex expression and
-                                          subdirectories.
+            post_file_name_identifier (str): Identifier for postprocessed files.
+                                             The file prefix can contain regex expression and
+                                             subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
                                       the post_processed file. The respective child class will
                                        implement valid options for this dictionary.
@@ -122,16 +123,16 @@ class PostPost(metaclass=abc.ABCMeta):
         driver_params = config.get(driver_name)
         post_post_options = driver_params["driver_params"].get('post_post')
 
-        post_file_name_prefix = post_post_options.get('post_file_name_prefix')
-        if not post_file_name_prefix:
+        post_file_name_identifier = post_post_options.get('post_file_name_identifier')
+        if not post_file_name_identifier:
             raise IOError(
-                f"No option 'post_file_name_prefix' was provided in '{driver_name}' driver! "
+                f"No option 'post_file_name_identifier' was provided in '{driver_name}' driver! "
                 "PostPost object cannot be instantiated! Abort..."
             )
-        if not isinstance(post_file_name_prefix, str):
+        if not isinstance(post_file_name_identifier, str):
             raise TypeError(
-                "The option 'post_file_name_prefix' must be of type 'str' "
-                f"but is of type {type(post_file_name_prefix)}. Abort..."
+                "The option 'post_file_name_identifier' must be of type 'str' "
+                f"but is of type {type(post_file_name_identifier)}. Abort..."
             )
 
         file_options_dict = post_post_options.get('file_options_dict')
@@ -153,7 +154,7 @@ class PostPost(metaclass=abc.ABCMeta):
                 f"but is of type {type(files_to_be_deleted_regex_lst)}. Abort..."
             )
 
-        return post_file_name_prefix, file_options_dict, files_to_be_deleted_regex_lst
+        return post_file_name_identifier, file_options_dict, files_to_be_deleted_regex_lst
 
     def get_data_from_post_file(self, base_dir_post_file):
         """Get data of interest from postprocessed file.
@@ -199,8 +200,8 @@ class PostPost(metaclass=abc.ABCMeta):
             post_file_path_regex (str): Path to postprocessed file that still
                                         contains wildcards or regex expressions
         """
-        file_prefix = '*' + self.post_file_name_prefix + '*'
-        post_file_path_regex = os.path.join(base_dir_post_file, file_prefix)
+        file_identifier = '*' + self.post_file_name_identifier + '*'
+        post_file_path_regex = os.path.join(base_dir_post_file, file_identifier)
         return post_file_path_regex
 
     def _check_file_exist_and_is_unique(self, post_file_path_regex):

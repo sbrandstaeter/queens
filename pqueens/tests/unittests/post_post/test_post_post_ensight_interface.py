@@ -21,7 +21,7 @@ def all_dimensions(request):
 @pytest.fixture()
 def default_post_post(mocker):
     """Default ensight class for upcoming tests."""
-    post_file_name_prefix = ('dummy_prefix*dummypostfix',)
+    post_file_name_identifier = ('dummy_prefix*dummypostfix',)
     file_options_dict = {}
     experimental_ref_data = 'dummy'
     displacement_fields = ['first_disp', 'second_disp']
@@ -38,7 +38,7 @@ def default_post_post(mocker):
     )
     # pylint: enable=line-too-long error
     pp = pqueens.post_post.post_post_ensight_interface.PostPostEnsightInterfaceDiscrepancy(
-        post_file_name_prefix,
+        post_file_name_identifier,
         file_options_dict,
         file_to_be_deleted_regex_lst,
         driver_name,
@@ -119,7 +119,7 @@ def vtkUnstructuredGridExample3d():
 @pytest.mark.unit_tests
 def test_init(mocker):
     """Test the init method."""
-    post_file_name_prefix = ('dummy_prefix*dummypostfix',)
+    post_file_name_identifier = ('dummy_prefix*dummypostfix',)
     file_options_dict = {}
     experimental_ref_data = 'dummy'
     displacement_fields = ['first_disp', 'second_disp']
@@ -130,7 +130,7 @@ def test_init(mocker):
     problem_dim = '5d'
 
     my_postpost = PostPostEnsightInterfaceDiscrepancy(
-        post_file_name_prefix,
+        post_file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -150,7 +150,7 @@ def test_init(mocker):
     assert my_postpost.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
     assert my_postpost.file_options_dict == file_options_dict
     assert my_postpost.driver_name == driver_name
-    assert my_postpost.post_file_name_prefix == post_file_name_prefix
+    assert my_postpost.post_file_name_identifier == post_file_name_identifier
     assert my_postpost.post_file_path is None
     np.testing.assert_array_equal(my_postpost.post_post_data, np.empty(shape=0))
     assert my_postpost.raw_file_data is None
@@ -172,7 +172,7 @@ def test_from_config_create_post_post(mocker):
     )
     # pylint: enable=line-too-long error
     driver_name = 'driver'
-    post_file_name_prefix = 'dummyprefix*dummy.case'
+    post_file_name_identifier = 'dummyprefix*dummy.case'
     time_tol = 1e-03
     visualization_bool = False
     displacement_fields = ['first_disp', 'second_disp']
@@ -195,7 +195,7 @@ def test_from_config_create_post_post(mocker):
         'driver': {
             'driver_params': {
                 'post_post': {
-                    'post_file_name_prefix': post_file_name_prefix,
+                    'post_file_name_identifier': post_file_name_identifier,
                     'file_options_dict': file_options_dict,
                 }
             }
@@ -207,7 +207,7 @@ def test_from_config_create_post_post(mocker):
         driver_name,
     )
     mp.assert_called_once_with(
-        post_file_name_prefix,
+        post_file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,

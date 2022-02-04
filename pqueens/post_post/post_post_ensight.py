@@ -41,7 +41,7 @@ class PostPostEnsight(PostPost):
 
     def __init__(
         self,
-        post_file_name_prefix,
+        post_file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -62,9 +62,9 @@ class PostPostEnsight(PostPost):
         """Init method for ensight post-post object.
 
         Args:
-            post_file_name_prefix (str): Prefix of postprocessed file name.
-                                         The file prefix can contain regex expression
-                                         and subdirectories.
+            post_file_name_identifier (str): Identifier of postprocessed file name.
+                                             The file prefix can contain regex expression
+                                             and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
                                       the post_processed file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
@@ -94,7 +94,7 @@ class PostPostEnsight(PostPost):
             Instance of PostPostEnsight class (obj)
         """
         super(PostPostEnsight, self).__init__(
-            post_file_name_prefix,
+            post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -118,7 +118,7 @@ class PostPostEnsight(PostPost):
     def from_config_create_post_post(cls, config, driver_name):
         """Create post_post routine from problem description."""
         (
-            post_file_name_prefix,
+            post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
         ) = super().from_config_set_base_attributes(config, driver_name)
@@ -193,7 +193,7 @@ class PostPostEnsight(PostPost):
         external_geometry_obj = ExternalGeometry.from_config_create_external_geometry(config)
 
         return cls(
-            post_file_name_prefix,
+            post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,

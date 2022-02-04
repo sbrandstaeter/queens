@@ -180,42 +180,26 @@
         ""
       ],
       "post_post": {
-        "post_post_approach_sel": "baci_ensight",
-        "post_post_file_name_prefix_lst": [
-          "scatra"
-        ],
-        "field_specification": {
+        "post_post_approach_sel": "ensight",
+        "post_file_name_identifier": "scatra",
+        "file_options_dict": {
+          "delete_field_data": false,
           "geometric_target": [
-            [
-              "experimental_data"
-            ]
+            "experimental_data"
           ],
           "physical_field_dict": {
-            "vtk_field_type": [
-              "scatra"
-            ],
-            "vtk_array_type": [
-              "point_array"
-            ],
-            "vtk_field_label": [
-              "phi_1"
-            ],
+            "vtk_field_type": "scatra",
+            "vtk_array_type": "point_array",
+            "vtk_field_label": "phi_1",
             "field_components": [
-              [
-                0
-              ]
+              0
             ]
           },
-          "target_time": [
-            [
-              "from_experimental_data"
-            ]
+          "target_time_lst": [
+            "from_experimental_data"
           ],
-          "time_tol": [
-            0.001
-          ]
-        },
-        "delete_field_data": false
+          "time_tol": 0.001
+        }
       }
     }
   },
@@ -232,42 +216,26 @@
         ""
       ],
       "post_post": {
-        "post_post_approach_sel": "baci_ensight",
-        "post_post_file_name_prefix_lst": [
-          "scatra"
-        ],
-        "field_specification": {
+        "post_post_approach_sel": "ensight",
+        "post_file_name_identifier": "scatra",
+        "file_options_dict": {
+          "delete_field_data": false,
           "geometric_target": [
-            [
-              "experimental_data"
-            ]
+            "experimental_data"
           ],
           "physical_field_dict": {
-            "vtk_field_type": [
-              "scatra"
-            ],
-            "vtk_array_type": [
-              "point_array"
-            ],
-            "vtk_field_label": [
-              "phi_1"
-            ],
+            "vtk_field_type": "scatra",
+            "vtk_array_type": "point_array",
+            "vtk_field_label": "phi_1",
             "field_components": [
-              [
-                0
-              ]
+              0
             ]
           },
-          "target_time": [
-            [
-              "from_experimental_data"
-            ]
+          "target_time_lst": [
+            "from_experimental_data"
           ],
-          "time_tol": [
-            0.001
-          ]
-        },
-        "delete_field_data": false
+          "time_tol": 0.001
+        }
       }
     }
   },
@@ -284,42 +252,26 @@
         ""
       ],
       "post_post": {
-        "post_post_approach_sel": "baci_ensight",
-        "post_post_file_name_prefix_lst": [
-          "scatra"
-        ],
-        "field_specification": {
+        "post_post_approach_sel": "ensight",
+        "post_file_name_identifier": "scatra",
+        "file_options_dict": {
+          "delete_field_data": false,
           "geometric_target": [
-            [
-              "experimental_data"
-            ]
+            "experimental_data"
           ],
           "physical_field_dict": {
-            "vtk_field_type": [
-              "scatra"
-            ],
-            "vtk_array_type": [
-              "point_array"
-            ],
-            "vtk_field_label": [
-              "phi_1"
-            ],
+            "vtk_field_type": "scatra",
+            "vtk_array_type": "point_array",
+            "vtk_field_label": "phi_1",
             "field_components": [
-              [
-                0
-              ]
+              0
             ]
           },
-          "target_time": [
-            [
-              "from_experimental_data"
-            ]
+          "target_time_lst": [
+            "from_experimental_data"
           ],
-          "time_tol": [
-            0.001
-          ]
-        },
-        "delete_field_data": false
+          "time_tol": 0.001
+        }
       }
     }
   },
