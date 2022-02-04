@@ -6,7 +6,7 @@ import subprocess
 import time
 from pprint import pprint
 
-from pqueens.utils.run_subprocess import run_subprocess
+from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 
@@ -30,14 +30,21 @@ def create_singularity_image():
         "cd",
         path_to_pqueens,
         "&&",
-        "/usr/bin/singularity build --fakeroot",
+        "/usr/bin/singularity build --force --fakeroot",
         abs_path1,
         abs_path2,
     ]
     command_string = ' '.join(command_list)
-    run_subprocess(
-        command_string, additional_error_message='Build of local singularity image failed!'
-    )
+
+    # Singularity logs to the wrong stream depending on the OS.
+    try:
+        run_subprocess(
+            command_string, additional_error_message='Build of local singularity image failed!'
+        )
+    except SubprocessError as sp_error:
+        # Check if build was successful
+        if sp_error.message.find("INFO:    Build complete:") < 0:
+            raise sp_error
 
     script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
     rel_path = '../../singularity_image.sif'
