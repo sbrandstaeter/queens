@@ -241,7 +241,7 @@ class Driver(metaclass=abc.ABCMeta):
             if base_settings['remote'] and not base_settings['singularity']:
                 raise NotImplementedError(
                     "The combination of 'remote: true' and 'singularity: false' is "
-                    "not implemented! Abort..."
+                    "not implemented in the `scheduler section`! Abort..."
                 )
             elif base_settings['singularity'] and (
                 base_settings['scheduler_type'] == 'pbs'
@@ -405,7 +405,6 @@ class Driver(metaclass=abc.ABCMeta):
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
             # call post-post-processing
-            self.result = None
             self.result = self.postpostprocessor.get_data_from_post_file(self.output_directory)
 
             # print obtained result to screen

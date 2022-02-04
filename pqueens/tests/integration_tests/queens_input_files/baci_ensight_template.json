@@ -48,7 +48,7 @@
       ],
       "post_post": {
         "post_post_approach_sel": "ensight",
-        "post_post_file_name_prefix": "baci_ensight*structure.case",
+        "post_file_name_prefix": "baci_ensight*structure.case",
         "file_options_dict": {
           "delete_field_data": false,
           "geometric_target": [
@@ -64,7 +64,7 @@
               1
             ]
           },
-          "target_time": [
+          "target_time_lst": [
             "last"
           ]
         }

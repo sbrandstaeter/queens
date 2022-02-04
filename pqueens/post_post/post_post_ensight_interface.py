@@ -27,7 +27,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
 
     def __init__(
         self,
-        post_post_file_name_prefix,
+        post_file_name_prefix,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -40,9 +40,9 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
         """Initialize post_post_ensight_interface class.
 
         Args:
-            post_post_file_name_prefix (str): Prefix of postprocessed file name.
-                                              The file prefix can contain regex expression
-                                              and subdirectories.
+            post_file_name_prefix (str): Prefix of postprocessed file name.
+                                         The file prefix can contain regex expression
+                                         and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
                                       the post_processed file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
@@ -56,7 +56,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
                                               discrepancy measure is computed.
         """
         super(PostPostEnsightInterfaceDiscrepancy, self).__init__(
-            post_post_file_name_prefix,
+            post_file_name_prefix,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -68,15 +68,19 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
         self.experimental_ref_data_lst = experimental_reference_data_lst
 
     @classmethod
-    def from_config_create_post_post(
-        cls,
-        driver_name,
-        post_post_file_name_prefix,
-        file_options_dict,
-        files_to_be_deleted_regex_list,
-        _config,
-    ):
-        """Create post_post routine from problem description."""
+    def from_config_create_post_post(cls, config, driver_name):
+        """Create the class from the problem description.
+
+        Args:
+            config (dict): Dictionary with problem description.
+            driver_name (str): Name of driver that is used in this job-submission
+        """
+        (
+            post_file_name_prefix,
+            file_options_dict,
+            files_to_be_deleted_regex_lst,
+        ) = super().from_config_set_base_attributes(config, driver_name)
+
         path_ref_data_str = file_options_dict.get('path_to_ref_data')
         if not path_ref_data_str:
             raise ValueError(
@@ -93,17 +97,34 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
                 f"in the '{driver_name}' driver. Abort ..."
             )
 
-        visualization = file_options_dict.get('visualization', False)
+        visualization_bool = file_options_dict.get('visualization', False)
+        if not isinstance(visualization_bool, bool):
+            raise TypeError(
+                "The option 'visualization_bool' must be of type 'bool' "
+                f"but you provided type {type(visualization_bool)}. Abort..."
+            )
+
         displacement_fields = file_options_dict.get('displacement_fields', 'displacement')
+        if not isinstance(displacement_fields, str):
+            raise TypeError(
+                "The option 'displacement_fields' must be of type 'str' "
+                f"but you provided type {type(displacement_fields)}. Abort..."
+            )
+
         problem_dimension = file_options_dict.get('problem_dimension', '2d')
+        if not isinstance(problem_dimension, str):
+            raise TypeError(
+                "The option 'problem_dimension' must be of type 'str' "
+                f"but you provided type {type(problem_dimension)}. Abort..."
+            )
 
         return cls(
-            post_post_file_name_prefix,
+            post_file_name_prefix,
             file_options_dict,
-            files_to_be_deleted_regex_list,
+            files_to_be_deleted_regex_lst,
             driver_name,
             time_tol,
-            visualization,
+            visualization_bool,
             displacement_fields,
             problem_dimension,
             experimental_reference_data,
@@ -189,7 +210,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
     def _get_raw_data_from_file(self):
         """Read-in EnSight file using vtkGenericEnSightReader."""
         self.raw_file_data = vtk.vtkGenericEnSightReader()
-        self.raw_file_data.SetCaseFileName(self.post_post_file_path)
+        self.raw_file_data.SetCaseFileName(self.post_file_path)
         self.raw_file_data.ReadAllVariablesOn()
         self.raw_file_data.Update()
 

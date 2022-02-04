@@ -86,7 +86,8 @@ class BaciDriver(Driver):
         if base_settings['remote'] and not base_settings['singularity']:
             # make output directory on remote machine
             raise NotImplementedError(
-                "The combination of 'remote: true' and 'singularity: false' is not implemented! "
+                "The combination of 'remote: true' and 'singularity: false' in the "
+                "'scheduler section' is not implemented! "
                 "Abort..."
             )
         else:

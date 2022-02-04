@@ -60,7 +60,7 @@
             ],
             "post_post": {
                 "post_post_approach_sel": "csv",
-                "post_post_file_name_prefix": "QoI",
+                "post_file_name_prefix": "QoI",
                 "file_options_dict": {
                     "delete_field_data": false,
                     "filter_range": [5e-1, 5e-1],
