@@ -238,6 +238,6 @@ class PostPostCsv(PostPost):
             # delete the filter column from the data array
             self.post_post_data = np.delete(post_post_data, self.filter_column, axis=1)
             if not np.any(self.post_post_data):
-                _logger.warning(
+                raise RuntimeError(
                     "The filtered data was empty! Adjust your filter tolerance or filter range!"
                 )

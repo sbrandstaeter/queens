@@ -116,7 +116,12 @@ class PostPostEnsight(PostPost):
 
     @classmethod
     def from_config_create_post_post(cls, config, driver_name):
-        """Create post_post routine from problem description."""
+        """Create post_post routine from problem description.
+
+        Args:
+            config (dict): Dictionary with problem description.
+            driver_name (str): Name of driver that is used in this job-submission
+        """
         (
             post_file_name_identifier,
             file_options_dict,
