@@ -1,4 +1,5 @@
-"""BACI driver."""
+"""Driver for simulation software BACI."""
+
 import json
 import logging
 import os
@@ -49,7 +50,7 @@ class BaciDriver(Driver):
     def from_config_create_driver(cls, base_settings, workdir=None):
         """Create Driver to run BACI from input configuration.
 
-        Also sets up required directories and files.
+        Set up required directories and files.
 
         Args:
             base_settings (dict): dictionary with base settings of parent class
@@ -84,19 +85,11 @@ class BaciDriver(Driver):
         # directory on local machine for remote scheduling without Singularity
         if base_settings['remote'] and not base_settings['singularity']:
             # make output directory on remote machine
-            make_directory_on_remote(
-                base_settings['remote_connect'], base_settings['output_directory']
+            raise NotImplementedError(
+                "The combination of 'remote: true' and 'singularity: false' in the "
+                "'scheduler section' is not implemented! "
+                "Abort..."
             )
-
-            # set path to output directory on local machine
-            local_dest_dir = os.path.join(
-                str(base_settings['global_output_dir']), str(base_settings['job_id'])
-            )
-            base_settings['local_output_dir'] = os.path.join(local_dest_dir, 'output')
-
-            # make "mirror" output directory on local machine, if not already existent
-            if not os.path.isdir(base_settings['local_output_dir']):
-                os.makedirs(base_settings['local_output_dir'])
         else:
             # make output directory on local machine, if not already existent
             if not os.path.isdir(base_settings['output_directory']):

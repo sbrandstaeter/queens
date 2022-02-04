@@ -507,39 +507,6 @@ class SingularityManager:
             additional_error_message="Was not able to copy temporary input file to remote!",
         )
 
-    def copy_post_post(self):
-        """Copy an instance of the post-post module to the remote.
-
-        Load the module dynamically during runtime. This enables fast changes in post-post
-        scripts without the need to rebuild the singularity image.
-
-        Returns:
-            None
-        """
-        abs_dirpath_current_file = os.path.dirname(os.path.abspath(__file__))
-        abs_path_post_post = os.path.join(abs_dirpath_current_file, '../post_post')
-        # delete old files
-        command_list = [
-            "ssh",
-            self.remote_connect,
-            '\'rm -r',
-            self.singularity_path + '/post_post\'',
-        ]
-        command_string = ' '.join(command_list)
-        run_subprocess(command_string, raise_error_on_subprocess_failure=False)
-
-        # copy new files
-        command_list = [
-            "scp -r",
-            abs_path_post_post,
-            self.remote_connect + ':' + self.singularity_path + '/post_post',
-        ]
-        command_string = ' '.join(command_list)
-        run_subprocess(
-            command_string,
-            additional_error_message="Was not able to copy post_post directory to remote!",
-        )
-
 
 def hash_files():
     """Hash all files that are used in the singularity image.
