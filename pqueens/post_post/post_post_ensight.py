@@ -133,12 +133,14 @@ class PostPostEnsight(PostPost):
                 f"type {type(target_time_lst)}. Abort..."
             )
         time_tol = file_options_dict.get('time_tol')
-        if not isinstance(time_tol, float):
-            raise TypeError(
-                "The option 'time_tol' in the post_post settings of the "
-                f"'{driver_name}' driver must be of type 'float' but you provided "
-                f"type {type(time_tol)}. Abort..."
-            )
+        if time_tol:
+            if not isinstance(time_tol, float):
+                raise TypeError(
+                    "The option 'time_tol' in the post_post settings of the "
+                    f"'{driver_name}' driver must be of type 'float' but you provided "
+                    f"type {type(time_tol)}. Abort..."
+                )
+
         vtk_field_label = file_options_dict['physical_field_dict']['vtk_field_label']
         if not isinstance(vtk_field_label, str):
             raise TypeError(
@@ -147,7 +149,7 @@ class PostPostEnsight(PostPost):
                 f"type {type(vtk_field_label)}. Abort..."
             )
         vtk_field_components = file_options_dict['physical_field_dict']['field_components']
-        if not isinstance(vtk_field_label, list):
+        if not isinstance(vtk_field_components, list):
             raise TypeError(
                 "The option 'vtk_field_components' in the post_post settings of the "
                 f"'{driver_name}' driver must be of type 'list' but you provided "
@@ -155,7 +157,7 @@ class PostPostEnsight(PostPost):
             )
 
         vtk_array_type = file_options_dict['physical_field_dict']['vtk_array_type']
-        if not isinstance(vtk_field_label, str):
+        if not isinstance(vtk_array_type, str):
             raise TypeError(
                 "The option 'vtk_array_type' in the post_post settings of the "
                 f"'{driver_name}' driver must be of type 'str' but you provided "
@@ -219,7 +221,7 @@ class PostPostEnsight(PostPost):
                                       physical fields of interest that should be read-in.
             driver_name (str): Name of the associated driver
         """
-        required_keys_lst = ['target_time', 'physical_field_dict', 'geometric_target']
+        required_keys_lst = ['target_time_lst', 'physical_field_dict', 'geometric_target']
         if not set(required_keys_lst).issubset(set(file_options_dict.keys())):
             raise KeyError(
                 "The option 'file_options_dict' within the post_post section of the "
@@ -316,7 +318,7 @@ class PostPostEnsight(PostPost):
         # loop over different time-steps here.
         time_lst = sorted(time_lst)
         for time_value in time_lst:
-            vtk_data_per_time_step = self._vtk_from_ensight(time_value, self.time_tol)
+            vtk_data_per_time_step = self._vtk_from_ensight(time_value)
 
             # check if data was found
             if not vtk_data_per_time_step:
@@ -529,12 +531,11 @@ class PostPostEnsight(PostPost):
 
         return interpolated_data
 
-    def _vtk_from_ensight(self, target_time, time_tol):
+    def _vtk_from_ensight(self, target_time):
         """Load a vtk-object from the ensight file.
 
         Args:
             target_time (float): Time the field should be evaluated on
-            time_tol (float): Tolerance for the target time
 
         Retruns:
             vtk_solution_field (obj)
@@ -553,11 +554,11 @@ class PostPostEnsight(PostPost):
                 else:
                     timestep = time_set.flat[np.abs(time_set - target_time).argmin()]
 
-                    if np.abs(timestep - target_time) > time_tol:
+                    if np.abs(timestep - target_time) > self.time_tol:
                         raise RuntimeError(
                             "Time not within tolerance"
                             f"Target time: {target_time}, selected time: {timestep},"
-                            f"tolerance {time_tol}"
+                            f"tolerance {self.time_tol}"
                         )
                     self.raw_file_data.SetTimeValue(timestep)
 

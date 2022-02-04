@@ -104,10 +104,10 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
                 f"but you provided type {type(visualization_bool)}. Abort..."
             )
 
-        displacement_fields = file_options_dict.get('displacement_fields', 'displacement')
-        if not isinstance(displacement_fields, str):
+        displacement_fields = file_options_dict.get('displacement_fields', ['displacement'])
+        if not isinstance(displacement_fields, list):
             raise TypeError(
-                "The option 'displacement_fields' must be of type 'str' "
+                "The option 'displacement_fields' must be of type 'list' "
                 f"but you provided type {type(displacement_fields)}. Abort..."
             )
 

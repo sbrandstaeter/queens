@@ -166,40 +166,55 @@ def test_from_config_create_post_post(mocker):
         return_value=None,
     )
 
-    mp2 = mocker.patch(
+    mocker.patch(
         'pqueens.post_post.post_post_ensight_interface.PostPostEnsightInterfaceDiscrepancy.read_monitorfile',
         return_value=experimental_ref_data,
     )
     # pylint: enable=line-too-long error
     driver_name = 'driver'
     post_file_name_prefix = 'dummyprefix*dummy.case'
-    file_options_dict = {
-        'time_tol': 1e-03,
-        'visualization': False,
-        'displacement_fields': ['first_disp', 'second_disp'],
-        'delete_field_data': False,
-        'problem_dimension': '5d',
-        'path_to_ref_data': 'some_path',
-    }
+    time_tol = 1e-03
+    visualization_bool = False
+    displacement_fields = ['first_disp', 'second_disp']
+    delete_field_data = False
+    problem_dimension = '5d'
+    path_to_ref_data = 'some_path'
     files_to_be_deleted_regex_lst = []
-    config = {}
+
+    file_options_dict = {
+        'time_tol': time_tol,
+        'visualization_bool': visualization_bool,
+        'displacement_fields': displacement_fields,
+        'delete_field_data': delete_field_data,
+        'problem_dimension': problem_dimension,
+        'path_to_ref_data': path_to_ref_data,
+        'files_to_be_deleted_regex_lst': files_to_be_deleted_regex_lst,
+    }
+
+    config = {
+        'driver': {
+            'driver_params': {
+                'post_post': {
+                    'post_file_name_prefix': post_file_name_prefix,
+                    'file_options_dict': file_options_dict,
+                }
+            }
+        }
+    }
 
     PostPostEnsightInterfaceDiscrepancy.from_config_create_post_post(
-        driver_name,
-        post_file_name_prefix,
-        file_options_dict,
-        files_to_be_deleted_regex_lst,
         config,
+        driver_name,
     )
     mp.assert_called_once_with(
         post_file_name_prefix,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
-        1e-3,
-        False,
-        ['first_disp', 'second_disp'],
-        '5d',
+        time_tol,
+        delete_field_data,
+        displacement_fields,
+        problem_dimension,
         experimental_ref_data,
     )
 
