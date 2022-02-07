@@ -210,7 +210,6 @@ class BaciDriver(Driver):
         job_id,
         batch,
         driver_name,
-        abs_path=None,
         workdir=None,
         cluster_options=None,
     ):
@@ -222,7 +221,6 @@ class BaciDriver(Driver):
             config (dict):  Dictionary containing configuration from QUEENS input file
             job_id (int):   Job ID as provided in database within range [1, n_jobs]
             batch (int):    Job batch number (multiple batches possible)
-            abs_path (str): Absolute path to post-post module on remote resource
             workdir (str):  Path to working directory on remote resource
             driver_name (str): Name of driver instance that should be realized
 

@@ -131,7 +131,6 @@ class Driver(metaclass=abc.ABCMeta):
             job_id,
             batch,
             driver_name,
-            abs_path,
             workdir,
             cluster_options,
         )
