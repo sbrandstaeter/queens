@@ -29,7 +29,7 @@ def create_singularity_image():
     command_list = [
         "cd",
         path_to_pqueens,
-        "&&",
+        "&& unset SINGULARITY_BIND &&",
         "/usr/bin/singularity build --force --fakeroot",
         abs_path1,
         abs_path2,
