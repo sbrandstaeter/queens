@@ -1,4 +1,5 @@
-"""BACI driver."""
+"""Driver for simulation software BACI."""
+
 import json
 import logging
 import os
@@ -215,7 +216,7 @@ class BaciDriver(Driver):
     ):
         """Create Driver to run BACI from input configuration.
 
-        Also sets up required directories and files.
+        Set up required directories and files.
 
         Args:
             config (dict):  Dictionary containing configuration from QUEENS input file
@@ -306,7 +307,9 @@ class BaciDriver(Driver):
 
         if remote and not singularity:
             raise NotImplementedError(
-                "Native remote runs not possible, singularity must be used in this cases."
+                "The combination of 'remote: true' and 'singularity: false' in the "
+                "'scheduler section' is not implemented! "
+                "Abort..."
             )
         else:
             if not os.path.isdir(output_directory):

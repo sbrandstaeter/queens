@@ -98,7 +98,7 @@ def get_options(args):
 
     args = parser.parse_args(args)
 
-    # if no options are provided print a greeding message
+    # if no options are provided print a greeting message
     if args.input is None and args.output_dir is None:
         ascii_art.print_centered_multiline("Welcome to the royal family!")
         print("\nTo use QUEENS run:\n")

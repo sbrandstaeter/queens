@@ -1,6 +1,9 @@
 """QUEENS driver module base class."""
 import abc
+import logging
 import time
+
+_logger = logging.getLogger(__name__)
 
 
 class Driver(metaclass=abc.ABCMeta):
@@ -96,7 +99,6 @@ class Driver(metaclass=abc.ABCMeta):
         job_id,
         batch,
         driver_name,
-        abs_path=None,
         workdir=None,
         cluster_options=None,
     ):
@@ -106,7 +108,6 @@ class Driver(metaclass=abc.ABCMeta):
             config (dict):  Dictionary containing configuration from QUEENS input file
             job_id (int):   Job ID as provided in database within range [1, n_jobs]
             batch (int):    Job batch number (multiple batches possible)
-            abs_path (str): Absolute path to post-post module on remote resource
             workdir (str):  Path to working directory on remote resource
             driver_name (str): Name of driver instance that should be realized
 
@@ -206,7 +207,10 @@ class Driver(metaclass=abc.ABCMeta):
         )
 
     def postpostprocessing(self):
-        """Do postpost-processing if required."""
+        """Extract data of interest from post-processed file.
+
+        Afterwards save them to the database.
+        """
         # load job from database if existent
         if self.job is None:
             self.job = self.database.load(
@@ -215,24 +219,12 @@ class Driver(metaclass=abc.ABCMeta):
                 'jobs_' + self.driver_name,
                 {'id': self.job_id},
             )
-
-        # Remains from not singularity and remote
-        pp_local_output_dir = self.output_directory
-        pp_remote_output_dir = None
-        remote_connect = None
-
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
-            # set security duplicate in case post_post did not catch an error
-            self.result = None
-
             # call post-post-processing
-            self.result = self.postpostprocessor.postpost_main(
-                pp_local_output_dir, remote_connect, pp_remote_output_dir
-            )
+            self.result = self.postpostprocessor.get_data_from_post_file(self.output_directory)
 
-            # print obtained result to screen
-            print("Got result %s\n" % (self.result))
+            _logger.info(f"Got result: {self.result}")
 
     def finalize_job_in_db(self):
         """Finalize job in database."""
@@ -258,9 +250,9 @@ class Driver(metaclass=abc.ABCMeta):
             if self.job['start time'] and not self.direct_scheduling:
                 self.job['end time'] = time.time()
                 computing_time = self.job['end time'] - self.job['start time']
-                print(
-                    'Successfully completed job {:d} (No. of proc.: {:d}, '
-                    'computing time: {:08.2f} s).\n'.format(
+                _logger.info(
+                    "Successfully completed job {:d} (No. of proc.: {:d}, "
+                    "computing time: {:08.2f} s).\n".format(
                         self.job_id, self.num_procs, computing_time
                     )
                 )
