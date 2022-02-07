@@ -4,17 +4,18 @@ import logging
 import os
 import pathlib
 
+import pqueens.database.database as DB_module
 from pqueens.drivers.driver import Driver
+from pqueens.external_geometry.external_geometry import ExternalGeometry
+from pqueens.post_post.post_post import PostPost
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,
 )
 from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.injector import inject
 from pqueens.utils.numpy_array_encoder import NumpyArrayEncoder
-from pqueens.utils.remote_operations import make_directory_on_remote
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
-from pqueens.utils.string_extractor_and_checker import extract_string_from_output
 
 _logger = logging.getLogger(__name__)
 
@@ -23,101 +24,356 @@ class BaciDriver(Driver):
     """Driver to run BACI.
 
     Attributes:
-        workdir (str): Path to the working directory of QUEENS experiment
-        external_geometry_obj (obj): Object instance of external external_geometry_obj definition
-        random_fields_lst (lst): List of descriptions of random fields
-        random_fields_realized_lst (lst): List containing one realization of potentially several
-                                          random fields
+        batch (int):               Current batch of driver calls.
+        direct_scheduling(bool):   flag for direct scheduling
+        do_postprocessing (str):   string for identifying either local post-processing
+                                   ('local') or remote post-processing ('remote') or 'None'
+        driver_name (str):         Name of the driver used for the analysis. The name is
+                                   specified in the json-input file.
+        experiment_dir (str):      path to QUEENS experiment directory
+        experiment_name (str):     name of QUEENS experiment
+        job (dict):                dictionary containing description of current job
+        job_id (int):              job ID as provided in database within range [1, n_jobs]
+        num_procs (int):           number of processors for processing
+        output_directory (str):    path to output directory (on remote computing resource for
+                                   remote scheduling)
+        remote (bool):             flag for remote scheduling
+        remote connect (str):      (only for remote scheduling) adress of remote
+                                   computing resource
+        result (np.array):         simulation result to be stored in database
+        singularity (bool):        flag for use of Singularity containers
+        database (obj):            database object
+        cae_output_streaming (bool): flag for additional streaming to given stream
+        cluster_options (str):     (only for cluster schedulers Slurm and PBS) cluster options
+        log_file (str):            path to log file
+        error_file (str):          path to error file
+        executable (str):          path to main executable of respective CAE software
+        external_geometry_obj (obj): External geometry object
+        global_output_dir (str):   path to global output directory provided when launching
+        input_file (str):          path to input file
+        log_file (str):            path to log file
+        num_procs_post (int):      number of processors for post-processing
+        output_file (str):         path to output file
+        output_prefix (str):       output prefix
+        post_file_name_prefix_lst (lst): List with unique prefix sequence to name the
+                                         post-processed files by the post-processor
+        post_options (list):       (only for post-processing) list containing settings/options
+                                   for post-processing
+        postprocessor (str):       (only for post-processing) path to postprocessor of
+                                   respective CAE software
+        random_fields_lst (lst):   List of random fields
+        remote_python_cmd (str):   path to python-bin on the remote resource
+        scheduler_type (str):      type of scheduler chosen in QUEENS input file
+        workdir (str):             path to working directory
+        do_postpostprocessing (bool): Boolean if postpost-processing should be done
+        postpostprocessor (obj):   instance of post-post class
+        pid (int):                 unique process ID for subprocess
+        random_fields_realized_lst (lst): List of random field realizations.
     """
 
-    def __init__(self, base_settings, workdir, external_geometry_obj, random_fields_lst):
+    def __init__(
+        self,
+        batch,
+        direct_scheduling,
+        do_postprocessing,
+        driver_name,
+        experiment_dir,
+        experiment_name,
+        job,
+        job_id,
+        num_procs,
+        output_directory,
+        remote,
+        remote_connect,
+        result,
+        singularity,
+        database,
+        cae_output_streaming,
+        cluster_options,
+        control_file,
+        error_file,
+        executable,
+        external_geometry_obj,
+        global_output_dir,
+        input_file,
+        log_file,
+        num_procs_post,
+        output_file,
+        output_prefix,
+        post_file_name_prefix_lst,
+        post_options,
+        postprocessor,
+        random_fields_lst,
+        remote_python_cmd,
+        scheduler_type,
+        simulation_input_template,
+        workdir,
+        do_postpostprocessing,
+        postpostprocessor,
+    ):
         """Initialize BaciDriver object.
 
         Args:
-            base_settings (dict): Base settings
-            workdir (str): Work directory
+            batch (int):               Current batch of driver calls.
+            direct_scheduling(bool):   flag for direct scheduling
+            do_postprocessing (str):   string for identifying either local post-processing
+                                       ('local') or remote post-processing ('remote') or 'None'
+            driver_name (str):         Name of the driver used for the analysis. The name is
+                                       specified in the json-input file.
+            experiment_dir (str):      path to QUEENS experiment directory
+            experiment_name (str):     name of QUEENS experiment
+            job (dict):                dictionary containing description of current job
+            job_id (int):              job ID as provided in database within range [1, n_jobs]
+            num_procs (int):           number of processors for processing
+            output_directory (str):    path to output directory (on remote computing resource for
+                                       remote scheduling)
+            remote (bool):             flag for remote scheduling
+            remote_connect (str):      (only for remote scheduling) adress of remote
+                                       computing resource
+            result (np.array):         simulation result to be stored in database
+            singularity (bool):        flag for use of Singularity containers
+            database (obj):            database object
+            cae_output_streaming (bool): flag for additional streaming to given stream
+            cluster_options (str):     (only for cluster schedulers Slurm and PBS) cluster options
+            control_file(str):         Baci control file
+            log_file (str):            path to log file
+            error_file (str):          path to error file
+            executable (str):          path to main executable of respective CAE software
             external_geometry_obj (obj): External geometry object
-            random_fields_lst (lst): List of random fields
+            global_output_dir (str):   path to global output directory provided when launching
+            input_file (str):          path to input file
+            log_file (str):            path to log file
+            num_procs_post (int):      number of processors for post-processing
+            output_file (str):         path to output file
+            output_prefix (str):       output prefix
+            post_file_name_prefix_lst (lst): List with unique prefix sequence to name the
+                                             post-processed files by the post-processor
+            post_options (list):       (only for post-processing) list containing settings/options
+                                       for post-processing
+            postprocessor (str):       (only for post-processing) path to postprocessor of
+                                       respective CAE software
+            random_fields_lst (lst):   List of random fields
+            remote_python_cmd (str):   path to python-bin on the remote resource
+            scheduler_type (str):      type of scheduler chosen in QUEENS input file
+            simulation_input_template (str): path to BACI input template
+            workdir (str):             path to working directory
+            do_postpostprocessing (bool): Boolean if postpost-processing should be done
+            postpostprocessor (obj):   instance of post-post class
         """
-        super(BaciDriver, self).__init__(base_settings)
-        self.workdir = workdir
+        super().__init__(
+            batch,
+            direct_scheduling,
+            do_postprocessing,
+            driver_name,
+            experiment_dir,
+            experiment_name,
+            job,
+            job_id,
+            num_procs,
+            output_directory,
+            remote,
+            remote_connect,
+            result,
+            singularity,
+            database,
+        )
+        self.cae_output_streaming = cae_output_streaming
+        self.cluster_options = cluster_options
+        self.control_file = control_file
+        self.error_file = error_file
+        self.executable = executable
         self.external_geometry_obj = external_geometry_obj
+        self.global_output_dir = global_output_dir
+        self.input_file = input_file
+        self.log_file = log_file
+        self.num_procs_post = num_procs_post
+        self.output_file = output_file
+        self.output_prefix = output_prefix
+        self.pid = None
+        self.post_file_name_prefix_lst = post_file_name_prefix_lst
+        self.post_options = post_options
+        self.postprocessor = postprocessor
         self.random_fields_lst = random_fields_lst
         self.random_fields_realized_lst = []
+        self.remote_python_cmd = remote_python_cmd
+        self.scheduler_type = scheduler_type
+        self.simulation_input_template = simulation_input_template
+        self.workdir = workdir
+        self.do_postpostprocessing = do_postpostprocessing
+        self.postpostprocessor = postpostprocessor
 
     @classmethod
-    def from_config_create_driver(cls, base_settings, workdir=None):
+    def from_config_create_driver(
+        cls,
+        config,
+        job_id,
+        batch,
+        driver_name,
+        abs_path=None,
+        workdir=None,
+        cluster_options=None,
+    ):
         """Create Driver to run BACI from input configuration.
 
         Also sets up required directories and files.
 
         Args:
-            base_settings (dict): dictionary with base settings of parent class
-                                  (depreciated: will be removed soon)
-            workdir (str): path to working directory
+            config (dict):  Dictionary containing configuration from QUEENS input file
+            job_id (int):   Job ID as provided in database within range [1, n_jobs]
+            batch (int):    Job batch number (multiple batches possible)
+            abs_path (str): Absolute path to post-post module on remote resource
+            workdir (str):  Path to working directory on remote resource
+            driver_name (str): Name of driver instance that should be realized
 
         Returns:
             BaciDriver (obj): instance of BaciDriver class
         """
-        # potentially create an external external_geometry_obj object for dat-file manipulation
-        external_geometry_obj = base_settings["external_geometry_obj"]
+        experiment_name = config['global_settings'].get('experiment_name')
+        global_output_dir = config['global_settings'].get('output_dir')
 
-        # get list of random field tuples: name, type
-        random_fields_lst = base_settings["random_fields_lst"]
-
-        # set destination directory and output prefix
-        dest_dir = os.path.join(str(base_settings['experiment_dir']), str(base_settings['job_id']))
-        base_settings['output_prefix'] = (
-            str(base_settings['experiment_name']) + '_' + str(base_settings['job_id'])
-        )
-
-        # set path to input file
-        file_extension_obj = pathlib.PurePosixPath(base_settings['simulation_input_template'])
-        input_file_str = base_settings['output_prefix'] + file_extension_obj.suffix
-
-        base_settings['input_file'] = os.path.join(dest_dir, input_file_str)
-
-        # set path to output directory (either on local or remote machine)
-        base_settings['output_directory'] = os.path.join(dest_dir, 'output')
-
-        # make (actual) output directory on remote machine as well as "mirror" output
-        # directory on local machine for remote scheduling without Singularity
-        if base_settings['remote'] and not base_settings['singularity']:
-            # make output directory on remote machine
-            make_directory_on_remote(
-                base_settings['remote_connect'], base_settings['output_directory']
-            )
-
-            # set path to output directory on local machine
-            local_dest_dir = os.path.join(
-                str(base_settings['global_output_dir']), str(base_settings['job_id'])
-            )
-            base_settings['local_output_dir'] = os.path.join(local_dest_dir, 'output')
-
-            # make "mirror" output directory on local machine, if not already existent
-            if not os.path.isdir(base_settings['local_output_dir']):
-                os.makedirs(base_settings['local_output_dir'])
+        first = list(config['resources'])[0]
+        scheduler_name = config['resources'][first]['scheduler']
+        scheduler_options = config[scheduler_name]
+        scheduler_type = scheduler_options['scheduler_type']
+        experiment_dir = scheduler_options['experiment_dir']
+        num_procs = scheduler_options.get('num_procs', '1')
+        num_procs_post = scheduler_options.get('num_procs_post', '1')
+        if scheduler_options.get('remote', False):
+            remote = True
+            remote_options = scheduler_options['remote']
+            remote_connect = remote_options['connect']
+            remote_python_cmd = remote_options.get('python_cmd', 'python')
         else:
-            # make output directory on local machine, if not already existent
-            if not os.path.isdir(base_settings['output_directory']):
-                os.makedirs(base_settings['output_directory'])
+            remote = False
+            remote_connect = None
+            remote_python_cmd = None
+        singularity = scheduler_options.get('singularity', False)
 
-        # generate path to output files in general as well as control, log and error file
-        base_settings['output_file'] = os.path.join(
-            base_settings['output_directory'], base_settings['output_prefix']
-        )
-        control_file_str = base_settings['output_prefix'] + '.control'
-        base_settings['control_file'] = os.path.join(
-            base_settings['output_directory'], control_file_str
-        )
-        log_file_str = base_settings['output_prefix'] + '.log'
-        base_settings['log_file'] = os.path.join(base_settings['output_directory'], log_file_str)
-        error_file_str = base_settings['output_prefix'] + '.err'
-        base_settings['error_file'] = os.path.join(
-            base_settings['output_directory'], error_file_str
-        )
+        direct_scheduling = False
+        if not singularity:
+            if scheduler_type in ['pbs', 'slurm']:
+                direct_scheduling = True
 
-        return cls(base_settings, workdir, external_geometry_obj, random_fields_lst)
+        # get cluster options if required
+        if not scheduler_type in ['pbs', 'slurm']:
+            cluster_options = None
+
+        database = DB_module.database
+
+        driver_options = config[driver_name]['driver_params']
+        job = None
+        result = None
+        simulation_input_template = driver_options.get('input_template', None)
+        executable = driver_options['path_to_executable']
+
+        postprocessor = driver_options.get('path_to_postprocessor', None)
+        if postprocessor:
+            post_file_name_prefix_lst = driver_options.get('post_file_name_prefix_lst', None)
+            post_options = driver_options.get('post_process_options', None)
+        else:
+            post_file_name_prefix_lst = None
+            post_options = None
+
+        if postprocessor and ((not direct_scheduling) or post_options):
+            if remote and not singularity:
+                raise NotImplementedError(
+                    "Remote computations without singularity is not implemented"
+                )
+            elif singularity and (scheduler_type in ['pbs', 'slurm']):
+                do_postprocessing = 'cluster_sing'
+            else:
+                do_postprocessing = 'local'
+        else:
+            do_postprocessing = None
+
+        do_postpostprocessing = driver_options.get('post_post', None)
+        if do_postpostprocessing:
+            postpostprocessor = PostPost.from_config_create_post_post(
+                config, driver_name=driver_name
+            )
+            cae_output_streaming = False
+        else:
+            postpostprocessor = None
+            cae_output_streaming = True
+
+        dest_dir = os.path.join(experiment_dir, str(job_id))
+        output_directory = os.path.join(dest_dir, 'output')
+        output_prefix = experiment_name + '_' + str(job_id)
+        output_file = os.path.join(output_directory, output_prefix)
+        file_extension_obj = pathlib.PurePosixPath(simulation_input_template)
+        input_file_str = output_prefix + file_extension_obj.suffix
+        input_file = os.path.join(dest_dir, input_file_str)
+
+        if remote and not singularity:
+            raise NotImplementedError(
+                "Native remote runs not possible, singularity must be used in this cases."
+            )
+        else:
+            if not os.path.isdir(output_directory):
+                os.makedirs(output_directory)
+
+        control_file_str = output_prefix + '.control'
+        control_file = os.path.join(output_directory, control_file_str)
+        log_file_str = output_prefix + '.log'
+        log_file = os.path.join(output_directory, log_file_str)
+        error_file_str = output_prefix + '.err'
+        error_file = os.path.join(output_directory, error_file_str)
+
+        if config.get('external_geometry', None):
+            external_geometry_obj = ExternalGeometry.from_config_create_external_geometry(config)
+        else:
+            external_geometry_obj = None
+
+        model_name = config['method']['method_options'].get('model')
+        parameter_name = config[model_name].get('parameters')
+
+        random_fields_lst = None
+        if parameter_name:
+            random_fields = config[parameter_name].get("random_fields")
+            if random_fields:
+                random_fields_lst = [
+                    (name, value['external_definition']) for name, value in random_fields.items()
+                ]
+
+        return cls(
+            batch,
+            direct_scheduling,
+            do_postprocessing,
+            driver_name,
+            experiment_dir,
+            experiment_name,
+            job,
+            job_id,
+            num_procs,
+            output_directory,
+            remote,
+            remote_connect,
+            result,
+            singularity,
+            database,
+            cae_output_streaming,
+            cluster_options,
+            control_file,
+            error_file,
+            executable,
+            external_geometry_obj,
+            global_output_dir,
+            input_file,
+            log_file,
+            num_procs_post,
+            output_file,
+            output_prefix,
+            post_file_name_prefix_lst,
+            post_options,
+            postprocessor,
+            random_fields_lst,
+            remote_python_cmd,
+            scheduler_type,
+            simulation_input_template,
+            workdir,
+            do_postpostprocessing,
+            postpostprocessor,
+        )
 
     # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
     def prepare_input_files(self):
@@ -187,8 +443,8 @@ class BaciDriver(Driver):
         target_file_opt_core = '--output=' + self.output_directory
 
         if self.post_options:
-            for num, (option, target_file_prefix) in enumerate(
-                zip(self.post_options, self.post_file_name_prefix_lst)
+            for option, target_file_prefix in zip(
+                self.post_options, self.post_file_name_prefix_lst
             ):
                 # set extension of target file opt and final target file opt
                 target_file_opt = os.path.join(target_file_opt_core, target_file_prefix)
@@ -281,7 +537,7 @@ class BaciDriver(Driver):
         Returns:
             None
         """
-        if (self.external_geometry_obj is not None) and self.random_fields_lst:
+        if self.external_geometry_obj and self.random_fields_lst:
             # TODO currently we have to perform the main run here a second time
             # TODO this is not optimal and should be changed but ok for now
             self.external_geometry_obj.main_run()
@@ -311,7 +567,7 @@ class BaciDriver(Driver):
             None
         """
         # set also new name for copied dat-file
-        if self.random_fields_lst is not None:
+        if self.random_fields_lst:
             self.simulation_input_template = self.external_geometry_obj.write_random_fields_to_dat(
                 self.random_fields_realized_lst, self.job_id
             )
@@ -495,7 +751,7 @@ class BaciDriver(Driver):
         self.cluster_options['EXE'] = self.executable
         self.cluster_options['INPUT'] = self.input_file
         self.cluster_options['OUTPUTPREFIX'] = self.output_prefix
-        if self.postprocessor is not None:
+        if self.postprocessor:
             self.cluster_options['POSTPROCESSFLAG'] = 'true'
             self.cluster_options['POSTEXE'] = self.postprocessor
         else:

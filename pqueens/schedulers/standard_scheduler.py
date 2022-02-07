@@ -1,12 +1,15 @@
 """Standard scheduler for QUEENS runs."""
+import logging
 import os
-import sys
 
 from pqueens.utils.information_output import print_driver_information, print_scheduling_information
+from pqueens.utils.manage_singularity import _check_if_new_image_needed, create_singularity_image
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.string_extractor_and_checker import check_if_string_in_file
 
 from .scheduler import Scheduler
+
+_logger = logging.getLogger(__name__)
 
 
 class StandardScheduler(Scheduler):
@@ -109,6 +112,10 @@ class StandardScheduler(Scheduler):
         input_file = config["input_file"]
         restart = config.get("restart", False)
         singularity = scheduler_options.get('singularity', False)
+        if singularity:
+            if _check_if_new_image_needed():
+                _logger.info("Local singularity image is outdated/missing, building a new one!")
+                create_singularity_image()
         cluster_options = {}
         scheduler_type = scheduler_options["scheduler_type"]
 
