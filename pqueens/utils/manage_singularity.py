@@ -15,11 +15,7 @@ abs_singularity_image_path = os.path.join(path_to_queens, "singularity_image.sif
 
 
 def create_singularity_image():
-    """Create pre-designed singularity image for cluster applications.
-
-    Returns:
-         None
-    """
+    """Create pre-designed singularity image for cluster applications."""
     # create the actual image
     command_string = '/usr/bin/singularity --version'
     run_subprocess(command_string, additional_error_message='Singularity could not be executed!')
@@ -74,11 +70,9 @@ class SingularityManager:
         """Check and establish system variables for the singularity image.
 
         Examples are directory bindings such that certain directories of
-        the host can be accessed on runtime within the singularity image. Other
-        system variables include path and environment variables.
-
-        Returns:
-            None
+        the host can be accessed on runtime within the singularity
+        image. Other system variables include path and environment
+        variables.
         """
         # Check if SINGULARITY_BIND exists and if not write it to .bashrc file
         if self.remote:
