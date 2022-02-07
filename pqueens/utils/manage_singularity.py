@@ -30,7 +30,7 @@ def create_singularity_image():
     command_list = [
         "cd",
         path_to_queens,
-        "&& export SINGULARITY_BIND=/opt:/opt/ &&",
+        "&& unset SINGULARITY_BIND &&",
         "/usr/bin/singularity build --force --fakeroot",
         abs_singularity_image_path,
         abs_definition_path,
@@ -444,7 +444,7 @@ def _check_if_new_image_needed():
     if os.path.exists(abs_singularity_image_path):
         return _check_if_files_changed()
     else:
-        return False
+        return True
 
 
 def _check_if_files_changed():

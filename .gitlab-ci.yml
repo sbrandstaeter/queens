@@ -111,11 +111,8 @@ remove_conda_env_and_singularity_image:
 build_singularity:
   stage: build
   script:
-    - cd pqueens/
-    - /usr/bin/singularity --version
-    - /usr/bin/singularity build --fakeroot ../singularity_image.sif ../singularity_recipe.def
-    - du -sh ../singularity_image.sif
-    - mv ../singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
+    - /usr/bin/singularity build --fakeroot singularity_image.sif singularity_recipe.def
+    - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
   only:
     variables:
       - $CENTOS_TESTS == "1"
