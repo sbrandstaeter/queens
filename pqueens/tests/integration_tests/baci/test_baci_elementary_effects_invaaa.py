@@ -1,5 +1,8 @@
-"""Test suite for integration tests for the Morris-Salib Iterator (Elementary
-Effects) for local simulations with BACI using the INVAAA minimal model."""
+"""Test suite for integration tests for the Morris-Salib Iterator.
+
+Estimate Elementary Effects for local simulations with BACI using the
+INVAAA minimal model.
+"""
 
 import json
 import os
@@ -16,13 +19,22 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 @pytest.fixture(params=[True, False])
 def singularity_bool(request):
+    """Return boolean to run with or without singularity.
+
+    Args:
+        request (SubRequest): true = with singularity; false = without singularity
+
+    Returns:
+        request.param (bool): true = with singularity; false = without singularity
+    """
     return request.param
 
 
 @pytest.fixture(scope="session")
 def output_directory_forward(tmpdir_factory):
-    """Create two temporary output directories for test runs with singularity
-    (<...>_true) and without singularity (<...>_false)
+    """Create two temporary output directories for test runs with singularity.
+
+    with singularity (<...>_true) and without singularity (<...>_false)
 
     Args:
         tmpdir_factory: fixture used to create arbitrary temporary directories
@@ -78,7 +90,7 @@ def count_subdirectories(current_directory):
 def remove_job_output_directory(experiment_directory, jobid):
     """Remove output directory of job #jobid from experiment_directory."""
     rm_cmd = "rm -r " + str(experiment_directory) + "/" + str(jobid)
-    _, _, _, stderr = run_subprocess(rm_cmd)
+    run_subprocess(rm_cmd)
 
 
 @pytest.mark.integration_tests_baci
@@ -86,6 +98,7 @@ def test_baci_elementary_effects(
     inputdir, third_party_inputs, baci_link_paths, singularity_bool, experiment_directory
 ):
     """Integration test for the Elementary Effects Iterator together with BACI.
+
     The test runs a local native BACI simulation as well as a local Singularity
     based BACI simulation for elementary effects.
 
@@ -121,15 +134,15 @@ def test_baci_elementary_effects(
     if singularity_bool is True:
         # check existence of local singularity image
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../../../../driver.simg'
+        rel_path = '../../../../singularity_image.sif'
         abs_path = os.path.join(script_dir, rel_path)
         assert os.path.isfile(abs_path), (
             "No singularity image existent! Please provide an up-to-date "
             "singularity image for the testing framework. Being in the "
             "directory `pqueens` you can run the command:\n"
             "----------------------------------------------------\n"
-            "sudo /usr/bin/singularity build ../driver.simg "
-            "../singularity_recipe\n"
+            "sudo /usr/bin/singularity build ../singularity_image.sif "
+            "../singularity_recipe.def\n"
             "----------------------------------------------------\n"
             "to build a fresh image."
         )
@@ -142,25 +155,24 @@ def test_baci_elementary_effects(
         # check singularity image hash
         command_list = ['/usr/bin/singularity', 'run', abs_path, '--hash=true']
         command_string = ' '.join(command_list)
-        _, _, singularity_hash_list, stderr = run_subprocess(command_string)
+        _, _, singularity_hash_list, _ = run_subprocess(
+            command_string, additional_error_message="Singularity hash-check failed!"
+        )
 
-        if stderr:
-            raise RuntimeError(f'Singularity hash-check return the error: {stderr}. Abort...')
-        else:
-            singularity_hash = [
-                ele.replace("\'", "") for ele in singularity_hash_list.strip('][').split(', ')
-            ]
-            singularity_hash = [ele.replace("]", "") for ele in singularity_hash]
-            singularity_hash = [ele.replace("\n", "") for ele in singularity_hash]
-            singularity_hash = ''.join(singularity_hash)
+        singularity_hash = [
+            ele.replace("\'", "") for ele in singularity_hash_list.strip('][').split(', ')
+        ]
+        singularity_hash = [ele.replace("]", "") for ele in singularity_hash]
+        singularity_hash = [ele.replace("\n", "") for ele in singularity_hash]
+        singularity_hash = ''.join(singularity_hash)
 
         assert local_hash == singularity_hash, (
             "Local hash key and singularity image hash key "
             "deviate! Please provide and up-to-date "
             "singularity image by running:\n"
             "----------------------------------------------------\n"
-            "sudo /usr/bin/singularity build ../driver.simg "
-            "../singularity_recipe\n"
+            "sudo /usr/bin/singularity build ../singularity_image.sif "
+            "../singularity_recipe.def\n"
             "----------------------------------------------------\n"
         )
 
@@ -186,6 +198,7 @@ def test_baci_elementary_effects(
     )
 
 
+@pytest.mark.integration_tests_baci
 def test_restart_from_output_folders_baci(
     inputdir,
     tmpdir,
@@ -195,8 +208,9 @@ def test_restart_from_output_folders_baci(
     experiment_directory,
     check_experiment_directory,
 ):
-    """Integration test for the restart functionality for restart from results
-    in output folders.
+    """Integration test for the restart functionality.
+
+     Test restart from results in output folders.
 
     - test with and without singularity
     - drop_database_boolean = true
@@ -261,8 +275,9 @@ def test_restart_from_output_folders_baci(
 def test_block_restart_baci(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, output_directory_forward
 ):
-    """Integration test for the block-restart functionality: Delete last
-    results and block-restart those results (only without singularity).
+    """Integration test for the block-restart functionality.
+
+     Delete last results and block-restart those results (only without singularity).
 
     Args:
         inputdir (str): Path to the JSON input file
@@ -330,8 +345,9 @@ def test_block_restart_baci(
 def test_restart_from_db_baci(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, output_directory_forward
 ):
-    """Integration test for the restart functionality for restart from results
-    in database.
+    """Integration test for the restart functionality.
+
+    Test restart from results in database.
 
     - test only without singularity
     - drop_database_boolean = false

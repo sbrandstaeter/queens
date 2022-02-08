@@ -1,8 +1,8 @@
-"""Test suite for integration tests for the heritage baci Levenberg-Marquardt
-optimizer for local simulations with BACI using a minimal FSI model and the
-post_post_baci_shape evaluation and.
+"""Test suite for the heritage baci Levenberg-Marquardt optimizer.
 
-therefore post_drt_ensight postprocessing - post_processor.
+Test local simulations with BACI using a minimal FSI model and the
+post_post_baci_shape evaluation and therefore post_drt_ensight post-
+processor.
 """
 
 import json
@@ -20,13 +20,22 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 @pytest.fixture(params=[False, True])
 def singularity_bool(request):
+    """Return boolean to run with or without singularity.
+
+    Args:
+        request (SubRequest): true = with singularity; false = without singularity
+
+    Returns:
+        request.param (bool): true = with singularity; false = without singularity
+    """
     return request.param
 
 
 @pytest.fixture(scope="session")
 def output_directory_forward(tmpdir_factory):
-    """Create two temporary output directories for test runs with singularity
-    (<...>_true) and without singularity (<...>_false)
+    """Create two temporary output directories for test runs with singularity.
+
+    with singularity (<...>_true) and without singularity (<...>_false)
 
     Args:
         tmpdir_factory: fixture used to create arbitrary temporary directories
@@ -60,8 +69,9 @@ def test_baci_lm_shape(
     singularity_bool,
     experiment_directory,
 ):
-    """Integration test for the Baci Levenberg Marquardt Iterator together with
-    BACI. The test runs local native BACI simulations as well as a local
+    """Integration test for the Baci Levenberg Marquardt Iterator with BACI.
+
+    The test runs local native BACI simulations as well as a local
     Singularity based BACI simulations.
 
     Args:
@@ -104,15 +114,15 @@ def test_baci_lm_shape(
     if singularity_bool is True:
         # check existence of local singularity image
         script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../../../../driver.simg'
+        rel_path = '../../../../singularity_image.sif'
         abs_path = os.path.join(script_dir, rel_path)
         assert os.path.isfile(abs_path), (
             "No singularity image existent! Please provide an up-to-date "
             "singularity image for the testing framework. Being in the "
             "directory `pqueens` you can run the command:\n"
             "----------------------------------------------------\n"
-            "sudo /usr/bin/singularity build ../driver.simg "
-            "../singularity_recipe\n"
+            "sudo /usr/bin/singularity build ../singularity_image.sif "
+            "../singularity_recipe.def\n"
             "----------------------------------------------------\n"
             "to build a fresh image."
         )
@@ -125,25 +135,23 @@ def test_baci_lm_shape(
         # check singularity image hash
         command_list = ['/usr/bin/singularity', 'run', abs_path, '--hash=true']
         command_string = ' '.join(command_list)
-        _, _, singularity_hash_list, stderr = run_subprocess(command_string)
-
-        if stderr:
-            raise RuntimeError(f'Singularity hash-check return the error: {stderr}. Abort...')
-        else:
-            singularity_hash = [
-                ele.replace("\'", "") for ele in singularity_hash_list.strip('][').split(', ')
-            ]
-            singularity_hash = [ele.replace("]", "") for ele in singularity_hash]
-            singularity_hash = [ele.replace("\n", "") for ele in singularity_hash]
-            singularity_hash = ''.join(singularity_hash)
+        _, _, singularity_hash_list, _ = run_subprocess(
+            command_string, additional_error_message="Singularity hash-check failed!"
+        )
+        singularity_hash = [
+            ele.replace("\'", "") for ele in singularity_hash_list.strip('][').split(', ')
+        ]
+        singularity_hash = [ele.replace("]", "") for ele in singularity_hash]
+        singularity_hash = [ele.replace("\n", "") for ele in singularity_hash]
+        singularity_hash = ''.join(singularity_hash)
 
         assert local_hash == singularity_hash, (
             "Local hash key and singularity image hash key "
             "deviate! Please provide and up-to-date "
             "singularity image by running:\n"
             "----------------------------------------------------\n"
-            "sudo /usr/bin/singularity build ../driver.simg "
-            "../singularity_recipe\n"
+            "sudo /usr/bin/singularity build ../singularity_image.sif "
+            "../singularity_recipe.def\n"
             "----------------------------------------------------\n"
         )
 

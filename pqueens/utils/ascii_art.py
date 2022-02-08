@@ -1,49 +1,94 @@
+"""ASCII art module."""
+import pyfiglet
+
+
 def print_bmfia_acceleration():
+    """Print BMFIA rocket."""
     rocket = r"""
-                !
-                !
-                ^
-               / \
-             / ___ \
-            |=     =|
-            |       |
-            |-BMFIA-|
-            |       |
-            |       |
-            |       |
-            |       |
-            |       |
-            |       |
-            |       |
-           /| ##!## | \
-         /  | ##!## |   \
-       /    | ##!## |     \
-      |     / ^ | ^  \     |
-      |    /   (|)    \    |
-      |   /    (|)     \   |
-      |  /   ((   ))    \  |
-      | /     ((:))      \ |
-      |/      ((:))       \|
-             ((   ))
-              (( ))
-               ( )
-                .
-                .
-                .
+          !
+          !
+          ^
+         / \
+       / ___ \
+      |=     =|
+      |       |
+      |-BMFIA-|
+      |       |
+      |       |
+      |       |
+      |       |
+      |       |
+      |       |
+      |       |
+     /| ##!## | \
+   /  | ##!## |   \
+ /    | ##!## |     \
+|     / ^ | ^  \     |
+|    /   (|)    \    |
+|   /    (|)     \   |
+|  /   ((   ))    \  |
+| /     ((:))      \ |
+|/      ((:))       \|
+       ((   ))
+        (( ))
+         ( )
+          .
+          .
+          .
     """
-    print(rocket)
+    print_centered_multiline_block(rocket)
 
 
-def print_crown():
-    # pylint: disable=anomalous-backslash-in-string
-    crown = """
-                                *
-                              * | *
-                             * \|/ *
-                        * * * \|O|/ * * *
-                         \o\o\o|O|o/o/o/
-                         (<><><>O<><><>)
-                          '==========='
+def print_crown(output_width=63):
+    """Print crown.
+
+    Args:
+        output_width (int): Terminal output width. Default is 63.
     """
-    # pylint: enable=anomalous-backslash-in-string
-    print(crown)
+    crown = r"""
+        *
+      * | *
+     * \|/ *
+* * * \|O|/ * * *
+ \o\o\o|O|o/o/o/
+ (<><><>O<><><>)
+  '==========='
+    """
+    print_centered_multiline_block(crown, output_width)
+
+
+def print_banner(message="QUEENS", output_width=63):
+    """Print banner.
+
+    Args:
+        message (str): Messge in banner
+        output_width (int): Terminal output width. Default is 63.
+    """
+    print_centered_multiline_block(pyfiglet.figlet_format(message, font="banner3-D"), output_width)
+
+
+def print_centered_multiline_block(string, output_width=63):
+    """Print a multiline text in the center as a block.
+
+    Args:
+        string (str): String to be printed
+        output_width (int): Terminal output width. Default is 63.
+    """
+    lines = string.split("\n")
+    max_line_width = max([len(line) for line in lines])
+    if max_line_width % 2:
+        output_width += 1
+    for line in lines:
+        print(line.ljust(max_line_width).center(output_width))
+
+
+def print_centered_multiline(string, output_width=63):
+    """Center every line of a multiline text.
+
+    Args:
+        string (str): String to be printed
+        output_width (int): Terminal output width. Default is 63.
+    """
+    lines = string.split("\n")
+    for line in lines:
+        print(line.strip().center(output_width))

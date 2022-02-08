@@ -1,3 +1,4 @@
+"""Simulation model class."""
 from pqueens.interfaces.interface import Interface
 
 from .model import Model
@@ -58,5 +59,5 @@ class SimulationModel(Model):
 
     def evaluate(self):
         """Evaluate model with current set of variables."""
-        self.response = self.interface.map(self.variables)
+        self.response = self.interface.evaluate(self.variables)
         return self.response

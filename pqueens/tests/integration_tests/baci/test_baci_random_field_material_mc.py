@@ -21,7 +21,7 @@ def test_write_random_material_to_dat(
     new_dat_file_path = os.path.join(tmpdir, "coarse_plate_dirichlet_template.dat")
     cmd_lst = ['/bin/cp -arfp', third_party_input_file, new_dat_file_path]
     command_string = ' '.join(cmd_lst)
-    _, _, _, stderr = run_subprocess(command_string)
+    run_subprocess(command_string)
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 

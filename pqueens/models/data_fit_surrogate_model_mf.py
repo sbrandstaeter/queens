@@ -1,3 +1,4 @@
+"""Multi-fidelity Surrogate model class."""
 import numpy as np
 
 from pqueens.interfaces.interface import Interface
@@ -82,12 +83,11 @@ class MFDataFitSurrogateModel(Model):
         if not self.interface.is_initialized():
             self.build_approximation()
 
-        self.response = self.interface.map(self.variables)
+        self.response = self.interface.evaluate(self.variables)
         return self.response
 
     def build_approximation(self):
         """Build underlying approximation."""
-
         self.subordinate_iterator.run()
 
         # get samples and results
@@ -128,8 +128,6 @@ class MFDataFitSurrogateModel(Model):
 
         Returns:
             float: error based on desired metric
-
-        Raises:
         """
         # TODO checkout raises field
         if measure == "sum_squared":

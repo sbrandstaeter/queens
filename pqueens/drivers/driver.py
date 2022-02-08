@@ -1,11 +1,15 @@
+"""Module that actually starts the simulation runs."""
+
 import abc
 import getpass
+import logging
 import os
-import sys
 import time
 
 import pqueens.database.database as DB_module
 from pqueens.external_geometry.external_geometry import ExternalGeometry
+
+_logger = logging.getLogger(__name__)
 
 
 class Driver(metaclass=abc.ABCMeta):
@@ -14,10 +18,6 @@ class Driver(metaclass=abc.ABCMeta):
     The driver manages simulation runs in QUEENS on local or remote computing resources
     with or without Singularity containers depending on the chosen CAE software (see also
     respective Wiki article on available CAE software).
-
-    Args:
-        base_settings (dict):      dictionary containing settings from base class for
-                                   potential further use and completion in child classes
 
     Attributes:
         driver_name (str):         Name of the driver used for the analysis. The name is
@@ -62,7 +62,6 @@ class Driver(metaclass=abc.ABCMeta):
         output_prefix (str):       output prefix (not required for all drivers)
         output_directory (str):    path to output directory (on remote computing resource for
                                    remote scheduling)
-        local_output_dir (str):    (only for remote scheduling) path to local output directory
         output_file (str):         path to output file (not required for all drivers)
         control_file (str):        path to control file (not required for all drivers)
         log_file (str):            path to log file (not required for all drivers)
@@ -73,6 +72,11 @@ class Driver(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, base_settings):
+        """Instantiate the driver object.
+
+        Args:
+            base_settings (dict): Dictionary with base settings of the parent class.
+        """
         self.driver_name = base_settings['driver_name']
         self.experiment_name = base_settings['experiment_name']
         self.global_output_dir = base_settings['global_output_dir']
@@ -114,7 +118,6 @@ class Driver(metaclass=abc.ABCMeta):
         self.case_run_script = base_settings['case_run_script']
         self.output_prefix = base_settings['output_prefix']
         self.output_directory = base_settings['output_directory']
-        self.local_output_dir = base_settings['local_output_dir']
         self.output_file = base_settings['output_file']
         self.control_file = base_settings['control_file']
         self.log_file = base_settings['log_file']
@@ -128,7 +131,6 @@ class Driver(metaclass=abc.ABCMeta):
         batch,
         driver_name,
         port=None,
-        abs_path=None,
         workdir=None,
         cluster_options=None,
     ):
@@ -139,7 +141,6 @@ class Driver(metaclass=abc.ABCMeta):
             job_id (int):   Job ID as provided in database within range [1, n_jobs]
             batch (int):    Job batch number (multiple batches possible)
             port (int):     Port for data forwarding from/to remote resource
-            abs_path (str): Absolute path to post-post module on remote resource
             workdir (str):  Path to working directory on remote resource
             driver_name (str): Name of driver instance that should be realized
 
@@ -238,7 +239,10 @@ class Driver(metaclass=abc.ABCMeta):
             (not base_settings['direct_scheduling']) or (base_settings['post_options'] is not None)
         ):
             if base_settings['remote'] and not base_settings['singularity']:
-                base_settings['do_postprocessing'] = 'remote'
+                raise NotImplementedError(
+                    "The combination of 'remote: true' and 'singularity: false' is "
+                    "not implemented in the `scheduler section`! Abort..."
+                )
             elif base_settings['singularity'] and (
                 base_settings['scheduler_type'] == 'pbs'
                 or base_settings['scheduler_type'] == 'slurm'
@@ -256,7 +260,7 @@ class Driver(metaclass=abc.ABCMeta):
             # TODO "hiding" a complete object in the base settings dict is unbelieveably ugly
             # and should be fixed ASAP
             base_settings['postpostprocessor'] = PostPost.from_config_create_post_post(
-                config, driver_name=driver_name
+                config, driver_name
             )
             base_settings['cae_output_streaming'] = False
         else:
@@ -268,7 +272,6 @@ class Driver(metaclass=abc.ABCMeta):
         base_settings['input_file_2'] = None
         base_settings['case_run_script'] = None
         base_settings['output_prefix'] = None
-        base_settings['local_output_dir'] = None
         base_settings['output_file'] = None
         base_settings['control_file'] = None
         base_settings['log_file'] = None
@@ -329,8 +332,9 @@ class Driver(metaclass=abc.ABCMeta):
         self.prepare_input_files()
 
     def post_job_run(self):
-        """Post-process (if required), post-post process (if required) and
-        finalize job in database.
+        """Post-process (if required), post-post process (if required).
+
+        Afterwards, also finalize job in database.
 
         Returns:
             None
@@ -382,13 +386,13 @@ class Driver(metaclass=abc.ABCMeta):
         )
 
     def postpostprocessing(self):
-        """Extract data of interest from post-processed files and save them to
-        database.
+        """Extract data of interest from post-processed file.
+
+        Afterwards save them to the database.
 
         Returns:
             None
         """
-
         # load job from database if existent
         if self.job is None:
             self.job = self.database.load(
@@ -398,30 +402,13 @@ class Driver(metaclass=abc.ABCMeta):
                 {'id': self.job_id},
             )
 
-        # get (from the point of view of the location of the post-processed files)
-        # "local" and "remote" output directory for this job ID, which is exactly
-        # opposite to the general definition, with the latter effectively used
-        # only in case of remote scheduling
-        pp_local_output_dir = self.output_directory
-        if self.remote and not self.singularity:
-            pp_remote_output_dir = self.local_output_dir
-            remote_connect = self.remote_connect
-        else:
-            pp_remote_output_dir = None
-            remote_connect = None
-
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
-            # set security duplicate in case post_post did not catch an error
-            self.result = None
-
             # call post-post-processing
-            self.result = self.postpostprocessor.postpost_main(
-                pp_local_output_dir, remote_connect, pp_remote_output_dir
-            )
+            self.result = self.postpostprocessor.get_data_from_post_file(self.output_directory)
 
             # print obtained result to screen
-            sys.stdout.write("Got result %s\n" % (self.result))
+            _logger.info(f"Got result: {self.result}")
 
     def finalize_job_in_db(self):
         """Finalize job in database.
@@ -429,7 +416,6 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             None
         """
-
         if self.result is None:
             self.job['result'] = None  # TODO: maybe we should better use a pandas format here
             self.job['status'] = 'failed'
@@ -452,9 +438,9 @@ class Driver(metaclass=abc.ABCMeta):
             if self.job['start time'] is not None and not self.direct_scheduling:
                 self.job['end time'] = time.time()
                 computing_time = self.job['end time'] - self.job['start time']
-                sys.stdout.write(
-                    'Successfully completed job {:d} (No. of proc.: {:d}, '
-                    'computing time: {:08.2f} s).\n'.format(
+                _logger.info(
+                    "Successfully completed job {:d} (No. of proc.: {:d}, "
+                    "computing time: {:08.2f} s).\n".format(
                         self.job_id, self.num_procs, computing_time
                     )
                 )
@@ -516,7 +502,7 @@ class Driver(metaclass=abc.ABCMeta):
     # ---------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod
     def prepare_input_files(self):
-        """Abstract method for preparing input file(s)
+        """Abstract method for preparing input file(s).
 
         Returns:
             None

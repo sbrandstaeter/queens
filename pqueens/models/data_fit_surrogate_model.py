@@ -1,3 +1,4 @@
+"""Surrogate model class."""
 import logging
 
 import numpy as np
@@ -123,12 +124,11 @@ class DataFitSurrogateModel(Model):
         if not self.interface.is_initialized():
             self.build_approximation()
 
-        self.response = self.interface.map(self.variables)
+        self.response = self.interface.evaluate(self.variables)
         return self.response
 
     def build_approximation(self):
         """Build underlying approximation."""
-
         self.subordinate_iterator.run()
 
         # get samples and results
@@ -175,7 +175,7 @@ class DataFitSurrogateModel(Model):
             raise RuntimeError("Cannot compute accuracy on uninitialized model")
 
         x_test_var = self.convert_array_to_model_variables(x_test)
-        response = self.interface.map(x_test_var)
+        response = self.interface.evaluate(x_test_var)
         y_prediction = response['mean'].reshape((-1, 1))
 
         error_info = {}
@@ -238,8 +238,6 @@ class DataFitSurrogateModel(Model):
 
         Returns:
             float: error based on desired metric
-
-        Raises:
         """
         return {
             "sum_squared": np.sum((y_test - y_posterior_mean) ** 2),
@@ -252,7 +250,7 @@ class DataFitSurrogateModel(Model):
 
     @staticmethod
     def compute_nash_sutcliffe_efficiency(y_test, y_posterior_mean):
-        """Nash-Sutcliffe model efficiency.
+        r"""Compute Nash-Sutcliffe model efficiency.
 
         .. math::
             NSE = 1-\\frac{\\sum_{i=1}^{N}(e_{i}-s_{i})^2}{\\sum_{i=1}^{N}(e_{i}-\\bar{e})^2}
@@ -264,7 +262,6 @@ class DataFitSurrogateModel(Model):
         Returns:
             efficiency (float): Nash-Sutcliffe model efficiency
         """
-
         if len(y_test) == len(y_posterior_mean):
             y_posterior_mean, y_test = np.array(y_posterior_mean), np.array(y_test)
             if y_test.shape != y_posterior_mean.shape:

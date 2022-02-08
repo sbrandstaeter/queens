@@ -128,7 +128,9 @@ class ClusterScheduler(Scheduler):
             # also already as executable for jobscript
             singularity_path = singularity_input_options['cluster_path']
             base_settings['cluster_options']['singularity_path'] = singularity_path
-            base_settings['cluster_options']['EXE'] = os.path.join(singularity_path, 'driver.simg')
+            base_settings['cluster_options']['EXE'] = os.path.join(
+                singularity_path, 'singularity_image.sif'
+            )
 
             # set cluster bind for Singularity
             base_settings['cluster_options']['singularity_bind'] = singularity_input_options[
@@ -175,7 +177,6 @@ class ClusterScheduler(Scheduler):
                 )
 
                 self.singularity_manager.copy_temp_json()
-                self.singularity_manager.copy_post_post()
 
     def _submit_singularity(self, job_id, batch, restart):
         """Submit job remotely to Singularity.
@@ -231,15 +232,11 @@ class ClusterScheduler(Scheduler):
                     '"',
                 ]
                 cmd_remote_main = ' '.join(cmdlist_remote_main)
-                _, _, stdout, stderr = run_subprocess(cmd_remote_main)
-
-                # error check
-                if stderr:
-                    raise RuntimeError(
-                        "\nThe file 'remote_main' in remote singularity image "
-                        "could not be executed properly!"
-                        f"\nStderr from remote:\n{stderr}"
-                    )
+                _, _, stdout, _ = run_subprocess(
+                    cmd_remote_main,
+                    additional_message_error="The file 'remote_main' in remote singularity image "
+                    "could not be executed properly!",
+                )
 
                 # check matching of job ID
                 match = get_cluster_job_id(self.scheduler_type, stdout)
@@ -252,7 +249,7 @@ class ClusterScheduler(Scheduler):
             # restart submission
             else:
                 self.cluster_options['EXE'] = (
-                    self.cluster_options['singularity_path'] + '/driver.simg'
+                    self.cluster_options['singularity_path'] + '/singularity_image.sif'
                 )
                 self.cluster_options[
                     'INPUT'
@@ -280,7 +277,7 @@ class ClusterScheduler(Scheduler):
                     '"',
                 ]
                 cmd_remote_main = ' '.join(cmdlist_remote_main)
-                _, _, _, _ = run_subprocess(cmd_remote_main)
+                run_subprocess(cmd_remote_main)
 
                 return 0
         else:
@@ -329,7 +326,7 @@ class ClusterScheduler(Scheduler):
             ]
 
         command_string = ' '.join(command_list)
-        _, _, stdout, stderr = run_subprocess(command_string)
+        _, _, stdout, _ = run_subprocess(command_string)
 
         if stdout:
             # split output string

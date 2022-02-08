@@ -117,12 +117,11 @@ def main(args):
             except FileNotFoundError:
                 raise FileNotFoundError("temp.json did not load properly.")
 
-            path_to_post_post_file = os.path.join(path_json, 'post_post/post_post.py')
             config["database"]["reset_existing_db"] = False
             DB_module.from_config_create_database(config)
             with DB_module.database:
                 driver_obj = Driver.from_config_create_driver(
-                    config, job_id, batch, driver_name, port, path_to_post_post_file, workdir
+                    config, job_id, batch, driver_name, port, workdir
                 )
                 # Run the singularity image in two steps and two different singularity calls to have
                 # more freedom concerning mpi ranks

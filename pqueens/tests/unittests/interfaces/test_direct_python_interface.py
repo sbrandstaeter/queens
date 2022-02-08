@@ -16,7 +16,6 @@ from pqueens.variables.variables import Variables
 @pytest.fixture(scope='module')
 def uncertain_parameters():
     """Options dictionary to create variables."""
-
     uncertain_parameter = {}
     uncertain_parameter['type'] = "FLOAT"
     uncertain_parameter['size'] = 1
@@ -38,7 +37,6 @@ def uncertain_parameters():
 @pytest.fixture(scope='module')
 def variables(uncertain_parameters):
     """An instance of Variables class."""
-
     variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
 
     # set values
@@ -50,28 +48,24 @@ def variables(uncertain_parameters):
 @pytest.fixture(scope='module')
 def list_of_variables(variables):
     """A list of multiple Variables instances."""
-
     return [variables, variables]
 
 
 @pytest.fixture(scope='module')
 def expected_result():
     """Expected result of ishigami funciton for [1., 1., 1.]."""
-
     return np.array([[5.8821320112036846]])
 
 
 @pytest.fixture(scope='module')
 def expected_results(expected_result):
     """Expected results corresponding to list_of_variables."""
-
     return np.concatenate([expected_result, expected_result])
 
 
 @pytest.fixture(scope='module')
 def config(uncertain_parameters):
     """Minimal config dict to create a Direct-Python-Interface."""
-
     config = {}
     config['test_interface'] = {'type': 'direct_python_interface', 'main_file': 'ishigami.py'}
 
@@ -82,9 +76,11 @@ def config(uncertain_parameters):
 
 @pytest.fixture(scope='module')
 def config_parallel(config):
-    """Minimal config dict to create a Direct-Python-Interface with parallel
-    evaluation of multiple forward calls."""
+    """Configure parallel evaluation.
 
+    Minimal config dict to create a Direct-Python-Interface with
+    parallel evaluation of multiple forward calls.
+    """
     config['test_interface']['num_workers'] = 2
 
     return config
@@ -93,7 +89,6 @@ def config_parallel(config):
 @pytest.fixture(scope='module')
 def direct_python_interface(variables):
     """An instance of Variables class."""
-
     interface_name = 'test_interface'
     python_function_name = 'ishigami.py'
 
@@ -103,7 +98,6 @@ def direct_python_interface(variables):
 @pytest.fixture(scope='module')
 def direct_python_interface_parallel(variables):
     """An instance of Variables class."""
-
     interface_name = 'test_interface'
     python_function_name = 'ishigami.py'
 
@@ -113,8 +107,7 @@ def direct_python_interface_parallel(variables):
 @pytest.mark.unit_tests
 def test_map(list_of_variables, expected_results, direct_python_interface):
     """Test mapping from input to response/ output."""
-
-    output = direct_python_interface.map(list_of_variables)
+    output = direct_python_interface.evaluate(list_of_variables)
 
     assert direct_python_interface.pool is None
     np.testing.assert_allclose(output["mean"], expected_results)
@@ -122,10 +115,12 @@ def test_map(list_of_variables, expected_results, direct_python_interface):
 
 @pytest.mark.unit_tests
 def test_map_parallel(list_of_variables, expected_results, direct_python_interface_parallel):
-    """Test parallel mapping from multiple input vectors to corresponding
-    responses."""
+    """Test parallel mapping.
 
-    output = direct_python_interface_parallel.map(list_of_variables)
+    Test parallel mapping from multiple input vectors to corresponding
+    responses.
+    """
+    output = direct_python_interface_parallel.evaluate(list_of_variables)
 
     assert isinstance(direct_python_interface_parallel.pool, multiprocessing.pool.Pool)
     np.testing.assert_allclose(output["mean"], expected_results)
@@ -134,7 +129,6 @@ def test_map_parallel(list_of_variables, expected_results, direct_python_interfa
 @pytest.mark.unit_tests
 def test_create_from_config(variables, config):
     """Given a config dict instantiate DirectPythonInterface."""
-
     direct_python_interface = Interface.from_config_create_interface('test_interface', config)
     # ensure correct types
     assert direct_python_interface.pool is None
@@ -143,9 +137,11 @@ def test_create_from_config(variables, config):
 
 @pytest.mark.unit_tests
 def test_create_from_config_parallel(variables, config_parallel):
-    """Given a config dict instantiate DirectPythonInterface with parallel
-    evaluation of multiple forward calls."""
+    """Test creation from config file.
 
+    Given a config dict instantiate DirectPythonInterface with parallel
+    evaluation of multiple forward calls.
+    """
     direct_python_interface_parallel = Interface.from_config_create_interface(
         'test_interface', config_parallel
     )

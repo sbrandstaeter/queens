@@ -1,3 +1,4 @@
+"""Class for mapping input variables to responses using a MF approximation."""
 import numpy as np
 
 from pqueens.regression_approximations_mf.regression_approximation_mf import (
@@ -61,21 +62,19 @@ class ApproximationInterfaceMF(Interface):
         # initialize object
         return cls(interface_name, approximation_config, parameters)
 
-    # TODO think about intruducing general mf-interface ?
-    def map(self, samples, level=None):
+    # TODO think about introducing general mf-interface ?
+    def evaluate(self, samples):
         """Mapping function which calls the regression approximation.
 
         Args:
             samples (list):         list of variables objects
-            level   (int):          which level to predict, None leads to highest
-                                    level prediction
 
         Returns:
             dict: Dictionary with mean, variance, and possibly
                   posterior samples ('post_samples') at samples
         """
         if not self.approx_init:
-            raise RuntimeError("Approximation has not been properly initialzed, cannot continue!")
+            raise RuntimeError("Approximation has not been properly initialized, cannot continue!")
 
         inputs = []
         for variables in samples:

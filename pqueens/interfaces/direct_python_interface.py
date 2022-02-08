@@ -1,3 +1,4 @@
+"""Class for mapping input variables to responses using a python function."""
 import importlib.util
 import os
 import sys
@@ -33,8 +34,8 @@ class DirectPythonInterface(Interface):
             function_file (string):     function file name (including path)
                                         to be executed
             variables (dict):           dictionary with variables
+            num_workers (int):          number of worker processes
         """
-
         self.name = interface_name
         self.variables = variables
 
@@ -94,7 +95,7 @@ class DirectPythonInterface(Interface):
         # instantiate object
         return cls(interface_name, function_file, parameters, num_workers)
 
-    def map(self, samples):
+    def evaluate(self, samples):
         """Mapping function which orchestrates call to simulator function.
 
         Args:
