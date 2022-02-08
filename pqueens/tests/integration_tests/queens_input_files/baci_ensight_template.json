@@ -34,7 +34,7 @@
     "resources": "resources",
     "driver": "driver"
   },
-  "driver": {
+  "driver": {ssh-copy-id -i ~/.ssh/id_rsa.pub <username>@machine_you_would_like_to_access_passwordless
     "driver_type": "baci",
     "driver_params": {
       "input_template": "{baci_input}",
