@@ -1,3 +1,5 @@
+"""Base module for iterators or methods."""
+
 import abc
 
 
@@ -16,6 +18,15 @@ class Iterator(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, model=None, global_settings=None):
+        """Initialize base iterator from problem description.
+
+        Args:
+            model (obj, optional): Model object on which the iterator
+                                   is applied to. Defaults to None.
+            global_settings (dict, optional): Dictionary containing global settings
+                                              for the QUEENS simulation run.
+                                              Defaults to None.
+        """
         self.model = model
         self.global_settings = global_settings
 
@@ -44,13 +55,10 @@ class Iterator(metaclass=abc.ABCMeta):
         from .metropolis_hastings_iterator import MetropolisHastingsIterator
         from .monte_carlo_iterator import MonteCarloIterator
         from .optimization_iterator import OptimizationIterator
-        from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
-<<<<<<< HEAD
         from .sequential_monte_carlo_chopin_iterator import SequentialMonteCarloChopinIterator
-=======
+        from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
         from .single_sim_run_iterator import SingleSimRunIterator
         from .sobol_index_iterator import SobolIndexIterator
->>>>>>> master
         from .sobol_sequence_iterator import SobolSequenceIterator
         from .variational_inference_reparameterization import VIRPIterator
 
@@ -64,11 +72,8 @@ class Iterator(metaclass=abc.ABCMeta):
             'elementary_effects': ElementaryEffectsIterator,
             'sobol_indices': SobolIndexIterator,
             'smc': SequentialMonteCarloIterator,
-<<<<<<< HEAD
             'smc_chopin': SequentialMonteCarloChopinIterator,
-=======
             'sobol_sequence': SobolSequenceIterator,
->>>>>>> master
             'sing_sim_run': SingleSimRunIterator,
             'bmfmc': BMFMCIterator,
             'grid': GridIterator,
@@ -107,8 +112,10 @@ class Iterator(metaclass=abc.ABCMeta):
         pass
 
     def post_run(self):
-        """Optional post-run portion of run, e.g., for doing some post
-        processing."""
+        """Optional post-run portion of run.
+
+        E.g., for doing some post processing.
+        """
         pass
 
     def finalize_run(self):

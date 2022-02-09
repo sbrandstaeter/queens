@@ -1,6 +1,7 @@
 {
   "experiment_name": "xxx",
   "database": {
+    "type": "mongodb",
     "address": "localhost:27017"
   },
   "method": {
@@ -10,14 +11,7 @@
       "num_particles": 100,
       "resampling_threshold": 0.5,
       "resampling_method": "residual",
-      "feynman_kac_model": "{fk_method}",
-      "tempering_exponents": [
-        0,
-        0.1,
-        0.5,
-        0.8,
-        1
-      ],
+      "feynman_kac_model": "adaptive_tempering",
       "model": "model",
       "max_feval": 10000,
       "result_description": {

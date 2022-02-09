@@ -1,3 +1,5 @@
+"""Logging in QUEENS."""
+
 import io
 import logging
 import re
@@ -6,17 +8,26 @@ import time
 
 
 class LogFilter(logging.Filter):
-<<<<<<< HEAD
-    """Filters (lets through) all messages with level <= LEVEL"""
-=======
     """Filters (lets through) all messages with level <= LEVEL."""
->>>>>>> master
 
     def __init__(self, level):
+        """Initiate the logging filter.
+
+        Args:
+            level (int): Logging level
+        """
         super().__init__()
         self.level = level
 
     def filter(self, record):
+        """Filter the logging record.
+
+        Args:
+            record (LogRecord obj): Logging record object
+
+        Returns:
+            (LogRecord obj): Filter logging record
+        """
         return record.levelno <= self.level
 
 
@@ -121,6 +132,7 @@ def job_logging(command_string, process, joblogger, terminate_expr):
     """Actual logging of job.
 
     Args:
+        command_string (str): Command string for the subprocess
         process (obj): subprocess object
         joblogger (obj): job logger object
         terminate_expr (str): expression on which to terminate
@@ -168,8 +180,10 @@ def job_logging(command_string, process, joblogger, terminate_expr):
 
 
 def finish_job_logger(joblogger, lfh, efh, sh):
-    """Close and remove file handlers (to prevent OSError: [Errno 24] Too many
-    open files)"""
+    """Close and remove file handlers.
+
+    (to prevent OSError: [Errno 24] Too many open files)
+    """
     # we need to close the FileHandlers to
     lfh.close()
     efh.close()

@@ -1,24 +1,26 @@
+"""Sequential Monte Carlo implementation using 'particles' package."""
+
+import logging
+
 import numpy as np
 import particles
-from particles import distributions as dists
-from particles.smc_samplers import Tempering
-from particles.smc_samplers import AdaptiveTempering
 from particles import collectors as col
+from particles import distributions as dists
+from particles.smc_samplers import AdaptiveTempering, TemperingBridge
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.model import Model
 from pqueens.utils import smc_utils
-from pqueens.utils.process_outputs import process_ouputs
-from pqueens.utils.process_outputs import write_results
-import logging
+from pqueens.utils.process_outputs import process_ouputs, write_results
 
 _logger = logging.getLogger(__name__)
 
 
 class SequentialMonteCarloChopinIterator(Iterator):
-    """
-    Sequential Monte Carlo algorithm based on the book [1] and the particles library 
-    (https://github.com/nchopin/particles/)
+    """Sequential Monte Carlo algorithm from Chopin et al.
+
+    Sequential Monte Carlo algorithm based on the book [1] (especially chapter 17)
+    and the particles library (https://github.com/nchopin/particles/)
 
 
     References:
@@ -36,13 +38,11 @@ class SequentialMonteCarloChopinIterator(Iterator):
         max_feval (int): Maximum number of model calls
         n_sims (int): Number of model calls
         prior (object): Particles Prior object
-        smc (object): Particles SMC object
+        smc_obj (object): Particles SMC object
         random_variable_keys (list): Random variables names
         resampling_threshold (float): Ratio of ESS to partice number at which to resample
         resampling_method (str): Resampling method implemented in particles
         feynman_kac_model (str): Feynman Kac model for the smc object
-        mh_options (dict): Metropolis-Hastings options for the Feynman Kac model
-        exponents (list): List for non-adaptive tempring 
     """
 
     def __init__(
@@ -55,14 +55,29 @@ class SequentialMonteCarloChopinIterator(Iterator):
         n_sims,
         max_feval,
         prior,
-        smc,
+        smc_obj,
         random_variable_keys,
         resampling_threshold,
         resampling_method,
         feynman_kac_model,
-        mh_options,
-        exponents,
     ):
+        """Initialize the SMC iterator.
+
+        Args:
+            global_settings (dict): Global settings of the QUEENS simulations
+            model (obj): Underlying simulation model on which the inverse analysis is conducted
+            num_particles (int): Number of particles
+            result_description (dict): Settings for storing and visualizing the results
+            seed (int): Seed for random number generator
+            n_sims (int): Number of model calls
+            max_feval (int): Maximum number of model calls
+            prior (object): Particles Prior object
+            smc_obj (object): Particles SMC object
+            random_variable_keys (list): Random variables names
+            resampling_threshold (float): Ratio of ESS to partice number at which to resample
+            resampling_method (str): Resampling method implemented in particles
+            feynman_kac_model (str): Feynman Kac model for the smc object
+        """
         super().__init__(model, global_settings)
         self.result_description = result_description
         self.seed = seed
@@ -71,18 +86,15 @@ class SequentialMonteCarloChopinIterator(Iterator):
         self.n_sims = n_sims
         self.max_feval = max_feval
         self.prior = prior
-        self.smc = smc
+        self.smc_obj = smc_obj
         self.random_variable_keys = random_variable_keys
         self.resampling_threshold = resampling_threshold
         self.resampling_method = resampling_method
         self.feynman_kac_model = feynman_kac_model
-        self.mh_options = mh_options
-        self.exponents = exponents
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """
-        Create Sequential Monte Carlo Chopin iterator from problem description
+        """Create SMC Chopin iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -91,9 +103,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
 
         Returns:
             iterator: SequentialMonteCarloChopinIterator object
-
         """
-
         if iterator_name is None:
             method_options = config['method']['method_options']
         else:
@@ -111,8 +121,6 @@ class SequentialMonteCarloChopinIterator(Iterator):
         resampling_threshold = method_options.get("resampling_threshold")
         resampling_method = method_options.get("resampling_method")
         feynman_kac_model = method_options.get("feynman_kac_model")
-        exponents = method_options.get("tempering_exponents", None)
-        mh_options = method_options.get("mh_options", None)
         return cls(
             global_settings=global_settings,
             model=model,
@@ -123,8 +131,6 @@ class SequentialMonteCarloChopinIterator(Iterator):
             resampling_threshold=resampling_threshold,
             resampling_method=resampling_method,
             feynman_kac_model=feynman_kac_model,
-            exponents=exponents,
-            mh_options=mh_options,
             n_sims=0,
             prior=None,
             smc=None,
@@ -132,25 +138,21 @@ class SequentialMonteCarloChopinIterator(Iterator):
         )
 
     def eval_model(self):
-        """ Evaluate model at current sample. """
-
+        """Evaluate model at current sample."""
         result_dict = self.model.evaluate()
         return result_dict
 
     def eval_log_likelihood(self, samples):
-        """ Evaluate natural logarithm of likelihood at sample. """
-
+        """Evaluate natural logarithm of likelihood at sample."""
         self.model.update_model_from_sample_batch(samples)
         log_likelihood = self.eval_model()
         return log_likelihood
 
     def _initialize_prior_model(self):
-        """
-        Initialize the prior model of the inverse problem form the problem description.
+        """Initialize the prior model form the problem description.
 
         Returns:
             None
-
         """
         # Read design of prior
         input_dict = self.model.get_parameter()
@@ -165,7 +167,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             )
         # Generate prior using the particles library
         prior_dict = {}
-        for dim, rv in enumerate(random_variables.keys()):
+        for rv in random_variables.keys():
             rv_options = random_variables[rv]
             distribution = rv_options.get("distribution")
             distribution_params = rv_options.get("distribution_parameter")
@@ -176,7 +178,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             elif distribution == "uniform":
                 a = distribution_params[0]
                 b = distribution_params[1]
-                prior_dict.update({rv: dist.Unifrom(a=a, b=b)})
+                prior_dict.update({rv: dists.Unifrom(a=a, b=b)})
             else:
                 raise NotImplementedError(
                     f"Currently the priors are only allowed to be normal or uniform"
@@ -185,24 +187,16 @@ class SequentialMonteCarloChopinIterator(Iterator):
         self.prior = dists.StructDist(prior_dict)
 
     def initialize_feynman_kac(self, static_model):
-        """
-        Initialize the Feynman Kac model for the SMC approach
+        """Initialize the Feynman Kac model for the SMC approach.
 
         Args:
             static_model (StaticModel): Static model from the particles library
 
         Returns:
             feynman_kac_model (FKSMCsampler): Model for the smc object
-
         """
         if self.feynman_kac_model == "adaptive_tempering":
-            feynman_kac_model = AdaptiveTempering(
-                static_model, mh_options=self.mh_options, ESSrmin=self.resampling_threshold
-            )
-        elif self.feynman_kac_model == "tempering":
-            feynman_kac_model = Tempering(
-                static_model, mh_options=self.mh_options, exponents=self.exponents
-            )
+            feynman_kac_model = AdaptiveTempering(static_model, ESSrmin=self.resampling_threshold)
         else:
             raise NotImplementedError(
                 f"The allowed Feynman Kac models are: 'tempering' and 'adaptive_tempering'"
@@ -210,8 +204,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         return feynman_kac_model
 
     def initialize_run(self):
-        """ Draw initial sample. """
-
+        """Draw initial sample."""
         _logger.info("Initialize run.")
         self._initialize_prior_model()
         np.random.seed(self.seed)
@@ -231,7 +224,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         feynman_kac_model = self.initialize_feynman_kac(static_model)
 
         # SMC object
-        self.smc = particles.SMC(
+        self.smc_obj = particles.SMC(
             fk=feynman_kac_model,
             N=self.num_particles,
             verbose=True,
@@ -241,16 +234,18 @@ class SequentialMonteCarloChopinIterator(Iterator):
         )
 
     def core_run(self):
-        """ Core run of Sequential Monte Carlo iterator. """
+        """Core run of Sequential Monte Carlo iterator.
 
+        The particles library is generator based. Hence one step of the
+        SMC algorithm is done using next(self.smc). As the next()
+        function is called during the for loop, we only need to add some
+        logging and check if the number of model runs is exceeded.
+        """
         _logger.info('Welcome to SMC (particles) core run.')
 
-        # The particles library is generator based. Hence one step of the SMC algorithm is done
-        # using next(self.smc). As the next() function is called during the for loop, we only need
-        # to add some logging and check if the number of modelruns is exceeded.
-        for _ in self.smc:
-            _logger.info(f"SMC step {self.smc.t-1}")
-            self.n_sims = self.smc.fk.model.n_sims
+        for _ in self.smc_obj:
+            _logger.info(f"SMC step {self.smc_obj.t-1}")
+            self.n_sims = self.smc_obj.fk.model.n_sims
             _logger.info(f"Number of forward runs {self.n_sims}")
             _logger.info("-" * 70)
             if self.n_sims >= self.max_feval:
@@ -259,23 +254,24 @@ class SequentialMonteCarloChopinIterator(Iterator):
                 break
 
     def post_run(self):
-        """ Analyze the resulting importance sample. """
-
+        """Analyze the resulting importance sample."""
         # SMC data
-        particles = self.smc.fk.model.particles_array_to_numpy(self.smc.X.theta)
-        weights = self.smc.W.reshape(-1, 1)
+        particles = self.smc_obj.fk.model.particles_array_to_numpy(self.smc_obj.X.theta)
+        weights = self.smc_obj.W.reshape(-1, 1)
 
         # First and second moment
-        mean = self.smc.fk.model.particles_array_to_numpy(self.smc.summaries.moments[-1]["mean"])[0]
-        variance = self.smc.fk.model.particles_array_to_numpy(
-            self.smc.summaries.moments[-1]["var"]
+        mean = self.smc_obj.fk.model.particles_array_to_numpy(
+            self.smc_obj.summaries.moments[-1]["mean"]
+        )[0]
+        variance = self.smc_obj.fk.model.particles_array_to_numpy(
+            self.smc_obj.summaries.moments[-1]["var"]
         )[0]
         if self.result_description:
             results = process_ouputs(
                 {
                     'particles': particles,
                     'weights': weights,
-                    'log_posterior': self.smc.X.lpost,
+                    'log_posterior': self.smc_obj.X.lpost,
                     "mean": mean,
                     "var": variance,
                     "n_sims": self.n_sims,
@@ -289,4 +285,3 @@ class SequentialMonteCarloChopinIterator(Iterator):
                     self.global_settings["experiment_name"],
                 )
             _logger.info("Post run data exported!")
-
