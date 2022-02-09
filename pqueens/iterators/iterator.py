@@ -31,7 +31,7 @@ class Iterator(metaclass=abc.ABCMeta):
         self.global_settings = global_settings
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+    def from_config_create_iterator(_cls, config, iterator_name=None, model=None):
         """Create iterator from problem description.
 
         Args:
@@ -55,7 +55,7 @@ class Iterator(metaclass=abc.ABCMeta):
         from .metropolis_hastings_iterator import MetropolisHastingsIterator
         from .monte_carlo_iterator import MonteCarloIterator
         from .optimization_iterator import OptimizationIterator
-        from .sequential_monte_carlo_chopin_iterator import SequentialMonteCarloChopinIterator
+        from .sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
         from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
         from .single_sim_run_iterator import SingleSimRunIterator
         from .sobol_index_iterator import SobolIndexIterator

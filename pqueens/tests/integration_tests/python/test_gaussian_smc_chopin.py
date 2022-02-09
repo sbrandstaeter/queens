@@ -9,9 +9,7 @@ import pytest
 from mock import patch
 
 # fmt: on
-from pqueens.iterators.sequential_monte_carlo_chopin_iterator import (
-    SequentialMonteCarloChopinIterator,
-)
+from pqueens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
 from pqueens.main import main
 
 # fmt: off
