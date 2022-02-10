@@ -33,6 +33,11 @@ def parse_resources_from_configuration(config, driver_name):
             resources[resource_name] = resource_factory(
                 resource_name, exp_name, config, driver_name
             )
+        if len(resources.keys()) > 1:
+            raise NotImplementedError(
+                "You indicated more than one resource: {list(config['resources'].keys())}"
+                " Currently QUEENS only supports one!"
+            )
         return resources
     # no specified resources
     else:
