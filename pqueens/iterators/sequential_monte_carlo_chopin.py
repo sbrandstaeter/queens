@@ -143,7 +143,11 @@ class SequentialMonteCarloChopinIterator(Iterator):
         return result_dict
 
     def eval_log_likelihood(self, samples):
-        """Evaluate natural logarithm of likelihood at sample."""
+        """Evaluate natural logarithm of likelihood at sample.
+
+        Args:
+            samples (np.array): Samples/particles of the SMC.
+        """
         self.model.update_model_from_sample_batch(samples)
         log_likelihood = self.eval_model()
         return log_likelihood
