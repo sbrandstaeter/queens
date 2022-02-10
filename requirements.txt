@@ -106,7 +106,9 @@ importlib-metadata==4.10.0
 iniconfig==1.1.1
     # via pytest
 joblib==1.1.0
-    # via scikit-learn
+    # via
+    #   particles
+    #   scikit-learn
 keras==2.7.0
     # via tensorflow
 keras-preprocessing==1.1.2
@@ -139,7 +141,9 @@ multiprocess==0.70.12.2
 netcdf4==1.5.8
     # via arviz
 numba==0.53.1
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   particles
 numpy==1.21.2
     # via
     #   -r requirements.in
@@ -158,6 +162,7 @@ numpy==1.21.2
     #   opt-einsum
     #   pandas
     #   paramz
+    #   particles
     #   pydoe
     #   salib
     #   scikit-learn
@@ -188,6 +193,8 @@ pandas==1.2.4
     #   xarray
 paramz==0.9.5
     # via gpy
+particles==0.3
+    # via -r requirements.in
 pathos==0.2.8
     # via salib
 pillow==9.0.0
@@ -270,6 +277,7 @@ scipy==1.7.3
     #   gpflow
     #   gpy
     #   paramz
+    #   particles
     #   pydoe
     #   salib
     #   scikit-learn
@@ -361,6 +369,6 @@ yarl==1.7.2
     # via aiohttp
 zipp==3.7.0
     # via importlib-metadata
-particles==0.3
+
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
