@@ -1,14 +1,14 @@
 """Singularity management utilities."""
-import hashlib
+import logging
 import os
 import random
 import subprocess
 import time
-from pprint import pprint
 
 from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
+_logger = logging.getLogger(__name__)
 path_to_pqueens = os.path.join(os.path.dirname(__file__), "../")
 path_to_queens = os.path.join(os.path.dirname(__file__), "../../")
 abs_singularity_image_path = os.path.join(path_to_queens, "singularity_image.sif")
@@ -160,8 +160,8 @@ class SingularityManager:
 
     def copy_image_to_remote(self):
         """Copy the local singularity image to the remote recsource."""
-        print("Updating remote image from local image...")
-        print("(This might take a couple of seconds, but needs only to be done once)")
+        _logger.info("Updating remote image from local image...")
+        _logger.info("(This might take a couple of seconds, but needs only to be done once)")
         command_list = [
             "scp",
             abs_singularity_image_path,
@@ -170,7 +170,7 @@ class SingularityManager:
         command_string = ' '.join(command_list)
         run_subprocess(
             command_string,
-            additional_error_message="Was not able to copy local singularity image to " "remote! ",
+            additional_error_message="Was not able to copy local singularity image to remote! ",
         )
 
     def prepare_singularity_files(self):
@@ -185,13 +185,13 @@ class SingularityManager:
         """
         copy_to_remote = False
         if _check_if_new_image_needed():
-            print(
+            _logger.info(
                 "Local singularity image is not up-to-date with QUEENS! "
                 "Writing new local image..."
             )
-            print("(This will take 3 min or so, but needs only to be done once)")
+            _logger.info("(This will take 3 min or so, but needs only to be done once)")
             create_singularity_image()
-            print("Local singularity image written successfully!")
+            _logger.info("Local singularity image written successfully!")
 
             if self.remote:
                 copy_to_remote = True
@@ -241,16 +241,16 @@ class SingularityManager:
             pass
 
         if active_ssh:
-            # print the queens related open ports
-            print('The following QUEENS sessions are still occupying ports on the remote:')
-            print('----------------------------------------------------------------------')
-            pprint(active_ssh, width=150)
-            print('----------------------------------------------------------------------')
-            print('')
-            print('Do you want to close these connections (recommended)?')
+            # _logger.info the queens related open ports
+            _logger.info('The following QUEENS sessions are still occupying ports on the remote:')
+            _logger.info('----------------------------------------------------------------------')
+            p_logger.info(active_ssh, width=150)
+            _logger.info('----------------------------------------------------------------------')
+            _logger.info('')
+            _logger.info('Do you want to close these connections (recommended)?')
             while True:
                 try:
-                    print('Please type "y" or "n" >> ')
+                    _logger.info('Please type "y" or "n" >> ')
                     answer = request_user_input_with_default_and_timeout(default="n", timeout=10)
                 except SyntaxError:
                     answer = None
@@ -261,18 +261,20 @@ class SingularityManager:
                         command_list = ['ssh', self.remote_connect, '\'kill -9', ssh_id + '\'']
                         command_string = ' '.join(command_list)
                         run_subprocess(command_string)
-                    print('Old QUEENS port-forwardings were successfully terminated!')
+                    _logger.info('Old QUEENS port-forwardings were successfully terminated!')
                     break
                 elif answer.lower() == 'n':
                     break
                 elif answer is None:
-                    print('You gave an empty input! Only "y" or "n" are valid inputs! Try again!')
+                    _logger.info(
+                        'You gave an empty input! Only "y" or "n" are valid inputs! Try again!'
+                    )
                 else:
-                    print(
+                    _logger.info(
                         f'The input "{answer}" is not an appropriate choice! '
                         f'Only "y" or "n" are valid inputs!'
                     )
-                    print('Try again!')
+                    _logger.info('Try again!')
         else:
             pass
 
@@ -306,7 +308,7 @@ class SingularityManager:
             command_string = ' '.join(command_list)
             port_fail = os.popen(command_string).read()
             time.sleep(0.1)
-        print('Remote port-forwarding successfully established for port %s' % (port))
+        _logger.info('Remote port-forwarding successfully established for port %s' % (port))
 
         return port
 
@@ -366,7 +368,9 @@ class SingularityManager:
                 for ssh_id in active_ssh_ids:
                     command_string = 'kill -9 ' + ssh_id
                     run_subprocess(command_string, raise_error_on_subprocess_failure=False)
-                print('Active QUEENS local to remote port-forwardings were closed successfully!')
+                _logger.info(
+                    'Active QUEENS local to remote port-forwardings were closed successfully!'
+                )
 
     def close_remote_port(self, port):
         """Closes the ports used in the current QUEENS simulation.
@@ -404,7 +408,7 @@ class SingularityManager:
                 command_list = ['ssh', self.remote_connect, '\'kill -9', ssh_id + '\'']
                 command_string = ' '.join(command_list)
                 run_subprocess(command_string)
-            print('Active QUEENS remote to local port-forwardings were closed successfully!')
+            _logger.info('Active QUEENS remote to local port-forwardings were closed successfully!')
 
     def copy_temp_json(self):
         """Copies a (temporary) JSON input-file to the remote machine.
