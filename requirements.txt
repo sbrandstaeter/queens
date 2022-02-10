@@ -361,6 +361,6 @@ yarl==1.7.2
     # via aiohttp
 zipp==3.7.0
     # via importlib-metadata
-particles
+particles==0.3
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
