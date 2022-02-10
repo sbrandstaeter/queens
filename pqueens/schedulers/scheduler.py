@@ -19,6 +19,29 @@ class Scheduler(metaclass=abc.ABCMeta):
     computing resources with or without Singularity containers using
     various scheduling systems on respective computing resource (see
     also respective Wiki article for more details).
+
+    Attributes:
+            experiment_name (str):     name of QUEENS experiment
+            input_file (str):          path to QUEENS input file
+            restart (bool):            flag for restart
+            experiment_dir (str):      path to QUEENS experiment directory
+            driver_name (str):         Name of the driver that shall be used for job submission
+            config (dict):             dictionary containing configuration as provided in
+                                       QUEENS input file
+            restart (bool):            flag for restart
+            cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
+                                       cluster options
+            remote (bool):             flag for remote scheduling
+            remote connect (str):      (only for remote scheduling) address of remote
+                                       computing resource
+            port (int):                (only for remote scheduling with Singularity) port of
+                                       remote resource for ssh port-forwarding to database
+            cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
+                                       cluster options
+            singularity (bool):        flag for use of Singularity containers
+            scheduler_type (str):      type of scheduler chosen in QUEENS input file
+            process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids
+                                as keys
     """
 
     def __init__(
@@ -47,7 +70,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
             remote (bool):             flag for remote scheduling
-            remote connect (str):      (only for remote scheduling) adress of remote
+            remote connect (str):      (only for remote scheduling) address of remote
                                        computing resource
             port (int):                (only for remote scheduling with Singularity) port of
                                        remote resource for ssh port-forwarding to database
@@ -55,8 +78,6 @@ class Scheduler(metaclass=abc.ABCMeta):
                                        cluster options
             singularity (bool):        flag for use of Singularity containers
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
-            process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids
-                                as keys
 
         Returns:
             scheduler (obj):           instance of scheduler class
