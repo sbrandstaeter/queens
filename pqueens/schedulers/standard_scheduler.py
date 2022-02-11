@@ -112,6 +112,12 @@ class StandardScheduler(Scheduler):
         input_file = config["input_file"]
         restart = config.get("restart", False)
         singularity = scheduler_options.get('singularity', False)
+        if not isinstance(singularity, bool):
+            raise TypeError(
+                f"The option 'singularity' in the scheduler part of the input file has to be a"
+                f" boolean, however you provided '{singularity}' which is of type "
+                f"{type(singularity)} "
+            )
         if singularity:
             if _check_if_new_image_needed():
                 _logger.info("Local singularity image is outdated/missing, building a new one!")
