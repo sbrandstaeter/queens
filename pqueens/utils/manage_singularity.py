@@ -244,7 +244,7 @@ class SingularityManager:
             # _logger.info the queens related open ports
             _logger.info('The following QUEENS sessions are still occupying ports on the remote:')
             _logger.info('----------------------------------------------------------------------')
-            p_logger.info(active_ssh, width=150)
+            _logger.info(active_ssh)
             _logger.info('----------------------------------------------------------------------')
             _logger.info('')
             _logger.info('Do you want to close these connections (recommended)?')
@@ -452,7 +452,13 @@ def _check_if_files_changed():
         [bool]: if files have changed
     """
     # Folders included in the singularity image relevant for a run
-    folders_to_compare_list = ['drivers/', 'post_post/', 'utils/', 'external_geometry/']
+    folders_to_compare_list = [
+        'drivers/',
+        'post_post/',
+        'utils/',
+        'external_geometry/',
+        'randomfields/',
+    ]
 
     # Specific files in the singularity image relevant for a run
     files_to_compare_list = [
@@ -512,6 +518,9 @@ def _get_python_files_in_folder(relative_path_from_pqueens):
 def sha1sum(file_path, remote_connect=None):
     """Hash files using sha1sum.
 
+    sha1sum is a computer program that calculates hashes and is the default on most Linux
+    distributions. It it is not available on your OS under the same name you can still create a
+    symlink.
     Args:
         file_path (str): Absolute path to the file to hash.
         remote_connect (str, optional): username@machine in case of remote machines.
