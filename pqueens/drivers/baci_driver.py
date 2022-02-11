@@ -63,7 +63,6 @@ class BaciDriver(Driver):
         postprocessor (str):       (only for post-processing) path to postprocessor of
                                    respective CAE software
         random_fields_lst (lst):   List of random fields
-        remote_python_cmd (str):   path to python-bin on the remote resource
         scheduler_type (str):      type of scheduler chosen in QUEENS input file
         workdir (str):             path to working directory
         do_postpostprocessing (bool): Boolean if postpost-processing should be done
@@ -105,7 +104,6 @@ class BaciDriver(Driver):
         post_options,
         postprocessor,
         random_fields_lst,
-        remote_python_cmd,
         scheduler_type,
         simulation_input_template,
         workdir,
@@ -154,7 +152,6 @@ class BaciDriver(Driver):
             postprocessor (str):       (only for post-processing) path to postprocessor of
                                        respective CAE software
             random_fields_lst (lst):   List of random fields
-            remote_python_cmd (str):   path to python-bin on the remote resource
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             simulation_input_template (str): path to BACI input template
             workdir (str):             path to working directory
@@ -196,7 +193,6 @@ class BaciDriver(Driver):
         self.postprocessor = postprocessor
         self.random_fields_lst = random_fields_lst
         self.random_fields_realized_lst = []
-        self.remote_python_cmd = remote_python_cmd
         self.scheduler_type = scheduler_type
         self.simulation_input_template = simulation_input_template
         self.workdir = workdir
@@ -230,22 +226,21 @@ class BaciDriver(Driver):
         experiment_name = config['global_settings'].get('experiment_name')
         global_output_dir = config['global_settings'].get('output_dir')
 
-        first = list(config['resources'])[0]
-        scheduler_name = config['resources'][first]['scheduler']
+        # If multiple resources are passed an error is raised in the resources module.
+        resource_name = list(config['resources'])[0]
+        scheduler_name = config['resources'][resource_name]['scheduler']
         scheduler_options = config[scheduler_name]
         scheduler_type = scheduler_options['scheduler_type']
         experiment_dir = scheduler_options['experiment_dir']
-        num_procs = scheduler_options.get('num_procs', '1')
-        num_procs_post = scheduler_options.get('num_procs_post', '1')
+        num_procs = scheduler_options.get('num_procs', 1)
+        num_procs_post = scheduler_options.get('num_procs_post', 1)
         if scheduler_options.get('remote', False):
             remote = True
             remote_options = scheduler_options['remote']
             remote_connect = remote_options['connect']
-            remote_python_cmd = remote_options.get('python_cmd', 'python')
         else:
             remote = False
             remote_connect = None
-            remote_python_cmd = None
         singularity = scheduler_options.get('singularity', False)
 
         direct_scheduling = False
@@ -368,7 +363,6 @@ class BaciDriver(Driver):
             post_options,
             postprocessor,
             random_fields_lst,
-            remote_python_cmd,
             scheduler_type,
             simulation_input_template,
             workdir,
@@ -383,10 +377,7 @@ class BaciDriver(Driver):
         In case of remote scheduling without Singularity or in all other
         cases.
         """
-        if self.remote and not self.singularity:
-            self.prepare_input_file_on_remote()
-        else:
-            inject(self.job['params'], self.simulation_input_template, self.input_file)
+        inject(self.job['params'], self.simulation_input_template, self.input_file)
 
         # delete copied file and potential back-up files afterwards to save to space
         if self.external_geometry_obj and ("_copy_" in self.simulation_input_template):
@@ -452,80 +443,6 @@ class BaciDriver(Driver):
 
                 # run post-processing command
                 self.run_postprocessing_cmd(output_file_opt, target_file_opt, option)
-
-    # ----- METHODS FOR PREPARATIVE TASKS ON REMOTE MACHINE ---------------------
-    def prepare_input_file_on_remote(self):
-        """Prepare input file on remote machine."""
-        # generate a JSON file containing parameter dictionary
-        params_json_name = 'params_dict.json'
-        params_json_path = os.path.join(self.global_output_dir, params_json_name)
-        with open(params_json_path, 'w') as fp:
-            json.dump(self.job['params'], fp, cls=NumpyArrayEncoder)
-
-        # generate command for copying 'injector.py' and JSON file containing
-        # parameter dictionary to experiment directory on remote machine
-        injector_filename = 'injector.py'
-        this_dir = os.path.dirname(__file__)
-        rel_path = os.path.join('../utils', injector_filename)
-        abs_path = os.path.join(this_dir, rel_path)
-        command_list = [
-            "scp ",
-            abs_path,
-            " ",
-            params_json_path,
-            " ",
-            self.remote_connect,
-            ":",
-            self.experiment_dir,
-        ]
-        command_string = ''.join(command_list)
-        run_subprocess(
-            command_string,
-            additional_error_message="Injector file and param dict file could not be copied to"
-            " remote machine!",
-        )
-
-        # remove local copy of JSON file containing parameter dictionary
-        os.remove(params_json_path)
-
-        # generate command for executing 'injector.py' on remote machine
-        injector_path_on_remote = os.path.join(self.experiment_dir, injector_filename)
-        json_path_on_remote = os.path.join(self.experiment_dir, params_json_name)
-
-        arg_list = (
-            json_path_on_remote + ' ' + self.simulation_input_template + ' ' + self.input_file
-        )
-        command_list = [
-            'ssh',
-            self.remote_connect,
-            '"',
-            self.remote_python_cmd,
-            injector_path_on_remote,
-            arg_list,
-            '"',
-        ]
-        command_string = ' '.join(command_list)
-        run_subprocess(
-            command_string,
-            additional_error_message="Injector file could not be executed on remote machine!",
-        )
-
-        # generate command for removing 'injector.py' and JSON file containing
-        # parameter dictionary from experiment directory on remote machine
-        command_list = [
-            'ssh',
-            self.remote_connect,
-            '"rm',
-            injector_path_on_remote,
-            json_path_on_remote,
-            '"',
-        ]
-        command_string = ' '.join(command_list)
-        run_subprocess(
-            command_string,
-            additional_error_message="Injector and JSON file could not be removed from remote"
-            " machine!",
-        )
 
     # ----- RUN METHODS ---------------------------------------------------------
     # overload the parent pre_job_run method
