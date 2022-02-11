@@ -94,7 +94,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.process_ids = {}
 
     @classmethod
-    def from_config_create_scheduler(cls, config, scheduler_name=None, driver_name=None):
+    def from_config_create_scheduler(_cls, config, scheduler_name=None, driver_name=None):
         """Create scheduler from problem configuration.
 
         Args:
@@ -123,26 +123,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         scheduler_options = config[scheduler_name]
         scheduler = scheduler_dict[scheduler_options["scheduler_type"]]
         return scheduler.from_config_create_scheduler(config, scheduler_name, driver_name)
-
-        ## TODO: This should be moved
-        ## TODO: this might not work anymore for multiple drivers
-        ## print out driver information
-        ## (done here to print out this information only once)
-        # try:
-        #    if config['driver']['driver_params'].get('post_post') is not None:
-        #        post_post_file_prefix = config['driver']['driver_params']['post_post'].get(
-        #            'file_prefix'
-        #        )
-        #    else:
-        #        post_post_file_prefix = None
-        #    print_driver_information(
-        #        config['driver']['driver_type'],
-        #        config['driver']['driver_params'].get('cae_software_version'),
-        #        post_post_file_prefix,
-        #        scheduler_options.get('docker_image', None),
-        #    )
-        # except KeyError:
-        #    pass
 
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
     def submit(self, job_id, batch):
