@@ -120,6 +120,12 @@ class ClusterScheduler(Scheduler):
         input_file = config["input_file"]
         restart = config.get("restart", False)
         singularity = scheduler_options.get('singularity', False)
+        if not isinstance(singularity, bool):
+            raise TypeError(
+                f"The option 'singularity' in the scheduler part of the input file has to be a"
+                f" boolean, however you provided '{singularity}' which is of type "
+                f"{type(singularity)} "
+            )
         scheduler_type = scheduler_options["scheduler_type"]
 
         cluster_options = scheduler_options.get("cluster", {})
@@ -143,8 +149,8 @@ class ClusterScheduler(Scheduler):
         # This hurts my brain
         cluster_options['job_name'] = None
         cluster_options['CLUSTERSCRIPT'] = cluster_options.get('script', None)
-        cluster_options['nposttasks'] = scheduler_options.get('num_procs_post', '1')
-        num_procs = scheduler_options.get('num_procs', '1')
+        cluster_options['nposttasks'] = scheduler_options.get('num_procs_post', 1)
+        num_procs = scheduler_options.get('num_procs', 1)
 
         # set cluster options required specifically for PBS or Slurm
         if scheduler_type == 'pbs':
