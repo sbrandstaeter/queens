@@ -6,6 +6,8 @@ import sys
 import numpy as np
 
 from pqueens.utils.cluster_utils import get_cluster_job_id
+from pqueens.utils.information_output import print_driver_information, print_scheduling_information
+from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
@@ -13,151 +15,232 @@ from .scheduler import Scheduler
 
 
 class ClusterScheduler(Scheduler):
-    """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS."""
+    """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS.
 
-    def __init__(self, base_settings):
+    Args:
+        experiment_name (str):     name of QUEENS experiment
+        input_file (str):          path to QUEENS input file
+        restart (bool):            flag for restart
+        experiment_dir (str):      path to QUEENS experiment directory
+        driver_name (str):         Name of the driver that shall be used for job submission
+        config (dict):             dictionary containing configuration as provided in
+                                   QUEENS input file
+        cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
+                                   cluster options
+        singularity (bool):        flag for use of Singularity containers
+        scheduler_type (str):      type of scheduler chosen in QUEENS input file
+        singularity_manager (obj): instance of Singularity-manager class
+        remote (bool):             flag for remote scheduling
+        remote connect (str):      (only for remote scheduling) adress of remote
+                                   computing resource
+        port (int):                (only for remote scheduling with Singularity) port of
+                                   remote resource for ssh port-forwarding to database
+        process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids as
+                           keys
+    """
+
+    def __init__(
+        self,
+        experiment_name,
+        input_file,
+        restart,
+        experiment_dir,
+        driver_name,
+        config,
+        cluster_options,
+        singularity,
+        scheduler_type,
+        singularity_manager,
+        remote,
+        remote_connect,
+    ):
         """Init method for the cluster scheduler.
 
         Args:
-            base_settings (dict): dictionary containing settings from base class for
-                                  further use and completion in this child class
+            experiment_name (str):     name of QUEENS experiment
+            input_file (str):          path to QUEENS input file
+            restart (bool):            flag for restart
+            experiment_dir (str):      path to QUEENS experiment directory
+            driver_name (str):         Name of the driver that shall be used for job submission
+            config (dict):             dictionary containing configuration as provided in
+                                       QUEENS input file
+            cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
+                                       cluster options
+            singularity (bool):        flag for use of Singularity containers
+            scheduler_type (str):      type of scheduler chosen in QUEENS input file
+            singularity_manager (obj): instance of Singularity-manager class
+            remote (bool):             flag for remote scheduling
+            remote_connect (str):      (only for remote scheduling) adress of remote
+                                       computing resource
+            port (int):                (only for remote scheduling with Singularity) port of
+                                       remote resource for ssh port-forwarding to database
+            process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids
+                                as keys
         """
-        super(ClusterScheduler, self).__init__(base_settings)
+        super().__init__(
+            experiment_name,
+            input_file,
+            restart,
+            experiment_dir,
+            driver_name,
+            config,
+            cluster_options,
+            singularity,
+            scheduler_type,
+        )
+        self.singularity_manager = singularity_manager
+        self.remote = remote
+        self.port = None
+        self.remote_connect = remote_connect
 
         # Close the ssh ports at when exiting after the queens run
         atexit.register(self.post_run)
 
     @classmethod
-    def create_scheduler_class(cls, base_settings):
+    def from_config_create_scheduler(cls, config, scheduler_name=None, driver_name=None):
         """Create cluster scheduler (Slurm or Torque/PBS) class for QUEENS.
 
         Args:
-            base_settings (dict): dictionary containing settings from base class for
-                                  further use and completion in this child class
+            config (dict): QUEENS input dictionary
+            scheduler_name (str): Name of the scheduler
+            driver_name (str): Name of the driver
 
         Returns:
-            scheduler (obj):      instance of scheduler class
+            instance of cluster scheduler class
         """
-        # get input options for scheduler in general and cluster in
-        # particular from base settings
-        scheduler_input_options = base_settings['scheduler_input_options']
-        cluster_input_options = base_settings['cluster_input_options']
-        singularity_input_options = base_settings['singularity_input_options']
+        if not scheduler_name:
+            scheduler_name = "scheduler"
+        scheduler_options = config[scheduler_name]
 
-        # initialize sub-dictionary for cluster options within base settings
-        base_settings['cluster_options'] = {}
+        if not scheduler_options.get("remote", False):
+            raise NotImplementedError("Standard scheduler can not be used remotely")
 
-        # get general cluster options
-        base_settings['cluster_options']['job_name'] = None  # job name assembled later
-        base_settings['cluster_options']['walltime'] = cluster_input_options['walltime']
-        base_settings['cluster_options']['CLUSTERSCRIPT'] = cluster_input_options['script']
+        experiment_name = config['global_settings']['experiment_name']
+        experiment_dir = scheduler_options['experiment_dir']
+        input_file = config["input_file"]
+        restart = config.get("restart", False)
+        singularity = scheduler_options.get('singularity', False)
+        if not isinstance(singularity, bool):
+            raise TypeError(
+                f"The option 'singularity' in the scheduler part of the input file has to be a"
+                f" boolean, however you provided '{singularity}' which is of type "
+                f"{type(singularity)} "
+            )
+        scheduler_type = scheduler_options["scheduler_type"]
 
-        # set output option (currently not enforced)
-        if cluster_input_options.get('output', True):
-            base_settings['cluster_options']['output'] = ''
+        cluster_options = scheduler_options.get("cluster", {})
+        if scheduler_options.get('remote'):
+            remote = True
+            remote_connect = scheduler_options['remote']['connect']
         else:
-            base_settings['cluster_options']['output'] = '--output=/dev/null --error=/dev/null'
+            remote = False
+            remote_connect = None
 
-        # get number of processors for processing and post-processing (default: 1)
-        ntasks = int(scheduler_input_options.get('num_procs', '1'))
-        base_settings['cluster_options']['nposttasks'] = scheduler_input_options.get(
-            'num_procs_post', '1'
-        )
+        if singularity:
+            singularity_options = scheduler_options['singularity_settings']
+            singularity_manager = SingularityManager(
+                remote=remote,
+                remote_connect=remote_connect,
+                singularity_bind=singularity_options['cluster_bind'],
+                singularity_path=singularity_options['cluster_path'],
+                input_file=input_file,
+            )
+
+        # This hurts my brain
+        cluster_options['job_name'] = None
+        cluster_options['CLUSTERSCRIPT'] = cluster_options.get('script', None)
+        cluster_options['nposttasks'] = scheduler_options.get('num_procs_post', 1)
+        num_procs = scheduler_options.get('num_procs', 1)
 
         # set cluster options required specifically for PBS or Slurm
-        if scheduler_input_options['scheduler_type'] == 'pbs':
-            # set PBS start command
-            base_settings['cluster_options']['start_cmd'] = 'qsub'
+        if scheduler_type == 'pbs':
+            cluster_options['start_cmd'] = 'qsub'
 
-            # set relative path to PBS jobscript template
             rel_path = '../utils/jobscript_pbs.sh'
 
-            # for PBS, get type of batch (default: batch)
-            base_settings['cluster_options']['pbs_queue'] = cluster_input_options.get(
-                'pbs_queue', 'batch'
-            )
-            # for PBS, split up number of tasks into number of nodes and
-            # processors per node
-            navppn = int(scheduler_input_options.get('pbs_num_avail_ppn', '16'))
-            if ntasks <= navppn:
-                base_settings['cluster_options']['pbs_nodes'] = '1'
-                base_settings['cluster_options']['pbs_ppn'] = str(ntasks)
+            cluster_options['pbs_queue'] = cluster_options.get('pbs_queue', 'batch')
+            ppn = scheduler_options.get('pbs_num_avail_ppn', 16)
+            if num_procs <= ppn:
+                cluster_options['pbs_nodes'] = '1'
+                cluster_options['pbs_ppn'] = str(num_procs)
             else:
-                num_nodes = np.ceil(ntasks / navppn)
-                if ntasks % num_nodes == 0:
-                    base_settings['cluster_options']['pbs_ppn'] = str(ntasks / num_nodes)
+                num_nodes = np.ceil(num_procs / ppn)
+                if num_procs % num_nodes == 0:
+                    cluster_options['pbs_ppn'] = str(num_procs / num_nodes)
                 else:
                     raise ValueError(
                         "Number of tasks not evenly distributable, as required for PBS scheduler!"
                     )
-        else:
-            # set Slurm start command
-            base_settings['cluster_options']['start_cmd'] = 'sbatch'
+        elif scheduler_type == "slurm":
+            cluster_options['start_cmd'] = 'sbatch'
 
-            # set relative path to Slurm jobscript template
             rel_path = '../utils/jobscript_slurm.sh'
 
-            # for Slurm, directly set number of tasks for processing
-            base_settings['cluster_options']['slurm_ntasks'] = str(ntasks)
+            cluster_options['slurm_ntasks'] = str(num_procs)
 
-            # for Slurm, get exclusivity flag (default: false)
-            if cluster_input_options.get('slurm_exclusive', False):
-                base_settings['cluster_options']['slurm_exclusive'] = ''
+            # What is slurm exclusive?
+            if cluster_options.get('slurm_exclusive', False):
+                cluster_options['slurm_exclusive'] = ''
             else:
-                base_settings['cluster_options']['slurm_exclusive'] = '#'
+                cluster_options['slurm_exclusive'] = '#'
 
-            # for Slurm, get node-exclusion flag (default: false) as well
-            # as potentially excluded nodes
-            if cluster_input_options.get('slurm_exclude', False):
-                base_settings['cluster_options']['slurm_exclude'] = ''
-                base_settings['cluster_options']['slurm_excl_node'] = cluster_input_options[
-                    'slurm_excl_node'
-                ]
+            if cluster_options.get('slurm_exclude', False):
+                cluster_options['slurm_exclude'] = ''
+                cluster_options['slurm_excl_node'] = cluster_options['slurm_excl_node']
             else:
-                base_settings['cluster_options']['slurm_exclude'] = '#'
-                base_settings['cluster_options']['slurm_excl_node'] = ''
+                cluster_options['slurm_exclude'] = '#'
+                cluster_options['slurm_excl_node'] = ''
+        else:
+            raise ValueError("Know cluster scheduler types are pbs or slurm")
 
-        # set absolute path to jobscript template
         script_dir = os.path.dirname(__file__)  # absolute path to directory of this file
         abs_path = os.path.join(script_dir, rel_path)
-        base_settings['cluster_options']['jobscript_template'] = abs_path
+        cluster_options['jobscript_template'] = abs_path
 
-        # set cluster options required for Singularity
-        if singularity_input_options is not None:
-            # set path to Singularity container in general and
-            # also already as executable for jobscript
-            singularity_path = singularity_input_options['cluster_path']
-            base_settings['cluster_options']['singularity_path'] = singularity_path
-            base_settings['cluster_options']['EXE'] = os.path.join(
-                singularity_path, 'singularity_image.sif'
-            )
+        if singularity_options:
+            singularity_path = singularity_options['cluster_path']
+            cluster_options['singularity_path'] = singularity_path
+            cluster_options['EXE'] = os.path.join(singularity_path, 'singularity_image.sif')
 
-            # set cluster bind for Singularity
-            base_settings['cluster_options']['singularity_bind'] = singularity_input_options[
-                'cluster_bind'
-            ]
+            cluster_options['singularity_bind'] = singularity_options['cluster_bind']
 
-            # set further fixed options when using Singularity
-            base_settings['cluster_options']['OUTPUTPREFIX'] = ''
-            base_settings['cluster_options']['POSTPROCESSFLAG'] = 'false'
-            base_settings['cluster_options']['POSTEXE'] = ''
-            base_settings['cluster_options']['POSTPOSTPROCESSFLAG'] = 'true'
+            cluster_options['OUTPUTPREFIX'] = ''
+            cluster_options['POSTPROCESSFLAG'] = 'false'
+            cluster_options['POSTEXE'] = ''
+            cluster_options['POSTPOSTPROCESSFLAG'] = 'true'
         else:
-            # set further fixed options when not using Singularity
-            base_settings['cluster_options']['singularity_path'] = None
-            base_settings['cluster_options']['singularity_bind'] = None
-            base_settings['cluster_options']['POSTPOSTPROCESSFLAG'] = 'false'
+            cluster_options['singularity_path'] = None
+            cluster_options['singularity_bind'] = None
+            cluster_options['POSTPOSTPROCESSFLAG'] = 'false'
 
-        return cls(base_settings)
+        # TODO move this to a different place
+        # print out scheduling information
+        print_scheduling_information(
+            scheduler_type,
+            remote,
+            remote_connect,
+            singularity,
+        )
+        return cls(
+            experiment_name,
+            input_file,
+            restart,
+            experiment_dir,
+            driver_name,
+            config,
+            cluster_options,
+            singularity,
+            scheduler_type,
+            singularity_manager,
+            remote,
+            remote_connect,
+        )
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
         """Pre-run routine for local and remote computing with Singularity.
 
         Do automated port-forwarding and copying files/folders.
-
-        Returns:
-            None
         """
         # pre-run routines required when using Singularity both local and remote
         if self.singularity is True:
@@ -196,17 +279,12 @@ class ClusterScheduler(Scheduler):
                 self.cluster_options['job_name'] = '{}_{}_{}'.format(
                     self.experiment_name, 'queens', job_id
                 )
-                # pylint: disable=line-too-long
-                self.cluster_options[
-                    'INPUT'
-                ] = '--job_id={} --batch={} --port={} --path_json={} --driver_name={} --workdir '.format(
-                    job_id,
-                    batch,
-                    self.port,
-                    self.cluster_options['singularity_path'],
-                    self.driver_name,
+                self.cluster_options['INPUT'] = (
+                    f"--job_id={job_id} --batch={batch} --port={self.port} --path_json="
+                    + f"{self.cluster_options['singularity_path']} --driver_name="
+                    + f"{self.driver_name} --workdir"
                 )
-                # pylint: enable=line-too-long
+
                 self.cluster_options['DESTDIR'] = os.path.join(
                     str(self.experiment_dir), str(job_id), 'output'
                 )
@@ -288,8 +366,12 @@ class ClusterScheduler(Scheduler):
     def check_job_completion(self, job):
         """Check whether this job has been completed.
 
+        Args:
+            job (dict): Job dict.
+
         Returns:
-            None
+            completed (bool): If job is completed
+            failed (bool): If job failed.
         """
         # initialize completion and failure flags to false
         # (Note that failure is not checked for cluster scheduler
@@ -340,10 +422,9 @@ class ClusterScheduler(Scheduler):
         return completed, failed
 
     def post_run(self):
-        """Post-run routine for remote computing with Singularity: close ports.
+        """Post-run routine.
 
-        Returns:
-            None
+        Only for remote computing with Singularity: close ports.
         """
         if self.remote and self.singularity:
             self.singularity_manager.close_local_port_forwarding()
