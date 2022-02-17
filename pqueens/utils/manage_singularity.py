@@ -486,7 +486,9 @@ def _check_if_files_changed():
             f"/usr/bin/singularity exec {abs_singularity_image_path} "
             + f"cmp {file} {filepath_in_singularity}"
         )
-        _, _, stdout, stderr = run_subprocess(command_string)
+        _, _, stdout, stderr = run_subprocess(
+            command_string, raise_error_on_subprocess_failure=False
+        )
 
         # If file is different or missing stop iteration and build the image
         if stdout or stderr:
