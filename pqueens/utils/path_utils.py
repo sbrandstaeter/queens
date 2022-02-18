@@ -39,23 +39,6 @@ def relative_path_from_queens(relative_path):
     return os.path.join(PATH_TO_QUEENS, relative_path)
 
 
-def relative_path_from_queens_tmp(relative_path):
-    """Create relative path from `queens/tmp*`.
-
-    As an example to create:
-        queens/tmp/folder/file.A
-
-    call relative_path_from_queens_tmp("folder/file.A")
-
-    Args:
-        relative_path (str): Path starting from queens/tmp
-
-    Returns:
-        [str]: Absolute path to the file
-    """
-    return os.path.join(QUEENS_TMP, relative_path)
-
-
 def create_folder_if_not_existent(path):
     """Create folder if not existent.
 
