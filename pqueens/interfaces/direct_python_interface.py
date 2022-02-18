@@ -7,6 +7,8 @@ from multiprocessing import Pool
 import numpy as np
 from tqdm import tqdm
 
+from pqueens.utils.path_utils import relative_path_from_pqueens
+
 from .interface import Interface
 
 
@@ -40,10 +42,9 @@ class DirectPythonInterface(Interface):
         self.variables = variables
 
         # get path to queens example simulator functions directory
-        function_dir = os.path.join(
-            os.path.dirname(__file__), '..', 'tests/integration_tests/example_simulator_functions'
+        abs_function_dir = relative_path_from_pqueens(
+            'tests/integration_tests/example_simulator_functions'
         )
-        abs_function_dir = os.path.abspath(function_dir)
         # join paths intelligently, i.e., if function_file contains an
         # absolute path it will be preserved, otherwise the call below will
         # prepend the absolute path to the example_simulator_functions directory
