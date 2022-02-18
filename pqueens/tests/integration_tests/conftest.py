@@ -7,30 +7,28 @@ import pathlib
 import pytest
 
 from pqueens.utils.manage_singularity import SingularityManager
+from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_from_queens
 from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.fixture(scope='session')
 def inputdir():
     """Return the path to the json input-files of the function test."""
-    dirpath = os.path.dirname(__file__)
-    input_files_path = os.path.join(dirpath, 'queens_input_files')
+    input_files_path = relative_path_from_pqueens("tests/integration_tests/queens_input_files")
     return input_files_path
 
 
 @pytest.fixture(scope='session')
 def third_party_inputs():
     """Return the path to the json input-files of the function test."""
-    dirpath = os.path.dirname(__file__)
-    input_files_path = os.path.join(dirpath, 'third_party_input_files')
+    input_files_path = relative_path_from_pqueens("tests/integration_tests/third_party_input_files")
     return input_files_path
 
 
 @pytest.fixture(scope='session')
 def config_dir():
     """Return the path to the json input-files of the function test."""
-    dirpath = os.path.dirname(__file__).split("/pqueens")[0]
-    config_dir_path = os.path.join(dirpath, 'config')
+    config_dir_path = relative_path_from_queens("config")
     return config_dir_path
 
 

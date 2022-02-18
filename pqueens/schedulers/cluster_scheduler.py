@@ -8,6 +8,7 @@ import numpy as np
 from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.information_output import print_driver_information, print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
+from pqueens.utils.path_utils import relative_path_from_pqueens
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
@@ -156,7 +157,7 @@ class ClusterScheduler(Scheduler):
         if scheduler_type == 'pbs':
             cluster_options['start_cmd'] = 'qsub'
 
-            rel_path = '../utils/jobscript_pbs.sh'
+            rel_path = 'utils/jobscript_pbs.sh'
 
             cluster_options['pbs_queue'] = cluster_options.get('pbs_queue', 'batch')
             ppn = scheduler_options.get('pbs_num_avail_ppn', 16)
@@ -174,7 +175,7 @@ class ClusterScheduler(Scheduler):
         elif scheduler_type == "slurm":
             cluster_options['start_cmd'] = 'sbatch'
 
-            rel_path = '../utils/jobscript_slurm.sh'
+            rel_path = 'utils/jobscript_slurm.sh'
 
             cluster_options['slurm_ntasks'] = str(num_procs)
 
@@ -193,8 +194,7 @@ class ClusterScheduler(Scheduler):
         else:
             raise ValueError("Know cluster scheduler types are pbs or slurm")
 
-        script_dir = os.path.dirname(__file__)  # absolute path to directory of this file
-        abs_path = os.path.join(script_dir, rel_path)
+        abs_path = relative_path_from_pqueens(rel_path)
         cluster_options['jobscript_template'] = abs_path
 
         if singularity_options:

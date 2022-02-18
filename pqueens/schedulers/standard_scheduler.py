@@ -4,6 +4,7 @@ import os
 
 from pqueens.utils.information_output import print_driver_information, print_scheduling_information
 from pqueens.utils.manage_singularity import _check_if_new_image_needed, create_singularity_image
+from pqueens.utils.path_utils import relative_path_from_queens
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.string_extractor_and_checker import check_if_string_in_file
 
@@ -167,9 +168,8 @@ class StandardScheduler(Scheduler):
         remote_args = '--job_id={} --batch={} --port={} --path_json={} --driver_name={}'.format(
             job_id, batch, '000', local_path_json, self.driver_name
         )
-        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../../singularity_image.sif'
-        local_singularity_path = os.path.join(script_dir, rel_path)
+        local_singularity_path = relative_path_from_queens("singularity_image.sif")
+
         if restart:
             cmdlist_remote_main = [
                 '/usr/bin/singularity run',

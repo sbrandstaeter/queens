@@ -7,11 +7,14 @@ import time
 
 from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
+from pqueens.utils.path_utils import (
+    PATH_TO_QUEENS,
+    relative_path_from_queens,
+    relative_path_from_pqueens,
+)
 
 _logger = logging.getLogger(__name__)
-path_to_pqueens = os.path.join(os.path.dirname(__file__), "../")
-path_to_queens = os.path.join(os.path.dirname(__file__), "../../")
-abs_singularity_image_path = os.path.join(path_to_queens, "singularity_image.sif")
+abs_singularity_image_path = relative_path_from_queens("singularity_image.sif")
 
 
 def create_singularity_image():
@@ -20,12 +23,11 @@ def create_singularity_image():
     command_string = '/usr/bin/singularity --version'
     run_subprocess(command_string, additional_error_message='Singularity could not be executed!')
 
-    script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
     definition_path = 'singularity_recipe.def'
-    abs_definition_path = os.path.join(path_to_queens, definition_path)
+    abs_definition_path = relative_path_from_queens(definition_path)
     command_list = [
         "cd",
-        path_to_queens,
+        PATH_TO_QUEENS,
         "&& unset SINGULARITY_BIND &&",
         "/usr/bin/singularity build --force --fakeroot",
         abs_singularity_image_path,
@@ -467,10 +469,8 @@ def _check_if_files_changed():
         'remote_main.py',
     ]
     # generate absolute paths
-    files_to_compare_list = [os.path.join(path_to_pqueens, file) for file in files_to_compare_list]
-    folders_to_compare_list = [
-        os.path.join(path_to_pqueens, file) for file in folders_to_compare_list
-    ]
+    files_to_compare_list = [relative_path_from_pqueens(file) for file in files_to_compare_list]
+    folders_to_compare_list = [relative_path_from_pqueens(file) for file in folders_to_compare_list]
 
     # Add files from the relevant folders to the list of files
     for folder in folders_to_compare_list:
@@ -497,18 +497,18 @@ def _check_if_files_changed():
     return files_changed
 
 
-def _get_python_files_in_folder(relative_path_from_pqueens):
+def _get_python_files_in_folder(relative_path):
     """Get list of absolute paths of files in folder.
 
     Only python files are included.
 
     Args:
-        relative_path_from_pqueens (str): Relative path to folder from pqueens.
+        relative_path (str): Relative path to folder from pqueens.
 
     Returns:
         file_paths: List of the absolute paths of the python files within the folder.
     """
-    abs_path = os.path.join(path_to_pqueens, relative_path_from_pqueens)
+    abs_path = relative_path_from_pqueens(relative_path)
     elements = os.listdir(abs_path)
     elements.sort()
     file_paths = [

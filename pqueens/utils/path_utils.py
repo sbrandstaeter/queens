@@ -3,10 +3,9 @@ import os
 
 PATH_TO_PQUEENS = os.path.join(os.path.dirname(__file__), "../")
 PATH_TO_QUEENS = os.path.join(os.path.dirname(__file__), "../../")
-QUEENS_TMP = create_folder_if_not_existent(PATH_TO_QUEENS, "tmp/")
 
 
-def from_pqueens(relative_path):
+def relative_path_from_pqueens(relative_path):
     """Create relative path from `pqueens/`.
 
     As an example to create:
