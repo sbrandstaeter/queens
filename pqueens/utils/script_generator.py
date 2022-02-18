@@ -3,9 +3,8 @@
 import os
 
 from pqueens.utils.injector import inject
-from pqueens.utils.run_subprocess import run_subprocess
-
 from pqueens.utils.path_utils import relative_path_from_pqueens
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 def generate_submission_script(

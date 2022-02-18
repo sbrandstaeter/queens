@@ -5,13 +5,13 @@ import random
 import subprocess
 import time
 
-from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
-from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 from pqueens.utils.path_utils import (
     PATH_TO_QUEENS,
-    relative_path_from_queens,
     relative_path_from_pqueens,
+    relative_path_from_queens,
 )
+from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
+from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 _logger = logging.getLogger(__name__)
 abs_singularity_image_path = relative_path_from_queens("singularity_image.sif")
