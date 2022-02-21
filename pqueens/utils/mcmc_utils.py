@@ -1,5 +1,4 @@
-"""Collection of utility functions and classes for Markov Chain Monte Carlo
-algorithms."""
+"""Collection of utils for Markov Chain Monte Carlo algorithms."""
 
 import abc
 
@@ -13,6 +12,7 @@ class ProposalDistribution:
     """Base class for continuous probability distributions."""
 
     def __init__(self, mean, covariance, dimension):
+        """Initialize proposal distribution."""
         # TODO this base class is not general enough
         self.mean = mean
         self.covariance = covariance
@@ -20,7 +20,7 @@ class ProposalDistribution:
 
     @abc.abstractmethod
     def cdf(self, x):
-        """Evaluate the cummulative distribution function (cdf)."""
+        """Evaluate the cumulative distribution function (cdf)."""
         pass
 
     @abc.abstractmethod
@@ -47,11 +47,11 @@ class ProposalDistribution:
 class Uniform(ProposalDistribution):
     """Uniform distribution.
 
-    On the interval [a, b)
+    On the interval [a, b).
     """
 
     def __init__(self, a, b):
-
+        """Initialize uniform distribution."""
         if b <= a:
             raise ValueError(f"Invalid interval: [a, b) = [{a}, {b}).\n Set a<=b!")
 
@@ -69,28 +69,29 @@ class Uniform(ProposalDistribution):
         self.logpdf_const = np.log(self.pdf_const)
 
     def cdf(self, x):
+        """Cumulative distribution function."""
         return scipy.stats.uniform.cdf(x, loc=self.a, scale=self.width)
 
     def draw(self, num_draws=1):
-        """Return ndarray of shape num_draws with samples between [a, b)."""
-
+        """Draw samples."""
         return npy.random.uniform(low=self.a, high=self.b, size=num_draws)
 
     def logpdf(self, x):
-
+        """Log of the probability density function."""
         if x >= self.a and x < self.b:
             return self.logpdf_const
         else:
             return -np.inf
 
     def pdf(self, x):
-
+        """Probability density function."""
         if x >= self.a and x < self.b:
             return self.pdf_const
         else:
             return 0
 
     def ppf(self, q):
+        """Percent point function (inverse of cdf — percentiles)."""
         return scipy.stats.uniform.ppf(q=q, loc=self.a, scale=self.width)
 
 
@@ -102,7 +103,7 @@ class LogNormal(ProposalDistribution):
     """
 
     def __init__(self, mu, sigma):
-
+        """Initialize lognormal distribution."""
         # sanity checks:
         if sigma <= 0:
             raise ValueError(f"Sigma has to be positive. (sigma > 0). You supplied {sigma}")
@@ -124,18 +125,23 @@ class LogNormal(ProposalDistribution):
         self.K2 = 1.0 / (2.0 * self.sigma ** 2)
 
     def cdf(self, x):
+        """Cumulative distribution function."""
         return scipy.stats.lognorm.cdf(x, s=self.sigma, scale=np.exp(self.mu))
 
     def draw(self, num_draws=1):
+        """Draw samples."""
         return npy.random.lognormal(mean=self.mu, sigma=self.sigma, size=num_draws)
 
     def logpdf(self, x):
+        """Log of the probability density function."""
         return -self.K2 * (np.log(x) - self.mu) ** 2 + self.log_K1 - np.log(x)
 
     def pdf(self, x):
+        """Probability density function."""
         return self.K1 * np.exp(-self.K2 * (np.log(x) - self.mu) ** 2) / x
 
     def ppf(self, q):
+        """Percent point function (inverse of cdf — percentiles)."""
         return scipy.stats.lognorm.ppf(q, s=self.sigma, scale=np.exp(self.mu))
 
 
@@ -143,7 +149,7 @@ class NormalProposal(ProposalDistribution):
     """Normal distribution."""
 
     def __init__(self, mean, covariance):
-
+        """Initialize normal distribution."""
         # convert to ndarrays if possible and not already done
         mean = np.array(mean)
         covariance = np.array(covariance)
@@ -192,12 +198,14 @@ class NormalProposal(ProposalDistribution):
         self.log_K1 = np.log(self.K1)
 
     def cdf(self, x):
+        """Cumulative distribution function."""
         if self.dimension == 1:
             return scipy.stats.norm.cdf(x, loc=self.mean, scale=self.std)
         else:
             return scipy.stats.multivariate_normal.cdf(x, mean=self.mean, cov=self.covariance)
 
     def draw(self, num_draws=1):
+        """Draw samples."""
         uncorrelated_vector = (
             npy.random.randn(self.dimension, num_draws)
             .reshape((self.dimension, num_draws))
@@ -209,6 +217,7 @@ class NormalProposal(ProposalDistribution):
         ).T
 
     def logpdf(self, x):
+        """Log of the probability density function."""
         if self.dimension == 1:
             logpdf = (
                 -np.log(np.sqrt(self.covariance))
@@ -222,6 +231,7 @@ class NormalProposal(ProposalDistribution):
         return logpdf
 
     def ppf(self, q):
+        """Percent point function (inverse of cdf — percentiles)."""
         if self.dimension == 1:
             return scipy.stats.norm.ppf(q, loc=self.mean, scale=self.std)
         else:
@@ -231,13 +241,15 @@ class NormalProposal(ProposalDistribution):
             )
 
     def pdf(self, x):
+        """Probability density function."""
         y = x - self.mean
         pdf = self.K1 * np.exp(-0.5 * np.dot(np.dot(y, self.Q), y))
         return pdf
 
 
 class BetaDistribution(ProposalDistribution):
-    """
+    """Beta distribution.
+
     A generalized one dim beta distribution based on scipy stats. The generalized beta
     distribution has a lower bound at :math:`lb = loc` and and upper bound at :math:`ub = loc +
     scale`. The parameters :math:`a` and :math:`b` determine the shape of the distribution within
@@ -251,6 +263,7 @@ class BetaDistribution(ProposalDistribution):
     """
 
     def __init__(self, a, b, loc, scale):
+        """Initialize Beta distribution."""
         # sanity checks:
         if (a <= 0) or (b <= 0):
             raise ValueError(
@@ -268,18 +281,23 @@ class BetaDistribution(ProposalDistribution):
         )
 
     def cdf(self, x):
+        """Cumulative distribution function."""
         return self.distr.cdf(x)
 
     def draw(self, num_draws=1):
+        """Draw samples."""
         return self.distr.rvs(size=num_draws)
 
     def logpdf(self, x):
+        """Log of the probability density function."""
         return self.distr.logpdf(x)
 
     def pdf(self, x):
+        """Probability density function."""
         return self.distr.pdf(x)
 
     def ppf(self, q):
+        """Percent point function (inverse of cdf — percentiles)."""
         return self.distr.ppf(q)
 
 
@@ -323,7 +341,6 @@ def create_proposal_distribution(distribution_options):
 
 def mh_select(log_acceptance_probability, current_sample, proposed_sample):
     """Do Metropolis Hastings selection."""
-
     isfinite = npy.isfinite(log_acceptance_probability)
     accept = (
         npy.log(npy.random.uniform(size=log_acceptance_probability.shape))
@@ -338,9 +355,9 @@ def mh_select(log_acceptance_probability, current_sample, proposed_sample):
 
 
 def tune_scale_covariance(scale_covariance, accept_rate):
-    """Tune the acceptance rate according to the last tuning interval.
+    r"""Tune the acceptance rate according to the last tuning interval.
 
-    The goal is an acceptance rate within 20\% - 50\%.
+    The goal is an acceptance rate within 20\\% - 50\\%.
     The (acceptance) rate is adapted according to the following rule:
 
         Acceptance Rate    Variance adaptation factor
@@ -357,7 +374,6 @@ def tune_scale_covariance(scale_covariance, accept_rate):
     Reference:
     [1]: https://github.com/pymc-devs/pymc3/blob/master/pymc3/step_methods/metropolis.py
     """
-
     scale_covariance = np.where(accept_rate < 0.001, scale_covariance * 0.1, scale_covariance)
     scale_covariance = np.where(
         (accept_rate >= 0.001) * (accept_rate < 0.05), scale_covariance * 0.5, scale_covariance

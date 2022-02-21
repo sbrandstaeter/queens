@@ -1,10 +1,12 @@
+"""Kernels for GP regression with GPy."""
+
 import GPy
 import numpy as np
 
 
 def get_gpy_kernel_type(kernel_type):
-    """
-    Choose kernel setup method by kernel type
+    """Choose kernel setup method by kernel type.
+
     Args:
         kernel_type (str): kernel type to setup
 
@@ -22,12 +24,13 @@ def get_gpy_kernel_type(kernel_type):
 
 
 def setup_rbf(input_dim, variance_0, lengthscale_0, ard):
-    """Radial Basis Function (RBF) kernel (aka squared-exponential or Gaussian
-    kernel)
+    r"""Radial Basis Function (RBF) kernel.
+
+     aka squared-exponential or Gaussian kernel
 
     .. math::
 
-       k(r) = \sigma^2 \exp \\bigg(- \\frac{1}{2} r^2 \\bigg)
+       k(r) = \\sigma^2 \\exp \\bigg(- \\frac{1}{2} r^2 \\bigg)
 
     Args:
         input_dim (int): number of input dimensions
@@ -50,12 +53,7 @@ def setup_rbf(input_dim, variance_0, lengthscale_0, ard):
 
 
 def setup_matern(input_dim, variance_0, lengthscale_0, ard):
-    """Radial Basis Function (RBF) kernel (aka squared-exponential or Gaussian
-    kernel)
-
-    .. math::
-
-       k(r) = \sigma^2 \exp \\bigg(- \\frac{1}{2} r^2 \\bigg)
+    """Matern 5/2 kernel.
 
     Args:
         input_dim (int): number of input dimensions

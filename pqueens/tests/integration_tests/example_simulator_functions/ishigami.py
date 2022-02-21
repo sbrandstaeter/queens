@@ -1,4 +1,6 @@
-"""Ishigami function is a three dimensional test function for sensitvity
+"""Ishigami function.
+
+Ishigami function is a three-dimensional test function for sensitivity
 analysis and UQ.
 
 It is nonlinear and nonmonoton.
@@ -12,9 +14,9 @@ P2 = 0.1
 
 
 def ishigami(x1, x2, x3, p1=P1, p2=P2):
-    """Three dimensional benchmark function.
+    r"""Three-dimensional benchmark function.
 
-    Three dimensional benchmark function from [2] used for UQ because it
+    Three-dimensional benchmark function from [2] used for UQ because it
     exhibits strong nonlinearity and nonmonotonicity.
     It also has a peculiar dependence on x3, as described [5]).
     The values of a and b used in [1] and [3] are: p_1 = a = 7
@@ -24,8 +26,8 @@ def ishigami(x1, x2, x3, p1=P1, p2=P2):
 
      :math:`f({\\bf x}) = \\sin(x_1) + p_1 \\sin^2(x_2 +p_2x_3^4\\sin(x_1))`
 
-    Typically distributions of the input random variables are is:
-    :math:`x_i ~` Uniform[:math:`-\pi, \pi`], for all i = 1, 2, 3
+    Typically, distributions of the input random variables are is:
+    :math:`x_i ~` Uniform[:math:`-\\pi, \\pi`], for all i = 1, 2, 3
 
     Args:
         x1 (float): Input parameter 1
@@ -38,7 +40,6 @@ def ishigami(x1, x2, x3, p1=P1, p2=P2):
         float : Value of ishigami function at [x1, x2, x3]
 
     References:
-
         [1] Crestaux, T., Martinez, J.-M., Le Maitre, O., & Lafitte, O. (2007).
             Polynomial chaos expansion for uncertainties quantification and
             sensitivity analysis [PowerPoint slides]. Retrieved from
@@ -59,7 +60,6 @@ def ishigami(x1, x2, x3, p1=P1, p2=P2):
             reducing multipliers in Monte Carlo computations of a global
             sensitivity index. Computer Physics Communications, 117(1), 52-61.
     """
-
     term1 = np.sin(x1)
     term2 = p1 * (np.sin(x2)) ** 2
     term3 = p2 * x3 ** 4 * np.sin(x1)
@@ -68,7 +68,7 @@ def ishigami(x1, x2, x3, p1=P1, p2=P2):
 
 
 def variance(p1=P1, p2=P2):
-    """Variance of Ishigami test funcion.
+    """Variance of Ishigami test function.
 
     according to (50) in [1].
 
@@ -87,7 +87,7 @@ def variance(p1=P1, p2=P2):
 
 
 def first_effect_variance(p1=P1, p2=P2):
-    """Total variance of Ishigami test funcion.
+    """Total variance of Ishigami test function.
 
     according to (50)-(53) in [1].
 
@@ -109,7 +109,7 @@ def first_effect_variance(p1=P1, p2=P2):
 
 
 def first_order_indices(p1=P1, p2=P2):
-    """First order Sobol' indices of Ishigami test funcion.
+    """First order Sobol' indices of Ishigami test function.
 
     according to (50)-(53) in [1].
 
@@ -130,7 +130,7 @@ def first_order_indices(p1=P1, p2=P2):
 
 
 def total_order_indices(p1=P1, p2=P2):
-    """Total order Sobol' indices of Ishigami test funcion.
+    """Total order Sobol' indices of Ishigami test function.
 
     according to (50)-(57) in [1].
 

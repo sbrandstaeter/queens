@@ -45,7 +45,7 @@ def do_processing(output_data, output_description):
 
     Args:
         output_data (dict):         Dictionary containing model output
-        output_descripion (dict):   Dictionary describing desired output quantities
+        output_description (dict):   Dictionary describing desired output quantities
 
     Returns:
         dict:                       Dictionary with processed results
@@ -66,12 +66,12 @@ def do_processing(output_data, output_description):
     # result interval
     result_interval = output_description.get('result_interval', None)
     # TODO: we get an error below!
-    output_data["mean"] = output_data["mean"].astype(np.float)
+    output_data["mean"] = output_data["mean"].astype(np.float64)
     if result_interval is None:
         # estimate interval from results
         result_interval = estimate_result_interval(output_data)
 
-    # get number of support support points
+    # get number of support points
     num_support_points = output_description.get('num_support_points', 100)
     support_points = np.linspace(result_interval[0], result_interval[1], num_support_points)
 
@@ -128,7 +128,6 @@ def write_results(processed_results, path_to_file, file_name):
         path_to_file (str):        Path to write results to
         file_name (str):           Name of result file
     """
-
     pickle_file = pathlib.Path(path_to_file, file_name + ".pickle")
 
     with open(pickle_file, 'wb') as handle:
@@ -216,7 +215,6 @@ def estimate_cdf(output_data, support_points, bayesian):
     Returns:
         cdf:                        Dictionary with cdf estimates
     """
-
     cdf = {}
     cdf["x"] = support_points
     if bayesian is False:
@@ -384,7 +382,6 @@ def perform_kde(samples, kernel_bandwidth, support_points):
     Returns:
         np.array:                   pdf_estimate at support points
     """
-
     kde = KernelDensity(kernel='gaussian', bandwidth=kernel_bandwidth).fit(samples.reshape(-1, 1))
 
     y_density = np.exp(kde.score_samples(support_points.reshape(-1, 1)))

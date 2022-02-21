@@ -1,3 +1,18 @@
+"""Visualization for BMFMC-UQ.
+
+A module that provides utilities and a class for visualization in BMFMC-UQ
+It is designed such that the BMFMCVisualization class needs only to be initialized one
+and can then be accessed and modified in the entire project.
+
+In this context "this" is a pointer to the module object instance itself and can be compared to the
+"self" keyword in classes.
+
+Attributes:
+    bmfmc_visualization_instance (obj): Instance of the BMFMCVisualization class
+
+Returns:
+    None
+"""
 import os
 import sys
 
@@ -5,27 +20,14 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
 
-"""
-A module that provides utilities and a class for visualization in BMFMC-UQ
-It is designed such that the BMFMCVisualization class needs only to be initialized one
-and can then be accessed and modified in the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the 
-"self" keyword in classes.
-
-Attributes:
-    bmfmc_visualization_instance (obj): Instance of the BMFMCVisualization class
-    
-Returns:
-    None
-"""
-
 this = sys.modules[__name__]
 this.bmfmc_visualization_instance = None
 
 
 def from_config_create(config):
-    """Module function that calls the class function `from_config_create` and
+    """Create class from config.
+
+    Module function that calls the class function `from_config_create` and
     creates instance of the BMFMCVisualization class from the problem
     description.
 
@@ -36,8 +38,10 @@ def from_config_create(config):
 
 
 class BMFMCVisualization(object):
-    """Visualization class for BMFMC-UQ that containts several plotting,
-    storing and visualization methods that can be used anywhere in QUEENS.
+    """Visualization class for BMFMC-UQ.
+
+    This contains several plotting, storing and visualization methods that can be used anywhere
+    in QUEENS.
 
     Attributes:
        paths (list): List with paths to save the plots.
@@ -59,6 +63,7 @@ class BMFMCVisualization(object):
     def __init__(
         self, paths, save_bools, animation_bool, predictive_var, no_features_ref, plot_booleans
     ):
+        """Initialize."""
         self.paths = paths
         self.save_bools = save_bools
         self.animation_bool = animation_bool
@@ -68,16 +73,14 @@ class BMFMCVisualization(object):
 
     @classmethod
     def from_config_create(cls, config):
-        """
-        Create the BMFMC visualization object from the problem description
+        """Create the BMFMC visualization object from config.
+
         Args:
             config (dict): Dictionary containing the problem description
 
         Returns:
             Instance of BMFMCVisualization (obj)
-
         """
-
         method_options = config["method"].get("method_options")
         plotting_options = method_options["result_description"].get("plotting_options")
         paths = [
@@ -94,7 +97,9 @@ class BMFMCVisualization(object):
         )
 
     def plot_pdfs(self, output):
-        """Plot the output distributions of HF output prediction, LF output,
+        """Plot pdfs.
+
+        Plot the output distributions of HF output prediction, LF output,
         Monte-Carlo reference, posterior variance or BMFMC reference with no
         features, depending on settings in input file. Animate and save plots
         dependent on problem description.
@@ -169,7 +174,9 @@ class BMFMCVisualization(object):
             plt.show()
 
     def plot_manifold(self, output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
-        """Plot the probabilistic manifold of high-fidelity, low-fidelity
+        """Plot manifold.
+
+        Plot the probabilistic manifold of high-fidelity, low-fidelity
         outputs and informative features of the input space, depending on the
         description in the input file. Also plot the probabilistic mapping
         along with its training points. Potentially animate and save these
@@ -198,7 +205,8 @@ class BMFMCVisualization(object):
             plt.show()
 
     def plot_feature_ranking(self, dim_counter, ranking, iteration):
-        """
+        r"""Plot feature ranking.
+
         Plot the score/ranking of possible candidates of informative features
         :math:`\\gamma_i`. Only the candidates with the highest score will be
         considered for :math:`z_{LF}`
@@ -216,7 +224,6 @@ class BMFMCVisualization(object):
         Returns:
             Plots of the ranking/scores of candidates for informative features of the
             input :math:`\\gamma_i`
-
         """
         if self.plot_booleans[2]:
             fig, ax = plt.subplots()
@@ -242,7 +249,9 @@ class BMFMCVisualization(object):
 
 # ------ helper functions ----------------------------------------------------------
 def _get_manifold_plotter(output):
-    """Service method that returns the proper manifold plotting function
+    """Get moanifold plotter.
+
+    Service method that returns the proper manifold plotting function
     depending on the output.
 
     Args:
@@ -260,8 +269,8 @@ def _get_manifold_plotter(output):
 
 
 def _3d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
-    """
-    Plot the data manifold in three dimensions.
+    r"""Plot the data manifold in three dimensions.
+
     Args:
         output (dict): Dictionary containing output data to plot.
         Y_LFs_mc (np.array): Vector with LF output Monte-Carlo data.
@@ -270,7 +279,6 @@ def _3d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
 
     Returns:
         3D-plot of output data manifold and one informative input feature :math:`\\gamma_1`
-
     """
     fig3 = plt.figure(figsize=(10, 10))
     ax3 = fig3.add_subplot(111, projection='3d')
@@ -292,7 +300,7 @@ def _3d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
         c='k',
         linewidth=0.5,
         cmap='jet',
-        label='$\mathcal{D}_{\mathrm{MC}}$, (Reference)',
+        label=r'$\mathcal{D}_{\mathrm{MC}}$, (Reference)',
     )
 
     ax3.scatter(
@@ -303,7 +311,7 @@ def _3d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
         s=70,
         c='r',
         alpha=1,
-        label='$\mathcal{D}$, (Training)',
+        label=r'$\mathcal{D}$, (Training)',
     )
 
     ax3.set_xlabel(r'$\mathrm{y}_{\mathrm{LF}}$')
@@ -405,7 +413,9 @@ def _2d_manifold(output, Y_LFs_mc, Y_HF_mc, Y_HF_train):
 
 
 def _animate_3d(output, Y_HF_mc, save_path):
-    """Animate 3D-data plots for better visual representation of the data.
+    """Animate 3D-data plots.
+
+    Animate 3D-data plots for better visual representation of the data.
     Potentially save animation as mp4.
 
     Args:
@@ -418,6 +428,7 @@ def _animate_3d(output, Y_HF_mc, save_path):
     """
 
     def init():
+        """Initialize."""
         ax = plt.gca()
         ax.scatter(
             output['Z_mc'][:, 0, None],
@@ -436,6 +447,7 @@ def _animate_3d(output, Y_HF_mc, save_path):
         return ()
 
     def animate(i):
+        """Animate."""
         ax = plt.gca()
         ax.view_init(elev=10.0, azim=i)
         return ()
@@ -448,7 +460,9 @@ def _animate_3d(output, Y_HF_mc, save_path):
 
 
 def _plot_pdf_var(output, reference_str=''):
-    """Plot the root of the posterior variance (=SD) of HF output density
+    r"""Plot the root of the posterior variance.
+
+    Plot the root of the posterior variance (=SD) of HF output density
     estimate :math:`\\mathbb{V}_{ f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]`
     in form of credible intervals around the mean prediction.
 
@@ -494,7 +508,8 @@ def _save_plot(save_bool, path):
 
 
 def _plot_pdf_no_features(output, posterior_variance=False):
-    """
+    r"""Plot without features.
+
     Plot reference BMFMC prediction without using informative features
     :math:`\\gamma_i`.
 
@@ -505,7 +520,6 @@ def _plot_pdf_no_features(output, posterior_variance=False):
 
     Returns:
         Plot of BMFMC-prediction without using informative features of the input.
-
     """
     ax = plt.gca()
 

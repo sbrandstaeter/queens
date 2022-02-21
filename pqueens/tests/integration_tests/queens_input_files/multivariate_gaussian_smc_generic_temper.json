@@ -23,7 +23,7 @@
     "method_name": "metropolis-hastings",
     "method_options": {
       "as_mcmc_kernel": true,
-      "num_chains": 20,
+      "num_chains": 200,
       "num_samples": 20,
       "proposal_distribution": "normal_proposal"
     }
