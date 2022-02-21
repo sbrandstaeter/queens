@@ -14,7 +14,6 @@ import pytest
 
 from pqueens.main import main
 from pqueens.utils import injector
-from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.fixture(scope="session")
@@ -111,13 +110,13 @@ def test_baci_lm_shape(
     np.testing.assert_allclose(result_data['resnorm'][1], 1.42069484e-02, 1.0e-5)
     np.testing.assert_allclose(result_data['gradnorm'][1], 4.53755307e-03, 1.0e-5)
 
-    params = result_data["params"].str.replace(r"[", "")
-    params = params.str.replace(r"]", "")
+    params = result_data["params"].str.replace(r"[", "", regex=True)
+    params = params.str.replace(r"]", "", regex=True)
     params = params.str.split(expand=True)
     np.testing.assert_allclose(params.loc[1].astype(float), [1.70123614e03, 3.43936558e-01], 1.0e-5)
 
-    delta_params = result_data["delta_params"].str.replace(r"[", "")
-    delta_params = delta_params.str.replace(r"]", "")
+    delta_params = result_data["delta_params"].str.replace(r"[", "", regex=True)
+    delta_params = delta_params.str.replace(r"]", "", regex=True)
     delta_params = delta_params.str.split(expand=True)
     np.testing.assert_allclose(
         delta_params.loc[1].astype(float), [1.28123570e02, -3.47241922e-02], 1.0e-5
