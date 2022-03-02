@@ -736,7 +736,7 @@ class BaciDriver(Driver):
             BACI run command
         """
         # set MPI command
-        mpi_cmd = 'mpirun -np'
+        mpi_cmd = 'mpirun --bind-to none -np'
 
         command_list = [
             mpi_cmd,
@@ -762,7 +762,7 @@ class BaciDriver(Driver):
             postprocessing command
         """
         # set MPI command
-        mpi_cmd = 'mpirun -np'
+        mpi_cmd = 'mpirun --bind-to none -np'
 
         command_list = [
             mpi_cmd,
