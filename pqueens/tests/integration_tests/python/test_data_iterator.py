@@ -11,7 +11,7 @@ from pqueens.main import main
 def test_branin_data_iterator(inputdir, tmpdir, mocker):
     """Test case for data iterator."""
     arguments = [
-        '--input=' + os.path.join(inputdir, 'branin_data_iterator.json'),
+        '--input=' + os.path.join(inputdir, 'data_iterator_branin.json'),
         '--output=' + str(tmpdir),
     ]
 

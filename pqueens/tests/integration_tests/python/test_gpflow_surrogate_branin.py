@@ -8,10 +8,10 @@ from pqueens.main import main
 
 
 @pytest.mark.integration_tests
-def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
-    """Test case for GPflow based SVGP model."""
+def test_gpflow_surrogate_branin(inputdir, tmpdir, expected_mean, expected_var):
+    """Test case for GPflow based GP model."""
     arguments = [
-        '--input=' + os.path.join(inputdir, 'gpflow_svgp_surrogate_branin.json'),
+        '--input=' + os.path.join(inputdir, 'gpflow_surrogate_branin.json'),
         '--output=' + str(tmpdir),
     ]
 
@@ -32,16 +32,16 @@ def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
 def expected_mean():
     mean = np.array(
         [
-            [181.62057979],
-            [37.95455295],
-            [47.86422341],
-            [32.47391656],
-            [23.99246991],
-            [167.32578661],
-            [106.07427664],
-            [92.93591941],
-            [50.72976800],
-            [22.10505115],
+            [127.97233506],
+            [39.73551321],
+            [47.00641347],
+            [28.88934819],
+            [22.40199886],
+            [150.69211917],
+            [104.25630329],
+            [92.22700928],
+            [50.69060622],
+            [22.18886383],
         ]
     )
     return mean
@@ -51,16 +51,16 @@ def expected_mean():
 def expected_var():
     var = np.array(
         [
-            [4.62061],
-            [1.38456],
-            [0.96146],
-            [0.20286],
-            [0.34231],
-            [1.03465],
-            [0.24111],
-            [0.40275],
-            [0.22169],
-            [0.58071],
+            [788.8004288],
+            [1.8365012],
+            [2.25043994],
+            [4.24878946],
+            [1.97026586],
+            [174.50881662],
+            [14.06623098],
+            [8.34025715],
+            [0.95922611],
+            [0.33420735],
         ]
     )
     return var

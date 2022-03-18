@@ -15,7 +15,7 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.mark.lnm_cluster
-def test_cluster_elementary_effects(
+def test_cluster_baci_elementary_effects(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):
     """Test for the Elementary Effects Iterator on the clusters with BACI.
@@ -49,8 +49,8 @@ def test_cluster_elementary_effects(
     # unique experiment name
     experiment_name = cluster + "_morris_salib"
 
-    template = pathlib.Path(inputdir, "elementary_effects_baci_cluster_invaaa_template.json")
-    input_file = pathlib.Path(tmpdir, f"morris_{cluster}_deep_invaaa.json")
+    template = pathlib.Path(inputdir, "baci_cluster_elementary_effects_template.json")
+    input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_deep_invaaa.json")
 
     # specific folder for this test
     cluster_experiment_dir = cluster_queens_testing_folder.joinpath(experiment_name)
