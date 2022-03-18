@@ -14,6 +14,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_co
     park91a_hifi_coords,
 )
 from pqueens.utils import injector, variational_inference_utils
+from pqueens.utils.stochastic_optimizer import StochasticOptimizer
 
 
 @pytest.mark.integration_tests
@@ -41,12 +42,18 @@ def test_bbvi_density_match(
         var_params = variational_distr_obj.construct_variational_params(mu, cov)
         dummy_bbvi_instance.variational_params = var_params
         dummy_bbvi_instance.variational_params_array = np.empty((len(var_params), 0))
-        # actual run of the algorithm
+        dummy_bbvi_instance.stochastic_optimizer.gradient = (
+            dummy_bbvi_instance._get_gradient_function()
+        )
+        dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
+            var_params.reshape(-1, 1)  # actual run of the algorithm
+        )
         dummy_bbvi_instance.run()
 
         opt_variational_params = np.array(dummy_bbvi_instance.variational_params)
 
         elbo = dummy_bbvi_instance.elbo_list
+        print(elbo)
 
     # Actual tests
     opt_variational_samples = variational_distr_obj.draw(opt_variational_params, 10000)
@@ -107,13 +114,10 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
     # -1 indicates to run a fixed number of samples
-    min_requ_relative_change_variational_params = -1
-    max_feval = 10 * n_samples_per_iter
+    max_feval = 100 * n_samples_per_iter
     num_variables = 5
-    learning_rate = 0.01
-    memory = 10
-    natural_gradient_bool = False
-    clipping_bool = True
+    memory = 20
+    natural_gradient_bool = True
     fim_dampening_bool = True
     export_quantities_over_iter = False
     variational_params_initialization_approach = "random"
@@ -144,13 +148,21 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
     db = 'dummy'
     random_seed = 1
 
+    optimizer_config = {
+        "stochastic_optimizer": "Adam",
+        "learning_rate": 0.01,
+        "optimization_type": "max",
+        "rel_L1_change_threshold": -1,
+        "rel_L2_change_threshold": -1,
+        "max_iter": 10000000,
+    }
+    stochastic_optimizer = StochasticOptimizer.from_config_create_optimizer(optimizer_config)
     bbvi_instance = BBVIIterator(
         global_settings=global_settings,
         model=model,
         result_description=result_description,
         db=db,
         experiment_name=experiment_name,
-        min_requ_relative_change_variational_params=min_requ_relative_change_variational_params,
         variational_params_initialization_approach=variational_params_initialization_approach,
         n_samples_per_iter=n_samples_per_iter,
         variational_transformation=variational_transformation,
@@ -159,9 +171,6 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         num_iter_average_convergence=num_iter_average_convergence,
         num_variables=num_variables,
         memory=memory,
-        learning_rate=learning_rate,
-        clipping_bool=clipping_bool,
-        gradient_clipping_norm_threshold=gradient_clipping_norm_threshold,
         natural_gradient_bool=natural_gradient_bool,
         fim_dampening_bool=fim_dampening_bool,
         fim_decay_start_iter=fim_decay_start_iter,
@@ -172,14 +181,10 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         loo_cv_bool=loo_cv_bool,
         variational_distribution_obj=my_variational_distribution_obj,
         variational_family=variational_family,
-        optimization_iteration=0,
-        v_param_adams=0,
-        m_param_adams=0,
         n_sims=0,
         variational_params=0,
         f_mat=None,
         h_mat=None,
-        grad_elbo=None,
         log_variational_mat=None,
         grad_params_log_variational_mat=None,
         log_posterior_unnormalized=None,
@@ -191,6 +196,7 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         ess_list=[],
         noise_list=[0, 0],
         variational_params_array=None,
+        stochastic_optimizer=stochastic_optimizer,
     )
     return bbvi_instance
 

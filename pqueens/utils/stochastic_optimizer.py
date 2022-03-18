@@ -126,10 +126,7 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
         if section_name:
             algorithm = config[section_name].get("stochastic_optimizer")
         else:
-            raise ValueError(
-                "You did not provide a section name for the stochastic "
-                "optimizer in the input file. Abort..."
-            )
+            algorithm = config.get("stochastic_optimizer")
 
         if algorithm == "Adam":
             return Adam.from_config_create_optimizer(config, section_name)
@@ -514,8 +511,8 @@ class Adam(StochasticOptimizer):
         rel_L1_change = 1
         rel_L2_change = 1
 
-        beta_1 = config[section_name].get("beta_1", 0.9)
-        beta_2 = config[section_name].get("beta_2", 0.999)
+        beta_1 = config_sec.get("beta_1", 0.9)
+        beta_2 = config_sec.get("beta_2", 0.999)
         m = ExponentialAveraging.from_config_create_iterative_averaging({"coefficient": beta_1})
         v = ExponentialAveraging.from_config_create_iterative_averaging({"coefficient": beta_2})
         eps = config_sec.get("eps", 1e-8)
