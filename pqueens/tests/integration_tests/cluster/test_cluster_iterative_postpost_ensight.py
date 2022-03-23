@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 
 import pqueens.database.database as DB_module
-from pqueens.models.model import Model
+from pqueens.models import from_config_create_model
 from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -136,7 +136,7 @@ def test_cluster_postpost_ensight(
         db.save(experimental_data_dict, experiment_name, 'experimental_data', 1)
 
         # Create a BACI model for the benchmarks
-        model = Model.from_config_create_model("model", config)
+        model = from_config_create_model("model", config)
 
         # Evaluate the first batch
         first_sample_batch = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])

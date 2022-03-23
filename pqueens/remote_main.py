@@ -14,7 +14,7 @@ import sys
 from collections import OrderedDict
 
 import pqueens.database.database as DB_module
-from pqueens.drivers.driver import Driver
+from pqueens.drivers import from_config_create_driver
 
 try:
     import simplejson as json
@@ -78,7 +78,7 @@ def main(args):
             config["database"]["reset_existing_db"] = False
             DB_module.from_config_create_database(config)
             with DB_module.database:
-                driver_obj = Driver.from_config_create_driver(config, job_id, batch, driver_name)
+                driver_obj = from_config_create_driver(config, job_id, batch, driver_name)
 
                 # Run the singularity image in two stages waiting for each other but within one
                 # singularity call
@@ -109,9 +109,7 @@ def main(args):
             config["database"]["reset_existing_db"] = False
             DB_module.from_config_create_database(config)
             with DB_module.database:
-                driver_obj = Driver.from_config_create_driver(
-                    config, job_id, batch, driver_name, workdir
-                )
+                driver_obj = from_config_create_driver(config, job_id, batch, driver_name, workdir)
                 # Run the singularity image in two steps and two different singularity calls to have
                 # more freedom concerning mpi ranks
                 if post == 'true':

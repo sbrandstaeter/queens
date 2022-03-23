@@ -1,7 +1,7 @@
 import numpy as np
 
 import pqueens.visualization.grid_iterator_visualization as qvis
-from pqueens.models.model import Model
+from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import process_ouputs, write_results
 
 from .iterator import Iterator
@@ -62,7 +62,7 @@ class GridIterator(Iterator):
             method_options = config[iterator_name]["method_options"]
         if model is None:
             model_name = method_options["model"]
-            model = Model.from_config_create_model(model_name, config)
+            model = from_config_create_model(model_name, config)
 
         result_description = method_options.get("result_description", None)
         global_settings = config.get("global_settings", None)

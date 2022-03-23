@@ -8,7 +8,7 @@ import vtk
 from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
 import pqueens.database.database as DB_module
-from pqueens.external_geometry.external_geometry import ExternalGeometry
+from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.post_post.post_post import PostPost
 
 _logger = logging.getLogger(__name__)
@@ -195,7 +195,7 @@ class PostPostEnsight(PostPost):
         ) = cls._get_experimental_data_from_db(config, database)
 
         # generate the external geometry module
-        external_geometry_obj = ExternalGeometry.from_config_create_external_geometry(config)
+        external_geometry_obj = from_config_create_external_geometry(config)
 
         return cls(
             post_file_name_identifier,

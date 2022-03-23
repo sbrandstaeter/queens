@@ -1,5 +1,5 @@
 """Interface for grouping outputs with inputs."""
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from pqueens.regression_approximations import from_config_create_regression_approximation
 
 from .interface import Interface
 
@@ -80,7 +80,7 @@ class BmfmcInterface(Interface):
         Returns:
             None
         """
-        self.probabilistic_mapping_obj = RegressionApproximation.from_config_create(
+        self.probabilistic_mapping_obj = from_config_create_regression_approximation(
             self.config, self.approx_name, Z_LF_train, Y_HF_train
         )
 

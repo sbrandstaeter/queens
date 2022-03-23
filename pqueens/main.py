@@ -10,7 +10,7 @@ import time
 from collections import OrderedDict
 
 import pqueens.database.database as DB_module
-from pqueens.iterators.iterator import Iterator
+from pqueens.iterators import from_config_create_iterator
 from pqueens.utils import ascii_art
 from pqueens.utils.logger_settings import setup_basic_logging
 
@@ -57,7 +57,7 @@ def main(args=None):
     with DB_module.database as db:
 
         # build iterator
-        my_iterator = Iterator.from_config_create_iterator(options)
+        my_iterator = from_config_create_iterator(options)
 
         end_time_input = time.time()
 

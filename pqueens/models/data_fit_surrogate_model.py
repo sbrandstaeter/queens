@@ -4,8 +4,9 @@ import logging
 import numpy as np
 
 import pqueens.visualization.surrogate_visualization as qvis
-from pqueens.interfaces.interface import Interface
-from pqueens.iterators.iterator import Iterator
+from pqueens.interfaces import from_config_create_interface
+from pqueens.iterators import from_config_create_iterator
+from pqueens.models import from_config_create_model
 
 from .model import Model
 
@@ -84,12 +85,12 @@ class DataFitSurrogateModel(Model):
 
         # create subordinate model
         if subordinate_model_name:
-            subordinate_model = Model.from_config_create_model(subordinate_model_name, config)
+            subordinate_model = from_config_create_model(subordinate_model_name, config)
         else:
             subordinate_model = None
 
         # create subordinate iterator
-        subordinate_iterator = Iterator.from_config_create_iterator(
+        subordinate_iterator = from_config_create_iterator(
             config, subordinate_iterator_name, subordinate_model
         )
 
@@ -98,7 +99,7 @@ class DataFitSurrogateModel(Model):
         )
 
         # create interface
-        interface = Interface.from_config_create_interface(interface_name, config)
+        interface = from_config_create_interface(interface_name, config)
 
         # visualization
         qvis.from_config_create(config, model_name=model_name)
@@ -323,7 +324,7 @@ class DataFitSurrogateModel(Model):
             nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
         """
         if testing_iterator_name:
-            testing_iterator = Iterator.from_config_create_iterator(
+            testing_iterator = from_config_create_iterator(
                 config, testing_iterator_name, subordinate_model
             )
             nash_sutcliffe_efficiency = model_options.get("nash_sutcliffe_efficiency", False)

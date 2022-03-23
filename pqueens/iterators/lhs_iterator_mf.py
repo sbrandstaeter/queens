@@ -1,7 +1,7 @@
 import numpy as np
 from pyDOE import lhs
 
-from pqueens.models.model import Model
+from pqueens.models import from_config_create_model
 from pqueens.models.multifidelity_model import MultifidelityModel
 from pqueens.utils.scale_samples import scale_samples
 
@@ -59,7 +59,7 @@ class MF_LHSIterator(Iterator):
             method_options = config[iterator_name]["method_options"]
         if model is None:
             model_name = method_options["model"]
-            model = Model.from_config_create_model(model_name, config)
+            model = from_config_create_model(model_name, config)
         return cls(
             model,
             method_options["seed"],
