@@ -36,7 +36,7 @@ class TestMultiFidelityModel(unittest.TestCase):
         }
 
     @pytest.mark.unit_tests
-    @mock.patch('pqueens.interfaces.interface.Interface.from_config_create_interface')
+    @mock.patch('pqueens.models.multifidelity_model.from_config_create_interface')
     @mock.patch('pqueens.models.multifidelity_model.SimulationModel')
     def test_from_config_function(self, mock_submodel, mock_interface):
         MultifidelityModel.from_config_create_model("model", self.dummy_config)

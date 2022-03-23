@@ -11,18 +11,20 @@ from pqueens.remote_main import main
 
 @pytest.fixture(scope="module", params=[True, False])
 def finalize_fail(request):
+    """Fixture to test failure."""
     # This fixture selects if the driver patch fails when writing to the db
     return request.param
 
 
 @pytest.fixture(scope="module", params=["000", "27017"])
 def port(request):
+    """Port for the singularity runs."""
     return request.param
 
 
 @pytest.mark.unit_tests
 def test_exit_conditions_remote_main(mocker, monkeypatch, finalize_fail, port):
-
+    """Test if an error is raised."""
     # Patch open() function
     mocker.patch("builtins.open", create=True)
 
@@ -64,9 +66,7 @@ def test_exit_conditions_remote_main(mocker, monkeypatch, finalize_fail, port):
     def driver_mock_response(*args, **kwargs):
         return driver_mock(finalize_fail)
 
-    monkeypatch.setattr(
-        pqueens.drivers.driver.Driver, "from_config_create_driver", driver_mock_response
-    )
+    monkeypatch.setattr(pqueens.remote_main, "from_config_create_driver", driver_mock_response)
 
     # Dummy arguments
     args = [

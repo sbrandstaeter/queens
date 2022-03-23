@@ -104,8 +104,7 @@ def test_build_approximation(mocker, default_interface):
     Z = np.atleast_2d(np.linspace(0.0, 1.0, 10))
     Y = np.atleast_2d(np.linspace(1.0, 2.0, 10))
     mp1 = mocker.patch(
-        "pqueens.regression_approximations.regression_approximation.RegressionApproximation"
-        ".from_config_create",
+        'pqueens.interfaces.bmfmc_interface.from_config_create_regression_approximation',
         return_value=FakeRegression,
     )
     mp2 = mocker.patch(

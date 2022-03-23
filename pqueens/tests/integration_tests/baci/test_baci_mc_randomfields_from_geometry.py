@@ -3,7 +3,7 @@ import os
 import numpy as np
 import pytest
 
-from pqueens.external_geometry.external_geometry import ExternalGeometry
+from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.main import get_options
 from pqueens.utils import injector
 
@@ -29,7 +29,7 @@ def test_geometry_from_dat(
     config = get_options(arguments)
 
     # create pre-processing module form config
-    preprocessor_obj = ExternalGeometry.from_config_create_external_geometry(config)
+    preprocessor_obj = from_config_create_external_geometry(config)
     preprocessor_obj.main_run()
 
     # Check if we got the expected results

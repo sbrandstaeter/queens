@@ -197,7 +197,8 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
     }
 
     mp = mocker.patch(
-        'pqueens.models.model.Model.from_config_create_model', return_value='dummy_model'
+        'pqueens.iterators.baci_lm_iterator.from_config_create_model',
+        return_value='dummy_model',
     )
 
     mockinit = mocker.patch(

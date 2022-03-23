@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 
 import pqueens.database.database as DB_module
+from pqueens.models import from_config_create_model
 from pqueens.models.model import Model
 
 
@@ -70,7 +71,7 @@ class LikelihoodModel(Model):
         model_class = model_dict[model_options["subtype"]]
 
         forward_model_name = model_options.get("forward_model")
-        forward_model = Model.from_config_create_model(forward_model_name, config)
+        forward_model = from_config_create_model(forward_model_name, config)
 
         parameters = model_options["parameters"]
         model_parameters = config[parameters]

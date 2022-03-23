@@ -12,7 +12,10 @@ from pqueens.models.data_fit_surrogate_model import DataFitSurrogateModel
 
 
 class TestDataFitSurrogateModel(unittest.TestCase):
+    """Unit tests realted to datafit surrogates."""
+
     def setUp(self):
+        """Set up test."""
         self.dummy_config = {
             "model": {
                 "type": "simulation_model",
@@ -38,10 +41,11 @@ class TestDataFitSurrogateModel(unittest.TestCase):
         }
 
     @pytest.mark.unit_tests
-    @mock.patch('pqueens.iterators.iterator.Iterator.from_config_create_iterator')
-    @mock.patch('pqueens.interfaces.interface.Interface.from_config_create_interface')
-    @mock.patch('pqueens.models.model.Model.from_config_create_model')
+    @mock.patch('pqueens.models.data_fit_surrogate_model.from_config_create_iterator')
+    @mock.patch('pqueens.models.data_fit_surrogate_model.from_config_create_interface')
+    @mock.patch('pqueens.models.data_fit_surrogate_model.from_config_create_model')
     def test_from_config_function(self, mock_submodel, mock_interface, mock_iterator):
+        """Test the fcc function."""
         DataFitSurrogateModel.from_config_create_model("model", self.dummy_config)
         mock_iterator.assert_called_with(
             self.dummy_config, "dummy_iterator", mock_submodel.return_value

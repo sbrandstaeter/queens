@@ -2,7 +2,7 @@
 import numpy as np
 from sklearn.model_selection import KFold
 
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from pqueens.regression_approximations import from_config_create_regression_approximation
 
 from .interface import Interface
 
@@ -93,7 +93,7 @@ class ApproximationInterface(Interface):
             x_train (np.array):  Training inputs
             y_train (np.array):  Training outputs
         """
-        self.approximation = RegressionApproximation.from_config_create(
+        self.approximation = from_config_create_regression_approximation(
             self.config, self.approximation_name, x_train, y_train
         )
         self.approximation.train()
@@ -123,7 +123,7 @@ class ApproximationInterface(Interface):
 
         for train_index, test_index in kf.split(x_train):
             # TODO configuration here is not nice
-            approximation = RegressionApproximation.from_config_create(
+            approximation = from_config_create_regression_approximation(
                 self.config, self.approximation_name, x_train[train_index], y_train[train_index]
             )
             approximation.train()

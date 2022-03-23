@@ -1,9 +1,7 @@
 """Class for mapping input variables to responses using a MF approximation."""
 import numpy as np
 
-from pqueens.regression_approximations_mf.regression_approximation_mf import (
-    RegressionApproximationMF,
-)
+from pqueens.regression_approximations_mf import from_comfig_create_regression_approximators_mf
 
 from .interface import Interface
 
@@ -94,7 +92,7 @@ class ApproximationInterfaceMF(Interface):
             Xtrain (list):      List of arrays of Training inputs
             Ytrain (list):      List of arrays of Training outputs
         """
-        self.approximation = RegressionApproximationMF.from_options(
+        self.approximation = from_comfig_create_regression_approximators_mf(
             self.approximation_config, Xtrain, Ytrain
         )
         self.approximation.train()

@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import pqueens.database.database as DB_module
-from pqueens.external_geometry.external_geometry import ExternalGeometry
-from pqueens.models.model import Model
+from pqueens.external_geometry import from_config_create_external_geometry
+from pqueens.models import from_config_create_model
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,
 )
@@ -73,12 +73,12 @@ class MonteCarloIterator(Iterator):
             method_options = config[iterator_name]['method_options']
         if model is None:
             model_name = method_options['model']
-            model = Model.from_config_create_model(model_name, config)
+            model = from_config_create_model(model_name, config)
 
         result_description = method_options.get('result_description', None)
         global_settings = config.get('global_settings', None)
         if config.get('external_geometry') is not None:
-            external_geometry_obj = ExternalGeometry.from_config_create_external_geometry(config)
+            external_geometry_obj = from_config_create_external_geometry(config)
         else:
             external_geometry_obj = None
 

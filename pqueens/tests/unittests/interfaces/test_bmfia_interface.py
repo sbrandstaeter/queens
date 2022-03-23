@@ -185,12 +185,10 @@ def test_instantiate_probabilistic_mappings(
     num_reg = Y_HF_train.shape[1]
     default_bmfia_interface.probabilistic_mapping_obj_lst = []
 
-    # pylint: disable=line-too-long
     mp_1 = mocker.patch(
-        'pqueens.regression_approximations.regression_approximation.RegressionApproximation.from_config_create',
+        'pqueens.interfaces.bmfia_interface.from_config_create_regression_approximation',
         return_value=dummy_reg_obj,
     )
-    # pylint: enable=line-too-long
     default_bmfia_interface._instantiate_probabilistic_mappings(Z_LF_train, Y_HF_train)
 
     # --- asserts / tests
@@ -252,7 +250,10 @@ def test_set_optimized_state_of_probabilistic_mappings(
     default_bmfia_interface, my_state_lst, mocker, default_probabilistic_obj_lst
 ):
     """Test the state update of the mappings."""
-    mocker.patch('pqueens.interfaces.bmfia_interface.RegressionApproximation', DummyRegression)
+    mocker.patch(
+        'pqueens.interfaces.bmfia_interface.from_config_create_regression_approximation',
+        DummyRegression,
+    )
     default_bmfia_interface.probabilistic_mapping_obj_lst = default_probabilistic_obj_lst
     default_bmfia_interface._set_optimized_state_of_probabilistic_mappings(my_state_lst)
     for obj in default_bmfia_interface.probabilistic_mapping_obj_lst:

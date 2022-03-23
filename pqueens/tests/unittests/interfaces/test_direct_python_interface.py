@@ -8,8 +8,8 @@ import multiprocessing
 import numpy as np
 import pytest
 
+from pqueens.interfaces import from_config_create_interface
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
-from pqueens.interfaces.interface import Interface
 from pqueens.variables.variables import Variables
 
 
@@ -129,7 +129,7 @@ def test_map_parallel(list_of_variables, expected_results, direct_python_interfa
 @pytest.mark.unit_tests
 def test_create_from_config(variables, config):
     """Given a config dict instantiate DirectPythonInterface."""
-    direct_python_interface = Interface.from_config_create_interface('test_interface', config)
+    direct_python_interface = from_config_create_interface('test_interface', config)
     # ensure correct types
     assert direct_python_interface.pool is None
     assert isinstance(direct_python_interface, DirectPythonInterface)
@@ -142,7 +142,7 @@ def test_create_from_config_parallel(variables, config_parallel):
     Given a config dict instantiate DirectPythonInterface with parallel
     evaluation of multiple forward calls.
     """
-    direct_python_interface_parallel = Interface.from_config_create_interface(
+    direct_python_interface_parallel = from_config_create_interface(
         'test_interface', config_parallel
     )
     # ensure correct types
