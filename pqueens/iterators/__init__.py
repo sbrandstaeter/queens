@@ -36,6 +36,7 @@ def from_config_create_iterator(config, iterator_name=None, model=None):
     from .sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
     from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
     from .single_sim_run_iterator import SingleSimRunIterator
+    from .sobol_index_gp_uncertainty_iterator import SobolIndexGPUncertaintyIterator
     from .sobol_index_iterator import SobolIndexIterator
     from .sobol_sequence_iterator import SobolSequenceIterator
     from .variational_inference_reparameterization import VIRPIterator
@@ -49,6 +50,7 @@ def from_config_create_iterator(config, iterator_name=None, model=None):
         'read_data_from_file': DataIterator,
         'elementary_effects': ElementaryEffectsIterator,
         'sobol_indices': SobolIndexIterator,
+        'sobol_indices_gp_uncertainty': SobolIndexGPUncertaintyIterator,
         'smc': SequentialMonteCarloIterator,
         'smc_chopin': SequentialMonteCarloChopinIterator,
         'sobol_sequence': SobolSequenceIterator,
