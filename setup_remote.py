@@ -27,6 +27,7 @@ setup(
         'pqueens.drivers',
         'pqueens.utils',
         'pqueens.external_geometry',
+        'pqueens.randomfields',
     ],
     install_requires=[
         "docker",

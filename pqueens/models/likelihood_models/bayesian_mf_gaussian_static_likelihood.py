@@ -5,7 +5,7 @@ import numpy as np
 
 import pqueens.visualization.bmfia_visualization as qvis
 from pqueens.interfaces.bmfia_interface import BmfiaInterface
-from pqueens.iterators.iterator import Iterator
+from pqueens.iterators import from_config_create_iterator
 from pqueens.utils.ascii_art import print_bmfia_acceleration
 
 from .likelihood_model import LikelihoodModel
@@ -169,7 +169,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
 
         # ----------------------- create subordinate bmfia iterator ------------------------------
         bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator"]
-        bmfia_subiterator = Iterator.from_config_create_iterator(config, bmfia_iterator_name)
+        bmfia_subiterator = from_config_create_iterator(config, bmfia_iterator_name)
 
         # ----------------------- create visualization object(s) ---------------------------------
         qvis.from_config_create(config, model_name=model_name)

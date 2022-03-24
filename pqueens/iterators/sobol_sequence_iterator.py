@@ -3,7 +3,7 @@ import logging
 from torch.quasirandom import SobolEngine
 
 from pqueens.iterators.iterator import Iterator
-from pqueens.models.model import Model
+from pqueens.models import from_config_create_model
 from pqueens.utils.get_random_variables import get_random_variables
 from pqueens.utils.process_outputs import process_ouputs, write_results
 from pqueens.utils.scale_samples import scale_samples
@@ -62,7 +62,7 @@ class SobolSequenceIterator(Iterator):
             method_options = config[iterator_name]["method_options"]
         if model is None:
             model_name = method_options["model"]
-            model = Model.from_config_create_model(model_name, config)
+            model = from_config_create_model(model_name, config)
 
         seed = method_options["seed"]
         number_of_samples = method_options["num_samples"]

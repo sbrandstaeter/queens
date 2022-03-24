@@ -34,6 +34,7 @@ stages:
     - apt-get install libgl1-mesa-glx -y
     - apt-get install libxt6 -y
     - apt-get install libtbb2 -y
+    - apt-get install gfortran -y
     - conda env create -f environment.yml -n queens
     - source activate queens
     - pip install -e .[develop]
@@ -111,11 +112,8 @@ remove_conda_env_and_singularity_image:
 build_singularity:
   stage: build
   script:
-    - cd pqueens/
-    - /usr/bin/singularity --version
-    - /usr/bin/singularity build --fakeroot ../singularity_image.sif ../singularity_recipe.def
-    - du -sh ../singularity_image.sif
-    - mv ../singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
+    - /usr/bin/singularity build --fakeroot singularity_image.sif singularity_recipe.def
+    - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
   only:
     variables:
       - $CENTOS_TESTS == "1"

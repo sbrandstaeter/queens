@@ -8,6 +8,7 @@ import pqueens.utils.pdf_estimation as est
 import pqueens.visualization.bmfmc_visualization as qvis
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator
+from pqueens.models import from_config_create_model
 from pqueens.variables.variables import Variables
 
 from .model import Model
@@ -233,7 +234,7 @@ class BMFMCModel(Model):
 
         # if HF model is specified create an HF model object
         if hf_model_name is not None:
-            hf_model = Model.from_config_create_model(hf_model_name, config)
+            hf_model = from_config_create_model(hf_model_name, config)
         else:
             hf_model = None
 

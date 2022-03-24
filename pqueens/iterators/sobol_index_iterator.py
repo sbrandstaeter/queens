@@ -9,7 +9,7 @@ from SALib.analyze import sobol
 from SALib.sample import saltelli
 
 from pqueens.iterators.iterator import Iterator
-from pqueens.models.model import Model
+from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import write_results
 
 _logger = logging.getLogger(__name__)
@@ -95,7 +95,7 @@ class SobolIndexIterator(Iterator):
 
         if model is None:
             model_name = method_options["model"]
-            model = Model.from_config_create_model(model_name, config)
+            model = from_config_create_model(model_name, config)
 
         return cls(
             model,

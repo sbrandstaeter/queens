@@ -8,7 +8,7 @@ import mock
 import pytest
 
 from pqueens.database.mongodb import MongoDB
-from pqueens.interfaces.interface import Interface
+from pqueens.interfaces import from_config_create_interface
 from pqueens.interfaces.job_interface import JobInterface
 
 
@@ -76,6 +76,6 @@ class TestJobInterface(unittest.TestCase):
         'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=db_fake
     )
     def test_construction(self, config, **mocks):
-        interface = Interface.from_config_create_interface('test_interface', self.config)
+        interface = from_config_create_interface('test_interface', self.config)
         # ensure correct type
         self.assertIsInstance(interface, JobInterface)

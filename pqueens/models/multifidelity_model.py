@@ -1,6 +1,6 @@
 """Multi-fidelity model class."""
 
-from pqueens.interfaces.interface import Interface
+from pqueens.interfaces import from_config_create_interface
 
 from .model import Model
 from .simulation_model import SimulationModel
@@ -76,7 +76,7 @@ class MultifidelityModel(Model):
                     'Multifidelity models can only have simulation models as sub models'
                 )
             # TODO check for same parameters
-            sub_interface = Interface.from_config_create_interface(sub_interface_name, config)
+            sub_interface = from_config_create_interface(sub_interface_name, config)
             sub_model_parameters = config[parameters]
             sub_models.append(SimulationModel(sub_model_name, sub_interface, sub_model_parameters))
 

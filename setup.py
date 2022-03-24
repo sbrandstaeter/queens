@@ -72,9 +72,6 @@ if system_python_version != required_python_version:
     )
     raise ImportError(message)
 
-# create a `main.py`` copy. This way QUEENS can be called directly through `queens` command
-copyfile('pqueens/main.py', os.path.join(os.path.dirname(__file__), 'queens'))
-
 # Actual setup process
 setup(
     name="queens",
@@ -82,11 +79,16 @@ setup(
     author="QUEENS developers",
     description=(queens_description),
     keywords=keywords,
-    scripts=["queens"],
     packages=find_packages(exclude=["pqueens/tests"]),
     install_requires=read_requirements("requirements.txt"),
     extras_require={"develop": developer_extras},
     long_description=read('README.md'),
     setup_requires='pytest-runner',
     tests_require='pytest',
+    entry_points={
+        'console_scripts': [
+            'queens = pqueens.main:main',
+            'queens-build-singularity = pqueens.utils.cli_utils:build_singularity_cli',
+        ],
+    },
 )

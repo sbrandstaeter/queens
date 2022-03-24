@@ -1,6 +1,10 @@
+"""Database module."""
+
 import abc
 import logging
 import sys
+
+from pqueens.database import from_config_create_database as create_database
 
 _logger = logging.getLogger(__name__)
 
@@ -16,8 +20,7 @@ def from_config_create_database(config):
     Args:
         config (dict): Problem configuration
     """
-
-    this.database = Database.from_config_create_database(config)
+    this.database = create_database(config)
 
 
 class Database(metaclass=abc.ABCMeta):
@@ -34,12 +37,19 @@ class Database(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, db_name, reset_existing_db):
+        """Initialize the database.
+
+        Args:
+            db_name (str): Name of the database
+            reset_existing_db (bool): True if existing db is to be reset.
+        """
         self.db_name = db_name
         self.reset_existing_db = reset_existing_db
 
     def __enter__(self):
-        """
-        'enter'-function in order to use the db objects as a context. This function is called
+        """'enter'-function in order to use the db objects as a context.
+
+        This function is called
         prior to entering the context
         In this function:
             1. the connection is established
@@ -114,27 +124,3 @@ class Database(metaclass=abc.ABCMeta):
         all related databases or similar.
         """
         pass
-
-    @classmethod
-    def from_config_create_database(_, config):
-        """Create new QUEENS database object from config.
-
-        Args:
-            config (dict): Problem configuration
-
-        Returns:
-            Database object
-        """
-
-        db_type = config["database"].get("type")
-
-        from .mongodb import MongoDB
-
-        valid_options = {"mongodb": MongoDB}
-
-        if db_type in valid_options.keys():
-            return valid_options[db_type].from_config_create_database(config)
-        else:
-            raise KeyError(
-                f"Database type '{db_type}' unknown, valid options are {list(valid_options.keys())}"
-            )

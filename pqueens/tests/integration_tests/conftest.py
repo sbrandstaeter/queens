@@ -7,30 +7,28 @@ import pathlib
 import pytest
 
 from pqueens.utils.manage_singularity import SingularityManager
+from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_from_queens
 from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.fixture(scope='session')
 def inputdir():
     """Return the path to the json input-files of the function test."""
-    dirpath = os.path.dirname(__file__)
-    input_files_path = os.path.join(dirpath, 'queens_input_files')
+    input_files_path = relative_path_from_pqueens("tests/integration_tests/queens_input_files")
     return input_files_path
 
 
 @pytest.fixture(scope='session')
 def third_party_inputs():
     """Return the path to the json input-files of the function test."""
-    dirpath = os.path.dirname(__file__)
-    input_files_path = os.path.join(dirpath, 'third_party_input_files')
+    input_files_path = relative_path_from_pqueens("tests/integration_tests/third_party_input_files")
     return input_files_path
 
 
 @pytest.fixture(scope='session')
 def config_dir():
     """Return the path to the json input-files of the function test."""
-    dirpath = os.path.dirname(__file__).split("/pqueens")[0]
-    config_dir_path = os.path.join(dirpath, 'config')
+    config_dir_path = relative_path_from_queens("config")
     return config_dir_path
 
 
@@ -165,28 +163,24 @@ def prepare_cluster_testing_environment(
     # create generic testing folder
     print(f"Create testing folder on {cluster_address}")
     command_string = f'mkdir -v -p {cluster_queens_testing_folder}'
-    returncode, pid, stdout, stderr = run_subprocess(
+    _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_user=cluster_user,
         remote_address=cluster_address,
     )
     print(stdout)
-    if returncode:
-        raise Exception(stderr)
 
     # create folder for singularity
     print(f"Create folder for singularity image on {cluster_address}")
     command_string = f'mkdir -v -p {cluster_path_to_singularity}'
-    returncode, pid, stdout, stderr = run_subprocess(
+    _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_user=cluster_user,
         remote_address=cluster_address,
     )
     print(stdout)
-    if returncode:
-        raise Exception(stderr)
 
     return True
 
@@ -269,56 +263,44 @@ def baci_cluster_paths(cluster_user, cluster_address):
     )
 
     command_string = f'test -f {path_to_executable}'
-    returncode, _, stdout, stderr = run_subprocess(
+    run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_user=cluster_user,
         remote_address=cluster_address,
+        additional_error_message=f"Could not find executable on {cluster_address}.\n"
+        f"Was looking here: {path_to_executable}",
     )
-    if returncode:
-        raise RuntimeError(
-            f"Could not find executable on {cluster_address}.\n"
-            f"Was looking here: {path_to_executable}"
-        )
 
     command_string = f'test -f {path_to_drt_monitor}'
-    returncode, _, stdout, stderr = run_subprocess(
+    run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_user=cluster_user,
         remote_address=cluster_address,
+        additional_error_message=f"Could not find postprocessor on {cluster_address}.\n"
+        f"Was looking here: {path_to_drt_monitor}",
     )
-    if returncode:
-        raise RuntimeError(
-            f"Could not find postprocessor on {cluster_address}.\n"
-            f"Was looking here: {path_to_drt_monitor}"
-        )
 
     command_string = f'test -f {path_to_drt_ensight}'
-    returncode, _, stdout, stderr = run_subprocess(
+    run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_user=cluster_user,
         remote_address=cluster_address,
+        additional_error_message=f"Could not find postprocessor on {cluster_address}.\n"
+        f"Was looking here: {path_to_drt_ensight}",
     )
-    if returncode:
-        raise RuntimeError(
-            f"Could not find postprocessor on {cluster_address}.\n"
-            f"Was looking here: {path_to_drt_ensight}"
-        )
 
     command_string = f'test -f {path_to_post_processor}'
-    returncode, _, stdout, stderr = run_subprocess(
+    run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_user=cluster_user,
         remote_address=cluster_address,
+        additional_error_message=f"Could not find postprocessor on {cluster_address}.\n"
+        f"Was looking here: {path_to_post_processor}",
     )
-    if returncode:
-        raise RuntimeError(
-            f"Could not find postprocessor on {cluster_address}.\n"
-            f"Was looking here: {path_to_post_processor}"
-        )
 
     baci_cluster_paths = dict(
         path_to_executable=path_to_executable,

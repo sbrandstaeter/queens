@@ -1,5 +1,5 @@
 """Simulation model class."""
-from pqueens.interfaces.interface import Interface
+from pqueens.interfaces import from_config_create_interface
 
 from .model import Model
 
@@ -54,7 +54,7 @@ class SimulationModel(Model):
             model_parameters["random_variables"]["pseudo_var"]["type"] = 'none'
 
         # create interface
-        interface = Interface.from_config_create_interface(interface_name, config)
+        interface = from_config_create_interface(interface_name, config)
         return cls(model_name, interface, model_parameters)
 
     def evaluate(self):

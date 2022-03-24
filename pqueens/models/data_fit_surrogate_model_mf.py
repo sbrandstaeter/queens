@@ -1,8 +1,9 @@
 """Multi-fidelity Surrogate model class."""
 import numpy as np
 
-from pqueens.interfaces.interface import Interface
-from pqueens.iterators.iterator import Iterator
+from pqueens.interfaces import from_config_create_interface
+from pqueens.iterators import from_config_create_iterator
+from pqueens.models import from_config_create_model
 
 from .model import Model
 
@@ -59,16 +60,16 @@ class MFDataFitSurrogateModel(Model):
         subordinate_iterator_name = model_options["subordinate_iterator"]
 
         # create subordinate model
-        subordinate_model = Model.from_config_create_model(subordinate_model_name, config)
+        subordinate_model = from_config_create_model(subordinate_model_name, config)
 
         # create subordinate iterator
-        subordinate_iterator = Iterator.from_config_create_iterator(
+        subordinate_iterator = from_config_create_iterator(
             config, subordinate_iterator_name, subordinate_model
         )
         # TODO add check if we have a multi-fidelity iterator
 
         # create interface
-        interface = Interface.from_config_create_interface(interface_name, config)
+        interface = from_config_create_interface(interface_name, config)
 
         # TODO check that we have a multi-fidelity interface
 

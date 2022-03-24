@@ -1,26 +1,27 @@
-"""Generator module supplies function to generate a job or task script for
-submission."""
+"""Function to generate a job or task script for submission."""
 
 import os
 
 from pqueens.utils.injector import inject
+from pqueens.utils.path_utils import relative_path_from_pqueens
 from pqueens.utils.run_subprocess import run_subprocess
 
 
 def generate_submission_script(
     script_options, submission_script_path, submission_script_template, connect_to_resource=None
 ):
-    """Generate a submission script for either a task definition on AWS based
-    on a task-script template or the simulation based on a job-script template
-    (with the latter either local or remote).
+    """Generate a submission script.
+
+    Based on based on a job-script template.
 
     Args:
-         job_id (int): Internal QUEENS job-ID that is used to enumerate the simulations
-    Returns:
-         None
+        script_options (dict): Options for the submission
+        submission_script_path (str): Destination path for the script
+        submission_script_template (str): Path to submission template
+        connect_to_resource (str, optional): Resource connection string
     """
     # local dummy path
-    local_dummy_path = os.path.join(os.path.dirname(__file__), 'dummy_submission_script')
+    local_dummy_path = relative_path_from_pqueens('utils/dummy_submission_script')
 
     # create actual submission file with parsed parameters
     inject(script_options, submission_script_template, local_dummy_path)
@@ -31,4 +32,5 @@ def generate_submission_script(
     else:
         command_list = ['scp', local_dummy_path, connect_to_resource + ':' + submission_script_path]
     command_string = ' '.join(command_list)
-    process_returncode, p, stdout, stderr = run_subprocess(command_string)
+
+    run_subprocess(command_string)

@@ -7,8 +7,8 @@ import unittest
 import mock
 import pytest
 
+from pqueens.interfaces import from_config_create_interface
 from pqueens.interfaces.approximation_interface import ApproximationInterface
-from pqueens.interfaces.interface import Interface
 
 
 class TestApproximationInterface(unittest.TestCase):
@@ -38,6 +38,6 @@ class TestApproximationInterface(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_construction(self):
-        interface = Interface.from_config_create_interface('test_interface', self.config)
+        interface = from_config_create_interface('test_interface', self.config)
         # ensure correct type
         self.assertIsInstance(interface, ApproximationInterface)

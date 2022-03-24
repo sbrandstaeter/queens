@@ -14,8 +14,7 @@ import sys
 from collections import OrderedDict
 
 import pqueens.database.database as DB_module
-from pqueens.drivers.driver import Driver
-from pqueens.utils.manage_singularity import hash_files
+from pqueens.drivers import from_config_create_driver
 
 try:
     import simplejson as json
@@ -49,11 +48,6 @@ def main(args):
     parser.add_argument("--post", help="option for postprocessing", type=str)
     parser.add_argument("--driver_name", help="name of driver for the current run", type=str)
     parser.add_argument("--workdir", help="working directory", type=str)
-    parser.add_argument(
-        "--hash",
-        help="Boolean that specifies whether the main run should return "
-        "the hash of all copied QUEENS files",
-    )
 
     args = parser.parse_args(args)
     job_id = args.job_id
@@ -65,15 +59,10 @@ def main(args):
 
     driver_obj = None
     try:
-        hash = args.hash
         driver_name = args.driver_name
 
         # return hash of QUEENS files in singularity image
-        if hash == 'true':
-            hashlist = hash_files()
-            print(hashlist)
-
-        elif port == "000":
+        if port == "000":
             try:
                 with open(path_json, 'r') as myfile:
                     config = json.load(myfile, object_pairs_hook=OrderedDict)
@@ -89,7 +78,7 @@ def main(args):
             config["database"]["reset_existing_db"] = False
             DB_module.from_config_create_database(config)
             with DB_module.database:
-                driver_obj = Driver.from_config_create_driver(config, job_id, batch, driver_name)
+                driver_obj = from_config_create_driver(config, job_id, batch, driver_name)
 
                 # Run the singularity image in two stages waiting for each other but within one
                 # singularity call
@@ -117,13 +106,10 @@ def main(args):
             except FileNotFoundError:
                 raise FileNotFoundError("temp.json did not load properly.")
 
-            path_to_post_post_file = os.path.join(path_json, 'post_post/post_post.py')
             config["database"]["reset_existing_db"] = False
             DB_module.from_config_create_database(config)
             with DB_module.database:
-                driver_obj = Driver.from_config_create_driver(
-                    config, job_id, batch, driver_name, port, path_to_post_post_file, workdir
-                )
+                driver_obj = from_config_create_driver(config, job_id, batch, driver_name, workdir)
                 # Run the singularity image in two steps and two different singularity calls to have
                 # more freedom concerning mpi ranks
                 if post == 'true':

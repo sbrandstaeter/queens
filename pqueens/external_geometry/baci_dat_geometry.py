@@ -609,18 +609,15 @@ class BaciDatExternalGeometry(ExternalGeometry):
         # copy the dat file and rename it for the current simulation
         cmd_lst = ['/bin/cp -arfp', self.path_to_dat_file, new_dat_file_path]
         command_string = ' '.join(cmd_lst)
-        _, _, _, stderr = run_subprocess(command_string)
+        run_subprocess(
+            command_string, additional_error_message="Copying of simulation input file failed"
+        )
 
         # this has to be done outside of the file read as order is not known a priori
         self._create_new_node_sets(random_fields_lst)
 
         # potentially organize new material definitions
         self._organize_new_material_definitions()
-
-        if stderr:
-            raise RuntimeError(
-                f"Copying of simulation input file failed with error message: {stderr}"
-            )
 
         # save original file ownership details
         stat = os.stat(self.path_to_dat_file)

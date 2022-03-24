@@ -13,21 +13,7 @@ import pytest
 
 from pqueens.main import main
 from pqueens.utils import injector
-from pqueens.utils.manage_singularity import hash_files
 from pqueens.utils.run_subprocess import run_subprocess
-
-
-@pytest.fixture(params=[True, False])
-def singularity_bool(request):
-    """Return boolean to run with or without singularity.
-
-    Args:
-        request (SubRequest): true = with singularity; false = without singularity
-
-    Returns:
-        request.param (bool): true = with singularity; false = without singularity
-    """
-    return request.param
 
 
 @pytest.fixture(scope="session")
@@ -90,7 +76,7 @@ def count_subdirectories(current_directory):
 def remove_job_output_directory(experiment_directory, jobid):
     """Remove output directory of job #jobid from experiment_directory."""
     rm_cmd = "rm -r " + str(experiment_directory) + "/" + str(jobid)
-    _, _, _, stderr = run_subprocess(rm_cmd)
+    run_subprocess(rm_cmd)
 
 
 @pytest.mark.integration_tests_baci
@@ -131,52 +117,6 @@ def test_baci_elementary_effects(
     injector.inject(dir_dict, template, input_file)
     arguments = ['--input=' + input_file, '--output=' + str(experiment_directory)]
 
-    if singularity_bool is True:
-        # check existence of local singularity image
-        script_dir = os.path.dirname(__file__)  # <-- absolute dir the script is in
-        rel_path = '../../../../singularity_image.sif'
-        abs_path = os.path.join(script_dir, rel_path)
-        assert os.path.isfile(abs_path), (
-            "No singularity image existent! Please provide an up-to-date "
-            "singularity image for the testing framework. Being in the "
-            "directory `pqueens` you can run the command:\n"
-            "----------------------------------------------------\n"
-            "sudo /usr/bin/singularity build ../singularity_image.sif "
-            "../singularity_recipe.def\n"
-            "----------------------------------------------------\n"
-            "to build a fresh image."
-        )
-
-        # check if hash of singularity image is correct
-        # local hash key
-        hashlist = hash_files()
-        local_hash = ''.join(hashlist)
-
-        # check singularity image hash
-        command_list = ['/usr/bin/singularity', 'run', abs_path, '--hash=true']
-        command_string = ' '.join(command_list)
-        _, _, singularity_hash_list, stderr = run_subprocess(command_string)
-
-        if stderr:
-            raise RuntimeError(f'Singularity hash-check return the error: {stderr}. Abort...')
-        else:
-            singularity_hash = [
-                ele.replace("\'", "") for ele in singularity_hash_list.strip('][').split(', ')
-            ]
-            singularity_hash = [ele.replace("]", "") for ele in singularity_hash]
-            singularity_hash = [ele.replace("\n", "") for ele in singularity_hash]
-            singularity_hash = ''.join(singularity_hash)
-
-        assert local_hash == singularity_hash, (
-            "Local hash key and singularity image hash key "
-            "deviate! Please provide and up-to-date "
-            "singularity image by running:\n"
-            "----------------------------------------------------\n"
-            "sudo /usr/bin/singularity build ../singularity_image.sif "
-            "../singularity_recipe.def\n"
-            "----------------------------------------------------\n"
-        )
-
     main(arguments)
 
     result_file_name = experiment_name + ".pickle"
@@ -199,6 +139,7 @@ def test_baci_elementary_effects(
     )
 
 
+@pytest.mark.integration_tests_baci
 def test_restart_from_output_folders_baci(
     inputdir,
     tmpdir,

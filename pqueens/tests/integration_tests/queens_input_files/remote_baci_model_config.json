@@ -41,49 +41,22 @@
         ""
       ],
       "post_post": {
-        "post_post_approach_sel": "baci_ensight",
-        "post_post_file_name_prefix_lst": [
-          "{cluster}"
-        ],
-        "field_specification": {
-          "geometric_target": [
-            [
-              "experimental_data",
-              [
-                "x1",
-                "x2",
-                "x3"
-              ]
-            ]
-          ],
+        "post_post_approach_sel": "ensight",
+        "post_file_name_identifier": "{cluster}*.case",
+        "file_options_dict": {
+          "delete_field_data": false,
+          "geometric_target": ["experimental_data"],
           "physical_field_dict": {
-            "vtk_field_type": [
-              "structure"
-            ],
-            "vtk_array_type": [
-              "point_array"
-            ],
-            "vtk_field_label": [
-              "displacement"
-            ],
+            "vtk_field_type": "structure",
+            "vtk_array_type": "point_array",
+            "vtk_field_label": "displacement",
             "field_components": [
-              [
-                0
-              ]
+              0
             ]
           },
-          "target_time": [
-            [
-              [
-                0.5
-              ]
-            ]
-          ],
-          "time_tol": [
-            0.001
-          ]
-        },
-        "delete_field_data": false
+          "target_time_lst": [0.5],
+          "time_tol": 0.001
+        }
       }
     }
   },

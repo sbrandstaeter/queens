@@ -1,3 +1,7 @@
+"""Python function module.
+
+This module is outdated and should therefore no be used.
+"""
 import os
 import sys
 

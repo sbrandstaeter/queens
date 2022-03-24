@@ -9,10 +9,8 @@ import sys
 import time
 from collections import OrderedDict
 
-import pyfiglet
-
 import pqueens.database.database as DB_module
-from pqueens.iterators.iterator import Iterator
+from pqueens.iterators import from_config_create_iterator
 from pqueens.utils import ascii_art
 from pqueens.utils.logger_settings import setup_basic_logging
 
@@ -22,7 +20,7 @@ except ImportError:
     import json
 
 
-def main(args):
+def main(args=None):
     """Main function of QUEENS.
 
     controls and runs the analysis.
@@ -31,14 +29,16 @@ def main(args):
         args (list): list of arguments to be parsed
     """
     ascii_art.print_crown()
-    result = pyfiglet.figlet_format("QUEENS", font="banner3-D")
-    print(result)
-    result = """
- A general purpose framework for Uncertainty Quantification, 
-  Physics-Informed Machine Learning, Bayesian Optimization, 
-         Inverse Problems and Simulation Analytics
-"""
-    print(result)
+    ascii_art.print_banner()
+    description = """
+    A general purpose framework for Uncertainty Quantification,
+    Physics-Informed Machine Learning, Bayesian Optimization,
+    Inverse Problems and Simulation Analytics
+    """
+    ascii_art.print_centered_multiline(description)
+
+    if not args:
+        args = sys.argv[1:]
 
     # read input
     start_time_input = time.time()
@@ -57,7 +57,7 @@ def main(args):
     with DB_module.database as db:
 
         # build iterator
-        my_iterator = Iterator.from_config_create_iterator(options)
+        my_iterator = from_config_create_iterator(options)
 
         end_time_input = time.time()
 
@@ -89,7 +89,6 @@ def get_options(args):
     Returns:
         dict: parsed options in a dictionary
     """
-
     parser = argparse.ArgumentParser(description="QUEENS")
     parser.add_argument('--input', type=str, default=None, help='Input file in .json format.')
     parser.add_argument(
@@ -99,9 +98,9 @@ def get_options(args):
 
     args = parser.parse_args(args)
 
-    # if no options are provided print a greeding message
+    # if no options are provided print a greeting message
     if args.input is None and args.output_dir is None:
-        print("\t\t Welcome to the royal family!")
+        ascii_art.print_centered_multiline("Welcome to the royal family!")
         print("\nTo use QUEENS run:\n")
         print("queens --input <inputfile> --output_dir <output_dir>\n")
         print("or\n")
@@ -155,4 +154,4 @@ def get_options(args):
 
 
 if __name__ == '__main__':
-    sys.exit(main(sys.argv[1:]))
+    sys.exit(main())

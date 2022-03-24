@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from pqueens.iterators.iterator import Iterator
-from pqueens.models.model import Model
+from pqueens.models import from_config_create_model
 from pqueens.utils import mcmc_utils, smc_utils
 from pqueens.utils.process_outputs import process_ouputs, write_results
 
@@ -158,7 +158,7 @@ class MetropolisHastingsIterator(Iterator):
             method_options = config[iterator_name]['method_options']
         if model is None:
             model_name = method_options['model']
-            model = Model.from_config_create_model(model_name, config)
+            model = from_config_create_model(model_name, config)
 
         result_description = method_options.get('result_description', None)
         global_settings = config.get('global_settings', None)

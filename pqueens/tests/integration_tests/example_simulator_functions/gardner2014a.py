@@ -1,17 +1,21 @@
-"""Gradner2014a function is a two dimensional benchmark function for constraint
-Bayesian optimization."""
+"""Gradner2014a function.
+
+This is a two-dimensional benchmark function for constraint Bayesian
+optimization.
+"""
 import numpy as np
 
 
 def gardner2014a(x1, x2):
-    """Gradner2014a function: Two dimensional benchmark function for constraint
-    Bayesian optimization [1]
+    r"""Gradner2014a function.
+
+    Two-dimensional benchmark function for constraint Bayesian optimization [1]
 
     :math:`f({\\bf x}) = \\cos(2x_1)\\cos(x_2)+ \\sin(x_1)`
 
     with the corresponding constraint function:
 
-    :math:`c({\\bf x}) = \\cos(x_1)\\cos(x_2) - \\sin(x_1)\sin(x_2)`
+    :math:`c({\\bf x}) = \\cos(x_1)\\cos(x_2) - \\sin(x_1)\\sin(x_2)`
 
     with
 
@@ -28,12 +32,10 @@ def gardner2014a(x1, x2):
 
 
     References:
-
         [1] Gardner, Jacob R., Matt J. Kusner, Zhixiang Eddie Xu, Kilian Q.
             Weinberger, and John P. Cunningham. "Bayesian Optimization with
             Inequality Constraints." In ICML, pp. 937-945. 2014
     """
-
     y = np.cos(2 * x1) * np.cos(x2) + np.sin(x1)
     c = np.cos(x1) * np.cos(x2) - np.sin(x1) * np.sin(x2)
 
@@ -41,7 +43,7 @@ def gardner2014a(x1, x2):
 
 
 def main(job_id, params):
-    """Interface to ma function.
+    """Interface to main function.
 
     Args:
         job_id (int):  ID of job

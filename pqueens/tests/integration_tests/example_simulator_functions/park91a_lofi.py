@@ -1,19 +1,20 @@
+"""Low-fidelity Park91a function."""
 import numpy as np
 
 from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi import park91a_hifi
 
 
 def park91a_lofi(x1, x2, x3, x4):
-    """Low-fidelity Park91a function.
+    r"""Low-fidelity Park91a function.
 
     Simple four dimensional benchmark function as proposed in [1] to mimic
     a computer model. For the purpose of multi-fidelity simulation, [3]
     defined a corresponding lower fidelity function, which is  defined as
 
     :math:`f_{lofi}({\\bf x})=
-    [1 + \\frac{\sin(x_1)}{10} ] f_{hifi}({\\bf x}) - 2x_1 + x_2^2 + x_3^2 + 0.5`
+    [1 + \\frac{\\sin(x_1)}{10} ] f_{hifi}({\\bf x}) - 2x_1 + x_2^2 + x_3^2 + 0.5`
 
-    The high-fidelity version is defiend as is implemented in park91a_hifi
+    The high-fidelity version is defined as is implemented in park91a_hifi.
 
     Args:
         x1 (float):  Input parameter 1 [0,1)
@@ -25,7 +26,6 @@ def park91a_lofi(x1, x2, x3, x4):
         float: Value of function at parameters
 
     References:
-
         [1] Park, J.-S.(1991). Tuning complex computer codes to data and optimal
             designs, Ph.D Thesis
 
@@ -45,7 +45,7 @@ def park91a_lofi(x1, x2, x3, x4):
 
 
 def main(job_id, params):
-    """Interface to Park91a test fuction.
+    """Interface to Park91a test function.
 
     Args:
         job_id (int):  ID of job
