@@ -37,21 +37,23 @@ def run_subprocess(command_string, **kwargs):
     return subprocess_specific(command_string, **kwargs)
 
 
-def _get_subprocess(subprocess_type):
+def _get_subprocess(desired_subprocess):
     """Choose subprocess implementation by subprocess_type.
 
     Args:
-        subprocess_type (str): subprocess_type of run_subprocess
+        desired_subprocess (str): subprocess type of run_subprocess
     Returns:
         function object (obj): function object for implementation type of run_subprocess from utils
     """
-    subprocess_types = {
+    valid_subprocess_types = {
         'simple': _run_subprocess_simple,
         'simulation': _run_subprocess_simulation,
         'submit': _run_subprocess_submit_job,
         'remote': _run_subprocess_remote,
     }
-    return get_option(subprocess_types, subprocess_type, error_message="Invalid subprocess type!")
+    return get_option(
+        valid_subprocess_types, desired_subprocess, error_message="Invalid subprocess type!"
+    )
 
 
 def _run_subprocess_simple(command_string, **kwargs):
