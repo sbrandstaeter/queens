@@ -12,7 +12,7 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.mark.lnm_cluster
-def test_cluster_postpost_ensight(
+def test_cluster_baci_postpost_ensight(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):
     """Test suite for remote BACI sumlations on the cluster in combination with
@@ -54,8 +54,8 @@ def test_cluster_postpost_ensight(
     # unique experiment name
     experiment_name = cluster + "_remote_post_post_ensight"
 
-    template = pathlib.Path(inputdir, "remote_baci_model_config.json")
-    input_file = pathlib.Path(tmpdir, f"remote_baci_model_config.json")
+    template = pathlib.Path(inputdir, "baci_remote_model_config.json")
+    input_file = pathlib.Path(tmpdir, f"baci_remote_model_config.json")
 
     # specific folder for this test
     cluster_experiment_dir = cluster_queens_testing_folder.joinpath(experiment_name)

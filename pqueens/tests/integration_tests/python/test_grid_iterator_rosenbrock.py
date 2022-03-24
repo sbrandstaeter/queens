@@ -11,12 +11,12 @@ from pqueens.main import main
 def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
     """Integration test for the grid iterator."""
     arguments = [
-        '--input=' + os.path.join(inputdir, 'grid_iterator_local.json'),
+        '--input=' + os.path.join(inputdir, 'grid_iterator_rosenbrock.json'),
         '--output=' + str(tmpdir),
     ]
 
     main(arguments)
-    result_file = os.path.join(tmpdir, 'grid_iterator_local.pickle')
+    result_file = os.path.join(tmpdir, 'grid_iterator_rosenbrock.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
