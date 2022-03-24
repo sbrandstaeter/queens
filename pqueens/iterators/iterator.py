@@ -7,7 +7,7 @@ class Iterator(metaclass=abc.ABCMeta):
     """Base class for Iterator hierarchy.
 
     This Iterator class is the base class for one of the primary class
-    hierarchies in QUEENS.The job of the iterator hierarchy is to
+    hierarchies in QUEENS. The job of the iterator hierarchy is to
     coordinate and execute simulations/function evaluations. The purpose
     of this base class is twofold. First, it defines the unified
     interface of the iterator hierarchy. Second, it works as factory
@@ -16,7 +16,7 @@ class Iterator(metaclass=abc.ABCMeta):
     """
 
     def __init__(self, model=None, global_settings=None):
-        """Initialise iterator object.
+        """Initialize iterator object.
 
         Args:
             model (obj, optional): Model to be evaluated by iterator.

@@ -19,7 +19,7 @@ def get_option(options_dict, desired_option, error_message=""):
 
 
 def check_if_valid_option(valid_options, desired_option, error_message=""):
-    """Check if the dersired option is in valid_options.
+    """Check if the desired option is in valid_options.
 
     Args:
         valid_options (lst): List of valid option keys
@@ -41,7 +41,7 @@ class InvalidOptionError(Exception):
     """Custom error class for invalid options during QUEENS runs."""
 
     def __init__(self, message):
-        """Initialise InvalidOptionError.
+        """Initialize InvalidOptionError.
 
         Args:
             message (str): Error message
