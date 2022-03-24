@@ -7,25 +7,20 @@ class Iterator(metaclass=abc.ABCMeta):
     """Base class for Iterator hierarchy.
 
     This Iterator class is the base class for one of the primary class
-    hierarchies in QUEENS.The job of the iterator hierarchy is to coordinate
-    and execute simulations/function evaluations. The purpose of this base class
-    is twofold. First, it defines the unified interface of the iterator hierarchy.
-    Second, it works as factory which allows unified instantiation of iterator object
-    by calling its classmethods.
-
-    Attributes:
-        model (model): Model to be evaluated by iterator
+    hierarchies in QUEENS. The job of the iterator hierarchy is to
+    coordinate and execute simulations/function evaluations. The purpose
+    of this base class is twofold. First, it defines the unified
+    interface of the iterator hierarchy. Second, it works as factory
+    which allows unified instantiation of iterator object by calling its
+    classmethods.
     """
 
     def __init__(self, model=None, global_settings=None):
-        """Initialize base iterator from problem description.
+        """Initialize iterator object.
 
         Args:
-            model (obj, optional): Model object on which the iterator
-                                   is applied to. Defaults to None.
-            global_settings (dict, optional): Dictionary containing global settings
-                                              for the QUEENS simulation run.
-                                              Defaults to None.
+            model (obj, optional): Model to be evaluated by iterator.
+            global_settings (dict, optional): Settings for the QUEENS run.
         """
         self.model = model
         self.global_settings = global_settings

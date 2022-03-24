@@ -5,6 +5,7 @@ import subprocess
 _logger = logging.getLogger(__name__)
 
 from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
+from pqueens.utils.valid_options_utils import get_option
 
 # Currently allowed errors that might appear but have no effect on subprocesses
 _allowed_errors = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
@@ -36,24 +37,23 @@ def run_subprocess(command_string, **kwargs):
     return subprocess_specific(command_string, **kwargs)
 
 
-def _get_subprocess(subprocess_type):
+def _get_subprocess(desired_subprocess):
     """Choose subprocess implementation by subprocess_type.
 
     Args:
-        subprocess_type (str): subprocess_type of run_subprocess
+        desired_subprocess (str): subprocess type of run_subprocess
     Returns:
         function object (obj): function object for implementation type of run_subprocess from utils
     """
-    if subprocess_type == 'simple':
-        return _run_subprocess_simple
-    elif subprocess_type == 'simulation':
-        return _run_subprocess_simulation
-    elif subprocess_type == 'submit':
-        return _run_subprocess_submit_job
-    elif subprocess_type == 'remote':
-        return _run_subprocess_remote
-    else:
-        raise SubprocessError(f'subprocess_type {subprocess_type} not found.')
+    valid_subprocess_types = {
+        'simple': _run_subprocess_simple,
+        'simulation': _run_subprocess_simulation,
+        'submit': _run_subprocess_submit_job,
+        'remote': _run_subprocess_remote,
+    }
+    return get_option(
+        valid_subprocess_types, desired_subprocess, error_message="Invalid subprocess type!"
+    )
 
 
 def _run_subprocess_simple(command_string, **kwargs):
