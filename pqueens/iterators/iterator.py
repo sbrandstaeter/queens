@@ -2,8 +2,6 @@
 
 import abc
 
-from pqueens.utils.valid_options_utils import get_option
-
 
 class Iterator(metaclass=abc.ABCMeta):
     """Base class for Iterator hierarchy.
