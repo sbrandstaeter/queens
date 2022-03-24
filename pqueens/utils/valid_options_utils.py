@@ -4,7 +4,7 @@
 def get_option(options_dict, desired_option, error_message=""):
     """Get option desired_option from the options_dict.
 
-    The options_dict consists of the keys and their value. Note that the value can also be
+    The options_dict consists of the keys and their values. Note that the value can also be
     functions. In case the option is not found an error is raised.
 
     Args:
@@ -12,7 +12,7 @@ def get_option(options_dict, desired_option, error_message=""):
         desired_option (str): Desired method key
 
     Returns:
-        value of the desired_option
+        Value of the desired_option
     """
     if check_if_valid_option(list(options_dict.keys()), desired_option, error_message):
         return options_dict[desired_option]
@@ -40,20 +40,13 @@ def check_if_valid_option(valid_options, desired_option, error_message=""):
 class InvalidOptionError(Exception):
     """Custom error class for invalid options during QUEENS runs."""
 
-    def __init__(self, message, valid_options=None, desired_option=None, additional_message=None):
+    def __init__(self, message):
         """Initialise InvalidOptionError.
 
         Args:
             message (str): Error message
-            valid_options (lst): List of valid option keys
-            desired_option (str): Key of desired option
-            additional_message (str, optional): Additional message to pass. Defaults to None.
         """
-        self.valid_options = valid_options
-        self.desired_option = desired_option
-        self.additional_message = additional_message
-        self.message = message
-        super().__init__(self.message)
+        super().__init__(message)
 
     @classmethod
     def construct_error_from_options(cls, valid_options, desired_option, additional_message=""):
@@ -68,7 +61,7 @@ class InvalidOptionError(Exception):
             InvalidOptionError
         """
         message = cls.construct_error_message(valid_options, desired_option, additional_message)
-        return cls(message, valid_options, desired_option, additional_message)
+        return cls(message)
 
     @staticmethod
     def construct_error_message(valid_options, desired_option, additional_message):
