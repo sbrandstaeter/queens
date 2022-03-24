@@ -13,25 +13,26 @@ from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCar
 from pqueens.main import main
 
 # fmt: off
-from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
+from pqueens.tests.integration_tests.example_simulator_functions.multivariate_gaussian_logpdf import (
+    gauss_like,
     gaussian_logpdf,
-    standard_normal,
 )
 from pqueens.utils import injector
 
 
 @pytest.mark.integration_tests
-def test_gaussian_smc(inputdir, tmpdir, dummy_data):
-    """Test Sequential Monte Carlo with univariate Gaussian."""
-    template = os.path.join(inputdir, "smc_gaussian.json")
+def test_metropolis_hastings_multivariate_gaussian(inputdir, tmpdir, dummy_data):
+    """Test case for metropolis hastings iterator."""
+    template = os.path.join(inputdir, "metropolis_hastings_multivariate_gaussian.json")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = os.path.join(tmpdir, "gaussian_smc_realiz.json")
+    input_file = os.path.join(tmpdir, "multivariate_gaussian_metropolis_hastings_realiz.json")
     injector.inject(dir_dict, template, input_file)
     arguments = [
         '--input=' + input_file,
         '--output=' + str(tmpdir),
     ]
+
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
         with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
@@ -42,22 +43,36 @@ def test_gaussian_smc(inputdir, tmpdir, dummy_data):
         results = pickle.load(handle)
 
     # note that the analytical solution would be:
-    # posterior mean: [1.]
-    # posterior var: [0.5]
-    # posterior std: [0.70710678]
+    # posterior mean: [0.29378531 -1.97175141]
+    # posterior cov: [[0.42937853 0.00282486] [0.00282486 0.00988701]]
     # however, we only have a very inaccurate approximation here:
-    np.testing.assert_almost_equal(results['mean'], np.array([[0.93548976354251]]), decimal=1)
-    np.testing.assert_almost_equal(results['var'], np.array([[0.7216833388663654]]), decimal=1)
+
+    np.testing.assert_allclose(
+        results['mean'], np.array([[0.7240107551260684, -2.045891088599629]])
+    )
+    np.testing.assert_allclose(
+        results['cov'],
+        np.array(
+            [
+                [
+                    [0.30698538649168755, -0.027059991075557278],
+                    [-0.027059991075557278, 0.004016365725389411],
+                ]
+            ]
+        ),
+    )
 
 
 def target_density(self, samples):
     samples = np.atleast_2d(samples)
+    x1_vec = samples[:, 0]
+    x2_vec = samples[:, 1]
 
     log_lik = []
-    for x in samples:
-        log_lik.append(gaussian_logpdf(x))
+    for x1, x2 in zip(x1_vec, x2_vec):
+        log_lik.append(gaussian_logpdf(x1, x2))
 
-    log_likelihood = np.atleast_2d(np.array(log_lik).flatten()).T
+    log_likelihood = np.atleast_2d(np.array(log_lik)).T
 
     return log_likelihood
 
@@ -65,14 +80,16 @@ def target_density(self, samples):
 @pytest.fixture()
 def dummy_data(tmpdir):
     # generate 10 samples from the same gaussian
-    samples = standard_normal.draw(10).flatten()
+    samples = gauss_like.draw(10)
+    x1_vec = samples[:, 0]
+    x2_vec = samples[:, 1]
 
     # evaluate the gaussian pdf for these 1000 samples
     pdf = []
-    for x in samples:
-        pdf.append(gaussian_logpdf(x))
+    for x1, x2 in zip(x1_vec, x2_vec):
+        pdf.append(gaussian_logpdf(x1, x2))
 
-    pdf = np.array(pdf).flatten()
+    pdf = np.array(pdf)
 
     # write the data to a csv file in tmpdir
     data_dict = {'y_obs': pdf}

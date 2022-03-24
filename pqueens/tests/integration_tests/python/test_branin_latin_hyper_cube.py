@@ -10,7 +10,7 @@ from pqueens.main import main
 def test_branin_latin_hyper_cube(inputdir, tmpdir):
     """Test case for latin hyper cube iterator."""
     arguments = [
-        '--input=' + os.path.join(inputdir, 'branin_latin_hyper_cube.json'),
+        '--input=' + os.path.join(inputdir, 'latin_hyper_cube_branin.json'),
         '--output=' + str(tmpdir),
     ]
 
