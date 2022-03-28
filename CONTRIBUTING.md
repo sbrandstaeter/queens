@@ -81,7 +81,6 @@ Assuming you have already staged and committed all your local changes as well as
 ```
 git push --set-upstream origin <name-of-your-branch>
 ```
-> **Note**: use `git rebase -i` only on commits that have not been pushed to the remote, yet.
 
 ### Merging another branch into master: merge requests (MR)
 We encourage you to merge your developments on a regular basis into master such that everyone can profit from the new code and your developments are also tested in our pipeline. Furthermore, it is usually less work to merge smaller pieces of work than one big merge request. **Please think also about the poor reviewers and avoid huge merge requests!**
@@ -106,6 +105,8 @@ Some further comments:
 - We should try to use the `start a review` option to collect review comments before sending them. This keeps the Email account a bit cleaner
 - MRs should be reviewed as soon as possible to keep the process going. A reaction to a MR should follow within two working days. Please let the developer know in case your review might take longer due to other obligations.
 - It would be nice if the MRs link to the appropriate issues, i.e., by having the issue number in the beginning of the feature branch or tagging the issues explicitly.
+
+> **Note**: Be careful when using `git rebase -i` on commits that have already been pushed to the remote. However, it is possible to squash all your commits (the orginal commits already pushed to the remote and newer commits from the review process) before merging so that the history stays clean. Gitlab still keeps the different versions since merge request versions are based on push not on commit (for more info see [here](https://docs.gitlab.com/ee/user/project/merge_requests/versions.html)).
 
 Please note, that the above points mostly discussed the procedure of merging a development branch into the remote master branch. Please make sure that your feature branch contains the latest updates from master by following [Staying up-to-date with the master branch](#staying-up-to-date-with-the-master-branch).
 ### Keep things clean

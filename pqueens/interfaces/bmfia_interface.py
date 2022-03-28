@@ -6,7 +6,7 @@ from multiprocessing import Pool
 
 import numpy as np
 
-from pqueens.regression_approximations.regression_approximation import RegressionApproximation
+from pqueens.regression_approximations import from_config_create_regression_approximation
 
 from .interface import Interface
 
@@ -158,7 +158,7 @@ class BmfiaInterface(Interface):
             None
         """
         self.probabilistic_mapping_obj_lst = [
-            RegressionApproximation.from_config_create(
+            from_config_create_regression_approximation(
                 self.config, self.approx_name, np.atleast_2d(z_lf), np.atleast_2d(y_hf).T
             )
             for (z_lf, y_hf) in (zip(Z_LF_train.T, Y_HF_train.T))

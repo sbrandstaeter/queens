@@ -22,7 +22,7 @@ from pqueens.utils import injector
 
 def test_gaussian_smc_chopin_adaptive_tempering(inputdir, tmpdir, dummy_data):
     """Test Sequential Monte Carlo with univariate Gaussian."""
-    template = os.path.join(inputdir, "gaussian_smc_chopin.json")
+    template = os.path.join(inputdir, "smc_chopin_gaussian.json")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path, "fk_method": "adaptive_tempering"}
     input_file = os.path.join(tmpdir, "gaussian_smc_realiz.json")

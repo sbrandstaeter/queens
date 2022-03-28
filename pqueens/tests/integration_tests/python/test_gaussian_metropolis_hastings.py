@@ -21,7 +21,7 @@ from pqueens.utils import injector
 @pytest.mark.integration_tests
 def test_gaussian_metropolis_hastings(inputdir, tmpdir, dummy_data):
     """Test case for metropolis hastings iterator."""
-    template = os.path.join(inputdir, "gaussian_metropolis_hastings.json")
+    template = os.path.join(inputdir, "metropolis_hastings_gaussian.json")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = os.path.join(tmpdir, "gaussian_metropolis_hastings_realiz.json")

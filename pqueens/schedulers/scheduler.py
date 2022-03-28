@@ -7,7 +7,7 @@ except ImportError:
 import abc
 
 import pqueens.interfaces.job_interface as job_interface
-from pqueens.drivers.driver import Driver
+from pqueens.drivers import from_config_create_driver
 from pqueens.utils.information_output import print_driver_information, print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
 
@@ -93,37 +93,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.singularity = singularity
         self.process_ids = {}
 
-    @classmethod
-    def from_config_create_scheduler(_cls, config, scheduler_name=None, driver_name=None):
-        """Create scheduler from problem configuration.
-
-        Args:
-            config (dict):        dictionary containing configuration
-                                  as provided in QUEENS input file
-            scheduler_name (str): Name of scheduler
-            driver_name (str): Name of driver that should be used in this job-submission
-
-        Returns:
-            Scheduler object
-        """
-        # import here to avoid issues with circular inclusion
-        from .cluster_scheduler import ClusterScheduler
-        from .standard_scheduler import StandardScheduler
-
-        scheduler_dict = {
-            'standard': StandardScheduler,
-            'pbs': ClusterScheduler,
-            'slurm': ClusterScheduler,
-        }
-
-        # get scheduler options according to chosen scheduler name
-        # or without specific naming from input file
-        if not scheduler_name:
-            scheduler_name = "scheduler"
-        scheduler_options = config[scheduler_name]
-        scheduler = scheduler_dict[scheduler_options["scheduler_type"]]
-        return scheduler.from_config_create_scheduler(config, scheduler_name, driver_name)
-
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
     def submit(self, job_id, batch):
         """Function to submit job to scheduling software on a resource.
@@ -157,7 +126,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         # create driver
         # TODO we should not create a new driver instance here every time
         # instead only update the driver attributes.
-        driver_obj = Driver.from_config_create_driver(self.config, job_id, batch, self.driver_name)
+        driver_obj = from_config_create_driver(self.config, job_id, batch, self.driver_name)
 
         # do post-processing (if required), post-post-processing,
         # finish and clean job
@@ -207,7 +176,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         # TODO we should not create the object here everytime!
         # TODO instead only update the attributes of the instance.
         # TODO we should specify the data base sheet as well
-        driver_obj = Driver.from_config_create_driver(
+        driver_obj = from_config_create_driver(
             self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
         )
 

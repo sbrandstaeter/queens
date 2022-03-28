@@ -9,9 +9,9 @@ from scipy.stats import multivariate_normal as mvn
 
 import pqueens.database.database as DB_module
 import pqueens.visualization.variational_inference_visualization as vis
-from pqueens.external_geometry.external_geometry import ExternalGeometry
+from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.iterators.iterator import Iterator
-from pqueens.models.model import Model
+from pqueens.models import from_config_create_model
 from pqueens.utils import mcmc_utils, variational_inference_utils
 from pqueens.utils.process_outputs import write_results
 
@@ -204,7 +204,7 @@ class VIRPIterator(Iterator):
             method_options = config[iterator_name]['method_options']
         if model is None:
             model_name = method_options['model']
-            model = Model.from_config_create_model(model_name, config)
+            model = from_config_create_model(model_name, config)
 
         result_description = method_options.get('result_description', None)
         export_quantities_over_iter = result_description.get("export_iteration_data")
@@ -220,7 +220,7 @@ class VIRPIterator(Iterator):
         random_seed = method_options.get("random_seed")
         max_feval = method_options.get("max_feval")
         num_variables = len(model.variables[0].variables)
-        geometry_obj = ExternalGeometry.from_config_create_external_geometry(config)
+        geometry_obj = from_config_create_external_geometry(config)
         num_iter_average_convergence = method_options.get("num_iter_average_convergence", "5")
         score_function_bool = method_options.get("score_function_bool", True)
         finite_difference_step = method_options.get("finite_difference_step")

@@ -13,7 +13,7 @@ from SALib.sample import morris
 
 import pqueens.visualization.sa_visualization as qvis
 from pqueens.iterators.iterator import Iterator
-from pqueens.models.model import Model
+from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import write_results
 
 if not mpl.get_backend().lower() == 'agg':
@@ -116,7 +116,7 @@ class ElementaryEffectsIterator(Iterator):
 
         if model is None:
             model_name = method_options["model"]
-            model = Model.from_config_create_model(model_name, config)
+            model = from_config_create_model(model_name, config)
 
         if "num_traj_chosen" not in method_options:
             method_options["num_traj_chosen"] = None

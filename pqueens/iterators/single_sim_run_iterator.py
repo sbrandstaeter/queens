@@ -1,6 +1,6 @@
 import numpy as np
 
-from pqueens.models.model import Model
+from pqueens.models import from_config_create_model
 
 from .iterator import Iterator
 
@@ -42,7 +42,7 @@ class SingleSimRunIterator(Iterator):
             method_options = config[iterator_name]['method_options']
         if model is None:
             model_name = method_options['model']
-            model = Model.from_config_create_model(model_name, config)
+            model = from_config_create_model(model_name, config)
 
         global_settings = config.get('global_settings', None)
 

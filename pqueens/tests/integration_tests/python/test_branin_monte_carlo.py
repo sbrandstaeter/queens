@@ -10,7 +10,7 @@ from pqueens.main import main
 def test_branin_monte_carlo(inputdir, tmpdir):
     """Test case for monte carlo iterator."""
     arguments = [
-        '--input=' + os.path.join(inputdir, 'branin_monte_carlo.json'),
+        '--input=' + os.path.join(inputdir, 'monte_carlo_branin.json'),
         '--output=' + str(tmpdir),
     ]
 

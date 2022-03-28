@@ -10,7 +10,7 @@ import sys
 
 import numpy as np
 
-from pqueens.schedulers.scheduler import Scheduler
+from pqueens.schedulers import from_config_create_scheduler
 
 # TODO refactor this method into a class method
 
@@ -65,7 +65,7 @@ def resource_factory(resource_name, exp_name, config, driver_name):
     scheduler_name = resource_options['scheduler']
 
     # create scheduler from config
-    scheduler = Scheduler.from_config_create_scheduler(
+    scheduler = from_config_create_scheduler(
         scheduler_name=scheduler_name, config=config, driver_name=driver_name
     )
     # Create/update singularity image in case of cluster job

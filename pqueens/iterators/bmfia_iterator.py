@@ -5,10 +5,10 @@ import logging
 import numpy as np
 
 import pqueens.database.database as DB_module
-from pqueens.external_geometry.external_geometry import ExternalGeometry
+from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
-from pqueens.models.model import Model
+from pqueens.models import from_config_create_model
 
 _logger = logging.getLogger(__name__)
 
@@ -126,11 +126,11 @@ class BMFIAIterator(Iterator):
         lf_model_name = bmfia_iterator_dict["low_fidelity_model"]
         initial_design_dict = bmfia_iterator_dict["initial_design"]
 
-        hf_model = Model.from_config_create_model(hf_model_name, config)
-        lf_model = Model.from_config_create_model(lf_model_name, config)
+        hf_model = from_config_create_model(hf_model_name, config)
+        lf_model = from_config_create_model(lf_model_name, config)
 
         # ---------- configure external geometry object (returns None if not available) -
-        external_geometry = ExternalGeometry.from_config_create_external_geometry(config)
+        external_geometry = from_config_create_external_geometry(config)
 
         # ---------- create database object to load coordinates --------------------------
         output_label = config[model_name].get("output_label")

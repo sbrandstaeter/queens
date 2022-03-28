@@ -7,8 +7,8 @@ import pathlib
 
 import pqueens.database.database as DB_module
 from pqueens.drivers.driver import Driver
-from pqueens.external_geometry.external_geometry import ExternalGeometry
-from pqueens.post_post.post_post import PostPost
+from pqueens.external_geometry import from_config_create_external_geometry
+from pqueens.post_post import from_config_create_post_post
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,
 )
@@ -282,9 +282,7 @@ class BaciDriver(Driver):
 
         do_postpostprocessing = driver_options.get('post_post', None)
         if do_postpostprocessing:
-            postpostprocessor = PostPost.from_config_create_post_post(
-                config, driver_name=driver_name
-            )
+            postpostprocessor = from_config_create_post_post(config, driver_name=driver_name)
             cae_output_streaming = False
         else:
             postpostprocessor = None
@@ -316,7 +314,7 @@ class BaciDriver(Driver):
         error_file = os.path.join(output_directory, error_file_str)
 
         if config.get('external_geometry', None):
-            external_geometry_obj = ExternalGeometry.from_config_create_external_geometry(config)
+            external_geometry_obj = from_config_create_external_geometry(config)
         else:
             external_geometry_obj = None
 

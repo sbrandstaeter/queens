@@ -11,7 +11,7 @@ from pqueens.main import main
 def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
     """Test case for GPflow based SVGP model."""
     arguments = [
-        '--input=' + os.path.join(inputdir, 'branin_gpflow_svgp_surrogate.json'),
+        '--input=' + os.path.join(inputdir, 'gpflow_svgp_surrogate_branin.json'),
         '--output=' + str(tmpdir),
     ]
 

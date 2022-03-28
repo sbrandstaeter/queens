@@ -11,7 +11,7 @@ from pqueens.main import main
 def test_branin_gpy_surrogate(inputdir, tmpdir, expected_pdf):
     """Test case for GP based surrogate model."""
     arguments = [
-        '--input=' + os.path.join(inputdir, 'branin_gpy_surrogate.json'),
+        '--input=' + os.path.join(inputdir, 'gpy_surrogate_branin.json'),
         '--output=' + str(tmpdir),
     ]
 
