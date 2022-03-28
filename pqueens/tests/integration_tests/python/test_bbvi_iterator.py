@@ -53,7 +53,6 @@ def test_bbvi_density_match(
         opt_variational_params = np.array(dummy_bbvi_instance.variational_params)
 
         elbo = dummy_bbvi_instance.elbo_list
-        print(elbo)
 
     # Actual tests
     opt_variational_samples = variational_distr_obj.draw(opt_variational_params, 10000)
@@ -64,8 +63,8 @@ def test_bbvi_density_match(
     kl_divergence = np.abs(np.mean(variational_logpdf - target_logpdf))
     # Test if KL divergence is not too large
     assert kl_divergence < 10 ** 5
-    # Test if the elbo declined
-    assert elbo[0] < elbo[-1]
+    # Test if the elbo declined on average
+    assert np.mean(elbo[-5:]) > np.mean(elbo[:5])
 
 
 @pytest.mark.integration_tests
@@ -114,14 +113,13 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
     # -1 indicates to run a fixed number of samples
-    max_feval = 100 * n_samples_per_iter
+    max_feval = 100
     num_variables = 5
     memory = 20
-    natural_gradient_bool = True
+    natural_gradient_bool = False
     fim_dampening_bool = True
     export_quantities_over_iter = False
     variational_params_initialization_approach = "random"
-    num_iter_average_convergence = 5
     gradient_clipping_norm_threshold = 1e6
     fim_decay_start_iter = 50
     fim_dampening_coefficient = 1e-2
@@ -168,7 +166,6 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         variational_transformation=variational_transformation,
         random_seed=random_seed,
         max_feval=max_feval,
-        num_iter_average_convergence=num_iter_average_convergence,
         num_variables=num_variables,
         memory=memory,
         natural_gradient_bool=natural_gradient_bool,
