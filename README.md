@@ -172,11 +172,19 @@ To check that the command was successful, you can
 For more information please refer to the singularity documentation for [user](https://sylabs.io/guides/3.5/user-guide/fakeroot.html) and [admin](https://sylabs.io/guides/3.5/admin-guide/user_namespace.html#config-fakeroot) on the fakeroot option of singularity.
 
 Make sure that after the installation process your `.bashrc` file contains
-```
-export SINGULARITY_BIND=/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm
-export SINGULARITYENV_APPEND_PATH=$PATH
-export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
-```
+- for LNM CentOS machines:
+  ```
+  export SINGULARITY_BIND=/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm
+  export SINGULARITYENV_APPEND_PATH=$PATH
+  export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+  ```
+- for LNM Ubuntu machines:
+  ```
+  export SINGULARITY_BIND=/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm,/usr/share/openmpi:/usr/share/openmpi
+  export SINGULARITYENV_APPEND_PATH=$PATH
+  export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+  ```
+
 (Generally this should be generated automatically. Without `lnm` on external PCs.)
 
 Assuming singularity is already installed, an image for a QUEENS run can be build (in the environment where QUEENS is installed) using the QUEENS CLI with the command:
