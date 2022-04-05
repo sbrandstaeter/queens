@@ -11,11 +11,12 @@
             "max_feval": 100,
             "num_iter_average_convergence": 5,
             "n_samples_per_iter": 2,
-            "memory": 10,
+            "memory": 20,
             "variational_distribution": {
                 "variational_approximation_type": "fullrank",
                 "variational_family": "normal"
             },
+            "model_eval_iteration_period": 1000,
             "optimization_options": {
                 "natural_gradient": true,
                 "FIM_dampening": true,
@@ -40,7 +41,7 @@
                 "plotting_options": {
                     "plot_boolean": false,
                     "plotting_dir": "{plot_dir}",
-                    "plot_name": "variatonal_params_convergence.eps",
+                    "plot_name": "variational_params_convergence.eps",
                     "save_bool": false
                 }
             }
