@@ -34,11 +34,11 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
             w_n[:, i] = self.compute_roots_of_characteristic_equation().ravel()
 
         # compute factors of denominator
-        fac1 = self.corr_length ** 2 * w_n[:, 0] ** 2 + 1
-        fac2 = self.corr_length ** 2 * w_n[:, 1] ** 2 + 1
+        fac1 = self.corr_length**2 * w_n[:, 0] ** 2 + 1
+        fac2 = self.corr_length**2 * w_n[:, 1] ** 2 + 1
 
         # compute eigenvalues and store in vector
-        lambdas_array = 4 * self.corr_length ** 2 / (np.kron(fac1, fac2))
+        lambdas_array = 4 * self.corr_length**2 / (np.kron(fac1, fac2))
         lambdas_vec = lambdas_array.reshape(-1, 1)
 
         # in order to sort the eigenvalues we need to store the corresponding
@@ -69,7 +69,7 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
         self.w_n[:, 1] = w_n[my_index_1, 1]
         self.w_n[:, 0] = w_n[my_index_0, 0]
         #
-        retained_energy = np.sum(self.lambda_n[:, 0]) / (self.largest_length ** self.spatial_dim)
+        retained_energy = np.sum(self.lambda_n[:, 0]) / (self.largest_length**self.spatial_dim)
 
         if retained_energy < self.des_energy_frac:
             raise RuntimeError(

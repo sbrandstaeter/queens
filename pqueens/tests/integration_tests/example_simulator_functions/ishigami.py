@@ -62,7 +62,7 @@ def ishigami(x1, x2, x3, p1=P1, p2=P2):
     """
     term1 = np.sin(x1)
     term2 = p1 * (np.sin(x2)) ** 2
-    term3 = p2 * x3 ** 4 * np.sin(x1)
+    term3 = p2 * x3**4 * np.sin(x1)
 
     return term1 + term2 + term3
 
@@ -83,7 +83,7 @@ def variance(p1=P1, p2=P2):
     Returns:
         float : Value of variance of ishigami function
     """
-    return 0.125 * p1 ** 2 + 0.2 * p2 * np.pi ** 4 + p2 ** 2 * np.pi ** 8 / 18 + 0.5
+    return 0.125 * p1**2 + 0.2 * p2 * np.pi**4 + p2**2 * np.pi**8 / 18 + 0.5
 
 
 def first_effect_variance(p1=P1, p2=P2):
@@ -102,8 +102,8 @@ def first_effect_variance(p1=P1, p2=P2):
     Returns:
         float : Value of first effect (conditional) variance of ishigami function
     """
-    V1 = 0.2 * p2 * np.pi ** 4 + 0.02 * p2 ** 2 * np.pi ** 8 + 0.5
-    V2 = 0.125 * p1 ** 2
+    V1 = 0.2 * p2 * np.pi**4 + 0.02 * p2**2 * np.pi**8 + 0.5
+    V2 = 0.125 * p1**2
     V3 = 0
     return np.array([V1, V2, V3])
 
@@ -151,7 +151,7 @@ def total_order_indices(p1=P1, p2=P2):
     V2 = Vi[1]
     V3 = Vi[2]
     V12 = 0
-    V13 = p2 ** 2 * np.pi ** 8 * (1.0 / 18.0 - 0.02)
+    V13 = p2**2 * np.pi**8 * (1.0 / 18.0 - 0.02)
     V23 = 0
     V123 = 0
     VT1 = V1 + V12 + V13 + V123

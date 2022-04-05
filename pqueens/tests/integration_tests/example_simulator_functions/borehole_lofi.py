@@ -48,7 +48,7 @@ def borehole_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
 
     frac1 = 5 * Tu * (Hu - Hl)
 
-    frac2a = 2 * L * Tu / (np.log(r / rw) * rw ** 2 * Kw)
+    frac2a = 2 * L * Tu / (np.log(r / rw) * rw**2 * Kw)
     frac2b = Tu / Tl
     frac2 = np.log(r / rw) * (1.5 + frac2a + frac2b)
 

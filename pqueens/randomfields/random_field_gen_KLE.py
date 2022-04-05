@@ -85,7 +85,7 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
         # based on the number of terms per dimension, we can have only
         # num_ex_term_per_dim^dim terms in total
-        if num_ex_term_per_dim ** self.spatial_dim < num_terms:
+        if num_ex_term_per_dim**self.spatial_dim < num_terms:
             raise ValueError(
                 'Number of terms in KLE expansion is too large. '
                 'Decrease number of terms or increase number of '
@@ -170,7 +170,7 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         Returns:
             double: value of characteristic function at w
         """
-        return 2 * self.corr_length * w / (self.corr_length ** 2 * w ** 2 - 1) - np.tan(
+        return 2 * self.corr_length * w / (self.corr_length**2 * w**2 - 1) - np.tan(
             w * self.largest_length
         )
 
@@ -192,7 +192,7 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
         temp1 = 1.0 / (
             np.sqrt(
-                (self.corr_length ** 2 * (kron1) ** 2 + 1) * self.largest_length / 2
+                (self.corr_length**2 * (kron1) ** 2 + 1) * self.largest_length / 2
                 + self.corr_length
             )
         )

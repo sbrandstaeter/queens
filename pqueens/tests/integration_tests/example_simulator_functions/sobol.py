@@ -60,7 +60,7 @@ def first_effect_variance(a=A, alpha=ALPHA):
     Returns:
         ndarray: vector of first order variances
     """
-    Vi = alpha ** 2 / (1 + 2 * alpha) / (1 + a) ** 2
+    Vi = alpha**2 / (1 + 2 * alpha) / (1 + a) ** 2
     return Vi
 
 

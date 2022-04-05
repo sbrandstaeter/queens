@@ -38,12 +38,12 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
             w_n[:, i] = roots
 
         # compute factors of denominator
-        fac1 = self.corr_length ** 2 * w_n[:, 0] ** 2 + 1
-        fac2 = self.corr_length ** 2 * w_n[:, 1] ** 2 + 1
-        fac3 = self.corr_length ** 2 * w_n[:, 2] ** 2 + 1
+        fac1 = self.corr_length**2 * w_n[:, 0] ** 2 + 1
+        fac2 = self.corr_length**2 * w_n[:, 1] ** 2 + 1
+        fac3 = self.corr_length**2 * w_n[:, 2] ** 2 + 1
 
         # compute eigenvalues and store in vector
-        lambdas_array = 8 * self.corr_length ** 3 / (np.kron(np.kron(fac1, fac2), fac3))
+        lambdas_array = 8 * self.corr_length**3 / (np.kron(np.kron(fac1, fac2), fac3))
         lambdas_vec = lambdas_array.reshape(-1, 1)
 
         # round values to achieve that lambda values are actually the same
@@ -59,7 +59,7 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         index_dim1 = index_dim1_h.reshape((-1, 1), order='F')
         index_dim2 = np.tile((index_dim), (1, self.m)).T
 
-        index_dim3_h = np.tile(index_dim, (self.m ** 2, 1))
+        index_dim3_h = np.tile(index_dim, (self.m**2, 1))
         index_dim3 = index_dim3_h.reshape((-1, 1), order='F')
 
         my_w_index = np.hstack(
@@ -90,7 +90,7 @@ class RandomFieldGenKLE3D(RandomFieldGenKLE):
         self.w_n[:, 0] = w_n[my_index_0, 0]
         np.set_printoptions(threshold=sys.maxsize)
 
-        retained_energy = np.sum(self.lambda_n[:, 0]) / (self.largest_length ** self.spatial_dim)
+        retained_energy = np.sum(self.lambda_n[:, 0]) / (self.largest_length**self.spatial_dim)
 
         if retained_energy < self.des_energy_frac:
             raise RuntimeError(
