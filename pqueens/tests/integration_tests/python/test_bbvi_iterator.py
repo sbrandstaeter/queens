@@ -56,7 +56,7 @@ def test_bbvi_density_match(
     target_logpdf = target_density("dummy", x=opt_variational_samples, pdf=False).flatten()
     kl_divergence = np.abs(np.mean(variational_logpdf - target_logpdf))
     # Test if KL divergence is not too large
-    assert kl_divergence < 10 ** 5
+    assert kl_divergence < 10**5
     # Test if the elbo declined
     assert elbo[0] < elbo[-1]
 
@@ -201,7 +201,7 @@ def target_density(self, x=None, pdf=False):
         -1,
     )
     std_vec = np.array([0.1, 0.2, 0.01, 0.3, 0.1])
-    cov = np.diag(std_vec ** 2)
+    cov = np.diag(std_vec**2)
     if pdf is False:
         for value in x:
             output_array.append(mvn.logpdf(value, mean=mean, cov=cov))

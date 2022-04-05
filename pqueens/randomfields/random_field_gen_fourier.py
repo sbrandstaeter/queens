@@ -113,6 +113,6 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
                 corr_length
                 * np.sqrt(np.pi)
                 / (length_of_field)
-                * np.exp(-((k * np.pi * corr_length) ** 2 / (4 * length_of_field ** 2)))
+                * np.exp(-((k * np.pi * corr_length) ** 2 / (4 * length_of_field**2)))
             )
         return coeff

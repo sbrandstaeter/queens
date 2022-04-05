@@ -90,7 +90,7 @@ def borehole_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw):
 
     frac1 = 2 * np.pi * Tu * (Hu - Hl)
 
-    frac2a = 2 * L * Tu / (np.log(r / rw) * rw ** 2 * Kw)
+    frac2a = 2 * L * Tu / (np.log(r / rw) * rw**2 * Kw)
     frac2b = Tu / Tl
     frac2 = np.log(r / rw) * (1 + frac2a + frac2b)
 

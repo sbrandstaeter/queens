@@ -101,31 +101,31 @@ M = np.array([M_EL, M_SM, M_CO])
 
 
 def fung_cauchy_stress(lambda_e, k1, k2, rho=1.0):
-    lam_e_sqrd = lambda_e ** 2
+    lam_e_sqrd = lambda_e**2
     lam_e_sqrd_one = lam_e_sqrd - 1
-    return 2 * rho * k1 * lam_e_sqrd * lam_e_sqrd_one * np.exp(k2 * lam_e_sqrd_one ** 2)
+    return 2 * rho * k1 * lam_e_sqrd * lam_e_sqrd_one * np.exp(k2 * lam_e_sqrd_one**2)
 
 
 def fung_elastic_modulus(lambda_e, k1, k2, rho=1.0):
-    lam_e_sqrd = lambda_e ** 2
+    lam_e_sqrd = lambda_e**2
     lam_e_sqrd_one = lam_e_sqrd - 1
-    lam_e_sqrd_one_sqrd = lam_e_sqrd_one ** 2
+    lam_e_sqrd_one_sqrd = lam_e_sqrd_one**2
     return (
         2
         * k1
         * rho
         * lam_e_sqrd
         * (lam_e_sqrd_one + (3 * lam_e_sqrd - 1 + 4 * k2 * lam_e_sqrd * lam_e_sqrd_one_sqrd))
-        * np.exp(k2 * lam_e_sqrd_one ** 2)
+        * np.exp(k2 * lam_e_sqrd_one**2)
     )
 
 
 def neo_hooke_cauchy_stress_cir(lambda_phi, lambda_r, mu, rho=1.0):
-    return rho * mu * lambda_phi ** 2 * (1 - 1 / (lambda_phi ** 4 * lambda_r ** 2))
+    return rho * mu * lambda_phi**2 * (1 - 1 / (lambda_phi**4 * lambda_r**2))
 
 
 def neo_hooke_elastic_modulus_cir(lambda_phi, lambda_r, mu, rho=1.0):
-    return 2 * rho * mu * lambda_phi ** 2 * (1 + 1 / (lambda_phi ** 4 * lambda_r ** 2))
+    return 2 * rho * mu * lambda_phi**2 * (1 + 1 / (lambda_phi**4 * lambda_r**2))
 
 
 class UniformCircumferentialGrowthAndRemodellingParams:

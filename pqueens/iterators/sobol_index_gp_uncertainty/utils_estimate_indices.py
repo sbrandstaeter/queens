@@ -310,7 +310,7 @@ def _estimate_first_order_index(A, B, AB, estimator):
         # [Janon2014] Equation (2.8)
         first_order = np.sum(
             (B - 0.5 * (B.mean() + AB.mean())) * (AB - 0.5 * (B.mean() + AB.mean()))
-        ) / np.sum(0.5 * (B ** 2 + AB ** 2) - (0.5 * (B.mean() + AB.mean())) ** 2)
+        ) / np.sum(0.5 * (B**2 + AB**2) - (0.5 * (B.mean() + AB.mean())) ** 2)
 
     elif estimator == 'Gratiet2014':
         # [Gratiet2014] Equation (4.1)

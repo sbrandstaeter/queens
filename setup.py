@@ -47,7 +47,7 @@ developer_extras = [
     'pylint>=2.12',
     'pylint-exit',
     'isort>=5.0',
-    'black==21.12b0',
+    'black==22.3.0',
     'pre-commit',
     'liccheck',
     'sphinx',

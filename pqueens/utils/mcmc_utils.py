@@ -60,7 +60,7 @@ class Uniform(ProposalDistribution):
         self.width = b - a
 
         mean = (self.a + self.b) / 2.0
-        cov = self.width ** 2 / 12.0
+        cov = self.width**2 / 12.0
 
         dim = 1
         super(Uniform, self).__init__(mean=mean, covariance=cov, dimension=dim)
@@ -113,8 +113,8 @@ class LogNormal(ProposalDistribution):
 
         self.distr = scipy.stats.lognorm(scale=np.exp(self.mu), s=self.sigma)
 
-        mean = np.exp(self.mu + self.sigma ** 2 / 2.0)
-        cov = (np.exp(self.sigma ** 2) - 1) * np.exp(2 * self.mu + self.sigma ** 2)
+        mean = np.exp(self.mu + self.sigma**2 / 2.0)
+        cov = (np.exp(self.sigma**2) - 1) * np.exp(2 * self.mu + self.sigma**2)
 
         dim = 1
         super(LogNormal, self).__init__(mean, cov, dim)
@@ -122,7 +122,7 @@ class LogNormal(ProposalDistribution):
         self.K1 = 1.0 / (self.sigma * np.sqrt(2 * np.pi))
         self.log_K1 = np.log(self.K1)
 
-        self.K2 = 1.0 / (2.0 * self.sigma ** 2)
+        self.K2 = 1.0 / (2.0 * self.sigma**2)
 
     def cdf(self, x):
         """Cumulative distribution function."""

@@ -17,7 +17,7 @@ mean1 = 0.5 * np.ones(dim)
 mean2 = -mean1
 
 std = 0.1
-cov = (std ** 2) * np.eye(dim)
+cov = (std**2) * np.eye(dim)
 
 weight1 = 0.1
 weight2 = 1 - weight1
