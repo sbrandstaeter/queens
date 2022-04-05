@@ -98,7 +98,7 @@ def calc_ess(weights):
 
     We use the exp-log trick here to avoid numerical problems.
     """
-    ess = np.exp(np.log(np.sum(weights) ** 2) - np.log(np.sum(weights ** 2)))
+    ess = np.exp(np.log(np.sum(weights) ** 2) - np.log(np.sum(weights**2)))
     return ess
 
 

@@ -540,7 +540,7 @@ class BMFMCModel(Model):
                 covariance = k_post[num1, num2]
                 mean_vec = np.array([mean1, mean2])
                 diff = points - mean_vec.T
-                det_sigma = var1 * var2 - covariance ** 2
+                det_sigma = var1 * var2 - covariance**2
 
                 if det_sigma < 0:
                     det_sigma = 1e-6
@@ -554,14 +554,14 @@ class BMFMCModel(Model):
 
                 a = np.dot(diff, inv_sigma)
                 b = np.einsum('ij,ij->i', a, diff)
-                c = np.sqrt(4 * np.pi ** 2 * det_sigma)
+                c = np.sqrt(4 * np.pi**2 * det_sigma)
                 args = -0.5 * b + np.log(1 / c)
                 args[args > 40] = 40  # limit arguments for for better conditioning
                 yhf_pdf_grid += np.exp(args)
                 i = i + 1
 
                 # Define inner loop (add rows of 2D domain to yield variance function)
-                self.p_yhf_var = 1 / (i - 1) * yhf_pdf_grid - 0.9995 * self.p_yhf_mean ** 2
+                self.p_yhf_var = 1 / (i - 1) * yhf_pdf_grid - 0.9995 * self.p_yhf_mean**2
 
     def compute_pymc_reference(self):
         """Compute reference kernel density estimate.

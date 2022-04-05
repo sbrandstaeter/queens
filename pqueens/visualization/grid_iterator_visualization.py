@@ -51,7 +51,7 @@ def _log_tick_formatter(val):
     Returns:
         Formatted tick values
     """
-    return "{:.2e}".format(10 ** val)
+    return "{:.2e}".format(10**val)
 
 
 def _ln_tick_formatter(val):
@@ -64,7 +64,7 @@ def _ln_tick_formatter(val):
         Formatted tick values
     """
 
-    return "{:.2e}".format(np.e ** val)
+    return "{:.2e}".format(np.e**val)
 
 
 def _linear_tick_formatter(val):

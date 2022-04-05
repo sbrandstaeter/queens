@@ -278,14 +278,14 @@ class GPPrecompiled(RegressionApproximation):
                     noise_var = 0.0
 
                 delta = np.linalg.norm(x - y)
-                k_mat[i, j] = sigma_0_sq * np.exp(-(delta ** 2) / (2.0 * l_scale_sq)) + noise_var
+                k_mat[i, j] = sigma_0_sq * np.exp(-(delta**2) / (2.0 * l_scale_sq)) + noise_var
                 partial_l_scale_sq[i, j] = (
                     sigma_0_sq
-                    * np.exp(-(delta ** 2) / (2.0 * l_scale_sq))
-                    * delta ** 2
-                    / (2.0 * l_scale_sq ** 2)
+                    * np.exp(-(delta**2) / (2.0 * l_scale_sq))
+                    * delta**2
+                    / (2.0 * l_scale_sq**2)
                 )
-                partial_sigma_0_sq[i, j] = np.exp(-(delta ** 2) / (2.0 * l_scale_sq))
+                partial_sigma_0_sq[i, j] = np.exp(-(delta**2) / (2.0 * l_scale_sq))
 
         k_mat_inv = np.linalg.inv(k_mat)
         cholesky_k_mat = cholesky(k_mat)
@@ -333,7 +333,7 @@ class GPPrecompiled(RegressionApproximation):
         for j, x_test in enumerate(x_test_mat):
             for i, x_train in enumerate(x_train_mat):
                 delta = np.linalg.norm(x_test - x_train)
-                k_vec[i, j] = sigma_0_sq * np.exp(-(delta ** 2) / (2 * l_scale_sq))
+                k_vec[i, j] = sigma_0_sq * np.exp(-(delta**2) / (2 * l_scale_sq))
 
         if prior_mean_function_type is None:
             mu_vec = np.dot(np.dot(k_vec.T, k_mat_inv), (y_train_vec))
@@ -383,13 +383,13 @@ class GPPrecompiled(RegressionApproximation):
         for j, x_test in enumerate(x_test_mat):
             for i, x_train in enumerate(x_train_mat):
                 delta = np.linalg.norm(x_test - x_train)
-                k_mat_test_train[i, j] = sigma_0_sq * np.exp(-(delta ** 2) / (2 * l_scale_sq))
+                k_mat_test_train[i, j] = sigma_0_sq * np.exp(-(delta**2) / (2 * l_scale_sq))
 
         k_mat_test = np.zeros((x_test_mat.shape[0], x_test_mat.shape[0]), dtype=np.float64)
         for j, x_test1 in enumerate(x_test_mat):
             for i, x_test2 in enumerate(x_test_mat):
                 delta = np.linalg.norm(x_test1 - x_test2)
-                k_mat_test[i, j] = sigma_0_sq * np.exp(-(delta ** 2) / (2 * l_scale_sq))
+                k_mat_test[i, j] = sigma_0_sq * np.exp(-(delta**2) / (2 * l_scale_sq))
 
         posterior_variance_vec = np.diag(
             k_mat_test - np.dot(np.dot(k_mat_test_train.T, k_mat_inv), k_mat_test_train)

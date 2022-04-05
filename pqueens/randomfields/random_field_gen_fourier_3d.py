@@ -61,7 +61,7 @@ class RandomFieldGenFourier3D(RandomFieldGenFourier):
         for k1 in range(0, self.m):
             for k2 in range(0, self.m):
                 for k3 in range(0, self.m):
-                    if (k1 ** 2 + k2 ** 2 + k3 ** 2) <= self.trunc_thres:
+                    if (k1**2 + k2**2 + k3**2) <= self.trunc_thres:
                         sum_ck = sum_ck + (
                             self.compute_expansion_coefficient(
                                 k1, self.largest_length, self.corr_length

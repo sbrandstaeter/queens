@@ -400,9 +400,9 @@ class RMSprop(StochasticOptimizer):
         if self.iteration == 0:
             self.v.current_average = np.zeros(gradient.shape)
 
-        v_hat = self.v.update_average(gradient ** 2)
+        v_hat = self.v.update_average(gradient**2)
         v_hat /= 1 - self.beta ** (self.iteration + 1)
-        gradient = gradient / (v_hat ** 0.5 + self.eps)
+        gradient = gradient / (v_hat**0.5 + self.eps)
         return gradient
 
 
@@ -558,10 +558,10 @@ class Adam(StochasticOptimizer):
             self.v.current_average = np.zeros(gradient.shape)
 
         m_hat = self.m.update_average(gradient)
-        v_hat = self.v.update_average(gradient ** 2)
+        v_hat = self.v.update_average(gradient**2)
         m_hat /= 1 - self.beta_1 ** (self.iteration + 1)
         v_hat /= 1 - self.beta_2 ** (self.iteration + 1)
-        gradient = m_hat / (v_hat ** 0.5 + self.eps)
+        gradient = m_hat / (v_hat**0.5 + self.eps)
         return gradient
 
 

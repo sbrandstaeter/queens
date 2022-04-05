@@ -234,7 +234,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
             export_dict (dictionnary): Dict containing distribution information
         """
         mean, cov = self.reconstruct_parameters(variational_params)
-        sd = cov ** 0.5
+        sd = cov**0.5
         export_dict = {
             "type": "meanfield_Normal",
             "mean": mean,

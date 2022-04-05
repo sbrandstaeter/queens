@@ -197,8 +197,8 @@ class MF_NAR_GP_Regression_3_Levels(object):
         Z = np.random.multivariate_normal(mu1.flatten(), C1, self.num_posterior_samples)
 
         # push samples through f_2 and f_3
-        tmp_m = np.zeros((self.num_posterior_samples ** 2, num_test_points))
-        tmp_v = np.zeros((self.num_posterior_samples ** 2, num_test_points))
+        tmp_m = np.zeros((self.num_posterior_samples**2, num_test_points))
+        tmp_v = np.zeros((self.num_posterior_samples**2, num_test_points))
         cnt = 0
 
         for i in range(0, self.num_posterior_samples):
