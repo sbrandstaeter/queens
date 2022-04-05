@@ -514,7 +514,6 @@ class VIRPIterator(Iterator):
             self.iteration_num,
             self.variational_params_array,
             self.elbo_lst,
-            self.relative_change_variational_params,
         )
 
     def _random_field_preprocessing(self, random_fields):
@@ -895,7 +894,7 @@ class VIRPIterator(Iterator):
         if self.export_quantities_over_iter:
             result_description.update(
                 {
-                    "params_over_iter": self.variational_params_array,
+                    "params_over_iter": self.variational_params_array.T.tolist(),
                     "likelihood_noise_var": self.noise_lst,
                     "elbo": self.elbo_lst,
                 }
