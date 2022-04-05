@@ -566,11 +566,11 @@ class BBVIIterator(Iterator):
         # transformed distribution would match the moments of the prior
         if self.variational_transformation == 'exp':
             mean_list_variational = [
-                np.log(E ** 2 / np.sqrt(E ** 2 + S ** 2))
+                np.log(E**2 / np.sqrt(E**2 + S**2))
                 for E, S in zip(mean_list_prior, std_list_prior)
             ]
             std_list_variational = [
-                np.sqrt(np.log(1 + S ** 2 / E ** 2))
+                np.sqrt(np.log(1 + S**2 / E**2))
                 for E, S in zip(mean_list_prior, std_list_prior)
             ]
         elif self.variational_transformation is None:
@@ -922,7 +922,7 @@ class BBVIIterator(Iterator):
                 # Self normalize weighs
                 normalizing_constant = np.sum(weights_is)
                 selfnormalized_weights = weights_is / normalizing_constant
-                self.ess_list.append(1 / np.sum(selfnormalized_weights ** 2))
+                self.ess_list.append(1 / np.sum(selfnormalized_weights**2))
                 self.weights_list.append(weights_is)
 
         return selfnormalized_weights, normalizing_constant
