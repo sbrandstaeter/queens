@@ -114,7 +114,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
         for y_vec in Y_mat:
 
             dist = np.atleast_2d(self.y_obs_vec - y_vec)
-            dist_squared = (dist ** 2).reshape(1, -1)  # squared distances as row vector
+            dist_squared = (dist**2).reshape(1, -1)  # squared distances as row vector
             log_likelihood.append(
                 -n / 2 * np.log(2 * np.pi)
                 - n / 2 * np.log(self.noise_var)
@@ -151,7 +151,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
             dist_squared = np.zeros((1, num_obs))
             for y_vec in Y_mat:
                 dist = np.atleast_2d(self.y_obs_vec - y_vec)
-                dist_squared += (dist ** 2).reshape(1, -1)  # squared distances as row vector
+                dist_squared += (dist**2).reshape(1, -1)  # squared distances as row vector
 
             self.noise_var = np.sum(dist_squared, axis=1) / (1 + (num_obs * Y_mat.shape[0]))
 

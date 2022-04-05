@@ -27,7 +27,7 @@ def park91a_lofi_coords(x1, x2, x3, x4):
 
     yh = park91a_hifi(x1, x2, x3, x4)
     term1 = (1 + np.sin(x1) / 10) * yh
-    term2 = -2 * x1 + x2 ** 2 + x3 ** 2
+    term2 = -2 * x1 + x2**2 + x3**2
     y = term1 + term2 + 0.5
 
     return y

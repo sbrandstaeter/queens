@@ -304,7 +304,7 @@ def L2_norm(x, averaged=False):
     """
     x = np.array(x).flatten()
     x = np.nan_to_num(x)
-    norm_x = np.sum(x ** 2) ** 0.5
+    norm_x = np.sum(x**2) ** 0.5
     if averaged:
         norm_x /= len(x) ** 0.5
     return norm_x

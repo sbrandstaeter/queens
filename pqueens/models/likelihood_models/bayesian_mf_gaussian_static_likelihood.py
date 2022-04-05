@@ -334,7 +334,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         if self.likelihood_noise_type == "fixed":
             self.noise_var = max(self.fixed_likelihood_noise_value, self.nugget_noise_var)
         elif self.likelihood_noise_type == "jeffreys_prior":
-            self.noise_var = np.sum(diff_mat ** 2) / (1 + (diff_mat.shape[0] * diff_mat.shape[1]))
+            self.noise_var = np.sum(diff_mat**2) / (1 + (diff_mat.shape[0] * diff_mat.shape[1]))
             self.noise_var = max(self.noise_var, self.nugget_noise_var)
             _logger.info(f"Calculated ML-estimate for likelihood noise: {self.noise_var}")
         else:

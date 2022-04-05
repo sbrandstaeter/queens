@@ -182,7 +182,7 @@ def target_distribution_obj(rv_dimension):
 
     distribution_options = {
         "distribution": "normal",
-        "distribution_parameter": [mean, np.diag(std ** 2)],
+        "distribution_parameter": [mean, np.diag(std**2)],
     }
     target_distribution_object = mcmc_utils.create_proposal_distribution(distribution_options)
     return target_distribution_object

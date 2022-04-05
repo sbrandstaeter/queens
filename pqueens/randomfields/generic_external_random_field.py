@@ -155,8 +155,8 @@ class GenericExternalRandomField:
         # here we assume a specific kernel, namely a rbf kernel
         for num1, x_one in enumerate(self.random_field_coordinates):
             for num2, x_two in enumerate(self.random_field_coordinates):
-                K_mat[num1, num2] = self.std_hyperparam_rf ** 2 * np.exp(
-                    -(np.linalg.norm(x_one - x_two) ** 2) / (2 * self.corr_length ** 2)
+                K_mat[num1, num2] = self.std_hyperparam_rf**2 * np.exp(
+                    -(np.linalg.norm(x_one - x_two) ** 2) / (2 * self.corr_length**2)
                 )
 
         self.K_mat = K_mat + self.nugget_variance_rf * np.eye(self.num_points)

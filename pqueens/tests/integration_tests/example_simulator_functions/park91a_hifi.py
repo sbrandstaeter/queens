@@ -38,7 +38,7 @@ def park91a_hifi(x1, x2, x3, x4):
             http://doi.org/10.1080/00401706.2012.723572
     """
     term1a = x1 / 2
-    term1b = np.sqrt(1 + (x2 + x3 ** 2) * x4 / (x1 ** 2)) - 1
+    term1b = np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2)) - 1
     term1 = term1a * term1b
 
     term2a = x1 + 3 * x4

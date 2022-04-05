@@ -437,7 +437,7 @@ class SequentialMonteCarloIterator(Iterator):
 
             # scale covariance based on average acceptance rate of last rejuvenation step
             scale_prop_cov = self.a + self.b * avg_accept
-            cov_mat *= scale_prop_cov ** 2
+            cov_mat *= scale_prop_cov**2
 
             # Rejuvenate
             self.mcmc_kernel.initialize_run(
