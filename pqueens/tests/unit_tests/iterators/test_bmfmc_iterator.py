@@ -168,7 +168,6 @@ def test_init(
     assert my_bmfmc_iterator.result_description == result_description
     assert my_bmfmc_iterator.X_train is None
     assert my_bmfmc_iterator.Y_LFs_train is None
-    assert my_bmfmc_iterator.eigenfunc_random_fields_train is None
     assert my_bmfmc_iterator.output is None
     assert my_bmfmc_iterator.initial_design == initial_design
     assert my_bmfmc_iterator.predictive_var == predictive_var
@@ -187,7 +186,8 @@ def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
     mp1.assert_called_once()
 
     # ---- determine optimal input points for which HF should be simulated -------
-    mp2.assert_called_once()
+    mp2.assert_called_onc:\
+        e()
 
     # ----- build model on training points and evaluate it -----------------------
     mp3.assert_called_once()

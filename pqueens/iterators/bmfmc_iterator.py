@@ -38,14 +38,6 @@ class BMFMCIterator(Iterator):
                                inputs X_train such that :math:`Y_{HF}=y_{HF}(X)`
         Y_LFs_train (np.array): Outputs of the low-fidelity models that correspond to the training
                                 inputs X_train
-        eigenfunc_random_fields_train (np.array): (Intermediate solution) Array containing
-                                                  eigenfunctions of involved random fields,
-                                                  such that 99 % of their variance is covered.
-                                                  Eigenfunctions are only required for
-                                                  determination of informative features where only
-                                                  the first few eigenfunctions are involved so
-                                                  that we have very relaxed demands on the
-                                                  accuracy of the field reconstruction.
         output (dict): Dictionary containing the output quantities:
 
                        *  "Z_mc": Corresponding Monte-Carlo point in LF informative feature space
@@ -122,7 +114,6 @@ class BMFMCIterator(Iterator):
         self.result_description = result_description
         self.X_train = None
         self.Y_LFs_train = None
-        self.eigenfunc_random_fields_train = None
         self.output = None
         self.initial_design = initial_design
         self.predictive_var = predictive_var
