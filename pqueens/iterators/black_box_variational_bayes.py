@@ -745,7 +745,6 @@ class BBVIIterator(Iterator):
             obj: function to evaluate the gradient
         """
         if self.natural_gradient_bool:
-            FIM = self._get_fim()
             gradient = lambda variational_parameters: np.linalg.solve(
                 self._get_fim(), self._calculate_elbo_gradient(variational_parameters)
             )
@@ -761,6 +760,9 @@ class BBVIIterator(Iterator):
         Based on MC with importance sampling with the samples of previous iterations if desired.
         The score function is used as a control variate. No Rao-Blackwellization scheme
         is used.
+
+        Args:
+            variational_parameters (np.array): Variational parameters
 
         Returns:
             elbo gradient as column vector (np.array)
