@@ -511,8 +511,8 @@ class VIRPIterator(Iterator):
         """
         # some plotting and output
         vis.vi_visualization_instance.plot_convergence(
-            self.iteration_num,
-            self.variational_params_array,
+            self.iteration_num + 1,
+            self.variational_params_array.T.tolist(),
             self.elbo_lst,
         )
 
@@ -894,7 +894,7 @@ class VIRPIterator(Iterator):
         if self.export_quantities_over_iter:
             result_description.update(
                 {
-                    "params_over_iter": self.variational_params_array.T.tolist(),
+                    "params_over_iter": self.variational_params_array,
                     "likelihood_noise_var": self.noise_lst,
                     "elbo": self.elbo_lst,
                 }
