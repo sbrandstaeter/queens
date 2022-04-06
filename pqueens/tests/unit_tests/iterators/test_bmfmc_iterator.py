@@ -186,7 +186,7 @@ def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
     mp1.assert_called_once()
 
     # ---- determine optimal input points for which HF should be simulated -------
-    mp2.assert_called_onc: e()
+    mp2.assert_called_once()
 
     # ----- build model on training points and evaluate it -----------------------
     mp3.assert_called_once()

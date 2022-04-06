@@ -52,10 +52,10 @@ class BMFMCIterator(Iterator):
                                        distribution
                        *  "p_yhf_mean_BMFMC": Vector containing mean function of HF output
                                               posterior distribution calculated without informative
-                                              features :math:`\\boldsymbol{\\gamma}`
+                                              features :math:`\boldsymbol{\gamma}`
                        *  "p_yhf_var_BMFMC": Vector containing posterior variance function of HF
                                              output distribution calculated without informative
-                                             features :math:`\\boldsymbol{\\gamma}`
+                                             features :math:`\boldsymbol{\gamma}`
                        *  "p_ylf_mc": Vector with low-fidelity output distribution (kde from MC
                                       data)
                        *  "p_yhf_mc": Vector with reference HF output distribution (kde from MC
@@ -69,10 +69,10 @@ class BMFMCIterator(Iterator):
         initial_design (dict): Dictionary containing settings for the selection strategy/initial
                                design of training points for the probabilistic mapping
         predictive_var (bool): Boolean flag that triggers the computation of the posterior variance
-                               :math:`\\mathbb{V}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` if
+                               :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` if
                                set to True. (default value: False)
         BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
-                                features :math:`\\boldsymbol{\\gamma}` for comparison if set to
+                                features :math:`\boldsymbol{\gamma}` for comparison if set to
                                 True (default
                                 value: False)
 
@@ -99,10 +99,10 @@ class BMFMCIterator(Iterator):
                                    design of training points for the probabilistic mapping
             predictive_var (bool): Boolean flag that triggers the computation of the posterior
                                    variance
-                                   :math:`\\mathbb{V}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]`
+                                   :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]`
                                    if set to True. (default value: False)
             BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
-                                    features :math:`\\boldsymbol{\\gamma}` for comparison if set to
+                                    features :math:`\boldsymbol{\gamma}` for comparison if set to
                                     True (default value: False)
             global_settings (dict): Settings for the QUEENS run.
         """
@@ -171,8 +171,8 @@ class BMFMCIterator(Iterator):
         3.  Update the BMFMCModel with the partial training data set of X_train, Y_LF_train (
             Y_HF_train is determined in the BMFMCModel)
         4.  Evaluate the BMFMCModel which means that the posterior statistics
-            :math:`\\mathbb{E}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` and
-            :math:`\\mathbb{V}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` are computed based
+            :math:`\mathbb{E}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` and
+            :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` are computed based
             on the BMFMC algorithm which is implemented in the BMFMCModel
 
         Returns:
@@ -197,10 +197,10 @@ class BMFMCIterator(Iterator):
 
         1. **random**: Divides the :math:`y_{LF}` data set in bins and selects training
                        candidates random from each bin until :math:`n_{train}` is reached
-        2. **diverse subset**: Determine the most important input features :math:`\\gamma_i`
+        2. **diverse subset**: Determine the most important input features :math:`\gamma_i`
                                (this information is provided by the BMFMCModel) and find a space
                                filling subset (diverse subset) given the LF sampling data with
-                               respect to the most important features :math:`\\gamma_i`. The
+                               respect to the most important features :math:`\gamma_i`. The
                                number of features to be considered can be set in the input file.
                                **Remark**: An optimization routine for the optimal number of
                                features to be considered will be added in the future
@@ -328,8 +328,8 @@ class BMFMCIterator(Iterator):
     def eval_model(self):
         r"""Evaluate the BMFMCModel which means that the posterior statistics.
 
-             :math:`\\mathbb{E}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` and
-             :math:`\\mathbb{V}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` are computed based
+             :math:`\mathbb{E}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` and
+             :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` are computed based
              on the BMFMC algorithm which is implemented in the BMFMCModel
 
         Returns:
