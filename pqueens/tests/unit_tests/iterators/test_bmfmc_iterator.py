@@ -168,7 +168,6 @@ def test_init(
     assert my_bmfmc_iterator.result_description == result_description
     assert my_bmfmc_iterator.X_train is None
     assert my_bmfmc_iterator.Y_LFs_train is None
-    assert my_bmfmc_iterator.eigenfunc_random_fields_train is None
     assert my_bmfmc_iterator.output is None
     assert my_bmfmc_iterator.initial_design == initial_design
     assert my_bmfmc_iterator.predictive_var == predictive_var
@@ -268,16 +267,17 @@ def test_random_design(mocker, default_bmfmc_iterator):
         "num_bins": 3,
         "method": "random",
         "seed": 1,
+        "master_LF": 1,
     }
     default_bmfmc_iterator._random_design(n_points)
     X_train = default_bmfmc_iterator.X_train
     Y_LFs_train = default_bmfmc_iterator.Y_LFs_train
 
     expected_X_train = np.array(
-        np.array([[0.39676747, 0.53881673], [0.02738759, 0.67046751], [0.18626021, 0.34556073]])
+        np.array([[0.6918771, 0.3155156], [0.3134242, 0.6923226], [0.1403869, 0.1981015]])
     )
     expected_Y_LFs_train = np.array(
-        np.array([[0.28777534, 0.13002857], [0.49157316, 0.05336255], [0.9085955, 0.29361415]])
+        np.array([[0.3976768, 0.1653542], [0.6944002, 0.4141793], [0.5893055, 0.6997584]])
     )
     np.testing.assert_array_almost_equal(X_train, expected_X_train, decimal=6)
     np.testing.assert_array_almost_equal(Y_LFs_train, expected_Y_LFs_train, decimal=6)
