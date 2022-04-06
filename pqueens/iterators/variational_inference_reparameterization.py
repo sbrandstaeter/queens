@@ -511,10 +511,9 @@ class VIRPIterator(Iterator):
         """
         # some plotting and output
         vis.vi_visualization_instance.plot_convergence(
-            self.iteration_num,
-            self.variational_params_array,
+            self.iteration_num + 1,
+            self.variational_params_array.T.tolist(),
             self.elbo_lst,
-            self.relative_change_variational_params,
         )
 
     def _random_field_preprocessing(self, random_fields):
