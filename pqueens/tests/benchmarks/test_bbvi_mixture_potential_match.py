@@ -7,7 +7,7 @@ from mock import patch
 import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
 from pqueens.main import main
-from pqueens.utils.stochastic_optimizer import StochasticOptimizer
+from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 from pqueens.utils.variational_inference_utils import create_variational_distribution
 
 
@@ -37,7 +37,7 @@ def test_bbvi_GMM_density_match(
         variational_distr_obj = dummy_bbvi_instance.variational_distribution_obj
         var_params = variational_distr_obj.initialize_parameters_randomly()
         dummy_bbvi_instance.variational_params = var_params
-        dummy_bbvi_instance.stochastic_optimizer.gradient = (
+        dummy_bbvi_instance.stochastic_optimizer.set_gradient_function(
             dummy_bbvi_instance._get_gradient_function()
         )
         dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
@@ -105,7 +105,7 @@ def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
         "rel_L2_change_threshold": -1,
         "max_iter": 10000000,
     }
-    stochastic_optimizer = StochasticOptimizer.from_config_create_optimizer(optimizer_config)
+    stochastic_optimizer = from_config_create_optimizer(optimizer_config)
     # ------ other params ----------------------------------------------------------
     model = 'fake_model'
     global_settings = {'output_dir': tmpdir, 'experiment_name': experiment_name}

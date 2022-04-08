@@ -1,6 +1,31 @@
+"""Iterative averaging utils."""
 import abc
 
 import numpy as np
+
+from pqueens.utils.valid_options_utils import get_option
+
+
+def from_config_create_iterative_averaging(config):
+    """Build a iterative averaging scheme from config.
+
+    Args:
+        config (dict): Configuration dict for the iterative averaging
+
+    Returns:
+        iterative averaging object
+    """
+    valid_options = {
+        "moving_average": MovingAveraging,
+        "polyak_averaging": PolyakAveraging,
+        "exponential_averaging": ExponentialAveraging,
+    }
+    averaging_type = config.get("averaging_type")
+
+    averaging_obj = get_option(
+        valid_options, averaging_type, error_message="Iterative averaging option not found."
+    )
+    return averaging_obj.from_config_create_iterative_averaging(config)
 
 
 class IterativeAveraging(metaclass=abc.ABCMeta):
@@ -13,45 +38,17 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         rel_L2_change (float): Relative change in L2 norm of the average value
     """
 
-    def __init__(self, current_average, new_value, rel_L1_change, rel_L2_change):
-        self.current_average = current_average
-        self.new_value = new_value
-        self.rel_L1_change = rel_L1_change
-        self.rel_L2_change = rel_L2_change
-
-    @classmethod
-    def from_config_create_iterative_averaging(cls, config, section_name=None):
-        """
-            Build a iterative averaging scheme from config
-        Args:
-            config (dict): Configuration dict
-            section_name (str): Name of section where the averaging object is configured
-
-        Returns:
-            iterative averaging object
-
-        """
-        valid_options = ["moving_average", "polyak_averaging", "exponential_averaging"]
-        if section_name:
-            averaging_type = config[section_name].get("averaging_type")
-        else:
-            averaging_type = config.get("averaging_type")
-
-        if averaging_type == "moving_average":
-            return MovingAveraging.from_config_create_iterative_averaging(config, section_name)
-        elif averaging_type == "polyak_averaging":
-            return PolyakAveraging.from_config_create_iterative_averaging(config, section_name)
-        elif averaging_type == "exponential_averaging":
-            return ExponentialAveraging.from_config_create_iterative_averaging(config, section_name)
-        else:
-            raise NotImplementedError(
-                f"Iterative averaging option '{averaging_type}' unknown. Valid options are"
-                f"{valid_options}"
-            )
+    def __init__(self):
+        """Initialize iterative averaging."""
+        self.current_average = None
+        self.new_value = None
+        self.rel_L1_change = 1
+        self.rel_L2_change = 1
 
     def _compute_rel_change(self, old_average, new_average):
-        """Compute the relative changes (L1 and L2) between new and old
-        average.
+        """Compute the relative changes (L1 and L2).
+
+        Relative change between new and old average.
 
         Args:
             old_average (np.array): Old average value
@@ -61,10 +58,13 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         self.rel_L1_change = relative_change(old_average, new_average, L1_norm)
 
     def update_average(self, new_value):
-        """Compute the actual average. (Is scheme specific)
+        """Compute the actual average.
 
         Args:
             new_value (np.array): New observation for the averaging
+
+        Returns:
+            current average value
         """
         if isinstance(new_value, (float, int)):
             new_value = np.array(new_value)
@@ -84,53 +84,48 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
 
 
 class MovingAveraging(IterativeAveraging):
-    """
-    Compute the moving average:
-        :math:`x^{(j)}_{avg}=\\frac{1}{k}\\sum_{i=0}^{k-1}x^{(j-i)}`
+    r"""Moving averages.
+
+    :math:`x^{(j)}_{avg}=\frac{1}{k}\sum_{i=0}^{k-1}x^{(j-i)}`
+
     where :math: `k-1` is the number of values from previous iterations that are used
 
     Attributes:
-        current_average (np.array): Current average value
-        new_value (np.array): New value for the averaging process
-        rel_L1_change (float): Relative change in L1 norm of the average value
-        rel_L2_change (float): Relative change in L2 norm of the average value
         num_iter_for_avg (int): Number of samples in the averaging window
-        data (list): List of the stored values
-
     """
 
-    def __init__(
-        self, current_average, new_value, rel_L1_change, rel_L2_change, num_iter_for_avg, data
-    ):
-        super().__init__(current_average, new_value, rel_L1_change, rel_L2_change)
+    def __init__(self, num_iter_for_avg):
+        """Initialize moving averaging object.
+
+        Args:
+            num_iter_for_avg (int): Number of samples in the averaging window
+        """
+        super().__init__()
         self.num_iter_for_avg = num_iter_for_avg
-        self.data = data
+        self.data = []
 
     @classmethod
     def from_config_create_iterative_averaging(cls, config, section_name=None):
-        """
-            Build a moving averaging object from config
+        """Build a moving averaging object from config.
+
         Args:
             config (dict): Configuration dict
             section_name (str): Name of section where the averaging object is configured
 
         Returns:
             MovingAveraging object
-
         """
-        current_average = None
-        new_value = None
-        rel_L1_change = 1
-        rel_L2_change = 1
         if section_name:
             num_iter_for_avg = config[section_name].get("num_iter_for_avg")
         else:
             num_iter_for_avg = config.get("num_iter_for_avg")
-        data = []
-        return cls(current_average, new_value, rel_L1_change, rel_L2_change, num_iter_for_avg, data)
+        return cls(num_iter_for_avg=num_iter_for_avg)
 
     def average_computation(self, new_value):
         """Compute the moving average.
+
+        Args:
+            new_value (float or np.array): New value to update the average.
 
         Returns:
             average (np.array): The current average
@@ -145,68 +140,44 @@ class MovingAveraging(IterativeAveraging):
 
 
 class PolyakAveraging(IterativeAveraging):
-    """
-    Polyak averaging:
-        :math:`x^{(j)}_{avg}=\\frac{1}{j}\\sum_{i=0}^{j}x^{(j)}`
+    r"""Polyak averaging.
+
+    :math:`x^{(j)}_{avg}=\frac{1}{j}\sum_{i=0}^{j}x^{(j)}`
 
     Attributes:
-        current_average (np.array): Current average value
-        new_value (np.array): New value for the averaging process
-        rel_L1_change (float): Relative change in L1 norm of the average value
-        rel_L2_change (float): Relative change in L2 norm of the average value
         iteration_counter (float): Number of samples
         sum_over_iter (np.array): Sum over all samples
 
     """
 
-    def __init__(
-        self,
-        current_average,
-        new_value,
-        rel_L1_change,
-        rel_L2_change,
-        iteration_counter,
-        sum_over_iter,
-    ):
-        super().__init__(current_average, new_value, rel_L1_change, rel_L2_change)
-        self.iteration_counter = iteration_counter
-        self.sum_over_iter = sum_over_iter
+    def __init__(self):
+        """Initialize Polyak averaging object."""
+        super().__init__()
+        self.iteration_counter = 1
+        self.sum_over_iter = 0
 
     @classmethod
     def from_config_create_iterative_averaging(cls, config, section_name=None):
-        """
-            Build a Polyak averaging object from config
+        """Build a Polyak averaging object from config.
+
         Args:
             config (dict): Configuration dict
             section_name (str): Name of section where the averaging object is created
 
         Returns:
             PolyakAveraging object
-
         """
-        current_average = None
-        new_value = None
-        rel_L1_change = 1
-        rel_L2_change = 1
-        # Start counter at 1 as in the first update the counter is not increased
-        iteration_counter = 1
-        sum_over_iter = 0
-        return cls(
-            current_average,
-            new_value,
-            rel_L1_change,
-            rel_L2_change,
-            iteration_counter,
-            sum_over_iter,
-        )
+        return cls()
 
     def average_computation(self, new_value):
         """Compute the Polyak average.
 
+        Args:
+            new_value (float or np.array): New value to update the average.
+
         Returns:
             current_average (np.array): returns the current average
         """
-
         self.sum_over_iter += new_value
         self.iteration_counter += 1
         current_average = self.sum_over_iter / self.iteration_counter
@@ -215,43 +186,38 @@ class PolyakAveraging(IterativeAveraging):
 
 
 class ExponentialAveraging(IterativeAveraging):
-    """
-    Exponential averaging:
-        :math:`x^{(0)}_{avg}=x^{(0)}`
-        :math:`x^{(j)}_{avg}= \\alpha x^{(j-1)}_{avg}+(1-\\alpha)x^{(j)}`
+    r"""Exponential averaging.
 
-        Is also sometimes referred to as exponential smoothing.
+    :math:`x^{(0)}_{avg}=x^{(0)}`
+    :math:`x^{(j)}_{avg}= \alpha x^{(j-1)}_{avg}+(1-\alpha)x^{(j)}`
 
-    Args:
-        current_average (np.array): Current average value
-        new_value (np.array): New value for the averaging process
-        rel_L1_change (float): Relative change in L1 norm of the average value
-        rel_L2_change (float): Relative change in L2 norm of the average value
+    Is also sometimes referred to as exponential smoothing.
+
+    Attributes:
         coefficient (float): Coefficient in (0,1) for the average
 
     """
 
-    def __init__(self, current_average, new_value, rel_L1_change, rel_L2_change, coefficient):
-        super().__init__(current_average, new_value, rel_L1_change, rel_L2_change)
+    def __init__(self, coefficient):
+        """Initialize exponential averaging object.
+
+        Args:
+            coefficient (float): Coefficient in (0,1) for the average
+        """
+        super().__init__()
         self.coefficient = coefficient
 
     @classmethod
     def from_config_create_iterative_averaging(cls, config, section_name=None):
-        """
-            Build a exponential averaging object from config
+        """Build a exponential averaging object from config.
+
         Args:
             config (dict): Configuration dict
             section_name (str): Name of section where the averaging object is created
 
         Returns:
             ExponentialAveraging object
-
         """
-        current_average = None
-        new_value = None
-        rel_L1_change = 1
-        rel_L2_change = 1
-
         if section_name:
             coefficient = config[section_name].get("coefficient")
         else:
@@ -259,10 +225,13 @@ class ExponentialAveraging(IterativeAveraging):
 
         if coefficient < 0 or coefficient > 1:
             raise ValueError(f"Coefficient for exponential averaging needs to be in (0,1)")
-        return cls(current_average, new_value, rel_L2_change, rel_L2_change, coefficient)
+        return cls(coefficient=coefficient)
 
     def average_computation(self, new_value):
         """Compute the exponential average.
+
+        Args:
+            new_value (float or np.array): New value to update the average.
 
         Returns:
             current_average (np.array): returns the current average

@@ -15,7 +15,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_co
     park91a_hifi_coords,
 )
 from pqueens.utils import injector, variational_inference_utils
-from pqueens.utils.stochastic_optimizer import StochasticOptimizer
+from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 
 @pytest.mark.integration_tests
@@ -43,7 +43,7 @@ def test_bbvi_density_match(
         cov = np.exp(np.diag([0.5, 0.5, 0.5, 0.5, 0.5]) * 2)
         var_params = variational_distr_obj.construct_variational_params(mu, cov)
         dummy_bbvi_instance.variational_params = var_params
-        dummy_bbvi_instance.stochastic_optimizer.gradient = (
+        dummy_bbvi_instance.stochastic_optimizer.set_gradient_function(
             dummy_bbvi_instance._get_gradient_function()
         )
         dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
@@ -146,7 +146,7 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         "rel_L2_change_threshold": -1,
         "max_iter": 10000000,
     }
-    stochastic_optimizer = StochasticOptimizer.from_config_create_optimizer(optimizer_config)
+    stochastic_optimizer = from_config_create_optimizer(optimizer_config)
 
     # ------ other params ----------------------------------------------------------
     model = 'fake_model'
