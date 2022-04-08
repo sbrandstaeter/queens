@@ -3,6 +3,7 @@ import abc
 
 import numpy as np
 
+from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.valid_options_utils import get_option
 
 
@@ -138,6 +139,23 @@ class MovingAveraging(IterativeAveraging):
             average += d
         return average / len(self.data)
 
+    def __str__(self):
+        """String of the iterative averaging.
+
+        Args:
+            name (str): averaging approach
+
+        Returns:
+            str: String version of the optimizer
+        """
+        name = "Moving average."
+        print_dict = {
+            "Averaging window size": self.num_iter_for_avg,
+            "Rel. L1 change to previous average": self.rel_L1_change,
+            "Rel. L2 change to previous average": self.rel_L2_change,
+        }
+        return get_str_table(name, print_dict)
+
 
 class PolyakAveraging(IterativeAveraging):
     r"""Polyak averaging.
@@ -183,6 +201,23 @@ class PolyakAveraging(IterativeAveraging):
         current_average = self.sum_over_iter / self.iteration_counter
 
         return current_average
+
+    def __str__(self):
+        """String of the iterative averaging.
+
+        Args:
+            name (str): averaging approach
+
+        Returns:
+            str: String version of the optimizer
+        """
+        name = "Polyak averaging."
+        print_dict = {
+            "Number of iterations": self.iteration_counter,
+            "Rel. L1 change to previous average": self.rel_L1_change,
+            "Rel. L2 change to previous average": self.rel_L2_change,
+        }
+        return get_str_table(name, print_dict)
 
 
 class ExponentialAveraging(IterativeAveraging):
@@ -240,6 +275,23 @@ class ExponentialAveraging(IterativeAveraging):
             self.coefficient * self.current_average + (1 - self.coefficient) * new_value
         )
         return current_average
+
+    def __str__(self):
+        """String of the iterative averaging.
+
+        Args:
+            name (str): averaging approach
+
+        Returns:
+            str: String version of the optimizer
+        """
+        name = "Exponential averaging."
+        print_dict = {
+            "Coefficient": self.coefficient,
+            "Rel. L1 change to previous average": self.rel_L1_change,
+            "Rel. L2 change to previous average": self.rel_L2_change,
+        }
+        return get_str_table(name, print_dict)
 
 
 def L1_norm(x, averaged=False):
