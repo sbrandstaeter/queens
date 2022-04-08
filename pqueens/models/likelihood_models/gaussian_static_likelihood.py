@@ -1,4 +1,7 @@
+"""Gaussian static likelihood."""
 import numpy as np
+
+from pqueens.utils.iterative_averaging_utils import from_config_create_iterative_averaging
 
 from .likelihood_model import LikelihoodModel
 
@@ -13,6 +16,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
                                      Fixed or MAP estimate with Jeffreys prior
         fixed_likelihood_noise_value (float): Value for likelihood noise in case the fixed option
                                               was chosen
+        noise_var_iterative_averaging (obj): Iterative averaging object
 
     Returns:
         Instance of GaussianStaticLikelihood Class
@@ -31,8 +35,28 @@ class GaussianStaticLikelihood(LikelihoodModel):
         fixed_likelihood_noise_value,
         output_label,
         coord_labels,
+        noise_var_iterative_averaging,
     ):
-        super(GaussianStaticLikelihood, self).__init__(
+        """Initialize likelihood model.
+
+        Args:
+            model_name (str): Model name
+            model_parameters (dict): Dictionary with description of uncertain
+                                     parameters
+            forward_model (obj): Forward model on which the likelihood model is based
+            coords_mat (np.array): Row-wise coordinates at which the observations were recorded
+            time_vec (np.array): Vector of observation times
+            y_obs_vec (np.array): Corresponding experimental data vector to coords_mat
+            output_label (str): Name of the experimental outputs (column label in csv-file)
+            coord_labels (lst): List with coordinate labels for (column labels in csv-file)
+            nugget_noise_var (float): Lower bound for the likelihood noise parameter
+            likelihood_noise_type (str): String encoding the type of likelihood noise model:
+                                         Fixed or MAP estimate with Jeffreys prior
+            fixed_likelihood_noise_value (float): Value for likelihood noise in case the fixed
+                                                  option was chosen
+            noise_var_iterative_averaging (obj): Iterative averaging object
+        """
+        super().__init__(
             model_name,
             model_parameters,
             forward_model,
@@ -46,6 +70,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
         self.nugget_noise_var = nugget_noise_var
         self.likelihood_noise_type = likelihood_noise_type
         self.fixed_likelihood_noise_value = fixed_likelihood_noise_value
+        self.noise_var_iterative_averaging = noise_var_iterative_averaging
 
     @classmethod
     def from_config_create_likelihood(
@@ -84,23 +109,29 @@ class GaussianStaticLikelihood(LikelihoodModel):
         fixed_likelihood_noise_value = model_options.get("fixed_likelihood_noise_value")
         nugget_noise_var = model_options.get("nugget_noise_var", 1e-6)
 
+        noise_var_iterative_averaging = model_options.get("noise_var_iterative_averaging", None)
+        if noise_var_iterative_averaging:
+            noise_var_iterative_averaging = from_config_create_iterative_averaging(
+                noise_var_iterative_averaging
+            )
+
         return cls(
-            model_name,
-            model_parameters,
-            nugget_noise_var,
-            forward_model,
-            coords_mat,
-            time_vec,
-            y_obs_vec,
-            likelihood_noise_type,
-            fixed_likelihood_noise_value,
-            output_label,
-            coord_labels,
+            model_name=model_name,
+            model_parameters=model_parameters,
+            nugget_noise_var=nugget_noise_var,
+            forward_model=forward_model,
+            coords_mat=coords_mat,
+            time_vec=time_vec,
+            y_obs_vec=y_obs_vec,
+            likelihood_noise_type=likelihood_noise_type,
+            fixed_likelihood_noise_value=fixed_likelihood_noise_value,
+            output_label=output_label,
+            coord_labels=coord_labels,
+            noise_var_iterative_averaging=noise_var_iterative_averaging,
         )
 
     def evaluate(self):
-        """Evaluate likelihood with current set of variables which are an
-        attribute of the underlying simulation model.
+        """Evaluate likelihood with current set of samples.
 
         Returns:
             log_likelihood (np.array): Vector of log-likelihood values per model input.
@@ -129,18 +160,20 @@ class GaussianStaticLikelihood(LikelihoodModel):
         log_likelihood = np.array(log_likelihood)
         return log_likelihood
 
+    def _noise_var_iterative_averaging(self):
+        """Average likelihood noise iteratively."""
+        self.noise_var = self.noise_var_iterative_averaging.update_average(self.noise_var)
+
     def _update_noise_var(self, num_obs, Y_mat):
-        """Potentially update the static noise variance of the likelihood model
-        with a Jeffreys prior MAP estimate or just keep it fixed at desired
-        value.
+        """Potentially update the static noise variance.
+
+        The noise is computed based on a MAP estimate using a Jeffreys prior on the var. If
+        activated, the noise is averaged according to a iterative averaging scheme.
 
         Args:
             num_obs (int): Number of experimental observations (length of y_obs)
             Y_mat (np.array): Matrix of row-wise simulation output at observation coordinates for
                               input batch X_batch
-
-        Returns:
-            None
         """
         # either keep noise level fixed or regulate it with a Jeffreys prior
         if self.likelihood_noise_type == "fixed":
@@ -155,22 +188,29 @@ class GaussianStaticLikelihood(LikelihoodModel):
 
             self.noise_var = np.sum(dist_squared, axis=1) / (1 + (num_obs * Y_mat.shape[0]))
 
+            # If iterative averaging is desired
+            if self.noise_var_iterative_averaging:
+                self.noise_var = self.noise_var_iterative_averaging.update_average(self.noise_var)
+            print(self.noise_var)
+            # Limit noise to minimum value set by the nugget_var
+            if self.noise_var < self.nugget_noise_var:
+                print(
+                    "Calculated likelihood noise variance fell below the nugget-noise variance. "
+                    "Resetting likelihood noise variance to nugget_noise..."
+                )
+                self.noise_var = self.nugget_noise_var
+
         else:
             raise ValueError(
                 f"Please specify a valid likelihood noise type! Your choice of "
-                f"{self.likelihood_noise_type} is invalid!"
+                f"{self.likelihood_noise_type} is invalid! Valid options are fixed or"
+                f"jeffreys_prior"
             )
-
-        # Limit noise to minimum value set by the nugget_var
-        if self.noise_var < self.nugget_noise_var:
-            print(
-                "Calculated likelihood noise variance fell below the nugget-noise variance. "
-                "Resetting likelihood noise variance to nugget_noise..."
-            )
-            self.noise_var = self.nugget_noise_var
 
     def _update_and_evaluate_forward_model(self):
-        """Pass the variables update to subordinate simulation model and then
+        """Evaluate forward model.
+
+        Pass the variables update to subordinate simulation model and then
         evaluate the simulation model.
 
         Returns:

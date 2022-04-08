@@ -61,6 +61,10 @@
         "experimental_csv_data_base_dirs": [
             "{experimental_data_path}"
         ],
+        "noise_var_iterative_averaging": {
+            "averaging_type": "moving_average",
+            "num_iter_for_avg": 10
+        },
         "parameters": "parameters"
     },
     "forward_model": {
