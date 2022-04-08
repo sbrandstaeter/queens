@@ -10,6 +10,7 @@ from pqueens.utils.iterative_averaging_utils import (
     L2_norm,
     relative_change,
 )
+from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
@@ -303,6 +304,33 @@ class StochasticOptimizer(metaclass=abc.ABCMeta):
             pass
         return self.current_variational_parameters
 
+    def __str__(self, name):
+        """String of optimizer.
+
+        Args:
+            name (str): name of the optimizer.
+
+        Returns:
+            str: String version of the optimizer
+        """
+        name += " stochastic optimizer."
+        if self.precoefficient == 1:
+            optimization_type = "maximization"
+        else:
+            optimization_type = "minimization"
+
+        print_dict = {
+            "Optimization type": optimization_type,
+            "Learning_rate": self.learning_rate,
+            "Iterations": self.iteration,
+            "Max. number of iteration": self.max_iteration,
+            "Rel. L1 change of the parameters": self.rel_L1_change,
+            "Rel. L1 change threshold": self.rel_L1_change_threshold,
+            "Rel. L2 change of the parameters": self.rel_L2_change,
+            "Rel. L2 change threshold": self.rel_L2_change_threshold,
+        }
+        return get_str_table(name, print_dict)
+
 
 class RMSprop(StochasticOptimizer):
     """RMSprop stochastic optimizer [1].
@@ -418,6 +446,15 @@ class RMSprop(StochasticOptimizer):
         v_hat /= 1 - self.beta ** (self.iteration + 1)
         gradient = gradient / (v_hat**0.5 + self.eps)
         return gradient
+
+    def __str__(self):
+        """String of optimizer.
+
+        Returns:
+            str: String version of the optimizer
+        """
+        name = "RMSprop"
+        return super().__str__(name)
 
 
 class Adam(StochasticOptimizer):
@@ -549,6 +586,15 @@ class Adam(StochasticOptimizer):
         gradient = m_hat / (v_hat**0.5 + self.eps)
         return gradient
 
+    def __str__(self):
+        """String of optimizer.
+
+        Returns:
+            str: String version of the optimizer
+        """
+        name = "Adam"
+        return super().__str__(name)
+
 
 class Adamax(StochasticOptimizer):
     """Adamax stochastic optimizer [1]. `eps` added to avoid devision by zero.
@@ -679,6 +725,15 @@ class Adamax(StochasticOptimizer):
         self.u = np.maximum(self.beta_2 * self.u, abs_grad)
         gradient = m_hat / (self.u + self.eps)
         return gradient
+
+    def __str__(self):
+        """String of optimizer.
+
+        Returns:
+            str: String version of the optimizer
+        """
+        name = "Adamax"
+        return super().__str__(name)
 
 
 def clip_by_L2_norm(gradient, L2_norm_threshold=1e6):
