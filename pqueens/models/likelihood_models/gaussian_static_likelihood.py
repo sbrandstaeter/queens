@@ -1,9 +1,14 @@
 """Gaussian static likelihood."""
+
+import logging
+
 import numpy as np
 
 from pqueens.utils.iterative_averaging_utils import from_config_create_iterative_averaging
 
 from .likelihood_model import LikelihoodModel
+
+_logger = logging.getLogger(__name__)
 
 
 class GaussianStaticLikelihood(LikelihoodModel):
@@ -167,7 +172,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
     def _update_noise_var(self, num_obs, Y_mat):
         """Potentially update the static noise variance.
 
-        The noise is computed based on a MAP estimate using a Jeffreys prior on the var. If
+        The noise is computed based on a MAP estimate using a Jeffreys prior on the variance. If
         activated, the noise is averaged according to a iterative averaging scheme.
 
         Args:
@@ -191,10 +196,9 @@ class GaussianStaticLikelihood(LikelihoodModel):
             # If iterative averaging is desired
             if self.noise_var_iterative_averaging:
                 self.noise_var = self.noise_var_iterative_averaging.update_average(self.noise_var)
-            print(self.noise_var)
             # Limit noise to minimum value set by the nugget_var
             if self.noise_var < self.nugget_noise_var:
-                print(
+                _logger.info(
                     "Calculated likelihood noise variance fell below the nugget-noise variance. "
                     "Resetting likelihood noise variance to nugget_noise..."
                 )
@@ -210,8 +214,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
     def _update_and_evaluate_forward_model(self):
         """Evaluate forward model.
 
-        Pass the variables update to subordinate simulation model and then
-        evaluate the simulation model.
+        Pass the variables update to subordinate model and then evaluate the forward model.
 
         Returns:
            Y_mat (np.array): Simulation output (row-wise) that corresponds to input batch X_batch

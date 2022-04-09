@@ -13,9 +13,7 @@ def get_str_table(name, print_dict):
     """
     seperator_line = "-" * 60 + "\n"
 
-    string = "\n" + seperator_line
-    string += name + "\n"
-    string += seperator_line
+    string = "\n" + seperator_line + name + "\n" + seperator_line
     for item in print_dict.items():
         string += f"{item[0]}: {item[1]}\n"
     string += seperator_line + "\n"

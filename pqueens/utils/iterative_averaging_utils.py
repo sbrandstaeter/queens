@@ -23,10 +23,10 @@ def from_config_create_iterative_averaging(config):
     }
     averaging_type = config.get("averaging_type")
 
-    averaging_obj = get_option(
+    averaging_class = get_option(
         valid_options, averaging_type, error_message="Iterative averaging option not found."
     )
-    return averaging_obj.from_config_create_iterative_averaging(config)
+    return averaging_class.from_config_create_iterative_averaging(config)
 
 
 class IterativeAveraging(metaclass=abc.ABCMeta):
@@ -46,18 +46,6 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         self.rel_L1_change = 1
         self.rel_L2_change = 1
 
-    def _compute_rel_change(self, old_average, new_average):
-        """Compute the relative changes (L1 and L2).
-
-        Relative change between new and old average.
-
-        Args:
-            old_average (np.array): Old average value
-            new_average (np.array): New average value
-        """
-        self.rel_L2_change = relative_change(old_average, new_average, L2_norm)
-        self.rel_L1_change = relative_change(old_average, new_average, L1_norm)
-
     def update_average(self, new_value):
         """Compute the actual average.
 
@@ -72,11 +60,30 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         if self.current_average is not None:
             old_average = self.current_average.copy()
             self.current_average = self.average_computation(new_value)
-            self._compute_rel_change(old_average, self.current_average)
+            self.rel_L2_change = relative_change(old_average, self.current_average, L2_norm)
+            self.rel_L1_change = relative_change(old_average, self.current_average, L1_norm)
         else:
             # If it is the first observation
             self.current_average = new_value.copy()
         return self.current_average.copy()
+
+    def __str__(self, name, approach_print_dict):
+        """String of the iterative averaging.
+
+        Args:
+            name (str): averaging approach
+            approach_print_dict (dict): Dict with method specific print quantities
+
+        Returns:
+            str: String version of the optimizer
+        """
+        print_dict = {
+            "Rel. L1 change to previous average": self.rel_L1_change,
+            "Rel. L2 change to previous average": self.rel_L2_change,
+            "Current average": self.current_average,
+        }
+        approach_print_dict.update(print_dict)
+        return get_str_table(name, approach_print_dict)
 
     @abc.abstractclassmethod
     def average_computation(self):
@@ -142,19 +149,14 @@ class MovingAveraging(IterativeAveraging):
     def __str__(self):
         """String of the iterative averaging.
 
-        Args:
-            name (str): averaging approach
-
         Returns:
-            str: String version of the optimizer
+            str: String version of the iterative averaging
         """
         name = "Moving average."
         print_dict = {
             "Averaging window size": self.num_iter_for_avg,
-            "Rel. L1 change to previous average": self.rel_L1_change,
-            "Rel. L2 change to previous average": self.rel_L2_change,
         }
-        return get_str_table(name, print_dict)
+        return super().__str__(name, print_dict)
 
 
 class PolyakAveraging(IterativeAveraging):
@@ -205,19 +207,14 @@ class PolyakAveraging(IterativeAveraging):
     def __str__(self):
         """String of the iterative averaging.
 
-        Args:
-            name (str): averaging approach
-
         Returns:
-            str: String version of the optimizer
+            str: String version of the iterative averaging
         """
         name = "Polyak averaging."
         print_dict = {
             "Number of iterations": self.iteration_counter,
-            "Rel. L1 change to previous average": self.rel_L1_change,
-            "Rel. L2 change to previous average": self.rel_L2_change,
         }
-        return get_str_table(name, print_dict)
+        return super().__str__(name, print_dict)
 
 
 class ExponentialAveraging(IterativeAveraging):
@@ -279,19 +276,13 @@ class ExponentialAveraging(IterativeAveraging):
     def __str__(self):
         """String of the iterative averaging.
 
-        Args:
-            name (str): averaging approach
-
         Returns:
-            str: String version of the optimizer
+            str: String version of the iterative averaging
         """
-        name = "Exponential averaging."
         print_dict = {
             "Coefficient": self.coefficient,
-            "Rel. L1 change to previous average": self.rel_L1_change,
-            "Rel. L2 change to previous average": self.rel_L2_change,
         }
-        return get_str_table(name, print_dict)
+        return super().__str__("Exponential averaging.", print_dict)
 
 
 def L1_norm(x, averaged=False):
