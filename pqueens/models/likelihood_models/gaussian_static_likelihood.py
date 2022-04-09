@@ -173,7 +173,7 @@ class GaussianStaticLikelihood(LikelihoodModel):
         """Potentially update the static noise variance.
 
         The noise is computed based on a MAP estimate using a Jeffreys prior on the variance. If
-        activated, the noise is averaged according to a iterative averaging scheme.
+        activated, the noise is averaged according to an iterative averaging scheme.
 
         Args:
             num_obs (int): Number of experimental observations (length of y_obs)

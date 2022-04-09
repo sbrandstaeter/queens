@@ -8,7 +8,7 @@ from pqueens.utils.valid_options_utils import get_option
 
 
 def from_config_create_iterative_averaging(config):
-    """Build a iterative averaging scheme from config.
+    """Build an iterative averaging scheme from config.
 
     Args:
         config (dict): Configuration dict for the iterative averaging
