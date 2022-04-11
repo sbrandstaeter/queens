@@ -1,14 +1,16 @@
+"""Test stochastic optimizers."""
 import numpy as np
 import pytest
 
-from pqueens.utils.stochastic_optimizer import StochasticOptimizer
+from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 
 @pytest.mark.integration_tests
 def test_RMSprop_max(rmsprop_optimizer):
+    """Test RMSprop."""
     varparams = 5 * np.ones(5).reshape(-1, 1)
     rmsprop_optimizer.current_variational_parameters = varparams
-    rmsprop_optimizer.gradient = gradient
+    rmsprop_optimizer.set_gradient_function(gradient)
     result = None
     for r in rmsprop_optimizer:
         result = r
@@ -20,10 +22,11 @@ def test_RMSprop_max(rmsprop_optimizer):
 
 @pytest.mark.integration_tests
 def test_Adamax(adamax_optimizer):
+    """Test Adamax."""
     varparams = np.ones(5).reshape(-1, 1)
     adamax_optimizer.current_variational_parameters = varparams
     grad = lambda x: -gradient(x)
-    adamax_optimizer.gradient = grad
+    adamax_optimizer.set_gradient_function(grad)
     result = adamax_optimizer.run_optimization()
     iterations = adamax_optimizer.iteration
     assert iterations < 1000
@@ -32,9 +35,10 @@ def test_Adamax(adamax_optimizer):
 
 @pytest.mark.integration_tests
 def test_Adam(adam_optimizer):
+    """Test Adam."""
     varparams = np.ones(5).reshape(-1, 1)
     adam_optimizer.current_variational_parameters = varparams
-    adam_optimizer.gradient = gradient
+    adam_optimizer.set_gradient_function(gradient)
     result = adam_optimizer.run_optimization()
     iterations = adam_optimizer.iteration
     assert iterations < 1000
@@ -43,6 +47,7 @@ def test_Adam(adam_optimizer):
 
 @pytest.fixture()
 def adam_optimizer():
+    """Adam optimzer."""
     opt_config = {
         "dummy_section": {
             "stochastic_optimizer": "Adam",
@@ -53,14 +58,13 @@ def adam_optimizer():
             "max_iter": 1000,
         }
     }
-    optimizer = StochasticOptimizer.from_config_create_optimizer(
-        opt_config, section_name="dummy_section"
-    )
+    optimizer = from_config_create_optimizer(opt_config, section_name="dummy_section")
     return optimizer
 
 
 @pytest.fixture()
 def adamax_optimizer():
+    """Adamax optimzer."""
     opt_config = {
         "dummy_section": {
             "stochastic_optimizer": "Adamax",
@@ -71,14 +75,13 @@ def adamax_optimizer():
             "max_iter": 1000,
         }
     }
-    optimizer = StochasticOptimizer.from_config_create_optimizer(
-        opt_config, section_name="dummy_section"
-    )
+    optimizer = from_config_create_optimizer(opt_config, section_name="dummy_section")
     return optimizer
 
 
 @pytest.fixture()
 def rmsprop_optimizer():
+    """Rmsprop optimzer."""
     opt_config = {
         "dummy_section": {
             "stochastic_optimizer": "RMSprop",
@@ -89,11 +92,10 @@ def rmsprop_optimizer():
             "max_iter": 500,
         }
     }
-    optimizer = StochasticOptimizer.from_config_create_optimizer(
-        opt_config, section_name="dummy_section"
-    )
+    optimizer = from_config_create_optimizer(opt_config, section_name="dummy_section")
     return optimizer
 
 
 def gradient(x):
+    """Gradient function."""
     return -2 * (x - 0.5).reshape(-1, 1)

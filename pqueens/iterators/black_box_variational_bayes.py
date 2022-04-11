@@ -10,7 +10,7 @@ from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils import mcmc_utils, variational_inference_utils
 from pqueens.utils.process_outputs import write_results
-from pqueens.utils.stochastic_optimizer import StochasticOptimizer
+from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 _logger = logging.getLogger(__name__)
 
@@ -275,9 +275,7 @@ class BBVIIterator(Iterator):
         else:
             model_eval_iteration_period = 1
 
-        stochastic_optimizer = StochasticOptimizer.from_config_create_optimizer(
-            method_options, "optimization_options"
-        )
+        stochastic_optimizer = from_config_create_optimizer(method_options, "optimization_options")
         resample = method_options.get("resample", False)
         return cls(
             global_settings=global_settings,
@@ -356,7 +354,7 @@ class BBVIIterator(Iterator):
         self._initialize_variational_params()
 
         # set the gradient according to input
-        self.stochastic_optimizer.gradient = self._get_gradient_function()
+        self.stochastic_optimizer.set_gradient_function(self._get_gradient_function())
         self.stochastic_optimizer.current_variational_parameters = self.variational_params.reshape(
             -1, 1
         )

@@ -7,7 +7,7 @@ from scipy.stats import multivariate_normal as mvn
 import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
 from pqueens.utils import mcmc_utils, variational_inference_utils
-from pqueens.utils.stochastic_optimizer import StochasticOptimizer
+from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 # Needed here to ensure that the target density is always the same.
 np.random.seed(666)
@@ -48,7 +48,7 @@ def test_bbvi_density_match_high_dimensional(
         )
         var_params = np.zeros(var_params.shape)
         dummy_bbvi_instance.variational_params = var_params
-        dummy_bbvi_instance.stochastic_optimizer.gradient = (
+        dummy_bbvi_instance.stochastic_optimizer.set_gradient_function(
             dummy_bbvi_instance._get_gradient_function()
         )
         dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
@@ -115,7 +115,7 @@ def dummy_bbvi_instance(tmpdir, rv_dimension, my_variational_distribution_obj):
         "rel_L2_change_threshold": 1e-8,
         "max_iter": 10000000,
     }
-    stochastic_optimizer = StochasticOptimizer.from_config_create_optimizer(optimizer_config)
+    stochastic_optimizer = from_config_create_optimizer(optimizer_config)
     # ------ other params ----------------------------------------------------------
     model = 'fake_model'
     global_settings = {'output_dir': tmpdir, 'experiment_name': experiment_name}

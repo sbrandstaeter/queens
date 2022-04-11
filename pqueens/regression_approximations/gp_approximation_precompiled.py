@@ -8,7 +8,7 @@ from numpy.linalg.linalg import cholesky
 
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from pqueens.utils.random_process_scaler import Scaler
-from pqueens.utils.stochastic_optimizer import StochasticOptimizer
+from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 _logger = logging.getLogger(__name__)
 
@@ -196,7 +196,7 @@ class GPPrecompiled(RegressionApproximation):
             )
 
         # configure the stochastic optimizer and iterative averaging
-        stochastic_optimizer = StochasticOptimizer.from_config_create_optimizer(config, approx_name)
+        stochastic_optimizer = from_config_create_optimizer(config, approx_name)
 
         # get the plot refresh rate
         plot_refresh_rate = config[approx_name].get("plot_refresh_rate", None)
