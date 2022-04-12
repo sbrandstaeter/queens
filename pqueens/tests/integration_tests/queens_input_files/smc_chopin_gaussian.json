@@ -13,7 +13,7 @@
       "resampling_method": "residual",
       "feynman_kac_model": "adaptive_tempering",
       "waste_free": true,
-      "chain_length": 10,
+      "num_rejuvenation_steps": 9,
       "model": "model",
       "max_feval": 10000,
       "result_description": {
