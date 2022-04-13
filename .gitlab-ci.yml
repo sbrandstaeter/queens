@@ -49,6 +49,7 @@ stages:
 #----------------------------------------------------------------------------------------------
 .centos_build_settings:
   before_script:
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda update -n base conda
   only:
     variables:
@@ -58,6 +59,7 @@ stages:
 #----------------------------------------------------------------------------------------------
 .centos_settings:
   before_script:
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - source activate queens-$CI_PIPELINE_ID
   only:
     variables:
@@ -84,6 +86,7 @@ build_conda_env:
     - .centos_build_settings
   stage: build
   script:
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - source activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
@@ -98,6 +101,7 @@ build_conda_env:
 remove_conda_env_and_singularity_image:
   stage: cleanup
   script:
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda env remove -n queens-$CI_PIPELINE_ID
     - rm /tmp/singularity_image.sif-$CI_PIPELINE_ID
   when: always
