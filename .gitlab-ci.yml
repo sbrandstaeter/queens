@@ -88,7 +88,7 @@ build_conda_env:
   script:
     - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
-    - source activate queens-$CI_PIPELINE_ID
+    - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
   artifacts:
