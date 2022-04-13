@@ -60,7 +60,7 @@ stages:
 .centos_settings:
   before_script:
     - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
-    - source activate queens-$CI_PIPELINE_ID
+    - conda activate queens-$CI_PIPELINE_ID
   only:
     variables:
       - $CENTOS_TESTS == "1"
@@ -280,7 +280,8 @@ pages:
     - centos_full_test_suite_master
   before_script:
     # use the base environment for badge creation
-    - source activate base
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
+    - conda activate base
     - conda install pip
     - pip install anybadge
     - mkdir public
