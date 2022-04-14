@@ -262,7 +262,7 @@ def baci_cluster_paths(cluster_user, cluster_address):
         "/home", cluster_user, "workspace", "build", "post_drt_ensight"
     )
 
-    command_string = f'test -f {path_to_executable}'
+    command_string = f'find {path_to_executable}'
     run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
@@ -272,7 +272,7 @@ def baci_cluster_paths(cluster_user, cluster_address):
         f"Was looking here: {path_to_executable}",
     )
 
-    command_string = f'test -f {path_to_drt_monitor}'
+    command_string = f'find {path_to_drt_monitor}'
     run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
@@ -282,7 +282,7 @@ def baci_cluster_paths(cluster_user, cluster_address):
         f"Was looking here: {path_to_drt_monitor}",
     )
 
-    command_string = f'test -f {path_to_drt_ensight}'
+    command_string = f'find {path_to_drt_ensight}'
     run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
@@ -292,7 +292,7 @@ def baci_cluster_paths(cluster_user, cluster_address):
         f"Was looking here: {path_to_drt_ensight}",
     )
 
-    command_string = f'test -f {path_to_post_processor}'
+    command_string = f'find {path_to_post_processor}'
     run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
