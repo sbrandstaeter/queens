@@ -143,6 +143,8 @@ class ClusterScheduler(Scheduler):
                 singularity_path=singularity_options['cluster_path'],
                 input_file=input_file,
             )
+        else:
+            singularity_manager = None
 
         # This hurts my brain
         cluster_options['job_name'] = None
@@ -194,7 +196,7 @@ class ClusterScheduler(Scheduler):
         abs_path = relative_path_from_pqueens(rel_path)
         cluster_options['jobscript_template'] = abs_path
 
-        if singularity_options:
+        if singularity:
             singularity_path = singularity_options['cluster_path']
             cluster_options['singularity_path'] = singularity_path
             cluster_options['EXE'] = os.path.join(singularity_path, 'singularity_image.sif')
