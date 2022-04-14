@@ -221,18 +221,18 @@ class ClusterScheduler(Scheduler):
             singularity,
         )
         return cls(
-            experiment_name,
-            input_file,
-            restart,
-            experiment_dir,
-            driver_name,
-            config,
-            cluster_options,
-            singularity,
-            scheduler_type,
-            singularity_manager,
-            remote,
-            remote_connect,
+            experiment_name=experiment_name,
+            input_file=input_file,
+            restart=restart,
+            experiment_dir=experiment_dir,
+            driver_name=driver_name,
+            config=config,
+            cluster_options=cluster_options,
+            singularity=singularity,
+            scheduler_type=scheduler_type,
+            singularity_manager=singularity_manager,
+            remote=remote,
+            remote_connect=remote_connect,
         )
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
@@ -386,7 +386,9 @@ class ClusterScheduler(Scheduler):
             check_cmd = 'squeue --job'
             check_loc = -4
         else:
-            raise RuntimeError('Unknown scheduler type! Abort...')
+            raise RuntimeError(
+                f'Unknown scheduler type "{self.scheduler_type}"! Valid options are pbs, slurm'
+            )
 
         if self.remote:
             # set check command, check location and delete command for PBS or SLURM
