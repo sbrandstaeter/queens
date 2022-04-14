@@ -49,6 +49,7 @@ stages:
 #----------------------------------------------------------------------------------------------
 .centos_build_settings:
   before_script:
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda update -n base conda
   only:
     variables:
@@ -58,7 +59,8 @@ stages:
 #----------------------------------------------------------------------------------------------
 .centos_settings:
   before_script:
-    - source activate queens-$CI_PIPELINE_ID
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
+    - conda activate queens-$CI_PIPELINE_ID
   only:
     variables:
       - $CENTOS_TESTS == "1"
@@ -84,8 +86,9 @@ build_conda_env:
     - .centos_build_settings
   stage: build
   script:
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
-    - source activate queens-$CI_PIPELINE_ID
+    - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
   artifacts:
@@ -98,6 +101,7 @@ build_conda_env:
 remove_conda_env_and_singularity_image:
   stage: cleanup
   script:
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda env remove -n queens-$CI_PIPELINE_ID
     - rm /tmp/singularity_image.sif-$CI_PIPELINE_ID
   when: always
@@ -112,7 +116,7 @@ remove_conda_env_and_singularity_image:
 build_singularity:
   stage: build
   script:
-    - /usr/bin/singularity build --fakeroot singularity_image.sif singularity_recipe.def
+    - unset SINGULARITY_BIND && /usr/bin/singularity build --fakeroot singularity_image.sif singularity_recipe.def
     - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
   only:
     variables:
@@ -276,7 +280,8 @@ pages:
     - centos_full_test_suite_master
   before_script:
     # use the base environment for badge creation
-    - source activate base
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
+    - conda activate base
     - conda install pip
     - pip install anybadge
     - mkdir public
