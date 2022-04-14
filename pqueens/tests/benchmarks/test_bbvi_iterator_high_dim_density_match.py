@@ -1,3 +1,4 @@
+"""High dimensional Gaussian density match case."""
 import numpy as np
 import pytest
 from mock import patch
@@ -6,6 +7,10 @@ from scipy.stats import multivariate_normal as mvn
 import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
 from pqueens.utils import mcmc_utils, variational_inference_utils
+from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
+
+# Needed here to ensure that the target density is always the same.
+np.random.seed(666)
 
 
 @pytest.mark.benchmark
@@ -16,8 +21,9 @@ def test_bbvi_density_match_high_dimensional(
     my_variational_distribution_obj,
     target_distribution_obj,
     dummy_bbvi_instance,
-    RV_dimension,
+    rv_dimension,
 ):
+    """Matching a high dimensional Gaussian distribution."""
     # fix the random seed
     np.random.seed(1)
 
@@ -40,14 +46,22 @@ def test_bbvi_density_match_high_dimensional(
         var_params = (
             dummy_bbvi_instance.variational_distribution_obj.initialize_parameters_randomly()
         )
+        var_params = np.zeros(var_params.shape)
         dummy_bbvi_instance.variational_params = var_params
-        dummy_bbvi_instance.variational_params_array = np.empty((len(var_params), 0))
+        dummy_bbvi_instance.stochastic_optimizer.set_gradient_function(
+            dummy_bbvi_instance._get_gradient_function()
+        )
+        dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
+            var_params.reshape(-1, 1)  # actual run of the algorithm
+        )
+        dummy_bbvi_instance.noise_list = [6, 6, 6]
 
         # actual run of the algorithm
         dummy_bbvi_instance.run()
 
         variational_distr_obj = dummy_bbvi_instance.variational_distribution_obj
         opt_variational_params = np.array(dummy_bbvi_instance.variational_params)
+        elbo = dummy_bbvi_instance.elbo_list[-1]
     # Actual tests
     opt_variational_samples = variational_distr_obj.draw(opt_variational_params, 10000)
     variational_logpdf = variational_distr_obj.logpdf(
@@ -58,30 +72,28 @@ def test_bbvi_density_match_high_dimensional(
     ).flatten()
     kl_divergence = np.abs(np.mean(variational_logpdf - target_logpdf))
     assert kl_divergence < 5.0
+    assert np.abs(elbo) < 1e-5
 
 
 @pytest.fixture()
-def dummy_bbvi_instance(tmpdir, RV_dimension, my_variational_distribution_obj):
+def dummy_bbvi_instance(tmpdir, rv_dimension, my_variational_distribution_obj):
+    """Initialize BBVI instance."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 30
-    relative_change_variational_params = 0.001
-    num_variables = RV_dimension
-    learning_rate = 0.1
+    num_variables = rv_dimension
     max_feval = 1e5
-    num_variables = 5
     memory = 10
     natural_gradient_bool = True
-    clipping_bool = True
     fim_dampening_bool = True
     export_quantities_over_iter = False
     variational_params_initialization_approach = "random"
-    num_iter_average_convergence = 5
-    gradient_clipping_norm_threshold = 1e6
     fim_decay_start_iter = 50
     fim_dampening_coefficient = 1e-2
     fim_dampening_lower_bound = 1e-8
     control_variates_scaling_type = "averaged"
     loo_cv_bool = False
+    resample = True
+    model_eval_iteration_period = 1000
     # ------ params we want to keep fixed -----------------------------------------
     variational_transformation = None
     variational_family = 'normal'
@@ -95,7 +107,15 @@ def dummy_bbvi_instance(tmpdir, RV_dimension, my_variational_distribution_obj):
             "save_bool": False,
         },
     }
-
+    optimizer_config = {
+        "stochastic_optimizer": "Adam",
+        "learning_rate": 0.1,
+        "optimization_type": "max",
+        "rel_L1_change_threshold": 1e-8,
+        "rel_L2_change_threshold": 1e-8,
+        "max_iter": 10000000,
+    }
+    stochastic_optimizer = from_config_create_optimizer(optimizer_config)
     # ------ other params ----------------------------------------------------------
     model = 'fake_model'
     global_settings = {'output_dir': tmpdir, 'experiment_name': experiment_name}
@@ -108,18 +128,13 @@ def dummy_bbvi_instance(tmpdir, RV_dimension, my_variational_distribution_obj):
         result_description=result_description,
         db=db,
         experiment_name=experiment_name,
-        min_requ_relative_change_variational_params=relative_change_variational_params,
         variational_params_initialization_approach=variational_params_initialization_approach,
         n_samples_per_iter=n_samples_per_iter,
         variational_transformation=variational_transformation,
         random_seed=random_seed,
         max_feval=max_feval,
-        num_iter_average_convergence=num_iter_average_convergence,
         num_variables=num_variables,
         memory=memory,
-        learning_rate=learning_rate,
-        clipping_bool=clipping_bool,
-        gradient_clipping_norm_threshold=gradient_clipping_norm_threshold,
         natural_gradient_bool=natural_gradient_bool,
         fim_dampening_bool=fim_dampening_bool,
         fim_decay_start_iter=fim_decay_start_iter,
@@ -130,30 +145,15 @@ def dummy_bbvi_instance(tmpdir, RV_dimension, my_variational_distribution_obj):
         loo_cv_bool=loo_cv_bool,
         variational_distribution_obj=my_variational_distribution_obj,
         variational_family=variational_family,
-        optimization_iteration=0,
-        v_param_adams=0,
-        m_param_adams=0,
-        n_sims=0,
-        variational_params=0,
-        f_mat=None,
-        h_mat=None,
-        grad_elbo=None,
-        log_variational_mat=None,
-        grad_params_log_variational_mat=None,
-        log_posterior_unnormalized=None,
-        prior_obj_list=None,
-        elbo_list=[],
-        samples_list=[],
-        parameter_list=[],
-        log_posterior_unnormalized_list=[],
-        ess_list=[],
-        noise_list=[0, 0],
-        variational_params_array=None,
+        stochastic_optimizer=stochastic_optimizer,
+        model_eval_iteration_period=model_eval_iteration_period,
+        resample=resample,
     )
     return bbvi_instance
 
 
 def target_density(self, target_distribution_obj, x=None, pdf=False):
+    """Function to mock get_log_posterior_unnormalized."""
     output_array = []
     if pdf is False:
         for value in x:
@@ -167,16 +167,18 @@ def target_density(self, target_distribution_obj, x=None, pdf=False):
 
 
 @pytest.fixture()
-def RV_dimension():
-    RV_dimension = 100
-    return RV_dimension
+def rv_dimension():
+    """Dimension of target distribution."""
+    rv_dimension = 100
+    return rv_dimension
 
 
 @pytest.fixture()
-def target_distribution_obj(RV_dimension):
+def target_distribution_obj(rv_dimension):
+    """Target probabilistic model."""
     # Initializing the target distribution
-    mean = np.random.rand(RV_dimension)
-    std = np.random.rand(RV_dimension) + 0.01
+    mean = np.random.rand(rv_dimension)
+    std = np.random.rand(rv_dimension) + 0.01
 
     distribution_options = {
         "distribution": "normal",
@@ -187,12 +189,13 @@ def target_distribution_obj(RV_dimension):
 
 
 @pytest.fixture()
-def my_variational_distribution_obj(RV_dimension):
+def my_variational_distribution_obj(rv_dimension):
+    """Variational distribution object."""
     # Initializing the variational distribution
     distribution_options = {
         "variational_family": "normal",
         "variational_approximation_type": "mean_field",
-        "dimension": RV_dimension,
+        "dimension": rv_dimension,
     }
     my_variational_object = variational_inference_utils.create_variational_distribution(
         distribution_options
@@ -201,6 +204,7 @@ def my_variational_distribution_obj(RV_dimension):
 
 
 def visualization_obj(tmpdir):
+    """Create visualization module."""
     visualization_dict = {
         "method": {
             "method_options": {

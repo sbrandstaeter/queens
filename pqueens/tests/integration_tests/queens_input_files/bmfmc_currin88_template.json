@@ -37,9 +37,10 @@
     },
     "initial_design": {
       "num_HF_eval": 100,
-      "num_bins": 20,
+      "num_bins": 50,
       "method": "{design_method}",
-      "seed": 1
+      "seed": 1,
+      "master_LF": 0
     }
   },
   "joint_density_approx": {

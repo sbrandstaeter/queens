@@ -1,3 +1,5 @@
+"""Iterator for Bayesian multi-fidelity UQ."""
+import logging
 from random import randint
 
 import pandas as pd
@@ -9,11 +11,13 @@ from pqueens.utils.process_outputs import process_ouputs, write_results
 
 from .iterator import Iterator
 
+_logger = logging.getLogger(__name__)
+
 
 class BMFMCIterator(Iterator):
-    """Iterator for the (generalized) Bayesian multi-fidelity Monte-Carlo
-    method. The iterator fulfills the following tasks:
+    r"""Iterator for the Bayesian multi-fidelity Monte-Carlo method.
 
+    The iterator fulfills the following tasks:
     1.  Load the low-fidelity Monte Carlo data
     2.  Based on low-fidelity data, calculate optimal X_train to evaluate the high-fidelity model
     3.  Based on X_train return the corresponding Y_LFs_train
@@ -25,7 +29,6 @@ class BMFMCIterator(Iterator):
         itself.
 
     Attributes:
-
         model (obj): Instance of the BMFMCModel
         result_description (dict): Dictionary containing settings for plotting and saving data/
                                    results
@@ -35,14 +38,6 @@ class BMFMCIterator(Iterator):
                                inputs X_train such that :math:`Y_{HF}=y_{HF}(X)`
         Y_LFs_train (np.array): Outputs of the low-fidelity models that correspond to the training
                                 inputs X_train
-        eigenfunc_random_fields_train (np.array): (Intermediate solution) Array containing
-                                                  eigenfunctions of involved random fields,
-                                                  such that 99 % of their variance is covered.
-                                                  Eigenfunctions are only required for
-                                                  determination of informative features where only
-                                                  the first few eigenfunctions are involved so
-                                                  that we have very relaxed demands on the
-                                                  accuracy of the field reconstruction.
         output (dict): Dictionary containing the output quantities:
 
                        *  "Z_mc": Corresponding Monte-Carlo point in LF informative feature space
@@ -57,10 +52,10 @@ class BMFMCIterator(Iterator):
                                        distribution
                        *  "p_yhf_mean_BMFMC": Vector containing mean function of HF output
                                               posterior distribution calculated without informative
-                                              features :math:`\\boldsymbol{\\gamma}`
+                                              features :math:`\boldsymbol{\gamma}`
                        *  "p_yhf_var_BMFMC": Vector containing posterior variance function of HF
                                              output distribution calculated without informative
-                                             features :math:`\\boldsymbol{\\gamma}`
+                                             features :math:`\boldsymbol{\gamma}`
                        *  "p_ylf_mc": Vector with low-fidelity output distribution (kde from MC
                                       data)
                        *  "p_yhf_mc": Vector with reference HF output distribution (kde from MC
@@ -74,15 +69,14 @@ class BMFMCIterator(Iterator):
         initial_design (dict): Dictionary containing settings for the selection strategy/initial
                                design of training points for the probabilistic mapping
         predictive_var (bool): Boolean flag that triggers the computation of the posterior variance
-                               :math:`\\mathbb{V}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` if
+                               :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` if
                                set to True. (default value: False)
         BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
-                                features :math:`\\boldsymbol{\\gamma}` for comparison if set to
+                                features :math:`\boldsymbol{\gamma}` for comparison if set to
                                 True (default
                                 value: False)
 
     Returns:
-
        BMFMCIterator (obj): Instance of the BMFMCIterator
     """
 
@@ -95,6 +89,23 @@ class BMFMCIterator(Iterator):
         BMFMC_reference,
         global_settings,
     ):
+        r"""Initialize BMFMC iterator object.
+
+        Args:
+            model (obj): Instance of the BMFMCModel
+            result_description (dict): Dictionary containing settings for plotting and saving data/
+                                       results
+            initial_design (dict): Dictionary containing settings for the selection strategy/initial
+                                   design of training points for the probabilistic mapping
+            predictive_var (bool): Boolean flag that triggers the computation of the posterior
+                                   variance
+                                   :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]`
+                                   if set to True. (default value: False)
+            BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
+                                    features :math:`\boldsymbol{\gamma}` for comparison if set to
+                                    True (default value: False)
+            global_settings (dict): Settings for the QUEENS run.
+        """
         #  TODO check if None for the model is appropriate here
         super(BMFMCIterator, self).__init__(
             None, global_settings
@@ -103,7 +114,6 @@ class BMFMCIterator(Iterator):
         self.result_description = result_description
         self.X_train = None
         self.Y_LFs_train = None
-        self.eigenfunc_random_fields_train = None
         self.output = None
         self.initial_design = initial_design
         self.predictive_var = predictive_var
@@ -122,7 +132,11 @@ class BMFMCIterator(Iterator):
             iterator (obj): BMFMCIterator object
         """
         # Initialize Iterator and model
-        method_options = config["method"]["method_options"]
+        if iterator_name is None:
+            method_options = config['method']['method_options']
+        else:
+            method_options = config[iterator_name]['method_options']
+
         BMFMC_reference = method_options["BMFMC_reference"]
         result_description = method_options["result_description"]
         predictive_var = method_options["predictive_var"]
@@ -139,25 +153,26 @@ class BMFMCIterator(Iterator):
         qvis.from_config_create(config)
 
         return cls(
-            model,
-            result_description,
-            initial_design,
-            predictive_var,
-            BMFMC_reference,
-            global_settings,
+            model=model,
+            result_description=result_description,
+            initial_design=initial_design,
+            predictive_var=predictive_var,
+            BMFMC_reference=BMFMC_reference,
+            global_settings=global_settings,
         )
 
     def core_run(self):
-        """Main run of the BMFMCIterator that covers the following points:
+        r"""Main run of the BMFMCIterator.
 
+        The BMFMCIterator covers the following points:
         1.  Reading the sampling data from the low-fidelity model in QUEENS
         2.  Based on LF data, determine optimal X_train for which the high-fidelity model should
             be evaluated :math:`Y_{HF}=y_{HF}(X)`
         3.  Update the BMFMCModel with the partial training data set of X_train, Y_LF_train (
             Y_HF_train is determined in the BMFMCModel)
         4.  Evaluate the BMFMCModel which means that the posterior statistics
-            :math:`\\mathbb{E}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` and
-            :math:`\\mathbb{V}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` are computed based
+            :math:`\mathbb{E}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` and
+            :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` are computed based
             on the BMFMC algorithm which is implemented in the BMFMCModel
 
         Returns:
@@ -173,17 +188,19 @@ class BMFMCIterator(Iterator):
         self.output = self.eval_model()
 
     def calculate_optimal_X_train(self):
-        """Based on the low-fidelity sampling data, calculate the optimal model
+        r"""Calculate the optimal model inputs X_train.
+
+        Based on the low-fidelity sampling data, calculate the optimal model
         inputs X_train on which the high-fidelity model should be evaluated to
         construct the training data set for BMFMC. This selection is performed
         based on the following method options:
 
         1. **random**: Divides the :math:`y_{LF}` data set in bins and selects training
                        candidates random from each bin until :math:`n_{train}` is reached
-        2. **diverse subset**: Determine the most important input features :math:`\\gamma_i`
+        2. **diverse subset**: Determine the most important input features :math:`\gamma_i`
                                (this information is provided by the BMFMCModel) and find a space
                                filling subset (diverse subset) given the LF sampling data with
-                               respect to the most important features :math:`\\gamma_i`. The
+                               respect to the most important features :math:`\gamma_i`. The
                                number of features to be considered can be set in the input file.
                                **Remark**: An optimization routine for the optimal number of
                                features to be considered will be added in the future
@@ -202,8 +219,9 @@ class BMFMCIterator(Iterator):
         self.model.Y_LFs_train = self.Y_LFs_train
 
     def _get_design_method(self, design_method):
-        """Get the design method for selecting the HF data from the LF MC data-
-        set.
+        """Get the design method for selecting the HF data.
+
+        Get the design method for selecting the HF data from the LF MC dataset.
 
         Args:
             design_method (str): Design method specified in input file
@@ -229,10 +247,10 @@ class BMFMCIterator(Iterator):
         return run_design_method
 
     def _diverse_subset_design(self, n_points):
-        """Calculate the HF training points from large LF-MC data-set based on
-        the diverse subset strategy based on the psa_select method from.
+        """Calculate the HF training points based on psa_select.
 
-        **diversipy**.
+        Calculate the HF training points from large LF-MC data-set based on
+        the diverse subset strategy based on the psa_select method from **diversipy**.
 
         Args:
              n_points (int): Number of HF training points to be selected
@@ -256,8 +274,10 @@ class BMFMCIterator(Iterator):
         self.Y_LFs_train = self.model.Y_LFs_mc[index, :]
 
     def _random_design(self, n_points):
-        """Calculate the HF training points from large LF-MC data-set based on
-        random selection from bins over y_LF.
+        """Calculate the HF training points based on random selection.
+
+        Calculate the HF training points from large LF-MC data-set based on random selection from
+        bins over y_LF.
 
         Args:
             n_points (int): Number of HF training points to be selected
@@ -266,62 +286,50 @@ class BMFMCIterator(Iterator):
             None
         """
         n_bins = self.initial_design.get("num_bins")
-        seed = self.initial_design.get("seed")
+        np.random.seed(self.initial_design.get("seed"))
+        master_LF = self.initial_design.get("master_LF", 0)
         ylf_min = np.amin(self.model.Y_LFs_mc)
         ylf_max = np.amax(self.model.Y_LFs_mc)
         break_points = np.linspace(ylf_min, ylf_max, n_bins + 1)
 
-        # TODO: bin_vec only works for one LF --> user should define a 'master LF' for
-        #  binning at the moment the first LF in the list is taken as the 'master LF'
         bin_vec = pd.cut(
-            self.model.Y_LFs_mc[:, 0],
+            self.model.Y_LFs_mc[:, master_LF],
             bins=break_points,
             labels=False,
             include_lowest=True,
             retbins=True,
-        )
-
-        # Some initialization
-        self.Y_LFs_train = np.empty((0, self.model.Y_LFs_mc.shape[1]))
-
-        self.X_train = np.array([]).reshape(0, self.model.X_mc.shape[1])
-
-        if self.model.eigenfunc_random_fields is not None:
-            self.eigenfunc_random_fields_train = np.array([]).reshape(
-                0, self.model.eigenfunc_random_fields.shape[1]
-            )
+        )[0]
 
         # Go through all bins and  randomly select points
+        all_indices = np.arange(0, bin_vec.shape[0], dtype=int)
         training_indices = []
-        for bin_n in range(n_bins):
-            # array of booleans
-            y_in_bin_bool = [bin_vec[0] == bin_n]
+        for current_bin in range(n_bins):
+            bin_indices = all_indices[bin_vec == current_bin]  # array of booleans
+            training_indices.append(
+                list(
+                    np.random.choice(
+                        bin_indices, min(n_points // n_bins, bin_indices.shape[0]), replace=False
+                    )
+                )
+            )
 
-            # define bin data
-            bin_data_X_mc = self.model.X_mc[tuple(y_in_bin_bool)]
-            bin_data_Y_LFs_mc = self.model.Y_LFs_mc[tuple(y_in_bin_bool)]
-
-            # randomly select points in bins
-            rnd_select = []
-            for _ in range(n_points // n_bins):
-                random.seed(seed)
-                rnd_select.append(randint(0, bin_data_Y_LFs_mc.shape[0] - 1))
-                seed += 1
-
-            # Define X_train and Y_LFs_train by checking the bins
-            if len(rnd_select) != 0:
-                self.X_train = np.vstack([self.X_train, bin_data_X_mc[rnd_select, :]])
-                self.Y_LFs_train = np.vstack((self.Y_LFs_train, bin_data_Y_LFs_mc[rnd_select, :]))
-            # return training indices to the BMFMC model
-            training_indices.extend(rnd_select)
-
-        self.model.training_indices = np.array(training_indices)
+        self.model.training_indices = np.array(
+            [item for sublist in training_indices for item in sublist]
+        )
+        self.X_train = self.model.X_mc[self.model.training_indices]
+        self.Y_LFs_train = self.model.Y_LFs_mc[self.model.training_indices]
+        if self.model.training_indices.shape[0] < n_points:
+            _logger.warning(
+                f"The chosen number of training points ({self.model.training_indices.shape[0]}) "
+                f"for the HF-LF mapping is smaller than specified ({n_points}). "
+                f"Reduce the number of bins to increase the number of training points!"
+            )
 
     def eval_model(self):
-        """
-        Evaluate the BMFMCModel which means that the posterior statistics
-             :math:`\\mathbb{E}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` and
-             :math:`\\mathbb{V}_{f}\\left[p(y_{HF}^*|f,\\mathcal{D})\\right]` are computed based
+        r"""Evaluate the BMFMCModel which means that the posterior statistics.
+
+             :math:`\mathbb{E}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` and
+             :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` are computed based
              on the BMFMC algorithm which is implemented in the BMFMCModel
 
         Returns:

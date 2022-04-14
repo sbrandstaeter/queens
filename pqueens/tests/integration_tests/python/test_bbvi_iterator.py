@@ -1,3 +1,4 @@
+"""Integration tests for the BBVI iterator."""
 import os
 import pickle
 
@@ -14,6 +15,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_co
     park91a_hifi_coords,
 )
 from pqueens.utils import injector, variational_inference_utils
+from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 
 @pytest.mark.integration_tests
@@ -24,6 +26,7 @@ def test_bbvi_density_match(
     dummy_bbvi_instance,
     visualization_obj,
 ):
+    """Matching a Gaussian distribution."""
     # fix the random seed
     np.random.seed(1)
 
@@ -40,8 +43,13 @@ def test_bbvi_density_match(
         cov = np.exp(np.diag([0.5, 0.5, 0.5, 0.5, 0.5]) * 2)
         var_params = variational_distr_obj.construct_variational_params(mu, cov)
         dummy_bbvi_instance.variational_params = var_params
-        dummy_bbvi_instance.variational_params_array = np.empty((len(var_params), 0))
-        # actual run of the algorithm
+        dummy_bbvi_instance.stochastic_optimizer.set_gradient_function(
+            dummy_bbvi_instance._get_gradient_function()
+        )
+        dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
+            var_params.reshape(-1, 1)  # actual run of the algorithm
+        )
+        dummy_bbvi_instance.noise_list = [6, 6, 6]
         dummy_bbvi_instance.run()
 
         opt_variational_params = np.array(dummy_bbvi_instance.variational_params)
@@ -57,15 +65,13 @@ def test_bbvi_density_match(
     kl_divergence = np.abs(np.mean(variational_logpdf - target_logpdf))
     # Test if KL divergence is not too large
     assert kl_divergence < 10**5
-    # Test if the elbo declined
-    assert elbo[0] < elbo[-1]
+    # Test if the elbo declined on average
+    assert np.mean(elbo[-3:]) > np.mean(elbo[:3])
 
 
 @pytest.mark.integration_tests
 def test_bbvi_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
-    """Integration test for the bbvi iterator based on the park91a_hifi
-    function."""
-
+    """Test for the bbvi iterator based on the park91a_hifi function."""
     # generate json input file from template
     template = os.path.join(inputdir, "bbvi_park91a_hifi_template.json")
     experimental_data_path = tmpdir
@@ -99,26 +105,21 @@ def test_bbvi_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimen
     assert np.abs(results["variational_distr"]["mean"][1] - 0.2) < 0.1
     assert results["variational_distr"]["covariance"][0, 0] ** 0.5 < 0.5
     assert results["variational_distr"]["covariance"][1, 1] ** 0.5 < 0.5
-    assert np.mean(elbo_list[-5:]) > elbo_list[0]
+    assert np.mean(elbo_list[-5:]) > np.mean(elbo_list[:5])
 
 
 @pytest.fixture()
 def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
+    """Create visualization module."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
-    # -1 indicates to run a fixed number of samples
-    min_requ_relative_change_variational_params = -1
     max_feval = 10 * n_samples_per_iter
     num_variables = 5
-    learning_rate = 0.01
     memory = 10
     natural_gradient_bool = False
-    clipping_bool = True
     fim_dampening_bool = True
     export_quantities_over_iter = False
     variational_params_initialization_approach = "random"
-    num_iter_average_convergence = 5
-    gradient_clipping_norm_threshold = 1e6
     fim_decay_start_iter = 50
     fim_dampening_coefficient = 1e-2
     fim_dampening_lower_bound = 1e-8
@@ -137,6 +138,15 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
             "save_bool": False,
         },
     }
+    optimizer_config = {
+        "stochastic_optimizer": "Adam",
+        "learning_rate": 0.01,
+        "optimization_type": "max",
+        "rel_L1_change_threshold": -1,
+        "rel_L2_change_threshold": -1,
+        "max_iter": 10000000,
+    }
+    stochastic_optimizer = from_config_create_optimizer(optimizer_config)
 
     # ------ other params ----------------------------------------------------------
     model = 'fake_model'
@@ -150,18 +160,13 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         result_description=result_description,
         db=db,
         experiment_name=experiment_name,
-        min_requ_relative_change_variational_params=min_requ_relative_change_variational_params,
         variational_params_initialization_approach=variational_params_initialization_approach,
         n_samples_per_iter=n_samples_per_iter,
         variational_transformation=variational_transformation,
         random_seed=random_seed,
         max_feval=max_feval,
-        num_iter_average_convergence=num_iter_average_convergence,
         num_variables=num_variables,
         memory=memory,
-        learning_rate=learning_rate,
-        clipping_bool=clipping_bool,
-        gradient_clipping_norm_threshold=gradient_clipping_norm_threshold,
         natural_gradient_bool=natural_gradient_bool,
         fim_dampening_bool=fim_dampening_bool,
         fim_decay_start_iter=fim_decay_start_iter,
@@ -172,30 +177,15 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         loo_cv_bool=loo_cv_bool,
         variational_distribution_obj=my_variational_distribution_obj,
         variational_family=variational_family,
-        optimization_iteration=0,
-        v_param_adams=0,
-        m_param_adams=0,
-        n_sims=0,
-        variational_params=0,
-        f_mat=None,
-        h_mat=None,
-        grad_elbo=None,
-        log_variational_mat=None,
-        grad_params_log_variational_mat=None,
-        log_posterior_unnormalized=None,
-        prior_obj_list=None,
-        elbo_list=[],
-        samples_list=[],
-        parameter_list=[],
-        log_posterior_unnormalized_list=[],
-        ess_list=[],
-        noise_list=[0, 0],
-        variational_params_array=None,
+        stochastic_optimizer=stochastic_optimizer,
+        model_eval_iteration_period=1,
+        resample=True,
     )
     return bbvi_instance
 
 
 def target_density(self, x=None, pdf=False):
+    """Create visualization module."""
     output_array = []
     mean = (np.array([0.5, 0.2, 0.6, 0.1, 0.2])).reshape(
         -1,
@@ -215,6 +205,7 @@ def target_density(self, x=None, pdf=False):
 
 @pytest.fixture()
 def my_variational_distribution_obj():
+    """Create visualization module."""
     dimension = 5
     distribution_options = {
         "variational_family": "normal",
@@ -229,6 +220,7 @@ def my_variational_distribution_obj():
 
 @pytest.fixture()
 def design_and_write_experimental_data_to_csv(tmpdir):
+    """Create experimental data."""
     # Fix random seed
     np.random.seed(seed=1)
 
@@ -267,6 +259,7 @@ def design_and_write_experimental_data_to_csv(tmpdir):
 
 @pytest.fixture()
 def visualization_obj(tmpdir):
+    """Create visualization module."""
     visualization_dict = {
         "method": {
             "method_options": {

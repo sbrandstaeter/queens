@@ -1,3 +1,4 @@
+"""Rezende potential matching case with GMM."""
 import numpy as np
 import pytest
 import scipy.stats
@@ -6,6 +7,7 @@ from mock import patch
 import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
 from pqueens.main import main
+from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 from pqueens.utils.variational_inference_utils import create_variational_distribution
 
 
@@ -18,6 +20,7 @@ def test_bbvi_GMM_density_match(
     dummy_bbvi_instance,
     visualization_obj,
 ):
+    """Matching Rezende potential with GMM."""
     # The test is done with a fixed number of iterations, since the convergence criteria are not
     # optimatl yet
 
@@ -34,11 +37,17 @@ def test_bbvi_GMM_density_match(
         variational_distr_obj = dummy_bbvi_instance.variational_distribution_obj
         var_params = variational_distr_obj.initialize_parameters_randomly()
         dummy_bbvi_instance.variational_params = var_params
-        dummy_bbvi_instance.variational_params_array = np.empty((len(var_params), 0))
-        # actual run of the algorithm
+        dummy_bbvi_instance.stochastic_optimizer.set_gradient_function(
+            dummy_bbvi_instance._get_gradient_function()
+        )
+        dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
+            var_params.reshape(-1, 1)  # actual run of the algorithm
+        )
+        dummy_bbvi_instance.noise_list = [6, 6, 6]
         dummy_bbvi_instance.run()
 
         opt_variational_params = np.array(dummy_bbvi_instance.variational_params)
+
         elbo = dummy_bbvi_instance.elbo_list
 
     # Actual tests
@@ -57,26 +66,24 @@ def test_bbvi_GMM_density_match(
 
 @pytest.fixture()
 def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
+    """Initialize BBVI instance."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
     # -1 indicates to run a fixed number of samples
-    min_requ_relative_change_variational_params = -1
     max_feval = 3000
     num_variables = 5
-    learning_rate = 0.01
     memory = 50
     natural_gradient_bool = True
-    clipping_bool = True
     fim_dampening_bool = True
     export_quantities_over_iter = False
     variational_params_initialization_approach = "random"
-    num_iter_average_convergence = 5
-    gradient_clipping_norm_threshold = 1e6
     fim_decay_start_iter = 50
     fim_dampening_coefficient = 1e-2
     fim_dampening_lower_bound = 1e-8
     control_variates_scaling_type = "averaged"
     loo_cv_bool = False
+    model_eval_iteration_period = 1
+    resample = False
     # ------ params we want to keep fixed -----------------------------------------
     variational_transformation = None
     variational_family = 'normal'
@@ -90,7 +97,15 @@ def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
             "save_bool": False,
         },
     }
-
+    optimizer_config = {
+        "stochastic_optimizer": "Adam",
+        "learning_rate": 0.01,
+        "optimization_type": "max",
+        "rel_L1_change_threshold": -1,
+        "rel_L2_change_threshold": -1,
+        "max_iter": 10000000,
+    }
+    stochastic_optimizer = from_config_create_optimizer(optimizer_config)
     # ------ other params ----------------------------------------------------------
     model = 'fake_model'
     global_settings = {'output_dir': tmpdir, 'experiment_name': experiment_name}
@@ -103,18 +118,13 @@ def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
         result_description=result_description,
         db=db,
         experiment_name=experiment_name,
-        min_requ_relative_change_variational_params=min_requ_relative_change_variational_params,
         variational_params_initialization_approach=variational_params_initialization_approach,
         n_samples_per_iter=n_samples_per_iter,
         variational_transformation=variational_transformation,
         random_seed=random_seed,
         max_feval=max_feval,
-        num_iter_average_convergence=num_iter_average_convergence,
         num_variables=num_variables,
         memory=memory,
-        learning_rate=learning_rate,
-        clipping_bool=clipping_bool,
-        gradient_clipping_norm_threshold=gradient_clipping_norm_threshold,
         natural_gradient_bool=natural_gradient_bool,
         fim_dampening_bool=fim_dampening_bool,
         fim_decay_start_iter=fim_decay_start_iter,
@@ -125,31 +135,17 @@ def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
         loo_cv_bool=loo_cv_bool,
         variational_distribution_obj=variational_distribution_obj,
         variational_family=variational_family,
-        optimization_iteration=0,
-        v_param_adams=0,
-        m_param_adams=0,
-        n_sims=0,
-        variational_params=0,
-        f_mat=None,
-        h_mat=None,
-        grad_elbo=None,
-        log_variational_mat=None,
-        grad_params_log_variational_mat=None,
-        log_posterior_unnormalized=None,
-        prior_obj_list=None,
-        elbo_list=[],
-        samples_list=[],
-        parameter_list=[],
-        log_posterior_unnormalized_list=[],
-        ess_list=[],
-        noise_list=[0, 0],
-        variational_params_array=None,
+        stochastic_optimizer=stochastic_optimizer,
+        model_eval_iteration_period=model_eval_iteration_period,
+        resample=resample,
     )
     return bbvi_instance
 
 
 def negative_potential(self, x=None):
-    """The unnormalized probabilistic model used in this test is proportional
+    """Rezende potential.
+
+    The unnormalized probabilistic model used in this test is proportional
     to exp(-U) where U is a potential. Hence the log_posterior_unnormalized is
     given by -U.
 
@@ -173,6 +169,7 @@ def negative_potential(self, x=None):
 
 @pytest.fixture()
 def variational_distribution_obj():
+    """Variational distribution object."""
     k = 4
     d = 2
     base_distribution = {
@@ -191,6 +188,7 @@ def variational_distribution_obj():
 
 @pytest.fixture()
 def visualization_obj(tmpdir):
+    """Create visualization module."""
     visualization_dict = {
         "method": {
             "method_options": {

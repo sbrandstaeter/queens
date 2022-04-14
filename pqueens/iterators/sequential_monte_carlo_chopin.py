@@ -43,7 +43,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         resampling_threshold (float): Ratio of ESS to partice number at which to resample
         resampling_method (str): Resampling method implemented in particles
         feynman_kac_model (str): Feynman Kac model for the smc object
-        chain_length (int): Length of Markov chain (Number of rejuvenation steps + 1)
+        num_rejuvenation_steps (int): Number of rejuvenation steps (e.g. MCMC steps)
         waste_free (bool): if True, all intermediate Markov steps are kept
     """
 
@@ -62,7 +62,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         resampling_threshold,
         resampling_method,
         feynman_kac_model,
-        chain_length,
+        num_rejuvenation_steps,
         waste_free,
     ):
         """Initialize the SMC iterator.
@@ -81,7 +81,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             resampling_threshold (float): Ratio of ESS to partice number at which to resample
             resampling_method (str): Resampling method implemented in particles
             feynman_kac_model (str): Feynman Kac model for the smc object
-            chain_length (int): Length of Markov chain (Number of rejuvenation steps + 1)
+            num_rejuvenation_steps (int): Number of rejuvenation steps (e.g. MCMC steps)
             waste_free (bool): if True, all intermediate Markov steps are kept
         """
         super().__init__(model, global_settings)
@@ -97,7 +97,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         self.resampling_threshold = resampling_threshold
         self.resampling_method = resampling_method
         self.feynman_kac_model = feynman_kac_model
-        self.chain_length = chain_length
+        self.num_rejuvenation_steps = num_rejuvenation_steps
         self.waste_free = waste_free
 
     @classmethod
@@ -129,7 +129,8 @@ class SequentialMonteCarloChopinIterator(Iterator):
         resampling_threshold = method_options.get("resampling_threshold")
         resampling_method = method_options.get("resampling_method")
         feynman_kac_model = method_options.get("feynman_kac_model")
-        chain_length = method_options.get("chain_length")
+        num_rejuvenation_steps = method_options.get("num_rejuvenation_steps")
+        print(num_rejuvenation_steps)
         waste_free = method_options.get("waste_free")
         return cls(
             global_settings=global_settings,
@@ -141,7 +142,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             resampling_threshold=resampling_threshold,
             resampling_method=resampling_method,
             feynman_kac_model=feynman_kac_model,
-            chain_length=chain_length,
+            num_rejuvenation_steps=num_rejuvenation_steps,
             waste_free=waste_free,
             n_sims=0,
             prior=None,
@@ -216,7 +217,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
                 static_model,
                 ESSrmin=self.resampling_threshold,
                 wastefree=self.waste_free,
-                len_chain=self.chain_length,
+                len_chain=self.num_rejuvenation_steps + 1,  # is handle this way in the library
             )
         else:
             raise NotImplementedError(

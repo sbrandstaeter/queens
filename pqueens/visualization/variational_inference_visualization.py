@@ -1,31 +1,24 @@
+"""A module that provides utilities and a class for visualization in VI.
+
+It is designed such that the
+VIVisualization class needs only to be initialized once and can then be accessed and modified in
+ the entire project.
+
+In this context "this" is a pointer to the module object instance itself and can be compared to the
+"self" keyword in classes.
+"""
 import os
 import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
 
-"""
-A module that provides utilities and a class for visualization in VI It is designed such that the 
-VIVisualization class needs only to be initialized once and can then be accessed and modified in
- the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the 
-"self" keyword in classes.
-
-Attributes:
-    vi_visualization_instance (obj): Instance of the VIVisualization class
-
-Returns:
-    None
-"""
-
 this = sys.modules[__name__]
 this.vi_visualization_instance = None
 
 
 def from_config_create(config):
-    """Module function that calls the class function `from_config_create` and
-    creates instance of the Visualization class from the problem description.
+    """Calls `from_config_create` and creates a singleton like object.
 
     Args:
         config (dict): Dictionary created from the input file, containing the problem description
@@ -34,8 +27,7 @@ def from_config_create(config):
 
 
 class VIVisualization(object):
-    """Visualization class for VI that containts several plotting, storing and
-    visualization methods that can be used anywhere in QUEENS.
+    """Visualization class for VI.
 
     Attributes:
        path (str): Paths to save the plots.
@@ -43,9 +35,6 @@ class VIVisualization(object):
        plot_boolean (bool): Boolean for determining whether should be plotted or not.
        axs_convergence_plots (matplotlib axes): Axes for the convergence plot
        fig_convergence_plots (matplotlib figure): Figure for the convergence plot
-
-    Returns:
-        VIVisualization (obj): Instance of the VIVisualization Class
     """
 
     # some overall class states
@@ -53,6 +42,15 @@ class VIVisualization(object):
     plt.rcParams.update({'font.size': 10})
 
     def __init__(self, path, save_bool, plot_boolean, axs_convergence_plots, fig_convergence_plots):
+        """Initialize visualization object.
+
+        Args:
+            path (str): Paths to save the plots.
+            save_bool (bool): Boolean to save plot.
+            plot_boolean (bool): Boolean for determining whether should be plotted or not.
+            axs_convergence_plots (matplotlib axes): Axes for the convergence plot
+            fig_convergence_plots (matplotlib figure): Figure for the convergence plot
+        """
         self.path = path
         self.save_bool = save_bool
         self.plot_boolean = plot_boolean
@@ -61,14 +59,13 @@ class VIVisualization(object):
 
     @classmethod
     def from_config_create(cls, config):
-        """
-        Create the VIVisualization visualization object from the problem description
+        """Create the VIVisualization object from config.
+
         Args:
             config (dict): Dictionary containing the problem description
 
         Returns:
             Instance of VIVisualization (obj)
-
         """
         method_options = config["method"].get("method_options")
         plotting_options = method_options["result_description"].get("plotting_options")
@@ -79,35 +76,34 @@ class VIVisualization(object):
         fig_convergence_plots = None
         return cls(path, save_bool, plot_boolean, axs_convergence_plots, fig_convergence_plots)
 
-    def plot_convergence(self, iteration, variational_params_array, elbo, relative_change):
-        """Plots for VI over iterations. Consists of 3 subplots:
+    def plot_convergence(self, iteration, variational_params_list, elbo):
+        """Plots for VI over iterations.
 
+        Consists of 3 subplots:
             1. ELBO
             2. Variational parameters
             3. Relative change in variational parameters
 
         Args:
             iteration (int): Current iteration
-            variational_params_array (np.array): Column-wise variational parameters of the
-                                                 iterations
+            variational_params_list (list): List of parameters from first to last iteration
             elbo (np.array): Rowvector elbo values over iterations
-            relative_change (np.array): Column-wise Relative change for the variational parameters
-
-        Returns:
-            None
         """
-        iterations = np.arange(iteration + 1)
-        if self.plot_boolean:
+        if iteration > 1 and self.plot_boolean:
+            iterations = np.arange(iteration)
+            variational_params_array = np.array(variational_params_list)
+            relative_change = np.abs(np.diff(variational_params_array, axis=0)) / np.maximum(
+                np.abs(variational_params_array[:-1]), 1e-6
+            )
+            relative_change = np.mean(relative_change, axis=1)
             if self.fig_convergence_plots is None:
                 self.fig_convergence_plots, self.axs_convergence_plots = plt.subplots(1, 3, num=2)
                 self.fig_convergence_plots.set_size_inches(25, 8)
             self.axs_convergence_plots[0].clear()
             self.axs_convergence_plots[1].clear()
             self.axs_convergence_plots[0].plot(iterations, elbo, 'k-')
-            self.axs_convergence_plots[1].plot(iterations, variational_params_array.T, '-')
-            self.axs_convergence_plots[2].plot(
-                iterations[0:], np.mean(np.abs(relative_change), axis=1), 'k-'
-            )
+            self.axs_convergence_plots[1].plot(iterations, variational_params_array, '-')
+            self.axs_convergence_plots[2].plot(iterations[1:], relative_change, 'k-')
             self.axs_convergence_plots[2].hlines(0.1, 0, iterations[-1], color='g')
             self.axs_convergence_plots[2].hlines(0.01, 0, iterations[-1], color='r')
 
@@ -138,9 +134,6 @@ class VIVisualization(object):
         Args:
             save_bool (bool): Flag to decide whether saving option is triggered.
             path (str): Path where to save the plot.
-
-        Returns:
-            None
         """
         if self.save_bool:
             self.fig_convergence_plots.savefig(self.path, dpi=300)

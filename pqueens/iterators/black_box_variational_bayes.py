@@ -1,3 +1,4 @@
+"""Black box variational inference iterator."""
 import logging
 import time
 
@@ -9,18 +10,19 @@ from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils import mcmc_utils, variational_inference_utils
 from pqueens.utils.process_outputs import write_results
+from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 _logger = logging.getLogger(__name__)
 
 
 class BBVIIterator(Iterator):
-    """Black box variational inference (BBVI) iterator for Bayesian inverse
-    problems. BBVI does not require model gradients and can hence be used with
-    any simulation model and without the need for adjoints implementations. The
-    algorithm is based on [1]. The expectations for the gradient computations
-    are computed using an importance sampling approach where the IS-
-    distribution is constructed as a mixture of the variational distribution
-    from previous iterations (similar as in [2]).
+    """Black box variational inference (BBVI) iterator.
+
+    For Bayesian inverse problems. BBVI does not require model gradients and can hence be used with
+    any simulation model and without the need for adjoints implementations. The algorithm is based
+    on [1]. The expectations for the gradient computations are computed using an importance
+    sampling approach where the IS-distribution is constructed as a mixture of the variational
+    distribution from previous iterations (similar as in [2]).
 
     Keep in mind:
         This algorithm requires the logpdf of the variational distribution to be differentiable w.r.
@@ -44,13 +46,9 @@ class BBVIIterator(Iterator):
         result_description (dict): Settings for storing and visualizing the results
         db (obj): QUEENS database object
         experiment_name (str): Name of the QUEENS simulation
-        min_requ_relative_change_variational_params (float): Minimum required relative change in
-                                                             the variational parameters in order
-                                                             to reach convergence
         variational_family (str): Density type for variatonal approximation
         variational_params_initialization_approach (str): Flag to decide how to initialize the
                                                           variational paramaters
-        learning_rate (float): Learning rate of the ADAMS stochastic decent optimizer
         n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration to
                                   estimate the involved expectations)
         variational_transformation (str): String encoding the transformation that will be applied to
@@ -61,29 +59,22 @@ class BBVIIterator(Iterator):
         memory (int): Number of previous iterations that should be included in the MC ELBO
                       gradient estimations. For memory=0 the algorithm reduces to standard the
                       standard BBVI algorithm. (Better variable name is welcome)
-        clipping_bool (boolean): True if gradient clipping should be used
-        gradient_clipping_norm_threshold (float): Threshold for gradient clipping
         natural_gradient_bool (boolean): True if natural gradient should be used
         fim_dampening_bool (boolean): True if FIM dampening should be used
         fim_decay_start_iter (float): Iteration at which the FIM dampening is started
         fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
         fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-        num_iter_average_convergence (float): Number of iteration used in assesing convergence
         export_quantities_over_iter (boolean): True if data (variational_params, elbo, ESS) should
                                                be exported in the pickle file
         control_variates_scaling_type (str): Flag to decide how to compute control variate scaling
         loo_cv_bool (boolean): True if leave-one-out procedure is used for the control variate
                                scaling estimations. Is quite slow!
-        optimization_iteration (iter): Current iteration number of the optimization
-        v_param_adams (np.array): Parameter in the ADAMS stochastic optimizer
-        m_param_adams (np.array): Parameter in the ADAMS stochastic optimizer
         n_sims (int): Number of probabilistic model calls
         variational_distribution_obj (VariationalDistribution): Variational distribution object
         variational_params (np.array): Rowvector containing the variatonal parameters
         f_mat (np.array): Column-wise ELBO gradient samples
         h_mat (np.array): Column-wise control variate
         elbo_list (list): ELBO value of every iteration
-        grad_elbo (np.array): ELBO gradient (Columnvector)
         log_variational_mat (np.array): Logpdf evaluations of the variational distribution
         grad_params_log_variational_mat (np.array): Column-wise grad params logpdf (score function)
                                                     of the variational distribution
@@ -99,10 +90,11 @@ class BBVIIterator(Iterator):
         ess_list (list): List containing the effective sample size for every iteration (in case IS
                          is used)
         noise_list (list): Gaussian likelihood noise variance values.
-        variational_params_array (np.array): Column-wise parameters from first to last iteration
-
-    Returns:
-        bbvi_obj (obj): Instance of the BBVIIterator
+        variational_params_list (list): List of parameters from first to last iteration
+        model_eval_iteration_period (int): If the iteration number is a multiple of this number
+                                           the probabilistic model is sampled independent of the
+                                           other conditions
+        stochastic_optimizer (obj): QUEENS stochastic optimizer object
     """
 
     def __init__(
@@ -112,63 +104,78 @@ class BBVIIterator(Iterator):
         result_description,
         db,
         experiment_name,
-        min_requ_relative_change_variational_params,
         variational_family,
         variational_params_initialization_approach,
-        learning_rate,
         n_samples_per_iter,
         variational_transformation,
         random_seed,
         max_feval,
         num_variables,
         memory,
-        clipping_bool,
-        gradient_clipping_norm_threshold,
         natural_gradient_bool,
         fim_dampening_bool,
         fim_decay_start_iter,
         fim_dampening_coefficient,
         fim_dampening_lower_bound,
-        num_iter_average_convergence,
         export_quantities_over_iter,
         control_variates_scaling_type,
         loo_cv_bool,
-        optimization_iteration,
-        v_param_adams,
-        m_param_adams,
-        n_sims,
         variational_distribution_obj,
-        variational_params,
-        f_mat,
-        h_mat,
-        elbo_list,
-        grad_elbo,
-        log_variational_mat,
-        grad_params_log_variational_mat,
-        log_posterior_unnormalized,
-        prior_obj_list,
-        samples_list,
-        parameter_list,
-        log_posterior_unnormalized_list,
-        ess_list,
-        noise_list,
-        variational_params_array,
+        stochastic_optimizer,
+        model_eval_iteration_period,
+        resample,
     ):
+        """Initialize BBVI iterator.
+
+        Args:
+            global_settings (dict): Global settings of the QUEENS simulations
+            model (obj): Underlying simulation model on which the inverse analysis is conducted
+            result_description (dict): Settings for storing and visualizing the results
+            db (obj): QUEENS database object
+            experiment_name (str): Name of the QUEENS simulation
+            variational_family (str): Density type for variatonal approximation
+            variational_params_initialization_approach (str): Flag to decide how to initialize the
+                                                              variational paramaters
+            n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
+                                                to estimate the involved expectations)
+            variational_transformation (str): String encoding the transformation that will be
+                                              applied to
+                                              the variational density
+            random_seed (int): Seed for the random number generators
+            max_feval (int): Maximum number of simulation runs for this analysis
+            num_variables (int): Actual number of model input variables that should be calibrated
+            memory (int): Number of previous iterations that should be included in the MC ELBO
+                          gradient estimations. For memory=0 the algorithm reduces to standard the
+                          standard BBVI algorithm. (Better variable name is welcome)
+            natural_gradient_bool (boolean): True if natural gradient should be used
+            fim_dampening_bool (boolean): True if FIM dampening should be used
+            fim_decay_start_iter (float): Iteration at which the FIM dampening is started
+            fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
+            fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
+            export_quantities_over_iter (boolean): True if data (variational_params, elbo, ESS)
+                                                   should be exported in the pickle file
+            control_variates_scaling_type (str): Flag to decide how to compute control variate
+                                                scaling
+            loo_cv_bool (boolean): True if leave-one-out procedure is used for the control variate
+                                   scaling estimations. Is quite slow!
+            variational_distribution_obj (VariationalDistribution): Variational distribution object
+            variational_params_list (list): List of parameters from first to last iteration
+            model_eval_iteration_period (int): If the iteration number is a multiple of this number
+                                               the probabilistic model is sampled independent of the
+                                               other conditions
+            resample (bool): True is resampling should be used
+            stochastic_optimizer (obj): QUEENS stochastic optimizer object
+        Returns:
+            bbvi_obj (obj): Instance of the BBVIIterator
+        """
         super().__init__(model, global_settings)
 
         self.result_description = result_description
         self.db = db
         self.experiment_name = experiment_name
-        self.relative_change_variational_params = []
-        self.min_requ_relative_change_variational_params = (
-            min_requ_relative_change_variational_params
-        )
         self.variational_params_initialization_approach = variational_params_initialization_approach
-        self.learning_rate = learning_rate
         self.n_samples_per_iter = n_samples_per_iter
         self.variational_transformation = variational_transformation
-        self.clipping_bool = clipping_bool
-        self.gradient_clipping_norm_threshold = gradient_clipping_norm_threshold
         self.natural_gradient_bool = natural_gradient_bool
         self.fim_decay_start_iter = fim_decay_start_iter
         self.fim_dampening_coefficient = fim_dampening_coefficient
@@ -179,35 +186,34 @@ class BBVIIterator(Iterator):
         self.loo_cv_bool = loo_cv_bool
         self.random_seed = random_seed
         self.max_feval = max_feval
-        self.num_iter_average_convergence = num_iter_average_convergence
         self.num_variables = num_variables
         self.memory = memory
-        self.optimization_iteration = optimization_iteration
-        self.v_param_adams = v_param_adams
-        self.m_param_adams = m_param_adams
-        self.n_sims = n_sims
-        self.variational_distribution_obj = variational_distribution_obj
-        self.variational_params = variational_params
-        self.f_mat = f_mat
-        self.h_mat = h_mat
-        self.elbo_list = elbo_list
-        self.grad_elbo = grad_elbo
-        self.log_variational_mat = log_variational_mat
-        self.grad_params_log_variational_mat = grad_params_log_variational_mat
-        self.log_posterior_unnormalized = log_posterior_unnormalized
-        self.prior_obj_list = prior_obj_list
-        self.samples_list = samples_list
-        self.parameter_list = parameter_list
-        self.log_posterior_unnormalized_list = log_posterior_unnormalized_list
-        self.ess_list = ess_list
-        self.noise_list = noise_list
         self.variational_family = variational_family
-        self.variational_params_array = variational_params_array
+        self.stochastic_optimizer = stochastic_optimizer
+        self.model_eval_iteration_period = model_eval_iteration_period
+        self.variational_distribution_obj = variational_distribution_obj
+        self.resample = resample
+        self.n_sims = 0
+        self.variational_params = None
+        self.f_mat = None
+        self.h_mat = None
+        self.log_variational_mat = None
+        self.grad_params_log_variational_mat = None
+        self.variational_params_list = []
+        self.log_posterior_unnormalized = None
+        self.prior_obj_list = []
+        self.samples_list = []
+        self.parameter_list = []
+        self.log_posterior_unnormalized_list = []
+        self.ess_list = []
+        self.noise_list = []
+        self.elbo_list = []
+        self.weights_list = []
+        self.n_sims_list = []
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name=None, model=None):
-        """Create black box variational inference iterator from problem
-        description.
+        """Create iterator from problem description.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -217,7 +223,6 @@ class BBVIIterator(Iterator):
         Returns:
             iterator (obj): BBVI object
         """
-
         if iterator_name is None:
             method_options = config['method']['method_options']
         else:
@@ -231,14 +236,11 @@ class BBVIIterator(Iterator):
 
         db = DB_module.database
         experiment_name = config['global_settings']['experiment_name']
-        relative_change_variational_params = method_options.get(
-            'min_relative_change_variational_params', 0.01
-        )
-        num_variables = len(model.variables[0].variables)
 
         # set-up of the variational distribution
         variational_distribution_description = method_options.get("variational_distribution")
         # TODO this may have to be changed in the future
+        num_variables = len(model.variables[0].variables)
         variational_distribution_description.update({"dimension": num_variables})
         variational_distribution_obj = variational_inference_utils.create_variational_distribution(
             variational_distribution_description
@@ -251,18 +253,12 @@ class BBVIIterator(Iterator):
         variational_params_initialization_approach = method_options.get(
             "variational_parameter_initialization", None
         )
-        num_iter_average_convergence = method_options.get("num_iter_average_convergence", "5")
-        memory = method_options.get("memory")
+        memory = method_options.get("memory", 0)
 
         vis.from_config_create(config)
 
         optimization_options = method_options.get("optimization_options")
-        clipping_bool = optimization_options.get("gradient_clipping")
-        gradient_clipping_norm_threshold = optimization_options.get(
-            "gradient_clipping_norm_threshold", 1e6
-        )
         natural_gradient_bool = optimization_options.get("natural_gradient", True)
-        learning_rate = optimization_options.get("learning_rate")
         fim_dampening_bool = optimization_options.get("FIM_dampening", True)
         fim_decay_start_iter = optimization_options.get("decay_start_iteration", 50)
         fim_dampening_coefficient = optimization_options.get("dampening_coefficient", 1e-2)
@@ -274,46 +270,27 @@ class BBVIIterator(Iterator):
         export_quantities_over_iter = result_description.get("export_iteration_data")
         control_variates_scaling_type = method_options.get("control_variates_scaling_type")
         loo_cv_bool = method_options.get("loo_control_variates_scaling")
-        optimization_iteration = 0
-        v_param_adams = 0
-        m_param_adams = 0
-        n_sims = 0
-        variational_params = None
-        f_mat = None
-        h_mat = None
-        grad_elbo = None
-        log_variational_mat = None
-        grad_params_log_variational_mat = None
-        log_posterior_unnormalized = None
-        variational_params_array = None
-        elbo_list = []
-        prior_obj_list = []
-        samples_list = []
-        parameter_list = []
-        log_posterior_unnormalized_list = []
-        ess_list = []
-        noise_list = []
+        if memory:
+            model_eval_iteration_period = method_options.get("model_eval_iteration_period", 1000)
+        else:
+            model_eval_iteration_period = 1
 
-        # initialize objective function
+        stochastic_optimizer = from_config_create_optimizer(method_options, "optimization_options")
+        resample = method_options.get("resample", False)
         return cls(
             global_settings=global_settings,
             model=model,
             result_description=result_description,
             db=db,
             experiment_name=experiment_name,
-            min_requ_relative_change_variational_params=relative_change_variational_params,
             variational_family=variational_family,
             variational_params_initialization_approach=variational_params_initialization_approach,
-            learning_rate=learning_rate,
             n_samples_per_iter=n_samples_per_iter,
             variational_transformation=variational_transformation,
             random_seed=random_seed,
             max_feval=max_feval,
-            num_iter_average_convergence=num_iter_average_convergence,
             num_variables=num_variables,
             memory=memory,
-            clipping_bool=clipping_bool,
-            gradient_clipping_norm_threshold=gradient_clipping_norm_threshold,
             natural_gradient_bool=natural_gradient_bool,
             fim_dampening_bool=fim_dampening_bool,
             fim_decay_start_iter=fim_decay_start_iter,
@@ -322,26 +299,10 @@ class BBVIIterator(Iterator):
             export_quantities_over_iter=export_quantities_over_iter,
             control_variates_scaling_type=control_variates_scaling_type,
             loo_cv_bool=loo_cv_bool,
-            optimization_iteration=optimization_iteration,
-            v_param_adams=v_param_adams,
-            m_param_adams=m_param_adams,
-            n_sims=n_sims,
             variational_distribution_obj=variational_distribution_obj,
-            variational_params=variational_params,
-            f_mat=f_mat,
-            h_mat=h_mat,
-            elbo_list=elbo_list,
-            grad_elbo=grad_elbo,
-            log_variational_mat=log_variational_mat,
-            grad_params_log_variational_mat=grad_params_log_variational_mat,
-            log_posterior_unnormalized=log_posterior_unnormalized,
-            prior_obj_list=prior_obj_list,
-            samples_list=samples_list,
-            parameter_list=parameter_list,
-            log_posterior_unnormalized_list=log_posterior_unnormalized_list,
-            ess_list=ess_list,
-            noise_list=noise_list,
-            variational_params_array=variational_params_array,
+            stochastic_optimizer=stochastic_optimizer,
+            model_eval_iteration_period=model_eval_iteration_period,
+            resample=resample,
         )
 
     def core_run(self):
@@ -350,20 +311,26 @@ class BBVIIterator(Iterator):
         start = time.time()
         # --------------------------------------------------------------------
         # -------- here comes the bbvi algorithm -----------------------------
-        while self._check_convergence():
+        for _ in self.stochastic_optimizer:
             self._catch_non_converging_simulations()
-            self._calculate_elbo_gradient()
-            self._update_variational_params()
+            # Just to avoid constant spamming
+            if self.stochastic_optimizer.iteration % 10 == 0:
+                self._verbose_output()
+                self._write_results()
+
+            # Stop the optimizer in case of too many simulations
+            if self.n_sims > self.max_feval:
+                break
+
+            self.variational_params_list.append(self.variational_params.copy())
             self._clearing_and_plots()
-            self._verbose_output()
-            self.optimization_iteration += 1
         # --------- end of bbvi algorithm ------------------------------------
         # --------------------------------------------------------------------
         end = time.time()
 
         if self.n_sims > self.max_feval:
             _logger.warning(f"Maximum probabilistic model calls reached")
-        elif np.any(np.isnan(self.relative_change_variational_params[-1])):
+        elif np.any(np.isnan(self.stochastic_optimizer.rel_L2_change)):
             _logger.warning(f"NaN(s) in the relative change of variational parameters")
         else:
             _logger.info(f"Finished sucessfully! :-)")
@@ -374,67 +341,26 @@ class BBVIIterator(Iterator):
         _logger.info(f"---------------------------------------------------------")
         _logger.info(f"Post run: Finishing, saving and cleaning...")
 
-    def _check_convergence(self):
-        """Check the convergence criterion for the BBVI iterator.
-
-        Returns:
-            convergence_bool (bool): True if not yet converged. False if converged
-        """
-        if self.optimization_iteration > self.num_iter_average_convergence:
-            convergence_bool = (
-                (
-                    np.any(
-                        np.abs(
-                            np.mean(
-                                (
-                                    self.relative_change_variational_params[
-                                        -self.num_iter_average_convergence :
-                                    ]
-                                ),
-                                axis=0,
-                            )
-                        )
-                        > self.min_requ_relative_change_variational_params
-                    )
-                )
-                and not np.any(np.isnan(self.relative_change_variational_params[-1]))
-                and self.n_sims < self.max_feval
-            )
-        else:
-            convergence_bool = True
-        return convergence_bool
-
     def _catch_non_converging_simulations(self):
-        """Reset variational parameters in case of non-converging simulation
-        runs.
-
-        Returns:
-            None
-        """
-        if len(self.relative_change_variational_params) > 0:
-            if np.any(np.isnan(self.relative_change_variational_params[-1])):
-                self.variational_params = self.variational_params_array[:, -2]
-                self.variational_distribution_obj.update_distribution_params(
-                    self.variational_params
-                )
+        """Reset variational parameters in case of failed simulations."""
+        if np.isnan(self.stochastic_optimizer.rel_L2_change):
+            self.variational_params = self.variational_params_list[:, -2]
+            self.variational_distribution_obj.update_distribution_params(self.variational_params)
 
     def initialize_run(self):
-        """Initialize the prior model and variational parameters.
-
-        Returns:
-            None
-        """
+        """Initialize the prior model and variational parameters."""
         _logger.info("Initialize Optimization run.")
         self._initialize_prior_model()
         self._initialize_variational_params()
 
-    def post_run(self):
-        """Write results and potentially visualize them using the visualization
-        module.
+        # set the gradient according to input
+        self.stochastic_optimizer.set_gradient_function(self._get_gradient_function())
+        self.stochastic_optimizer.current_variational_parameters = self.variational_params.reshape(
+            -1, 1
+        )
 
-        Returns:
-            None
-        """
+    def post_run(self):
+        """Write results and potentially visualize them."""
         if self.result_description["write_results"]:
             result_dict = self._prepare_result_description()
             write_results(
@@ -454,12 +380,7 @@ class BBVIIterator(Iterator):
         return result_dict
 
     def _initialize_prior_model(self):
-        """Initialize the prior model of the inverse problem form the problem
-        description.
-
-        Returns:
-            None
-        """
+        """Initialize the prior model."""
         # Read design of prior
         input_dict = self.model.get_parameter()
         # get random variables
@@ -477,10 +398,10 @@ class BBVIIterator(Iterator):
             self.prior_obj_list.append(mcmc_utils.create_proposal_distribution(rv_options))
 
     def eval_log_likelihood(self, sample_batch):
-        """Calculate the log-likelihood of the observation data. Evaluation of
-        the likelihood model for all inputs of the sample batch will trigger
-        the actual forward simulation (can be executed in parallel as batch-
-        sequential procedure)
+        """Calculate the log-likelihood of the observation data.
+
+        Evaluation of the likelihood model for all inputs of the sample batch will trigger
+        the actual forward simulation.
 
         Args:
             sample_batch (np.array): Sample-batch with samples row-wise
@@ -498,8 +419,9 @@ class BBVIIterator(Iterator):
         return log_likelihood.flatten()
 
     def get_log_prior(self, sample_batch):
-        """Construct and evaluate the log prior of the model for current sample
-        batch. The samples are transformed according to the selected
+        """Evaluate the log prior of the model for a sample batch.
+
+        The samples are transformed according to the selected
         transformation.
 
         Args:
@@ -515,8 +437,7 @@ class BBVIIterator(Iterator):
         return log_prior_vec.flatten()
 
     def get_log_posterior_unnormalized(self, sample_batch):
-        """Calculate the unnormalized log posterior joint for all samples in
-        batch.
+        """Calculate the unnormalized log posterior for a sample batch.
 
         Args:
             sample_batch (np.array): Sample batch for which the model should be evaluated
@@ -533,148 +454,55 @@ class BBVIIterator(Iterator):
         return log_posterior_unnormalized.flatten()
 
     def _verbose_output(self):
-        """Give some informative outputs during the BBVI iterations.
-
-        Returns:
-            None
-        """
-        if self.optimization_iteration % 10 == 0:
-            mean_change = np.mean(np.abs(self.relative_change_variational_params[-1]), axis=0) * 100
-            _logger.info("-" * 80)
-            _logger.info(f"Iteration {self.optimization_iteration + 1} of BBVI algorithm")
-            _logger.info(f"So far {self.n_sims} simulation runs")
-            _logger.info(f"The elbo is: {self.elbo_list[-1]:.2f}")
-            if self.memory > 0 and self.optimization_iteration > 0:
-                _logger.info(
-                    f"ESS: {self.ess_list[-1]:.2f} of {(self.memory + 1) * self.n_samples_per_iter}"
-                )
-            if self.optimization_iteration > 1:
-                rel_noise = (
-                    np.mean(np.abs(self.noise_list[-2] - self.noise_list[-1]) / self.noise_list[-2])
-                    * 100
-                )
-                _logger.info(
-                    f"Likelihood noise variance: {self.noise_list[-1]} (mean relative change "
-                    f"{rel_noise:.2f}) %"
-                )
+        """Give some informative outputs during the BBVI iterations."""
+        mean_change = self.stochastic_optimizer.rel_L2_change * 100
+        _logger.info("-" * 80)
+        _logger.info(f"Iteration {self.stochastic_optimizer.iteration + 1} of BBVI algorithm")
+        _logger.info(f"So far {self.n_sims} simulation runs")
+        _logger.info(f"The elbo is: {self.elbo_list[-1]:.2f}")
+        if self.memory > 0 and self.stochastic_optimizer.iteration > 0:
             _logger.info(
-                f"Mean absolute percentage change of all variational parameters: "
-                f""
-                f"{mean_change:.2f} %"
+                f"ESS: {self.ess_list[-1]:.2f} of {(self.memory + 1) * self.n_samples_per_iter}"
+            )
+        if self.stochastic_optimizer.iteration > 1:
+            rel_noise = (
+                np.mean(np.abs(self.noise_list[-2] - self.noise_list[-1]) / self.noise_list[-2])
+                * 100
+            )
+            _logger.info(
+                f"Likelihood noise variance: {self.noise_list[-1]} (mean relative change "
+                f"{rel_noise:.2f}) %"
+            )
+        _logger.info(f"L2 change of all variational parameters: " f"" f"{mean_change:.4f} %")
+
+        # Avoids a busy screen
+        if self.variational_params.shape[0] > 24:
+            _logger.info(
+                f"First 24 of {self.variational_params.shape[0]} variational parameters : \n"
+            )
+            _logger.info(self.variational_params[:24])
+        else:
+            _logger.info(f"Values of variational parameters: \n")
+            _logger.info(self.variational_params)
+        _logger.info("-" * 80)
+
+    def _write_results(self):
+        if self.result_description["write_results"]:
+            result_dict = self._prepare_result_description()
+            write_results(
+                result_dict,
+                self.global_settings["output_dir"],
+                self.global_settings["experiment_name"],
             )
 
-            # Avoids a busy screen
-            if self.variational_params.shape[0] > 24:
-                _logger.info(
-                    f"First 24 of {self.variational_params.shape[0]} variational parameters : \n"
-                )
-                _logger.info(self.variational_params[:24])
-            else:
-                _logger.info(f"Values of variational parameters: \n")
-                _logger.info(self.variational_params)
-            _logger.info("-" * 80)
-        if self.optimization_iteration % 10 == 0:
-            if self.result_description["write_results"]:
-                result_dict = self._prepare_result_description()
-                write_results(
-                    result_dict,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
-                )
-
-    def stochastic_ascent_adam(self, gradient_estimate_x, x_vec, b1=0.9, b2=0.999, eps=10**-8):
-        """Stochastic gradient ascent algorithm ADAM. Adam as described in
-        http://arxiv.org/pdf/1412.6980.pdf. It's basically RMSprop with
-        momentum and some correction terms.
-
-        Args:
-            gradient_estimate_x (np.array): (Noisy) Monte-Carlo estimate of a gradient
-            x_vec (np.array): Current position in the latent design space
-            b1 (float): The exponential decay rate for the first moment estimates
-            b2 (float): The exponential decay rate for the second-moment estimates
-            eps (float): Is a very small number to prevent any division by zero in the
-                         implementation
-
-        Returns:
-            x_vec_new (list): Updated vector/point in the latent design space
-        """
-        x_vec = x_vec.reshape(-1, 1)
-        g = gradient_estimate_x
-        self.m_param_adams = (1 - b1) * g + b1 * self.m_param_adams  # First  moment estimate.
-        self.v_param_adams = (1 - b2) * (
-            g**2
-        ) + b2 * self.v_param_adams  # Second moment estimate.
-        mhat = self.m_param_adams / (
-            1 - b1 ** (self.optimization_iteration + 1)
-        )  # Bias correction.
-        vhat = self.v_param_adams / (1 - b2 ** (self.optimization_iteration + 1))
-        x_vec_new = x_vec + self.learning_rate * mhat / (np.sqrt(vhat) + eps)  # update
-        return x_vec_new.flatten()
-
-    def _update_variational_params(self):
-        """Update the variational parameters of the variational distribution
-        based on learning rate and the ELBO gradient estimate. If enabled, the
-        natural gradient is created and clipped.
-
-        Returns:
-            None
-        """
-        self.variational_params_array = np.hstack(
-            (self.variational_params_array, self.variational_params.reshape(-1, 1))
-        )
-        old_variational_params = np.array(self.variational_params)
-
-        gradient = self.grad_elbo
-        if self.natural_gradient_bool:
-            FIM = self._get_fim()
-            gradient = np.linalg.solve(FIM, self.grad_elbo)
-
-        if self.clipping_bool:
-            # Clipping, in order to avoid exploding gradients
-            # TODO move this output to the input?
-            gradient_norm = (np.sum(gradient**2)) ** 0.5
-            if gradient_norm > self.gradient_clipping_norm_threshold:
-                _logger.info("Clipping gradient")
-                gradient = gradient / gradient_norm * self.gradient_clipping_norm_threshold
-
-        # Use Adam for stochastic optimization
-        self.variational_params = self.stochastic_ascent_adam(gradient, self.variational_params)
-        self._get_percentage_change_params(old_variational_params)
-
-    def _get_percentage_change_params(self, old_variational_params):
-        """Calculate L2 norm of the percentage change of the variational
-        parameters.
-
-        Args:
-            old_variational_params (np.array): Array of variational parameters
-
-        Returns:
-            None
-        """
-        rel_distance_vec = np.divide(
-            (self.variational_params.flatten() - old_variational_params.flatten()),
-            old_variational_params.flatten(),
-        )
-        if len(self.relative_change_variational_params) > 0:
-            self.relative_change_variational_params.append(rel_distance_vec)
-        else:
-            self.relative_change_variational_params = [rel_distance_vec]
-
-        if np.any(np.isnan(self.relative_change_variational_params[-1])):
-            # dummy value to redo the iteration
-            self.relative_change_variational_params.append(np.ones(len(self.variational_params)))
-
     def _initialize_variational_params(self):
-        """
-        Initialize the variational parameters. There are two possibilities:
+        """Initialize the variational parameters.
+
+        There are two possibilities:
             1. Random initialization:
                 Is handeled by the variational distribution object
             2. Initialization based on the prior modeling (only for normal distributions!)
                 Extract the prior moments and initialize the parameters based on them
-
-        Returns:
-            None
-
         """
         if self.variational_params_initialization_approach == "random":
             self.variational_params = (
@@ -699,20 +527,16 @@ class BBVIIterator(Iterator):
                 f"Valid options are {valid_initialization_types}"
             )
 
-        self.variational_params_array = np.empty((len(self.variational_params), 0))
-
     def _initialize_variational_params_from_prior(self, random_variables):
-        """Initializes the variational parameters based on the prior
-        definition. The variational distribution might be transformed in a
+        """Initialize the variational parameters based on the prior.
+
+        The variational distribution might be transformed in a
         second step such that the actual variational distribution is of a
         different family. Only is used for normal distributions.
 
         Args:
             random_variables (dict): Dictionary containing the prior probabilistic description of
             the input variables
-
-        Returns:
-            None
         """
         # Get the first and second moments of the prior distributions
         mean_list_prior = []
@@ -759,8 +583,10 @@ class BBVIIterator(Iterator):
         return np.array(mean_list_variational), np.diag(std_list_variational) ** 2
 
     def _transform_samples(self, x_mat):
-        """Transform samples of the variational distribution according to the
-        specified transformation mapping.
+        """Transform samples.
+
+        Transform samples of the variational distribution according to the specified
+        transformation mapping.
 
         Args:
             x_mat (np.array): Samples of the variational distribution
@@ -788,12 +614,9 @@ class BBVIIterator(Iterator):
         """
         result_description = {
             "final_elbo": self.elbo_list[-1],
-            "iterations": self.optimization_iteration,
             "batch_size": self.n_samples_per_iter,
             "number_of_sim": self.n_sims,
-            "learning_rate": self.learning_rate,
             "natural_gradient": self.natural_gradient_bool,
-            "gradient_clipping": self.clipping_bool,
             "fim_dampening": self.fim_dampening_bool,
             "control_variates_scaling_type": self.control_variates_scaling_type,
             "loo_control_variates": self.loo_cv_bool,
@@ -803,7 +626,7 @@ class BBVIIterator(Iterator):
         if self.export_quantities_over_iter:
             result_description.update(
                 {
-                    "params_over_iter": self.variational_params_array,
+                    "params_over_iter": self.variational_params_list,
                     "likelihood_noise_var": self.noise_list,
                     "elbo": self.elbo_list,
                 }
@@ -826,7 +649,9 @@ class BBVIIterator(Iterator):
         return result_description
 
     def _averaged_control_variates_scalings(self, f_mat, h_mat):
-        """This function computes the control variate scaling averaged over the
+        """Averaged control variate scalings.
+
+        This function computes the control variate scaling averaged over the
         components of the control variate.
 
         Args:
@@ -847,8 +672,9 @@ class BBVIIterator(Iterator):
         return cv_scaling
 
     def _componentwise_control_variates_scalings(self, f_mat, h_mat):
-        """This function computes the control variates scaling for every
-        component of the control variate separately.
+        """Computes the componentwise control variates scaling.
+
+        I.e., every component of the control variate separately is computed seperately.
 
         Args:
             f_mat (np.array): Column-wise MC gradient samples
@@ -864,7 +690,9 @@ class BBVIIterator(Iterator):
         return cv_scaling
 
     def _loo_control_variates_scalings(self, cv_obj, f_mat, h_mat):
-        """To reduce bias in the MC and control variate saling estimation
+        """Leave one out control variates.
+
+        To reduce bias in the MC and control variate saling estimation
         Ranganath proposed a leave-one-out procedure to estimate the control
         variate scalings. Each sample has its own scaling that is computed
         using f_mat and h_mat without the values related to itself. (see
@@ -906,38 +734,56 @@ class BBVIIterator(Iterator):
             cv_scaling = cv_scaling_obj(self.f_mat, self.h_mat)
         return cv_scaling
 
-    def _calculate_elbo_gradient(self):
-        """Estimate the ELBO gradient expression using MC with importance
-        sampling with the samples of previous iterations if desired. The score
-        function is used as a control variate. No Rao-Blackwellization scheme
-        is used.
+    def _get_gradient_function(self):
+        """Select the gradient function for the stochastic optimizer.
+
+        Two options exist, with or without natural gradient.
 
         Returns:
-            None
+            obj: function to evaluate the gradient
         """
-        # Increase model call counter
-        self.n_sims += self.n_samples_per_iter
+        if self.natural_gradient_bool:
+            gradient = lambda variational_parameters: np.linalg.solve(
+                self._get_fim(), self._calculate_elbo_gradient(variational_parameters)
+            )
+        else:
+            gradient = lambda variational_parameters: self._calculate_elbo_gradient(
+                variational_parameters
+            )
+        return gradient
 
-        # Draw samples for the current iteration
-        samples = self.variational_distribution_obj.draw(
-            self.variational_params, self.n_samples_per_iter
-        )
+    def _calculate_elbo_gradient(self, variational_parameters):
+        """Estimate the ELBO gradient expression.
 
-        # Calls the (unnormalized) probabilistic model
-        self.log_posterior_unnormalized = self.get_log_posterior_unnormalized(samples)
+        Based on MC with importance sampling with the samples of previous iterations if desired.
+        The score function is used as a control variate. No Rao-Blackwellization scheme
+        is used.
 
-        # Compute the logpdf for the elbo estimate (here no IS is used)
-        self._calculate_elbo(samples, self.log_posterior_unnormalized)
+        Args:
+            variational_parameters (np.array): Variational parameters
+
+        Returns:
+            elbo gradient as column vector (np.array)
+        """
+        self.variational_params = variational_parameters.flatten()
+
+        # Check if evaluating the probabilistic model is necessary
+        self._check_if_sampling_necessary()
+        if self.sampling_bool:
+            self._sample_gradient_from_probabilistic_model()
 
         # Use IS sampling (if enabled)
-        (
-            selfnormalized_weights_is,
-            normalizing_constant_is,
-            samples,
-        ) = self._prepare_importance_sampling(samples)
+        selfnormalized_weights_is, normalizing_constant_is = self._prepare_importance_sampling()
+        if self.stochastic_optimizer.iteration > self.memory and self.memory > 0 and self.resample:
+            # Number of samples to resample currently set to the max achievable ESS
+            n_samples = int(self.n_samples_per_iter * self.memory)
+            # Resample
+            self._resample(selfnormalized_weights_is, n_samples)
+            # After resampling the weights
+            selfnormalized_weights_is, normalizing_constant_is = 1 / n_samples, n_samples
 
         #  Evaluate the logpdf and grad params logpdf function of the variational distribution
-        self.evaluate_variational_distribution_for_batch(samples)
+        self._evaluate_variational_distribution_for_batch()
         self._filter_failed_simulations()
 
         # Compute the MC samples, without control variates but with IS weights
@@ -958,27 +804,95 @@ class BBVIIterator(Iterator):
             self.f_mat - a * self.h_mat, axis=1
         ).reshape(-1, 1)
 
-        # Avoid NaN in the elbo gradient
-        self.grad_elbo = np.nan_to_num(self.grad_elbo)
+        # Compute the logpdf for the elbo estimate (here no IS is used)
+        self._calculate_elbo(selfnormalized_weights_is, normalizing_constant_is)
 
-    def _calculate_elbo(self, samples, log_posterior_unnormalized):
+        self.n_sims_list.append(self.n_sims)
+
+        # Avoid NaN in the elbo gradient
+        return np.nan_to_num(self.grad_elbo)
+
+    def _sample_gradient_from_probabilistic_model(self):
+        """Evaluate probabilistic model."""
+        # Increase model call counter
+        n_samples = self.n_samples_per_iter
+        self.n_sims += n_samples
+        # Draw samples for the current iteration
+        self.samples = self.variational_distribution_obj.draw(self.variational_params, n_samples)
+
+        # Calls the (unnormalized) probabilistic model
+        self.log_posterior_unnormalized = self.get_log_posterior_unnormalized(self.samples)
+
+    def _evaluate_variational_distribution_for_batch(self):
+        """Evaluate logpdf and score function."""
+        self.log_variational_mat = self.variational_distribution_obj.logpdf(
+            self.variational_params, self.samples
+        )
+
+        self.grad_params_log_variational_mat = self.variational_distribution_obj.grad_params_logpdf(
+            self.variational_params, self.samples
+        )
+
+        # Convert if NaNs to floats. For high dimensional RV floating point issues
+        # might be avoided this way
+        self.log_variational_mat = np.nan_to_num(self.log_variational_mat)
+        self.grad_params_log_variational_mat = np.nan_to_num(self.grad_params_log_variational_mat)
+
+    def _resample(self, selfnormalized_weights, n_samples):
+        """Stratified resampling.
+
+        Args:
+            selfnormalized_weights (np.array): weights of the samples
+            n_samples (int): number of samples
+        """
+        random_sample_within_bins = (np.random.rand(n_samples) + np.arange(n_samples)) / n_samples
+
+        idx = []
+        cumulative_probability = np.cumsum(selfnormalized_weights)
+        i, j = 0, 0
+        while i < n_samples:
+            if random_sample_within_bins[i] < cumulative_probability[j]:
+                idx.append(j)
+                i += 1
+            else:
+                j += 1
+
+        self.log_posterior_unnormalized = self.log_posterior_unnormalized[idx]
+        self.samples = np.array([self.samples[j] for j in idx])
+
+    def _check_if_sampling_necessary(self):
+        """Check if resampling is necessary.
+
+        Resampling is necessary if on of the following condition is True:
+            1. No memory is used
+            2. Not enought samples in memory
+            3. ESS number is too low
+            4. Every model_eval_iteration_period
+        """
+        max_ess = self.n_samples_per_iter * (self.memory)
+        self.sampling_bool = (
+            self.memory == 0
+            or self.stochastic_optimizer.iteration <= self.memory
+            or self.ess_list[-1] < 0.5 * max_ess
+            or self.stochastic_optimizer.iteration % self.model_eval_iteration_period == 0
+        )
+
+    def _calculate_elbo(self, selfnormalized_weights, normalizing_constant):
         """Calculate the ELBO.
 
         Args:
-            samples (np.array): Row-wise samples of the variational distribution
-            log_posterior_unnormalized (np.array): log probabilistic model evaluations
-
-        Returns:
-            None
+            selfnormalized_weights (np.array): selfnormalized importance sampling weights
+            normalizing_constant (int): Importance sampling normalizing constant
         """
-        logpdf = self.variational_distribution_obj.logpdf(self.variational_params, samples)
-        instant_elbo = log_posterior_unnormalized - logpdf
-        self.elbo_list.append(np.mean(instant_elbo))
+        instant_elbo = selfnormalized_weights * (
+            self.log_posterior_unnormalized - self.log_variational_mat
+        )
+        self.elbo_list.append(normalizing_constant * np.mean(instant_elbo))
 
-    def _prepare_importance_sampling(self, samples):
-        """
-        This helper functions prepares everything needed for an importance sampling based gradient
-        computation (if enabled). This includes:
+    def _prepare_importance_sampling(self):
+        r"""Helper functions for the importance sampling.
+
+        Importance sampling based gradient computation (if enabled). This includes:
             1. Store samples, variational parameters and probabilistic model evaluations
             2. Update variables samples and log_posterior_unnormalized
             3. Compute autonormalized weights and the normalizing constant
@@ -986,56 +900,63 @@ class BBVIIterator(Iterator):
         The normalizing constant is a constant in order to recover the proper weights values. The
         gradient estimation is multiplied with this constant in order to avoid a bias. This can
         be done since for any constant :math:`a`:
-        # :math:`\\int_x h(x) p(x) dx = a \\int_x h(x) \\frac{1}{a}p(x) dx`
-
-        Args:
-            samples (np.array): Row-wise samples
+        :math:`\int_x h(x) p(x) dx = a \int_x h(x) \frac{1}{a}p(x) dx`
 
         Returns:
             selfnormalized_weights (np.array): Row-vector with selfnormalized weights
             normalizing_constant (int): Normalizing constant
             samples (np.array): Eventually extended row-wise samples
-
         """
         # Values if no IS is used or for the first iteration
         selfnormalized_weights = 1
         normalizing_constant = 1
+
+        # If importance sampling is used
         if self.memory > 0:
-            # Store the current samples, parameters and probabilistic model evals
-            self.parameter_list.append(self.variational_params)
-            self.samples_list.append(samples)
-            self.log_posterior_unnormalized_list.append(self.log_posterior_unnormalized)
+            self._update_sample_and_posterior_lists()
 
             # The number of iterations that we want to keep the samples and model evals
-            if self.optimization_iteration >= self.memory:
-                self.parameter_list = self.parameter_list[-(self.memory + 1) :]
-                self.samples_list = self.samples_list[-(self.memory + 1) :]
-                self.log_posterior_unnormalized_list = self.log_posterior_unnormalized_list[
-                    -(self.memory + 1) :
-                ]
-                samples = np.concatenate(self.samples_list, axis=0)
-                self.log_posterior_unnormalized = np.concatenate(
-                    self.log_posterior_unnormalized_list, axis=0
-                )
-
-            if self.optimization_iteration > 0:
-                # Get the importance sampling weights
-                weights_is = self.get_importance_sampling_weights(self.parameter_list, samples)
-                normalizing_constant = np.sum(weights_is)
+            if self.stochastic_optimizer.iteration > 0:
+                weights_is = self.get_importance_sampling_weights(self.parameter_list, self.samples)
 
                 # Self normalize weighs
+                normalizing_constant = np.sum(weights_is)
                 selfnormalized_weights = weights_is / normalizing_constant
                 self.ess_list.append(1 / np.sum(selfnormalized_weights**2))
+                self.weights_list.append(weights_is)
 
-        return selfnormalized_weights, normalizing_constant, samples
+        return selfnormalized_weights, normalizing_constant
+
+    def _update_sample_and_posterior_lists(self):
+        """Assemble the samples for IS MC gradient estimation."""
+        # Check if probabilistic model was sampled
+        if self.sampling_bool:
+            # Store the current samples, parameters and probabilistic model evals
+            self.parameter_list.append(self.variational_params)
+            self.samples_list.append(self.samples)
+            self.log_posterior_unnormalized_list.append(self.log_posterior_unnormalized)
+
+        # The number of iterations that we want to keep the samples and model evals
+        if self.stochastic_optimizer.iteration >= self.memory:
+            self.parameter_list = self.parameter_list[-(self.memory + 1) :]
+            self.samples_list = self.samples_list[-(self.memory + 1) :]
+            self.log_posterior_unnormalized_list = self.log_posterior_unnormalized_list[
+                -(self.memory + 1) :
+            ]
+
+            self.samples = np.concatenate(self.samples_list, axis=0)
+            self.log_posterior_unnormalized = np.concatenate(
+                self.log_posterior_unnormalized_list, axis=0
+            )
 
     def get_importance_sampling_weights(self, variational_params_list, samples):
-        """Get the importance sampling weights for the MC gradient estimation.
+        r"""Get the importance sampling weights for the MC gradient estimation.
+
         Uses a special computation of the weights using the logpdfs to reduce
         numerical issues:
 
-        :math: `w=\\frac{q_i}{\\sum_{j=0}^{memory+1} \\frac{1}{memory+1}q_j}=\\frac{(memory +1)}
-        {1+\\sum_{j=0}^{memory}exp(lnq_j-lnq_i)}`
+        :math: `w=\frac{q_i}{\sum_{j=0}^{memory+1} \frac{1}{memory+1}q_j}=\frac{(memory +1)}
+        {1+\sum_{j=0}^{memory}exp(lnq_j-lnq_i)}`
 
         and is therefore slightly slower.
 
@@ -1061,15 +982,11 @@ class BBVIIterator(Iterator):
         return weights
 
     def evaluate_variational_distribution_for_batch(self, samples):
-        """Evaluate logpdf and grad params logpdf function of the variational
-        distribution.
+        """Evaluate logpdf and score function of the variational distribution.
 
         Args:
             samples (np.array): Row-wise samples
-
-        Returns: None
         """
-
         self.log_variational_mat = self.variational_distribution_obj.logpdf(
             self.variational_params, samples
         )
@@ -1084,12 +1001,7 @@ class BBVIIterator(Iterator):
         self.grad_params_log_variational_mat = np.nan_to_num(self.grad_params_log_variational_mat)
 
     def _filter_failed_simulations(self):
-        """Filter samples and expressions that are associated with failed
-        simulations.
-
-        Returns:
-            None
-        """
+        """Filter samples failed simulations."""
         # Indices where the log joint is a nan
         idx = np.where(~np.isnan(self.log_posterior_unnormalized))[0]
         if len(idx) != len(self.log_posterior_unnormalized):
@@ -1102,13 +1014,7 @@ class BBVIIterator(Iterator):
         self.log_posterior_unnormalized = self.log_posterior_unnormalized[idx]
 
     def _clearing_and_plots(self):
-        """Pass data to the visualization object and clear some internal
-        variables.
-
-        Returns:
-            None
-        """
-
+        """Visualization and clear some internal variables."""
         # clear internal variables
         self.log_variational_mat = None
         self.log_posterior_unnormalized = None
@@ -1116,24 +1022,24 @@ class BBVIIterator(Iterator):
 
         # some plotting and output
         vis.vi_visualization_instance.plot_convergence(
-            self.optimization_iteration,
-            self.variational_params_array,
+            self.stochastic_optimizer.iteration,
+            self.variational_params_list,
             self.elbo_list,
-            self.relative_change_variational_params,
         )
 
     def _get_fim(self):
-        """Get the FIM for the current variational distribution and add
-        dampening if desired.
+        """Get the FIM for the current variational distribution.
+
+        Add dampening if desired.
 
         Returns:
             fisher (np.array): fisher information matrix of the variational distribution
         """
         FIM = self.variational_distribution_obj.fisher_information_matrix(self.variational_params)
         if self.fim_dampening_bool:
-            if self.optimization_iteration > self.fim_decay_start_iter:
+            if self.stochastic_optimizer.iteration > self.fim_decay_start_iter:
                 dampening_coefficient = self.fim_dampening_coefficient * np.exp(
-                    -(self.optimization_iteration - self.fim_decay_start_iter)
+                    -(self.stochastic_optimizer.iteration - self.fim_decay_start_iter)
                     / self.fim_decay_start_iter
                 )
                 dampening_coefficient = max(self.fim_dampening_lower_bound, dampening_coefficient)
