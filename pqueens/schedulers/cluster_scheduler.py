@@ -113,9 +113,6 @@ class ClusterScheduler(Scheduler):
             scheduler_name = "scheduler"
         scheduler_options = config[scheduler_name]
 
-        if not scheduler_options.get("remote", False):
-            raise NotImplementedError("Standard scheduler can not be used remotely")
-
         experiment_name = config['global_settings']['experiment_name']
         experiment_dir = scheduler_options['experiment_dir']
         input_file = config["input_file"]
