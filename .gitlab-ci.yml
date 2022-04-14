@@ -116,7 +116,7 @@ remove_conda_env_and_singularity_image:
 build_singularity:
   stage: build
   script:
-    - /usr/bin/singularity build --fakeroot singularity_image.sif singularity_recipe.def
+    - unset SINGULARITY_BIND && /usr/bin/singularity build --fakeroot singularity_image.sif singularity_recipe.def
     - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
   only:
     variables:
