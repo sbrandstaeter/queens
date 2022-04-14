@@ -113,9 +113,6 @@ class ClusterScheduler(Scheduler):
             scheduler_name = "scheduler"
         scheduler_options = config[scheduler_name]
 
-        if not scheduler_options.get("remote", False):
-            raise NotImplementedError("Standard scheduler can not be used remotely")
-
         experiment_name = config['global_settings']['experiment_name']
         experiment_dir = scheduler_options['experiment_dir']
         input_file = config["input_file"]
@@ -146,6 +143,8 @@ class ClusterScheduler(Scheduler):
                 singularity_path=singularity_options['cluster_path'],
                 input_file=input_file,
             )
+        else:
+            singularity_manager = None
 
         # This hurts my brain
         cluster_options['job_name'] = None
@@ -197,7 +196,7 @@ class ClusterScheduler(Scheduler):
         abs_path = relative_path_from_pqueens(rel_path)
         cluster_options['jobscript_template'] = abs_path
 
-        if singularity_options:
+        if singularity:
             singularity_path = singularity_options['cluster_path']
             cluster_options['singularity_path'] = singularity_path
             cluster_options['EXE'] = os.path.join(singularity_path, 'singularity_image.sif')
@@ -222,18 +221,18 @@ class ClusterScheduler(Scheduler):
             singularity,
         )
         return cls(
-            experiment_name,
-            input_file,
-            restart,
-            experiment_dir,
-            driver_name,
-            config,
-            cluster_options,
-            singularity,
-            scheduler_type,
-            singularity_manager,
-            remote,
-            remote_connect,
+            experiment_name=experiment_name,
+            input_file=input_file,
+            restart=restart,
+            experiment_dir=experiment_dir,
+            driver_name=driver_name,
+            config=config,
+            cluster_options=cluster_options,
+            singularity=singularity,
+            scheduler_type=scheduler_type,
+            singularity_manager=singularity_manager,
+            remote=remote,
+            remote_connect=remote_connect,
         )
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
@@ -387,7 +386,9 @@ class ClusterScheduler(Scheduler):
             check_cmd = 'squeue --job'
             check_loc = -4
         else:
-            raise RuntimeError('Unknown scheduler type! Abort...')
+            raise RuntimeError(
+                f'Unknown scheduler type "{self.scheduler_type}"! Valid options are pbs, slurm'
+            )
 
         if self.remote:
             # set check command, check location and delete command for PBS or SLURM
