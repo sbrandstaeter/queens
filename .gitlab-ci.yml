@@ -3,7 +3,7 @@
 variables:
   # flags to turn on/ off tests for specific platforms
   DOCKER_TESTS: "1"
-  CENTOS_TESTS: "1"
+  UBUNTU_TESTS: "1"
   CLUSTER_TESTS: "0"
   BENCHMARKS: "0"
   # optional parameters for pytest calls
@@ -47,29 +47,29 @@ stages:
 #----------------------------------------------------------------------------------------------
 # Settings
 #----------------------------------------------------------------------------------------------
-.centos_build_settings:
+.ubuntu_build_settings:
   before_script:
     - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda update -n base conda
   only:
     variables:
-      - $CENTOS_TESTS == "1"
+      - $UBUNTU_TESTS == "1"
   tags:
-    - queens-centos
+    - queens-ubuntu
 #----------------------------------------------------------------------------------------------
-.centos_settings:
+.ubuntu_settings:
   before_script:
     - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda activate queens-$CI_PIPELINE_ID
   only:
     variables:
-      - $CENTOS_TESTS == "1"
+      - $UBUNTU_TESTS == "1"
   tags:
-    - queens-centos
+    - queens-ubuntu
 #----------------------------------------------------------------------------------------------
 .codechecks_settings:
   extends:
-    - .centos_settings
+    - .ubuntu_settings
   stage: codechecks
   except:
     variables:
@@ -83,7 +83,7 @@ stages:
 #---------------------------------------------------------------------------------------------------
 build_conda_env:
   extends:
-    - .centos_build_settings
+    - .ubuntu_build_settings
   stage: build
   script:
     - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
@@ -109,9 +109,9 @@ remove_conda_env_and_singularity_image:
     GIT_STRATEGY: none
   only:
     variables:
-      - $CENTOS_TESTS == "1"
+      - $UBUNTU_TESTS == "1"
   tags:
-    - queens-centos
+    - queens-ubuntu
 
 build_singularity:
   stage: build
@@ -120,9 +120,9 @@ build_singularity:
     - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
   only:
     variables:
-      - $CENTOS_TESTS == "1"
+      - $UBUNTU_TESTS == "1"
   tags:
-    - queens-centos
+    - queens-ubuntu
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: codechecks
@@ -192,12 +192,12 @@ docker_full_test_suite:
   needs: []
   when: always
 #---------------------------------------------------------------------------------------------------
-# Centos tests
+# ubuntu tests
 #---------------------------------------------------------------------------------------------------
-centos_full_test_suite_develop:
+ubuntu_full_test_suite_develop:
   stage: tests
   extends:
-    - .centos_settings
+    - .ubuntu_settings
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
     - pytest -m "unit_tests or integration_tests or integration_tests_baci" $PYTEST_OPTIONAL_PARAMETERS
@@ -213,10 +213,10 @@ centos_full_test_suite_develop:
 #----------------------------------------------------------------------------------------------
 # Master tests
 #---------------------------------------------------------------------------------------------------
-centos_full_test_suite_master:
+ubuntu_full_test_suite_master:
   stage: tests
   extends:
-    - .centos_settings
+    - .ubuntu_settings
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
     - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
@@ -242,7 +242,7 @@ centos_full_test_suite_master:
 cluster_tests:
   stage: tests
   extends:
-    - .centos_settings
+    - .ubuntu_settings
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
     - pytest -m lnm_cluster --no-cov
@@ -256,7 +256,7 @@ cluster_tests:
 benchmarks:
   stage: tests
   extends:
-    - .centos_settings
+    - .ubuntu_settings
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
     - pytest -m benchmark --no-cov
@@ -277,7 +277,7 @@ pages:
   # disable cache on this job since we do not need conda env here
   dependencies:
     - documentation
-    - centos_full_test_suite_master
+    - ubuntu_full_test_suite_master
   before_script:
     # use the base environment for badge creation
     - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
@@ -297,7 +297,7 @@ pages:
     paths:
       - public
   tags:
-    - queens-centos
+    - queens-ubuntu
   only:
     refs:
       - master
