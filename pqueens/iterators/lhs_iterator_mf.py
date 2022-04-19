@@ -9,7 +9,7 @@ from .iterator import Iterator
 
 
 # TODO add test cases for mf LHS iterator
-class MF_LHSIterator(Iterator):
+class MFLHSIterator(Iterator):
     """Multi-Fidelity LHS Iterator to enable Latin Hypercube sampling.
 
     Multi-Fidelity LHS Iterator with the purpose to generate multi-fidelity
@@ -28,9 +28,9 @@ class MF_LHSIterator(Iterator):
     """
 
     def __init__(self, model, seed, num_samples, num_iterations, mode, global_settings):
-        super(MF_LHSIterator, self).__init__(model, global_settings)
+        super(MFLHSIterator, self).__init__(model, global_settings)
         if type(self.model) is not MultifidelityModel:
-            raise RuntimeError("MF_LHS Iterator requires a multi-fidelity model")
+            raise RuntimeError("MFLHS Iterator requires a multi-fidelity model")
 
         self.seed = seed
         self.num_samples = num_samples
@@ -50,7 +50,7 @@ class MF_LHSIterator(Iterator):
             model (model):       Model to use (optional)
 
         Returns:
-            iterator: MF_LHSIterator object
+            iterator: MFLHSIterator object
         """
         method_options = config[iterator_name]["method_options"]
         print("Method options {}".format(method_options))

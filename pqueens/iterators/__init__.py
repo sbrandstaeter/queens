@@ -29,7 +29,7 @@ def from_config_create_iterator(config, iterator_name='method', model=None):
     from .elementary_effects_iterator import ElementaryEffectsIterator
     from .grid_iterator import GridIterator
     from .lhs_iterator import LHSIterator
-    from .lhs_iterator_mf import MF_LHSIterator
+    from .lhs_iterator_mf import MFLHSIterator
     from .metropolis_hastings_iterator import MetropolisHastingsIterator
     from .monte_carlo_iterator import MonteCarloIterator
     from .optimization_iterator import OptimizationIterator
@@ -43,7 +43,7 @@ def from_config_create_iterator(config, iterator_name='method', model=None):
 
     method_dict = {
         'lhs': LHSIterator,
-        'lhs_mf': MF_LHSIterator,
+        'lhs_mf': MFLHSIterator,
         'metropolis_hastings': MetropolisHastingsIterator,
         'monte_carlo': MonteCarloIterator,
         'optimization': OptimizationIterator,
