@@ -9,7 +9,7 @@ import pytest
 from pqueens.iterators.baci_lm_iterator import BaciLMIterator
 
 
-@pytest.fixture(scope='module', params=[None, 'method'])
+@pytest.fixture(scope='module', params=['method'])
 def iterator_name_cases(request):
     return request.param
 
@@ -85,9 +85,7 @@ def default_baci_lm_iterator():
         },
     }
 
-    baci_lm_i = BaciLMIterator.from_config_create_iterator(
-        config,
-    )
+    baci_lm_i = BaciLMIterator.from_config_create_iterator(config, iterator_name='method')
 
     return baci_lm_i
 
