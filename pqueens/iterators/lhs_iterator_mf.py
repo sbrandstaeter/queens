@@ -40,7 +40,7 @@ class MF_LHSIterator(Iterator):
         self.mode = mode
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create LHS iterator from problem description.
 
         Args:
@@ -52,11 +52,8 @@ class MF_LHSIterator(Iterator):
         Returns:
             iterator: MF_LHSIterator object
         """
-        if iterator_name is None:
-            method_options = config["method"]["method_options"]
-            print("Method options {}".format(method_options))
-        else:
-            method_options = config[iterator_name]["method_options"]
+        method_options = config[iterator_name]["method_options"]
+        print("Method options {}".format(method_options))
         if model is None:
             model_name = method_options["model"]
             model = from_config_create_model(model_name, config)

@@ -13,22 +13,22 @@ A module that provides utilities and a class for visualization in the grid itera
 It is designed such that the GridIteratorVisualization class needs only to be initialized one
 and can then be accessed and modified in the entire project.
 
-In this context "this" is a pointer to the module object instance itself and can be compared to the 
+In this context "this" is a pointer to the module object instance itself and can be compared to the
 "self" keyword in classes.
 
 Attributes:
     grid_iterator_visualization_instance (obj): Instance of the GridIteratorVisualization class
-    
+
 Returns:
     None
-    
+
 """
 
 this = sys.modules[__name__]
 this.grid_iterator_visualization_instance = None
 
 
-def from_config_create(config, iterator_name=None):
+def from_config_create(config, iterator_name='method'):
     """Module function that calls the class function `from_config_create` and
     creates instance of the GridIteratorVisualization class from the problem
     description.
@@ -108,7 +108,7 @@ class GridIteratorVisualization(object):
         self.var_names_list = var_names_list
 
     @classmethod
-    def from_config_create(cls, config, iterator_name=None):
+    def from_config_create(cls, config, iterator_name):
         """
         Create the grid visualization object from the problem description
         Args:
@@ -120,10 +120,7 @@ class GridIteratorVisualization(object):
             Instance of GridIteratorVisualization (obj)
 
         """
-        if iterator_name is None:
-            method_options = config["method"].get("method_options")
-        else:
-            method_options = config[iterator_name].get("method_options")
+        method_options = config[iterator_name].get("method_options")
 
         plotting_options = method_options["result_description"].get("plotting_options")
         paths = [

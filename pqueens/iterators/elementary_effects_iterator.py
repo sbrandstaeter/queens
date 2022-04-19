@@ -95,7 +95,7 @@ class ElementaryEffectsIterator(Iterator):
         self.si = {}
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create ElementaryEffectsIterator iterator from problem description.
 
         Args:
@@ -109,10 +109,7 @@ class ElementaryEffectsIterator(Iterator):
         """
         qvis.from_config_create(config)
 
-        if iterator_name is None:
-            method_options = config['method']['method_options']
-        else:
-            method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]['method_options']
 
         if model is None:
             model_name = method_options["model"]

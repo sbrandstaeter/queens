@@ -104,7 +104,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         self.results = {}
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create iterator from problem description.
 
         Args:
@@ -116,10 +116,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         Returns:
             iterator: SobolIndexGPUncertaintyIterator object
         """
-        if iterator_name is None:
-            method_options = config['method']['method_options']
-        else:
-            method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]['method_options']
         result_description = method_options.get("result_description", None)
 
         if model is None:

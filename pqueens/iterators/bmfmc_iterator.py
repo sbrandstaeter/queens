@@ -120,7 +120,7 @@ class BMFMCIterator(Iterator):
         self.BMFMC_reference = BMFMC_reference
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create LHS iterator from problem description in input file.
 
         Args:
@@ -132,10 +132,7 @@ class BMFMCIterator(Iterator):
             iterator (obj): BMFMCIterator object
         """
         # Initialize Iterator and model
-        if iterator_name is None:
-            method_options = config['method']['method_options']
-        else:
-            method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]['method_options']
 
         BMFMC_reference = method_options["BMFMC_reference"]
         result_description = method_options["result_description"]

@@ -9,7 +9,7 @@ or surrogate based UQ approaches.
 """
 
 
-def from_config_create_iterator(config, iterator_name=None, model=None):
+def from_config_create_iterator(config, iterator_name='method', model=None):
     """Create iterator from problem description.
 
     Args:
@@ -63,13 +63,8 @@ def from_config_create_iterator(config, iterator_name=None, model=None):
         'virp': VIRPIterator,
     }
 
-    if iterator_name is None:
-        method_name = config['method']['method_name']
-        iterator_class = method_dict[method_name]
-        iterator = iterator_class.from_config_create_iterator(config, model)
-    else:
-        method_name = config[iterator_name]['method_name']
-        iterator_class = method_dict[method_name]
-        iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
+    method_name = config[iterator_name]['method_name']
+    iterator_class = method_dict[method_name]
+    iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
 
     return iterator

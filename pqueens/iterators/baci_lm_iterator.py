@@ -54,7 +54,7 @@ class BaciLMIterator(Iterator):
         self.iter_opt = 0
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create Levenberg Marquardt iterator from problem description.
 
         Args:
@@ -71,10 +71,8 @@ class BaciLMIterator(Iterator):
                 config.get('global_settings').get('experiment_name')
             )
         )
-        if iterator_name is None:
-            method_options = config['method']['method_options']
-        else:
-            method_options = config[iterator_name]['method_options']
+
+        method_options = config[iterator_name]['method_options']
         if model is None:
             model_name = method_options['model']
             model = from_config_create_model(model_name, config)
