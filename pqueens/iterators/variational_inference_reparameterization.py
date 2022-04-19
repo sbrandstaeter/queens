@@ -186,7 +186,7 @@ class VIRPIterator(Iterator):
         self.finite_difference_step = finite_difference_step
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create variational inference reparameterization trick iterator from
         problem description.
 
@@ -198,10 +198,7 @@ class VIRPIterator(Iterator):
         Returns:
             iterator (obj): VIRP object
         """
-        if iterator_name is None:
-            method_options = config['method']['method_options']
-        else:
-            method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]['method_options']
         if model is None:
             model_name = method_options['model']
             model = from_config_create_model(model_name, config)

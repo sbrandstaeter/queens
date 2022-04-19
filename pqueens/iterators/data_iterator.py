@@ -23,7 +23,7 @@ class DataIterator(Iterator):
         self.result_description = result_description
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create data iterator from problem description.
 
         Args:
@@ -36,10 +36,7 @@ class DataIterator(Iterator):
             iterator: DataIterator object
         """
         print(config.get("experiment_name"))
-        if iterator_name is None:
-            method_options = config["method"]["method_options"]
-        else:
-            method_options = config[iterator_name]["method_options"]
+        method_options = config[iterator_name]["method_options"]
 
         path_to_data = method_options.get("path_to_data", None)
         result_description = method_options.get("result_description", None)

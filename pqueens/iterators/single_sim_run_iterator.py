@@ -24,7 +24,7 @@ class SingleSimRunIterator(Iterator):
         self.output = None
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name=None, model=None):
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create iterator for single simulation run from problem description.
 
         Args:
@@ -36,10 +36,7 @@ class SingleSimRunIterator(Iterator):
         Returns:
             iterator: MonteCarloIterator object
         """
-        if iterator_name is None:
-            method_options = config['method']['method_options']
-        else:
-            method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]['method_options']
         if model is None:
             model_name = method_options['model']
             model = from_config_create_model(model_name, config)
