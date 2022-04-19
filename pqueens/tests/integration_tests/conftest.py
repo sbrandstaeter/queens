@@ -83,14 +83,14 @@ def cluster(request):
 @pytest.fixture(scope="session")
 def cluster_address(cluster):
     """String used for ssh connect to the cluster."""
-    address = cluster + '.lnm.mw.tum.de'
+    address = cluster + '.lnm.ed.tum.de'
     return address
 
 
 @pytest.fixture(scope="session")
 def connect_to_resource(cluster_user, cluster):
     """String used for ssh connect to the cluster."""
-    connect_to_resource = cluster_user + '@' + cluster + '.lnm.mw.tum.de'
+    connect_to_resource = cluster_user + '@' + cluster + '.lnm.ed.tum.de'
     return connect_to_resource
 
 
