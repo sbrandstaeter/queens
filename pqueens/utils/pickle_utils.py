@@ -29,18 +29,15 @@ def print_pickled_data(file_path):
     """
     data = load_pickle(file_path)
     print(f"\n\npickle file: {file_path}")
-    for key in data.keys():
-        item = data[key]
+    for key, item in data.items():
         item_type = type(item)
         if isinstance(item, dict):
             string = ""
-            for subkey in item.keys():
-                subitem = item[subkey]
+            for subkey, subitem in item.items():
                 string += (
                     _create_single_item_string(subkey, subitem, type(subitem), seperator="-") + "\n"
                 )
             item = string.replace("\n", "\n    ")
-            print(item)
         print(_create_single_item_string(key, item, item_type))
         print()
 
