@@ -6,12 +6,11 @@ def at_least_2d(arr):
     """View input array as array with at least two dimensions.
 
     Args:
-        arr (array_like): Input array
+        arr (np.ndarray): Input array
 
     Returns:
         arr (np.ndarray): View of input array with at least two dimensions
     """
-    arr = np.array(arr)
     if arr.ndim == 0:
         return arr.reshape((1, 1))
     elif arr.ndim == 1:
@@ -24,12 +23,11 @@ def at_least_3d(arr):
     """View input array as array with at least three dimensions.
 
     Args:
-        arr (array_like): Input array
+        arr (np.ndarray): Input array
 
     Returns:
         arr (np.ndarray): View of input array with at least three dimensions
     """
-    arr = np.array(arr)
     if arr.ndim == 0:
         return arr.reshape((1, 1, 1))
     elif arr.ndim == 1:
