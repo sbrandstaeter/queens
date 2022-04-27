@@ -49,7 +49,7 @@
         "post_file_name_identifier": "QoI",
         "file_options_dict": {
           "delete_field_data": false,
-          "filter_range": [5e-1, 5e-1],
+          "filter_range": [5e-1],
           "filter_tol": 1e-2,
           "use_cols_lst": [
             1,
