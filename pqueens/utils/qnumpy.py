@@ -1,4 +1,4 @@
-"""Module for data class."""
+"""Module for QArray data class."""
 
 import numpy as np
 
@@ -17,10 +17,10 @@ class QArray:
         """Initialize iterator object.
 
         Args:
-            arr (array_like): Array containing data.
+            arr (np.ndarray): Array containing data.
             ax_keys (list): List of strings containing labels for axes of arr
         """
-        self._arr = np.array(arr)
+        self._arr = arr
         self._axes = {}
         shape = arr.shape
         ax_keys = self._create_unique_keys(ax_keys)
@@ -124,14 +124,14 @@ class QArray:
 
 
 def dot_product(arr1, arr2, axes):
-    """Initialize iterator object.
+    """Dot product / Tensor contraction.
 
     Args:
         arr1 (QArray): Array containing data
         arr2 (QArray): Array containing data
         axes (str, array_like): axis over which the inner product is evaluated
 
-    Returns: QArray: Dot product of the input
+    Returns: QArray: Dot product / Tensor contraction of the input arrays
     """
     np_arr1 = arr1.to_numpy()
     np_arr2 = arr2.to_numpy()
