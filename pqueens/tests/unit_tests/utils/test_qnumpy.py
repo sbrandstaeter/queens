@@ -12,8 +12,8 @@ def arrays():
     np_arr_1 = np.random.rand(10, 3, 8)
     np_arr_2 = np.random.rand(3, 8, 10)
 
-    arr1 = qnp.QArray(np_arr_1, ['samples', 'out_dim', 'coordinates'])
-    arr2 = qnp.QArray(np_arr_2, ['out_dim', 'coordinates', 'samples'])
+    arr1 = qnp.array(np_arr_1, ['samples', 'out_dim', 'coordinates'])
+    arr2 = qnp.array(np_arr_2, ['out_dim', 'coordinates', 'samples'])
 
     return arr1, arr2
 
