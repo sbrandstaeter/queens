@@ -21,7 +21,9 @@ def arrays():
 @pytest.mark.unit_tests
 def test_dot_product(arrays, expected_result):
     """Test the dot product."""
-    res = qnp.dot_product(arrays[0], arrays[1], ['samples', 'coordinates'])
+    res = qnp.tensordot(
+        arrays[0], arrays[1], ['samples', 'coordinates'], ['out_dim_1', 'out_dim_2']
+    )
     np_res = res.to_numpy(['out_dim_2', 'out_dim_1'])
     np.testing.assert_array_almost_equal(np_res, expected_result, decimal=8)
 
