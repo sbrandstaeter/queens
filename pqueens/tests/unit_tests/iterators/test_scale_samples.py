@@ -22,15 +22,18 @@ class TestScaleSamples(unittest.TestCase):
 
         first_distribution = {}
         first_distribution['distribution'] = "uniform"
-        first_distribution['distribution_parameter'] = [-3.14159265359, 3.14159265359]
+        first_distribution['lower_bound'] = -3.14159265359
+        first_distribution['upper_bound'] = 3.14159265359
 
         second_distribution = {}
         second_distribution['distribution'] = "normal"
-        second_distribution['distribution_parameter'] = [0, 4]
+        second_distribution['mean'] = 0
+        second_distribution['covariance'] = 4
 
         third_distribution = {}
         third_distribution['distribution'] = "lognormal"
-        third_distribution['distribution_parameter'] = [1, 2]
+        third_distribution['mu'] = 1
+        third_distribution['sigma'] = 2
 
         self.distribution_info_to_small = [first_distribution, second_distribution]
 
@@ -47,15 +50,18 @@ class TestScaleSamples(unittest.TestCase):
         # parameters
         wrong_uniform_distribution = {}
         wrong_uniform_distribution['distribution'] = "uniform"
-        wrong_uniform_distribution['distribution_parameter'] = [0, -2]
+        wrong_uniform_distribution['lower_bound'] = 0
+        wrong_uniform_distribution['upper_bound'] = -2
 
         wrong_normal_distribution = {}
         wrong_normal_distribution['distribution'] = "normal"
-        wrong_normal_distribution['distribution_parameter'] = [0, -4]
+        wrong_normal_distribution['mean'] = 0
+        wrong_normal_distribution['covariance'] = -4
 
         wrong_lognormal_distribution = {}
         wrong_lognormal_distribution['distribution'] = "lognormal"
-        wrong_lognormal_distribution['distribution_parameter'] = [0, -2]
+        wrong_lognormal_distribution['mu'] = 0
+        wrong_lognormal_distribution['sigma'] = -2
 
         self.wrong_uniform_distribution_list = [wrong_uniform_distribution] * 3
         self.wrong_normal_distribution_list = [wrong_normal_distribution] * 3

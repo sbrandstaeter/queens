@@ -20,7 +20,8 @@ def uncertain_parameters():
     uncertain_parameter['type'] = "FLOAT"
     uncertain_parameter['size'] = 1
     uncertain_parameter['distribution'] = "uniform"
-    uncertain_parameter['distribution_parameter'] = [-3.14, 3.14]
+    uncertain_parameter['lower_bound'] = -3.14
+    uncertain_parameter['upper_bound'] = 3.14
     uncertain_parameter['value'] = 1.0
 
     random_variables = {}

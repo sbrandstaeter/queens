@@ -9,10 +9,11 @@ from scipy.stats import multivariate_normal as mvn
 
 import pqueens.database.database as DB_module
 import pqueens.visualization.variational_inference_visualization as vis
+from pqueens.distributions import from_config_create_distribution
 from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
-from pqueens.utils import mcmc_utils, variational_inference_utils
+from pqueens.utils import variational_inference_utils
 from pqueens.utils.process_outputs import write_results
 
 _logger = logging.getLogger(__name__)
@@ -816,19 +817,20 @@ class VIRPIterator(Iterator):
         mean_list_prior = []
         std_list_prior = []
         if random_variables:
-            for rv_options in random_variables.values():
-                params = rv_options["distribution_parameter"]
-                if rv_options["distribution"] == "normal":
-                    mean_list_prior.append(params[0])
-                    std_list_prior.append(params[1])
-                elif rv_options["distribution"] == "lognormal":
-                    mean_list_prior.append(np.exp(params[0] + (params[1] ** 2) / 2))
+            for params in random_variables.values():
+                if params["distribution"] == "normal":
+                    mean_list_prior.append(params['mean'])
+                    std_list_prior.append(params['covariance'])
+                elif params["distribution"] == "lognormal":
+                    mean_list_prior.append(np.exp(params['mu'] + (params['sigma'] ** 2) / 2))
                     std_list_prior.append(mean_list_prior[-1] * np.sqrt(np.exp(params[1] ** 2) - 1))
-                elif rv_options["distribution"] == "uniform":
-                    mean_list_prior.append((params[1] - params[0]) / 2)
-                    std_list_prior.append((params[1] - params[0]) / np.sqrt(12))
+                elif params["distribution"] == "uniform":
+                    mean_list_prior.append((params['upper_bound'] - params['lower_bound']) / 2)
+                    std_list_prior.append(
+                        (params['upper_bound'] - params['lower_bound']) / np.sqrt(12)
+                    )
                 else:
-                    distr_type = rv_options["distribution"]
+                    distr_type = params["distribution"]
                     raise NotImplementedError(
                         f"Your prior type {distr_type} is not supported in"
                         f" the variational approach! Abort..."
@@ -937,8 +939,8 @@ class VIRPIterator(Iterator):
         # mat corresponds to all realization for this variable)
         for dim, rv_options in enumerate(random_variables.values()):
             if rv_options['distribution'] == 'normal' and rv_options['size'] == 1:
-                rv_options['distribution_parameter'][1] = 1
-            self.prior_obj_list.append(mcmc_utils.create_proposal_distribution(rv_options))
+                rv_options['covariance'] = 1
+            self.prior_obj_list.append(from_config_create_distribution(rv_options))
 
     def eval_log_likelihood(self, params):
         """Calculate the log-likelihood of the observation data. Evaluation of

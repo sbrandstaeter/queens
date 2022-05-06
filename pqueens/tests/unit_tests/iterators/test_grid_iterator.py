@@ -52,7 +52,11 @@ def grid_dict_four():
 
 @pytest.fixture()
 def parameters_one():
-    params = {"random_variables": {"x1": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0}}}
+    params = {
+        "random_variables": {
+            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0}
+        }
+    }
     return params
 
 
@@ -60,8 +64,8 @@ def parameters_one():
 def parameters_two():
     params = {
         "random_variables": {
-            "x1": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
-            "x2": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
+            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x2": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
         }
     }
     return params
@@ -71,9 +75,9 @@ def parameters_two():
 def parameters_three():
     params = {
         "random_variables": {
-            "x1": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
-            "x2": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
-            "x3": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
+            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x2": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x3": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
         }
     }
     return params
@@ -83,10 +87,10 @@ def parameters_three():
 def parameters_four():
     params = {
         "random_variables": {
-            "x1": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
-            "x2": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
-            "x3": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
-            "x4": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
+            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x2": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x3": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x4": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
         }
     }
     return params

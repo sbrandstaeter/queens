@@ -29,22 +29,8 @@ def parameters():
     """Fixture for dummy parameters."""
     params = {
         "random_variables": {
-            "x1": {
-                "type": "FLOAT",
-                "size": 1,
-                "min": -2.0,
-                "max": 2.0,
-                "distribution": "uniform",
-                "distribution_parameter": [-2, 2],
-            },
-            "x2": {
-                "type": "FLOAT",
-                "size": 1,
-                "min": -2.0,
-                "max": 2.0,
-                "distribution": "uniform",
-                "distribution_parameter": [-2, 2],
-            },
+            "x1": {"size": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
+            "x2": {"size": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
         },
     }
     return params

@@ -19,7 +19,8 @@ class TestApproximationInterface(unittest.TestCase):
         uncertain_parameter["type"] = "FLOAT"
         uncertain_parameter["size"] = 1
         uncertain_parameter["distribution"] = "uniform"
-        uncertain_parameter["distribution_parameter"] = [-3.14159265359, 3.14159265359]
+        uncertain_parameter['lower_bound'] = -3.14159265359
+        uncertain_parameter['upper_bound'] = 3.14159265359
 
         uncertain_parameters['x1'] = uncertain_parameter
         uncertain_parameters['x2'] = uncertain_parameter

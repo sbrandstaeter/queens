@@ -37,11 +37,9 @@
   "parameters": {
     "random_variables": {
       "x1": {
-        "type": "FLOAT",
         "size": 1
       },
       "x2": {
-        "type": "FLOAT",
         "size": 1
       }
     }

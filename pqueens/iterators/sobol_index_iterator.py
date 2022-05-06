@@ -119,8 +119,8 @@ class SobolIndexIterator(Iterator):
         self.num_params = 0
         for key, value in parameter_info["random_variables"].items():
             self.parameter_names.append(key)
-            max_temp = value["distribution_parameter"][1]
-            min_temp = value["distribution_parameter"][0]
+            max_temp = value["upper_bound"]
+            min_temp = value["lower_bound"]
 
             # in queens normal distributions are parameterized with mean and var
             # in salib normal distributions are parameterized via mean and std

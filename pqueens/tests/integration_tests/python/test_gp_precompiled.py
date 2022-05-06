@@ -22,7 +22,7 @@ def test_gp_precompiled_one_dim(inputdir, tmpdir):
     # pylint: disable=line-too-long
     dir_dict = {
         'test_fun': 'sinus_test_fun.py',
-        'variables': '"x1": {"type": "FLOAT","size": 1,"min": -5,"max": 5,"distribution": "uniform","distribution_parameter": [-5,5]}',
+        'variables': '"x1": {"size": 1,"distribution": "uniform","lower_bound": -5, "upper_bound": 5}',
     }
     # pylint: enable=line-too-long
 
@@ -60,7 +60,7 @@ def test_gp_precompiled_two_dim(inputdir, tmpdir):
     # pylint: disable=line-too-long
     dir_dict = {
         'test_fun': 'branin_hifi.py',
-        'variables': '"x1": {"type": "FLOAT","size": 1,"min": -5,"max": 10,"distribution": "uniform","distribution_parameter": [-5,10]}, "x2": {"type": "FLOAT","size": 1,"min": 0,"max": 15,"distribution": "uniform","distribution_parameter": [0,15]}',
+        'variables': '"x1": {"size": 1,"distribution": "uniform","lower_bound": -5, "upper_bound": 10}, "x2": {"size": 1,"distribution": "uniform","lower_bound": 0, "upper_bound": 15}',
     }
     # pylint: enable=line-too-long
 

@@ -92,8 +92,6 @@
           "external_instance": "DSURFACE 1"
         },
         "dimension": 2,
-        "min": 0,
-        "max": 1,
         "corrstruct": "generic_external_random_field",
         "corr_length": 5.0,
         "std_hyperparam_rf": 0.03,

@@ -30,8 +30,9 @@
     "parameters": "parameters"
   },
   "normal_proposal": {
-    "type": "normal",
-    "proposal_covariance": 1.0
+    "distribution": "normal",
+    "mean": 0.0,
+    "covariance": 1.0
   },
   "interface": {
     "type": "direct_python_interface",

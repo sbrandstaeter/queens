@@ -1,6 +1,6 @@
 import numpy as np
 
-from pqueens.utils import mcmc_utils
+from pqueens.distributions import from_config_create_distribution
 
 cov = [
     [2.691259143915389, 1.465825570809310, 0.347698874175537, 0.140030644426489],
@@ -11,9 +11,8 @@ cov = [
 
 mean = [0.806500709319150, 2.750827521892630, -3.388270291505472, 1.293259980552181]
 
-distr_dict = {'distribution': 'normal', 'distribution_parameter': [mean, cov]}
-
-gaussian = mcmc_utils.create_proposal_distribution(distr_dict)
+dist_options = {'distribution': 'normal', 'mean': mean, 'covariance': cov}
+gaussian = from_config_create_distribution(dist_options)
 
 
 def gaussian_logpdf(x1, x2, x3, x4):

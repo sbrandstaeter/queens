@@ -51,13 +51,10 @@
   "parameters": {
     "random_variables": {
       "x": {
-        "type": "FLOAT",
         "size": 1,
         "distribution": "normal",
-        "distribution_parameter": [
-          2.0,
-          1.0
-        ]
+        "mean": 2.0,
+        "covariance": 1.0
       }
     }
   }

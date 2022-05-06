@@ -48,14 +48,14 @@
     "parameters": "parameters"
   },
   "normal_proposal": {
-    "type": "normal",
+    "distribution": "normal",
     "mean": [
       0.0,
       0.0,
       0.0,
       0.0
     ],
-    "cov": [
+    "covariance": [
       [
         0.001,
         0.00,
@@ -90,40 +90,28 @@
   "parameters": {
     "random_variables": {
       "x1": {
-        "type": "FLOAT",
         "size": 1,
         "distribution": "uniform",
-        "distribution_parameter": [
-          -2.0,
-          2.0
-        ]
+        "lower_bound": -2,
+        "upper_bound": 2
       },
       "x2": {
-        "type": "FLOAT",
         "size": 1,
         "distribution": "uniform",
-        "distribution_parameter": [
-          -2.0,
-          2.0
-        ]
+        "lower_bound": -2,
+        "upper_bound": 2
       },
       "x3": {
-        "type": "FLOAT",
         "size": 1,
         "distribution": "uniform",
-        "distribution_parameter": [
-          -2.0,
-          2.0
-        ]
+        "lower_bound": -2,
+        "upper_bound": 2
       },
       "x4": {
-        "type": "FLOAT",
         "size": 1,
         "distribution": "uniform",
-        "distribution_parameter": [
-          -2.0,
-          2.0
-        ]
+        "lower_bound": -2,
+        "upper_bound": 2
       }
     }
   }

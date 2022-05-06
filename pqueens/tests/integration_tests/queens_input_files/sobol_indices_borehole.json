@@ -31,92 +31,52 @@
   "parameters": {
     "random_variables": {
       "rw": {
-        "type": "FLOAT",
         "size": 1,
-        "min": 0.05,
-        "max": 0.15,
         "distribution": "uniform",
-        "distribution_parameter": [
-          0.05,
-          0.15
-        ]
+        "lower_bound": 0.05,
+        "upper_bound": 0.15
       },
       "r": {
-        "type": "FLOAT",
         "size": 1,
-        "min": 100,
-        "max": 50000,
         "distribution": "uniform",
-        "distribution_parameter": [
-          100,
-          50000
-        ]
+        "lower_bound": 100,
+        "upper_bound": 50000
       },
       "Tu": {
-        "type": "FLOAT",
         "size": 1,
-        "min": 63070,
-        "max": 115600,
         "distribution": "uniform",
-        "distribution_parameter": [
-          63070,
-          115600
-        ]
+        "lower_bound": 63070,
+        "upper_bound": 115600
       },
       "Hu": {
-        "type": "FLOAT",
         "size": 1,
-        "min": 990,
-        "max": 1110,
         "distribution": "uniform",
-        "distribution_parameter": [
-          990,
-          1110
-        ]
+        "lower_bound": 990,
+        "upper_bound": 1110
       },
       "Tl": {
-        "type": "FLOAT",
         "size": 1,
-        "min": 63.1,
-        "max": 116,
         "distribution": "uniform",
-        "distribution_parameter": [
-          63.1,
-          116
-        ]
+        "lower_bound": 63.1,
+        "upper_bound": 116
       },
       "Hl": {
-        "type": "FLOAT",
         "size": 1,
-        "min": 700,
-        "max": 820,
         "distribution": "uniform",
-        "distribution_parameter": [
-          700,
-          820
-        ]
+        "lower_bound": 700,
+        "upper_bound": 820
       },
       "L": {
-        "type": "FLOAT",
         "size": 1,
-        "min": 1120,
-        "max": 1680,
         "distribution": "uniform",
-        "distribution_parameter": [
-          1120,
-          1680
-        ]
+        "lower_bound": 1120,
+        "upper_bound": 1680
       },
       "Kw": {
-        "type": "FLOAT",
         "size": 1,
-        "min": 9855,
-        "max": 12045,
         "distribution": "uniform",
-        "distribution_parameter": [
-          9855,
-          12045
-        ]
+        "lower_bound": 9855,
+        "upper_bound": 12045
       }
     }
   }

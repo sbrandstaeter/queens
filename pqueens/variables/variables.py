@@ -2,7 +2,7 @@
 field realizations."""
 import numpy as np
 
-from pqueens.utils import mcmc_utils
+from pqueens.distributions import from_config_create_distribution
 
 
 class Variables(object):
@@ -38,8 +38,8 @@ class Variables(object):
                 my_size = data['size']
                 self.variables[key]['size'] = my_size
                 self.variables[key]['value'] = values[i : i + my_size]
-                self.variables[key]['type'] = data['type']
-                self.variables[key]['distribution'] = mcmc_utils.create_proposal_distribution(data)
+                self.variables[key]['type'] = data.get('type')
+                self.variables[key]['distribution'] = from_config_create_distribution(data)
                 self.variables[key]['active'] = active[i]
                 i += my_size
             else:
@@ -157,7 +157,7 @@ class Variables(object):
             data['value'] = new_variable_data[key]['value']
             data['active'] = new_variable_data[key]['active']
             data['type'] = new_variable_data[key]['type']
-            data['distribution'] = mcmc_utils.create_proposal_distribution(new_variable_data[key])
+            data['distribution'] = from_config_create_distribution(new_variable_data[key])
 
     def update_variables_from_vector(self, data_vector):
         """Update variable values from vector.
