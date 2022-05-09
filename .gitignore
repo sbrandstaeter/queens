@@ -11,7 +11,9 @@ doc/source/*.rst
 # notebook checkpoints
 *.ipynb_checkpoints
 
-.coverage
+# pytest related
+.pytest_cache/
+.coverage*
 
 _posts/
 bin/
@@ -20,8 +22,6 @@ database_data/
 diagnostic.data/
 dist/
 journal/
-pqueens.egg-info
-.pytest_cache/
 
 # singularity images
 singularity_image.sif
@@ -32,10 +32,10 @@ hashfile.txt
 
 # ignore egg package files
 .eggs/
+*.egg-info/
 
 # ignore config folder
 config/
-
 
 # ignore temporarily created requirements file
 requirements.tmp
@@ -43,4 +43,4 @@ requirements.tmp
 # vscode config files
 .vscode/settings.json
 .vscode/launch.json
-vscode_workspace_queens.code-workspace
+*.code-workspace
