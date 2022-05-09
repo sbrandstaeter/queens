@@ -75,8 +75,8 @@ def scale_samples(samples, distribution_info):
                 scaled_samples[:, i] = scipy.stats.norm.ppf(samples[:, i], loc=b1, scale=b2)
 
         elif distribution_info[i]['distribution'] == 'lognormal':
-            b1 = distribution_info[i]['mu']
-            b2 = distribution_info[i]['sigma']
+            b1 = distribution_info[i]['normal_mean']
+            b2 = distribution_info[i]['normal_covariance']
             if b2 <= 0:
                 raise ValueError('''Lognormal distribution: scale must be > 0''')
             else:

@@ -1,4 +1,5 @@
 """Beta Distribution."""
+import numpy as np
 import scipy.linalg
 import scipy.stats
 
@@ -20,18 +21,13 @@ class BetaDistribution(Distribution):
         upper_bound (float): The upper bound of the beta distribution
     """
 
-    def __init__(self, lower_bound, upper_bound, a, b):
+    def __init__(self, lower_bound, upper_bound, a, b, scipy_beta):
         """Initialize Beta distribution."""
-        # sanity checks:
-        super().check_positivity({'a': a, 'b': b})
-        super().check_bounds(lower_bound, upper_bound)
-
         self.a = a
         self.b = b
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
-        self.scale = upper_bound - lower_bound
-        self.scipy_beta = scipy.stats.beta(scale=self.scale, loc=lower_bound, a=a, b=b)
+        self.scipy_beta = scipy_beta
         super().__init__(mean=self.scipy_beta.mean(), covariance=self.scipy_beta.var(), dimension=1)
 
     @classmethod
@@ -44,11 +40,19 @@ class BetaDistribution(Distribution):
         Returns:
             distribution: BetaDistribution object
         """
-        lower_bound = distribution_options['lower_bound']
-        upper_bound = distribution_options['upper_bound']
+        lower_bound = np.array(distribution_options['lower_bound']).reshape(-1)
+        upper_bound = np.array(distribution_options['upper_bound']).reshape(-1)
         a = distribution_options['a']
         b = distribution_options['b']
-        return cls(lower_bound=lower_bound, upper_bound=upper_bound, a=a, b=b)
+
+        super().check_positivity({'a': a, 'b': b})
+        super().check_bounds(lower_bound, upper_bound)
+
+        scale = upper_bound - lower_bound
+        scipy_beta = scipy.stats.beta(scale=scale, loc=lower_bound, a=a, b=b)
+        return cls(
+            lower_bound=lower_bound, upper_bound=upper_bound, a=a, b=b, scipy_beta=scipy_beta
+        )
 
     def cdf(self, x):
         """Cumulative distribution function."""

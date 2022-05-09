@@ -84,8 +84,8 @@
       "emodul": {
         "size": 1,
         "distribution": "lognormal",
-        "mu": 6.392,
-        "sigma": 0.0705
+        "normal_mean": 6.392,
+        "normal_covariance": 0.0705
       },
       "nue": {
         "size": 1,

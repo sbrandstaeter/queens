@@ -36,6 +36,11 @@ class Distribution:
         """Evaluate the ppf, i.e. the inverse of the cdf."""
         pass
 
+    def check_1d(self):
+        """Check if distribution is 1 dimensional."""
+        if self.dimension != 1:
+            raise RuntimeError("Method does not support multivariate distributions!")
+
     @staticmethod
     def check_positivity(parameters):
         """Check if parameters are positive."""
@@ -48,7 +53,7 @@ class Distribution:
     @staticmethod
     def check_bounds(lower_bound, upper_bound):
         """Check sanity of bounds."""
-        if upper_bound <= lower_bound:
+        if (upper_bound <= lower_bound).all():
             raise ValueError(
                 f"Lower bound must be smaller than upper bound. "
                 f"You specified lower_bound={lower_bound} and upper_bound={upper_bound}"

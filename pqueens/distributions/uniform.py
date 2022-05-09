@@ -12,22 +12,16 @@ class UniformDistribution(Distribution):
     On the interval [a, b].
     """
 
-    def __init__(self, lower_bound, upper_bound):
+    def __init__(
+        self, lower_bound, upper_bound, width, pdf_const, logpdf_const, mean, covariance, dimension
+    ):
         """Initialize uniform distribution."""
-        super().check_bounds(lower_bound, upper_bound)
-
+        super().__init__(mean=mean, covariance=covariance, dimension=dimension)
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
-        self.width = upper_bound - lower_bound
-
-        mean = (self.lower_bound + self.upper_bound) / 2.0
-        cov = self.width**2 / 12.0
-
-        dim = 1
-        super().__init__(mean=mean, covariance=cov, dimension=dim)
-
-        self.pdf_const = 1.0 / self.width
-        self.logpdf_const = np.log(self.pdf_const)
+        self.width = width
+        self.pdf_const = pdf_const
+        self.logpdf_const = logpdf_const
 
     @classmethod
     def from_config_create_distribution(cls, distribution_options):
@@ -39,17 +33,39 @@ class UniformDistribution(Distribution):
         Returns:
             distribution: UniformDistribution object
         """
-        lower_bound = distribution_options['lower_bound']
-        upper_bound = distribution_options['upper_bound']
-        return cls(lower_bound=lower_bound, upper_bound=upper_bound)
+        lower_bound = np.array(distribution_options['lower_bound']).reshape(-1)
+        upper_bound = np.array(distribution_options['upper_bound']).reshape(-1)
+        super().check_bounds(lower_bound, upper_bound)
+        width = upper_bound - lower_bound
+
+        mean = (lower_bound + upper_bound) / 2.0
+        covariance = np.diag(width**2 / 12.0)
+        dimension = mean.size
+
+        pdf_const = 1.0 / width
+        logpdf_const = np.log(pdf_const)
+
+        return cls(
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
+            width=width,
+            pdf_const=pdf_const,
+            logpdf_const=logpdf_const,
+            mean=mean,
+            covariance=covariance,
+            dimension=dimension,
+        )
 
     def cdf(self, x):
         """Cumulative distribution function."""
-        return scipy.stats.uniform.cdf(x, loc=self.lower_bound, scale=self.width)
-
-    def inverse_cdf(self, x):
-        """Cumulative distribution function."""
-        return x * self.width + self.lower_bound
+        cdf = np.prod(
+            np.clip(
+                (x.reshape(-1, self.dimension) - self.lower_bound) / self.width,
+                a_min=np.zeros(self.dimension),
+                a_max=np.ones(self.dimension),
+            )
+        )
+        return cdf
 
     def draw(self, num_draws=1):
         """Draw samples."""
@@ -71,4 +87,5 @@ class UniformDistribution(Distribution):
 
     def ppf(self, q):
         """Percent point function (inverse of cdf — percentiles)."""
+        self.check_1d()
         return scipy.stats.uniform.ppf(q=q, loc=self.lower_bound, scale=self.width)

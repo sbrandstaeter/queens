@@ -51,12 +51,8 @@ def test_gaussian_smc_chopin_adaptive_tempering(inputdir, tmpdir, dummy_data):
 def target_density(self, samples):
     """Target posterior density."""
     samples = np.atleast_2d(samples)
+    log_likelihood = gaussian_logpdf(samples).reshape(-1, 1)
 
-    log_lik = []
-    for x in samples:
-        log_lik.append(gaussian_logpdf(x))
-
-    log_likelihood = np.atleast_2d(np.array(log_lik).flatten()).T
     return log_likelihood
 
 

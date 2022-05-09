@@ -35,8 +35,8 @@ def default_model():
         "type": "FLOAT",
         "size": 1,
         "distribution": "lognormal",
-        "mu": 0.3,
-        "sigma": 1,
+        "normal_mean": 0.3,
+        "normal_covariance": 1,
     }
 
     random_variables = {

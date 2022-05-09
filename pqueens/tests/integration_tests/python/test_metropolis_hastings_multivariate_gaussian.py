@@ -65,14 +65,7 @@ def test_metropolis_hastings_multivariate_gaussian(inputdir, tmpdir, dummy_data)
 
 def target_density(self, samples):
     samples = np.atleast_2d(samples)
-    x1_vec = samples[:, 0]
-    x2_vec = samples[:, 1]
-
-    log_lik = []
-    for x1, x2 in zip(x1_vec, x2_vec):
-        log_lik.append(gaussian_logpdf(x1, x2))
-
-    log_likelihood = np.atleast_2d(np.array(log_lik)).T
+    log_likelihood = gaussian_logpdf(samples).reshape(-1, 1)
 
     return log_likelihood
 
@@ -81,13 +74,7 @@ def target_density(self, samples):
 def dummy_data(tmpdir):
     # generate 10 samples from the same gaussian
     samples = gauss_like.draw(10)
-    x1_vec = samples[:, 0]
-    x2_vec = samples[:, 1]
-
-    # evaluate the gaussian pdf for these 1000 samples
-    pdf = []
-    for x1, x2 in zip(x1_vec, x2_vec):
-        pdf.append(gaussian_logpdf(x1, x2))
+    pdf = (gaussian_logpdf(samples))
 
     pdf = np.array(pdf)
 

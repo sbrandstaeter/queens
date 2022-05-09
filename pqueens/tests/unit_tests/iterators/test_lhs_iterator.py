@@ -37,8 +37,8 @@ class TestLHSIterator(unittest.TestCase):
         uncertain_parameter3["type"] = "FLOAT"
         uncertain_parameter3["size"] = 1
         uncertain_parameter3["distribution"] = "lognormal"
-        uncertain_parameter3["mu"] = 0.3
-        uncertain_parameter3["sigma"] = 1
+        uncertain_parameter3["normal_mean"] = 0.3
+        uncertain_parameter3["normal_covariance"] = 1
 
         random_variables['x1'] = uncertain_parameter1
         random_variables['x2'] = uncertain_parameter2

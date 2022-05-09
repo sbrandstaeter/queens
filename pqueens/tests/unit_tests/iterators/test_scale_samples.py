@@ -32,8 +32,8 @@ class TestScaleSamples(unittest.TestCase):
 
         third_distribution = {}
         third_distribution['distribution'] = "lognormal"
-        third_distribution['mu'] = 1
-        third_distribution['sigma'] = 2
+        third_distribution['normal_mean'] = 1
+        third_distribution['normal_covariance'] = 2
 
         self.distribution_info_to_small = [first_distribution, second_distribution]
 
@@ -60,8 +60,8 @@ class TestScaleSamples(unittest.TestCase):
 
         wrong_lognormal_distribution = {}
         wrong_lognormal_distribution['distribution'] = "lognormal"
-        wrong_lognormal_distribution['mu'] = 0
-        wrong_lognormal_distribution['sigma'] = -2
+        wrong_lognormal_distribution['normal_mean'] = 0
+        wrong_lognormal_distribution['normal_covariance'] = -2
 
         self.wrong_uniform_distribution_list = [wrong_uniform_distribution] * 3
         self.wrong_normal_distribution_list = [wrong_normal_distribution] * 3

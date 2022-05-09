@@ -28,7 +28,7 @@ gaussian1 = from_config_create_distribution(dist_options_1)
 gaussian2 = from_config_create_distribution(dist_options_2)
 
 
-def gaussian_mixture_logpdf(x1, x2, x3, x4):
+def gaussian_mixture_logpdf(samples):
     """Multivariate Gaussian Mixture likelihood model.
 
     Used as a basic test function for MCMC and SMC methods.
@@ -41,10 +41,7 @@ def gaussian_mixture_logpdf(x1, x2, x3, x4):
     \\exp[-\\frac{1}{2}(x-\\mu_2)^T\\Sigma_2^{-1}(x-\\mu_2)])`
 
     Args:
-        x1 (float):
-        x2 (float):
-        x3 (float):
-        x4 (float):
+        samples (np.ndarray)
 
     Returns:
         numpy.array : The logpdf evaluated at x
@@ -54,9 +51,7 @@ def gaussian_mixture_logpdf(x1, x2, x3, x4):
 
         [1] https://en.wikipedia.org/wiki/Multivariate_normal_distribution
     """
-    x = np.array([x1, x2, x3, x4])
-
-    y = np.log(weight1 * gaussian1.pdf(x) + weight2 * gaussian2.pdf(x))
+    y = np.log(weight1 * gaussian1.pdf(samples) + weight2 * gaussian2.pdf(samples))
     return y
 
 
@@ -69,11 +64,12 @@ def main(job_id, params):
     Returns:
         float: Value of logpdf of Gaussian Mixture at parameters specified in input dict
     """
-    return gaussian_mixture_logpdf(params['x1'], params['x2'], params['x3'], params['x4'])
+    sample = np.array([params['x1'], params['x2'], params['x3'], params['x4']]).reshape(1, -1)
+    return gaussian_mixture_logpdf(sample)
 
 
 if __name__ == "__main__":
-    result = np.exp(gaussian_mixture_logpdf(0.5, 0.5, 0.5, 0.5))
+    result = np.exp(gaussian_mixture_logpdf(np.array([0.5, 0.5, 0.5, 0.5]).reshape(1, -1)))
     print(f"results={result}")
-    result = np.exp(gaussian_mixture_logpdf(-0.5, -0.5, -0.5, -0.5))
+    result = np.exp(gaussian_mixture_logpdf(np.array([-0.5, -0.5, -0.5, -0.5]).reshape(1, -1)))
     print(f"results={result}")

@@ -15,7 +15,7 @@ dist_options = {'distribution': 'normal', 'mean': mean, 'covariance': cov}
 gaussian = from_config_create_distribution(dist_options)
 
 
-def gaussian_logpdf(x1, x2, x3, x4):
+def gaussian_logpdf(samples):
     """4D Gaussian likelihood model.
 
     Used as a basic test function for SMC.
@@ -38,10 +38,7 @@ def gaussian_logpdf(x1, x2, x3, x4):
 
         [1] https://en.wikipedia.org/wiki/Multivariate_normal_distribution
     """
-
-    x = np.array([x1, x2, x3, x4])
-
-    return gaussian.logpdf(x)
+    return gaussian.logpdf(samples)
 
 
 def main(job_id, params):
@@ -53,4 +50,5 @@ def main(job_id, params):
     Returns:
         float: Value of Gaussian at parameters specified in input dict
     """
-    return gaussian_logpdf(params['x1'], params['x2'], params['x3'], params['x4'])
+    sample = np.array([params['x1'], params['x2'], params['x3'], params['x4']])
+    return gaussian_logpdf(sample)

@@ -545,7 +545,9 @@ class BBVIIterator(Iterator):
                     mean_list_prior.append(params['mean'])
                     std_list_prior.append(params['covariance'])
                 elif params["distribution"] == "lognormal":
-                    mean_list_prior.append(np.exp(params['mu'] + (params['sigma'] ** 2) / 2))
+                    mean_list_prior.append(
+                        np.exp(params['normal_mean'] + (params['normal_covariance'] ** 2) / 2)
+                    )
                     std_list_prior.append(mean_list_prior[-1] * np.sqrt(np.exp(params[1] ** 2) - 1))
                 elif params["distribution"] == "uniform":
                     mean_list_prior.append((params['upper_bound'] - params['lower_bound']) / 2)
