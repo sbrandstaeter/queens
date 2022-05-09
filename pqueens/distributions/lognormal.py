@@ -20,9 +20,9 @@ class LogNormalDistribution(Distribution):
 
         self.mu = mu
         self.sigma = sigma
-        self.distribution = scipy.stats.lognorm(scale=np.exp(self.mu), s=self.sigma)
+        self.scipy_lognorm = scipy.stats.lognorm(scale=np.exp(self.mu), s=self.sigma)
         super().__init__(
-            mean=self.distribution.mean(), covariance=self.distribution.var(), dimension=1
+            mean=self.scipy_lognorm.mean(), covariance=self.scipy_lognorm.var(), dimension=1
         )
 
         self.K1 = 1.0 / (self.sigma * np.sqrt(2 * np.pi))
@@ -45,7 +45,7 @@ class LogNormalDistribution(Distribution):
 
     def cdf(self, x):
         """Cumulative distribution function."""
-        return self.distribution.cdf(x)
+        return self.scipy_lognorm.cdf(x)
 
     def draw(self, num_draws=1):
         """Draw samples."""

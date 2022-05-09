@@ -31,10 +31,8 @@ class BetaDistribution(Distribution):
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.scale = upper_bound - lower_bound
-        self.distribution = scipy.stats.beta(scale=self.scale, loc=lower_bound, a=a, b=b)
-        super().__init__(
-            mean=self.distribution.mean(), covariance=self.distribution.var(), dimension=1
-        )
+        self.scipy_beta = scipy.stats.beta(scale=self.scale, loc=lower_bound, a=a, b=b)
+        super().__init__(mean=self.scipy_beta.mean(), covariance=self.scipy_beta.var(), dimension=1)
 
     @classmethod
     def from_config_create_distribution(cls, distribution_options):
@@ -54,20 +52,20 @@ class BetaDistribution(Distribution):
 
     def cdf(self, x):
         """Cumulative distribution function."""
-        return self.distribution.cdf(x)
+        return self.scipy_beta.cdf(x)
 
     def draw(self, num_draws=1):
         """Draw samples."""
-        return self.distribution.rvs(size=num_draws)
+        return self.scipy_beta.rvs(size=num_draws)
 
     def logpdf(self, x):
         """Log of the probability density function."""
-        return self.distribution.logpdf(x)
+        return self.scipy_beta.logpdf(x)
 
     def pdf(self, x):
         """Probability density function."""
-        return self.distribution.pdf(x)
+        return self.scipy_beta.pdf(x)
 
     def ppf(self, q):
         """Percent point function (inverse of cdf — percentiles)."""
-        return self.distribution.ppf(q)
+        return self.scipy_beta.ppf(q)
