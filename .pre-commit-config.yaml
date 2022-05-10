@@ -38,6 +38,7 @@ repos:
         name: pylint
         entry: pylint
         language: python
+        types: ["python"]
         additional_dependencies: ["toml"]
         always_run: false
         pass_filenames: true
