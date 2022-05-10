@@ -15,14 +15,6 @@ doc/source/*.rst
 .pytest_cache/
 .coverage*
 
-_posts/
-bin/
-build/
-database_data/
-diagnostic.data/
-dist/
-journal/
-
 # singularity images
 singularity_image.sif
 hashfile.txt
