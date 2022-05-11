@@ -118,7 +118,12 @@ class NormalDistribution(Distribution):
             logpdf (np.ndarray): log pdf at evaluated positions
         """
         dist = x.reshape(-1, self.dimension) - self.mean
-        logpdf = self.logpdf_const - 0.5 * (np.dot(dist, self.precision) * dist).sum(axis=1)
+        if dist.shape[0] == 1:  # TODO: Remove this if case, once autograd is removed
+            logpdf = self.logpdf_const - 0.5 * np.dot(np.dot(dist, self.precision), dist.T).reshape(
+                -1
+            )
+        else:
+            logpdf = self.logpdf_const - 0.5 * (np.dot(dist, self.precision) * dist).sum(axis=1)
         return logpdf
 
     def pdf(self, x):

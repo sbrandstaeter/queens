@@ -19,7 +19,7 @@ class TestQUEENSMain(unittest.TestCase):
         """Set up."""
         self.options = {
             "experiment_name": "my_test",
-            "global_settings": {"output_dir": '', "experiment_name": 'xxx'},
+            "global_settings": {"output_dir": 'dummy_path', "experiment_name": 'xxx'},
             "database": {"type": "mongodb", "reset_existing_db": True},
             "method": {
                 "method_name": "monte_carlo",
