@@ -34,14 +34,6 @@ repos:
         additional_dependencies: ["toml"]
 -   repo: local
     hooks:
-    -   id: pylint
-        name: pylint
-        entry: pylint
-        language: python
-        types: ["python"]
-        additional_dependencies: ["toml"]
-        always_run: false
-        pass_filenames: true
     -   id: isort
         name: isort (python)
         entry: isort
@@ -57,3 +49,11 @@ repos:
         always_run: false
         pass_filenames: true
         additional_dependencies: ["toml"]
+    -   id: pylint
+        name: pylint
+        entry: pylint
+        language: python
+        types: ["python"]
+        additional_dependencies: ["toml"]
+        always_run: false
+        pass_filenames: true
