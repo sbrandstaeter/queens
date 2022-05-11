@@ -134,9 +134,9 @@ code_analysis:
   stage: codechecks
   script:
     - vulture pqueens > track_vulture.txt
-    - pylint --output-format=parseable pqueens | tee track_pylint.txt
     - isort --check-only pqueens/ > track_isort.txt
     - black --check pqueens > track_black.txt
+    - pylint --output-format=parseable --disable=all --enable=c-extension-no-member,line-too-long,bad-indentation pqueens | tee track_pylint.txt
   artifacts:
     name: "$CI_JOB_NAME-$CI_JOB_ID"
     paths:
