@@ -1,4 +1,4 @@
-"""Test-module for distributions of mcmc_utils module."""
+"""Test-module for beta distribution."""
 
 import numpy as np
 import pytest
@@ -65,12 +65,12 @@ def test_init_beta(beta, lower_bound, upper_bound, shape_a, shape_b):
     var_ref = scipy.stats.beta.var(a=shape_a, b=shape_b, loc=lower_bound, scale=width).reshape(1, 1)
 
     assert beta.dimension == 1
-    np.testing.assert_allclose(beta.mean, mean_ref)
-    np.testing.assert_allclose(beta.covariance, var_ref)
-    np.testing.assert_allclose(beta.lower_bound, lower_bound)
-    np.testing.assert_allclose(beta.upper_bound, upper_bound)
-    np.testing.assert_allclose(beta.a, shape_a)
-    np.testing.assert_allclose(beta.b, shape_b)
+    np.testing.assert_equal(beta.mean, mean_ref)
+    np.testing.assert_equal(beta.covariance, var_ref)
+    np.testing.assert_equal(beta.lower_bound, lower_bound)
+    np.testing.assert_equal(beta.upper_bound, upper_bound)
+    np.testing.assert_equal(beta.a, shape_a)
+    np.testing.assert_equal(beta.b, shape_b)
 
 
 @pytest.mark.unit_tests
@@ -108,7 +108,7 @@ def test_cdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_b):
     ref_sol = scipy.stats.beta.cdf(
         sample_pos, a=shape_a, b=shape_b, loc=lower_bound, scale=width
     ).reshape(-1)
-    np.testing.assert_allclose(beta.cdf(sample_pos), ref_sol)
+    np.testing.assert_equal(beta.cdf(sample_pos), ref_sol)
 
 
 @pytest.mark.unit_tests
@@ -117,7 +117,7 @@ def test_draw_beta(beta, lower_bound, upper_bound, mocker):
     sample = np.asarray(0.5 * (lower_bound + upper_bound)).reshape(1, 1)
     mocker.patch('scipy.stats._distn_infrastructure.rv_frozen.rvs', return_value=sample)
     draw = beta.draw()
-    np.testing.assert_allclose(draw, sample)
+    np.testing.assert_equal(draw, sample)
 
 
 @pytest.mark.unit_tests
@@ -127,7 +127,7 @@ def test_logpdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_
     ref_sol = scipy.stats.beta.logpdf(
         sample_pos, a=shape_a, b=shape_b, loc=lower_bound, scale=width
     ).reshape(-1)
-    np.testing.assert_allclose(beta.logpdf(sample_pos), ref_sol)
+    np.testing.assert_equal(beta.logpdf(sample_pos), ref_sol)
 
 
 @pytest.mark.unit_tests
@@ -137,7 +137,7 @@ def test_pdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_b):
     ref_sol = scipy.stats.beta.pdf(
         sample_pos, a=shape_a, b=shape_b, loc=lower_bound, scale=width
     ).reshape(-1)
-    np.testing.assert_allclose(beta.pdf(sample_pos), ref_sol)
+    np.testing.assert_equal(beta.pdf(sample_pos), ref_sol)
 
 
 @pytest.mark.unit_tests
@@ -148,4 +148,4 @@ def test_ppf_beta(beta, lower_bound, upper_bound, shape_a, shape_b):
     ref_sol = scipy.stats.beta.ppf(
         quantile, a=shape_a, b=shape_b, loc=lower_bound, scale=width
     ).reshape(-1)
-    np.testing.assert_allclose(beta.ppf(quantile), ref_sol)
+    np.testing.assert_equal(beta.ppf(quantile), ref_sol)

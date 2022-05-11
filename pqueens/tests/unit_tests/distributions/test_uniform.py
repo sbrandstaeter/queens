@@ -89,9 +89,9 @@ def test_init_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d):
     assert uniform_1d.dimension == 1
     np.testing.assert_allclose(uniform_1d.mean, mean_ref)
     np.testing.assert_allclose(uniform_1d.covariance, var_ref)
-    np.testing.assert_allclose(uniform_1d.lower_bound, lower_bound_1d)
-    np.testing.assert_allclose(uniform_1d.upper_bound, upper_bound_1d)
-    np.testing.assert_allclose(uniform_1d.width, width)
+    np.testing.assert_equal(uniform_1d.lower_bound, lower_bound_1d)
+    np.testing.assert_equal(uniform_1d.upper_bound, upper_bound_1d)
+    np.testing.assert_equal(uniform_1d.width, width)
 
 
 @pytest.mark.unit_tests
@@ -120,7 +120,7 @@ def test_draw_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, mocker):
     sample = np.asarray(0.5 * (lower_bound_1d + upper_bound_1d)).reshape(1, 1)
     mocker.patch('numpy.random.uniform', return_value=sample)
     draw = uniform_1d.draw()
-    np.testing.assert_allclose(draw, sample)
+    np.testing.assert_equal(draw, sample)
 
 
 @pytest.mark.unit_tests
@@ -169,9 +169,9 @@ def test_init_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d):
     assert uniform_2d.dimension == 2
     np.testing.assert_allclose(uniform_2d.mean, mean_ref)
     np.testing.assert_allclose(uniform_2d.covariance, var_ref)
-    np.testing.assert_allclose(uniform_2d.lower_bound, lower_bound_2d)
-    np.testing.assert_allclose(uniform_2d.upper_bound, upper_bound_2d)
-    np.testing.assert_allclose(uniform_2d.width, width)
+    np.testing.assert_equal(uniform_2d.lower_bound, lower_bound_2d)
+    np.testing.assert_equal(uniform_2d.upper_bound, upper_bound_2d)
+    np.testing.assert_equal(uniform_2d.width, width)
 
 
 @pytest.mark.unit_tests
@@ -203,7 +203,7 @@ def test_draw_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, mocker):
     sample = np.asarray(0.5 * (lower_bound_2d + upper_bound_2d)).reshape(1, 2)
     mocker.patch('numpy.random.uniform', return_value=sample)
     draw = uniform_2d.draw()
-    np.testing.assert_allclose(draw, sample)
+    np.testing.assert_equal(draw, sample)
 
 
 @pytest.mark.unit_tests
@@ -232,4 +232,4 @@ def test_pdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2
 def test_ppf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d):
     """Test ppf method of Uniform Distribution distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
-        np.testing.assert_allclose(uniform_2d.ppf(np.zeros(2)), np.zeros(2))
+        uniform_2d.ppf(np.zeros(2))

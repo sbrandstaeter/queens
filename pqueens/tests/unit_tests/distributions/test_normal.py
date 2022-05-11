@@ -107,13 +107,9 @@ def uncorrelated_vector_3d(num_draws):
 @pytest.mark.unit_tests
 def test_init_normal_1d(normal_1d, mean_1d, covariance_1d):
     """Test init method of Normal Distribution class."""
-    std = np.sqrt(covariance_1d)
-    mean_ref = scipy.stats.norm.mean(loc=mean_1d, scale=std).reshape(1)
-    var_ref = scipy.stats.norm.var(loc=mean_1d, scale=std).reshape(1, 1)
-
     assert normal_1d.dimension == 1
-    np.testing.assert_allclose(normal_1d.mean, mean_ref)
-    np.testing.assert_allclose(normal_1d.covariance, var_ref)
+    np.testing.assert_equal(normal_1d.mean, np.array(mean_1d).reshape(1))
+    np.testing.assert_equal(normal_1d.covariance, np.array(covariance_1d).reshape(1, 1))
 
 
 @pytest.mark.unit_tests
@@ -142,7 +138,7 @@ def test_draw_normal_1d(normal_1d, mean_1d, covariance_1d, uncorrelated_vector_1
     mocker.patch('numpy.random.randn', return_value=uncorrelated_vector_1d)
     draw = normal_1d.draw()
     ref_sol = mean_1d + covariance_1d ** (1 / 2) * uncorrelated_vector_1d.T
-    np.testing.assert_allclose(draw, ref_sol)
+    np.testing.assert_equal(draw, ref_sol)
 
 
 @pytest.mark.unit_tests
@@ -175,8 +171,8 @@ def test_ppf_normal_1d(normal_1d, mean_1d, covariance_1d):
 def test_init_normal_3d(normal_3d, mean_3d, covariance_3d):
     """Test init method of Normal Distribution class."""
     assert normal_3d.dimension == 3
-    np.testing.assert_allclose(normal_3d.mean, mean_3d.reshape(3))
-    np.testing.assert_allclose(normal_3d.covariance, covariance_3d.reshape(3, 3))
+    np.testing.assert_equal(normal_3d.mean, mean_3d.reshape(3))
+    np.testing.assert_equal(normal_3d.covariance, covariance_3d.reshape(3, 3))
 
 
 @pytest.mark.unit_tests
@@ -196,7 +192,7 @@ def test_draw_normal_3d(normal_3d, mean_3d, low_chol_3d, uncorrelated_vector_3d,
     mocker.patch('numpy.random.randn', return_value=uncorrelated_vector_3d)
     draw = normal_3d.draw()
     ref_sol = mean_3d + np.dot(low_chol_3d, uncorrelated_vector_3d).T
-    np.testing.assert_allclose(draw, ref_sol)
+    np.testing.assert_equal(draw, ref_sol)
 
 
 @pytest.mark.unit_tests
@@ -219,14 +215,14 @@ def test_pdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
 def test_ppf_normal_3d(normal_3d, mean_3d, covariance_3d):
     """Test ppf method of Normal Distribution distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
-        np.testing.assert_allclose(normal_3d.ppf(np.zeros(2)), np.zeros(2))
+        normal_3d.ppf(np.zeros(2))
 
 
 @pytest.mark.unit_tests
 def test_init_normal_wrong_dimension(mean_3d):
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[[1.0, 0.1], [1.0, 0.1]], [[0.2, 2.0], [0.2, 2.0]]])
-    with pytest.raises(ValueError, match=r'Provided covariance is not a matrix.'):
+    with pytest.raises(ValueError, match=r'Provided covariance is not a matrix.*'):
         distribution_options = {
             'distribution': 'normal',
             'mean': mean_3d,
@@ -239,7 +235,7 @@ def test_init_normal_wrong_dimension(mean_3d):
 def test_init_normal_not_quadratic(mean_3d):
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0], [3.0, 0.3]])
-    with pytest.raises(ValueError, match=r'Provided covariance matrix is not quadratic.'):
+    with pytest.raises(ValueError, match=r'Provided covariance matrix is not quadratic.*'):
         distribution_options = {
             'distribution': 'normal',
             'mean': mean_3d,
@@ -265,7 +261,7 @@ def test_init_normal_not_symmetric(mean_3d):
 def test_init_lognormal_not_symmetric():
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[1.0, 0.0], [0.0, 2.0]])
-    with pytest.raises(ValueError, match=r'Dimension of mean vector and covariance vector do not*'):
+    with pytest.raises(ValueError, match=r'Dimension of mean vector and covariance matrix do not*'):
         distribution_options = {
             'distribution': 'lognormal',
             'normal_mean': np.zeros(3),

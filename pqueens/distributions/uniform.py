@@ -127,6 +127,7 @@ class UniformDistribution(Distribution):
             pdf (np.ndarray): pdf at evaluated positions
         """
         x = x.reshape(-1, self.dimension)
+        # Check if positions are within bounds of the uniform distribution
         within_bounds = (x >= self.lower_bound).all(axis=1) * (x <= self.upper_bound).all(axis=1)
         logpdf = within_bounds * self.pdf_const
         return logpdf

@@ -1,5 +1,7 @@
 """Distributions."""
 
+from pqueens.utils.valid_options_utils import get_option
+
 
 def from_config_create_distribution(distribution_options):
     """Create distribution object from distribution options dictionary.
@@ -15,7 +17,7 @@ def from_config_create_distribution(distribution_options):
     from .normal import NormalDistribution
     from .uniform import UniformDistribution
 
-    distribution_dict = {
+    valid_options = {
         'normal': NormalDistribution,
         'uniform': UniformDistribution,
         'lognormal': LogNormalDistribution,
@@ -24,17 +26,11 @@ def from_config_create_distribution(distribution_options):
 
     distribution_type = distribution_options.get('distribution', None)
 
+    # TODO: This if statement might be unnecessary once the variable class is updated
     if distribution_type is not None:
-        distribution_class = distribution_dict.get(distribution_type, None)
-
-        if distribution_class is None:
-            raise ValueError(
-                "Requested distribution type not supported: {}.\n"
-                "Supported types of distributions:  {}. "
-                "".format(distribution_type, distribution_dict.keys())
-            )
-
+        distribution_class = get_option(
+            valid_options,
+            distribution_type,
+            error_message="Requested distribution type not supported.",
+        )
         return distribution_class.from_config_create_distribution(distribution_options)
-
-    else:
-        return None

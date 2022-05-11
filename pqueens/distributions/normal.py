@@ -53,13 +53,25 @@ class NormalDistribution(Distribution):
         # sanity checks
         dimension = covariance.shape[0]
         if covariance.ndim != 2:
-            raise ValueError("Provided covariance is not a matrix.")
+            raise ValueError(
+                f"Provided covariance is not a matrix. "
+                f"Provided covariance shape: {covariance.shape}"
+            )
         if dimension != covariance.shape[1]:
-            raise ValueError("Provided covariance matrix is not quadratic.")
+            raise ValueError(
+                "Provided covariance matrix is not quadratic. "
+                f"Provided covariance shape: {covariance.shape}"
+            )
         if not np.allclose(covariance.T, covariance):
-            raise ValueError("Provided covariance matrix is not symmetric.")
+            raise ValueError(
+                "Provided covariance matrix is not symmetric. " f"Provided covariance: {covariance}"
+            )
         if mean.shape[0] != dimension:
-            raise ValueError("Dimension of mean vector and covariance vector do not match.")
+            raise ValueError(
+                f"Dimension of mean vector and covariance matrix do not match. "
+                f"Provided dimension of mean vector: {mean.shape[0]}. "
+                f"Provided dimension of covariance matrix: {dimension}. "
+            )
 
         low_chol = numpy_utils.safe_cholesky(covariance)
 

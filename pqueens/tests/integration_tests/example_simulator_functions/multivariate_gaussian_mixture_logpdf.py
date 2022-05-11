@@ -70,6 +70,4 @@ def main(job_id, params):
 
 if __name__ == "__main__":
     result = np.exp(gaussian_mixture_logpdf(np.array([0.5, 0.5, 0.5, 0.5]).reshape(1, -1)))
-    print(f"results={result}")
     result = np.exp(gaussian_mixture_logpdf(np.array([-0.5, -0.5, -0.5, -0.5]).reshape(1, -1)))
-    print(f"results={result}")

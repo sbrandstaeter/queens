@@ -1,4 +1,4 @@
-"""Test-module for normal distribution."""
+"""Test-module for lognormal distribution."""
 
 import numpy as np
 import pytest
@@ -108,10 +108,8 @@ def test_init_lognormal_1d(lognormal_1d, mean_1d, covariance_1d):
     var_ref = scipy.stats.lognorm.var(scale=np.exp(mean_1d), s=std).reshape(1, 1)
 
     assert lognormal_1d.dimension == 1
-    np.testing.assert_allclose(lognormal_1d.normal_mean, np.array(mean_1d).reshape(1))
-    np.testing.assert_allclose(
-        lognormal_1d.normal_covariance, np.array(covariance_1d).reshape(1, 1)
-    )
+    np.testing.assert_equal(lognormal_1d.normal_mean, np.array(mean_1d).reshape(1))
+    np.testing.assert_equal(lognormal_1d.normal_covariance, np.array(covariance_1d).reshape(1, 1))
     np.testing.assert_allclose(lognormal_1d.mean, mean_ref)
     np.testing.assert_allclose(lognormal_1d.covariance, var_ref)
 
@@ -142,7 +140,7 @@ def test_draw_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, uncorrelated_ve
     mocker.patch('numpy.random.randn', return_value=uncorrelated_vector_1d)
     draw = lognormal_1d.draw()
     ref_sol = np.exp(mean_1d + covariance_1d ** (1 / 2) * uncorrelated_vector_1d.T).reshape(-1, 1)
-    np.testing.assert_allclose(draw, ref_sol)
+    np.testing.assert_equal(draw, ref_sol)
 
 
 @pytest.mark.unit_tests
@@ -191,8 +189,8 @@ def test_init_lognormal_2d(lognormal_2d, mean_2d, covariance_2d):
     )
 
     assert lognormal_2d.dimension == 2
-    np.testing.assert_allclose(lognormal_2d.normal_mean, mean_2d)
-    np.testing.assert_allclose(lognormal_2d.normal_covariance, covariance_2d)
+    np.testing.assert_equal(lognormal_2d.normal_mean, mean_2d)
+    np.testing.assert_equal(lognormal_2d.normal_covariance, covariance_2d)
     np.testing.assert_allclose(lognormal_2d.mean, mean_ref)
     np.testing.assert_allclose(lognormal_2d.covariance, var_ref)
 
@@ -215,7 +213,7 @@ def test_draw_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, uncorrelated_ve
     mocker.patch('numpy.random.randn', return_value=uncorrelated_vector_2d)
     draw = lognormal_2d.draw()
     ref_sol = np.exp(mean_2d + np.dot(np.sqrt(covariance_2d), uncorrelated_vector_2d).T)
-    np.testing.assert_allclose(draw, ref_sol)
+    np.testing.assert_equal(draw, ref_sol)
 
 
 @pytest.mark.unit_tests
@@ -246,14 +244,14 @@ def test_pdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
 def test_ppf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d):
     """Test ppf method of LogNormal Distribution distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
-        np.testing.assert_allclose(lognormal_2d.ppf(np.zeros(2)), np.zeros(2))
+        lognormal_2d.ppf(np.zeros(2))
 
 
 @pytest.mark.unit_tests
 def test_init_lognormal_wrong_dimension(mean_2d):
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[[1.0, 0.1], [1.0, 0.1]], [[0.2, 2.0], [0.2, 2.0]]])
-    with pytest.raises(ValueError, match=r'Provided covariance is not a matrix.'):
+    with pytest.raises(ValueError, match=r'Provided covariance is not a matrix.*'):
         distribution_options = {
             'distribution': 'lognormal',
             'normal_mean': np.zeros(3),
@@ -266,7 +264,7 @@ def test_init_lognormal_wrong_dimension(mean_2d):
 def test_init_lognormal_not_quadratic():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0], [3.0, 0.3]])
-    with pytest.raises(ValueError, match=r'Provided covariance matrix is not quadratic.'):
+    with pytest.raises(ValueError, match=r'Provided covariance matrix is not quadratic.*'):
         distribution_options = {
             'distribution': 'lognormal',
             'normal_mean': np.zeros(3),
@@ -292,7 +290,7 @@ def test_init_lognormal_not_symmetric():
 def test_init_lognormal_not_symmetric():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.0], [0.0, 2.0]])
-    with pytest.raises(ValueError, match=r'Dimension of mean vector and covariance vector do not*'):
+    with pytest.raises(ValueError, match=r'Dimension of mean vector and covariance matrix do not*'):
         distribution_options = {
             'distribution': 'lognormal',
             'normal_mean': np.zeros(3),

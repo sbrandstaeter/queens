@@ -99,3 +99,13 @@ class Distribution:
                 f"Lower bound must be smaller than upper bound. "
                 f"You specified lower_bound={lower_bound} and upper_bound={upper_bound}"
             )
+
+    def export_dict(self):
+        """Create a dict of the distribution.
+
+        Returns:
+            export_dict (dict): Dict containing distribution information
+        """
+        export_dict = vars(self)
+        export_dict = {'type': self.__class__.__name__, **export_dict}
+        return export_dict
