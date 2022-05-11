@@ -57,13 +57,14 @@
         "post_file_name_identifier": "baci_write_random_field_to_dat.mon",
         "file_options_dict": {
           "delete_field_data": false,
-          "use_rows_lst": [
-            -1
-          ],
           "use_cols_lst": [
             3
           ],
-          "skip_rows": 4
+          "skip_rows": 4,
+          "filter": {
+            "type": "by_row_index",
+            "rows": [-1]
+          }
         }
       }
     }

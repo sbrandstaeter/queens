@@ -19,11 +19,12 @@ class PostPost(metaclass=abc.ABCMeta):
                                          subdirectories. Examples are wildcards `*` or
                                          expressions like `[ab]`.
         post_file_path (str): Actual path to the file of interest
-        file_options (dict): Dictionary with read-in options for
+        file_options_dict (dict): Dictionary with read-in options for
                                 the post_processed file
         files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                 The paths can contain regex expressions.
         driver_name (str): Name of the associated driver.
+        raw_file_data (np.array): Raw data from file.
         post_post_data (np.array): Cleaned, filtered or manipulated post_post data
     """
 
@@ -154,7 +155,7 @@ class PostPost(metaclass=abc.ABCMeta):
             post_file_path_regex (str): Path to postprocessed file that still
                                         contains wildcards or regex expressions
         """
-        file_identifier = '*' + self.post_file_name_identifier + '*'
+        file_identifier = self.post_file_name_identifier + '*'
         post_file_path_regex = os.path.join(base_dir_post_file, file_identifier)
         return post_file_path_regex
 

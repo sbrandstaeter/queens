@@ -11,8 +11,10 @@ repos:
     hooks:
     -   id: commitizen-prepare-commit-msg
         stages: [prepare-commit-msg]
+        additional_dependencies: ["markupsafe==2.0.1"]
     -   id: commitizen
         stages: [commit-msg]
+        additional_dependencies: ["markupsafe==2.0.1"]
 -   repo: https://github.com/jendrikseipp/vulture
     rev: v2.3
     hooks:
