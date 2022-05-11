@@ -46,7 +46,7 @@
     "interface": "interface",
     "parameters": "parameters"
   },
-  "normal_proposal": {
+  "proposal_distribution": {
     "distribution": "normal",
     "mean": 0.0,
     "covariance": 1.0

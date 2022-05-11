@@ -89,7 +89,7 @@
       "as_mcmc_kernel": true,
       "num_chains": 15,
       "num_samples": 30,
-      "proposal_distribution": "normal_proposal"
+      "proposal_distribution": "proposal_distribution"
     }
   },
   "bmfia_iterator": {
@@ -112,7 +112,7 @@
     "interface": "hf_interface",
     "parameters": "parameters"
   },
-  "normal_proposal": {
+  "proposal_distribution": {
     "distribution": "normal",
     "mean": [
       0.0,

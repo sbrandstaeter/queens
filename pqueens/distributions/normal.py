@@ -3,20 +3,38 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 
+from pqueens.distributions.distributions import Distribution
 from pqueens.utils import numpy_utils
-
-from .distributions import Distribution
 
 
 class NormalDistribution(Distribution):
-    """Normal distribution."""
+    """Normal distribution.
 
-    def __init__(self, mean, covariance, dimension, low_chol, precision, det_cov, logpdf_const):
-        """Initialize normal distribution."""
+    Attributes:
+        low_chol (np.ndarray): lower-triangular Cholesky factor of covariance matrix
+        precision (np.ndarray): Precision matrix corresponding to covariance matrix
+        det_covariance (float): Determinant of covariance matrix
+        logpdf_const (float): Constant for evaluation of log pdf
+    """
+
+    def __init__(
+        self, mean, covariance, dimension, low_chol, precision, det_covariance, logpdf_const
+    ):
+        """Initialize normal distribution.
+
+        Args:
+            mean (np.ndarray): mean of the distribution
+            covariance (np.ndarray): covariance of the distribution
+            dimension (int): dimensionality of the distribution
+            low_chol (np.ndarray): lower-triangular Cholesky factor of covariance matrix
+            precision (np.ndarray): Precision matrix corresponding to covariance matrix
+            det_covariance (float): Determinant of covariance matrix
+            logpdf_const (float): Constant for evaluation of log pdf
+        """
         super().__init__(mean, covariance, dimension)
         self.low_chol = low_chol
         self.precision = precision
-        self.det_cov = det_cov
+        self.det_covariance = det_covariance
         self.logpdf_const = logpdf_const
 
     @classmethod
@@ -24,7 +42,7 @@ class NormalDistribution(Distribution):
         """Create beta distribution object from parameter dictionary.
 
         Args:
-            distribution_options (dict):     Dictionary with distribution description
+            distribution_options (dict): Dictionary with distribution description
 
         Returns:
             distribution: NormalDistribution object
@@ -50,8 +68,8 @@ class NormalDistribution(Distribution):
         precision = np.dot(chol_inv.T, chol_inv)
 
         # constant needed for pdf
-        det_cov = np.linalg.det(covariance)
-        logpdf_const = -1 / 2 * np.log((2.0 * np.pi) ** dimension * det_cov)
+        det_covariance = np.linalg.det(covariance)
+        logpdf_const = -1 / 2 * np.log((2.0 * np.pi) ** dimension * det_covariance)
 
         return cls(
             mean=mean,
@@ -59,39 +77,71 @@ class NormalDistribution(Distribution):
             dimension=dimension,
             low_chol=low_chol,
             precision=precision,
-            det_cov=det_cov,
+            det_covariance=det_covariance,
             logpdf_const=logpdf_const,
         )
 
     def cdf(self, x):
-        """Cumulative distribution function."""
-        cdf = scipy.stats.multivariate_normal.cdf(x, mean=self.mean, cov=self.covariance)
+        """Cumulative distribution function.
+
+        Args:
+            x (np.ndarray): Positions at which the cdf is evaluated
+
+        Returns:
+            cdf (np.ndarray): CDF at evaluated positions
+        """
+        cdf = scipy.stats.multivariate_normal.cdf(
+            x.reshape(-1, self.dimension), mean=self.mean, cov=self.covariance
+        ).reshape(-1)
         return cdf
 
     def draw(self, num_draws=1):
-        """Draw samples."""
+        """Draw samples.
+
+        Args:
+            num_draws (int, optional): Number of draws
+
+        Returns:
+            samples (np.ndarray): Drawn samples from the distribution
+        """
         uncorrelated_vector = np.random.randn(self.dimension, num_draws)
         samples = self.mean + np.dot(self.low_chol, uncorrelated_vector).T
         return samples
 
     def logpdf(self, x):
-        """Log of the probability density function."""
-        y = x.reshape(-1, self.dimension) - self.mean
-        if y.shape[0] == 1:  # This is only needed because np.einsum can not handle autograd objects
-            logpdf = self.logpdf_const - 0.5 * np.dot(np.dot(y, self.precision), y.T).reshape(-1)
-        else:
-            logpdf = self.logpdf_const - 0.5 * np.einsum(
-                'ij, jk, ik -> i', y, self.precision, y
-            ).reshape(-1)
+        """Log of the probability density function.
+
+        Args:
+            x (np.ndarray): Positions at which the log pdf is evaluated
+
+        Returns:
+            logpdf (np.ndarray): log pdf at evaluated positions
+        """
+        dist = x.reshape(-1, self.dimension) - self.mean
+        logpdf = self.logpdf_const - 0.5 * (np.dot(dist, self.precision) * dist).sum(axis=1)
         return logpdf
 
-    def ppf(self, q):
-        """Percent point function (inverse of cdf — percentiles)."""
-        self.check_1d()
-        ppf = scipy.stats.norm.ppf(q, loc=self.mean.squeeze(), scale=self.covariance.squeeze())
-        return ppf
-
     def pdf(self, x):
-        """Probability density function."""
+        """Probability density function.
+
+        Args:
+            x (np.ndarray): Positions at which the pdf is evaluated
+
+        Returns:
+            pdf (np.ndarray): pdf at evaluated positions
+        """
         pdf = np.exp(self.logpdf(x))
         return pdf
+
+    def ppf(self, q):
+        """Percent point function (inverse of cdf — quantiles).
+
+        Args:
+            q (np.ndarray): Quantiles at which the ppf is evaluated
+
+        Returns:
+            ppf (np.ndarray): Positions which correspond to given quantiles
+        """
+        self.check_1d()
+        ppf = scipy.stats.norm.ppf(q, loc=self.mean, scale=self.covariance).reshape(-1)
+        return ppf

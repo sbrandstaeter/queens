@@ -5,7 +5,7 @@ def from_config_create_distribution(distribution_options):
     """Create distribution object from distribution options dictionary.
 
     Args:
-        distribution_options (dict):     Dictionary with distribution description
+        distribution_options (dict): Dictionary with distribution description
 
     Returns:
         distribution: Distribution object

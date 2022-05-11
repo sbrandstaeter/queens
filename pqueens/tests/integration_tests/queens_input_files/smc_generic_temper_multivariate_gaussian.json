@@ -25,7 +25,7 @@
       "as_mcmc_kernel": true,
       "num_chains": 200,
       "num_samples": 20,
-      "proposal_distribution": "normal_proposal"
+      "proposal_distribution": "proposal_distribution"
     }
   },
   "model": {
@@ -47,7 +47,7 @@
     "interface": "interface",
     "parameters": "parameters"
   },
-  "normal_proposal": {
+  "proposal_distribution": {
     "distribution": "normal",
     "mean": [
       0.0,

@@ -12,7 +12,7 @@
       "num_burn_in": 5,
       "scale_covariance": 1.0,
       "model": "model",
-      "proposal_distribution": "normal_proposal",
+      "proposal_distribution": "proposal_distribution",
       "result_description": {
         "write_results": true,
         "plot_results": false,
@@ -39,7 +39,7 @@
     "interface": "interface",
     "parameters": "parameters"
   },
-  "normal_proposal": {
+  "proposal_distribution": {
     "distribution": "normal",
     "mean": 0.0,
     "covariance": 1.0
