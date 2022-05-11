@@ -51,4 +51,7 @@ def test_create_export_dict():
     }
     for (key, value), (key_ref, value_ref) in zip(exported_dict.items(), ref_dict.items()):
         assert key == key_ref
-        np.testing.assert_equal(np.array(value), np.array(value_ref))
+        if key == 'type':
+            assert value == value_ref
+        else:
+            np.testing.assert_allclose(value, value_ref)
