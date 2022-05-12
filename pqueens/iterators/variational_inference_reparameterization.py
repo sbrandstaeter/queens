@@ -568,8 +568,8 @@ class VIRPIterator(Iterator):
                                          evaluated at the parameter value
         """
         grad_log_prior_lst = []
-        for (dim, grad_log_prior_distr), param in zip(enumerate(self.grad_log_priors), params):
-            grad_log_prior_lst.append(grad_log_prior_distr(param))
+        for prior_distr, param in zip(self.prior_obj_list, params):
+            grad_log_prior_lst.append(prior_distr.grad_logpdf(param))
 
         grad_log_priors = np.array(grad_log_prior_lst)
         return grad_log_priors

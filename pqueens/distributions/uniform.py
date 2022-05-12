@@ -117,6 +117,18 @@ class UniformDistribution(Distribution):
         logpdf = np.where(within_bounds, self.logpdf_const, -np.inf)
         return logpdf
 
+    def grad_logpdf(self, x):
+        """Gradient of the log pdf.
+
+        Args:
+            x (np.ndarray): Positions at which the log pdf is evaluated
+
+        Returns:
+            grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
+        """
+        x = x.reshape(-1, self.dimension)
+        return np.zeros(x.shape[0])
+
     def pdf(self, x):
         """Probability density function.
 

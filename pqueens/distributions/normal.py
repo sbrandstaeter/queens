@@ -130,25 +130,24 @@ class NormalDistribution(Distribution):
             logpdf (np.ndarray): log pdf at evaluated positions
         """
         dist = x.reshape(-1, self.dimension) - self.mean
-        if dist.shape[0] == 1:  # TODO: Remove this if case, once autograd is removed
-            logpdf = self.logpdf_const - 0.5 * np.dot(np.dot(dist, self.precision), dist.T).reshape(
-                -1
-            )
-        else:
-            logpdf = self.logpdf_const - 0.5 * (np.dot(dist, self.precision) * dist).sum(axis=1)
+        logpdf = self.logpdf_const - 0.5 * (np.dot(dist, self.precision) * dist).sum(axis=1)
         return logpdf
 
-    def pdf(self, x):
-        """Probability density function.
+    def grad_logpdf(self, x):
+        """Gradient of the log pdf.
 
         Args:
-            x (np.ndarray): Positions at which the pdf is evaluated
+            x (np.ndarray): Positions at which the log pdf is evaluated
 
         Returns:
-            pdf (np.ndarray): pdf at evaluated positions
+            grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
         """
-        pdf = np.exp(self.logpdf(x))
-        return pdf
+        x = x.reshape(-1, self.dimension)
+        grad_logpdf = -0.5 * (
+            np.dot(x, self.precision + self.precision.T)
+            - np.dot(self.precision + self.precision.T, self.mean).reshape(1, self.dimension)
+        )
+        return grad_logpdf
 
     def ppf(self, q):
         """Percent point function (inverse of cdf — quantiles).
