@@ -113,11 +113,10 @@ class BetaDistribution(Distribution):
 
         Args:
             x (np.ndarray): Positions at which the log pdf is evaluated
-
-        Returns:
-            grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
         """
-        raise
+        raise NotImplementedError(
+            'This method is currently not implemented for the beta ' 'distribution.'
+        )
 
     def pdf(self, x):
         """Probability density function.

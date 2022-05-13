@@ -127,7 +127,7 @@ class UniformDistribution(Distribution):
             grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
         """
         x = x.reshape(-1, self.dimension)
-        return np.zeros(x.shape[0])
+        return np.zeros(x.shape)
 
     def pdf(self, x):
         """Probability density function.
