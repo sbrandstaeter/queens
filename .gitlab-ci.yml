@@ -275,11 +275,9 @@ update:
     - cd $CI_PROJECT_DIR
     # create simply environment to use pip-tools
     - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
-    - conda env create -n queens-$CI_PIPELINE_ID python=3 pip-tools
-    - conda activate queens-$CI_PIPELINE_ID
+    - conda activate piptools-env
     - pip-compile --upgrade
     - conda deactivate
-    - conda env remove -n queens-$CI_PIPELINE_ID
     - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')
     - GITLAB_USER_NAME=project_${CI_PROJECT_ID}_bot
     - git config --global user.name "${AUTO_COMMITTER_NAME}"
@@ -302,9 +300,6 @@ update:
               --data "${BODY}" \
       | jq '.iid')
     - echo "Opened MR !${MR_IID}"
-
-
-
   only:
     variables:
     - $DOCKER_TESTS == "0"
