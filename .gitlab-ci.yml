@@ -278,7 +278,7 @@ update:
     - conda activate piptools-env
     - pip-compile --upgrade
     - conda deactivate
-    - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')
+    - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
     - GITLAB_USER_NAME=project_${CI_PROJECT_ID}_bot
     - git config --global user.name "${AUTO_COMMITTER_NAME}"
     - git config --global user.email "${AUTO_COMMITTER_EMAIL}"
