@@ -1,4 +1,5 @@
 """Surrogate model class."""
+
 import logging
 
 import numpy as np
@@ -50,7 +51,7 @@ class DataFitSurrogateModel(Model):
             error_measures (list):          List of error measures to compute
             nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
         """
-        super(DataFitSurrogateModel, self).__init__(model_name, model_parameters)
+        super().__init__(model_name, model_parameters)
         self.interface = interface
         self.subordinate_model = subordinate_model
         self.subordinate_iterator = subordinate_iterator

@@ -77,7 +77,7 @@ class ElementaryEffectsIterator(Iterator):
             result_description (dict): dictionary with desired result description
             global_settings (dict): dictionary with global (all) settings of the analysis
         """
-        super(ElementaryEffectsIterator, self).__init__(model, global_settings)
+        super().__init__(model, global_settings)
         self.num_trajectories = num_trajectories
         self.local_optimization = local_optimization
         self.num_optimal_trajectories = num_optimal_trajectories

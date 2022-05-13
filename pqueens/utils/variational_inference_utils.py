@@ -1,4 +1,5 @@
 """Variational distribution utils."""
+
 import abc
 
 import autograd.numpy as npy
@@ -70,7 +71,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
         Args:
             dimension (int): Dimension of RV.
         """
-        super(MeanFieldNormalVariational, self).__init__(dimension)
+        super().__init__(dimension)
         self.num_params = 2 * dimension
 
     def initialize_parameters_randomly(self):
@@ -273,7 +274,7 @@ class FullRankNormalVariational(VariationalDistribution):
         Args:
             dimension (int): dimension of the RV
         """
-        super(FullRankNormalVariational, self).__init__(dimension)
+        super().__init__(dimension)
         self.num_params = (dimension * (dimension + 1)) // 2 + dimension
 
     def initialize_parameters_randomly(self):
@@ -513,7 +514,7 @@ class MixtureModel(VariationalDistribution):
             num_components (int): Number of mixture components
             base_distribution: Variational distribution object for the components
         """
-        super(MixtureModel, self).__init__(dimension)
+        super().__init__(dimension)
         self.num_components = num_components
         self.base_distribution = base_distribution
         self.num_params = num_components * base_distribution.num_params

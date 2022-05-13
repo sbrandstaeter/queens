@@ -1,4 +1,5 @@
 """Multi-fidelity Gaussian static likelihood model."""
+
 import logging
 
 import numpy as np
@@ -96,7 +97,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         noise_var_lst,
     ):
         """Instanciate the multi-fidelity likelihood class."""
-        super(BMFGaussianStaticModel, self).__init__(
+        super().__init__(
             model_name,
             model_parameters,
             forward_model,

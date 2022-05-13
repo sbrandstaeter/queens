@@ -6,6 +6,7 @@ cluster. The resource can provide basic status information as well as
 workload capacity. If the workload capacity allows it the computing
 resource accepts jobs and executes them.
 """
+import logging
 import sys
 
 import numpy as np
@@ -13,6 +14,7 @@ import numpy as np
 from pqueens.schedulers import from_config_create_scheduler
 
 # TODO refactor this method into a class method
+_logger = logging.getLogger(__name__)
 
 
 def parse_resources_from_configuration(config, driver_name):
@@ -112,7 +114,7 @@ class Resource(object):
         self.exp_name = exp_name
 
         if len(self.exp_name) == 0:
-            sys.stdout.write("Warning: resource %s has no tasks assigned " " to it" % self.name)
+            _logger.info("Warning: resource %s has no tasks assigned " " to it" % self.name)
 
     def filter_my_jobs(self, jobs):
         """Take a list of jobs and filter those that are on this resource.
@@ -174,16 +176,16 @@ class Resource(object):
         process_id = self.scheduler.submit(job['id'], batch)
         if process_id is not None:
             if process_id != 0:
-                sys.stdout.write(
+                _logger.info(
                     'Submitted job %d with %s '
                     '(process id: %d).\n' % (job['id'], self.scheduler_class, process_id)
                 )
             elif process_id == 0:
-                sys.stdout.write(
+                _logger.info(
                     'Checked job %d for restart and loaded results into database.\n\n' % job['id']
                 )
         else:
-            sys.stdout.write('Failed to submit job %d.\n' % job['id'])
+            _logger.info('Failed to submit job %d.\n' % job['id'])
 
         return process_id
 
@@ -218,6 +220,4 @@ class Resource(object):
             raise Exception("This job does not belong to me!")
 
         self.scheduler.submit_post_post(job['id'], batch)
-        sys.stdout.write(
-            'Submitted post-post job %d with %s \n' % (job['id'], self.scheduler_class)
-        )
+        _logger.info('Submitted post-post job %d with %s \n' % (job['id'], self.scheduler_class))

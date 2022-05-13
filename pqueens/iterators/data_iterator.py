@@ -1,3 +1,5 @@
+"""Data iterator."""
+
 import pickle
 
 from pqueens.iterators.iterator import Iterator
@@ -15,7 +17,14 @@ class DataIterator(Iterator):
     """
 
     def __init__(self, path_to_data, result_description, global_settings):
-        super(DataIterator, self).__init__(None, global_settings)
+        """Initialise data iterator.
+
+        Args:
+            path_to_data (string):      Path to pickle file containing data
+            result_description (dict):  Description of desired results
+            global_settings (dict, optional): Settings for the QUEENS run.
+        """
+        super().__init__(None, global_settings)
         self.samples = None
         self.output = None
         self.eigenfunc = None  # TODO this is an intermediate solution--> see Issue #45
@@ -46,9 +55,6 @@ class DataIterator(Iterator):
 
     def eval_model(self):
         """Evaluate the model."""
-        pass
-
-    def pre_run(self):
         pass
 
     def core_run(self):
@@ -87,7 +93,6 @@ class DataIterator(Iterator):
             np.array, np.array: Two arrays, the first contains input samples,
                                 the second the corresponding output samples
         """
-
         data = pickle.load(open(self.path_to_data, "rb"))
 
         return data

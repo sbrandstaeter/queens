@@ -1,3 +1,5 @@
+"""Sobol sequence iterator."""
+
 import logging
 
 from torch.quasirandom import SobolEngine
@@ -35,7 +37,19 @@ class SobolSequenceIterator(Iterator):
         result_description,
         global_settings,
     ):
-        super(SobolSequenceIterator, self).__init__(model, global_settings)
+        """Initialise Sobol sequence iterator.
+
+        Args:
+             model (model): Model to be evaluated by iterator
+             number_of_samples (int): Number of samples to compute
+             randomize (bool): Setting this to True will produce scrambled Sobol sequences.
+                               Scrambling is capable of producing better Sobol sequences.
+             seed  (int): This is the seed for the scrambling. The seed of the random number
+                          generator is set to this, if specified. Otherwise, it uses a random seed.
+             result_description (dict):  Description of desired results
+             global_settings (dict, optional): Settings for the QUEENS run.
+        """
+        super().__init__(model, global_settings)
         self.seed = seed
         self.number_of_samples = number_of_samples
         self.randomize = randomize
@@ -83,7 +97,6 @@ class SobolSequenceIterator(Iterator):
 
     def pre_run(self):
         """Generate samples for subsequent sobol sequence analysis."""
-
         _, _, number_input_dimensions, distribution_info = get_random_variables(self.model)
 
         _logger.info(f'Number of inputs: {number_input_dimensions}')
@@ -102,9 +115,7 @@ class SobolSequenceIterator(Iterator):
 
     def core_run(self):
         """Run sobol sequence analysis on model."""
-
         self.model.update_model_from_sample_batch(self.samples)
-
         self.output = self.eval_model()
 
     def post_run(self):
