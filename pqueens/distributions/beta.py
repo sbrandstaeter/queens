@@ -108,6 +108,17 @@ class BetaDistribution(Distribution):
         logpdf = self.scipy_beta.logpdf(x).reshape(-1)
         return logpdf
 
+    def grad_logpdf(self, x):
+        """Gradient of the log pdf.
+
+        Args:
+            x (np.ndarray): Positions at which the log pdf is evaluated
+
+        Returns:
+            grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
+        """
+        raise
+
     def pdf(self, x):
         """Probability density function.
 

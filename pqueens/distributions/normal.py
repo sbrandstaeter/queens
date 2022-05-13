@@ -143,11 +143,21 @@ class NormalDistribution(Distribution):
             grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
         """
         x = x.reshape(-1, self.dimension)
-        grad_logpdf = -0.5 * (
-            np.dot(x, self.precision + self.precision.T)
-            - np.dot(self.precision + self.precision.T, self.mean).reshape(1, self.dimension)
-        )
+        p_p = self.precision + self.precision.T
+        grad_logpdf = -0.5 * (np.dot(x, p_p) - np.dot(p_p, self.mean).reshape(1, self.dimension))
         return grad_logpdf
+
+    def pdf(self, x):
+        """Probability density function.
+
+        Args:
+            x (np.ndarray): Positions at which the pdf is evaluated
+
+        Returns:
+            pdf (np.ndarray): pdf at evaluated positions
+        """
+        pdf = np.exp(self.logpdf(x))
+        return pdf
 
     def ppf(self, q):
         """Percent point function (inverse of cdf — quantiles).

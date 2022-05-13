@@ -115,9 +115,16 @@ class LogNormalDistribution(Distribution):
             grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
         """
         x = x.reshape(-1, self.dimension)
-        grad_logpdf = -1 / x - 0.5 * (
-            np.dot(x, self.precision + self.precision.T)
-            - np.dot(self.precision + self.precision.T, self.mean).reshape(1, self.dimension)
+        x[x == 0] = np.nan
+        p_p = self.precision + self.precision.T
+        grad_logpdf = (
+            -1
+            / x
+            * (
+                1
+                + 0.5 * np.dot(np.log(x), p_p)
+                - 0.5 * np.dot(p_p, self.normal_mean).reshape(1, self.dimension)
+            )
         )
         return grad_logpdf
 

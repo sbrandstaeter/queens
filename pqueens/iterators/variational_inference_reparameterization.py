@@ -533,7 +533,6 @@ class VIRPIterator(Iterator):
         self.grad_reparameterization_variational_params = grad(
             variational_inference_utils.conduct_reparameterization
         )
-        self.grad_log_priors = [grad(log_prior.logpdf) for log_prior in self.prior_obj_list]
         self.grad_log_variational_distr_params = (
             self.variational_distribution_obj.grad_logpdf_sample
         )
