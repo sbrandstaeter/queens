@@ -56,22 +56,8 @@ def write_LF_MC_data_to_pickle(tmpdir, generate_X_mc, generate_LF_MC_data):
     file_name = 'LF_MC_data'
     input_description = {
         "random_variables": {
-            "x1": {
-                "type": "FLOAT",
-                "size": 1,
-                "min": 0.0,
-                "max": 1.0,
-                "distribution": "uniform",
-                "distribution_parameter": [0.0, 1.0],
-            },
-            "x2": {
-                "type": "FLOAT",
-                "size": 1,
-                "min": 0.0,
-                "max": 1.0,
-                "distribution": "uniform",
-                "distribution_parameter": [0.0, 1.0],
-            },
+            "x1": {"size": 1, "distribution": "uniform", "lower_bound": 0.0, "upper_bound": 1.0},
+            "x2": {"size": 1, "distribution": "uniform", "lower_bound": 0.0, "upper_bound": 1.0},
         },
         "random_fields": None,
     }

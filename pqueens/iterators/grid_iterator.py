@@ -99,8 +99,8 @@ class GridIterator(Iterator):
 
         #  set up 1D arrays for each parameter (needs bounds and type of axis)
         for index, (parameter_name, parameter) in enumerate(self.parameters.items()):
-            start_value = parameter["min"]
-            stop_value = parameter["max"]
+            start_value = parameter["lower_bound"]
+            stop_value = parameter["upper_bound"]
             data_type = parameter["type"]
             axis_type = self.grid_dict[parameter_name].get("axis_type", None)
             num_grid_points = self.grid_dict[parameter_name].get("num_grid_points", None)

@@ -14,8 +14,8 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
         uncertain_parameter = {
             "type": "FLOAT",
             "size": 1,
-            "max": 3.14159265359,
-            "min": -3.14159265359,
+            "upper_bound": 3.14159265359,
+            "lower_bound": -3.14159265359,
         }
 
         random_variables = {

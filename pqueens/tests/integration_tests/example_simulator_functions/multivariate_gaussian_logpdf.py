@@ -1,6 +1,6 @@
 import numpy as np
 
-from pqueens.utils import mcmc_utils
+from pqueens.distributions import from_config_create_distribution
 
 dim = 2
 
@@ -10,11 +10,11 @@ cov = [[1.0, 0.5], [0.5, 1.0]]
 A = np.eye(dim, dim)
 b = np.zeros(dim)
 
+dist_options = {'distribution': 'normal', 'mean': meas_data, 'covariance': cov}
+gauss_like = from_config_create_distribution(dist_options)
 
-gauss_like = mcmc_utils.NormalProposal(mean=meas_data, covariance=cov)
 
-
-def gaussian_logpdf(x1, x2):
+def gaussian_logpdf(samples):
     """2D Gaussian likelihood model.
 
     Used as a basic test function for MCMC methods.
@@ -36,10 +36,7 @@ def gaussian_logpdf(x1, x2):
         [1] https://en.wikipedia.org/wiki/Multivariate_normal_distribution
     """
 
-    x = np.array([x1, x2])
-
-    model_data = np.dot(A, x) + b
-
+    model_data = np.dot(A, samples.T).T + b
     y = gauss_like.logpdf(model_data)
     return y
 
@@ -53,4 +50,5 @@ def main(job_id, params):
     Returns:
         float: Value of Gaussian at parameters specified in input dict
     """
-    return gaussian_logpdf(params['x1'], params['x2'])
+    sample = np.array([params['x1'], params['x2']]).reshape(1, -1)
+    return gaussian_logpdf(sample)

@@ -144,8 +144,8 @@ class ElementaryEffectsIterator(Iterator):
         self.num_params = 0
         for key, value in parameter_info["random_variables"].items():
             self.parameter_names.append(key)
-            max_temp = value["max"]
-            min_temp = value["min"]
+            max_temp = value["upper_bound"]
+            min_temp = value["lower_bound"]
             bounds.append([min_temp, max_temp])
             if "distribution" in value:
                 raise ValueError("Parameters must not have probability distributions")

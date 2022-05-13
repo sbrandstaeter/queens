@@ -36,8 +36,8 @@
 #                    "youngs": {
 #                        "type": "FLOAT",
 #                        "size": 1,
-#                        "min": 1000000,
-#                        "max": 5000000,
+#                        "lower_bound": 1000000,
+#                        "upper_bound": 5000000,
 #                        "distribution": "normal",
 #                        "distribution_parameter": [400000, 100000000],
 #                    }
@@ -49,8 +49,8 @@
 #                "youngs": {
 #                    "type": "FLOAT",
 #                    "size": 1,
-#                    "min": 1000,
-#                    "max": 5000000,
+#                    "lower_bound": 1000,
+#                    "upper_bound": 5000000,
 #                    "distribution": "uniform",
 #                    "distribution_parameter": [1000, 10000],
 #                }

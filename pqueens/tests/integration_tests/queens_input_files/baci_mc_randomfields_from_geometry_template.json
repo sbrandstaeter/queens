@@ -77,13 +77,10 @@
   "parameters": {
     "random_variables": {
       "emodul": {
-        "type": "FLOAT",
         "size": 1,
         "distribution": "lognormal",
-        "distribution_parameter": [
-          6.392,
-          0.0705
-        ]
+        "normal_mean": 6.392,
+        "normal_covariance": 0.0705
       }
     },
     "random_fields": {
@@ -94,8 +91,6 @@
           "external_instance": "DSURFACE 9"
         },
         "dimension": 2,
-        "min": 0,
-        "max": 1,
         "corrstruct": "generic_external_random_field",
         "corr_length": 0.08,
         "std_hyperparam_rf": 0.1,

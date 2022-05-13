@@ -13,7 +13,7 @@
       "num_burn_in": 5,
       "scale_covariance": 1.0,
       "model": "model",
-      "proposal_distribution": "normal_proposal",
+      "proposal_distribution": "proposal_distribution",
       "result_description": {
         "write_results": true,
         "plot_results": false,
@@ -40,13 +40,13 @@
     "interface": "interface",
     "parameters": "parameters"
   },
-  "normal_proposal": {
-    "type": "normal",
+  "proposal_distribution": {
+    "distribution": "normal",
     "mean": [
       0.0,
       0.0
     ],
-    "cov": [
+    "covariance": [
       [
         1.0,
         0.0
@@ -64,22 +64,16 @@
   "parameters": {
     "random_variables": {
       "x1": {
-        "type": "FLOAT",
         "size": 1,
         "distribution": "normal",
-        "distribution_parameter": [
-          2.0,
-          1.0
-        ]
+        "mean": 2.0,
+        "covariance": 1.0
       },
       "x2": {
-        "type": "FLOAT",
         "size": 1,
         "distribution": "normal",
-        "distribution_parameter": [
-          -2.0,
-          0.01
-        ]
+        "mean": -2.0,
+        "covariance": 0.01
       }
     }
   }

@@ -52,12 +52,7 @@ def test_gaussian_smc(inputdir, tmpdir, dummy_data):
 
 def target_density(self, samples):
     samples = np.atleast_2d(samples)
-
-    log_lik = []
-    for x in samples:
-        log_lik.append(gaussian_logpdf(x))
-
-    log_likelihood = np.atleast_2d(np.array(log_lik).flatten()).T
+    log_likelihood = gaussian_logpdf(samples).reshape(-1, 1)
 
     return log_likelihood
 

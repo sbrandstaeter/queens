@@ -45,9 +45,6 @@ def scale_samples(samples, distribution_info):
 
     # loop over the parameters
     for i in range(scaled_samples.shape[1]):
-        # setting first and second arguments for distributions
-        b1 = distribution_info[i]['distribution_parameter'][0]
-        b2 = distribution_info[i]['distribution_parameter'][1]
         if 'min' in distribution_info[i] or 'max' in distribution_info[i]:
             warnings.warn(
                 "Bounds of parameters are ignored when using \
@@ -55,6 +52,8 @@ def scale_samples(samples, distribution_info):
             )
 
         if distribution_info[i]['distribution'] == 'uniform':
+            b1 = distribution_info[i]['lower_bound']
+            b2 = distribution_info[i]['upper_bound']
             if b1 >= b2:
                 raise ValueError(
                     '''Uniform distribution: lower bound
@@ -64,6 +63,8 @@ def scale_samples(samples, distribution_info):
                 scaled_samples[:, i] = samples[:, i] * (b2 - b1) + b1
 
         elif distribution_info[i]['distribution'] == 'normal':
+            b1 = distribution_info[i]['mean']
+            b2 = distribution_info[i]['covariance']
             if b2 <= 0:
                 raise ValueError('''Normal distribution: sigma must be > 0''')
             else:
@@ -74,6 +75,8 @@ def scale_samples(samples, distribution_info):
                 scaled_samples[:, i] = scipy.stats.norm.ppf(samples[:, i], loc=b1, scale=b2)
 
         elif distribution_info[i]['distribution'] == 'lognormal':
+            b1 = distribution_info[i]['normal_mean']
+            b2 = distribution_info[i]['normal_covariance']
             if b2 <= 0:
                 raise ValueError('''Lognormal distribution: scale must be > 0''')
             else:

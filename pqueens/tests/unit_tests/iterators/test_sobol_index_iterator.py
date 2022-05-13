@@ -15,10 +15,10 @@ class TestSobolIndices(unittest.TestCase):
     def setUp(self):
         """Set up the iterator."""
         uncertain_parameter = {
-            "type": "FLOAT",
             "size": 1,
             "distribution": "uniform",
-            "distribution_parameter": [-3.14159265359, 3.14159265359],
+            "lower_bound": -3.14159265359,
+            "upper_bound": 3.14159265359,
         }
 
         random_variables = {

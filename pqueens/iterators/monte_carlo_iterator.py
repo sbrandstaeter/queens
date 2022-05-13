@@ -5,12 +5,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 import pqueens.database.database as DB_module
+from pqueens.distributions import from_config_create_distribution
 from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.models import from_config_create_model
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,
 )
-from pqueens.utils import mcmc_utils
 from pqueens.utils.get_random_variables import get_random_samples
 from pqueens.utils.process_outputs import process_ouputs, write_results
 
@@ -170,7 +170,7 @@ class MonteCarloIterator(Iterator):
                 # pylint: disable=line-too-long
                 my_field_generator = (
                     UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
-                        mcmc_utils.create_proposal_distribution(rf), **random_field_opt
+                        from_config_create_distribution(rf), **random_field_opt
                     )
                 )
                 # pylint: enable=line-too-long

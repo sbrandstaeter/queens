@@ -18,22 +18,23 @@ class TestMCIterator(unittest.TestCase):
         random_variables = {}
         uncertain_parameters = {}
         uncertain_parameter1 = {}
-        uncertain_parameter1["type"] = "FLOAT"
         uncertain_parameter1["size"] = 1
         uncertain_parameter1["distribution"] = "uniform"
-        uncertain_parameter1["distribution_parameter"] = [-3.14159265359, 3.14159265359]
+        uncertain_parameter1["lower_bound"] = -3.14159265359
+        uncertain_parameter1["upper_bound"] = 3.14159265359
 
         uncertain_parameter2 = {}
-        uncertain_parameter2["type"] = "FLOAT"
         uncertain_parameter2["size"] = 1
         uncertain_parameter2["distribution"] = "normal"
-        uncertain_parameter2["distribution_parameter"] = [0, 4]
+        uncertain_parameter2["mean"] = 0
+        uncertain_parameter2["covariance"] = 4
 
         uncertain_parameter3 = {}
         uncertain_parameter3["type"] = "FLOAT"
         uncertain_parameter3["size"] = 1
         uncertain_parameter3["distribution"] = "lognormal"
-        uncertain_parameter3["distribution_parameter"] = [0.3, 1]
+        uncertain_parameter3["normal_mean"] = 0.3
+        uncertain_parameter3["normal_covariance"] = 1
 
         random_variables['x1'] = uncertain_parameter1
         random_variables['x2'] = uncertain_parameter2

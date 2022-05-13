@@ -12,6 +12,8 @@ import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
 
+from pqueens.distributions import from_config_create_distribution
+from pqueens.distributions.normal import NormalDistribution
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils import mcmc_utils, smc_utils
@@ -104,7 +106,7 @@ class MetropolisHastingsIterator(Iterator):
             self.scale_covariance = 1.0
             self.num_burn_in = 0
 
-            if not isinstance(self.proposal_distribution, mcmc_utils.NormalProposal):
+            if not isinstance(self.proposal_distribution, NormalDistribution):
                 raise RuntimeError("Currently only Normal proposals are supported as MCMC Kernel.")
 
         self.temper = smc_utils.temper_factory(temper_type)
@@ -162,15 +164,7 @@ class MetropolisHastingsIterator(Iterator):
         name_proposal_distribution = method_options['proposal_distribution']
         prop_opts = config.get(name_proposal_distribution, None)
         if prop_opts is not None:
-            distribution_type = prop_opts['type']
-            # translate proposal_options to distribution_options of random_variables
-            distribution_options = {
-                'distribution': distribution_type,
-                'distribution_parameter': list(
-                    [np.squeeze(prop_opts['mean']), np.squeeze(prop_opts['cov'])]
-                ),
-            }
-            proposal_distribution = mcmc_utils.create_proposal_distribution(distribution_options)
+            proposal_distribution = from_config_create_distribution(prop_opts)
         else:
             raise ValueError(
                 f'Could not find proposal distributio'
@@ -304,7 +298,8 @@ class MetropolisHastingsIterator(Iterator):
         else:
             # create random walk normal proposal
             mean = np.zeros(cov_mat.shape[0])
-            self.proposal_distribution = mcmc_utils.NormalProposal(mean=mean, covariance=cov_mat)
+            dist_opts = {'distribution': 'normal', 'mean': mean, 'covariance': cov_mat}
+            self.proposal_distribution = from_config_create_distribution(dist_opts)
 
         self.gamma = gamma
 

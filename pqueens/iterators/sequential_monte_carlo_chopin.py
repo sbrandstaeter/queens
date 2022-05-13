@@ -184,14 +184,13 @@ class SequentialMonteCarloChopinIterator(Iterator):
         for rv in random_variables.keys():
             rv_options = random_variables[rv]
             distribution = rv_options.get("distribution")
-            distribution_params = rv_options.get("distribution_parameter")
             if distribution == "normal":
-                loc = distribution_params[0]
-                scale = distribution_params[1] ** 0.5
+                loc = rv_options['mean']
+                scale = rv_options['covariance'] ** 0.5
                 prior_dict.update({rv: dists.Normal(loc=loc, scale=scale)})
             elif distribution == "uniform":
-                a = distribution_params[0]
-                b = distribution_params[1]
+                a = rv_options['lower_bound']
+                b = rv_options['upper_bound']
                 prior_dict.update({rv: dists.Uniform(a=a, b=b)})
             else:
                 raise NotImplementedError(

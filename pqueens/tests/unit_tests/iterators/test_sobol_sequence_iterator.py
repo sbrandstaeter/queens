@@ -17,24 +17,26 @@ def global_settings():
 def default_model():
     uncertain_parameters = {}
     uncertain_parameter1 = {
-        "type": "FLOAT",
         "size": 1,
         "distribution": "uniform",
-        "distribution_parameter": [-3.14159265359, 3.14159265359],
+        "lower_bound": -3.14159265359,
+        "upper_bound": 3.14159265359,
     }
 
     uncertain_parameter2 = {
         "type": "FLOAT",
         "size": 1,
         "distribution": "normal",
-        "distribution_parameter": [0, 4],
+        "mean": 0,
+        "covariance": 4,
     }
 
     uncertain_parameter3 = {
         "type": "FLOAT",
         "size": 1,
         "distribution": "lognormal",
-        "distribution_parameter": [0.3, 1],
+        "normal_mean": 0.3,
+        "normal_covariance": 1,
     }
 
     random_variables = {

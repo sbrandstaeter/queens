@@ -1,11 +1,9 @@
 import numpy as np
 
-from pqueens.utils.mcmc_utils import NormalProposal
+from pqueens.distributions import from_config_create_distribution
 
-mean = 0.0
-covariance = 1.0
-
-standard_normal = NormalProposal(mean=mean, covariance=covariance)
+dist_options = {'distribution': 'normal', 'mean': 0.0, 'covariance': 1.0}
+standard_normal = from_config_create_distribution(dist_options)
 
 
 def gaussian_logpdf(x):

@@ -11,8 +11,8 @@ from pqueens.models.bmfmc_model import BMFMCModel
 def default_parameters():
     params = {
         "random_variables": {
-            "x1": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
-            "x2": {"type": "FLOAT", "size": 1, "min": -2.0, "max": 2.0},
+            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x2": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
         }
     }
     return params

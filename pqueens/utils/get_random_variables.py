@@ -1,4 +1,4 @@
-from pqueens.utils.mcmc_utils import create_proposal_distribution
+from pqueens.distributions import from_config_create_distribution
 
 
 def get_random_variables(model):
@@ -40,11 +40,7 @@ def get_distribution_info(random_variables):
     """
     distribution_info = []
     for _, rv in random_variables.items():
-        temp = {
-            "distribution": rv["distribution"],
-            "distribution_parameter": rv["distribution_parameter"],
-        }
-        distribution_info.append(temp)
+        distribution_info.append(rv)
     return distribution_info
 
 
@@ -60,7 +56,7 @@ def get_random_samples(description, num_samples):
         np.array:                   Array with samples
     """
 
-    distribution = create_proposal_distribution(description)
+    distribution = from_config_create_distribution(description)
     samples = distribution.draw(num_draws=num_samples)
 
     return samples
