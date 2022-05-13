@@ -1,3 +1,5 @@
+"""Latin hypercube sampling iterator."""
+
 import logging
 
 import numpy as np
@@ -24,6 +26,8 @@ class LHSIterator(Iterator):
         seed (int): Seed for numpy random number generator
         samples (np.array):   Array with all samples
         output (np.array):   Array with all model outputs
+        criterion (str): Allowable values are "center" or "c", "maximin" or "m",
+                         "centermaximin" or "cm", and "correlation" or "corr"
     """
 
     def __init__(
@@ -36,7 +40,19 @@ class LHSIterator(Iterator):
         global_settings,
         criterion,
     ):
-        super(LHSIterator, self).__init__(model, global_settings)
+        """Initialise LHSiterator.
+
+        Args:
+            model (obj, optional): Model to be evaluated by iterator.
+            global_settings (dict, optional): Settings for the QUEENS run.
+            num_samples (int):    Number of samples to compute
+            num_iterations (int): Number of optimization iterations of design
+            result_description (dict):  Description of desired results
+            seed (int): Seed for numpy random number generator
+            criterion (str): Allowable values are "center" or "c", "maximin" or "m",
+                             "centermaximin" or "cm", and "correlation" or "corr"
+        """
+        super().__init__(model, global_settings)
         self.seed = seed
         self.num_samples = num_samples
         self.num_iterations = num_iterations
@@ -107,9 +123,7 @@ class LHSIterator(Iterator):
 
     def core_run(self):
         """Run LHS Analysis on model."""
-
         self.model.update_model_from_sample_batch(self.samples)
-
         self.output = self.eval_model()
 
     def post_run(self):

@@ -96,7 +96,7 @@ class PostPostCsv(PostPost):
         Returns:
             Instance of PostPostCsv class
         """
-        super(PostPostCsv, self).__init__(
+        super().__init__(
             post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
