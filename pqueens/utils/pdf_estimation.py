@@ -1,23 +1,22 @@
-"""Estimation of the probability density function based on samples from the
+"""Kernel density estimation (KDE).
+
+Estimation of the probability density function based on samples from the
 distribution.
-
-It uses the kernel density estimation (kde) algorithm.
 """
-
-import pdb
 
 import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
 
-def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
+def estimate_bandwidth_for_kde(samples, min_samples, max_samples, kernel='gaussian'):
     """Estimate optimal bandwidth for kde of pdf.
 
     Args:
-        samples (np.array):  samples for which to estimate pdf
+        samples (np.ndarray):  samples for which to estimate pdf
         min_samples (float): smallest value
         max_samples (float): largest value
+        kernel (str,optional):        Kernel type
 
     Returns:
         float: estimate for optimal kernel_bandwidth
@@ -26,10 +25,9 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
     kernel_bandwidth_lower_bound = np.log10((max_samples - min_samples) / 30.0)
 
     # do 30-fold cross-validation and use all cores available to speed-up the process
-    # we use the epanechinkov kernel as it is bounded in contrast to the gaussian kernel
     # we use a log grid to emphasize the smaller bandwidth values
     grid = GridSearchCV(
-        KernelDensity(kernel='epanechnikov'),
+        KernelDensity(kernel=kernel),
         {'bandwidth': np.logspace(kernel_bandwidth_lower_bound, kernel_bandwidth_upper_bound, 40)},
         cv=30,
         n_jobs=-1,
@@ -37,20 +35,22 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
 
     grid.fit(samples.reshape(-1, 1))
     kernel_bandwidth = grid.best_params_['bandwidth']
-    print('bandwidth = %s' % kernel_bandwidth)
+    print(f'bandwidth = {kernel_bandwidth}')
 
     return kernel_bandwidth
 
 
-def estimate_pdf(samples, kernel_bandwidth, support_points=None):
+def estimate_pdf(samples, kernel_bandwidth, support_points=None, kernel='gaussian'):
     """Estimate pdf using kernel density estimation.
 
     Args:
         samples (np.array):         samples for which to estimate pdf
         kernel_bandwidth (float):   kernel width to use in kde
         support_points (np.array):  points where to evaluate pdf
+        kernel (str, optional):               Kernel type
+
     Returns:
-        np.array,np.array:          pdf_estimate at support points
+        np.ndarray, np.ndarray:          pdf_estimate at support points
     """
     # make sure that we have at least 2 D column vectors but do not change correct 2D format
     samples = np.atleast_2d(samples).T
@@ -72,7 +72,7 @@ def estimate_pdf(samples, kernel_bandwidth, support_points=None):
         support_points = np.atleast_2d(support_points).T
 
         # no support points given
-    kde = KernelDensity(kernel='gaussian', bandwidth=kernel_bandwidth).fit(samples)
+    kde = KernelDensity(kernel=kernel, bandwidth=kernel_bandwidth).fit(samples)
 
     y_density = np.exp(kde.score_samples(support_points))
     return y_density, support_points
