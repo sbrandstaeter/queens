@@ -300,12 +300,9 @@ update:
               --data "${BODY}" \
       | jq '.iid')
     - echo "Opened MR !${MR_IID}"
-  only:
+  rules:
     variables:
-    - $DOCKER_TESTS == "0"
-    - $UBUNTU_TESTS == "0"
-    - $BENCHMARKS == "0"
-    - $UPDATE_REQUIREMENTS == "1"
+    - if: $UPDATE_REQUIREMENTS == "1"
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: pages
