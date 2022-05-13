@@ -188,7 +188,7 @@ docker_full_test_suite:
   extends:
     - .docker_settings
   script:
-    - pytest -m "unit_tests or integration_tests" $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -m "unit_tests or integration_tests" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
   needs: []
   when: always
 #---------------------------------------------------------------------------------------------------
@@ -200,7 +200,7 @@ ubuntu_full_test_suite_develop:
     - .ubuntu_settings
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-    - pytest -m "unit_tests or integration_tests or integration_tests_baci" $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - build_conda_env
     - build_singularity
@@ -219,7 +219,7 @@ ubuntu_full_test_suite_master:
     - .ubuntu_settings
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-    - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   artifacts:
     name: coverage_report
     paths:
