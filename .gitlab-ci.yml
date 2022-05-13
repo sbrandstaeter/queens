@@ -301,7 +301,6 @@ update:
       | jq '.iid')
     - echo "Opened MR !${MR_IID}"
   rules:
-    variables:
     - if: $UPDATE_REQUIREMENTS == "1"
 
 #---------------------------------------------------------------------------------------------------
