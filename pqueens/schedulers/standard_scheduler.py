@@ -172,7 +172,7 @@ class StandardScheduler(Scheduler):
 
         if restart:
             cmdlist_remote_main = [
-                '/usr/bin/singularity run',
+                'singularity run',
                 local_singularity_path,
                 remote_args,
                 '--post=true',
@@ -182,11 +182,12 @@ class StandardScheduler(Scheduler):
             return 0
         else:
             cmdlist_remote_main = [
-                '/usr/bin/singularity run',
+                'singularity run',
                 local_singularity_path,
                 remote_args,
             ]
             cmd_remote_main = ' '.join(cmdlist_remote_main)
+            print(cmd_remote_main)
             _, pid, _, _ = run_subprocess(cmd_remote_main, subprocess_type='submit')
             return pid
 

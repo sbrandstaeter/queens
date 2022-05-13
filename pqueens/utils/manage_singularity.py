@@ -20,7 +20,7 @@ abs_singularity_image_path = relative_path_from_queens("singularity_image.sif")
 def create_singularity_image():
     """Create pre-designed singularity image for cluster applications."""
     # create the actual image
-    command_string = '/usr/bin/singularity --version'
+    command_string = 'singularity --version'
     run_subprocess(command_string, additional_error_message='Singularity could not be executed!')
 
     definition_path = 'singularity_recipe.def'
@@ -29,7 +29,7 @@ def create_singularity_image():
         "cd",
         PATH_TO_QUEENS,
         "&& unset SINGULARITY_BIND &&",
-        "/usr/bin/singularity build --force --fakeroot",
+        "singularity build --force --fakeroot",
         abs_singularity_image_path,
         abs_definition_path,
     ]
@@ -483,7 +483,7 @@ def _check_if_files_changed():
 
         # Compare the queens source files with the ones inside the container
         command_string = (
-            f"/usr/bin/singularity exec {abs_singularity_image_path} "
+            f"singularity exec {abs_singularity_image_path} "
             + f"cmp {file} {filepath_in_singularity}"
         )
         _, _, stdout, stderr = run_subprocess(
