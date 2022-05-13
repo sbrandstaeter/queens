@@ -372,3 +372,6 @@ zipp==3.7.0
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
+
+jax~=0.3.10
+setuptools~=58.0.4

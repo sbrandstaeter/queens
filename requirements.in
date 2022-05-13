@@ -27,6 +27,7 @@ gpflow # LV and variational GPs
 tensorflow
 tensorflow-probability
 torch
+jax
 
 # making fancy plots
 matplotlib
