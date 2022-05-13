@@ -286,7 +286,7 @@ update:
     - git branch -f $UPDATE_BRANCH_NAME && git checkout $UPDATE_BRANCH_NAME
     - git add requirements.txt
     - git commit -m "Update requirements based on pip-tools"
-    - git push --force "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
+    - git push -o ci.skip --force "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
     - >
       BODY="{\"id\": \"${CI_PROJECT_ID}\",
       \"source_branch\": \"${UPDATE_BRANCH_NAME}\",
