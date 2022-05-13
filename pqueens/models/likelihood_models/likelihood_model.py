@@ -1,7 +1,9 @@
+"""Module to define likelihood functions."""
+
 import abc
 import glob
+import logging
 import os
-import pprint
 
 import numpy as np
 import pandas as pd
@@ -10,10 +12,11 @@ import pqueens.database.database as DB_module
 from pqueens.models import from_config_create_model
 from pqueens.models.model import Model
 
+_logger = logging.getLogger(__name__)
+
 
 class LikelihoodModel(Model):
-    """Base class for likelihood models that unifies interfaces of likelihood
-    models used in inverse analysis.
+    """Base class for likelihood models.
 
     Attributes:
         forward_model (obj): Forward model on which the likelihood model is based
@@ -38,6 +41,18 @@ class LikelihoodModel(Model):
         output_label,
         coord_labels,
     ):
+        """Initialize the likelihood model.
+
+        Args:
+            model_name (str): Name of the underlying model in input file
+            model_parameters (OrderedDict): Parameters of the underlying model
+            forward_model (obj): Forward model that is evaluated during the likelihood evaluation
+            coords_mat (np.array): Matrix of observation coordinates (new coordinates row-wise)
+            time_vec (np.array): Vector containing time stamps for each observation
+            y_obs_vec (np.array): Matrix with row-wise observation vectors
+            output_label (str): Output label name of the observations
+            coord_labels (list): List of coordinate label names. One name per column in coord_mat
+        """
         super(LikelihoodModel, self).__init__(model_name, model_parameters)
         self.forward_model = forward_model
         self.coords_mat = coords_mat
@@ -112,8 +127,7 @@ class LikelihoodModel(Model):
         time_label,
         output_label,
     ):
-        """Load all experimental data into QUEENS and conduct some
-        preprocessing and cleaning.
+        """Load all experimental data into QUEENS.
 
         Args:
             experimental_data_path_list (lst): List containing paths to base directories of
@@ -145,16 +159,14 @@ class LikelihoodModel(Model):
             #  check if some files are not csv files and throw a warning
             non_csv_files = [x for x in all_files_list if x not in files_of_interest_list]
             if non_csv_files:
-                print('#####################################################################')
-                pprint.pprint(
+                _logger.info('----------------------------------------------------------------')
+                _logger.info(
                     f'The following experimental data files could not be read-in as they do '
                     f'not have a .csv file-ending: {non_csv_files}'
                 )
-                print('#####################################################################')
+                _logger.info('----------------------------------------------------------------')
 
             # read all experimental data into one numpy array
-            # TODO in the future we should use xarrays here
-            # TODO filter out / handle corrupted data and NaNs
             data_list = []
             for filename in files_of_interest_list:
                 try:
@@ -163,10 +175,10 @@ class LikelihoodModel(Model):
                     )
                     data_list.append(new_experimental_data)
 
-                except IOError:
+                except IOError as myerror:
                     raise IOError(
-                        'An error occurred while reading in the experimental data '
-                        'files. Abort...'
+                        'The following error has occurred while reading in the experimental data '
+                        f'files: {myerror} Abort...'
                     )
             experimental_data_dict = pd.concat(data_list, axis=0, ignore_index=True).to_dict('list')
 
@@ -175,7 +187,7 @@ class LikelihoodModel(Model):
             # extended in the future if we want to read in several different data sources
             db.save(experimental_data_dict, experiment_name, 'experimental_data', '1')
 
-            # arrange the experimental data coordinates
+            # arrange the experimental data‹ coordinates
             experimental_coordinates = (
                 np.array([experimental_data_dict[coordinate] for coordinate in coordinate_labels]),
             )[0].T
