@@ -1,3 +1,5 @@
+"""Monte Carlo iterator."""
+
 import copy
 import logging
 
@@ -44,7 +46,19 @@ class MonteCarloIterator(Iterator):
         external_geometry_obj,
         db,
     ):
-        super(MonteCarloIterator, self).__init__(model, global_settings)
+        """Initialise Monte Carlo iterator.
+
+        Args:
+            model (model):              Model to be evaluated by iterator
+            seed  (int):                Seed for random number generation
+            num_samples (int):          Number of samples to compute
+            result_description (dict):  Description of desired results
+            external_geometry_obj (obj): External external_geometry_obj object containing node and
+                                         mesh information
+            db (obj):                   Data base object
+            global_settings (dict, optional): Settings for the QUEENS run.
+        """
+        super().__init__(model, global_settings)
         self.seed = seed
         self.num_samples = num_samples
         self.result_description = result_description

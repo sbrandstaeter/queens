@@ -1,22 +1,30 @@
+"""Utils for data scaling."""
+
 import abc
 
 import numpy as np
 
 
 class Scaler(metaclass=abc.ABCMeta):
-    """Base class for general scaling classes. The purpose of these classes is
-    the scaling of training data for, e.g., machine learning approaches or
-    other subsequent analysis.
+    """Base class for general scaling classes.
+
+    The purpose of these classes is the scaling of training data.
 
     Attributes:
         mean (np.array): Mean-values of the data-matrix (column-wise)
         standard_deviation (np.array): Standard deviation of the data-matrix (per column)
-
-    Returns:
-        Instance of the Scaler Class (obj)
     """
 
     def __init__(self, mean, standard_deviation):
+        """Intialise scaler.
+
+        Args:
+            mean (np.array): Mean-values of the data-matrix (column-wise)
+            standard_deviation (np.array): Standard deviation of the data-matrix (per column)
+
+        Returns:
+            Instance of the Scaler Class (obj)
+        """
         self.mean = mean
         self.standard_deviation = standard_deviation
 
@@ -61,36 +69,31 @@ class Scaler(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def inverse_transform_mean(self, x_mat):
-        """Conduct the inverse transformation for the mean / the mean function
-        of the random process trained on the scaled training data.
-
-        Args:
-            x_mat (np.array): Data matrix that should be standardized
-        """
+        """Conduct the inverse transformation for the mean."""
         pass
 
     @abc.abstractmethod
     def inverse_transform_std(self, x_mat):
-        """Conduct the inverse transformation for the posterior standard
-        deviation of the random process trained on the scaled training data.
-
-        Args:
-            x_mat (np.array): Data matrix that should be standardized
-        """
+        """Conduct the inverse transformation."""
         pass
 
 
 class StandardScaler(Scaler):
-    """Scaler for standardization of data. In case a stochastic process in
-    trained on the scaled data, inverse rescaling is implemented to recover the
-    correct mean and standard deviation prediction for the posterior process.
+    """Scaler for standardization of data.
 
-    Returns:
-        instance of the StandardScaler (obj)
+    In case a stochastic process in trained on the scaled data, inverse
+    rescaling is implemented to recover the correct mean and standard
+    deviation prediction for the posterior process.
     """
 
     def __init__(self, mean, standard_deviation):
-        super(StandardScaler, self).__init__(mean, standard_deviation)
+        """Initialise standard scaler.
+
+        Args:
+            mean (_type_): _description_
+            standard_deviation (_type_): _description_
+        """
+        super().__init__(mean, standard_deviation)
 
     @classmethod
     def from_config_create_scaler(cls, scaler_settings, mean, standard_deviation):
@@ -145,8 +148,9 @@ class StandardScaler(Scaler):
         return transformed_data
 
     def inverse_transform_std(self, x_mat):
-        """Conduct the inverse scaling transformation on the standard deviation
-        data of the random process.
+        """Conduct the inverse scaling transformation.
+
+        The data is transformed based on the standard deviation.
 
         Args:
             x_mat (np.array): Data matrix that should be standardized
@@ -160,11 +164,16 @@ class StandardScaler(Scaler):
 
 
 class IdentityScaler(Scaler):
-    """The identity scaler is shares the interfaces of other scalers but does
-    nothing to the data."""
+    """The identity scaler."""
 
     def __init__(self, mean, standard_deviation):
-        super(IdentityScaler, self).__init__(mean, standard_deviation)
+        """Initialise indentity scaler.
+
+        Args:
+            mean (np.array): Mean value, not needed in this case.
+            standard_deviation (np.array): Standard deviation, not needed in this case.
+        """
+        super().__init__(mean, standard_deviation)
 
     @classmethod
     def from_config_create_scaler(cls, scaler_settings, mean, standard_deviation):
@@ -179,7 +188,6 @@ class IdentityScaler(Scaler):
         Returns:
             IdentityScaler instance (obj)
         """
-
         return cls(mean, standard_deviation)
 
     def fit(self, x_mat):
@@ -187,9 +195,6 @@ class IdentityScaler(Scaler):
 
         Args:
             x_mat (np.array): Data matrix that should be standardized
-
-        Returns:
-            None
         """
         pass
 
@@ -202,7 +207,6 @@ class IdentityScaler(Scaler):
         Returns:
             transformed_data (np.array): Transformed data-array
         """
-
         return x_mat
 
     def inverse_transform_mean(self, x_mat):
@@ -217,8 +221,7 @@ class IdentityScaler(Scaler):
         return x_mat
 
     def inverse_transform_std(self, x_mat):
-        """Conduct the inverse scaling transformation on the standard deviation
-        data of the random process.
+        """Conduct the inverse scaling.
 
         Args:
             x_mat (np.array): Data matrix that should be standardized

@@ -1,3 +1,5 @@
+"""Grid iterator."""
+
 import numpy as np
 
 import pqueens.visualization.grid_iterator_visualization as qvis
@@ -8,8 +10,9 @@ from .iterator import Iterator
 
 
 class GridIterator(Iterator):
-    """Grid Iterator to enable meshgrid evaluations with different axis scaling
-    such as linear, log10 or ln.
+    """Grid Iterator to enable meshgrid evaluations.
+
+    Different axis scaling possiblem: as linear, log10 or ln.
 
     Attributes:
         model (model): Model to be evaluated by iterator
@@ -32,7 +35,17 @@ class GridIterator(Iterator):
         parameters,
         num_parameters,
     ):
-        super(GridIterator, self).__init__(model, global_settings)
+        """Initialize grid iterator.
+
+        Args:
+            model (model): Model to be evaluated by iterator
+            result_description (dict):  Description of desired results
+            global_settings (dict, optional): Settings for the QUEENS run.
+            grid_dict (dict): Dictionary containing grid information
+            parameters (dict):    dictionary containing parameter information
+            num_parameters (int):   number of parameters to be varied
+        """
+        super().__init__(model, global_settings)
         self.grid_dict = grid_dict
         self.parameters = parameters
         self.result_description = result_description

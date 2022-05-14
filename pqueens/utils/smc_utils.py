@@ -125,7 +125,7 @@ class StaticStateSpaceModel(ssp.StaticModel):
             prior (obj, optional): Model for the prior distribution. Defaults to None.
         """
         # Data is always set to `Ǹone` as we let QUEENS handle the actual likelihood computation
-        super(StaticStateSpaceModel, self).__init__(data=data, prior=prior)
+        super().__init__(data=data, prior=prior)
         self.likelihood_model = likelihood_model
         self.random_variable_keys = random_variable_keys
         self.n_sims = 0

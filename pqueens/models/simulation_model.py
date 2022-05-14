@@ -1,4 +1,5 @@
 """Simulation model class."""
+
 from pqueens.interfaces import from_config_create_interface
 
 from .model import Model
@@ -20,7 +21,7 @@ class SimulationModel(Model):
             model_parameters (dict):    Dictionary with description of
                                         model parameters
         """
-        super(SimulationModel, self).__init__(model_name, model_parameters)
+        super().__init__(model_name, model_parameters)
         self.interface = interface
 
     @classmethod

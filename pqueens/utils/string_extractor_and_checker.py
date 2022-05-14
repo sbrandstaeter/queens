@@ -1,5 +1,10 @@
-"""Module supplies functions to extract string from output and to check if
-string is contained in file."""
+"""Module supplies functions to extract string.
+
+Checks if string is contained in file.
+"""
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 def extract_string_from_output(search_string, output):
@@ -9,7 +14,6 @@ def extract_string_from_output(search_string, output):
         search_string (str):    string to be searched for
         output (str):           output string
     """
-
     newstr1 = ""
     for item in output.split("\n"):
         if search_string in item:
@@ -41,6 +45,5 @@ if __name__ == "__main__":
 
     string_present = check_if_string_in_file(sys.argv[1], sys.argv[2])
     if string_present:
-        sys.stdout.write("True\n")
-        sys.stdout.flush()
+        _logger.info("True\n")
     sys.exit(0)

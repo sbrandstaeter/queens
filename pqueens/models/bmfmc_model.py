@@ -1,4 +1,5 @@
 """Bayesian multi-fidelity Monte-Carlo model."""
+
 import numpy as np
 import scipy.stats as st
 from sklearn.preprocessing import StandardScaler
@@ -192,7 +193,7 @@ class BMFMCModel(Model):
         self.hf_data_iterator = hf_data_iterator
         self.training_indices = None
 
-        super(BMFMCModel, self).__init__(
+        super().__init__(
             name="bmfmc_model", uncertain_parameters=uncertain_parameters, data_flag=True
         )  # TODO handling of variables, fields and parameters should be updated!
 

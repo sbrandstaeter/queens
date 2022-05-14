@@ -1,3 +1,5 @@
+"""Likelihood models base class."""
+
 import abc
 import glob
 import os
@@ -12,8 +14,7 @@ from pqueens.models.model import Model
 
 
 class LikelihoodModel(Model):
-    """Base class for likelihood models that unifies interfaces of likelihood
-    models used in inverse analysis.
+    """Base class for likelihood models.
 
     Attributes:
         forward_model (obj): Forward model on which the likelihood model is based
@@ -22,9 +23,6 @@ class LikelihoodModel(Model):
         y_obs_vec (np.array): Corresponding experimental data vector to coords_mat
         output_label (str): Name of the experimental outputs (column label in csv-file)
         coord_labels (lst): List with coordinate labels for (column labels in csv-file)
-
-    Returns:
-        Instance of LikelihoodModel class
     """
 
     def __init__(
@@ -38,7 +36,20 @@ class LikelihoodModel(Model):
         output_label,
         coord_labels,
     ):
-        super(LikelihoodModel, self).__init__(model_name, model_parameters)
+        """Initialise likelihood model.
+
+        Args:
+            model_name (string): Name of model
+            model_parameters (dict): Dictionary with description of uncertain
+                                     parameters (from input file)
+            forward_model (obj): Forward model on which the likelihood model is based
+            coords_mat (np.array): Row-wise coordinates at which the observations were recorded
+            time_vec (np.array): Vector of observation times
+            y_obs_vec (np.array): Corresponding experimental data vector to coords_mat
+            output_label (str): Name of the experimental outputs (column label in csv-file)
+            coord_labels (lst): List with coordinate labels for (column labels in csv-file)
+        """
+        super().__init__(model_name, model_parameters)
         self.forward_model = forward_model
         self.coords_mat = coords_mat
         self.y_obs_vec = y_obs_vec
@@ -112,8 +123,7 @@ class LikelihoodModel(Model):
         time_label,
         output_label,
     ):
-        """Load all experimental data into QUEENS and conduct some
-        preprocessing and cleaning.
+        """Load all experimental data into QUEENS and preprocessing data.
 
         Args:
             experimental_data_path_list (lst): List containing paths to base directories of
