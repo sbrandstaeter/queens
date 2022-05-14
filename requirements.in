@@ -46,7 +46,7 @@ mock
 pyfiglet # make ascii  -art printsc
 tqdm # a smart progress meter for loops
 gnuplotlib # for gnuplot based terminal ascii plots
-tomli<2.0.0 # TOML parser
+tomli # TOML parser
 
 ## Maybe not needed
 #pathos # multiprocessing with more complex python objects
