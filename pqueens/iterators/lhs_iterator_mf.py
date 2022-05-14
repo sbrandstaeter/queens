@@ -1,3 +1,5 @@
+"""Multi-fideliy latin hypercube sampling."""
+
 import numpy as np
 from pyDOE import lhs
 
@@ -28,7 +30,17 @@ class MFLHSIterator(Iterator):
     """
 
     def __init__(self, model, seed, num_samples, num_iterations, mode, global_settings):
-        super(MFLHSIterator, self).__init__(model, global_settings)
+        """Initialise multi-fidelity iterator.
+
+        Args:
+            model (model):        multi-fidelity model comprising sub-models
+            seed  (int):          Seed for random number generation
+            num_samples (list):   List of number of samples to compute on each level
+            num_iterations (int): Number of optimization iterations of design
+            mode (str):           Mode of sampling (nested/independent)
+            global_settings (dict, optional): Settings for the QUEENS run.
+        """
+        super().__init__(model, global_settings)
         if type(self.model) is not MultifidelityModel:
             raise RuntimeError("MFLHS Iterator requires a multi-fidelity model")
 
@@ -104,7 +116,6 @@ class MFLHSIterator(Iterator):
 
     def core_run(self):
         """Run LHS Analysis on model."""
-
         self.model.set_response_mode("bypass_lofi")
 
         for i in range(0, self.model.num_levels):

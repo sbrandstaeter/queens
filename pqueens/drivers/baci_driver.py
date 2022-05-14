@@ -472,15 +472,12 @@ class BaciDriver(Driver):
             )
             # pylint: enable=line-too-long
             self._manipulate_dat_file()
-        super(BaciDriver, self).pre_job_run()
+        super().pre_job_run()
 
     def _manipulate_dat_file(self):
         """Helper method that calls the dat-file manipulation method.
 
         Only needed if random fields are used.
-
-        Returns:
-            None
         """
         # set also new name for copied dat-file
         if self.random_fields_lst:

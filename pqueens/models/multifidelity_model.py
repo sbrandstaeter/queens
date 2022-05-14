@@ -33,7 +33,7 @@ class MultifidelityModel(Model):
             model_sequence (list):      List with SimulationModels
             eval_cost_per_level (list): List with model evaluation cost
         """
-        super(MultifidelityModel, self).__init__(model_name, model_parameters)
+        super().__init__(model_name, model_parameters)
 
         self.eval_cost_per_level = eval_cost_per_level
         self.num_levels = len(model_sequence)

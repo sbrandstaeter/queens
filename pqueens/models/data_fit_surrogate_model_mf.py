@@ -1,4 +1,5 @@
 """Multi-fidelity Surrogate model class."""
+
 import numpy as np
 
 from pqueens.interfaces import from_config_create_interface
@@ -34,7 +35,7 @@ class MFDataFitSurrogateModel(Model):
                                              model with the purpose of getting
                                              training data
         """
-        super(MFDataFitSurrogateModel, self).__init__(model_name, model_parameters)
+        super().__init__(model_name, model_parameters)
         self.interface = interface
         self.subordinate_model = subordinate_model
         self.subordinate_iterator = subordinate_iterator

@@ -1,4 +1,5 @@
 """Job interface class."""
+import logging
 import sys
 import time
 
@@ -13,6 +14,8 @@ from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 this = sys.modules[__name__]
 this.restart_flag = None
+
+_logger = logging.getLogger(__name__)
 
 
 class JobInterface(Interface):
@@ -621,7 +624,7 @@ class JobInterface(Interface):
                             computing_time = (
                                 current_check_job['end time'] - current_check_job['start time']
                             )
-                            sys.stdout.write(
+                            _logger.info(
                                 'Successfully completed job {:d} (No. of proc.: {:d}, '
                                 'computing time: {:08.2f} s).\n'.format(
                                     current_check_job['id'],
@@ -874,12 +877,12 @@ class JobInterface(Interface):
 
     def print_resources_status(self):
         """Print out whats going on on the resources."""
-        sys.stdout.write('\nResources:      ')
+        _logger.info('\nResources:      ')
         left_indent = 16
         indentation = ' ' * left_indent
-        sys.stdout.write('NAME            PENDING      COMPLETED    FAILED   \n')
-        sys.stdout.write(indentation)
-        sys.stdout.write('------------    ---------    ---------    ---------\n')
+        _logger.info('NAME            PENDING      COMPLETED    FAILED   \n')
+        _logger.info(indentation)
+        _logger.info('------------    ---------    ---------    ---------\n')
         total_pending = 0
         total_complete = 0
         total_failed = 0
@@ -892,14 +895,14 @@ class JobInterface(Interface):
             total_pending += pending
             total_complete += complete
             total_failed += failed
-            sys.stdout.write(
+            _logger.info(
                 '{}{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
                     indentation, resource.name, pending, complete, failed
                 )
             )
-        sys.stdout.write(
+        _logger.info(
             '{}{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
                 indentation, '*TOTAL*', total_pending, total_complete, total_failed
             )
         )
-        sys.stdout.write('\n')
+        _logger.info('\n')

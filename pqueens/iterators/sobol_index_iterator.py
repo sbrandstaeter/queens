@@ -1,4 +1,5 @@
 """Estimate Sobol indices."""
+
 import logging
 import os
 
@@ -59,7 +60,7 @@ class SobolIndexIterator(Iterator):
             result_description (dict): Dictionary with desired result description
             global_settings (dict): Dictionary with global settings for the analysis
         """
-        super(SobolIndexIterator, self).__init__(model, global_settings)
+        super().__init__(model, global_settings)
 
         self.seed = seed
         self.num_samples = num_samples

@@ -70,9 +70,7 @@ class BMFIAIterator(Iterator):
         y_obs_vec,
     ):
         """Instantiate the BMFIAIterator object."""
-        super(BMFIAIterator, self).__init__(
-            None, global_settings
-        )  # Input prescribed by iterator.py
+        super().__init__(None, global_settings)  # Input prescribed by iterator.py
 
         self.result_description = result_description
         self.X_train = x_train
