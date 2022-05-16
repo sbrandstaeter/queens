@@ -289,6 +289,16 @@ class PostPostCsv(PostPost):
 
     def _filter_and_manipulate_raw_data(self):
         """Filter the pandas data-frame based on filter type."""
+        filter_formats_dict = {
+            "numpy": self.raw_file_data.to_numpy(),
+            "dict": self.raw_file_data.to_dict('list'),
+        }
+        if self.filter_format not in filter_formats_dict:
+            raise KeyError(
+                "The filter format you provided is not a current option. Allowed options are "
+                f"{filter_formats_dict.keys()}. Abort..."
+            )
+
         valid_filter_types = {
             'entire_file': self._filter_entire_file,
             'by_range': self._filter_by_range,
@@ -301,6 +311,7 @@ class PostPostCsv(PostPost):
             valid_filter_types, self.filter_type, error_message=error_message
         )
         filter_method()
+        self.post_post_data = filter_formats_dict[self.filter_format]
 
         if not np.any(self.post_post_data):
             raise RuntimeError(
@@ -309,16 +320,6 @@ class PostPostCsv(PostPost):
 
     def _filter_entire_file(self):
         """Keep entire csv file data and provide format."""
-        filter_formats_dict = {
-            "numpy": self.raw_file_data.to_numpy(),
-            "dict": self.raw_file_data.to_dict('list'),
-        }
-        if self.filter_format not in filter_formats_dict:
-            raise KeyError(
-                "The filter format you provided is not a current option. Allowed options are "
-                f"{filter_formats_dict.keys()}. Abort..."
-            )
-        self.post_post_data = filter_formats_dict[self.filter_format]
 
     def _filter_by_row_index(self):
         """Filter the csv file based on given data rows."""
