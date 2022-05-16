@@ -76,7 +76,10 @@ class PostPost(metaclass=abc.ABCMeta):
             driver_name (str): Name of the associated driver.
         """
         driver_params = config.get(driver_name)
-        post_post_options = driver_params["driver_params"].get('post_post')
+        try:
+            post_post_options = driver_params["driver_params"].get('post_post')
+        except KeyError:
+            post_post_options = driver_params.get("post_post")
 
         post_file_name_identifier = post_post_options.get('post_file_name_identifier')
         if not post_file_name_identifier:
@@ -155,7 +158,7 @@ class PostPost(metaclass=abc.ABCMeta):
             post_file_path_regex (str): Path to postprocessed file that still
                                         contains wildcards or regex expressions
         """
-        file_identifier = self.post_file_name_identifier + '*'
+        file_identifier = self.post_file_name_identifier
         post_file_path_regex = os.path.join(base_dir_post_file, file_identifier)
         return post_file_path_regex
 
@@ -178,7 +181,7 @@ class PostPost(metaclass=abc.ABCMeta):
                 "The files are: {file_list}."
                 "The file prefix must lead to a unique file. Abort..."
             )
-        elif len(file_list) == 1:
+        if len(file_list) == 1:
             self.post_file_path = file_list[0]
             file_exists = True
         else:
@@ -190,12 +193,10 @@ class PostPost(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def _get_raw_data_from_file(self):
         """Get the raw data from the files of interest."""
-        pass
 
     @abc.abstractmethod
     def _filter_and_manipulate_raw_data(self):
         """Filter or clean the raw data for given criteria."""
-        pass
 
     def _subsequent_data_manipulation(self):
         """Subsequent manipulate the post_post data.
@@ -205,7 +206,6 @@ class PostPost(metaclass=abc.ABCMeta):
         sure to add the module to the `from_config_create` method in
         this file.
         """
-        pass
 
     @staticmethod
     def _clean_up(file_path):

@@ -12,6 +12,8 @@ import os
 import numpy as np
 import pandas as pd
 
+from pqueens.post_post.post_post_csv_data import PostPostCsv
+
 _logger = logging.getLogger(__name__)
 
 
@@ -54,12 +56,19 @@ def from_config_create_model(model_name, config):
     time_label = model_options.get('time_label')
     db = DB_module.database
     global_settings = config.get('global_settings', None)
-    experimental_data_path_list = model_options.get("experimental_csv_data_base_dirs")
+    experimental_data_base_dir = model_options.get("experimental_csv_data_base_dir")
     experiment_name = global_settings["experiment_name"]
 
-    # call classmethod to load experimental data
+    # call method to load experimental data
+    csv_data_reader = PostPostCsv.from_config_create_post_post(config, model_name)
     y_obs_vec, coords_mat, time_vec = _get_experimental_data_and_write_to_db(
-        experimental_data_path_list, experiment_name, db, coord_labels, time_label, output_label
+        csv_data_reader,
+        experimental_data_base_dir,
+        experiment_name,
+        db,
+        coord_labels,
+        time_label,
+        output_label,
     )
 
     likelihood_model = model_class.from_config_create_likelihood(
@@ -78,7 +87,8 @@ def from_config_create_model(model_name, config):
 
 
 def _get_experimental_data_and_write_to_db(
-    experimental_data_path_list,
+    csv_data_reader,
+    experimental_data_path,
     experiment_name,
     db,
     coordinate_labels,
@@ -88,8 +98,9 @@ def _get_experimental_data_and_write_to_db(
     """Load all experimental data into QUEENS.
 
     Args:
-        experimental_data_path_list (lst): List containing paths to base directories of
-                                            experimental data in csv format
+        csv_data_reader (obj): CSV - data reader object
+        experimental_data_path (str): Path to base directory containing
+                                      experimental data
         experiment_name (str): Name of the current experiment in QUEENS
         db (obj): Database object
         coordinate_labels (lst): List of column-wise coordinate labels in csv files
@@ -102,62 +113,25 @@ def _get_experimental_data_and_write_to_db(
         experimental_coordinates (np.array): Matrix with observation coordinates. One row
                                                 corresponds to one coordinate point.
     """
-    try:
-        # iteratively load all csv files in specified directory
-        files_of_interest_list = []
-        all_files_list = []
-        for experimental_data_path in experimental_data_path_list:
-            prefix_expr = '*.csv'  # only read csv files
-            files_of_interest_paths = os.path.join(experimental_data_path, prefix_expr)
-            files_of_interest_list.extend(glob.glob(files_of_interest_paths))
-            all_files_path = os.path.join(experimental_data_path, '*')
-            all_files_list.extend(glob.glob(all_files_path))
+    experimental_data_dict = csv_data_reader.get_data_from_post_file(experimental_data_path)
 
-        #  check if some files are not csv files and throw a warning
-        non_csv_files = [x for x in all_files_list if x not in files_of_interest_list]
-        if non_csv_files:
-            _logger.info('----------------------------------------------------------------')
-            _logger.info(
-                f'The following experimental data files could not be read-in as they do '
-                f'not have a .csv file-ending: {non_csv_files}'
-            )
-            _logger.info('----------------------------------------------------------------')
+    # potentially scale experimental data and save the results to the database
+    # For now we save all data-points to the experimental data slot `1`. This could be
+    # extended in the future if we want to read in several different data sources
+    db.save(experimental_data_dict, experiment_name, 'experimental_data', '1')
 
-        # read all experimental data into one numpy array
-        data_list = []
-        for filename in files_of_interest_list:
-            try:
-                new_experimental_data = pd.read_csv(
-                    filename, sep=r'[,\s]\s*', header=0, engine='python', index_col=None
-                )
-                data_list.append(new_experimental_data)
+    # arrange the experimental data‹ coordinates
+    experimental_coordinates = (
+        np.array([experimental_data_dict[coordinate] for coordinate in coordinate_labels]),
+    )[0].T
 
-            except IOError as my_error:
-                raise IOError(
-                    'An error has ocurred while reading the experimental data! Abort...'
-                ) from my_error
-        experimental_data_dict = pd.concat(data_list, axis=0, ignore_index=True).to_dict('list')
+    # get a unique vector of observation times
+    if time_label:
+        time_vec = np.sort(list(set(experimental_data_dict[time_label])))
+    else:
+        time_vec = None
 
-        # potentially scale experimental data and save the results to the database
-        # For now we save all data-points to the experimental data slot `1`. This could be
-        # extended in the future if we want to read in several different data sources
-        db.save(experimental_data_dict, experiment_name, 'experimental_data', '1')
+    # get the experimental outputs
+    y_obs_vec = np.array(experimental_data_dict[output_label]).squeeze()
 
-        # arrange the experimental data‹ coordinates
-        experimental_coordinates = (
-            np.array([experimental_data_dict[coordinate] for coordinate in coordinate_labels]),
-        )[0].T
-
-        # get a unique vector of observation times
-        if time_label:
-            time_vec = np.sort(list(set(experimental_data_dict[time_label])))
-        else:
-            time_vec = None
-
-        # get the experimental outputs
-        y_obs_vec = np.array(experimental_data_dict[output_label]).squeeze()
-
-        return y_obs_vec, experimental_coordinates, time_vec
-
-    except IOError as my_error:
-        raise IOError("You did not specify any experimental data! Abort...") from my_error
+    return y_obs_vec, experimental_coordinates, time_vec

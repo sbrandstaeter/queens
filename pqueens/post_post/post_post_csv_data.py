@@ -63,6 +63,7 @@ class PostPostCsv(PostPost):
         filter_range,
         filter_target_values,
         filter_tol,
+        filter_format,
     ):
         """Instantiate post post class for csv data.
 
@@ -92,11 +93,12 @@ class PostPostCsv(PostPost):
                                 in list format
             filter_tol (float): Tolerance for the filter range
             filter_target_values (list): target values to filter
+            filter_format (str): Returned data format after filtering
 
         Returns:
             Instance of PostPostCsv class
         """
-        super(PostPostCsv, self).__init__(
+        super().__init__(
             post_file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
@@ -111,6 +113,7 @@ class PostPostCsv(PostPost):
         self.filter_range = filter_range
         self.filter_target_values = filter_target_values
         self.filter_tol = filter_tol
+        self.filter_format = filter_format
 
     @classmethod
     def from_config_create_post_post(cls, config, driver_name):
@@ -148,12 +151,19 @@ class PostPostCsv(PostPost):
             )
 
         index_column = file_options_dict.get('index_column', False)
-        if index_column and (not (isinstance(index_column, int) or isinstance(index_column, str))):
+        if index_column and not isinstance(index_column, (int, str)):
             raise TypeError(
                 "The option 'index_column' must be either of type 'int' or 'str', "
                 f"but you provided type {type(index_column)}! Either your original data "
                 "type is wrong or the column does not exist in the csv-data file! "
                 "Abort..."
+            )
+
+        filter_format = file_options_dict.get('filter_format', 'numpy')
+        if not isinstance(filter_format, str):
+            raise TypeError(
+                "The option 'filter_format' has to be of type 'str', "
+                f"but you provided type {type(filter_format)}. Abort..."
             )
 
         filter_options_dict = file_options_dict.get('filter')
@@ -172,12 +182,11 @@ class PostPostCsv(PostPost):
                 "The option 'use_rows_lst' must be of type 'list' "
                 f"but you provided type {type(use_rows_lst)}. Abort..."
             )
-        else:
-            if not all(isinstance(row_idx, int) for row_idx in use_rows_lst):
-                raise TypeError(
-                    "The option 'use_rows_lst' must be a list of `int` "
-                    f"but you provided type {[type(row_idx) for row_idx in use_rows_lst]}. Abort..."
-                )
+        if not all(isinstance(row_idx, int) for row_idx in use_rows_lst):
+            raise TypeError(
+                "The option 'use_rows_lst' must be a list of `int` "
+                f"but you provided type {[type(row_idx) for row_idx in use_rows_lst]}. Abort..."
+            )
 
         filter_range = filter_options_dict.get('range', [])
         if filter_range and not isinstance(filter_range, list):
@@ -214,6 +223,7 @@ class PostPostCsv(PostPost):
             filter_range,
             filter_target_values,
             filter_tol,
+            filter_format,
         )
 
     @classmethod
@@ -230,21 +240,21 @@ class PostPostCsv(PostPost):
                     f"a dictionary of type {cls.expected_filter_entire_file}."
                 )
             return
-        elif filter_options_dict["type"] == 'by_range':
+        if filter_options_dict["type"] == 'by_range':
             if not filter_options_dict.keys() == cls.expected_filter_by_range.keys():
                 raise TypeError(
                     "For the filter type `by_range`, you have to provide "
                     f"a dictionary of type {cls.expected_filter_by_range}."
                 )
             return
-        elif filter_options_dict["type"] == 'by_row_index':
+        if filter_options_dict["type"] == 'by_row_index':
             if not filter_options_dict.keys() == cls.expected_filter_by_row_index.keys():
                 raise TypeError(
                     "For the filter type `by_row_index`, you have to provide "
                     f"a dictionary of type {cls.expected_filter_by_row_index}."
                 )
             return
-        elif filter_options_dict["type"] == 'by_target_values':
+        if filter_options_dict["type"] == 'by_target_values':
             if not filter_options_dict.keys() == cls.expected_filter_by_target_values.keys():
                 raise TypeError(
                     "For the filter type `by_target_values`, you have to provide "
@@ -298,8 +308,17 @@ class PostPostCsv(PostPost):
             )
 
     def _filter_entire_file(self):
-        """Keep entire csv file data."""
-        self.post_post_data = self.raw_file_data.to_numpy()
+        """Keep entire csv file data and provide format."""
+        filter_formats_dict = {
+            "numpy": self.raw_file_data.to_numpy(),
+            "dict": self.raw_file_data.to_dict('list'),
+        }
+        if self.filter_format not in filter_formats_dict:
+            raise KeyError(
+                "The filter format you provided is not a current option. Allowed options are "
+                f"{filter_formats_dict.keys()}. Abort..."
+            )
+        self.post_post_data = filter_formats_dict[self.filter_format]
 
     def _filter_by_row_index(self):
         """Filter the csv file based on given data rows."""
@@ -309,8 +328,7 @@ class PostPostCsv(PostPost):
             except IndexError as exception:
                 raise IndexError(
                     f"Index list {self.use_rows_lst} are not contained in raw_file_data. "
-                    f"The IndexError was: {exception}. Abort..."
-                )
+                ) from exception
 
     def _filter_by_target_values(self):
         """Filter the pandas data frame based on target values."""
