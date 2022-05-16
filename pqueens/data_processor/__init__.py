@@ -38,13 +38,13 @@ def from_config_create_data_processor(config, driver_name):
             f"The 'data_processor' options were not found in the driver '{driver_name}'! Abort..."
         )
 
-    data_processor_version = data_processor_options.get('data_processor_approach_sel')
-    if not data_processor_version:
+    data_processor_type = data_processor_options.get('type')
+    if not data_processor_type:
         raise ValueError(
-            "The data_processor section did not specify a valid 'data_processor_approach_sel'! "
+            "The data_processor section did not specify a valid 'type'! "
             f"Valid options are {data_processor_dict.keys()}. Abort..."
         )
 
-    data_processor_class = data_processor_dict[data_processor_version]
+    data_processor_class = data_processor_dict[data_processor_type]
     data_processor = data_processor_class.from_config_create_data_processor(config, driver_name)
     return data_processor

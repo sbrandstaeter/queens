@@ -179,7 +179,7 @@
         ""
       ],
       "data_processor": {
-        "data_processor_approach_sel": "ensight",
+        "type": "ensight",
         "post_file_name_identifier": "scatra",
         "file_options_dict": {
           "delete_field_data": false,
@@ -215,7 +215,7 @@
         ""
       ],
       "data_processor": {
-        "data_processor_approach_sel": "ensight",
+        "type": "ensight",
         "post_file_name_identifier": "scatra",
         "file_options_dict": {
           "delete_field_data": false,
@@ -251,7 +251,7 @@
         ""
       ],
       "data_processor": {
-        "data_processor_approach_sel": "ensight",
+        "type": "ensight",
         "post_file_name_identifier": "scatra",
         "file_options_dict": {
           "delete_field_data": false,

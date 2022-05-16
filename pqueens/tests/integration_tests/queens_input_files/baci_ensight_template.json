@@ -47,7 +47,7 @@
         "baci_ensight"
       ],
       "data_processor": {
-        "data_processor_approach_sel": "ensight",
+        "type": "ensight",
         "post_file_name_identifier": "baci_ensight*structure.case",
         "file_options_dict": {
           "delete_field_data": false,

@@ -60,7 +60,7 @@
                 "--field=structure --node=26 --start=1"
             ],
             "data_processor": {
-                "data_processor_approach_sel": "csv",
+                "type": "csv",
                 "post_file_name_identifier": "QoI",
                 "file_options_dict": {
                     "delete_field_data": false,
