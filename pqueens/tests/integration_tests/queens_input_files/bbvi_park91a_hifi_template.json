@@ -51,6 +51,17 @@
         "type": "likelihood_model",
         "subtype": "gaussian_static",
         "forward_model": "forward_model",
+        "post_post": {
+        "post_file_name_identifier": "*.csv",
+        "file_options_dict": {
+            "header_row": 0,
+            "index_column": false,
+            "filter_format": "dict",
+            "filter": {
+                "type": "entire_file"
+            }
+            }
+        },
         "output_label": "y_obs",
         "coordinate_labels": [
             "x3",
@@ -58,9 +69,7 @@
         ],
         "likelihood_noise_type": "jeffreys_prior",
         "nugget_noise_var": 1E-8,
-        "experimental_csv_data_base_dirs": [
-            "{experimental_data_path}"
-        ],
+        "experimental_csv_data_base_dir": "{experimental_data_path}",
         "noise_var_iterative_averaging": {
             "averaging_type": "moving_average",
             "num_iter_for_avg": 10
