@@ -83,6 +83,7 @@ def default_post_post():
     filter_range = []
     filter_target_values = [1, 2]
     filter_tol = 2.0
+    filter_format = "numpy"
 
     pp = pqueens.post_post.post_post_csv_data.PostPostCsv(
         post_file_name_identifier,
@@ -98,6 +99,7 @@ def default_post_post():
         filter_range,
         filter_target_values,
         filter_tol,
+        filter_format,
     )
     return pp
 
@@ -118,6 +120,7 @@ def test_init():
     filter_range = []
     filter_target_values = [1, 2]
     filter_tol = 2.0
+    filter_format = "dict"
 
     my_postpost = PostPostCsv(
         post_file_name_identifier,
@@ -133,6 +136,7 @@ def test_init():
         filter_range,
         filter_target_values,
         filter_tol,
+        filter_format,
     )
 
     assert my_postpost.driver_name == driver_name
@@ -151,6 +155,7 @@ def test_init():
     assert my_postpost.skip_rows == skip_rows
     assert my_postpost.use_cols_lst == use_cols_lst
     assert my_postpost.use_rows_lst == use_rows_lst
+    assert my_postpost.filter_format == filter_format
 
 
 @pytest.mark.unit_tests
@@ -236,6 +241,7 @@ def test_from_config_create_post_post(mocker):
     filter_range = []
     filter_target_values = []
     filter_tol = 0.0
+    filter_format = "numpy"
 
     file_options_dict = {
         'header_row': header_row,
@@ -244,6 +250,7 @@ def test_from_config_create_post_post(mocker):
         'use_rows_lst': use_rows_lst,
         'index_column': index_column,
         'files_to_be_deleted_regex_lst': files_to_be_deleted_regex_lst,
+        'filter_format': filter_format,
         "filter": {"type": filter_type, "rows": use_rows_lst},
     }
 
@@ -276,6 +283,7 @@ def test_from_config_create_post_post(mocker):
         filter_range,
         filter_target_values,
         filter_tol,
+        filter_format,
     )
 
 
@@ -349,7 +357,6 @@ def test_filter_by_range(default_post_post, default_raw_data):
     default_post_post._filter_and_manipulate_raw_data()
 
     expected_data = np.array([1.54266, 1.86050, 2.12885, 2.36284]).reshape((4, 1))
-
     np.testing.assert_allclose(expected_data, default_post_post.post_post_data)
 
 

@@ -289,16 +289,6 @@ class PostPostCsv(PostPost):
 
     def _filter_and_manipulate_raw_data(self):
         """Filter the pandas data-frame based on filter type."""
-        filter_formats_dict = {
-            "numpy": self.raw_file_data.to_numpy(),
-            "dict": self.raw_file_data.to_dict('list'),
-        }
-        if self.filter_format not in filter_formats_dict:
-            raise KeyError(
-                "The filter format you provided is not a current option. Allowed options are "
-                f"{filter_formats_dict.keys()}. Abort..."
-            )
-
         valid_filter_types = {
             'entire_file': self._filter_entire_file,
             'by_range': self._filter_by_range,
@@ -311,6 +301,16 @@ class PostPostCsv(PostPost):
             valid_filter_types, self.filter_type, error_message=error_message
         )
         filter_method()
+        filter_formats_dict = {
+            "numpy": self.post_post_data.to_numpy(),
+            "dict": self.post_post_data.to_dict('list'),
+        }
+        if self.filter_format not in filter_formats_dict:
+            raise KeyError(
+                "The filter format you provided is not a current option. Allowed options are "
+                f"{filter_formats_dict.keys()}. Abort..."
+            )
+
         self.post_post_data = filter_formats_dict[self.filter_format]
 
         if not np.any(self.post_post_data):
@@ -320,12 +320,13 @@ class PostPostCsv(PostPost):
 
     def _filter_entire_file(self):
         """Keep entire csv file data and provide format."""
+        self.post_post_data = self.raw_file_data
 
     def _filter_by_row_index(self):
         """Filter the csv file based on given data rows."""
         if any(self.raw_file_data):
             try:
-                self.post_post_data = self.raw_file_data.iloc[self.use_rows_lst].to_numpy()
+                self.post_post_data = self.raw_file_data.iloc[self.use_rows_lst]
             except IndexError as exception:
                 raise IndexError(
                     f"Index list {self.use_rows_lst} are not contained in raw_file_data. "
@@ -344,7 +345,7 @@ class PostPostCsv(PostPost):
                     )
                 )
 
-            self.post_post_data = self.raw_file_data.iloc[target_indices].to_numpy()
+            self.post_post_data = self.raw_file_data.iloc[target_indices]
 
     def _filter_by_range(self):
         """Filter the pandas data frame based on values in a data column."""
@@ -360,4 +361,4 @@ class PostPostCsv(PostPost):
                 )[-1]
             )
 
-            self.post_post_data = (self.raw_file_data.iloc[range_start : range_end + 1]).to_numpy()
+            self.post_post_data = self.raw_file_data.iloc[range_start : range_end + 1]
