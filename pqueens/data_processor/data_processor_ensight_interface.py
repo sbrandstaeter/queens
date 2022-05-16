@@ -1,4 +1,4 @@
-"""Post post module for vtk ensight boundary data."""
+"""Data processor module for vtk ensight boundary data."""
 
 import re
 from pathlib import Path
@@ -27,7 +27,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
     def __init__(
         self,
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -40,11 +40,11 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         """Initialize data_processor_ensight_interface class.
 
         Args:
-            post_file_name_identifier (str): Identifier of postprocessed file name.
+            file_name_identifier (str): Identifier of file name.
                                              The file prefix can contain regex expression
                                              and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
-                                      the post_processed file
+                                      the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
             driver_name (str): Name of the associated driver.
@@ -56,7 +56,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                                               discrepancy measure is computed.
         """
         super().__init__(
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -76,7 +76,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             driver_name (str): Name of driver that is used in this job-submission
         """
         (
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
         ) = super().from_config_set_base_attributes(config, driver_name)
@@ -119,7 +119,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             )
 
         return cls(
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -210,7 +210,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
     def _get_raw_data_from_file(self):
         """Read-in EnSight file using vtkGenericEnSightReader."""
         self.raw_file_data = vtk.vtkGenericEnSightReader()
-        self.raw_file_data.SetCaseFileName(self.post_file_path)
+        self.raw_file_data.SetCaseFileName(self.file_path)
         self.raw_file_data.ReadAllVariablesOn()
         self.raw_file_data.Update()
 
@@ -255,7 +255,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
             self._visualize_final_discrepancy_measure(outline_out, points, vertices)
 
-        self.data_processor_data = residual_distance_lst
+        self.processed_data = residual_distance_lst
 
     def _get_intersection_points(self, outline_data, outline_out, point_vector):
         """Get intersection points."""
@@ -446,7 +446,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         return distance
 
     def create_UnstructuredGridFromEnsight_per_time_step(self, time):
-        """Read ensight file from post_processor.
+        """Read ensight file.
 
         Afterwards, warpbyvector by displacement of *structure*
         result in case files.

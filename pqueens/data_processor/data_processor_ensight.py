@@ -1,4 +1,4 @@
-"""Post post class for reading vtk-ensight data."""
+"""Data processor class for reading vtk-ensight data."""
 
 import logging
 
@@ -41,7 +41,7 @@ class DataProcessorEnsight(DataProcessor):
 
     def __init__(
         self,
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -62,11 +62,11 @@ class DataProcessorEnsight(DataProcessor):
         """Init method for ensight data processor object.
 
         Args:
-            post_file_name_identifier (str): Identifier of postprocessed file name.
+            file_name_identifier (str): Identifier of file name.
                                              The file prefix can contain regex expression
                                              and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
-                                      the post_processed file
+                                      the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
             driver_name (str): Name of the associated driver.
@@ -94,7 +94,7 @@ class DataProcessorEnsight(DataProcessor):
             Instance of DataProcessorEnsight class (obj)
         """
         super().__init__(
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -123,7 +123,7 @@ class DataProcessorEnsight(DataProcessor):
             driver_name (str): Name of driver that is used in this job-submission
         """
         (
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
         ) = super().from_config_set_base_attributes(config, driver_name)
@@ -198,7 +198,7 @@ class DataProcessorEnsight(DataProcessor):
         external_geometry_obj = from_config_create_external_geometry(config)
 
         return cls(
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -308,7 +308,7 @@ class DataProcessorEnsight(DataProcessor):
         """
         # Set vtk reader object as raw file data
         self.raw_file_data = vtk.vtkEnSightGoldBinaryReader()
-        self.raw_file_data.SetCaseFileName(self.post_file_path)
+        self.raw_file_data.SetCaseFileName(self.file_path)
         self.raw_file_data.Update()
 
     def _filter_and_manipulate_raw_data(self):
@@ -330,28 +330,28 @@ class DataProcessorEnsight(DataProcessor):
                 break
 
             # get ensight field from specified coordinates
-            data_processor_data_per_time_step_interpolated = self._get_field_values_by_coordinates(
+            processed_data_per_time_step_interpolated = self._get_field_values_by_coordinates(
                 vtk_data_per_time_step,
                 time_value,
             )
 
             # potentially append new time step result to result array
-            if self.data_processor_data.size > 0:
-                self.data_processor_data = np.hstack(
-                    (self.data_processor_data, data_processor_data_per_time_step_interpolated)
+            if self.processed_data.size > 0:
+                self.processed_data = np.hstack(
+                    (self.processed_data, processed_data_per_time_step_interpolated)
                 )
             else:
-                self.data_processor_data = data_processor_data_per_time_step_interpolated
+                self.processed_data = processed_data_per_time_step_interpolated
 
     def _get_field_values_by_coordinates(
         self,
-        vtk_post_data_obj,
+        vtk_data_obj,
         time_value,
     ):
         """Interpolate the vtk field to the coordinates from experimental data.
 
         Args:
-            vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
+            vtk_data_obj (obj): VTK ensight object that contains that solution fields of
                                      interest
             time_value (float): Current time value at which simulation should be evaluated
 
@@ -361,12 +361,12 @@ class DataProcessorEnsight(DataProcessor):
         """
         if self.geometric_target[0] == "experimental_data":
             response_data = self._get_data_from_experimental_coordinates(
-                vtk_post_data_obj,
+                vtk_data_obj,
                 time_value,
             )
         elif self.geometric_target[0] == "geometric_set":
             response_data = self._get_data_from_geometric_set(
-                vtk_post_data_obj,
+                vtk_data_obj,
             )
         else:
             raise ValueError(
@@ -376,11 +376,11 @@ class DataProcessorEnsight(DataProcessor):
 
         return response_data
 
-    def _get_data_from_experimental_coordinates(self, vtk_post_data_obj, time_value):
+    def _get_data_from_experimental_coordinates(self, vtk_data_obj, time_value):
         """Interpolate the ensight/vtk field to experimental coordinates.
 
         Args:
-            vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
+            vtk_data_obj (obj): VTK ensight object that contains that solution fields of
                                      interest
             time_value (float): Current time value at which the simulation shall be evaluated
 
@@ -408,7 +408,7 @@ class DataProcessorEnsight(DataProcessor):
         # interpolate vtk solution to experimental coordinates
         interpolated_data = DataProcessorEnsight._interpolate_vtk(
             experimental_coordinates_for_snapshot,
-            vtk_post_data_obj,
+            vtk_data_obj,
             self.vtk_array_type,
             self.vtk_field_label,
             self.vtk_field_components,
@@ -418,12 +418,12 @@ class DataProcessorEnsight(DataProcessor):
 
     def _get_data_from_geometric_set(
         self,
-        vtk_post_data_obj,
+        vtk_data_obj,
     ):
         """Get entire fields for desired components.
 
         Args:
-            vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
+            vtk_data_obj (obj): VTK ensight object that contains that solution fields of
                                      interest
         Returns:
             data (np.array): Array of field values for nodes of geometric set
@@ -462,7 +462,7 @@ class DataProcessorEnsight(DataProcessor):
         # interpolate vtk solution to experimental coordinates
         interpolated_data = DataProcessorEnsight._interpolate_vtk(
             geometric_set_coordinates,
-            vtk_post_data_obj,
+            vtk_data_obj,
             self.vtk_array_type,
             self.vtk_field_label,
             self.vtk_field_components,
@@ -472,14 +472,14 @@ class DataProcessorEnsight(DataProcessor):
 
     @staticmethod
     def _interpolate_vtk(
-        coordinates, vtk_post_data_obj, vtk_array_type, vtk_field_label, vtk_field_components
+        coordinates, vtk_data_obj, vtk_array_type, vtk_field_label, vtk_field_components
     ):
         """Interpolate the vtk solution field to given coordinates.
 
         Args:
             coordinates (np.array): Coordinates at which the vtk solution field should be
                                     interpolated at
-            vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
+            vtk_data_obj (obj): VTK ensight object that contains that solution fields of
                                      interest
             vtk_array_type (str): Type of vtk array (cell array or point array)
             vtk_field_label (str): Field label that should be extracted
@@ -499,7 +499,7 @@ class DataProcessorEnsight(DataProcessor):
 
         # Generate a vtk filter with desired vtk data as source
         probe_filter_obj = vtk.vtkProbeFilter()
-        probe_filter_obj.SetSourceData(vtk_post_data_obj)
+        probe_filter_obj.SetSourceData(vtk_data_obj)
 
         # Evaluate/interpolate this filter at experimental coordinates
         probe_filter_obj.SetInputData(polydata_obj)

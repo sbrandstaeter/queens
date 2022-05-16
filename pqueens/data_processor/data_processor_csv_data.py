@@ -1,4 +1,4 @@
-"""Post post class for csv data extraction."""
+"""Data processor class for csv data extraction."""
 
 import logging
 
@@ -36,7 +36,7 @@ class DataProcessorCsv(DataProcessor):
         skip_rows (int): Number of rows that should be skipped to be read-in in csv file.
         use_cols_lst (lst): list with column numbers that should be read-in.
         use_rows_lst (lst): In case this options is used, the list contains the indices of rows
-                            in the csv file that should be used as post post data
+                            in the csv file that should be used as data
     """
 
     expected_filter_entire_file = {'type': 'entire_file'}
@@ -50,7 +50,7 @@ class DataProcessorCsv(DataProcessor):
 
     def __init__(
         self,
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -64,14 +64,14 @@ class DataProcessorCsv(DataProcessor):
         filter_target_values,
         filter_tol,
     ):
-        """Instantiate post post class for csv data.
+        """Instantiate data processor class for csv data.
 
         Args:
-            post_file_name_identifier (str): Identifier of postprocessed file name
+            file_name_identifier (str): Identifier of file name
                                              The file prefix can contain regex expression
                                              and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
-                                      the post_processed file
+                                      the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
             driver_name (str): Name of the associated driver.
@@ -85,7 +85,7 @@ class DataProcessorCsv(DataProcessor):
                 pandas to not use the first column as the index. Index_column is used for
                 filtering the remaining columns.
             use_rows_lst (lst): In case this options is used, the list contains the indices of rows
-                                in the csv file that should be used as post post data
+                                in the csv file that should be used as data
             filter_range (lst): After data is selected by `use_cols_lst` and a filter column is
                                 specified by `index_column`, this option selects which data range
                                 shall be filtered by providing a minimum and maximum value pair
@@ -97,7 +97,7 @@ class DataProcessorCsv(DataProcessor):
             Instance of DataProcessorCsv class
         """
         super().__init__(
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -121,7 +121,7 @@ class DataProcessorCsv(DataProcessor):
             driver_name (str): Name of driver that is used in this job-submission
         """
         (
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
         ) = super().from_config_set_base_attributes(config, driver_name)
@@ -201,7 +201,7 @@ class DataProcessorCsv(DataProcessor):
             )
 
         return cls(
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -261,7 +261,7 @@ class DataProcessorCsv(DataProcessor):
         """
         try:
             self.raw_file_data = pd.read_csv(
-                self.post_file_path,
+                self.file_path,
                 sep=r',|\s+',
                 usecols=self.use_cols_lst,
                 skiprows=self.skip_rows,
@@ -269,11 +269,10 @@ class DataProcessorCsv(DataProcessor):
                 engine='python',
                 index_col=self.index_column,
             )
-            _logger.info(f"Successfully read-in data from {self.post_file_path}.")
+            _logger.info(f"Successfully read-in data from {self.file_path}.")
         except IOError as error:
             _logger.warning(
-                f"Could not read postprocessed file {self.post_file_path}. "
-                f"The IOError was: {error}. Skip..."
+                f"Could not read file {self.file_path}. " f"The IOError was: {error}. Skip..."
             )
             self.raw_file_data = None
 
@@ -292,20 +291,20 @@ class DataProcessorCsv(DataProcessor):
         )
         filter_method()
 
-        if not np.any(self.data_processor_data):
+        if not np.any(self.processed_data):
             raise RuntimeError(
                 "The filtered data was empty! Adjust your filter tolerance or filter range!"
             )
 
     def _filter_entire_file(self):
         """Keep entire csv file data."""
-        self.data_processor_data = self.raw_file_data.to_numpy()
+        self.processed_data = self.raw_file_data.to_numpy()
 
     def _filter_by_row_index(self):
         """Filter the csv file based on given data rows."""
         if any(self.raw_file_data):
             try:
-                self.data_processor_data = self.raw_file_data.iloc[self.use_rows_lst].to_numpy()
+                self.processed_data = self.raw_file_data.iloc[self.use_rows_lst].to_numpy()
             except IndexError as exception:
                 raise IndexError(
                     f"Index list {self.use_rows_lst} are not contained in raw_file_data. "
@@ -325,7 +324,7 @@ class DataProcessorCsv(DataProcessor):
                     )
                 )
 
-            self.data_processor_data = self.raw_file_data.iloc[target_indices].to_numpy()
+            self.processed_data = self.raw_file_data.iloc[target_indices].to_numpy()
 
     def _filter_by_range(self):
         """Filter the pandas data frame based on values in a data column."""
@@ -341,6 +340,4 @@ class DataProcessorCsv(DataProcessor):
                 )[-1]
             )
 
-            self.data_processor_data = (
-                self.raw_file_data.iloc[range_start : range_end + 1]
-            ).to_numpy()
+            self.processed_data = (self.raw_file_data.iloc[range_start : range_end + 1]).to_numpy()

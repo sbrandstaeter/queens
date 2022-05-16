@@ -1,4 +1,4 @@
-"""Post post.
+"""Data processor.
 
 Extract data from simulation output.
 """

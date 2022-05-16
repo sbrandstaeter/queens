@@ -48,7 +48,7 @@
       ],
       "data_processor": {
         "type": "ensight",
-        "post_file_name_identifier": "baci_ensight*structure.case",
+        "file_name_identifier": "baci_ensight*structure.case",
         "file_options_dict": {
           "delete_field_data": false,
           "geometric_target": [

@@ -23,7 +23,7 @@ def all_dimensions(request):
 @pytest.fixture()
 def default_data_processor(mocker):
     """Default ensight class for upcoming tests."""
-    post_file_name_identifier = ('dummy_prefix*dummypostfix',)
+    file_name_identifier = ('dummy_prefix*dummyfix',)
     file_options_dict = {}
     experimental_ref_data = 'dummy'
     displacement_fields = ['first_disp', 'second_disp']
@@ -40,7 +40,7 @@ def default_data_processor(mocker):
     )
     # pylint: enable=line-too-long error
     pp = pqueens.data_processor.data_processor_ensight_interface.DataProcessorEnsightInterfaceDiscrepancy(
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         file_to_be_deleted_regex_lst,
         driver_name,
@@ -121,7 +121,7 @@ def vtkUnstructuredGridExample3d():
 @pytest.mark.unit_tests
 def test_init(mocker):
     """Test the init method."""
-    post_file_name_identifier = ('dummy_prefix*dummypostfix',)
+    file_name_identifier = ('dummy_prefix*dummyfix',)
     file_options_dict = {}
     experimental_ref_data = 'dummy'
     displacement_fields = ['first_disp', 'second_disp']
@@ -132,7 +132,7 @@ def test_init(mocker):
     problem_dim = '5d'
 
     my_data_processor = DataProcessorEnsightInterfaceDiscrepancy(
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -152,9 +152,9 @@ def test_init(mocker):
     assert my_data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
     assert my_data_processor.file_options_dict == file_options_dict
     assert my_data_processor.driver_name == driver_name
-    assert my_data_processor.post_file_name_identifier == post_file_name_identifier
-    assert my_data_processor.post_file_path is None
-    np.testing.assert_array_equal(my_data_processor.data_processor_data, np.empty(shape=0))
+    assert my_data_processor.file_name_identifier == file_name_identifier
+    assert my_data_processor.file_path is None
+    np.testing.assert_array_equal(my_data_processor.processed_data, np.empty(shape=0))
     assert my_data_processor.raw_file_data is None
 
 
@@ -174,7 +174,7 @@ def test_from_config_create_data_processor(mocker):
     )
     # pylint: enable=line-too-long error
     driver_name = 'driver'
-    post_file_name_identifier = 'dummyprefix*dummy.case'
+    file_name_identifier = 'dummyprefix*dummy.case'
     time_tol = 1e-03
     visualization_bool = False
     displacement_fields = ['first_disp', 'second_disp']
@@ -197,7 +197,7 @@ def test_from_config_create_data_processor(mocker):
         'driver': {
             'driver_params': {
                 'data_processor': {
-                    'post_file_name_identifier': post_file_name_identifier,
+                    'file_name_identifier': file_name_identifier,
                     'file_options_dict': file_options_dict,
                 }
             }
@@ -209,7 +209,7 @@ def test_from_config_create_data_processor(mocker):
         driver_name,
     )
     mp.assert_called_once_with(
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,

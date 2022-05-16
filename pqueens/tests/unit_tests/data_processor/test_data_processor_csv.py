@@ -1,4 +1,4 @@
-"""Tests for post post csv routine."""
+"""Tests for data processor csv routine."""
 
 import re
 
@@ -69,8 +69,8 @@ def default_raw_data():
 
 @pytest.fixture()
 def default_data_processor():
-    """Default post post csv class for unit tests."""
-    post_file_name_identifier = 'dummy_prefix*dummypostfix'
+    """Default data processor csv class for unit tests."""
+    file_name_identifier = 'dummy_prefix*dummyfix'
     file_options_dict = {}
     filter_type = 'entire_file'
     files_to_be_deleted_regex_lst = []
@@ -85,7 +85,7 @@ def default_data_processor():
     filter_tol = 2.0
 
     pp = pqueens.data_processor.data_processor_csv_data.DataProcessorCsv(
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -105,7 +105,7 @@ def default_data_processor():
 @pytest.mark.unit_tests
 def test_init():
     """Test the init method."""
-    post_file_name_identifier = 'dummy_prefix*dummypostfix'
+    file_name_identifier = 'dummy_prefix*dummyfix'
     file_options_dict = {}
     filter_type = 'entire_file'
     files_to_be_deleted_regex_lst = []
@@ -120,7 +120,7 @@ def test_init():
     filter_tol = 2.0
 
     my_data_processor = DataProcessorCsv(
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -144,9 +144,9 @@ def test_init():
     assert my_data_processor.filter_type == filter_type
     assert my_data_processor.header_row == header_row
     assert my_data_processor.index_column == index_column
-    assert my_data_processor.post_file_name_identifier == post_file_name_identifier
-    assert my_data_processor.post_file_path is None
-    np.testing.assert_array_equal(my_data_processor.data_processor_data, np.empty(shape=0))
+    assert my_data_processor.file_name_identifier == file_name_identifier
+    assert my_data_processor.file_path is None
+    np.testing.assert_array_equal(my_data_processor.processed_data, np.empty(shape=0))
     assert my_data_processor.raw_file_data is None
     assert my_data_processor.skip_rows == skip_rows
     assert my_data_processor.use_cols_lst == use_cols_lst
@@ -224,7 +224,7 @@ def test_from_config_create_data_processor(mocker):
         return_value=None,
     )
 
-    post_file_name_identifier = 'dummy_prefix*dummypostfix'
+    file_name_identifier = 'dummy_prefix*dummyfix'
     files_to_be_deleted_regex_lst = []
     driver_name = 'driver'
     header_row = 0
@@ -251,7 +251,7 @@ def test_from_config_create_data_processor(mocker):
         'driver': {
             'driver_params': {
                 'data_processor': {
-                    'post_file_name_identifier': post_file_name_identifier,
+                    'file_name_identifier': file_name_identifier,
                     'file_options_dict': file_options_dict,
                 }
             }
@@ -263,7 +263,7 @@ def test_from_config_create_data_processor(mocker):
         driver_name,
     )
     mp.assert_called_once_with(
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -288,7 +288,7 @@ def test_get_raw_data_from_file_with_index(
     default_data_processor.use_cols_lst = [1, 3]
     default_data_processor.skip_rows = 3
     default_data_processor.index_column = 0
-    default_data_processor.post_file_path = dummy_csv_file
+    default_data_processor.file_path = dummy_csv_file
 
     default_data_processor._get_raw_data_from_file()
 
@@ -302,7 +302,7 @@ def test_get_raw_data_from_file_without_index(dummy_csv_file, default_data_proce
     default_data_processor.use_cols_lst = [1, 3]
     default_data_processor.skip_rows = 3
     default_data_processor.index_column = False
-    default_data_processor.post_file_path = dummy_csv_file
+    default_data_processor.file_path = dummy_csv_file
 
     default_data_processor._get_raw_data_from_file()
 
@@ -337,7 +337,7 @@ def test_filter_entire_file(default_data_processor, default_raw_data):
         [0.64879, 1.15097, 1.54266, 1.86050, 2.12885, 2.36284, 2.57195, 2.76238, 2.93828, 3.10256]
     ).reshape((10, 1))
 
-    np.testing.assert_allclose(expected_data, default_data_processor.data_processor_data)
+    np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
 
 
 @pytest.mark.unit_tests
@@ -352,7 +352,7 @@ def test_filter_by_range(default_data_processor, default_raw_data):
 
     expected_data = np.array([1.54266, 1.86050, 2.12885, 2.36284]).reshape((4, 1))
 
-    np.testing.assert_allclose(expected_data, default_data_processor.data_processor_data)
+    np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
 
 
 @pytest.mark.unit_tests
@@ -367,7 +367,7 @@ def test_filter_by_target_values(default_data_processor, default_raw_data):
 
     expected_data = np.array([1.54266, 2.12885, 2.93828]).reshape((3, 1))
 
-    np.testing.assert_allclose(expected_data, default_data_processor.data_processor_data)
+    np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
 
 
 @pytest.mark.unit_tests
@@ -381,4 +381,4 @@ def test_filter_by_row_index(default_data_processor, default_raw_data):
 
     expected_data = np.array([0.64879, 2.36284, 2.93828]).reshape((3, 1))
 
-    np.testing.assert_allclose(expected_data, default_data_processor.data_processor_data)
+    np.testing.assert_allclose(expected_data, default_data_processor.processed_data)

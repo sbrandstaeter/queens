@@ -61,7 +61,7 @@
       ],
       "data_processor": {
         "type": "ensight_interface_discrepancy",
-        "post_file_name_identifier": "xx*structure.case",
+        "file_name_identifier": "xx*structure.case",
         "file_options_dict": {
           "path_to_ref_data": "{baci_input_monitor}",
           "delete_field_data": false,

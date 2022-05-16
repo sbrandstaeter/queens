@@ -54,7 +54,7 @@
       ],
       "data_processor": {
         "type": "csv",
-        "post_file_name_identifier": "baci_write_random_field_to_dat.mon",
+        "file_name_identifier": "baci_write_random_field_to_dat.mon",
         "file_options_dict": {
           "delete_field_data": false,
           "use_cols_lst": [

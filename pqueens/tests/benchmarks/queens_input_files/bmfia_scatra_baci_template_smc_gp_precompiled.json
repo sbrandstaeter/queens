@@ -181,7 +181,7 @@
       ],
       "data_processor": {
         "type": "ensight",
-        "post_file_name_identifier": "scatra",
+        "file_name_identifier": "scatra",
         "file_options_dict": {
           "delete_field_data": false,
           "geometric_target": [
@@ -217,7 +217,7 @@
       ],
       "data_processor": {
         "type": "ensight",
-        "post_file_name_identifier": "scatra",
+        "file_name_identifier": "scatra",
         "file_options_dict": {
           "delete_field_data": false,
           "geometric_target": [
@@ -253,7 +253,7 @@
       ],
       "data_processor": {
         "type": "ensight",
-        "post_file_name_identifier": "scatra",
+        "file_name_identifier": "scatra",
         "file_options_dict": {
           "delete_field_data": false,
           "geometric_target": [
