@@ -121,7 +121,7 @@ class Driver(metaclass=abc.ABCMeta):
         else:
             # set result to "no" and load job from database, if there
             # has not been any data-processing before
-            self.result = 'no data-processed result'
+            self.result = 'no processed data result'
             if self.job is None:
                 self.job = self.database.load(
                     self.experiment_name,
@@ -176,7 +176,7 @@ class Driver(metaclass=abc.ABCMeta):
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
             # call data-processing
-            self.result = self.data_processor.get_data_from_post_file(self.output_directory)
+            self.result = self.data_processor.get_data_from_file(self.output_directory)
 
             _logger.info(f"Got result: {self.result}")
 
