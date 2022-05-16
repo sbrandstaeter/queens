@@ -44,8 +44,8 @@
         "--field=structure --node=219 --start=1",
         "--field=structure --node=344 --start=1"
       ],
-      "post_post": {
-        "post_post_approach_sel": "csv",
+      "data_processor": {
+        "data_processor_approach_sel": "csv",
         "post_file_name_identifier": "QoI",
         "file_options_dict": {
           "delete_field_data": false,

@@ -5,15 +5,15 @@ from pathlib import Path
 
 import numpy as np
 import vtk
-from vtk.util.numpy_support import vtk_to_numpy
+from vtkmodules.util.numpy_support import vtk_to_numpy
 
-from .post_post import PostPost
+from .data_processor import DataProcessor
 
 
-class PostPostEnsightInterfaceDiscrepancy(PostPost):
+class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
     """Discrepancy measure for boundaries and shapes.
 
-    Post_post class uses full ensight result in vtk to measure distance of
+    data_processor class uses full ensight result in vtk to measure distance of
     surface from simulations to experiment.
 
     Attributes:
@@ -37,7 +37,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
         problem_dimension,
         experimental_reference_data_lst,
     ):
-        """Initialize post_post_ensight_interface class.
+        """Initialize data_processor_ensight_interface class.
 
         Args:
             post_file_name_identifier (str): Identifier of postprocessed file name.
@@ -68,7 +68,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
         self.experimental_ref_data_lst = experimental_reference_data_lst
 
     @classmethod
-    def from_config_create_post_post(cls, config, driver_name):
+    def from_config_create_data_processor(cls, config, driver_name):
         """Create the class from the problem description.
 
         Args:
@@ -222,7 +222,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
         experiment.
 
         Returns:
-            residual (list): full residual from this post_post class
+            residual (list): full residual from this data_processor class
         """
         residual_distance_lst = []
         points = vtk.vtkPoints()
@@ -255,7 +255,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
 
             self._visualize_final_discrepancy_measure(outline_out, points, vertices)
 
-        self.post_post_data = residual_distance_lst
+        self.data_processor_data = residual_distance_lst
 
     def _get_intersection_points(self, outline_data, outline_out, point_vector):
         """Get intersection points."""
@@ -452,7 +452,7 @@ class PostPostEnsightInterfaceDiscrepancy(PostPost):
         result in case files.
 
         Args:
-            time (float): time value for post_post process - executed once for every time value
+            time (float): time value for data processing - executed once for every time value
 
         Returns:
             grid (vtkUnstructuredGrid): deformed discretization for given time

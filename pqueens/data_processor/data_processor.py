@@ -1,4 +1,4 @@
-"""Module for post-post processing of simulation results."""
+"""Module for data processing of simulation results."""
 
 import abc
 import glob
@@ -10,7 +10,7 @@ import numpy as np
 _logger = logging.getLogger(__name__)
 
 
-class PostPost(metaclass=abc.ABCMeta):
+class DataProcessor(metaclass=abc.ABCMeta):
     """Base class for post post processing.
 
     Attributes:
@@ -25,7 +25,7 @@ class PostPost(metaclass=abc.ABCMeta):
                                                 The paths can contain regex expressions.
         driver_name (str): Name of the associated driver.
         raw_file_data (np.array): Raw data from file.
-        post_post_data (np.array): Cleaned, filtered or manipulated post_post data
+        data_processor_data (np.array): Cleaned, filtered or manipulated data_processor data
     """
 
     def __init__(
@@ -53,7 +53,7 @@ class PostPost(metaclass=abc.ABCMeta):
         self.driver_name = driver_name
         self.post_file_name_identifier = post_file_name_identifier
         self.post_file_path = None
-        self.post_post_data = np.empty(shape=0)
+        self.data_processor_data = np.empty(shape=0)
         self.raw_file_data = None
 
     @classmethod
@@ -76,13 +76,13 @@ class PostPost(metaclass=abc.ABCMeta):
             driver_name (str): Name of the associated driver.
         """
         driver_params = config.get(driver_name)
-        post_post_options = driver_params["driver_params"].get('post_post')
+        data_processor_options = driver_params["driver_params"].get('data_processor')
 
-        post_file_name_identifier = post_post_options.get('post_file_name_identifier')
+        post_file_name_identifier = data_processor_options.get('post_file_name_identifier')
         if not post_file_name_identifier:
             raise IOError(
                 f"No option 'post_file_name_identifier' was provided in '{driver_name}' driver! "
-                "PostPost object cannot be instantiated! Abort..."
+                "DataProcessor object cannot be instantiated! Abort..."
             )
         if not isinstance(post_file_name_identifier, str):
             raise TypeError(
@@ -90,11 +90,11 @@ class PostPost(metaclass=abc.ABCMeta):
                 f"but is of type {type(post_file_name_identifier)}. Abort..."
             )
 
-        file_options_dict = post_post_options.get('file_options_dict')
+        file_options_dict = data_processor_options.get('file_options_dict')
         if not file_options_dict:
             raise IOError(
                 f"No option 'file_options_dict' was provided in {driver_name} driver! "
-                "PostPost object cannot be instantiated! Abort..."
+                "DataProcessor object cannot be instantiated! Abort..."
             )
         if not isinstance(file_options_dict, dict):
             raise TypeError(
@@ -102,7 +102,9 @@ class PostPost(metaclass=abc.ABCMeta):
                 f"but is of type {type(file_options_dict)}. Abort..."
             )
 
-        files_to_be_deleted_regex_lst = post_post_options.get('files_to_be_deleted_regex_lst', [])
+        files_to_be_deleted_regex_lst = data_processor_options.get(
+            'files_to_be_deleted_regex_lst', []
+        )
         if not isinstance(files_to_be_deleted_regex_lst, list):
             raise TypeError(
                 "The option 'files_to_be_deleted_regex_lst' must be of type 'list' "
@@ -119,11 +121,11 @@ class PostPost(metaclass=abc.ABCMeta):
                                            contains the file of interest.
 
         Returns:
-            post_post_data (np.array): Final data from post post module
+            data_processor_data (np.array): Final data from post post module
         """
         if not base_dir_post_file:
             raise ValueError(
-                "The post_post processor requires a base_directory for the post "
+                "The data processor requires a base_directory for the post "
                 "processed files to operate on! Your input was empty! Abort..."
             )
         if not isinstance(base_dir_post_file, str):
@@ -142,7 +144,7 @@ class PostPost(metaclass=abc.ABCMeta):
         for file_path in self.files_to_be_deleted_regex_lst:
             self._clean_up(file_path)
 
-        return self.post_post_data
+        return self.data_processor_data
 
     def _generate_path_to_post_file(self, base_dir_post_file):
         """Generate path to postprocessed file.
@@ -173,7 +175,7 @@ class PostPost(metaclass=abc.ABCMeta):
         file_list = glob.glob(post_file_path_regex)
         if len(file_list) > 1:
             raise RuntimeError(
-                "The post_post module found several files for the "
+                "The data_processor module found several files for the "
                 "provided 'post_file_name_prefix'!"
                 "The files are: {file_list}."
                 "The file prefix must lead to a unique file. Abort..."
@@ -198,7 +200,7 @@ class PostPost(metaclass=abc.ABCMeta):
         pass
 
     def _subsequent_data_manipulation(self):
-        """Subsequent manipulate the post_post data.
+        """Subsequent manipulate the data_processor data.
 
         This method can be easily implemented by overloading the empty
         method in a custom inheritance of a desired child class. Make

@@ -238,7 +238,7 @@ class OptimizationIterator(Iterator):
                                     not part of the parameters which should be calibrated but
                                     rather coordinates e.g. in space and time.
                                     We already preselect the to the coordinates corresponding
-                                    response vector of the model in the post_post class to not
+                                    response vector of the model in the data_processor class to not
                                     have to store the entire model response.
 
         Returns:

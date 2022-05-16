@@ -102,8 +102,8 @@
       "post_process_options": [
         ""
       ],
-      "post_post": {
-        "post_post_approach_sel": "ensight",
+      "data_processor": {
+        "data_processor_approach_sel": "ensight",
         "post_file_name_identifier": "scatra",
         "file_options_dict": {
           "delete_field_data": false,

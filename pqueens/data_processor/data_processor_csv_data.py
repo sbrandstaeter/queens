@@ -5,13 +5,13 @@ import logging
 import numpy as np
 import pandas as pd
 
-from pqueens.post_post.post_post import PostPost
+from pqueens.data_processor.data_processor import DataProcessor
 from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
 
 
-class PostPostCsv(PostPost):
+class DataProcessorCsv(DataProcessor):
     """Class for extracting data from csv files.
 
     Attributes:
@@ -94,7 +94,7 @@ class PostPostCsv(PostPost):
             filter_target_values (list): target values to filter
 
         Returns:
-            Instance of PostPostCsv class
+            Instance of DataProcessorCsv class
         """
         super().__init__(
             post_file_name_identifier,
@@ -113,7 +113,7 @@ class PostPostCsv(PostPost):
         self.filter_tol = filter_tol
 
     @classmethod
-    def from_config_create_post_post(cls, config, driver_name):
+    def from_config_create_data_processor(cls, config, driver_name):
         """Create the class from the problem description.
 
         Args:
@@ -129,7 +129,7 @@ class PostPostCsv(PostPost):
         header_row = file_options_dict.get('header_row')
         if header_row and not isinstance(header_row, int):
             raise ValueError(
-                "The option 'header_row' in the post_post settings must be of type 'int'! "
+                "The option 'header_row' in the data_processor settings must be of type 'int'! "
                 f"You provided type '{type(header_row)}'. Abort..."
             )
 
@@ -143,7 +143,7 @@ class PostPostCsv(PostPost):
         skip_rows = file_options_dict.get('skip_rows', 0)
         if not isinstance(skip_rows, int):
             raise ValueError(
-                "The option 'skip_rows' in the post_post settings must be of type 'int'! "
+                "The option 'skip_rows' in the data_processor settings must be of type 'int'! "
                 f"You provided type '{type(skip_rows)}'. Abort..."
             )
 
@@ -162,7 +162,7 @@ class PostPostCsv(PostPost):
         filter_type = filter_options_dict.get('type')
         if not isinstance(filter_type, str):
             raise ValueError(
-                "The option 'filter_type' in the post_post settings must be of type 'str'! "
+                "The option 'filter_type' in the data_processor settings must be of type 'str'! "
                 f"You provided type '{type(filter_type)}'. Abort..."
             )
 
@@ -292,20 +292,20 @@ class PostPostCsv(PostPost):
         )
         filter_method()
 
-        if not np.any(self.post_post_data):
+        if not np.any(self.data_processor_data):
             raise RuntimeError(
                 "The filtered data was empty! Adjust your filter tolerance or filter range!"
             )
 
     def _filter_entire_file(self):
         """Keep entire csv file data."""
-        self.post_post_data = self.raw_file_data.to_numpy()
+        self.data_processor_data = self.raw_file_data.to_numpy()
 
     def _filter_by_row_index(self):
         """Filter the csv file based on given data rows."""
         if any(self.raw_file_data):
             try:
-                self.post_post_data = self.raw_file_data.iloc[self.use_rows_lst].to_numpy()
+                self.data_processor_data = self.raw_file_data.iloc[self.use_rows_lst].to_numpy()
             except IndexError as exception:
                 raise IndexError(
                     f"Index list {self.use_rows_lst} are not contained in raw_file_data. "
@@ -325,7 +325,7 @@ class PostPostCsv(PostPost):
                     )
                 )
 
-            self.post_post_data = self.raw_file_data.iloc[target_indices].to_numpy()
+            self.data_processor_data = self.raw_file_data.iloc[target_indices].to_numpy()
 
     def _filter_by_range(self):
         """Filter the pandas data frame based on values in a data column."""
@@ -341,4 +341,6 @@ class PostPostCsv(PostPost):
                 )[-1]
             )
 
-            self.post_post_data = (self.raw_file_data.iloc[range_start : range_end + 1]).to_numpy()
+            self.data_processor_data = (
+                self.raw_file_data.iloc[range_start : range_end + 1]
+            ).to_numpy()

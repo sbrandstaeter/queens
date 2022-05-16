@@ -186,8 +186,8 @@
       "post_process_options": [
         ""
       ],
-      "post_post": {
-        "post_post_approach_sel": "ensight",
+      "data_processor": {
+        "data_processor_approach_sel": "ensight",
         "post_file_name_identifier": "scatra",
         "file_options_dict": {
           "delete_field_data": false,
@@ -222,8 +222,8 @@
       "post_process_options": [
         ""
       ],
-      "post_post": {
-        "post_post_approach_sel": "_ensight",
+      "data_processor": {
+        "data_processor_approach_sel": "_ensight",
         "post_file_name_identifier": "scatra",
         "file_options_dict": {
           "delete_field_data": false,
@@ -258,9 +258,9 @@
       "post_process_options": [
         ""
       ],
-      "post_post": {
-        "post_post_approach_sel": "baci_ensight",
-        "post_post_file_name_identifier": "scatra",
+      "data_processor": {
+        "data_processor_approach_sel": "baci_ensight",
+        "data_processor_file_name_identifier": "scatra",
         "file_options_dict": {
           "delete_field_data": false,
           "geometric_target": [

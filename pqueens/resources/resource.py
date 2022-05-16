@@ -206,8 +206,8 @@ class Resource(object):
 
         return completed, failed
 
-    def dispatch_post_post_job(self, batch, job):
-        """Submit a new post-post job using the scheduler of the resource.
+    def dispatch_data_processor_job(self, batch, job):
+        """Submit a new data processor job using the scheduler of the resource.
 
         Args:
             batch (string):         Batch number of job
@@ -219,5 +219,7 @@ class Resource(object):
         if job['resource'] != self.name:
             raise Exception("This job does not belong to me!")
 
-        self.scheduler.submit_post_post(job['id'], batch)
-        _logger.info('Submitted post-post job %d with %s \n' % (job['id'], self.scheduler_class))
+        self.scheduler.submit_data_processor(job['id'], batch)
+        _logger.info(
+            'Submitted data processor job %d with %s \n' % (job['id'], self.scheduler_class)
+        )
