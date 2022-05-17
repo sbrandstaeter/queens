@@ -66,9 +66,18 @@
     "fixed_likelihood_noise_value": 1E-9,
     "nugget_noise_var": 1E-8,
     "noise_upper_bound": 2.0,
-    "experimental_csv_data_base_dirs": [
-      "{experimental_data_path}"
-    ],
+    "post_post": {
+    "post_file_name_identifier": "*.csv",
+    "file_options_dict": {
+        "header_row": 0,
+        "index_column": false,
+        "filter_format": "dict",
+        "filter": {
+            "type": "entire_file"
+        }
+        }
+    },
+    "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters",
     "plotting_options": {
       "plotting_dir": "{plot_dir}",
