@@ -387,3 +387,32 @@ def test_filter_by_row_index(default_post_post, default_raw_data):
     expected_data = np.array([0.64879, 2.36284, 2.93828]).reshape((3, 1))
 
     np.testing.assert_allclose(expected_data, default_post_post.post_post_data)
+
+
+@pytest.mark.unit_tests
+def test_filter_and_manipulate_raw_data_numpy(default_post_post, default_raw_data):
+    """Test output format in numpy."""
+    default_post_post.filter_format = 'numpy'
+    default_post_post.raw_file_data = default_raw_data
+    default_post_post._filter_and_manipulate_raw_data()
+    expected_data = default_raw_data.to_numpy()
+    np.testing.assert_array_equal(expected_data, default_post_post.post_post_data)
+
+
+@pytest.mark.unit_tests
+def test_filter_and_manipulate_raw_data_dict(default_post_post, default_raw_data):
+    """Test output format as dict."""
+    default_post_post.filter_format = 'dict'
+    default_post_post.raw_file_data = default_raw_data
+    default_post_post._filter_and_manipulate_raw_data()
+    expected_data = default_raw_data.to_dict('list')
+    np.testing.assert_array_equal(expected_data, default_post_post.post_post_data)
+
+
+@pytest.mark.unit_tests
+def test_filter_and_manipulate_raw_data_error(default_post_post, default_raw_data):
+    """Test wrong output format."""
+    default_post_post.filter_format = 'stuff'
+    default_post_post.raw_file_data = default_raw_data
+    with pytest.raises(KeyError):
+        default_post_post._filter_and_manipulate_raw_data()
