@@ -43,7 +43,7 @@ def print_scheduling_information(scheduler_type, remote, remote_connect, singula
 
 
 def print_driver_information(
-    driver_type, cae_software_version, post_post_file_prefix, docker_image
+    driver_type, cae_software_version, data_processor_file_prefix, docker_image
 ):
     """Print out information on chosen driver."""
     # determine name of driver
@@ -63,10 +63,10 @@ def print_driver_information(
             '\nAs requested, %s will be run in Docker containers based on'
             '\nthe following Docker image:\n\t%s.' % (driver_name, docker_image)
         )
-    if post_post_file_prefix is not None:
+    if data_processor_file_prefix is not None:
         _logger.info(
             '\nQuantities of interest will be extracted from result files indicated'
-            '\nby the following (sub-)string:\n\t%s' % post_post_file_prefix
+            '\nby the following (sub-)string:\n\t%s' % data_processor_file_prefix
         )
     _logger.info('\n=====================================================================')
     _logger.info('\n')

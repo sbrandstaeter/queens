@@ -131,6 +131,16 @@ def test_logpdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_
 
 
 @pytest.mark.unit_tests
+def test_grad_logpdf_beta(beta, sample_pos):
+    """Test grad_logpdf method of beta distribution class."""
+    with pytest.raises(
+        NotImplementedError,
+        match=r'This method is currently not implemented for ' r'the beta distribution.',
+    ):
+        beta.grad_logpdf(sample_pos)
+
+
+@pytest.mark.unit_tests
 def test_pdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_b):
     """Test pdf method of beta distribution class."""
     width = upper_bound - lower_bound

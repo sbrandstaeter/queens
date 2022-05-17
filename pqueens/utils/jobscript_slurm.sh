@@ -35,13 +35,13 @@ RESTART_FROM_PREFIX=xxx                  #
 
 ##########################################
 #                                        #
-#     POST- AND POST-POST-PROCESSING     #
+#     POST- AND DATA-PROCESSING     #
 #     SPECIFICATION                      #
 #                                        #
 ##########################################
 DoPostprocess={POSTPROCESSFLAG} # post-processing flag for non-singularity run
 POSTEXE={POSTEXE} # post-processing executable for non-singularity run
-DoPostpostprocess={POSTPOSTPROCESSFLAG} # post- and post-post-processing flag for singularity run
+DoDataProcessing={DATAPROCESSINGFLAG} # post- and data-processing flag for singularity run
 
 #################################################################
 # BEGIN ############### DO NOT TOUCH ME #########################
@@ -56,7 +56,7 @@ RunProgram
 wait
 #RunPostprocessor
 # Post-processing for non-singularity run
-# (only for post-processor without additional options so far) 
+# (only for post-processor without additional options so far)
 if [ $DoPostprocess = true ]
 then
   if [ $RESTART -le 0 ]
@@ -75,9 +75,9 @@ echo
 echo "Job finished with exit code $? at: `date`"
 # ------- FINISH AND CLEAN SINGULARITY JOB (DONE ON MASTER/LOGIN NODE!) -------
 wait
-# Post- and post-post-processing for singularity run
+# Post- and data-processing for singularity run
 # (cd back into home since pwd does not exist anymore)
-if [ $DoPostpostprocess = true ]
+if [ $DoDataProcessing = true ]
 then
   $MPI_RUN $MPIFLAGS -np {nposttasks} $EXE $INPUT $WORKDIR '--post=true'
 fi

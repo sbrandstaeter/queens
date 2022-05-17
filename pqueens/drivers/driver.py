@@ -113,15 +113,15 @@ class Driver(metaclass=abc.ABCMeta):
         self.prepare_input_files()
 
     def post_job_run(self):
-        """Post-process, post-post process and finalize job in database."""
+        """Post-process, data processing and finalize job in database."""
         if self.do_postprocessing:
             self.postprocess_job()
-        if self.do_postpostprocessing:
-            self.postpostprocessing()
+        if self.do_data_processing:
+            self.data_processing()
         else:
             # set result to "no" and load job from database, if there
-            # has not been any post-post-processing before
-            self.result = 'no post-post-processed result'
+            # has not been any data-processing before
+            self.result = 'no processed data result'
             if self.job is None:
                 self.job = self.database.load(
                     self.experiment_name,
@@ -160,7 +160,7 @@ class Driver(metaclass=abc.ABCMeta):
             {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
         )
 
-    def postpostprocessing(self):
+    def data_processing(self):
         """Extract data of interest from post-processed file.
 
         Afterwards save them to the database.
@@ -175,8 +175,9 @@ class Driver(metaclass=abc.ABCMeta):
             )
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
-            # call post-post-processing
-            self.result = self.postpostprocessor.get_data_from_post_file(self.output_directory)
+            # call data-processing
+            self.result = self.data_processor.get_data_from_file(self.output_directory)
+
             _logger.info(f"Got result: {self.result}")
 
     def finalize_job_in_db(self):

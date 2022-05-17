@@ -46,9 +46,9 @@
       "post_file_name_prefix_lst": [
         "QoI"
       ],
-      "post_post": {
-        "post_post_approach_sel": "csv",
-        "post_file_name_identifier": "QoI*",
+      "data_processor": {
+        "type": "csv",
+        "file_name_identifier": "QoI*",
         "file_options_dict": {
           "delete_field_data": false,
           "use_cols_lst": [

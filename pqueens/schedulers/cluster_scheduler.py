@@ -209,11 +209,11 @@ class ClusterScheduler(Scheduler):
             cluster_options['OUTPUTPREFIX'] = ''
             cluster_options['POSTPROCESSFLAG'] = 'false'
             cluster_options['POSTEXE'] = ''
-            cluster_options['POSTPOSTPROCESSFLAG'] = 'true'
+            cluster_options['DATAPROCESSINGFLAG'] = 'true'
         else:
             cluster_options['singularity_path'] = None
             cluster_options['singularity_bind'] = None
-            cluster_options['POSTPOSTPROCESSFLAG'] = 'false'
+            cluster_options['DATAPROCESSINGFLAG'] = 'false'
 
         # TODO move this to a different place
         # print out scheduling information

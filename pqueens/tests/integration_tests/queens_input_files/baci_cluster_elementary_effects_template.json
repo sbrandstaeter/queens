@@ -59,9 +59,9 @@
       "post_process_options": [
         "--field=structure --node=26 --start=1"
       ],
-      "post_post": {
-        "post_post_approach_sel": "csv",
-        "post_file_name_identifier": "QoI",
+      "data_processor": {
+        "type": "csv",
+        "file_name_identifier": "QoI",
         "file_options_dict": {
           "delete_field_data": false,
           "filter_range": [5e-1],
