@@ -37,17 +37,7 @@
     "likelihood_noise_type": "fixed",
     "fixed_likelihood_noise_value": 1.0,
     "nugget_noise_var": 1E-5,
-      "data_processor": {
-      "file_name_identifier": "*.csv",
-      "file_options_dict": {
-        "header_row": 0,
-        "index_column": false,
-         "filter_format": "dict",
-          "filter": {
-              "type": "entire_file"
-          }
-        }
-    },
+    "experimental_file_name_identifier": "*.csv",
     "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters"
   },

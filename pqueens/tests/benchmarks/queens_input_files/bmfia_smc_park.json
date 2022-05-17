@@ -64,6 +64,7 @@
     "nugget_noise_var": 1E-12,
     "noise_upper_bound": 2.0,
     "data_processor": {
+    "type": "csv",
     "file_name_identifier": "*.csv",
     "file_options_dict": {
         "header_row": 0,

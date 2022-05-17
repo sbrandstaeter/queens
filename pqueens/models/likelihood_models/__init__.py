@@ -12,7 +12,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from pqueens.data_processor.data_processor_csv_data import DataProcessorCsv
+from pqueens.data_processor import from_config_create_data_processor
 
 _logger = logging.getLogger(__name__)
 
@@ -60,9 +60,32 @@ def from_config_create_model(model_name, config):
     experiment_name = global_settings["experiment_name"]
 
     # call method to load experimental data
-    csv_data_reader = DataProcessorCsv.from_config_create_data_processor(config, model_name)
+    try:
+        # standard initialization for data_processor
+        data_processor = from_config_create_data_processor(config, model_name)
+    except ValueError:
+        # allow short initialization for data_processor
+        # only using the 'file_name_identifier'
+        model_section = config.get(model_name)
+        file_name_identifier = model_section.get('experimental_file_name_identifier')
+        short_config = {
+            model_name: {
+                "data_processor": {
+                    "type": "csv",
+                    "file_name_identifier": file_name_identifier,
+                    "file_options_dict": {
+                        "header_row": 0,
+                        "index_column": False,
+                        "filter_format": "dict",
+                        "filter": {"type": "entire_file"},
+                    },
+                },
+            }
+        }
+        data_processor = from_config_create_data_processor(short_config, model_name)
+
     y_obs_vec, coords_mat, time_vec = _get_experimental_data_and_write_to_db(
-        csv_data_reader,
+        data_processor,
         experimental_data_base_dir,
         experiment_name,
         db,

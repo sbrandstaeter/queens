@@ -38,6 +38,7 @@
     "fixed_likelihood_noise_value": 1.0,
     "nugget_noise_var": 1E-5,
     "data_processor": {
+      "type": "csv",
       "file_name_identifier": "*.csv",
       "file_options_dict": {
         "header_row": 0,
