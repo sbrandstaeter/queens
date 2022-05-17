@@ -4,20 +4,17 @@
 """
 import unittest
 
-import mock
 import numpy as np
 import pytest
-from sklearn.neighbors import KernelDensity
 
 from pqueens.utils.pdf_estimation import estimate_bandwidth_for_kde, estimate_pdf
 
-# class TestInjector(unittest.TestCase):
-#     def setUp(self):
-#     def test_something(self):
-
 
 class TestPDFEstimation(unittest.TestCase):
+    """Test class for KDE."""
+
     def setUp(self):
+        """Test setup."""
         # fix seed
         np.random.seed(42)
         # create normal random samples
@@ -26,13 +23,15 @@ class TestPDFEstimation(unittest.TestCase):
 
     @pytest.mark.unit_tests
     def test_compute_kernel_bandwidth(self):
+        """Test computation of kernel bandwidth."""
         min_samples = -3
         max_samples = 3
         bandwidth = estimate_bandwidth_for_kde(self.samples, min_samples, max_samples)
-        np.testing.assert_almost_equal(bandwidth, 0.987693684111131, 7)
+        np.testing.assert_almost_equal(bandwidth, 0.42928730252308495, 7)
 
     @pytest.mark.unit_tests
     def test_density_estimation(self):
+        """Test density estimations."""
         supp_points = np.linspace(-1, 1, 10)
         # test with support points
         pdf_estimate, _ = estimate_pdf(self.samples, self.bandwidth, support_points=supp_points)
