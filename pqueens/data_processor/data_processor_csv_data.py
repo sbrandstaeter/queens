@@ -301,8 +301,8 @@ class DataProcessorCsv(DataProcessor):
         )
         filter_method()
         filter_formats_dict = {
-            "numpy": self.post_post_data.to_numpy(),
-            "dict": self.post_post_data.to_dict('list'),
+            "numpy": self.processed_data.to_numpy(),
+            "dict": self.processed_data.to_dict('list'),
         }
         if self.filter_format not in filter_formats_dict:
             raise KeyError(
@@ -310,7 +310,7 @@ class DataProcessorCsv(DataProcessor):
                 f"{filter_formats_dict.keys()}. Abort..."
             )
 
-        self.post_post_data = filter_formats_dict[self.filter_format]
+        self.processed_data = filter_formats_dict[self.filter_format]
 
         if not np.any(self.processed_data):
             raise RuntimeError(
@@ -318,23 +318,14 @@ class DataProcessorCsv(DataProcessor):
             )
 
     def _filter_entire_file(self):
-<<<<<<< HEAD:pqueens/post_post/post_post_csv_data.py
         """Keep entire csv file data and provide format."""
-        self.post_post_data = self.raw_file_data
-=======
-        """Keep entire csv file data."""
-        self.processed_data = self.raw_file_data.to_numpy()
->>>>>>> master:pqueens/data_processor/data_processor_csv_data.py
+        self.processed_data = self.raw_file_data
 
     def _filter_by_row_index(self):
         """Filter the csv file based on given data rows."""
         if any(self.raw_file_data):
             try:
-<<<<<<< HEAD:pqueens/post_post/post_post_csv_data.py
-                self.post_post_data = self.raw_file_data.iloc[self.use_rows_lst]
-=======
-                self.processed_data = self.raw_file_data.iloc[self.use_rows_lst].to_numpy()
->>>>>>> master:pqueens/data_processor/data_processor_csv_data.py
+                self.processed_data = self.raw_file_data.iloc[self.use_rows_lst]
             except IndexError as exception:
                 raise IndexError(
                     f"Index list {self.use_rows_lst} are not contained in raw_file_data. "
@@ -353,11 +344,7 @@ class DataProcessorCsv(DataProcessor):
                     )
                 )
 
-<<<<<<< HEAD:pqueens/post_post/post_post_csv_data.py
-            self.post_post_data = self.raw_file_data.iloc[target_indices]
-=======
-            self.processed_data = self.raw_file_data.iloc[target_indices].to_numpy()
->>>>>>> master:pqueens/data_processor/data_processor_csv_data.py
+            self.processed_data = self.raw_file_data.iloc[target_indices]
 
     def _filter_by_range(self):
         """Filter the pandas data frame based on values in a data column."""
@@ -373,8 +360,4 @@ class DataProcessorCsv(DataProcessor):
                 )[-1]
             )
 
-<<<<<<< HEAD:pqueens/post_post/post_post_csv_data.py
-            self.post_post_data = self.raw_file_data.iloc[range_start : range_end + 1]
-=======
-            self.processed_data = (self.raw_file_data.iloc[range_start : range_end + 1]).to_numpy()
->>>>>>> master:pqueens/data_processor/data_processor_csv_data.py
+            self.processed_data = self.raw_file_data.iloc[range_start : range_end + 1]

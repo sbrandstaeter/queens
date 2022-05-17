@@ -359,12 +359,8 @@ def test_filter_by_range(default_data_processor, default_raw_data):
     default_data_processor._filter_and_manipulate_raw_data()
 
     expected_data = np.array([1.54266, 1.86050, 2.12885, 2.36284]).reshape((4, 1))
-<<<<<<< HEAD:pqueens/tests/unit_tests/post_post/test_post_post_csv.py
-    np.testing.assert_allclose(expected_data, default_post_post.post_post_data)
-=======
 
     np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
->>>>>>> master:pqueens/tests/unit_tests/data_processor/test_data_processor_csv.py
 
 
 @pytest.mark.unit_tests
@@ -392,38 +388,33 @@ def test_filter_by_row_index(default_data_processor, default_raw_data):
     default_data_processor._filter_and_manipulate_raw_data()
 
     expected_data = np.array([0.64879, 2.36284, 2.93828]).reshape((3, 1))
-
-<<<<<<< HEAD:pqueens/tests/unit_tests/post_post/test_post_post_csv.py
-    np.testing.assert_allclose(expected_data, default_post_post.post_post_data)
-
-
-@pytest.mark.unit_tests
-def test_filter_and_manipulate_raw_data_numpy(default_post_post, default_raw_data):
-    """Test output format in numpy."""
-    default_post_post.filter_format = 'numpy'
-    default_post_post.raw_file_data = default_raw_data
-    default_post_post._filter_and_manipulate_raw_data()
-    expected_data = default_raw_data.to_numpy()
-    np.testing.assert_array_equal(expected_data, default_post_post.post_post_data)
-
-
-@pytest.mark.unit_tests
-def test_filter_and_manipulate_raw_data_dict(default_post_post, default_raw_data):
-    """Test output format as dict."""
-    default_post_post.filter_format = 'dict'
-    default_post_post.raw_file_data = default_raw_data
-    default_post_post._filter_and_manipulate_raw_data()
-    expected_data = default_raw_data.to_dict('list')
-    np.testing.assert_array_equal(expected_data, default_post_post.post_post_data)
-
-
-@pytest.mark.unit_tests
-def test_filter_and_manipulate_raw_data_error(default_post_post, default_raw_data):
-    """Test wrong output format."""
-    default_post_post.filter_format = 'stuff'
-    default_post_post.raw_file_data = default_raw_data
-    with pytest.raises(KeyError):
-        default_post_post._filter_and_manipulate_raw_data()
-=======
     np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
->>>>>>> master:pqueens/tests/unit_tests/data_processor/test_data_processor_csv.py
+
+
+@pytest.mark.unit_tests
+def test_filter_and_manipulate_raw_data_numpy(default_data_processor, default_raw_data):
+    """Test output format in numpy."""
+    default_data_processor.filter_format = 'numpy'
+    default_data_processor.raw_file_data = default_raw_data
+    default_data_processor._filter_and_manipulate_raw_data()
+    expected_data = default_raw_data.to_numpy()
+    np.testing.assert_array_equal(expected_data, default_data_processor.processed_data)
+
+
+@pytest.mark.unit_tests
+def test_filter_and_manipulate_raw_data_dict(default_data_processor, default_raw_data):
+    """Test output format as dict."""
+    default_data_processor.filter_format = 'dict'
+    default_data_processor.raw_file_data = default_raw_data
+    default_data_processor._filter_and_manipulate_raw_data()
+    expected_data = default_raw_data.to_dict('list')
+    np.testing.assert_array_equal(expected_data, default_data_processor.processed_data)
+
+
+@pytest.mark.unit_tests
+def test_filter_and_manipulate_raw_data_error(default_data_processor, default_raw_data):
+    """Test wrong output format."""
+    default_data_processor.filter_format = 'stuff'
+    default_data_processor.raw_file_data = default_raw_data
+    with pytest.raises(KeyError):
+        default_data_processor._filter_and_manipulate_raw_data()

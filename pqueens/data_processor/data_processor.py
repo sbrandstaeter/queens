@@ -76,14 +76,10 @@ class DataProcessor(metaclass=abc.ABCMeta):
             driver_name (str): Name of the associated driver.
         """
         driver_params = config.get(driver_name)
-<<<<<<< HEAD:pqueens/post_post/post_post.py
         try:
-            post_post_options = driver_params["driver_params"].get('post_post')
+            data_processor_options = driver_params["driver_params"].get('data_processor')
         except KeyError:
-            post_post_options = driver_params.get("post_post")
-=======
-        data_processor_options = driver_params["driver_params"].get('data_processor')
->>>>>>> master:pqueens/data_processor/data_processor.py
+            data_processor_options = driver_params.get("post_post")
 
         file_name_identifier = data_processor_options.get('file_name_identifier')
         if not file_name_identifier:
@@ -141,14 +137,8 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 f"but is of type {type(base_dir_file)}. Abort..."
             )
 
-<<<<<<< HEAD:pqueens/post_post/post_post.py
-        post_file_path_regex = self._generate_path_to_post_file(base_dir_post_file)
-        file_exists_bool = self._check_file_exist_and_is_unique(post_file_path_regex)
-        breakpoint()
-=======
         file_path_regex = self._generate_path_to_file(base_dir_file)
         file_exists_bool = self._check_file_exist_and_is_unique(file_path_regex)
->>>>>>> master:pqueens/data_processor/data_processor.py
         if file_exists_bool:
             breakpoint()
             self._get_raw_data_from_file()
@@ -170,15 +160,9 @@ class DataProcessor(metaclass=abc.ABCMeta):
             file_path_regex (str): Path to file that still
                                         contains wildcards or regex expressions
         """
-<<<<<<< HEAD:pqueens/post_post/post_post.py
-        file_identifier = self.post_file_name_identifier
-        post_file_path_regex = os.path.join(base_dir_post_file, file_identifier)
-        return post_file_path_regex
-=======
-        file_identifier = self.file_name_identifier + '*'
+        file_identifier = self.file_name_identifier
         file_path_regex = os.path.join(base_dir_file, file_identifier)
         return file_path_regex
->>>>>>> master:pqueens/data_processor/data_processor.py
 
     def _check_file_exist_and_is_unique(self, file_path_regex):
         """Check if file exists.
@@ -199,13 +183,8 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 "The files are: {file_list}."
                 "The file prefix must lead to a unique file. Abort..."
             )
-<<<<<<< HEAD:pqueens/post_post/post_post.py
         if len(file_list) == 1:
-            self.post_file_path = file_list[0]
-=======
-        elif len(file_list) == 1:
             self.file_path = file_list[0]
->>>>>>> master:pqueens/data_processor/data_processor.py
             file_exists = True
         else:
             _logger.warning(f"The file '{file_path_regex}' does not exist!")

@@ -12,7 +12,7 @@ import os
 import numpy as np
 import pandas as pd
 
-from pqueens.post_post.post_post_csv_data import PostPostCsv
+from pqueens.data_processor.data_processor_csv_data import DataProcessorCsv
 
 _logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ def from_config_create_model(model_name, config):
     experiment_name = global_settings["experiment_name"]
 
     # call method to load experimental data
-    csv_data_reader = PostPostCsv.from_config_create_post_post(config, model_name)
+    csv_data_reader = DataProcessorCsv.from_config_create_data_processor(config, model_name)
     y_obs_vec, coords_mat, time_vec = _get_experimental_data_and_write_to_db(
         csv_data_reader,
         experimental_data_base_dir,
