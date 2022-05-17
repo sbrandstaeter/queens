@@ -1,8 +1,8 @@
 """Test suite for the heritage baci Levenberg-Marquardt optimizer.
 
 Test local simulations with BACI using a minimal FSI model and the
-post_post_baci_shape evaluation and therefore post_drt_ensight post-
-processor.
+data_processor_ensight_interface evaluation and therefore post_drt_ensight
+post-processor.
 """
 
 import json

@@ -1,21 +1,21 @@
-"""Post post class for reading vtk-ensight data."""
+"""Data processor class for reading vtk-ensight data."""
 
 import logging
 
 import numpy as np
 import pandas as pd
 import vtk
-from vtk.util.numpy_support import numpy_to_vtk, vtk_to_numpy
+from vtkmodules.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
 import pqueens.database.database as DB_module
+from pqueens.data_processor.data_processor import DataProcessor
 from pqueens.external_geometry import from_config_create_external_geometry
-from pqueens.post_post.post_post import PostPost
 
 _logger = logging.getLogger(__name__)
 
 
-class PostPostEnsight(PostPost):
-    """Class for post-post-processing Ensight output.
+class DataProcessorEnsight(DataProcessor):
+    """Class for data-processing Ensight output.
 
     Attributes:
         db (obj): Database object
@@ -41,7 +41,7 @@ class PostPostEnsight(PostPost):
 
     def __init__(
         self,
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -59,14 +59,14 @@ class PostPostEnsight(PostPost):
         vtk_array_type,
         geometric_target,
     ):
-        """Init method for ensight post-post object.
+        """Init method for ensight data processor object.
 
         Args:
-            post_file_name_identifier (str): Identifier of postprocessed file name.
+            file_name_identifier (str): Identifier of file name.
                                              The file prefix can contain regex expression
                                              and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
-                                      the post_processed file
+                                      the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
             driver_name (str): Name of the associated driver.
@@ -91,10 +91,10 @@ class PostPostEnsight(PostPost):
                                     generated the vtk file.)
 
         Returns:
-            Instance of PostPostEnsight class (obj)
+            Instance of DataProcessorEnsight class (obj)
         """
         super().__init__(
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -115,15 +115,15 @@ class PostPostEnsight(PostPost):
         self.geometric_target = geometric_target
 
     @classmethod
-    def from_config_create_post_post(cls, config, driver_name):
-        """Create post_post routine from problem description.
+    def from_config_create_data_processor(cls, config, driver_name):
+        """Create data_processor routine from problem description.
 
         Args:
             config (dict): Dictionary with problem description.
             driver_name (str): Name of driver that is used in this job-submission
         """
         (
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
         ) = super().from_config_set_base_attributes(config, driver_name)
@@ -133,7 +133,7 @@ class PostPostEnsight(PostPost):
         target_time_lst = file_options_dict.get('target_time_lst')
         if not isinstance(target_time_lst, list):
             raise TypeError(
-                "The option 'target_time_lst' in the post_post settings of the "
+                "The option 'target_time_lst' in the data_processor settings of the "
                 f"'{driver_name}' driver must be of type 'list' but you provided "
                 f"type {type(target_time_lst)}. Abort..."
             )
@@ -141,7 +141,7 @@ class PostPostEnsight(PostPost):
         if time_tol:
             if not isinstance(time_tol, float):
                 raise TypeError(
-                    "The option 'time_tol' in the post_post settings of the "
+                    "The option 'time_tol' in the data_processor settings of the "
                     f"'{driver_name}' driver must be of type 'float' but you provided "
                     f"type {type(time_tol)}. Abort..."
                 )
@@ -149,14 +149,14 @@ class PostPostEnsight(PostPost):
         vtk_field_label = file_options_dict['physical_field_dict']['vtk_field_label']
         if not isinstance(vtk_field_label, str):
             raise TypeError(
-                "The option 'vtk_field_label' in the post_post settings of the "
+                "The option 'vtk_field_label' in the data_processor settings of the "
                 f"'{driver_name}' driver must be of type 'str' but you provided "
                 f"type {type(vtk_field_label)}. Abort..."
             )
         vtk_field_components = file_options_dict['physical_field_dict']['field_components']
         if not isinstance(vtk_field_components, list):
             raise TypeError(
-                "The option 'vtk_field_components' in the post_post settings of the "
+                "The option 'vtk_field_components' in the data_processor settings of the "
                 f"'{driver_name}' driver must be of type 'list' but you provided "
                 f"type {type(vtk_field_components)}. Abort..."
             )
@@ -164,7 +164,7 @@ class PostPostEnsight(PostPost):
         vtk_array_type = file_options_dict['physical_field_dict']['vtk_array_type']
         if not isinstance(vtk_array_type, str):
             raise TypeError(
-                "The option 'vtk_array_type' in the post_post settings of the "
+                "The option 'vtk_array_type' in the data_processor settings of the "
                 f"'{driver_name}' driver must be of type 'str' but you provided "
                 f"type {type(vtk_array_type)}. Abort..."
             )
@@ -177,7 +177,7 @@ class PostPostEnsight(PostPost):
         geometric_target = file_options_dict["geometric_target"]
         if not isinstance(geometric_target, list):
             raise TypeError(
-                "The option 'geometric_target' in the post_post settings of the "
+                "The option 'geometric_target' in the data_processor settings of the "
                 f"'{driver_name}' driver must be of type 'list' but you provided "
                 f"type {type(geometric_target)}. Abort..."
             )
@@ -198,7 +198,7 @@ class PostPostEnsight(PostPost):
         external_geometry_obj = from_config_create_external_geometry(config)
 
         return cls(
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -229,7 +229,7 @@ class PostPostEnsight(PostPost):
         required_keys_lst = ['target_time_lst', 'physical_field_dict', 'geometric_target']
         if not set(required_keys_lst).issubset(set(file_options_dict.keys())):
             raise KeyError(
-                "The option 'file_options_dict' within the post_post section of the "
+                "The option 'file_options_dict' within the data_processor section of the "
                 f"'{driver_name}' driver must at least contain the following keys: "
                 f"{required_keys_lst}. You only provided: {file_options_dict.keys()}."
                 "Abort..."
@@ -246,7 +246,7 @@ class PostPostEnsight(PostPost):
             set(file_options_dict['physical_field_dict'].keys())
         ):
             raise KeyError(
-                "The option 'physical_field_dict' within the post_post section of the "
+                "The option 'physical_field_dict' within the data_processor section of the "
                 f"'{driver_name}' driver must at least contain the following keys: "
                 f"{required_field_keys}. You only provided the keys: "
                 f"{file_options_dict['physical_field_dict'].keys()}"
@@ -308,7 +308,7 @@ class PostPostEnsight(PostPost):
         """
         # Set vtk reader object as raw file data
         self.raw_file_data = vtk.vtkEnSightGoldBinaryReader()
-        self.raw_file_data.SetCaseFileName(self.post_file_path)
+        self.raw_file_data.SetCaseFileName(self.file_path)
         self.raw_file_data.Update()
 
     def _filter_and_manipulate_raw_data(self):
@@ -330,28 +330,28 @@ class PostPostEnsight(PostPost):
                 break
 
             # get ensight field from specified coordinates
-            post_post_data_per_time_step_interpolated = self._get_field_values_by_coordinates(
+            processed_data_per_time_step_interpolated = self._get_field_values_by_coordinates(
                 vtk_data_per_time_step,
                 time_value,
             )
 
             # potentially append new time step result to result array
-            if self.post_post_data.size > 0:
-                self.post_post_data = np.hstack(
-                    (self.post_post_data, post_post_data_per_time_step_interpolated)
+            if self.processed_data.size > 0:
+                self.processed_data = np.hstack(
+                    (self.processed_data, processed_data_per_time_step_interpolated)
                 )
             else:
-                self.post_post_data = post_post_data_per_time_step_interpolated
+                self.processed_data = processed_data_per_time_step_interpolated
 
     def _get_field_values_by_coordinates(
         self,
-        vtk_post_data_obj,
+        vtk_data_obj,
         time_value,
     ):
         """Interpolate the vtk field to the coordinates from experimental data.
 
         Args:
-            vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
+            vtk_data_obj (obj): VTK ensight object that contains that solution fields of
                                      interest
             time_value (float): Current time value at which simulation should be evaluated
 
@@ -361,12 +361,12 @@ class PostPostEnsight(PostPost):
         """
         if self.geometric_target[0] == "experimental_data":
             response_data = self._get_data_from_experimental_coordinates(
-                vtk_post_data_obj,
+                vtk_data_obj,
                 time_value,
             )
         elif self.geometric_target[0] == "geometric_set":
             response_data = self._get_data_from_geometric_set(
-                vtk_post_data_obj,
+                vtk_data_obj,
             )
         else:
             raise ValueError(
@@ -376,11 +376,11 @@ class PostPostEnsight(PostPost):
 
         return response_data
 
-    def _get_data_from_experimental_coordinates(self, vtk_post_data_obj, time_value):
+    def _get_data_from_experimental_coordinates(self, vtk_data_obj, time_value):
         """Interpolate the ensight/vtk field to experimental coordinates.
 
         Args:
-            vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
+            vtk_data_obj (obj): VTK ensight object that contains that solution fields of
                                      interest
             time_value (float): Current time value at which the simulation shall be evaluated
 
@@ -406,9 +406,9 @@ class PostPostEnsight(PostPost):
                 experimental_coordinates_for_snapshot, axis=1
             )
         # interpolate vtk solution to experimental coordinates
-        interpolated_data = PostPostEnsight._interpolate_vtk(
+        interpolated_data = DataProcessorEnsight._interpolate_vtk(
             experimental_coordinates_for_snapshot,
-            vtk_post_data_obj,
+            vtk_data_obj,
             self.vtk_array_type,
             self.vtk_field_label,
             self.vtk_field_components,
@@ -418,12 +418,12 @@ class PostPostEnsight(PostPost):
 
     def _get_data_from_geometric_set(
         self,
-        vtk_post_data_obj,
+        vtk_data_obj,
     ):
         """Get entire fields for desired components.
 
         Args:
-            vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
+            vtk_data_obj (obj): VTK ensight object that contains that solution fields of
                                      interest
         Returns:
             data (np.array): Array of field values for nodes of geometric set
@@ -460,9 +460,9 @@ class PostPostEnsight(PostPost):
         ]
 
         # interpolate vtk solution to experimental coordinates
-        interpolated_data = PostPostEnsight._interpolate_vtk(
+        interpolated_data = DataProcessorEnsight._interpolate_vtk(
             geometric_set_coordinates,
-            vtk_post_data_obj,
+            vtk_data_obj,
             self.vtk_array_type,
             self.vtk_field_label,
             self.vtk_field_components,
@@ -472,14 +472,14 @@ class PostPostEnsight(PostPost):
 
     @staticmethod
     def _interpolate_vtk(
-        coordinates, vtk_post_data_obj, vtk_array_type, vtk_field_label, vtk_field_components
+        coordinates, vtk_data_obj, vtk_array_type, vtk_field_label, vtk_field_components
     ):
         """Interpolate the vtk solution field to given coordinates.
 
         Args:
             coordinates (np.array): Coordinates at which the vtk solution field should be
                                     interpolated at
-            vtk_post_data_obj (obj): VTK ensight object that contains that solution fields of
+            vtk_data_obj (obj): VTK ensight object that contains that solution fields of
                                      interest
             vtk_array_type (str): Type of vtk array (cell array or point array)
             vtk_field_label (str): Field label that should be extracted
@@ -499,7 +499,7 @@ class PostPostEnsight(PostPost):
 
         # Generate a vtk filter with desired vtk data as source
         probe_filter_obj = vtk.vtkProbeFilter()
-        probe_filter_obj.SetSourceData(vtk_post_data_obj)
+        probe_filter_obj.SetSourceData(vtk_data_obj)
 
         # Evaluate/interpolate this filter at experimental coordinates
         probe_filter_obj.SetInputData(polydata_obj)

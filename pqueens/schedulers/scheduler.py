@@ -116,8 +116,8 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         return pid
 
-    def submit_post_post(self, job_id, batch):
-        """Function to submit post-post job to scheduling software.
+    def submit_data_processor(self, job_id, batch):
+        """Function to submit data processor job to scheduling software.
 
         Args:
             job_id (int):            ID of job to submit
@@ -128,7 +128,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         # instead only update the driver attributes.
         driver_obj = from_config_create_driver(self.config, job_id, batch, self.driver_name)
 
-        # do post-processing (if required), post-post-processing,
+        # do post-processing (if required), data-processing,
         # finish and clean job
         driver_obj.post_job_run()
 
@@ -186,7 +186,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             pid = driver_obj.pid
 
             # only required for standard scheduling: finish-and-clean call
-            # (taken care of by submit_post_post for other schedulers)
+            # (taken care of by submit_data_processor for other schedulers)
             if self.scheduler_type == 'standard':
                 driver_obj.post_job_run()
         else:

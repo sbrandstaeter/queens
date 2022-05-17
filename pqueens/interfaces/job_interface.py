@@ -190,18 +190,18 @@ class JobInterface(Interface):
 
         # Main run
         job_manager = self.get_job_manager()
-        jobid_for_post_post = job_manager(samples)
+        jobid_for_data_processor = job_manager(samples)
 
         # Post run
         for _, resource in self.resources.items():
-            if self.direct_scheduling and jobid_for_post_post.size != 0:
+            if self.direct_scheduling and jobid_for_data_processor.size != 0:
                 # check tasks to determine completed jobs
                 while not self.all_jobs_finished():
                     time.sleep(self.polling_time)
-                    self._check_job_completions(jobid_for_post_post)
+                    self._check_job_completions(jobid_for_data_processor)
 
-                # submit post-post jobs
-                self._manage_post_post_submission(jobid_for_post_post)
+                # submit data processor jobs
+                self._manage_data_processor_submission(jobid_for_data_processor)
 
             # for all other resources:
             else:
@@ -415,10 +415,10 @@ class JobInterface(Interface):
             samples (DataFrame):     realization/samples of QUEENS simulation input variables
 
         Returns:
-            jobid_for_post_post(ndarray): jobids for post-post-processing
+            jobid_for_data_processor(ndarray): jobids for data-processing
         """
-        # Job that need direct post-post-processing
-        jobid_for_post_post = np.empty(shape=0)
+        # Job that need direct data-processing
+        jobid_for_data_processor = np.empty(shape=0)
 
         # Check results in database
         number_of_results_in_db, jobid_missing_results_in_db = self._check_results_in_db(samples)
@@ -432,14 +432,16 @@ class JobInterface(Interface):
             # Run jobs with missing results in database
             if len(jobid_missing_results_in_db) > 0:
                 self._manage_job_submission(samples, jobid_missing_results_in_db)
-                jobid_for_post_post = np.append(jobid_for_post_post, jobid_missing_results_in_db)
+                jobid_for_data_processor = np.append(
+                    jobid_for_data_processor, jobid_missing_results_in_db
+                )
 
             # Find index for block-restart and run jobs
             jobid_for_block_restart = self._find_block_restart(samples)
             if jobid_for_block_restart is not None:
                 range_block_restart = range(jobid_for_block_restart, samples.size + 1)
                 self._manage_job_submission(samples, range_block_restart)
-                jobid_for_post_post = np.append(jobid_for_post_post, range_block_restart)
+                jobid_for_data_processor = np.append(jobid_for_data_processor, range_block_restart)
 
             # Check if database is complete: all jobs are loaded
             is_every_job_in_db, jobid_smallest_in_db = self._check_jobs_in_db()
@@ -452,9 +454,11 @@ class JobInterface(Interface):
                 # Restart single failed jobs
                 if len(jobid_for_single_restart) > 0:
                     self._manage_job_submission(samples, jobid_for_single_restart)
-                    jobid_for_post_post = np.append(jobid_for_post_post, jobid_for_single_restart)
+                    jobid_for_data_processor = np.append(
+                        jobid_for_data_processor, jobid_for_single_restart
+                    )
 
-        return jobid_for_post_post
+        return jobid_for_data_processor
 
     def _manage_jobs(self, samples):
         """Manage regular submission of jobs without restart.
@@ -463,7 +467,7 @@ class JobInterface(Interface):
             samples (DataFrame): realization/samples of QUEENS simulation input variables
 
         Returns:
-            jobid_for_post_post(ndarray): jobids for post-post-processing
+            jobid_for_data_processor(ndarray): jobids for data-processing
         """
         num_jobs = self.count_jobs()
         if not num_jobs or self.batch_number == 1:
@@ -691,7 +695,9 @@ class JobInterface(Interface):
             if jobid_for_restart_found:
                 break
             elif jobid == 1:
-                raise RuntimeError('Block-restart not found. Check for errors in PostPost-Module')
+                raise RuntimeError(
+                    'Block-restart not found. Check for errors in DataProcessor-Module'
+                )
 
         # If jobid for block-restart out of range -> no restart
         if jobid_for_block_restart > samples.size:
@@ -853,8 +859,8 @@ class JobInterface(Interface):
             raise ValueError(f"Found more than one job with jobid {jobid} in db.")
         return current_job[0]
 
-    def _manage_post_post_submission(self, jobid_range):
-        """Manage submission of post-post processing.
+    def _manage_data_processor_submission(self, jobid_range):
+        """Manage submission of data processing.
 
         Args:
             jobid_range (range):     range of job IDs which are submitted
@@ -869,7 +875,7 @@ class JobInterface(Interface):
                 except (StopIteration, IndexError):
                     pass
 
-                resource.dispatch_post_post_job(self.batch_number, current_job)
+                resource.dispatch_data_processor_job(self.batch_number, current_job)
 
         self.print_resources_status()
 

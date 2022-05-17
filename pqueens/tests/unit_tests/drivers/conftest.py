@@ -30,8 +30,8 @@ def baci_job(job, tmpdir_factory):
     driver_params['path_to_executable'] = str(baci_dir.join('baci_release'))
     driver_params['path_to_postprocessor'] = str(baci_dir.join('post_processor'))
     driver_params['post_process_options'] = ['post_process_options_1', 'post_process_options_2']
-    driver_params['post_post_script'] = str(
-        tmpdir_factory.mktemp('post_post_dir').join('post_post_script.py')
+    driver_params['data_processor_script'] = str(
+        tmpdir_factory.mktemp('data_processor_dir').join('data_processor_script.py')
     )
 
     job['driver_params'] = driver_params
@@ -123,8 +123,8 @@ def driver_base_settings(job):
     base_settings['do_postprocessing'] = False
     base_settings['postprocessor'] = 'post_drt_mon'
     base_settings['post_options'] = '--field=structure --node=26 --start=1'
-    base_settings['do_postpostprocessing'] = True
-    base_settings['postpostprocessor'] = 'Post_post.py'
+    base_settings['do_data_processing'] = True
+    base_settings['data_processor'] = 'data_processor.py'
     base_settings['cae_output_streaming'] = False
     base_settings['input_file'] = 'input.json'
     base_settings['input_file_2'] = None
