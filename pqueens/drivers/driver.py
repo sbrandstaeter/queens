@@ -177,7 +177,6 @@ class Driver(metaclass=abc.ABCMeta):
         if self.job['status'] != "failed":
             # call post-post-processing
             self.result = self.postpostprocessor.get_data_from_post_file(self.output_directory)
-
             _logger.info(f"Got result: {self.result}")
 
     def finalize_job_in_db(self):

@@ -137,7 +137,9 @@ class PostPost(metaclass=abc.ABCMeta):
 
         post_file_path_regex = self._generate_path_to_post_file(base_dir_post_file)
         file_exists_bool = self._check_file_exist_and_is_unique(post_file_path_regex)
+        breakpoint()
         if file_exists_bool:
+            breakpoint()
             self._get_raw_data_from_file()
             self._filter_and_manipulate_raw_data()
             self._subsequent_data_manipulation()

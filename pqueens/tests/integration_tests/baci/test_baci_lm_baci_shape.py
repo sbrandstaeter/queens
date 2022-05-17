@@ -83,6 +83,7 @@ def test_baci_lm_shape(
 
     baci_release, _, _, post_processor = baci_link_paths
 
+    singularity_bool = False
     dir_dict = {
         'experiment_name': experiment_name,
         'experiment_dir': str(experiment_directory),
