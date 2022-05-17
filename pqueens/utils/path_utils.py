@@ -1,5 +1,6 @@
 """Path utilities for QUEENS."""
 import os
+from pathlib import Path
 
 PATH_TO_PQUEENS = os.path.join(os.path.dirname(__file__), "../")
 PATH_TO_QUEENS = os.path.join(os.path.dirname(__file__), "../../")
@@ -46,3 +47,15 @@ def create_folder_if_not_existent(path):
         path (str): Path to be created
     """
     os.makedirs(path, exist_ok=True)
+
+
+def check_if_path_exists(path, error_message=""):
+    """Check if a path exists.
+
+    Args:
+        path (str): Path to be checked
+        error_message (str,optional): If an additional message is desired
+    """
+    path_to_check = Path(path)
+    if not path_to_check.exists():
+        raise FileNotFoundError(error_message + f"\nPath {path} does not exist.")
