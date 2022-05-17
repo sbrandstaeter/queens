@@ -30,7 +30,6 @@ class Distribution:
         Args:
             x (np.ndarray): Positions at which the cdf is evaluated
         """
-        pass
 
     @abc.abstractmethod
     def draw(self, num_draws=1):
@@ -39,7 +38,6 @@ class Distribution:
         Args:
             num_draws (int, optional): Number of draws
         """
-        pass
 
     @abc.abstractmethod
     def logpdf(self, x):
@@ -48,7 +46,14 @@ class Distribution:
         Args:
             x (np.ndarray): Positions at which the log pdf is evaluated
         """
-        pass
+
+    @abc.abstractmethod
+    def grad_logpdf(self, x):
+        """Gradient of the log pdf with respect to x.
+
+        Args:
+            x (np.ndarray): Positions at which the gradient of log pdf is evaluated
+        """
 
     @abc.abstractmethod
     def pdf(self, x):
@@ -57,7 +62,6 @@ class Distribution:
         Args:
             x (np.ndarray): Positions at which the pdf is evaluated
         """
-        pass
 
     @abc.abstractmethod
     def ppf(self, q):
@@ -66,7 +70,6 @@ class Distribution:
         Args:
             q (np.ndarray): Quantiles at which the ppf is evaluated
         """
-        pass
 
     def check_1d(self):
         """Check if distribution is 1 dimensional."""

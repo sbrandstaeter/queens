@@ -106,10 +106,10 @@ class LogNormalDistribution(Distribution):
         return logpdf
 
     def grad_logpdf(self, x):
-        """Gradient of the log pdf.
+        """Gradient of the log pdf with respect to x.
 
         Args:
-            x (np.ndarray): Positions at which the log pdf is evaluated
+            x (np.ndarray): Positions at which the gradient of log pdf is evaluated
 
         Returns:
             grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions

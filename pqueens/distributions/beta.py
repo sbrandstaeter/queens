@@ -109,10 +109,10 @@ class BetaDistribution(Distribution):
         return logpdf
 
     def grad_logpdf(self, x):
-        """Gradient of the log pdf.
+        """Gradient of the log pdf with respect to x.
 
         Args:
-            x (np.ndarray): Positions at which the log pdf is evaluated
+            x (np.ndarray): Positions at which the gradient of log pdf is evaluated
         """
         raise NotImplementedError(
             'This method is currently not implemented for the beta ' 'distribution.'
