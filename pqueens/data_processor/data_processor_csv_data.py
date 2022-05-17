@@ -1,17 +1,17 @@
-"""Post post class for csv data extraction."""
+"""Data processor class for csv data extraction."""
 
 import logging
 
 import numpy as np
 import pandas as pd
 
-from pqueens.post_post.post_post import PostPost
+from pqueens.data_processor.data_processor import DataProcessor
 from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
 
 
-class PostPostCsv(PostPost):
+class DataProcessorCsv(DataProcessor):
     """Class for extracting data from csv files.
 
     Attributes:
@@ -36,7 +36,7 @@ class PostPostCsv(PostPost):
         skip_rows (int): Number of rows that should be skipped to be read-in in csv file.
         use_cols_lst (lst): list with column numbers that should be read-in.
         use_rows_lst (lst): In case this options is used, the list contains the indices of rows
-                            in the csv file that should be used as post post data
+                            in the csv file that should be used as data
     """
 
     expected_filter_entire_file = {'type': 'entire_file'}
@@ -50,7 +50,7 @@ class PostPostCsv(PostPost):
 
     def __init__(
         self,
-        post_file_name_identifier,
+        file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         driver_name,
@@ -64,14 +64,14 @@ class PostPostCsv(PostPost):
         filter_target_values,
         filter_tol,
     ):
-        """Instantiate post post class for csv data.
+        """Instantiate data processor class for csv data.
 
         Args:
-            post_file_name_identifier (str): Identifier of postprocessed file name
+            file_name_identifier (str): Identifier of file name
                                              The file prefix can contain regex expression
                                              and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for
-                                      the post_processed file
+                                      the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
             driver_name (str): Name of the associated driver.
@@ -85,7 +85,7 @@ class PostPostCsv(PostPost):
                 pandas to not use the first column as the index. Index_column is used for
                 filtering the remaining columns.
             use_rows_lst (lst): In case this options is used, the list contains the indices of rows
-                                in the csv file that should be used as post post data
+                                in the csv file that should be used as data
             filter_range (lst): After data is selected by `use_cols_lst` and a filter column is
                                 specified by `index_column`, this option selects which data range
                                 shall be filtered by providing a minimum and maximum value pair
@@ -94,10 +94,10 @@ class PostPostCsv(PostPost):
             filter_target_values (list): target values to filter
 
         Returns:
-            Instance of PostPostCsv class
+            Instance of DataProcessorCsv class
         """
         super().__init__(
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -113,7 +113,7 @@ class PostPostCsv(PostPost):
         self.filter_tol = filter_tol
 
     @classmethod
-    def from_config_create_post_post(cls, config, driver_name):
+    def from_config_create_data_processor(cls, config, driver_name):
         """Create the class from the problem description.
 
         Args:
@@ -121,7 +121,7 @@ class PostPostCsv(PostPost):
             driver_name (str): Name of driver that is used in this job-submission
         """
         (
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
         ) = super().from_config_set_base_attributes(config, driver_name)
@@ -129,7 +129,7 @@ class PostPostCsv(PostPost):
         header_row = file_options_dict.get('header_row')
         if header_row and not isinstance(header_row, int):
             raise ValueError(
-                "The option 'header_row' in the post_post settings must be of type 'int'! "
+                "The option 'header_row' in the data_processor settings must be of type 'int'! "
                 f"You provided type '{type(header_row)}'. Abort..."
             )
 
@@ -143,7 +143,7 @@ class PostPostCsv(PostPost):
         skip_rows = file_options_dict.get('skip_rows', 0)
         if not isinstance(skip_rows, int):
             raise ValueError(
-                "The option 'skip_rows' in the post_post settings must be of type 'int'! "
+                "The option 'skip_rows' in the data_processor settings must be of type 'int'! "
                 f"You provided type '{type(skip_rows)}'. Abort..."
             )
 
@@ -162,7 +162,7 @@ class PostPostCsv(PostPost):
         filter_type = filter_options_dict.get('type')
         if not isinstance(filter_type, str):
             raise ValueError(
-                "The option 'filter_type' in the post_post settings must be of type 'str'! "
+                "The option 'filter_type' in the data_processor settings must be of type 'str'! "
                 f"You provided type '{type(filter_type)}'. Abort..."
             )
 
@@ -201,7 +201,7 @@ class PostPostCsv(PostPost):
             )
 
         return cls(
-            post_file_name_identifier,
+            file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
             driver_name,
@@ -261,7 +261,7 @@ class PostPostCsv(PostPost):
         """
         try:
             self.raw_file_data = pd.read_csv(
-                self.post_file_path,
+                self.file_path,
                 sep=r',|\s+',
                 usecols=self.use_cols_lst,
                 skiprows=self.skip_rows,
@@ -269,11 +269,10 @@ class PostPostCsv(PostPost):
                 engine='python',
                 index_col=self.index_column,
             )
-            _logger.info(f"Successfully read-in data from {self.post_file_path}.")
+            _logger.info(f"Successfully read-in data from {self.file_path}.")
         except IOError as error:
             _logger.warning(
-                f"Could not read postprocessed file {self.post_file_path}. "
-                f"The IOError was: {error}. Skip..."
+                f"Could not read file {self.file_path}. " f"The IOError was: {error}. Skip..."
             )
             self.raw_file_data = None
 
@@ -292,20 +291,20 @@ class PostPostCsv(PostPost):
         )
         filter_method()
 
-        if not np.any(self.post_post_data):
+        if not np.any(self.processed_data):
             raise RuntimeError(
                 "The filtered data was empty! Adjust your filter tolerance or filter range!"
             )
 
     def _filter_entire_file(self):
         """Keep entire csv file data."""
-        self.post_post_data = self.raw_file_data.to_numpy()
+        self.processed_data = self.raw_file_data.to_numpy()
 
     def _filter_by_row_index(self):
         """Filter the csv file based on given data rows."""
         if any(self.raw_file_data):
             try:
-                self.post_post_data = self.raw_file_data.iloc[self.use_rows_lst].to_numpy()
+                self.processed_data = self.raw_file_data.iloc[self.use_rows_lst].to_numpy()
             except IndexError as exception:
                 raise IndexError(
                     f"Index list {self.use_rows_lst} are not contained in raw_file_data. "
@@ -325,7 +324,7 @@ class PostPostCsv(PostPost):
                     )
                 )
 
-            self.post_post_data = self.raw_file_data.iloc[target_indices].to_numpy()
+            self.processed_data = self.raw_file_data.iloc[target_indices].to_numpy()
 
     def _filter_by_range(self):
         """Filter the pandas data frame based on values in a data column."""
@@ -341,4 +340,4 @@ class PostPostCsv(PostPost):
                 )[-1]
             )
 
-            self.post_post_data = (self.raw_file_data.iloc[range_start : range_end + 1]).to_numpy()
+            self.processed_data = (self.raw_file_data.iloc[range_start : range_end + 1]).to_numpy()

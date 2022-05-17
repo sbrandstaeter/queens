@@ -60,8 +60,8 @@ class TestJobInterface(unittest.TestCase):
         self.config['driver'] = {}
         self.config['driver']['driver_type'] = 'baci'
         self.config['driver']['driver_params'] = {}
-        self.config['driver']['driver_params']['post_post'] = {}
-        self.config['driver']['driver_params']['post_post']['file_prefix'] = 'test-file-prefix'
+        self.config['driver']['driver_params']['data_processor'] = {}
+        self.config['driver']['driver_params']['data_processor']['file_prefix'] = 'test-file-prefix'
 
     class FakeDB(object):
         database_address = 'localhost:27017'

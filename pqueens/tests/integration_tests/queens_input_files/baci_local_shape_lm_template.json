@@ -59,9 +59,9 @@
       "post_file_name_prefix_lst": [
         "xx"
       ],
-      "post_post": {
-        "post_post_approach_sel": "ensight_interface_discrepancy",
-        "post_file_name_identifier": "xx*structure.case",
+      "data_processor": {
+        "type": "ensight_interface_discrepancy",
+        "file_name_identifier": "xx*structure.case",
         "file_options_dict": {
           "path_to_ref_data": "{baci_input_monitor}",
           "delete_field_data": false,

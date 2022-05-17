@@ -6,9 +6,9 @@ import os
 import pathlib
 
 import pqueens.database.database as DB_module
+from pqueens.data_processor import from_config_create_data_processor
 from pqueens.drivers.driver import Driver
 from pqueens.external_geometry import from_config_create_external_geometry
-from pqueens.post_post import from_config_create_post_post
 from pqueens.randomfields.univariate_field_generator_factory import (
     UniVarRandomFieldGeneratorFactory,
 )
@@ -65,8 +65,8 @@ class BaciDriver(Driver):
         random_fields_lst (lst):   List of random fields
         scheduler_type (str):      type of scheduler chosen in QUEENS input file
         workdir (str):             path to working directory
-        do_postpostprocessing (bool): Boolean if postpost-processing should be done
-        postpostprocessor (obj):   instance of post-post class
+        do_data_processing (bool): Boolean if data_processing should be done
+        data_processor (obj):   instance of data processor class
         pid (int):                 unique process ID for subprocess
         random_fields_realized_lst (lst): List of random field realizations.
     """
@@ -107,8 +107,8 @@ class BaciDriver(Driver):
         scheduler_type,
         simulation_input_template,
         workdir,
-        do_postpostprocessing,
-        postpostprocessor,
+        do_data_processing,
+        data_processor,
     ):
         """Initialize BaciDriver object.
 
@@ -155,8 +155,8 @@ class BaciDriver(Driver):
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             simulation_input_template (str): path to BACI input template
             workdir (str):             path to working directory
-            do_postpostprocessing (bool): Boolean if postpost-processing should be done
-            postpostprocessor (obj):   instance of post-post class
+            do_data_processing (bool): Boolean if data_processing should be done
+            data_processor (obj):   instance of data processor class
         """
         super().__init__(
             batch,
@@ -196,8 +196,8 @@ class BaciDriver(Driver):
         self.scheduler_type = scheduler_type
         self.simulation_input_template = simulation_input_template
         self.workdir = workdir
-        self.do_postpostprocessing = do_postpostprocessing
-        self.postpostprocessor = postpostprocessor
+        self.do_data_processing = do_data_processing
+        self.data_processor = data_processor
 
     @classmethod
     def from_config_create_driver(
@@ -280,12 +280,12 @@ class BaciDriver(Driver):
         else:
             do_postprocessing = None
 
-        do_postpostprocessing = driver_options.get('post_post', None)
-        if do_postpostprocessing:
-            postpostprocessor = from_config_create_post_post(config, driver_name=driver_name)
+        do_data_processing = driver_options.get('data_processor', None)
+        if do_data_processing:
+            data_processor = from_config_create_data_processor(config, driver_name=driver_name)
             cae_output_streaming = False
         else:
-            postpostprocessor = None
+            data_processor = None
             cae_output_streaming = True
 
         dest_dir = os.path.join(experiment_dir, str(job_id))
@@ -364,8 +364,8 @@ class BaciDriver(Driver):
             scheduler_type,
             simulation_input_template,
             workdir,
-            do_postpostprocessing,
-            postpostprocessor,
+            do_data_processing,
+            data_processor,
         )
 
     # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------

@@ -456,7 +456,7 @@ def _check_if_files_changed():
     # Folders included in the singularity image relevant for a run
     folders_to_compare_list = [
         'drivers/',
-        'post_post/',
+        'data_processor/',
         'utils/',
         'external_geometry/',
         'randomfields/',

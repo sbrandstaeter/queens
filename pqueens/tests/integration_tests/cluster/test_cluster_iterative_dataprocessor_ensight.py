@@ -12,17 +12,17 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.mark.lnm_cluster
-def test_cluster_baci_postpost_ensight(
+def test_cluster_baci_data_processor_ensight(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):
     """Test suite for remote BACI sumlations on the cluster in combination with
-    the BACI ensight post-post-processor. No iterator is used, the model is
-    called directly.
+    the BACI ensight data-processor. No iterator is used, the model is called
+    directly.
 
     This integration test is constructed such that:
         - The interface-map function is called twice (mimics feedback-loops)
         - The maximum concurrent job is activated
-        - Post_Post_ensight to remotely communicate with the database (besides the driver)
+        - data_processor_ensight to remotely communicate with the database (besides the driver)
         - No iterator is used to reduce complexity
 
     Args:
@@ -52,7 +52,7 @@ def test_cluster_baci_postpost_ensight(
     path_to_post_processor = baci_cluster_paths["path_to_post_processor"]
 
     # unique experiment name
-    experiment_name = cluster + "_remote_post_post_ensight"
+    experiment_name = cluster + "_remote_data_processor_ensight"
 
     template = pathlib.Path(inputdir, "baci_remote_model_config.json")
     input_file = pathlib.Path(tmpdir, f"baci_remote_model_config.json")
