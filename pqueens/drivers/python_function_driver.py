@@ -2,10 +2,13 @@
 
 This module is outdated and should therefore no be used.
 """
+import logging
 import os
 import sys
 
 import numpy as np
+
+_logger = logging.getLogger(__name__)
 
 
 def python_function_driver(job):
@@ -18,14 +21,14 @@ def python_function_driver(job):
         result (float): result of run
     """
     # run Python function
-    sys.stdout.write("Running job for Python function.\n")
+    _logger.info("Running job for Python function.\n")
 
     # add directory to system path.
     sys.path.append(os.path.realpath(job['expt_dir']))
 
     # change to directory.
     os.chdir(job['expt_dir'])
-    sys.stdout.write("Changed to directory %s\n" % (os.getcwd()))
+    _logger.info("Changed to directory %s\n" % (os.getcwd()))
 
     # convert dict to vector of parameters.
     params = {}
@@ -44,14 +47,14 @@ def python_function_driver(job):
     main_file = job['driver_params']['main-file']
     if main_file[-3:] == '.py':
         main_file = main_file[:-3]
-    sys.stdout.write('Importing %s.py\n' % main_file)
+    _logger.info('Importing %s.py\n' % main_file)
     module = __import__(main_file)
-    sys.stdout.write('Running %s.main()\n' % main_file)
+    _logger.info('Running %s.main()\n' % main_file)
     result = module.main(job['id'], params)
 
     # change back
     os.chdir('..')
 
-    sys.stdout.write("Got result %s\n" % (result))
+    _logger.info("Got result %s\n" % (result))
 
     return result

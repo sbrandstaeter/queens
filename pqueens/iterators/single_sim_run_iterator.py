@@ -1,3 +1,5 @@
+"""Iterator to run a single simulation run."""
+
 import numpy as np
 
 from pqueens.models import from_config_create_model
@@ -18,7 +20,13 @@ class SingleSimRunIterator(Iterator):
     """
 
     def __init__(self, model, global_settings):
-        super(SingleSimRunIterator, self).__init__(model, global_settings)
+        """Initialise Single Sim Run Iterator.
+
+        Args:
+            model (obj, optional): Model to be evaluated by iterator.
+            global_settings (dict, optional): Settings for the QUEENS run.
+        """
+        super().__init__(model, global_settings)
         self.num_samples = 1
         self.samples = np.zeros(1)
         self.output = None

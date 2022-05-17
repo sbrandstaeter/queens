@@ -15,9 +15,6 @@ class LikelihoodModel(Model):
         y_obs_vec (np.array): Corresponding experimental data vector to coords_mat
         output_label (str): Name of the experimental outputs (column label in csv-file)
         coord_labels (lst): List with coordinate labels for (column labels in csv-file)
-
-    Returns:
-        Instance of LikelihoodModel class
     """
 
     def __init__(

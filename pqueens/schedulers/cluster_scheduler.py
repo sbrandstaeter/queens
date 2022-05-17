@@ -1,5 +1,6 @@
 """Cluster scheduler for QUEENS runs."""
 import atexit
+import logging
 import os
 import sys
 
@@ -13,6 +14,8 @@ from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
 from .scheduler import Scheduler
+
+_logger = logging.getLogger(__name__)
 
 
 class ClusterScheduler(Scheduler):
@@ -321,7 +324,7 @@ class ClusterScheduler(Scheduler):
                 try:
                     return int(match)
                 except ValueError:
-                    sys.stderr.write(stdout)
+                    _logger.error(stdout)
                     return None
             # restart submission
             else:

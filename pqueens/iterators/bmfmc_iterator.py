@@ -1,4 +1,5 @@
 """Iterator for Bayesian multi-fidelity UQ."""
+
 import logging
 from random import randint
 
@@ -107,9 +108,7 @@ class BMFMCIterator(Iterator):
             global_settings (dict): Settings for the QUEENS run.
         """
         #  TODO check if None for the model is appropriate here
-        super(BMFMCIterator, self).__init__(
-            None, global_settings
-        )  # Input prescribed by iterator.py
+        super().__init__(None, global_settings)  # Input prescribed by iterator.py
         self.model = model
         self.result_description = result_description
         self.X_train = None
