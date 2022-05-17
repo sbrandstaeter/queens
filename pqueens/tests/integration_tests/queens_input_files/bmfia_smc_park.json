@@ -62,8 +62,8 @@
     "likelihood_noise_type": "jeffreys_prior",
     "fixed_likelihood_noise_value": 0.01,
     "nugget_noise_var": 1E-8,
-    "post_post": {
-      "post_file_name_identifier": "*.csv",
+    "data_processor": {
+      "file_name_identifier": "*.csv",
       "file_options_dict": {
         "header_row": 0,
         "index_column": false,

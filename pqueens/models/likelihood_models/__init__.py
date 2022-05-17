@@ -113,7 +113,7 @@ def _get_experimental_data_and_write_to_db(
         experimental_coordinates (np.array): Matrix with observation coordinates. One row
                                                 corresponds to one coordinate point.
     """
-    experimental_data_dict = csv_data_reader.get_data_from_post_file(experimental_data_path)
+    experimental_data_dict = csv_data_reader.get_data_from_file(experimental_data_path)
 
     # potentially scale experimental data and save the results to the database
     # For now we save all data-points to the experimental data slot `1`. This could be

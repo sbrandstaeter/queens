@@ -79,7 +79,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         try:
             data_processor_options = driver_params["driver_params"].get('data_processor')
         except KeyError:
-            data_processor_options = driver_params.get("post_post")
+            data_processor_options = driver_params.get("data_processor")
 
         file_name_identifier = data_processor_options.get('file_name_identifier')
         if not file_name_identifier:
@@ -140,7 +140,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
         file_path_regex = self._generate_path_to_file(base_dir_file)
         file_exists_bool = self._check_file_exist_and_is_unique(file_path_regex)
         if file_exists_bool:
-            breakpoint()
             self._get_raw_data_from_file()
             self._filter_and_manipulate_raw_data()
             self._subsequent_data_manipulation()

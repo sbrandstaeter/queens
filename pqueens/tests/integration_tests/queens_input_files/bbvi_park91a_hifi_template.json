@@ -51,8 +51,8 @@
         "type": "likelihood_model",
         "subtype": "gaussian_static",
         "forward_model": "forward_model",
-        "post_post": {
-        "post_file_name_identifier": "*.csv",
+        "data_processor": {
+        "file_name_identifier": "*.csv",
         "file_options_dict": {
             "header_row": 0,
             "index_column": false,
