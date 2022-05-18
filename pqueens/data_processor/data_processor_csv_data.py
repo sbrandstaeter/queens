@@ -160,11 +160,6 @@ class DataProcessorCsv(DataProcessor):
             )
 
         returned_filter_format = file_options_dict.get('returned_filter_format', 'numpy')
-        if not isinstance(returned_filter_format, str):
-            raise TypeError(
-                "The option 'filter_format' has to be of type 'str', "
-                f"but you provided type {type(returned_filter_format)}. Abort..."
-            )
 
         filter_options_dict = file_options_dict.get('filter')
         cls._check_valid_filter_options(filter_options_dict)

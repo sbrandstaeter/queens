@@ -394,7 +394,7 @@ def test_filter_by_row_index(default_data_processor, default_raw_data):
 @pytest.mark.unit_tests
 def test_filter_and_manipulate_raw_data_numpy(default_data_processor, default_raw_data):
     """Test output format in numpy."""
-    default_data_processor.filter_format = 'numpy'
+    default_data_processor.returned_filter_format = 'numpy'
     default_data_processor.raw_file_data = default_raw_data
     default_data_processor._filter_and_manipulate_raw_data()
     expected_data = default_raw_data.to_numpy()
@@ -404,7 +404,7 @@ def test_filter_and_manipulate_raw_data_numpy(default_data_processor, default_ra
 @pytest.mark.unit_tests
 def test_filter_and_manipulate_raw_data_dict(default_data_processor, default_raw_data):
     """Test output format as dict."""
-    default_data_processor.filter_format = 'dict'
+    default_data_processor.returned_filter_format = 'dict'
     default_data_processor.raw_file_data = default_raw_data
     default_data_processor._filter_and_manipulate_raw_data()
     expected_data = default_raw_data.to_dict('list')
@@ -414,7 +414,7 @@ def test_filter_and_manipulate_raw_data_dict(default_data_processor, default_raw
 @pytest.mark.unit_tests
 def test_filter_and_manipulate_raw_data_error(default_data_processor, default_raw_data):
     """Test wrong output format."""
-    default_data_processor.filter_format = 'stuff'
+    default_data_processor.returned_filter_format = 'stuff'
     default_data_processor.raw_file_data = default_raw_data
     with pytest.raises(KeyError):
         default_data_processor._filter_and_manipulate_raw_data()
