@@ -76,7 +76,10 @@ class DataProcessor(metaclass=abc.ABCMeta):
             driver_name (str): Name of the associated driver.
         """
         driver_params = config.get(driver_name)
-        data_processor_options = driver_params["driver_params"].get('data_processor')
+        try:
+            data_processor_options = driver_params["driver_params"].get('data_processor')
+        except KeyError:
+            data_processor_options = driver_params.get("data_processor")
 
         file_name_identifier = data_processor_options.get('file_name_identifier')
         if not file_name_identifier:
@@ -156,7 +159,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
             file_path_regex (str): Path to file that still
                                         contains wildcards or regex expressions
         """
-        file_identifier = self.file_name_identifier + '*'
+        file_identifier = self.file_name_identifier
         file_path_regex = os.path.join(base_dir_file, file_identifier)
         return file_path_regex
 
@@ -179,7 +182,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 "The files are: {file_list}."
                 "The file prefix must lead to a unique file. Abort..."
             )
-        elif len(file_list) == 1:
+        if len(file_list) == 1:
             self.file_path = file_list[0]
             file_exists = True
         else:
@@ -191,12 +194,10 @@ class DataProcessor(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def _get_raw_data_from_file(self):
         """Get the raw data from the files of interest."""
-        pass
 
     @abc.abstractmethod
     def _filter_and_manipulate_raw_data(self):
         """Filter or clean the raw data for given criteria."""
-        pass
 
     def _subsequent_data_manipulation(self):
         """Subsequent manipulate the data_processor data.
@@ -206,7 +207,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
         sure to add the module to the `from_config_create` method in
         this file.
         """
-        pass
 
     @staticmethod
     def _clean_up(file_path):

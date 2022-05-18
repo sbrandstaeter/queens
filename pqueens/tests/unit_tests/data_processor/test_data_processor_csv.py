@@ -83,6 +83,7 @@ def default_data_processor():
     filter_range = []
     filter_target_values = [1, 2]
     filter_tol = 2.0
+    filter_format = "numpy"
 
     pp = pqueens.data_processor.data_processor_csv_data.DataProcessorCsv(
         file_name_identifier,
@@ -98,6 +99,7 @@ def default_data_processor():
         filter_range,
         filter_target_values,
         filter_tol,
+        filter_format,
     )
     return pp
 
@@ -118,6 +120,7 @@ def test_init():
     filter_range = []
     filter_target_values = [1, 2]
     filter_tol = 2.0
+    filter_format = "dict"
 
     my_data_processor = DataProcessorCsv(
         file_name_identifier,
@@ -133,6 +136,7 @@ def test_init():
         filter_range,
         filter_target_values,
         filter_tol,
+        filter_format,
     )
 
     assert my_data_processor.driver_name == driver_name
@@ -151,6 +155,7 @@ def test_init():
     assert my_data_processor.skip_rows == skip_rows
     assert my_data_processor.use_cols_lst == use_cols_lst
     assert my_data_processor.use_rows_lst == use_rows_lst
+    assert my_data_processor.returned_filter_format == filter_format
 
 
 @pytest.mark.unit_tests
@@ -236,6 +241,7 @@ def test_from_config_create_data_processor(mocker):
     filter_range = []
     filter_target_values = []
     filter_tol = 0.0
+    filter_format = "numpy"
 
     file_options_dict = {
         'header_row': header_row,
@@ -244,6 +250,7 @@ def test_from_config_create_data_processor(mocker):
         'use_rows_lst': use_rows_lst,
         'index_column': index_column,
         'files_to_be_deleted_regex_lst': files_to_be_deleted_regex_lst,
+        'filter_format': filter_format,
         "filter": {"type": filter_type, "rows": use_rows_lst},
     }
 
@@ -276,6 +283,7 @@ def test_from_config_create_data_processor(mocker):
         filter_range,
         filter_target_values,
         filter_tol,
+        filter_format,
     )
 
 
@@ -380,5 +388,33 @@ def test_filter_by_row_index(default_data_processor, default_raw_data):
     default_data_processor._filter_and_manipulate_raw_data()
 
     expected_data = np.array([0.64879, 2.36284, 2.93828]).reshape((3, 1))
-
     np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
+
+
+@pytest.mark.unit_tests
+def test_filter_and_manipulate_raw_data_numpy(default_data_processor, default_raw_data):
+    """Test output format in numpy."""
+    default_data_processor.returned_filter_format = 'numpy'
+    default_data_processor.raw_file_data = default_raw_data
+    default_data_processor._filter_and_manipulate_raw_data()
+    expected_data = default_raw_data.to_numpy()
+    np.testing.assert_array_equal(expected_data, default_data_processor.processed_data)
+
+
+@pytest.mark.unit_tests
+def test_filter_and_manipulate_raw_data_dict(default_data_processor, default_raw_data):
+    """Test output format as dict."""
+    default_data_processor.returned_filter_format = 'dict'
+    default_data_processor.raw_file_data = default_raw_data
+    default_data_processor._filter_and_manipulate_raw_data()
+    expected_data = default_raw_data.to_dict('list')
+    np.testing.assert_array_equal(expected_data, default_data_processor.processed_data)
+
+
+@pytest.mark.unit_tests
+def test_filter_and_manipulate_raw_data_error(default_data_processor, default_raw_data):
+    """Test wrong output format."""
+    default_data_processor.returned_filter_format = 'stuff'
+    default_data_processor.raw_file_data = default_raw_data
+    with pytest.raises(pqueens.utils.valid_options_utils.InvalidOptionError):
+        default_data_processor._filter_and_manipulate_raw_data()

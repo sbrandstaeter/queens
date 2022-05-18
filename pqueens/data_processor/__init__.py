@@ -32,7 +32,10 @@ def from_config_create_data_processor(config, driver_name):
             "which could not be found in the problem description. Abort..."
         )
 
-    data_processor_options = driver_params["driver_params"].get('data_processor')
+    try:
+        data_processor_options = driver_params["driver_params"].get('data_processor')
+    except KeyError:
+        data_processor_options = driver_params.get('data_processor')
     if not data_processor_options:
         raise ValueError(
             f"The 'data_processor' options were not found in the driver '{driver_name}'! Abort..."

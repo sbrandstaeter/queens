@@ -29,9 +29,8 @@
     "likelihood_noise_type": "fixed",
     "fixed_likelihood_noise_value": 1.0,
     "nugget_noise_var": 1E-5,
-    "experimental_csv_data_base_dirs": [
-      "{experimental_data_path}"
-    ],
+    "experimental_file_name_identifier": "*.csv",
+    "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters"
   },
   "forward_model": {

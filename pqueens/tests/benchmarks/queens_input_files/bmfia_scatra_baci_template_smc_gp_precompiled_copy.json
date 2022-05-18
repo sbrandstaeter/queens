@@ -65,12 +65,22 @@
     "fixed_likelihood_noise_value": 1E-9,
     "nugget_noise_var": 1E-8,
     "noise_upper_bound": 2.0,
-    "experimental_csv_data_base_dirs": [
-      "{experimental_data_path}"
-    ],
+    "data_processor": {
+    "type": "csv",
+    "file_name_identifier": "*.csv",
+    "file_options_dict": {
+        "header_row": 0,
+        "index_column": false,
+        "returned_filter_format": "dict",
+        "filter": {
+            "type": "entire_file"
+        }
+        }
+    },
+    "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters",
     "plotting_options": {
-      "plotting_dir": "/home/nitzler/workspace/QUEENS_Rep/queens",
+      "plotting_dir": "{plot_dir}",
       "plot_names": [
         "conditional_plot.png",
         "mf_posterior.png"

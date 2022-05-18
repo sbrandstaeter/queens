@@ -204,7 +204,6 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                     for iii in range(0, npoint_lines[ii][0]):
                         monfile_data[i][1][ii][x][npoint_lines[ii][iii + 1]] = steps_lines[i][k]
                         k += 1
-
         return monfile_data
 
     def _get_raw_data_from_file(self):

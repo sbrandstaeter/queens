@@ -54,9 +54,8 @@
     ],
     "likelihood_noise_type": "jeffreys_prior",
     "nugget_noise_var": 1E-8,
-    "experimental_csv_data_base_dirs": [
-      "{experimental_data_path}"
-    ],
+    "experimental_file_name_identifier": "*.csv",
+    "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters"
   },
   "forward_model": {

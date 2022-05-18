@@ -34,9 +34,19 @@
     "fixed_likelihood_noise_value": 1E-6,
     "nugget_noise_var": 1E-15,
     "noise_upper_bound": 2.0,
-    "experimental_csv_data_base_dirs": [
-      "{experimental_data_path}"
-    ],
+    "data_processor": {
+    "type": "csv",
+    "file_name_identifier": "*.csv",
+    "file_options_dict": {
+        "header_row": 0,
+        "index_column": false,
+        "returned_filter_format": "dict",
+        "filter": {
+            "type": "entire_file"
+        }
+        }
+    },
+    "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters"
   },
   "MCMC_Kernel": {
