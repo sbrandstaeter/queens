@@ -155,7 +155,7 @@ def test_init():
     assert my_data_processor.skip_rows == skip_rows
     assert my_data_processor.use_cols_lst == use_cols_lst
     assert my_data_processor.use_rows_lst == use_rows_lst
-    assert my_data_processor.filter_format == filter_format
+    assert my_data_processor.returned_filter_format == filter_format
 
 
 @pytest.mark.unit_tests

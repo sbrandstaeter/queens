@@ -71,7 +71,7 @@
     "file_options_dict": {
         "header_row": 0,
         "index_column": false,
-        "filter_format": "dict",
+        "returned_filter_format": "dict",
         "filter": {
             "type": "entire_file"
         }

@@ -63,7 +63,7 @@ class DataProcessorCsv(DataProcessor):
         filter_range,
         filter_target_values,
         filter_tol,
-        filter_format,
+        returned_filter_format,
     ):
         """Instantiate data processor class for csv data.
 
@@ -93,7 +93,7 @@ class DataProcessorCsv(DataProcessor):
                                 in list format
             filter_tol (float): Tolerance for the filter range
             filter_target_values (list): target values to filter
-            filter_format (str): Returned data format after filtering
+            returned_filter_format (str): Returned data format after filtering
 
         Returns:
             Instance of DataProcessorCsv class
@@ -113,7 +113,7 @@ class DataProcessorCsv(DataProcessor):
         self.filter_range = filter_range
         self.filter_target_values = filter_target_values
         self.filter_tol = filter_tol
-        self.filter_format = filter_format
+        self.returned_filter_format = returned_filter_format
 
     @classmethod
     def from_config_create_data_processor(cls, config, driver_name):
@@ -159,11 +159,11 @@ class DataProcessorCsv(DataProcessor):
                 "Abort..."
             )
 
-        filter_format = file_options_dict.get('filter_format', 'numpy')
-        if not isinstance(filter_format, str):
+        returned_filter_format = file_options_dict.get('returned_filter_format', 'numpy')
+        if not isinstance(returned_filter_format, str):
             raise TypeError(
                 "The option 'filter_format' has to be of type 'str', "
-                f"but you provided type {type(filter_format)}. Abort..."
+                f"but you provided type {type(returned_filter_format)}. Abort..."
             )
 
         filter_options_dict = file_options_dict.get('filter')
@@ -223,7 +223,7 @@ class DataProcessorCsv(DataProcessor):
             filter_range,
             filter_target_values,
             filter_tol,
-            filter_format,
+            returned_filter_format,
         )
 
     @classmethod
@@ -304,13 +304,14 @@ class DataProcessorCsv(DataProcessor):
             "numpy": self.processed_data.to_numpy(),
             "dict": self.processed_data.to_dict('list'),
         }
-        if self.filter_format not in filter_formats_dict:
+
+        try:
+            self.processed_data = filter_formats_dict[self.returned_filter_format]
+        except KeyError:
             raise KeyError(
                 "The filter format you provided is not a current option. Allowed options are "
                 f"{filter_formats_dict.keys()}. Abort..."
             )
-
-        self.processed_data = filter_formats_dict[self.filter_format]
 
         if not np.any(self.processed_data):
             raise RuntimeError(
@@ -318,7 +319,7 @@ class DataProcessorCsv(DataProcessor):
             )
 
     def _filter_entire_file(self):
-        """Keep entire csv file data and provide format."""
+        """Keep entire csv file data."""
         self.processed_data = self.raw_file_data
 
     def _filter_by_row_index(self):

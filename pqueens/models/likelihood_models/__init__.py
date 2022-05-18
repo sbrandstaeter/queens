@@ -5,16 +5,9 @@ QUEENS, to build probabilistic models. A standard use-case are inverse
 problems.
 """
 
-import glob
-import logging
-import os
-
 import numpy as np
-import pandas as pd
 
 from pqueens.data_processor import from_config_create_data_processor
-
-_logger = logging.getLogger(__name__)
 
 
 def from_config_create_model(model_name, config):
@@ -76,7 +69,7 @@ def from_config_create_model(model_name, config):
                     "file_options_dict": {
                         "header_row": 0,
                         "index_column": False,
-                        "filter_format": "dict",
+                        "returned_filter_format": "dict",
                         "filter": {"type": "entire_file"},
                     },
                 },
@@ -143,7 +136,7 @@ def _get_experimental_data_and_write_to_db(
     # extended in the future if we want to read in several different data sources
     db.save(experimental_data_dict, experiment_name, 'experimental_data', '1')
 
-    # arrange the experimental data‹ coordinates
+    # arrange the experimental data coordinates
     experimental_coordinates = (
         np.array([experimental_data_dict[coordinate] for coordinate in coordinate_labels]),
     )[0].T
@@ -155,6 +148,8 @@ def _get_experimental_data_and_write_to_db(
         time_vec = None
 
     # get the experimental outputs
-    y_obs_vec = np.array(experimental_data_dict[output_label]).squeeze()
+    y_obs_vec = np.array(experimental_data_dict[output_label]).reshape(
+        -1,
+    )
 
     return y_obs_vec, experimental_coordinates, time_vec
