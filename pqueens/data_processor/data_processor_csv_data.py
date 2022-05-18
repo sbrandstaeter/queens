@@ -300,13 +300,12 @@ class DataProcessorCsv(DataProcessor):
             "dict": self.processed_data.to_dict('list'),
         }
 
-        try:
-            self.processed_data = filter_formats_dict[self.returned_filter_format]
-        except KeyError:
-            raise KeyError(
-                "The filter format you provided is not a current option. Allowed options are "
-                f"{filter_formats_dict.keys()}. Abort..."
-            )
+        self.processed_data = get_option(
+            filter_formats_dict,
+            self.returned_filter_format,
+            error_message="The filter format you provided is not a current option."
+            f"Allowed options are {filter_formats_dict.keys()}. Abort...",
+        )
 
         if not np.any(self.processed_data):
             raise RuntimeError(
