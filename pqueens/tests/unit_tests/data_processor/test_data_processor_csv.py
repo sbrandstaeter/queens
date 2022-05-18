@@ -416,5 +416,5 @@ def test_filter_and_manipulate_raw_data_error(default_data_processor, default_ra
     """Test wrong output format."""
     default_data_processor.returned_filter_format = 'stuff'
     default_data_processor.raw_file_data = default_raw_data
-    with pytest.raises(KeyError):
+    with pytest.raises(pqueens.utils.valid_options_utils.InvalidOptionError):
         default_data_processor._filter_and_manipulate_raw_data()

@@ -303,8 +303,7 @@ class DataProcessorCsv(DataProcessor):
         self.processed_data = get_option(
             filter_formats_dict,
             self.returned_filter_format,
-            error_message="The filter format you provided is not a current option."
-            f"Allowed options are {filter_formats_dict.keys()}. Abort...",
+            error_message="The returned filter format you provided is not a current option.",
         )
 
         if not np.any(self.processed_data):
