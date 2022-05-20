@@ -44,7 +44,7 @@ class DataProcessorEnsight(DataProcessor):
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
         database,
         experiment_name,
         experimental_data,
@@ -69,7 +69,7 @@ class DataProcessorEnsight(DataProcessor):
                                       the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            driver_name (str): Name of the associated driver.
+            data_processor_name (str): Name of the data processor.
             database (obj): Database object
             experiment_name (str): Name of QUEENS experiment
             experimental_data (pd.DataFrame): Pandas dataframe with experimental data
@@ -97,7 +97,7 @@ class DataProcessorEnsight(DataProcessor):
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-            driver_name,
+            data_processor_name,
         )
 
         self.db = database
@@ -115,58 +115,53 @@ class DataProcessorEnsight(DataProcessor):
         self.geometric_target = geometric_target
 
     @classmethod
-    def from_config_create_data_processor(cls, config, driver_name):
+    def from_config_create_data_processor(cls, config, data_processor_name):
         """Create data_processor routine from problem description.
 
         Args:
             config (dict): Dictionary with problem description.
-            driver_name (str): Name of driver that is used in this job-submission
+            data_processor_name (str): Name of data processor that is used in this job-submission
         """
         (
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-        ) = super().from_config_set_base_attributes(config, driver_name)
+        ) = super().from_config_set_base_attributes(config, data_processor_name)
 
-        cls._check_field_specification_dict(file_options_dict, driver_name)
+        cls._check_field_specification_dict(file_options_dict, data_processor_name)
         # load the necessary options from the file options dictionary
         target_time_lst = file_options_dict.get('target_time_lst')
         if not isinstance(target_time_lst, list):
             raise TypeError(
-                "The option 'target_time_lst' in the data_processor settings of the "
-                f"'{driver_name}' driver must be of type 'list' but you provided "
-                f"type {type(target_time_lst)}. Abort..."
+                "The option 'target_time_lst' in the data_processor settings must be of type 'list'"
+                f" but you provided type {type(target_time_lst)}. Abort..."
             )
         time_tol = file_options_dict.get('time_tol')
         if time_tol:
             if not isinstance(time_tol, float):
                 raise TypeError(
-                    "The option 'time_tol' in the data_processor settings of the "
-                    f"'{driver_name}' driver must be of type 'float' but you provided "
-                    f"type {type(time_tol)}. Abort..."
+                    "The option 'time_tol' in the data_processor settings must be of type 'float' "
+                    f"but you provided type {type(time_tol)}. Abort..."
                 )
 
         vtk_field_label = file_options_dict['physical_field_dict']['vtk_field_label']
         if not isinstance(vtk_field_label, str):
             raise TypeError(
-                "The option 'vtk_field_label' in the data_processor settings of the "
-                f"'{driver_name}' driver must be of type 'str' but you provided "
-                f"type {type(vtk_field_label)}. Abort..."
+                "The option 'vtk_field_label' in the data_processor settings must be of type 'str' "
+                f"but you provided type {type(vtk_field_label)}. Abort..."
             )
         vtk_field_components = file_options_dict['physical_field_dict']['field_components']
         if not isinstance(vtk_field_components, list):
             raise TypeError(
-                "The option 'vtk_field_components' in the data_processor settings of the "
-                f"'{driver_name}' driver must be of type 'list' but you provided "
-                f"type {type(vtk_field_components)}. Abort..."
+                "The option 'vtk_field_components' in the data_processor settings must be of type "
+                f"'list' but you provided type {type(vtk_field_components)}. Abort..."
             )
 
         vtk_array_type = file_options_dict['physical_field_dict']['vtk_array_type']
         if not isinstance(vtk_array_type, str):
             raise TypeError(
-                "The option 'vtk_array_type' in the data_processor settings of the "
-                f"'{driver_name}' driver must be of type 'str' but you provided "
-                f"type {type(vtk_array_type)}. Abort..."
+                "The option 'vtk_array_type' in the data_processor settings must be of type 'str' "
+                f"but you provided type {type(vtk_array_type)}. Abort..."
             )
 
         # geometric_target (lst): List specifying where (for which geometric target) vtk data
@@ -177,9 +172,8 @@ class DataProcessorEnsight(DataProcessor):
         geometric_target = file_options_dict["geometric_target"]
         if not isinstance(geometric_target, list):
             raise TypeError(
-                "The option 'geometric_target' in the data_processor settings of the "
-                f"'{driver_name}' driver must be of type 'list' but you provided "
-                f"type {type(geometric_target)}. Abort..."
+                "The option 'geometric_target' in the data_processor settings must be of type "
+                f"'list' but you provided type {type(geometric_target)}. Abort..."
             )
 
         # Load the database
@@ -201,7 +195,7 @@ class DataProcessorEnsight(DataProcessor):
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-            driver_name,
+            data_processor_name,
             database,
             experiment_name,
             experimental_data,
@@ -218,21 +212,20 @@ class DataProcessorEnsight(DataProcessor):
         )
 
     @staticmethod
-    def _check_field_specification_dict(file_options_dict, driver_name):
+    def _check_field_specification_dict(file_options_dict, data_processor_name):
         """Check the file_options_dict for valid inputs.
 
         Args:
             file_options_dict (dict): Dictionary containing the field descritpion for the
                                       physical fields of interest that should be read-in.
-            driver_name (str): Name of the associated driver
+            data_processor_name (str): Name of the data processor
         """
         required_keys_lst = ['target_time_lst', 'physical_field_dict', 'geometric_target']
         if not set(required_keys_lst).issubset(set(file_options_dict.keys())):
             raise KeyError(
-                "The option 'file_options_dict' within the data_processor section of the "
-                f"'{driver_name}' driver must at least contain the following keys: "
-                f"{required_keys_lst}. You only provided: {file_options_dict.keys()}."
-                "Abort..."
+                "The option 'file_options_dict' within the data_processor section must at least "
+                f"contain the following keys: {required_keys_lst}. "
+                f"You only provided: {file_options_dict.keys()}. Abort..."
             )
 
         required_field_keys = [
@@ -246,9 +239,8 @@ class DataProcessorEnsight(DataProcessor):
             set(file_options_dict['physical_field_dict'].keys())
         ):
             raise KeyError(
-                "The option 'physical_field_dict' within the data_processor section of the "
-                f"'{driver_name}' driver must at least contain the following keys: "
-                f"{required_field_keys}. You only provided the keys: "
+                "The option 'physical_field_dict' within the data_processor section must at least "
+                f"contain the following keys: {required_field_keys}. You only provided the keys: "
                 f"{file_options_dict['physical_field_dict'].keys()}"
             )
 

@@ -65,7 +65,6 @@ class BaciDriver(Driver):
         random_fields_lst (lst):   List of random fields
         scheduler_type (str):      type of scheduler chosen in QUEENS input file
         workdir (str):             path to working directory
-        do_data_processing (bool): Boolean if data_processing should be done
         data_processor (obj):   instance of data processor class
         pid (int):                 unique process ID for subprocess
         random_fields_realized_lst (lst): List of random field realizations.
@@ -107,7 +106,6 @@ class BaciDriver(Driver):
         scheduler_type,
         simulation_input_template,
         workdir,
-        do_data_processing,
         data_processor,
     ):
         """Initialize BaciDriver object.
@@ -155,7 +153,6 @@ class BaciDriver(Driver):
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             simulation_input_template (str): path to BACI input template
             workdir (str):             path to working directory
-            do_data_processing (bool): Boolean if data_processing should be done
             data_processor (obj):   instance of data processor class
         """
         super().__init__(
@@ -196,7 +193,6 @@ class BaciDriver(Driver):
         self.scheduler_type = scheduler_type
         self.simulation_input_template = simulation_input_template
         self.workdir = workdir
-        self.do_data_processing = do_data_processing
         self.data_processor = data_processor
 
     @classmethod
@@ -280,9 +276,9 @@ class BaciDriver(Driver):
         else:
             do_postprocessing = None
 
-        do_data_processing = driver_options.get('data_processor', None)
-        if do_data_processing:
-            data_processor = from_config_create_data_processor(config, driver_name=driver_name)
+        data_processor_name = driver_options.get('data_processor', None)
+        if data_processor_name:
+            data_processor = from_config_create_data_processor(config, data_processor_name)
             cae_output_streaming = False
         else:
             data_processor = None
@@ -364,7 +360,6 @@ class BaciDriver(Driver):
             scheduler_type,
             simulation_input_template,
             workdir,
-            do_data_processing,
             data_processor,
         )
 

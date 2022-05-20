@@ -59,20 +59,21 @@
       "post_file_name_prefix_lst": [
         "xx"
       ],
-      "data_processor": {
-        "type": "ensight_interface_discrepancy",
-        "file_name_identifier": "xx*structure.case",
-        "file_options_dict": {
-          "path_to_ref_data": "{baci_input_monitor}",
-          "delete_field_data": false,
-          "time_tol": 1e-2,
-          "displacement_fields": [
-            "displacement"
-          ],
-          "problem_dimension": "2d",
-          "visualization": false
-        }
-      }
+      "data_processor": "data_processor"
+    }
+  },
+  "data_processor": {
+    "type": "ensight_interface_discrepancy",
+    "file_name_identifier": "xx*structure.case",
+    "file_options_dict": {
+      "path_to_ref_data": "{baci_input_monitor}",
+      "delete_field_data": false,
+      "time_tol": 1e-2,
+      "displacement_fields": [
+        "displacement"
+      ],
+      "problem_dimension": "2d",
+      "visualization": false
     }
   },
   "resources": {

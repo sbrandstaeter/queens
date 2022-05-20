@@ -51,31 +51,29 @@ def from_config_create_model(model_name, config):
     global_settings = config.get('global_settings', None)
     experimental_data_base_dir = model_options.get("experimental_csv_data_base_dir")
     experiment_name = global_settings["experiment_name"]
+    data_processor_name = model_options.get('data_processor')
 
     # call method to load experimental data
     try:
         # standard initialization for data_processor
-        data_processor = from_config_create_data_processor(config, model_name)
+        data_processor = from_config_create_data_processor(config, data_processor_name)
     except ValueError:
         # allow short initialization for data_processor
         # only using the 'file_name_identifier'
-        model_section = config.get(model_name)
-        file_name_identifier = model_section.get('experimental_file_name_identifier')
+        file_name_identifier = model_options.get('experimental_file_name_identifier')
         short_config = {
-            model_name: {
-                "data_processor": {
-                    "type": "csv",
-                    "file_name_identifier": file_name_identifier,
-                    "file_options_dict": {
-                        "header_row": 0,
-                        "index_column": False,
-                        "returned_filter_format": "dict",
-                        "filter": {"type": "entire_file"},
-                    },
+            "data_processor": {
+                "type": "csv",
+                "file_name_identifier": file_name_identifier,
+                "file_options_dict": {
+                    "header_row": 0,
+                    "index_column": False,
+                    "returned_filter_format": "dict",
+                    "filter": {"type": "entire_file"},
                 },
-            }
+            },
         }
-        data_processor = from_config_create_data_processor(short_config, model_name)
+        data_processor = from_config_create_data_processor(short_config, "data_processor")
 
     y_obs_vec, coords_mat, time_vec = _get_experimental_data_and_write_to_db(
         data_processor,

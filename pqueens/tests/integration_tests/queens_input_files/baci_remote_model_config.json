@@ -40,24 +40,25 @@
       "post_process_options": [
         ""
       ],
-      "data_processor": {
-        "type": "ensight",
-        "file_name_identifier": "{cluster}*.case",
-        "file_options_dict": {
-          "delete_field_data": false,
-          "geometric_target": ["experimental_data"],
-          "physical_field_dict": {
-            "vtk_field_type": "structure",
-            "vtk_array_type": "point_array",
-            "vtk_field_label": "displacement",
-            "field_components": [
-              0
-            ]
-          },
-          "target_time_lst": [0.5],
-          "time_tol": 0.001
-        }
-      }
+      "data_processor": "data_processor"
+    }
+  },
+  "data_processor": {
+    "type": "ensight",
+    "file_name_identifier": "{cluster}*.case",
+    "file_options_dict": {
+      "delete_field_data": false,
+      "geometric_target": ["experimental_data"],
+      "physical_field_dict": {
+        "vtk_field_type": "structure",
+        "vtk_array_type": "point_array",
+        "vtk_field_label": "displacement",
+        "field_components": [
+          0
+        ]
+      },
+      "target_time_lst": [0.5],
+      "time_tol": 0.001
     }
   },
   "resources": {
