@@ -421,7 +421,7 @@ class BaciDriver(Driver):
                 },
             )
 
-    def postprocess_job(self):
+    def post_processor_job(self):
         """Post-process BACI job."""
         # set output and core of target file opt
         output_file_opt = '--file=' + self.output_file
