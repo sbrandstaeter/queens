@@ -10,8 +10,6 @@ def get_experimental_data_and_write_to_db(
     data_processor_name,
     base_dir,
     file_name,
-    experiment_name,
-    db,
     coordinate_labels,
     time_label,
     output_label,
@@ -23,8 +21,6 @@ def get_experimental_data_and_write_to_db(
         data_processor_name (str): DataProcessor name
         base_dir (str): Path to base directory containing experimental data
         file_name (str): file name of experimental data
-        experiment_name (str): Name of the current experiment in QUEENS
-        db (obj): Database object
         coordinate_labels (lst): List of column-wise coordinate labels in csv files
         time_label (str): Name of the time variable in csv file
         output_label (str): Label that marks the output quantity in the csv file
@@ -34,6 +30,8 @@ def get_experimental_data_and_write_to_db(
                                 observation coordinates
         experimental_coordinates (np.array): Matrix with observation coordinates. One row
                                                 corresponds to one coordinate point.
+        time_vec (np.array): unique vector of observation times
+        experimental_data_dict (dict): Dictionary containing the experimental data
     """
     try:
         # standard initialization for data_processor
@@ -57,11 +55,6 @@ def get_experimental_data_and_write_to_db(
 
     experimental_data_dict = data_processor.get_data_from_file(base_dir)
 
-    # save experimental data to the database
-    # For now we save all data-points to the experimental data slot `1`. This could be
-    # extended in the future if we want to read in several different data sources
-    db.save(experimental_data_dict, experiment_name, 'experimental_data', '1')
-
     # arrange the experimental data coordinates
     experimental_coordinates = (
         np.array([experimental_data_dict[coordinate] for coordinate in coordinate_labels]),
@@ -78,4 +71,16 @@ def get_experimental_data_and_write_to_db(
         -1,
     )
 
-    return y_obs_vec, experimental_coordinates, time_vec
+    return y_obs_vec, experimental_coordinates, time_vec, experimental_data_dict
+
+
+def write_experimental_data_to_db(experimental_data_dict, experiment_name, db, batch='1'):
+    """Write experimental data to database.
+
+    Args:
+        experimental_data_dict (dict): Dictionary containing the experimental data
+        experiment_name (str): Name of the current experiment in QUEENS
+        db (obj): Database object
+        batch (string): batch the data belongs to
+    """
+    db.save(experimental_data_dict, experiment_name, 'experimental_data', batch)

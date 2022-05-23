@@ -40,10 +40,10 @@
       "post_process_options": [
         ""
       ],
-      "data_processor": "data_processor"
+      "data_processor": "data_processor_baci"
     }
   },
-  "data_processor": {
+  "data_processor_baci": {
     "type": "ensight",
     "file_name_identifier": "{cluster}*.case",
     "file_options_dict": {

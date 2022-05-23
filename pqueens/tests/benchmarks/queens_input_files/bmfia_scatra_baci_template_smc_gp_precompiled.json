@@ -66,18 +66,7 @@
     "fixed_likelihood_noise_value": 1E-9,
     "nugget_noise_var": 1E-8,
     "noise_upper_bound": 2.0,
-    "data_processor": {
-    "type": "csv",
-    "file_name_identifier": "*.csv",
-    "file_options_dict": {
-        "header_row": 0,
-        "index_column": false,
-        "returned_filter_format": "dict",
-        "filter": {
-            "type": "entire_file"
-        }
-        }
-    },
+    "data_processor": "data_processor_experimental_data",
     "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters",
     "plotting_options": {
@@ -94,6 +83,18 @@
         true,
         true
       ]
+    }
+  },
+  "data_processor_experimental_data": {
+    "type": "csv",
+    "file_name_identifier": "*.csv",
+    "file_options_dict": {
+        "header_row": 0,
+        "index_column": false,
+        "returned_filter_format": "dict",
+        "filter": {
+            "type": "entire_file"
+        }
     }
   },
   "MCMC_Kernel": {
@@ -189,10 +190,10 @@
       "post_process_options": [
         ""
       ],
-      "data_processor": "data_preprocessor"
+      "data_processor": "data_processor_hf"
     }
   },
-  "data_processor": {
+  "data_processor_hf": {
     "type": "ensight",
     "file_name_identifier": "scatra",
     "file_options_dict": {
@@ -226,7 +227,7 @@
       "post_process_options": [
         ""
       ],
-      "data_processor": "data_preprocessor_lf"
+      "data_processor": "data_processor_lf"
     }
   },
   "lf_driver_2": {
@@ -241,7 +242,7 @@
       "post_process_options": [
         ""
       ],
-      "data_processor": "data_preprocessor_lf"
+      "data_processor": "data_processor_lf"
     }
   },
   "data_processor_lf": {

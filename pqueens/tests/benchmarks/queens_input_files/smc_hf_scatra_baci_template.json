@@ -112,10 +112,10 @@
       "post_process_options": [
         ""
       ],
-      "data_processor": "data_preprocessor"
+      "data_processor": "data_processor_baci"
     }
   },
-  "data_processor": {
+  "data_processor_baci": {
     "type": "ensight",
     "file_name_identifier": "scatra",
     "file_options_dict": {

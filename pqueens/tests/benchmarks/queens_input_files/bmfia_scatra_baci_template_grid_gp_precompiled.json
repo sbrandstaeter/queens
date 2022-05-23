@@ -82,7 +82,7 @@
     "fixed_likelihood_noise_value": 1E-9,
     "nugget_noise_var": 1E-8,
     "noise_upper_bound": 2.0,
-    "data_processor": "data_processor",
+    "data_processor": "data_processor_experimental_data",
     "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters",
     "plotting_options": {
@@ -101,7 +101,7 @@
       ]
     }
   },
-  "data_processor": {
+  "data_processor_experimental_data": {
     "type": "csv",
     "file_name_identifier": "*.csv",
     "file_options_dict": {

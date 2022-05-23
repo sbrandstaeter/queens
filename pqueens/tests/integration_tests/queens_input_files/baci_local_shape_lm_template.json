@@ -59,10 +59,10 @@
       "post_file_name_prefix_lst": [
         "xx"
       ],
-      "data_processor": "data_processor"
+      "data_processor": "data_processor_baci"
     }
   },
-  "data_processor": {
+  "data_processor_baci": {
     "type": "ensight_interface_discrepancy",
     "file_name_identifier": "xx*structure.case",
     "file_options_dict": {
