@@ -27,7 +27,7 @@ class BaciDriver(Driver):
     Attributes:
         batch (int):               Current batch of driver calls.
         direct_scheduling(bool):   flag for direct scheduling
-        do_postprocessing (str):   string for identifying either local post-processing
+        post_processor_location (str): string for identifying either local post-processing
                                    ('local') or remote post-processing ('remote') or 'None'
         driver_name (str):         Name of the driver used for the analysis. The name is
                                    specified in the json-input file.
@@ -60,12 +60,11 @@ class BaciDriver(Driver):
                                          post-processed files by the post-processor
         post_options (list):       (only for post-processing) list containing settings/options
                                    for post-processing
-        postprocessor (str):       (only for post-processing) path to postprocessor of
+        post_processor (str):       (only for post-processing) path to post_processor of
                                    respective CAE software
         random_fields_lst (lst):   List of random fields
         scheduler_type (str):      type of scheduler chosen in QUEENS input file
         workdir (str):             path to working directory
-        do_data_processing (bool): Boolean if data_processing should be done
         data_processor (obj):   instance of data processor class
         pid (int):                 unique process ID for subprocess
         random_fields_realized_lst (lst): List of random field realizations.
@@ -75,7 +74,7 @@ class BaciDriver(Driver):
         self,
         batch,
         direct_scheduling,
-        do_postprocessing,
+        post_processor_location,
         driver_name,
         experiment_dir,
         experiment_name,
@@ -102,12 +101,11 @@ class BaciDriver(Driver):
         output_prefix,
         post_file_name_prefix_lst,
         post_options,
-        postprocessor,
+        post_processor,
         random_fields_lst,
         scheduler_type,
         simulation_input_template,
         workdir,
-        do_data_processing,
         data_processor,
     ):
         """Initialize BaciDriver object.
@@ -115,7 +113,7 @@ class BaciDriver(Driver):
         Args:
             batch (int):               Current batch of driver calls.
             direct_scheduling(bool):   flag for direct scheduling
-            do_postprocessing (str):   string for identifying either local post-processing
+            post_processor_location (str):   string for identifying either local post-processing
                                        ('local') or remote post-processing ('remote') or 'None'
             driver_name (str):         Name of the driver used for the analysis. The name is
                                        specified in the json-input file.
@@ -149,19 +147,18 @@ class BaciDriver(Driver):
                                              post-processed files by the post-processor
             post_options (list):       (only for post-processing) list containing settings/options
                                        for post-processing
-            postprocessor (str):       (only for post-processing) path to postprocessor of
+            post_processor (str):       (only for post-processing) path to post_processor of
                                        respective CAE software
             random_fields_lst (lst):   List of random fields
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             simulation_input_template (str): path to BACI input template
             workdir (str):             path to working directory
-            do_data_processing (bool): Boolean if data_processing should be done
             data_processor (obj):   instance of data processor class
         """
         super().__init__(
             batch,
             direct_scheduling,
-            do_postprocessing,
+            post_processor_location,
             driver_name,
             experiment_dir,
             experiment_name,
@@ -190,13 +187,12 @@ class BaciDriver(Driver):
         self.pid = None
         self.post_file_name_prefix_lst = post_file_name_prefix_lst
         self.post_options = post_options
-        self.postprocessor = postprocessor
+        self.post_processor = post_processor
         self.random_fields_lst = random_fields_lst
         self.random_fields_realized_lst = []
         self.scheduler_type = scheduler_type
         self.simulation_input_template = simulation_input_template
         self.workdir = workdir
-        self.do_data_processing = do_data_processing
         self.data_processor = data_processor
 
     @classmethod
@@ -260,29 +256,29 @@ class BaciDriver(Driver):
         simulation_input_template = driver_options.get('input_template', None)
         executable = driver_options['path_to_executable']
 
-        postprocessor = driver_options.get('path_to_postprocessor', None)
-        if postprocessor:
+        post_processor = driver_options.get('path_to_postprocessor', None)
+        if post_processor:
             post_file_name_prefix_lst = driver_options.get('post_file_name_prefix_lst', None)
             post_options = driver_options.get('post_process_options', None)
         else:
             post_file_name_prefix_lst = None
             post_options = None
 
-        if postprocessor and ((not direct_scheduling) or post_options):
+        if post_processor and ((not direct_scheduling) or post_options):
             if remote and not singularity:
                 raise NotImplementedError(
                     "Remote computations without singularity is not implemented"
                 )
             elif singularity and (scheduler_type in ['pbs', 'slurm']):
-                do_postprocessing = 'cluster_sing'
+                post_processor_location = 'cluster_sing'
             else:
-                do_postprocessing = 'local'
+                post_processor_location = 'local'
         else:
-            do_postprocessing = None
+            post_processor_location = None
 
-        do_data_processing = driver_options.get('data_processor', None)
-        if do_data_processing:
-            data_processor = from_config_create_data_processor(config, driver_name=driver_name)
+        data_processor_name = driver_options.get('data_processor', None)
+        if data_processor_name:
+            data_processor = from_config_create_data_processor(config, data_processor_name)
             cae_output_streaming = False
         else:
             data_processor = None
@@ -332,7 +328,7 @@ class BaciDriver(Driver):
         return cls(
             batch,
             direct_scheduling,
-            do_postprocessing,
+            post_processor_location,
             driver_name,
             experiment_dir,
             experiment_name,
@@ -359,12 +355,11 @@ class BaciDriver(Driver):
             output_prefix,
             post_file_name_prefix_lst,
             post_options,
-            postprocessor,
+            post_processor,
             random_fields_lst,
             scheduler_type,
             simulation_input_template,
             workdir,
-            do_data_processing,
             data_processor,
         )
 
@@ -426,7 +421,7 @@ class BaciDriver(Driver):
                 },
             )
 
-    def postprocess_job(self):
+    def post_processor_job(self):
         """Post-process BACI job."""
         # set output and core of target file opt
         output_file_opt = '--file=' + self.output_file
@@ -440,7 +435,7 @@ class BaciDriver(Driver):
                 target_file_opt = os.path.join(target_file_opt_core, target_file_prefix)
 
                 # run post-processing command
-                self.run_postprocessing_cmd(output_file_opt, target_file_opt, option)
+                self.run_post_processor_cmd(output_file_opt, target_file_opt, option)
 
     # ----- RUN METHODS ---------------------------------------------------------
     # overload the parent pre_job_run method
@@ -605,23 +600,23 @@ class BaciDriver(Driver):
 
         return returncode
 
-    def run_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
-        """Run command for postprocessing."""
+    def run_post_processor_cmd(self, output_file_opt, target_file_opt, option):
+        """Run command for post-processing."""
         # assemble post-processing command with three options:
         # 1) post-processing with Singularity container on cluster with Slurm or PBS
         # 2) local post-processing
         # 3) remote post-processing
-        if self.do_postprocessing == 'cluster_sing':
-            final_pp_cmd = self.assemble_sing_postprocessing_cmd(
+        if self.post_processor_location == 'cluster_sing':
+            final_pp_cmd = self.assemble_sing_post_processor_cmd(
                 output_file_opt, target_file_opt, option
             )
         else:
-            pp_cmd = self.assemble_postprocessing_cmd(output_file_opt, target_file_opt, option)
+            pp_cmd = self.assemble_post_processor_cmd(output_file_opt, target_file_opt, option)
 
             # wrap up post-processing command for remote scheduling or
-            # directly use post-processing command for local scheduling
-            if self.do_postprocessing == 'remote':
-                final_pp_cmd = self.assemble_remote_postprocessing_cmd(pp_cmd)
+            # directly use post-procesing command for local scheduling
+            if self.post_processor_location == 'remote':
+                final_pp_cmd = self.assemble_remote_post_processor_cmd(pp_cmd)
             else:
                 final_pp_cmd = pp_cmd
 
@@ -664,9 +659,9 @@ class BaciDriver(Driver):
         self.cluster_options['EXE'] = self.executable
         self.cluster_options['INPUT'] = self.input_file
         self.cluster_options['OUTPUTPREFIX'] = self.output_prefix
-        if self.postprocessor:
+        if self.post_processor:
             self.cluster_options['POSTPROCESSFLAG'] = 'true'
-            self.cluster_options['POSTEXE'] = self.postprocessor
+            self.cluster_options['POSTEXE'] = self.post_processor
         else:
             self.cluster_options['POSTPROCESSFLAG'] = 'false'
             self.cluster_options['POSTEXE'] = ''
@@ -746,8 +741,8 @@ class BaciDriver(Driver):
 
         return ' '.join(filter(None, command_list))
 
-    def assemble_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
-        """Assemble command for postprocessing.
+    def assemble_post_processor_cmd(self, output_file_opt, target_file_opt, option):
+        """Assemble command for post-processing.
 
         Args:
             output_file_opt (str): Path (with name) to the simulation output files without the
@@ -757,7 +752,7 @@ class BaciDriver(Driver):
             option (str): Post-processing options for external post-processor
 
         Returns:
-            postprocessing command
+            post-processing command
         """
         # set MPI command
         if self.remote:
@@ -768,7 +763,7 @@ class BaciDriver(Driver):
         command_list = [
             mpi_cmd,
             str(self.num_procs_post),
-            self.postprocessor,
+            self.post_processor,
             output_file_opt,
             option,
             target_file_opt,
@@ -776,14 +771,14 @@ class BaciDriver(Driver):
 
         return ' '.join(filter(None, command_list))
 
-    def assemble_sing_postprocessing_cmd(self, output_file_opt, target_file_opt, option):
-        """Assemble command for postprocessing in Singularity container.
+    def assemble_sing_post_processor_cmd(self, output_file_opt, target_file_opt, option):
+        """Assemble command for post-processing in Singularity container.
 
         Returns:
-            Singularity postprocessing command
+            Singularity post-processing command
         """
         command_list = [
-            self.postprocessor,
+            self.post_processor,
             output_file_opt,
             option,
             target_file_opt,
@@ -791,11 +786,11 @@ class BaciDriver(Driver):
 
         return ' '.join(filter(None, command_list))
 
-    def assemble_remote_postprocessing_cmd(self, postprocess_cmd):
-        """Assemble command for remote postprocessing.
+    def assemble_remote_post_processor_cmd(self, postprocess_cmd):
+        """Assemble command for remote post-processing.
 
         Returns:
-            remote postprocessing command
+            remote post-processing command
         """
         command_list = [
             'ssh',

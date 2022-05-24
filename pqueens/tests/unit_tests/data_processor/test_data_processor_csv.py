@@ -74,7 +74,7 @@ def default_data_processor():
     file_options_dict = {}
     filter_type = 'entire_file'
     files_to_be_deleted_regex_lst = []
-    driver_name = 'driver'
+    data_processor_name = 'data_processor'
     header_row = 0
     use_cols_lst = [0, 2, 3]
     skip_rows = 1
@@ -89,7 +89,7 @@ def default_data_processor():
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
         filter_type,
         header_row,
         use_cols_lst,
@@ -111,7 +111,7 @@ def test_init():
     file_options_dict = {}
     filter_type = 'entire_file'
     files_to_be_deleted_regex_lst = []
-    driver_name = 'driver'
+    data_processor_name = 'data_processor'
     header_row = 0
     use_cols_lst = [0, 2, 3]
     skip_rows = 1
@@ -126,7 +126,7 @@ def test_init():
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
         filter_type,
         header_row,
         use_cols_lst,
@@ -139,7 +139,7 @@ def test_init():
         filter_format,
     )
 
-    assert my_data_processor.driver_name == driver_name
+    assert my_data_processor.data_processor_name == data_processor_name
     assert my_data_processor.file_options_dict == file_options_dict
     assert my_data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
     assert my_data_processor.filter_range == filter_range
@@ -231,7 +231,7 @@ def test_from_config_create_data_processor(mocker):
 
     file_name_identifier = 'dummy_prefix*dummyfix'
     files_to_be_deleted_regex_lst = []
-    driver_name = 'driver'
+    data_processor_name = 'data_processor'
     header_row = 0
     use_cols_lst = [0, 2, 3]
     skip_rows = 1
@@ -255,25 +255,21 @@ def test_from_config_create_data_processor(mocker):
     }
 
     config = {
-        'driver': {
-            'driver_params': {
-                'data_processor': {
-                    'file_name_identifier': file_name_identifier,
-                    'file_options_dict': file_options_dict,
-                }
-            }
+        'data_processor': {
+            'file_name_identifier': file_name_identifier,
+            'file_options_dict': file_options_dict,
         }
     }
 
     DataProcessorCsv.from_config_create_data_processor(
         config,
-        driver_name,
+        data_processor_name,
     )
     mp.assert_called_once_with(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
         filter_type,
         header_row,
         use_cols_lst,

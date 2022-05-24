@@ -15,11 +15,6 @@ class DataProcessorCsv(DataProcessor):
     """Class for extracting data from csv files.
 
     Attributes:
-        expected_filter_entire_file (dict): expected input dictionary for filter `entire_file`
-        expected_filter_by_row_index (dict): expected input dictionary for filter `by_row_index`
-        expected_filter_by_target_values (dict): expected input dictionary for filter
-                                                 `by_target_values`
-        expected_filter_by_range (dict): expected input dictionary for filter `by_range`
         filter_range (lst): After data is selected by `use_cols_lst` and a filter column is
                             specified by `index_column`, this option selects which data range
                             shall be filtered by providing a minimum and maximum value pair
@@ -37,6 +32,7 @@ class DataProcessorCsv(DataProcessor):
         use_cols_lst (lst): list with column numbers that should be read-in.
         use_rows_lst (lst): In case this options is used, the list contains the indices of rows
                             in the csv file that should be used as data
+        returned_filter_format (str): Returned data format after filtering
     """
 
     expected_filter_entire_file = {'type': 'entire_file'}
@@ -53,7 +49,7 @@ class DataProcessorCsv(DataProcessor):
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
         filter_type,
         header_row,
         use_cols_lst,
@@ -75,7 +71,7 @@ class DataProcessorCsv(DataProcessor):
                                       the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            driver_name (str): Name of the associated driver.
+            data_processor_name (str): Name of the data processor.
             filter_type (str): filter type to use
             header_row (int):   Integer that determines which csv-row contains labels/headers of
                                 the columns. Default is 'None', meaning no header used.
@@ -102,7 +98,7 @@ class DataProcessorCsv(DataProcessor):
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-            driver_name,
+            data_processor_name,
         )
         self.use_cols_lst = use_cols_lst
         self.filter_type = filter_type
@@ -116,18 +112,18 @@ class DataProcessorCsv(DataProcessor):
         self.returned_filter_format = returned_filter_format
 
     @classmethod
-    def from_config_create_data_processor(cls, config, driver_name):
+    def from_config_create_data_processor(cls, config, data_processor_name):
         """Create the class from the problem description.
 
         Args:
             config (dict): Dictionary with problem description.
-            driver_name (str): Name of driver that is used in this job-submission
+            data_processor_name (str): Name of the data processor
         """
         (
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-        ) = super().from_config_set_base_attributes(config, driver_name)
+        ) = super().from_config_set_base_attributes(config, data_processor_name)
 
         header_row = file_options_dict.get('header_row')
         if header_row and not isinstance(header_row, int):
@@ -208,7 +204,7 @@ class DataProcessorCsv(DataProcessor):
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-            driver_name,
+            data_processor_name,
             filter_type,
             header_row,
             use_cols_lst,

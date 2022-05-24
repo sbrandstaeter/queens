@@ -5,9 +5,7 @@ QUEENS, to build probabilistic models. A standard use-case are inverse
 problems.
 """
 
-import numpy as np
-
-from pqueens.data_processor import from_config_create_data_processor
+from pqueens.utils.get_experimental_data import get_experimental_data, write_experimental_data_to_db
 
 
 def from_config_create_model(model_name, config):
@@ -49,43 +47,21 @@ def from_config_create_model(model_name, config):
     time_label = model_options.get('time_label')
     db = DB_module.database
     global_settings = config.get('global_settings', None)
-    experimental_data_base_dir = model_options.get("experimental_csv_data_base_dir")
     experiment_name = global_settings["experiment_name"]
+    data_processor_name = model_options.get('data_processor')
+    file_name = model_options.get('experimental_file_name_identifier')
+    base_dir = model_options.get('experimental_csv_data_base_dir')
 
-    # call method to load experimental data
-    try:
-        # standard initialization for data_processor
-        data_processor = from_config_create_data_processor(config, model_name)
-    except ValueError:
-        # allow short initialization for data_processor
-        # only using the 'file_name_identifier'
-        model_section = config.get(model_name)
-        file_name_identifier = model_section.get('experimental_file_name_identifier')
-        short_config = {
-            model_name: {
-                "data_processor": {
-                    "type": "csv",
-                    "file_name_identifier": file_name_identifier,
-                    "file_options_dict": {
-                        "header_row": 0,
-                        "index_column": False,
-                        "returned_filter_format": "dict",
-                        "filter": {"type": "entire_file"},
-                    },
-                },
-            }
-        }
-        data_processor = from_config_create_data_processor(short_config, model_name)
-
-    y_obs_vec, coords_mat, time_vec = _get_experimental_data_and_write_to_db(
-        data_processor,
-        experimental_data_base_dir,
-        experiment_name,
-        db,
-        coord_labels,
-        time_label,
-        output_label,
+    y_obs_vec, coords_mat, time_vec, experimental_data_dict = get_experimental_data(
+        config=config,
+        data_processor_name=data_processor_name,
+        base_dir=base_dir,
+        file_name=file_name,
+        coordinate_labels=coord_labels,
+        time_label=time_label,
+        output_label=output_label,
     )
+    write_experimental_data_to_db(experimental_data_dict, experiment_name, db)
 
     likelihood_model = model_class.from_config_create_likelihood(
         model_name,
@@ -100,56 +76,3 @@ def from_config_create_model(model_name, config):
     )
 
     return likelihood_model
-
-
-def _get_experimental_data_and_write_to_db(
-    csv_data_reader,
-    experimental_data_path,
-    experiment_name,
-    db,
-    coordinate_labels,
-    time_label,
-    output_label,
-):
-    """Load all experimental data into QUEENS.
-
-    Args:
-        csv_data_reader (obj): CSV - data reader object
-        experimental_data_path (str): Path to base directory containing
-                                      experimental data
-        experiment_name (str): Name of the current experiment in QUEENS
-        db (obj): Database object
-        coordinate_labels (lst): List of column-wise coordinate labels in csv files
-        time_label (str): Name of the time variable in csv file
-        output_label (str): Label that marks the output quantity in the csv file
-
-    Returns:
-        y_obs_vec (np.array): Column-vector of model outputs which correspond row-wise to
-                                observation coordinates
-        experimental_coordinates (np.array): Matrix with observation coordinates. One row
-                                                corresponds to one coordinate point.
-    """
-    experimental_data_dict = csv_data_reader.get_data_from_file(experimental_data_path)
-
-    # potentially scale experimental data and save the results to the database
-    # For now we save all data-points to the experimental data slot `1`. This could be
-    # extended in the future if we want to read in several different data sources
-    db.save(experimental_data_dict, experiment_name, 'experimental_data', '1')
-
-    # arrange the experimental data coordinates
-    experimental_coordinates = (
-        np.array([experimental_data_dict[coordinate] for coordinate in coordinate_labels]),
-    )[0].T
-
-    # get a unique vector of observation times
-    if time_label:
-        time_vec = np.sort(list(set(experimental_data_dict[time_label])))
-    else:
-        time_vec = None
-
-    # get the experimental outputs
-    y_obs_vec = np.array(experimental_data_dict[output_label]).reshape(
-        -1,
-    )
-
-    return y_obs_vec, experimental_coordinates, time_vec
