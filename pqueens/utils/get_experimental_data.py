@@ -5,7 +5,7 @@ import numpy as np
 from pqueens.data_processor import from_config_create_data_processor
 
 
-def get_experimental_data_and_write_to_db(
+def get_experimental_data(
     config,
     data_processor_name,
     base_dir,

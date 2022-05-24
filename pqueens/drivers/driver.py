@@ -117,7 +117,7 @@ class Driver(metaclass=abc.ABCMeta):
         if self.post_processor:
             self.post_processor_job()
         if self.data_processor:
-            self.process_data_job()
+            self.data_processor_job()
         else:
             # set result to "no" and load job from database, if there
             # has not been any data-processing before
@@ -160,7 +160,7 @@ class Driver(metaclass=abc.ABCMeta):
             {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
         )
 
-    def process_data_job(self):
+    def data_processor_job(self):
         """Extract data of interest from post-processed file.
 
         Afterwards save them to the database.

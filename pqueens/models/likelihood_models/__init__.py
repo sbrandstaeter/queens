@@ -5,10 +5,7 @@ QUEENS, to build probabilistic models. A standard use-case are inverse
 problems.
 """
 
-from pqueens.utils.get_experimental_data import (
-    get_experimental_data_and_write_to_db,
-    write_experimental_data_to_db,
-)
+from pqueens.utils.get_experimental_data import get_experimental_data, write_experimental_data_to_db
 
 
 def from_config_create_model(model_name, config):
@@ -55,7 +52,7 @@ def from_config_create_model(model_name, config):
     file_name = model_options.get('experimental_file_name_identifier')
     base_dir = model_options.get('experimental_csv_data_base_dir')
 
-    y_obs_vec, coords_mat, time_vec, experimental_data_dict = get_experimental_data_and_write_to_db(
+    y_obs_vec, coords_mat, time_vec, experimental_data_dict = get_experimental_data(
         config=config,
         data_processor_name=data_processor_name,
         base_dir=base_dir,
