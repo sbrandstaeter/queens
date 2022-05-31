@@ -116,15 +116,8 @@ class LogNormalDistribution(Distribution):
         """
         x = x.reshape(-1, self.dimension)
         x[x == 0] = np.nan
-        p_p = self.precision + self.precision.T
         grad_logpdf = (
-            -1
-            / x
-            * (
-                1
-                + 0.5 * np.dot(np.log(x), p_p)
-                - 0.5 * np.dot(p_p, self.normal_mean).reshape(1, self.dimension)
-            )
+            1 / x * (np.dot(self.normal_mean.reshape(1, -1) - np.log(x), self.precision) - 1)
         )
         return grad_logpdf
 
