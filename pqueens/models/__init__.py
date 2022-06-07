@@ -17,10 +17,11 @@ def from_config_create_model(model_name, config):
     Returns:
         model: Instance of model class
     """
+    from pqueens.models import likelihood_models
+
     from .bmfmc_model import BMFMCModel
     from .data_fit_surrogate_model import DataFitSurrogateModel
     from .data_fit_surrogate_model_mf import MFDataFitSurrogateModel
-    from .likelihood_models.likelihood_model import LikelihoodModel
     from .multifidelity_model import MultifidelityModel
     from .simulation_model import SimulationModel
 
@@ -30,7 +31,7 @@ def from_config_create_model(model_name, config):
         'datafit_surrogate_model_mf': MFDataFitSurrogateModel,
         'multi_fidelity_model': MultifidelityModel,
         'bmfmc_model': BMFMCModel,
-        'likelihood_model': LikelihoodModel,
+        'likelihood_model': likelihood_models,
     }
 
     model_options = config[model_name]

@@ -23,7 +23,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                 the file
         files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                 The paths can contain regex expressions.
-        driver_name (str): Name of the associated driver.
+        data_processor_name (str): Name of the data processor.
         raw_file_data (np.array): Raw data from file.
         processed_data (np.array): Cleaned, filtered or manipulated data_processor data
     """
@@ -33,7 +33,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
     ):
         """Init data processor class.
 
@@ -46,23 +46,23 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                        implement valid options for this dictionary.
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            driver_name (str): Name of the associated driver.
+            data_processor_name (str): Name of the data processor.
         """
         self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
         self.file_options_dict = file_options_dict
-        self.driver_name = driver_name
+        self.data_processor_name = data_processor_name
         self.file_name_identifier = file_name_identifier
         self.file_path = None
         self.processed_data = np.empty(shape=0)
         self.raw_file_data = None
 
     @classmethod
-    def from_config_set_base_attributes(cls, config, driver_name):
+    def from_config_set_base_attributes(cls, config, data_processor_name):
         """Extract attributes of this base class from the config.
 
         Args:
             config (dict): Dictionary with problem description.
-            driver_name (str): Name of driver that is used in this job-submission
+            data_processor_name (str): Name of the data processor
 
         Returns:
             file_name_identifier (str): Identifier for files.
@@ -73,15 +73,13 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                        implement valid options for this dictionary.
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            driver_name (str): Name of the associated driver.
+            data_processor_name (str): Name of the data processor.
         """
-        driver_params = config.get(driver_name)
-        data_processor_options = driver_params["driver_params"].get('data_processor')
-
+        data_processor_options = config.get(data_processor_name)
         file_name_identifier = data_processor_options.get('file_name_identifier')
         if not file_name_identifier:
             raise IOError(
-                f"No option 'file_name_identifier' was provided in '{driver_name}' driver! "
+                f"No option 'file_name_identifier' was provided in '{data_processor_name}'! "
                 "DataProcessor object cannot be instantiated! Abort..."
             )
         if not isinstance(file_name_identifier, str):
@@ -93,7 +91,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         file_options_dict = data_processor_options.get('file_options_dict')
         if not file_options_dict:
             raise IOError(
-                f"No option 'file_options_dict' was provided in {driver_name} driver! "
+                f"No option 'file_options_dict' was provided in '{data_processor_name}'! "
                 "DataProcessor object cannot be instantiated! Abort..."
             )
         if not isinstance(file_options_dict, dict):
@@ -156,7 +154,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
             file_path_regex (str): Path to file that still
                                         contains wildcards or regex expressions
         """
-        file_identifier = self.file_name_identifier + '*'
+        file_identifier = self.file_name_identifier
         file_path_regex = os.path.join(base_dir_file, file_identifier)
         return file_path_regex
 
@@ -179,7 +177,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 "The files are: {file_list}."
                 "The file prefix must lead to a unique file. Abort..."
             )
-        elif len(file_list) == 1:
+        if len(file_list) == 1:
             self.file_path = file_list[0]
             file_exists = True
         else:
@@ -191,12 +189,10 @@ class DataProcessor(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def _get_raw_data_from_file(self):
         """Get the raw data from the files of interest."""
-        pass
 
     @abc.abstractmethod
     def _filter_and_manipulate_raw_data(self):
         """Filter or clean the raw data for given criteria."""
-        pass
 
     def _subsequent_data_manipulation(self):
         """Subsequent manipulate the data_processor data.
@@ -206,7 +202,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
         sure to add the module to the `from_config_create` method in
         this file.
         """
-        pass
 
     @staticmethod
     def _clean_up(file_path):

@@ -58,20 +58,21 @@
             "post_process_options": [
                 "--field=structure --node=26 --start=1"
             ],
-            "data_processor": {
-                "type": "csv",
-                "file_name_identifier": "QoI",
-                "file_options_dict": {
-                    "delete_field_data": false,
-                    "use_cols_lst": [1, 3],
-                    "index_column": 0,
-                    "skip_rows": 4,
-                    "filter": {
-                        "type": "by_target_values",
-                        "target_values": [5e-1],
-                        "tolerance": 1e-2
-                    }
-                }
+            "data_processor": "data_processor_baci"
+        }
+    },
+    "data_processor_baci": {
+        "type": "csv",
+        "file_name_identifier": "QoI*",
+        "file_options_dict": {
+            "delete_field_data": false,
+            "use_cols_lst": [1, 3],
+            "index_column": 0,
+            "skip_rows": 4,
+            "filter": {
+                "type": "by_target_values",
+                "target_values": [5e-1],
+                "tolerance": 1e-2
             }
         }
     },

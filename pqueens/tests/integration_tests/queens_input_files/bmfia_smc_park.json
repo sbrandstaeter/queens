@@ -62,9 +62,8 @@
     "likelihood_noise_type": "jeffreys_prior",
     "fixed_likelihood_noise_value": 0.01,
     "nugget_noise_var": 1E-8,
-    "experimental_csv_data_base_dirs": [
-      "{experimental_data_path}"
-    ],
+    "experimental_file_name_identifier": "*.csv",
+    "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters",
     "plotting_options": {
       "plotting_dir": "{plot_dir}",

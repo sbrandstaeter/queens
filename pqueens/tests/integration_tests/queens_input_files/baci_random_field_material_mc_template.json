@@ -52,20 +52,21 @@
       "post_file_name_prefix_lst": [
         "baci_write_random_field_to_dat"
       ],
-      "data_processor": {
-        "type": "csv",
-        "file_name_identifier": "baci_write_random_field_to_dat.mon",
-        "file_options_dict": {
-          "delete_field_data": false,
-          "use_cols_lst": [
-            3
-          ],
-          "skip_rows": 4,
-          "filter": {
-            "type": "by_row_index",
-            "rows": [-1]
-          }
-        }
+      "data_processor": "data_processor_baci"
+    }
+  },
+  "data_processor_baci": {
+    "type": "csv",
+    "file_name_identifier": "baci_write_random_field_to_dat.mon",
+    "file_options_dict": {
+      "delete_field_data": false,
+      "use_cols_lst": [
+        3
+      ],
+      "skip_rows": 4,
+      "filter": {
+        "type": "by_row_index",
+        "rows": [-1]
       }
     }
   },

@@ -3,13 +3,15 @@
 Extract data from simulation output.
 """
 
+from pqueens.utils.valid_options_utils import get_option
 
-def from_config_create_data_processor(config, driver_name):
+
+def from_config_create_data_processor(config, data_processor_name):
     """Create DataProcessor object from problem description.
 
     Args:
         config (dict): input json file with problem description
-        driver_name (str): Name of driver that is used in this job-submission
+        data_processor_name (str): Name of the data processor
 
     Returns:
         data_processor (obj): data_processor object
@@ -24,18 +26,11 @@ def from_config_create_data_processor(config, driver_name):
         'ensight_interface_discrepancy': DataProcessorEnsightInterfaceDiscrepancy,
     }
 
-    driver_params = config.get(driver_name)
-    if not driver_params:
-        raise ValueError(
-            "No driver parameters found in problem description! "
-            f"You specified the driver name '{driver_name}', "
-            "which could not be found in the problem description. Abort..."
-        )
-
-    data_processor_options = driver_params["driver_params"].get('data_processor')
+    data_processor_options = config.get(data_processor_name)
     if not data_processor_options:
         raise ValueError(
-            f"The 'data_processor' options were not found in the driver '{driver_name}'! Abort..."
+            "The 'data processor' options were not found in the input file! "
+            f"You specified the data processor name '{data_processor_name}'. Abort..."
         )
 
     data_processor_type = data_processor_options.get('type')
@@ -45,6 +40,8 @@ def from_config_create_data_processor(config, driver_name):
             f"Valid options are {data_processor_dict.keys()}. Abort..."
         )
 
-    data_processor_class = data_processor_dict[data_processor_type]
-    data_processor = data_processor_class.from_config_create_data_processor(config, driver_name)
+    data_processor_class = get_option(data_processor_dict, data_processor_type)
+    data_processor = data_processor_class.from_config_create_data_processor(
+        config, data_processor_name
+    )
     return data_processor

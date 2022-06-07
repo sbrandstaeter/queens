@@ -30,7 +30,7 @@ def default_data_processor(mocker):
     time_tol = 1e-03
     visualization_bool = False
     file_to_be_deleted_regex_lst = []
-    driver_name = 'driver'
+    data_processor_name = 'data_processor'
     problem_dim = '5d'
 
     # pylint: disable=line-too-long error
@@ -43,7 +43,7 @@ def default_data_processor(mocker):
         file_name_identifier,
         file_options_dict,
         file_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
         time_tol,
         visualization_bool,
         displacement_fields,
@@ -128,14 +128,14 @@ def test_init(mocker):
     time_tol = 1e-03
     visualization_bool = False
     files_to_be_deleted_regex_lst = []
-    driver_name = 'driver'
+    data_processor_name = 'data_processor'
     problem_dim = '5d'
 
     my_data_processor = DataProcessorEnsightInterfaceDiscrepancy(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
         time_tol,
         visualization_bool,
         displacement_fields,
@@ -151,7 +151,7 @@ def test_init(mocker):
 
     assert my_data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
     assert my_data_processor.file_options_dict == file_options_dict
-    assert my_data_processor.driver_name == driver_name
+    assert my_data_processor.data_processor_name == data_processor_name
     assert my_data_processor.file_name_identifier == file_name_identifier
     assert my_data_processor.file_path is None
     np.testing.assert_array_equal(my_data_processor.processed_data, np.empty(shape=0))
@@ -173,7 +173,7 @@ def test_from_config_create_data_processor(mocker):
         return_value=experimental_ref_data,
     )
     # pylint: enable=line-too-long error
-    driver_name = 'driver'
+    data_processor_name = 'data_processor'
     file_name_identifier = 'dummyprefix*dummy.case'
     time_tol = 1e-03
     visualization_bool = False
@@ -194,25 +194,21 @@ def test_from_config_create_data_processor(mocker):
     }
 
     config = {
-        'driver': {
-            'driver_params': {
-                'data_processor': {
-                    'file_name_identifier': file_name_identifier,
-                    'file_options_dict': file_options_dict,
-                }
-            }
+        'data_processor': {
+            'file_name_identifier': file_name_identifier,
+            'file_options_dict': file_options_dict,
         }
     }
 
     DataProcessorEnsightInterfaceDiscrepancy.from_config_create_data_processor(
         config,
-        driver_name,
+        data_processor_name,
     )
     mp.assert_called_once_with(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
         time_tol,
         delete_field_data,
         displacement_fields,

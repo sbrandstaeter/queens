@@ -65,12 +65,11 @@
     "fixed_likelihood_noise_value": 1E-9,
     "nugget_noise_var": 1E-8,
     "noise_upper_bound": 2.0,
-    "experimental_csv_data_base_dirs": [
-      "{experimental_data_path}"
-    ],
+    "data_processor": "data_processor_experimental_data",
+    "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters",
     "plotting_options": {
-      "plotting_dir": "/home/nitzler/workspace/QUEENS_Rep/queens",
+      "plotting_dir": "{plot_dir}",
       "plot_names": [
         "conditional_plot.png",
         "mf_posterior.png"
@@ -83,6 +82,18 @@
         true,
         true
       ]
+    }
+  },
+  "data_processor_experimental_data": {
+    "type": "csv",
+    "file_name_identifier": "*.csv",
+    "file_options_dict": {
+        "header_row": 0,
+        "index_column": false,
+        "returned_filter_format": "dict",
+        "filter": {
+            "type": "entire_file"
+        }
     }
   },
   "MCMC_Kernel": {
@@ -178,28 +189,29 @@
       "post_process_options": [
         ""
       ],
-      "data_processor": {
-        "type": "ensight",
-        "file_name_identifier": "scatra",
-        "file_options_dict": {
-          "delete_field_data": false,
-          "geometric_target": [
-            "experimental_data"
-          ],
-          "physical_field_dict": {
-            "vtk_field_type": "scatra",
-            "vtk_array_type": "point_array",
-            "vtk_field_label": "phi_1",
-            "field_components": [
-              0
-            ]
-          },
-          "target_time_lst": [
-            "from_experimental_data"
-          ],
-          "time_tol": 0.001
-        }
-      }
+      "data_processor": "data_processor_hf"
+    }
+  },
+  "data_processor_hf": {
+    "type": "ensight",
+    "file_name_identifier": "scatra",
+    "file_options_dict": {
+      "delete_field_data": false,
+      "geometric_target": [
+        "experimental_data"
+      ],
+      "physical_field_dict": {
+        "vtk_field_type": "scatra",
+        "vtk_array_type": "point_array",
+        "vtk_field_label": "phi_1",
+        "field_components": [
+          0
+        ]
+      },
+      "target_time_lst": [
+        "from_experimental_data"
+      ],
+      "time_tol": 0.001
     }
   },
   "lf_driver_1": {
@@ -214,28 +226,7 @@
       "post_process_options": [
         ""
       ],
-      "data_processor": {
-        "type": "ensight",
-        "file_name_identifier": "scatra",
-        "file_options_dict": {
-          "delete_field_data": false,
-          "geometric_target": [
-            "experimental_data"
-          ],
-          "physical_field_dict": {
-            "vtk_field_type": "scatra",
-            "vtk_array_type": "point_array",
-            "vtk_field_label": "phi_1",
-            "field_components": [
-              0
-            ]
-          },
-          "target_time_lst": [
-            "from_experimental_data"
-          ],
-          "time_tol": 0.001
-        }
-      }
+      "data_processor": "data_processor_lf"
     }
   },
   "lf_driver_2": {
@@ -250,28 +241,29 @@
       "post_process_options": [
         ""
       ],
-      "data_processor": {
-        "type": "ensight",
-        "file_name_identifier": "scatra",
-        "file_options_dict": {
-          "delete_field_data": false,
-          "geometric_target": [
-            "experimental_data"
-          ],
-          "physical_field_dict": {
-            "vtk_field_type": "scatra",
-            "vtk_array_type": "point_array",
-            "vtk_field_label": "phi_1",
-            "field_components": [
-              0
-            ]
-          },
-          "target_time_lst": [
-            "from_experimental_data"
-          ],
-          "time_tol": 0.001
-        }
-      }
+      "data_processor": "data_processor_lf"
+    }
+  },
+  "data_processor_lf": {
+    "type": "ensight",
+    "file_name_identifier": "scatra",
+    "file_options_dict": {
+      "delete_field_data": false,
+      "geometric_target": [
+        "experimental_data"
+      ],
+      "physical_field_dict": {
+        "vtk_field_type": "scatra",
+        "vtk_array_type": "point_array",
+        "vtk_field_label": "phi_1",
+        "field_components": [
+          0
+        ]
+      },
+      "target_time_lst": [
+        "from_experimental_data"
+      ],
+      "time_tol": 0.001
     }
   },
   "parameters": {

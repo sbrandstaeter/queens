@@ -16,7 +16,7 @@ class Driver(metaclass=abc.ABCMeta):
     Attributes:
         batch (int):               Current batch of driver calls.
         direct_scheduling(bool):   flag for direct scheduling
-        do_postprocessing (str):   string for identifying either local post-processing
+        post_processor_location (str):   string for identifying either local post-processing
                                    ('local') or remote post-processing ('remote') or 'None'
         driver_name (str):         Name of the driver used for the analysis. The name is
                                    specified in the json-input file.
@@ -39,7 +39,7 @@ class Driver(metaclass=abc.ABCMeta):
         self,
         batch,
         direct_scheduling,
-        do_postprocessing,
+        post_processor_location,
         driver_name,
         experiment_dir,
         experiment_name,
@@ -58,7 +58,7 @@ class Driver(metaclass=abc.ABCMeta):
         Args:
             batch (int):               Current batch of driver calls.
             direct_scheduling(bool):   flag for direct scheduling
-            do_postprocessing (str):   string for identifying either local post-processing
+            post_processor_location (str):   string for identifying either local post-processing
                                        ('local') or remote post-processing ('remote') or 'None'
             driver_name (str):         Name of the driver used for the analysis. The name is
                                        specified in the json-input file.
@@ -78,7 +78,7 @@ class Driver(metaclass=abc.ABCMeta):
         """
         self.batch = batch
         self.direct_scheduling = direct_scheduling
-        self.do_postprocessing = do_postprocessing
+        self.post_processor_location = post_processor_location
         self.driver_name = driver_name
         self.experiment_dir = experiment_dir
         self.experiment_name = experiment_name
@@ -114,10 +114,10 @@ class Driver(metaclass=abc.ABCMeta):
 
     def post_job_run(self):
         """Post-process, data processing and finalize job in database."""
-        if self.do_postprocessing:
-            self.postprocess_job()
-        if self.do_data_processing:
-            self.data_processing()
+        if self.post_processor:
+            self.post_processor_job()
+        if self.data_processor:
+            self.data_processor_job()
         else:
             # set result to "no" and load job from database, if there
             # has not been any data-processing before
@@ -160,7 +160,7 @@ class Driver(metaclass=abc.ABCMeta):
             {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
         )
 
-    def data_processing(self):
+    def data_processor_job(self):
         """Extract data of interest from post-processed file.
 
         Afterwards save them to the database.
@@ -257,7 +257,7 @@ class Driver(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def postprocess_job(self):
+    def post_processor_job(self):
         """Abstract method for post-processing of job.
 
         Returns:

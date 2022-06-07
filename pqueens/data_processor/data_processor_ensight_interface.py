@@ -30,7 +30,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
         time_tol,
         visualization_bool,
         displacement_fields,
@@ -47,7 +47,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                                       the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            driver_name (str): Name of the associated driver.
+            data_processor_name (str): Name of the data processor.
             time_tol (float): time tolerance for given reference timepoints
             visualization_bool (bool): boolean for vtk visualization control
             displacement_fields (str): String with exact field names for displacement to apply
@@ -59,7 +59,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-            driver_name,
+            data_processor_name,
         )
         self.time_tol = time_tol
         self.visualization_bool = visualization_bool
@@ -68,24 +68,24 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         self.experimental_ref_data_lst = experimental_reference_data_lst
 
     @classmethod
-    def from_config_create_data_processor(cls, config, driver_name):
+    def from_config_create_data_processor(cls, config, data_processor_name):
         """Create the class from the problem description.
 
         Args:
             config (dict): Dictionary with problem description.
-            driver_name (str): Name of driver that is used in this job-submission
+            data_processor_name (str): Name of the data processor
         """
         (
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-        ) = super().from_config_set_base_attributes(config, driver_name)
+        ) = super().from_config_set_base_attributes(config, data_processor_name)
 
         path_ref_data_str = file_options_dict.get('path_to_ref_data')
         if not path_ref_data_str:
             raise ValueError(
                 "You must provide the option 'path_to_ref_data' within the 'file_options_dict' "
-                f"in the '{driver_name}' driver. Abort ..."
+                f"in '{data_processor_name}'. Abort ..."
             )
         path_ref_data = Path(path_ref_data_str)
         experimental_reference_data = cls.read_monitorfile(path_ref_data)
@@ -94,7 +94,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         if not time_tol:
             raise ValueError(
                 "You must provide the option 'time_tol' within the 'file_options_dict' "
-                f"in the '{driver_name}' driver. Abort ..."
+                f"in '{data_processor_name}'. Abort ..."
             )
 
         visualization_bool = file_options_dict.get('visualization', False)
@@ -122,7 +122,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-            driver_name,
+            data_processor_name,
             time_tol,
             visualization_bool,
             displacement_fields,
@@ -204,7 +204,6 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
                     for iii in range(0, npoint_lines[ii][0]):
                         monfile_data[i][1][ii][x][npoint_lines[ii][iii + 1]] = steps_lines[i][k]
                         k += 1
-
         return monfile_data
 
     def _get_raw_data_from_file(self):

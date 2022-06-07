@@ -15,11 +15,6 @@ class DataProcessorCsv(DataProcessor):
     """Class for extracting data from csv files.
 
     Attributes:
-        expected_filter_entire_file (dict): expected input dictionary for filter `entire_file`
-        expected_filter_by_row_index (dict): expected input dictionary for filter `by_row_index`
-        expected_filter_by_target_values (dict): expected input dictionary for filter
-                                                 `by_target_values`
-        expected_filter_by_range (dict): expected input dictionary for filter `by_range`
         filter_range (lst): After data is selected by `use_cols_lst` and a filter column is
                             specified by `index_column`, this option selects which data range
                             shall be filtered by providing a minimum and maximum value pair
@@ -37,6 +32,7 @@ class DataProcessorCsv(DataProcessor):
         use_cols_lst (lst): list with column numbers that should be read-in.
         use_rows_lst (lst): In case this options is used, the list contains the indices of rows
                             in the csv file that should be used as data
+        returned_filter_format (str): Returned data format after filtering
     """
 
     expected_filter_entire_file = {'type': 'entire_file'}
@@ -53,7 +49,7 @@ class DataProcessorCsv(DataProcessor):
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
-        driver_name,
+        data_processor_name,
         filter_type,
         header_row,
         use_cols_lst,
@@ -63,6 +59,7 @@ class DataProcessorCsv(DataProcessor):
         filter_range,
         filter_target_values,
         filter_tol,
+        returned_filter_format,
     ):
         """Instantiate data processor class for csv data.
 
@@ -74,7 +71,7 @@ class DataProcessorCsv(DataProcessor):
                                       the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            driver_name (str): Name of the associated driver.
+            data_processor_name (str): Name of the data processor.
             filter_type (str): filter type to use
             header_row (int):   Integer that determines which csv-row contains labels/headers of
                                 the columns. Default is 'None', meaning no header used.
@@ -92,6 +89,7 @@ class DataProcessorCsv(DataProcessor):
                                 in list format
             filter_tol (float): Tolerance for the filter range
             filter_target_values (list): target values to filter
+            returned_filter_format (str): Returned data format after filtering
 
         Returns:
             Instance of DataProcessorCsv class
@@ -100,7 +98,7 @@ class DataProcessorCsv(DataProcessor):
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-            driver_name,
+            data_processor_name,
         )
         self.use_cols_lst = use_cols_lst
         self.filter_type = filter_type
@@ -111,20 +109,21 @@ class DataProcessorCsv(DataProcessor):
         self.filter_range = filter_range
         self.filter_target_values = filter_target_values
         self.filter_tol = filter_tol
+        self.returned_filter_format = returned_filter_format
 
     @classmethod
-    def from_config_create_data_processor(cls, config, driver_name):
+    def from_config_create_data_processor(cls, config, data_processor_name):
         """Create the class from the problem description.
 
         Args:
             config (dict): Dictionary with problem description.
-            driver_name (str): Name of driver that is used in this job-submission
+            data_processor_name (str): Name of the data processor
         """
         (
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-        ) = super().from_config_set_base_attributes(config, driver_name)
+        ) = super().from_config_set_base_attributes(config, data_processor_name)
 
         header_row = file_options_dict.get('header_row')
         if header_row and not isinstance(header_row, int):
@@ -148,13 +147,15 @@ class DataProcessorCsv(DataProcessor):
             )
 
         index_column = file_options_dict.get('index_column', False)
-        if index_column and (not (isinstance(index_column, int) or isinstance(index_column, str))):
+        if index_column and not isinstance(index_column, (int, str)):
             raise TypeError(
                 "The option 'index_column' must be either of type 'int' or 'str', "
                 f"but you provided type {type(index_column)}! Either your original data "
                 "type is wrong or the column does not exist in the csv-data file! "
                 "Abort..."
             )
+
+        returned_filter_format = file_options_dict.get('returned_filter_format', 'numpy')
 
         filter_options_dict = file_options_dict.get('filter')
         cls._check_valid_filter_options(filter_options_dict)
@@ -172,12 +173,11 @@ class DataProcessorCsv(DataProcessor):
                 "The option 'use_rows_lst' must be of type 'list' "
                 f"but you provided type {type(use_rows_lst)}. Abort..."
             )
-        else:
-            if not all(isinstance(row_idx, int) for row_idx in use_rows_lst):
-                raise TypeError(
-                    "The option 'use_rows_lst' must be a list of `int` "
-                    f"but you provided type {[type(row_idx) for row_idx in use_rows_lst]}. Abort..."
-                )
+        if not all(isinstance(row_idx, int) for row_idx in use_rows_lst):
+            raise TypeError(
+                "The option 'use_rows_lst' must be a list of `int` "
+                f"but you provided type {[type(row_idx) for row_idx in use_rows_lst]}. Abort..."
+            )
 
         filter_range = filter_options_dict.get('range', [])
         if filter_range and not isinstance(filter_range, list):
@@ -204,7 +204,7 @@ class DataProcessorCsv(DataProcessor):
             file_name_identifier,
             file_options_dict,
             files_to_be_deleted_regex_lst,
-            driver_name,
+            data_processor_name,
             filter_type,
             header_row,
             use_cols_lst,
@@ -214,6 +214,7 @@ class DataProcessorCsv(DataProcessor):
             filter_range,
             filter_target_values,
             filter_tol,
+            returned_filter_format,
         )
 
     @classmethod
@@ -230,21 +231,21 @@ class DataProcessorCsv(DataProcessor):
                     f"a dictionary of type {cls.expected_filter_entire_file}."
                 )
             return
-        elif filter_options_dict["type"] == 'by_range':
+        if filter_options_dict["type"] == 'by_range':
             if not filter_options_dict.keys() == cls.expected_filter_by_range.keys():
                 raise TypeError(
                     "For the filter type `by_range`, you have to provide "
                     f"a dictionary of type {cls.expected_filter_by_range}."
                 )
             return
-        elif filter_options_dict["type"] == 'by_row_index':
+        if filter_options_dict["type"] == 'by_row_index':
             if not filter_options_dict.keys() == cls.expected_filter_by_row_index.keys():
                 raise TypeError(
                     "For the filter type `by_row_index`, you have to provide "
                     f"a dictionary of type {cls.expected_filter_by_row_index}."
                 )
             return
-        elif filter_options_dict["type"] == 'by_target_values':
+        if filter_options_dict["type"] == 'by_target_values':
             if not filter_options_dict.keys() == cls.expected_filter_by_target_values.keys():
                 raise TypeError(
                     "For the filter type `by_target_values`, you have to provide "
@@ -290,6 +291,16 @@ class DataProcessorCsv(DataProcessor):
             valid_filter_types, self.filter_type, error_message=error_message
         )
         filter_method()
+        filter_formats_dict = {
+            "numpy": self.processed_data.to_numpy(),
+            "dict": self.processed_data.to_dict('list'),
+        }
+
+        self.processed_data = get_option(
+            filter_formats_dict,
+            self.returned_filter_format,
+            error_message="The returned filter format you provided is not a current option.",
+        )
 
         if not np.any(self.processed_data):
             raise RuntimeError(
@@ -298,18 +309,17 @@ class DataProcessorCsv(DataProcessor):
 
     def _filter_entire_file(self):
         """Keep entire csv file data."""
-        self.processed_data = self.raw_file_data.to_numpy()
+        self.processed_data = self.raw_file_data
 
     def _filter_by_row_index(self):
         """Filter the csv file based on given data rows."""
         if any(self.raw_file_data):
             try:
-                self.processed_data = self.raw_file_data.iloc[self.use_rows_lst].to_numpy()
+                self.processed_data = self.raw_file_data.iloc[self.use_rows_lst]
             except IndexError as exception:
                 raise IndexError(
                     f"Index list {self.use_rows_lst} are not contained in raw_file_data. "
-                    f"The IndexError was: {exception}. Abort..."
-                )
+                ) from exception
 
     def _filter_by_target_values(self):
         """Filter the pandas data frame based on target values."""
@@ -324,7 +334,7 @@ class DataProcessorCsv(DataProcessor):
                     )
                 )
 
-            self.processed_data = self.raw_file_data.iloc[target_indices].to_numpy()
+            self.processed_data = self.raw_file_data.iloc[target_indices]
 
     def _filter_by_range(self):
         """Filter the pandas data frame based on values in a data column."""
@@ -340,4 +350,4 @@ class DataProcessorCsv(DataProcessor):
                 )[-1]
             )
 
-            self.processed_data = (self.raw_file_data.iloc[range_start : range_end + 1]).to_numpy()
+            self.processed_data = self.raw_file_data.iloc[range_start : range_end + 1]
