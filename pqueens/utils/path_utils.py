@@ -1,9 +1,8 @@
 """Path utilities for QUEENS."""
-import os
 from pathlib import Path
 
-PATH_TO_PQUEENS = os.path.join(os.path.dirname(__file__), "../")
-PATH_TO_QUEENS = os.path.join(os.path.dirname(__file__), "../../")
+PATH_TO_PQUEENS = Path(__file__).parents[1]
+PATH_TO_QUEENS = Path(__file__).parents[2]
 
 
 def relative_path_from_pqueens(relative_path):
@@ -18,9 +17,9 @@ def relative_path_from_pqueens(relative_path):
         relative_path (str): Path starting from queens/pqueens/
 
     Returns:
-        [str]: Absolute path to the file
+        (str): Absolute path to the file
     """
-    return os.path.join(PATH_TO_PQUEENS, relative_path)
+    return PATH_TO_PQUEENS.joinpath(relative_path)
 
 
 def relative_path_from_queens(relative_path):
@@ -35,18 +34,23 @@ def relative_path_from_queens(relative_path):
         relative_path (str): Path starting from queens/
 
     Returns:
-        [str]: Absolute path to the file
+        (str): Absolute path to the file
     """
-    return os.path.join(PATH_TO_QUEENS, relative_path)
+    return PATH_TO_QUEENS.joinpath(relative_path)
 
 
 def create_folder_if_not_existent(path):
     """Create folder if not existent.
 
     Args:
-        path (str): Path to be created
+        path (PosixPath): Path to be created
+
+    Returns:
+        path_obj (PosixPath) path object
     """
-    os.makedirs(path, exist_ok=True)
+    path_obj = Path(path)
+    path_obj.mkdir(parents=True, exist_ok=True)
+    return path_obj
 
 
 def check_if_path_exists(path, error_message=""):
@@ -56,6 +60,9 @@ def check_if_path_exists(path, error_message=""):
         path (str): Path to be checked
         error_message (str,optional): If an additional message is desired
     """
-    path_to_check = Path(path)
-    if not path_to_check.exists():
+    path_exists = Path(path).exists()
+
+    if not path_exists:
         raise FileNotFoundError(error_message + f"\nPath {path} does not exist.")
+
+    return path_exists
