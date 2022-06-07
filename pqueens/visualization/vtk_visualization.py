@@ -17,12 +17,11 @@ class VTKVisualization:
     """Visualization class for exporting fields using vtk.
 
     Attributes:
-       vtk_output_path (str): Path to directory where to save the vtk outputs.
-       geometry_file (str): Path to geometry file
-       save_every (int): Declares, how often the visualization will be done (default: 1)
-
-    Returns:
-        VTKVisualization (obj) : Instance of the VTKVisualization Class
+        output_dir (Path): Output directory of QUEENS
+        geometry_file (str): Path to vtu template
+        save_every (int): Which iteration to save the field
+        field_name (str): name of the field being exported
+        node_coordinates (np.array): Nodal coordinates of the vtu geometry file
     """
 
     def __init__(self, output_dir, geometry_file, save_every, field_name, node_coordinates):
@@ -73,8 +72,8 @@ class VTKVisualization:
             node_coordinates=node_coordinates,
         )
 
-    def write_vtk_file(self, field, iteration):
-        """Export data to vtk format and save with geometry as a file.
+    def write_vtu_file(self, field, iteration):
+        """Export data to vtu format and save with geometry as a file.
 
         Args:
             field (np.array): field data for its given discretization
