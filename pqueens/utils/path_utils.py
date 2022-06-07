@@ -5,7 +5,7 @@ PATH_TO_PQUEENS = Path(__file__).parents[1]
 PATH_TO_QUEENS = Path(__file__).parents[2]
 
 
-def relative_path_from_pqueens(relative_path):
+def relative_path_from_pqueens(relative_path, as_str=False):
     """Create relative path from `pqueens/`.
 
     As an example to create:
@@ -15,14 +15,17 @@ def relative_path_from_pqueens(relative_path):
 
     Args:
         relative_path (str): Path starting from queens/pqueens/
-
+        as_str (bool,optional): True if the path is to be returned as string
     Returns:
-        (str): Absolute path to the file
+        (PosixPath or str): Absolute path to the file
     """
-    return PATH_TO_PQUEENS.joinpath(relative_path)
+    full_path = PATH_TO_PQUEENS.joinpath(relative_path)
+    if as_str:
+        full_path = str(full_path)
+    return full_path
 
 
-def relative_path_from_queens(relative_path):
+def relative_path_from_queens(relative_path, as_str=False):
     """Create relative path from `queens/`.
 
     As an example to create:
@@ -32,11 +35,15 @@ def relative_path_from_queens(relative_path):
 
     Args:
         relative_path (str): Path starting from queens/
+        as_str (bool,optional): True if the path is to be returned as string
 
     Returns:
-        (str): Absolute path to the file
+        (PosixPath or str): Absolute path to the file
     """
-    return PATH_TO_QUEENS.joinpath(relative_path)
+    full_path = PATH_TO_QUEENS.joinpath(relative_path)
+    if as_str:
+        full_path = str(full_path)
+    return full_path
 
 
 def create_folder_if_not_existent(path):
