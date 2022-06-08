@@ -1,8 +1,10 @@
 """Command Line Interface utils collection."""
+import subprocess
 import sys
 
 from pqueens.utils import ascii_art
 from pqueens.utils.manage_singularity import create_singularity_image
+from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.pickle_utils import print_pickled_data
 
 
@@ -31,3 +33,54 @@ def print_pickle_data_cli():
     else:
         file_path = args[0]
         print_pickled_data(file_path)
+
+
+def build_html_coverage_report():
+    """Build html coverage report."""
+    print("Build html coverage report...")
+
+    pytest_command_string = (
+        'pytest -m "unit_tests or integration_tests or integration_tests_baci" '
+        '--cov --cov-report=html:html_coverage_report'
+    )
+    command_list = ["cd", PATH_TO_QUEENS, "&&", pytest_command_string]
+    command_string = ' '.join(command_list)
+    with subprocess.Popen(
+        command_string,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+        universal_newlines=True,
+    ) as process:
+        stdout, stderr = process.communicate()
+        process_returncode = process.returncode
+
+    if process_returncode:
+        print(stderr)
+    else:
+        print(stdout)
+
+
+def remove_html_coverage_report():
+    """Remove html coverage report files."""
+    print("Remove html coverage report...")
+
+    pytest_command_string = "rm -r html_coverage_report/; rm .coverage*"
+    command_list = ["cd", PATH_TO_QUEENS, "&&", pytest_command_string]
+    command_string = ' '.join(command_list)
+    with subprocess.Popen(
+        command_string,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+        universal_newlines=True,
+    ) as process:
+        stdout, stderr = process.communicate()
+        process_returncode = process.returncode
+
+    if process_returncode:
+        print(stderr)
+    else:
+        print(stdout)
