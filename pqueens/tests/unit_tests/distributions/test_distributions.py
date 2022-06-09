@@ -46,7 +46,6 @@ def test_create_export_dict():
         'dimension': 1,
         'low_chol': np.array([[1.0]]),
         'precision': np.array([[1.0]]),
-        'det_covariance': np.array(1.0),
         'logpdf_const': np.array([-0.9189385332046728]),
     }
     for (key, value), (key_ref, value_ref) in zip(exported_dict.items(), ref_dict.items()):

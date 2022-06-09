@@ -17,10 +17,9 @@ def at_least_2d(arr):
     """
     if arr.ndim == 0:
         return arr.reshape((1, 1))
-    elif arr.ndim == 1:
+    if arr.ndim == 1:
         return arr[:, np.newaxis]
-    else:
-        return arr
+    return arr
 
 
 def at_least_3d(arr):
@@ -34,12 +33,11 @@ def at_least_3d(arr):
     """
     if arr.ndim == 0:
         return arr.reshape((1, 1, 1))
-    elif arr.ndim == 1:
+    if arr.ndim == 1:
         return arr[:, np.newaxis, np.newaxis]
-    elif arr.ndim == 2:
+    if arr.ndim == 2:
         return arr[:, :, np.newaxis]
-    else:
-        return arr
+    return arr
 
 
 def safe_cholesky(matrix):
@@ -57,18 +55,37 @@ def safe_cholesky(matrix):
     try:
         low_cholesky = np.linalg.cholesky(matrix)
         return low_cholesky
-    except np.linalg.LinAlgError:
+    except np.linalg.LinAlgError as linalg_error:
         matrix_max = np.max(matrix)
         for i in range(5):
             jitter = matrix_max * 1e-10 * 10**i
             matrix_ = matrix + np.eye(matrix.shape[0]) * jitter
             _logger.warning(
-                'Added {:.2e} to diagonal of matrix for numerical stability '
-                'of cholesky decompostition'.format(jitter)
+                f'Added {jitter:.2e} to diagonal of matrix for numerical stability '
+                'of cholesky decompostition'
             )
             try:
                 low_cholesky = np.linalg.cholesky(matrix_)
                 return low_cholesky
             except np.linalg.LinAlgError:
                 continue
-        raise np.linalg.LinAlgError('Cholesky decomposition failed due to ill-conditioning!')
+        raise np.linalg.LinAlgError(
+            'Cholesky decomposition failed due to ill-conditioning!'
+        ) from linalg_error
+
+
+def add_nugget_to_diagonal(matrix, nugget_value):
+    """Add a small value to diagonal of matrix.
+
+    The nugget value is only added to diagonal entries that are smaller than the nugget value.
+
+    Args:
+        matrix (np.ndarray): Matrix
+        nugget_value (float): Small nugget value to be added
+
+    Returns:
+        matrix (np.ndarray): Manipulated matrix
+    """
+    nugget_diag = np.where(np.diag(matrix) < nugget_value, nugget_value, 0)
+    matrix += np.diag(nugget_diag)
+    return matrix

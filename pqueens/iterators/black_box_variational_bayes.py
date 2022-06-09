@@ -412,7 +412,7 @@ class BBVIIterator(Iterator):
         # get simulation output (run actual forward problem)--> data is saved to DB
         self.model.update_model_from_sample_batch(sample_batch)
         log_likelihood = self.eval_model()
-        self.noise_list.append(self.model.noise_var)
+        self.noise_list.append(self.model.normal_distribution.covariance)
 
         return log_likelihood.flatten()
 

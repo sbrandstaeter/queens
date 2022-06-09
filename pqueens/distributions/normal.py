@@ -13,13 +13,10 @@ class NormalDistribution(Distribution):
     Attributes:
         low_chol (np.ndarray): lower-triangular Cholesky factor of covariance matrix
         precision (np.ndarray): Precision matrix corresponding to covariance matrix
-        det_covariance (float): Determinant of covariance matrix
         logpdf_const (float): Constant for evaluation of log pdf
     """
 
-    def __init__(
-        self, mean, covariance, dimension, low_chol, precision, det_covariance, logpdf_const
-    ):
+    def __init__(self, mean, covariance, dimension, low_chol, precision, logpdf_const):
         """Initialize normal distribution.
 
         Args:
@@ -28,13 +25,11 @@ class NormalDistribution(Distribution):
             dimension (int): dimensionality of the distribution
             low_chol (np.ndarray): lower-triangular Cholesky factor of covariance matrix
             precision (np.ndarray): Precision matrix corresponding to covariance matrix
-            det_covariance (float): Determinant of covariance matrix
             logpdf_const (float): Constant for evaluation of log pdf
         """
         super().__init__(mean, covariance, dimension)
         self.low_chol = low_chol
         self.precision = precision
-        self.det_covariance = det_covariance
         self.logpdf_const = logpdf_const
 
     @classmethod
@@ -73,15 +68,7 @@ class NormalDistribution(Distribution):
                 f"Provided dimension of covariance matrix: {dimension}. "
             )
 
-        low_chol = numpy_utils.safe_cholesky(covariance)
-
-        # precision matrix Q and determinant of cov matrix
-        chol_inv = np.linalg.inv(low_chol)
-        precision = np.dot(chol_inv.T, chol_inv)
-
-        # constant needed for pdf
-        det_covariance = np.linalg.det(covariance)
-        logpdf_const = -1 / 2 * np.log((2.0 * np.pi) ** dimension * det_covariance)
+        low_chol, precision, logpdf_const = cls._calculate_distribution_parameters(covariance)
 
         return cls(
             mean=mean,
@@ -89,7 +76,6 @@ class NormalDistribution(Distribution):
             dimension=dimension,
             low_chol=low_chol,
             precision=precision,
-            det_covariance=det_covariance,
             logpdf_const=logpdf_const,
         )
 
@@ -170,3 +156,39 @@ class NormalDistribution(Distribution):
         self.check_1d()
         ppf = scipy.stats.norm.ppf(q, loc=self.mean, scale=self.covariance).reshape(-1)
         return ppf
+
+    def update_covariance(self, covariance):
+        """Update covariance and dependent distribution parameters.
+
+        Args:
+            covariance (np.ndarray): Covariance matrix
+        """
+        low_chol, precision, logpdf_const = self._calculate_distribution_parameters(covariance)
+        self.covariance = covariance
+        self.low_chol = low_chol
+        self.precision = precision
+        self.logpdf_const = logpdf_const
+
+    @staticmethod
+    def _calculate_distribution_parameters(covariance):
+        """Calculate covariance dependent distribution parameters.
+
+        Args:
+            covariance (np.ndarray): Covariance matrix
+
+        Returns:
+            low_chol (np.ndarray): lower-triangular Cholesky factor of covariance matrix
+            precision (np.ndarray): Precision matrix corresponding to covariance matrix
+            logpdf_const (float): Constant for evaluation of log pdf
+        """
+        dimension = covariance.shape[0]
+        low_chol = numpy_utils.safe_cholesky(covariance)
+
+        # precision matrix Q and determinant of cov matrix
+        chol_inv = np.linalg.inv(low_chol)
+        precision = np.dot(chol_inv.T, chol_inv)
+
+        # constant needed for pdf
+        det_covariance = np.linalg.det(covariance)
+        logpdf_const = -1 / 2 * (np.log(2.0 * np.pi) * dimension + np.log(det_covariance))
+        return low_chol, precision, logpdf_const

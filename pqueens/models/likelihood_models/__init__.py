@@ -23,12 +23,12 @@ def from_config_create_model(model_name, config):
     from pqueens.models import from_config_create_model
 
     # get child likelihood classes
-    from .bayesian_mf_gaussian_static_likelihood import BMFGaussianStaticModel
-    from .gaussian_static_likelihood import GaussianStaticLikelihood
+    from .bayesian_mf_gaussian_likelihood import BMFGaussianModel
+    from .gaussian_likelihood import GaussianLikelihood
 
     model_dict = {
-        'gaussian_static': GaussianStaticLikelihood,
-        'bmf_gaussian_static': BMFGaussianStaticModel,
+        'gaussian': GaussianLikelihood,
+        'bmf_gaussian': BMFGaussianModel,
     }
 
     # get options

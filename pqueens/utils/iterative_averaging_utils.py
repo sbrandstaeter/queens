@@ -85,7 +85,7 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         approach_print_dict.update(print_dict)
         return get_str_table(name, approach_print_dict)
 
-    @abc.abstractclassmethod
+    @abc.abstractmethod
     def average_computation(self):
         """Here the averaging approach is implemented."""
         pass

@@ -45,15 +45,15 @@
   },
   "model": {
     "type": "likelihood_model",
-    "subtype": "gaussian_static",
+    "subtype": "gaussian",
     "forward_model": "forward_model",
     "output_label": "y_obs",
     "coordinate_labels": [
       "x3",
       "x4"
     ],
-    "likelihood_noise_type": "jeffreys_prior",
-    "nugget_noise_var": 1E-8,
+    "noise_type": "MAP_jeffrey_variance",
+    "nugget_noise_variance": 1E-8,
     "experimental_file_name_identifier": "*.csv",
     "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters"

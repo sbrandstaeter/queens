@@ -21,7 +21,7 @@
   },
   "model": {
     "type": "likelihood_model",
-    "subtype": "bmf_gaussian_static",
+    "subtype": "bmf_gaussian",
     "mf_approx_settings": {
       "type": "gp_precompiled",
       "num_processors_multi_processing": 4,
@@ -60,7 +60,7 @@
       "x4"
     ],
     "likelihood_noise_type": "jeffreys_prior",
-    "fixed_likelihood_noise_value": 0.01,
+    "noise_value": 0.01,
     "nugget_noise_var": 1E-8,
     "experimental_file_name_identifier": "*.csv",
     "experimental_csv_data_base_dir": "{experimental_data_path}",

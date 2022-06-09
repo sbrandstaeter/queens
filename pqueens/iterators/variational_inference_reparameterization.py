@@ -961,7 +961,7 @@ class VIRPIterator(Iterator):
 
         self.model.update_model_from_sample_batch(np.atleast_2d(params).reshape(1, -1))
         log_likelihood = self.eval_model()
-        self.noise_lst.append(self.model.noise_var)
+        self.noise_lst.append(self.model.normal_distribution.covariance)
 
         return log_likelihood
 
