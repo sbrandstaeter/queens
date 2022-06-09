@@ -1,4 +1,4 @@
-"""Multi-fidelity Gaussian static likelihood model."""
+"""Multi-fidelity Gaussian likelihood model."""
 
 import logging
 
@@ -14,7 +14,7 @@ from .likelihood_model import LikelihoodModel
 _logger = logging.getLogger(__name__)
 
 
-class BMFGaussianStaticModel(LikelihoodModel):
+class BMFGaussianModel(LikelihoodModel):
     """Multi fidelity likelihood function.
 
     Multi-fidelity likelihood of the Bayesian multi-fidelity inverse
@@ -55,8 +55,8 @@ class BMFGaussianStaticModel(LikelihoodModel):
         noise_var_lst (lst): List with noise variance per iteration
 
     Returns:
-        Instance of BMFGaussianStaticModel. This is a multi-fidelity version of the
-        Gaussian static noise likelihood model.
+        Instance of BMFGaussianModel. This is a multi-fidelity version of the
+        Gaussian noise likelihood model.
 
 
     References:
@@ -142,7 +142,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         """Configure multi-fidelity likelihood class from problem description.
 
         Returns:
-            BMFGaussianStaticModel (obj): A BMFGaussianStaticModel object
+            BMFGaussianModel (obj): A BMFGaussianModel object
         """
         # TODO the unlabeled treatment of raw data for eigenfunc_random_fields and input vars and
         #  random fields is prone to errors and should be changed! The implementation should
@@ -152,7 +152,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
         # get model options
         model_options = config[model_name]
 
-        # get specifics of gaussian static likelihood model
+        # get specifics of gaussian likelihood model
         likelihood_noise_type = model_options["likelihood_noise_type"]
         fixed_likelihood_noise_value = model_options.get("fixed_likelihood_noise_value")
         nugget_noise_var = model_options.get("nugget_noise_var", 1e-9)
@@ -311,10 +311,10 @@ class BMFGaussianStaticModel(LikelihoodModel):
         m_f_mat, var_y_mat = self.mf_interface.evaluate(z_mat)
 
         assert np.array_equal(
-            m_f_mat.shape[1], np.atleast_2d(self.y_obs_vec).shape[1]
+            m_f_mat.shape[1], np.atleast_2d(self.y_obs).shape[1]
         ), "Column dimension of the probab. regression output and y_obs do not agree! Abort..."
 
-        diff_mat = m_f_mat - np.atleast_2d(self.y_obs_vec) * np.ones(m_f_mat.shape)
+        diff_mat = m_f_mat - np.atleast_2d(self.y_obs) * np.ones(m_f_mat.shape)
 
         return diff_mat, var_y_mat
 
@@ -411,7 +411,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
             f"provided the shape {diff_vec.shape}. Abort..."
         )
 
-        num_obs = self.y_obs_vec.size  # number of observations
+        num_obs = self.y_obs.size  # number of observations
         # Note we assume here only a diagonal covariance matrix, can be generalized in the future
         inv_mf_variance_vec = (
             1 / mf_variance_vec
@@ -450,7 +450,7 @@ class BMFGaussianStaticModel(LikelihoodModel):
 
         self.bmfia_subiterator.coords_experimental_data = self.coords_mat
         self.bmfia_subiterator.time_vec = self.time_vec
-        self.bmfia_subiterator.y_obs_vec = self.y_obs_vec
+        self.bmfia_subiterator.y_obs = self.y_obs
         self._build_approximation()
 
     def _build_approximation(self):
