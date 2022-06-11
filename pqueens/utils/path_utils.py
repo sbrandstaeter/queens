@@ -5,7 +5,7 @@ PATH_TO_PQUEENS = Path(__file__).parents[1]
 PATH_TO_QUEENS = Path(__file__).parents[2]
 
 
-def relative_path_from_pqueens(relative_path, as_str=False):
+def relative_path_from_pqueens(relative_path, as_str=True):
     """Create relative path from `pqueens/`.
 
     As an example to create:
@@ -25,7 +25,7 @@ def relative_path_from_pqueens(relative_path, as_str=False):
     return full_path
 
 
-def relative_path_from_queens(relative_path, as_str=False):
+def relative_path_from_queens(relative_path, as_str=True):
     """Create relative path from `queens/`.
 
     As an example to create:

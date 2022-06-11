@@ -167,7 +167,7 @@ class StandardScheduler(Scheduler):
         remote_args = '--job_id={} --batch={} --port={} --path_json={} --driver_name={}'.format(
             job_id, batch, '000', local_path_json, self.driver_name
         )
-        local_singularity_path = relative_path_from_queens("singularity_image.sif", as_str=True)
+        local_singularity_path = relative_path_from_queens("singularity_image.sif")
 
         if restart:
             cmdlist_remote_main = [

@@ -14,7 +14,7 @@ from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 _logger = logging.getLogger(__name__)
-abs_singularity_image_path = relative_path_from_queens("singularity_image.sif", as_str=True)
+abs_singularity_image_path = relative_path_from_queens("singularity_image.sif")
 
 
 def create_singularity_image():
@@ -24,7 +24,7 @@ def create_singularity_image():
     run_subprocess(command_string, additional_error_message='Singularity could not be executed!')
 
     definition_path = 'singularity_recipe.def'
-    abs_definition_path = relative_path_from_queens(definition_path, as_str=True)
+    abs_definition_path = relative_path_from_queens(definition_path)
     command_list = [
         "cd",
         str(PATH_TO_QUEENS),
@@ -462,12 +462,8 @@ def _check_if_files_changed():
         'remote_main.py',
     ]
     # generate absolute paths
-    files_to_compare_list = [
-        relative_path_from_pqueens(file, as_str=True) for file in files_to_compare_list
-    ]
-    folders_to_compare_list = [
-        relative_path_from_pqueens(file, as_str=True) for file in folders_to_compare_list
-    ]
+    files_to_compare_list = [relative_path_from_pqueens(file) for file in files_to_compare_list]
+    folders_to_compare_list = [relative_path_from_pqueens(file) for file in folders_to_compare_list]
 
     # Add files from the relevant folders to the list of files
     for folder in folders_to_compare_list:
