@@ -31,7 +31,7 @@ def fixture_cell_data_array(request):
 def fixture_cell_data_vtkarray(request):
     """Fixture vtkArray for cell data."""
     array = numpy_to_vtk(np.ones(request.param))
-    array.SetName("test_name_different_form_the_other")
+    array.SetName("test_name_different_from_the_other")
     return array
 
 
@@ -45,7 +45,7 @@ def fixture_point_data_array(request):
 def fixture_point_data_vtkarray(request):
     """Fixture vtkArray for point data."""
     array = numpy_to_vtk(np.ones(request.param))
-    array.SetName("test_name_different_form_the_other")
+    array.SetName("test_name_different_from_the_other")
     return array
 
 
@@ -118,7 +118,7 @@ def test_add_point_array_to_vtu_object_numpy(template_file_path, point_data_arra
     np.testing.assert_equal(point_data_array, resulting_array)
 
     # Check if the name was successfully changed
-    not_existing_array = vtu_object.GetPointData().GetArray("test_name_different_form_the_other")
+    not_existing_array = vtu_object.GetPointData().GetArray("test_name_different_from_the_other")
     assert not_existing_array is None
 
 
@@ -131,7 +131,7 @@ def test_add_point_array_to_vtu_object_vtkarray(template_file_path, point_data_v
     assert point_data_vtkarray == resulting_array
 
     # Check if the name was successfully changed
-    not_existing_array = vtu_object.GetPointData().GetArray("test_name_different_form_the_other")
+    not_existing_array = vtu_object.GetPointData().GetArray("test_name_different_from_the_other")
     assert not_existing_array is None
 
 
@@ -170,7 +170,7 @@ def test_add_cell_array_to_vtu_object_numpy(template_file_path, cell_data_array)
     np.testing.assert_equal(cell_data_array, resulting_array)
 
     # Check if the name was successfully changed
-    not_existing_array = vtu_object.GetCellData().GetArray("test_name_different_form_the_other")
+    not_existing_array = vtu_object.GetCellData().GetArray("test_name_different_from_the_other")
     assert not_existing_array is None
 
 
@@ -183,7 +183,7 @@ def test_add_cell_array_to_vtu_object_vtkarray(template_file_path, cell_data_vtk
     assert cell_data_vtkarray == resulting_array
 
     # Check if the name was successfully changed
-    not_existing_array = vtu_object.GetCellData().GetArray("test_name_different_form_the_other")
+    not_existing_array = vtu_object.GetCellData().GetArray("test_name_different_from_the_other")
     assert not_existing_array is None
 
 

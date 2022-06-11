@@ -23,16 +23,16 @@ def load_vtu_file(template_file_path):
     return reader.GetOutput()
 
 
-def export_vtu_file(vtu_object, template_file_path):
+def export_vtu_file(vtu_object, export_file_path):
     """Export vtu object.
 
     Args:
         vtu_object (vtk object): VTU data to be exported
-        template_file_path (str): Path where to store this file
+        export_file_path (str): Path where to store this file
     """
     writer = vtk.vtkUnstructuredGridWriter()
     writer.SetInputData(vtu_object)
-    writer.SetFileName(template_file_path)
+    writer.SetFileName(export_file_path)
     writer.Write()
 
 
@@ -63,23 +63,18 @@ def add_cell_array_to_vtu_object(vtu_object, array_name, array_data):
         array_data (np.array or vtkArray): data to add to the vtu_object
     """
     vtk_array = array_data
-    number_of_points = vtu_object.GetNumberOfCells()
+    number_of_cells = vtu_object.GetNumberOfCells()
+
     if isinstance(array_data, np.ndarray):
         vtk_array = numpy_to_vtk(array_data)
-        if len(array_data) != number_of_points:
-            raise ValueError(
-                f"The provided array has dimension {len(array_data)}, but the geometry requires",
-                f"{number_of_points} cells.",
-            )
-    elif isinstance(array_data, vtkDoubleArray):
-        if vtk_array.GetNumberOfTuples() != number_of_points:
-            raise ValueError(
-                f"The provided vtkArray has dimension {array_data.GetNumberOfTuples()}, but the"
-                f" geometry requires {number_of_points} cells."
-            )
-    else:
+    elif not isinstance(array_data, vtkDoubleArray):
         raise ValueError(
             f"Type {type(array_data)} not allowed, valid options are np.ndarray or vtkDoubleArray"
+        )
+    if vtk_array.GetNumberOfTuples() != number_of_cells:
+        raise ValueError(
+            f"The provided cell data array has dimension {vtk_array.GetNumberOfTuples()}, but the"
+            f" geometry requires {number_of_cells} cells."
         )
     vtk_array.SetName(array_name)
     vtu_object.GetCellData().AddArray(vtk_array)
@@ -95,22 +90,19 @@ def add_point_array_to_vtu_object(vtu_object, array_name, array_data):
     """
     vtk_array = array_data
     number_of_points = vtu_object.GetNumberOfPoints()
+
     if isinstance(array_data, np.ndarray):
         vtk_array = numpy_to_vtk(array_data)
-        if len(array_data) != number_of_points:
-            raise ValueError(
-                f"The provided array has dimension {len(array_data)}, but the geometry requires"
-                f"{number_of_points} nodes."
-            )
-    elif isinstance(array_data, vtkDoubleArray):
-        if vtk_array.GetNumberOfTuples() != number_of_points:
-            raise ValueError(
-                f"The provided vtkArray has dimension {array_data.GetNumberOfTuples()}, but the"
-                f"geometry requires {number_of_points} nodes."
-            )
-    else:
+    elif not isinstance(array_data, vtkDoubleArray):
         raise ValueError(
             f"Type {type(array_data)} not allowed, valid options are np.ndarray or vtkDoubleArray"
         )
+
+    if vtk_array.GetNumberOfTuples() != number_of_points:
+        raise ValueError(
+            f"The provided point data array has dimension {vtk_array.GetNumberOfTuples()}, but the"
+            f"geometry requires {number_of_points} nodes."
+        )
+
     vtk_array.SetName(array_name)
     vtu_object.GetPointData().AddArray(vtk_array)
