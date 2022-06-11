@@ -6,6 +6,10 @@ import logging
 
 import chaospy as cp
 import numpy as np
+from chaospy.distributions.sampler.generator import (
+    SAMPLER_NAMES as collocation_valid_sampling_rules,
+)
+from chaospy.quadrature.frontend import SHORT_NAME_TABLE as projection_node_location_rules
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
@@ -25,6 +29,7 @@ class PolynomialChaosIterator(Iterator):
         polynomial_order (int): Order of polynomial expansion
         sparse (bool): For pseudo project, if true uses sparse collocation points
         polynomial_chaos_approach (str): Approach for the polynomial chaos approach
+        distribution (cp.distribution): Joint input distribution
         result_description (dict): Description of desired results
     """
 
@@ -37,6 +42,7 @@ class PolynomialChaosIterator(Iterator):
         polynomial_order,
         sparse,
         polynomial_chaos_approach,
+        distribution,
         result_description,
         global_settings,
     ):
@@ -50,6 +56,7 @@ class PolynomialChaosIterator(Iterator):
         polynomial_order (int): Order of polynomial expansion
         sparse (bool): For pseudo project, if true uses sparse collocation points
         polynomial_chaos_approach (str): Approach for the polynomial chaos approach
+        distribution (cp.distribution): Joint input distribution
         result_description (dict): Description of desired results
         global_settings (dict, optional): Settings for the QUEENS run.
         """
@@ -61,10 +68,10 @@ class PolynomialChaosIterator(Iterator):
         self.result_description = result_description
         self.sparse = sparse
         self.polynomial_chaos_approach = polynomial_chaos_approach
+        self.distribution = distribution
         self.samples = None
         self.expansions = None
         self.result_dict = None
-        self.distribution = None
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -87,7 +94,7 @@ class PolynomialChaosIterator(Iterator):
         result_description = method_options.get('result_description', None)
         global_settings = config.get('global_settings', None)
 
-        if config.get('external_geometry') is not None:
+        if config.get('external_geometry', None) is not None:
             raise NotImplementedError("External geometry not supported with this iterator!")
 
         seed = method_options.get("seed", 42)
@@ -105,43 +112,17 @@ class PolynomialChaosIterator(Iterator):
 
         sparse = method_options.get("sparse", None)
 
+        sampling_rule = method_options.get("sampling_rule", None)
         if polynomial_chaos_approach == "collocation":
-            valid_sampling_rules = {
-                "additive_recursion": "additive_recursion",
-                "chebyshev": "chebyshev",
-                "nested_chebyshev": "nested_chebyshev",
-                "korobov": "korobov",
-                "grid": "grid",
-                "nested_grid": "nested_grid",
-                "sobol": "sobol",
-                "halton": "halton",
-                "hammersley": "hammersley",
-                "latin_hypercube": "latin_hypercube",
-                "random": "random",
-            }
+            valid_sampling_rules = collocation_valid_sampling_rules
         elif polynomial_chaos_approach == "pseudo_spectral":
             _logger.info(
                 f"Maximum number of collocation points was set to {num_collocation_points}."
             )
-            valid_sampling_rules = {
-                "clenshaw_curtis": "clenshaw_curtis",
-                "fejer_1": "fejer_1",
-                "fejer_2": "fejer_2",
-                "gaussian": "gaussian",
-                "legendre": "legendre",
-                "lobatto": "lobatto",
-                "kronrod": "kronrod",
-                "patterson": "patterson",
-                "radau": "radau",
-                "leja": "leja",
-                "newton_cotes": "newton_cotes",
-                "discrete": "discrete",
-                "grid": "grid",
-                "genz_keister_16": "genz_keister_16",
-                "genz_keister_18": "genz_keister_18",
-                "genz_keister_22": "genz_keister_22",
-                "genz_keister_24": "genz_keister_24",
-            }
+            valid_sampling_rules = projection_node_location_rules
+            if sampling_rule is None:
+                # Chaospy default
+                sampling_rule = "clenshaw_curtis"
 
             if not isinstance(sparse, bool):
                 raise ValueError(
@@ -150,7 +131,7 @@ class PolynomialChaosIterator(Iterator):
 
         sampling_rule = get_option(
             valid_sampling_rules,
-            method_options.get("sampling_rule"),
+            sampling_rule,
             "Chaospy sampling rule unknown",
         )
         polynomial_order = method_options.get("polynomial_order")
@@ -160,6 +141,8 @@ class PolynomialChaosIterator(Iterator):
                 f"{polynomial_order}"
             )
 
+        parameters_dict = model.get_parameter()
+        distribution = from_config_create_chaospy_joint_distribution(parameters_dict)
         return cls(
             model=model,
             seed=seed,
@@ -170,45 +153,8 @@ class PolynomialChaosIterator(Iterator):
             global_settings=global_settings,
             sparse=sparse,
             polynomial_chaos_approach=polynomial_chaos_approach,
+            distribution=distribution,
         )
-
-    @staticmethod
-    def create_chaospy_distribution(distribution_options):
-        """Create chaospy distribution object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary containing parameters
-                                     defining the distribution
-
-        Returns:
-            distribution:     Distribution object in chaospy format
-        """
-        distribution_type = distribution_options.get('distribution', None)
-        if distribution_type is None:
-            distribution = None
-        else:
-            if distribution_type == 'normal':
-                distribution = cp.Normal(
-                    mu=distribution_options["mean"], sigma=distribution_options["covariance"]
-                )
-            elif distribution_type == 'uniform':
-                distribution = cp.Uniform(
-                    lower=distribution_options["lower_bound"],
-                    upper=distribution_options["upper_bound"],
-                )
-            elif distribution_type == 'lognormal':
-                distribution = cp.LogNormal(
-                    mu=distribution_options["normal_mean"],
-                    sigma=distribution_options["normal_covariance"],
-                )
-            elif distribution_type == 'beta':
-                distribution = cp.Beta(
-                    alpha=distribution_options["a"],
-                    beta=distribution_options["b"],
-                    lower=distribution_options["lower_bound"],
-                    upper=distribution_options["upper_bound"],
-                )
-        return distribution
 
     def initialize_run(self):
         """Initiliaze run."""
@@ -229,28 +175,6 @@ class PolynomialChaosIterator(Iterator):
         """
         self.model.update_model_from_sample_batch(samples)
         return self.eval_model()
-
-    def pre_run(self):
-        """Get random variables in chaospy distribution format."""
-        parameters = self.model.get_parameter()
-
-        # get random Variables
-        random_variables = parameters.get('random_variables', None)
-
-        variables = []
-
-        # loop over rvs and create joint
-        for _, rv in random_variables.items():
-            rv_size = rv['size']
-            if rv_size != 1:
-                raise ValueError("Multidimensional random variables are not supported yet.")
-
-            variable = self.create_chaospy_distribution(rv)
-
-            variables.append(variable)
-
-        # Pass the variables list as arguments
-        self.distribution = cp.J(*variables)
 
     def core_run(self):
         """Core run for the polynomial chaos iterator."""
@@ -281,7 +205,7 @@ class PolynomialChaosIterator(Iterator):
         """
         # Generate nodes and weights for the polynomial chaos method
         nodes, weights = cp.generate_quadrature(
-            self.polynomial_order, self.distribution, sparse=True
+            self.polynomial_order, self.distribution, sparse=self.sparse, rule=self.sampling_rule
         )
         num_collocation_points = len(nodes)
         if num_collocation_points > self.num_collocation_points:
@@ -332,3 +256,69 @@ class PolynomialChaosIterator(Iterator):
                     self.global_settings["output_dir"],
                     self.global_settings["experiment_name"],
                 )
+
+
+def from_config_create_chaospy_joint_distribution(parameters_dict):
+    """Get random variables in chaospy distribution format.
+
+    Args:
+        parameters_dict (dict): Dict with the random variables
+
+    Returns:
+        chaospy distribution
+    """
+    # get random Variables
+    random_variables = parameters_dict.get('random_variables', None)
+
+    variables = []
+
+    # loop over rvs and create joint
+    for _, rv in random_variables.items():
+        rv_size = rv['size']
+        if rv_size != 1:
+            raise ValueError("Multidimensional random variables are not supported yet.")
+
+        variable = from_config_create_chaospy_distribution(rv)
+
+        variables.append(variable)
+
+    # Pass the variables list as arguments
+    return cp.J(*variables)
+
+
+def from_config_create_chaospy_distribution(distribution_options):
+    """Create chaospy distribution object from parameter dictionary.
+
+    Args:
+        distribution_options (dict): Dictionary containing parameters
+                                 defining the distribution
+
+    Returns:
+        distribution:     Distribution object in chaospy format
+    """
+    distribution_type = distribution_options.get('distribution', None)
+    if distribution_type is None:
+        distribution = None
+    else:
+        if distribution_type == 'normal':
+            distribution = cp.Normal(
+                mu=distribution_options["mean"], sigma=distribution_options["covariance"]
+            )
+        elif distribution_type == 'uniform':
+            distribution = cp.Uniform(
+                lower=distribution_options["lower_bound"],
+                upper=distribution_options["upper_bound"],
+            )
+        elif distribution_type == 'lognormal':
+            distribution = cp.LogNormal(
+                mu=distribution_options["normal_mean"],
+                sigma=distribution_options["normal_covariance"],
+            )
+        elif distribution_type == 'beta':
+            distribution = cp.Beta(
+                alpha=distribution_options["a"],
+                beta=distribution_options["b"],
+                lower=distribution_options["lower_bound"],
+                upper=distribution_options["upper_bound"],
+            )
+    return distribution

@@ -19,8 +19,8 @@ def test_polynomial_chaos_pseudo_spectral_borehole(inputdir, tmpdir):
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
-    assert results["mean"] == pytest.approx(61.80183799)
-    assert results["covariance"] == pytest.approx([1316.83598805])
+    assert results["mean"] == pytest.approx(61.78966587)
+    assert results["covariance"] == pytest.approx([1312.23414971])
 
 
 @pytest.mark.integration_tests
