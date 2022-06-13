@@ -27,7 +27,7 @@ def create_singularity_image():
     abs_definition_path = relative_path_from_queens(definition_path)
     command_list = [
         "cd",
-        PATH_TO_QUEENS,
+        str(PATH_TO_QUEENS),
         "&& unset SINGULARITY_BIND &&",
         "singularity build --force --fakeroot",
         abs_singularity_image_path,
@@ -265,9 +265,10 @@ class SingularityManager:
                         run_subprocess(command_string)
                     _logger.info('Old QUEENS port-forwardings were successfully terminated!')
                     break
-                elif answer.lower() == 'n':
+
+                if answer.lower() == 'n':
                     break
-                elif answer is None:
+                if answer is None:
                     _logger.info(
                         'You gave an empty input! Only "y" or "n" are valid inputs! Try again!'
                     )
@@ -310,7 +311,7 @@ class SingularityManager:
             command_string = ' '.join(command_list)
             port_fail = os.popen(command_string).read()
             time.sleep(0.1)
-        _logger.info('Remote port-forwarding successfully established for port %s' % (port))
+        _logger.info(f'Remote port-forwarding successfully established for port {port}')
 
         return port
 
@@ -323,9 +324,6 @@ class SingularityManager:
 
         Args:
             address_localhost (str): IP-address of the localhost
-
-        Returns:
-            None
         """
         remote_address = self.remote_connect.split(r'@')[1]
         command_list = [
@@ -342,15 +340,11 @@ class SingularityManager:
         stat = ssh_proc.poll()
         while stat is None:
             stat = ssh_proc.poll()
-        # TODO Think of some kind of error catching here;
-        #  so far it works but error might be cryptical
+        # Think of some kind of error catching here;
+        # so far it works but error might be cryptical
 
     def close_local_port_forwarding(self):
-        """Closes port forwarding from local to remote machine.
-
-        Returns:
-            None
-        """
+        """Closes port forwarding from local to remote machine."""
         _, _, username, _ = run_subprocess('whoami')
         command_string = "ps -aux | grep 'ssh -f -N -L 9001:' | grep ':22 " + username + "@'"
         _, _, active_ssh, _ = run_subprocess(
@@ -439,12 +433,11 @@ def _check_if_new_image_needed():
     Before checking if the files changed, a check is performed to see if there is an image first.
 
     Returns:
-        [bool]: True if new image is needed.
+        (bool): True if new image is needed.
     """
     if os.path.exists(abs_singularity_image_path):
         return _check_if_files_changed()
-    else:
-        return True
+    return True
 
 
 def _check_if_files_changed():

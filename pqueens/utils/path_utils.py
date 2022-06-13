@@ -1,11 +1,11 @@
 """Path utilities for QUEENS."""
-import os
+from pathlib import Path
 
-PATH_TO_PQUEENS = os.path.join(os.path.dirname(__file__), "../")
-PATH_TO_QUEENS = os.path.join(os.path.dirname(__file__), "../../")
+PATH_TO_PQUEENS = Path(__file__).parents[1]
+PATH_TO_QUEENS = Path(__file__).parents[2]
 
 
-def relative_path_from_pqueens(relative_path):
+def relative_path_from_pqueens(relative_path, as_str=True):
     """Create relative path from `pqueens/`.
 
     As an example to create:
@@ -15,14 +15,17 @@ def relative_path_from_pqueens(relative_path):
 
     Args:
         relative_path (str): Path starting from queens/pqueens/
-
+        as_str (bool,optional): True if the path is to be returned as string
     Returns:
-        [str]: Absolute path to the file
+        (PosixPath or str): Absolute path to the file
     """
-    return os.path.join(PATH_TO_PQUEENS, relative_path)
+    full_path = PATH_TO_PQUEENS.joinpath(relative_path)
+    if as_str:
+        full_path = str(full_path)
+    return full_path
 
 
-def relative_path_from_queens(relative_path):
+def relative_path_from_queens(relative_path, as_str=True):
     """Create relative path from `queens/`.
 
     As an example to create:
@@ -32,17 +35,41 @@ def relative_path_from_queens(relative_path):
 
     Args:
         relative_path (str): Path starting from queens/
+        as_str (bool,optional): True if the path is to be returned as string
 
     Returns:
-        [str]: Absolute path to the file
+        (PosixPath or str): Absolute path to the file
     """
-    return os.path.join(PATH_TO_QUEENS, relative_path)
+    full_path = PATH_TO_QUEENS.joinpath(relative_path)
+    if as_str:
+        full_path = str(full_path)
+    return full_path
 
 
 def create_folder_if_not_existent(path):
     """Create folder if not existent.
 
     Args:
-        path (str): Path to be created
+        path (PosixPath): Path to be created
+
+    Returns:
+        path_obj (PosixPath) path object
     """
-    os.makedirs(path, exist_ok=True)
+    path_obj = Path(path)
+    path_obj.mkdir(parents=True, exist_ok=True)
+    return path_obj
+
+
+def check_if_path_exists(path, error_message=""):
+    """Check if a path exists.
+
+    Args:
+        path (str): Path to be checked
+        error_message (str,optional): If an additional message is desired
+    """
+    path_exists = Path(path).exists()
+
+    if not path_exists:
+        raise FileNotFoundError(error_message + f"\nPath {path} does not exist.")
+
+    return path_exists
