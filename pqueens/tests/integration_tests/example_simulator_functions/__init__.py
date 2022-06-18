@@ -1,44 +1,123 @@
-# -*- coding: utf-8 -*-
-"""
-------------
-Example Simulator Functions
-------------
-This package contains a set of example simulator functions, which can be used as
-benchmark functions for UQ and optimization routines.
+"""Example simulator functions.
 
+This package contains a set of example simulator functions, which can be
+used as benchmark.
 """
 
-# # -*- coding: utf-8 -*-
-# """Example Google style docstrings.
-#
-# This module demonstrates documentation as specified by the `Google Python
-# Style Guide`_. Docstrings may extend over multiple lines. Sections are created
-# with a section header and a colon followed by a block of indented text.
-#
-# Example:
-#     Examples can be given using either the ``Example`` or ``Examples``
-#     sections. Sections support any reStructuredText formatting, including
-#     literal blocks::
-#
-#         $ python example_google.py
-#
-# Section breaks are created by resuming unindented text. Section breaks
-# are also implicitly created anytime a new section starts.
-#
-# Attributes:
-#     module_level_variable1 (int): Module level variables may be documented in
-#         either the ``Attributes`` section of the module docstring, or in an
-#         inline docstring immediately following the variable.
-#
-#         Either form is acceptable, but the two should not be mixed. Choose
-#         one convention to document module level variables and be consistent
-#         with it.
-#
-# Todo:
-#     * For module TODOs
-#     * You have to also use ``sphinx.ext.todo`` extension
-#
-# .. _Google Python Style Guide:
-#    http://google.github.io/styleguide/pyguide.html
-#
-# """
+from pqueens.tests.integration_tests.example_simulator_functions.agawal09 import agawal09a
+from pqueens.tests.integration_tests.example_simulator_functions.borehole83 import (
+    borehole83_hifi,
+    borehole83_lofi,
+)
+from pqueens.tests.integration_tests.example_simulator_functions.branin78 import (
+    branin78_hifi,
+    branin78_lofi,
+    branin78_medfi,
+)
+from pqueens.tests.integration_tests.example_simulator_functions.currin88 import (
+    currin88_hifi,
+    currin88_lofi,
+)
+from pqueens.tests.integration_tests.example_simulator_functions.gardner14a import gardner14a
+from pqueens.tests.integration_tests.example_simulator_functions.ishigami90 import ishigami90
+from pqueens.tests.integration_tests.example_simulator_functions.ma09 import ma09
+from pqueens.tests.integration_tests.example_simulator_functions.oakley_ohagan04 import (
+    oakley_ohagan04,
+)
+from pqueens.tests.integration_tests.example_simulator_functions.paraboloid import paraboloid
+from pqueens.tests.integration_tests.example_simulator_functions.parabula_residual import (
+    parabula_residual,
+)
+from pqueens.tests.integration_tests.example_simulator_functions.park91a import (
+    park91a_hifi,
+    park91a_hifi_on_grid,
+    park91a_lofi,
+    park91a_lofi_on_grid,
+)
+from pqueens.tests.integration_tests.example_simulator_functions.park91b import (
+    park91b_hifi,
+    park91b_lofi,
+)
+from pqueens.tests.integration_tests.example_simulator_functions.perdikaris17 import (
+    perdikaris17_hifi,
+    perdikaris17_lofi,
+)
+from pqueens.tests.integration_tests.example_simulator_functions.rosenbrock60 import (
+    rosenbrock60,
+    rosenbrock60_residual,
+    rosenbrock60_residual_1d,
+)
+from pqueens.tests.integration_tests.example_simulator_functions.sinus import sinus_test_fun
+from pqueens.tests.integration_tests.example_simulator_functions.sobol_g_function import (
+    sobol_g_function,
+)
+from pqueens.utils.valid_options_utils import get_option
+
+VALID_EXAMPLE_SIMULATOR_FUNCTIONS = {
+    "agawal09a": agawal09a,
+    "borehole83_lofi": borehole83_lofi,
+    "borehole83_hifi": borehole83_hifi,
+    "branin78_lofi": branin78_lofi,
+    "branin78_medfi": branin78_medfi,
+    "branin78_hifi": branin78_hifi,
+    "currin88_lofi": currin88_lofi,
+    "currin88_hifi": currin88_hifi,
+    "gardner14a": gardner14a,
+    "ishigami90": ishigami90,
+    "ma09": ma09,
+    "oakley_ohagan04": oakley_ohagan04,
+    "paraboloid": paraboloid,
+    "parabula_residual": parabula_residual,
+    "park91a_lofi_on_grid": park91a_lofi_on_grid,
+    "park91a_hifi_on_grid": park91a_hifi_on_grid,
+    "park91a_lofi": park91a_lofi,
+    "park91a_hifi": park91a_hifi,
+    "park91b_lofi": park91b_lofi,
+    "park91b_hifi": park91b_hifi,
+    "perdikaris17_lofi": perdikaris17_lofi,
+    "perdikaris17_hifi": perdikaris17_hifi,
+    "rosenbrock60": rosenbrock60,
+    "rosenbrock60_residual": rosenbrock60_residual,
+    "rosenbrock60_residual_1d": rosenbrock60_residual_1d,
+    "sinus_test_fun": sinus_test_fun,
+    "sobol_g_function": sobol_g_function,
+    "patch_for_likelihood": lambda x: 42,
+}
+
+
+def wrap_to_main_function(function):
+    """Function to call the example simulators by the parameters dict.
+
+    Args:
+        function (func): Function to be wrapped
+
+    Returns:
+        Wrapped function
+    """
+
+    def main(_job_id, params):
+        """Interface for the example simulator functions.
+
+        Args:
+            _job_id (int):  ID of job
+            params (dict): Dictionary with parameters
+
+        Returns:
+            float: Value of the function at parameter specified in input dict
+        """
+        return function(**params)
+
+    return main
+
+
+def example_simulator_function_by_name(function_name):
+    """Get example simulator function by name.
+
+    Args:
+        function_name (str): Name of the example simulator function
+
+    Returns:
+        (func): Function
+    """
+    function = get_option(VALID_EXAMPLE_SIMULATOR_FUNCTIONS, function_name)
+    return wrap_to_main_function(function)
