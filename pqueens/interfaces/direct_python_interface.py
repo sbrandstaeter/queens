@@ -1,13 +1,13 @@
 """Class for mapping input variables to responses using a python function."""
-import importlib.util
-import os
-import sys
-from multiprocessing import Pool
 
 import numpy as np
 from tqdm import tqdm
 
-from pqueens.utils.path_utils import relative_path_from_pqueens
+from pqueens.tests.integration_tests.example_simulator_functions import (
+    example_simulator_function_by_name,
+)
+from pqueens.utils.import_utils import load_main_by_path
+from pqueens.utils.pool_utils import create_pool_thread_number
 
 from .interface import Interface
 
@@ -23,56 +23,27 @@ class DirectPythonInterface(Interface):
         this class is to be able to call the test examples in said folder.
 
     Attributes:
-        name (string):                  name of interface
-        variables (dict):               dictionary with variables
-        function (function object):     address of database to use
+        name (string):          name of interface
+        variables (dict):       dictionary with variables
+        function (function):    function to evaluate
+        pool (pathos pool):     multiprocessing pool
+        latest_job_id (int):    Latest job id
     """
 
-    def __init__(self, interface_name, function_file, variables, num_workers=1):
+    def __init__(self, interface_name, function, variables, pool):
         """Create interface.
 
         Args:
             interface_name (string):    name of interface
-            function_file (string):     function file name (including path)
-                                        to be executed
+            function (function):        function to evaluate
             variables (dict):           dictionary with variables
-            num_workers (int):          number of worker processes
+            pool (pathos pool):         multiprocessing pool
         """
         self.name = interface_name
         self.variables = variables
-
-        # get path to queens example simulator functions directory
-        abs_function_dir = relative_path_from_pqueens(
-            'tests/integration_tests/example_simulator_functions'
-        )
-        # join paths intelligently, i.e., if function_file contains an
-        # absolute path it will be preserved, otherwise the call below will
-        # prepend the absolute path to the example_simulator_functions directory
-        abs_function_file = os.path.join(abs_function_dir, function_file)
-        try:
-            spec = importlib.util.spec_from_file_location("my_function", abs_function_file)
-            my_function = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(my_function)
-            # we want to be able to import the my_function module
-            # by name later:
-            sys.modules["my_function"] = my_function
-        except FileNotFoundError:
-            print('Did not find file locally, trying absolute path')
-            raise FileNotFoundError(
-                "Could not import specified python function " "file! Fix your config file!"
-            )
-
-        self.function = my_function
-
-        # pool needs to be created AFTER my_function module is imported
-        # and added to sys.module
-        if num_workers > 1:
-            print(f"Activating parallel evaluation of samples with {num_workers} workers.\n")
-            pool = Pool(processes=num_workers)
-        else:
-            pool = None
-
+        self.function = function
         self.pool = pool
+        self.latest_job_id = 1
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config, driver_name):
@@ -89,12 +60,31 @@ class DirectPythonInterface(Interface):
         """
         interface_options = config[interface_name]
 
-        function_file = interface_options["main_file"]
         parameters = config['parameters']
 
         num_workers = interface_options.get('num_workers', 1)
-        # instantiate object
-        return cls(interface_name, function_file, parameters, num_workers)
+        main_file = interface_options.get("main_file", None)
+        example_simulator_function = interface_options.get("example_simulator_function", None)
+        if main_file is None and example_simulator_function is None:
+            raise ValueError(
+                f"Please add a main file using the keyword 'main_file' or an example simulator"
+                " function with the key 'example_simulator_function' to your input file"
+            )
+        if main_file is not None and example_simulator_function is not None:
+            raise ValueError(
+                f"Conflicting inputs: main_file {main_file} and example_simulator_function"
+                f"{example_simulator_function}. Only one of these keywords can be set."
+            )
+        if example_simulator_function:
+            my_function = example_simulator_function_by_name(example_simulator_function)
+        else:
+            my_function = load_main_by_path(main_file)
+
+        pool = create_pool_thread_number(num_workers)
+
+        return cls(
+            interface_name=interface_name, function=my_function, variables=parameters, pool=pool
+        )
 
     def evaluate(self, samples):
         """Mapping function which orchestrates call to simulator function.
@@ -109,18 +99,30 @@ class DirectPythonInterface(Interface):
         """
         output = {}
         mean_values = []
-        job_id = 1
+        number_of_samples = len(samples)
+
+        # List of global sample ids
+        sample_ids = np.arange(self.latest_job_id, self.latest_job_id + number_of_samples)
+
+        # Update the latest job id
+        self.latest_job_id = self.latest_job_id + number_of_samples
+
+        # Pool or no pool
         if self.pool is None:
-            for variables in tqdm(samples):
+            for job_id, variables in tqdm(zip(sample_ids, samples), total=number_of_samples):
                 params = variables.get_active_variables()
-                mean_value = np.squeeze(self.function.main(job_id, params))
+                mean_value = np.squeeze(self.function(job_id, params))
                 if not mean_value.shape:
                     mean_value = np.expand_dims(mean_value, axis=0)
                 mean_values.append(mean_value)
         else:
-            params_list = [(job_id, variables.get_active_variables()) for variables in samples]
+            params_list = [
+                (job_id, variables.get_active_variables())
+                for job_id, variables in zip(sample_ids, samples)
+            ]
 
-            mean_values = self.pool.starmap(self.function.main, params_list)
+            print(params_list)
+            mean_values = self.pool.map(lambda args: self.function(*args), params_list)
 
             for idx, mean_value in enumerate(mean_values):
                 mean_value = np.squeeze(mean_value)
