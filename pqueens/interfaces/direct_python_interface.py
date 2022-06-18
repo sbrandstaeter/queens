@@ -121,7 +121,6 @@ class DirectPythonInterface(Interface):
                 for job_id, variables in zip(sample_ids, samples)
             ]
 
-            print(params_list)
             mean_values = self.pool.map(lambda args: self.function(*args), params_list)
 
             for idx, mean_value in enumerate(mean_values):
