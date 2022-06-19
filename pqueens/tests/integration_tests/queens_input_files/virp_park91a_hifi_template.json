@@ -65,7 +65,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "park91a_hifi_coords.py"
+    "example_simulator_function": "park91a_hifi_on_grid"
   },
   "parameters": {
     "random_variables": {

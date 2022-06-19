@@ -17,7 +17,11 @@ from pqueens.utils import injector
 
 @pytest.mark.benchmark
 def test_bmfia_park_hf_smc(
-    inputdir, tmpdir, design_and_write_experimental_data_to_csv, expected_weights, expected_samples
+    inputdir,
+    tmpdir,
+    create_experimental_data_park91a_hifi_on_grid,
+    expected_weights,
+    expected_samples,
 ):
     """Benchmark test for bayesian multi-fidelity inverse analysis (bmfia).
 
@@ -57,7 +61,7 @@ def test_bmfia_park_hf_smc(
 
 
 @pytest.fixture
-def design_and_write_experimental_data_to_csv(tmpdir):
+def create_experimental_data_park91a_hifi_on_grid(tmpdir):
     """Fixture to write dummy observation data."""
     # Fix random seed
     np.random.seed(seed=1)

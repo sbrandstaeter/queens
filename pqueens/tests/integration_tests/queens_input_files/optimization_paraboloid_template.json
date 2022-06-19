@@ -53,7 +53,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "paraboloid.py"
+    "example_simulator_function": "paraboloid"
   },
   "parameters": {
     "random_variables": {

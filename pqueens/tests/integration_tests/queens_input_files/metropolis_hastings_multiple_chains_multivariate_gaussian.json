@@ -58,7 +58,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "multivariate_gaussian_logpdf.py"
+    "example_simulator_function": "patch_for_likelihood"
   },
   "parameters": {
     "random_variables": {

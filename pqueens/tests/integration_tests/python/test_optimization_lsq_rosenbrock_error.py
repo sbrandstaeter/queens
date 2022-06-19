@@ -13,5 +13,5 @@ def test_optimization_lsq_rosenbrock_error(inputdir, tmpdir):
         '--output=' + str(tmpdir),
     ]
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError, match="got an unexpected keyword argument 'x3'"):
         main(arguments)

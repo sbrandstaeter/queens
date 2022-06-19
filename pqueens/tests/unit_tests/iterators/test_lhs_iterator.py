@@ -10,6 +10,9 @@ import pytest
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.lhs_iterator import LHSIterator
 from pqueens.models.simulation_model import SimulationModel
+from pqueens.tests.integration_tests.example_simulator_functions import (
+    example_simulator_function_by_name,
+)
 from pqueens.variables.variables import Variables
 
 
@@ -50,8 +53,11 @@ class TestLHSIterator(unittest.TestCase):
 
         self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
 
+        function = example_simulator_function_by_name("ishigami90")
         # create interface
-        self.interface = DirectPythonInterface('test_interface', 'ishigami.py', self.variables)
+        self.interface = DirectPythonInterface(
+            'test_interface', function, self.variables, pool=None
+        )
 
         # create mock model
         self.model = SimulationModel("my_model", self.interface, uncertain_parameters)

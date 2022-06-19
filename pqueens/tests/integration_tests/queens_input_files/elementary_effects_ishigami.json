@@ -42,7 +42,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "ishigami.py"
+    "example_simulator_function": "ishigami90"
   },
   "parameters": {
     "random_variables": {

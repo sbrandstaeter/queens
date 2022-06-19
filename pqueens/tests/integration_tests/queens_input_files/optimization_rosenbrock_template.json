@@ -36,7 +36,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "rosenbrock.py"
+    "example_simulator_function": "rosenbrock60"
   },
   "parameters": {
     "random_variables": {

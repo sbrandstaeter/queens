@@ -67,7 +67,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "branin_hifi.py"
+    "example_simulator_function": "branin78_hifi"
   },
   "parameters": {
     "random_variables": {
