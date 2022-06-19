@@ -9,9 +9,7 @@ import pytest
 
 import pqueens.visualization.bmfia_visualization as qvis
 from pqueens.main import main
-from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_coords import (
-    park91a_hifi_coords,
-)
+from pqueens.tests.integration_tests.example_simulator_functions.park91a import park91a_hifi
 from pqueens.utils import injector
 
 
@@ -80,7 +78,7 @@ def create_experimental_data_park91a_hifi_on_grid(tmpdir):
     # generate clean function output for fake test data
     y_vec = []
     for x3, x4 in zip(x3_vec, x4_vec):
-        y_vec.append(park91a_hifi_coords(x1, x2, x3, x4))
+        y_vec.append(park91a_hifi(x1, x2, x3, x4))
     y_vec = np.array(y_vec)
 
     # add artificial noise to fake measurements
