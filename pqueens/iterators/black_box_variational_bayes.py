@@ -1,22 +1,14 @@
 """Black box variational inference iterator."""
 import logging
-import time
 
 import numpy as np
 
-import pqueens.database.database as DB_module
-import pqueens.visualization.variational_inference_visualization as vis
-from pqueens.distributions import from_config_create_distribution
-from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
-from pqueens.utils import variational_inference_utils
-from pqueens.utils.process_outputs import write_results
-from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
+from pqueens.iterators.variational_inference import VariationalInferenceIterator
 
 _logger = logging.getLogger(__name__)
 
 
-class BBVIIterator(Iterator):
+class BBVIIterator(VariationalInferenceIterator):
     """Black box variational inference (BBVI) iterator.
 
     For Bayesian inverse problems. BBVI does not require model gradients and can hence be used with
@@ -96,6 +88,8 @@ class BBVIIterator(Iterator):
                                            the probabilistic model is sampled independent of the
                                            other conditions
         stochastic_optimizer (obj): QUEENS stochastic optimizer object
+        sampling_bool (bool): True if probabilistic model has to be sampled
+        samples (np.ndarray): Current samples used to evalute the probabilistic model
     """
 
     def __init__(
@@ -169,38 +163,40 @@ class BBVIIterator(Iterator):
         Returns:
             bbvi_obj (obj): Instance of the BBVIIterator
         """
-        super().__init__(model, global_settings)
+        super().__init__(
+            global_settings,
+            model,
+            result_description,
+            db,
+            experiment_name,
+            variational_family,
+            variational_params_initialization_approach,
+            n_samples_per_iter,
+            variational_transformation,
+            random_seed,
+            max_feval,
+            num_variables,
+            natural_gradient_bool,
+            fim_dampening_bool,
+            fim_decay_start_iter,
+            fim_dampening_coefficient,
+            fim_dampening_lower_bound,
+            export_quantities_over_iter,
+            variational_distribution_obj,
+            stochastic_optimizer,
+        )
 
-        self.result_description = result_description
-        self.db = db
-        self.experiment_name = experiment_name
-        self.variational_params_initialization_approach = variational_params_initialization_approach
-        self.n_samples_per_iter = n_samples_per_iter
-        self.variational_transformation = variational_transformation
-        self.natural_gradient_bool = natural_gradient_bool
-        self.fim_decay_start_iter = fim_decay_start_iter
-        self.fim_dampening_coefficient = fim_dampening_coefficient
-        self.fim_dampening_lower_bound = fim_dampening_lower_bound
-        self.fim_dampening_bool = fim_dampening_bool
-        self.export_quantities_over_iter = export_quantities_over_iter
         self.control_variates_scaling_type = control_variates_scaling_type
         self.loo_cv_bool = loo_cv_bool
         self.random_seed = random_seed
         self.max_feval = max_feval
-        self.num_variables = num_variables
         self.memory = memory
-        self.variational_family = variational_family
-        self.stochastic_optimizer = stochastic_optimizer
         self.model_eval_iteration_period = model_eval_iteration_period
-        self.variational_distribution_obj = variational_distribution_obj
         self.resample = resample
-        self.n_sims = 0
-        self.variational_params = None
         self.f_mat = None
         self.h_mat = None
         self.log_variational_mat = None
         self.grad_params_log_variational_mat = None
-        self.variational_params_list = []
         self.log_posterior_unnormalized = None
         self.prior_obj_list = []
         self.samples_list = []
@@ -210,7 +206,8 @@ class BBVIIterator(Iterator):
         self.noise_list = []
         self.elbo_list = []
         self.weights_list = []
-        self.n_sims_list = []
+        self.sampling_bool = True
+        self.samples = None
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -225,47 +222,13 @@ class BBVIIterator(Iterator):
             iterator (obj): BBVI object
         """
         method_options = config[iterator_name]['method_options']
-        if model is None:
-            model_name = method_options['model']
-            model = from_config_create_model(model_name, config)
 
         result_description = method_options.get('result_description', None)
         global_settings = config.get('global_settings', None)
 
-        db = DB_module.database
         experiment_name = config['global_settings']['experiment_name']
 
-        # set-up of the variational distribution
-        variational_distribution_description = method_options.get("variational_distribution")
-        # TODO this may have to be changed in the future
-        num_variables = len(model.variables[0].variables)
-        variational_distribution_description.update({"dimension": num_variables})
-        variational_distribution_obj = variational_inference_utils.create_variational_distribution(
-            variational_distribution_description
-        )
-        variational_family = variational_distribution_description.get("variational_family")
-        n_samples_per_iter = method_options.get("n_samples_per_iter")
-        variational_transformation = method_options.get("variational_transformation")
-        random_seed = method_options.get("random_seed")
-        max_feval = method_options.get("max_feval")
-        variational_params_initialization_approach = method_options.get(
-            "variational_parameter_initialization", None
-        )
         memory = method_options.get("memory", 0)
-
-        vis.from_config_create(config)
-
-        optimization_options = method_options.get("optimization_options")
-        natural_gradient_bool = optimization_options.get("natural_gradient", True)
-        fim_dampening_bool = optimization_options.get("FIM_dampening", True)
-        fim_decay_start_iter = optimization_options.get("decay_start_iteration", 50)
-        fim_dampening_coefficient = optimization_options.get("dampening_coefficient", 1e-2)
-        fim_dampening_lower_bound = optimization_options.get("FIM_dampening_lower_bound", 1e-8)
-        variational_params_initialization_approach = method_options.get(
-            "variational_parameter_initialization", None
-        )
-
-        export_quantities_over_iter = result_description.get("export_iteration_data")
         control_variates_scaling_type = method_options.get("control_variates_scaling_type")
         loo_cv_bool = method_options.get("loo_control_variates_scaling")
         if memory:
@@ -273,8 +236,30 @@ class BBVIIterator(Iterator):
         else:
             model_eval_iteration_period = 1
 
-        stochastic_optimizer = from_config_create_optimizer(method_options, "optimization_options")
         resample = method_options.get("resample", False)
+        (
+            global_settings,
+            model,
+            result_description,
+            db,
+            experiment_name,
+            variational_family,
+            variational_params_initialization_approach,
+            n_samples_per_iter,
+            variational_transformation,
+            random_seed,
+            max_feval,
+            num_variables,
+            natural_gradient_bool,
+            fim_dampening_bool,
+            fim_decay_start_iter,
+            fim_dampening_coefficient,
+            fim_dampening_lower_bound,
+            variational_distribution_obj,
+            stochastic_optimizer,
+            export_quantities_over_iter,
+        ) = super().get_base_attributes_from_config(config, iterator_name)
+
         return cls(
             global_settings=global_settings,
             model=model,
@@ -306,67 +291,7 @@ class BBVIIterator(Iterator):
     def core_run(self):
         """Core run for black-box variational inference."""
         _logger.info('Starting black box Bayesian variational inference...')
-        start = time.time()
-        # --------------------------------------------------------------------
-        # -------- here comes the bbvi algorithm -----------------------------
-        for _ in self.stochastic_optimizer:
-            self._catch_non_converging_simulations()
-            # Just to avoid constant spamming
-            if self.stochastic_optimizer.iteration % 10 == 0:
-                self._verbose_output()
-                self._write_results()
-
-            # Stop the optimizer in case of too many simulations
-            if self.n_sims > self.max_feval:
-                break
-
-            self.variational_params_list.append(self.variational_params.copy())
-            self._clearing_and_plots()
-        # --------- end of bbvi algorithm ------------------------------------
-        # --------------------------------------------------------------------
-        end = time.time()
-
-        if self.n_sims > self.max_feval:
-            _logger.warning(f"Maximum probabilistic model calls reached")
-        elif np.any(np.isnan(self.stochastic_optimizer.rel_L2_change)):
-            _logger.warning(f"NaN(s) in the relative change of variational parameters")
-        else:
-            _logger.info(f"Finished sucessfully! :-)")
-        _logger.info(f"Black box variational inference took {end-start} seconds.")
-        _logger.info(f"---------------------------------------------------------")
-        _logger.info(f"Cost of the analysis: {self.n_sims} simulation runs")
-        _logger.info(f"Final ELBO: {self.elbo_list[-1]}")
-        _logger.info(f"---------------------------------------------------------")
-        _logger.info(f"Post run: Finishing, saving and cleaning...")
-
-    def _catch_non_converging_simulations(self):
-        """Reset variational parameters in case of failed simulations."""
-        if np.isnan(self.stochastic_optimizer.rel_L2_change):
-            self.variational_params = self.variational_params_list[:, -2]
-            self.variational_distribution_obj.update_distribution_params(self.variational_params)
-
-    def initialize_run(self):
-        """Initialize the prior model and variational parameters."""
-        _logger.info("Initialize Optimization run.")
-        self._initialize_prior_model()
-        self._initialize_variational_params()
-
-        # set the gradient according to input
-        self.stochastic_optimizer.set_gradient_function(self._get_gradient_function())
-        self.stochastic_optimizer.current_variational_parameters = self.variational_params.reshape(
-            -1, 1
-        )
-
-    def post_run(self):
-        """Write results and potentially visualize them."""
-        if self.result_description["write_results"]:
-            result_dict = self._prepare_result_description()
-            write_results(
-                result_dict,
-                self.global_settings["output_dir"],
-                self.global_settings["experiment_name"],
-            )
-        vis.vi_visualization_instance.save_plots()
+        super().core_run()
 
     def eval_model(self):
         """Evaluate model for the sample batch.
@@ -376,24 +301,6 @@ class BBVIIterator(Iterator):
         """
         result_dict = self.model.evaluate()
         return result_dict
-
-    def _initialize_prior_model(self):
-        """Initialize the prior model."""
-        # Read design of prior
-        input_dict = self.model.get_parameter()
-        # get random variables
-        random_variables = input_dict.get('random_variables', None)
-        # get random fields
-        random_fields = input_dict.get('random_fields', None)
-
-        if random_fields:
-            raise NotImplementedError(
-                'Variational inference for random fields is not yet implemented! Abort...'
-            )
-        # for each rv, evaluate prior all corresponding dims in current sample batch (column of
-        # mat corresponds to all realization for this variable)
-        for dim, rv_options in enumerate(random_variables.values()):
-            self.prior_obj_list.append(from_config_create_distribution(rv_options))
 
     def eval_log_likelihood(self, sample_batch):
         """Calculate the log-likelihood of the observation data.
@@ -430,7 +337,6 @@ class BBVIIterator(Iterator):
         """
         log_prior_vec = np.zeros((self.n_samples_per_iter, 1))
         for dim, prior_distr in enumerate(self.prior_obj_list):
-            # TODO Future proof this method
             log_prior_vec = log_prior_vec + prior_distr.logpdf(sample_batch[:, dim]).reshape(-1, 1)
         return log_prior_vec.flatten()
 
@@ -453,11 +359,11 @@ class BBVIIterator(Iterator):
 
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations."""
-        mean_change = self.stochastic_optimizer.rel_L2_change * 100
         _logger.info("-" * 80)
         _logger.info(f"Iteration {self.stochastic_optimizer.iteration + 1} of BBVI algorithm")
-        _logger.info(f"So far {self.n_sims} simulation runs")
-        _logger.info(f"The elbo is: {self.elbo_list[-1]:.2f}")
+
+        super()._verbose_output()
+
         if self.memory > 0 and self.stochastic_optimizer.iteration > 0:
             _logger.info(
                 f"ESS: {self.ess_list[-1]:.2f} of {(self.memory + 1) * self.n_samples_per_iter}"
@@ -471,141 +377,7 @@ class BBVIIterator(Iterator):
                 f"Likelihood noise variance: {self.noise_list[-1]} (mean relative change "
                 f"{rel_noise:.2f}) %"
             )
-        _logger.info(f"L2 change of all variational parameters: " f"" f"{mean_change:.4f} %")
-
-        # Avoids a busy screen
-        if self.variational_params.shape[0] > 24:
-            _logger.info(
-                f"First 24 of {self.variational_params.shape[0]} variational parameters : \n"
-            )
-            _logger.info(self.variational_params[:24])
-        else:
-            _logger.info(f"Values of variational parameters: \n")
-            _logger.info(self.variational_params)
         _logger.info("-" * 80)
-
-    def _write_results(self):
-        if self.result_description["write_results"]:
-            result_dict = self._prepare_result_description()
-            write_results(
-                result_dict,
-                self.global_settings["output_dir"],
-                self.global_settings["experiment_name"],
-            )
-
-    def _initialize_variational_params(self):
-        """Initialize the variational parameters.
-
-        There are two possibilities:
-            1. Random initialization:
-                Is handeled by the variational distribution object
-            2. Initialization based on the prior modeling (only for normal distributions!)
-                Extract the prior moments and initialize the parameters based on them
-        """
-        if self.variational_params_initialization_approach == "random":
-            self.variational_params = (
-                self.variational_distribution_obj.initialize_parameters_randomly()
-            )
-        elif self.variational_params_initialization_approach == "prior":
-            if self.variational_family == "normal":
-                input_dict = self.model.get_parameter()
-                random_variables = input_dict.get('random_variables', None)
-                mu, cov = self._initialize_variational_params_from_prior(random_variables)
-                var_params = self.variational_distribution_obj.construct_variational_params(mu, cov)
-                self.variational_params = var_params
-            else:
-                raise ValueError(
-                    f"Initializing the variational parameters based on the prior is only possible"
-                    f"for distribution family 'normal'"
-                )
-        else:
-            valid_initialization_types = {"random", "prior"}
-            raise NotImplementedError(
-                f"{self.variational_params_initialization_approach} is not known.\n"
-                f"Valid options are {valid_initialization_types}"
-            )
-
-    def _initialize_variational_params_from_prior(self, random_variables):
-        """Initialize the variational parameters based on the prior.
-
-        The variational distribution might be transformed in a
-        second step such that the actual variational distribution is of a
-        different family. Only is used for normal distributions.
-
-        Args:
-            random_variables (dict): Dictionary containing the prior probabilistic description of
-            the input variables
-        """
-        # Get the first and second moments of the prior distributions
-        mean_list_prior = []
-        std_list_prior = []
-        if random_variables:
-            for params in random_variables.values():
-                if params["distribution"] == "normal":
-                    mean_list_prior.append(params['mean'])
-                    std_list_prior.append(params['covariance'])
-                elif params["distribution"] == "lognormal":
-                    mean_list_prior.append(
-                        np.exp(params['normal_mean'] + (params['normal_covariance'] ** 2) / 2)
-                    )
-                    std_list_prior.append(mean_list_prior[-1] * np.sqrt(np.exp(params[1] ** 2) - 1))
-                elif params["distribution"] == "uniform":
-                    mean_list_prior.append((params['upper_bound'] - params['lower_bound']) / 2)
-                    std_list_prior.append(
-                        (params['upper_bound'] - params['lower_bound']) / np.sqrt(12)
-                    )
-                else:
-                    distr_type = params["distribution"]
-                    raise NotImplementedError(
-                        f"Your prior type {distr_type} is not supported in"
-                        f" the variational approach! Abort..."
-                    )
-
-        # Set the mean and std-deviation params of the variational distr such that the
-        # transformed distribution would match the moments of the prior
-        if self.variational_transformation == 'exp':
-            mean_list_variational = [
-                np.log(E**2 / np.sqrt(E**2 + S**2))
-                for E, S in zip(mean_list_prior, std_list_prior)
-            ]
-            std_list_variational = [
-                np.sqrt(np.log(1 + S**2 / E**2))
-                for E, S in zip(mean_list_prior, std_list_prior)
-            ]
-        elif self.variational_transformation is None:
-            mean_list_variational = mean_list_prior
-            std_list_variational = std_list_prior
-        else:
-            raise ValueError(
-                f"The transformation type {self.variational_transformation} for the "
-                f"variational density is unknown! Abort..."
-            )
-
-        return np.array(mean_list_variational), np.diag(std_list_variational) ** 2
-
-    def _transform_samples(self, x_mat):
-        """Transform samples.
-
-        Transform samples of the variational distribution according to the specified
-        transformation mapping.
-
-        Args:
-            x_mat (np.array): Samples of the variational distribution
-
-        Returns:
-            x_mat_trans (np.array): Transformed samples of variational distribution
-        """
-        if self.variational_transformation == 'exp':
-            x_mat_trans = np.exp(x_mat)
-        elif self.variational_transformation is None:
-            x_mat_trans = x_mat
-        else:
-            raise ValueError(
-                f"The transformation type {self.variational_transformation} for the "
-                f"variational density is unknown! Abort..."
-            )
-
-        return x_mat_trans
 
     def _prepare_result_description(self):
         """Creates the dictionary for the result pickle file.
@@ -613,16 +385,13 @@ class BBVIIterator(Iterator):
         Returns:
             result_description (dict): Dictionary with result summary of the analysis
         """
-        result_description = {
-            "final_elbo": self.elbo_list[-1],
-            "batch_size": self.n_samples_per_iter,
-            "number_of_sim": self.n_sims,
-            "natural_gradient": self.natural_gradient_bool,
-            "fim_dampening": self.fim_dampening_bool,
-            "control_variates_scaling_type": self.control_variates_scaling_type,
-            "loo_control_variates": self.loo_cv_bool,
-            "variational_parameter_initialization": self.variational_params_initialization_approach,
-        }
+        result_description = super()._prepare_result_description()
+        result_description.update(
+            {
+                "control_variates_scaling_type": self.control_variates_scaling_type,
+                "loo_control_variates": self.loo_cv_bool,
+            }
+        )
 
         if self.export_quantities_over_iter:
             result_description.update(
@@ -637,19 +406,14 @@ class BBVIIterator(Iterator):
                     {
                         "ESS": self.ess_list,
                         "memory": self.memory,
+                        "weigths_over_iter": self.weights_list,
                     }
                 )
 
-        distribution_dict = self.variational_distribution_obj.export_dict(self.variational_params)
-        if self.variational_transformation == "exp":
-            distribution_dict.update(
-                {"variational_transformation": self.variational_transformation}
-            )
-
-        result_description.update({"variational_distr": distribution_dict})
         return result_description
 
-    def _averaged_control_variates_scalings(self, f_mat, h_mat):
+    @staticmethod
+    def _averaged_control_variates_scalings(f_mat, h_mat):
         """Averaged control variate scalings.
 
         This function computes the control variate scaling averaged over the
@@ -672,7 +436,8 @@ class BBVIIterator(Iterator):
         cv_scaling = np.ones((dim, 1)) * cov_sum / var_sum
         return cv_scaling
 
-    def _componentwise_control_variates_scalings(self, f_mat, h_mat):
+    @staticmethod
+    def _componentwise_control_variates_scalings(f_mat, h_mat):
         """Computes the componentwise control variates scaling.
 
         I.e., every component of the control variate separately is computed seperately.
@@ -690,7 +455,8 @@ class BBVIIterator(Iterator):
             cv_scaling[i] = cv_scaling[i] / np.var(h_mat[i])
         return cv_scaling
 
-    def _loo_control_variates_scalings(self, cv_obj, f_mat, h_mat):
+    @staticmethod
+    def _loo_control_variates_scalings(cv_obj, f_mat, h_mat):
         """Leave one out control variates.
 
         To reduce bias in the MC and control variate saling estimation
@@ -734,24 +500,6 @@ class BBVIIterator(Iterator):
         else:
             cv_scaling = cv_scaling_obj(self.f_mat, self.h_mat)
         return cv_scaling
-
-    def _get_gradient_function(self):
-        """Select the gradient function for the stochastic optimizer.
-
-        Two options exist, with or without natural gradient.
-
-        Returns:
-            obj: function to evaluate the gradient
-        """
-        if self.natural_gradient_bool:
-            gradient = lambda variational_parameters: np.linalg.solve(
-                self._get_fim(), self._calculate_elbo_gradient(variational_parameters)
-            )
-        else:
-            gradient = lambda variational_parameters: self._calculate_elbo_gradient(
-                variational_parameters
-            )
-        return gradient
 
     def _calculate_elbo_gradient(self, variational_parameters):
         """Estimate the ELBO gradient expression.
@@ -798,11 +546,11 @@ class BBVIIterator(Iterator):
         self.h_mat = selfnormalized_weights_is * self.grad_params_log_variational_mat
 
         # Get control variate scalings
-        a = self._get_control_variates_scalings()
+        control_variate_scalings = self._get_control_variates_scalings()
 
         # MC gradient estimation with control variates
-        self.grad_elbo = normalizing_constant_is * np.mean(
-            self.f_mat - a * self.h_mat, axis=1
+        grad_elbo = normalizing_constant_is * np.mean(
+            self.f_mat - control_variate_scalings * self.h_mat, axis=1
         ).reshape(-1, 1)
 
         # Compute the logpdf for the elbo estimate (here no IS is used)
@@ -811,7 +559,7 @@ class BBVIIterator(Iterator):
         self.n_sims_list.append(self.n_sims)
 
         # Avoid NaN in the elbo gradient
-        return np.nan_to_num(self.grad_elbo)
+        return np.nan_to_num(grad_elbo)
 
     def _sample_gradient_from_probabilistic_model(self):
         """Evaluate probabilistic model."""
@@ -1006,45 +754,10 @@ class BBVIIterator(Iterator):
         # Indices where the log joint is a nan
         idx = np.where(~np.isnan(self.log_posterior_unnormalized))[0]
         if len(idx) != len(self.log_posterior_unnormalized):
-            _logger.warning(f"At least one probabilistic model call resulted in a NaN")
+            _logger.warning("At least one probabilistic model call resulted in a NaN")
         if self.log_variational_mat.ndim > 1:
             self.log_variational_mat = self.log_variational_mat[:, idx]
         else:
             self.log_variational_mat = self.log_variational_mat[idx]
         self.grad_params_log_variational_mat = self.grad_params_log_variational_mat[:, idx]
         self.log_posterior_unnormalized = self.log_posterior_unnormalized[idx]
-
-    def _clearing_and_plots(self):
-        """Visualization and clear some internal variables."""
-        # clear internal variables
-        self.log_variational_mat = None
-        self.log_posterior_unnormalized = None
-        self.grad_params_log_variational_mat = None
-
-        # some plotting and output
-        vis.vi_visualization_instance.plot_convergence(
-            self.stochastic_optimizer.iteration,
-            self.variational_params_list,
-            self.elbo_list,
-        )
-
-    def _get_fim(self):
-        """Get the FIM for the current variational distribution.
-
-        Add dampening if desired.
-
-        Returns:
-            fisher (np.array): fisher information matrix of the variational distribution
-        """
-        FIM = self.variational_distribution_obj.fisher_information_matrix(self.variational_params)
-        if self.fim_dampening_bool:
-            if self.stochastic_optimizer.iteration > self.fim_decay_start_iter:
-                dampening_coefficient = self.fim_dampening_coefficient * np.exp(
-                    -(self.stochastic_optimizer.iteration - self.fim_decay_start_iter)
-                    / self.fim_decay_start_iter
-                )
-                dampening_coefficient = max(self.fim_dampening_lower_bound, dampening_coefficient)
-            else:
-                dampening_coefficient = self.fim_dampening_coefficient
-            FIM = FIM + np.eye(len(FIM)) * dampening_coefficient
-        return FIM
