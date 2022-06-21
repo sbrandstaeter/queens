@@ -204,7 +204,6 @@ class BBVIIterator(VariationalInferenceIterator):
         self.log_posterior_unnormalized_list = []
         self.ess_list = []
         self.noise_list = []
-        self.elbo_list = []
         self.weights_list = []
         self.sampling_bool = True
         self.samples = None
@@ -223,20 +222,17 @@ class BBVIIterator(VariationalInferenceIterator):
         """
         method_options = config[iterator_name]['method_options']
 
-        result_description = method_options.get('result_description', None)
-        global_settings = config.get('global_settings', None)
-
-        experiment_name = config['global_settings']['experiment_name']
-
         memory = method_options.get("memory", 0)
         control_variates_scaling_type = method_options.get("control_variates_scaling_type")
         loo_cv_bool = method_options.get("loo_control_variates_scaling")
+
         if memory:
             model_eval_iteration_period = method_options.get("model_eval_iteration_period", 1000)
         else:
             model_eval_iteration_period = 1
 
         resample = method_options.get("resample", False)
+
         (
             global_settings,
             model,
