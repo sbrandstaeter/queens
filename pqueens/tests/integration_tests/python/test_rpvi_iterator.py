@@ -8,7 +8,6 @@ from mock import patch
 from scipy.stats import multivariate_normal as mvn
 
 import pqueens.visualization.variational_inference_visualization as vis
-from pqueens.iterators.variational_inference_reparameterization import VIRPIterator
 from pqueens.main import main
 from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_coords import (
     park91a_hifi_coords,
@@ -18,11 +17,11 @@ from pqueens.utils import injector, variational_inference_utils
 
 # TODO add the test prefix again after fullrank was implemented
 @pytest.mark.integration_tests
-def virp_density_match(
+def rpvi_density_match(
     mocker,
     inputdir,
     tmpdir,
-    dummy_virp_instance,
+    dummy_rpvi_instance,
     visualization_obj,
 ):
     # fix the random seed
@@ -30,24 +29,24 @@ def virp_density_match(
 
     # mock all parts of the algorithm that has to do with initialization or an underlying model
     mocker.patch(
-        "pqueens.iterators.variational_inference_reparameterization.VIRPIterator.initialize_run",
+        "pqueens.iterators.variational_inference_reparameterization.rpviIterator.initialize_run",
         return_value=None,
     )
 
     # actual main call of bbvi with patched density for posterior
-    with patch.object(VIRPIterator, 'get_log_posterior_unnormalized', target_density):
-        variational_distr_obj = dummy_virp_instance.variational_distribution_obj
+    with patch.object(rpviIterator, 'get_log_posterior_unnormalized', target_density):
+        variational_distr_obj = dummy_rpvi_instance.variational_distribution_obj
         mu = np.array([0.1, 0.7, 0.2, 0.3, 0.25])
         cov = np.exp(np.diag([0.5, 0.5, 0.5, 0.5, 0.5]) * 2)
         var_params = variational_distr_obj.construct_variational_params(mu, cov)
-        dummy_virp_instance.variational_params = var_params
-        dummy_virp_instance.variational_params_array = np.empty((len(var_params), 0))
+        dummy_rpvi_instance.variational_params = var_params
+        dummy_rpvi_instance.variational_params_array = np.empty((len(var_params), 0))
         # actual run of the algorithm
-        dummy_virp_instance.run()
+        dummy_rpvi_instance.run()
 
-        opt_variational_params = np.array(dummy_virp_instance.variational_params)
+        opt_variational_params = np.array(dummy_rpvi_instance.variational_params)
 
-        elbo = dummy_virp_instance.elbo_list
+        elbo = dummy_rpvi_instance.elbo_list
 
     # Actual tests
     opt_variational_samples = variational_distr_obj.draw(opt_variational_params, 10000)
@@ -63,19 +62,19 @@ def virp_density_match(
 
 
 @pytest.mark.integration_tests
-def test_virp_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
-    """Integration test for the virp iterator based on the park91a_hifi
+def test_rpvi_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
+    """Integration test for the rpvi iterator based on the park91a_hifi
     function."""
 
     # generate json input file from template
-    template = os.path.join(inputdir, "virp_park91a_hifi_template.json")
+    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
     experimental_data_path = tmpdir
     plot_dir = tmpdir
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
     }
-    input_file = os.path.join(tmpdir, "virp_park91a_hifi.json")
+    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -91,7 +90,7 @@ def test_virp_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimen
     main(arguments)
 
     # get the results of the QUEENS run
-    result_file = os.path.join(tmpdir, "inverse_virp_park91a_hifi.pickle")
+    result_file = os.path.join(tmpdir, "inverse_rpvi_park91a_hifi.pickle")
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
     elbo_list = results["elbo"]
@@ -104,8 +103,8 @@ def test_virp_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimen
 
 
 @pytest.fixture()
-def dummy_virp_instance(tmpdir, my_variational_distribution_obj):
-    # TODO this needs to be adjusted for virp !!
+def dummy_rpvi_instance(tmpdir, my_variational_distribution_obj):
+    # TODO this needs to be adjusted for rpvi !!
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
     # -1 indicates to run a fixed number of samples
@@ -147,35 +146,9 @@ def dummy_virp_instance(tmpdir, my_variational_distribution_obj):
     db = 'dummy'
     random_seed = 1
 
-    virp_instance = VIRPIterator(
-        model,
-        global_settings,
-        result_description,
-        db,
-        experiment_name,
-        min_requ_relative_change_variational_params,
-        learning_rate,
-        n_samples_per_iter,
-        random_seed,
-        max_feval,
-        num_variables,
-        geometry_obj,
-        variational_family,
-        variational_approximation_type,
-        iteration_num,
-        variational_samples,
-        variational_params_lst,
-        variational_distribution_obj,
-        relative_change_variational_params_lst,
-        log_likelihood_vec,
-        elbo_lst,
-        log_posterior_unnormalized,
-        v_param_adams,
-        m_param_adams,
-        prior_obj_list,
-        variational_transformation,
-    )
-    return virp_instance
+    # Will be fixed in a subsequent MR
+    rpvi_instance = None
+    return rpvi_instance
 
 
 def target_density(self, x=None, pdf=False):

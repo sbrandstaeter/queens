@@ -10,8 +10,8 @@ from pqueens.utils import variational_inference_utils
 _logger = logging.getLogger(__name__)
 
 
-class VIRPIterator(VariationalInferenceIterator):
-    """Variational Inference with reparameterization trick (VIRP).
+class RPVIIterator(VariationalInferenceIterator):
+    """Reparameterization based variational inference (RPVI).
 
     Iterator for Bayesian inverse problems. This variational inference approach requires
     model gradients/jacobians w.r.t. the parameters/the parameterization of the
@@ -77,7 +77,7 @@ class VIRPIterator(VariationalInferenceIterator):
         finite_difference_step (float): Finite difference step size
 
     Returns:
-        virp_obj (obj): Instance of the VIRPIterator
+        rpvi_obj (obj): Instance of the RPVIIterator
     """
 
     def __init__(
@@ -174,7 +174,7 @@ class VIRPIterator(VariationalInferenceIterator):
             model (model): Model to use (optional)
 
         Returns:
-            iterator (obj): VIRP object
+            iterator (obj): RPVI object
         """
         method_options = config[iterator_name]['method_options']
         score_function_bool = method_options.get("score_function_bool", True)
