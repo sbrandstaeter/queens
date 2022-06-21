@@ -6,7 +6,7 @@ import numpy as np
 import particles
 from particles import collectors as col
 from particles import distributions as dists
-from particles.smc_samplers import AdaptiveTempering, TemperingBridge
+from particles.smc_samplers import AdaptiveTempering
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
@@ -127,7 +127,6 @@ class SequentialMonteCarloChopinIterator(Iterator):
         resampling_method = method_options.get("resampling_method")
         feynman_kac_model = method_options.get("feynman_kac_model")
         num_rejuvenation_steps = method_options.get("num_rejuvenation_steps")
-        print(num_rejuvenation_steps)
         waste_free = method_options.get("waste_free")
         return cls(
             global_settings=global_settings,
@@ -189,12 +188,12 @@ class SequentialMonteCarloChopinIterator(Iterator):
                 scale = rv_options['covariance'] ** 0.5
                 prior_dict.update({rv: dists.Normal(loc=loc, scale=scale)})
             elif distribution == "uniform":
-                a = rv_options['lower_bound']
-                b = rv_options['upper_bound']
-                prior_dict.update({rv: dists.Uniform(a=a, b=b)})
+                lower_bound = rv_options['lower_bound']
+                upper_bound = rv_options['upper_bound']
+                prior_dict.update({rv: dists.Uniform(a=lower_bound, b=upper_bound)})
             else:
                 raise NotImplementedError(
-                    f"Currently the priors are only allowed to be normal or uniform"
+                    "Currently the priors are only allowed to be normal or uniform"
                 )
             self.random_variable_keys.append(rv)
         self.prior = dists.StructDist(prior_dict)
@@ -217,7 +216,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             )
         else:
             raise NotImplementedError(
-                f"The allowed Feynman Kac models are: 'tempering' and 'adaptive_tempering'"
+                "The allowed Feynman Kac models are: 'tempering' and 'adaptive_tempering'"
             )
         return feynman_kac_model
 
@@ -228,7 +227,10 @@ class SequentialMonteCarloChopinIterator(Iterator):
         np.random.seed(self.seed)
 
         # Likelihood function for the static model based on the QUEENS function
+        # Yes the lambda is necessary
+        # pylint: disable=unnecessary-lambda
         log_likelihood = lambda x: self.eval_log_likelihood(x)
+        # pylint: enable=unnecessary-lambda
 
         # Static model for the Feynman Kac model
         static_model = smc_utils.StaticStateSpaceModel(
@@ -267,14 +269,14 @@ class SequentialMonteCarloChopinIterator(Iterator):
             _logger.info(f"Number of forward runs {self.n_sims}")
             _logger.info("-" * 70)
             if self.n_sims >= self.max_feval:
-                _logger.warning(f"Maximum number of model evaluations reached!")
-                _logger.warning(f"Stopping SMC...")
+                _logger.warning("Maximum number of model evaluations reached!")
+                _logger.warning("Stopping SMC...")
                 break
 
     def post_run(self):
         """Analyze the resulting importance sample."""
         # SMC data
-        particles = self.smc_obj.fk.model.particles_array_to_numpy(self.smc_obj.X.theta)
+        particles_smc = self.smc_obj.fk.model.particles_array_to_numpy(self.smc_obj.X.theta)
         weights = self.smc_obj.W.reshape(-1, 1)
 
         # First and second moment
@@ -287,7 +289,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         if self.result_description:
             results = process_ouputs(
                 {
-                    'particles': particles,
+                    'particles': particles_smc,
                     'weights': weights,
                     'log_posterior': self.smc_obj.X.lpost,
                     "mean": mean,
