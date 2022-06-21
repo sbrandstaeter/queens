@@ -1,5 +1,6 @@
 """Class for mapping input variables to responses using a python function."""
 import importlib.util
+import logging
 import os
 import sys
 from multiprocessing import Pool
@@ -10,6 +11,8 @@ from tqdm import tqdm
 from pqueens.utils.path_utils import relative_path_from_pqueens
 
 from .interface import Interface
+
+_logger = logging.getLogger(__name__)
 
 
 class DirectPythonInterface(Interface):
@@ -56,18 +59,17 @@ class DirectPythonInterface(Interface):
             # we want to be able to import the my_function module
             # by name later:
             sys.modules["my_function"] = my_function
-        except FileNotFoundError:
-            print('Did not find file locally, trying absolute path')
+        except FileNotFoundError as my_error:
             raise FileNotFoundError(
-                "Could not import specified python function " "file! Fix your config file!"
-            )
+                "Could not import specified python function file! Fix your config file!"
+            ) from my_error
 
         self.function = my_function
 
         # pool needs to be created AFTER my_function module is imported
         # and added to sys.module
         if num_workers > 1:
-            print(f"Activating parallel evaluation of samples with {num_workers} workers.\n")
+            _logger.info(f"Activating parallel evaluation of samples with {num_workers} workers.\n")
             pool = Pool(processes=num_workers)
         else:
             pool = None
@@ -75,14 +77,12 @@ class DirectPythonInterface(Interface):
         self.pool = pool
 
     @classmethod
-    def from_config_create_interface(cls, interface_name, config, driver_name):
+    def from_config_create_interface(cls, interface_name, config, **_kargs):
         """Create interface from config dictionary.
 
         Args:
             interface_name (str):   name of interface
             config(dict):           dictionary containing problem description
-            driver_name (str): Name of the driver that uses this interface
-                               (not used here)
 
         Returns:
             interface:              instance of DirectPythonInterface
@@ -96,11 +96,13 @@ class DirectPythonInterface(Interface):
         # instantiate object
         return cls(interface_name, function_file, parameters, num_workers)
 
-    def evaluate(self, samples):
+    def evaluate(self, samples, gradient_bool=False):
         """Mapping function which orchestrates call to simulator function.
 
         Args:
-            samples (list):         list of Variables objects
+            samples (list): List of variables objects
+            gradient_bool (bool): Flag to determine, whether the gradient of the function at
+                                  the evaluation point is expected (True) or not (False)
 
         Returns:
             dict: dictionary with
@@ -109,25 +111,45 @@ class DirectPythonInterface(Interface):
         """
         output = {}
         mean_values = []
+        gradient_values = []
         job_id = 1
         if self.pool is None:
             for variables in tqdm(samples):
                 params = variables.get_active_variables()
-                mean_value = np.squeeze(self.function.main(job_id, params))
-                if not mean_value.shape:
-                    mean_value = np.expand_dims(mean_value, axis=0)
-                mean_values.append(mean_value)
+                model_output = self.function.main(job_id, params)
+
+                mean_values, gradient_values = DirectPythonInterface._get_correct_model_outputs(
+                    model_output, mean_values, gradient_values, gradient_bool=gradient_bool
+                )
+
         else:
             params_list = [(job_id, variables.get_active_variables()) for variables in samples]
+            model_outputs = self.pool.starmap(self.function.main, params_list)
 
-            mean_values = self.pool.starmap(self.function.main, params_list)
-
-            for idx, mean_value in enumerate(mean_values):
-                mean_value = np.squeeze(mean_value)
-                if not mean_value.shape:
-                    mean_value = np.expand_dims(mean_value, axis=0)
-                mean_values[idx] = mean_value
+            for model_output in model_outputs:
+                mean_values, gradient_values = DirectPythonInterface._get_correct_model_outputs(
+                    model_output, mean_values, gradient_values, gradient_bool=gradient_bool
+                )
 
         output['mean'] = np.array(mean_values)
-
+        output['gradient'] = np.array(gradient_values).reshape(output['mean'].shape[1], -1)
         return output
+
+    @staticmethod
+    def _get_correct_model_outputs(model_output, mean_values, gradient_values, gradient_bool=False):
+        """Synthesize the correct model outputs."""
+        if gradient_bool:
+            model_response = np.squeeze(model_output[0])
+            model_gradient = np.squeeze(model_output[1])
+        else:
+            model_response = np.squeeze(model_output)
+            model_gradient = np.empty(model_response.shape)
+
+        if not model_response.shape:
+            model_response = np.expand_dims(model_response, axis=0)
+            model_gradient = np.expand_dims(model_gradient, axis=0)
+
+        mean_values.append(model_response)
+        gradient_values.append(model_gradient)
+
+        return mean_values, gradient_values

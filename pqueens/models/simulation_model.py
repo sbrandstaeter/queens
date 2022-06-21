@@ -58,7 +58,15 @@ class SimulationModel(Model):
         interface = from_config_create_interface(interface_name, config)
         return cls(model_name, interface, model_parameters)
 
-    def evaluate(self):
-        """Evaluate model with current set of variables."""
-        self.response = self.interface.evaluate(self.variables)
+    def evaluate(self, gradient_bool=False):
+        """Evaluate model with current set of variables.
+
+        Args:
+            gradient_bool (bool): Boolean to determine whether gradient at current variable
+                                  should be evaluated as well (if True).
+
+        Returns:
+            self.response (np.array, tuple): Response of the underlying model at current variables
+        """
+        self.response = self.interface.evaluate(self.variables, gradient_bool=gradient_bool)
         return self.response

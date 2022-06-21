@@ -13,7 +13,7 @@ class Interface(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def evaluate(self, samples):
+    def evaluate(self, samples, gradient_bool=False):
         """Evaluate samples.
 
         Mapping function which orchestrates call to external simulation
@@ -21,5 +21,6 @@ class Interface(metaclass=abc.ABCMeta):
 
         Args:
             samples (list):  list of variables objects
+            gradient_bool (bool): Flag to determine, whether the gradient of the function at
+                                  the evaluation point is expected (True) or not (False)
         """
-        pass

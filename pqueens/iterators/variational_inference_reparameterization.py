@@ -1,9 +1,9 @@
+"""Variational inference using reparameterization trick."""
 import logging
 import pprint
 import time
 
 import autograd.numpy as np
-import numpy as npy
 from autograd import grad
 from scipy.stats import multivariate_normal as mvn
 
@@ -15,13 +15,15 @@ from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils import variational_inference_utils
 from pqueens.utils.process_outputs import write_results
+from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
 
 
 class VIRPIterator(Iterator):
-    """Variational Inference with reparameterization trick (VIRP) iterator for
-    Bayesian inverse problems. This variational inference approach requires
+    """Variational inference with reparameterization trick (VIRP).
+
+    This variational inference approach requires
     model gradients/jacobians w.r.t. the parameters/the parameterization of the
     inverse problem. The latter can be provided by:
 
@@ -61,12 +63,10 @@ class VIRPIterator(Iterator):
         iteration_num (int): Iteration number
         log_likelihood_vec (np.array): Vector with likelihood score per sample
         elbo_lst (lst): List with values of the evidence lower bound per iteration
-        log_posterior_unnormalized (float): Value of unnormalized log posterior for given model
-                                            output
         v_param_adams (float): Parameter of stochastic ascent Adam optimizer
         m_param_adams (float): Parameter of stochastic ascent Adam optimizer
         random_seed (int): Random seed for random number generation
-        prior_obj_list (lst): List containing the (intependent) prior distribution objects
+        prior_obj_list (lst): List containing the (independent) prior distribution objects
         max_feval (int): Maximum number of solver calls / function evaluations
         num_variables (int): Number of random variables
         geometry_obj (obj): Instance of external geometry class
@@ -75,8 +75,8 @@ class VIRPIterator(Iterator):
         variational_family (str): String that indicates the type/family of the variational
                                   distribution
         variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                          variational paramaters
-        num_iter_average_convergence (float): Number of iteration used in assesing convergence
+                                                          variational parameters
+        num_iter_average_convergence (float): Number of iteration used in assessing convergence
         variational_params_array (np.array): Column-wise parameters from first to last iteration
         n_sims (int): Number of probabilistic model calls
         export_quantities_over_iter (boolean): True if data (variational_params, elbo) should
@@ -89,10 +89,16 @@ class VIRPIterator(Iterator):
         fim_decay_start_iter (float): Iteration at which the FIM dampening is started
         fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
         fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-        score_function_bool (bool): Boolean flag to decide wheater the score function term
+        score_function_bool (bool): Boolean flag to decide whether the score function term
                                     should be considered in the elbo gradient. If true the
                                     score function is considered.
         finite_difference_step (float): Finite difference step size
+        likelihood_gradient_method (str, optional): Method for how to calculate the gradient of the
+                                                    log-likelihood
+        grad_reparameterization_variational_params (np.array): Gradient of the reparameterization
+                                                               step w.r.t. the variational params
+        grad_log_variational_distr_params (np.array): Gradient of the log variational distribution
+                                                      w.r.t. the distribution parameters
 
     Returns:
         virp_obj (obj): Instance of the VIRPIterator
@@ -121,7 +127,6 @@ class VIRPIterator(Iterator):
         relative_change_variational_params_lst,
         log_likelihood_vec,
         elbo_lst,
-        log_posterior_unnormalized,
         v_param_adams,
         m_param_adams,
         prior_obj_list,
@@ -141,7 +146,9 @@ class VIRPIterator(Iterator):
         fim_dampening_lower_bound,
         score_function_bool,
         finite_difference_step,
+        likelihood_gradient_method,
     ):
+        """Initialize reparameterization VI object."""
         super().__init__(model, global_settings)
 
         self.result_description = result_description
@@ -159,7 +166,6 @@ class VIRPIterator(Iterator):
         self.iteration_num = iteration_num
         self.log_likelihood_vec = log_likelihood_vec
         self.elbo_lst = elbo_lst
-        self.log_posterior_unnormalized = log_posterior_unnormalized
         self.v_param_adams = v_param_adams
         self.m_param_adams = m_param_adams
         self.random_seed = random_seed
@@ -185,11 +191,13 @@ class VIRPIterator(Iterator):
         self.fim_dampening_bool = fim_dampening_bool
         self.score_function_bool = score_function_bool
         self.finite_difference_step = finite_difference_step
+        self.likelihood_gradient_method = likelihood_gradient_method
+        self.grad_reparameterization_variational_params = None
+        self.grad_log_variational_distr_params = None
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create variational inference reparameterization trick iterator from
-        problem description.
+        """Create variational inference reparameterization trick iterator.
 
         Args:
             config (dict): Dictionary with QUEENS problem description
@@ -214,6 +222,9 @@ class VIRPIterator(Iterator):
             'min_relative_change_variational_params', 0.01
         )
         learning_rate = method_options.get("learning_rate")
+        likelihood_gradient_method = method_options.get(
+            "likelihood_gradient_method", "finite_difference"
+        )
         n_samples_per_iter = method_options.get("n_samples_per_iter")
         random_seed = method_options.get("random_seed")
         max_feval = method_options.get("max_feval")
@@ -259,7 +270,6 @@ class VIRPIterator(Iterator):
         relative_change_variational_params_lst = []
         log_likelihood_vec = None
         elbo_lst = []
-        log_posterior_unnormalized = None
         v_param_adams = 0
         m_param_adams = 0
         n_sims = 0
@@ -292,7 +302,6 @@ class VIRPIterator(Iterator):
             relative_change_variational_params_lst=relative_change_variational_params_lst,
             log_likelihood_vec=log_likelihood_vec,
             elbo_lst=elbo_lst,
-            log_posterior_unnormalized=log_posterior_unnormalized,
             v_param_adams=v_param_adams,
             m_param_adams=m_param_adams,
             prior_obj_list=prior_obj_list,
@@ -312,6 +321,7 @@ class VIRPIterator(Iterator):
             fim_dampening_lower_bound=fim_dampening_lower_bound,
             score_function_bool=score_function_bool,
             finite_difference_step=finite_difference_step,
+            likelihood_gradient_method=likelihood_gradient_method,
         )
 
     def initialize_run(self):
@@ -324,7 +334,6 @@ class VIRPIterator(Iterator):
         Returns:
             None
         """
-
         _logger.info("Initialize Optimization run.")
         # check for random fields
         parameters = self.model.get_parameter()
@@ -337,8 +346,7 @@ class VIRPIterator(Iterator):
         self._get_gradient_objects()
 
     def _catch_non_converging_simulations(self):
-        """Reset variational parameters in case of non-converging simulation
-        runs.
+        """Reset variational parameters in case of non-converging simulation.
 
         Returns:
             None
@@ -353,16 +361,14 @@ class VIRPIterator(Iterator):
     def core_run(self):
         """Core run for variational inference with reparameterization trick.
 
-        Retruns:
+        Returns:
             None
         """
-
         # Some clarification of terms:
         # params: actual parameters for which we solve the inverse problem
         # sample: sample of the variational distribution
         # variational_params: variational parameters that parameterize var,.distr. of params
         #                     (lambda)
-
         _logger.info('Starting variational inference...')
         start = time.time()
 
@@ -434,7 +440,7 @@ class VIRPIterator(Iterator):
                     )
                     # pylint: enable=line-too-long
 
-                grad_log_likelihood, log_likelihood = self.calculate_grad_log_likelihood_params(
+                log_likelihood, grad_log_likelihood = self.calculate_grad_log_likelihood_params(
                     params
                 )
 
@@ -515,8 +521,7 @@ class VIRPIterator(Iterator):
         )
 
     def _random_field_preprocessing(self, random_fields):
-        """Preprocessing for random fields, e.g., spectral representation or
-        PCA representation.
+        """Preprocessing for random fields, e.g., spectral representation.
 
         Returns:
             None
@@ -524,8 +529,9 @@ class VIRPIterator(Iterator):
         raise NotImplementedError("Random field preprocessing is not implemented, yet! Abort...")
 
     def _get_gradient_objects(self):
-        """Get the automatic differentiation gradient objects that are
-        necessary to evaluate the gradient of the ELBO.
+        """Get the automatic differentiation gradient objects.
+
+        The latter are necessary to evaluate the gradient of the ELBO.
 
         Returns:
             None
@@ -533,13 +539,13 @@ class VIRPIterator(Iterator):
         self.grad_reparameterization_variational_params = grad(
             variational_inference_utils.conduct_reparameterization
         )
+
         self.grad_log_variational_distr_params = (
             self.variational_distribution_obj.grad_logpdf_sample
         )
 
     def calculate_grad_reparameterization_variational_params(self, variational_params, sample):
-        """Calculate the gradient of the reparameterization w.r.t. the varional
-        parameters, evaluated at the given sample location.
+        """Gradient of reparameterization w.r.t. the variational parameters.
 
         Args:
             variational_params (np.array): Array containing the variational parameters
@@ -555,8 +561,7 @@ class VIRPIterator(Iterator):
         return grad_reparameterization
 
     def calculate_grad_log_prior_params(self, params):
-        """Calculate the gradient of the log-prior distribution w.r.t. the
-        random parameters.
+        """Gradient of the log-prior distribution w.r.t. the random parameters.
 
         Args:
             params (np.array): Current parameter samples
@@ -574,25 +579,39 @@ class VIRPIterator(Iterator):
         return grad_log_priors
 
     def calculate_grad_log_likelihood_params(self, params):
-        """Calculate the gradient/jacobian of the log-likelihood function
-        w.r.t. the random parameters, evaluated at the samples of the latter.
+        """Calculate the gradient/jacobian of the log-likelihood function.
+
+        Gradient is calculated w.r.t. the argument params
 
         Args:
             params (np.array): Current sample values of the random parameters
-
 
         Returns:
             jacobi_log_likelihood (np.array): Jacobian of the log-likelihood function
             log_likelihood (float): Value of the log-likelihood function
         """
-        # TODO: For now this is done via finite differences;
-        # parsing of adjoint gradient should be enabled too
+        gradient_methods = {
+            'adjoint': self._calculate_grad_log_lik_params_adjoint,
+            'finite_difference': self._calculate_grad_log_lik_params_finite_difference,
+        }
+        my_gradient_method = get_option(gradient_methods, self.likelihood_gradient_method)
+        log_likelihood, jacobi_log_likelihood = my_gradient_method(params)
+
+        return log_likelihood, jacobi_log_likelihood
+
+    def _calculate_grad_log_lik_params_adjoint(self, params):
+        """Calculate the gradient of the log likelihood based on adjoints."""
+        log_likelihood, grad_log_likelihood = self.eval_log_likelihood(params, gradient=True)
+        return log_likelihood, grad_log_likelihood
+
+    def _calculate_grad_log_lik_params_finite_difference(self, params):
+        """Gradient of the log likelihood with finite differences."""
         grad_log_likelihood = []
 
         log_likelihood = self.eval_log_likelihood(params)
 
         # two-point finite difference scheme
-        for num, param in enumerate(params):
+        for num in np.arange(params.size):
             zero_vec = np.zeros(params.shape)
             zero_vec[num] = self.finite_difference_step
             log_likelihood_right = self.eval_log_likelihood(params + zero_vec)
@@ -601,9 +620,9 @@ class VIRPIterator(Iterator):
                 (log_likelihood_right - log_likelihood) / self.finite_difference_step
             )
 
-        jacobi_log_likelihood = np.array(grad_log_likelihood)
+        grad_log_likelihood = np.array(grad_log_likelihood)
 
-        return jacobi_log_likelihood, log_likelihood
+        return log_likelihood, grad_log_likelihood
 
     def _calculate_elbo(self, log_unnormalized_posterior_mean):
         """Calculate the ELBO of the current variational approximation.
@@ -624,11 +643,6 @@ class VIRPIterator(Iterator):
         elbo = mvn.entropy(mu.flatten(), cov) + log_unnormalized_posterior_mean
         self.elbo_lst.append(elbo.flatten())
 
-        # clear internal variables
-        self.log_variational_mat = None
-        self.log_posterior_unnormalized = None
-        self.grad_log_variational_mat = None
-
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations.
 
@@ -647,12 +661,14 @@ class VIRPIterator(Iterator):
                 f""
                 f"{mean_change:.3f} %"
             )
-            _logger.info(f"Values of variational parameters: \n")
+            _logger.info("Values of variational parameters: \n")
             pprint.pprint(self.variational_params)
             _logger.info("------------------------------------------------------------------------")
 
-    def stochastic_ascent_adam(self, gradient_estimate_x, x_vec, b1=0.9, b2=0.999, eps=10**-8):
-        """Stochastic gradient ascent algorithm ADAM. Adam as described in
+    def stochastic_ascent_adam(self, gradient_estimate_x, x_vec, b1=0.9, b2=0.999, eps=10 ** -8):
+        """Stochastic gradient ascent algorithm ADAM.
+
+        Adam as described in
         http://arxiv.org/pdf/1412.6980.pdf. It's basically RMSprop with
         momentum and some correction terms.
 
@@ -671,7 +687,7 @@ class VIRPIterator(Iterator):
         g = gradient_estimate_x
         self.m_param_adams = (1 - b1) * g + b1 * self.m_param_adams  # First moment estimate.
         self.v_param_adams = (1 - b2) * (
-            g**2
+            g ** 2
         ) + b2 * self.v_param_adams  # Second moment estimate.
         mhat = self.m_param_adams / (1 - b1 ** (self.iteration_num + 1))  # Bias correction.
         vhat = self.v_param_adams / (1 - b2 ** (self.iteration_num + 1))
@@ -680,8 +696,7 @@ class VIRPIterator(Iterator):
         return x_vec_new.flatten()
 
     def _get_FIM(self):
-        """Calculate the Fisher information matrix of the current variational
-        approximation.
+        """Calculate the Fisher information matrix.
 
         Returns:
             fisher (np.array): fisher information matrix of the variational distribution
@@ -704,8 +719,9 @@ class VIRPIterator(Iterator):
         return fisher
 
     def _update_variational_params(self, elbo_gradient):
-        """Update the variational parameters of the variational distribution
-        based on learning rate rho_to and the noisy ELBO gradients.
+        """Update the variational parameters of the variational distribution.
+
+        Based on learning rate rho_to and the noisy ELBO gradients.
 
         Args:
             elbo_gradient (np.array): Gradient vector of the ELBO w.r.t. the variational parameters
@@ -720,13 +736,13 @@ class VIRPIterator(Iterator):
         old_variational_params = self.variational_params.reshape(-1, 1)
 
         if self.natural_gradient_bool:
-            FIM = self._get_fim()
-            elbo_gradient = np.linalg.solve(FIM, elbo_gradient)
+            fim = self._get_fim()
+            elbo_gradient = np.linalg.solve(fim, elbo_gradient)
 
         if self.clipping_bool:
             # Clipping, in order to avoid exploding gradients
             # TODO move this output to the input?
-            gradient_norm = (np.sum(elbo_gradient**2)) ** 0.5
+            gradient_norm = (np.sum(elbo_gradient ** 2)) ** 0.5
             if gradient_norm > self.gradient_clipping_norm_threshold:
                 _logger.info("Clipping gradient")
                 elbo_gradient = (
@@ -741,8 +757,7 @@ class VIRPIterator(Iterator):
         self._get_percentage_change_params(old_variational_params)
 
     def _get_percentage_change_params(self, old_variational_params):
-        """Calculate L2 norm of the percentage change of the variational
-        parameters.
+        """L2 norm of the percentage change of the variational parameters.
 
         Args:
             old_variational_params (np.array): Array of variational parameters
@@ -763,8 +778,9 @@ class VIRPIterator(Iterator):
             self.relative_change_variational_params.append(1)  # dummy value to redo iteration
 
     def _initialize_variational_params(self):
-        """
-        Initialize the variational parameters. There are two possibilities:
+        """Initialize the variational parameters.
+
+        There are two possibilities:
             1. Random initialization:
                 Is handeled by the variational distribution object
             2. Initialization based on the prior modeling (only for normal distributions!)
@@ -772,7 +788,6 @@ class VIRPIterator(Iterator):
 
         Returns:
             None
-
         """
         if self.variational_params_initialization_approach == "random":
             self.variational_params = (
@@ -800,8 +815,9 @@ class VIRPIterator(Iterator):
         self.variational_params_array = np.empty((len(self.variational_params), 0))
 
     def _initialize_variational_params_from_prior(self, random_variables):
-        """Initializes the variational parameters based on the prior
-        definition. The variational distribution might be transformed in a
+        """Initializes the variational parameters based on prior definition.
+
+        The variational distribution might be transformed in a
         second step such that the actual variational distribution is of a
         different family. Only is used for normal distributions.
 
@@ -841,11 +857,11 @@ class VIRPIterator(Iterator):
         # transformed distribution would match the moments of the prior
         if self.variational_transformation == 'exp':
             mean_list_variational = [
-                np.log(E**2 / np.sqrt(E**2 + S**2))
+                np.log(E ** 2 / np.sqrt(E ** 2 + S ** 2))
                 for E, S in zip(mean_list_prior, std_list_prior)
             ]
             std_list_variational = [
-                np.sqrt(np.log(1 + S**2 / E**2))
+                np.sqrt(np.log(1 + S ** 2 / E ** 2))
                 for E, S in zip(mean_list_prior, std_list_prior)
             ]
         elif self.variational_transformation is None:
@@ -860,8 +876,7 @@ class VIRPIterator(Iterator):
         return np.array(mean_list_variational), np.diag(std_list_variational) ** 2
 
     def post_run(self):
-        """Write results and potentially visualize them using the visualization
-        module.
+        """Write results and visualize them using the visualization module.
 
         Returns:
             None
@@ -876,8 +891,10 @@ class VIRPIterator(Iterator):
         vis.vi_visualization_instance.save_plots()
 
     def _prepare_result_description(self):
-        """Transform the results back the correct space and summarize results
-        in a dictionary that will be stored as a pickle file.
+        """Transform the results back the correct space.
+
+        Summarize results in a dictionary that will be stored as
+        a pickle file.
 
         Returns:
             result_description (dict): Dictionary with result summary of the analysis
@@ -909,18 +926,20 @@ class VIRPIterator(Iterator):
         result_description.update({"variational_distr": distribution_dict})
         return result_description
 
-    def eval_model(self):
+    def eval_model(self, gradient=False):
         """Evaluate model for the sample batch.
+
+        Args:
+            gradient (bool): Boolean to compute gradient of the model as well, if set to True
 
         Returns:
            result_dict (dict): Dictionary containing model response for sample batch
         """
-        result_dict = self.model.evaluate()
+        result_dict = self.model.evaluate(gradient=gradient)
         return result_dict
 
     def _initialize_prior_model(self):
-        """Initialize the prior model of the inverse problem form the problem
-        description.
+        """Initialize the prior model of the inverse problem.
 
         Returns:
             None
@@ -943,31 +962,33 @@ class VIRPIterator(Iterator):
                 rv_options['covariance'] = 1
             self.prior_obj_list.append(from_config_create_distribution(rv_options))
 
-    def eval_log_likelihood(self, params):
-        """Calculate the log-likelihood of the observation data. Evaluation of
-        the likelihood model for all inputs of the sample batch will trigger
+    def eval_log_likelihood(self, params, gradient=False):
+        """Calculate the log-likelihood of the observation data.
+
+        Evaluation of the likelihood model for all inputs of the sample batch will trigger
         the actual forward simulation (can be executed in parallel as batch-
         sequential procedure)
 
         Args:
             sample_batch (np.array): Sample-batch with samples row-wise
+            gradient (bool): Flag to determine, whether gradient should be provided as well.
 
         Returns:
-            log_likelihood (np.array): Vector of the log-likelihood function for all input
-                                       samples of the current batch
+            likelihood_return_tuple (tuple): Tuple containing Vector of the log-likelihood
+                                             function for all inputs samples of the current batch,
+                                             and potentially the corresponding gradient
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)--> data is saved to DB
 
         self.model.update_model_from_sample_batch(np.atleast_2d(params).reshape(1, -1))
-        log_likelihood = self.eval_model()
+        likelihood_return_tuple = self.eval_model(gradient=gradient)
         self.noise_lst.append(self.model.normal_distribution.covariance)
 
-        return log_likelihood
+        return likelihood_return_tuple
 
     def get_log_prior(self, params):
-        """Construct and evaluate the log prior of the model for current sample
-        batch.
+        """Construct and evaluate the log prior of the model.
 
         Args:
             sample_batch (np.array): Sample batch for which the model should be evaluated
@@ -982,11 +1003,12 @@ class VIRPIterator(Iterator):
         return log_prior
 
     def _get_fim(self):
-        """Get the FIM for the current variational distribution and add
-        dampening if desired.
+        """Get the FIM for the current variational distribution.
+
+        Add dampening if desired.
 
         Returns:
-            fisher (np.array): fisher information matrix of the variational distribution
+            FIM (np.array): fisher information matrix of the variational distribution
         """
         FIM = self.variational_distribution_obj.fisher_information_matrix(self.variational_params)
         if self.fim_dampening_bool:
