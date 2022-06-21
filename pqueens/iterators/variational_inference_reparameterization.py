@@ -665,7 +665,7 @@ class VIRPIterator(Iterator):
             pprint.pprint(self.variational_params)
             _logger.info("------------------------------------------------------------------------")
 
-    def stochastic_ascent_adam(self, gradient_estimate_x, x_vec, b1=0.9, b2=0.999, eps=10 ** -8):
+    def stochastic_ascent_adam(self, gradient_estimate_x, x_vec, b1=0.9, b2=0.999, eps=10**-8):
         """Stochastic gradient ascent algorithm ADAM.
 
         Adam as described in
@@ -687,7 +687,7 @@ class VIRPIterator(Iterator):
         g = gradient_estimate_x
         self.m_param_adams = (1 - b1) * g + b1 * self.m_param_adams  # First moment estimate.
         self.v_param_adams = (1 - b2) * (
-            g ** 2
+            g**2
         ) + b2 * self.v_param_adams  # Second moment estimate.
         mhat = self.m_param_adams / (1 - b1 ** (self.iteration_num + 1))  # Bias correction.
         vhat = self.v_param_adams / (1 - b2 ** (self.iteration_num + 1))
@@ -742,7 +742,7 @@ class VIRPIterator(Iterator):
         if self.clipping_bool:
             # Clipping, in order to avoid exploding gradients
             # TODO move this output to the input?
-            gradient_norm = (np.sum(elbo_gradient ** 2)) ** 0.5
+            gradient_norm = (np.sum(elbo_gradient**2)) ** 0.5
             if gradient_norm > self.gradient_clipping_norm_threshold:
                 _logger.info("Clipping gradient")
                 elbo_gradient = (
@@ -857,11 +857,11 @@ class VIRPIterator(Iterator):
         # transformed distribution would match the moments of the prior
         if self.variational_transformation == 'exp':
             mean_list_variational = [
-                np.log(E ** 2 / np.sqrt(E ** 2 + S ** 2))
+                np.log(E**2 / np.sqrt(E**2 + S**2))
                 for E, S in zip(mean_list_prior, std_list_prior)
             ]
             std_list_variational = [
-                np.sqrt(np.log(1 + S ** 2 / E ** 2))
+                np.sqrt(np.log(1 + S**2 / E**2))
                 for E, S in zip(mean_list_prior, std_list_prior)
             ]
         elif self.variational_transformation is None:

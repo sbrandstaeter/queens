@@ -61,7 +61,7 @@ def park91a_hifi_coords(x1, x2, x3, x4):
         x4 = 0.99
 
     term1a = x1 / 2
-    term1b = np.sqrt(1 + (x2 + x3 ** 2) * x4 / (x1 ** 2)) - 1
+    term1b = np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2)) - 1
     term1 = term1a * term1b
 
     term2a = x1 + 3 * x4
@@ -73,11 +73,11 @@ def park91a_hifi_coords(x1, x2, x3, x4):
     # ----
     term1a = x1 / 2
     d_term1a_dx1 = 1 / 2
-    term1b = np.sqrt(1 + (x2 + x3 ** 2) * x4 / (x1 ** 2)) - 1
+    term1b = np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2)) - 1
     d_term1b_dx1 = (
         1
-        / (2 * np.sqrt(1 + (x2 + x3 ** 2) * x4 / (x1 ** 2)))
-        * (-2 * (x2 + x3 ** 2) * x4 * x1 ** (-3))
+        / (2 * np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2)))
+        * (-2 * (x2 + x3**2) * x4 * x1 ** (-3))
     )
     term1 = term1a * term1b
     d_term1_dx1 = d_term1a_dx1 * term1b + term1a * d_term1b_dx1
@@ -94,8 +94,8 @@ def park91a_hifi_coords(x1, x2, x3, x4):
     # ----
     term1a = x1 / 2
     d_term1a_dx2 = 0
-    term1b = np.sqrt(1 + (x2 + x3 ** 2) * x4 / (x1 ** 2)) - 1
-    d_term1b_dx2 = 1 / (2 * np.sqrt(1 + (x2 + x3 ** 2) * x4 / (x1 ** 2))) * x4 / (x1 ** 2)
+    term1b = np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2)) - 1
+    d_term1b_dx2 = 1 / (2 * np.sqrt(1 + (x2 + x3**2) * x4 / (x1**2))) * x4 / (x1**2)
     term1 = term1a * term1b
     d_term1_dx2 = d_term1a_dx2 * term1b + term1a * d_term1b_dx2
 

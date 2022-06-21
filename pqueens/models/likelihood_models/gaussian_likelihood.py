@@ -197,9 +197,9 @@ class GaussianLikelihood(LikelihoodModel):
         dist = y_model - self.y_obs.reshape(1, -1)
         num_samples, dim_y = y_model.shape
         if self.noise_type == 'MAP_jeffrey_variance':
-            covariance = np.eye(dim_y) / (dim_y * (num_samples + dim_y + 2)) * np.sum(dist ** 2)
+            covariance = np.eye(dim_y) / (dim_y * (num_samples + dim_y + 2)) * np.sum(dist**2)
         elif self.noise_type == 'MAP_jeffrey_variance_vector':
-            covariance = np.diag(1 / (num_samples + dim_y + 2) * np.sum(dist ** 2, axis=0))
+            covariance = np.diag(1 / (num_samples + dim_y + 2) * np.sum(dist**2, axis=0))
         else:
             covariance = 1 / (num_samples + dim_y + 2) * np.dot(dist.T, dist)
 
