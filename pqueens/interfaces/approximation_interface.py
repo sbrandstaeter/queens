@@ -63,7 +63,7 @@ class ApproximationInterface(Interface):
         # initialize object
         return cls(interface_name, config, approximation_name, parameters)
 
-    def evaluate(self, samples):
+    def evaluate(self, samples, **_kwargs):
         """Call the regression approximation prediction.
 
         Args:

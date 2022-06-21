@@ -61,7 +61,7 @@ class ApproximationInterfaceMF(Interface):
         return cls(interface_name, approximation_config, parameters)
 
     # TODO think about introducing general mf-interface ?
-    def evaluate(self, samples):
+    def evaluate(self, samples, **_kwargs):
         """Mapping function which calls the regression approximation.
 
         Args:

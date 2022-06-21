@@ -172,13 +172,15 @@ class JobInterface(Interface):
             driver_name,
         )
 
-    def evaluate(self, samples):
+    def evaluate(self, samples, **_kwargs):
         """Orchestrate call to external simulation software.
 
         Second variant which takes the input samples as argument
 
         Args:
             samples (list): realization/samples of QUEENS simulation input variables
+            gradient_bool (bool): Flag to determine, whether the gradient of the function at
+                                  the evaluation point is expected (True) or not (False)
 
         Returns:
             output(dict): output data
