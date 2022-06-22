@@ -2,7 +2,7 @@
 from pathos.multiprocessing import ProcessingPool as Pool
 
 
-def create_pool_thread_number(number_of_workers):
+def create_pool(number_of_workers):
     """Create pathos Pool from number of workers.
 
     Args:
