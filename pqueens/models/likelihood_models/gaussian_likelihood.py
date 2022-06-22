@@ -171,18 +171,19 @@ class GaussianLikelihood(LikelihoodModel):
             gradient (bool, optional): Boolean to determine whether the gradient of the
                                         likelihood should be evaluated (if set to True)
         """
-        model_output = self._update_and_evaluate_forward_model(gradient_bool=gradient)
-
         if gradient:
-            self.update_covariance(model_output[0])
-            log_likelihood_output = self.normal_distribution.logpdf(model_output[0])
+            model_output, model_gradient = self._update_and_evaluate_forward_model(
+                gradient_bool=gradient
+            )
+            self.update_covariance(model_output)
+            log_likelihood_output = self.normal_distribution.logpdf(model_output)
 
-            grad_y = model_output[1]
             grad_log_likelihood = np.dot(
-                self.normal_distribution.grad_logpdf(model_output[0]), grad_y
+                self.normal_distribution.grad_logpdf(model_output), model_gradient
             )
             log_likelihood_output = (log_likelihood_output, grad_log_likelihood)
         else:
+            model_output = self._update_and_evaluate_forward_model(gradient_bool=gradient)
             self.update_covariance(model_output)
             log_likelihood_output = self.normal_distribution.logpdf(model_output)
 
