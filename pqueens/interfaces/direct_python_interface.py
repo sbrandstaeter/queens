@@ -6,8 +6,9 @@ from tqdm import tqdm
 from pqueens.tests.integration_tests.example_simulator_functions import (
     example_simulator_function_by_name,
 )
-from pqueens.utils.import_utils import load_main_by_path
+from pqueens.utils.import_utils import load_function_by_name_from_path
 from pqueens.utils.pool_utils import create_pool_thread_number
+from pqueens.utils.valid_options_utils import InvalidOptionError
 
 from .interface import Interface
 
@@ -41,7 +42,8 @@ class DirectPythonInterface(Interface):
         """
         self.name = interface_name
         self.variables = variables
-        self.function = function
+        # Wrap function to clean the output
+        self.function = self.function_wrapper(function)
         self.pool = pool
         self.latest_job_id = 1
 
@@ -63,22 +65,17 @@ class DirectPythonInterface(Interface):
         parameters = config['parameters']
 
         num_workers = interface_options.get('num_workers', 1)
-        main_file = interface_options.get("main_file", None)
-        example_simulator_function = interface_options.get("example_simulator_function", None)
-        if main_file is None and example_simulator_function is None:
-            raise ValueError(
-                f"Please add a main file using the keyword 'main_file' or an example simulator"
-                " function with the key 'example_simulator_function' to your input file"
-            )
-        if main_file is not None and example_simulator_function is not None:
-            raise ValueError(
-                f"Conflicting inputs: main_file {main_file} and example_simulator_function"
-                f"{example_simulator_function}. Only one of these keywords can be set."
-            )
-        if example_simulator_function:
-            my_function = example_simulator_function_by_name(example_simulator_function)
+        function_name = interface_options.get("function_name", None)
+        external_python_module = interface_options.get("external_python_module", None)
+
+        if external_python_module is None:
+            try:
+                my_function = example_simulator_function_by_name(function_name)
+            except InvalidOptionError:
+                # Could not find the function in example simulator function of QUEENS
+                pass
         else:
-            my_function = load_main_by_path(main_file)
+            my_function = load_function_by_name_from_path(external_python_module, function_name)
 
         pool = create_pool_thread_number(num_workers)
 
@@ -97,8 +94,6 @@ class DirectPythonInterface(Interface):
                   key:     value:
                   'mean' | ndarray shape:(samples size, shape_of_response)
         """
-        output = {}
-        mean_values = []
         number_of_samples = len(samples)
 
         # List of global sample ids
@@ -107,28 +102,49 @@ class DirectPythonInterface(Interface):
         # Update the latest job id
         self.latest_job_id = self.latest_job_id + number_of_samples
 
+        # Create samples list and add job_id to the dicts
+        samples_list = []
+        for job_id, variables in zip(sample_ids, samples):
+            sample_dict = variables.get_active_variables()
+            sample_dict.update({"job_id": job_id})
+            samples_list.append(sample_dict)
+
         # Pool or no pool
-        if self.pool is None:
-            for job_id, variables in tqdm(zip(sample_ids, samples), total=number_of_samples):
-                params = variables.get_active_variables()
-                mean_value = np.squeeze(self.function(job_id, params))
-                if not mean_value.shape:
-                    mean_value = np.expand_dims(mean_value, axis=0)
-                mean_values.append(mean_value)
+        if self.pool:
+            results = self.pool.map(self.function, samples_list)
         else:
-            params_list = [
-                (job_id, variables.get_active_variables())
-                for job_id, variables in zip(sample_ids, samples)
-            ]
+            results = list(map(self.function, tqdm(samples_list)))
 
-            mean_values = self.pool.map(lambda args: self.function(*args), params_list)
-
-            for idx, mean_value in enumerate(mean_values):
-                mean_value = np.squeeze(mean_value)
-                if not mean_value.shape:
-                    mean_value = np.expand_dims(mean_value, axis=0)
-                mean_values[idx] = mean_value
-
-        output['mean'] = np.array(mean_values)
+        output = {'mean': np.array(results)}
 
         return output
+
+    @staticmethod
+    def function_wrapper(function):
+        """Wrap the function to be used.
+
+        This wrapper calls the function by a kwargs dict only and reshapes output as needed. This way if called in a pool the reshaping is also done by the workers.
+
+        Args:
+            function (function): function to be wrapped
+
+        Returns:
+            reshaped_output_function (function): wrapped function
+        """
+
+        def reshaped_output_function(sample_dict):
+            """Call function and reshape output
+
+            Args:
+                sample_dict (dict): dictionary containing parameters and `job_id`
+
+            Returns:
+                (np.ndarray): result of the function call
+            """
+            result = function(**sample_dict)
+            result = np.squeeze(result)
+            if not result.shape:
+                result = np.expand_dims(result, axis=0)
+            return result
+
+        return reshaped_output_function
