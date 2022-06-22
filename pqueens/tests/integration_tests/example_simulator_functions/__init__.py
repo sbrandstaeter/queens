@@ -85,31 +85,6 @@ VALID_EXAMPLE_SIMULATOR_FUNCTIONS = {
 }
 
 
-def wrap_to_main_function(function):
-    """Function to call the example simulators by the parameters dict.
-
-    Args:
-        function (func): Function to be wrapped
-
-    Returns:
-        Wrapped function
-    """
-
-    def main(_job_id, params):
-        """Interface for the example simulator functions.
-
-        Args:
-            _job_id (int):  ID of job
-            params (dict): Dictionary with parameters
-
-        Returns:
-            float: Value of the function at parameter specified in input dict
-        """
-        return function(**params)
-
-    return main
-
-
 def example_simulator_function_by_name(function_name):
     """Get example simulator function by name.
 
@@ -119,5 +94,4 @@ def example_simulator_function_by_name(function_name):
     Returns:
         (func): Function
     """
-    function = get_option(VALID_EXAMPLE_SIMULATOR_FUNCTIONS, function_name)
-    return wrap_to_main_function(function)
+    return get_option(VALID_EXAMPLE_SIMULATOR_FUNCTIONS, function_name)
