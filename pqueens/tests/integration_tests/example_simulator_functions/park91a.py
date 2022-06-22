@@ -25,7 +25,7 @@ def unit_bounding(*args):
     return tuple(args)
 
 
-def x3_x4_grid_eval(park_function, x1, x2):
+def x3_x4_grid_eval(park_function, x1, x2, **kwargs):
     """Evaluate a park function a x3 and x4 grid.
 
     Args:
@@ -45,7 +45,7 @@ def x3_x4_grid_eval(park_function, x1, x2):
     return np.array(y_vec)
 
 
-def park91a_lofi(x1, x2, x3, x4):
+def park91a_lofi(x1, x2, x3, x4, **kwargs):
     r"""Low-fidelity Park91a function.
 
     Simple four dimensional benchmark function as proposed in [1] to mimic
@@ -142,7 +142,7 @@ def park91a_hifi_on_grid(x1, x2, **kwargs):
     Returns:
         np.ndarray: Value of function at parameters
     """
-    y = x3_x4_grid_eval(park91a_hifi, x1, x2)
+    y = x3_x4_grid_eval(park91a_hifi, x1, x2, **kwargs)
     return y
 
 
@@ -156,5 +156,5 @@ def park91a_lofi_on_grid(x1, x2, **kwargs):
     Returns:
         np.ndarray: Value of function at parameters
     """
-    y = x3_x4_grid_eval(park91a_lofi, x1, x2)
+    y = x3_x4_grid_eval(park91a_lofi, x1, x2, **kwargs)
     return y
