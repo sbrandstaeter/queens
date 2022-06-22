@@ -23,6 +23,13 @@ class VariationalInferenceIterator(Iterator):
     References:
         [1]: Mohamed et al. "Monte Carlo Gradient Estimation in Machine Learning". Journal of
              Machine Learning Research. 21(132):1−62, 2020.
+        [2]: Blei, D. M., Kucukelbir, A., & McAuliffe, J. D. (2017). Variational Inference: A
+             Review for Statisticians. Journal of the American Statistical Association, 112(518),
+             859–877. https://doi.org/10.1080/01621459.2017.1285773
+        [3]: Hoffman, M. D., Blei, D. M., Wang, C., & Paisley, J. (2013). Stochastic variational
+             inference. Journal of Machine Learning Research, 14(1), 1303–1347.
+
+
 
     Attributes:
         global_settings (dict): Global settings of the QUEENS simulations
