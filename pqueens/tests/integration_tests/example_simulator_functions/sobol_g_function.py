@@ -1,6 +1,6 @@
 """Sobol's G function.
 
-a test function for sensitivity analysis.
+A test function for sensitivity analysis.
 
 References:
     [1]: Saltelli, A., Annoni, P., Azzini, I., Campolongo, F., Ratto, M., & Tarantola, S. (2010).
@@ -9,6 +9,8 @@ References:
     Computer Physics Communications, 181(2), 259–270.
     https://doi.org/10.1016/j.cpc.2009.09.018
 """
+# pylint: disable=invalid-name
+
 import numpy as np
 
 # values  of G*_6 in Table 5 of [1]
@@ -18,7 +20,7 @@ ALPHA = np.array([2] * dim)
 DELTA = np.array([0] * dim)
 
 
-def sobol(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
+def sobol_g_function(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
     """Compute generalized Sobol's G function.
 
     with variable dimension. See (33) in [1].
@@ -29,6 +31,7 @@ def sobol(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
         alpha (ndarray): vector of alpha parameter values
         delta (ndarray): vector of delta parameter values
         kwargs (dict): contains the input x_i ~ U(0,1) (uniformly from [0,1])
+
     Returns:
         double: value of Sobol function
     """
@@ -41,7 +44,7 @@ def sobol(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
         raise ValueError("0 <= delta <= 1 not satisfied")
 
     # all additionally supplied kwargs are interpreted as the x_i
-    x = np.array([key for key in kwargs.values()])
+    x = np.array(list(kwargs.values()))
 
     if not (x.shape == a.shape and x.shape == alpha.shape and x.shape == delta.shape):
         raise ValueError("shape mismatch")
@@ -52,11 +55,12 @@ def sobol(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
 
 
 def first_effect_variance(a=A, alpha=ALPHA):
-    """Calculate first effect variance V_xi[E_x~i[Y|xi]]
+    """Calculate first effect variance V_xi[E_x~i[Y|xi]].
 
     Args:
         a (ndarray): vector of a parameter values
         alpha (ndarray): vector of alpha parameter values
+
     Returns:
         ndarray: vector of first order variances
     """
@@ -65,10 +69,11 @@ def first_effect_variance(a=A, alpha=ALPHA):
 
 
 def variance(Vi=first_effect_variance(a=A, alpha=ALPHA)):
-    """Calculate variance of Sobol function V_x[Y]
+    """Calculate variance of Sobol function V_x[Y].
 
     Args:
         Vi (ndarray): vector of first effect variances
+
     Returns:
         double: variance of Sobol's G function
     """
@@ -79,10 +84,12 @@ def variance(Vi=first_effect_variance(a=A, alpha=ALPHA)):
 def first_order_indices(a=A, alpha=ALPHA):
     """Compute first order indices of the Sobol test function.
 
-    see (32) in [1]
+    see (32) in [1].
+
     Args:
         a (ndarray): vector of a parameter values
         alpha (ndarray): vector of alpha parameter values
+
     Returns:
         ndarray: vector of first order indices
     """
@@ -100,6 +107,7 @@ def total_order_indices(a=A, alpha=ALPHA):
     Args:
         a (ndarray): vector of a parameter values
         alpha (ndarray): vector of alpha parameter values
+
     Returns:
         ndarray: vector of total order indices
     """
@@ -113,16 +121,3 @@ def total_order_indices(a=A, alpha=ALPHA):
         ST[i] = Vi[i] * np.prod(1 + Vi[mask]) / V
 
     return ST
-
-
-def main(job_id, params):
-    """Interface to Sobol G function.
-
-    Args:
-        job_id (int):   ID of job
-        params (dict):  Dictionary with parameters and input variables
-    Returns:
-        float:          Value of Sobol G function at parameters
-                        specified in input dict
-    """
-    return sobol(**params)

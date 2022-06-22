@@ -5,6 +5,8 @@ analysis and UQ.
 
 It is nonlinear and nonmonoton.
 """
+# pylint: disable=invalid-name
+
 
 import numpy as np
 
@@ -13,7 +15,7 @@ P1 = 7
 P2 = 0.1
 
 
-def ishigami(x1, x2, x3, p1=P1, p2=P2):
+def ishigami90(x1, x2, x3, p1=P1, p2=P2):
     r"""Three-dimensional benchmark function.
 
     Three-dimensional benchmark function from [2] used for UQ because it
@@ -158,15 +160,3 @@ def total_order_indices(p1=P1, p2=P2):
     VT2 = V2 + V12 + V23 + V123
     VT3 = V3 + V13 + V23 + V123
     return np.array([VT1, VT2, VT3]) / V
-
-
-def main(job_id, params):
-    """Interface to ishigami function.
-
-    Args:
-        job_id (int):  ID of job
-        params (dict): Dictionary with parameters
-    Returns:
-        float: Value of ishigami function at parameters specified in input dict
-    """
-    return ishigami(params['x1'], params['x2'], params['x3'])
