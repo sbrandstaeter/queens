@@ -20,13 +20,13 @@ from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIte
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.iterators.optimization_iterator import OptimizationIterator
 from pqueens.iterators.polynomial_chaos_iterator import PolynomialChaosIterator
+from pqueens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
 from pqueens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
 from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from pqueens.iterators.single_sim_run_iterator import SingleSimRunIterator
 from pqueens.iterators.sobol_index_gp_uncertainty_iterator import SobolIndexGPUncertaintyIterator
 from pqueens.iterators.sobol_index_iterator import SobolIndexIterator
 from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
-from pqueens.iterators.variational_inference_reparameterization import VIRPIterator
 
 
 def from_config_create_iterator(config, iterator_name='method', model=None):
@@ -61,7 +61,7 @@ def from_config_create_iterator(config, iterator_name='method', model=None):
         'baci_lm': BaciLMIterator,
         'bbvi': BBVIIterator,
         'bmfia': BMFIAIterator,
-        'virp': VIRPIterator,
+        'rpvi': RPVIIterator,
     }
 
     method_name = config[iterator_name]['method_name']
