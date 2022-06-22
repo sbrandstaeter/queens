@@ -8,23 +8,28 @@
     "method_name": "rpvi",
     "method_options": {
       "model": "model",
-      "max_feval": 1300,
+      "max_feval": 1500,
+      "likelihood_gradient_method": "{gradient_method}",
+      "finite_difference_step": 1e-5,
+      "min_relative_change_variational_params": -1,
+      "num_iter_average_convergence": 5,
       "n_samples_per_iter": 2,
       "score_function_bool": true,
-      "finite_difference_step": 1e-5,
       "variational_distribution": {
         "variational_approximation_type": "mean_field",
         "variational_family": "normal"
       },
       "optimization_options": {
+        "stochastic_optimizer": "Adam",
+        "optimization_type": "max",
+        "learning_rate": 0.025,
+        "gradient_clipping": true,
+        "gradient_clipping_norm_threshold": 1e6,
         "natural_gradient": true,
         "FIM_dampening": true,
         "decay_start_iteration": 50,
         "dampening_coefficient": 1e-2,
         "FIM_dampening_lower_bound": 1e-8,
-        "stochastic_optimizer": "Adam",
-        "learning_rate": 0.01,
-        "optimization_type": "max",
         "rel_L1_change_threshold": -1,
         "rel_L2_change_threshold": -1,
         "max_iter": 10000000
@@ -66,7 +71,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "park91a_hifi_coords.py"
+    "main_file": "{simulator_function}"
   },
   "parameters": {
     "random_variables": {

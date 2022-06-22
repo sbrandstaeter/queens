@@ -73,6 +73,8 @@ def test_rpvi_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimen
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
+        "gradient_method": "finite_difference",
+        "simulator_function": "park91a_hifi_coords.py"
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
@@ -83,10 +85,10 @@ def test_rpvi_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimen
         "--output=" + str(tmpdir),
     ]
 
-    # This seed is fixed so that the variational distribution is initalized so that the park
-    # function can be evaluted correctly
+    # This seed is fixed so that the variational distribution is initialized so that the park
+    # function can be evaluated correctly
     np.random.seed(211)
-    # actual main call of bbvi
+    # actual main call
     main(arguments)
 
     # get the results of the QUEENS run
@@ -102,17 +104,19 @@ def test_rpvi_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimen
 
 
 @pytest.mark.integration_tests
-def test_rpvi_iterator_park91a_hifi_adjoint(
+def test_rpvi_iterator_park91a_hifi_provided_gradient(
     inputdir, tmpdir, design_and_write_experimental_data_to_csv
 ):
     """Test for the rpvi iterator based on the park91a_hifi function."""
     # generate json input file from template
-    template = os.path.join(inputdir, "rpvi_adjoint_park91a_hifi_template.json")
+    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
     experimental_data_path = tmpdir
     plot_dir = tmpdir
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
+        "gradient_method": "adjoint",
+        "simulator_function": "park91a_hifi_coords_gradient.py"
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
