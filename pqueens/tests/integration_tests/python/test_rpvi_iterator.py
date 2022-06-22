@@ -34,7 +34,7 @@ def rpvi_density_match(
     )
 
     # actual main call of bbvi with patched density for posterior
-    with patch.object(rpviIterator, 'get_log_posterior_unnormalized', target_density):
+    with patch.object(RPVIIterator, 'get_log_posterior_unnormalized', target_density):
         variational_distr_obj = dummy_rpvi_instance.variational_distribution_obj
         mu = np.array([0.1, 0.7, 0.2, 0.3, 0.25])
         cov = np.exp(np.diag([0.5, 0.5, 0.5, 0.5, 0.5]) * 2)
