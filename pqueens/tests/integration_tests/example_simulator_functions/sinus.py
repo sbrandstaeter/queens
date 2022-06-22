@@ -4,7 +4,7 @@
 import numpy as np
 
 
-def sinus_test_fun(x1):
+def sinus_test_fun(x1, **kwargs):
     """A standard sine as a test function.
 
     Args:
@@ -13,6 +13,6 @@ def sinus_test_fun(x1):
     Returns:
         float: Value of the sinus function
     """
-    result = np.sin(x1)
+    result = np.sin(x1, **kwargs)
 
     return result

@@ -15,7 +15,7 @@ P1 = 7
 P2 = 0.1
 
 
-def ishigami90(x1, x2, x3, p1=P1, p2=P2):
+def ishigami90(x1, x2, x3, p1=P1, p2=P2, **kwargs):
     r"""Three-dimensional benchmark function.
 
     Three-dimensional benchmark function from [2] used for UQ because it

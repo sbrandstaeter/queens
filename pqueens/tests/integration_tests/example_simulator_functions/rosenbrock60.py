@@ -8,7 +8,7 @@ Function. The Computer Journal, 3(3), 175–184. doi:10.1093/comjnl/3.3.175
 import numpy as np
 
 
-def rosenbrock60(x1, x2):
+def rosenbrock60(x1, x2, **kwargs):
     """Rosenbrocks banana function.
 
     Args:
@@ -23,7 +23,7 @@ def rosenbrock60(x1, x2):
     return a * a + b * b * 100.0
 
 
-def rosenbrock60_residual(x1, x2):
+def rosenbrock60_residual(x1, x2, **kwargs):
     """Residuals of Rosenbrock banana function.
 
     Args:
@@ -39,7 +39,7 @@ def rosenbrock60_residual(x1, x2):
     return np.array([res1, res2])
 
 
-def rosenbrock60_residual_1d(x1):
+def rosenbrock60_residual_1d(x1, **kwargs):
     """Residuals of Rosenbrock banana function.
 
     Args:

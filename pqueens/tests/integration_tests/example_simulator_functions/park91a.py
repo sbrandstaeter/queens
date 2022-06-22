@@ -41,7 +41,7 @@ def x3_x4_grid_eval(park_function, x1, x2):
     for x3, x4 in zip(x3_vec, x4_vec):
         # Bound the arguments
         args = unit_bounding(x1, x2, x3, x4)
-        y_vec.append(park_function(*args))
+        y_vec.append(park_function(*args, **kwargs))
     return np.array(y_vec)
 
 
@@ -85,7 +85,7 @@ def park91a_lofi(x1, x2, x3, x4):
     return y
 
 
-def park91a_hifi(x1, x2, x3, x4):
+def park91a_hifi(x1, x2, x3, x4, **kwargs):
     r"""High-fidelity Park91a function.
 
     Simple four dimensional benchmark function as proposed in [1] to mimic
@@ -132,7 +132,7 @@ def park91a_hifi(x1, x2, x3, x4):
     return y
 
 
-def park91a_hifi_on_grid(x1, x2):
+def park91a_hifi_on_grid(x1, x2, **kwargs):
     r"""High-fidelity Park91a function on x3 and x4 grid.
 
     Args:
@@ -146,7 +146,7 @@ def park91a_hifi_on_grid(x1, x2):
     return y
 
 
-def park91a_lofi_on_grid(x1, x2):
+def park91a_lofi_on_grid(x1, x2, **kwargs):
     r"""Low-fidelity Park91a function on fixed x3 and x4 grid.
 
     Args:

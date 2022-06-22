@@ -10,7 +10,7 @@ Towards global optimization, 2, 1-15.
 import numpy as np
 
 
-def branin78_lofi(x1, x2):
+def branin78_lofi(x1, x2, **kwargs):
     """Low-fidelity fidelity Branin function.
 
     Compute value of medium-fidelity version of Branin function as described
@@ -36,7 +36,7 @@ def branin78_lofi(x1, x2):
     return y
 
 
-def branin78_medfi(x1, x2):
+def branin78_medfi(x1, x2, **kwargs):
     """Medium fidelity Branin function.
 
     Compute value of medium-fidelity version of Branin function as described
@@ -66,7 +66,7 @@ def branin78_medfi(x1, x2):
     return y
 
 
-def branin78_hifi(x1, x2):
+def branin78_hifi(x1, x2, **kwargs):
     """High-fidelity Branin function.
 
     Compute value of high fidelity version of Branin function as described
