@@ -502,7 +502,7 @@ class VariationalInferenceIterator(Iterator):
                 {"variational_transformation": self.variational_transformation}
             )
 
-        result_description.update({"variational_distr": distribution_dict})
+        result_description.update({"variational_distribution": distribution_dict})
         return result_description
 
     @abc.abstractmethod

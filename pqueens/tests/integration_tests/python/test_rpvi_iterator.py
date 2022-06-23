@@ -93,13 +93,13 @@ def test_rpvi_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimen
     result_file = os.path.join(tmpdir, "inverse_rpvi_park91a_hifi.pickle")
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
-    elbo_list = results["elbo"]
+    elbo_list = results["iteration_data"]["elbo"]
 
     # Actual tests
-    assert np.abs(results["variational_distr"]["mean"][0] - 0.5) < 0.25
-    assert np.abs(results["variational_distr"]["mean"][1] - 0.2) < 0.1
-    assert results["variational_distr"]["covariance"][0, 0] ** 0.5 < 0.5
-    assert results["variational_distr"]["covariance"][1, 1] ** 0.5 < 0.5
+    assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
+    assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.1
+    assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
+    assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
 
 
 @pytest.fixture()
