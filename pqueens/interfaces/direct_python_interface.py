@@ -7,8 +7,7 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
     example_simulator_function_by_name,
 )
 from pqueens.utils.import_utils import load_function_by_name_from_path
-from pqueens.utils.pool_utils import create_pool_thread_number
-from pqueens.utils.valid_options_utils import InvalidOptionError
+from pqueens.utils.pool_utils import create_pool
 
 from .interface import Interface
 
@@ -69,15 +68,13 @@ class DirectPythonInterface(Interface):
         external_python_module = interface_options.get("external_python_module", None)
 
         if external_python_module is None:
-            try:
-                my_function = example_simulator_function_by_name(function_name)
-            except InvalidOptionError:
-                # Could not find the function in example simulator function of QUEENS
-                pass
+            # Try to load existing simulator functions
+            my_function = example_simulator_function_by_name(function_name)
         else:
+            # Try to load external simulator functions
             my_function = load_function_by_name_from_path(external_python_module, function_name)
 
-        pool = create_pool_thread_number(num_workers)
+        pool = create_pool(num_workers)
 
         return cls(
             interface_name=interface_name, function=my_function, variables=parameters, pool=pool
@@ -123,7 +120,8 @@ class DirectPythonInterface(Interface):
     def function_wrapper(function):
         """Wrap the function to be used.
 
-        This wrapper calls the function by a kwargs dict only and reshapes output as needed. This way if called in a pool the reshaping is also done by the workers.
+        This wrapper calls the function by a kwargs dict only and reshapes output as needed. This
+        way if called in a pool the reshaping is also done by the workers.
 
         Args:
             function (function): function to be wrapped
@@ -133,7 +131,7 @@ class DirectPythonInterface(Interface):
         """
 
         def reshaped_output_function(sample_dict):
-            """Call function and reshape output
+            """Call function and reshape output.
 
             Args:
                 sample_dict (dict): dictionary containing parameters and `job_id`
