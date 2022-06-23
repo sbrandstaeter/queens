@@ -31,6 +31,7 @@ class Driver(metaclass=abc.ABCMeta):
         remote_connect (str):      (only for remote scheduling) adress of remote
                                    computing resource
         result (np.array):         simulation result to be stored in database
+        gradient (np.array): gradient of the simulation output w.r.t. to the input
         singularity (bool):        flag for use of Singularity containers
         database (obj):            database object
     """
@@ -50,6 +51,7 @@ class Driver(metaclass=abc.ABCMeta):
         remote,
         remote_connect,
         result,
+        gradient,
         singularity,
         database,
     ):
@@ -73,6 +75,7 @@ class Driver(metaclass=abc.ABCMeta):
             remote_connect (str):      (only for remote scheduling) adress of remote
                                        computing resource
             result (np.array):         simulation result to be stored in database
+            gradient (np.array): gradient of the simulation output w.r.t. to the input
             singularity (bool):        flag for use of Singularity containers
             database (obj):            database object
         """
@@ -89,6 +92,7 @@ class Driver(metaclass=abc.ABCMeta):
         self.remote = remote
         self.remote_connect = remote_connect
         self.result = result
+        self.gradient = gradient
         self.singularity = singularity
         self.database = database
 
@@ -118,6 +122,9 @@ class Driver(metaclass=abc.ABCMeta):
             self.post_processor_job()
         if self.data_processor:
             self.data_processor_job()
+        if self.gradient_data_processor:
+            self.gradient_data_processor_job()
+
         else:
             # set result to "no" and load job from database, if there
             # has not been any data-processing before
@@ -180,10 +187,30 @@ class Driver(metaclass=abc.ABCMeta):
 
             _logger.info(f"Got result: {self.result}")
 
+    def gradient_data_processor_job(self):
+        """Extract gradient data from post-processed file.
+
+        Afterwards save them to the database.
+        """
+        # load job from database if existent
+        if self.job is None:
+            self.job = self.database.load(
+                self.experiment_name,
+                self.batch,
+                'jobs_' + self.driver_name,
+                {'id': self.job_id},
+            )
+        # only proceed if this job did not fail
+        if self.job['status'] != "failed":
+            # call data-processing
+            self.gradient = self.gradient_data_processor.get_data_from_file(self.output_directory)
+            _logger.info(f"Got gradient: {self.gradient}")
+
     def finalize_job_in_db(self):
         """Finalize job in database."""
         if self.result is None:
             self.job['result'] = None  # TODO: maybe we should better use a pandas format here
+            self.job['gradient'] = None
             self.job['status'] = 'failed'
             if not self.direct_scheduling:
                 self.job['end time'] = time.time()
@@ -200,6 +227,7 @@ class Driver(metaclass=abc.ABCMeta):
             )
         else:
             self.job['result'] = self.result
+            self.job['gradient'] = self.gradient
             self.job['status'] = 'complete'
             if self.job['start time'] and not self.direct_scheduling:
                 self.job['end time'] = time.time()

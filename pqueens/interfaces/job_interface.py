@@ -172,7 +172,7 @@ class JobInterface(Interface):
             driver_name,
         )
 
-    def evaluate(self, samples, **_kwargs):
+    def evaluate(self, samples, gradient_bool=False):
         """Orchestrate call to external simulation software.
 
         Second variant which takes the input samples as argument
@@ -212,7 +212,7 @@ class JobInterface(Interface):
                     time.sleep(self.polling_time)
 
         # get sample and response data
-        output = self.get_output_data()
+        output = self.get_output_data(gradient_bool)
         return output
 
     def get_job_manager(self):
@@ -230,6 +230,7 @@ class JobInterface(Interface):
     def attempt_dispatch(self, resource, new_job):
         """Attempt to dispatch job multiple times.
 
+        This is the actual job submission.
         Submitting jobs to the queue sometimes fails, hence we try multiple times
         before giving up. We also wait one second between submit commands
 
@@ -238,7 +239,7 @@ class JobInterface(Interface):
             new_job (dict):             Dictionary with job
 
         Returns:
-            int: Process ID of submitted job if successfull, None otherwise
+            int: Process ID of submitted job if successful, None otherwise
         """
         process_id = None
         num_tries = 0
@@ -371,8 +372,13 @@ class JobInterface(Interface):
         self.print_resources_status()
         return True
 
-    def get_output_data(self):
+    def get_output_data(self, gradient_bool):
         """Extract output data from database and return it.
+
+        Args:
+            gradient_bool (bool): Flag to determine whether the gradient
+                                  of the model output w.r.t. to the input
+                                  is expected (True if yes)
 
         Returns:
             dict: output dictionary; i
@@ -382,6 +388,7 @@ class JobInterface(Interface):
         """
         output = {}
         mean_values = []
+        gradient_values = []
         if not self.all_jobs_finished():
             print("Not all jobs are finished yet, try again later")
         else:
@@ -396,11 +403,18 @@ class JobInterface(Interface):
             for ID in jobids:
                 current_job = next(job for job in jobs if job['id'] == ID)
                 mean_value = np.squeeze(current_job['result'])
+                gradient_value = np.squeeze(current_job.get('gradient', None))
+
                 if not mean_value.shape:
                     mean_value = np.expand_dims(mean_value, axis=0)
+                    gradient_value = np.expand_dims(gradient_value, axis=0)
+
                 mean_values.append(mean_value)
+                gradient_values.append(gradient_value)
 
         output['mean'] = np.array(mean_values)
+        if gradient_bool:
+            output['gradient'] = np.array(gradient_values)
 
         return output
 
@@ -797,6 +811,7 @@ class JobInterface(Interface):
                         self.save_job(current_job)
 
                         # Submit the job to the appropriate resource
+                        # this is the actual job subission
                         this.restart_flag = False
                         process_id = self.attempt_dispatch(resource, current_job)
 

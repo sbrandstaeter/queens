@@ -177,7 +177,6 @@ class GaussianLikelihood(LikelihoodModel):
             )
             self.update_covariance(model_output)
             log_likelihood_output = self.normal_distribution.logpdf(model_output)
-
             grad_log_likelihood = np.dot(
                 self.normal_distribution.grad_logpdf(model_output), model_gradient
             )
@@ -233,9 +232,7 @@ class GaussianLikelihood(LikelihoodModel):
         if gradient_bool:
             model_output_dict = self.forward_model.evaluate(gradient_bool=gradient_bool)
             model_response = model_output_dict['mean'][-n_samples_batch:]
-            model_gradient = model_output_dict['gradient'][
-                -n_samples_batch * model_response.shape[1] :, :
-            ]
+            model_gradient = model_output_dict['gradient'][-n_samples_batch:]
             model_output = (model_response, model_gradient)
         else:
             model_output = self.forward_model.evaluate()['mean'][-n_samples_batch:]
