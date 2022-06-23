@@ -361,7 +361,7 @@ class RPVIIterator(VariationalInferenceIterator):
             log_likelihood (float): Value of the log-likelihood function
         """
         gradient_methods = {
-            'adjoint': self._calculate_grad_log_lik_params_adjoint,
+            'provided_gradient': self._calculate_grad_log_lik_params_adjoint,
             'finite_difference': self._calculate_grad_log_lik_params_finite_difference,
         }
         my_gradient_method = get_option(gradient_methods, self.likelihood_gradient_method)

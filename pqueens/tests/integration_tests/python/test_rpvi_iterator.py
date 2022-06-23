@@ -115,7 +115,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
-        "gradient_method": "adjoint",
+        "gradient_method": "provided_gradient",
         "simulator_function": "park91a_hifi_coords_gradient.py",
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
