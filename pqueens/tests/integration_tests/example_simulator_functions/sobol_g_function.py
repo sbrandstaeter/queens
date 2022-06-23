@@ -43,8 +43,12 @@ def sobol_g_function(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
     if not (np.all(delta >= 0) and np.all(delta <= 1)):
         raise ValueError("0 <= delta <= 1 not satisfied")
 
-    # all additionally supplied kwargs are interpreted as the x_i
-    x = np.array(list(kwargs.values()))
+    # From kwargs get the x_i
+    x = []
+    for key, value in kwargs.items():
+        if key.find("x") > -1:
+            x.append(value)
+    x = np.array(x)
 
     if not (x.shape == a.shape and x.shape == alpha.shape and x.shape == delta.shape):
         raise ValueError("shape mismatch")

@@ -13,6 +13,6 @@ def sinus_test_fun(x1, **kwargs):
     Returns:
         float: Value of the sinus function
     """
-    result = np.sin(x1, **kwargs)
+    result = np.sin(x1)
 
     return result
