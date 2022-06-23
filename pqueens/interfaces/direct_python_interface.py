@@ -67,6 +67,9 @@ class DirectPythonInterface(Interface):
         function_name = interface_options.get("function_name", None)
         external_python_module = interface_options.get("external_python_module", None)
 
+        if function_name is None:
+            raise ValueError(f"Keyword 'function_name' is missing in interface '{interface_name}'")
+
         if external_python_module is None:
             # Try to load existing simulator functions
             my_function = example_simulator_function_by_name(function_name)
