@@ -8,7 +8,7 @@
     "method_name": "rpvi",
     "method_options": {
       "model": "model",
-      "max_feval": 1500,
+      "max_feval": 8,
       "likelihood_gradient_method": "adjoint",
       "min_relative_change_variational_params": -1,
       "num_iter_average_convergence": 5,

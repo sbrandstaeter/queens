@@ -132,7 +132,7 @@ class DirectPythonInterface(Interface):
                 )
 
         output['mean'] = np.array(mean_values)
-        output['gradient'] = np.array(gradient_values).reshape(output['mean'].shape[1], -1)
+        output['gradient'] = np.array(gradient_values)
         return output
 
     @staticmethod
