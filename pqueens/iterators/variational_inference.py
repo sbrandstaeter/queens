@@ -478,6 +478,7 @@ class VariationalInferenceIterator(Iterator):
         """
         result_description = {
             "final_elbo": self.elbo_list[-1],
+            "final_variational_parameters": self.variational_params,
             "batch_size": self.n_samples_per_iter,
             "number_of_sim": self.n_sims,
             "natural_gradient": self.natural_gradient_bool,
@@ -488,8 +489,10 @@ class VariationalInferenceIterator(Iterator):
         if self.export_quantities_over_iter:
             result_description.update(
                 {
-                    "params_over_iter": self.variational_params_list,
-                    "elbo": self.elbo_list,
+                    "iteration_data": {
+                        "variational_parameters": self.variational_params_list,
+                        "elbo": self.elbo_list,
+                    }
                 }
             )
 
