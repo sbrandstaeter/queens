@@ -81,7 +81,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "example_simulator_function": "{test_fun}"
+    "function_name": "{test_fun}"
   },
   "parameters": {
     "random_variables": {

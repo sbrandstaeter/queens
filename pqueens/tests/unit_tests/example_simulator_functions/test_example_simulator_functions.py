@@ -209,7 +209,7 @@ def test_example_simulator_functions(function_name, test_dict):
     function = example_simulator_function_by_name(function_name)
     inputs = test_dict["input"]
     desired_result = test_dict["desired_result"]
-    np.testing.assert_allclose(function(211, inputs), desired_result)
+    np.testing.assert_allclose(function(**inputs), desired_result)
 
 
 @pytest.mark.unit_tests

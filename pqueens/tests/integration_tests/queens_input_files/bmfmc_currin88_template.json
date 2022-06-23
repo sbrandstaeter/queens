@@ -60,7 +60,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "example_simulator_function": "currin88_hifi"
+    "function_name": "currin88_hifi"
   },
   "parameters": {
     "random_variables": {

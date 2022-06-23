@@ -24,7 +24,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "example_simulator_function": "borehole83_lofi"
+    "function_name": "borehole83_lofi"
   },
   "parameters": {
     "random_variables": {

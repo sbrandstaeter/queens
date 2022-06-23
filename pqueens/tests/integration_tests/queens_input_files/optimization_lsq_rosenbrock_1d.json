@@ -30,7 +30,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "example_simulator_function": "rosenbrock60_residual_1d"
+    "function_name": "rosenbrock60_residual_1d"
   },
   "parameters": {
     "random_variables": {

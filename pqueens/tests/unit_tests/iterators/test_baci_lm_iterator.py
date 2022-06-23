@@ -64,7 +64,7 @@ def default_baci_lm_iterator():
         'interface': OrderedDict(
             [
                 ('type', 'direct_python_interface'),
-                ('example_simulator_function', 'rosenbrock60_residual'),
+                ('function_name', 'rosenbrock60_residual'),
             ]
         ),
         'parameters': OrderedDict(

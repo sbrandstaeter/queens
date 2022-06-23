@@ -84,7 +84,7 @@
   "interface": {
     "type": "direct_python_interface",
     "num_workers": 1,
-    "example_simulator_function": "agawal09a"
+    "function_name": "agawal09a"
   },
   "parameters": {
     "random_variables": {

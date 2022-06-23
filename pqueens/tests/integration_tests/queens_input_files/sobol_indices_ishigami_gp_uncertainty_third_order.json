@@ -39,7 +39,7 @@
     },
     "interface": {
         "type": "direct_python_interface",
-        "example_simulator_function": "ishigami90"
+        "function_name": "ishigami90"
     },
     "gp_surrogate_model": {
         "type": "datafit_surrogate_model",

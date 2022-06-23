@@ -13,7 +13,7 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
     example_simulator_function_by_name,
 )
 from pqueens.utils.path_utils import relative_path_from_pqueens
-from pqueens.utils.pool_utils import create_pool_thread_number
+from pqueens.utils.pool_utils import create_pool
 from pqueens.variables.variables import Variables
 
 
@@ -74,7 +74,7 @@ def config(uncertain_parameters):
     config = {}
     config['test_interface'] = {
         'type': 'direct_python_interface',
-        'example_simulator_function': 'ishigami90',
+        'function_name': 'ishigami90',
     }
 
     config['parameters'] = uncertain_parameters
@@ -86,13 +86,14 @@ def config(uncertain_parameters):
 def config_by_path(uncertain_parameters):
     """Minimal config dict to create a Direct-Python-Interface."""
     path_to_file = relative_path_from_pqueens(
-        "tests/integration_tests/example_simulator_functions/ishigami90_main.py", as_str=True
+        "tests/integration_tests/example_simulator_functions/ishigami90.py", as_str=True
     )
     print(path_to_file)
     config = {}
     config['test_interface'] = {
         'type': 'direct_python_interface',
-        'main_file': path_to_file,
+        'function_name': "ishigami90",
+        'external_python_module': path_to_file,
     }
 
     config['parameters'] = uncertain_parameters
@@ -126,7 +127,7 @@ def direct_python_interface_parallel(variables):
     """An instance of Variables class."""
     interface_name = 'test_interface'
     function = example_simulator_function_by_name("ishigami90")
-    pool = create_pool_thread_number(2)
+    pool = create_pool(2)
     return DirectPythonInterface(interface_name, function, variables, pool)
 
 

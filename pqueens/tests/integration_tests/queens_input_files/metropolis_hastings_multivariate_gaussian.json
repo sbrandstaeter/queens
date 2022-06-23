@@ -56,7 +56,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "example_simulator_function": "patch_for_likelihood"
+    "function_name": "patch_for_likelihood"
   },
   "parameters": {
     "random_variables": {
