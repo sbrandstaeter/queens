@@ -67,6 +67,8 @@ class VariationalInferenceIterator(Iterator):
                                            the probabilistic model is sampled independent of the
                                            other conditions
         stochastic_optimizer (obj): QUEENS stochastic optimizer object
+        nan_in_gradient_counter (int): Count how many times NaNs appeared in the gradient estimate
+                                       in a row
     """
 
     def __init__(
@@ -150,6 +152,7 @@ class VariationalInferenceIterator(Iterator):
         self.elbo_list = []
         self.n_sims_list = []
         self.prior_obj_list = []
+        self.nan_in_gradient_counter = 0
 
     @staticmethod
     def get_base_attributes_from_config(config, iterator_name, model=None):
@@ -560,4 +563,39 @@ class VariationalInferenceIterator(Iterator):
             )
         else:
             gradient = self._calculate_elbo_gradient
+
+        gradient = self.handle_gradient_nan(gradient)
         return gradient
+
+    def handle_gradient_nan(self, gradient_function):
+        """Mehtod that handles NaN in gradient estimations.
+
+        Args:
+            gradient_function (function): Function that estimates the gradient
+
+        Returns:
+             function: Gradient function wrapped with the counter
+        """
+
+        def nan_counter_and_warner(*args, **kwargs):
+            """Count iterations with NaNs and write warning."""
+            gradient = gradient_function(*args, **kwargs)
+            if np.isnan(gradient).any():
+                _logger.warn(
+                    "Gradient estimate contains NaNs (number of iterations in a row with NaNs:"
+                    f" {self.nan_in_gradient_counter})"
+                )
+                gradient = np.nan_to_num(gradient)
+                self.nan_in_gradient_counter += 1
+            else:
+                self.nan_in_gradient_counter = 0
+
+            # Arbitrary number, this will be changed in the future
+            if self.nan_in_gradient_counter == 10:
+                raise ValueError(
+                    "Variational inference stopped: 10 iterations in a row failed to compute a"
+                    "bounded gradient!"
+                )
+            return gradient
+
+        return nan_counter_and_warner

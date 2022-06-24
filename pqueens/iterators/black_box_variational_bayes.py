@@ -559,7 +559,7 @@ class BBVIIterator(VariationalInferenceIterator):
         self.n_sims_list.append(self.n_sims)
 
         # Avoid NaN in the elbo gradient
-        return np.nan_to_num(grad_elbo)
+        return grad_elbo
 
     def _sample_gradient_from_probabilistic_model(self):
         """Evaluate probabilistic model."""
