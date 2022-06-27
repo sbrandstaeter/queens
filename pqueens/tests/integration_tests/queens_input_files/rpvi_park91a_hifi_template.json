@@ -10,9 +10,8 @@
       "model": "model",
       "max_feval": 1500,
       "likelihood_gradient_method": "{gradient_method}",
+      "finite_difference_method": "2-point",
       "finite_difference_step": 1e-5,
-      "min_relative_change_variational_params": -1,
-      "num_iter_average_convergence": 5,
       "n_samples_per_iter": 2,
       "score_function_bool": true,
       "variational_distribution": {

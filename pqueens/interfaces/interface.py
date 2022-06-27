@@ -8,7 +8,7 @@ class Interface(metaclass=abc.ABCMeta):
     The interface is responsible for the actual mapping between input
     variables and simulation outputs. The purpose of this base class is
     to define a unified interface on the one hand, while at the other
-    hand taking care of the contruction of the appropirate objects from
+    hand taking care of the construction of the appropriate objects from
     the derived class.
     """
 

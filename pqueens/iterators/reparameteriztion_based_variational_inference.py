@@ -6,7 +6,8 @@ from scipy.stats import multivariate_normal as mvn
 
 from pqueens.iterators.variational_inference import VariationalInferenceIterator
 from pqueens.utils import variational_inference_utils
-from pqueens.utils.valid_options_utils import get_option
+from pqueens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
+from pqueens.utils.valid_options_utils import check_if_valid_option, get_option
 
 _logger = logging.getLogger(__name__)
 
@@ -78,6 +79,11 @@ class RPVIIterator(VariationalInferenceIterator):
                                     should be considered in the ELBO gradient. If true the
                                     score function is considered.
         finite_difference_step (float): Finite difference step size
+        finite_difference_method (str): Method to calculate a finite difference based
+                                        approximation of the Jacobian matrix:
+
+                        - '2-point': a one sided scheme by definition
+                        - '3-point': more exact but needs twice as many function evaluations
 
     Returns:
         rpvi_obj (obj): Instance of the RPVIIterator
@@ -108,6 +114,7 @@ class RPVIIterator(VariationalInferenceIterator):
         score_function_bool,
         finite_difference_step,
         likelihood_gradient_method,
+        finite_difference_method,
     ):
         """Initialize RPVI iterator.
 
@@ -143,6 +150,11 @@ class RPVIIterator(VariationalInferenceIterator):
             finite_difference_step (float): Finite difference step size
             likelihood_gradient_method (str, optional): Method for how to calculate the gradient
                                                         of the log-likelihood
+            finite_difference_method (str): Method to calculate a finite difference based
+                                            approximation of the Jacobian matrix:
+
+                            - '2-point': a one sided scheme by definition
+                            - '3-point': more exact but needs twice as many function evaluations
         """
         super().__init__(
             global_settings,
@@ -170,6 +182,7 @@ class RPVIIterator(VariationalInferenceIterator):
         self.finite_difference_step = finite_difference_step
         self.likelihood_gradient_method = likelihood_gradient_method
         self.noise_list = []
+        self.finite_difference_method = finite_difference_method
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -189,6 +202,10 @@ class RPVIIterator(VariationalInferenceIterator):
         likelihood_gradient_method = method_options.get(
             "likelihood_gradient_method", "finite_difference"
         )
+        valid_finite_difference_methods = ["2-point", "3-point"]
+        finite_difference_method = method_options.get("finite_difference_method")
+        if likelihood_gradient_method == "finite_difference":
+            check_if_valid_option(valid_finite_difference_methods, finite_difference_method)
 
         (
             global_settings,
@@ -237,6 +254,7 @@ class RPVIIterator(VariationalInferenceIterator):
             score_function_bool=score_function_bool,
             finite_difference_step=finite_difference_step,
             likelihood_gradient_method=likelihood_gradient_method,
+            finite_difference_method=finite_difference_method,
         )
 
     def core_run(self):
@@ -378,27 +396,60 @@ class RPVIIterator(VariationalInferenceIterator):
         return log_likelihood, jacobi_log_likelihood
 
     def _calculate_grad_log_lik_params_provided_gradient(self, params):
-        """Calculate gradient of log likelihood based on provided gradient."""
-        log_likelihood, grad_log_likelihood = self.eval_log_likelihood(params, gradient=True)
+        """Calculate gradient of log likelihood based on provided gradient.
+
+        The gradient of the log-likelihood is calculated w.r.t. the input of the underlying forward
+        model, here denoted by params.
+
+        Args:
+            params (np.array): Current sample values of the random parameters
+
+        Returns:
+            jacobi_log_likelihood (np.array): Jacobian of the log-likelihood function
+            log_likelihood (float): Value of the log-likelihood function
+        """
+        log_likelihood, grad_log_likelihood = self.eval_log_likelihood(params, gradient_bool=True)
         return log_likelihood, grad_log_likelihood
 
     def _calculate_grad_log_lik_params_finite_difference(self, params):
-        """Gradient of the log likelihood with finite differences."""
-        grad_log_likelihood = []
+        """Gradient of the log likelihood with finite differences.
 
-        log_likelihood = self.eval_log_likelihood(params)
+        The gradient of the log-likelihood is calculated w.r.t. the input of the underlying forward
+        model, here denoted by params.
 
-        # two-point finite difference scheme
-        for num in np.arange(params.size):
-            zero_vec = np.zeros(params.shape)
-            zero_vec[num] = self.finite_difference_step
-            log_likelihood_right = self.eval_log_likelihood(params + zero_vec)
+        Args:
+            params (np.array): Current sample values of the random parameters
 
-            grad_log_likelihood.append(
-                (log_likelihood_right - log_likelihood) / self.finite_difference_step
-            )
+        Returns:
+            jacobi_log_likelihood (np.array): Jacobian of the log-likelihood function
+            log_likelihood (float): Value of the log-likelihood function
+        """
+        positions, delta_positions = get_positions(
+            params,
+            method=self.finite_difference_method,
+            rel_step=self.finite_difference_step,
+            bounds=None,
+        )
+        _, use_one_sided = compute_step_with_bounds(
+            params,
+            method=self.finite_difference_method,
+            rel_step=self.finite_difference_step,
+            bounds=None,
+        )
 
-        grad_log_likelihood = np.array(grad_log_likelihood)
+        # model response should now correspond to objective function evaluated at positions
+        log_likelihood_batch = self.eval_log_likelihood(positions)
+
+        log_likelihood = log_likelihood_batch[0]  # first entry corresponds to f(x0)
+        perturbed_log_likelihood = np.delete(log_likelihood_batch, 0, 0)  # delete the first entry
+
+        grad_log_likelihood = fd_jacobian(
+            log_likelihood,
+            perturbed_log_likelihood,
+            delta_positions,
+            use_one_sided,
+            method=self.finite_difference_method,
+        )
 
         return log_likelihood, grad_log_likelihood
 
@@ -455,19 +506,20 @@ class RPVIIterator(VariationalInferenceIterator):
             )
         return result_description
 
-    def eval_model(self, gradient=False):
+    def eval_model(self, gradient_bool=False):
         """Evaluate model for the sample batch.
 
         Args:
-            gradient (bool): Boolean to compute gradient of the model as well, if set to True
+            gradient_bool (bool): Boolean to compute gradient of the model as well,
+                                  if set to True
 
         Returns:
            result_dict (dict): Dictionary containing model response for sample batch
         """
-        result_dict = self.model.evaluate(gradient=gradient)
+        result_dict = self.model.evaluate(gradient_bool=gradient_bool)
         return result_dict
 
-    def eval_log_likelihood(self, params, gradient=False):
+    def eval_log_likelihood(self, sample_batch, gradient_bool=False):
         """Calculate the log-likelihood of the observation data.
 
         Evaluation of the likelihood model for all inputs of the sample batch will trigger
@@ -476,7 +528,7 @@ class RPVIIterator(VariationalInferenceIterator):
 
         Args:
             sample_batch (np.array): Sample-batch with samples row-wise
-            gradient (bool): Flag to determine, whether gradient should be provided as well.
+            gradient_bool (bool): Flag to determine, whether gradient should be provided as well.
 
         Returns:
             likelihood_return_tuple (tuple): Tuple containing Vector of the log-likelihood
@@ -486,9 +538,9 @@ class RPVIIterator(VariationalInferenceIterator):
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)--> data is saved to DB
 
-        self.model.update_model_from_sample_batch(np.atleast_2d(params).reshape(1, -1))
-        likelihood_return_tuple = self.eval_model(gradient=gradient)
-        self.n_sims += len(params)
+        self.model.update_model_from_sample_batch(np.atleast_2d(sample_batch).reshape(1, -1))
+        likelihood_return_tuple = self.eval_model(gradient_bool=gradient_bool)
+        self.n_sims += len(sample_batch)
         self.n_sims_list.append(self.n_sims)
         self.noise_list.append(self.model.normal_distribution.covariance)
 

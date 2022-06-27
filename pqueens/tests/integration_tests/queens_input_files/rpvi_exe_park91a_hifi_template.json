@@ -10,8 +10,6 @@
       "model": "model",
       "max_feval": 8,
       "likelihood_gradient_method": "provided_gradient",
-      "min_relative_change_variational_params": -1,
-      "num_iter_average_convergence": 5,
       "n_samples_per_iter": 2,
       "score_function_bool": true,
       "variational_distribution": {

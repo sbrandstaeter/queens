@@ -61,11 +61,13 @@ class ApproximationInterfaceMF(Interface):
         return cls(interface_name, approximation_config, parameters)
 
     # TODO think about introducing general mf-interface ?
-    def evaluate(self, samples, **_kwargs):
+    def evaluate(self, samples, gradient_bool=False):
         """Mapping function which calls the regression approximation.
 
         Args:
             samples (list):         list of variables objects
+            gradient_bool (bool): Flag to determine, whether the gradient of the function at
+                                  the evaluation point is expected (True) or not (False)
 
         Returns:
             dict: Dictionary with mean, variance, and possibly
@@ -73,6 +75,11 @@ class ApproximationInterfaceMF(Interface):
         """
         if not self.approx_init:
             raise RuntimeError("Approximation has not been properly initialized, cannot continue!")
+
+        if gradient_bool:
+            raise NotImplementedError(
+                "The gradient response is not implemented for this interface. Please set `gradient_bool=False`. Abort..."
+            )
 
         inputs = []
         for variables in samples:

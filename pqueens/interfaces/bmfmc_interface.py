@@ -38,7 +38,7 @@ class BmfmcInterface(Interface):
         self.approx_name = approx_name
         self.probabilistic_mapping_obj = None
 
-    def evaluate(self, Z_LF, support='y', full_cov=False, **_kwargs):
+    def evaluate(self, Z_LF, support='y', full_cov=False, gradient_bool=False):
         r"""Predict on probabilistic mapping.
 
         Call the probabilistic mapping and predict the mean and variance
@@ -47,6 +47,8 @@ class BmfmcInterface(Interface):
         Args:
             Z_LF (np.array): low-fidelity feature vector that contains the corresponding Monte-Carlo
                               points on which the probabilistic mapping should be evaluated
+            gradient_bool (bool): Flag to determine, whether the gradient of the function at
+                                  the evaluation point is expected (True) or not (False)
 
         Returns:
             mean_Y_HF_given_Z_LF (np.array): Vector of mean predictions
@@ -60,6 +62,10 @@ class BmfmcInterface(Interface):
         if self.probabilistic_mapping_obj is None:
             raise RuntimeError(
                 "The probabilistic mapping has not been properly initialized, cannot continue!"
+            )
+        if gradient_bool:
+            raise NotImplementedError(
+                "The gradient response is not implemented for this interface. Please set `gradient_bool=False`. Abort..."
             )
 
         output = self.probabilistic_mapping_obj.predict(Z_LF, support=support, full_cov=full_cov)

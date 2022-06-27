@@ -161,19 +161,19 @@ class GaussianLikelihood(LikelihoodModel):
             coord_labels=coord_labels,
         )
 
-    def evaluate(self, gradient=False):
+    def evaluate(self, gradient_bool=False):
         """Evaluate likelihood with current set of samples.
 
         Returns:
             log_likelihood_output (tuple): Tuple with vector of log-likelihood values
-                                            per model input and potentially the gradient
-                                            of the model w.r.t. its inputs
-            gradient (bool, optional): Boolean to determine whether the gradient of the
-                                        likelihood should be evaluated (if set to True)
+                                           per model input and potentially the gradient
+                                           of the model w.r.t. its inputs
+            gradient_bool (bool, optional): Boolean to determine whether the gradient of the
+                                            likelihood should be evaluated (if set to True)
         """
-        if gradient:
+        if gradient_bool:
             model_output, model_gradient = self._update_and_evaluate_forward_model(
-                gradient_bool=gradient
+                gradient_bool=gradient_bool
             )
             self.update_covariance(model_output)
             log_likelihood_output = self.normal_distribution.logpdf(model_output)
@@ -182,7 +182,7 @@ class GaussianLikelihood(LikelihoodModel):
             )
             log_likelihood_output = (log_likelihood_output, grad_log_likelihood)
         else:
-            model_output = self._update_and_evaluate_forward_model(gradient_bool=gradient)
+            model_output = self._update_and_evaluate_forward_model(gradient_bool=gradient_bool)
             self.update_covariance(model_output)
             log_likelihood_output = self.normal_distribution.logpdf(model_output)
 
