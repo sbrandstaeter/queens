@@ -60,7 +60,9 @@ def rpvi_density_match(
 
 
 @pytest.mark.integration_tests
-def test_rpvi_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimental_data_to_csv):
+def test_rpvi_iterator_park91a_hifi(
+    inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
+):
     """Integration test for the rpvi iterator based on the park91a_hifi
     function."""
 
