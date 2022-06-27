@@ -23,6 +23,13 @@ class VariationalInferenceIterator(Iterator):
     References:
         [1]: Mohamed et al. "Monte Carlo Gradient Estimation in Machine Learning". Journal of
              Machine Learning Research. 21(132):1−62, 2020.
+        [2]: Blei, D. M., Kucukelbir, A., & McAuliffe, J. D. (2017). Variational Inference: A
+             Review for Statisticians. Journal of the American Statistical Association, 112(518),
+             859–877. https://doi.org/10.1080/01621459.2017.1285773
+        [3]: Hoffman, M. D., Blei, D. M., Wang, C., & Paisley, J. (2013). Stochastic variational
+             inference. Journal of Machine Learning Research, 14(1), 1303–1347.
+
+
 
     Attributes:
         global_settings (dict): Global settings of the QUEENS simulations
@@ -60,6 +67,8 @@ class VariationalInferenceIterator(Iterator):
                                            the probabilistic model is sampled independent of the
                                            other conditions
         stochastic_optimizer (obj): QUEENS stochastic optimizer object
+        nan_in_gradient_counter (int): Count how many times NaNs appeared in the gradient estimate
+                                       in a row
     """
 
     def __init__(
@@ -143,6 +152,7 @@ class VariationalInferenceIterator(Iterator):
         self.elbo_list = []
         self.n_sims_list = []
         self.prior_obj_list = []
+        self.nan_in_gradient_counter = 0
 
     @staticmethod
     def get_base_attributes_from_config(config, iterator_name, model=None):
@@ -471,6 +481,7 @@ class VariationalInferenceIterator(Iterator):
         """
         result_description = {
             "final_elbo": self.elbo_list[-1],
+            "final_variational_parameters": self.variational_params,
             "batch_size": self.n_samples_per_iter,
             "number_of_sim": self.n_sims,
             "natural_gradient": self.natural_gradient_bool,
@@ -481,8 +492,10 @@ class VariationalInferenceIterator(Iterator):
         if self.export_quantities_over_iter:
             result_description.update(
                 {
-                    "params_over_iter": self.variational_params_list,
-                    "elbo": self.elbo_list,
+                    "iteration_data": {
+                        "variational_parameters": self.variational_params_list,
+                        "elbo": self.elbo_list,
+                    }
                 }
             )
 
@@ -492,7 +505,7 @@ class VariationalInferenceIterator(Iterator):
                 {"variational_transformation": self.variational_transformation}
             )
 
-        result_description.update({"variational_distr": distribution_dict})
+        result_description.update({"variational_distribution": distribution_dict})
         return result_description
 
     @abc.abstractmethod
@@ -544,10 +557,45 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             obj: function to evaluate the gradient
         """
+        safe_gradient = self.handle_gradient_nan(self._calculate_elbo_gradient)
         if self.natural_gradient_bool:
             gradient = lambda variational_parameters: np.linalg.solve(
-                self._get_fim(), self._calculate_elbo_gradient(variational_parameters)
+                self._get_fim(), safe_gradient(variational_parameters)
             )
         else:
-            gradient = self._calculate_elbo_gradient
+            gradient = safe_gradient
+
         return gradient
+
+    def handle_gradient_nan(self, gradient_function):
+        """Mehtod that handles NaN in gradient estimations.
+
+        Args:
+            gradient_function (function): Function that estimates the gradient
+
+        Returns:
+             function: Gradient function wrapped with the counter
+        """
+
+        def nan_counter_and_warner(*args, **kwargs):
+            """Count iterations with NaNs and write warning."""
+            gradient = gradient_function(*args, **kwargs)
+            if np.isnan(gradient).any():
+                _logger.warn(
+                    "Gradient estimate contains NaNs (number of iterations in a row with NaNs:"
+                    f" {self.nan_in_gradient_counter})"
+                )
+                gradient = np.nan_to_num(gradient)
+                self.nan_in_gradient_counter += 1
+            else:
+                self.nan_in_gradient_counter = 0
+
+            # Arbitrary number, this will be changed in the future
+            if self.nan_in_gradient_counter == 10:
+                raise ValueError(
+                    "Variational inference stopped: 10 iterations in a row failed to compute a"
+                    "bounded gradient!"
+                )
+            return gradient
+
+        return nan_counter_and_warner

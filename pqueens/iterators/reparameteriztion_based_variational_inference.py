@@ -23,6 +23,8 @@ class RPVIIterator(VariationalInferenceIterator):
         - An externally provided gradient/jacobian that was, e.g., calculated via adjoint methods or
           automated differentiation
 
+    The current implementation does not support importance sampling of the MC gradient.
+
     The mathematical details of the algorithm can be found in [1], [2], [3]
 
     References:
@@ -243,7 +245,14 @@ class RPVIIterator(VariationalInferenceIterator):
         super().core_run()
 
     def _calculate_elbo_gradient(self, variational_parameters):
+        """Compute ELBO gradient.
 
+        Args:
+            variational_parameters (np.ndarray): variational parameters
+
+        Returns:
+            np.ndarray: ELBO gradient (n_params x 1)
+        """
         # Some clarification of terms:
         # params: actual parameters for which we solve the inverse problem
         # sample: sample of the variational distribution
@@ -438,9 +447,10 @@ class RPVIIterator(VariationalInferenceIterator):
         """
         result_description = super()._prepare_result_description()
         if self.export_quantities_over_iter:
-            result_description.update(
+            result_description["iteration_data"].update(
                 {
                     "likelihood_noise_var": self.noise_list,
+                    "elbo": self.elbo_list,
                 }
             )
         return result_description

@@ -88,8 +88,11 @@ class BBVIIterator(VariationalInferenceIterator):
                                            the probabilistic model is sampled independent of the
                                            other conditions
         stochastic_optimizer (obj): QUEENS stochastic optimizer object
-        sampling_bool (bool): True if probabilistic model has to be sampled
-        samples (np.ndarray): Current samples used to evalute the probabilistic model
+        sampling_bool (bool): True if probabilistic model has to be sampled. If importance
+                              sampling is used the forward model might not evaluated in
+                              every iteration
+        sample_set (np.ndarray): Set of samples used to evalute the probabilistic model is
+                                 not needed in other VI methods
     """
 
     def __init__(
@@ -206,7 +209,7 @@ class BBVIIterator(VariationalInferenceIterator):
         self.noise_list = []
         self.weights_list = []
         self.sampling_bool = True
-        self.samples = None
+        self.sample_set = None
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -389,20 +392,21 @@ class BBVIIterator(VariationalInferenceIterator):
             }
         )
 
+        if self.memory > 0:
+            result_description.update({"memory": self.memory})
+
         if self.export_quantities_over_iter:
-            result_description.update(
+            result_description["iteration_data"].update(
                 {
-                    "params_over_iter": self.variational_params_list,
                     "likelihood_noise_var": self.noise_list,
                     "elbo": self.elbo_list,
                 }
             )
             if self.memory > 0:
-                result_description.update(
+                result_description["iteration_data"].update(
                     {
                         "ESS": self.ess_list,
-                        "memory": self.memory,
-                        "weigths_over_iter": self.weights_list,
+                        "importance_sampling_weights": self.weights_list,
                     }
                 )
 
@@ -554,8 +558,7 @@ class BBVIIterator(VariationalInferenceIterator):
 
         self.n_sims_list.append(self.n_sims)
 
-        # Avoid NaN in the elbo gradient
-        return np.nan_to_num(grad_elbo)
+        return grad_elbo
 
     def _sample_gradient_from_probabilistic_model(self):
         """Evaluate probabilistic model."""
@@ -563,19 +566,19 @@ class BBVIIterator(VariationalInferenceIterator):
         n_samples = self.n_samples_per_iter
         self.n_sims += n_samples
         # Draw samples for the current iteration
-        self.samples = self.variational_distribution_obj.draw(self.variational_params, n_samples)
+        self.sample_set = self.variational_distribution_obj.draw(self.variational_params, n_samples)
 
         # Calls the (unnormalized) probabilistic model
-        self.log_posterior_unnormalized = self.get_log_posterior_unnormalized(self.samples)
+        self.log_posterior_unnormalized = self.get_log_posterior_unnormalized(self.sample_set)
 
     def _evaluate_variational_distribution_for_batch(self):
         """Evaluate logpdf and score function."""
         self.log_variational_mat = self.variational_distribution_obj.logpdf(
-            self.variational_params, self.samples
+            self.variational_params, self.sample_set
         )
 
         self.grad_params_log_variational_mat = self.variational_distribution_obj.grad_params_logpdf(
-            self.variational_params, self.samples
+            self.variational_params, self.sample_set
         )
 
         # Convert if NaNs to floats. For high dimensional RV floating point issues
@@ -603,7 +606,7 @@ class BBVIIterator(VariationalInferenceIterator):
                 j += 1
 
         self.log_posterior_unnormalized = self.log_posterior_unnormalized[idx]
-        self.samples = np.array([self.samples[j] for j in idx])
+        self.sample_set = np.array([self.sample_set[j] for j in idx])
 
     def _check_if_sampling_necessary(self):
         """Check if resampling is necessary.
@@ -662,7 +665,9 @@ class BBVIIterator(VariationalInferenceIterator):
 
             # The number of iterations that we want to keep the samples and model evals
             if self.stochastic_optimizer.iteration > 0:
-                weights_is = self.get_importance_sampling_weights(self.parameter_list, self.samples)
+                weights_is = self.get_importance_sampling_weights(
+                    self.parameter_list, self.sample_set
+                )
 
                 # Self normalize weighs
                 normalizing_constant = np.sum(weights_is)
@@ -678,7 +683,7 @@ class BBVIIterator(VariationalInferenceIterator):
         if self.sampling_bool:
             # Store the current samples, parameters and probabilistic model evals
             self.parameter_list.append(self.variational_params)
-            self.samples_list.append(self.samples)
+            self.samples_list.append(self.sample_set)
             self.log_posterior_unnormalized_list.append(self.log_posterior_unnormalized)
 
         # The number of iterations that we want to keep the samples and model evals
@@ -689,7 +694,7 @@ class BBVIIterator(VariationalInferenceIterator):
                 -(self.memory + 1) :
             ]
 
-            self.samples = np.concatenate(self.samples_list, axis=0)
+            self.sample_set = np.concatenate(self.samples_list, axis=0)
             self.log_posterior_unnormalized = np.concatenate(
                 self.log_posterior_unnormalized_list, axis=0
             )

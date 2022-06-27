@@ -36,7 +36,7 @@ def rpvi_density_match(
     )
 
     # actual main call of bbvi with patched density for posterior
-    with patch.object(rpviIterator, 'get_log_posterior_unnormalized', target_density):
+    with patch.object(RPVIIterator, 'get_log_posterior_unnormalized', target_density):
         variational_distr_obj = dummy_rpvi_instance.variational_distribution_obj
         mu = np.array([0.1, 0.7, 0.2, 0.3, 0.25])
         cov = np.exp(np.diag([0.5, 0.5, 0.5, 0.5, 0.5]) * 2)
@@ -190,10 +190,10 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         results = pickle.load(handle)
 
     # Actual tests
-    assert np.abs(results["variational_distr"]["mean"][0] - 0.5) < 0.25
-    assert np.abs(results["variational_distr"]["mean"][1] - 0.2) < 0.1
-    assert results["variational_distr"]["covariance"][0, 0] ** 0.5 < 0.5
-    assert results["variational_distr"]["covariance"][1, 1] ** 0.5 < 0.5
+    assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
+    assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.1
+    assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
+    assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
 
 
 @pytest.fixture()
