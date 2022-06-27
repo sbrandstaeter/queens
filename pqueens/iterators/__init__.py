@@ -7,6 +7,26 @@ the iterators orchestrate the evaluations on one or multiple models.
 QUEENS also permits nesting of iterators to enable hierarchical methods
 or surrogate based UQ approaches.
 """
+from pqueens.iterators.baci_lm_iterator import BaciLMIterator
+from pqueens.iterators.black_box_variational_bayes import BBVIIterator
+from pqueens.iterators.bmfia_iterator import BMFIAIterator
+from pqueens.iterators.bmfmc_iterator import BMFMCIterator
+from pqueens.iterators.data_iterator import DataIterator
+from pqueens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
+from pqueens.iterators.grid_iterator import GridIterator
+from pqueens.iterators.lhs_iterator import LHSIterator
+from pqueens.iterators.lhs_iterator_mf import MFLHSIterator
+from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
+from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
+from pqueens.iterators.optimization_iterator import OptimizationIterator
+from pqueens.iterators.polynomial_chaos_iterator import PolynomialChaosIterator
+from pqueens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
+from pqueens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
+from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+from pqueens.iterators.single_sim_run_iterator import SingleSimRunIterator
+from pqueens.iterators.sobol_index_gp_uncertainty_iterator import SobolIndexGPUncertaintyIterator
+from pqueens.iterators.sobol_index_iterator import SobolIndexIterator
+from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 
 
 def from_config_create_iterator(config, iterator_name='method', model=None):
@@ -21,26 +41,6 @@ def from_config_create_iterator(config, iterator_name='method', model=None):
     Returns:
         iterator: Iterator object
     """
-    from .baci_lm_iterator import BaciLMIterator
-    from .black_box_variational_bayes import BBVIIterator
-    from .bmfia_iterator import BMFIAIterator
-    from .bmfmc_iterator import BMFMCIterator
-    from .data_iterator import DataIterator
-    from .elementary_effects_iterator import ElementaryEffectsIterator
-    from .grid_iterator import GridIterator
-    from .lhs_iterator import LHSIterator
-    from .lhs_iterator_mf import MFLHSIterator
-    from .metropolis_hastings_iterator import MetropolisHastingsIterator
-    from .monte_carlo_iterator import MonteCarloIterator
-    from .optimization_iterator import OptimizationIterator
-    from .sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
-    from .sequential_monte_carlo_iterator import SequentialMonteCarloIterator
-    from .single_sim_run_iterator import SingleSimRunIterator
-    from .sobol_index_gp_uncertainty_iterator import SobolIndexGPUncertaintyIterator
-    from .sobol_index_iterator import SobolIndexIterator
-    from .sobol_sequence_iterator import SobolSequenceIterator
-    from .variational_inference_reparameterization import VIRPIterator
-
     method_dict = {
         'lhs': LHSIterator,
         'lhs_mf': MFLHSIterator,
@@ -49,6 +49,7 @@ def from_config_create_iterator(config, iterator_name='method', model=None):
         'optimization': OptimizationIterator,
         'read_data_from_file': DataIterator,
         'elementary_effects': ElementaryEffectsIterator,
+        'polynomial_chaos': PolynomialChaosIterator,
         'sobol_indices': SobolIndexIterator,
         'sobol_indices_gp_uncertainty': SobolIndexGPUncertaintyIterator,
         'smc': SequentialMonteCarloIterator,
@@ -60,7 +61,7 @@ def from_config_create_iterator(config, iterator_name='method', model=None):
         'baci_lm': BaciLMIterator,
         'bbvi': BBVIIterator,
         'bmfia': BMFIAIterator,
-        'virp': VIRPIterator,
+        'rpvi': RPVIIterator,
     }
 
     method_name = config[iterator_name]['method_name']

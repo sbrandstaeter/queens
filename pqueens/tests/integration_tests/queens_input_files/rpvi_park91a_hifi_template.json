@@ -1,16 +1,14 @@
 {
-  "experiment_name": "inverse_virp_park91a_hifi",
+  "experiment_name": "inverse_rpvi_park91a_hifi",
   "database": {
     "type": "mongodb",
     "address": "localhost:27017"
   },
   "method": {
-    "method_name": "virp",
+    "method_name": "rpvi",
     "method_options": {
       "model": "model",
       "max_feval": 1300,
-      "min_relative_change_variational_params": -1,
-      "num_iter_average_convergence": 5,
       "n_samples_per_iter": 2,
       "score_function_bool": true,
       "finite_difference_step": 1e-5,
@@ -19,14 +17,17 @@
         "variational_family": "normal"
       },
       "optimization_options": {
-        "learning_rate": 0.01,
-        "gradient_clipping": true,
-        "gradient_clipping_norm_threshold": 1e6,
         "natural_gradient": true,
         "FIM_dampening": true,
         "decay_start_iteration": 50,
         "dampening_coefficient": 1e-2,
-        "FIM_dampening_lower_bound": 1e-8
+        "FIM_dampening_lower_bound": 1e-8,
+        "stochastic_optimizer": "Adam",
+        "learning_rate": 0.01,
+        "optimization_type": "max",
+        "rel_L1_change_threshold": -1,
+        "rel_L2_change_threshold": -1,
+        "max_iter": 10000000
       },
       "variational_transformation": null,
       "variational_parameter_initialization": "prior",

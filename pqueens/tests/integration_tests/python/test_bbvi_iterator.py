@@ -103,12 +103,13 @@ def test_bbvi_iterator_park91a_hifi(
     result_file = os.path.join(tmpdir, "inverse_bbvi_park91a_hifi.pickle")
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
-    elbo_list = results["elbo"]
+    elbo_list = results["iteration_data"]["elbo"]
+
     # Actual tests
-    assert np.abs(results["variational_distr"]["mean"][0] - 0.5) < 0.25
-    assert np.abs(results["variational_distr"]["mean"][1] - 0.2) < 0.2
-    assert results["variational_distr"]["covariance"][0, 0] ** 0.5 < 0.5
-    assert results["variational_distr"]["covariance"][1, 1] ** 0.5 < 0.5
+    assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
+    assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.2
+    assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
+    assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
     assert np.mean(elbo_list[-5:]) > np.mean(elbo_list[:5])
 
 
