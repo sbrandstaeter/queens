@@ -2,7 +2,6 @@
 
 import abc
 
-import autograd.numpy as npy
 import numpy as np
 import scipy
 from numba import njit
@@ -18,17 +17,14 @@ class VariationalDistribution:
     @abc.abstractmethod
     def draw(self, variational_params, num_draws=1):
         """Draw num_draws samples from distribution."""
-        pass
 
     @abc.abstractmethod
     def logpdf(self, variational_params, x):
         """Evaluate the natural logarithm of the logpdf at sample."""
-        pass
 
     @abc.abstractmethod
     def pdf(self, variational_params, x):
         """Evaluate the probability density function (pdf) at sample."""
-        pass
 
     @abc.abstractmethod
     def grad_params_logpdf(self, variational_params, x):
@@ -36,16 +32,14 @@ class VariationalDistribution:
 
         Evaluated at samples x. Also known as the score function.
         """
-        pass
 
     @abc.abstractmethod
-    def fisher_information_matrix(self, variational_params, x):
+    def fisher_information_matrix(self, variational_params, num_samples):
         """Compute the fisher information matrix.
 
         Depends on the variational distribution for the given
         parameterization.
         """
-        pass
 
 
 class MeanFieldNormalVariational(VariationalDistribution):
@@ -536,7 +530,7 @@ class MixtureModel(VariationalDistribution):
         """
         variational_params = []
         # Initialize the variational parameters of the components
-        for j in range(self.num_components):
+        for _ in range(self.num_components):
             params_comp = self.base_distribution.initialize_parameters_randomly().tolist()
             variational_params.extend(params_comp)
         # Initialize weight parameters with random uniform noise
@@ -584,7 +578,7 @@ class MixtureModel(VariationalDistribution):
         """
         parameters_list, weights = self.reconstruct_parameters(variational_params)
         samples = []
-        for j in range(num_draws):
+        for _ in range(num_draws):
             # Select component to draw from
             component = np.argmax(np.random.multinomial(1, weights))
             # Draw a sample of this component
@@ -613,13 +607,13 @@ class MixtureModel(VariationalDistribution):
         logpdf = []
         x = np.atleast_2d(x)
         # Parameter for the log-sum-exp trick
-        m = -np.inf * np.ones(len(x))
+        max_logpdf = -np.inf * np.ones(len(x))
         for j in range(self.num_components):
             logpdf.append(np.log(weights[j]) + self.base_distribution.logpdf(parameters_list[j], x))
-            m = np.maximum(m, logpdf[-1])
-        logpdf = np.array(logpdf) - np.tile(m, (self.num_components, 1))
+            max_logpdf = np.maximum(max_logpdf, logpdf[-1])
+        logpdf = np.array(logpdf) - np.tile(max_logpdf, (self.num_components, 1))
         logpdf = np.sum(np.exp(logpdf), axis=0)
-        logpdf = np.log(logpdf) + m
+        logpdf = np.log(logpdf) + max_logpdf
         return logpdf
 
     def pdf(self, variational_params, x):
@@ -683,11 +677,11 @@ class MixtureModel(VariationalDistribution):
         """
         samples = self.draw(variational_params, num_samples)
         scores = self.grad_params_logpdf(variational_params, samples)
-        FIM = 0
+        fim = 0
         for j in range(num_samples):
-            FIM = FIM + np.outer(scores[:, j], scores[:, j])
-        FIM = FIM / num_samples
-        return FIM
+            fim = fim + np.outer(scores[:, j], scores[:, j])
+        fim = fim / num_samples
+        return fim
 
     def export_dict(self, variational_params):
         """Create a dict of the distribution based on the given parameters.
@@ -750,9 +744,8 @@ def create_normal_distribution(dimension, approximation_type):
     else:
         supported_types = {'mean_field', 'fullrank'}
         raise ValueError(
-            "Requested variational approximation type not supported: {0}.\n"
-            "Supported types:  {1}. "
-            "".format(approximation_type, supported_types)
+            f"Requested variational approximation type not supported: {approximation_type}.\n"
+            f"Supported types:  {supported_types}. "
         )
     return distribution_obj
 
@@ -772,9 +765,9 @@ def create_mixture_model_distribution(base_distribution, dimension, num_componen
         distribution_obj = MixtureModel(base_distribution, dimension, num_components)
     else:
         raise ValueError(
-            f"Number of mixture components has be greater than 1. If a single component is"
-            f"desired use the respective variational distribution directly (is computationally"
-            f"more efficient)."
+            "Number of mixture components has be greater than 1. If a single component is"
+            "desired use the respective variational distribution directly (is computationally"
+            "more efficient)."
         )
     return distribution_obj
 
@@ -808,9 +801,8 @@ def create_variational_distribution(distribution_options):
             supported_nested_distribution_families + supported_simple_distribution_families
         )
         raise ValueError(
-            "Requested variational family type not supported: {0}.\n"
-            "Supported types:  {1}. "
-            "".format(distribution_family, supported_distributions)
+            f"Requested variational family type not supported: {distribution_family}.\n"
+            f"Supported types:  {supported_distributions}."
         )
     return distribution_obj
 
@@ -829,23 +821,41 @@ def draw_base_samples_from_standard_normal(n_samples_per_iter, num_variables):
     return sample_batch
 
 
-def conduct_reparameterization(variational_params, sample_dim):
+def grad_varparams_reparameterization(variational_params, sample):
+    """Gradient of the reparameterization w.r.t. the variational params.
+
+    Args:
+        variational_params (np.array): Array containing the variational parameters
+        sample (float): Sample  of a standard Gaussian
+
+    Returns:
+        gradient (np.array): gradient
+    """
+    sigma_transformed = variational_params[1]
+
+    # transformation for variance
+    sigma = np.exp(sigma_transformed)
+    gradient = np.array([1, sigma * sample]).reshape(-1, 1)
+    return gradient
+
+
+def conduct_reparameterization(variational_params, sample):
     """Conduct the reparameterization trick in the sample generation.
 
     Args:
         variational_params (np.array): Array containing the variational parameters
-        sample_dim (int): Dimension of the variational distribution
+        sample (float): Sample  of a standard Gaussian
 
     Returns:
         param (float): Actual sample of the variational distribution
     """
     # note sample is one sample and one dim of the sample_vector
-    mu = variational_params[0]
+    mean = variational_params[0]
     sigma_transformed = variational_params[1]
 
     # transformation for variance
-    sigma = npy.sqrt(npy.exp(2 * sigma_transformed))
-    param = mu + sigma * sample_dim
+    sigma = np.exp(sigma_transformed)
+    param = mean + sigma * sample
 
     return param
 
