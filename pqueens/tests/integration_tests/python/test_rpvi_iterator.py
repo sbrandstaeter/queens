@@ -97,10 +97,10 @@ def test_rpvi_iterator_park91a_hifi(inputdir, tmpdir, design_and_write_experimen
         results = pickle.load(handle)
 
     # Actual tests
-    assert np.abs(results["variational_distr"]["mean"][0] - 0.5) < 0.25
-    assert np.abs(results["variational_distr"]["mean"][1] - 0.2) < 0.1
-    assert results["variational_distr"]["covariance"][0, 0] ** 0.5 < 0.5
-    assert results["variational_distr"]["covariance"][1, 1] ** 0.5 < 0.5
+    assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
+    assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.1
+    assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
+    assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
 
 
 @pytest.mark.integration_tests
@@ -139,10 +139,10 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         results = pickle.load(handle)
 
     # Actual tests
-    assert np.abs(results["variational_distr"]["mean"][0] - 0.5) < 0.25
-    assert np.abs(results["variational_distr"]["mean"][1] - 0.2) < 0.1
-    assert results["variational_distr"]["covariance"][0, 0] ** 0.5 < 0.5
-    assert results["variational_distr"]["covariance"][1, 1] ** 0.5 < 0.5
+    assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
+    assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.1
+    assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
+    assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
 
 
 @pytest.mark.integration_tests

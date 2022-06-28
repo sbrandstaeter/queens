@@ -375,13 +375,13 @@ class RPVIIterator(VariationalInferenceIterator):
         grad_log_priors = np.array(grad_log_prior_lst)
         return grad_log_priors
 
-    def calculate_grad_log_likelihood_params(self, params):
+    def calculate_grad_log_likelihood_params(self, sample):
         """Calculate the gradient/jacobian of the log-likelihood function.
 
         Gradient is calculated w.r.t. the argument params
 
         Args:
-            params (np.array): Current sample values of the random parameters
+            sample (np.array): Current sample values of the random parameters
 
         Returns:
             jacobi_log_likelihood (np.array): Jacobian of the log-likelihood function
@@ -392,8 +392,8 @@ class RPVIIterator(VariationalInferenceIterator):
             'finite_difference': self._calculate_grad_log_lik_params_finite_difference,
         }
         my_gradient_method = get_option(gradient_methods, self.likelihood_gradient_method)
-        log_likelihood, jacobi_log_likelihood = my_gradient_method(params)
-        return log_likelihood, jacobi_log_likelihood
+        log_likelihood, grad_log_likelihood = my_gradient_method(sample)
+        return log_likelihood, grad_log_likelihood
 
     def _calculate_grad_log_lik_params_provided_gradient(self, params):
         """Calculate gradient of log likelihood based on provided gradient.
@@ -411,43 +411,37 @@ class RPVIIterator(VariationalInferenceIterator):
         log_likelihood, grad_log_likelihood = self.eval_log_likelihood(params, gradient_bool=True)
         return log_likelihood, grad_log_likelihood
 
-    def _calculate_grad_log_lik_params_finite_difference(self, params):
+    def _calculate_grad_log_lik_params_finite_difference(self, sample):
         """Gradient of the log likelihood with finite differences.
 
         The gradient of the log-likelihood is calculated w.r.t. the input of the underlying forward
         model, here denoted by params.
 
         Args:
-            params (np.array): Current sample values of the random parameters
+            sample (np.array): Current sample values of the random parameters
 
         Returns:
             jacobi_log_likelihood (np.array): Jacobian of the log-likelihood function
             log_likelihood (float): Value of the log-likelihood function
         """
-        positions, delta_positions = get_positions(
-            params,
+        sample_stencil, delta_positions = get_positions(
+            sample,
             method=self.finite_difference_method,
             rel_step=self.finite_difference_step,
-            bounds=None,
-        )
-        _, use_one_sided = compute_step_with_bounds(
-            params,
-            method=self.finite_difference_method,
-            rel_step=self.finite_difference_step,
-            bounds=None,
+            bounds=[-np.inf, np.inf],
         )
 
         # model response should now correspond to objective function evaluated at positions
-        log_likelihood_batch = self.eval_log_likelihood(positions)
+        log_likelihood_batch = self.eval_log_likelihood(sample_stencil)
 
-        log_likelihood = log_likelihood_batch[0]  # first entry corresponds to f(x0)
+        log_likelihood = log_likelihood_batch[0]  # first entry corresponds to log-likelihood
         perturbed_log_likelihood = np.delete(log_likelihood_batch, 0, 0)  # delete the first entry
 
         grad_log_likelihood = fd_jacobian(
             log_likelihood,
             perturbed_log_likelihood,
-            delta_positions,
-            use_one_sided,
+            delta_positions.T,
+            False,
             method=self.finite_difference_method,
         )
 
@@ -537,8 +531,7 @@ class RPVIIterator(VariationalInferenceIterator):
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)--> data is saved to DB
-
-        self.model.update_model_from_sample_batch(np.atleast_2d(sample_batch).reshape(1, -1))
+        self.model.update_model_from_sample_batch(np.atleast_2d(sample_batch))
         likelihood_return_tuple = self.eval_model(gradient_bool=gradient_bool)
         self.n_sims += len(sample_batch)
         self.n_sims_list.append(self.n_sims)
