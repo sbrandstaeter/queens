@@ -65,7 +65,8 @@ class BmfmcInterface(Interface):
             )
         if gradient_bool:
             raise NotImplementedError(
-                "The gradient response is not implemented for this interface. Please set `gradient_bool=False`. Abort..."
+                "The gradient response is not implemented for this interface. Please set "
+                "`gradient_bool=False`. Abort..."
             )
 
         output = self.probabilistic_mapping_obj.predict(Z_LF, support=support, full_cov=full_cov)

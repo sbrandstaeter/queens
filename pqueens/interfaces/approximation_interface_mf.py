@@ -78,7 +78,8 @@ class ApproximationInterfaceMF(Interface):
 
         if gradient_bool:
             raise NotImplementedError(
-                "The gradient response is not implemented for this interface. Please set `gradient_bool=False`. Abort..."
+                "The gradient response is not implemented for this interface. Please set "
+                "`gradient_bool=False`. Abort..."
             )
 
         inputs = []
