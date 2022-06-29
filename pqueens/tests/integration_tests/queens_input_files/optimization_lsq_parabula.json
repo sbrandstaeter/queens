@@ -30,7 +30,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "parabula_residual.py"
+    "function_name": "parabula_residual"
   },
   "parameters": {
     "random_variables": {

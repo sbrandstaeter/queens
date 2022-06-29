@@ -4,6 +4,9 @@ import pytest
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 from pqueens.models.simulation_model import SimulationModel
+from pqueens.tests.integration_tests.example_simulator_functions import (
+    example_simulator_function_by_name,
+)
 from pqueens.variables.variables import Variables
 
 
@@ -48,8 +51,9 @@ def default_model():
 
     variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
 
+    function = example_simulator_function_by_name("ishigami90")
     # create interface
-    interface = DirectPythonInterface('test_interface', 'ishigami.py', variables)
+    interface = DirectPythonInterface('test_interface', function, variables, None)
 
     # create mock model
     model = SimulationModel("my_model", interface, uncertain_parameters)

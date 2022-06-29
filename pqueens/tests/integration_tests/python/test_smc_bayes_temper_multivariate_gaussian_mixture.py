@@ -7,15 +7,11 @@ import pytest
 from mock import patch
 
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
-
-# fmt: on
 from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from pqueens.main import main
-
-# fmt: off
-from pqueens.tests.integration_tests.example_simulator_functions.multivariate_gaussian_mixture_logpdf import (
-    gaussian1,
-    gaussian_mixture_logpdf,
+from pqueens.tests.integration_tests.example_simulator_functions.gaussian_mixture_logpdf import (
+    gaussian_component_1,
+    gaussian_mixture_4d_logpdf,
 )
 from pqueens.utils import injector
 
@@ -101,7 +97,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmpdir, dummy_
 
 def target_density(self, samples):
     samples = np.atleast_2d(samples)
-    log_likelihood = gaussian_mixture_logpdf(samples).reshape(-1, 1)
+    log_likelihood = gaussian_mixture_4d_logpdf(samples).reshape(-1, 1)
 
     return log_likelihood
 
@@ -109,8 +105,8 @@ def target_density(self, samples):
 @pytest.fixture()
 def dummy_data(tmpdir):
     # generate 10 samples from the same gaussian
-    samples = gaussian1.draw(10)
-    pdf = (gaussian_mixture_logpdf(samples))
+    samples = gaussian_component_1.draw(10)
+    pdf = gaussian_mixture_4d_logpdf(samples)
 
     pdf = np.array(pdf)
 

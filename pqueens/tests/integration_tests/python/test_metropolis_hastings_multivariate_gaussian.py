@@ -13,9 +13,9 @@ from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCar
 from pqueens.main import main
 
 # fmt: off
-from pqueens.tests.integration_tests.example_simulator_functions.multivariate_gaussian_logpdf import (
-    gauss_like,
-    gaussian_logpdf,
+from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
+    gaussian_2d,
+    gaussian_2d_logpdf,
 )
 from pqueens.utils import injector
 
@@ -65,7 +65,7 @@ def test_metropolis_hastings_multivariate_gaussian(inputdir, tmpdir, dummy_data)
 
 def target_density(self, samples):
     samples = np.atleast_2d(samples)
-    log_likelihood = gaussian_logpdf(samples).reshape(-1, 1)
+    log_likelihood = gaussian_2d_logpdf(samples).reshape(-1, 1)
 
     return log_likelihood
 
@@ -73,8 +73,8 @@ def target_density(self, samples):
 @pytest.fixture()
 def dummy_data(tmpdir):
     # generate 10 samples from the same gaussian
-    samples = gauss_like.draw(10)
-    pdf = (gaussian_logpdf(samples))
+    samples = gaussian_2d.draw(10)
+    pdf = (gaussian_2d_logpdf(samples))
 
     pdf = np.array(pdf)
 

@@ -1,12 +1,14 @@
+"""Oakley O'Hagan 15D function."""
+# pylint: disable=invalid-name
+
 import numpy as np
 
 
-def oakley_ohagan2004_func(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15):
-    """Oakley O'Hagan 2004 function 15 dimensional benchmark function proposed
-    in [1]
+def oakley_ohagan04(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, **kwargs):
+    r"""Oakley O'Hagan 2004 function 15 dimensional benchmark function in [1].
 
-    :math:`f({\\bf x})=
-    {\\bf a_1}^T{\\bf x}+{\\bf a_2}^T\\sin({\\bf x})+{\\bf a_3}^T\\cos({\\bf x})+{\\bf x^T M x}`
+    :math:`f({\bf x})=
+    {\bf a_1}^T{\bf x}+{\bf a_2}^T\sin({\bf x})+{\bf a_3}^T\cos({\bf x})+{\bf x^T M x}`
 
     The a-coefficients are chosen so that 5 of the input variables contribute
     significantly to the output variance, 5 have a much smaller effect, and the
@@ -14,7 +16,7 @@ def oakley_ohagan2004_func(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x1
     coefficient vectors a1, a2 and a3, and the matrix M, can be found at:
     http://www.jeremy-oakley.staff.shef.ac.uk/psa_example.txt.
 
-    In [1] :math:`x_i \\sim N(\\mu=0, \\sigma=1), \\textrm{for all i = 1, ..., 15}.`
+    In [1] :math:`x_i \sim N(\mu=0, \sigma=1), \textrm{for all i = 1, ..., 15}.`
 
     Args:
         x1 (float): Input parameter 1
@@ -37,7 +39,6 @@ def oakley_ohagan2004_func(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x1
         float: Value of function at parameters
 
     References:
-
         [1] Oakley, J. E., & O'Hagan, A. (2004). Probabilistic sensitivity analysis
             of complex models: a Bayesian approach. Journal of the Royal Statistical
             Society: Series B (Statistical Methodology), 66(3), 751-769.
@@ -390,32 +391,3 @@ def oakley_ohagan2004_func(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x1
 
     y = term1 + term2 + term3 + term4
     return y[0, 0]
-
-
-def main(job_id, params):
-    """Interface to Oakley O'Hagan 2004 fuction.
-
-    Args:
-        job_id (int):  ID of job
-        params (dict): Dictionary with parameters
-
-    Returns:
-        float: Value of the function at parameter specified in input dict
-    """
-    return oakley_ohagan2004_func(
-        params['x1'],
-        params['x2'],
-        params['x3'],
-        params['x4'],
-        params['x5'],
-        params['x6'],
-        params['x7'],
-        params['x8'],
-        params['x9'],
-        params['x10'],
-        params['x11'],
-        params['x12'],
-        params['x13'],
-        params['x14'],
-        params['x15'],
-    )

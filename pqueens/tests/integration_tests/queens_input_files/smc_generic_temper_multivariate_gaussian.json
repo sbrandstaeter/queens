@@ -83,8 +83,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "num_workers": 1,
-    "main_file": "multivariate_gaussian_4D_logpdf.py"
+    "function_name": "patch_for_likelihood"
   },
   "parameters": {
     "random_variables": {

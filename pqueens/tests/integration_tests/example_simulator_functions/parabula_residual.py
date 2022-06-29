@@ -1,7 +1,10 @@
+"""Residual of a parabula."""
+# pylint: disable=invalid-name
+
 import numpy as np
 
 
-def parabula_residual(x1):
+def parabula_residual(x1, **kwargs):
     """Residual formulation of a parabula.
 
     Args:
@@ -10,21 +13,6 @@ def parabula_residual(x1):
     Returns:
         ndarray: Vector of residuals of the parabula
     """
-
     res1 = 10.0 * x1 - 3.0
 
     return np.array([res1])
-
-
-def main(job_id, params):
-    """Interface to Residuals of Rosenbrock banana function.
-
-    Args:
-        job_id (int):   ID of job
-        params (dict):  Dictionary with parameters
-
-    Returns:
-        ndarray: Vector of residuals of the parabula at the
-                 positions specified in the params dict
-    """
-    return parabula_residual(params['x1'])

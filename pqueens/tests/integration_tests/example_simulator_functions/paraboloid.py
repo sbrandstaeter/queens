@@ -1,4 +1,8 @@
-def paraboloid(x1, x2):
+"""2D paraboloid."""
+# pylint: disable=invalid-name
+
+
+def paraboloid(x1, x2, **kwargs):
     """A paraboloid.
 
     see  https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
@@ -10,21 +14,6 @@ def paraboloid(x1, x2):
     Returns:
         float: Value of function
     """
-
     a = 1.0
     b = 2.5
     return (x1 - a) ** 2 + (x2 - b) ** 2
-
-
-def main(job_id, params):
-    """Interface to Paraboloid function.
-
-    Args:
-        job_id (int):   ID of job
-        params (dict):  Dictionary with parameters
-
-    Returns:
-        float:          Value of paraboloid function at parameters
-                        specified in input dict
-    """
-    return paraboloid(params['x1'], params['x2'])

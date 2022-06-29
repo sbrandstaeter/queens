@@ -81,7 +81,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "{test_fun}"
+    "function_name": "{test_fun}"
   },
   "parameters": {
     "random_variables": {
