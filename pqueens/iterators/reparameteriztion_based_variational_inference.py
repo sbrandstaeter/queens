@@ -6,7 +6,7 @@ from scipy.stats import multivariate_normal as mvn
 
 from pqueens.iterators.variational_inference import VariationalInferenceIterator
 from pqueens.utils import variational_inference_utils
-from pqueens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
+from pqueens.utils.fd_jacobian import fd_jacobian, get_positions
 from pqueens.utils.valid_options_utils import check_if_valid_option, get_option
 
 _logger = logging.getLogger(__name__)

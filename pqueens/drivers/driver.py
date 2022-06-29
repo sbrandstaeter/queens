@@ -120,11 +120,12 @@ class Driver(metaclass=abc.ABCMeta):
         """Post-process, data processing and finalize job in database."""
         if self.post_processor:
             self.post_processor_job()
-        if self.data_processor:
-            self.data_processor_job()
+
         if self.gradient_data_processor:
             self.gradient_data_processor_job()
 
+        if self.data_processor:
+            self.data_processor_job()
         else:
             # set result to "no" and load job from database, if there
             # has not been any data-processing before

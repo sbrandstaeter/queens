@@ -175,7 +175,6 @@ class BaciLMIterator(Iterator):
 
         f0 = f_batch[0]  # first entry corresponds to f(x0)
         f_perturbed = np.delete(f_batch, 0, 0)  # delete the first entry
-
         J = fd_jacobian(f0, f_perturbed, delta_positions, True, '2-point')
         # sanity checks:
         # in the case of LSQ, the number of residuals needs to be

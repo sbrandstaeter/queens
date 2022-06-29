@@ -289,6 +289,9 @@ class BaciDriver(Driver):
             gradient_data_processor = from_config_create_data_processor(
                 config, gradient_data_processor_name
             )
+        else:
+            gradient_data_processor = None
+
         if data_processor_name:
             data_processor = from_config_create_data_processor(config, data_processor_name)
             cae_output_streaming = False
@@ -743,7 +746,7 @@ class BaciDriver(Driver):
         if self.remote:
             mpi_cmd = 'mpirun -np'
         else:
-            mpi_cmd = 'mpirun --bind-to none -np'
+            mpi_cmd = '/usr/bin/mpirun --bind-to none -np'
 
         command_list = [
             mpi_cmd,
