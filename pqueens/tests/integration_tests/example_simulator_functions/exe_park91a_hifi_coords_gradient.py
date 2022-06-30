@@ -3,7 +3,7 @@
 import sys
 
 import numpy as np
-import pandas as pd
+from numpy import genfromtxt
 
 
 def park91a_hifi_coords(x1, x2, x3, x4):
@@ -144,16 +144,14 @@ def write_results(y_vec, y_grad, output_path):
     """Write solution to csv files."""
     output_file = output_path + "_output.csv"
     gradient_file = output_path + "_gradient.csv"
-    pd.DataFrame(y_vec).to_csv(output_file, header=None, index=False)
-    pd.DataFrame(np.squeeze(y_grad)).to_csv(gradient_file, header=None, index=False)
+    np.savetxt(output_file, y_vec, delimiter=",")
+    np.savetxt(gradient_file, np.squeeze(y_grad), delimiter=",")
 
 
 def read_input_file(input_file_path):
     """Read-in input from csv file."""
-    inputs = pd.read_csv(
-        input_file_path, sep=r',|\s+', engine='python', header=None, index_col=False
-    )
-    return inputs.to_numpy()
+    inputs = genfromtxt(input_file_path, delimiter=r',|\s+')
+    return inputs
 
 
 if __name__ == "__main__":
