@@ -9,11 +9,13 @@
     "method_options": {
       "model": "model",
       "max_feval": 8,
-      "likelihood_gradient_method": "provided_gradient",
-      "n_samples_per_iter": 2,
+      "_likelihood_gradient_method": "provided_gradient",
+      "likelihood_gradient_method": "{gradient_method}",
+      "finite_difference_method": "2-point",
+      "n_samples_per_iter": 3,
       "score_function_bool": true,
       "variational_distribution": {
-        "variational_approximation_type": "mean_field",
+        "variational_approximation_type": "fullrank",
         "variational_family": "normal"
       },
       "optimization_options": {

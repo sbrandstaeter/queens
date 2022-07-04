@@ -21,6 +21,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     design_and_write_experimental_data_to_csv,
     third_party_inputs,
     example_simulator_fun_dir,
+    gradient_method,
 ):
     """Test for the rpvi iterator based on the park91a_hifi function."""
     # generate json input file from template
@@ -37,6 +38,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         "input_file": third_party_input_file,
         "executable": executable,
         "experiment_dir": tmpdir,
+        "gradient_method": gradient_method,
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
@@ -63,6 +65,12 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.1
     assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
     assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
+
+
+@pytest.fixture(params=["finite_difference", "provided_gradient"])
+def gradient_method(request):
+    """Fixture for parameterized gradient methods."""
+    return request.param
 
 
 @pytest.fixture()

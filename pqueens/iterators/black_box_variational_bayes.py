@@ -39,9 +39,9 @@ class BBVIIterator(VariationalInferenceIterator):
         result_description (dict): Settings for storing and visualizing the results
         db (obj): QUEENS database object
         experiment_name (str): Name of the QUEENS simulation
-        variational_family (str): Density type for variatonal approximation
+        variational_family (str): Density type for variational approximation
         variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                          variational paramaters
+                                                          variational parameters
         n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration to
                                   estimate the involved expectations)
         variational_transformation (str): String encoding the transformation that will be applied to
@@ -57,21 +57,21 @@ class BBVIIterator(VariationalInferenceIterator):
         fim_decay_start_iter (float): Iteration at which the FIM dampening is started
         fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
         fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-        export_quantities_over_iter (boolean): True if data (variational_params, elbo, ESS) should
+        export_quantities_over_iter (boolean): True if data (variational_params, ELBO, ESS) should
                                                be exported in the pickle file
         control_variates_scaling_type (str): Flag to decide how to compute control variate scaling
         loo_cv_bool (boolean): True if leave-one-out procedure is used for the control variate
                                scaling estimations. Is quite slow!
         n_sims (int): Number of probabilistic model calls
         variational_distribution_obj (VariationalDistribution): Variational distribution object
-        variational_params (np.array): Rowvector containing the variatonal parameters
+        variational_params (np.array): Row-vector containing the variational parameters
         f_mat (np.array): Column-wise ELBO gradient samples
         h_mat (np.array): Column-wise control variate
         elbo_list (list): ELBO value of every iteration
         log_variational_mat (np.array): Logpdf evaluations of the variational distribution
         grad_params_log_variational_mat (np.array): Column-wise grad params logpdf (score function)
                                                     of the variational distribution
-        log_posterior_unnormalized (np.array): Rowvector logarithmic probabilistic model evaluation
+        log_posterior_unnormalized (np.array): Row-vector logarithmic probabilistic model evaluation
                                                (generally unnormalized)
         prior_obj_list (list): List containing objects of prior models for the random input. The
                                list is ordered in the same way as the random input definition in
@@ -91,7 +91,7 @@ class BBVIIterator(VariationalInferenceIterator):
         sampling_bool (bool): True if probabilistic model has to be sampled. If importance
                               sampling is used the forward model might not evaluated in
                               every iteration
-        sample_set (np.ndarray): Set of samples used to evalute the probabilistic model is
+        sample_set (np.ndarray): Set of samples used to evaluate the probabilistic model is
                                  not needed in other VI methods
     """
 
@@ -131,9 +131,9 @@ class BBVIIterator(VariationalInferenceIterator):
             result_description (dict): Settings for storing and visualizing the results
             db (obj): QUEENS database object
             experiment_name (str): Name of the QUEENS simulation
-            variational_family (str): Density type for variatonal approximation
+            variational_family (str): Density type for variational approximation
             variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                              variational paramaters
+                                                              variational parameters
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
                                                 to estimate the involved expectations)
             variational_transformation (str): String encoding the transformation that will be
@@ -150,7 +150,7 @@ class BBVIIterator(VariationalInferenceIterator):
             fim_decay_start_iter (float): Iteration at which the FIM dampening is started
             fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
             fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-            export_quantities_over_iter (boolean): True if data (variational_params, elbo, ESS)
+            export_quantities_over_iter (boolean): True if data (variational_params, ELBO, ESS)
                                                    should be exported in the pickle file
             control_variates_scaling_type (str): Flag to decide how to compute control variate
                                                 scaling
