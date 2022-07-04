@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""High-fidelity Park91a function with x3 and x4 as fixed coordinates as executable."""
+"""High-fidelity Park91a with x3 and x4 as fixed coordinates as executable."""
 import sys
 
 import numpy as np

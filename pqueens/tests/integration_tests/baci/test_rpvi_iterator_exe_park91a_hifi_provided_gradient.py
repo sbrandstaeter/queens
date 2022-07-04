@@ -29,7 +29,9 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     template = os.path.join(inputdir, "rpvi_exe_park91a_hifi_template.json")
     third_party_input_file = tmpdir.join("input_file_executable_park91a_hifi_on_grid.csv")
     experimental_data_path = tmpdir
-    executable = os.path.join(example_simulator_fun_dir, "exe_park91a_hifi_coords_gradient.py")
+    executable = os.path.join(
+        example_simulator_fun_dir, "executable_park91a_hifi_on_grid_with_gradients.py"
+    )
     plot_dir = tmpdir
     dir_dict = {
         "experimental_data_path": experimental_data_path,
