@@ -22,13 +22,12 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     third_party_inputs,
     example_simulator_fun_dir,
     gradient_method,
+    create_input_file_executable_park91a_hifi_on_grid,
 ):
     """Test for the rpvi iterator based on the park91a_hifi function."""
     # generate json input file from template
     template = os.path.join(inputdir, "rpvi_exe_park91a_hifi_template.json")
-    third_party_input_file = os.path.join(
-        third_party_inputs, "python_input_files", "input_file_exe_park91a_hifi_coords_gradient.csv"
-    )
+    third_party_input_file = tmpdir.join("input_file_executable_park91a_hifi_on_grid.csv")
     experimental_data_path = tmpdir
     executable = os.path.join(example_simulator_fun_dir, "exe_park91a_hifi_coords_gradient.py")
     plot_dir = tmpdir
@@ -71,6 +70,15 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
 def gradient_method(request):
     """Fixture for parameterized gradient methods."""
     return request.param
+
+
+@pytest.fixture()
+def create_input_file_executable_park91a_hifi_on_grid(tmpdir):
+    """Write temporary input file for executable."""
+    input_path = tmpdir.join("input_file_executable_park91a_hifi_on_grid.csv")
+    with open(input_path, "w", encoding='utf-8') as input_file:
+        input_file.write("{x1}\n")
+        input_file.write("{x2}")
 
 
 @pytest.fixture()

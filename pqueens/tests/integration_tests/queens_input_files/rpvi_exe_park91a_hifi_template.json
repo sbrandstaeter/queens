@@ -59,7 +59,7 @@
     ],
     "noise_type": "MAP_jeffrey_variance",
     "nugget_noise_variance": 1E-8,
-    "experimental_file_name_identifier": "*.csv",
+    "experimental_file_name_identifier": "experimental_data.csv",
     "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters"
   },
