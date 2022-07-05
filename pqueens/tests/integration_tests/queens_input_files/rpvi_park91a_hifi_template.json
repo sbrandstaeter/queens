@@ -8,7 +8,7 @@
     "method_name": "rpvi",
     "method_options": {
       "model": "model",
-      "max_feval": 1500,
+      "max_feval": 2000,
       "likelihood_gradient_method": "{gradient_method}",
       "finite_difference_method": "2-point",
       "finite_difference_step": 1e-5,

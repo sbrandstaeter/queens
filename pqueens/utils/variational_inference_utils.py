@@ -4,7 +4,6 @@ import abc
 
 import numpy as np
 import scipy
-from jax import grad
 from numba import njit
 
 
@@ -43,7 +42,7 @@ class VariationalDistribution:
         """
 
     def conduct_reparameterization(self):
-        """Conduct the reparameterization trick."""
+        """Conduct a reparameterization."""
         raise NotImplementedError(
             "The reparameterization trick is not available for the variational distribution "
             f"family {self.__class__.__name__}. Abort..."
@@ -233,13 +232,20 @@ class MeanFieldNormalVariational(VariationalDistribution):
             sample_batch (np.array): Row-wise samples
 
         Returns:
-            gradient_lst (list): List with column-wise gradient
+            gradients_batch (np.array): Gradients of the log-pdf w.r.t. the
+                                        sample x. The first dimension of the
+                                        array corresponds to the different samples.
+                                        The second dimension to different dimensions
+                                        within one sample. (Third dimension is empty
+                                        and just added to keep slices two dimensional.)
         """
         mean, cov = self.reconstruct_parameters(variational_params)
         gradient_lst = []
         for sample in sample_batch:
-            gradient_lst.append((2 * (sample - mean) / cov).reshape(-1, 1))
-        return gradient_lst
+            gradient_lst.append((-2 * (sample - mean) / cov).reshape(-1, 1))
+
+        gradients_batch = np.array(gradient_lst)
+        return gradients_batch
 
     def fisher_information_matrix(self, variational_params):
         """Compute the Fisher information matrix analytically.
@@ -275,7 +281,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
         return export_dict
 
     def conduct_reparameterization(self, variational_params, n_samples):
-        """Conduct the reparameterization trick.
+        """Conduct a reparameterization.
 
         Args:
             variational_params (np.array): Array with variational parameters
@@ -303,16 +309,33 @@ class MeanFieldNormalVariational(VariationalDistribution):
                                                     batch
             variational_params (np.array): Variational parameters
 
+        Note:
+            We assume that `grad_reconstruct_params` is a row-vector containing the partial
+            derivatives of the reconstruction mapping of the actual distribution parameters
+            w.r.t. the variational parameters.
+
+            The variable `jacobi_parameters` is the (num_params x dim_sample) Jacobi matrix
+            of the reparameterization w.r.t. the distribution parameters,
+            with differentiating after the distribution
+            parameters in different rows and different output dimensions of the sample per
+            column.
+
         Returns:
-            jacobi_reparameterization_lst (lst):  List of Jacobi matrices for the
-                                                  reparameterization trick
+            jacobi_reparameterization_batch (np.array): Tensor with Jacobi matrices for the
+                                                  reparameterization trick. The first dimension
+                                                  loops over the individual samples, the second
+                                                  dimension over variational parameters and the last
+                                                  dimension over the dimensions within one sample
         """
         jacobi_reparameterization_lst = []
+        grad_reconstruct_params = self._grad_reconstruct_parameters(variational_params)
         for sample in standard_normal_sample_batch:
             jacobi_parameters = np.vstack((np.eye(self.dimension), np.diag(sample)))
-            grad_reconstruct_params = self._grad_reconstruct_parameters(variational_params)
-            jacobi_reparameterization_lst.append(jacobi_parameters * grad_reconstruct_params.T)
-        return jacobi_reparameterization_lst
+            jacobi_reparameterization = jacobi_parameters * grad_reconstruct_params.T
+            jacobi_reparameterization_lst.append(jacobi_reparameterization)
+
+        jacobi_reparameterization_batch = np.array(jacobi_reparameterization_lst)
+        return jacobi_reparameterization_batch
 
 
 class FullRankNormalVariational(VariationalDistribution):
@@ -515,7 +538,12 @@ class FullRankNormalVariational(VariationalDistribution):
             sample_batch (np.array): Row-wise samples
 
         Returns:
-            gradient_lst (list): List of column-wise gradients
+            gradients_batch (np.array): Gradients of the log-pdf w.r.t. the
+                                        sample x. The first dimension of the
+                                        array corresponds to the different samples.
+                                        The second dimension to different dimensions
+                                        within one sample. (Third dimension is empty
+                                        and just added to keep slices two dimensional.)
         """
         mean, cov, _ = self.reconstruct_parameters(variational_params)
         gradient_lst = []
@@ -523,7 +551,9 @@ class FullRankNormalVariational(VariationalDistribution):
             gradient_lst.append(
                 np.dot(np.linalg.inv(cov), 2 * (sample.reshape(-1, 1) - mean)).reshape(-1, 1)
             )
-        return gradient_lst
+
+        gradients_batch = np.array(gradient_lst)
+        return gradients_batch
 
     def fisher_information_matrix(self, variational_params):
         """Compute the Fisher information matrix analytically.
@@ -586,7 +616,7 @@ class FullRankNormalVariational(VariationalDistribution):
         return export_dict
 
     def conduct_reparameterization(self, variational_params, n_samples):
-        """Conduct the reparameterization trick.
+        """Conduct a reparameterization.
 
         Args:
             variational_params (np.array): Array with variational parameters
@@ -612,19 +642,35 @@ class FullRankNormalVariational(VariationalDistribution):
                                                     batch
             variational_params (np.array): Variational parameters
 
+        Note:
+            We assume that `grad_reconstruct_params` is a row-vector containing the partial
+            derivatives of the reconstruction mapping of the actual distribution parameters
+            w.r.t. the variational parameters.
+
+            The variable `jacobi_parameters` is the (num_params x dim_sample) Jacobi matrix
+            of the reparameterization w.r.t. the distribution parameters,
+            with differentiating after the distribution
+            parameters in different rows and different output dimensions of the sample per
+            column.
+
         Returns:
-            jacobi_reparameterization_lst (lst):  List of Jacobi matrices for the
-                                                  reparameterization trick
+            jacobi_reparameterization_batch (np.array): Tensor with Jacobi matrices for the
+                                                  reparameterization trick. The first dimension
+                                                  loops over the individual samples, the second
+                                                  dimension over variational parameters and the last
+                                                  dimension over the dimensions within one sample
         """
         jacobi_reparameterization_lst = []
+        grad_reconstruct_params = self._grad_reconstruct_parameters(variational_params)
         for sample in standard_normal_sample_batch:
             jacobi_mean = np.eye(self.dimension)
             jacobi_cholesky = np.tile(sample, (variational_params.size - self.dimension, 1))
             jacobi_cholesky[0, -1] = 0
             jacobi_parameters = np.vstack((jacobi_mean, jacobi_cholesky))
-            grad_reconstruct_params = self._grad_reconstruct_parameters(variational_params)
             jacobi_reparameterization_lst.append(jacobi_parameters * grad_reconstruct_params.T)
-        return jacobi_reparameterization_lst
+
+        jacobi_reparameterization_batch = np.array(jacobi_reparameterization_lst)
+        return jacobi_reparameterization_batch
 
 
 class MixtureModel(VariationalDistribution):
@@ -965,7 +1011,7 @@ def calculate_grad_log_variational_distr_variational_params(
         jacobi_reparameterization_variational_params_lst (lst): List of Jacobi matrices of the
                                                                 reparameterization w.r.t. the
                                                                 variational parameters.
-        grad_log_variational_distr_params_lst (lst): List of Gradients of the variational
+        grad_log_variational_distr_params_lst (lst): List of gradients of the variational
                                                      distribution w.r.t. to the input
                                                      parameters per sample
 
