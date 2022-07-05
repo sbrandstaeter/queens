@@ -205,7 +205,7 @@ class Driver(metaclass=abc.ABCMeta):
         if self.job['status'] != "failed":
             # call data-processing
             self.gradient = self.gradient_data_processor.get_data_from_file(self.output_directory)
-            _logger.info(f"Got gradient: {self.gradient}")
+            _logger.debug(f"Got gradient: {self.gradient}")
 
     def finalize_job_in_db(self):
         """Finalize job in database."""

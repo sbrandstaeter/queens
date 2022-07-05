@@ -143,6 +143,73 @@ TEST_DICT = {
             ]
         ),
     },
+    "park91a_hifi_on_grid_with_gradients": {
+        "input": {"x1": 0.6, "x2": 0.9},
+        "desired_result": (
+            np.array(
+                [
+                    1.73345561,
+                    2.37956809,
+                    3.18381199,
+                    3.95882022,
+                    4.49917307,
+                    6.15016577,
+                    8.22126049,
+                    10.23116841,
+                    7.32847641,
+                    10.01162049,
+                    13.37705781,
+                    16.6411683,
+                    10.06105667,
+                    13.74382059,
+                    18.36034068,
+                    22.8346894,
+                ]
+            ),
+            (
+                np.array(
+                    [
+                        2.73946469,
+                        3.7635742,
+                        5.0357767,
+                        6.2589992,
+                        2.61486571,
+                        3.62978115,
+                        4.87857452,
+                        6.07358046,
+                        2.55177614,
+                        3.56546718,
+                        4.81251441,
+                        6.0077492,
+                        2.51381084,
+                        3.52760463,
+                        4.77556048,
+                        5.97285327,
+                    ]
+                ),
+                np.array(
+                    [
+                        0.00411553,
+                        0.00410936,
+                        0.00409098,
+                        0.00406195,
+                        0.10257365,
+                        0.09981385,
+                        0.09269862,
+                        0.08389309,
+                        0.17009755,
+                        0.16389772,
+                        0.14869717,
+                        0.13121326,
+                        0.22127348,
+                        0.21215152,
+                        0.19032831,
+                        0.16606255,
+                    ]
+                ),
+            ),
+        ),
+    },
     "park91a_lofi": {
         "input": {"x1": 0.3, "x2": 0.6, "x3": 0.5, "x4": 0.1},
         "desired_result": 3.2830146685714103,
@@ -209,7 +276,11 @@ def test_example_simulator_functions(function_name, test_dict):
     function = example_simulator_function_by_name(function_name)
     inputs = test_dict["input"]
     desired_result = test_dict["desired_result"]
-    np.testing.assert_allclose(function(**inputs), desired_result)
+    if isinstance(desired_result, tuple):
+        np.testing.assert_allclose(function(**inputs)[0], desired_result[0], atol=1e-6)
+        np.testing.assert_allclose(function(**inputs)[1], desired_result[1], atol=1e-6)
+    else:
+        np.testing.assert_allclose(function(**inputs), desired_result)
 
 
 @pytest.mark.unit_tests
