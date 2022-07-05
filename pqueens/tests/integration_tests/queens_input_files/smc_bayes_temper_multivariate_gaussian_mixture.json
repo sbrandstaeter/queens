@@ -84,7 +84,7 @@
   "interface": {
     "type": "direct_python_interface",
     "num_workers": 1,
-    "main_file": "multivariate_gaussian_mixture_logpdf.py"
+    "function_name": "agawal09a"
   },
   "parameters": {
     "random_variables": {

@@ -12,7 +12,7 @@
       "likelihood_gradient_method": "{gradient_method}",
       "finite_difference_method": "2-point",
       "finite_difference_step": 1e-5,
-      "n_samples_per_iter": 2,
+      "n_samples_per_iter": 3,
       "score_function_bool": true,
       "variational_distribution": {
         "variational_approximation_type": "mean_field",
@@ -70,7 +70,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "{simulator_function}"
+    "function_name": "{my_function}"
   },
   "parameters": {
     "random_variables": {

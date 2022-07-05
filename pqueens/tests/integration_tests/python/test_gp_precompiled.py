@@ -5,10 +5,8 @@ import numpy as np
 import pytest
 
 from pqueens.main import main
-from pqueens.tests.integration_tests.example_simulator_functions.branin_hifi import branin_hifi
-from pqueens.tests.integration_tests.example_simulator_functions.sinus_test_fun import (
-    sinus_test_fun,
-)
+from pqueens.tests.integration_tests.example_simulator_functions.branin78 import branin78_hifi
+from pqueens.tests.integration_tests.example_simulator_functions.sinus import sinus_test_fun
 from pqueens.utils import injector
 
 
@@ -19,12 +17,10 @@ def test_gp_precompiled_one_dim(inputdir, tmpdir):
     template = os.path.join(inputdir, 'gp_precompiled_template.json')
     input_file = os.path.join(tmpdir, 'gp_precompiled.json')
 
-    # pylint: disable=line-too-long
     dir_dict = {
-        'test_fun': 'sinus_test_fun.py',
+        'test_fun': 'sinus_test_fun',
         'variables': '"x1": {"size": 1,"distribution": "uniform","lower_bound": -5, "upper_bound": 5}',
     }
-    # pylint: enable=line-too-long
 
     injector.inject(dir_dict, template, input_file)
 
@@ -57,12 +53,10 @@ def test_gp_precompiled_two_dim(inputdir, tmpdir):
     template = os.path.join(inputdir, 'gp_precompiled_template.json')
     input_file = os.path.join(tmpdir, 'gp_precompiled.json')
 
-    # pylint: disable=line-too-long
     dir_dict = {
-        'test_fun': 'branin_hifi.py',
+        'test_fun': 'branin78_hifi',
         'variables': '"x1": {"size": 1,"distribution": "uniform","lower_bound": -5, "upper_bound": 10}, "x2": {"size": 1,"distribution": "uniform","lower_bound": 0, "upper_bound": 15}',
     }
-    # pylint: enable=line-too-long
 
     injector.inject(dir_dict, template, input_file)
 
@@ -79,7 +73,7 @@ def test_gp_precompiled_two_dim(inputdir, tmpdir):
     # evaluate the testing/benchmark function at testing inputs
     x1_vec = results['raw_output_data']['x_test'][:, 0]
     x2_vec = results['raw_output_data']['x_test'][:, 1]
-    fun_mat = branin_hifi(x1_vec, x2_vec)
+    fun_mat = branin78_hifi(x1_vec, x2_vec)
     var_mat = np.zeros(fun_mat.shape)
 
     np.testing.assert_array_almost_equal(

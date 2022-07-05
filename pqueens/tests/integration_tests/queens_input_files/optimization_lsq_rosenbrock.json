@@ -31,7 +31,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "rosenbrock_residual.py"
+    "function_name": "rosenbrock60_residual"
   },
   "parameters": {
     "random_variables": {

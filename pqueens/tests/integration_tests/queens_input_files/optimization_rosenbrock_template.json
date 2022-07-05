@@ -36,7 +36,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "rosenbrock.py"
+    "function_name": "rosenbrock60"
   },
   "parameters": {
     "random_variables": {

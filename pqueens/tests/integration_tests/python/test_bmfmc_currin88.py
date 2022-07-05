@@ -7,11 +7,9 @@ from scipy.stats import entropy
 
 import pqueens.utils.pdf_estimation as est
 from pqueens.main import main
-from pqueens.tests.integration_tests.example_simulator_functions.currin88_hifi import (
-    main as currin88_hifi,
-)
-from pqueens.tests.integration_tests.example_simulator_functions.currin88_lofi import (
-    main as currin88_lofi,
+from pqueens.tests.integration_tests.example_simulator_functions.currin88 import (
+    currin88_hifi,
+    currin88_lofi,
 )
 from pqueens.utils import injector
 from pqueens.utils.process_outputs import write_results
@@ -32,7 +30,7 @@ def generate_LF_MC_data(generate_X_mc):
     y = []
     for x_vec in generate_X_mc:
         params = {'x1': x_vec[0], 'x2': x_vec[1]}
-        y.append(currin88_lofi(0, params))
+        y.append(currin88_lofi(**params))
 
     Y_LF_mc = np.array(y).reshape((generate_X_mc.shape[0], -1))
 
@@ -44,7 +42,7 @@ def generate_HF_MC_data(generate_X_mc):
     y = []
     for x_vec in generate_X_mc:
         params = {'x1': x_vec[0], 'x2': x_vec[1]}
-        y.append(currin88_hifi(0, params))
+        y.append(currin88_hifi(**params))
 
     Y_LF_mc = np.array(y).reshape((generate_X_mc.shape[0], -1))
 

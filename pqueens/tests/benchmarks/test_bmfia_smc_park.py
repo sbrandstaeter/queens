@@ -9,15 +9,17 @@ import pytest
 
 import pqueens.visualization.bmfia_visualization as qvis
 from pqueens.main import main
-from pqueens.tests.integration_tests.example_simulator_functions.park91a_hifi_coords import (
-    park91a_hifi_coords,
-)
+from pqueens.tests.integration_tests.example_simulator_functions.park91a import park91a_hifi
 from pqueens.utils import injector
 
 
 @pytest.mark.benchmark
 def test_bmfia_park_hf_smc(
-    inputdir, tmpdir, design_and_write_experimental_data_to_csv, expected_weights, expected_samples
+    inputdir,
+    tmpdir,
+    create_experimental_data_park91a_hifi_on_grid,
+    expected_weights,
+    expected_samples,
 ):
     """Benchmark test for bayesian multi-fidelity inverse analysis (bmfia).
 
@@ -57,7 +59,7 @@ def test_bmfia_park_hf_smc(
 
 
 @pytest.fixture
-def design_and_write_experimental_data_to_csv(tmpdir):
+def create_experimental_data_park91a_hifi_on_grid(tmpdir):
     """Fixture to write dummy observation data."""
     # Fix random seed
     np.random.seed(seed=1)
@@ -76,7 +78,7 @@ def design_and_write_experimental_data_to_csv(tmpdir):
     # generate clean function output for fake test data
     y_vec = []
     for x3, x4 in zip(x3_vec, x4_vec):
-        y_vec.append(park91a_hifi_coords(x1, x2, x3, x4))
+        y_vec.append(park91a_hifi(x1, x2, x3, x4))
     y_vec = np.array(y_vec)
 
     # add artificial noise to fake measurements

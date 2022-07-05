@@ -26,7 +26,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "ishigami.py"
+    "function_name": "ishigami90"
   },
   "parameters": {
     "random_variables": {

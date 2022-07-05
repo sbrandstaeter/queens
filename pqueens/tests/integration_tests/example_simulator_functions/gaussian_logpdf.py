@@ -1,42 +1,78 @@
+"""Gaussian distributions."""
 import numpy as np
 
 from pqueens.distributions import from_config_create_distribution
 
-dist_options = {'distribution': 'normal', 'mean': 0.0, 'covariance': 1.0}
-standard_normal = from_config_create_distribution(dist_options)
+# pylint: disable=invalid-name
 
 
-def gaussian_logpdf(x):
+# 1d standard Gaussian
+standard_normal_dict = {'distribution': 'normal', 'mean': 0.0, 'covariance': 1.0}
+standard_normal = from_config_create_distribution(standard_normal_dict)
+
+# 2d Gaussian
+dim = 2
+
+meas_data = [0.0, 0.0]
+cov = [[1.0, 0.5], [0.5, 1.0]]
+
+A = np.eye(dim, dim)
+b = np.zeros(dim)
+
+dist_options = {'distribution': 'normal', 'mean': meas_data, 'covariance': cov}
+gaussian_2d = from_config_create_distribution(dist_options)
+
+# 4d Gaussian
+cov = [
+    [2.691259143915389, 1.465825570809310, 0.347698874175537, 0.140030644426489],
+    [1.465825570809310, 4.161662217930926, 0.423882544003853, 1.357386322235196],
+    [0.347698874175537, 0.423882544003853, 2.928845742295657, 0.484200164430076],
+    [0.140030644426489, 1.357386322235196, 0.484200164430076, 3.350315448057768],
+]
+
+mean = [0.806500709319150, 2.750827521892630, -3.388270291505472, 1.293259980552181]
+
+dist_options = {'distribution': 'normal', 'mean': mean, 'covariance': cov}
+gaussian_4d = from_config_create_distribution(dist_options)
+
+
+def gaussian_1d_logpdf(x):
     """1D Gaussian likelihood model.
 
     Used as a basic test function for MCMC methods.
-
-    The log likelihood is defined as (see [1]):
-
-    :math:`f({x}) = \\frac{-(x-\\mu)^2}{2\\sigma^2} - \\log(\\sqrt(2 \\pi \\sigma^2)`
 
     Args:
         x (float):
 
     Returns:
         float : The logpdf evaluated at x
-
-
-    References:
-
-        [1] https://en.wikipedia.org/wiki/Normal_distribution
     """
     y = np.atleast_2d(standard_normal.logpdf(x))
     return y
 
 
-def main(job_id, params):
-    """Interface to 1D Gaussian model.
+def gaussian_2d_logpdf(samples):
+    """2D Gaussian logpdf.
 
     Args:
-        job_id (int):  ID of job
-        params (dict): Dictionary with parameters
+        samples (np.ndarray): samples to be evaluated
+
     Returns:
-        float: Value of Gaussian at parameters specified in input dict
+        np.ndarray: logpdf
     """
-    return gaussian_logpdf(params['x'])
+    model_data = np.dot(A, samples.T).T + b
+    y = gaussian_2d.logpdf(model_data)
+    return y
+
+
+def gaussian_4d_logpdf(samples):
+    """4D Gaussian logpdf.
+
+    Args:
+        samples (np.ndarray): samples to be evaluated
+
+    Returns:
+        np.ndarray: logpdf
+    """
+    y = gaussian_4d.logpdf(samples)
+    return y

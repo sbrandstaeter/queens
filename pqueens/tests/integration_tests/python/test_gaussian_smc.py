@@ -7,14 +7,10 @@ import pytest
 from mock import patch
 
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
-
-# fmt: on
 from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from pqueens.main import main
-
-# fmt: off
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
-    gaussian_logpdf,
+    gaussian_1d_logpdf,
     standard_normal,
 )
 from pqueens.utils import injector
@@ -52,7 +48,7 @@ def test_gaussian_smc(inputdir, tmpdir, dummy_data):
 
 def target_density(self, samples):
     samples = np.atleast_2d(samples)
-    log_likelihood = gaussian_logpdf(samples).reshape(-1, 1)
+    log_likelihood = gaussian_1d_logpdf(samples).reshape(-1, 1)
 
     return log_likelihood
 
@@ -65,7 +61,7 @@ def dummy_data(tmpdir):
     # evaluate the gaussian pdf for these 1000 samples
     pdf = []
     for x in samples:
-        pdf.append(gaussian_logpdf(x))
+        pdf.append(gaussian_1d_logpdf(x))
 
     pdf = np.array(pdf).flatten()
 

@@ -43,7 +43,7 @@
   },
   "interface": {
     "type": "direct_python_interface",
-    "main_file": "sobol.py"
+    "function_name": "sobol_g_function"
   },
   "parameters": {
     "random_variables": {

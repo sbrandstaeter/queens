@@ -2,10 +2,14 @@
 import unittest
 
 import numpy as np
+import pytest
 
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.sobol_index_iterator import SobolIndexIterator
 from pqueens.models.simulation_model import SimulationModel
+from pqueens.tests.integration_tests.example_simulator_functions import (
+    example_simulator_function_by_name,
+)
 from pqueens.variables.variables import Variables
 
 
@@ -31,7 +35,8 @@ class TestSobolIndices(unittest.TestCase):
         some_settings = {"experiment_name": "test"}
 
         self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
-        self.interface = DirectPythonInterface('test_interface', 'ishigami.py', self.variables)
+        function = example_simulator_function_by_name("ishigami90")
+        self.interface = DirectPythonInterface('test_interface', function, self.variables, None)
 
         # create mock model
         self.model = SimulationModel("my_model", self.interface, uncertain_parameters)
@@ -47,6 +52,7 @@ class TestSobolIndices(unittest.TestCase):
             global_settings=some_settings,
         )
 
+    @pytest.mark.unit_tests
     def test_correct_sampling(self):
         """Test correct sampling."""
         self.my_iterator.pre_run()
@@ -74,6 +80,7 @@ class TestSobolIndices(unittest.TestCase):
 
         np.testing.assert_allclose(self.my_iterator.samples, ref_vals, 1e-07, 1e-07)
 
+    @pytest.mark.unit_tests
     def test_correct_sensitivity_indices(self):
         """Test sobol indices results."""
         self.my_iterator.pre_run()

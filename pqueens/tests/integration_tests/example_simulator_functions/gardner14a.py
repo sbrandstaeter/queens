@@ -3,10 +3,12 @@
 This is a two-dimensional benchmark function for constraint Bayesian
 optimization.
 """
+# pylint: disable=invalid-name
+
 import numpy as np
 
 
-def gardner2014a(x1, x2):
+def gardner14a(x1, x2, **kwargs):
     r"""Gradner2014a function.
 
     Two-dimensional benchmark function for constraint Bayesian optimization [1]
@@ -27,7 +29,7 @@ def gardner2014a(x1, x2):
         x2 (float): input parameter 2 in [0, 6]
 
     Returns:
-        float, float: value of gardner2014a function, value of corresponding
+        np.ndarray: value of gardner2014a function, value of corresponding
         constraint function
 
 
@@ -39,17 +41,4 @@ def gardner2014a(x1, x2):
     y = np.cos(2 * x1) * np.cos(x2) + np.sin(x1)
     c = np.cos(x1) * np.cos(x2) - np.sin(x1) * np.sin(x2)
 
-    return y, c
-
-
-def main(job_id, params):
-    """Interface to main function.
-
-    Args:
-        job_id (int):  ID of job
-        params (dict): Dictionary with parameters
-    Returns:
-        float, float: Value of gardner2014a function and constraint
-                      at parameters specified in input dict
-    """
-    return gardner2014a(params['x1'], params['x2'])
+    return np.array([y, c])

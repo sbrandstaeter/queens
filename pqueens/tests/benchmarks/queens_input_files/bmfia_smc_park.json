@@ -86,12 +86,12 @@
     "type": "csv",
     "file_name_identifier": "*.csv",
     "file_options_dict": {
-        "header_row": 0,
-        "index_column": false,
-        "returned_filter_format": "dict",
-        "filter": {
-            "type": "entire_file"
-        }
+      "header_row": 0,
+      "index_column": false,
+      "returned_filter_format": "dict",
+      "filter": {
+        "type": "entire_file"
+      }
     }
   },
   "MCMC_Kernel": {
@@ -143,12 +143,12 @@
   "lf_interface": {
     "type": "direct_python_interface",
     "num_workers": 1,
-    "main_file": "park91a_lofi_coords.py"
+    "function_name": "park91a_lofi_on_grid"
   },
   "hf_interface": {
     "type": "direct_python_interface",
     "num_workers": 1,
-    "main_file": "park91a_hifi_coords.py"
+    "function_name": "park91a_hifi_on_grid"
   },
   "parameters": {
     "random_variables": {
