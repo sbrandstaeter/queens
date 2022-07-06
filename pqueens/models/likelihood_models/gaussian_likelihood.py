@@ -168,7 +168,8 @@ class GaussianLikelihood(LikelihoodModel):
             log_likelihood (np.array): Vector of log-likelihood values per model input.
         """
         y_model = self._update_and_evaluate_forward_model()
-        self.update_covariance(y_model)
+        if self.noise_type.startswith('MAP'):
+            self.update_covariance(y_model)
         log_likelihood = self.normal_distribution.logpdf(y_model)
 
         return log_likelihood
