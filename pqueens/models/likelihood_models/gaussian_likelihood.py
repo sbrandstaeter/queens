@@ -177,7 +177,8 @@ class GaussianLikelihood(LikelihoodModel):
             model_output, model_gradient_batch = self._update_and_evaluate_forward_model(
                 gradient_bool=gradient_bool
             )
-            self.update_covariance(model_output)
+            if self.noise_type.startswith('MAP'):
+                self.update_covariance(model_output)
             log_likelihood_output = self.normal_distribution.logpdf(model_output)
             grad_log_likelihood_lst = []
             for output, model_gradient in zip(model_output, model_gradient_batch):
@@ -187,7 +188,8 @@ class GaussianLikelihood(LikelihoodModel):
             log_likelihood_output = (log_likelihood_output, grad_log_likelihood_lst)
         else:
             model_output = self._update_and_evaluate_forward_model(gradient_bool=gradient_bool)
-            self.update_covariance(model_output)
+            if self.noise_type.startswith('MAP'):
+                self.update_covariance(model_output)
             log_likelihood_output = self.normal_distribution.logpdf(model_output)
 
         return log_likelihood_output

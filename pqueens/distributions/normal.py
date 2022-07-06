@@ -189,6 +189,5 @@ class NormalDistribution(Distribution):
         precision = np.dot(chol_inv.T, chol_inv)
 
         # constant needed for pdf
-        det_covariance = np.linalg.det(covariance)
-        logpdf_const = -1 / 2 * (np.log(2.0 * np.pi) * dimension + np.log(det_covariance))
+        logpdf_const = -1 / 2 * (np.log(2.0 * np.pi) * dimension + np.linalg.slogdet(covariance)[1])
         return low_chol, precision, logpdf_const
