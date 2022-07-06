@@ -242,7 +242,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
         mean, cov = self.reconstruct_parameters(variational_params)
         gradient_lst = []
         for sample in sample_batch:
-            gradient_lst.append((-2 * (sample - mean) / cov).reshape(-1, 1))
+            gradient_lst.append((-(sample - mean) / cov).reshape(-1, 1))
 
         gradients_batch = np.array(gradient_lst)
         return gradients_batch
@@ -430,18 +430,15 @@ class FullRankNormalVariational(VariationalDistribution):
         cov = np.matmul(cholesky_covariance, cholesky_covariance.T)
         return mean, cov, cholesky_covariance
 
-    def _grad_reconstruct_parameters(self, variational_params):
+    def _grad_reconstruct_parameters(self):
         """Gradient of the parameter reconstruction.
-
-         Args:
-            variational_params (np.array): Variational parameters
 
         Returns:
             grad_reconstruct_params (np.array): Gradient vector of the reconstruction
                                                 w.r.t. the variational parameters
         """
         grad_mean = np.ones((1, self.dimension))
-        grad_cholesky = np.ones((1, variational_params.size - self.dimension))
+        grad_cholesky = np.ones((1, self.num_params - self.dimension))
         grad_reconstruct_params = np.hstack((grad_mean, grad_cholesky))
         return grad_reconstruct_params
 
@@ -549,7 +546,7 @@ class FullRankNormalVariational(VariationalDistribution):
         gradient_lst = []
         for sample in sample_batch:
             gradient_lst.append(
-                np.dot(np.linalg.inv(cov), 2 * (sample.reshape(-1, 1) - mean)).reshape(-1, 1)
+                np.dot(np.linalg.inv(cov), -(sample.reshape(-1, 1) - mean)).reshape(-1, 1)
             )
 
         gradients_batch = np.array(gradient_lst)
@@ -661,7 +658,7 @@ class FullRankNormalVariational(VariationalDistribution):
                                                   dimension over the dimensions within one sample
         """
         jacobi_reparameterization_lst = []
-        grad_reconstruct_params = self._grad_reconstruct_parameters(variational_params)
+        grad_reconstruct_params = self._grad_reconstruct_parameters()
         for sample in standard_normal_sample_batch:
             jacobi_mean = np.eye(self.dimension)
             jacobi_cholesky = np.tile(sample, (variational_params.size - self.dimension, 1))
