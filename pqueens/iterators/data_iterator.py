@@ -53,10 +53,6 @@ class DataIterator(Iterator):
 
         return cls(path_to_data, result_description, global_settings)
 
-    def eval_model(self):
-        """Evaluate the model."""
-        pass
-
     def core_run(self):
         """Read data from file."""
         # TODO: We should return a more general data structure in the future

@@ -5,7 +5,6 @@ import logging
 import numpy as np
 
 import pqueens.database.database as DB_module
-from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.models import from_config_create_model
@@ -43,7 +42,6 @@ class BMFIAIterator(Iterator):
         settings_probab_mapping (dict): Dictionary with settings for the probabilistic
                                         multi-fidelity mapping
         db (obj): Database object
-        external_geometry_obj (obj): External geometry object
 
     Returns:
        BMFIAIterator (obj): Instance of the BMFIAIterator
@@ -60,7 +58,6 @@ class BMFIAIterator(Iterator):
         coord_labels,
         settings_probab_mapping,
         db,
-        external_geometry_obj,
         x_train,
         Y_LF_train,
         Y_HF_train,
@@ -87,7 +84,6 @@ class BMFIAIterator(Iterator):
         self.y_obs_vec = y_obs_vec
         self.settings_probab_mapping = settings_probab_mapping
         self.db = db
-        self.external_geometry_obj = external_geometry_obj
 
     @classmethod
     def from_config_create_iterator(cls, config, _iterator_name=None, _model_name=None):
@@ -127,15 +123,12 @@ class BMFIAIterator(Iterator):
         hf_model = from_config_create_model(hf_model_name, config)
         lf_model = from_config_create_model(lf_model_name, config)
 
-        # ---------- configure external geometry object (returns None if not available) -
-        external_geometry = from_config_create_external_geometry(config)
-
         # ---------- create database object to load coordinates --------------------------
         output_label = config[model_name].get("output_label")
         coord_labels = config[model_name].get("coordinate_labels")
         db = DB_module.database
         # ---------- calculate the optimal training samples via classmethods ----------
-        x_train = cls._calculate_optimal_x_train(initial_design_dict, external_geometry, lf_model)
+        x_train = cls._calculate_optimal_x_train(initial_design_dict, lf_model)
 
         # ---------------------- initialize some variables / attributes ---------------
         Y_LF_train = None
@@ -155,7 +148,6 @@ class BMFIAIterator(Iterator):
             coord_labels,
             mf_approx_settings,
             db,
-            external_geometry,
             x_train,
             Y_LF_train,
             Y_HF_train,
@@ -166,7 +158,7 @@ class BMFIAIterator(Iterator):
         )
 
     @classmethod
-    def _calculate_optimal_x_train(cls, initial_design_dict, external_geometry_obj, model):
+    def _calculate_optimal_x_train(cls, initial_design_dict, model):
         """Optimal training data set for probabilistic model.
 
         Based on the selected design method, determine the optimal set of
@@ -175,7 +167,6 @@ class BMFIAIterator(Iterator):
 
         Args:
             initial_design_dict (dict): Dictionary with description of initial design.
-            external_geometry_obj (obj): Object with information about an external geometry
             model (obj): A model object on which the calculation is performed (only needed for
                          interfaces here. The model is not evaluated here)
 
@@ -183,7 +174,7 @@ class BMFIAIterator(Iterator):
             x_train (np.array): Optimal training input samples
         """
         run_design_method = cls._get_design_method(initial_design_dict)
-        x_train = run_design_method(initial_design_dict, external_geometry_obj, model)
+        x_train = run_design_method(initial_design_dict, model)
         return x_train
 
     @classmethod
@@ -221,7 +212,7 @@ class BMFIAIterator(Iterator):
         return run_design_method
 
     @classmethod
-    def _random_design(cls, initial_design_dict, external_geometry_obj, model):
+    def _random_design(cls, initial_design_dict, model):
         """A uniformly random design strategy.
 
         Calculate the HF training points from large LF-MC data-set based on
@@ -229,7 +220,6 @@ class BMFIAIterator(Iterator):
 
         Args:
             initial_design_dict (dict): Dictionary with description of initial design.
-            external_geometry_obj (obj): Object with external geometry information
             model (obj): A model object on which the calculation is performed (only needed for
                          interfaces here. The model is not evaluated here)
 
@@ -248,7 +238,6 @@ class BMFIAIterator(Iterator):
             initial_design_dict['num_HF_eval'],
             dummy_result_description,
             dummy_global_settings,
-            external_geometry_obj,
             dummy_db,
         )
         mc_iterator.pre_run()
@@ -282,11 +271,9 @@ class BMFIAIterator(Iterator):
         Returns:
             None
         """
-        self.lf_model.update_model_from_sample_batch(self.X_train)
-
         # reshape the scalar output by the coordinate dimension
         num_coords = self.coords_experimental_data.shape[0]
-        self.Y_LF_train = self.lf_model.evaluate()['mean'].reshape(-1, num_coords)
+        self.Y_LF_train = self.lf_model.evaluate(self.X_train)['mean'].reshape(-1, num_coords)
 
     def _evaluate_HF_model_for_X_train(self):
         """Evaluate the high-fidelity model for the X_train input data-set.
@@ -294,11 +281,9 @@ class BMFIAIterator(Iterator):
         Returns:
             None
         """
-        self.hf_model.update_model_from_sample_batch(self.X_train)
-
         # reshape the scalar output by the coordinate dimension
         num_coords = self.coords_experimental_data.shape[0]
-        self.Y_HF_train = self.hf_model.evaluate()['mean'].reshape(-1, num_coords)
+        self.Y_HF_train = self.hf_model.evaluate(self.X_train)['mean'].reshape(-1, num_coords)
 
     def _set_feature_strategy(self, y_lf_mat, x_mat, coords_mat):
         """Get the low-fidelity feature matrix.

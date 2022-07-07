@@ -47,7 +47,6 @@ class JobInterface(Interface):
         polling_time,
         output_dir,
         restart,
-        parameters,
         remote,
         remote_connect,
         scheduler_type,
@@ -65,7 +64,6 @@ class JobInterface(Interface):
             polling_time (int):         how frequently do we check if jobs are done
             output_dir (string):        directory to write output to
             restart (bool):             true if restart option is chosen
-            parameters (dict):          dictionary with parameters
             remote (bool):              true of remote computation
             remote_connect (str):       connection to computing resource
             scheduler_type (str):       scheduler type
@@ -74,13 +72,13 @@ class JobInterface(Interface):
                                         input file can finish and we do not overload the network
             driver_name (str):          Name of the associated driver for the current interface
         """
+        super().__init__(interface_name)
         self.name = interface_name
         self.resources = resources
         self.experiment_name = experiment_name
         self.db = db
         self.polling_time = polling_time
         self.output_dir = output_dir
-        self.parameters = parameters
         self.batch_number = 0
         self.num_pending = None
         self.restart = restart
@@ -109,9 +107,6 @@ class JobInterface(Interface):
 
         # get resources from config
         resources = parse_resources_from_configuration(config, driver_name)
-
-        # get parameters from config, if any
-        parameters = config.get('parameters')
 
         # get various scheduler options
         # TODO: This is not nice
@@ -163,7 +158,6 @@ class JobInterface(Interface):
             polling_time,
             output_dir,
             restart,
-            parameters,
             remote,
             remote_connect,
             scheduler_type,
@@ -178,7 +172,7 @@ class JobInterface(Interface):
         Second variant which takes the input samples as argument
 
         Args:
-            samples (list): realization/samples of QUEENS simulation input variables
+            samples (np.ndarray): realization/samples of QUEENS simulation input variables
             gradient_bool (bool): Flag to determine, whether the gradient of the function at
                                   the evaluation point is expected (True) or not (False)
 
@@ -186,9 +180,6 @@ class JobInterface(Interface):
             output(dict): output data
         """
         self.batch_number += 1
-
-        # Convert samples to pandas DataFrame to use index
-        samples = pd.DataFrame(samples, index=range(1, len(samples) + 1))
 
         # Main run
         job_manager = self.get_job_manager()
@@ -212,7 +203,7 @@ class JobInterface(Interface):
                     time.sleep(self.polling_time)
 
         # get sample and response data
-        output = self.get_output_data(gradient_bool)
+        output = self.get_output_data(num_samples=samples.shape[0], gradient_bool=gradient_bool)
         return output
 
     def get_job_manager(self):
@@ -325,7 +316,7 @@ class JobInterface(Interface):
 
         job = {
             'id': job_id,
-            'params': variables.get_active_variables(),
+            'params': variables,
             'expt_dir': self.output_dir,
             'expt_name': self.experiment_name,
             'resource': resource_name,
@@ -372,10 +363,11 @@ class JobInterface(Interface):
         self.print_resources_status()
         return True
 
-    def get_output_data(self, gradient_bool):
+    def get_output_data(self, num_samples, gradient_bool):
         """Extract output data from database and return it.
 
         Args:
+            num_samples (int): Number of evaluated samples
             gradient_bool (bool): Flag to determine whether the gradient
                                   of the model output w.r.t. to the input
                                   is expected (True if yes)
@@ -412,9 +404,9 @@ class JobInterface(Interface):
                 mean_values.append(mean_value)
                 gradient_values.append(gradient_value)
 
-        output['mean'] = np.array(mean_values)
+        output['mean'] = np.array(mean_values)[-num_samples:]
         if gradient_bool:
-            output['gradient'] = np.array(gradient_values)
+            output['gradient'] = np.array(gradient_values)[-num_samples:]
 
         return output
 
@@ -440,7 +432,7 @@ class JobInterface(Interface):
         number_of_results_in_db, jobid_missing_results_in_db = self._check_results_in_db(samples)
 
         # All job results in database
-        if number_of_results_in_db == samples.size:
+        if number_of_results_in_db == samples.shape[0]:
             print(f"All results found in database.")
 
         # Not all job results in database
@@ -455,7 +447,7 @@ class JobInterface(Interface):
             # Find index for block-restart and run jobs
             jobid_for_block_restart = self._find_block_restart(samples)
             if jobid_for_block_restart is not None:
-                range_block_restart = range(jobid_for_block_restart, samples.size + 1)
+                range_block_restart = range(jobid_for_block_restart, samples.shape[0] + 1)
                 self._manage_job_submission(samples, range_block_restart)
                 jobid_for_data_processor = np.append(jobid_for_data_processor, range_block_restart)
 
@@ -487,9 +479,9 @@ class JobInterface(Interface):
         """
         num_jobs = self.count_jobs()
         if not num_jobs or self.batch_number == 1:
-            job_ids_generator = range(1, samples.size + 1, 1)
+            job_ids_generator = range(1, samples.shape[0] + 1, 1)
         else:
-            job_ids_generator = range(num_jobs + 1, num_jobs + samples.size + 1, 1)
+            job_ids_generator = range(num_jobs + 1, num_jobs + samples.shape[0] + 1, 1)
 
         self._manage_job_submission(samples, job_ids_generator)
 
@@ -572,7 +564,7 @@ class JobInterface(Interface):
             else:
                 try:
                     jobid_from_user = int(answer)
-                    if jobid_from_user <= samples.size:
+                    if jobid_from_user <= samples.shape[0]:
                         print(f'>> You chose a restart from job {jobid_from_user}.')
                         jobid_for_restart = jobid_from_user
                         return jobid_for_restart
@@ -584,7 +576,7 @@ class JobInterface(Interface):
                         jobid_from_user = np.array([int(jobid) for jobid in answer.split()])
                         valid_id = True
                         for jobid in jobid_from_user:
-                            if jobid <= samples.size:
+                            if jobid <= samples.shape[0]:
                                 valid_id = True
                                 pass
                             else:
@@ -688,11 +680,11 @@ class JobInterface(Interface):
                 "You chose restart_from_finished simulations, but your output folder is empty."
             )
 
-        if number_of_subdirectories < samples.size:
+        if number_of_subdirectories < samples.shape[0]:
             # Start from (number of subdirectories) + 1
             jobid_start_search = int(number_of_subdirectories) + 1
         else:
-            jobid_start_search = samples.size
+            jobid_start_search = samples.shape[0]
 
         jobid_for_block_restart = None
         jobid_for_restart_found = False
@@ -716,7 +708,7 @@ class JobInterface(Interface):
                 )
 
         # If jobid for block-restart out of range -> no restart
-        if jobid_for_block_restart > samples.size:
+        if jobid_for_block_restart > samples.shape[0]:
             jobid_for_block_restart = None
 
         # Get user input for block-restart
@@ -801,9 +793,9 @@ class JobInterface(Interface):
                         if len(current_job) == 1:
                             current_job = current_job[0]
                         elif not current_job:
-                            job_num = jobid - (self.batch_number - 1) * samples.size
-                            variables = samples.loc[job_num][0]
-                            current_job = self.create_new_job(variables, resource_name, jobid)
+                            job_num = jobid - (self.batch_number - 1) * samples.shape[0]
+                            sample_dict = self.parameters.sample_as_dict(samples[job_num - 1])
+                            current_job = self.create_new_job(sample_dict, resource_name, jobid)
                         else:
                             raise ValueError(f"Found more than one job with jobid {jobid} in db.")
 
@@ -859,9 +851,9 @@ class JobInterface(Interface):
 
         if not current_job:
             # job not in database -> load result from output folder
-            job_num = jobid - (self.batch_number - 1) * samples.size
-            variables = samples.loc[job_num][0]
-            current_job = self.create_new_job(variables, resource_name, jobid)
+            job_num = jobid - (self.batch_number - 1) * samples.shape[0]
+            sample_dict = self.parameters.sample_as_dict(samples[job_num - 1])
+            current_job = self.create_new_job(sample_dict, resource_name, jobid)
 
             this.restart_flag = True
             self.attempt_dispatch(resource, current_job)

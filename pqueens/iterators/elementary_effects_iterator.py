@@ -37,8 +37,6 @@ class ElementaryEffectsIterator(Iterator):
         confidence_level (float): size of confidence interval
         num_bootstrap_samples (int): number of bootstrap samples used to compute confidence
                                      intervals for sensitivity measures
-        num_params (int): number of model parameters
-        parameter_names (list): list with parameter names
         samples (np.array): samples at which model is evaluated
         output (np.array): results at samples
         salib_problem (dict): dictionary with SALib problem description
@@ -87,8 +85,6 @@ class ElementaryEffectsIterator(Iterator):
         self.num_bootstrap_samples = num_bootstrap_samples
         self.result_description = result_description
 
-        self.num_params = None
-        self.parameter_names = []
         self.samples = None
         self.output = None
         self.salib_problem = {}
@@ -131,34 +127,17 @@ class ElementaryEffectsIterator(Iterator):
             config["global_settings"],
         )
 
-    def eval_model(self):
-        """Evaluate the model."""
-        return self.model.evaluate()
-
     def pre_run(self):
         """Generate samples for subsequent analysis and update model."""
-        parameter_info = self.model.get_parameter()
-
-        # setup SALib problem dict
         bounds = []
-        self.num_params = 0
-        for key, value in parameter_info["random_variables"].items():
-            self.parameter_names.append(key)
-            max_temp = value["upper_bound"]
-            min_temp = value["lower_bound"]
-            bounds.append([min_temp, max_temp])
-            if "distribution" in value:
+        for parameter in self.parameters.dict.values():
+            bounds.append([parameter.lower_bound, parameter.upper_bound])
+            if parameter.distribution is not None:
                 raise ValueError("Parameters must not have probability distributions")
-            self.num_params += 1
-
-        if parameter_info.get("random_fields", None) is not None:
-            raise RuntimeError(
-                "Morris screening is currently not implemented in conjunction with random fields."
-            )
 
         self.salib_problem = {
-            'num_vars': self.num_params,
-            'names': self.parameter_names,
+            'num_vars': self.parameters.num_parameters,
+            'names': self.parameters.names,
             'bounds': bounds,
             'groups': None,
         }
@@ -174,9 +153,7 @@ class ElementaryEffectsIterator(Iterator):
 
     def core_run(self):
         """Run Analysis on model."""
-        self.model.update_model_from_sample_batch(self.samples)
-
-        self.output = self.eval_model()
+        self.output = self.model.evaluate(self.samples)
 
         self.si = morris_analyzer.analyze(
             self.salib_problem,
@@ -206,7 +183,7 @@ class ElementaryEffectsIterator(Iterator):
 
     def process_results(self):
         """Write all results to self contained dictionary."""
-        results = {"parameter_names": self.parameter_names, "sensitivity_indices": self.si}
+        results = {"parameter_names": self.parameters.names, "sensitivity_indices": self.si}
         return results
 
     def print_results(self, results):
@@ -217,7 +194,7 @@ class ElementaryEffectsIterator(Iterator):
             )
         )
 
-        for j in range(self.num_params):
+        for j in range(self.parameters.num_parameters):
             _logger.info(
                 "{0!s:20} {1!s:10} {2!s:10} {3!s:15} {4!s:10}".format(
                     results['sensitivity_indices']['names'][j],

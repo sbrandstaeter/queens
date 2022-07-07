@@ -189,7 +189,7 @@ class DataProcessorEnsight(DataProcessor):
         ) = cls._get_experimental_data_from_db(config, database)
 
         # generate the external geometry module
-        external_geometry_obj = from_config_create_external_geometry(config)
+        external_geometry_obj = from_config_create_external_geometry(config, 'external_geometry')
 
         return cls(
             file_name_identifier,

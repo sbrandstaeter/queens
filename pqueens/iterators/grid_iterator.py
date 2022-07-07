@@ -1,5 +1,3 @@
-"""Grid iterator."""
-
 import numpy as np
 
 import pqueens.visualization.grid_iterator_visualization as qvis
@@ -18,7 +16,6 @@ class GridIterator(Iterator):
         model (model): Model to be evaluated by iterator
         grid_dict (dict): Dictionary containing grid information
         result_description (dict):  Description of desired results
-        parameters (dict) :    dictionary containing parameter information
         num_parameters (int)          :   number of parameters to be varied
         samples (np.array):   Array with all samples
         output (np.array):   Array with all model outputs
@@ -32,7 +29,6 @@ class GridIterator(Iterator):
         result_description,
         global_settings,
         grid_dict,
-        parameters,
         num_parameters,
     ):
         """Initialize grid iterator.
@@ -47,7 +43,6 @@ class GridIterator(Iterator):
         """
         super().__init__(model, global_settings)
         self.grid_dict = grid_dict
-        self.parameters = parameters
         self.result_description = result_description
         self.samples = None
         self.output = None
@@ -77,7 +72,6 @@ class GridIterator(Iterator):
         result_description = method_options.get("result_description", None)
         global_settings = config.get("global_settings", None)
         grid_dict = method_options.get("grid_design", None)
-        parameters = config["parameters"]["random_variables"]
         num_parameters = len(grid_dict)
 
         # take care of wrong user input
@@ -87,22 +81,13 @@ class GridIterator(Iterator):
         # ---------------------- CREATE VISUALIZATION BORG ----------------------------
         qvis.from_config_create(config, iterator_name=iterator_name)
 
-        return cls(
-            model, result_description, global_settings, grid_dict, parameters, num_parameters
-        )
-
-    def eval_model(self):
-        """Evaluate the model."""
-        return self.model.evaluate()
+        return cls(model, result_description, global_settings, grid_dict, num_parameters)
 
     def pre_run(self):
         """Generate samples based on description in grid_dict."""
-        # get variables from problem description (needed to design the grid)
-        parameters = self.model.get_parameter()
 
         # Sanity check for random fields
-        random_fields = parameters.get("random_fields", None)
-        if random_fields is not None:
+        if self.parameters.random_field_flag:
             raise RuntimeError(
                 "The grid iterator is currently not implemented in conjunction with random fields."
             )
@@ -111,10 +96,10 @@ class GridIterator(Iterator):
         grid_point_list = []
 
         #  set up 1D arrays for each parameter (needs bounds and type of axis)
-        for index, (parameter_name, parameter) in enumerate(self.parameters.items()):
-            start_value = parameter["lower_bound"]
-            stop_value = parameter["upper_bound"]
-            data_type = parameter["type"]
+        for index, (parameter_name, parameter) in enumerate(self.parameters.dict.items()):
+            start_value = parameter.lower_bound
+            stop_value = parameter.upper_bound
+            data_type = parameter.data_type
             axis_type = self.grid_dict[parameter_name].get("axis_type", None)
             num_grid_points = self.grid_dict[parameter_name].get("num_grid_points", None)
             self.num_grid_points_per_axis.append(num_grid_points)
@@ -206,8 +191,7 @@ class GridIterator(Iterator):
 
     def core_run(self):
         """Evaluate the meshgrid on model."""
-        self.model.update_model_from_sample_batch(self.samples)
-        self.output = self.eval_model()
+        self.output = self.model.evaluate(self.samples)
 
     def post_run(self):
         """Analyze the results."""

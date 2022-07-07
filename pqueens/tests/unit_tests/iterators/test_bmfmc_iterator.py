@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.bmfmc_iterator import BMFMCIterator
 from pqueens.models.bmfmc_model import BMFMCModel
@@ -11,10 +12,11 @@ from pqueens.models.bmfmc_model import BMFMCModel
 def default_parameters():
     params = {
         "random_variables": {
-            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x2": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x2": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
         }
     }
+    parameters_module.from_config_create_parameters({"parameters": params})
     return params
 
 
@@ -55,7 +57,6 @@ def default_bmfmc_model(default_interface, default_parameters):
         settings_probab_mapping,
         False,
         y_pdf_support,
-        default_parameters,
         default_interface,
         hf_model=None,
         no_features_comparison_bool=False,
@@ -178,7 +179,7 @@ def test_init(
 def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.load_sampling_data')
     mp2 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator.calculate_optimal_X_train')
-    mp3 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator.eval_model')
+    mp3 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.evaluate')
 
     default_bmfmc_iterator.core_run()
 
@@ -284,9 +285,9 @@ def test_random_design(mocker, default_bmfmc_iterator):
 
 
 @pytest.mark.unit_tests
-def test_eval_model(mocker, default_bmfmc_iterator):
+def test_model_evaluate(mocker, default_bmfmc_iterator):
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.evaluate')
-    default_bmfmc_iterator.eval_model()
+    default_bmfmc_iterator.model.evaluate(None)
     mp1.assert_called_once()
 
 

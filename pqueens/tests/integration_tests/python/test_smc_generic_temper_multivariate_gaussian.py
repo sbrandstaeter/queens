@@ -40,26 +40,27 @@ def test_smc_generic_temper_multivariate_gaussian(inputdir, tmpdir, dummy_data):
 
     # note that the analytical solution can be found in multivariate_gaussian_4D_logpdf
     # we only have a very inaccurate approximation here:
-    np.testing.assert_allclose(
-        results['mean'], np.array([[0.60398075, 2.52994971, -3.18073644, 1.33579982]])
+    np.testing.assert_array_almost_equal(
+        results['mean'], np.array([[0.884713, 2.903405, -3.112647, 1.56134]]), decimal=5
     )
 
-    np.testing.assert_allclose(
-        results['var'], np.array([[2.86233632, 4.19022998, 2.37767776, 2.87405536]])
+    np.testing.assert_almost_equal(
+        results['var'], np.array([[3.255066, 4.143380, 1.838545, 2.834356]]), decimal=5
     )
 
-    np.testing.assert_allclose(
+    np.testing.assert_almost_equal(
         results['cov'],
         np.array(
             [
                 [
-                    [2.86233632, 1.47874047, 0.41524659, -0.00426986],
-                    [1.47874047, 4.19022998, 0.88684972, 1.53565931],
-                    [0.41524659, 0.88684972, 2.37767776, 0.60398836],
-                    [-0.00426986, 1.53565931, 0.60398836, 2.87405536],
+                    [3.255066, 1.781563, 0.313565, -0.090972],
+                    [1.781563, 4.143380, 0.779616, 1.704881],
+                    [0.313565, 0.779616, 1.838545, 0.630236],
+                    [-0.090972, 1.704881, 0.630236, 2.834356],
                 ]
             ]
         ),
+        decimal=5,
     )
 
 

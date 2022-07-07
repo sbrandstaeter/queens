@@ -3,13 +3,13 @@ import unittest
 import numpy as np
 import pytest
 
+import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.tests.integration_tests.example_simulator_functions import (
     example_simulator_function_by_name,
 )
-from pqueens.variables.variables import Variables
 
 
 class TestElementaryEffectsIshigami(unittest.TestCase):
@@ -17,7 +17,7 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
 
         uncertain_parameter = {
             "type": "FLOAT",
-            "size": 1,
+            "dimension": 1,
             "upper_bound": 3.14159265359,
             "lower_bound": -3.14159265359,
         }
@@ -29,14 +29,14 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
         }
 
         uncertain_parameters = {"random_variables": random_variables}
+        parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
         some_settings = {"experiment_name": "test"}
 
-        self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
         function = example_simulator_function_by_name("ishigami90")
-        self.interface = DirectPythonInterface('test_interface', function, self.variables, None)
+        self.interface = DirectPythonInterface('test_interface', function, None)
 
         # create mock model
-        self.model = SimulationModel("my_model", self.interface, uncertain_parameters)
+        self.model = SimulationModel("my_model", self.interface)
 
         self.my_iterator = ElementaryEffectsIterator(
             self.model,

@@ -30,17 +30,15 @@ class DirectPythonInterface(Interface):
         latest_job_id (int):    Latest job id
     """
 
-    def __init__(self, interface_name, function, variables, pool):
+    def __init__(self, interface_name, function, pool):
         """Create interface.
 
         Args:
             interface_name (string):    name of interface
             function (function):        function to evaluate
-            variables (dict):           dictionary with variables
             pool (pathos pool):         multiprocessing pool
         """
-        self.name = interface_name
-        self.variables = variables
+        super().__init__(interface_name)
         # Wrap function to clean the output
         self.function = self.function_wrapper(function)
         self.pool = pool
@@ -59,8 +57,6 @@ class DirectPythonInterface(Interface):
         """
         interface_options = config[interface_name]
 
-        parameters = config['parameters']
-
         num_workers = interface_options.get('num_workers', 1)
         function_name = interface_options.get("function_name", None)
         external_python_module = interface_options.get("external_python_module", None)
@@ -77,9 +73,7 @@ class DirectPythonInterface(Interface):
 
         pool = create_pool(num_workers)
 
-        return cls(
-            interface_name=interface_name, function=my_function, variables=parameters, pool=pool
-        )
+        return cls(interface_name=interface_name, function=my_function, pool=pool)
 
     def evaluate(self, samples, gradient_bool=False):
         """Mapping function which orchestrates call to simulator function.
@@ -104,8 +98,8 @@ class DirectPythonInterface(Interface):
 
         # Create samples list and add job_id to the dicts
         samples_list = []
-        for job_id, variables in zip(sample_ids, samples):
-            sample_dict = variables.get_active_variables()
+        for job_id, sample in zip(sample_ids, samples):
+            sample_dict = self.parameters.sample_as_dict(sample)
             sample_dict.update({"job_id": job_id})
             samples_list.append(sample_dict)
 

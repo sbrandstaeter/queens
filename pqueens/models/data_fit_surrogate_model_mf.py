@@ -20,9 +20,7 @@ class MFDataFitSurrogateModel(Model):
         subordinate_iterator (iterator):    Iterator for subordinate model
     """
 
-    def __init__(
-        self, model_name, interface, model_parameters, subordinate_model, subordinate_iterator
-    ):
+    def __init__(self, model_name, interface, subordinate_model, subordinate_iterator):
         """Initialize data fit surrogate model.
 
         Args:
@@ -35,7 +33,7 @@ class MFDataFitSurrogateModel(Model):
                                              model with the purpose of getting
                                              training data
         """
-        super().__init__(model_name, model_parameters)
+        super().__init__(model_name)
         self.interface = interface
         self.subordinate_model = subordinate_model
         self.subordinate_iterator = subordinate_iterator
@@ -54,8 +52,6 @@ class MFDataFitSurrogateModel(Model):
         # get options
         model_options = config[model_name]
         interface_name = model_options["interface"]
-        parameters = model_options["parameters"]
-        model_parameters = config[parameters]
 
         subordinate_model_name = model_options["subordinate_model"]
         subordinate_iterator_name = model_options["subordinate_iterator"]
@@ -74,7 +70,7 @@ class MFDataFitSurrogateModel(Model):
 
         # TODO check that we have a multi-fidelity interface
 
-        return cls(model_name, interface, model_parameters, subordinate_model, subordinate_iterator)
+        return cls(model_name, interface, subordinate_model, subordinate_iterator)
 
     def evaluate(self):
         """Evaluate model with current set of variables.

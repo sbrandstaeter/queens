@@ -19,7 +19,7 @@ def test_gp_precompiled_one_dim(inputdir, tmpdir):
 
     dir_dict = {
         'test_fun': 'sinus_test_fun',
-        'variables': '"x1": {"size": 1,"distribution": "uniform","lower_bound": -5, "upper_bound": 5}',
+        'variables': '"x1": {"dimension": 1,"distribution": "uniform","lower_bound": -5, "upper_bound": 5}',
     }
 
     injector.inject(dir_dict, template, input_file)
@@ -55,7 +55,7 @@ def test_gp_precompiled_two_dim(inputdir, tmpdir):
 
     dir_dict = {
         'test_fun': 'branin78_hifi',
-        'variables': '"x1": {"size": 1,"distribution": "uniform","lower_bound": -5, "upper_bound": 10}, "x2": {"size": 1,"distribution": "uniform","lower_bound": 0, "upper_bound": 15}',
+        'variables': '"x1": {"dimension": 1,"distribution": "uniform","lower_bound": -5, "upper_bound": 10}, "x2": {"dimension": 1,"distribution": "uniform","lower_bound": 0, "upper_bound": 15}',
     }
 
     injector.inject(dir_dict, template, input_file)

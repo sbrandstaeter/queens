@@ -65,7 +65,6 @@ class BaciLMIterator(Iterator):
         Returns:
             iterator: OptimizationIterator object
         """
-
         print(
             "Baci LM Iterator for experiment: {0}".format(
                 config.get('global_settings').get('experiment_name')
@@ -116,59 +115,21 @@ class BaciLMIterator(Iterator):
             verbose_output=verbose_output,
         )
 
-    def eval_model(self):
-        """Evaluate model at current point."""
+    def jacobian_and_residual(self, x0):
+        """Evaluate Jacobian and residual of objective function at x0.
 
-        result_dict = self.model.evaluate()
-        return result_dict
-
-    def residual(self, x0):
-        """Evaluate objective function at x0.
-
-        Args:
-            x0 (numpy.ndarray): vector with current parameters
-
-        Returns:
-            f0 (numpy.ndarray): current residual vector
-        """
-
-        x_batch, _ = self.get_positions_raw_2pointperturb(x0)
-
-        precalculated = self.model.check_for_precalculated_response_of_sample_batch(x_batch)
-
-        # try to recover if response was not found to be precalculated
-        if not precalculated:
-            self.model.update_model_from_sample_batch(x_batch)
-            self.eval_model()
-
-        # model response should now correspond to objective function evaluated at positions
-        f = self.model.response['mean']
-        f_batch = f[-(len(x_batch)) :]
-
-        # first entry corresponds to f(x0)
-        f0 = f_batch[0]
-
-        return f0
-
-    def jacobian(self, x0):
-        """Evaluate Jacobian of objective function at x0. For BACI LM we can
-        restrict to "2-point".
+        For BACI LM we can restrict to "2-point".
 
         Args:
             x0 (numpy.ndarray): vector with current parameters
 
         Returns:
             J (numpy.ndarray): Jacobian Matrix approximation from finite differences
+            f0 (numpy.ndarray): residual of objective function at x0
         """
-
         positions, delta_positions = self.get_positions_raw_2pointperturb(x0)
 
-        precalculated = self.model.check_for_precalculated_response_of_sample_batch(positions)
-
-        # try to recover if response was not found to be precalculated
-        if not precalculated:
-            self.model.update_model_from_sample_batch(positions)
-            self.eval_model()
+        self.model.evaluate(positions)
 
         f = self.model.response['mean']
         f_batch = f[-(len(positions)) :]
@@ -187,17 +148,13 @@ class BaciLMIterator(Iterator):
                 f" You have {num_res}<{num_par}."
             )
 
-        return J
+        return J, f0
 
     def initialize_run(self):
-        """Print console output and optionally open .csv file for results and
-        write header.
+        """Initialize run.
 
-        Args:
-            none
-
-        Returns:
-            none
+        Print console output and optionally open .csv file for results
+        and write header.
         """
 
         print("Initialize BACI Levenberg-Marquardt run.")
@@ -218,15 +175,7 @@ class BaciLMIterator(Iterator):
                     df.to_csv(f, sep='\t', index=None)
 
     def core_run(self):
-        """Core run of Levenberg Marquardt iterator.
-
-        Args:
-            none
-
-        Returns:
-            none
-        """
-
+        """Core run of Levenberg Marquardt iterator."""
         resnorm = np.inf
         gradnorm = np.inf
 
@@ -247,8 +196,7 @@ class BaciLMIterator(Iterator):
                 f"{self.param_current}"
             )
 
-            jacobian = self.jacobian(self.param_current)
-            residual = self.residual(self.param_current)
+            jacobian, residual = self.jacobian_and_residual(self.param_current)
 
             # store terms for repeated useage
             JTJ = (jacobian.T).dot(jacobian)
@@ -315,14 +263,10 @@ class BaciLMIterator(Iterator):
         self.solution = self.param_opt
 
     def post_run(self):
-        """Write solution to console and optionally create .html plot from
+        """Post run.
+
+        Write solution to console and optionally create .html plot from
         result file.
-
-        Args:
-            none
-
-        Returns:
-            none
         """
         print(f"The optimum:\t{self.solution} occured in iteration #{self.iter_opt}.")
         if self.result_description:
@@ -339,9 +283,8 @@ class BaciLMIterator(Iterator):
                 xydata = xydata.unstack()
                 data = data.drop(columns='params')
                 i = 0
-                var_name = [*self.model.variables[0].variables.keys()]
                 for column in xydata:
-                    data[var_name[i]] = xydata[column].astype(float)
+                    data[self.parameters.names[i]] = xydata[column].astype(float)
                     i = i + 1
 
                 if i > 2:
@@ -354,8 +297,8 @@ class BaciLMIterator(Iterator):
                 elif i == 2:
                     fig = px.line_3d(
                         data,
-                        x=var_name[0],
-                        y=var_name[1],
+                        x=self.parameters.names[0],
+                        y=self.parameters.names[1],
                         z='resnorm',
                         hover_data=[
                             'iter',
@@ -363,15 +306,15 @@ class BaciLMIterator(Iterator):
                             'gradnorm',
                             'delta_params',
                             'mu',
-                            var_name[0],
-                            var_name[1],
+                            self.parameters.names[0],
+                            self.parameters.names[1],
                         ],
                     )
                     fig.update_traces(mode='lines+markers', marker=dict(size=2), line=dict(width=4))
                 elif i == 1:
                     fig = px.line(
                         data,
-                        x=var_name[0],
+                        x=self.parameters.names[0],
                         y='resnorm',
                         hover_data=[
                             'iter',
@@ -379,7 +322,7 @@ class BaciLMIterator(Iterator):
                             'gradnorm',
                             'delta_params',
                             'mu',
-                            var_name[0],
+                            self.parameters.names[0],
                         ],
                     )
                     fig.update_traces(mode='lines+markers', marker=dict(size=7), line=dict(width=3))
@@ -394,7 +337,6 @@ class BaciLMIterator(Iterator):
                 )
 
     def get_positions_raw_2pointperturb(self, x0):
-
         """Get parameter sets for objective function evaluations.
 
         Args:
@@ -404,7 +346,6 @@ class BaciLMIterator(Iterator):
             positions (numpy.ndarray): parameter batch for function evaluation
             delta_positions (numpy.ndarray): parameter perturbations for finite difference scheme
         """
-
         delta_positions = self.jac_abs_step + self.jac_rel_step * np.abs(x0)
         # if bounds do not allow finite difference step, use opposite direction
         if self.havebounds:
@@ -425,7 +366,6 @@ class BaciLMIterator(Iterator):
         return positions, delta_positions
 
     def printstep(self, i, resnorm, gradnorm, param_delta):
-
         """Print iteration data to console and optionally to file. Opens file
         in append mode, so that file is updated frequently.
 
@@ -438,7 +378,6 @@ class BaciLMIterator(Iterator):
         Returns:
             None
         """
-
         # write iteration to file
         if self.result_description:
             if self.result_description["write_results"]:
@@ -462,7 +401,6 @@ class BaciLMIterator(Iterator):
                     df.to_csv(f, sep='\t', header=None, mode='a', index=None, float_format='%.8f')
 
     def checkbounds(self, param_delta, i):
-
         """check if proposed step is in bounds, otherwise double regularization
         and compute new step.
 
@@ -473,7 +411,6 @@ class BaciLMIterator(Iterator):
         Returns:
             stepisoutside (bool): flag if proposed step is out of bounds
         """
-
         stepisoutside = False
         nextstep = self.param_current + param_delta
         if np.any(nextstep < self.bounds[0]) or np.any(nextstep > self.bounds[1]):

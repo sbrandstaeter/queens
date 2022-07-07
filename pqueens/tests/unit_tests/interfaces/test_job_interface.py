@@ -18,7 +18,7 @@ class TestJobInterface(unittest.TestCase):
         uncertain_parameters = {}
         uncertain_parameter = {}
         uncertain_parameter["type"] = "FLOAT"
-        uncertain_parameter["size"] = 1
+        uncertain_parameter["dimension"] = 1
         uncertain_parameter["distribution"] = "uniform"
         uncertain_parameter['lower_bound'] = -3.14159265359
         uncertain_parameter['upper_bound'] = 3.14159265359

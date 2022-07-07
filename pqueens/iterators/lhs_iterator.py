@@ -7,9 +7,7 @@ from pyDOE import lhs
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
-from pqueens.utils.get_random_variables import get_random_variables
 from pqueens.utils.process_outputs import process_ouputs, write_results
-from pqueens.utils.scale_samples import scale_samples
 
 _logger = logging.getLogger(__name__)
 
@@ -92,22 +90,11 @@ class LHSIterator(Iterator):
             method_options.get("criterion", "maximin"),
         )
 
-    def eval_model(self):
-        """Evaluate the model."""
-        return self.model.evaluate()
-
     def pre_run(self):
         """Generate samples for subsequent LHS analysis."""
         np.random.seed(self.seed)
 
-        random_variables, random_fields, num_inputs, distribution_info = get_random_variables(
-            self.model
-        )
-
-        if random_fields is not None:
-            raise RuntimeError(
-                "LHS Sampling is currently not implemented in conjunction with random fields."
-            )
+        num_inputs = self.parameters.num_parameters
 
         _logger.info(f'Number of inputs: {num_inputs}')
         _logger.info(f'Number of samples: {self.num_samples}')
@@ -119,12 +106,11 @@ class LHSIterator(Iterator):
             num_inputs, self.num_samples, criterion=self.criterion, iterations=self.num_iterations
         )
         # scale and transform samples according to the inverse cdf
-        self.samples = scale_samples(hypercube_samples, distribution_info)
+        self.samples = self.parameters.inverse_cdf_transform(hypercube_samples)
 
     def core_run(self):
         """Run LHS Analysis on model."""
-        self.model.update_model_from_sample_batch(self.samples)
-        self.output = self.eval_model()
+        self.output = self.model.evaluate(self.samples)
 
     def post_run(self):
         """Analyze the results."""

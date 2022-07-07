@@ -22,12 +22,11 @@
     "list_geometric_sets": [
       "DSURFACE 4"
     ],
-    "queens_tmp_dir": "{experiment_dir}"
+    "input_template": "{baci_input}"
   },
   "model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "interface": {
     "type": "job_interface",
@@ -88,13 +87,13 @@
   "parameters": {
     "random_variables": {
       "nue": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0.45,
         "upper_bound": 0.49
       },
       "pressure": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 28000,
         "upper_bound": 38000

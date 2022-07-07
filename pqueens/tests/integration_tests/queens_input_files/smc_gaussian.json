@@ -37,13 +37,11 @@
     "noise_type": "fixed_variance",
     "noise_value": 1.0,
     "experimental_file_name_identifier": "*.csv",
-    "experimental_csv_data_base_dir": "{experimental_data_path}",
-    "parameters": "parameters"
+    "experimental_csv_data_base_dir": "{experimental_data_path}"
   },
   "forward_model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "proposal_distribution": {
     "distribution": "normal",
@@ -57,7 +55,7 @@
   "parameters": {
     "random_variables": {
       "x": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "normal",
         "mean": 2.0,
         "covariance": 1.0

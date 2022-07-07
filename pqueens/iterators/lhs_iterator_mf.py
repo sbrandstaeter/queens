@@ -5,7 +5,6 @@ from pyDOE import lhs
 
 from pqueens.models import from_config_create_model
 from pqueens.models.multifidelity_model import MultifidelityModel
-from pqueens.utils.scale_samples import scale_samples
 
 from .iterator import Iterator
 
@@ -78,10 +77,6 @@ class MFLHSIterator(Iterator):
             config["global_settings"],
         )
 
-    def eval_model(self):
-        """Evaluate the model."""
-        return self.model.evaluate()
-
     def pre_run(self):
         """Generate samples for subsequent LHS analysis."""
         np.random.seed(self.seed)
@@ -99,7 +94,7 @@ class MFLHSIterator(Iterator):
                         numparams, self.num_samples[0], 'maximin', iterations=self.num_iterations
                     )
                     # scale and transform samples according to the inverse cdf
-                    self.samples.append(scale_samples(hypercube_samples, distribution_info))
+                    self.samples.append(self.parameters_inverse_transform(hypercube_samples))
                 else:
                     self.samples.append(
                         self.select_random_subset(self.samples[i - 1], self.num_samples[i])
@@ -110,7 +105,7 @@ class MFLHSIterator(Iterator):
                     numparams, self.num_samples[i], 'maximin', iterations=self.num_iterations
                 )
                 # scale and transform samples according to the inverse cdf
-                self.samples.append(scale_samples(hypercube_samples, distribution_info))
+                self.samples.append(self.parameters_inverse_transform(hypercube_samples))
         else:
             raise ValueError("Mode must be either 'nested' or 'independent' ")
 
@@ -120,8 +115,7 @@ class MFLHSIterator(Iterator):
 
         for i in range(0, self.model.num_levels):
             self.model.set_hifi_model_index(i)
-            self.model.update_model_from_sample_batch(self.samples[i])
-            self.outputs.append(self.eval_model())
+            self.outputs.append(self.model.evaluate(self.samples[i]))
 
     def post_run(self):
         """Analyze the results."""

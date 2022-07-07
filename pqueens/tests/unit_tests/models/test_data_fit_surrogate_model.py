@@ -29,7 +29,7 @@ class TestDataFitSurrogateModel(unittest.TestCase):
             "dummy_parameters": {
                 "random_variables": {
                     "youngs": {
-                        "size": 1,
+                        "dimension": 1,
                         "distribution": "normal",
                         "mean": 1000000,
                         "covariance": 5000000,

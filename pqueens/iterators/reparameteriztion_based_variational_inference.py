@@ -40,43 +40,8 @@ class RPVIIterator(VariationalInferenceIterator):
              859-877.
 
     Attributes:
-           global_settings (dict): Global settings of the QUEENS simulations
-        model (obj): Underlying simulation model on which the inverse analysis is conducted
-        result_description (dict): Settings for storing and visualizing the results
-        db (obj): QUEENS database object
-        experiment_name (str): Name of the QUEENS simulation
-        variational_family (str): Density type for variational approximation
-        variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                          variational parameters
-        n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration to
-                                  estimate the involved expectations)
-        variational_transformation (str): String encoding the transformation that will be applied to
-                                          the variational density
-        random_seed (int): Seed for the random number generators
-        max_feval (int): Maximum number of simulation runs for this analysis
-        num_variables (int): Actual number of model input variables that should be calibrated
-        natural_gradient_bool (boolean): True if natural gradient should be used
-        fim_dampening_bool (boolean): True if FIM dampening should be used
-        fim_decay_start_iter (float): Iteration at which the FIM dampening is started
-        fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
-        fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-        export_quantities_over_iter (boolean): True if data (variational_params, elbo) should
-                                               be exported in the pickle file
-        n_sims (int): Number of probabilistic model calls
-        variational_distribution_obj (VariationalDistribution): Variational distribution object
-        variational_params (np.array): Row-vector containing the variational parameters
-        elbo_list (list): ELBO value of every iteration
-        prior_obj_list (list): List containing objects of prior models for the random input. The
-                               list is ordered in the same way as the random input definition in
-                               the input file
-        parameter_list (list): List of parameters from previous iterations for the ISMC gradient
-        variational_params_list (list): List of parameters from first to last iteration
-        model_eval_iteration_period (int): If the iteration number is a multiple of this number
-                                           the probabilistic model is sampled independent of the
-                                           other conditions
-        stochastic_optimizer (obj): QUEENS stochastic optimizer object
-        score_function_bool (bool): Boolean flag to decide whether the score function term
-                                    should be considered in the ELBO gradient. If true the
+        score_function_bool (bool): Boolean flag to decide wheater the score function term
+                                    should be considered in the elbo gradient. If true the
                                     score function is considered.
         finite_difference_step (float): Finite difference step size
         finite_difference_method (str): Method to calculate a finite difference based
@@ -84,6 +49,9 @@ class RPVIIterator(VariationalInferenceIterator):
 
                         - '2-point': a one sided scheme by definition
                         - '3-point': more exact but needs twice as many function evaluations
+        likelihood_gradient_method (str): Method for how to calculate the gradient
+                                                        of the log-likelihood
+        noise_list (list): Gaussian likelihood noise variance values.
 
     Returns:
         rpvi_obj (obj): Instance of the RPVIIterator
@@ -102,7 +70,7 @@ class RPVIIterator(VariationalInferenceIterator):
         variational_transformation,
         random_seed,
         max_feval,
-        num_variables,
+        num_parameters,
         natural_gradient_bool,
         fim_dampening_bool,
         fim_decay_start_iter,
@@ -134,7 +102,7 @@ class RPVIIterator(VariationalInferenceIterator):
                                               the variational density
             random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
-            num_variables (int): Actual number of model input variables that should be calibrated
+            num_parameters (int): Actual number of model input parameters that should be calibrated
             natural_gradient_bool (boolean): True if natural gradient should be used
             fim_dampening_bool (boolean): True if FIM dampening should be used
             fim_decay_start_iter (float): Iteration at which the FIM dampening is started
@@ -168,7 +136,7 @@ class RPVIIterator(VariationalInferenceIterator):
             variational_transformation,
             random_seed,
             max_feval,
-            num_variables,
+            num_parameters,
             natural_gradient_bool,
             fim_dampening_bool,
             fim_decay_start_iter,
@@ -219,7 +187,7 @@ class RPVIIterator(VariationalInferenceIterator):
             variational_transformation,
             random_seed,
             max_feval,
-            num_variables,
+            num_parameters,
             natural_gradient_bool,
             fim_dampening_bool,
             fim_decay_start_iter,
@@ -242,7 +210,7 @@ class RPVIIterator(VariationalInferenceIterator):
             variational_transformation=variational_transformation,
             random_seed=random_seed,
             max_feval=max_feval,
-            num_variables=num_variables,
+            num_parameters=num_parameters,
             natural_gradient_bool=natural_gradient_bool,
             fim_dampening_bool=fim_dampening_bool,
             fim_decay_start_iter=fim_decay_start_iter,
@@ -363,13 +331,11 @@ class RPVIIterator(VariationalInferenceIterator):
                                       evaluated at the parameter value
         """
         grad_log_prior_lst = []
-        grad_log_prior = np.zeros((self.variational_distribution_obj.dimension, 1))
-        for sample in sample_batch:
-            for prior_distr in self.prior_obj_list:
-                grad_log_prior += prior_distr.grad_logpdf(sample).reshape(-1, 1)
-            grad_log_prior_lst.append(grad_log_prior)
+        for parameter, sample in zip(self.parameters.to_list(), sample_batch):
+            grad_log_prior_lst.append(parameter.distribution.grad_logpdf(sample).reshape(-1))
 
-        return grad_log_prior_lst
+        grad_log_priors = np.array(grad_log_prior_lst).flatten()
+        return grad_log_priors
 
     def calculate_grad_log_likelihood_params(self, sample_batch):
         """Calculate the gradient/jacobian of the log-likelihood function.
@@ -477,10 +443,10 @@ class RPVIIterator(VariationalInferenceIterator):
         Returns:
             None
         """
-        mean = np.array(self.variational_params[: self.num_variables])
+        mean = np.array(self.variational_params[: self.num_parameters])
         covariance = np.diag(
             np.exp(
-                2 * np.array(self.variational_params[self.num_variables : 2 * self.num_variables])
+                2 * np.array(self.variational_params[self.num_parameters : 2 * self.num_parameters])
             ).flatten()
         )
         elbo = float(mvn.entropy(mean.flatten(), covariance) + log_unnormalized_posterior_mean)
@@ -520,19 +486,6 @@ class RPVIIterator(VariationalInferenceIterator):
             )
         return result_description
 
-    def eval_model(self, gradient_bool=False):
-        """Evaluate model for the sample batch.
-
-        Args:
-            gradient_bool (bool): Boolean to compute gradient of the model as well,
-                                  if set to True
-
-        Returns:
-           result_dict (dict): Dictionary containing model response for sample batch
-        """
-        result_dict = self.model.evaluate(gradient_bool=gradient_bool)
-        return result_dict
-
     def eval_log_likelihood(self, sample_batch, gradient_bool=False):
         """Calculate the log-likelihood of the observation data.
 
@@ -551,8 +504,9 @@ class RPVIIterator(VariationalInferenceIterator):
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)--> data is saved to DB
-        self.model.update_model_from_sample_batch(np.atleast_2d(sample_batch))
-        likelihood_return_tuple = self.eval_model(gradient_bool=gradient_bool)
+        likelihood_return_tuple = self.model.evaluate(
+            sample_batch.reshape(-1, self.num_parameters), gradient_bool=gradient_bool
+        )
         self.n_sims += len(sample_batch)
         self.n_sims_list.append(self.n_sims)
         self.noise_list.append(self.model.normal_distribution.covariance)
@@ -566,10 +520,7 @@ class RPVIIterator(VariationalInferenceIterator):
             sample_batch (np.array): Sample batch for which the model should be evaluated
 
         Returns:
-            log_prior_lst (lst): List of log-priors evaluated for current sample
+            log_prior (np.array): log-prior vector evaluated for current sample batch
         """
-        log_prior_lst = []
-        for dim, prior_distr in enumerate(self.prior_obj_list):
-            log_prior_lst.append(prior_distr.logpdf(sample_batch[:, dim]))
-
-        return log_prior_lst
+        log_prior = self.parameters.joint_logpdf(sample_batch)
+        return log_prior

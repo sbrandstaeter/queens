@@ -24,16 +24,15 @@ class MultifidelityModel(Model):
         active_hf_model_ind (int):         Index of current low-fidelity model
     """
 
-    def __init__(self, model_name, model_parameters, model_sequence, eval_cost_per_level):
+    def __init__(self, model_name, model_sequence, eval_cost_per_level):
         """Initialize multi-fidelity model.
 
         Args:
             model_name (string):        Name of model
-            model_parameters (dict):    Model parameters
             model_sequence (list):      List with SimulationModels
             eval_cost_per_level (list): List with model evaluation cost
         """
-        super().__init__(model_name, model_parameters)
+        super().__init__(model_name)
 
         self.eval_cost_per_level = eval_cost_per_level
         self.num_levels = len(model_sequence)
@@ -43,10 +42,6 @@ class MultifidelityModel(Model):
         self.__active_lf_model_ind = None
         self.__active_hf_model_ind = None
         self.response_mode = None
-
-        # self.__active_lf_model_ind = 0
-        # self.__active_hf_model_ind = 1
-        # self.response_mode = 'bypass_lofi'
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
@@ -77,10 +72,9 @@ class MultifidelityModel(Model):
                 )
             # TODO check for same parameters
             sub_interface = from_config_create_interface(sub_interface_name, config)
-            sub_model_parameters = config[parameters]
-            sub_models.append(SimulationModel(sub_model_name, sub_interface, sub_model_parameters))
+            sub_models.append(SimulationModel(sub_model_name, sub_interface))
 
-        return cls(model_name, model_parameters, sub_models, model_evaluation_cost)
+        return cls(model_name, sub_models, model_evaluation_cost)
 
     def evaluate(self):
         """Evaluate model with current set of variables."""

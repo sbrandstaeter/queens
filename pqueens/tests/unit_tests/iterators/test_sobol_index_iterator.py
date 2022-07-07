@@ -4,13 +4,13 @@ import unittest
 import numpy as np
 import pytest
 
+import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.sobol_index_iterator import SobolIndexIterator
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.tests.integration_tests.example_simulator_functions import (
     example_simulator_function_by_name,
 )
-from pqueens.variables.variables import Variables
 
 
 class TestSobolIndices(unittest.TestCase):
@@ -19,7 +19,7 @@ class TestSobolIndices(unittest.TestCase):
     def setUp(self):
         """Set up the iterator."""
         uncertain_parameter = {
-            "size": 1,
+            "dimension": 1,
             "distribution": "uniform",
             "lower_bound": -3.14159265359,
             "upper_bound": 3.14159265359,
@@ -32,14 +32,15 @@ class TestSobolIndices(unittest.TestCase):
         }
         uncertain_parameters = {"random_variables": random_variables}
 
+        parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
+
         some_settings = {"experiment_name": "test"}
 
-        self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
         function = example_simulator_function_by_name("ishigami90")
-        self.interface = DirectPythonInterface('test_interface', function, self.variables, None)
+        self.interface = DirectPythonInterface('test_interface', function, None)
 
         # create mock model
-        self.model = SimulationModel("my_model", self.interface, uncertain_parameters)
+        self.model = SimulationModel("my_model", self.interface)
 
         self.my_iterator = SobolIndexIterator(
             self.model,

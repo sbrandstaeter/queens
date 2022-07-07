@@ -55,8 +55,7 @@
   },
   "high_fidelity_model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "interface": {
     "type": "direct_python_interface",
@@ -65,13 +64,13 @@
   "parameters": {
     "random_variables": {
       "x1": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0.0,
         "upper_bound": 1.0
       },
       "x2": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0.0,
         "upper_bound": 1.0

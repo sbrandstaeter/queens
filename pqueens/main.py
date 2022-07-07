@@ -10,6 +10,8 @@ import time
 from collections import OrderedDict
 
 import pqueens.database.database as DB_module
+import pqueens.parameters.parameters as parameters_module
+from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.iterators import from_config_create_iterator
 from pqueens.utils import ascii_art
 from pqueens.utils.logger_settings import setup_basic_logging
@@ -55,6 +57,13 @@ def main(args=None):
     DB_module.from_config_create_database(options)
 
     with DB_module.database as db:
+
+        pre_processer = from_config_create_external_geometry(options, 'pre_processing')
+        if pre_processer:
+            pre_processer.main_run()
+            pre_processer.write_random_fields_to_dat()
+
+        parameters_module.from_config_create_parameters(options, pre_processer)
 
         # build iterator
         my_iterator = from_config_create_iterator(options)

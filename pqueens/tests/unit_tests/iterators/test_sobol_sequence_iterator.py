@@ -1,13 +1,13 @@
 import numpy as np
 import pytest
 
+import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.tests.integration_tests.example_simulator_functions import (
     example_simulator_function_by_name,
 )
-from pqueens.variables.variables import Variables
 
 
 @pytest.fixture()
@@ -20,7 +20,7 @@ def global_settings():
 def default_model():
     uncertain_parameters = {}
     uncertain_parameter1 = {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": -3.14159265359,
         "upper_bound": 3.14159265359,
@@ -28,7 +28,7 @@ def default_model():
 
     uncertain_parameter2 = {
         "type": "FLOAT",
-        "size": 1,
+        "dimension": 1,
         "distribution": "normal",
         "mean": 0,
         "covariance": 4,
@@ -36,7 +36,7 @@ def default_model():
 
     uncertain_parameter3 = {
         "type": "FLOAT",
-        "size": 1,
+        "dimension": 1,
         "distribution": "lognormal",
         "normal_mean": 0.3,
         "normal_covariance": 1,
@@ -49,14 +49,14 @@ def default_model():
     }
     uncertain_parameters["random_variables"] = random_variables
 
-    variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
+    parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
 
     function = example_simulator_function_by_name("ishigami90")
     # create interface
-    interface = DirectPythonInterface('test_interface', function, variables, None)
+    interface = DirectPythonInterface('test_interface', function, None)
 
     # create mock model
-    model = SimulationModel("my_model", interface, uncertain_parameters)
+    model = SimulationModel("my_model", interface)
 
     return model
 
