@@ -20,7 +20,7 @@
       "optimization_options": {
         "stochastic_optimizer": "Adam",
         "optimization_type": "max",
-        "learning_rate": 0.025,
+        "learning_rate": 0.02,
         "gradient_clipping": true,
         "gradient_clipping_norm_threshold": 1e6,
         "natural_gradient": true,
