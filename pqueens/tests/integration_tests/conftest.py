@@ -53,6 +53,15 @@ def baci_source_paths_for_gitlab_runner():
     return src_baci, src_drt_monitor, src_post_drt_ensight, src_post_processor
 
 
+@pytest.fixture(scope='session')
+def example_simulator_fun_dir():
+    """Return the path to the example simulator functions."""
+    input_files_path = relative_path_from_pqueens(
+        "tests/integration_tests/example_simulator_functions"
+    )
+    return input_files_path
+
+
 # CLUSTER TESTS ------------------------------------------------------------------------------------
 
 

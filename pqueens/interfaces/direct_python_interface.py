@@ -47,14 +47,12 @@ class DirectPythonInterface(Interface):
         self.latest_job_id = 1
 
     @classmethod
-    def from_config_create_interface(cls, interface_name, config, driver_name):
+    def from_config_create_interface(cls, interface_name, config, **_kargs):
         """Create interface from config dictionary.
 
         Args:
             interface_name (str):   name of interface
             config(dict):           dictionary containing problem description
-            driver_name (str): Name of the driver that uses this interface
-                               (not used here)
 
         Returns:
             interface:              instance of DirectPythonInterface
@@ -83,11 +81,13 @@ class DirectPythonInterface(Interface):
             interface_name=interface_name, function=my_function, variables=parameters, pool=pool
         )
 
-    def evaluate(self, samples):
+    def evaluate(self, samples, gradient_bool=False):
         """Mapping function which orchestrates call to simulator function.
 
         Args:
-            samples (list):         list of Variables objects
+            samples (list): List of variables objects
+            gradient_bool (bool): Flag to determine, whether the gradient of the function at
+                                  the evaluation point is expected (True) or not (False)
 
         Returns:
             dict: dictionary with
@@ -115,7 +115,16 @@ class DirectPythonInterface(Interface):
         else:
             results = list(map(self.function, tqdm(samples_list)))
 
-        output = {'mean': np.array(results)}
+        if gradient_bool:
+            result_lst = []
+            gradient_lst = []
+            for result in results:
+                result_lst.append(result[0])
+                gradient_lst.append(result[1].T)
+            output = {'mean': np.array(result_lst)}
+            output['gradient'] = np.array(gradient_lst)
+        else:
+            output = {'mean': np.array(results)}
 
         return output
 
@@ -142,10 +151,19 @@ class DirectPythonInterface(Interface):
             Returns:
                 (np.ndarray): result of the function call
             """
-            result = function(**sample_dict)
-            result = np.squeeze(result)
-            if not result.shape:
-                result = np.expand_dims(result, axis=0)
-            return result
+            result_array = function(**sample_dict)
+            if isinstance(result_array, tuple):
+                # here we expect a gradient return
+                result = result_array[0]
+                gradient = np.array(result_array[1])
+                if not result.shape:
+                    result = np.expand_dims(result, axis=0)
+                    gradient = np.expand_dims(gradient, axis=0)
+                return result, gradient
+            else:
+                # here no gradient return
+                if not result_array.shape:
+                    result_array = np.expand_dims(result_array, axis=0)
+                return result_array
 
         return reshaped_output_function

@@ -85,6 +85,7 @@ class BaciDriver(Driver):
         remote,
         remote_connect,
         result,
+        gradient,
         singularity,
         database,
         cae_output_streaming,
@@ -107,6 +108,7 @@ class BaciDriver(Driver):
         simulation_input_template,
         workdir,
         data_processor,
+        gradient_data_processor,
     ):
         """Initialize BaciDriver object.
 
@@ -128,6 +130,7 @@ class BaciDriver(Driver):
             remote_connect (str):      (only for remote scheduling) adress of remote
                                        computing resource
             result (np.array):         simulation result to be stored in database
+            gradient (np.array): gradient of the simulation output w.r.t. to the input
             singularity (bool):        flag for use of Singularity containers
             database (obj):            database object
             cae_output_streaming (bool): flag for additional streaming to given stream
@@ -154,6 +157,7 @@ class BaciDriver(Driver):
             simulation_input_template (str): path to BACI input template
             workdir (str):             path to working directory
             data_processor (obj):   instance of data processor class
+            gradient_data_processor (obj):   instance of data processor class for gradient data
         """
         super().__init__(
             batch,
@@ -169,6 +173,7 @@ class BaciDriver(Driver):
             remote,
             remote_connect,
             result,
+            gradient,
             singularity,
             database,
         )
@@ -194,6 +199,7 @@ class BaciDriver(Driver):
         self.simulation_input_template = simulation_input_template
         self.workdir = workdir
         self.data_processor = data_processor
+        self.gradient_data_processor = gradient_data_processor
 
     @classmethod
     def from_config_create_driver(
@@ -253,6 +259,7 @@ class BaciDriver(Driver):
         driver_options = config[driver_name]['driver_params']
         job = None
         result = None
+        gradient = None
         simulation_input_template = driver_options.get('input_template', None)
         executable = driver_options['path_to_executable']
 
@@ -277,6 +284,14 @@ class BaciDriver(Driver):
             post_processor_location = None
 
         data_processor_name = driver_options.get('data_processor', None)
+        gradient_data_processor_name = driver_options.get('gradient_data_processor', None)
+        if gradient_data_processor_name:
+            gradient_data_processor = from_config_create_data_processor(
+                config, gradient_data_processor_name
+            )
+        else:
+            gradient_data_processor = None
+
         if data_processor_name:
             data_processor = from_config_create_data_processor(config, data_processor_name)
             cae_output_streaming = False
@@ -339,6 +354,7 @@ class BaciDriver(Driver):
             remote,
             remote_connect,
             result,
+            gradient,
             singularity,
             database,
             cae_output_streaming,
@@ -361,6 +377,7 @@ class BaciDriver(Driver):
             simulation_input_template,
             workdir,
             data_processor,
+            gradient_data_processor,
         )
 
     # ----------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED -----------------
@@ -729,7 +746,7 @@ class BaciDriver(Driver):
         if self.remote:
             mpi_cmd = 'mpirun -np'
         else:
-            mpi_cmd = 'mpirun --bind-to none -np'
+            mpi_cmd = '/usr/bin/mpirun --bind-to none -np'
 
         command_list = [
             mpi_cmd,

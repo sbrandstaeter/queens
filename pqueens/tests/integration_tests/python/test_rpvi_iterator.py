@@ -1,3 +1,5 @@
+"""Integration test for reparameterization trick VI."""
+
 import os
 import pickle
 
@@ -9,11 +11,9 @@ from scipy.stats import multivariate_normal as mvn
 
 import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.main import main
-from pqueens.tests.integration_tests.example_simulator_functions.park91a import park91a_hifi_on_grid
 from pqueens.utils import injector, variational_inference_utils
 
 
-# TODO add the test prefix again after fullrank was implemented
 @pytest.mark.integration_tests
 def rpvi_density_match(
     mocker,
@@ -22,6 +22,7 @@ def rpvi_density_match(
     dummy_rpvi_instance,
     visualization_obj,
 ):
+    """Reference density for matching test."""
     # fix the random seed
     np.random.seed(1)
 
@@ -63,16 +64,18 @@ def rpvi_density_match(
 def test_rpvi_iterator_park91a_hifi(
     inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
 ):
-    """Integration test for the rpvi iterator based on the park91a_hifi
-    function."""
+    """Integration test for the rpvi iterator.
 
-    # generate json input file from template
+    Based on the park91a_hifi function.
+    """
     template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
     experimental_data_path = tmpdir
     plot_dir = tmpdir
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
+        "gradient_method": "finite_difference",
+        "my_function": "park91a_hifi_on_grid",
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
@@ -83,17 +86,59 @@ def test_rpvi_iterator_park91a_hifi(
         "--output=" + str(tmpdir),
     ]
 
-    # This seed is fixed so that the variational distribution is initalized so that the park
-    # function can be evaluted correctly
+    # This seed is fixed so that the variational distribution is initialized so that the park
+    # function can be evaluated correctly
     np.random.seed(211)
-    # actual main call of bbvi
+    arguments = ['--input=' + input_file, '--output=' + str(tmpdir)]
+    # actual main call
     main(arguments)
 
     # get the results of the QUEENS run
     result_file = os.path.join(tmpdir, "inverse_rpvi_park91a_hifi.pickle")
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
-    elbo_list = results["iteration_data"]["elbo"]
+
+    # Actual tests
+    assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
+    assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.1
+    assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
+    assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
+
+
+@pytest.mark.integration_tests
+def test_rpvi_iterator_park91a_hifi_provided_gradient(
+    inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
+):
+    """Test for the rpvi iterator based on the park91a_hifi function."""
+    # generate json input file from template
+    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
+    experimental_data_path = tmpdir
+    plot_dir = tmpdir
+    dir_dict = {
+        "experimental_data_path": experimental_data_path,
+        "plot_dir": plot_dir,
+        "gradient_method": "provided_gradient",
+        "my_function": "park91a_hifi_on_grid_with_gradients",
+    }
+    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
+    injector.inject(dir_dict, template, input_file)
+
+    # run the main routine of QUEENS
+    arguments = [
+        "--input=" + input_file,
+        "--output=" + str(tmpdir),
+    ]
+
+    # This seed is fixed so that the variational distribution is initialized so that the park
+    # function can be evaluated correctly
+    np.random.seed(211)
+    # actual main call of vi_rp
+    main(arguments)
+
+    # get the results of the QUEENS run
+    result_file = os.path.join(tmpdir, "inverse_rpvi_park91a_hifi.pickle")
+    with open(result_file, "rb") as handle:
+        results = pickle.load(handle)
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
@@ -104,7 +149,7 @@ def test_rpvi_iterator_park91a_hifi(
 
 @pytest.fixture()
 def dummy_rpvi_instance(tmpdir, my_variational_distribution_obj):
-    # TODO this needs to be adjusted for rpvi !!
+    """Reference RPVI instance."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
     # -1 indicates to run a fixed number of samples
@@ -152,6 +197,7 @@ def dummy_rpvi_instance(tmpdir, my_variational_distribution_obj):
 
 
 def target_density(self, x=None, pdf=False):
+    """Target density for tests."""
     output_array = []
     mean = (np.array([0.5, 0.2, 0.6, 0.1, 0.2])).reshape(
         -1,
@@ -171,6 +217,7 @@ def target_density(self, x=None, pdf=False):
 
 @pytest.fixture()
 def my_variational_distribution_obj():
+    """Variational distribution."""
     dimension = 5
     distribution_options = {
         "variational_family": "normal",
@@ -185,6 +232,7 @@ def my_variational_distribution_obj():
 
 @pytest.fixture()
 def visualization_obj(tmpdir):
+    """Visualization module."""
     visualization_dict = {
         "method": {
             "method_options": {

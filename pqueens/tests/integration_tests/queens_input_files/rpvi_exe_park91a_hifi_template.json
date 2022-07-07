@@ -8,20 +8,19 @@
     "method_name": "rpvi",
     "method_options": {
       "model": "model",
-      "max_feval": 2000,
+      "max_feval": 10,
       "likelihood_gradient_method": "{gradient_method}",
       "finite_difference_method": "2-point",
-      "finite_difference_step": 1e-5,
       "n_samples_per_iter": 3,
       "score_function_bool": true,
       "variational_distribution": {
-        "variational_approximation_type": "mean_field",
+        "variational_approximation_type": "fullrank",
         "variational_family": "normal"
       },
       "optimization_options": {
         "stochastic_optimizer": "Adam",
         "optimization_type": "max",
-        "learning_rate": 0.025,
+        "learning_rate": 0.02,
         "gradient_clipping": true,
         "gradient_clipping_norm_threshold": 1e6,
         "natural_gradient": true,
@@ -59,7 +58,7 @@
     ],
     "noise_type": "MAP_jeffrey_variance",
     "nugget_noise_variance": 1E-8,
-    "experimental_file_name_identifier": "*.csv",
+    "experimental_file_name_identifier": "experimental_data.csv",
     "experimental_csv_data_base_dir": "{experimental_data_path}",
     "parameters": "parameters"
   },
@@ -69,9 +68,57 @@
     "parameters": "parameters"
   },
   "interface": {
-    "type": "direct_python_interface",
-    "function_name": "{my_function}"
+    "type": "job_interface",
+        "resources": "resources",
+        "driver": "driver"
   },
+    "driver": {
+        "driver_type": "baci",
+        "driver_params": {
+            "input_template": "{input_file}",
+            "path_to_executable": "{executable}",
+            "path_to_postprocessor": "",
+            "post_file_name_prefix_lst": [],
+            "post_process_options": [],
+            "data_processor": "data_processor_output",
+            "gradient_data_processor": "gradient_data_processor"
+        }
+    },
+    "data_processor_output": {
+        "type": "csv",
+        "file_name_identifier": "*_output.csv",
+        "file_options_dict": {
+            "delete_field_data": false,
+            "filter": {
+                "type": "entire_file"
+            }
+        }
+    },
+  "gradient_data_processor":{
+    "type": "csv",
+    "file_name_identifier": "*_gradient.csv",
+    "file_options_dict": {
+        "delete_field_data": false,
+        "filter": {
+            "type": "entire_file"
+        }
+    }
+  },
+    "resources": {
+        "local_machine": {
+            "scheduler": "local_scheduler",
+            "max-concurrent": 1,
+            "max-finished-jobs": 1000
+        }
+    },
+    "local_scheduler": {
+        "experiment_dir": "{experiment_dir}",
+        "scheduler_type": "standard",
+        "singularity": false,
+        "num_procs": 1,
+        "num_procs_post": 1
+    },
+
   "parameters": {
     "random_variables": {
       "x1": {

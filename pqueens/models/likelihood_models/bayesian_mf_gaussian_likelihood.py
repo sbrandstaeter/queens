@@ -213,15 +213,23 @@ class BMFGaussianModel(LikelihoodModel):
             noise_var_lst,
         )
 
-    def evaluate(self):
+    def evaluate(self, gradient_bool=False):
         """Evaluate multi-fidelity likelihood.
 
         Evaluation with current set of variables
         which are an attribute of the underlying low-fidelity simulation model.
 
+        Args:
+            gradient_bool (bool, optional): Boolean to determine whether the gradient of the
+                                            likelihood should be evaluated (if set to True)
+
         Returns:
             mf_log_likelihood (np.array): Vector of log-likelihood values per model input.
         """
+        if gradient_bool:
+            raise NotImplementedError(
+                "The gradient response is not implemented, yet for the multi-fidelity likelihood."
+            )
         # Initialize underlying models in the first call
         if self.z_train is None:
             self._initialize()

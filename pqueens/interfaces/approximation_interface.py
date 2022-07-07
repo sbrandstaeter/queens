@@ -49,31 +49,38 @@ class ApproximationInterface(Interface):
         Args:
             interface_name (str):   Name of interface
             config (dict):          Dictionary containing problem description
-            driver_name (str): Name of the driver that uses this interface
-                               (not used here; only for compatability reasons)
+            _driver_name (str): Name of the driver that uses this interface
+                               (not used here; only for compatibility reasons)
 
         Returns:
             interface:              Instance of ApproximationInterface
         """
         interface_options = config[interface_name]
         approximation_name = interface_options["approximation"]
-        config = config
         parameters = config['parameters']
 
         # initialize object
         return cls(interface_name, config, approximation_name, parameters)
 
-    def evaluate(self, samples):
+    def evaluate(self, samples, gradient_bool=False):
         """Call the regression approximation prediction.
 
         Args:
             samples (list):         list of variables objects
+            gradient_bool (bool): Flag to determine, whether the gradient of the function at
+                                  the evaluation point is expected (True) or not (False)
 
         Returns:
             dict:               Dict with results corresponding to samples
         """
         if not self.approximation_init:
             raise RuntimeError("Approximation has not been properly initialized, cannot continue!")
+
+        if gradient_bool:
+            raise NotImplementedError(
+                "The gradient response is not implemented for this interface. Please set "
+                "`gradient_bool=False`. Abort..."
+            )
 
         inputs = []
         for variables in samples:

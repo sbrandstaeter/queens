@@ -568,7 +568,7 @@ class VariationalInferenceIterator(Iterator):
         return gradient
 
     def handle_gradient_nan(self, gradient_function):
-        """Mehtod that handles NaN in gradient estimations.
+        """Metod that handles NaN in gradient estimations.
 
         Args:
             gradient_function (function): Function that estimates the gradient

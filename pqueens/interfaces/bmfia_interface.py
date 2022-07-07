@@ -47,7 +47,7 @@ class BmfiaInterface(Interface):
         self.num_processors_multi_processing = num_processors_multi_processing
         self.probabilistic_mapping_obj_lst = []
 
-    def evaluate(self, Z_LF, support='y'):
+    def evaluate(self, Z_LF, support='y', gradient_bool=False):
         r"""Map the lf features to a probabilistic response for the hf model.
 
         Calls the probabilistic mapping and predicts the mean and variance,
@@ -64,7 +64,10 @@ class BmfiaInterface(Interface):
                             `support=f` the Gaussian process predicts w.r.t. the latent function
                             `f`. For the choice of `support=y` we predict w.r.t. to the
                             simulation/experimental output `y`,
-                            which introduces the additional variance of the observation noise.
+            gradient_bool (bool): Flag to determine, whether the gradient of the function at
+                                  the evaluation point is expected (True) or not (False)
+                                   which introduces the additional variance of the observation
+                                   noise.
 
         Returns:
             mean_Y_HF_given_Z_LF (np.array): Vector of mean predictions
@@ -86,6 +89,11 @@ class BmfiaInterface(Interface):
         if not self.probabilistic_mapping_obj_lst:
             raise RuntimeError(
                 "The probabilistic mapping has not been initialized, cannot continue!"
+            )
+        if gradient_bool:
+            raise NotImplementedError(
+                "The gradient response is not implemented for this interface. Please set "
+                "`gradient_bool=False`. Abort..."
             )
 
         mean_Y_HF_given_Z_LF = []

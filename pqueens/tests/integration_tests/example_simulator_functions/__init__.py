@@ -31,6 +31,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.parabula_residu
 from pqueens.tests.integration_tests.example_simulator_functions.park91a import (
     park91a_hifi,
     park91a_hifi_on_grid,
+    park91a_hifi_on_grid_with_gradients,
     park91a_lofi,
     park91a_lofi_on_grid,
 )
@@ -70,6 +71,7 @@ VALID_EXAMPLE_SIMULATOR_FUNCTIONS = {
     "parabula_residual": parabula_residual,
     "park91a_lofi_on_grid": park91a_lofi_on_grid,
     "park91a_hifi_on_grid": park91a_hifi_on_grid,
+    "park91a_hifi_on_grid_with_gradients": park91a_hifi_on_grid_with_gradients,
     "park91a_lofi": park91a_lofi,
     "park91a_hifi": park91a_hifi,
     "park91b_lofi": park91b_lofi,

@@ -161,18 +161,38 @@ class GaussianLikelihood(LikelihoodModel):
             coord_labels=coord_labels,
         )
 
-    def evaluate(self):
+    def evaluate(self, gradient_bool=False):
         """Evaluate likelihood with current set of samples.
 
-        Returns:
-            log_likelihood (np.array): Vector of log-likelihood values per model input.
-        """
-        y_model = self._update_and_evaluate_forward_model()
-        if self.noise_type.startswith('MAP'):
-            self.update_covariance(y_model)
-        log_likelihood = self.normal_distribution.logpdf(y_model)
+        Args:
+            gradient_bool (bool, optional): Boolean to determine whether the gradient of the
+                                            likelihood should be evaluated (if set to True)
 
-        return log_likelihood
+        Returns:
+            log_likelihood_output (tuple): Tuple with vector of log-likelihood values
+                                           per model input and potentially the gradient
+                                           of the model w.r.t. its inputs
+        """
+        if gradient_bool:
+            model_output, model_gradient_batch = self._update_and_evaluate_forward_model(
+                gradient_bool=gradient_bool
+            )
+            if self.noise_type.startswith('MAP'):
+                self.update_covariance(model_output)
+            log_likelihood_output = self.normal_distribution.logpdf(model_output)
+            grad_log_likelihood_lst = []
+            for output, model_gradient in zip(model_output, model_gradient_batch):
+                grad_log_likelihood_lst.append(
+                    np.dot(self.normal_distribution.grad_logpdf(output), model_gradient).T
+                )
+            log_likelihood_output = (log_likelihood_output, grad_log_likelihood_lst)
+        else:
+            model_output = self._update_and_evaluate_forward_model(gradient_bool=gradient_bool)
+            if self.noise_type.startswith('MAP'):
+                self.update_covariance(model_output)
+            log_likelihood_output = self.normal_distribution.logpdf(model_output)
+
+        return log_likelihood_output
 
     def update_covariance(self, y_model):
         """Update covariance matrix of the gaussian likelihood.
@@ -196,18 +216,31 @@ class GaussianLikelihood(LikelihoodModel):
         covariance = add_nugget_to_diagonal(covariance, self.nugget_noise_variance)
         self.normal_distribution.update_covariance(covariance)
 
-    def _update_and_evaluate_forward_model(self):
+    def _update_and_evaluate_forward_model(self, gradient_bool=False):
         """Evaluate forward model.
 
         Pass the variables update to subordinate model and then evaluate the forward model.
 
+        Args:
+            gradient_bool (bool): Flag to determine, whether the gradient of the function at
+                                  the evaluation point is expected (True) or not (False)
+
         Returns:
-           y_model (np.array): Forward model output with shape (samples, outputs)
+           model_output (tuple, np.array): Tuple with forward model output with shape
+                                          (samples, outputs) and gradient of the model
+                                           w.r.t. the model input; or only model output,
+                                           if not gradient is required
         """
         # Note that the wrapper of the model update needs to called externally such that
         # self.variables is updated
         self.forward_model.variables = self.variables
-        n_samples_batch = len(self.variables)  # TODO check if this is generally true
-        y_model = self.forward_model.evaluate()['mean'][-n_samples_batch:]  # TODO check this
+        n_samples_batch = len(self.variables)
+        if gradient_bool:
+            model_output_dict = self.forward_model.evaluate(gradient_bool=gradient_bool)
+            model_response = model_output_dict['mean'][-n_samples_batch:]
+            model_gradient = model_output_dict['gradient'][-n_samples_batch:]
+            model_output = (model_response, model_gradient)
+        else:
+            model_output = self.forward_model.evaluate()['mean'][-n_samples_batch:]
 
-        return y_model
+        return model_output
