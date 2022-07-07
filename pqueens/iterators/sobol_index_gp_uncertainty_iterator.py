@@ -3,6 +3,7 @@ import logging
 import multiprocessing as mp
 import time
 
+import pqueens.parameters.parameters as parameters_module
 from pqueens.iterators.sobol_index_gp_uncertainty.estimator import (
     SobolIndexEstimator,
     SobolIndexEstimatorThirdOrder,
@@ -15,7 +16,6 @@ from pqueens.iterators.sobol_index_gp_uncertainty.statistics import (
     StatisticsThirdOrderSobolIndexEstimates,
 )
 from pqueens.models import from_config_create_model
-from pqueens.utils.get_random_variables import get_random_variables
 from pqueens.utils.logger_settings import log_through_print
 from pqueens.utils.process_outputs import write_results
 
@@ -123,15 +123,14 @@ class SobolIndexGPUncertaintyIterator(Iterator):
             model_name = method_options['model']
             model = from_config_create_model(model_name, config)
 
-        random_variables, _, _, distribution_info = get_random_variables(model)
-        parameter_names = list(random_variables.keys())
+        parameter_names = parameters_module.parameters.names
 
         calculate_second_order = method_options.get("second_order", False)
         calculate_third_order = method_options.get("third_order", False)
 
         sampler_method, estimator_method = cls._choose_helpers(calculate_third_order)
         sampler = sampler_method.from_config_create(
-            method_options, parameter_names, distribution_info
+            method_options, parameter_names, parameters_module.parameters
         )
         index_estimator = estimator_method.from_config_create(method_options, parameter_names)
         predictor = Predictor.from_config_create(method_options, model.interface)
@@ -178,7 +177,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
 
     def core_run(self):
         """Core-run."""
-        self.eval_model()
+        self.model.build_approximation()
 
         self.calculate_index()
 
@@ -191,11 +190,6 @@ class SobolIndexGPUncertaintyIterator(Iterator):
                     self.global_settings["output_dir"],
                     self.global_settings['experiment_name'],
                 )
-
-    def eval_model(self):
-        """Evaluate the model."""
-        self.model.build_approximation()
-        return
 
     def calculate_index(self):
         """Calculate Sobol indices.

@@ -42,56 +42,27 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmpdir, dummy_
     # posterior mean: [-0.4 -0.4 -0.4 -0.4]
     # posterior var: [0.1, 0.1, 0.1, 0.1]
     # however, we only have a very inaccurate approximation here:
-    np.testing.assert_allclose(
-        results['mean'], np.array([[-0.53293528, -0.47730905, -0.50474165, -0.51011509]])
+    np.testing.assert_almost_equal(
+        results['mean'], np.array([[0.23384, 0.21806, 0.24079, 0.24528]]), decimal=5
     )
 
-    np.testing.assert_allclose(
-        results['var'],
-        np.array(
-            [
-                [
-                    0.007316406587829176,
-                    0.0029133218428340833,
-                    0.005518659870323712,
-                    0.00818496997630454,
-                ]
-            ]
-        ),
+    np.testing.assert_almost_equal(
+        results['var'], np.array([[0.30894, 0.15192, 0.19782, 0.18781]]), decimal=5
     )
 
-    np.testing.assert_allclose(
+    np.testing.assert_almost_equal(
         results['cov'],
         np.array(
             [
                 [
-                    [
-                        0.007316406587829175,
-                        -0.0007885967653077669,
-                        -0.0013053250444199829,
-                        -0.0002919686494523325,
-                    ],
-                    [
-                        -0.0007885967653077669,
-                        0.002913321842834083,
-                        0.0025587041396506224,
-                        -0.001115272621522347,
-                    ],
-                    [
-                        -0.0013053250444199829,
-                        0.0025587041396506224,
-                        0.005518659870323712,
-                        -0.00029490035214039926,
-                    ],
-                    [
-                        -0.0002919686494523325,
-                        -0.001115272621522347,
-                        -0.00029490035214039926,
-                        0.008184969976304537,
-                    ],
+                    [0.30894, 0.21080, 0.24623, 0.23590],
+                    [0.21080, 0.15192, 0.17009, 0.15951],
+                    [0.24623, 0.17009, 0.19782, 0.18695],
+                    [0.23590, 0.15951, 0.18695, 0.18781],
                 ]
             ]
         ),
+        decimal=5,
     )
 
 

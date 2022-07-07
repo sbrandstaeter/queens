@@ -38,9 +38,6 @@ def from_config_create_model(model_name, config):
     forward_model_name = model_options.get("forward_model")
     forward_model = from_config_create_model(forward_model_name, config)
 
-    parameters = model_options["parameters"]
-    model_parameters = config[parameters]
-
     # get further model options
     output_label = model_options.get('output_label')
     coord_labels = model_options.get('coordinate_labels')
@@ -66,7 +63,6 @@ def from_config_create_model(model_name, config):
     likelihood_model = model_class.from_config_create_likelihood(
         model_name,
         config,
-        model_parameters,
         forward_model,
         coords_mat,
         time_vec,

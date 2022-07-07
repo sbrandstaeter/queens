@@ -5,9 +5,7 @@ import pytest
 
 from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.iterators.bmfia_iterator import BMFIAIterator
-from pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood import (
-    BMFGaussianModel,
-)
+from pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood import BMFGaussianModel
 from pqueens.models.simulation_model import SimulationModel
 
 
@@ -31,8 +29,8 @@ def parameters():
     """Fixture for dummy parameters."""
     params = {
         "random_variables": {
-            "x1": {"size": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
-            "x2": {"size": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
+            "x1": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
+            "x2": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
         },
     }
     return params
@@ -43,9 +41,7 @@ def dummy_model(parameters):
     """Fixture for dummy model."""
     model_name = 'dummy'
     interface = 'my_dummy_interface'
-    model_parameters = parameters
-    model = SimulationModel(model_name, interface, model_parameters)
-    model
+    model = SimulationModel(model_name, interface)
     return model
 
 
@@ -98,7 +94,6 @@ def default_bmfia_iterator(result_description, global_settings):
     coord_labels = ['x_1', 'x_2']
     settings_probab_mapping = {'features_config': 'no_features'}
     db = 'dummy_db'
-    external_geometry_obj = None
     x_train = np.array([[1, 2], [3, 4]])
     Y_LF_train = np.array([[2], [3]])
     Y_HF_train = np.array([[2.2], [3.3]])
@@ -117,7 +112,6 @@ def default_bmfia_iterator(result_description, global_settings):
         coord_labels,
         settings_probab_mapping,
         db,
-        external_geometry_obj,
         x_train,
         Y_LF_train,
         Y_HF_train,
@@ -135,7 +129,6 @@ def default_mf_likelihood(
     dummy_model, parameters, default_interface, settings_probab_mapping, default_bmfia_iterator
 ):
     """Default multi-fidelity Gaussian likelihood object."""
-    model_parameters = parameters
     nugget_noise_var = 0.1
     forward_model = dummy_model
     coords_mat = np.array([[1, 2], [3, 4]])
@@ -162,7 +155,6 @@ def default_mf_likelihood(
 
     mf_likelihood = BMFGaussianModel(
         model_name,
-        model_parameters,
         nugget_noise_var,
         forward_model,
         coords_mat,
@@ -230,7 +222,6 @@ def test_init(
     dummy_model, parameters, default_interface, settings_probab_mapping, default_bmfia_iterator
 ):
     """Test the init of the multi-fidelity Gaussian likelihood function."""
-    model_parameters = parameters
     nugget_noise_var = 0.1
     forward_model = dummy_model
     coords_mat = np.array([[1, 2], [3, 4]])
@@ -257,7 +248,6 @@ def test_init(
 
     model = BMFGaussianModel(
         model_name,
-        model_parameters,
         nugget_noise_var,
         forward_model,
         coords_mat,
@@ -284,7 +274,6 @@ def test_init(
 
     # tests / asserts ----------------------------------
     assert model.name == model_name
-    assert model.uncertain_parameters == model_parameters
     assert model.forward_model == forward_model
     np.testing.assert_array_equal(model.coords_mat, coords_mat)
     np.testing.assert_array_equal(model.time_vec, time_vec)
@@ -302,7 +291,6 @@ def test_init(
     assert model.eigenvals is None
     assert model.f_mean_train is None
     assert model.bmfia_subiterator == bmfia_subiterator
-    assert model.uncertain_parameters == model_parameters
     assert model.noise_var is None
     assert model.nugget_noise_var == nugget_noise_var
     assert model.likelihood_noise_type == likelihood_noise_type
@@ -324,8 +312,8 @@ def test_evaluate(default_mf_likelihood, mocker, default_bmfia_iterator):
 
     # on purpose transpose y_lf_mat here to check if this is wrong orientation is corrected
     mp2 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._update_and_evaluate_forward_model',
-        return_value=y_lf_mat.T,
+        'pqueens.models.simulation_model.SimulationModel.evaluate',
+        return_value={"mean": y_lf_mat.T},
     )
 
     mp3 = mocker.patch(
@@ -335,7 +323,7 @@ def test_evaluate(default_mf_likelihood, mocker, default_bmfia_iterator):
 
     # pylint: enable=line-too-long
 
-    mf_log_likelihood = default_mf_likelihood.evaluate()
+    mf_log_likelihood = default_mf_likelihood.evaluate(np.zeros(1))
 
     # assert statements
     mp1.assert_called_once()
@@ -624,11 +612,11 @@ def test_get_random_fields_and_truncated_basis(default_mf_likelihood):
 
 
 @pytest.mark.unit_tests
-def test_update_and_evaluate_forward_model(default_mf_likelihood, mock_model):
+def test_evaluate_forward_model(default_mf_likelihood, mock_model):
     """Test if forward model (lf model) is updated and evaluated correctly."""
     y_mat_expected = 1
     default_mf_likelihood.forward_model = mock_model
-    y_mat = default_mf_likelihood._update_and_evaluate_forward_model()
+    y_mat = default_mf_likelihood.forward_model.evaluate(None)['mean']
 
     # actual tests / asserts
     np.testing.assert_array_almost_equal(y_mat, y_mat_expected, decimal=4)

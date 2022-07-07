@@ -20,7 +20,7 @@ class TestMultiFidelityModel(unittest.TestCase):
                 "eval_cost_per_level": [1, 1],
                 "parameters": "parameters",
             },
-            "parameters": {"random_variables": {"youngs": {"type": "FLOAT", "size": 1}}},
+            "parameters": {"random_variables": {"youngs": {"type": "FLOAT", "dimension": 1}}},
             "hifi_borehole": {"type": "simulation_model", "interface": "interface_hifi"},
             "lofi_borehole": {"type": "simulation_model", "interface": "interface_lofi"},
             "interface_lofi": {
@@ -42,12 +42,8 @@ class TestMultiFidelityModel(unittest.TestCase):
         MultifidelityModel.from_config_create_model("model", self.dummy_config)
 
         model_calls = [
-            mock.call(
-                "lofi_borehole", mock_interface.return_value, self.dummy_config["parameters"]
-            ),
-            mock.call(
-                "hifi_borehole", mock_interface.return_value, self.dummy_config["parameters"]
-            ),
+            mock.call("lofi_borehole", mock_interface.return_value),
+            mock.call("hifi_borehole", mock_interface.return_value),
         ]
 
         mock_submodel.assert_has_calls(model_calls, any_order=False)

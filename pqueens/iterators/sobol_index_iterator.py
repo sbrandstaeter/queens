@@ -9,6 +9,7 @@ import plotly.graph_objs as go
 from SALib.analyze import sobol
 from SALib.sample import saltelli
 
+from pqueens import distributions
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import write_results
@@ -72,7 +73,7 @@ class SobolIndexIterator(Iterator):
         self.samples = None
         self.output = None
         self.salib_problem = None
-        self.num_params = None
+        self.num_params = self.parameters.num_parameters
         self.parameter_names = []
         self.sensitivity_indices = None
 
@@ -106,43 +107,42 @@ class SobolIndexIterator(Iterator):
             config["global_settings"],
         )
 
-    def eval_model(self):
-        """Evaluate the model."""
-        return self.model.evaluate()
-
     def pre_run(self):
         """Generate samples for subsequent analysis and update model."""
-        parameter_info = self.model.get_parameter()
-
         # setup SALib problem dict
         bounds = []
         dists = []
-        self.num_params = 0
-        for key, value in parameter_info["random_variables"].items():
+        for key, parameter in self.parameters.dict.items():
             self.parameter_names.append(key)
-            max_temp = value["upper_bound"]
-            min_temp = value["lower_bound"]
-
+            if isinstance(parameter.distribution, distributions.uniform.UniformDistribution):
+                upper_bound = parameter.distribution.upper_bound
+                lower_bound = parameter.distribution.lower_bound
+                distribution_name = 'unif'
             # in queens normal distributions are parameterized with mean and var
             # in salib normal distributions are parameterized via mean and std
             # -> we need to reparameterize normal distributions
-            if value['distribution'] in ['normal']:
-                max_temp = np.sqrt(max_temp)
+            elif isinstance(parameter.distribution, distributions.normal.NormalDistribution):
+                lower_bound = parameter.distribution.mean.squeeze()
+                upper_bound = np.sqrt(parameter.distribution.covariance.squeeze())
+                distribution_name = 'norm'
+            elif isinstance(parameter.distribution, distributions.lognormal.LogNormalDistribution):
+                lower_bound = parameter.distribution.mu.squeeze()
+                upper_bound = parameter.distribution.sigma.squeeze()
+                distribution_name = 'lognorm'
+            else:
+                raise ValueError("Valid distributions are normal, lognormal and uniform!")
 
-            bounds.append([min_temp, max_temp])
-            dist = self._get_sa_lib_distribution_name(value["distribution"])
-            dists.append(dist)
-            self.num_params += 1
+            bounds.append([lower_bound, upper_bound])
+            dists.append(distribution_name)
 
-        random_fields = parameter_info.get("random_fields", None)
-        if random_fields is not None:
+        if self.parameters.random_field_flag:
             raise RuntimeError(
                 "The SaltelliIterator does not work in conjunction with random fields."
             )
 
         self.salib_problem = {
-            'num_vars': self.num_params,
-            'names': self.parameter_names,
+            'num_vars': self.parameters.num_parameters,
+            'names': self.parameters.names,
             'bounds': bounds,
             'dists': dists,
         }
@@ -163,8 +163,7 @@ class SobolIndexIterator(Iterator):
     def core_run(self):
         """Run Analysis on model."""
         _logger.info("Evaluate model...")
-        self.model.update_model_from_sample_batch(self.samples)
-        self.output = self.eval_model()
+        self.output = self.model.evaluate(self.samples)
 
         _logger.info("Calculate Sensitivity Indices...")
         self.sensitivity_indices = sobol.analyze(
@@ -215,9 +214,9 @@ class SobolIndexIterator(Iterator):
             S2 = S["S2"]
             S2_conf = S["S2_conf"]
 
-            for j in range(self.num_params):
+            for j in range(self.parameters.num_parameters):
                 S2[j, j] = S["S1"][j]
-                for k in range(j + 1, self.num_params):
+                for k in range(j + 1, self.parameters.num_parameters):
                     S2[k, j] = S2[j, k]
                     S2_conf[k, j] = S2_conf[j, k]
 
@@ -252,7 +251,7 @@ class SobolIndexIterator(Iterator):
             results (dict): dictionary with sobol indices and confidence intervals
         """
         results = {
-            "parameter_names": self.parameter_names,
+            "parameter_names": self.parameters.names,
             "sensitivity_indices": self.sensitivity_indices,
             "second_order": self.calc_second_order,
             "samples": self.samples,

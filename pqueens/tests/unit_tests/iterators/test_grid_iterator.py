@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 
+import pqueens.parameters.parameters as parameters_module
 from pqueens.iterators.grid_iterator import GridIterator
 from pqueens.models.simulation_model import SimulationModel
 
@@ -50,13 +51,13 @@ def grid_dict_four():
     return grid_dict_dummy
 
 
-@pytest.fixture()
 def parameters_one():
     params = {
         "random_variables": {
-            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0}
+            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0}
         }
     }
+    parameters_module.from_config_create_parameters({"parameters": params})
     return params
 
 
@@ -64,22 +65,23 @@ def parameters_one():
 def parameters_two():
     params = {
         "random_variables": {
-            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x2": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x2": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
         }
     }
+    parameters_module.from_config_create_parameters({"parameters": params})
     return params
 
 
-@pytest.fixture()
 def parameters_three():
     params = {
         "random_variables": {
-            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x2": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x3": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x2": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x3": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
         }
     }
+    parameters_module.from_config_create_parameters({"parameters": params})
     return params
 
 
@@ -87,12 +89,13 @@ def parameters_three():
 def parameters_four():
     params = {
         "random_variables": {
-            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x2": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x3": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x4": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x2": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x3": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x4": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
         }
     }
+    parameters_module.from_config_create_parameters({"parameters": params})
     return params
 
 
@@ -132,7 +135,7 @@ def expected_samples_three():
 def default_model(parameters_two):
     model_name = 'dummy_model'
     interface = 'dummy_interface'
-    model = SimulationModel(model_name, interface, parameters_two)
+    model = SimulationModel(model_name, interface)
     return model
 
 
@@ -148,7 +151,6 @@ def default_grid_iterator(
         result_description,
         global_settings,
         grid_dict_two,
-        parameters_two,
         num_parameters,
     )
     return my_grid_iterator
@@ -169,14 +171,12 @@ def test_init(
         result_description,
         global_settings,
         grid_dict_two,
-        parameters_two,
         num_parameters,
     )
 
     # tests / asserts
     mp.assert_called_once_with(default_model, global_settings)
     assert my_grid_iterator.grid_dict == grid_dict_two
-    assert my_grid_iterator.parameters == parameters_two
     assert my_grid_iterator.result_description == result_description
     assert my_grid_iterator.samples is None
     assert my_grid_iterator.output is None
@@ -186,28 +186,27 @@ def test_init(
 
 
 @pytest.mark.unit_tests
-def test_eval_model(default_grid_iterator, mocker):
+def test_model_evaluate(default_grid_iterator, mocker):
     mp = mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate', return_value=None)
-    default_grid_iterator.eval_model()
+    default_grid_iterator.model.evaluate(None)
     mp.assert_called_once()
 
 
 @pytest.mark.unit_tests
 def test_pre_run_one(
     grid_dict_one,
-    parameters_one,
     expected_samples_one,
     result_description,
     default_model,
     global_settings,
 ):
     num_params = 1
+    parameters_one()
     grid_iterator = GridIterator(
         default_model,
         result_description,
         global_settings,
         grid_dict_one,
-        parameters_one["random_variables"],
         num_params,
     )
     grid_iterator.pre_run()
@@ -224,7 +223,6 @@ def test_pre_run_two(
         result_description,
         global_settings,
         grid_dict_two,
-        parameters_two["random_variables"],
         num_params,
     )
     grid_iterator.pre_run()
@@ -234,19 +232,18 @@ def test_pre_run_two(
 @pytest.mark.unit_tests
 def test_pre_run_three(
     grid_dict_three,
-    parameters_three,
     expected_samples_three,
     result_description,
     default_model,
     global_settings,
 ):
     num_params = 3
+    parameters_three()
     grid_iterator = GridIterator(
         default_model,
         result_description,
         global_settings,
         grid_dict_three,
-        parameters_three["random_variables"],
         num_params,
     )
     grid_iterator.pre_run()
@@ -263,7 +260,6 @@ def test_pre_run_four(
         result_description,
         global_settings,
         grid_dict_four,
-        parameters_four["random_variables"],
         num_params,
     )
     with pytest.raises(ValueError) as e:
@@ -273,12 +269,10 @@ def test_pre_run_four(
 
 @pytest.mark.unit_tests
 def test_core_run(mocker, default_grid_iterator, expected_samples_two):
-    mocker.patch('pqueens.iterators.grid_iterator.GridIterator.eval_model', return_value=2)
+    mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate', return_value=2)
     default_grid_iterator.samples = expected_samples_two
     default_grid_iterator.core_run()
-    variable_list = default_grid_iterator.model.variables
-    var_vec = np.array([var.get_active_variables_vector() for var in variable_list]).reshape(-1, 2)
-    np.testing.assert_array_equal(var_vec, expected_samples_two)
+    np.testing.assert_array_equal(default_grid_iterator.samples, expected_samples_two)
     assert default_grid_iterator.output == 2
 
 

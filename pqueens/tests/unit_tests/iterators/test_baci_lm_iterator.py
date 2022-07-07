@@ -6,6 +6,7 @@ import pandas as pd
 import plotly.express as px
 import pytest
 
+import pqueens.parameters.parameters as parameters_module
 from pqueens.iterators.baci_lm_iterator import BaciLMIterator
 
 
@@ -73,8 +74,8 @@ def default_baci_lm_iterator():
                     'random_variables',
                     OrderedDict(
                         [
-                            ('x1', OrderedDict([('type', 'FLOAT'), ('size', 1)])),
-                            ('x2', OrderedDict([('type', 'FLOAT'), ('size', 1)])),
+                            ('x1', OrderedDict([('type', 'FLOAT'), ('dimension', 1)])),
+                            ('x2', OrderedDict([('type', 'FLOAT'), ('dimension', 1)])),
                         ]
                     ),
                 )
@@ -88,6 +89,7 @@ def default_baci_lm_iterator():
         },
     }
 
+    parameters_module.from_config_create_parameters(config)
     baci_lm_i = BaciLMIterator.from_config_create_iterator(config, iterator_name='method')
 
     return baci_lm_i
@@ -236,10 +238,10 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
 
 
 @pytest.mark.unit_tests
-def test_eval_model(default_baci_lm_iterator, mocker):
+def test_model_evaluate(default_baci_lm_iterator, mocker):
 
     mp = mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate', return_value=None)
-    default_baci_lm_iterator.eval_model()
+    default_baci_lm_iterator.model.evaluate(None)
     mp.assert_called_once()
 
 
@@ -248,38 +250,19 @@ def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
 
     m1 = mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator' '.get_positions_raw_2pointperturb',
-        return_value=[np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]), None],
+        return_value=[np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]), 1],
     )
 
     m2 = mocker.patch(
-        'pqueens.models.simulation_model.SimulationModel'
-        '.check_for_precalculated_response_of_sample_batch',
-        return_value=fix_true_false_param,
-    )
-
-    m3 = mocker.patch(
-        'pqueens.models.simulation_model.SimulationModel' '.update_model_from_sample_batch',
-        return_value=None,
-    )
-
-    m4 = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.eval_model',
+        'pqueens.models.simulation_model.SimulationModel.evaluate',
         return_value=None,
     )
 
     default_baci_lm_iterator.model.response = {'mean': np.array([[3.0, 4.2], [99.9, 99.9]])}
 
-    result = default_baci_lm_iterator.residual(np.array([1.0, 2.2]))
+    _, result = default_baci_lm_iterator.jacobian_and_residual(np.array([1.0, 2.2]))
 
     np.testing.assert_equal(result, np.array([3.0, 4.2]))
-
-    if fix_true_false_param == False:
-        m4.assert_called_once()
-        m3.assert_called_once()
-    else:
-        assert not m4.called
-        assert not m3.called
-
     m2.assert_called_once()
 
 
@@ -293,19 +276,8 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
         ],
     )
 
-    m2 = mocker.patch(
-        'pqueens.models.simulation_model.SimulationModel'
-        '.check_for_precalculated_response_of_sample_batch',
-        return_value=fix_true_false_param,
-    )
-
     m3 = mocker.patch(
-        'pqueens.models.simulation_model.SimulationModel.update_model_from_sample_batch',
-        return_value=None,
-    )
-
-    m4 = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.eval_model',
+        'pqueens.models.simulation_model.SimulationModel.evaluate',
         return_value=None,
     )
 
@@ -316,16 +288,10 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
         return_value=np.array([[1.0, 0.0], [0.0, 1.0]]),
     )
 
-    jacobian = default_baci_lm_iterator.jacobian(np.array([1.0, 2.2]))
+    jacobian, _ = default_baci_lm_iterator.jacobian_and_residual(np.array([1.0, 2.2]))
 
-    if fix_true_false_param == False:
-        m4.assert_called_once()
-        m3.assert_called_once()
-    else:
-        assert not m4.called
-        assert not m3.called
+    m3.assert_called_once()
 
-    m2.assert_called_once()
     m5.assert_called_once()
 
     np.testing.assert_equal(jacobian, np.array([[1.0, 0.0], [0.0, 1.0]]))
@@ -333,7 +299,7 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
     if fix_true_false_param == True:
         with pytest.raises(ValueError):
             m5.return_value = np.array([[1.1, 2.2]])
-            jac = default_baci_lm_iterator.jacobian(np.array([0.1]))
+            default_baci_lm_iterator.jacobian_and_residual(np.array([0.1]))
 
 
 @pytest.mark.unit_tests
@@ -361,13 +327,8 @@ def test_initialize_run(mocker, fix_true_false_param, default_baci_lm_iterator):
 @pytest.mark.unit_tests
 def test_core_run(default_baci_lm_iterator, mocker, fix_update_reg, fix_tolerance):
     m1 = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.jacobian',
-        return_value=np.array([[1.0, 2.0], [0.0, 1.0]]),
-    )
-
-    m2 = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.residual',
-        return_value=np.array([0.1, 0.01]),
+        'pqueens.iterators.baci_lm_iterator.BaciLMIterator.jacobian_and_residual',
+        return_value=(np.array([[1.0, 2.0], [0.0, 1.0]]), np.array([0.1, 0.01])),
     )
 
     m3 = mocker.patch('pqueens.iterators.baci_lm_iterator.BaciLMIterator.printstep')
@@ -382,11 +343,9 @@ def test_core_run(default_baci_lm_iterator, mocker, fix_update_reg, fix_toleranc
         default_baci_lm_iterator.core_run()
         if fix_tolerance == 1.0:
             assert m1.call_count == 1
-            assert m2.call_count == 1
             assert m3.call_count == 1
         else:
             assert m1.call_count == 3
-            assert m2.call_count == 3
             assert m3.call_count == 3
             np.testing.assert_almost_equal(
                 default_baci_lm_iterator.param_current, np.array([-0.00875, 0.15875]), 8
@@ -454,14 +413,6 @@ def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig):
     m6 = mocker.patch('plotly.express.line', return_value=fix_plotly_fig)
 
     checkdata = pd.DataFrame({'resnorm': [1.2, 2.2], 'x1': [1000.0, 1.1]})
-    default_baci_lm_iterator.model.variables[0].variables.clear()
-    default_baci_lm_iterator.model.variables[0].variables['x1'] = {
-        'size': 1,
-        'value': [None],
-        'type': 'FLOAT',
-        'distribution': None,
-        'active': True,
-    }
 
     default_baci_lm_iterator.post_run()
     callargs = m6.call_args
@@ -491,13 +442,17 @@ def test_post_run_3param(mocker, default_baci_lm_iterator):
     mocker.patch('pandas.read_csv', return_value=pdata)
     m5 = mocker.patch('builtins.print')
 
-    default_baci_lm_iterator.model.variables[0].variables['x3'] = {
-        'size': 1,
-        'value': [None],
-        'type': 'FLOAT',
-        'distribution': None,
-        'active': True,
+    options = {
+        "parameters": {
+            "random_variables": {
+                "x1": {"dimension": 1},
+                "x2": {"dimension": 1},
+                "x3": {"dimension": 1},
+            }
+        }
     }
+    parameters_module.from_config_create_parameters(options)
+    default_baci_lm_iterator.parameters = parameters_module.parameters
 
     default_baci_lm_iterator.post_run()
     m5.assert_called_with(

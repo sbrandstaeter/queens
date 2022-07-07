@@ -39,7 +39,6 @@ class GaussianLikelihood(LikelihoodModel):
     def __init__(
         self,
         model_name,
-        model_parameters,
         nugget_noise_variance,
         forward_model,
         noise_type,
@@ -55,8 +54,6 @@ class GaussianLikelihood(LikelihoodModel):
 
         Args:
             model_name (str): Model name
-            model_parameters (dict): Dictionary with description of uncertain
-                                     parameters
             forward_model (obj): Forward model on which the likelihood model is based
             nugget_noise_variance (float): Lower bound for the likelihood noise parameter
             noise_type (str): String encoding the type of likelihood noise model:
@@ -71,7 +68,6 @@ class GaussianLikelihood(LikelihoodModel):
         """
         super().__init__(
             model_name,
-            model_parameters,
             forward_model,
             coords_mat,
             time_vec,
@@ -89,7 +85,6 @@ class GaussianLikelihood(LikelihoodModel):
         cls,
         model_name,
         config,
-        model_parameters,
         forward_model,
         coords_mat,
         time_vec,
@@ -102,7 +97,6 @@ class GaussianLikelihood(LikelihoodModel):
         Args:
             model_name (str): Name of the likelihood model
             config (dict): Dictionary containing problem description
-            model_parameters (dict): Dictionary containing description of model parameters
             forward_model (obj): Forward model on which the likelihood model is based
             coords_mat (np.array): Row-wise coordinates at which the observations were recorded
             time_vec (np.array): Vector of observation times
@@ -148,7 +142,6 @@ class GaussianLikelihood(LikelihoodModel):
 
         return cls(
             model_name=model_name,
-            model_parameters=model_parameters,
             nugget_noise_variance=nugget_noise_variance,
             forward_model=forward_model,
             noise_type=noise_type,
@@ -161,10 +154,11 @@ class GaussianLikelihood(LikelihoodModel):
             coord_labels=coord_labels,
         )
 
-    def evaluate(self, gradient_bool=False):
+    def evaluate(self, samples, gradient_bool=False):
         """Evaluate likelihood with current set of samples.
 
         Args:
+            samples (np.ndarray): Evaluated samples
             gradient_bool (bool, optional): Boolean to determine whether the gradient of the
                                             likelihood should be evaluated (if set to True)
 
@@ -173,24 +167,20 @@ class GaussianLikelihood(LikelihoodModel):
                                            per model input and potentially the gradient
                                            of the model w.r.t. its inputs
         """
+        model_output_dict = self.forward_model.evaluate(samples, gradient_bool=gradient_bool)
+        model_output = model_output_dict['mean']
+        if self.noise_type.startswith('MAP'):
+            self.update_covariance(model_output)
+        log_likelihood_output = self.normal_distribution.logpdf(model_output)
+
         if gradient_bool:
-            model_output, model_gradient_batch = self._update_and_evaluate_forward_model(
-                gradient_bool=gradient_bool
-            )
-            if self.noise_type.startswith('MAP'):
-                self.update_covariance(model_output)
-            log_likelihood_output = self.normal_distribution.logpdf(model_output)
+            model_gradient_batch = model_output_dict['gradient']
             grad_log_likelihood_lst = []
             for output, model_gradient in zip(model_output, model_gradient_batch):
                 grad_log_likelihood_lst.append(
                     np.dot(self.normal_distribution.grad_logpdf(output), model_gradient).T
                 )
             log_likelihood_output = (log_likelihood_output, grad_log_likelihood_lst)
-        else:
-            model_output = self._update_and_evaluate_forward_model(gradient_bool=gradient_bool)
-            if self.noise_type.startswith('MAP'):
-                self.update_covariance(model_output)
-            log_likelihood_output = self.normal_distribution.logpdf(model_output)
 
         return log_likelihood_output
 
@@ -215,32 +205,3 @@ class GaussianLikelihood(LikelihoodModel):
 
         covariance = add_nugget_to_diagonal(covariance, self.nugget_noise_variance)
         self.normal_distribution.update_covariance(covariance)
-
-    def _update_and_evaluate_forward_model(self, gradient_bool=False):
-        """Evaluate forward model.
-
-        Pass the variables update to subordinate model and then evaluate the forward model.
-
-        Args:
-            gradient_bool (bool): Flag to determine, whether the gradient of the function at
-                                  the evaluation point is expected (True) or not (False)
-
-        Returns:
-           model_output (tuple, np.array): Tuple with forward model output with shape
-                                          (samples, outputs) and gradient of the model
-                                           w.r.t. the model input; or only model output,
-                                           if not gradient is required
-        """
-        # Note that the wrapper of the model update needs to called externally such that
-        # self.variables is updated
-        self.forward_model.variables = self.variables
-        n_samples_batch = len(self.variables)
-        if gradient_bool:
-            model_output_dict = self.forward_model.evaluate(gradient_bool=gradient_bool)
-            model_response = model_output_dict['mean'][-n_samples_batch:]
-            model_gradient = model_output_dict['gradient'][-n_samples_batch:]
-            model_output = (model_response, model_gradient)
-        else:
-            model_output = self.forward_model.evaluate()['mean'][-n_samples_batch:]
-
-        return model_output

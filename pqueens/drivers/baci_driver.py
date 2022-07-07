@@ -1,6 +1,5 @@
 """Driver for simulation software BACI."""
 
-import json
 import logging
 import os
 import pathlib
@@ -8,13 +7,8 @@ import pathlib
 import pqueens.database.database as DB_module
 from pqueens.data_processor import from_config_create_data_processor
 from pqueens.drivers.driver import Driver
-from pqueens.external_geometry import from_config_create_external_geometry
-from pqueens.randomfields.univariate_field_generator_factory import (
-    UniVarRandomFieldGeneratorFactory,
-)
 from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.injector import inject
-from pqueens.utils.numpy_array_encoder import NumpyArrayEncoder
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
@@ -49,7 +43,6 @@ class BaciDriver(Driver):
         log_file (str):            path to log file
         error_file (str):          path to error file
         executable (str):          path to main executable of respective CAE software
-        external_geometry_obj (obj): External geometry object
         global_output_dir (str):   path to global output directory provided when launching
         input_file (str):          path to input file
         log_file (str):            path to log file
@@ -62,7 +55,6 @@ class BaciDriver(Driver):
                                    for post-processing
         post_processor (str):       (only for post-processing) path to post_processor of
                                    respective CAE software
-        random_fields_lst (lst):   List of random fields
         scheduler_type (str):      type of scheduler chosen in QUEENS input file
         workdir (str):             path to working directory
         data_processor (obj):   instance of data processor class
@@ -93,7 +85,6 @@ class BaciDriver(Driver):
         control_file,
         error_file,
         executable,
-        external_geometry_obj,
         global_output_dir,
         input_file,
         log_file,
@@ -103,7 +94,6 @@ class BaciDriver(Driver):
         post_file_name_prefix_lst,
         post_options,
         post_processor,
-        random_fields_lst,
         scheduler_type,
         simulation_input_template,
         workdir,
@@ -139,7 +129,6 @@ class BaciDriver(Driver):
             log_file (str):            path to log file
             error_file (str):          path to error file
             executable (str):          path to main executable of respective CAE software
-            external_geometry_obj (obj): External geometry object
             global_output_dir (str):   path to global output directory provided when launching
             input_file (str):          path to input file
             log_file (str):            path to log file
@@ -152,7 +141,6 @@ class BaciDriver(Driver):
                                        for post-processing
             post_processor (str):       (only for post-processing) path to post_processor of
                                        respective CAE software
-            random_fields_lst (lst):   List of random fields
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             simulation_input_template (str): path to BACI input template
             workdir (str):             path to working directory
@@ -182,7 +170,6 @@ class BaciDriver(Driver):
         self.control_file = control_file
         self.error_file = error_file
         self.executable = executable
-        self.external_geometry_obj = external_geometry_obj
         self.global_output_dir = global_output_dir
         self.input_file = input_file
         self.log_file = log_file
@@ -193,8 +180,6 @@ class BaciDriver(Driver):
         self.post_file_name_prefix_lst = post_file_name_prefix_lst
         self.post_options = post_options
         self.post_processor = post_processor
-        self.random_fields_lst = random_fields_lst
-        self.random_fields_realized_lst = []
         self.scheduler_type = scheduler_type
         self.simulation_input_template = simulation_input_template
         self.workdir = workdir
@@ -324,21 +309,8 @@ class BaciDriver(Driver):
         error_file_str = output_prefix + '.err'
         error_file = os.path.join(output_directory, error_file_str)
 
-        if config.get('external_geometry', None):
-            external_geometry_obj = from_config_create_external_geometry(config)
-        else:
-            external_geometry_obj = None
-
         model_name = config['method']['method_options'].get('model')
         parameter_name = config[model_name].get('parameters')
-
-        random_fields_lst = None
-        if parameter_name:
-            random_fields = config[parameter_name].get("random_fields")
-            if random_fields:
-                random_fields_lst = [
-                    (name, value['external_definition']) for name, value in random_fields.items()
-                ]
 
         return cls(
             batch,
@@ -362,7 +334,6 @@ class BaciDriver(Driver):
             control_file,
             error_file,
             executable,
-            external_geometry_obj,
             global_output_dir,
             input_file,
             log_file,
@@ -372,7 +343,6 @@ class BaciDriver(Driver):
             post_file_name_prefix_lst,
             post_options,
             post_processor,
-            random_fields_lst,
             scheduler_type,
             simulation_input_template,
             workdir,
@@ -388,16 +358,6 @@ class BaciDriver(Driver):
         cases.
         """
         inject(self.job['params'], self.simulation_input_template, self.input_file)
-
-        # delete copied file and potential back-up files afterwards to save to space
-        if self.external_geometry_obj and ("_copy_" in self.simulation_input_template):
-            cmd_lst = [
-                "rm -f",
-                self.simulation_input_template,
-                self.simulation_input_template + '.bak',
-            ]
-            cmd_str = ' '.join(cmd_lst)
-            run_subprocess(cmd_str)
 
     def run_job(self):
         """Run BACI.
@@ -455,47 +415,6 @@ class BaciDriver(Driver):
                 self.run_post_processor_cmd(output_file_opt, target_file_opt, option)
 
     # ----- RUN METHODS ---------------------------------------------------------
-    # overload the parent pre_job_run method
-    def pre_job_run(self):
-        """Runtime manipulations on the dat-file.
-
-        These are the operation that need to be performed before the actual simulation run. This
-        method overloads the same-named parent method.
-
-        Returns:
-            None
-        """
-        if self.external_geometry_obj and self.random_fields_lst:
-            # TODO currently we have to perform the main run here a second time
-            # TODO this is not optimal and should be changed but ok for now
-            self.external_geometry_obj.main_run()
-            # realize random field sample form decomposition here
-            # pylint: disable=line-too-long
-            self.random_fields_realized_lst = (
-                UniVarRandomFieldGeneratorFactory.calculate_one_truncated_realization_of_all_fields(
-                    self.database,
-                    self.job_id,
-                    self.experiment_name,
-                    self.batch,
-                    self.experiment_dir,
-                    self.random_fields_lst,
-                    self.driver_name,
-                )
-            )
-            # pylint: enable=line-too-long
-            self._manipulate_dat_file()
-        super().pre_job_run()
-
-    def _manipulate_dat_file(self):
-        """Helper method that calls the dat-file manipulation method.
-
-        Only needed if random fields are used.
-        """
-        # set also new name for copied dat-file
-        if self.random_fields_lst:
-            self.simulation_input_template = self.external_geometry_obj.write_random_fields_to_dat(
-                self.random_fields_realized_lst, self.job_id
-            )
 
     def run_job_via_script(self):
         """Run BACI.

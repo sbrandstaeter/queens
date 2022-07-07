@@ -21,8 +21,7 @@
   },
   "model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "interface": {
     "type": "direct_python_interface",
@@ -31,61 +30,61 @@
   "parameters": {
     "random_variables": {
       "x1": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0,
         "upper_bound": 1
       },
       "x2": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0,
         "upper_bound": 1
       },
       "x3": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0,
         "upper_bound": 1
       },
       "x4": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0,
         "upper_bound": 1
       },
       "x5": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0,
         "upper_bound": 1
       },
       "x6": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0,
         "upper_bound": 1
       },
       "x7": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0,
         "upper_bound": 1
       },
       "x8": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0,
         "upper_bound": 1
       },
       "x9": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0,
         "upper_bound": 1
       },
       "x10": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0,
         "upper_bound": 1

@@ -5,8 +5,6 @@ import numpy as np
 import xarray as xr
 from scipy.stats import qmc
 
-from pqueens.utils.scale_samples import scale_samples
-
 _logger = logging.getLogger(__name__)
 
 
@@ -29,7 +27,7 @@ class Sampler:
         number_monte_carlo_samples (int): number of Monte-Carlo samples
         sampling_approach (string): sampling approach (pseudo-random or quasi-random)
         calculate_second_order (bool): true if second-order indices are calculated
-        distribution_info (list): information about distribution of random variables
+        parameters (list): information about distribution of random variables
         parameter_names (list): list of names of input parameters
         seed_monte_carlo (int): seed for random samples
     """
@@ -40,7 +38,7 @@ class Sampler:
         number_monte_carlo_samples,
         seed_monte_carlo,
         calculate_second_order,
-        distribution_info,
+        parameters,
         sampling_approach,
     ):
         """Initialize.
@@ -50,7 +48,7 @@ class Sampler:
             number_monte_carlo_samples (int): number of Monte-Carlo samples
             seed_monte_carlo (int): seed for random samples
             calculate_second_order (bool): true if second-order indices are calculated
-            distribution_info (list): information about distribution of random variables
+            parameters (list): information about distribution of random variables
             sampling_approach (string): sampling approach (pseudo-random or quasi-random)
         """
         self.parameter_names = parameter_names
@@ -58,17 +56,17 @@ class Sampler:
         self.number_monte_carlo_samples = number_monte_carlo_samples
         self.seed_monte_carlo = seed_monte_carlo
         self.calculate_second_order = calculate_second_order
-        self.distribution_info = distribution_info
+        self.parameters = parameters
         self.sampling_approach = sampling_approach
 
     @classmethod
-    def from_config_create(cls, method_options, parameter_names, distribution_info):
+    def from_config_create(cls, method_options, parameter_names, parameters):
         """Create sampler from problem description.
 
         Args:
             method_options (dict): dictionary with method options
             parameter_names (list): list of parameter names
-            distribution_info (list): information about distribution of random variables
+            parameters (list): information about distribution of random variables
 
         Returns:
             sampler: Sampler object
@@ -86,7 +84,7 @@ class Sampler:
             number_monte_carlo_samples=number_monte_carlo_samples,
             seed_monte_carlo=seed_monte_carlo,
             calculate_second_order=calculate_second_order,
-            distribution_info=distribution_info,
+            parameters=parameters,
             sampling_approach=sampling_approach,
         )
 
@@ -209,8 +207,8 @@ class Sampler:
         draw_sample = self._get_base_sample_method()
         base_sample_A, base_sample_B = draw_sample()
 
-        A = scale_samples(base_sample_A, self.distribution_info)
-        B = scale_samples(base_sample_B, self.distribution_info)
+        A = self.parameters.inverse_cdf_transform(base_sample_A)
+        B = self.parameters.inverse_cdf_transform(base_sample_B)
 
         return A, B
 
@@ -293,7 +291,7 @@ class ThirdOrderSampler(Sampler):
         number_monte_carlo_samples,
         seed_monte_carlo,
         calculate_second_order,
-        distribution_info,
+        parameters,
         sampling_approach,
         calculate_third_order,
         third_order_parameters,
@@ -305,7 +303,7 @@ class ThirdOrderSampler(Sampler):
             number_monte_carlo_samples (int): number of Monte-Carlo samples
             seed_monte_carlo (int): seed for random samples
             calculate_second_order (bool): true if second-order indices are calculated
-            distribution_info (list): information about distribution of random variables
+            parameters (list): information about distribution of random variables
             sampling_approach (string): sampling approach (pseudo-random or quasi-random)
             calculate_third_order (bool): true if third-order indices only are calculated
             third_order_parameters (list): list of parameter combination for third-order index
@@ -315,20 +313,20 @@ class ThirdOrderSampler(Sampler):
             number_monte_carlo_samples=number_monte_carlo_samples,
             seed_monte_carlo=seed_monte_carlo,
             calculate_second_order=calculate_second_order,
-            distribution_info=distribution_info,
+            parameters=parameters,
             sampling_approach=sampling_approach,
         )
         self.calculate_third_order = calculate_third_order
         self.third_order_parameters = third_order_parameters
 
     @classmethod
-    def from_config_create(cls, method_options, parameter_names, distribution_info):
+    def from_config_create(cls, method_options, parameter_names, parameters):
         """Create third-order sampler from problem description.
 
         Args:
             method_options (dict): dictionary with method options
             parameter_names (list): list of parameter names
-            distribution_info (list): information about distribution of random variables
+            parameters (list): information about distribution of random variables
 
         Returns:
             sampler: Sampler object
@@ -349,7 +347,7 @@ class ThirdOrderSampler(Sampler):
             number_monte_carlo_samples=number_monte_carlo_samples,
             seed_monte_carlo=seed_monte_carlo,
             calculate_second_order=calculate_second_order,
-            distribution_info=distribution_info,
+            parameters=parameters,
             sampling_approach=sampling_approach,
             calculate_third_order=calculate_third_order,
             third_order_parameters=third_order_parameters,

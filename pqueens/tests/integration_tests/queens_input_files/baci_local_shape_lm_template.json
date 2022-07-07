@@ -37,8 +37,7 @@
   },
   "model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "interface": {
     "type": "job_interface",
@@ -87,11 +86,11 @@
     "random_variables": {
       "E": {
         "type": "FLOAT",
-        "size": 1
+        "dimension": 1
       },
       "nue": {
         "type": "FLOAT",
-        "size": 1
+        "dimension": 1
       }
     }
   },

@@ -154,7 +154,7 @@ class NormalDistribution(Distribution):
             ppf (np.ndarray): Positions which correspond to given quantiles
         """
         self.check_1d()
-        ppf = scipy.stats.norm.ppf(q, loc=self.mean, scale=self.covariance).reshape(-1)
+        ppf = scipy.stats.norm.ppf(q, loc=self.mean, scale=self.covariance ** (1 / 2)).reshape(-1)
         return ppf
 
     def update_covariance(self, covariance):

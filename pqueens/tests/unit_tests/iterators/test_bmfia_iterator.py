@@ -5,6 +5,7 @@ from unittest.mock import patch
 import numpy as np
 import pytest
 
+import pqueens.parameters.parameters as parameters_module
 from pqueens.iterators.bmfia_iterator import BMFIAIterator
 from pqueens.models.simulation_model import SimulationModel
 
@@ -29,10 +30,11 @@ def parameters():
     """Fixture for dummy parameters."""
     params = {
         "random_variables": {
-            "x1": {"size": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
-            "x2": {"size": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
+            "x1": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
+            "x2": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
         },
     }
+    parameters_module.from_config_create_parameters({'parameters': params})
     return params
 
 
@@ -41,9 +43,7 @@ def dummy_model(parameters):
     """Fixture for dummy model."""
     model_name = 'dummy'
     interface = 'my_dummy_interface'
-    model_parameters = parameters
-    model = SimulationModel(model_name, interface, model_parameters)
-    model
+    model = SimulationModel(model_name, interface)
     return model
 
 
@@ -59,7 +59,6 @@ def default_bmfia_iterator(result_description, global_settings, dummy_model):
     coord_labels = ['x_1', 'x_2']
     settings_probab_mapping = {'features_config': 'no_features'}
     db = 'dummy_db'
-    external_geometry_obj = None
     x_train = np.array([[1, 2], [3, 4]])
     Y_LF_train = np.array([[2], [3]])
     Y_HF_train = np.array([[2.2], [3.3]])
@@ -78,7 +77,6 @@ def default_bmfia_iterator(result_description, global_settings, dummy_model):
         coord_labels,
         settings_probab_mapping,
         db,
-        external_geometry_obj,
         x_train,
         Y_LF_train,
         Y_HF_train,
@@ -136,7 +134,6 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
     coord_labels = ['x1', 'x2', 'x3']
     settings_probab_mapping = settings_probab_mapping
     db = 'dummy'
-    external_geometry_obj = None
     x_train = np.array([[1, 1, 1], [2, 2, 2]])
     Y_LF_train = np.array([[1, 2, 3], [4, 5, 6]])
     Y_HF_train = np.array([[1.1, 2.1, 3.1], [4.1, 5.1, 6.1]])
@@ -155,7 +152,6 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
         coord_labels,
         settings_probab_mapping,
         db,
-        external_geometry_obj,
         x_train,
         Y_LF_train,
         Y_HF_train,
@@ -181,7 +177,6 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
     np.testing.assert_array_equal(iterator.y_obs_vec, y_obs_vec)
     assert iterator.settings_probab_mapping == settings_probab_mapping
     assert iterator.db == db
-    assert iterator.external_geometry_obj == external_geometry_obj
 
 
 @pytest.mark.unit_tests
@@ -191,7 +186,6 @@ def test_calculate_optimal_x_train(dummy_model, mocker):
     Note: here we return the input arguments of the design method to
     later be able to test if the arguments were correct.
     """
-    external_geometry_obj = None
     expected_x_train = np.array([[1, 1]])  # return of mock_design
     model = dummy_model
     initial_design_dict = {'test': 'test'}
@@ -200,17 +194,14 @@ def test_calculate_optimal_x_train(dummy_model, mocker):
         return_value=my_mock_design,
     )
 
-    x_train, (arg0, arg1, arg2) = BMFIAIterator._calculate_optimal_x_train(
-        initial_design_dict, external_geometry_obj, model
-    )
+    x_train, (arg0, arg1) = BMFIAIterator._calculate_optimal_x_train(initial_design_dict, model)
 
     np.testing.assert_array_almost_equal(x_train, expected_x_train)
     assert mo_1.call_args[0][0] == initial_design_dict
 
     # test if the input arguments are correct
     assert arg0 == initial_design_dict
-    assert arg1 == external_geometry_obj
-    assert arg2 == dummy_model
+    assert arg1 == dummy_model
 
 
 @pytest.mark.unit_tests
@@ -243,12 +234,11 @@ def test_get_design_method(mocker):
 
 
 @pytest.mark.unit_tests
-def test_random_design(dummy_model):
+def test_random_design(dummy_model, parameters):
     """Test for the uniformly random design method."""
     initial_design_dict = {"seed": 1, "num_HF_eval": 1}
     x_train = np.array([[-0.33191198, 0.881297]])
-    external_geometry_obj = None
-    x_out = BMFIAIterator._random_design(initial_design_dict, external_geometry_obj, dummy_model)
+    x_out = BMFIAIterator._random_design(initial_design_dict, dummy_model)
 
     np.testing.assert_array_almost_equal(x_train, x_out, decimal=4)
 
@@ -283,40 +273,27 @@ def test_core_run(default_bmfia_iterator, mocker):
 def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
     """Test evaluation of LF model with test data."""
     with patch.object(
-        default_bmfia_iterator.lf_model,
-        'update_model_from_sample_batch',
-        return_value=None,
+        default_bmfia_iterator.lf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
     ) as mo_1:
-        with patch.object(
-            default_bmfia_iterator.lf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
-        ) as mo_2:
 
-            default_bmfia_iterator._evaluate_LF_model_for_X_train()
+        default_bmfia_iterator._evaluate_LF_model_for_X_train()
 
-            # Actual asserts / tests
-            mo_1.assert_called_once_with(default_bmfia_iterator.X_train)
-            mo_2.assert_called_once()
-            np.testing.assert_array_equal(np.array([[1, 1]]), default_bmfia_iterator.Y_LF_train)
+        mo_1.assert_called_once()
+        np.testing.assert_array_equal(np.array([[1, 1]]), default_bmfia_iterator.Y_LF_train)
 
 
 @pytest.mark.unit_tests
 def test_evaluate_HF_model_for_X_train(default_bmfia_iterator):
     """Test evaluation of HF model with test data."""
     with patch.object(
-        default_bmfia_iterator.hf_model,
-        'update_model_from_sample_batch',
-        return_value=None,
-    ) as mo_1:
-        with patch.object(
-            default_bmfia_iterator.hf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
-        ) as mo_2:
+        default_bmfia_iterator.hf_model, 'evaluate', return_value={'mean': np.array([1, 1])}
+    ) as mo_2:
 
-            default_bmfia_iterator._evaluate_HF_model_for_X_train()
+        default_bmfia_iterator._evaluate_HF_model_for_X_train()
 
-            # Actual asserts / tests
-            mo_1.assert_called_once_with(default_bmfia_iterator.X_train)
-            mo_2.assert_called_once()
-            np.testing.assert_array_equal(np.array([[1, 1]]), default_bmfia_iterator.Y_HF_train)
+        # Actual asserts / tests
+        mo_2.assert_called_once()
+        np.testing.assert_array_equal(np.array([[1, 1]]), default_bmfia_iterator.Y_HF_train)
 
 
 @pytest.mark.unit_tests

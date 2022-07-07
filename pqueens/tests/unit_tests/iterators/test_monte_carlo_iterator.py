@@ -7,13 +7,13 @@ import unittest
 import numpy as np
 import pytest
 
+import pqueens.parameters.parameters as parameters_module
 from pqueens.interfaces.direct_python_interface import DirectPythonInterface
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
 from pqueens.models.simulation_model import SimulationModel
 from pqueens.tests.integration_tests.example_simulator_functions import (
     example_simulator_function_by_name,
 )
-from pqueens.variables.variables import Variables
 
 
 class TestMCIterator(unittest.TestCase):
@@ -21,20 +21,20 @@ class TestMCIterator(unittest.TestCase):
         random_variables = {}
         uncertain_parameters = {}
         uncertain_parameter1 = {}
-        uncertain_parameter1["size"] = 1
+        uncertain_parameter1["dimension"] = 1
         uncertain_parameter1["distribution"] = "uniform"
         uncertain_parameter1["lower_bound"] = -3.14159265359
         uncertain_parameter1["upper_bound"] = 3.14159265359
 
         uncertain_parameter2 = {}
-        uncertain_parameter2["size"] = 1
+        uncertain_parameter2["dimension"] = 1
         uncertain_parameter2["distribution"] = "normal"
         uncertain_parameter2["mean"] = 0
         uncertain_parameter2["covariance"] = 4
 
         uncertain_parameter3 = {}
         uncertain_parameter3["type"] = "FLOAT"
-        uncertain_parameter3["size"] = 1
+        uncertain_parameter3["dimension"] = 1
         uncertain_parameter3["distribution"] = "lognormal"
         uncertain_parameter3["normal_mean"] = 0.3
         uncertain_parameter3["normal_covariance"] = 1
@@ -48,16 +48,14 @@ class TestMCIterator(unittest.TestCase):
         dummy_obj = None
         dummy_db = None
 
-        self.variables = Variables.from_uncertain_parameters_create(uncertain_parameters)
+        parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
 
         function = example_simulator_function_by_name("ishigami90")
         # create interface
-        self.interface = DirectPythonInterface(
-            'test_interface', function, self.variables, pool=None
-        )
+        self.interface = DirectPythonInterface('test_interface', function, pool=None)
 
         # create mock model
-        self.model = SimulationModel("my_model", self.interface, uncertain_parameters)
+        self.model = SimulationModel("my_model", self.interface)
 
         # create LHS iterator
         self.my_iterator = MonteCarloIterator(
@@ -66,7 +64,6 @@ class TestMCIterator(unittest.TestCase):
             num_samples=100,
             result_description=None,
             global_settings=some_settings,
-            external_geometry_obj=dummy_obj,
             db=dummy_db,
         )
 

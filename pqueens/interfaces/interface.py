@@ -1,6 +1,8 @@
 """Interface class to map input variables to simulation outputs."""
 import abc
 
+import pqueens.parameters.parameters as parameters_module
+
 
 class Interface(metaclass=abc.ABCMeta):
     """Interface class to map input variables to simulation outputs.
@@ -10,7 +12,20 @@ class Interface(metaclass=abc.ABCMeta):
     to define a unified interface on the one hand, while at the other
     hand taking care of the construction of the appropriate objects from
     the derived class.
+
+    Attributes:
+        name (str): Name of the interface
+        parameters (obj): Parameters object
     """
+
+    def __init__(self, name):
+        """Initialize interface object.
+
+        Args:
+            name (obj): Name of the interface.
+        """
+        self.name = name
+        self.parameters = parameters_module.parameters
 
     @abc.abstractmethod
     def evaluate(self, samples, gradient_bool=False):

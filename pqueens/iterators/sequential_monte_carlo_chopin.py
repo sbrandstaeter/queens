@@ -8,6 +8,8 @@ from particles import collectors as col
 from particles import distributions as dists
 from particles.smc_samplers import AdaptiveTempering
 
+from pqueens.distributions.normal import NormalDistribution
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils import smc_utils
@@ -88,7 +90,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         self.result_description = result_description
         self.seed = seed
         self.num_particles = num_particles
-        self.num_variables = self.model.variables[0].get_number_of_active_variables()
+        self.num_variables = self.parameters.num_parameters
         self.n_sims = n_sims
         self.max_feval = max_feval
         self.prior = prior
@@ -146,19 +148,13 @@ class SequentialMonteCarloChopinIterator(Iterator):
             random_variable_keys=[],
         )
 
-    def eval_model(self):
-        """Evaluate model at current sample."""
-        result_dict = self.model.evaluate()
-        return result_dict
-
     def eval_log_likelihood(self, samples):
         """Evaluate natural logarithm of likelihood at sample.
 
         Args:
             samples (np.array): Samples/particles of the SMC.
         """
-        self.model.update_model_from_sample_batch(samples)
-        log_likelihood = self.eval_model()
+        log_likelihood = self.model.evaluate(samples)
         return log_likelihood
 
     def _initialize_prior_model(self):
@@ -167,35 +163,26 @@ class SequentialMonteCarloChopinIterator(Iterator):
         Returns:
             None
         """
-        # Read design of prior
-        input_dict = self.model.get_parameter()
-        # get random variables
-        random_variables = input_dict.get('random_variables', None)
-        # get random fields
-        random_fields = input_dict.get('random_fields', None)
-
-        if random_fields:
+        if self.parameters.random_field_flag:
             raise NotImplementedError(
                 'Particles SMC for random fields is not yet implemented! Abort...'
             )
         # Generate prior using the particles library
         prior_dict = {}
-        for rv in random_variables.keys():
-            rv_options = random_variables[rv]
-            distribution = rv_options.get("distribution")
-            if distribution == "normal":
-                loc = rv_options['mean']
-                scale = rv_options['covariance'] ** 0.5
-                prior_dict.update({rv: dists.Normal(loc=loc, scale=scale)})
-            elif distribution == "uniform":
-                lower_bound = rv_options['lower_bound']
-                upper_bound = rv_options['upper_bound']
-                prior_dict.update({rv: dists.Uniform(a=lower_bound, b=upper_bound)})
+        for key, parameter in self.parameters.dict.items():
+            if isinstance(parameter.distribution, NormalDistribution):
+                loc = parameter.distribution.mean.squeeze()
+                scale = parameter.distribution.covariance.squeeze() ** 0.5
+                prior_dict.update({key: dists.Normal(loc=loc, scale=scale)})
+            elif isinstance(parameter.distribution, UniformDistribution):
+                lower_bound = parameter.distribution.lower_bound
+                upper_bound = parameter.distribution.upper_bound
+                prior_dict.update({key: dists.Uniform(a=lower_bound, b=upper_bound)})
             else:
                 raise NotImplementedError(
                     "Currently the priors are only allowed to be normal or uniform"
                 )
-            self.random_variable_keys.append(rv)
+            self.random_variable_keys.append(key)
         self.prior = dists.StructDist(prior_dict)
 
     def initialize_feynman_kac(self, static_model):

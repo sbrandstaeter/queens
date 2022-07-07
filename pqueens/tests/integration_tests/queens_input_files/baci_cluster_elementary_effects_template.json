@@ -38,8 +38,7 @@
   },
   "model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "interface": {
     "type": "job_interface",
@@ -107,13 +106,13 @@
     "random_variables": {
       "nue": {
         "type": "FLOAT",
-        "size": 1,
+        "dimension": 1,
         "lower_bound": 0.45,
         "upper_bound": 0.49
       },
       "pressure": {
         "type": "FLOAT",
-        "size": 1,
+        "dimension": 1,
         "lower_bound": 28000,
         "upper_bound": 38000
       }

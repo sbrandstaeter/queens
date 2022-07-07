@@ -73,9 +73,6 @@ class BBVIIterator(VariationalInferenceIterator):
                                                     of the variational distribution
         log_posterior_unnormalized (np.array): Row-vector logarithmic probabilistic model evaluation
                                                (generally unnormalized)
-        prior_obj_list (list): List containing objects of prior models for the random input. The
-                               list is ordered in the same way as the random input definition in
-                               the input file
         samples_list (list): List of samples from previous iterations for the ISMC gradient
         parameter_list (list): List of parameters from previous iterations for the ISMC gradient
         log_posterior_unnormalized_list (list): List of probabilistic model evaluations from
@@ -201,7 +198,6 @@ class BBVIIterator(VariationalInferenceIterator):
         self.log_variational_mat = None
         self.grad_params_log_variational_mat = None
         self.log_posterior_unnormalized = None
-        self.prior_obj_list = []
         self.samples_list = []
         self.parameter_list = []
         self.log_posterior_unnormalized_list = []
@@ -292,15 +288,6 @@ class BBVIIterator(VariationalInferenceIterator):
         _logger.info('Starting black box Bayesian variational inference...')
         super().core_run()
 
-    def eval_model(self):
-        """Evaluate model for the sample batch.
-
-        Returns:
-           result_dict (dict): Dictionary containing model response for sample batch
-        """
-        result_dict = self.model.evaluate()
-        return result_dict
-
     def eval_log_likelihood(self, sample_batch):
         """Calculate the log-likelihood of the observation data.
 
@@ -316,8 +303,7 @@ class BBVIIterator(VariationalInferenceIterator):
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)--> data is saved to DB
-        self.model.update_model_from_sample_batch(sample_batch)
-        log_likelihood = self.eval_model()
+        log_likelihood = self.model.evaluate(sample_batch)
         self.noise_list.append(self.model.normal_distribution.covariance)
 
         return log_likelihood.flatten()
@@ -334,10 +320,8 @@ class BBVIIterator(VariationalInferenceIterator):
         Returns:
             log_prior (np.array): log-prior vector evaluated for current sample batch
         """
-        log_prior_vec = np.zeros((self.n_samples_per_iter, 1))
-        for dim, prior_distr in enumerate(self.prior_obj_list):
-            log_prior_vec = log_prior_vec + prior_distr.logpdf(sample_batch[:, dim]).reshape(-1, 1)
-        return log_prior_vec.flatten()
+        log_prior_vec = self.parameters.joint_logpdf(sample_batch)
+        return log_prior_vec
 
     def get_log_posterior_unnormalized(self, sample_batch):
         """Calculate the unnormalized log posterior for a sample batch.

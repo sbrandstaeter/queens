@@ -25,7 +25,6 @@ class DataFitSurrogateModel(Model):
         self,
         model_name,
         interface,
-        model_parameters,
         subordinate_model,
         subordinate_iterator,
         testing_iterator,
@@ -51,7 +50,7 @@ class DataFitSurrogateModel(Model):
             error_measures (list):          List of error measures to compute
             nash_sutcliffe_efficiency (bool): true if Nash-Sutcliffe efficiency should be evaluated
         """
-        super().__init__(model_name, model_parameters)
+        super().__init__(model_name)
         self.interface = interface
         self.subordinate_model = subordinate_model
         self.subordinate_iterator = subordinate_iterator
@@ -74,8 +73,6 @@ class DataFitSurrogateModel(Model):
         # get options
         model_options = config[model_name]
         interface_name = model_options["interface"]
-        parameters = model_options["parameters"]
-        model_parameters = config[parameters]
 
         subordinate_model_name = model_options.get("subordinate_model", None)
         subordinate_iterator_name = model_options["subordinate_iterator"]
@@ -108,7 +105,6 @@ class DataFitSurrogateModel(Model):
         return cls(
             model_name,
             interface,
-            model_parameters,
             subordinate_model,
             subordinate_iterator,
             testing_iterator,
@@ -117,7 +113,7 @@ class DataFitSurrogateModel(Model):
             nash_sutcliffe_efficiency,
         )
 
-    def evaluate(self):
+    def evaluate(self, samples):
         """Evaluate model with current set of variables.
 
         Returns:
@@ -126,7 +122,7 @@ class DataFitSurrogateModel(Model):
         if not self.interface.is_initialized():
             self.build_approximation()
 
-        self.response = self.interface.evaluate(self.variables)
+        self.response = self.interface.evaluate(samples)
         return self.response
 
     def build_approximation(self):
@@ -176,8 +172,7 @@ class DataFitSurrogateModel(Model):
         if not self.interface.is_initialized():
             raise RuntimeError("Cannot compute accuracy on uninitialized model")
 
-        x_test_var = self.convert_array_to_model_variables(x_test)
-        response = self.interface.evaluate(x_test_var)
+        response = self.interface.evaluate(x_test)
         y_prediction = response['mean'].reshape((-1, 1))
 
         error_info = {}

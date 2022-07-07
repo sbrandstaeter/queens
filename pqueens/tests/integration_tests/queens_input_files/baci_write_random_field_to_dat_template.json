@@ -17,17 +17,37 @@
       }
     }
   },
-  "external_geometry": {
+  "pre_processing": {
     "type": "baci_dat",
     "list_geometric_sets": [
       "DSURFACE 4"
     ],
-    "queens_tmp_dir": "{experiment_dir}"
+    "random_fields": [
+      { "name": "random_inflow",
+        "type": "dirichlet",
+        "external_instance": "DSURFACE 4",
+        "dof_for_field": 3,
+        "funct_for_field": 0,
+        "dofs_deterministic": [
+          1,
+          2
+        ],
+        "value_dofs_deterministic": [
+          0,
+          0
+        ],
+        "funct_for_deterministic_dofs": [
+          0,
+          0
+        ]
+      }
+    ],
+    "input_template": "{baci_input}",
+    "input_template_preprocessed": "{baci_input_preprocessed}"
   },
   "model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "interface": {
     "type": "job_interface",
@@ -37,7 +57,7 @@
   "driver": {
     "driver_type": "baci",
     "driver_params": {
-      "input_template": "{baci_input}",
+      "input_template": "{baci_input_preprocessed}",
       "path_to_executable": "{baci-release}",
       "path_to_postprocessor": "{post_drt_monitor}",
       "post_process_options": [
@@ -83,19 +103,19 @@
   "parameters": {
     "random_variables": {
       "emodul": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "lognormal",
         "normal_mean": 6.392,
         "normal_covariance": 0.0705
       },
       "nue": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0.45,
         "upper_bound": 0.49
       },
       "pressure": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 28000,
         "upper_bound": 38000
@@ -103,33 +123,10 @@
     },
     "random_fields": {
       "random_inflow": {
-        "type": "FLOAT",
-        "external_definition": {
-          "type": "dirichlet",
-          "external_instance": "DSURFACE 4",
-          "dof_for_field": 3,
-          "funct_for_field": 0,
-          "dofs_deterministic": [
-            1,
-            2
-          ],
-          "value_dofs_deterministic": [
-            0,
-            0
-          ],
-          "funct_for_deterministic_dofs": [
-            0,
-            0
-          ]
-        },
-        "dimension": 1,
-        "corrstruct": "generic_external_random_field",
         "corr_length": 1.0,
         "std_hyperparam_rf": 0.001,
-        "mean_fun_type": "constant",
-        "mean_fun_params": [
-          0
-        ]
+        "mean_type": "constant",
+        "mean_param": 0
       }
     }
   }

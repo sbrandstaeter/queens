@@ -72,7 +72,6 @@ class BMFGaussianModel(LikelihoodModel):
     def __init__(
         self,
         model_name,
-        model_parameters,
         nugget_noise_var,
         forward_model,
         coords_mat,
@@ -99,7 +98,6 @@ class BMFGaussianModel(LikelihoodModel):
         """Instanciate the multi-fidelity likelihood class."""
         super().__init__(
             model_name,
-            model_parameters,
             forward_model,
             coords_mat,
             time_vec,
@@ -118,7 +116,6 @@ class BMFGaussianModel(LikelihoodModel):
         self.eigenvals = eigenvals
         self.f_mean_train = f_mean_train
         self.bmfia_subiterator = bmfia_subiterator
-        self.uncertain_parameters = model_parameters
         self.noise_var = noise_var
         self.nugget_noise_var = nugget_noise_var
         self.likelihood_noise_type = likelihood_noise_type
@@ -131,7 +128,6 @@ class BMFGaussianModel(LikelihoodModel):
         cls,
         model_name,
         config,
-        model_parameters,
         forward_model,
         coords_mat,
         time_vec,
@@ -188,7 +184,6 @@ class BMFGaussianModel(LikelihoodModel):
 
         return cls(
             model_name,
-            model_parameters,
             nugget_noise_var,
             forward_model,
             coords_mat,
@@ -213,13 +208,14 @@ class BMFGaussianModel(LikelihoodModel):
             noise_var_lst,
         )
 
-    def evaluate(self, gradient_bool=False):
+    def evaluate(self, samples, gradient_bool=False):
         """Evaluate multi-fidelity likelihood.
 
         Evaluation with current set of variables
         which are an attribute of the underlying low-fidelity simulation model.
 
         Args:
+            samples (np.ndarray): Evaluated samples
             gradient_bool (bool, optional): Boolean to determine whether the gradient of the
                                             likelihood should be evaluated (if set to True)
 
@@ -234,25 +230,17 @@ class BMFGaussianModel(LikelihoodModel):
         if self.z_train is None:
             self._initialize()
 
-        # get x_batch from variable object
-        x_batch = []
-        for variable in self.variables:
-            x_batch.append(np.array([i[1]['value'] for i in variable.variables.items()]))
-
-        x_batch = np.array(x_batch)
-        x_batch = np.atleast_2d(x_batch)
-
         # reshape the model output according to the number of coordinates
         num_coordinates = self.coords_mat.shape[0]
-        num_variables = len(self.variables)
+        num_samples = samples.shape[0]
 
         # we explicitly cut the array at the variable size as within one batch several chains
         # e.g., in MCMC might be calculated; we only want the last chain here
-        Y_LF_mat = self._update_and_evaluate_forward_model().reshape(-1, num_coordinates)[
-            :num_variables, :
+        Y_LF_mat = self.forward_model.evaluate(samples)['mean'].reshape(-1, num_coordinates)[
+            :num_samples, :
         ]
         # evaluate the modified multi-fidelity likelihood expression with LF model response
-        mf_log_likelihood = self._evaluate_mf_likelihood(Y_LF_mat, x_batch)
+        mf_log_likelihood = self._evaluate_mf_likelihood(Y_LF_mat, samples)
         return mf_log_likelihood
 
     def _evaluate_mf_likelihood(self, y_lf_mat, x_batch):
@@ -515,21 +503,6 @@ class BMFGaussianModel(LikelihoodModel):
             "'get_random_fields_and_truncated_basis' is not finished."
             "The method cannot be used at the moment. Abort..."
         )
-
-    def _update_and_evaluate_forward_model(self):
-        """Update underlying model and evaluate it.
-
-        Pass the variables update to subordinate simulation model and then
-        evaluate the simulation model.
-
-        Returns:
-           y_mat (np.array): Simulation output (row-wise) that corresponds to input batch X_batch
-        """
-        # Note that the wrapper of the model update needs to called externally such that
-        # self.variables is updated
-        self.forward_model.variables = self.variables
-        y_mat = self.forward_model.evaluate()['mean']
-        return y_mat
 
     # --------------------------- functions ------------------------------------------------------
     @staticmethod

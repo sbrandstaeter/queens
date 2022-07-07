@@ -64,7 +64,6 @@
     "nugget_noise_var": 1E-8,
     "experimental_file_name_identifier": "*.csv",
     "experimental_csv_data_base_dir": "{experimental_data_path}",
-    "parameters": "parameters",
     "plotting_options": {
       "plotting_dir": "{plot_dir}",
       "plot_names": [
@@ -102,13 +101,11 @@
   },
   "lf_model": {
     "type": "simulation_model",
-    "interface": "lf_interface",
-    "parameters": "parameters"
+    "interface": "lf_interface"
   },
   "hf_model": {
     "type": "simulation_model",
-    "interface": "hf_interface",
-    "parameters": "parameters"
+    "interface": "hf_interface"
   },
   "proposal_distribution": {
     "distribution": "normal",
@@ -140,13 +137,13 @@
   "parameters": {
     "random_variables": {
       "x1": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0.01,
         "upper_bound": 0.99
       },
       "x2": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": 0.01,
         "upper_bound": 0.99

@@ -62,13 +62,11 @@
         "noise_var_iterative_averaging": {
             "averaging_type": "moving_average",
             "num_iter_for_avg": 10
-        },
-        "parameters": "parameters"
+        }
     },
     "forward_model": {
         "type": "simulation_model",
-        "interface": "interface",
-        "parameters": "parameters"
+        "interface": "interface"
     },
     "interface": {
         "type": "direct_python_interface",
@@ -77,13 +75,13 @@
     "parameters": {
         "random_variables": {
             "x1": {
-                "size": 1,
+                "dimension": 1,
                 "distribution": "normal",
                 "mean": 0.6,
                 "covariance": 0.2
             },
             "x2": {
-                "size": 1,
+                "dimension": 1,
                 "distribution": "normal",
                 "mean": 0.3,
                 "covariance": 0.1

@@ -153,13 +153,13 @@
   "parameters": {
     "random_variables": {
       "x1": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "normal",
         "mean": 0.6,
         "covariance": 0.2
       },
       "x2": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "normal",
         "mean": 0.3,
         "covariance": 0.1
