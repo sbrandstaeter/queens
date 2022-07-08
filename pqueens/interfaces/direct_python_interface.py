@@ -6,7 +6,7 @@ from tqdm import tqdm
 from pqueens.tests.integration_tests.example_simulator_functions import (
     example_simulator_function_by_name,
 )
-from pqueens.utils.import_utils import load_function_by_name_from_path
+from pqueens.utils.import_utils import load_function_or_class_by_name_from_path
 from pqueens.utils.pool_utils import create_pool
 
 from .interface import Interface
@@ -69,7 +69,9 @@ class DirectPythonInterface(Interface):
             my_function = example_simulator_function_by_name(function_name)
         else:
             # Try to load external simulator functions
-            my_function = load_function_by_name_from_path(external_python_module, function_name)
+            my_function = load_function_or_class_by_name_from_path(
+                external_python_module, function_name
+            )
 
         pool = create_pool(num_workers)
 
