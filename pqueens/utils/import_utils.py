@@ -40,7 +40,7 @@ def load_function_or_class_by_name_from_path(path_to_module, function_or_class_n
         function = getattr(module, function_or_class_name)
     except AttributeError as error:
         raise AttributeError(
-            f"External python module {path_to_module} does not have a function "
+            f"External python module {path_to_module} does not have a function or class"
             f"{function_or_class_name}"
         ) from error
 
