@@ -84,37 +84,29 @@ class Database(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def save(self):
         """Save an entry to the database."""
-        pass
 
     @abc.abstractmethod
     def load(self):
         """Load an entry from the database."""
-        pass
 
     @abc.abstractmethod
     def remove(self):
         """Remove an entry from the database."""
-        pass
 
     @abc.abstractmethod
-    def _connect():
+    def _connect(self):
         """Connect to the database."""
-        pass
 
     @abc.abstractmethod
-    def _disconnect():
+    def _disconnect(self):
         """Close connection to the database."""
-        pass
 
     @abc.abstractmethod
     def _delete_database(self):
         """Remove a single database."""
-        pass
 
-    @abc.abstractmethod
     def _delete_databases_by_prefix(self):
         """Remove all databases based on a prefix."""
-        pass
 
     @abc.abstractmethod
     def _clean_database(self):
@@ -123,4 +115,7 @@ class Database(metaclass=abc.ABCMeta):
         This includes actions like reseting existing databases delete
         all related databases or similar.
         """
-        pass
+
+
+class QUEENSDatabaseError(Exception):
+    """QUEENS database error."""
