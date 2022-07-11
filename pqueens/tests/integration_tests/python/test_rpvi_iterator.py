@@ -2,9 +2,9 @@
 
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import pytest
 from mock import patch
 from scipy.stats import multivariate_normal as mvn
@@ -62,7 +62,11 @@ def rpvi_density_match(
 
 @pytest.mark.integration_tests
 def test_rpvi_iterator_park91a_hifi(
-    inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
+    inputdir,
+    tmpdir,
+    create_experimental_data_park91a_hifi_on_grid,
+    likelihood_model_type,
+    write_custom_likelihood_model,
 ):
     """Integration test for the rpvi iterator.
 
@@ -76,6 +80,7 @@ def test_rpvi_iterator_park91a_hifi(
         "plot_dir": plot_dir,
         "gradient_method": "finite_difference",
         "my_function": "park91a_hifi_on_grid",
+        "likelihood_model_type": likelihood_model_type,
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
@@ -119,6 +124,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         "plot_dir": plot_dir,
         "gradient_method": "provided_gradient",
         "my_function": "park91a_hifi_on_grid_with_gradients",
+        "likelihood_model_type": "gaussian",
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
@@ -145,6 +151,42 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.1
     assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
     assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
+
+
+@pytest.fixture()
+def module_path(tmpdir):
+    """Generate path for new likelihood module."""
+    my_module_path = Path(tmpdir, "my_likelihood_module.py")
+    return str(my_module_path)
+
+
+@pytest.fixture(params=['gaussian', 'own_gaussian'])
+def likelihood_model_type(request, module_path):
+    """Parameterized fixture for likelihood modules."""
+    # we have to write it this way as atm
+    # parameterized fixtures dont allow fixtures
+    # as parameters
+    if request.param == "own_gaussian":
+        my_return = module_path + "::MyLikelihood"
+    else:
+        my_return = request.param
+
+    return my_return
+
+
+@pytest.fixture()
+def write_custom_likelihood_model(module_path):
+    """Write custom likelihood class to file."""
+    # pylint: disable=line-too-long
+    custom_class_lst = [
+        "from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood\n",
+        "class MyLikelihood(GaussianLikelihood):\n",
+        "   pass",
+    ]
+    # pylint: enable=line-too-long
+    with open(module_path, 'w') as f:
+        for my_string in custom_class_lst:
+            f.writelines(my_string)
 
 
 @pytest.fixture()

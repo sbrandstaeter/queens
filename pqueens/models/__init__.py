@@ -5,6 +5,9 @@ context of UQ. Within QUEENS the a model class of object holds and
 stores the input and output data and can evaluate itself to produce
 data.
 """
+from pathlib import Path
+
+from pqueens.utils.import_utils import get_module_attribute
 
 
 def from_config_create_model(model_name, config):
@@ -35,5 +38,17 @@ def from_config_create_model(model_name, config):
     }
 
     model_options = config[model_name]
-    model_class = model_dict[model_options["type"]]
+    if model_options["type"] in model_dict.keys():
+        model_class = model_dict[model_options["type"]]
+    elif Path(model_options["type"].split('::')[0]).is_file():
+        module_path = Path(model_options["type"].split('::')[0])
+        module_attribute = model_options["type"].split('::')[1]
+        model_class = get_module_attribute(module_path, module_attribute)
+    else:
+        raise ModuleNotFoundError(
+            f"The module '{model_options['type']}' could not be found, nor a valid"
+            " path to an external module was provided. Valid internal modules are: "
+            f"{model_dict.keys()}. Abort..."
+        )
+
     return model_class.from_config_create_model(model_name, config)
