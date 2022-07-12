@@ -1,7 +1,11 @@
 """Import utils."""
 import importlib.util
+import logging
 import sys
 from pathlib import Path
+
+_logger = logging.getLogger(__name__)
+
 
 from pqueens.utils.path_utils import check_if_path_exists
 
@@ -44,4 +48,8 @@ def get_module_attribute(path_to_module, function_or_class_name):
             f"{function_or_class_name}"
         ) from error
 
+    _logger.debug(
+        f"Using now external Python method or class {function_or_class_name} \n"
+        f"in the file {path_to_module}."
+    )
     return function
