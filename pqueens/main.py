@@ -56,6 +56,7 @@ def main(args=None):
 
     with DB_module.database as db:
 
+        print(db)
         # build iterator
         my_iterator = from_config_create_iterator(options)
 
@@ -125,15 +126,15 @@ def get_options(args):
     try:
         with open(input_file, 'r') as f:
             options = json.load(f, object_pairs_hook=OrderedDict)
-    except:
-        raise FileNotFoundError("config.json did not load properly.")
+    except Exception as exception:
+        raise FileNotFoundError("config.json did not load properly.") from exception
 
     if args.debug == 'yes':
         debug = True
     elif args.debug == 'no':
         debug = False
     else:
-        print('Warning input flag not set correctly not showing debug' ' information')
+        print('Warning input flag not set correctly not showing debug information')
         debug = False
 
     options["debug"] = debug
