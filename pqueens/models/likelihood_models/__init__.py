@@ -39,15 +39,16 @@ def from_config_create_model(model_name, config):
 
     if model_options["subtype"] in model_dict.keys():
         model_class = model_dict[model_options["subtype"]]
-    elif Path(model_options["subtype"].split("::")[0]).is_file():
-        module_path = Path(model_options["subtype"].split("::")[0])
-        module_attribute = model_options["subtype"].split("::")[1]
+    elif model_options.get("path_external_python_module"):
+        module_path = model_options["path_external_python_module"]
+        module_attribute = model_options["subtype"]
         model_class = get_module_attribute(module_path, module_attribute)
     else:
         raise ModuleNotFoundError(
-            f"The module '{model_options['subtype']}' could not be found, nor a valid"
-            " path to an external module was provided. Valid internal modules are: "
-            f"{model_dict.keys()}. Abort..."
+            f"The module '{model_options['subtype']}' could not be found!\n"
+            f"Valid internal modules are: {model_dict.keys()}.\n"
+            "If you provided an external Python module, make sure you specified \n"
+            "the correct class name under the 'type' keyword!"
         )
 
     forward_model_name = model_options.get("forward_model")

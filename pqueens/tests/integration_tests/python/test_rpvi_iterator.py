@@ -67,6 +67,7 @@ def test_rpvi_iterator_park91a_hifi(
     create_experimental_data_park91a_hifi_on_grid,
     likelihood_model_type,
     write_custom_likelihood_model,
+    module_path,
 ):
     """Integration test for the rpvi iterator.
 
@@ -81,6 +82,7 @@ def test_rpvi_iterator_park91a_hifi(
         "gradient_method": "finite_difference",
         "my_function": "park91a_hifi_on_grid",
         "likelihood_model_type": likelihood_model_type,
+        "path_external_python_module": module_path,
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
@@ -160,18 +162,10 @@ def module_path(tmpdir):
     return str(my_module_path)
 
 
-@pytest.fixture(params=['gaussian', 'own_gaussian'])
-def likelihood_model_type(request, module_path):
+@pytest.fixture(params=['gaussian', 'MyLikelihood'])
+def likelihood_model_type(request):
     """Parameterized fixture for likelihood modules."""
-    # we have to write it this way as atm
-    # parameterized fixtures dont allow fixtures
-    # as parameters
-    if request.param == "own_gaussian":
-        my_return = module_path + "::MyLikelihood"
-    else:
-        my_return = request.param
-
-    return my_return
+    return request.param
 
 
 @pytest.fixture()
