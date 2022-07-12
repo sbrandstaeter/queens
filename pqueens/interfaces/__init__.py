@@ -5,13 +5,15 @@ This package contains a set of so-called interfaces. The purpose of an interface
 is essentially the mapping of inputs to outputs. For now there are four kinds
 of interface plus the base class.
 
-The mapping is can made by passing the inputs furhter down to a
+The mapping is can made by passing the inputs further down to a
 regression_approximation or a mf_regression_approximation, both of which
-essentially then evaluate a regression modelself.
+essentially then evaluate a regression model themselves.
 
 The alternatives are the evaluation of simple python function using the
 direct_python_interface or running an external software through the job_interface.
 """
+from pqueens.utils.import_utils import get_module_attribute
+from pqueens.utils.valid_options_utils import get_option
 
 
 def from_config_create_interface(interface_name, config):
@@ -40,7 +42,12 @@ def from_config_create_interface(interface_name, config):
 
     interface_options = config[interface_name]
     # determine which object to create
-    interface_class = interface_dict[interface_options["type"]]
+    if interface_options.get("external_python_module"):
+        module_path = interface_options["external_python_module"]
+        module_attribute = interface_options.get("type")
+        interface_class = get_module_attribute(module_path, module_attribute)
+    else:
+        interface_class = get_option(interface_dict, interface_options.get("type"))
 
     # get the driver which belongs to the model/interface
     # (important if several models are involved)

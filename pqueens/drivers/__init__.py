@@ -28,17 +28,22 @@ def from_config_create_driver(
         driver (obj):   Driver object
     """
     from pqueens.drivers.baci_driver import BaciDriver
+    from pqueens.utils.import_utils import get_module_attribute
+    from pqueens.utils.valid_options_utils import get_option
 
     # determine Driver class
     driver_dict = {
         'baci': BaciDriver,
     }
-    if driver_name:
-        driver_version = config[driver_name]['driver_type']
-    else:
-        driver_version = config['driver']['driver_type']
 
-    driver_class = driver_dict[driver_version]
+    driver_options = config.get(driver_name)
+    if driver_options.get("external_python_module"):
+        module_path = driver_options["external_python_module"]
+        module_attribute = driver_options.get("driver_type")
+        driver_class = get_module_attribute(module_path, module_attribute)
+    else:
+        driver_class = get_option(driver_dict, driver_options.get("driver_type"))
+
     driver = driver_class.from_config_create_driver(
         config,
         job_id,

@@ -5,10 +5,9 @@ QUEENS, to build probabilistic models. A standard use-case are inverse
 problems.
 """
 
-from pathlib import Path
-
 from pqueens.utils.get_experimental_data import get_experimental_data, write_experimental_data_to_db
 from pqueens.utils.import_utils import get_module_attribute
+from pqueens.utils.valid_options_utils import get_option
 
 
 def from_config_create_model(model_name, config):
@@ -36,20 +35,12 @@ def from_config_create_model(model_name, config):
 
     # get options
     model_options = config[model_name]
-
-    if model_options["subtype"] in model_dict.keys():
-        model_class = model_dict[model_options["subtype"]]
-    elif model_options.get("path_external_python_module"):
-        module_path = model_options["path_external_python_module"]
-        module_attribute = model_options["subtype"]
+    if model_options.get("external_python_module"):
+        module_path = model_options["external_python_module"]
+        module_attribute = model_options.get("subtype")
         model_class = get_module_attribute(module_path, module_attribute)
     else:
-        raise ModuleNotFoundError(
-            f"The module '{model_options['subtype']}' could not be found!\n"
-            f"Valid internal modules are: {model_dict.keys()}.\n"
-            "If you provided an external Python module, make sure you specified \n"
-            "the correct class name under the 'type' keyword!"
-        )
+        model_class = get_option(model_dict, model_options.get("subtype"))
 
     forward_model_name = model_options.get("forward_model")
     forward_model = from_config_create_model(forward_model_name, config)

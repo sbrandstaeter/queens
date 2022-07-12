@@ -65,7 +65,55 @@ def test_rpvi_iterator_park91a_hifi(
     inputdir,
     tmpdir,
     create_experimental_data_park91a_hifi_on_grid,
-    likelihood_model_type,
+):
+    """Integration test for the rpvi iterator.
+
+    Based on the park91a_hifi function.
+    """
+    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
+    experimental_data_path = tmpdir
+    plot_dir = tmpdir
+    dir_dict = {
+        "experimental_data_path": experimental_data_path,
+        "plot_dir": plot_dir,
+        "gradient_method": "finite_difference",
+        "my_function": "park91a_hifi_on_grid",
+        "likelihood_model_type": "gaussian",
+        "path_external_python_module": "",
+    }
+    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
+    injector.inject(dir_dict, template, input_file)
+
+    # run the main routine of QUEENS
+    arguments = [
+        "--input=" + input_file,
+        "--output=" + str(tmpdir),
+    ]
+
+    # This seed is fixed so that the variational distribution is initialized so that the park
+    # function can be evaluated correctly
+    np.random.seed(211)
+    arguments = ['--input=' + input_file, '--output=' + str(tmpdir)]
+    # actual main call
+    main(arguments)
+
+    # get the results of the QUEENS run
+    result_file = os.path.join(tmpdir, "inverse_rpvi_park91a_hifi.pickle")
+    with open(result_file, "rb") as handle:
+        results = pickle.load(handle)
+
+    # Actual tests
+    assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
+    assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.1
+    assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
+    assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
+
+
+@pytest.mark.integration_tests
+def test_rpvi_iterator_park91a_hifi_external_module(
+    inputdir,
+    tmpdir,
+    create_experimental_data_park91a_hifi_on_grid,
     write_custom_likelihood_model,
     module_path,
 ):
@@ -81,7 +129,7 @@ def test_rpvi_iterator_park91a_hifi(
         "plot_dir": plot_dir,
         "gradient_method": "finite_difference",
         "my_function": "park91a_hifi_on_grid",
-        "likelihood_model_type": likelihood_model_type,
+        "likelihood_model_type": "MyLikelihood",
         "path_external_python_module": module_path,
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
@@ -127,6 +175,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         "gradient_method": "provided_gradient",
         "my_function": "park91a_hifi_on_grid_with_gradients",
         "likelihood_model_type": "gaussian",
+        "path_external_python_module": "",
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
@@ -160,12 +209,6 @@ def module_path(tmpdir):
     """Generate path for new likelihood module."""
     my_module_path = Path(tmpdir, "my_likelihood_module.py")
     return str(my_module_path)
-
-
-@pytest.fixture(params=['gaussian', 'MyLikelihood'])
-def likelihood_model_type(request):
-    """Parameterized fixture for likelihood modules."""
-    return request.param
 
 
 @pytest.fixture()
