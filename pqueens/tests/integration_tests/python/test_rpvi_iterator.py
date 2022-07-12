@@ -79,7 +79,7 @@ def test_rpvi_iterator_park91a_hifi(
         "gradient_method": "finite_difference",
         "my_function": "park91a_hifi_on_grid",
         "likelihood_model_type": "gaussian",
-        "path_external_python_module": "",
+        "external_python_module": "",
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
@@ -130,7 +130,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
         "gradient_method": "finite_difference",
         "my_function": "park91a_hifi_on_grid",
         "likelihood_model_type": "MyLikelihood",
-        "path_external_python_module": module_path,
+        "external_python_module": module_path,
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
@@ -175,7 +175,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         "gradient_method": "provided_gradient",
         "my_function": "park91a_hifi_on_grid_with_gradients",
         "likelihood_model_type": "gaussian",
-        "path_external_python_module": "",
+        "external_python_module": "",
     }
     input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)

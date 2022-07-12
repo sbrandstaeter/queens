@@ -12,8 +12,6 @@ essentially then evaluate a regression model themselves.
 The alternatives are the evaluation of simple python function using the
 direct_python_interface or running an external software through the job_interface.
 """
-from pqueens.utils.import_utils import get_module_attribute
-from pqueens.utils.valid_options_utils import get_option
 
 
 def from_config_create_interface(interface_name, config):
@@ -31,6 +29,8 @@ def from_config_create_interface(interface_name, config):
     from pqueens.interfaces.bmfmc_interface import BmfmcInterface
     from pqueens.interfaces.direct_python_interface import DirectPythonInterface
     from pqueens.interfaces.job_interface import JobInterface
+    from pqueens.utils.import_utils import get_module_attribute
+    from pqueens.utils.valid_options_utils import get_option
 
     interface_dict = {
         'job_interface': JobInterface,

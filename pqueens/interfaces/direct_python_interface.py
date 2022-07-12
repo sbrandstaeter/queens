@@ -59,17 +59,17 @@ class DirectPythonInterface(Interface):
 
         num_workers = interface_options.get('num_workers', 1)
         function_name = interface_options.get("function_name", None)
-        external_python_module = interface_options.get("external_python_module", None)
+        external_python_function = interface_options.get("external_python_function", None)
 
         if function_name is None:
             raise ValueError(f"Keyword 'function_name' is missing in interface '{interface_name}'")
 
-        if external_python_module is None:
+        if external_python_function is None:
             # Try to load existing simulator functions
             my_function = example_simulator_function_by_name(function_name)
         else:
             # Try to load external simulator functions
-            my_function = get_module_attribute(external_python_module, function_name)
+            my_function = get_module_attribute(external_python_function, function_name)
 
         pool = create_pool(num_workers)
 
