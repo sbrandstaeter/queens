@@ -74,13 +74,13 @@ def get_experimental_data(
     return y_obs_vec, experimental_coordinates, time_vec, experimental_data_dict
 
 
-def write_experimental_data_to_db(experimental_data_dict, experiment_name, db, batch='1'):
+def write_experimental_data_to_db(experimental_data_dict, experiment_name, db, batch=1):
     """Write experimental data to database.
 
     Args:
         experimental_data_dict (dict): Dictionary containing the experimental data
         experiment_name (str): Name of the current experiment in QUEENS
         db (obj): Database object
-        batch (string): batch the data belongs to
+        batch (int): batch the data belongs to
     """
     db.save(experimental_data_dict, experiment_name, 'experimental_data', batch)
