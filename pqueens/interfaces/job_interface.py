@@ -71,6 +71,8 @@ class JobInterface(Interface):
             time_for_data_copy (float): Time (s) to wait such that copying process of simulation
                                         input file can finish and we do not overload the network
             driver_name (str):          Name of the associated driver for the current interface
+            _internal_batch_state (int): Helper attribute to compare batch_number with the internal
+                                         batch state to detect changes in the batch number.
         """
         super().__init__(interface_name)
         self.name = interface_name
@@ -88,6 +90,7 @@ class JobInterface(Interface):
         self.direct_scheduling = direct_scheduling
         self.time_for_data_copy = time_for_data_copy
         self.driver_name = driver_name
+        self._internal_batch_state = 0
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config, driver_name):
@@ -793,7 +796,12 @@ class JobInterface(Interface):
                         if len(current_job) == 1:
                             current_job = current_job[0]
                         elif not current_job:
-                            job_num = jobid - (self.batch_number - 1) * samples.shape[0]
+                            if self._internal_batch_state != self.batch_number:
+                                self._internal_batch_state = self.batch_number
+                                counter = 0
+
+                            counter += 1
+                            job_num = counter
                             sample_dict = self.parameters.sample_as_dict(samples[job_num - 1])
                             current_job = self.create_new_job(sample_dict, resource_name, jobid)
                         else:
@@ -803,7 +811,7 @@ class JobInterface(Interface):
                         self.save_job(current_job)
 
                         # Submit the job to the appropriate resource
-                        # this is the actual job subission
+                        # this is the actual job submission
                         this.restart_flag = False
                         process_id = self.attempt_dispatch(resource, current_job)
 
@@ -851,7 +859,13 @@ class JobInterface(Interface):
 
         if not current_job:
             # job not in database -> load result from output folder
-            job_num = jobid - (self.batch_number - 1) * samples.shape[0]
+            if self._internal_batch_state != self.batch_number:
+                self._internal_batch_state = self.batch_number
+                counter = 0
+
+            counter += 1
+            job_num = counter
+
             sample_dict = self.parameters.sample_as_dict(samples[job_num - 1])
             current_job = self.create_new_job(sample_dict, resource_name, jobid)
 
