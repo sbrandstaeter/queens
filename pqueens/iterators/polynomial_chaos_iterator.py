@@ -11,6 +11,8 @@ from chaospy.distributions.sampler.generator import (
 )
 from chaospy.quadrature.frontend import SHORT_NAME_TABLE as projection_node_location_rules
 
+import pqueens.parameters.parameters as parameters_module
+from pqueens import distributions
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import write_results
@@ -141,8 +143,8 @@ class PolynomialChaosIterator(Iterator):
                 f"{polynomial_order}"
             )
 
-        parameters_dict = model.get_parameter()
-        distribution = from_config_create_chaospy_joint_distribution(parameters_dict)
+        parameters = parameters_module.parameters
+        distribution = from_config_create_chaospy_joint_distribution(parameters)
         return cls(
             model=model,
             seed=seed,
@@ -159,22 +161,6 @@ class PolynomialChaosIterator(Iterator):
     def initialize_run(self):
         """Initiliaze run."""
         np.random.seed(self.seed)
-
-    def eval_model(self):
-        """Evaluate the model."""
-        return self.model.evaluate()['mean']
-
-    def evaluate_forward_model(self, samples):
-        """Evaluate forward model from samples.
-
-        Args:
-            samples (np.ndarray): Row-wise samples to evaluated the model
-
-        Returns:
-            (np.ndarray): model evaluations
-        """
-        self.model.update_model_from_sample_batch(samples)
-        return self.eval_model()
 
     def core_run(self):
         """Core run for the polynomial chaos iterator."""
@@ -215,7 +201,7 @@ class PolynomialChaosIterator(Iterator):
                 f" lead to {num_collocation_points} collocation points"
             )
         _logger.info(f"Number of collocation points: {num_collocation_points}")
-        evaluations = self.evaluate_forward_model(nodes.T)
+        evaluations = self.model.evaluate(nodes.T)['mean']
 
         # Generate the polynomial chaos expansion based on the distribution
         expansion = cp.generate_expansion(self.polynomial_order, self.distribution)
@@ -238,7 +224,7 @@ class PolynomialChaosIterator(Iterator):
             self.num_collocation_points, rule=self.sampling_rule
         )
 
-        evaluations = self.evaluate_forward_model(collocation_points.T)
+        evaluations = self.model.evaluate(collocation_points.T)['mean']
 
         # Generate the polynomial chaos expansion based on the distribution
         expansion = cp.generate_expansion(self.polynomial_order, self.distribution)
@@ -258,67 +244,54 @@ class PolynomialChaosIterator(Iterator):
                 )
 
 
-def from_config_create_chaospy_joint_distribution(parameters_dict):
+def from_config_create_chaospy_joint_distribution(parameters):
     """Get random variables in chaospy distribution format.
 
     Args:
-        parameters_dict (dict): Dict with the random variables
+        parameters (obj): Parameters object
 
     Returns:
         chaospy distribution
     """
-    # get random Variables
-    random_variables = parameters_dict.get('random_variables', None)
-
-    variables = []
+    cp_distribution_list = []
 
     # loop over rvs and create joint
-    for _, rv in random_variables.items():
-        rv_size = rv['size']
-        if rv_size != 1:
+    for parameter in parameters.to_list():
+        if parameter.dimension != 1:
             raise ValueError("Multidimensional random variables are not supported yet.")
 
-        variable = from_config_create_chaospy_distribution(rv)
+        cp_distribution_list.append(from_config_create_chaospy_distribution(parameter.distribution))
 
-        variables.append(variable)
-
-    # Pass the variables list as arguments
-    return cp.J(*variables)
+    # Pass the distribution list as arguments
+    return cp.J(*cp_distribution_list)
 
 
-def from_config_create_chaospy_distribution(distribution_options):
-    """Create chaospy distribution object from parameter dictionary.
+def from_config_create_chaospy_distribution(distribution):
+    """Create chaospy distribution object from queens distribution.
 
     Args:
-        distribution_options (dict): Dictionary containing parameters
-                                 defining the distribution
+        distribution (obj): Queens distribution object
 
     Returns:
         distribution:     Distribution object in chaospy format
     """
-    distribution_type = distribution_options.get('distribution', None)
-    if distribution_type is None:
-        distribution = None
-    else:
-        if distribution_type == 'normal':
-            distribution = cp.Normal(
-                mu=distribution_options["mean"], sigma=distribution_options["covariance"]
-            )
-        elif distribution_type == 'uniform':
-            distribution = cp.Uniform(
-                lower=distribution_options["lower_bound"],
-                upper=distribution_options["upper_bound"],
-            )
-        elif distribution_type == 'lognormal':
-            distribution = cp.LogNormal(
-                mu=distribution_options["normal_mean"],
-                sigma=distribution_options["normal_covariance"],
-            )
-        elif distribution_type == 'beta':
-            distribution = cp.Beta(
-                alpha=distribution_options["a"],
-                beta=distribution_options["b"],
-                lower=distribution_options["lower_bound"],
-                upper=distribution_options["upper_bound"],
-            )
+    if isinstance(distribution, distributions.normal.NormalDistribution):
+        distribution = cp.Normal(mu=distribution.mean, sigma=distribution.covariance ** (1 / 2))
+    elif isinstance(distribution, distributions.uniform.UniformDistribution):
+        distribution = cp.Uniform(
+            lower=distribution.lower_bound,
+            upper=distribution.upper_bound,
+        )
+    elif isinstance(distribution, distributions.lognormal.LogNormalDistribution):
+        distribution = cp.LogNormal(
+            mu=distribution.normal_mean,
+            sigma=distribution.normal_covariance ** (1 / 2),
+        )
+    elif isinstance(distribution, distributions.beta.BetaDistribution):
+        distribution = cp.Beta(
+            alpha=distribution.a,
+            beta=distribution.b,
+            lower=distribution.lower_bound,
+            upper=distribution.upper_bound,
+        )
     return distribution

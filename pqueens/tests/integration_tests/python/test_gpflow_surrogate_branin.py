@@ -21,7 +21,7 @@ def test_gpflow_surrogate_branin(inputdir, tmpdir, expected_mean, expected_var):
         results = pickle.load(handle)
 
     np.testing.assert_array_almost_equal(
-        results["raw_output_data"]["mean"], expected_mean, decimal=4
+        results["raw_output_data"]["mean"], expected_mean, decimal=3
     )
     np.testing.assert_array_almost_equal(
         results["raw_output_data"]["variance"], expected_var, decimal=2

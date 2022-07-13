@@ -29,7 +29,7 @@ def test_geometry_from_dat(
     config = get_options(arguments)
 
     # create pre-processing module form config
-    preprocessor_obj = from_config_create_external_geometry(config)
+    preprocessor_obj = from_config_create_external_geometry(config, 'pre_processing')
     preprocessor_obj.main_run()
 
     # Check if we got the expected results

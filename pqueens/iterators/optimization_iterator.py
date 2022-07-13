@@ -78,6 +78,8 @@ class OptimizationIterator(Iterator):
         output_column (int): species the columns that belong to the y_obs in the experimental
                              data set (currently only scalar output possible but could be
                              extended to vector-valued output)
+        precalculated_positions (dict): Dictionary containing precalculated positions and
+                                        corresponding model responses
 
     Returns:
         OptimizationIterator (obj): Instance of the OptimizationIterator
@@ -130,6 +132,7 @@ class OptimizationIterator(Iterator):
         self.output_label = output_label
         self.axis_scaling_experimental = axis_scaling_experimental
         self.output_scaling_experimental = output_scaling_experimental
+        self.precalculated_positions = {'position': [], 'output': []}
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -143,7 +146,6 @@ class OptimizationIterator(Iterator):
         Returns:
             iterator: OptimizationIterator object
         """
-
         print(
             "Optimization Iterator for experiment: {0}".format(
                 config.get('global_settings').get('experiment_name')
@@ -220,14 +222,8 @@ class OptimizationIterator(Iterator):
             verbose_output=verbose_output,
         )
 
-    def eval_model(self):
-        """Evaluate model at current point."""
-
-        result_dict = self.model.evaluate()
-        return result_dict
-
     def objective_function(self, x_vec, coordinates=None):
-        """Evaluate objective function at x_vec (in this sense the parameters)
+        """Evaluate objective function at x_vec (in this sense the parameters).
 
         Args:
             x_vec (np.array): input vector for model/objective function. The variable x_vec
@@ -244,37 +240,15 @@ class OptimizationIterator(Iterator):
         Returns:
             f_value (float): Response of objective function or model
         """
-        if self.eval_jacobian:
-            x_batch, _ = get_positions(
-                x_vec, method=self.jac_method, rel_step=self.jac_rel_step, bounds=self.bounds
-            )
-            precalculated = self.model.check_for_precalculated_response_of_sample_batch(x_batch)
-        else:
-            x_batch = np.atleast_2d(x_vec)
-            precalculated = False
+        f_value = self.eval_model(x_vec)
 
-        # try to recover if response was not found to be precalculated
-        if not precalculated:
-            self.model.update_model_from_sample_batch(x_batch)
-            self.eval_model()
-
-        if np.any(coordinates) is not None:
-            # take the last model response vector for the iteration
-            f_value = np.atleast_1d(np.squeeze(self.model.response['mean'][-1, :])).flatten()
-        else:
-            # model response should now correspond to objective function evaluated at positions
-            f_batch = np.atleast_1d(np.squeeze(self.model.response['mean']))
-            # first entry corresponds to f(x_vec)
-            f_value = f_batch[0]
-
-        parameter_list = self.model.uncertain_parameters['random_variables'].keys()
+        parameter_list = self.parameters.parameters_keys
         print(f"The intermediate, iterated parameters " f"{*parameter_list, } are:\n\t{x_vec}")
 
         return f_value
 
     def jacobian(self, x0):
         """Evaluate Jacobian of objective function at x0."""
-
         positions, delta_positions = get_positions(
             x0, method=self.jac_method, rel_step=self.jac_rel_step, bounds=self.bounds
         )
@@ -282,18 +256,11 @@ class OptimizationIterator(Iterator):
             x0, method=self.jac_method, rel_step=self.jac_rel_step, bounds=self.bounds
         )
 
-        precalculated = self.model.check_for_precalculated_response_of_sample_batch(positions)
-
-        # try to recover if response was not found to be precalculated
-        if not precalculated:
-            self.model.update_model_from_sample_batch(positions)
-            self.eval_model()
-
         # model response should now correspond to objective function evaluated at positions
-        f_batch = self.model.response['mean']
+        f_batch = self.eval_model(positions)
 
-        f0 = f_batch[0]  # first entry corresponds to f(x0)
-        f_perturbed = np.delete(f_batch, 0, 0)  # delete the first entry
+        f0 = f_batch[0].reshape(-1)  # first entry corresponds to f(x0)
+        f_perturbed = f_batch[1:].reshape(-1, f0.size)
 
         J = fd_jacobian(f0, f_perturbed, delta_positions, use_one_sided, method=self.jac_method)
         # sanity checks:
@@ -316,7 +283,6 @@ class OptimizationIterator(Iterator):
 
     def core_run(self):
         """Core run of Optimization iterator."""
-
         print('Welcome to Optimization core run.')
         start = time.time()
         # nonlinear least squares optimization with Levenberg-Marquardt (without Jacobian here!)
@@ -406,9 +372,8 @@ class OptimizationIterator(Iterator):
 
     def post_run(self):
         """Analyze the resulting optimum."""
-
         if self.algorithm == 'LM':
-            parameter_list = self.model.uncertain_parameters['random_variables'].keys()
+            parameter_list = self.parameters.parameters_keys()
             print(
                 f"The optimum of the parameters " f"{*parameter_list, } is:\n\t{self.solution[0]}"
             )
@@ -429,7 +394,6 @@ class OptimizationIterator(Iterator):
     # -------------- private helper functions --------------------------
     def _get_experimental_data_and_write_to_db(self):
         """Loop over post files in given output directory."""
-
         if self.experimental_data_path_list is not None:
             # iteratively load all csv files in specified directory
             files_of_interest_list = []
@@ -503,3 +467,39 @@ class OptimizationIterator(Iterator):
                 f'data output is not a valid choice! Please '
                 f'choose a valid scaling! Abort...'
             )
+
+    def eval_model(self, positions):
+        """Evaluate model at defined positions.
+
+        Args:
+            positions (np.ndarray): Positions at which the model is evaluated
+
+        Returns:
+            f_batch (np.ndarray): Model response
+        """
+        positions = positions.reshape(-1, self.parameters.num_parameters)
+        f_batch = []
+        for position in positions:
+            precalculated_output = self.check_precalculated(position)
+            if precalculated_output is not None:
+                f_batch.append(precalculated_output)
+            else:
+                f_batch.append(self.model.evaluate(position.reshape(1, -1))['mean'].reshape(-1))
+                self.precalculated_positions['position'].append(position)
+                self.precalculated_positions['output'].append(f_batch[-1])
+        f_batch = np.array(f_batch).squeeze()
+        return f_batch
+
+    def check_precalculated(self, position):
+        """Check if the model was already evaluated at defined position.
+
+        Args:
+            position (np.ndarray): Position at which the model should be evaluated
+
+        Returns:
+            (np.ndarray): Precalculated model response or None
+        """
+        for i, precalculated_position in enumerate(self.precalculated_positions['position']):
+            if np.equal(position, precalculated_position).all():
+                return self.precalculated_positions['output'][i]
+        return None

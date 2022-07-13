@@ -7,7 +7,6 @@ import numpy as np
 
 import pqueens.database.database as DB_module
 import pqueens.visualization.variational_inference_visualization as vis
-from pqueens.distributions import from_config_create_distribution
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils import variational_inference_utils
@@ -46,7 +45,7 @@ class VariationalInferenceIterator(Iterator):
                                           the variational density
         random_seed (int): Seed for the random number generators
         max_feval (int): Maximum number of simulation runs for this analysis
-        num_variables (int): Actual number of model input variables that should be calibrated
+        num_parameters (int): Actual number of model input parameters that should be calibrated
         natural_gradient_bool (boolean): True if natural gradient should be used
         fim_dampening_bool (boolean): True if FIM dampening should be used
         fim_decay_start_iter (float): Iteration at which the FIM dampening is started
@@ -58,9 +57,6 @@ class VariationalInferenceIterator(Iterator):
         variational_distribution_obj (VariationalDistribution): Variational distribution object
         variational_params (np.array): Rowvector containing the variatonal parameters
         elbo_list (list): ELBO value of every iteration
-        prior_obj_list (list): List containing objects of prior models for the random input. The
-                               list is ordered in the same way as the random input definition in
-                               the input file
         parameter_list (list): List of parameters from previous iterations for the ISMC gradient
         variational_params_list (list): List of parameters from first to last iteration
         model_eval_iteration_period (int): If the iteration number is a multiple of this number
@@ -84,7 +80,7 @@ class VariationalInferenceIterator(Iterator):
         variational_transformation,
         random_seed,
         max_feval,
-        num_variables,
+        num_parameters,
         natural_gradient_bool,
         fim_dampening_bool,
         fim_decay_start_iter,
@@ -112,7 +108,7 @@ class VariationalInferenceIterator(Iterator):
                                               the variational density
             random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
-            num_variables (int): Actual number of model input variables that should be calibrated
+            num_parameters (int): Actual number of model input parameters that should be calibrated
             natural_gradient_bool (boolean): True if natural gradient should be used
             fim_dampening_bool (boolean): True if FIM dampening should be used
             fim_decay_start_iter (float): Iteration at which the FIM dampening is started
@@ -141,7 +137,7 @@ class VariationalInferenceIterator(Iterator):
         self.fim_dampening_bool = fim_dampening_bool
         self.random_seed = random_seed
         self.max_feval = max_feval
-        self.num_variables = num_variables
+        self.num_parameters = num_parameters
         self.variational_family = variational_family
         self.stochastic_optimizer = stochastic_optimizer
         self.variational_distribution_obj = variational_distribution_obj
@@ -151,7 +147,6 @@ class VariationalInferenceIterator(Iterator):
         self.variational_params_list = []
         self.elbo_list = []
         self.n_sims_list = []
-        self.prior_obj_list = []
         self.nan_in_gradient_counter = 0
 
     @staticmethod
@@ -179,7 +174,7 @@ class VariationalInferenceIterator(Iterator):
                                               the variational density
             random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
-            num_variables (int): Actual number of model input variables that should be calibrated
+            num_parameters (int): Actual number of model input parameters that should be calibrated
             natural_gradient_bool (boolean): True if natural gradient should be used
             fim_dampening_bool (boolean): True if FIM dampening should be used
             fim_decay_start_iter (float): Iteration at which the FIM dampening is started
@@ -204,8 +199,8 @@ class VariationalInferenceIterator(Iterator):
 
         # set-up of the variational distribution
         variational_distribution_description = method_options.get("variational_distribution")
-        num_variables = len(model.variables[0].variables)
-        variational_distribution_description.update({"dimension": num_variables})
+        num_parameters = model.parameters.num_parameters
+        variational_distribution_description.update({"dimension": num_parameters})
         variational_distribution_obj = variational_inference_utils.create_variational_distribution(
             variational_distribution_description
         )
@@ -214,9 +209,6 @@ class VariationalInferenceIterator(Iterator):
         variational_transformation = method_options.get("variational_transformation")
         random_seed = method_options.get("random_seed")
         max_feval = method_options.get("max_feval")
-        variational_params_initialization_approach = method_options.get(
-            "variational_parameter_initialization", None
-        )
 
         vis.from_config_create(config)
 
@@ -245,7 +237,7 @@ class VariationalInferenceIterator(Iterator):
             variational_transformation,
             random_seed,
             max_feval,
-            num_variables,
+            num_parameters,
             natural_gradient_bool,
             fim_dampening_bool,
             fim_decay_start_iter,
@@ -296,7 +288,10 @@ class VariationalInferenceIterator(Iterator):
     def initialize_run(self):
         """Initialize the prior model and variational parameters."""
         _logger.info("Initialize Optimization run.")
-        self._initialize_prior_model()
+        if self.parameters.random_field_flag:
+            raise NotImplementedError(
+                'Variational inference for random fields is not yet implemented! Abort...'
+            )
         self._initialize_variational_params()
 
         # set the gradient according to input
@@ -315,25 +310,6 @@ class VariationalInferenceIterator(Iterator):
                 self.global_settings["experiment_name"],
             )
         vis.vi_visualization_instance.save_plots()
-
-    def _initialize_prior_model(self):
-        """Initialize the prior model."""
-        # Read design of prior
-        input_dict = self.model.get_parameter()
-
-        # get random variables
-        random_variables = input_dict.get('random_variables', None)
-        # get random fields
-        random_fields = input_dict.get('random_fields', None)
-
-        if random_fields:
-            raise NotImplementedError(
-                'Variational inference for random fields is not yet implemented! Abort...'
-            )
-        # for each rv, evaluate prior all corresponding dims in current sample batch (column of
-        # mat corresponds to all realization for this variable)
-        for _, rv_options in enumerate(random_variables.values()):
-            self.prior_obj_list.append(from_config_create_distribution(rv_options))
 
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations."""
@@ -375,9 +351,7 @@ class VariationalInferenceIterator(Iterator):
             )
         elif self.variational_params_initialization_approach == "prior":
             if self.variational_family == "normal":
-                input_dict = self.model.get_parameter()
-                random_variables = input_dict.get('random_variables', None)
-                mu, cov = self._initialize_variational_params_from_prior(random_variables)
+                mu, cov = self._initialize_variational_params_from_prior()
                 var_params = self.variational_distribution_obj.construct_variational_params(mu, cov)
                 self.variational_params = var_params
             else:
@@ -392,41 +366,20 @@ class VariationalInferenceIterator(Iterator):
                 f"Valid options are {valid_initialization_types}"
             )
 
-    def _initialize_variational_params_from_prior(self, random_variables):
+    def _initialize_variational_params_from_prior(self):
         """Initialize the variational parameters based on the prior.
 
-        The variational distribution might be transformed in a
-        second step such that the actual variational distribution is of a
+        The variational distribution might be transformed in a second
+        step such that the actual variational distribution is of a
         different family. Only is used for normal distributions.
-
-        Args:
-            random_variables (dict): Dictionary containing the prior probabilistic description of
-            the input variables
         """
         # Get the first and second moments of the prior distributions
         mean_list_prior = []
         std_list_prior = []
-        if random_variables:
-            for params in random_variables.values():
-                if params["distribution"] == "normal":
-                    mean_list_prior.append(params['mean'])
-                    std_list_prior.append(params['covariance'])
-                elif params["distribution"] == "lognormal":
-                    mean_list_prior.append(
-                        np.exp(params['normal_mean'] + (params['normal_covariance'] ** 2) / 2)
-                    )
-                    std_list_prior.append(mean_list_prior[-1] * np.sqrt(np.exp(params[1] ** 2) - 1))
-                elif params["distribution"] == "uniform":
-                    mean_list_prior.append((params['upper_bound'] - params['lower_bound']) / 2)
-                    std_list_prior.append(
-                        (params['upper_bound'] - params['lower_bound']) / np.sqrt(12)
-                    )
-                else:
-                    distr_type = params["distribution"]
-                    raise NotImplementedError(
-                        f"Your prior type {distr_type} is not supported in"
-                        f" the variational approach! Abort..."
-                    )
+        if self.parameters.num_parameters > 0:
+            for params in self.parameters.to_list():
+                mean_list_prior.append(params.distribution.mean)
+                std_list_prior.append(params.distribution.covariance.squeeze())
 
         # Set the mean and std-deviation params of the variational distr such that the
         # transformed distribution would match the moments of the prior

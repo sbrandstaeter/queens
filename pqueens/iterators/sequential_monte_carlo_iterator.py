@@ -92,7 +92,7 @@ class SequentialMonteCarloIterator(Iterator):
 
         # check agreement of dimensions of proposal distribution and
         # parameter space
-        self.num_variables = self.model.variables[0].get_number_of_active_variables()
+        self.num_variables = self.parameters.num_parameters
 
         if self.num_variables is not self.mcmc_kernel.proposal_distribution.dimension:
             raise ValueError(
@@ -136,7 +136,6 @@ class SequentialMonteCarloIterator(Iterator):
         Returns:
             iterator: SequentialMonteCarloIterator object
         """
-
         print(
             "Sequential Monte Carlo Iterator for experiment: {0}".format(
                 config.get('global_settings').get('experiment_name')
@@ -191,12 +190,6 @@ class SequentialMonteCarloIterator(Iterator):
             temper_type=temper_type,
         )
 
-    def eval_model(self):
-        """Evaluate model at current sample batch."""
-
-        result_dict = self.model.evaluate()
-        return result_dict
-
     def eval_log_prior(self, sample_batch):
         """Evaluate natural logarithm of prior at sample.
 
@@ -208,21 +201,7 @@ class SequentialMonteCarloIterator(Iterator):
 
         Note: we assume a multiplicative split of prior pdf
         """
-        log_prior_lst = []
-
-        for sample in sample_batch:
-            log_prior = 0.0
-            for i, (_, variable) in enumerate(self.model.variables[0].variables.items()):
-                log_prior += variable['distribution'].logpdf(sample[i])
-            log_prior_lst.append(log_prior)
-
-        log_prior_array = np.atleast_2d(np.array(log_prior_lst))
-
-        # catch problem with one dim arrays and shape
-        if log_prior_array.shape[0] == 1:
-            log_prior_array = log_prior_array.T
-
-        return log_prior_array
+        return self.parameters.joint_logpdf(sample_batch)
 
     def eval_log_likelihood(self, sample_batch):
         """Evaluate natural logarithm of likelihood at sample batch.
@@ -233,30 +212,18 @@ class SequentialMonteCarloIterator(Iterator):
         Returns:
             None
         """
-        self.model.update_model_from_sample_batch(np.atleast_2d(sample_batch))
-        log_likelihood = self.eval_model()
-
+        log_likelihood = self.model.evaluate(sample_batch)
         return log_likelihood
 
     def initialize_run(self):
         """Draw initial sample."""
-
         print("Initialize run.")
         np.random.seed(self.seed)
 
         # draw initial particles from prior distribution
-        for i in range(self.num_particles):
-
-            self.particles[i] = np.array(
-                [
-                    variable['distribution'].draw(num_draws=1)
-                    for model_variable in self.model.variables
-                    for variable_name, variable in model_variable.variables.items()
-                ]
-            ).T
+        self.particles = self.parameters.draw_samples(self.num_particles)
         self.log_likelihood = self.eval_log_likelihood(self.particles)
-
-        self.log_prior = self.eval_log_prior(self.particles)
+        self.log_prior = self.eval_log_prior(self.particles).reshape(-1, 1)
         self.log_posterior = self.log_likelihood + self.log_prior
         # initialize importance weights
         self.weights = np.ones((self.num_particles, 1))
@@ -354,7 +321,6 @@ class SequentialMonteCarloIterator(Iterator):
 
     def update_gamma(self, gamma_new):
         """Update the current gamma value and store old value."""
-
         self.gamma_cur = gamma_new
         self.gammas.append(self.gamma_cur)
 
@@ -370,7 +336,6 @@ class SequentialMonteCarloIterator(Iterator):
         eliminating particles with small weights and duplicating
         particles with large weights (see 2.2.1 in [2]).
         """
-
         # draw from multinomial distribution to decide
         # the frequency of individual particles
         particle_freq = np.random.multinomial(self.num_particles, np.squeeze(self.weights))
@@ -390,7 +355,6 @@ class SequentialMonteCarloIterator(Iterator):
 
     def core_run(self):
         """Core run of Sequential Monte Carlo iterator."""
-
         print('Welcome to SMC core run.')
         # counter
         step = 0
@@ -455,7 +419,6 @@ class SequentialMonteCarloIterator(Iterator):
 
     def post_run(self):
         """Analyze the resulting importance sample."""
-
         normalized_weights = self.weights / np.sum(self.weights)
 
         particles_resampled, _, _, _ = self.resample()
@@ -509,12 +472,10 @@ class SequentialMonteCarloIterator(Iterator):
         :param step: (int) current step index
         :return: None
         """
-
         particles_resampled, _, _, _ = self.resample()
         data_dict = {
             variable_name: particles_resampled[:, i]
-            for model_variable in self.model.variables
-            for i, (variable_name, variable) in enumerate(model_variable.variables.items())
+            for i, variable_name in enumerate(self.parameters.parameters_keys)
         }
         inference_data = az.convert_to_inference_data(data_dict)
         az.plot_trace(inference_data)

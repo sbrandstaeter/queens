@@ -4,6 +4,7 @@ import copy
 import fileinput
 import os
 import re
+import shutil
 
 import numpy as np
 
@@ -16,7 +17,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
     Attributes:
         path_to_dat_file (str): Path to dat file from which the external_geometry_obj should be
-                                extracted
+                                    extracted
+        path_to_preprocessed_dat_file (str): Path to preprocessed dat file with added
+                                             placeholders
+        coords_dict (str): Dictionary containing coordinates of the discretized random
+                                       fields and corresponding placeholder names.
         list_geometric_sets (lst): List of geometric sets that should be extracted
         current_dat_section (str): String that encodes the current section in the dat file as
                                    file is read line-wise
@@ -51,9 +56,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                                      on. Element topology means here the mapping of nodes,
                                      material and element number.
         original_materials_in_dat (lst): List of original material numbers in dat template file
-        starting_num_new_materials (int): Staring number for new material definitions
-        tmpdir (str): Path to temporary directory of QUEENS
-
+        random_fields (lst): List of random field descriptions
 
     Returns:
         geometry_obj (obj): Instance of BaciDatExternalGeometry class
@@ -99,13 +102,16 @@ class BaciDatExternalGeometry(ExternalGeometry):
         surface_topology,
         volume_topology,
         node_coordinates,
-        tmpdir,
+        path_to_preprocessed_dat_file,
+        random_fields,
     ):
         """Initialise BACI external geometry.
 
         Args:
             path_to_dat_file (str): Path to dat file from which the external_geometry_obj should be
                                     extracted
+            path_to_preprocessed_dat_file (str): Path to preprocessed dat file with added
+                                                 placeholders
             list_geometric_sets (list): List of geometric sets that should be extracted
             list_associated_material_numbers (lst): List of associated material numbers wrt to the
                                                     geometric sets of interest
@@ -120,12 +126,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
                                    category
             node_coordinates (lst): List of dictionares per random field of coordinates of mesh
                                     nodes
-            tmpdir (str): Path to temporary directory of QUEENS
+            random_fields (lst): List of random field descriptions
         """
         super().__init__()
         # settings / inputs
         self.path_to_dat_file = path_to_dat_file
-        self.tmpdir = tmpdir
+        self.path_to_preprocessed_dat_file = path_to_preprocessed_dat_file
+        self.coords_dict = {}
         self.list_geometric_sets = list_geometric_sets
         self.current_dat_section = None
         self.desired_dat_sections = {}
@@ -152,9 +159,10 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self.random_transport_dirich_flag = False
         self.random_neumann_flag = False
         self.nodes_written = False
+        self.random_fields = random_fields
 
     @classmethod
-    def from_config_create_external_geometry(cls, config):
+    def from_config_create_external_geometry(cls, config, name):
         """Create BaciDatExternalGeometry object from problem description.
 
         Args:
@@ -163,21 +171,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
         Returns:
             geometric_obj (obj): Instance of BaciDatExternalGeometry
         """
-        interface_name = config['model'].get('interface')
-        if interface_name is None:
-            forward_model_name = config["model"]["forward_model"]
-            interface_name = config[forward_model_name].get("interface")
-        driver_name = config[interface_name].get('driver')
-        path_to_dat_file = config[driver_name]['driver_params']['input_template']
-        tmpdir = config["external_geometry"].get("queens_tmp_dir")
-        if tmpdir is None:
-            raise ValueError(
-                "Please provide a temporary directory"
-                " with via 'queens_tmp_dir' keyword in the input file!"
-            )
+        path_to_dat_file = config[name]["input_template"]
+        path_to_preprocessed_dat_file = config[name].get('input_template_preprocessed')
 
-        list_geometric_sets = config['external_geometry'].get('list_geometric_sets')
-        list_associated_material_numbers = config['external_geometry'].get(
+        list_geometric_sets = config[name].get('list_geometric_sets')
+        list_associated_material_numbers = config[name].get(
             'associated_material_numbers_geometric_set'
         )
 
@@ -190,6 +188,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
         volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
         node_coordinates = {"node_mesh": [], "coordinates": []}
 
+        random_fields = config[name].get("random_fields")
+
         return cls(
             path_to_dat_file,
             list_geometric_sets,
@@ -200,7 +200,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
             surface_topology,
             volume_topology,
             node_coordinates,
-            tmpdir,
+            path_to_preprocessed_dat_file,
+            random_fields,
         )
 
     # --------------- child methods that must be implemented --------------------------------------
@@ -563,32 +564,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self.node_coordinates['node_mesh'] = sorted(self.node_coordinates['node_mesh'])
 
     # -------------- write random fields to dat file ----------------------------------------------
-    def write_random_fields_to_dat(self, random_fields_lst, job_id):
-        """Write the realized random fields to the dat file.
-
-        Args:
-            random_fields_lst (lst): List of descriptions for involved random fields whose
-                                     field_realizations should be written to the dat-file
-            job_id (int): Number of the current job
-
-        Returns: specific name the random fields
-        """
-        # copy the dat file as a new file to a tmp-dir using the "mktemp" command
-        filename_path, file_extension = os.path.splitext(self.path_to_dat_file)
-        file_name = os.path.basename(filename_path)
-
-        new_dat_file_name = file_name + "_copy_" + str(job_id) + file_extension
-        new_dat_file_path = os.path.join(self.tmpdir, new_dat_file_name)
-
+    def write_random_fields_to_dat(self):
+        """Write placeholders for random fields to the dat file."""
         # copy the dat file and rename it for the current simulation
-        cmd_lst = ['/bin/cp -arfp', self.path_to_dat_file, new_dat_file_path]
-        command_string = ' '.join(cmd_lst)
-        run_subprocess(
-            command_string, additional_error_message="Copying of simulation input file failed"
-        )
+        shutil.copy2(self.path_to_dat_file, self.path_to_preprocessed_dat_file)
 
         # this has to be done outside of the file read as order is not known a priori
-        self._create_new_node_sets(random_fields_lst)
+        self._create_new_node_sets(self.random_fields)
 
         # potentially organize new material definitions
         self._organize_new_material_definitions()
@@ -598,7 +580,9 @@ class BaciDatExternalGeometry(ExternalGeometry):
         uid, gid = stat[4], stat[5]
 
         # random_fields_lst is here a list containing a dict description per random field
-        with fileinput.input(new_dat_file_path, inplace=True, backup='.bak') as my_dat:
+        with fileinput.input(
+            self.path_to_preprocessed_dat_file, inplace=True, backup='.bak'
+        ) as my_dat:
             # read dat file line-wise
             for line in my_dat:
                 old_line = line
@@ -611,7 +595,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                 else:
                     # check if in design description and if so extend it
                     if self.current_dat_section == 'DESIGN DESCRIPTION':
-                        self._write_update_design_description(old_line, random_fields_lst)
+                        self._write_update_design_description(old_line, self.random_fields)
 
                     # check if in sec. DNODE-NODE topology and if so adjust this section in case
                     # of random BCs; write this only once
@@ -628,7 +612,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                         self.current_dat_section == 'DESIGN POINT DIRICH CONDITIONS'
                         and not self.random_dirich_flag
                     ):
-                        self._write_design_point_dirichlet_conditions(random_fields_lst, line)
+                        self._write_design_point_dirichlet_conditions(self.random_fields, line)
                         self.random_dirich_flag = True
 
                     elif (
@@ -662,21 +646,18 @@ class BaciDatExternalGeometry(ExternalGeometry):
                         self.current_dat_section == 'MATERIALS'
                         and self.list_associated_material_numbers
                     ):
-                        self._write_elementwise_materials(line, random_fields_lst)
+                        self._write_elementwise_materials(line, self.random_fields)
 
                     # If end of dat file is reached but certain sections did not exist so far,
                     # write them now
                     elif self.current_dat_section == 'END':
-                        bcs_list = [
-                            random_field["external_definition"]["type"]
-                            for random_field in random_fields_lst
-                        ]
+                        bcs_list = [random_field["type"] for random_field in self.random_fields]
                         if ('dirichlet' in bcs_list) and (self.random_dirich_flag is False):
                             print(
                                 '----------------------------------------------DESIGN POINT '
                                 'DIRICH CONDITIONS\n'
                             )
-                            self._write_design_point_dirichlet_conditions(line)
+                            self._write_design_point_dirichlet_conditions(self.random_fields, line)
 
                         elif ('transport_dirichlet' in bcs_list) and (
                             self.random_transport_dirich_flag is False
@@ -701,8 +682,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     else:
                         print(old_line, end='')
 
-        os.chown(new_dat_file_path, uid, gid)
-        return new_dat_file_path
+        os.chown(self.path_to_preprocessed_dat_file, uid, gid)
 
     # ------ write random material fields -----------------------------------------------
     def _organize_new_material_definitions(self):
@@ -811,11 +791,14 @@ class BaciDatExternalGeometry(ExternalGeometry):
         # TODO see how to use the random field lst here but also only address first rf for now
         # TODO maybe directly separate the rf types as different attributes
         # get random fields of type material
-        material_fields = [
-            field
-            for field in random_field_lst
-            if (field["external_definition"]["type"] == "material")
+        material_fields = [field for field in random_field_lst if (field["type"] == "material")]
+
+        material_field_placeholders = [
+            material_fields[0]['name'] + '_' + str(i) for i in range(len(self.element_centers))
         ]
+        self._write_coords_to_dict(
+            material_fields[0]['name'], material_field_placeholders, np.array(self.element_centers)
+        )
 
         # check if the current material number is equal to base material and rewrite the base
         # materials as well as the potentially associated nested materials here
@@ -889,9 +872,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
         Args:
             line (str): Current line in the dat-file
             material_fields (lst): List of dictionaries containing descriptions of material fields
-
-        Returns:
-            None
         """
         # below we loop over numbers of nested materials
         for idx, material_num in enumerate(self.new_material_numbers[1]):
@@ -931,10 +911,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
         line_new = line
         if mat_param_name in line:
             string_to_replace = "{" + mat_param_name + "}"
-            line_new = line.replace(
-                string_to_replace,
-                str(material_fields[0]["values"][realization_index]),
-            )  # TODO key field realization prob wrong
+            line_new = line.replace(string_to_replace, f'{{{mat_param_name}_{realization_index}}}')
+            # TODO key field realization prob wrong
 
         return line_new
 
@@ -955,11 +933,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
             # get random fields that are either Dirichlet or Neumann BCs
             for random_field in random_fields_lst:
                 if (
-                    (random_field["external_definition"]["type"] == "dirichlet")
-                    or (random_field["external_definition"]["type"] == "neumann")
-                    or (random_field["external_definition"]["type"] == "transport_dirichlet")
+                    (random_field["type"] == "dirichlet")
+                    or (random_field["type"] == "neumann")
+                    or (random_field["type"] == "transport_dirichlet")
                 ):
-                    geometric_set_name = random_field["external_definition"]["external_instance"]
+                    geometric_set_name = random_field["external_instance"]
                     geo_set_name_type = geometric_set_name.split()[0]
 
                     my_topology = self._get_my_topology(geo_set_name_type)
@@ -993,14 +971,14 @@ class BaciDatExternalGeometry(ExternalGeometry):
     def _write_design_point_neumann_conditions(self):
         pass
 
-    def _write_design_point_dirichlet_conditions(self, realized_random_fields_lst, line):
+    def _write_design_point_dirichlet_conditions(self, random_field_lst, line):
         """Write Dirichlet design conditions.
 
         Convert the random fields, defined on the geometric set of interest, into design point
-        Dirichlet BCs such that each dpoint contains a discrete value of the random field.
+        Dirichlet BCs such that each dpoint contains a placeholder value of the random field.
 
         Args:
-            realized_random_fields_lst (lst): List containing the design description of the
+            random_field_lst (lst): List containing the design description of the
                                               involved random fields
             line (str): String for the current line in the dat-file that is read in
         """
@@ -1008,18 +986,15 @@ class BaciDatExternalGeometry(ExternalGeometry):
         for geometric_set in self.list_geometric_sets:
             fields_dirich_on_geo_set = [
                 field
-                for field in realized_random_fields_lst
-                if (field["external_definition"]["type"] == "dirichlet")
-                and (field["external_definition"]["external_instance"] == geometric_set)
+                for field in random_field_lst
+                if (field["type"] == "dirichlet") and (field["external_instance"] == geometric_set)
             ]
             if fields_dirich_on_geo_set:
 
                 old_num = BaciDatExternalGeometry._get_old_num_design_point_dirichlet_conditions(
                     line
                 )
-                self._overwrite_num_design_point_dirichlet_conditions(
-                    realized_random_fields_lst, old_num
-                )
+                self._overwrite_num_design_point_dirichlet_conditions(random_field_lst, old_num)
                 # select correct node set
                 node_set = [
                     node_set for node_set in self.new_nodes_lst if node_set["name"] == geometric_set
@@ -1033,9 +1008,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     fun_1,
                     fun_2,
                     fun_3,
-                ) = BaciDatExternalGeometry._assign_random_dirichlet_fields_per_geo_set(
-                    fields_dirich_on_geo_set
-                )
+                ) = self._assign_random_dirichlet_fields_per_geo_set(fields_dirich_on_geo_set)
 
                 # take care of remaining deterministic dofs on the geometric set
                 # we take the first field to get deterministic dofs
@@ -1046,7 +1019,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     fun_1,
                     fun_2,
                     fun_3,
-                ) = BaciDatExternalGeometry._assign_deterministic_dirichlet_fields_per_geo_set(
+                ) = self._assign_deterministic_dirichlet_fields_per_geo_set(
                     fields_dirich_on_geo_set,
                     realized_random_field_1,
                     realized_random_field_2,
@@ -1088,13 +1061,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         return old_num
 
-    def _overwrite_num_design_point_dirichlet_conditions(self, realized_random_fields_lst, old_num):
+    def _overwrite_num_design_point_dirichlet_conditions(self, random_field_lst, old_num):
         """Write the new number of design point dirichlet conditions.
 
         Write them to the design description.
 
         Args:
-            realized_random_fields_lst (lst): List containing vectors with the values of the
+            random_field_lst (lst): List containing vectors with the values of the
                                               realized random fields
             old_num (int): Former number of design point Dirichlet conditions
 
@@ -1106,10 +1079,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
         for geometric_set in self.list_geometric_sets:
             field_values.extend(
                 [
-                    list(field['values'])
-                    for field in realized_random_fields_lst
-                    if (field["external_definition"]["type"] == "dirichlet")
-                    and (field["external_definition"]["external_instance"] == geometric_set)
+                    [
+                        field['name'] + '_' + str(i)
+                        for i in range(len(self.node_coordinates['node_mesh']))
+                    ]
+                    for field in random_field_lst
+                    if (field["type"] == "dirichlet")
+                    and (field["external_instance"] == geometric_set)
                 ]
             )
 
@@ -1119,8 +1095,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
             total_num_dpoints = num_new_dpoints + num_existing_dpoints
             print(f'DPOINT                          {total_num_dpoints}')
 
-    @staticmethod
-    def _assign_random_dirichlet_fields_per_geo_set(fields_dirich_on_geo_set):
+    def _assign_random_dirichlet_fields_per_geo_set(self, fields_dirich_on_geo_set):
         """Assign random Dirichlet fields.
 
         Args:
@@ -1154,18 +1129,23 @@ class BaciDatExternalGeometry(ExternalGeometry):
         realized_random_field_1 = realized_random_field_2 = realized_random_field_3 = None
         fun_1 = fun_2 = fun_3 = None
         for dirich_field in fields_dirich_on_geo_set:
-            set_shape = dirich_field['values'].shape
-            if dirich_field["external_definition"]["dof_for_field"] == 1:
-                realized_random_field_1 = dirich_field['values']
-                fun_1 = dirich_field["external_definition"]["funct_for_field"] * np.ones(set_shape)
+            set_shape = len(self.node_coordinates['node_mesh'])
+            placeholders = [dirich_field['name'] + '_' + str(i) for i in range(set_shape)]
+            if dirich_field["dof_for_field"] == 1:
+                realized_random_field_1 = ['{' + placeholder + '}' for placeholder in placeholders]
+                fun_1 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
-            elif dirich_field["external_definition"]["dof_for_field"] == 2:
-                realized_random_field_2 = dirich_field["values"]
-                fun_2 = dirich_field["external_definition"]["funct_for_field"] * np.ones(set_shape)
+            elif dirich_field["dof_for_field"] == 2:
+                realized_random_field_2 = ['{' + placeholder + '}' for placeholder in placeholders]
+                fun_2 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
-            elif dirich_field["external_definition"]["dof_for_field"] == 3:
-                realized_random_field_3 = dirich_field["values"]
-                fun_3 = dirich_field["external_definition"]["funct_for_field"] * np.ones(set_shape)
+            elif dirich_field["dof_for_field"] == 3:
+                realized_random_field_3 = ['{' + placeholder + '}' for placeholder in placeholders]
+                fun_3 = dirich_field["funct_for_field"] * np.ones(set_shape)
+
+            self._write_coords_to_dict(
+                dirich_field['name'], placeholders, np.array(self.node_coordinates['coordinates'])
+            )
 
         return (
             realized_random_field_1,
@@ -1176,8 +1156,8 @@ class BaciDatExternalGeometry(ExternalGeometry):
             fun_3,
         )
 
-    @staticmethod
     def _assign_deterministic_dirichlet_fields_per_geo_set(
+        self,
         fields_dirich_on_geo_set,
         realized_random_field_1,
         realized_random_field_2,
@@ -1240,11 +1220,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
                               function that might, e.g., vary in time.
         """
         # TODO see how this behaves for several fields
-        set_shape = fields_dirich_on_geo_set[0]['values'].shape
+        set_shape = len(self.node_coordinates['node_mesh'])
         for deter_dof, value_deter_dof, funct_deter in zip(
-            fields_dirich_on_geo_set[0]['external_definition']["dofs_deterministic"],
-            fields_dirich_on_geo_set[0]['external_definition']["value_dofs_deterministic"],
-            fields_dirich_on_geo_set[0]['external_definition']["funct_for_deterministic_dofs"],
+            fields_dirich_on_geo_set[0]["dofs_deterministic"],
+            fields_dirich_on_geo_set[0]["value_dofs_deterministic"],
+            fields_dirich_on_geo_set[0]["funct_for_deterministic_dofs"],
         ):
             if deter_dof == 1:
                 if realized_random_field_1 is None:
@@ -1337,15 +1317,15 @@ class BaciDatExternalGeometry(ExternalGeometry):
             random_field
             for random_field in random_fields_lst
             if (
-                (random_field["external_definition"]["type"] == "dirichlet")
-                or (random_field["external_definition"]["type"] == "neumann")
-                or (random_field["external_definition"]["type"] == "transport_dirichlet")
+                (random_field["type"] == "dirichlet")
+                or (random_field["type"] == "neumann")
+                or (random_field["type"] == "transport_dirichlet")
             )
         )
         nodes_mesh_lst = []  # note, this is a list of dicts
         for random_field in BCs_random_fields:
             # get associated geometric set
-            topology_name = random_field["external_definition"]["external_instance"]
+            topology_name = random_field["external_instance"]
             topology_type = topology_name.split()[0]
             # check if line, surf or vol
             my_topology_lst = self._get_my_topology(topology_type)
@@ -1386,3 +1366,13 @@ class BaciDatExternalGeometry(ExternalGeometry):
         for node_set in self.new_nodes_lst:
             for mesh_node, topo_node in zip(node_set['node_mesh'], node_set['topo_dnodes']):
                 print(f"NODE {mesh_node} DNODE {topo_node}")
+
+    def _write_coords_to_dict(self, field_name, field_keys, field_coords):
+        """Write random field coordinates to dict.
+
+        Args:
+            field_name (str): Name of the random field
+            field_keys (str): Placeholders for the discretized random field
+            field_coords (np.ndarray): Coordinates of the discretized random field
+        """
+        self.coords_dict[field_name] = {'keys': field_keys, 'coords': field_coords}

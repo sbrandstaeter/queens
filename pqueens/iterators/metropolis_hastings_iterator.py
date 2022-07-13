@@ -117,14 +117,14 @@ class MetropolisHastingsIterator(Iterator):
 
         # check agreement of dimensions of proposal distribution and
         # parameter space
-        num_variables = self.model.variables[0].get_number_of_active_variables()
-        if num_variables is not self.proposal_distribution.dimension:
+        num_parameters = self.parameters.num_parameters
+        if num_parameters != self.proposal_distribution.dimension:
             raise ValueError(
                 "Dimensions of proposal distribution and parameter space do not agree."
             )
 
         self.tot_num_samples = self.num_samples + self.num_burn_in + 1
-        self.chains = np.zeros((self.tot_num_samples, self.num_chains, num_variables))
+        self.chains = np.zeros((self.tot_num_samples, self.num_chains, num_parameters))
         self.log_likelihood = np.zeros((self.tot_num_samples, self.num_chains, 1))
         self.log_prior = np.zeros((self.tot_num_samples, self.num_chains, 1))
         self.log_posterior = np.zeros((self.tot_num_samples, self.num_chains, 1))
@@ -146,7 +146,6 @@ class MetropolisHastingsIterator(Iterator):
         Returns:
             iterator: MetropolisHastingsIterator object
         """
-
         print(
             "Metropolis-Hastings Iterator for experiment: {0}".format(
                 config.get('global_settings').get('experiment_name')
@@ -197,31 +196,16 @@ class MetropolisHastingsIterator(Iterator):
             tune_interval=tune_interval,
         )
 
-    def eval_model(self):
-        """Evaluate model at current samples of chains."""
-        result_dict = self.model.evaluate()
-        return result_dict
-
-    def eval_log_prior(self, chains):
+    def eval_log_prior(self, samples):
         """Evaluate natural logarithm of prior at samples of chains.
 
         Note: we assume a multiplicative split of prior pdf
         """
-        log_prior = np.zeros((self.num_chains, 1))
-        self.model.update_model_from_sample_batch(chains)
-        for i in range(chains.shape[0]):
-            j = 0
-            for _, variable in self.model.variables[i].variables.items():
-                log_prior[i] += variable['distribution'].logpdf(chains[i, j])
-                j += 1
+        return self.parameters.joint_logpdf(samples).reshape(-1, 1)
 
-        return log_prior
-
-    def eval_log_likelihood(self, chains):
+    def eval_log_likelihood(self, samples):
         """Evaluate natural logarithm of likelihood at samples of chains."""
-        self.model.update_model_from_sample_batch(chains)
-        log_likelihood = self.eval_model()
-
+        log_likelihood = self.model.evaluate(samples)
         return log_likelihood
 
     def do_mh_step(self, step_id):
@@ -275,24 +259,13 @@ class MetropolisHastingsIterator(Iterator):
         cov_mat=None,
     ):
         """Draw initial sample."""
-
         if not self.as_mcmc_kernel:
             print("Initialize Metropolis-Hastings run.")
 
             np.random.seed(self.seed)
 
             # draw initial sample from prior distribution
-            # TODO this is super ugly!
-            #  unify with get_random_samples and add as method to Variables class?
-            initial_samples = np.atleast_2d(
-                [
-                    np.squeeze(variable['distribution'].draw(num_draws=self.num_chains))
-                    for model_variable in self.model.variables
-                    for variable_name, variable in model_variable.variables.items()
-                ]
-            )
-            if self.num_chains != 1:
-                initial_samples = initial_samples.T
+            initial_samples = self.parameters.draw_samples(self.num_chains)
             initial_log_like = self.eval_log_likelihood(initial_samples)
             initial_log_prior = self.eval_log_prior(initial_samples)
         else:
@@ -403,8 +376,7 @@ class MetropolisHastingsIterator(Iterator):
 
             data_dict = {
                 variable_name: np.swapaxes(chain_core[:, :, i], 1, 0)
-                for model_variable in self.model.variables
-                for i, (variable_name, variable) in enumerate(model_variable.variables.items())
+                for i, variable_name in enumerate(self.parameters.parameters_keys)
             }
             inference_data = az.convert_to_inference_data(data_dict)
 

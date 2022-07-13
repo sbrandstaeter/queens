@@ -125,13 +125,13 @@
         "distribution": "normal",
         "mean": 0.6,
         "covariance": 0.2,
-        "size": 1
+        "dimension": 1
       },
       "x2": {
         "distribution": "normal",
         "mean": 0.3,
         "covariance": 0.1,
-        "size": 1
+        "dimension": 1
       }
     }
   }

@@ -43,8 +43,7 @@
   },
   "model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "proposal_distribution": {
     "distribution": "normal",
@@ -59,11 +58,11 @@
     "random_variables": {
       "x1": {
         "type": "FLOAT",
-        "size": 1
+        "dimension": 1
       },
       "x2": {
         "type": "FLOAT",
-        "size": 1
+        "dimension": 1
       }
     }
   }

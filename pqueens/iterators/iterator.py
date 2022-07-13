@@ -2,6 +2,8 @@
 
 import abc
 
+import pqueens.parameters.parameters as parameters_module
+
 
 class Iterator(metaclass=abc.ABCMeta):
     """Base class for Iterator hierarchy.
@@ -24,6 +26,7 @@ class Iterator(metaclass=abc.ABCMeta):
         """
         self.model = model
         self.global_settings = global_settings
+        self.parameters = parameters_module.parameters
 
     def initialize_run(self):
         """Optional setup step."""
@@ -51,11 +54,6 @@ class Iterator(metaclass=abc.ABCMeta):
 
     def finalize_run(self):
         """Optional cleanup step."""
-        pass
-
-    @abc.abstractmethod
-    def eval_model(self):
-        """Call the underlying model, implemented by all derived classes."""
         pass
 
     def run(self):

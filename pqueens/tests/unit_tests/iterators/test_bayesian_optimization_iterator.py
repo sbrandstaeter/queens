@@ -35,7 +35,7 @@
 #                "random_variables": {
 #                    "youngs": {
 #                        "type": "FLOAT",
-#                        "size": 1,
+#                        "dimension": 1,
 #                        "lower_bound": 1000000,
 #                        "upper_bound": 5000000,
 #                        "distribution": "normal",
@@ -48,7 +48,7 @@
 #            "random_variables": {
 #                "youngs": {
 #                    "type": "FLOAT",
-#                    "size": 1,
+#                    "dimension": 1,
 #                    "lower_bound": 1000,
 #                    "upper_bound": 5000000,
 #                    "distribution": "uniform",

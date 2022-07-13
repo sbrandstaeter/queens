@@ -6,6 +6,7 @@ import pytest
 
 from pqueens.main import main
 from pqueens.utils import injector
+from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.mark.integration_tests_baci
@@ -17,11 +18,13 @@ def test_write_random_dirichlet_to_dat(
         third_party_inputs, "baci_input_files", "invaaa_ee_fields_template.dat"
     )
 
+    dat_file_preprocessed = tmpdir.join("invaaa_ee_fields_template_preprocessed.dat")
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 
     dir_dict = {
         'experiment_dir': str(tmpdir),
         'baci_input': third_party_input_file,
+        'baci_input_preprocessed': dat_file_preprocessed,
         'post_drt_monitor': post_drt_monitor,
         'baci-release': baci_release,
     }

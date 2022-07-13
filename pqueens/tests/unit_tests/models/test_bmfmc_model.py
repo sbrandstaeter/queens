@@ -3,11 +3,12 @@ import numpy as np
 import pytest
 from mock import patch
 
-import pqueens.models.bmfmc_model as bmfmc_model
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator
 from pqueens.models.bmfmc_model import BMFMCModel
+import pqueens.models.bmfmc_model as bmfmc_model
 from pqueens.models.simulation_model import SimulationModel
+import pqueens.parameters.parameters as parameters_module
 
 
 # ------------ fixtures --------------------------
@@ -23,8 +24,7 @@ def dummy_high_fidelity_model(parameters):
     """Create dummy high-fidelity model."""
     model_name = 'dummy'
     interface = 'my_dummy_interface'
-    model_parameters = parameters
-    hf_model = SimulationModel(model_name, interface, model_parameters)
+    hf_model = SimulationModel(model_name, interface)
     hf_model.response = {'mean': 1.0}
     return hf_model
 
@@ -36,13 +36,20 @@ def global_settings():
     return global_set
 
 
+class PreProcessor:
+    def __init__(self):
+        self.coords_dict = {
+            'random_inflow': {'keys': [i for i in range(10)], 'coords': np.random.rand(10)}
+        }
+
+
 @pytest.fixture()
 def parameters():
     """Create parameters."""
     params = {
         "random_variables": {
-            "x1": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x2": {"type": "FLOAT", "size": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+            "x2": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
         },
         "random_fields": {
             'random_inflow': {
@@ -59,6 +66,8 @@ def parameters():
             }
         },
     }
+    pre_processor = PreProcessor()
+    parameters_module.from_config_create_parameters({"parameters": params}, pre_processor)
     return params
 
 
@@ -106,7 +115,6 @@ def default_bmfmc_model(parameters, settings_probab_mapping, default_interface):
         settings_probab_mapping,
         False,
         y_pdf_support,
-        parameters,
         default_interface,
         hf_model=None,
         no_features_comparison_bool=True,
@@ -176,7 +184,6 @@ def test_init(mocker, settings_probab_mapping, default_interface):
         settings_probab_mapping,
         True,
         y_pdf_support,
-        parameters,
         default_interface,
         hf_model=None,
         no_features_comparison_bool=False,
@@ -185,7 +192,7 @@ def test_init(mocker, settings_probab_mapping, default_interface):
     )
 
     # tests/ asserts ------------------
-    mp.assert_called_once_with(name='bmfmc_model', uncertain_parameters=parameters, data_flag=True)
+    mp.assert_called_once_with(name='bmfmc_model')
     assert model.interface == default_interface
     assert model.settings_probab_mapping == settings_probab_mapping
     assert model.high_fidelity_model is None
@@ -255,7 +262,7 @@ def test_evaluate(mocker, default_bmfmc_model):
         "X_train": np.array([1]),
         "Y_HF_train": np.array([1]),
     }
-    output = default_bmfmc_model.evaluate()
+    output = default_bmfmc_model.evaluate(None)
 
     mp1.assert_called_once()
     mp2.assert_called_once()
@@ -329,10 +336,7 @@ def test_load_sampling_data(mocker, default_bmfmc_model, default_data_iterator, 
 @pytest.mark.unit_tests
 def test_get_hf_training_data(mocker, default_bmfmc_model, dummy_high_fidelity_model):
     """Test getting of high-fidelity training data."""
-    mp1 = mocker.patch(
-        'pqueens.models.simulation_model.SimulationModel' '.update_model_from_sample_batch'
-    )
-    mp2 = mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate')
+    mp1 = mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate')
     default_bmfmc_model.X_train = None
 
     # test X_train is None
@@ -346,7 +350,6 @@ def test_get_hf_training_data(mocker, default_bmfmc_model, dummy_high_fidelity_m
     default_bmfmc_model.high_fidelity_model = dummy_high_fidelity_model
     default_bmfmc_model.get_hf_training_data()
     mp1.assert_called_once()
-    mp2.assert_called_once()
 
     # test HF MC data available and no HF model
     default_bmfmc_model.high_fidelity_model = None
@@ -487,8 +490,7 @@ def test_compute_pymc_reference(mocker, default_bmfmc_model):
 @pytest.mark.unit_tests
 def test_set_feature_strategy(mocker, default_bmfmc_model):
     """Test setting feature strategy."""
-    mp1 = mocker.patch('pqueens.models.bmfmc_model.update_model_variables')
-    mp2 = mocker.patch(
+    mp1 = mocker.patch(
         'pqueens.models.bmfmc_model.BMFMCModel.update_probabilistic_mapping_with_features'
     )
 
@@ -513,7 +515,7 @@ def test_set_feature_strategy(mocker, default_bmfmc_model):
     # test opt_features
     default_bmfmc_model.settings_probab_mapping['features_config'] = "opt_features"
     default_bmfmc_model.set_feature_strategy()
-    mp2.assert_called_once()
+    mp1.assert_called_once()
 
     default_bmfmc_model.settings_probab_mapping['num_features'] = 0
     with pytest.raises(ValueError):
@@ -528,9 +530,6 @@ def test_set_feature_strategy(mocker, default_bmfmc_model):
     np.testing.assert_array_almost_equal(
         default_bmfmc_model.Z_mc, default_bmfmc_model.Y_LFs_mc, decimal=6
     )
-
-    # test the variable update for all cases
-    assert mp1.call_count == 3
 
 
 @pytest.mark.unit_tests
@@ -636,14 +635,6 @@ def test_get_random_fields_and_truncated_basis(default_bmfmc_model):
         decimal=6,
     )
     np.testing.assert_array_almost_equal(x_uncorr, expected_x_uncorr, decimal=6)
-
-    # test error catch for other corrstructs in random fields
-    default_bmfmc_model.uncertain_parameters['random_fields']['random_inflow'][
-        'corrstruct'
-    ] = 'dummy'
-
-    with pytest.raises(NotImplementedError):
-        default_bmfmc_model.get_random_fields_and_truncated_basis(explained_var=95.0)
 
 
 @pytest.mark.unit_tests

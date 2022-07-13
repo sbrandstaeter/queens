@@ -25,8 +25,7 @@
   },
   "model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "interface": {
     "type": "direct_python_interface",
@@ -36,7 +35,7 @@
     "random_variables": {
       "x1": {
         "type": "FLOAT",
-        "size": 1
+        "dimension": 1
       }
     }
   }

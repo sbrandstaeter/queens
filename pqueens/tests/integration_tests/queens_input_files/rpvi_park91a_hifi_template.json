@@ -8,7 +8,7 @@
     "method_name": "rpvi",
     "method_options": {
       "model": "model",
-      "max_feval": 2000,
+      "max_feval": 3000,
       "likelihood_gradient_method": "{gradient_method}",
       "finite_difference_method": "2-point",
       "finite_difference_step": 1e-5,
@@ -60,13 +60,11 @@
     "noise_type": "MAP_jeffrey_variance",
     "nugget_noise_variance": 1E-8,
     "experimental_file_name_identifier": "*.csv",
-    "experimental_csv_data_base_dir": "{experimental_data_path}",
-    "parameters": "parameters"
+    "experimental_csv_data_base_dir": "{experimental_data_path}"
   },
   "forward_model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "interface": {
     "type": "direct_python_interface",
@@ -78,13 +76,13 @@
         "distribution": "normal",
         "mean": 0.6,
         "covariance": 0.2,
-        "size": 1
+        "dimension": 1
       },
       "x2": {
         "distribution": "normal",
         "mean": 0.3,
         "covariance": 0.1,
-        "size": 1
+        "dimension": 1
       }
     }
   }

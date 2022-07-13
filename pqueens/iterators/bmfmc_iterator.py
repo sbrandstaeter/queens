@@ -1,16 +1,15 @@
 """Iterator for Bayesian multi-fidelity UQ."""
 
 import logging
-from random import randint
 
+import numpy as np
 import pandas as pd
-from diversipy import *
+from diversipy import psa_select
 
 import pqueens.visualization.bmfmc_visualization as qvis
+from pqueens.iterators.iterator import Iterator
 from pqueens.models.bmfmc_model import BMFMCModel
 from pqueens.utils.process_outputs import process_ouputs, write_results
-
-from .iterator import Iterator
 
 _logger = logging.getLogger(__name__)
 
@@ -181,7 +180,11 @@ class BMFMCIterator(Iterator):
         self.calculate_optimal_X_train()
 
         # ----- build model on training points and evaluate it -----------------------
-        self.output = self.eval_model()
+        r"""Evaluate the BMFMCModel which means that the posterior statistics.
+        :math:`\mathbb{E}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` and
+        :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` are computed based
+        on the BMFMC algorithm which is implemented in the BMFMCModel"""
+        self.output = self.model.evaluate(self.X_train)
 
     def calculate_optimal_X_train(self):
         r"""Calculate the optimal model inputs X_train.
@@ -320,19 +323,6 @@ class BMFMCIterator(Iterator):
                 f"for the HF-LF mapping is smaller than specified ({n_points}). "
                 f"Reduce the number of bins to increase the number of training points!"
             )
-
-    def eval_model(self):
-        r"""Evaluate the BMFMCModel which means that the posterior statistics.
-
-             :math:`\mathbb{E}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` and
-             :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` are computed based
-             on the BMFMC algorithm which is implemented in the BMFMCModel
-
-        Returns:
-            None
-
-        """
-        return self.model.evaluate()
 
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
     def post_run(self):

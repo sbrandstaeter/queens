@@ -38,13 +38,11 @@
     "experimental_csv_data_base_dir": "{experimental_data_path}",
     "noise_type": "fixed_variance",
     "noise_value": 1.0,
-    "nugget_noise_var": 1E-5,
-    "parameters": "parameters"
+    "nugget_noise_var": 1E-5
   },
   "forward_model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "proposal_distribution": {
     "distribution": "normal",
@@ -89,25 +87,25 @@
   "parameters": {
     "random_variables": {
       "x1": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": -2,
         "upper_bound": 2
       },
       "x2": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": -2,
         "upper_bound": 2
       },
       "x3": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": -2,
         "upper_bound": 2
       },
       "x4": {
-        "size": 1,
+        "dimension": 1,
         "distribution": "uniform",
         "lower_bound": -2,
         "upper_bound": 2

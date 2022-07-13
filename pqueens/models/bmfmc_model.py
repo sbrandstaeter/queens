@@ -10,7 +10,7 @@ import pqueens.visualization.bmfmc_visualization as qvis
 from pqueens.interfaces.bmfmc_interface import BmfmcInterface
 from pqueens.iterators.data_iterator import DataIterator
 from pqueens.models import from_config_create_model
-from pqueens.variables.variables import Variables
+from pqueens.parameters.fields import RandomField
 
 from .model import Model
 
@@ -125,8 +125,6 @@ class BMFMCModel(Model):
                                  file
         hf_data_iterator (obj):  Data iterator to load the benchmark sampling data from a HF model
                                  from a file (optional and only for scientific benchmark)
-        uncertain_parameters (dict): Dictionary containing probabilistic description of the
-                                      uncertain parameters / random fields
         training_indices (np.array): Vector with indices to select the training data subset from
                                      the larger data set of Monte-Carlo data
 
@@ -144,7 +142,6 @@ class BMFMCModel(Model):
         settings_probab_mapping,
         predictive_var_bool,
         y_pdf_support,
-        uncertain_parameters,
         interface,
         hf_model,
         no_features_comparison_bool,
@@ -157,7 +154,6 @@ class BMFMCModel(Model):
             settings_probab_mapping (dict): settings for probabilistic mapping
             predictive_var_bool (bool): true if predictive variance is computed
             y_pdf_support (ndarray): PDF support used in this analysis
-            uncertain_parameters (dict): probabilistic description of the uncertain parameters
             interface (bmfmc_interface): BMFMC interface
             hf_model (mode): model for high-fidelity data
             no_features_comparison_bool (bool): true if feature comparison
@@ -193,9 +189,7 @@ class BMFMCModel(Model):
         self.hf_data_iterator = hf_data_iterator
         self.training_indices = None
 
-        super().__init__(
-            name="bmfmc_model", uncertain_parameters=uncertain_parameters, data_flag=True
-        )  # TODO handling of variables, fields and parameters should be updated!
+        super().__init__(name="bmfmc_model")
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
@@ -246,14 +240,11 @@ class BMFMCModel(Model):
 
         # ----------------------- create subordinate data iterators ------------------------------
         lf_data_iterators = [DataIterator(path, None, None) for path in lf_data_paths]
-        uncertain_parameters = None  # we set this None for now and update in load_sampling_data()
-        # method later
 
         return cls(
             model_options,
             predictive_var_bool,
             y_pdf_support,
-            uncertain_parameters,
             interface,
             lf_data_iterators=lf_data_iterators,
             hf_data_iterator=hf_data_iterator,
@@ -261,7 +252,7 @@ class BMFMCModel(Model):
             no_features_comparison_bool=no_features_comparison_bool,
         )
 
-    def evaluate(self):
+    def evaluate(self, samples):
         """Evaluate.
 
         Construct the probabilistic mapping between HF model and LF features
@@ -435,9 +426,8 @@ class BMFMCModel(Model):
                 'High-fidelity model found! Starting now simulation on HF model for BMFMC '
                 'training data...'
             )
-            self.high_fidelity_model.update_model_from_sample_batch(self.X_train)
             # Evaluate High Fidelity Model
-            self.high_fidelity_model.evaluate()
+            self.high_fidelity_model.evaluate(self.X_train)
 
             # Get the HF-model training data for BMFMC
             self.Y_HF_train = self.high_fidelity_model.response['mean']
@@ -621,12 +611,6 @@ class BMFMCModel(Model):
         else:
             raise IOError("Feature space method specified in input file is unknown!")
 
-        # TODO current workaround to update variables object with the inputs for the
-        #  multi-fidelity mapping
-
-        # TODO This does not seem to have any effect --> check this again
-        update_model_variables(self.Y_LFs_train, self.Z_mc)
-
     def calculate_extended_gammas(self):
         r"""Calculate extended input features.
 
@@ -744,57 +728,52 @@ class BMFMCModel(Model):
                                  variables
         """
         # determine uncorrelated random variables
-        num_random_var = len(self.uncertain_parameters.get("random_variables"))
+        num_random_var = 0
+        random_fields_list = []
+        for parameter_name, parameter in self.parameters.dict.items():
+            if isinstance(parameter, RandomField):
+                random_fields_list.append((parameter_name, parameter))
+            else:
+                num_random_var += parameter.dimension
+
         x_uncorr = self.X_mc[:, 0:num_random_var]
 
         # iterate over all random fields
         dim_random_fields = 0
-
-        if self.uncertain_parameters.get("random_fields") is not None:
+        if self.parameters.random_field_flag:
             for random_field, basis, eigenvals in zip(
-                self.uncertain_parameters.get("random_fields").items(),
+                random_fields_list,
                 self.eigenfunc_random_fields.items(),
                 self.eigenvals.items(),
             ):
-                # check which type of random field was used
-                if random_field[1].get("corrstruct") != "non_stationary_squared_exp":
-                    raise NotImplementedError(
-                        f"Your random field had the correlation structure "
-                        f"{random_field[1].get('corrstruct')} but this function is at "
-                        f"the moment only implemented for the correlation "
-                        f"structure non_stationary_squared_exp! Abort...."
-                    )
-                else:
-                    # write the simulated samples of the random fields also in the new dictionary
-                    # Attention: Here we assume that X_mc contains in the first columns uncorrelated
-                    #            random variables until the column id 'num_random_var' and then only
-                    #            random fields
-                    random_fields_trunc_dict = {
-                        random_field[0]: {
-                            "samples": self.X_mc[
-                                :,
-                                num_random_var
-                                + dim_random_fields : num_random_var
-                                + dim_random_fields
-                                + random_field[1]["num_points"],
-                            ]
-                        }
+                # write the simulated samples of the random fields also in the new dictionary
+                # Attention: Here we assume that X_mc contains in the first columns uncorrelated
+                #            random variables until the column id 'num_random_var' and then only
+                #            random fields
+                random_fields_trunc_dict = {
+                    random_field[0]: {
+                        "samples": self.X_mc[
+                            :,
+                            num_random_var
+                            + dim_random_fields : num_random_var
+                            + dim_random_fields
+                            + random_field[1].dimension,
+                        ]
                     }
+                }
 
-                    # determine the truncation basis
-                    idx_truncation = [
-                        idx
-                        for idx, eigenval in enumerate(eigenvals[1])
-                        if eigenval >= explained_var
-                    ][0]
+                # determine the truncation basis
+                idx_truncation = [
+                    idx for idx, eigenval in enumerate(eigenvals[1]) if eigenval >= explained_var
+                ][0]
 
-                    # write the truncated basis also in the dictionary
-                    random_fields_trunc_dict[random_field[0]].update(
-                        {"trunc_basis": basis[1][0:idx_truncation]}
-                    )
+                # write the truncated basis also in the dictionary
+                random_fields_trunc_dict[random_field[0]].update(
+                    {"trunc_basis": basis[1][0:idx_truncation]}
+                )
 
-                    # adjust the counter for next iteration
-                    dim_random_fields += random_field[1]["num_points"]
+                # adjust the counter for next iteration
+                dim_random_fields += random_field[1].dimension
         else:
             random_fields_trunc_dict = None
 
@@ -824,43 +803,6 @@ def _project_samples_on_truncated_basis(truncated_basis_dict, num_samples):
         coefs_mat = np.hstack((coefs_mat, np.dot(basis[1]["samples"], basis[1]["trunc_basis"].T)))
 
     return coefs_mat
-
-
-def update_model_variables(Y_LFs_train, Z_mc):
-    r"""Update variables.
-
-    Intermediate solution: Update the QUEENS variable object with the
-    previous calculated low-fidelity features :math:`Z_{\\text{LF}}`
-
-    Args:
-        Y_LFs_train (np.array): Low-fidelity outputs :math:`Y_{\\text{LF}}` for training input
-                                :math:`X`.
-        Z_mc (np.array): Low-fidelity feature matrix :math:`Z_{\\text{LF}}^{*}` corresponding to
-        sampling input :math:`X^{*}`
-    """
-    # TODO this is an intermediate solution while the variable class has not been changed to a
-    #  more flexible version
-
-    # TODO this does not seem to have any effect as Model class is not directly connected to BMFMC
-
-    uncertain_parameters = {
-        "random_variables": {}
-    }  # initialize a dict uncertain parameters to define input_variables of model
-
-    num_lfs = Y_LFs_train.shape[1]  # TODO not a very nice solution but works for now
-
-    # set the random variable for the LFs first
-    for counter, value in enumerate(Z_mc.T):  # iterate over all lfs
-        if counter < num_lfs - 1:
-            key = "LF{}".format(counter)
-        else:
-            key = "Feat{}".format(counter - num_lfs - 1)
-
-        dummy = {key: {"value": value}}
-        uncertain_parameters["random_variables"].update(dummy)  # we assume only 1 column per dim
-
-    # Append random variables for the feature dimensions (random fields are not necessary so far)
-    Model.variables = [Variables(uncertain_parameters)]  # TODO check effect here
 
 
 # ---------------- Some private helper functions ------------------------------------------------

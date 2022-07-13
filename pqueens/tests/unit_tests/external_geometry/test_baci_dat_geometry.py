@@ -9,9 +9,9 @@ from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 # general input fixtures
 @pytest.fixture()
 def default_geo_obj(tmpdir):
-    path_to_dat_file = os.path.join(tmpdir, 'myfile.dat')
+    path_to_dat_file = tmpdir.join('myfile.dat')
     list_geometric_sets = ["DSURFACE 9"]
-    list_associated_material_nubmers = [[10, 11]]
+    list_associated_material_numbers = [[10, 11]]
     element_topology = [{"element_number": [], "nodes": [], "material": []}]
     node_topology = [{"node_mesh": [], "node_topology": [], "topology_name": ""}]
     line_topology = [{"node_mesh": [], "line_topology": [], "topology_name": ""}]
@@ -19,17 +19,23 @@ def default_geo_obj(tmpdir):
     volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
     node_coordinates = {"node_mesh": [], "coordinates": []}
 
+    path_to_preprocessed_dat_file = tmpdir.join('preprocessed')
+    random_fields = (
+        [{"name": "mat_param", "type": "material", "external_instance": "DSURFACE 1"}],
+    )
+
     geo_obj = BaciDatExternalGeometry(
         path_to_dat_file,
         list_geometric_sets,
-        list_associated_material_nubmers,
+        list_associated_material_numbers,
         element_topology,
         node_topology,
         line_topology,
         surface_topology,
         volume_topology,
         node_coordinates,
-        tmpdir,
+        path_to_preprocessed_dat_file,
+        random_fields,
     )
     return geo_obj
 
@@ -185,6 +191,12 @@ def test_init(mocker, tmpdir):
     volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
     node_coordinates = {"node_mesh": [], "coordinates": []}
     mp = mocker.patch('pqueens.external_geometry.external_geometry.ExternalGeometry.__init__')
+
+    path_to_preprocessed_dat_file = tmpdir.join('preprocessed')
+    random_fields = (
+        [{"name": "mat_param", "type": "material", "external_instance": "DSURFACE 1"}],
+    )
+
     geo_obj = BaciDatExternalGeometry(
         path_to_dat_file,
         list_geometric_sets,
@@ -195,7 +207,8 @@ def test_init(mocker, tmpdir):
         surface_topology,
         volume_topology,
         node_coordinates,
-        tmpdir,
+        path_to_preprocessed_dat_file,
+        random_fields,
     )
     mp.assert_called_once()
     assert geo_obj.path_to_dat_file == path_to_dat_file
@@ -209,12 +222,13 @@ def test_init(mocker, tmpdir):
     assert geo_obj.desired_dat_sections == {}
     assert geo_obj.nodes_of_interest is None
     assert geo_obj.node_coordinates == node_coordinates
-    assert geo_obj.tmpdir == tmpdir
+    assert geo_obj.path_to_preprocessed_dat_file == path_to_preprocessed_dat_file
+    assert geo_obj.random_fields == random_fields
 
 
 @pytest.mark.unit_tests
 def test_read_external_data_comment(mocker, tmpdir, dat_dummy_comment, default_geo_obj):
-    filepath = os.path.join(tmpdir, "myfile.dat")
+    filepath = tmpdir.join("myfile.dat")
     write_to_file(dat_dummy_comment, filepath)
 
     mocker.patch(
@@ -264,7 +278,7 @@ def test_read_external_data_comment(mocker, tmpdir, dat_dummy_comment, default_g
 
 @pytest.mark.unit_tests
 def test_read_external_data_get_functions(mocker, tmpdir, dat_dummy_get_fun, default_geo_obj):
-    filepath = os.path.join(tmpdir, "myfile.dat")
+    filepath = tmpdir.join("myfile.dat")
     write_to_file(dat_dummy_get_fun, filepath)
 
     default_geo_obj.current_dat_section = 'dummy'

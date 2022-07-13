@@ -17,7 +17,7 @@
       }
     }
   },
-  "external_geometry": {
+  "pre_processing": {
     "type": "baci_dat",
     "list_geometric_sets": [
       "DSURFACE 1"
@@ -28,12 +28,19 @@
         11
       ]
     ],
-    "queens_tmp_dir": "{experiment_dir}"
+    "random_fields": [
+        {
+        "name": "mat_param",
+        "type": "material",
+        "external_instance": "DSURFACE 1"
+      }
+    ],
+    "input_template": "{baci_input}",
+    "input_template_preprocessed": "{baci_input_preprocessed}"
   },
   "model": {
     "type": "simulation_model",
-    "interface": "interface",
-    "parameters": "parameters"
+    "interface": "interface"
   },
   "interface": {
     "type": "job_interface",
@@ -43,7 +50,7 @@
   "driver": {
     "driver_type": "baci",
     "driver_params": {
-      "input_template": "{baci_input}",
+      "input_template": "{baci_input_preprocessed}",
       "path_to_executable": "{baci-release}",
       "path_to_postprocessor": "{post_drt_monitor}",
       "post_process_options": [
@@ -85,22 +92,12 @@
     "singularity": false
   },
   "parameters": {
-    "random_variables": {},
     "random_fields": {
       "mat_param": {
-        "type": "FLOAT",
-        "external_definition": {
-          "type": "material",
-          "external_instance": "DSURFACE 1"
-        },
-        "dimension": 2,
-        "corrstruct": "generic_external_random_field",
         "corr_length": 5.0,
         "std_hyperparam_rf": 0.03,
-        "mean_fun_type": "constant",
-        "mean_fun_params": [
-          0.25
-        ]
+        "mean_type": "constant",
+        "mean_param": 0.25
       }
     }
   }

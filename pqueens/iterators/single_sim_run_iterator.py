@@ -56,17 +56,13 @@ class SingleSimRunIterator(Iterator):
             global_settings,
         )
 
-    def eval_model(self):
-        """Evaluate the model."""
-        return self.model.evaluate()
-
     def pre_run(self):
         """Generate samples for subsequent MC analysis and update model."""
         pass
 
     def core_run(self):
         """Run single simulation."""
-        self.output = self.eval_model()
+        self.output = self.model.evaluate(self.samples)
 
     def post_run(self):
         """Not required here."""

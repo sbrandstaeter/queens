@@ -20,7 +20,6 @@ class LikelihoodModel(Model):
     def __init__(
         self,
         model_name,
-        model_parameters,
         forward_model,
         coords_mat,
         time_vec,
@@ -32,7 +31,6 @@ class LikelihoodModel(Model):
 
         Args:
             model_name (str): Name of the underlying model in input file
-            model_parameters (OrderedDict): Parameters of the underlying model
             forward_model (obj): Forward model that is evaluated during the likelihood evaluation
             coords_mat (np.array): Matrix of observation coordinates (new coordinates row-wise)
             time_vec (np.array): Vector containing time stamps for each observation
@@ -40,7 +38,7 @@ class LikelihoodModel(Model):
             output_label (str): Output label name of the observations
             coord_labels (list): List of coordinate label names. One name per column in coord_mat
         """
-        super().__init__(model_name, model_parameters)
+        super().__init__(model_name)
         self.forward_model = forward_model
         self.coords_mat = coords_mat
         self.time_vec = time_vec
@@ -49,5 +47,5 @@ class LikelihoodModel(Model):
         self.coord_labels = coord_labels
 
     @abc.abstractmethod
-    def evaluate(self):
+    def evaluate(self, samples):
         """Evaluate model with current set of variables."""

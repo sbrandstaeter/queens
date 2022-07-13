@@ -8,7 +8,6 @@ from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils.get_random_variables import get_random_variables
 from pqueens.utils.process_outputs import process_ouputs, write_results
-from pqueens.utils.scale_samples import scale_samples
 
 _logger = logging.getLogger(__name__)
 
@@ -91,32 +90,26 @@ class SobolSequenceIterator(Iterator):
             global_settings,
         )
 
-    def eval_model(self):
-        """Evaluate the model."""
-        return self.model.evaluate()
-
     def pre_run(self):
         """Generate samples for subsequent sobol sequence analysis."""
-        _, _, number_input_dimensions, distribution_info = get_random_variables(self.model)
 
-        _logger.info(f'Number of inputs: {number_input_dimensions}')
+        _logger.info(f'Number of inputs: {self.parameters.num_parameters}')
         _logger.info(f'Number of samples: {self.number_of_samples}')
         _logger.info(f'Randomize: {self.randomize}')
 
         # create samples
         sobol_engine = SobolEngine(
-            dimension=number_input_dimensions, scramble=self.randomize, seed=self.seed
+            dimension=self.parameters.num_parameters, scramble=self.randomize, seed=self.seed
         )
 
         qmc_samples = sobol_engine.draw(n=self.number_of_samples)
 
         # scale and transform samples according to the inverse cdf
-        self.samples = scale_samples(qmc_samples.numpy().astype('float64'), distribution_info)
+        self.samples = self.parameters.inverse_cdf_transform(qmc_samples.numpy().astype('float64'))
 
     def core_run(self):
         """Run sobol sequence analysis on model."""
-        self.model.update_model_from_sample_batch(self.samples)
-        self.output = self.eval_model()
+        self.output = self.model.evaluate(self.samples)
 
     def post_run(self):
         """Analyze the results."""

@@ -6,7 +6,6 @@ import pytest
 
 from pqueens.main import main
 from pqueens.utils import injector
-from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.mark.integration_tests_baci
@@ -18,16 +17,14 @@ def test_write_random_material_to_dat(
         third_party_inputs, "baci_input_files", "coarse_plate_dirichlet_template.dat"
     )
 
-    new_dat_file_path = os.path.join(tmpdir, "coarse_plate_dirichlet_template.dat")
-    cmd_lst = ['/bin/cp -arfp', third_party_input_file, new_dat_file_path]
-    command_string = ' '.join(cmd_lst)
-    run_subprocess(command_string)
+    dat_file_preprocessed = tmpdir.join("coarse_plate_dirichlet_template_preprocessed.dat")
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 
     dir_dict = {
         'experiment_dir': str(tmpdir),
-        'baci_input': new_dat_file_path,
+        'baci_input': third_party_input_file,
+        'baci_input_preprocessed': dat_file_preprocessed,
         'post_drt_monitor': post_drt_monitor,
         'baci-release': baci_release,
     }
@@ -59,5 +56,5 @@ def test_write_random_material_to_dat(
 
 @pytest.fixture()
 def expected_result():
-    result = np.array([[0.751], [0.84], [0.638]]).reshape(3, 1)
+    result = np.array([[0.79857, 0.73370, 0.71603]]).reshape(3, 1)
     return result

@@ -41,7 +41,6 @@
         "subordinate_iterator": "truth_model_iterator",
         "subordinate_model": "truth_model",
         "testing_iterator": "testing_iterator",
-        "parameters": "parameters",
         "nash_sutcliffe_efficiency": true
     },
     "testing_iterator": {
@@ -69,25 +68,24 @@
     },
     "truth_model": {
         "type": "simulation_model",
-        "interface": "interface",
-        "parameters": "parameters"
+        "interface": "interface"
     },
     "parameters": {
         "random_variables": {
             "x1": {
-                "size": 1,
+                "dimension": 1,
                 "distribution": "uniform",
                 "lower_bound": -3.14159265359,
                 "upper_bound": 3.14159265359
             },
             "x2": {
-                "size": 1,
+                "dimension": 1,
                 "distribution": "uniform",
                 "lower_bound": -3.14159265359,
                 "upper_bound": 3.14159265359
             },
             "x3": {
-                "size": 1,
+                "dimension": 1,
                 "distribution": "uniform",
                 "lower_bound": -3.14159265359,
                 "upper_bound": 3.14159265359

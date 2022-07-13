@@ -82,16 +82,7 @@ class ApproximationInterface(Interface):
                 "`gradient_bool=False`. Abort..."
             )
 
-        inputs = []
-        for variables in samples:
-            params = variables.get_active_variables()
-            inputs.append(list(params.values()))
-
-        # get inputs as array and reshape
-        num_active_vars = samples[0].get_number_of_active_variables()
-        inputs = np.reshape(np.array(inputs), (-1, num_active_vars), order='F')
-        output = self.approximation.predict(inputs)
-        return output
+        return self.approximation.predict(samples)
 
     def build_approximation(self, x_train, y_train):
         """Build and train underlying regression model.
