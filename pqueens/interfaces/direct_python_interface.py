@@ -59,7 +59,7 @@ class DirectPythonInterface(Interface):
 
         num_workers = interface_options.get('num_workers', 1)
         function_name = interface_options.get("function_name", None)
-        external_python_function = interface_options.get("external_python_function", None)
+        external_python_function = interface_options.get("external_python_module_function", None)
 
         if function_name is None:
             raise ValueError(f"Keyword 'function_name' is missing in interface '{interface_name}'")

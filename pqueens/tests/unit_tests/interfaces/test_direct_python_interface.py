@@ -80,7 +80,7 @@ def config_by_path(parameters):
     config['test_interface'] = {
         'type': 'direct_python_interface',
         'function_name': "ishigami90",
-        'external_python_function': path_to_file,
+        'external_python_module_function': path_to_file,
     }
 
     return config
