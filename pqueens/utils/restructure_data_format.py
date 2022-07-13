@@ -1,4 +1,9 @@
+"""Data formatter for databases."""
+import io
+import pickle
+
 import numpy as np
+import pandas as pd
 
 COMPRESS_TYPE = 'uncompressed array'
 
@@ -111,3 +116,86 @@ def convert_nested_db_dicts_to_lists_or_arrays(db_data):
                 ulist.append(value)
 
         return ulist
+
+
+def np_array_to_binary(np_array):
+    """Encode numpy array to binary.
+
+    Args:
+        np_array (np.ndarray): Array to be encoded
+
+    Returns:
+        bytes: encoded array
+    """
+    out = io.BytesIO()
+    np.save(out, np_array)
+    out.seek(0)
+    return out.read()
+
+
+def np_array_from_binary(binarized_array):
+    """Decode binary back to numpy array.
+
+    Args:
+        binarized_array (bytes): binarized array
+
+    Returns:
+        np.ndarray: Decoded array
+    """
+    out = io.BytesIO(binarized_array)
+    out.seek(0)
+    return np.load(out)
+
+
+def obj_to_binary(python_object):
+    """Encode python object to binary.
+
+    Args:
+        python_object (obj): Object to be encoded
+
+    Returns:
+        bytes: encoded object
+    """
+    out = pickle.dumps(python_object, protocol=-1)
+    return out
+
+
+def obj_from_binary(binarized_object):
+    """Decode binary back to python object.
+
+    Args:
+        binarized_object (bytes): binarized object
+
+    Returns:
+        obj: Python object
+    """
+    return pickle.loads(binarized_object)
+
+
+def pd_dataframe_to_binary(pd_dataframe):
+    """Encode dataframe to binary.
+
+    Args:
+        pd_dataframe (pd.DataFrame): Dataframe to be encoded
+
+    Returns:
+        bytes: encoded dataframe
+    """
+    out = io.BytesIO()
+    pd_dataframe.to_pickle(out)
+    out.seek(0)
+    return out.read()
+
+
+def pd_dataframe_from_binary(binarized_dataframe):
+    """Decode binary back to pd dataframe.
+
+    Args:
+        binarized_dataframe (bytes): binarized object
+
+    Returns:
+        pf.dataframe: Dataframe object
+    """
+    out = io.BytesIO(binarized_dataframe)
+    out.seek(0)
+    return pd.read_pickle(out)
