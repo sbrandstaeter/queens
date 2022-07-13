@@ -157,7 +157,7 @@ class Driver(metaclass=abc.ABCMeta):
 
         # set start time and store it in database
         start_time = time.time()
-        self.job['start time'] = start_time
+        self.job['start_time'] = start_time
 
         # save start time in database to make it accessible for the second post-processing call
         self.database.save(
@@ -214,7 +214,7 @@ class Driver(metaclass=abc.ABCMeta):
             self.job['gradient'] = None
             self.job['status'] = 'failed'
             if not self.direct_scheduling:
-                self.job['end time'] = time.time()
+                self.job['end_time'] = time.time()
             self.database.save(
                 self.job,
                 self.experiment_name,
@@ -230,9 +230,9 @@ class Driver(metaclass=abc.ABCMeta):
             self.job['result'] = self.result
             self.job['gradient'] = self.gradient
             self.job['status'] = 'complete'
-            if self.job['start time'] and not self.direct_scheduling:
-                self.job['end time'] = time.time()
-                computing_time = self.job['end time'] - self.job['start time']
+            if self.job['start_time'] and not self.direct_scheduling:
+                self.job['end_time'] = time.time()
+                computing_time = self.job['end_time'] - self.job['start_time']
                 _logger.info(
                     "Successfully completed job {:d} (No. of proc.: {:d}, "
                     "computing time: {:08.2f} s).\n".format(

@@ -7,7 +7,7 @@ import pymongo
 import xarray as xr
 from pymongo import MongoClient
 
-from pqueens.utils.decorators import safe_mongodb_operation
+from pqueens.utils.decorators import safe_operation as safe_mongodb_operation
 from pqueens.utils.restructure_data_format import (
     convert_nested_data_to_db_dict,
     convert_nested_db_dicts_to_lists_or_arrays,
