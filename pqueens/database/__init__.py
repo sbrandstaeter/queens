@@ -20,9 +20,10 @@ def from_config_create_database(config):
     """
     db_type = config["database"].get("type")
 
-    from .mongodb import MongoDB
+    from pqueens.database.mongodb import MongoDB
+    from pqueens.database.sqlite import SQLite
 
-    valid_options = {"mongodb": MongoDB}
+    valid_options = {"mongodb": MongoDB, "sqlite": SQLite}
 
     if db_type in valid_options.keys():
         return valid_options[db_type].from_config_create_database(config)
