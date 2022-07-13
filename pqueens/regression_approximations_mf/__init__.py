@@ -11,6 +11,8 @@ models external third party libraries are used, such as `GPy`_, `GPFlow`_.
  .. _GPFlow:
      https://github.com/GPflow/GPflow
 """
+from pqueens.utils.import_utils import get_module_attribute
+from pqueens.utils.valid_options_utils import get_option
 
 
 def from_comfig_create_regression_approximators_mf(approx_options, Xtrain, Ytrain):
@@ -34,6 +36,11 @@ def from_comfig_create_regression_approximators_mf(approx_options, Xtrain, Ytrai
         'mf_nar_gp_approximation_gpy_3_levels': MF_NAR_GP_Regression_3_Levels,
     }
 
-    approximation_class = approx_dict[approx_options["type"]]
+    if approx_options.get("external_python_module"):
+        module_path = approx_options["external_python_module"]
+        module_attribute = approx_options.get("type")
+        approximation_class = get_module_attribute(module_path, module_attribute)
+    else:
+        approximation_class = get_option(approx_dict, approx_options.get("type"))
 
     return approximation_class.from_options(approx_options, Xtrain, Ytrain)

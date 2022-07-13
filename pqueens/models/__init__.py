@@ -18,6 +18,8 @@ def from_config_create_model(model_name, config):
         model: Instance of model class
     """
     from pqueens.models import likelihood_models
+    from pqueens.utils.import_utils import get_module_attribute
+    from pqueens.utils.valid_options_utils import get_option
 
     from .bmfmc_model import BMFMCModel
     from .data_fit_surrogate_model import DataFitSurrogateModel
@@ -35,5 +37,13 @@ def from_config_create_model(model_name, config):
     }
 
     model_options = config[model_name]
-    model_class = model_dict[model_options["type"]]
+    # additional check to avoid external modules if subtype is active
+    # overwriting needs to be done in the subtype otherwise
+    if model_options.get("external_python_module") and not model_options.get("subtype"):
+        module_path = model_options["external_python_module"]
+        module_attribute = model_options.get("type")
+        model_class = get_module_attribute(module_path, module_attribute)
+    else:
+        model_class = get_option(model_dict, model_options.get("type"))
+
     return model_class.from_config_create_model(model_name, config)

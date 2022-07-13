@@ -18,6 +18,9 @@ def from_config_create_scheduler(config, scheduler_name=None, driver_name=None):
     Returns:
         Scheduler object
     """
+    from pqueens.utils.import_utils import get_module_attribute
+    from pqueens.utils.valid_options_utils import get_option
+
     # import here to avoid issues with circular inclusion
     from .cluster_scheduler import ClusterScheduler
     from .standard_scheduler import StandardScheduler
@@ -33,5 +36,11 @@ def from_config_create_scheduler(config, scheduler_name=None, driver_name=None):
     if not scheduler_name:
         scheduler_name = "scheduler"
     scheduler_options = config[scheduler_name]
-    scheduler = scheduler_dict[scheduler_options["scheduler_type"]]
-    return scheduler.from_config_create_scheduler(config, scheduler_name, driver_name)
+    if scheduler_options.get("external_python_module"):
+        module_path = scheduler_options["external_python_module"]
+        module_attribute = scheduler_options.get("scheduler_type")
+        scheduler_class = get_module_attribute(module_path, module_attribute)
+    else:
+        scheduler_class = get_option(scheduler_dict, scheduler_options.get("scheduler_type"))
+
+    return scheduler_class.from_config_create_scheduler(config, scheduler_name, driver_name)

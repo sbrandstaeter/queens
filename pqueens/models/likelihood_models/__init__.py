@@ -6,6 +6,8 @@ problems.
 """
 
 from pqueens.utils.get_experimental_data import get_experimental_data, write_experimental_data_to_db
+from pqueens.utils.import_utils import get_module_attribute
+from pqueens.utils.valid_options_utils import get_option
 
 
 def from_config_create_model(model_name, config):
@@ -33,7 +35,12 @@ def from_config_create_model(model_name, config):
 
     # get options
     model_options = config[model_name]
-    model_class = model_dict[model_options["subtype"]]
+    if model_options.get("external_python_module"):
+        module_path = model_options["external_python_module"]
+        module_attribute = model_options.get("subtype")
+        model_class = get_module_attribute(module_path, module_attribute)
+    else:
+        model_class = get_option(model_dict, model_options.get("subtype"))
 
     forward_model_name = model_options.get("forward_model")
     forward_model = from_config_create_model(forward_model_name, config)

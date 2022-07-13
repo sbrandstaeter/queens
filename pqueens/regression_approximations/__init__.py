@@ -32,6 +32,9 @@ def from_config_create_regression_approximation(config, approx_name, Xtrain, Ytr
     Returns:
         regression_approximation (obj): Approximation object
     """
+    from pqueens.utils.import_utils import get_module_attribute
+    from pqueens.utils.valid_options_utils import get_option
+
     from .bayesian_neural_network import GaussianBayesianNeuralNetwork
     from .gp_approximation_gpflow import GPFlowRegression
     from .gp_approximation_gpflow_svgp import GPflowSVGP
@@ -48,5 +51,11 @@ def from_config_create_regression_approximation(config, approx_name, Xtrain, Ytr
         'gp_approximation_gpflow_svgp': GPflowSVGP,
     }
     approx_options = config[approx_name]
-    approximation_class = approx_dict[approx_options["type"]]
+    if approx_options.get("external_python_module"):
+        module_path = approx_options["external_python_module"]
+        module_attribute = approx_options.get("type")
+        approximation_class = get_module_attribute(module_path, module_attribute)
+    else:
+        approximation_class = get_option(approx_dict, approx_options.get("type"))
+
     return approximation_class.from_config_create(config, approx_name, Xtrain, Ytrain)

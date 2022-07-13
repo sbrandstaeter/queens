@@ -1,7 +1,5 @@
 """Distributions."""
 
-from pqueens.utils.valid_options_utils import get_option
-
 
 def from_config_create_distribution(distribution_options):
     """Create distribution object from distribution options dictionary.
@@ -12,6 +10,9 @@ def from_config_create_distribution(distribution_options):
     Returns:
         distribution: Distribution object
     """
+    from pqueens.utils.import_utils import get_module_attribute
+    from pqueens.utils.valid_options_utils import get_option
+
     from .beta import BetaDistribution
     from .lognormal import LogNormalDistribution
     from .normal import NormalDistribution
@@ -24,13 +25,14 @@ def from_config_create_distribution(distribution_options):
         'beta': BetaDistribution,
     }
 
-    distribution_type = distribution_options.get('distribution', None)
-
-    # TODO: This if statement might be unnecessary once the variable class is updated
-    if distribution_type is not None:
+    if distribution_options.get("external_python_module"):
+        module_path = distribution_options["external_python_module"]
+        module_attribute = distribution_options.get("distribution")
+        distribution_class = get_module_attribute(module_path, module_attribute)
+    else:
         distribution_class = get_option(
             valid_options,
-            distribution_type,
+            distribution_options.get("distribution"),
             error_message="Requested distribution type not supported.",
         )
-        return distribution_class.from_config_create_distribution(distribution_options)
+    return distribution_class.from_config_create_distribution(distribution_options)

@@ -1,12 +1,16 @@
 """Import utils."""
 import importlib.util
+import logging
 import sys
 from pathlib import Path
+
+_logger = logging.getLogger(__name__)
+
 
 from pqueens.utils.path_utils import check_if_path_exists
 
 
-def load_function_or_class_by_name_from_path(path_to_module, function_or_class_name):
+def get_module_attribute(path_to_module, function_or_class_name):
     """Load function from python file by path.
 
     Args:
@@ -21,7 +25,7 @@ def load_function_or_class_by_name_from_path(path_to_module, function_or_class_n
     module_name = module_path_obj.stem
     module_ending = module_path_obj.suffix
 
-    # Check if file exsits
+    # Check if file exists
     if not check_if_path_exists(module_path_obj):
         raise FileNotFoundError(f"Could not find python file {path_to_module}.")
 
@@ -44,4 +48,8 @@ def load_function_or_class_by_name_from_path(path_to_module, function_or_class_n
             f"{function_or_class_name}"
         ) from error
 
+    _logger.debug(
+        f"Using now external Python method or class {function_or_class_name} \n"
+        f"in the file {path_to_module}."
+    )
     return function
