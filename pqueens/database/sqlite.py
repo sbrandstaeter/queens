@@ -156,7 +156,6 @@ class SQLite(Database):
         Here the connection is checked.
         """
         self._check_connection()
-        print(self)
         _logger.info(f"Connected to {self.database_path}")
 
     @safe_sqlitedb_operation
