@@ -10,6 +10,8 @@ from pymongo.errors import ServerSelectionTimeoutError
 
 from pqueens.database.mongodb import MongoDB
 
+pytestmark = pytest.mark.unit_tests
+
 
 @pytest.fixture(scope='module')
 def dummy_job():
@@ -158,24 +160,8 @@ def batch_id_2():
     return 2
 
 
-@pytest.fixture(scope="session")
-def username(session_mocker):
-    """Make sure username returned by getuser is a dummy test username.
-
-    This is necessary to ensure that the database tests do not interfere
-    with the actual databases of the user calling the tests.
-    """
-    username = "pytest"
-    session_mocker.patch('getpass.getuser', return_value=username)
-
-
-@pytest.mark.unit_tests
-def test_connection(username):
-    """Test connection to mongodb service.
-
-    Args:
-        username: mock username for safety reasons
-    """
+def test_connection():
+    """Test connection to mongodb service."""
 
     try:
         db = MongoDB.from_config_create_database({"database": {"address": "localhost:27017"}})
@@ -186,27 +172,18 @@ def test_connection(username):
     assert isinstance(db, MongoDB)
 
 
-@pytest.mark.unit_tests
-def test_connection_fails(username):
+def test_connection_fails():
     """Test for correct exception in case of failing connection to MongoDB
-    service.
-
-    Args:
-        username: mock username for safety reasons
-
-    Returns:
-    """
+    service."""
     with pytest.raises(ServerSelectionTimeoutError):
         db = MongoDB.from_config_create_database({"database": {"address": "localhos:2016"}})
         db._connect()
 
 
-@pytest.mark.unit_tests
-def test_read_write_delete(username, dummy_job, experiment_name, batch_id_1, job_id):
+def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
     """Test reading and writing to the database.
 
     Args:
-        username: mock username for safety reasons
         dummy_job: a test job that will be written and read to/from the database
         experiment_name: mock the experiment name of a QUEENS run needed for database name
         batch_id_1: (int) batch id needed for database name
@@ -253,8 +230,7 @@ def test_read_write_delete(username, dummy_job, experiment_name, batch_id_1, job
         assert not jobs
 
 
-@pytest.mark.unit_tests
-def test_write_multiple_entries(username, dummy_job, experiment_name, batch_id_2, job_id):
+def test_write_multiple_entries(dummy_job, experiment_name, batch_id_2, job_id):
 
     try:
         db = MongoDB.from_config_create_database(
@@ -281,7 +257,6 @@ def test_write_multiple_entries(username, dummy_job, experiment_name, batch_id_2
             db.save(dummy_job, experiment_name, 'jobs', batch_id_2, {"dummy_field1": "garbage"})
 
 
-@pytest.mark.unit_tests
 def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):
     try:
         db = MongoDB.from_config_create_database(
@@ -311,7 +286,6 @@ def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):
         )
 
 
-@pytest.mark.unit_tests
 def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
     try:
         db = MongoDB.from_config_create_database(
@@ -340,7 +314,6 @@ def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
         )
 
 
-@pytest.mark.unit_tests
 def test_pack_xarrays(dummy_doc_with_xarray_dataarray):
     try:
         db = MongoDB.from_config_create_database(
@@ -357,7 +330,6 @@ def test_pack_xarrays(dummy_doc_with_xarray_dataarray):
         db._pack_labeled_data(dummy_doc_with_xarray_dataarray, 'dummy', 'jobs', 1)
 
 
-@pytest.mark.unit_tests
 def test_unpack_labeled_data(dummy_job_with_result):
     try:
         db = MongoDB.from_config_create_database(
@@ -374,7 +346,6 @@ def test_unpack_labeled_data(dummy_job_with_result):
     assert isinstance(dummy_job_with_result[1]['result'], pd.DataFrame)
 
 
-@pytest.mark.unit_tests
 def test_unpack_list(dummy_job_with_list):
     try:
         db = MongoDB.from_config_create_database(
@@ -390,7 +361,6 @@ def test_unpack_list(dummy_job_with_list):
     assert isinstance(dummy_job_with_list[0]['result'], list)
 
 
-@pytest.mark.unit_tests
 def test_split_output_no_index():
 
     output_no_index = [
@@ -405,7 +375,6 @@ def test_split_output_no_index():
         MongoDB._split_output(output_no_index)
 
 
-@pytest.mark.unit_tests
 def test_split_output_simple_index(dummy_output_simple_index):
 
     data, index = MongoDB._split_output(dummy_output_simple_index)
@@ -413,7 +382,6 @@ def test_split_output_simple_index(dummy_output_simple_index):
     np.testing.assert_array_equal(data, expected_data)
 
 
-@pytest.mark.unit_tests
 def test_split_output_multi_index(dummy_output_multi_index):
 
     data, index = MongoDB._split_output(dummy_output_multi_index)
