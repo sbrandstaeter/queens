@@ -58,7 +58,6 @@ def main(args=None):
 
     with DB_module.database as db:
 
-        print(db)
         pre_processer = from_config_create_external_geometry(options, 'pre_processing')
         if pre_processer:
             pre_processer.main_run()
