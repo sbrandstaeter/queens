@@ -144,32 +144,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         """Post run routine."""
         pass
 
-    # ------------- private helper methods ----------------#
+    @abc.abstractmethod
     def _submit_driver(self, job_id, batch):
-        """Submit job to driver.
-
-        Args:
-            job_id (int):    ID of job to submit
-            batch (str):     Batch number of job
-
-        Returns:
-            driver_obj.pid (int): process ID
-        """
-        # create driver
-        # TODO we should not create the object here everytime!
-        # TODO instead only update the attributes of the instance.
-        # TODO we should specify the data base sheet as well
-        driver_obj = from_config_create_driver(
-            self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
-        )
-
-        # run driver and get process ID
-        driver_obj.pre_job_run_and_run_job()
-        pid = driver_obj.pid
-
-        # only required for standard scheduling: finish-and-clean call
-        # (taken care of by submit_data_processor for other schedulers)
-        if self.scheduler_type == 'standard':
-            driver_obj.post_job_run()
-
-        return pid
+        """Submit job to driver."""
+        pass
