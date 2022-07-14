@@ -18,12 +18,10 @@ class StandardScheduler(Scheduler):
     Args:
         experiment_name (str):     name of QUEENS experiment
         input_file (str):          path to QUEENS input file
-        restart (bool):            flag for restart
         experiment_dir (str):      path to QUEENS experiment directory
         driver_name (str):         Name of the driver that shall be used for job submission
         config (dict):             dictionary containing configuration as provided in
                                    QUEENS input file
-        restart (bool):            flag for restart
         cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                    cluster options
         remote (bool):             flag for remote scheduling
@@ -43,7 +41,6 @@ class StandardScheduler(Scheduler):
         self,
         experiment_name,
         input_file,
-        restart,
         experiment_dir,
         driver_name,
         config,
@@ -56,12 +53,10 @@ class StandardScheduler(Scheduler):
         Args:
             experiment_name (str):     name of QUEENS experiment
             input_file (str):          path to QUEENS input file
-            restart (bool):            flag for restart
             experiment_dir (str):      path to QUEENS experiment directory
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
-            restart (bool):            flag for restart
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
             remote (bool):             flag for remote scheduling
@@ -79,7 +74,6 @@ class StandardScheduler(Scheduler):
         super().__init__(
             experiment_name,
             input_file,
-            restart,
             experiment_dir,
             driver_name,
             config,
@@ -110,7 +104,6 @@ class StandardScheduler(Scheduler):
         experiment_name = config['global_settings']['experiment_name']
         experiment_dir = scheduler_options['experiment_dir']
         input_file = config["input_file"]
-        restart = config.get("restart", False)
         singularity = scheduler_options.get('singularity', False)
         if not isinstance(singularity, bool):
             raise TypeError(
@@ -136,7 +129,6 @@ class StandardScheduler(Scheduler):
         return cls(
             experiment_name,
             input_file,
-            restart,
             experiment_dir,
             driver_name,
             config,
@@ -153,7 +145,7 @@ class StandardScheduler(Scheduler):
         """
         pass
 
-    def _submit_singularity(self, job_id, batch, restart):
+    def _submit_singularity(self, job_id, batch):
         """Submit job locally to Singularity.
 
         Args:
@@ -169,26 +161,15 @@ class StandardScheduler(Scheduler):
         )
         local_singularity_path = relative_path_from_queens("singularity_image.sif")
 
-        if restart:
-            cmdlist_remote_main = [
-                'singularity run',
-                local_singularity_path,
-                remote_args,
-                '--post=true',
-            ]
-            cmd_remote_main = ' '.join(cmdlist_remote_main)
-            run_subprocess(cmd_remote_main)
-            return 0
-        else:
-            cmdlist_remote_main = [
-                'singularity run',
-                local_singularity_path,
-                remote_args,
-            ]
-            cmd_remote_main = ' '.join(cmdlist_remote_main)
-            print(cmd_remote_main)
-            _, pid, _, _ = run_subprocess(cmd_remote_main, subprocess_type='submit')
-            return pid
+        cmdlist_remote_main = [
+            'singularity run',
+            local_singularity_path,
+            remote_args,
+        ]
+        cmd_remote_main = ' '.join(cmdlist_remote_main)
+        print(cmd_remote_main)
+        _, pid, _, _ = run_subprocess(cmd_remote_main, subprocess_type='submit')
+        return pid
 
     def check_job_completion(self, job):
         """Check whether this job has been completed.
@@ -200,7 +181,7 @@ class StandardScheduler(Scheduler):
             completed (bool): If job is completed
             failed (bool): If job failed.
         """
-        # intialize completion and failure flags to false
+        # initialize completion and failure flags to false
         # (Note that failure is not checked for standard scheduler
         #  and returned false in any case.)
         failed = False
