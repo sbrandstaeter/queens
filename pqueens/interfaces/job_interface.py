@@ -309,15 +309,6 @@ class JobInterface(Interface):
 
         return job
 
-    def remove_jobs(self):
-        """Remove jobs from the jobs database."""
-        self.db.remove(
-            self.experiment_name,
-            'jobs_' + self.driver_name,
-            str(self.batch_number),
-            {'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
-        )
-
     def all_jobs_finished(self):
         """Determine whether all jobs are finished.
 
@@ -556,13 +547,13 @@ class JobInterface(Interface):
             total_complete += complete
             total_failed += failed
             _logger.info(
-                '{}{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
-                    indentation, resource.name, pending, complete, failed
+                '{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
+                    resource.name, pending, complete, failed
                 )
             )
         _logger.info(
-            '{}{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
-                indentation, '*TOTAL*', total_pending, total_complete, total_failed
+            '{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
+                '*TOTAL*', total_pending, total_complete, total_failed
             )
         )
         _logger.info('\n')
