@@ -11,6 +11,8 @@ import pytest
 from pqueens.main import get_options
 from pqueens.main import main as queens_main
 
+pytestmark = pytest.mark.unit_tests
+
 
 class TestQUEENSMain(unittest.TestCase):
     """Unit tests related to the main."""
@@ -36,7 +38,6 @@ class TestQUEENSMain(unittest.TestCase):
             'yes',
         ]
 
-    @pytest.mark.unit_tests
     @mock.patch('pqueens.main.from_config_create_iterator')
     @mock.patch('pqueens.main.get_options')
     def test_main_function(self, mock_parser, mock_iterator):
@@ -46,7 +47,6 @@ class TestQUEENSMain(unittest.TestCase):
         mock_iterator.assert_called_with(self.options)
         mock_iterator.return_value.run.assert_called()
 
-    @pytest.mark.unit_tests
     @mock.patch("json.load", return_value={"experiment_name": "entry"})
     @mock.patch("builtins.open", create=True)
     @mock.patch('os.path.isdir', return_value=True)
@@ -55,14 +55,12 @@ class TestQUEENSMain(unittest.TestCase):
         get_options(self.args)
         mock_isdir.assert_called_with('/dummy/path')
 
-    @pytest.mark.unit_tests
     @mock.patch('os.path.isdir', return_value=True)
     def test_option_parsing(self, mock_isdir):
         """Test option parsing."""
         with self.assertRaises(FileNotFoundError):
             get_options(self.args)
 
-    @pytest.mark.unit_tests
     @mock.patch("json.load", return_value={"experiment_name": "entry"})
     @mock.patch("builtins.open", create=True)
     def test_option_parsing_no_proper_output_dir(self, mock_open, mock_json):
@@ -71,14 +69,12 @@ class TestQUEENSMain(unittest.TestCase):
         with self.assertRaises(Exception):
             get_options(args)
 
-    @pytest.mark.unit_tests
     @mock.patch("os.path.realpath", return_value="/dummy/path")
     def test_option_parsing_no_proper_input_file(self, mock_realpath):
         """Test if error is raised for invalid inputs."""
         with self.assertRaises(Exception):
             get_options(self.args)
 
-    @pytest.mark.unit_tests
     @mock.patch("json.load", return_value={"experiment_name": "entry"})
     @mock.patch("builtins.open", create=True)
     @mock.patch('os.path.isdir', return_value=True)
