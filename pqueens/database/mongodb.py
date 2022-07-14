@@ -124,8 +124,7 @@ class MongoDB(Database):
 
         # Try the connection
         # Here the decorator is called directly rather than the whole function
-        safe_mongodb_operation(self.mongo_client.server_info())()
-
+        safe_mongodb_operation(self.mongo_client.server_info)()
         self.db_obj = self.mongo_client[self.db_name]
 
         _logger.info(f"Connected to {self.db_address}")
@@ -340,7 +339,9 @@ class MongoDB(Database):
         Args:
             dbdocs (list): documents from database
         """
-        for current_doc in dbdocs:
+        # TODO: we should use a return statement, reference based is a dangerous game
+        for idx in range(len(dbdocs)):
+            current_doc = dbdocs[idx]
             current_result = current_doc.get('result', None)
 
             if isinstance(current_result, list) and isinstance(current_result[0], list):
