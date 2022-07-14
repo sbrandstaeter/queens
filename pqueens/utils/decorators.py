@@ -44,7 +44,8 @@ def safe_operation(function, max_number_of_attempts=10, waiting_time=0.01):
                     )
                     sleep(waiting_time)
                 else:
-                    raise ValueError(
+                    # Raise the same error type as the original exception did
+                    raise type(error)(
                         f"Function {function_name} failed after {max_number_of_attempts} attempts!"
                     ) from error
 
