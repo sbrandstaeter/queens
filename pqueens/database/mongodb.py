@@ -124,7 +124,7 @@ class MongoDB(Database):
 
         # Try the connection
         # Here the decorator is called directly rather than the whole function
-        safe_mongodb_operation(self.mongo_client.server_info())
+        safe_mongodb_operation(self.mongo_client.server_info())()
 
         self.db_obj = self.mongo_client[self.db_name]
 
