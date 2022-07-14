@@ -9,6 +9,7 @@ import pandas as pd
 import xarray as xr
 
 from pqueens.utils.decorators import safe_operation
+from pqueens.utils.dictionary_utils import findkeys
 from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.restructure_data_format import (
     boolean_from_binary,
@@ -118,6 +119,14 @@ class SQLite(Database):
             db_path = Path(db_path)
         reset_existing_db = config['database'].get('reset_existing_db', True)
 
+        # Check if the QUEENS run is remote
+        for remote_bool in findkeys(config, "remote"):
+            if remote_bool:
+                raise NotImplementedError(
+                    "QUEENS with Sqlite can currently not be used for remote computations! Switch"
+                    " to MongoDB if available"
+                )
+
         return cls(db_name=db_name, reset_existing_db=reset_existing_db, database_path=db_path)
 
     def __init__(self, db_name, reset_existing_db, database_path):
@@ -207,15 +216,24 @@ class SQLite(Database):
         self.existing_tables.pop(table_name)
 
     def _get_table_info_from_query(self, table_name):
+        """Get column names and types through query.
+
+        Args:
+            table_name (str): Table names
+
+        Returns:
+            column_names (list): List of column names
+            column_data_types (list): List of column data types
+        """
         query = f"PRAGMA table_info({table_name})"
         cursor = self._execute(query)
         columns = cursor.fetchall()
         column_names = []
-        column_data_type = []
+        column_data_types = []
         for column in columns:
             column_names.append(column[1])
-            column_data_type.append(column[2])
-        return column_names, column_data_type
+            column_data_types.append(column[2])
+        return column_names, column_data_types
 
     def _delete_all_tables(self):
         """Delete all tables."""
@@ -224,6 +242,7 @@ class SQLite(Database):
             self._delete_table(table_name)
 
     def _get_exsiting_tables(self):
+        """Query table info from database."""
         table_names = self._get_all_table_names()
         for table_name in table_names:
             column_names, column_data_types = self._get_table_info_from_query(table_name)
@@ -378,6 +397,15 @@ class SQLite(Database):
             return None
 
     def _list_of_entry_dicts(self, table_name, entries):
+        """Create a dict with the column names.
+
+        Args:
+            table_name (str): Table name
+            entries (list): List obtained from the sqlite api
+
+        Returns:
+            list: List of entries as dicts
+        """
         column_names = self._get_table_column_names(table_name)
         list_of_dict_entries = []
         for entry in entries:

@@ -39,7 +39,7 @@ def fixture_db_sqlite(tmp_path):
             "name": "test_db",
             "file": tmp_path.joinpath("../test_sqlite.db"),
             "reset_existing_db": False,
-        }
+        },
     }
     db = SQLite.from_config_create_database(db_dict)
     return db
@@ -150,3 +150,17 @@ def test_delete_table(db_sqlite):
             == list(db_sqlite.existing_tables.keys())
             == ['table_1']
         )
+
+
+def test_remote_option_with_sqlite(tmp_path):
+    """Test if error is raised for remote runs."""
+    db_dict = {
+        "database": {
+            "name": "test_db",
+            "reset_existing_db": False,
+            "file": tmp_path.joinpath("../test_sqlite.db"),
+        },
+        "interface": {"scheduler": {"remote": "True"}},
+    }
+    with pytest.raises(NotImplementedError):
+        SQLite.from_config_create_database(db_dict)
