@@ -21,7 +21,7 @@ _logger = logging.getLogger(__name__)
 class ClusterScheduler(Scheduler):
     """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS.
 
-    Args:
+    Attributes:
         experiment_name (str):     name of QUEENS experiment
         input_file (str):          path to QUEENS input file
         experiment_dir (str):      path to QUEENS experiment directory
@@ -55,6 +55,7 @@ class ClusterScheduler(Scheduler):
         singularity_manager,
         remote,
         remote_connect,
+        max_concurrent,
     ):
         """Init method for the cluster scheduler.
 
@@ -71,12 +72,13 @@ class ClusterScheduler(Scheduler):
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             singularity_manager (obj): instance of Singularity-manager class
             remote (bool):             flag for remote scheduling
-            remote_connect (str):      (only for remote scheduling) adress of remote
+            remote_connect (str):      (only for remote scheduling) address of remote
                                        computing resource
             port (int):                (only for remote scheduling with Singularity) port of
                                        remote resource for ssh port-forwarding to database
             process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids
                                 as keys
+            max_concurrent (int): Number of maximum jobs that run in parallel
         """
         super().__init__(
             experiment_name,
@@ -87,6 +89,7 @@ class ClusterScheduler(Scheduler):
             cluster_options,
             singularity,
             scheduler_type,
+            max_concurrent,
         )
         self.singularity_manager = singularity_manager
         self.remote = remote
@@ -97,13 +100,16 @@ class ClusterScheduler(Scheduler):
         atexit.register(self.post_run)
 
     @classmethod
-    def from_config_create_scheduler(cls, config, scheduler_name=None, driver_name=None):
+    def from_config_create_scheduler(
+        cls, config, scheduler_name=None, driver_name=None, max_concurrent=1
+    ):
         """Create cluster scheduler (Slurm or Torque/PBS) class for QUEENS.
 
         Args:
             config (dict): QUEENS input dictionary
             scheduler_name (str): Name of the scheduler
             driver_name (str): Name of the driver
+            max_concurrent (int): Number of maximum jobs that run in parallel
 
         Returns:
             instance of cluster scheduler class
@@ -230,6 +236,7 @@ class ClusterScheduler(Scheduler):
             singularity_manager=singularity_manager,
             remote=remote,
             remote_connect=remote_connect,
+            max_concurrent=max_concurrent,
         )
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
@@ -410,14 +417,8 @@ class ClusterScheduler(Scheduler):
         driver_obj = from_config_create_driver(
             self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
         )
-
         # run driver and get process ID
         driver_obj.pre_job_run_and_run_job()
         pid = driver_obj.pid
-
-        # only required for standard scheduling: finish-and-clean call
-        # (taken care of by submit_data_processor for other schedulers)
-        if self.scheduler_type == 'standard':
-            driver_obj.post_job_run()
 
         return pid

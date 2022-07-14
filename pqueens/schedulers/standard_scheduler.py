@@ -1,7 +1,6 @@
 """Standard scheduler for QUEENS runs."""
 import logging
-import multiprocessing as mp
-from multiprocessing import Pool
+from threading import Thread
 
 from pqueens.drivers import from_config_create_driver
 from pqueens.utils.information_output import print_scheduling_information
@@ -18,15 +17,13 @@ _logger = logging.getLogger(__name__)
 class StandardScheduler(Scheduler):
     """Standard scheduler class for QUEENS.
 
-    Args:
+    Attributes:
         experiment_name (str):     name of QUEENS experiment
         input_file (str):          path to QUEENS input file
         experiment_dir (str):      path to QUEENS experiment directory
         driver_name (str):         Name of the driver that shall be used for job submission
         config (dict):             dictionary containing configuration as provided in
                                    QUEENS input file
-        cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
-                                   cluster options
         remote (bool):             flag for remote scheduling
         remote connect (str):      (only for remote scheduling) address of remote
                                    computing resource
@@ -50,6 +47,7 @@ class StandardScheduler(Scheduler):
         cluster_options,
         singularity,
         scheduler_type,
+        max_concurrent,
     ):
         """Initialize Standard scheduler.
 
@@ -73,6 +71,7 @@ class StandardScheduler(Scheduler):
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids
                                 as keys
+            max_concurrent (int): Number of maximum jobs that run in parallel
         """
         super().__init__(
             experiment_name,
@@ -83,16 +82,18 @@ class StandardScheduler(Scheduler):
             cluster_options,
             singularity,
             scheduler_type,
+            max_concurrent,
         )
 
     @classmethod
-    def from_config_create_scheduler(cls, config, scheduler_name, driver_name):
+    def from_config_create_scheduler(cls, config, scheduler_name, driver_name, max_concurrent):
         """Create standard scheduler object from config.
 
         Args:
             config (dict): QUEENS input dictionary
             scheduler_name (str): Name of the scheduler
             driver_name (str): Name of the driver
+            max_concurrent (int): Number of maximum jobs that run in parallel
 
         Returns:
             instance of standard scheduler class
@@ -138,6 +139,7 @@ class StandardScheduler(Scheduler):
             cluster_options,
             singularity,
             scheduler_type,
+            max_concurrent,
         )
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
@@ -213,17 +215,37 @@ class StandardScheduler(Scheduler):
         # TODO we should not create the object here everytime!
         # TODO instead only update the attributes of the instance.
         # TODO we should specify the data base sheet as well
-        driver_obj = from_config_create_driver(
-            self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
-        )
+        if self.max_concurrent == 1:
+            # sequential scheduling
+            pid = StandardScheduler.driver_execution_helper_fun(
+                self.config, job_id, batch, self.driver_name
+            )
+        else:
+            # run the drivers in separate threads to enable parallel execution
+            Thread(
+                target=StandardScheduler.driver_execution_helper_fun,
+                args=(self.config, job_id, batch, self.driver_name),
+            )
+            pid = 0
 
+        return pid
+
+    @staticmethod
+    def driver_execution_helper_fun(config, job_id, batch, driver_name):
+        """Helper function to execute driver commands.
+
+        Args:
+            config (dict): Input file problem description
+            job_id (int): Id number of the current job
+            batch (int): Number of the current batch
+            driver_name (str): Name of the driver module in input file
+
+        Returns:
+            pid (int): Process ID
+        """
+        driver_obj = from_config_create_driver(config, job_id, batch, driver_name)
         # run driver and get process ID
         driver_obj.pre_job_run_and_run_job()
         pid = driver_obj.pid
-
-        # only required for standard scheduling: finish-and-clean call
-        # (taken care of by submit_data_processor for other schedulers)
-        if self.scheduler_type == 'standard':
-            driver_obj.post_job_run()
-
+        driver_obj.post_job_run()
         return pid
