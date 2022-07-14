@@ -11,6 +11,8 @@ import xarray as xr
 from pqueens.utils.decorators import safe_operation
 from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.restructure_data_format import (
+    boolean_from_binary,
+    boolean_to_binary,
     np_array_from_binary,
     np_array_to_binary,
     obj_from_binary,
@@ -52,6 +54,8 @@ def type_to_sqlite(object):
     Returns:
         (str) sqlite data type
     """
+    if isinstance(object, bool):
+        return "BOOLEAN"
     if isinstance(object, str):
         return "TEXT"
     if isinstance(object, int):
@@ -76,6 +80,7 @@ sqlite3.register_adapter(xr.DataArray, sqlite_binary_wrapper(obj_to_binary))
 sqlite3.register_adapter(pd.DataFrame, sqlite_binary_wrapper(pd_dataframe_to_binary))
 sqlite3.register_adapter(list, sqlite_binary_wrapper(obj_to_binary))
 sqlite3.register_adapter(dict, sqlite_binary_wrapper(obj_to_binary))
+sqlite3.register_adapter(bool, sqlite_binary_wrapper(boolean_to_binary))
 
 # Add the converters, i.e. back to the objects
 sqlite3.register_converter("NPARRAY", np_array_from_binary)
@@ -83,6 +88,7 @@ sqlite3.register_converter("XARRAY", obj_from_binary)
 sqlite3.register_converter("PDDATAFRAME", pd_dataframe_from_binary)
 sqlite3.register_converter("LIST", obj_from_binary)
 sqlite3.register_converter("DICT", obj_from_binary)
+sqlite3.register_converter("BOOLEAN", boolean_from_binary)
 
 
 class SQLite(Database):
@@ -150,7 +156,7 @@ class SQLite(Database):
         Here the connection is checked.
         """
         self._check_connection()
-
+        print(self)
         _logger.info(f"Connected to {self.database_path}")
 
     @safe_sqlitedb_operation
@@ -189,7 +195,7 @@ class SQLite(Database):
         """
         query = "SELECT name FROM sqlite_schema WHERE type='table';"
         cursor = self._execute(query)
-        return cursor.fetchall()
+        return [table_name[0] for table_name in cursor.fetchall()]
 
     def _delete_table(self, table_name):
         """Delete table by name.
@@ -198,19 +204,43 @@ class SQLite(Database):
             table_name (table_name): Name of the table
         """
         query = f"DROP TABLE {table_name};"
-        self._execute(query)
+        self._execute(query, commit=True)
+        self.existing_tables.pop(table_name)
 
-    def _clean_database(self):
+    def _get_table_info_from_query(self, table_name):
+        query = f"PRAGMA table_info({table_name})"
+        cursor = self._execute(query)
+        columns = cursor.fetchall()
+        column_names = []
+        column_data_type = []
+        for column in columns:
+            column_names.append(column[1])
+            column_data_type.append(column[2])
+        return column_names, column_data_type
+
+    def _delete_all_tables(self):
         """Delete all tables."""
         table_names = self._get_all_table_names()
         for table_name in table_names:
-            self._delete_table(table_name[0])
+            self._delete_table(table_name)
+
+    def _get_exsiting_tables(self):
+        table_names = self._get_all_table_names()
+        for table_name in table_names:
+            column_names, column_data_types = self._get_table_info_from_query(table_name)
+            self.existing_tables[table_name] = dict(zip(column_names, column_data_types))
+
+    def _clean_database(self):
+        """Delete all tables."""
+        if self.database_path.is_file():
+            if self.reset_existing_db:
+                self._delete_all_tables()
+            else:
+                self._get_exsiting_tables()
 
     def _delete_database(self):
         """Delete database file."""
         self._disconnect()
-        # Delete database file
-        self.database_path.unlink()
 
     def _update_tables_if_necessary(self, table_name):
         """Add table if it does not exist.
@@ -312,7 +342,6 @@ class SQLite(Database):
             ]
             query += f" WHERE {' AND '.join(filter_conditions)}"
             items += tuple(field_filters.values())
-
         self._execute(query, parameters=items, commit=True)
 
     def load(self, experiment_name, batch, experiment_field, field_filters=None):
@@ -354,7 +383,6 @@ class SQLite(Database):
         list_of_dict_entries = []
         for entry in entries:
             entry_dict = dict(zip(column_names, entry))
-            # entry_dict.pop("id")
             entry_dict.pop("batch")
             list_of_dict_entries.append(entry_dict)
         return list_of_dict_entries
@@ -369,14 +397,17 @@ class SQLite(Database):
             field_filters (dict):      filter to find appropriate document(s)
                                        to delete
         """
-        table_name = experiment_field
-        field_filters.update({"batch": batch})
-        filter_conditions = [
-            f"{filter_column}='{filter_item}'"
-            for filter_column, filter_item in field_filters.items()
-        ]
-        query = f"DELETE FROM {table_name} WHERE {' AND '.join(filter_conditions)};"
-        self._execute(query, commit=True)
+        if field_filters:
+            table_name = experiment_field
+            field_filters.update({"batch": batch})
+            filter_conditions = [
+                f"{filter_column}='{filter_item}'"
+                for filter_column, filter_item in field_filters.items()
+            ]
+            query = f"DELETE FROM {table_name} WHERE {' AND '.join(filter_conditions)};"
+            self._execute(query, commit=True)
+        else:
+            raise QUEENSDatabaseError("No field filters for which the data should be removed!")
 
     def __str__(self):
         """String function of the sqlite object.
@@ -384,7 +415,11 @@ class SQLite(Database):
         Returns:
             str: table with information
         """
-        print_dict = {"Name": self.db_name, "File": self.database_path.resolve()}
+        print_dict = {
+            "Name": self.db_name,
+            "File": self.database_path.resolve(),
+            "Reset db": self.reset_existing_db,
+        }
         table = get_str_table("QUEENS SQLite database object wrapper", print_dict)
         return table
 

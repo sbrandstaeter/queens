@@ -199,3 +199,27 @@ def pd_dataframe_from_binary(binarized_dataframe):
     out = io.BytesIO(binarized_dataframe)
     out.seek(0)
     return pd.read_pickle(out)
+
+
+def boolean_to_binary(boolean):
+    """Encode bool to binary.
+
+    Args:
+        boolean (bool): Bool to be encoded
+
+    Returns:
+        bytes: encoded boolean
+    """
+    return bytes(boolean)
+
+
+def boolean_from_binary(binarized_boolean):
+    """Decode binary back to bool.
+
+    Args:
+        binarized_bool (bytes): binarized bool
+
+    Returns:
+        bool: decoded bool
+    """
+    return bool(binarized_boolean)
