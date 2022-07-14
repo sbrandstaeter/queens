@@ -217,7 +217,9 @@ paramz==0.9.5
 particles==0.3
     # via -r requirements.in
 pathos==0.2.9
-    # via salib
+    # via
+    #   -r requirements.in
+    #   salib
 pillow==9.1.1
     # via matplotlib
 plotly==5.8.2
@@ -254,6 +256,8 @@ pyparsing==3.0.9
     # via
     #   matplotlib
     #   packaging
+pysqlite3==0.4.7
+    # via -r requirements.in
 pytest==7.1.2
     # via
     #   -r requirements.in

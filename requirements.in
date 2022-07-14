@@ -10,6 +10,7 @@ pandas==1.2.4
 
 # Others
 pymongo<=3.12.0 # MongoDB
+pysqlite3 # sqlite
 xarray # Special array format
 pyDOE # design of experiments
 SALib # for sensitivity analysis
