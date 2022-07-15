@@ -134,6 +134,9 @@ class StandardScheduler(Scheduler):
         )
         # find the max_concurrent key in the input file
         max_concurrent = findkeys(config, "max-concurrent")
+        if max_concurrent is None:
+            max_concurrent = 1
+            
         return cls(
             experiment_name,
             input_file,
