@@ -225,7 +225,7 @@ class StandardScheduler(Scheduler):
             Thread(
                 target=StandardScheduler.driver_execution_helper_fun,
                 args=(self.config, job_id, batch, self.driver_name),
-            )
+            ).start()
             pid = 0
 
         return pid
