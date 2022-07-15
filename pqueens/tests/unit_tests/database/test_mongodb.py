@@ -196,7 +196,7 @@ def test_connection_fails(username):
 
     Returns:
     """
-    with pytest.raises(ServerSelectionTimeoutError):
+    with pytest.raises(ValueError):
         db = MongoDB.from_config_create_database({"database": {"address": "localhos:2016"}})
         db._connect()
 
