@@ -32,7 +32,6 @@ class Scheduler(metaclass=abc.ABCMeta):
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids
                                 as keys
-            max_concurrent (int): Number of maximum jobs that run in parallel
     """
 
     def __init__(
@@ -45,7 +44,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         cluster_options,
         singularity,
         scheduler_type,
-        max_concurrent,
     ):
         """Initialise Scheduler.
 
@@ -67,7 +65,6 @@ class Scheduler(metaclass=abc.ABCMeta):
                                        cluster options
             singularity (bool):        flag for use of Singularity containers
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
-            max_concurrent (int): Number of maximum jobs that run in parallel
 
         Returns:
             scheduler (obj):           instance of scheduler class
@@ -81,7 +78,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.scheduler_type = scheduler_type
         self.singularity = singularity
         self.process_ids = {}
-        self.max_concurrent = max_concurrent
 
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
     def submit(self, job_id, batch):

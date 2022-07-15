@@ -71,7 +71,6 @@ def resource_factory(resource_name, exp_name, config, driver_name):
         scheduler_name=scheduler_name,
         config=config,
         driver_name=driver_name,
-        max_concurrent=max_concurrent,
     )
     # Create/update singularity image in case of cluster job
     scheduler.pre_run()

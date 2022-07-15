@@ -3,6 +3,7 @@ import logging
 from threading import Thread
 
 from pqueens.drivers import from_config_create_driver
+from pqueens.utils.dictionary_utils import findkeys
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import _check_if_new_image_needed, create_singularity_image
 from pqueens.utils.path_utils import relative_path_from_queens
@@ -35,6 +36,7 @@ class StandardScheduler(Scheduler):
         scheduler_type (str):      type of scheduler chosen in QUEENS input file
         process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids as
                            keys
+        max_concurrent (int): Number of maximum jobs that run in parallel
     """
 
     def __init__(
@@ -61,7 +63,7 @@ class StandardScheduler(Scheduler):
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
             remote (bool):             flag for remote scheduling
-            remote connect (str):      (only for remote scheduling) adress of remote
+            remote connect (str):      (only for remote scheduling) address of remote
                                        computing resource
             port (int):                (only for remote scheduling with Singularity) port of
                                        remote resource for ssh port-forwarding to database
@@ -82,11 +84,11 @@ class StandardScheduler(Scheduler):
             cluster_options,
             singularity,
             scheduler_type,
-            max_concurrent,
         )
+        self.max_concurrent = max_concurrent
 
     @classmethod
-    def from_config_create_scheduler(cls, config, scheduler_name, driver_name, max_concurrent):
+    def from_config_create_scheduler(cls, config, scheduler_name, driver_name):
         """Create standard scheduler object from config.
 
         Args:
@@ -130,6 +132,8 @@ class StandardScheduler(Scheduler):
             None,
             singularity,
         )
+        # find the max_concurrent key in the input file
+        max_concurrent = findkeys(config, "max-concurrent")
         return cls(
             experiment_name,
             input_file,

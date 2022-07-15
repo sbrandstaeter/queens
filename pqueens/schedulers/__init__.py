@@ -6,7 +6,7 @@ simple system call.
 """
 
 
-def from_config_create_scheduler(config, scheduler_name=None, driver_name=None, max_concurrent=1):
+def from_config_create_scheduler(config, scheduler_name=None, driver_name=None):
     """Create scheduler from problem configuration.
 
     Args:
@@ -14,7 +14,6 @@ def from_config_create_scheduler(config, scheduler_name=None, driver_name=None, 
                               as provided in QUEENS input file
         scheduler_name (str): Name of scheduler
         driver_name (str): Name of driver that should be used in this job-submission
-        max_concurrent (int): Number of maximum jobs that run in parallel
 
     Returns:
         Scheduler object
@@ -44,6 +43,4 @@ def from_config_create_scheduler(config, scheduler_name=None, driver_name=None, 
     else:
         scheduler_class = get_option(scheduler_dict, scheduler_options.get("scheduler_type"))
 
-    return scheduler_class.from_config_create_scheduler(
-        config, scheduler_name, driver_name, max_concurrent
-    )
+    return scheduler_class.from_config_create_scheduler(config, scheduler_name, driver_name)
