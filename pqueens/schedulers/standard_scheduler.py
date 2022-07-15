@@ -133,8 +133,10 @@ class StandardScheduler(Scheduler):
             singularity,
         )
         # find the max_concurrent key in the input file
-        max_concurrent = findkeys(config, "max-concurrent")
-        if max_concurrent is None:
+        max_concurrent_lst = [value for value in findkeys(config, "max-concurrent")]
+        if max_concurrent_lst:
+            max_concurrent = max_concurrent_lst[0]
+        else:
             max_concurrent = 1
 
         return cls(
