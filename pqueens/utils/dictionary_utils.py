@@ -9,7 +9,7 @@ def findkeys(dictionary, key):
         key ('str'): String of key in dictionary we are interested in
         dictionary (dict): Actual dictionary variable
 
-    Retruns:
+    Returns:
         result (list): List of values that have the specified key.
     """
     if isinstance(dictionary, list):

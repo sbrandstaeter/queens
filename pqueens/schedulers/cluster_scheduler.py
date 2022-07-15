@@ -5,6 +5,7 @@ import os
 
 import numpy as np
 
+from pqueens.drivers import from_config_create_driver
 from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
@@ -20,7 +21,7 @@ _logger = logging.getLogger(__name__)
 class ClusterScheduler(Scheduler):
     """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS.
 
-    Args:
+    Attributes:
         experiment_name (str):     name of QUEENS experiment
         input_file (str):          path to QUEENS input file
         experiment_dir (str):      path to QUEENS experiment directory
@@ -70,7 +71,7 @@ class ClusterScheduler(Scheduler):
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             singularity_manager (obj): instance of Singularity-manager class
             remote (bool):             flag for remote scheduling
-            remote_connect (str):      (only for remote scheduling) adress of remote
+            remote_connect (str):      (only for remote scheduling) address of remote
                                        computing resource
             port (int):                (only for remote scheduling with Singularity) port of
                                        remote resource for ssh port-forwarding to database
@@ -391,3 +392,26 @@ class ClusterScheduler(Scheduler):
             self.singularity_manager.close_local_port_forwarding()
             self.singularity_manager.close_remote_port(self.port)
             print('All port-forwardings were closed again.')
+
+    def _submit_driver(self, job_id, batch):
+        """Submit job to driver.
+
+        Args:
+            job_id (int):    ID of job to submit
+            batch (str):     Batch number of job
+
+        Returns:
+            driver_obj.pid (int): process ID
+        """
+        # create driver
+        # TODO we should not create the object here everytime!
+        # TODO instead only update the attributes of the instance.
+        # TODO we should specify the data base sheet as well
+        driver_obj = from_config_create_driver(
+            self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
+        )
+        # run driver and get process ID
+        driver_obj.pre_job_run_and_run_job()
+        pid = driver_obj.pid
+
+        return pid
