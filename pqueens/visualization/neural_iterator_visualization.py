@@ -4,6 +4,7 @@ import sys
 import math
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib import cm
 
 from pqueens.visualization.custom_decision_boundary import DecisionBoundaryDisplay
@@ -90,7 +91,7 @@ class NeuralIteratorVisualization(object):
         plot_booleans = plotting_options.get("plot_booleans")
 
         # get the variable names
-        random_variables = config[iterator_name]["parameters"].get("random_variables")
+        random_variables = config["parameters"].get("random_variables")
         var_names_list = []
         if random_variables is not None:
             for variable_name, _ in random_variables.items():
@@ -107,17 +108,17 @@ class NeuralIteratorVisualization(object):
             output (dict):       Classification results obtained from simulation
             samples (np.array):     Array with sample points, size: (num_sample_points, num_params)
             num_params (int):    Number of parameters varied
-            clf (Classifier):    utils.convergence_classifiers.Classifier instance for evaluation
+            clf (Classifier from sklearn):    classifier instance for evaluation, e.g. GaussianProcessClassifier
         """
         if self.plot_booleans[0] is True or self.save_bools[0] is True:
             num_combinations, idx = _get_axes(num_params)
             fig, ax = plt.subplots(figsize=(10 * num_combinations, 10), ncols=num_combinations)
             for i, params in enumerate(idx):
-                axis = ax[i] if clf.n_params > 2 else ax
+                axis = ax[i] if num_params > 2 else ax
                 disp = DecisionBoundaryDisplay.from_estimator(
-                    clf._clf,
+                    clf,
                     samples[:, params],
-                    n_params=clf.n_params,
+                    n_params=num_params,
                     params=params,
                     ax=axis,
                     response_method="predict",
@@ -126,7 +127,7 @@ class NeuralIteratorVisualization(object):
                     xlabel=self.var_names_list[params[0]],
                     ylabel=self.var_names_list[params[1]],
                 )
-                axis.scatter(samples[:, params[0]], samples[:, params[1]], c=output, cmap=cm.coolwarm, s=20,
+                axis.scatter(samples[:, params[0]], samples[:, params[1]], c=(~np.isnan(output["mean"][:, 0])).astype(np.int64), cmap=cm.coolwarm, s=20,
                              edgecolors="k")
             _save_plot(self.save_bools[0], self.saving_paths_list[0])
 

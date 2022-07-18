@@ -1,13 +1,12 @@
 """Classifiers for use in convergence classification"""
+from pathlib import Path
 
 from sklearn.svm import SVC, SVR
 
 from sklearn.neural_network import MLPClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier
-
 from skactiveml.classifier import SklearnClassifier
 from skactiveml.pool import UncertaintySampling
-from skactiveml.utils import unlabeled_indices, labeled_indices, MISSING_LABEL
 
 import numpy as np
 from typing import Union, Any
@@ -31,17 +30,16 @@ class Classifier:
     def __init__(self, n_params: int):
         self.n_params = n_params
 
-    def train(self, X_train: np.ndarray, y_true: np.ndarray, n_cycles: int) -> None:
+    def train(self, X_train: np.ndarray, y_true: np.ndarray):
         """
         Train the underlying _clf classifier.
 
         Args:
             X_train: array with training samples, size: (n_samples, n_params)
             y_true: vector with corresponding training labels, size: (n_samples)
-            n_cycles: number of labeled data points to query in active learning
 
         Returns:
-            None
+            None or query index for active sampling
         """
         self._clf.fit(X_train, y_true)
 
@@ -56,12 +54,14 @@ class Classifier:
         """
         return np.round(self._clf.predict(X_test))
 
-    def save(self):
-        with open('clf_model.pkl', 'w') as file:
+    def save(self, path, file_name):
+        pkl_file = Path(path) / (file_name + ".pkl")
+        with open(pkl_file, 'wb') as file:
             pickle.dump(self._clf, file)
 
-    def load(self):
-        with open('clf_model.pkl', 'w') as file:
+    def load(self, path, file_name):
+        pkl_file = Path(path) / (file_name + ".pkl")
+        with open(pkl_file, 'rb') as file:
             self._clf = pickle.load(file)
 
 
@@ -110,31 +110,20 @@ class ActiveLearningClassifier(Classifier):
     """
     _qs: UncertaintySampling
 
-    def train(self, X_train: np.ndarray, y_true: np.ndarray, n_cycles=300) -> None:
+    def train(self, X_train: np.ndarray, y_train: np.ndarray) -> int:
         """
         Train the underlying _clf classifier.
 
         Args:
             X_train: array with training samples, size: (n_samples, n_params)
-            y_true: vector with corresponding training labels, size: (n_samples)
-            n_cycles: number of labeled data points to query in active learning, default: 300
+            y_train: vector with corresponding training labels, size: (n_samples)
 
         Returns:
-            None
+            query_idx: sample index in X_train to query next
         """
-        y = np.full(shape=y_true.shape, fill_value=MISSING_LABEL)
-        self._clf.fit(X_train, y)
-        for c in range(n_cycles):
-            query_idx = self._qs.query(X=X_train, y=y, clf=self._clf, batch_size=1)
-            y[query_idx] = y_true[query_idx]
-            self._clf.fit(X_train, y)
-
-            # plotting
-            unlbld_idx = unlabeled_indices(y)
-            lbld_idx = labeled_indices(y)
-            if len(lbld_idx) % 50 == 0:
-                print(f'After {len(lbld_idx)} iterations:')
-                print(f'The accuracy score is {self._clf.score(X_train, y_true)}.')
+        self._clf.fit(X_train, y_train)
+        query_idx = self._qs.query(X=X_train, y=y_train, clf=self._clf, batch_size=1)
+        return query_idx
 
     def predict(self, X_test: np.ndarray) -> Union[int, np.ndarray]:
         return self._clf.predict(X_test)
@@ -171,60 +160,3 @@ class DeepActiveClassifier(ActiveLearningClassifier):
         self._clf = SklearnClassifier(
             MLPClassifier(hidden_layer_sizes=hidden_layer_sizes, activation='relu', solver=solver, alpha=alpha,
                           random_state=0), classes=range(n_params))
-
-
-# class DeepActiveClassifier(Classifier):
-#     """Alternative implementation for an active neural network classifier with skorch."""
-#     def __init__(self, n_params: int):
-#         super(DeepActiveClassifier, self).__init__(n_params)
-#         torch.manual_seed(0)
-#         torch.cuda.manual_seed(0)
-#         self._net = NeuralNetClassifier(
-#             ClassifierModule,
-#             module__n_params=n_params,
-#             optimizer=torch.optim.Adam,
-#             max_epochs=200,
-#             lr=1e-4,
-#             verbose=0,
-#             train_split=False
-#         )
-#         self._clf = SklearnClassifier(
-#             estimator=self._net,
-#             missing_label=MISSING_LABEL,
-#             random_state=0,
-#             classes=range(n_params)
-#         )
-#         self._qs = UncertaintySampling(method='entropy', random_state=0)
-#
-#     def train(self, X_train: np.ndarray, y_true: np.ndarray, n_cycles=300) -> None:
-#         self._net.initialize()
-#
-#         y = np.full_like(y_true, fill_value=MISSING_LABEL, dtype=np.float32)
-#
-#         # Execute active learning cycle.
-#         for c in range(n_cycles):
-#             bound = [[-5, 5], [-5, 5]]
-#             # Fit and evaluate classifier.
-#             acc = self._clf.fit(X_train, y).score(X_train, y_true)
-#
-#             # Select and update training data.
-#             query_idx = self._qs.query(X=X_train, y=y, clf=self._clf, batch_size=1)
-#             y[query_idx] = y_true[query_idx]
-#
-#             # plotting
-#             unlbld_idx = unlabeled_indices(y)
-#             lbld_idx = labeled_indices(y)
-#             if len(lbld_idx) % 50 == 0:
-#                 print(f'After {len(lbld_idx)} iterations:')
-#                 print(f'The accuracy score is {acc}.')
-#                 plot_utilities(self._qs, X=X_train, y=y, clf=self._clf, feature_bound=bound)
-#                 # plot_decision_boundary(self._clf, feature_bound=bound)
-#                 plt.scatter(X_train[unlbld_idx, 0], X_train[unlbld_idx, 1], c='gray')
-#                 plt.scatter(X_train[:, 0], X_train[:, 1], c=y, cmap='jet')
-#                 plt.show()
-#
-#         # Fit and evaluate classifier.
-#         self._clf.fit(X_train, y)
-#
-#     def predict(self, X_test: np.ndarray) -> Union[int, np.ndarray]:
-#         pass

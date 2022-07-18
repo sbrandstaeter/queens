@@ -1,0 +1,55 @@
+{
+  "experiment_name": "neural_iterator_rosenbrock",
+  "database": {
+    "type": "mongodb",
+    "address": "localhost:27017"
+  },
+  "method": {
+    "method_name": "neural",
+    "method_options": {
+      "model": "model",
+      "num_sample_points": 10000,
+      "num_active_sample_points": 300,
+      "result_description": {
+        "write_results": true,
+        "plotting_options": {
+          "plot_booleans": [
+            true
+          ],
+          "plotting_dir": "some/plotting/dir",
+          "plot_names": [
+            "neural_classifier_convergence_plot.eps"
+          ],
+          "save_bool": [
+            false
+          ]
+        }
+      }
+    }
+  },
+  "model": {
+    "type": "simulation_model",
+    "interface": "interface"
+  },
+  "interface": {
+    "type": "direct_python_interface",
+    "function_name": "rosenbrock60"
+  },
+  "parameters": {
+    "random_variables": {
+      "x1": {
+        "type": "FLOAT",
+        "dimension": 1,
+        "lower_bound": -2.0,
+        "upper_bound": 2.0
+      },
+      "x2": {
+        "type": "FLOAT",
+        "dimension": 1,
+        "lower_bound": -2.0,
+        "upper_bound": 2.0
+      }
+    },
+    "classifier": "active_gp"
+  }
+}
