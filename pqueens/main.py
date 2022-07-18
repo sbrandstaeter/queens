@@ -1,72 +1,55 @@
-"""Main module of QUEENS containing the high-level control routine.
-
-Handles input parsing. Controls and runs the analysis.
-"""
-import argparse
-import os
-import pathlib
+"""Main module of QUEENS containing the high-level control routine."""
 import sys
 import time
-from collections import OrderedDict
+from pathlib import Path
 
 import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
 from pqueens.external_geometry import from_config_create_external_geometry
 from pqueens.iterators import from_config_create_iterator
-from pqueens.utils import ascii_art
+from pqueens.utils.ascii_art import print_banner_and_description
+from pqueens.utils.cli_utils import get_cli_options, print_greeting_message
+from pqueens.utils.io_utils import load_input_file
 from pqueens.utils.logger_settings import setup_basic_logging
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
 
-
-def main(args=None):
-    """Main function of QUEENS.
-
-    controls and runs the analysis.
+def run(input_file, output_dir, debug=False):
+    """Do a QUEENS run.
 
     Args:
-        args (list): list of arguments to be parsed
+        input_file (pathlib.Path): Path object to input file
+        output_dir (pathlib.Path): Path object to the output directory
+        debug (bool): True if debug mode is to be used
     """
-    ascii_art.print_crown()
-    ascii_art.print_banner()
-    description = """
-    A general purpose framework for Uncertainty Quantification,
-    Physics-Informed Machine Learning, Bayesian Optimization,
-    Inverse Problems and Simulation Analytics
-    """
-    ascii_art.print_centered_multiline(description)
+    print_banner_and_description()
 
-    if not args:
-        args = sys.argv[1:]
-
-    # read input
     start_time_input = time.time()
-    options = get_options(args)
 
-    # stop here if no options are provided
-    if options is None:
-        return
+    # read input and create config
+    config = get_config_dict(input_file, output_dir, debug)
 
+    # set up logging
     setup_basic_logging(
-        pathlib.Path(options["global_settings"]["output_dir"]),
-        options["global_settings"]["experiment_name"],
+        Path(config["global_settings"]["output_dir"]),
+        config["global_settings"]["experiment_name"],
     )
-    DB_module.from_config_create_database(options)
 
-    with DB_module.database as db:
+    # create database
+    DB_module.from_config_create_database(config)
 
-        pre_processer = from_config_create_external_geometry(options, 'pre_processing')
+    with DB_module.database:
+
+        # do pre-processing
+        pre_processer = from_config_create_external_geometry(config, 'pre_processing')
         if pre_processer:
             pre_processer.main_run()
             pre_processer.write_random_fields_to_dat()
 
-        parameters_module.from_config_create_parameters(options, pre_processer)
+        # create parameters
+        parameters_module.from_config_create_parameters(config, pre_processer)
 
-        # build iterator
-        my_iterator = from_config_create_iterator(options)
+        # create iterator
+        my_iterator = from_config_create_iterator(config)
 
         end_time_input = time.time()
 
@@ -89,61 +72,21 @@ def main(args=None):
     print("")
 
 
-def get_options(args):
-    """Parse options from command line and input file.
+def get_config_dict(input_file, output_dir, debug=False):
+    """Create QUEENS run config from input file and output dir.
 
     Args:
-        args (list): list of arguments to be parsed
+        input_file (pathlib.Path): Path object to input file
+        output_dir (pathlib.Path): Path object to the output directory
+        debug (bool): True if debug mode is to be used
 
     Returns:
-        dict: parsed options in a dictionary
+        dict: config dict
     """
-    parser = argparse.ArgumentParser(description="QUEENS")
-    parser.add_argument('--input', type=str, default=None, help='Input file in .json format.')
-    parser.add_argument(
-        '--output_dir', type=str, default=None, help='Output directory to write results to.'
-    )
-    parser.add_argument('--debug', type=str, default='no', help='debug mode yes/no')
+    if not output_dir.is_dir():
+        raise FileNotFoundError(f"Output directory {output_dir} does not exist.")
 
-    args = parser.parse_args(args)
-
-    # if no options are provided print a greeting message
-    if args.input is None and args.output_dir is None:
-        ascii_art.print_centered_multiline("Welcome to the royal family!")
-        print("\nTo use QUEENS run:\n")
-        print("queens --input <inputfile> --output_dir <output_dir>\n")
-        print("or\n")
-        print("python -m pqueens.main --input <inputfile> --output_dir <output_dir>\n")
-        print("or\n")
-        print(
-            "python path_to_queens/pqueens/main.py --input <inputfile> --output_dir <output_dir>\n"
-        )
-        return None
-
-    if args.input is None:
-        raise Exception("No json input file was provided.")
-
-    if args.output_dir is None:
-        raise Exception("No output directory was given.")
-
-    output_dir = os.path.realpath(os.path.expanduser(args.output_dir))
-    if not os.path.isdir(output_dir):
-        raise Exception("Output directory does not exist.")
-
-    input_file = os.path.realpath(os.path.expanduser(args.input))
-    try:
-        with open(input_file, 'r') as f:
-            options = json.load(f, object_pairs_hook=OrderedDict)
-    except:
-        raise FileNotFoundError("config.json did not load properly.")
-
-    if args.debug == 'yes':
-        debug = True
-    elif args.debug == 'no':
-        debug = False
-    else:
-        print('Warning input flag not set correctly not showing debug' ' information')
-        debug = False
+    options = load_input_file(input_file)
 
     options["debug"] = debug
     options["input_file"] = input_file
@@ -156,10 +99,26 @@ def get_options(args):
 
     # remove experiment_name field from options dict
     options["global_settings"] = global_settings
+
     # remove experiment_name field from options dict make copy first
     final_options = dict(options)
     del final_options["experiment_name"]
+
     return final_options
+
+
+def main():
+    """Main function."""
+    # the first argument is the file name
+    args = sys.argv[1:]
+
+    if len(args) > 0:
+        # do QUEENS run
+        input_file_path, output_dir, debug = get_cli_options(args)
+        run(input_file_path, output_dir, debug)
+    else:
+        # print some infos
+        print_greeting_message()
 
 
 if __name__ == '__main__':
