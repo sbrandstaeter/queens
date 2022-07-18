@@ -2,11 +2,12 @@
 
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 from pqueens.utils import injector
 
 
@@ -41,16 +42,12 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    arguments = [
-        "--input=" + input_file,
-        "--output=" + str(tmpdir),
-    ]
+    run(Path(input_file), Path(tmpdir))
 
     # This seed is fixed so that the variational distribution is initialized so that the park
     # function can be evaluated correctly
     np.random.seed(211)
     # actual main call of vi_rp
-    main(arguments)
 
     # get the results of the QUEENS run
     result_file = os.path.join(tmpdir, "inverse_rpvi_park91a_hifi.pickle")

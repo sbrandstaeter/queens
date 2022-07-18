@@ -2,15 +2,17 @@
 
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 from mock import patch
 
+from pqueens import run
+
 # fmt: on
 from pqueens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
-from pqueens.main import main
 
 # fmt: off
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
@@ -27,13 +29,10 @@ def test_gaussian_smc_chopin_adaptive_tempering(inputdir, tmpdir, dummy_data):
     dir_dict = {"experimental_data_path": experimental_data_path, "fk_method": "adaptive_tempering"}
     input_file = os.path.join(tmpdir, "gaussian_smc_realiz.json")
     injector.inject(dir_dict, template, input_file)
-    arguments = [
-        '--input=' + input_file,
-        '--output=' + str(tmpdir),
-    ]
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloChopinIterator, "eval_log_likelihood", target_density):
-        main(arguments)
+        run(Path(input_file), Path(tmpdir))
+        
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

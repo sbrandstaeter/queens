@@ -7,11 +7,12 @@ INVAAA minimal model.
 import json
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -115,9 +116,7 @@ def test_baci_elementary_effects(
     }
 
     injector.inject(dir_dict, template, input_file)
-    arguments = ['--input=' + input_file, '--output=' + str(experiment_directory)]
-
-    main(arguments)
+    run(Path(input_file), Path(experiment_directory))
 
     result_file_name = experiment_name + ".pickle"
     result_file = os.path.join(experiment_directory, result_file_name)

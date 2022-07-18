@@ -1,19 +1,16 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 
 
 @pytest.mark.integration_tests
 def test_branin_data_iterator(inputdir, tmpdir, mocker):
     """Test case for data iterator."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'data_iterator_branin.json'),
-        '--output=' + str(tmpdir),
-    ]
 
     output = {}
     output['mean'] = np.array(
@@ -51,7 +48,7 @@ def test_branin_data_iterator(inputdir, tmpdir, mocker):
         return_value=[samples, output],
     )
 
-    main(arguments)
+    run(Path(os.path.join(inputdir, 'data_iterator_branin.json')), Path(tmpdir))
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

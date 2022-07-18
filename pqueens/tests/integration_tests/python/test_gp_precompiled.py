@@ -1,10 +1,11 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 from pqueens.tests.integration_tests.example_simulator_functions.branin78 import branin78_hifi
 from pqueens.tests.integration_tests.example_simulator_functions.sinus import sinus_test_fun
 from pqueens.utils import injector
@@ -24,12 +25,8 @@ def test_gp_precompiled_one_dim(inputdir, tmpdir):
 
     injector.inject(dir_dict, template, input_file)
 
-    arguments = [
-        '--input=' + input_file,
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(input_file), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
@@ -60,12 +57,8 @@ def test_gp_precompiled_two_dim(inputdir, tmpdir):
 
     injector.inject(dir_dict, template, input_file)
 
-    arguments = [
-        '--input=' + input_file,
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(input_file), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

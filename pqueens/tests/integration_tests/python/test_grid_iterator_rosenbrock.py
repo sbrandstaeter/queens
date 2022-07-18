@@ -1,21 +1,18 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 
 
 @pytest.mark.integration_tests
 def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
     """Integration test for the grid iterator."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'grid_iterator_rosenbrock.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'grid_iterator_rosenbrock.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = os.path.join(tmpdir, 'grid_iterator_rosenbrock.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

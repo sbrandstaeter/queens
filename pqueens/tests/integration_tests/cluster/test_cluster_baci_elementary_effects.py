@@ -5,11 +5,12 @@ Elementary Effects simulations with BACI using the INVAAA minimal model.
 
 import pathlib
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -110,9 +111,7 @@ def test_cluster_baci_elementary_effects(
     }
 
     injector.inject(dir_dict, template, input_file)
-    arguments = ['--input=' + str(input_file), '--output=' + str(tmpdir)]
-
-    main(arguments)
+    run(Path(input_file), Path(tmpdir))
 
     result_file = pathlib.Path(tmpdir, experiment_name + '.pickle')
     with open(result_file, 'rb') as handle:

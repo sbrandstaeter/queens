@@ -1,10 +1,11 @@
 import os
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 from pqueens.external_geometry import from_config_create_external_geometry
-from pqueens.main import get_options
+from pqueens.main import get_config_dict
 from pqueens.utils import injector
 
 
@@ -25,8 +26,7 @@ def test_geometry_from_dat(
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
-    arguments = ['--input=' + input_file, '--output=' + str(tmpdir)]
-    config = get_options(arguments)
+    config = get_config_dict(Path(input_file), Path(tmpdir))
 
     # create pre-processing module form config
     preprocessor_obj = from_config_create_external_geometry(config, 'pre_processing')
