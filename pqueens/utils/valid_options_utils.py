@@ -1,4 +1,5 @@
 """Helper functions for valid options and switch analogy."""
+from pqueens.utils.exceptions import InvalidOptionError
 
 
 def get_option(options_dict, desired_option, error_message=""):
@@ -35,48 +36,3 @@ def check_if_valid_option(valid_options, desired_option, error_message=""):
         raise InvalidOptionError.construct_error_from_options(
             valid_options, desired_option, error_message
         )
-
-
-class InvalidOptionError(Exception):
-    """Custom error class for invalid options during QUEENS runs."""
-
-    def __init__(self, message):
-        """Initialize InvalidOptionError.
-
-        Args:
-            message (str): Error message
-        """
-        super().__init__(message)
-
-    @classmethod
-    def construct_error_from_options(cls, valid_options, desired_option, additional_message=""):
-        """Construct invalid option error from the valid and desired options.
-
-        Args:
-            valid_options (lst): List of valid option keys
-            desired_option (str): Key of desired option
-            additional_message (str, optional): Additional message to pass. Defaults to None.
-
-        Returns:
-            InvalidOptionError
-        """
-        message = cls.construct_error_message(valid_options, desired_option, additional_message)
-        return cls(message)
-
-    @staticmethod
-    def construct_error_message(valid_options, desired_option, additional_message):
-        """Construct error message based on the valid and desired options.
-
-        Args:
-            valid_options (lst): List of valid option keys
-            desired_option (str): Key of desired option
-            additional_message (str, optional): Additional message to pass. Defaults to None.
-
-        Returns:
-            message (str): Error message that is display once the error is raised
-        """
-        message = "\n" + additional_message
-        message += f"\nInvalid option '{desired_option}'. Valid options are:\n" + ", ".join(
-            sorted(valid_options)
-        )
-        return message
