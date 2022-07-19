@@ -1,38 +1,5 @@
 """QUEENS setup file for remote runs."""
-import os
-
 from setuptools import setup
-
-
-def read_requirements(fname):
-    """Load the requirement file `fname` and remove comments denoted by '#'.
-
-    Args:
-        fname (str): File name
-
-    Returns:
-        packages (list): List of the required packages
-    """
-    packages = []
-    with open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8") as f:
-        for line in f:
-            line = line.partition('#')[0].rstrip()
-            if line:
-                packages.append(line)
-    return packages
-
-
-def read(fname):
-    """Function to read the README file.
-
-    Args:
-        fname (str): File name to be read
-
-    Returns:
-        The content of the file fname
-    """
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 
 setup(
     name="pqueens-remote",
@@ -47,5 +14,19 @@ setup(
         'pqueens.external_geometry',
         'pqueens.randomfields',
     ],
-    install_requires=read_requirements("requirements.txt"),
+    install_requires=[
+        "docker",
+        "netcdf4",
+        "cython",
+        "numpy",
+        "pymongo",
+        "matplotlib",
+        "plotly",
+        "pandas",
+        "vtk",
+        "xarray",
+        "scipy",
+        "pyyaml",
+        "pyfiglet",
+    ],
 )
