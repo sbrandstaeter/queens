@@ -9,12 +9,11 @@ wrapped in a singularity image.
 
 import argparse
 import logging
-import os
 import sys
 from pathlib import Path
+
 import pqueens.database.database as DB_module
 from pqueens.drivers import from_config_create_driver
-
 from pqueens.main import get_config_dict
 
 _logger = logging.getLogger(__name__)
