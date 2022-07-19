@@ -4,6 +4,24 @@ import os
 from setuptools import setup
 
 
+def read_requirements(fname):
+    """Load the requirement file `fname` and remove comments denoted by '#'.
+
+    Args:
+        fname (str): File name
+
+    Returns:
+        packages (list): List of the required packages
+    """
+    packages = []
+    with open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8") as f:
+        for line in f:
+            line = line.partition('#')[0].rstrip()
+            if line:
+                packages.append(line)
+    return packages
+
+
 def read(fname):
     """Function to read the README file.
 
@@ -29,17 +47,5 @@ setup(
         'pqueens.external_geometry',
         'pqueens.randomfields',
     ],
-    install_requires=[
-        "docker",
-        "netcdf4",
-        "cython",
-        "numpy",
-        "pymongo==3.12.0",
-        "matplotlib",
-        "plotly",
-        "pandas",
-        "vtk",
-        "xarray",
-        "scipy",
-    ],
+    install_requires=read_requirements("requirements.txt"),
 )

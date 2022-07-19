@@ -19,6 +19,7 @@ autograd # wrapper around numpy for automated differentiation
 numba==0.53.1 # numba library for fast computing and jit compilation
 particles # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
 chaospy # polynomial chaos
+pyyaml # to load yaml files
 
 # Machine learing libraries
 scikit-learn==1.0.1
