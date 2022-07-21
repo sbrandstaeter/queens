@@ -109,6 +109,7 @@ class MongoDB(Database):
             max_number_of_attempts,
         )
 
+    @safe_mongodb_operation
     def _connect(self):
         """(Trying to) connect to the database."""
 
@@ -118,8 +119,7 @@ class MongoDB(Database):
         )
 
         # Try the connection
-        # Here the decorator is called directly rather than the whole function
-        safe_mongodb_operation(lambda *args: self.mongo_client.server_info(args[1:]))(self)
+        self.mongo_client.server_info()
 
         self.db_obj = self.mongo_client[self.db_name]
 
