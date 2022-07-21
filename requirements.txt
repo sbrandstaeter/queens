@@ -397,6 +397,7 @@ xarray-einstats==0.3.0
     # via arviz
 yarl==1.7.2
     # via aiohttp
+pyyaml
 zipp==3.8.1
     # via
     #   etils

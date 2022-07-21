@@ -7,12 +7,13 @@ post_drt_ensight post-processor.
 
 import json
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 from pqueens.utils import injector
 
 
@@ -94,9 +95,7 @@ def test_baci_lm_shape(
     }
 
     injector.inject(dir_dict, template, input_file)
-    arguments = ['--input=' + input_file, '--output=' + str(experiment_directory)]
-
-    main(arguments)
+    run(Path(input_file), Path(experiment_directory))
 
     result_file_name = experiment_name + ".csv"
     result_file = os.path.join(experiment_directory, result_file_name)

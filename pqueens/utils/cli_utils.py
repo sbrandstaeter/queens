@@ -1,7 +1,10 @@
 """Command Line Interface utils collection."""
+import argparse
 import sys
+from pathlib import Path
 
 from pqueens.utils import ascii_art
+from pqueens.utils.exceptions import CLIError
 from pqueens.utils.manage_singularity import create_singularity_image
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.pickle_utils import print_pickled_data
@@ -19,7 +22,7 @@ def build_singularity_cli():
         create_singularity_image()
         print("Done!")
     except Exception as cli_singularity_error:
-        print("Building singularity failed!\n\n")
+        CLIError("Building singularity failed!\n\n")
         raise cli_singularity_error
 
 
@@ -56,3 +59,77 @@ def remove_html_coverage_report():
     command_list = ["cd", str(PATH_TO_QUEENS), "&&", pytest_command_string]
     command_string = ' '.join(command_list)
     run_subprocess(command_string)
+
+
+def str_to_bool(value):
+    """Convert string to boolean for cli commands.
+
+    Args:
+        value (str): String to convert to a bool.
+
+    Returns:
+        bool: bool of the string
+    """
+    if isinstance(value, bool):
+        return value
+
+    false_options = ('false', 'f', '0', 'no', 'n')
+    true_options = ('true', 't', '1', 'yes', 'y')
+    if value.lower() in false_options:
+        return False
+    elif value.lower() in true_options:
+        return True
+    raise CLIError(
+        f"{value} is not a valid boolean value. Valid options are:\n"
+        f"{', '.join(list(true_options+false_options))}"
+    )
+
+
+def get_cli_options(args):
+    """Get input file path, output directory and debug from args.
+
+    Args:
+        args (list): cli arguments
+
+    Returns:
+        input_file (pathlib.Path): Path object to input file
+        output_dir (pathlib.Path): Path object to the output directory
+        debug (bool): True if debug mode is to be used
+    """
+    parser = argparse.ArgumentParser(description="QUEENS")
+    parser.add_argument(
+        '--input', type=str, default=None, help='Input file in .json or .yaml/yml format.'
+    )
+    parser.add_argument(
+        '--output_dir',
+        type=str,
+        default=None,
+        help='Output directory to write results to. The directory has to be created by the user!',
+    )
+    parser.add_argument('--debug', type=str_to_bool, default=False, help='Debug mode yes/no.')
+
+    args = parser.parse_args(args)
+
+    if args.input is None:
+        raise CLIError("No input file was provided with option --input.")
+
+    if args.output_dir is None:
+        raise CLIError("No output directory was provided with option --output_dir.")
+
+    debug = args.debug
+    output_dir = Path(args.output_dir)
+    input_file = Path(args.input)
+
+    return input_file, output_dir, debug
+
+
+def print_greeting_message():
+    """Print a greeting message and how to use QUEENS."""
+    ascii_art.print_banner_and_description()
+    ascii_art.print_centered_multiline("Welcome to the royal family!")
+    print("\nTo use QUEENS run:\n")
+    print("queens --input <inputfile> --output_dir <output_dir>\n")
+    print("or\n")
+    print("python -m pqueens.main --input <inputfile> --output_dir <output_dir>\n")
+    print("or\n")
+    print("python path_to_queens/pqueens/main.py --input <inputfile> --output_dir <output_dir>\n")

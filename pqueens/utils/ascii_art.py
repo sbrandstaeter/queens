@@ -75,7 +75,7 @@ def print_centered_multiline_block(string, output_width=63):
         output_width (int): Terminal output width. Default is 63.
     """
     lines = string.split("\n")
-    max_line_width = max([len(line) for line in lines])
+    max_line_width = max(len(line) for line in lines)
     if max_line_width % 2:
         output_width += 1
     for line in lines:
@@ -92,3 +92,15 @@ def print_centered_multiline(string, output_width=63):
     lines = string.split("\n")
     for line in lines:
         print(line.strip().center(output_width))
+
+
+def print_banner_and_description():
+    """Print banner and the description."""
+    print_crown()
+    print_banner()
+    description = """
+    A general purpose framework for Uncertainty Quantification,
+    Physics-Informed Machine Learning, Bayesian Optimization,
+    Inverse Problems and Simulation Analytics
+    """
+    print_centered_multiline(description)

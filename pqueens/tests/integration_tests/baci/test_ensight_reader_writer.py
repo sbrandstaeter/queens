@@ -1,10 +1,11 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 from pqueens.utils import injector
 
 
@@ -26,10 +27,9 @@ def test_ensight_reader_writer(
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
-    arguments = ['--input=' + input_file, '--output=' + str(tmpdir)]
+    run(Path(input_file), Path(tmpdir))
 
     # run a MC simulation with random input for now
-    main(arguments)
 
     # Check if we got the expected results
     experiment_name = "baci_ensight"

@@ -1,20 +1,17 @@
 import os
 import pickle
+from pathlib import Path
 
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 
 
 @pytest.mark.integration_tests
 def test_branin_monte_carlo(inputdir, tmpdir):
     """Test case for monte carlo iterator."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'monte_carlo_branin.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'monte_carlo_branin.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

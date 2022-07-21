@@ -1,20 +1,17 @@
 """Test cases for Sobol index estimation with metamodel uncertainty."""
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 
-from pqueens.main import main
+from pqueens import run
 
 
 def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmpdir):
     """Test case for Sobol indices based on GP realizations."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'sobol_indices_ishigami_gp_uncertainty.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp_uncertainty.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
@@ -48,13 +45,11 @@ def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmpdir):
 
 def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmpdir):
     """Test case for third-order Sobol indices."""
-    arguments = [
-        '--input='
-        + os.path.join(inputdir, 'sobol_indices_ishigami_gp_uncertainty_third_order.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(
+        Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp_uncertainty_third_order.json')),
+        Path(tmpdir),
+    )
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
@@ -72,12 +67,8 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmpdir):
 
 def test_sobol_indices_ishigami_gp_mean(inputdir, tmpdir):
     """Test case for Sobol indices based on GP mean."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'sobol_indices_ishigami_gp_mean.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp_mean.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

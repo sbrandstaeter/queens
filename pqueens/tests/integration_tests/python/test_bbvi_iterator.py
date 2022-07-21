@@ -1,6 +1,7 @@
 """Integration tests for the BBVI iterator."""
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -9,8 +10,8 @@ from mock import patch
 from scipy.stats import multivariate_normal as mvn
 
 import pqueens.visualization.variational_inference_visualization as vis
+from pqueens import run
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
-from pqueens.main import main
 from pqueens.tests.integration_tests.example_simulator_functions.park91a import (
     park91a_hifi_on_grid,
     x3_vec,
@@ -87,17 +88,12 @@ def test_bbvi_iterator_park91a_hifi(
     input_file = os.path.join(tmpdir, "bbvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
 
-    # run the main routine of QUEENS
-    arguments = [
-        "--input=" + input_file,
-        "--output=" + str(tmpdir),
-    ]
-
     # This seed is fixed so that the variational distribution is initalized so that the park
     # function can be evaluted correctly
     np.random.seed(211)
-    # actual main call of bbvi
-    main(arguments)
+
+    # run the main routine of QUEENS
+    run(Path(input_file), Path(tmpdir))
 
     # get the results of the QUEENS run
     result_file = os.path.join(tmpdir, "inverse_bbvi_park91a_hifi.pickle")

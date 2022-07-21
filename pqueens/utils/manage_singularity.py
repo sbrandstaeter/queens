@@ -42,7 +42,7 @@ def create_singularity_image():
         )
     except SubprocessError as sp_error:
         # Check if build was successful
-        if sp_error.message.find("INFO:    Build complete:") < 0:
+        if str(sp_error).find("INFO:    Build complete:") < 0:
             raise sp_error
 
     if not os.path.isfile(abs_singularity_image_path):

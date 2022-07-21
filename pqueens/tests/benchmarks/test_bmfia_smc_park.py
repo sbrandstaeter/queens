@@ -2,13 +2,14 @@
 
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 
 import pqueens.visualization.bmfia_visualization as qvis
-from pqueens.main import main
+from pqueens import run
 from pqueens.tests.integration_tests.example_simulator_functions.park91a import park91a_hifi
 from pqueens.utils import injector
 
@@ -34,13 +35,7 @@ def test_bmfia_park_hf_smc(
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    arguments = [
-        '--input=' + input_file,
-        '--output=' + str(tmpdir),
-    ]
-
-    # actual main call of smc
-    main(arguments)
+    run(Path(input_file), Path(tmpdir))
 
     # get the results of the QUEENS run
     result_file = os.path.join(tmpdir, 'smc_park_mf.pickle')

@@ -1,12 +1,13 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 from scipy.stats import entropy
 
 import pqueens.utils.pdf_estimation as est
-from pqueens.main import main
+from pqueens import run
 from pqueens.tests.integration_tests.example_simulator_functions.currin88 import (
     currin88_hifi,
     currin88_lofi,
@@ -111,10 +112,9 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    arguments = ['--input=' + input_file, '--output=' + str(tmpdir)]
+    run(Path(input_file), Path(tmpdir))
 
     # actual main call of BMFMC
-    main(arguments)
 
     # get the results of the QUEENS run
     result_file = os.path.join(tmpdir, 'bmfmc_currin88.pickle')

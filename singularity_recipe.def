@@ -13,6 +13,7 @@ variables at runtime.
 %files
   pqueens /queens/pqueens
   environment.yml /queens/environment.yml
+  requirements.txt /queens/requirements.txt
   setup_remote.py /queens/setup_remote.py
 
 %setup

@@ -1,13 +1,14 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import pytest
 from mock import patch
 
+from pqueens import run
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
-from pqueens.main import main
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
     gaussian_1d_logpdf,
     standard_normal,
@@ -23,13 +24,8 @@ def test_gaussian_metropolis_hastings(inputdir, tmpdir, dummy_data):
     dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = os.path.join(tmpdir, "gaussian_metropolis_hastings_realiz.json")
     injector.inject(dir_dict, template, input_file)
-    arguments = [
-        '--input=' + input_file,
-        '--output=' + str(tmpdir),
-    ]
-
     with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
-        main(arguments)
+        run(Path(input_file), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
