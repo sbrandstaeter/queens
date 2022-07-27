@@ -43,14 +43,12 @@ class ApproximationInterface(Interface):
         self.approximation_init = False
 
     @classmethod
-    def from_config_create_interface(cls, interface_name, config, driver_name):
+    def from_config_create_interface(cls, interface_name, config):
         """Create interface from config dictionary.
 
         Args:
             interface_name (str):   Name of interface
             config (dict):          Dictionary containing problem description
-            _driver_name (str): Name of the driver that uses this interface
-                               (not used here; only for compatibility reasons)
 
         Returns:
             interface:              Instance of ApproximationInterface

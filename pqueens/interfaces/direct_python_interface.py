@@ -45,7 +45,7 @@ class DirectPythonInterface(Interface):
         self.latest_job_id = 1
 
     @classmethod
-    def from_config_create_interface(cls, interface_name, config, **_kargs):
+    def from_config_create_interface(cls, interface_name, config):
         """Create interface from config dictionary.
 
         Args:

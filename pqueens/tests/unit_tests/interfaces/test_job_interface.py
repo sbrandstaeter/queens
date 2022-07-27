@@ -1,7 +1,4 @@
-"""Created on Dezember 11th  2017.
-
-@author: jbi
-"""
+"""Test job interface."""
 import unittest
 
 import mock
@@ -13,8 +10,10 @@ from pqueens.interfaces.job_interface import JobInterface
 
 
 class TestJobInterface(unittest.TestCase):
-    def setUp(self):
+    """TestJobInterface class."""
 
+    def setUp(self):
+        """Set-up TestJobInterface class."""
         uncertain_parameters = {}
         uncertain_parameter = {}
         uncertain_parameter["type"] = "FLOAT"
@@ -31,7 +30,11 @@ class TestJobInterface(unittest.TestCase):
         self.config['global_settings'] = {}
         self.config['input_file'] = 'test-input-file'
         self.config['global_settings']['experiment_name'] = 'test-experiment'
-        self.config['test_interface'] = {'type': 'job_interface', 'resources': 'dummy_resource'}
+        self.config['test_interface'] = {
+            'type': 'job_interface',
+            'resources': 'dummy_resource',
+            'driver': 'dummy_driver_name',
+        }
 
         self.config['parameters'] = uncertain_parameters
 
@@ -64,6 +67,8 @@ class TestJobInterface(unittest.TestCase):
         self.config['driver']['driver_params']['data_processor']['file_prefix'] = 'test-file-prefix'
 
     class FakeDB(object):
+        """Fake database class."""
+
         database_address = 'localhost:27017'
         database_name = 'test-database'
         database_list = {}
@@ -77,6 +82,7 @@ class TestJobInterface(unittest.TestCase):
         'pqueens.database.mongodb.MongoDB.from_config_create_database', return_value=db_fake
     )
     def test_construction(self, config, **mocks):
+        """Test construction of job interface."""
         interface = from_config_create_interface('test_interface', self.config)
         # ensure correct type
         self.assertIsInstance(interface, JobInterface)

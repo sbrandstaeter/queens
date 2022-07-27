@@ -28,7 +28,7 @@ class JobInterface(Interface):
         output_dir (string):                     directory to write output to
         parameters (dict):                       dictionary with parameters
         time_for_data_copy (float): Time (s) to wait such that copying process of simulation
-                                    input file can finish and we do not overload the network
+                                    input file can finish, and we do not overload the network
         job_num (int):              Number of the current job
         _internal_batch_state (int): Helper attribute to compare batch_number with the internal
                                      batch state to detect changes in the batch number.
@@ -63,7 +63,7 @@ class JobInterface(Interface):
             scheduler_type (str):       scheduler type
             direct_scheduling (bool):   true if direct scheduling
             time_for_data_copy (float): Time (s) to wait such that copying process of simulation
-                                        input file can finish and we do not overload the network
+                                        input file can finish, and we do not overload the network
             driver_name (str):          Name of the associated driver for the current interface
         """
         super().__init__(interface_name)
@@ -85,13 +85,12 @@ class JobInterface(Interface):
         self.job_num = 0
 
     @classmethod
-    def from_config_create_interface(cls, interface_name, config, driver_name):
+    def from_config_create_interface(cls, interface_name, config):
         """Create JobInterface from config dictionary.
 
         Args:
             interface_name (str):   name of interface
             config (dict):          dictionary containing problem description
-            driver_name (str): Name of the driver that uses this interface
 
         Returns:
             interface:              instance of JobInterface
@@ -99,6 +98,11 @@ class JobInterface(Interface):
         # get experiment name and polling time
         experiment_name = config['global_settings']['experiment_name']
         polling_time = config.get('polling-time', 1.0)
+
+        interface_options = config[interface_name]
+        driver_name = interface_options.get('driver', None)
+        if driver_name is None:
+            raise Exception("No driver_name specified for the JobInterface.")
 
         # get resources from config
         resources = parse_resources_from_configuration(config, driver_name)
@@ -120,10 +124,9 @@ class JobInterface(Interface):
             remote_connect = None
 
         # get flag for Singularity
-        if scheduler_options.get('singularity', False):
-            singularity = True
-        else:
-            singularity = False
+        singularity = scheduler_options.get('singularity', False)
+        if not isinstance(singularity, bool):
+            raise TypeError("Singularity option has to be a boolean (true or false).")
 
         # set flag for direct scheduling
         direct_scheduling = False
@@ -138,7 +141,6 @@ class JobInterface(Interface):
         db = DB_module.database
 
         # get waiting time for copying data
-        interface_options = config[interface_name]
         time_for_data_copy = interface_options.get('time_for_data_copy')
 
         # instantiate object
@@ -176,7 +178,7 @@ class JobInterface(Interface):
         jobid_for_data_processor = self._manage_jobs(samples)
 
         # Post run
-        for _, resource in self.resources.items():
+        for _ in self.resources:
             if self.direct_scheduling and jobid_for_data_processor.size != 0:
                 # check tasks to determine completed jobs
                 while not self.all_jobs_finished():
@@ -361,8 +363,8 @@ class JobInterface(Interface):
             jobids = [job['id'] for job in jobs]
             jobids.sort()
 
-            for ID in jobids:
-                current_job = next(job for job in jobs if job['id'] == ID)
+            for current_job_id in jobids:
+                current_job = next(job for job in jobs if job['id'] == current_job_id)
                 mean_value = np.squeeze(current_job['result'])
                 gradient_value = np.squeeze(current_job.get('gradient', None))
 
@@ -406,7 +408,7 @@ class JobInterface(Interface):
             field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
         )
         for check_jobid in jobid_range:
-            for _, resource in self.resources.items():
+            for resource in self.resources.values():
                 try:
                     current_check_job = next(job for job in jobs if job['id'] == check_jobid)
                     if current_check_job['status'] != 'complete':
@@ -425,12 +427,9 @@ class JobInterface(Interface):
                                 current_check_job['end time'] - current_check_job['start time']
                             )
                             _logger.info(
-                                'Successfully completed job {:d} (No. of proc.: {:d}, '
-                                'computing time: {:08.2f} s).\n'.format(
-                                    current_check_job['id'],
-                                    current_check_job['num_procs'],
-                                    computing_time,
-                                )
+                                f'Successfully completed job {current_check_job["id"]} '
+                                f'(No. of proc.: {current_check_job["num_procs"]}, '
+                                f'computing time: {computing_time} s).\n'
                             )
                             self.save_job(current_check_job)
                             return
@@ -498,11 +497,9 @@ class JobInterface(Interface):
                     else:
                         time.sleep(self.polling_time)
                         # check job completions for jobscript-based native driver
-                        for _, resource in self.resources.items():
+                        for _ in self.resources:
                             if self.direct_scheduling:
                                 self._check_job_completions(jobid_range)
-
-        return
 
     def _manage_data_processor_submission(self, jobid_range):
         """Manage submission of data processing.
@@ -514,7 +511,7 @@ class JobInterface(Interface):
             field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
         )
         for jobid in jobid_range:
-            for _, resource in self.resources.items():
+            for resource in self.resources.values():
                 try:
                     current_job = next(job for job in jobs if job['id'] == jobid)
                 except (StopIteration, IndexError):
@@ -523,8 +520,6 @@ class JobInterface(Interface):
                 resource.dispatch_data_processor_job(self.batch_number, current_job)
 
         self.print_resources_status()
-
-        return
 
     def print_resources_status(self):
         """Print out whats going on on the resources."""
@@ -547,13 +542,10 @@ class JobInterface(Interface):
             total_complete += complete
             total_failed += failed
             _logger.info(
-                '{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
-                    resource.name, pending, complete, failed
-                )
+                f'{resource.name:12.12}    {pending:<9d}    {complete:<9d}    {failed:<9d}\n'
             )
         _logger.info(
-            '{:12.12}    {:<9d}    {:<9d}    {:<9d}\n'.format(
-                '*TOTAL*', total_pending, total_complete, total_failed
-            )
+            f'{"*TOTAL*":12.12}    {total_pending:<9d}    {total_complete:<9d}    '
+            f'{total_failed:<9d}\n'
         )
         _logger.info('\n')
