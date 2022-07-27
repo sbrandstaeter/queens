@@ -203,6 +203,7 @@ ubuntu_full_test_suite_develop:
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
     - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
+  coverage: '/TOTAL.*\s+(\d+%)/'
   needs:
     - build_conda_env
     - build_singularity
@@ -222,6 +223,7 @@ ubuntu_full_test_suite_master:
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
     - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
+  coverage: '/TOTAL.*\s+(\d+%)/'
   artifacts:
     name: coverage_report
     paths:
