@@ -26,7 +26,6 @@ def from_config_create_interface(interface_name, config):
     """
     from pqueens.interfaces.approximation_interface import ApproximationInterface
     from pqueens.interfaces.approximation_interface_mf import ApproximationInterfaceMF
-    from pqueens.interfaces.bmfmc_interface import BmfmcInterface
     from pqueens.interfaces.direct_python_interface import DirectPythonInterface
     from pqueens.interfaces.job_interface import JobInterface
     from pqueens.utils.import_utils import get_module_attribute
@@ -37,7 +36,6 @@ def from_config_create_interface(interface_name, config):
         'direct_python_interface': DirectPythonInterface,
         'approximation_interface': ApproximationInterface,
         'approximation_interface_mf': ApproximationInterfaceMF,
-        'bmfmc_interface': BmfmcInterface,
     }
 
     interface_options = config[interface_name]
@@ -49,9 +47,4 @@ def from_config_create_interface(interface_name, config):
     else:
         interface_class = get_option(interface_dict, interface_options.get("type"))
 
-    # get the driver which belongs to the model/interface
-    # (important if several models are involved)
-    driver_name = interface_options.get("driver")
-    return interface_class.from_config_create_interface(
-        interface_name, config, driver_name=driver_name
-    )
+    return interface_class.from_config_create_interface(interface_name, config)
