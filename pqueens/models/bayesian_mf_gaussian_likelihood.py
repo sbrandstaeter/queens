@@ -7,9 +7,8 @@ import numpy as np
 import pqueens.visualization.bmfia_visualization as qvis
 from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.iterators import from_config_create_iterator
+from pqueens.models.likelihood_model import LikelihoodModel
 from pqueens.utils.ascii_art import print_bmfia_acceleration
-
-from .likelihood_model import LikelihoodModel
 
 _logger = logging.getLogger(__name__)
 
@@ -124,7 +123,7 @@ class BMFGaussianModel(LikelihoodModel):
         self.noise_var_lst = noise_var_lst
 
     @classmethod
-    def from_config_create_likelihood(
+    def from_config_create_model(
         cls,
         model_name,
         config,

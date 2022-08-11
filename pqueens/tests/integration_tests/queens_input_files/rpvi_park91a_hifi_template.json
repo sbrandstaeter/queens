@@ -49,8 +49,7 @@
     }
   },
   "model": {
-    "type": "likelihood_model",
-    "subtype": "{likelihood_model_type}",
+    "type": "{likelihood_model_type}",
     "external_python_module": "{external_python_module}",
     "forward_model": "forward_model",
     "output_label": "y_obs",

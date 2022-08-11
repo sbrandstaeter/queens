@@ -5,7 +5,7 @@ import pytest
 
 from pqueens.interfaces.bmfia_interface import BmfiaInterface
 from pqueens.iterators.bmfia_iterator import BMFIAIterator
-from pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood import BMFGaussianModel
+from pqueens.models.bayesian_mf_gaussian_likelihood import BMFGaussianModel
 from pqueens.models.simulation_model import SimulationModel
 
 
@@ -306,7 +306,7 @@ def test_evaluate(default_mf_likelihood, mocker, default_bmfia_iterator):
     y_lf_mat = np.array([[1, 2]])
     # pylint: disable=line-too-long
     mp1 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._initialize',
+        'pqueens.models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._initialize',
         return_value=None,
     )
 
@@ -317,7 +317,7 @@ def test_evaluate(default_mf_likelihood, mocker, default_bmfia_iterator):
     )
 
     mp3 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._evaluate_mf_likelihood',
+        'pqueens.models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._evaluate_mf_likelihood',
         return_value=mf_log_likelihood_exp,
     )
 
@@ -346,15 +346,15 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
 
     # pylint: disable=line-too-long
     mp1 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._calculate_distance_vector_and_var_y',
+        'pqueens.models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._calculate_distance_vector_and_var_y',
         return_value=(diff_mat, var_y_mat),
     )
     mp2 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._calculate_likelihood_noise_var',
+        'pqueens.models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._calculate_likelihood_noise_var',
         return_value=None,
     )
     mp3 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._log_likelihood_fun',
+        'pqueens.models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._log_likelihood_fun',
         return_value=1,
     )
     # pylint: enable=line-too-long
@@ -529,11 +529,11 @@ def test_initialize(default_mf_likelihood, mocker):
 
     # pylint: disable=line-too-long
     mo_1 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.print_bmfia_acceleration',
+        'pqueens.models.bayesian_mf_gaussian_likelihood.print_bmfia_acceleration',
         return_value=None,
     )
     mo_2 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._build_approximation',
+        'pqueens.models.bayesian_mf_gaussian_likelihood.BMFGaussianModel._build_approximation',
         return_value=None,
     )
     # pylint: enable=line-too-long
@@ -569,11 +569,11 @@ def test_build_approximation(default_mf_likelihood, mocker):
         return_value=None,
     )
     mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.qvis.bmfia_visualization_instance',
+        'pqueens.models.bayesian_mf_gaussian_likelihood.qvis.bmfia_visualization_instance',
         return_value=mock_visualization,
     )
     mo_4 = mocker.patch(
-        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.qvis.bmfia_visualization_instance.plot',
+        'pqueens.models.bayesian_mf_gaussian_likelihood.qvis.bmfia_visualization_instance.plot',
     )
     # pylint: enable=line-too-long
 
@@ -597,7 +597,7 @@ def test_input_dim_red(default_mf_likelihood, mocker):
     """Test for the input dimensionality reduction routine."""
     # pylint: disable=line-too-long
     mo_1 = mocker.patch(
-        "pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.input_dim_red"
+        "pqueens.models.bayesian_mf_gaussian_likelihood.BMFGaussianModel.input_dim_red"
     )
     # pylint: enable=line-too-long
     default_mf_likelihood.input_dim_red()

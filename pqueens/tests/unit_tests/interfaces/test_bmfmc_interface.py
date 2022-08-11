@@ -71,7 +71,6 @@ def test_init(config, approx_name):
     interface = BmfmcInterface(config, approx_name)
 
     # asserts / tests
-    assert interface.variables is None
     assert interface.config == config
     assert interface.probabilistic_mapping_obj is None
 

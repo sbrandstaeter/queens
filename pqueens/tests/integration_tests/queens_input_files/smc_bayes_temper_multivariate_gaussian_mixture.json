@@ -29,8 +29,7 @@
     }
   },
   "model": {
-    "type": "likelihood_model",
-    "subtype": "gaussian",
+    "type": "gaussian",
     "forward_model": "forward_model",
     "experimental_file_name_identifier": "*.csv",
     "output_label": "y_obs",

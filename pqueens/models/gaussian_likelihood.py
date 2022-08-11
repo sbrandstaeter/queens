@@ -5,7 +5,7 @@ import logging
 import numpy as np
 
 from pqueens.distributions import from_config_create_distribution
-from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
+from pqueens.models.likelihood_model import LikelihoodModel
 from pqueens.utils.iterative_averaging_utils import from_config_create_iterative_averaging
 from pqueens.utils.numpy_utils import add_nugget_to_diagonal
 
@@ -81,7 +81,7 @@ class GaussianLikelihood(LikelihoodModel):
         self.normal_distribution = normal_distribution
 
     @classmethod
-    def from_config_create_likelihood(
+    def from_config_create_model(
         cls,
         model_name,
         config,

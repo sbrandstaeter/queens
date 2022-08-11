@@ -21,8 +21,7 @@
     }
   },
   "model": {
-    "type": "likelihood_model",
-    "subtype": "bmf_gaussian_static",
+    "type": "bmf_gaussian",
     "mf_approx_settings": {
       "type": "gp_precompiled",
       "stochastic_optimizer": "Adam",
