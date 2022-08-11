@@ -65,8 +65,6 @@ class BBVIIterator(VariationalInferenceIterator):
         n_sims (int): Number of probabilistic model calls
         variational_distribution_obj (VariationalDistribution): Variational distribution object
         variational_params (np.array): Row-vector containing the variational parameters
-        f_mat (np.array): Column-wise ELBO gradient samples
-        h_mat (np.array): Column-wise control variate
         elbo_list (list): ELBO value of every iteration
         log_variational_mat (np.array): Logpdf evaluations of the variational distribution
         grad_params_log_variational_mat (np.array): Column-wise grad params logpdf (score function)
@@ -193,8 +191,6 @@ class BBVIIterator(VariationalInferenceIterator):
         self.memory = memory
         self.model_eval_iteration_period = model_eval_iteration_period
         self.resample = resample
-        self.f_mat = None
-        self.h_mat = None
         self.log_variational_mat = None
         self.grad_params_log_variational_mat = None
         self.log_posterior_unnormalized = None
@@ -397,7 +393,7 @@ class BBVIIterator(VariationalInferenceIterator):
         return result_description
 
     @staticmethod
-    def _averaged_control_variates_scalings(f_mat, h_mat):
+    def _averaged_control_variates_scalings(f_mat, h_mat, weights_is):
         """Averaged control variate scalings.
 
         This function computes the control variate scaling averaged over the
@@ -406,6 +402,7 @@ class BBVIIterator(VariationalInferenceIterator):
         Args:
             f_mat (np.array): Column-wise MC gradient samples
             h_mat (np.array): Column-wise control variate samples
+            weigths_is (np.array): importance sampling weights
 
         Returns:
             cv_scaling (np.array): Columnvector with control variate scalings
@@ -413,15 +410,15 @@ class BBVIIterator(VariationalInferenceIterator):
         dim = len(h_mat)
         cov_sum = 0
         var_sum = 0
-
-        for f_dim, h_dim in zip(f_mat, h_mat):
-            cov_sum += np.cov(f_dim, h_dim)[0, 1]
-            var_sum += np.var(h_dim)
+        for ielbo, covariate in zip(f_mat, h_mat):
+            cov_sum += np.cov(ielbo, covariate, aweights=weights_is)[0, 1]
+            # Use cov instead of np.var to use weights
+            var_sum += float(np.cov(covariate, aweights=weights_is))
         cv_scaling = np.ones((dim, 1)) * cov_sum / var_sum
         return cv_scaling
 
     @staticmethod
-    def _componentwise_control_variates_scalings(f_mat, h_mat):
+    def _componentwise_control_variates_scalings(f_mat, h_mat, weights_is):
         """Computes the componentwise control variates scaling.
 
         I.e., every component of the control variate separately is computed seperately.
@@ -429,18 +426,20 @@ class BBVIIterator(VariationalInferenceIterator):
         Args:
             f_mat (np.array): Column-wise MC gradient samples
             h_mat (np.array): Column-wise control variate samples
+            weights_is (np.array): importance sampling weights
         Returns:
             cv_scaling (np.array): Columnvector with control variate scalings
         """
         dim = len(h_mat)
         cv_scaling = np.ones((dim, 1))
         for i in range(dim):
-            cv_scaling[i] = np.cov(f_mat[i], h_mat[i])[0, 1]
-            cv_scaling[i] = cv_scaling[i] / np.var(h_mat[i])
+            cv_scaling[i] = np.cov(f_mat[i], h_mat[i])[0, 1] / float(
+                np.cov(h_mat[i], aweights=weights_is)
+            )
         return cv_scaling
 
     @staticmethod
-    def _loo_control_variates_scalings(cv_obj, f_mat, h_mat):
+    def _loo_control_variates_scalings(cv_obj, f_mat, h_mat, weights_is):
         """Leave one out control variates.
 
         To reduce bias in the MC and control variate saling estimation
@@ -459,14 +458,18 @@ class BBVIIterator(VariationalInferenceIterator):
         """
         cv_scaling = []
         for i in range(f_mat.shape[1]):
-            scv = cv_obj(np.delete(f_mat, i, 1), np.delete(h_mat, i, 1))
+            scv = cv_obj(np.delete(f_mat, i, 1), np.delete(h_mat, i, 1), np.delete(weights_is, i))
             cv_scaling.append(scv)
         cv_scaling = np.concatenate(cv_scaling, axis=1)
         return cv_scaling
 
-    def _get_control_variates_scalings(self):
+    def _get_control_variates_scalings(self, f_mat, h_mat, weights_is):
         """Calculate the control variate scalings.
 
+        Args:
+            f_mat (np.array): Column-wise MC gradient samples
+            h_mat (np.array): Column-wise control variate samples
+            weights_is (np.ndarray): Importance sampling weigths
         Returns:
             cv_scaling (np.array): Scaling for the control variate
         """
@@ -480,9 +483,11 @@ class BBVIIterator(VariationalInferenceIterator):
                 f"{self.control_variates_scaling_type} unknown, valid types are {valid_options}"
             )
         if self.loo_cv_bool:
-            cv_scaling = self._loo_control_variates_scalings(cv_scaling_obj, self.f_mat, self.h_mat)
+            cv_scaling = self._loo_control_variates_scalings(
+                cv_scaling_obj, f_mat, h_mat, weights_is
+            )
         else:
-            cv_scaling = cv_scaling_obj(self.f_mat, self.h_mat)
+            cv_scaling = cv_scaling_obj(f_mat, h_mat, weights_is)
         return cv_scaling
 
     def _calculate_elbo_gradient(self, variational_parameters):
@@ -508,7 +513,7 @@ class BBVIIterator(VariationalInferenceIterator):
         # Use IS sampling (if enabled)
         selfnormalized_weights_is, normalizing_constant_is = self._prepare_importance_sampling()
         if self.stochastic_optimizer.iteration > self.memory and self.memory > 0 and self.resample:
-            # Number of samples to resample currently set to the max achievable ESS
+            # Number of samples to resample
             n_samples = int(self.n_samples_per_iter * self.memory)
             # Resample
             self._resample(selfnormalized_weights_is, n_samples)
@@ -519,22 +524,31 @@ class BBVIIterator(VariationalInferenceIterator):
         self._evaluate_variational_distribution_for_batch()
         self._filter_failed_simulations()
 
-        # Compute the MC samples, without control variates but with IS weights
-        self.f_mat = (
-            selfnormalized_weights_is
-            * self.grad_params_log_variational_mat
-            * (self.log_posterior_unnormalized - self.log_variational_mat)
+        # Compute the MC samples, without control variates
+        f_mat = self.grad_params_log_variational_mat * (
+            self.log_posterior_unnormalized - self.log_variational_mat
         )
 
         # Compute the control variate at the given samples
-        self.h_mat = selfnormalized_weights_is * self.grad_params_log_variational_mat
+        h_mat = self.grad_params_log_variational_mat
+
+        if isinstance(selfnormalized_weights_is, (float, int)):
+            weights = (
+                np.ones(self.log_posterior_unnormalized.shape)
+                * selfnormalized_weights_is
+                * normalizing_constant_is
+            )
+        else:
+            weights = normalizing_constant_is * selfnormalized_weights_is
 
         # Get control variate scalings
-        control_variate_scalings = self._get_control_variates_scalings()
+        control_variate_scalings = self._get_control_variates_scalings(
+            f_mat, h_mat, weights.flatten()
+        )
 
         # MC gradient estimation with control variates
         grad_elbo = normalizing_constant_is * np.mean(
-            self.f_mat - control_variate_scalings * self.h_mat, axis=1
+            selfnormalized_weights_is * (f_mat - control_variate_scalings * h_mat), axis=1
         ).reshape(-1, 1)
 
         # Compute the logpdf for the elbo estimate (here no IS is used)
@@ -549,6 +563,7 @@ class BBVIIterator(VariationalInferenceIterator):
         # Increase model call counter
         n_samples = self.n_samples_per_iter
         self.n_sims += n_samples
+
         # Draw samples for the current iteration
         self.sample_set = self.variational_distribution_obj.draw(self.variational_params, n_samples)
 
@@ -590,7 +605,7 @@ class BBVIIterator(VariationalInferenceIterator):
                 j += 1
 
         self.log_posterior_unnormalized = self.log_posterior_unnormalized[idx]
-        self.sample_set = np.array([self.sample_set[j] for j in idx])
+        self.sample_set = self.sample_set[idx]
 
     def _check_if_sampling_necessary(self):
         """Check if resampling is necessary.
@@ -690,9 +705,9 @@ class BBVIIterator(VariationalInferenceIterator):
         numerical issues:
 
         :math: `w=\frac{q_i}{\sum_{j=0}^{memory+1} \frac{1}{memory+1}q_j}=\frac{(memory +1)}
-        {1+\sum_{j=0}^{memory}exp(lnq_j-lnq_i)}`
+        {\sum_{j=0}^{memory+1}exp(lnq_j-lnq_i)}`
 
-        and is therefore slightly slower.
+        and is therefore slightly slower. Assumes the mixture coefficients are all equal.
 
         Args:
             variational_params_list (list): variational parameters list of the current and the
@@ -702,17 +717,17 @@ class BBVIIterator(VariationalInferenceIterator):
         Returns:
             weights (np.array): (Unnormalized) weights for the ISMC evaluated for the given samples
         """
-        weights = 1
+        inv_weights = 0
         n_mixture = len(variational_params_list)
         log_pdf_current_iteration = self.variational_distribution_obj.logpdf(
             self.variational_params, samples
         )
-        for j in range(0, n_mixture - 1):
-            weights += np.exp(
-                self.variational_distribution_obj.logpdf(variational_params_list[j], samples)
+        for params in variational_params_list:
+            inv_weights += np.exp(
+                self.variational_distribution_obj.logpdf(params, samples)
                 - log_pdf_current_iteration
             )
-        weights = n_mixture / weights
+        weights = n_mixture / inv_weights
         return weights
 
     def evaluate_variational_distribution_for_batch(self, samples):
