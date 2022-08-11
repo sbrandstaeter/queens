@@ -128,18 +128,21 @@ class BMFGaussianModel(LikelihoodModel):
         cls,
         model_name,
         config,
-        forward_model,
-        coords_mat,
-        time_vec,
-        y_obs_vec,
-        output_label,
-        coord_labels,
     ):
         """Configure multi-fidelity likelihood class from problem description.
 
         Returns:
             BMFGaussianModel (obj): A BMFGaussianModel object
         """
+        (
+            forward_model,
+            coords_mat,
+            time_vec,
+            y_obs,
+            output_label,
+            coord_labels,
+        ) = super().get_base_attributes_from_config(model_name, config)
+
         # TODO the unlabeled treatment of raw data for eigenfunc_random_fields and input vars and
         #  random fields is prone to errors and should be changed! The implementation should
         #  rather use the variable module and reconstruct the eigenfunctions of the random fields
@@ -188,7 +191,7 @@ class BMFGaussianModel(LikelihoodModel):
             forward_model,
             coords_mat,
             time_vec,
-            y_obs_vec,
+            y_obs,
             likelihood_noise_type,
             fixed_likelihood_noise_value,
             output_label,
