@@ -1,13 +1,15 @@
 """Import utils."""
 import importlib.util
+import inspect
 import logging
 import sys
+from importlib import import_module
 from pathlib import Path
 
-_logger = logging.getLogger(__name__)
-
-
 from pqueens.utils.path_utils import check_if_path_exists
+from pqueens.utils.valid_options_utils import get_option
+
+_logger = logging.getLogger(__name__)
 
 
 def get_module_attribute(path_to_module, function_or_class_name):
@@ -53,3 +55,27 @@ def get_module_attribute(path_to_module, function_or_class_name):
         f"in the file {path_to_module}."
     )
     return function
+
+
+def get_module_class(input_options, valid_types, module_type):
+    """Return module class defined in config file.
+
+    Args:
+        input_options (dict): Part of config options
+        valid_types (dict): Dict of valid types with corresponding module paths and class names
+        module_type (str): Chosen module type
+
+    Returns:
+        module_class (class): class from the module
+    """
+    caller = inspect.getmodule(inspect.stack()[1][0]).__name__
+
+    # determine which object to create
+    if input_options.get("external_python_module"):
+        module_path = input_options["external_python_module"]
+        module_class = get_module_attribute(module_path, module_type)
+    else:
+        module_path, module_attribute = get_option(valid_types, module_type)
+        module_class = getattr(import_module(module_path, caller), module_attribute)
+
+    return module_class

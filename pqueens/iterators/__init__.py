@@ -7,6 +7,7 @@ the iterators orchestrate the evaluations on one or multiple models.
 QUEENS also permits nesting of iterators to enable hierarchical methods
 or surrogate based UQ approaches.
 """
+from pqueens.utils.import_utils import get_module_class
 
 
 def from_config_create_iterator(config, iterator_name='method', model=None):
@@ -21,61 +22,35 @@ def from_config_create_iterator(config, iterator_name='method', model=None):
     Returns:
         iterator: Iterator object
     """
-    from pqueens.iterators.baci_lm_iterator import BaciLMIterator
-    from pqueens.iterators.black_box_variational_bayes import BBVIIterator
-    from pqueens.iterators.bmfia_iterator import BMFIAIterator
-    from pqueens.iterators.bmfmc_iterator import BMFMCIterator
-    from pqueens.iterators.data_iterator import DataIterator
-    from pqueens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
-    from pqueens.iterators.grid_iterator import GridIterator
-    from pqueens.iterators.lhs_iterator import LHSIterator
-    from pqueens.iterators.lhs_iterator_mf import MFLHSIterator
-    from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
-    from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
-    from pqueens.iterators.optimization_iterator import OptimizationIterator
-    from pqueens.iterators.polynomial_chaos_iterator import PolynomialChaosIterator
-    from pqueens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
-    from pqueens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
-    from pqueens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
-    from pqueens.iterators.single_sim_run_iterator import SingleSimRunIterator
-    from pqueens.iterators.sobol_index_gp_uncertainty_iterator import (
-        SobolIndexGPUncertaintyIterator,
-    )
-    from pqueens.iterators.sobol_index_iterator import SobolIndexIterator
-    from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
-    from pqueens.utils.import_utils import get_module_attribute
-    from pqueens.utils.valid_options_utils import get_option
-
-    iterator_dict = {
-        'lhs': LHSIterator,
-        'lhs_mf': MFLHSIterator,
-        'metropolis_hastings': MetropolisHastingsIterator,
-        'monte_carlo': MonteCarloIterator,
-        'optimization': OptimizationIterator,
-        'read_data_from_file': DataIterator,
-        'elementary_effects': ElementaryEffectsIterator,
-        'polynomial_chaos': PolynomialChaosIterator,
-        'sobol_indices': SobolIndexIterator,
-        'sobol_indices_gp_uncertainty': SobolIndexGPUncertaintyIterator,
-        'smc': SequentialMonteCarloIterator,
-        'smc_chopin': SequentialMonteCarloChopinIterator,
-        'sobol_sequence': SobolSequenceIterator,
-        'sing_sim_run': SingleSimRunIterator,
-        'bmfmc': BMFMCIterator,
-        'grid': GridIterator,
-        'baci_lm': BaciLMIterator,
-        'bbvi': BBVIIterator,
-        'bmfia': BMFIAIterator,
-        'rpvi': RPVIIterator,
+    valid_types = {
+        'lhs': ['.lhs_iterator', 'LHSIterator'],
+        'lhs_mf': ['.lhs_iterator_mf', 'MFLHSIterator'],
+        'metropolis_hastings': ['.metropolis_hastings_iterator', 'MetropolisHastingsIterator'],
+        'monte_carlo': ['.monte_carlo_iterator', 'MonteCarloIterator'],
+        'optimization': ['.optimization_iterator', 'OptimizationIterator'],
+        'read_data_from_file': ['.data_iterator', 'DataIterator'],
+        'elementary_effects': ['.elementary_effects_iterator', 'ElementaryEffectsIterator'],
+        'polynomial_chaos': ['.polynomial_chaos_iterator', 'PolynomialChaosIterator'],
+        'sobol_indices': ['.sobol_index_iterator', 'SobolIndexIterator'],
+        'sobol_indices_gp_uncertainty': [
+            '.sobol_index_gp_uncertainty_iterator',
+            'SobolIndexGPUncertaintyIterator',
+        ],
+        'smc': ['.sequential_monte_carlo_iterator', 'SequentialMonteCarloIterator'],
+        'smc_chopin': ['.sequential_monte_carlo_chopin', 'SequentialMonteCarloChopinIterator'],
+        'sobol_sequence': ['.sobol_sequence_iterator', 'SobolSequenceIterator'],
+        'sing_sim_run': ['.single_sim_run_iterator', 'SingleSimRunIterator'],
+        'bmfmc': ['.bmfmc_iterator', 'BMFMCIterator'],
+        'grid': ['.grid_iterator', 'GridIterator'],
+        'baci_lm': ['.baci_lm_iterator', 'BaciLMIterator'],
+        'bbvi': ['.black_box_variational_bayes', 'BBVIIterator'],
+        'bmfia': ['.bmfia_iterator', 'BMFIAIterator'],
+        'rpvi': ['.reparameteriztion_based_variational_inference', 'RPVIIterator'],
     }
 
     iterator_options = config.get(iterator_name)
-    if iterator_options.get("external_python_module"):
-        module_path = iterator_options["external_python_module"]
-        module_attribute = iterator_options.get("method_name")
-        iterator_class = get_module_attribute(module_path, module_attribute)
-    else:
-        iterator_class = get_option(iterator_dict, iterator_options.get("method_name"))
+    iterator_type = iterator_options.get("method_name")
+    iterator_class = get_module_class(iterator_options, valid_types, iterator_type)
     iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
 
     return iterator

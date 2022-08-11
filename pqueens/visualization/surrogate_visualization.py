@@ -138,8 +138,7 @@ class SurrogateVisualization(object):
         Returns:
             Plots of sensitivity indices
         """
-        self.random_variables = interface.variables['random_variables']
-        self.parameter_names = list(self.random_variables.keys())
+        self.parameter_names = interface.parameters.names
 
         if self.should_be_saved['1d'] or self.should_be_displayed['1d']:
             self.plot_1d(interface.approximation)

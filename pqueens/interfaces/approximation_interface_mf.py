@@ -26,16 +26,14 @@ class ApproximationInterfaceMF(Interface):
         approx_init (bool):            Flag whether approximation has been initialized
     """
 
-    def __init__(self, interface_name, approximation_config, variables):
+    def __init__(self, interface_name, approximation_config):
         """Create interface.
 
         Args:
             interface_name (string):     Name of interface
             approximation_config (dict): Config options for approximation
-            variables (dict):            Dictionary with variables
         """
-        self.name = interface_name
-        self.variables = variables
+        super().__init__(interface_name)
         self.approximation_config = approximation_config
         self.approximation = None
         self.approx_init = False
