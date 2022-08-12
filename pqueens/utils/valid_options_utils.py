@@ -15,8 +15,8 @@ def get_option(options_dict, desired_option, error_message=""):
     Returns:
         Value of the desired_option
     """
-    if check_if_valid_option(list(options_dict.keys()), desired_option, error_message):
-        return options_dict[desired_option]
+    check_if_valid_option(list(options_dict.keys()), desired_option, error_message)
+    return options_dict[desired_option]
 
 
 def check_if_valid_option(valid_options, desired_option, error_message=""):
@@ -32,7 +32,27 @@ def check_if_valid_option(valid_options, desired_option, error_message=""):
     """
     if desired_option in valid_options:
         return True
-    else:
+
+    raise InvalidOptionError.construct_error_from_options(
+        valid_options, desired_option, error_message
+    )
+
+
+def get_valid_options(valid_options, desired_options, error_message=""):
+    """Get multiple desired options from a list of valid options.
+
+    Args:
+        valid_options (lst): List of valid option keys
+        desired_options (lst): List of desired options
+        error_message (str, optional): Error message in case the desired option can not be found.
+
+    Returns:
+        list: List with the unique desired and valid options
+    """
+    unvalid_options = list((set(desired_options) ^ set(valid_options)) - set(valid_options))
+    if unvalid_options:
         raise InvalidOptionError.construct_error_from_options(
-            valid_options, desired_option, error_message
+            valid_options, ", ".join(desired_options), error_message
         )
+    # remove eventual duplicates
+    return list(set(desired_options))
