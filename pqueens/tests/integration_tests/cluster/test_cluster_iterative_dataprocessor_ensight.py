@@ -1,11 +1,12 @@
+"""Test remote BACI simulations with ensight data-processor."""
 import json
 import pathlib
-import pickle
 
 import numpy as np
 import pytest
 
 import pqueens.database.database as DB_module
+import pqueens.parameters.parameters as parameters_module
 from pqueens.models import from_config_create_model
 from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess
@@ -15,9 +16,11 @@ from pqueens.utils.run_subprocess import run_subprocess
 def test_cluster_baci_data_processor_ensight(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):
-    """Test suite for remote BACI sumlations on the cluster in combination with
-    the BACI ensight data-processor. No iterator is used, the model is called
-    directly.
+    """Test remote BACI simulations with ensight data-processor.
+
+    Test suite for remote BACI simulations on the cluster in combination
+    with the BACI ensight data-processor. No iterator is used, the model is
+    called directly.
 
     This integration test is constructed such that:
         - The interface-map function is called twice (mimics feedback-loops)
@@ -46,7 +49,6 @@ def test_cluster_baci_data_processor_ensight(
     singularity_remote_ip = cluster_testsuite_settings["singularity_remote_ip"]
 
     path_to_executable = baci_cluster_paths["path_to_executable"]
-    path_to_drt_monitor = baci_cluster_paths["path_to_drt_monitor"]
     path_to_drt_ensight = baci_cluster_paths["path_to_drt_ensight"]
     path_to_drt_monitor = baci_cluster_paths["path_to_drt_monitor"]
     path_to_post_processor = baci_cluster_paths["path_to_post_processor"]
@@ -55,7 +57,7 @@ def test_cluster_baci_data_processor_ensight(
     experiment_name = cluster + "_remote_data_processor_ensight"
 
     template = pathlib.Path(inputdir, "baci_remote_model_config.json")
-    input_file = pathlib.Path(tmpdir, f"baci_remote_model_config.json")
+    input_file = pathlib.Path(tmpdir, "baci_remote_model_config.json")
 
     # specific folder for this test
     cluster_experiment_dir = cluster_queens_testing_folder.joinpath(experiment_name)
@@ -117,7 +119,7 @@ def test_cluster_baci_data_processor_ensight(
     injector.inject(dir_dict, template, input_file)
 
     # Patch the missing config arguments
-    with open(str(input_file)) as f:
+    with open(str(input_file), encoding="utf8") as f:
         config = json.load(f)
         global_settings = {
             "output_dir": str(tmpdir),
@@ -129,25 +131,25 @@ def test_cluster_baci_data_processor_ensight(
     # Initialise db module
     DB_module.from_config_create_database(config)
 
-    with DB_module.database as db:
+    with DB_module.database as db:  # pylint: disable=no-member
 
         # Add experimental coordinates to the database
         experimental_data_dict = {"x1": [-16, 10], "x2": [7, 15], "x3": [0.63, 0.2]}
         db.save(experimental_data_dict, experiment_name, 'experimental_data', 1)
+
+        parameters_module.from_config_create_parameters(config)
 
         # Create a BACI model for the benchmarks
         model = from_config_create_model("model", config)
 
         # Evaluate the first batch
         first_sample_batch = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])
-        model.update_model_from_sample_batch(first_sample_batch)
-        first_batch = np.array(model.evaluate()["mean"])
+        first_batch = np.array(model.evaluate(first_sample_batch)["mean"])
 
         # Evaluate a second batch
         # In order to make sure that no port is closed after one batch
         second_sample_batch = np.array([[0.25, 25], [0.4, 46], [0.47, 211]])
-        model.update_model_from_sample_batch(second_sample_batch)
-        second_batch = np.array(model.evaluate()["mean"][-3:])
+        second_batch = np.array(model.evaluate(second_sample_batch)["mean"][-3:])
 
     # Check results
     first_batch_reference_solution = np.array(

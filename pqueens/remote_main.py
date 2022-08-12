@@ -15,6 +15,7 @@ from pathlib import Path
 import pqueens.database.database as DB_module
 from pqueens.drivers import from_config_create_driver
 from pqueens.main import get_config_dict
+from pqueens.utils.logger_settings import setup_cluster_logging
 
 _logger = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ def main(args):
         if is_remote:
             input_path = Path(path_json).joinpath('temp.json')
             # output_dir is not needed but required in get_config_dict
-            output_dir = Path(workdir)
+            output_dir = Path(path_json)
             config = get_config_dict(input_path, output_dir)
 
             # Patch the remote address to the config
@@ -78,11 +79,12 @@ def main(args):
 
         # Create database
         DB_module.from_config_create_database(config)
-        with DB_module.database:
+        with DB_module.database:  # pylint: disable=no-member
             driver_obj = from_config_create_driver(config, job_id, batch, driver_name, workdir)
             # Run the singularity image in two steps and two different singularity calls to have
             # more freedom concerning mpi ranks
             if is_remote:
+                setup_cluster_logging()
                 if post == 'true':
                     driver_obj.post_job_run()
                 else:
@@ -92,16 +94,16 @@ def main(args):
                 driver_obj.post_job_run()
 
     except Exception as singularity_error:
-        _logger.error(f"Queens singularity run failed!")
+        _logger.error("Queens singularity run failed!")
         try:
-            if DB_module.database is None:
-                _logger.error(f"Could not connect to the database!")
+            if DB_module.database is None:  # pylint: disable=no-member
+                _logger.error("Could not connect to the database!")
             elif driver_obj is None:
-                _logger.error(f"Driver object could not be created!")
+                _logger.error("Driver object could not be created!")
             else:
                 driver_obj.finalize_job_in_db()
         except Exception as driver_error:
-            _logger.error(f"The driver cannot finalize the simulation run(s):")
+            _logger.error("The driver cannot finalize the simulation run(s):")
             raise driver_error from singularity_error
         raise singularity_error
 

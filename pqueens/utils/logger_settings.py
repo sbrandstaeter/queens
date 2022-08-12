@@ -79,6 +79,38 @@ def setup_basic_logging(output_dir, experiment_name):
     logging.getLogger('numba').setLevel(logging.CRITICAL)
 
 
+def setup_cluster_logging():
+    """Setup cluster logging."""
+    level_min = logging.INFO
+
+    logging.basicConfig(
+        level=level_min,
+        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+        datefmt='%m-%d %H:%M',
+    )
+
+    console_stdout = logging.StreamHandler(stream=sys.stdout)
+    console_stderr = logging.StreamHandler(stream=sys.stderr)
+
+    # messages lower than and including WARNING go to stdout
+    log_filter = LogFilter(logging.WARNING)
+    console_stdout.addFilter(log_filter)
+    console_stdout.setLevel(level_min)
+
+    # messages >= ERROR or messages >= CONSOLE_LEVEL_MIN if CONSOLE_LEVEL_MIN > ERROR go to stderr
+    console_stderr.setLevel(max(level_min, logging.ERROR))
+
+    # set a format which is simpler for console use
+    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    console_stdout.setFormatter(formatter)
+    console_stderr.setFormatter(formatter)
+
+    # add the handlers to the root logger
+    root_logger = logging.getLogger()
+    root_logger.addHandler(console_stdout)
+    root_logger.addHandler(console_stderr)
+
+
 def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False):
     """Setup job logging and get job logger.
 
@@ -93,7 +125,7 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
     joblogger = logging.getLogger(logger_name)
 
     # define formatter
-    ff = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # set level
     joblogger.setLevel(logging.INFO)
@@ -106,26 +138,26 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
     lfh = logging.FileHandler(log_file, mode='w', delay=False)
     lfh.setLevel(logging.INFO)
     lfh.terminator = ''
-    lfh.setFormatter(ff)
+    lfh.setFormatter(formatter)
     joblogger.addHandler(lfh)
     efh = logging.FileHandler(error_file, mode='w', delay=False)
     efh.setLevel(logging.ERROR)
     efh.terminator = ''
-    efh.setFormatter(ff)
+    efh.setFormatter(formatter)
     joblogger.addHandler(efh)
 
     # add handler for additional streaming to given stream, if required
     if streaming:
-        sh = logging.StreamHandler(stream=sys.stdout)
-        sh.setLevel(logging.INFO)
-        sh.terminator = ''
-        sh.setFormatter(fmt=None)
-        joblogger.addHandler(sh)
+        stream_handler = logging.StreamHandler(stream=sys.stdout)
+        stream_handler.setLevel(logging.INFO)
+        stream_handler.terminator = ''
+        stream_handler.setFormatter(fmt=None)
+        joblogger.addHandler(stream_handler)
     else:
-        sh = None
+        stream_handler = None
 
     # return job logger and handlers
-    return joblogger, lfh, efh, sh
+    return joblogger, lfh, efh, stream_handler
 
 
 def job_logging(command_string, process, joblogger, terminate_expr):
@@ -179,7 +211,7 @@ def job_logging(command_string, process, joblogger, terminate_expr):
     return stderr
 
 
-def finish_job_logger(joblogger, lfh, efh, sh):
+def finish_job_logger(joblogger, lfh, efh, stream_handler):
     """Close and remove file handlers.
 
     (to prevent OSError: [Errno 24] Too many open files)
@@ -189,9 +221,9 @@ def finish_job_logger(joblogger, lfh, efh, sh):
     efh.close()
     joblogger.removeHandler(lfh)
     joblogger.removeHandler(efh)
-    if sh is not None:
-        sh.close()
-        joblogger.removeHandler(sh)
+    if stream_handler is not None:
+        stream_handler.close()
+        joblogger.removeHandler(stream_handler)
 
 
 def log_through_print(logger, command):
@@ -212,8 +244,8 @@ def log_through_print(logger, command):
 
     output = new_stdout.getvalue()
     split_data = output.splitlines()
-    for line_number in range(len(split_data)):
-        logger.info(split_data[line_number])
+    for current_line in split_data:
+        logger.info(current_line)
     logger.info('')
 
     sys.stdout = old_stdout
