@@ -1,0 +1,72 @@
+experiment_name: inverse_bbvi_park91a_hifi
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  method_name: bbvi
+  method_options:
+    model: model
+    max_feval: 100
+    n_samples_per_iter: 2
+    memory: 20
+    variational_distribution:
+      variational_approximation_type: fullrank
+      variational_family: normal
+    model_eval_iteration_period: 1000
+    optimization_options:
+      natural_gradient: true
+      FIM_dampening: true
+      decay_start_iteration: 50
+      dampening_coefficient: 0.01
+      FIM_dampening_lower_bound: 1.0e-08
+      stochastic_optimizer: Adam
+      learning_rate: 0.01
+      optimization_type: max
+      rel_L1_change_threshold: -1
+      rel_L2_change_threshold: -1
+      max_iter: 10000000
+    variational_transformation:
+    variational_parameter_initialization: prior
+    random_seed: 1
+    control_variates_scaling_type: averaged
+    loo_control_variates_scaling: false
+    result_description:
+      write_results: true
+      export_iteration_data: true
+      plotting_options:
+        plot_boolean: false
+        plotting_dir: "{plot_dir}"
+        plot_name: variational_params_convergence.eps
+        save_bool: false
+model:
+  type: gaussian
+  forward_model: forward_model
+  experimental_file_name_identifier: "*.csv"
+  output_label: y_obs
+  coordinate_labels:
+  - x3
+  - x4
+  noise_type: MAP_jeffrey_variance
+  nugget_noise_variance: 1.0e-08
+  experimental_csv_data_base_dir: "{experimental_data_path}"
+  noise_var_iterative_averaging:
+    averaging_type: moving_average
+    num_iter_for_avg: 10
+forward_model:
+  type: simulation_model
+  interface: interface
+interface:
+  type: direct_python_interface
+  function_name: park91a_hifi_on_grid
+parameters:
+  random_variables:
+    x1:
+      dimension: 1
+      distribution: normal
+      mean: 0.6
+      covariance: 0.2
+    x2:
+      dimension: 1
+      distribution: normal
+      mean: 0.3
+      covariance: 0.1
