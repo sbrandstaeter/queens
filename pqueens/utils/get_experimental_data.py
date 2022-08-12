@@ -56,15 +56,16 @@ def get_experimental_data(
     experimental_data_dict = data_processor.get_data_from_file(base_dir)
 
     # arrange the experimental data coordinates
-    experimental_coordinates = (
-        np.array([experimental_data_dict[coordinate] for coordinate in coordinate_labels]),
-    )[0].T
+    experimental_coordinates = None
+    if coordinate_labels:
+        experimental_coordinates = (
+            np.array([experimental_data_dict[coordinate] for coordinate in coordinate_labels]),
+        )[0].T
 
     # get a unique vector of observation times
+    time_vec = None
     if time_label:
         time_vec = np.sort(list(set(experimental_data_dict[time_label])))
-    else:
-        time_vec = None
 
     # get the experimental outputs
     y_obs_vec = np.array(experimental_data_dict[output_label]).reshape(
