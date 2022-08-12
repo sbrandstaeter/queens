@@ -3,7 +3,12 @@ import logging
 
 import numpy as np
 
-from pqueens.iterators.variational_inference import VariationalInferenceIterator
+from pqueens.iterators.variational_inference import (
+    VALID_EXPORT_FIELDS,
+    VariationalInferenceIterator,
+)
+from pqueens.utils.collection_utils import CollectionObject
+from pqueens.utils.valid_options_utils import get_valid_options
 
 _logger = logging.getLogger(__name__)
 
@@ -57,15 +62,12 @@ class BBVIIterator(VariationalInferenceIterator):
         fim_decay_start_iter (float): Iteration at which the FIM dampening is started
         fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
         fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-        export_quantities_over_iter (boolean): True if data (variational_params, ELBO, ESS) should
-                                               be exported in the pickle file
         control_variates_scaling_type (str): Flag to decide how to compute control variate scaling
         loo_cv_bool (boolean): True if leave-one-out procedure is used for the control variate
                                scaling estimations. Is quite slow!
         n_sims (int): Number of probabilistic model calls
         variational_distribution_obj (VariationalDistribution): Variational distribution object
         variational_params (np.array): Row-vector containing the variational parameters
-        elbo_list (list): ELBO value of every iteration
         log_variational_mat (np.array): Logpdf evaluations of the variational distribution
         grad_params_log_variational_mat (np.array): Column-wise grad params logpdf (score function)
                                                     of the variational distribution
@@ -75,10 +77,7 @@ class BBVIIterator(VariationalInferenceIterator):
         parameter_list (list): List of parameters from previous iterations for the ISMC gradient
         log_posterior_unnormalized_list (list): List of probabilistic model evaluations from
                                                 previous iterations for the ISMC gradient
-        ess_list (list): List containing the effective sample size for every iteration (in case IS
-                         is used)
-        noise_list (list): Gaussian likelihood noise variance values.
-        variational_params_list (list): List of parameters from first to last iteration
+        ess (float): Effective sample size of the current iteration (in case IS is used)
         model_eval_iteration_period (int): If the iteration number is a multiple of this number
                                            the probabilistic model is sampled independent of the
                                            other conditions
@@ -88,6 +87,7 @@ class BBVIIterator(VariationalInferenceIterator):
                               every iteration
         sample_set (np.ndarray): Set of samples used to evaluate the probabilistic model is
                                  not needed in other VI methods
+        iteration_data (CollectionObject): Object to store iteration data if desired
     """
 
     def __init__(
@@ -110,13 +110,13 @@ class BBVIIterator(VariationalInferenceIterator):
         fim_decay_start_iter,
         fim_dampening_coefficient,
         fim_dampening_lower_bound,
-        export_quantities_over_iter,
         control_variates_scaling_type,
         loo_cv_bool,
         variational_distribution_obj,
         stochastic_optimizer,
         model_eval_iteration_period,
         resample,
+        iteration_data,
     ):
         """Initialize BBVI iterator.
 
@@ -145,19 +145,17 @@ class BBVIIterator(VariationalInferenceIterator):
             fim_decay_start_iter (float): Iteration at which the FIM dampening is started
             fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
             fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-            export_quantities_over_iter (boolean): True if data (variational_params, ELBO, ESS)
-                                                   should be exported in the pickle file
             control_variates_scaling_type (str): Flag to decide how to compute control variate
                                                 scaling
             loo_cv_bool (boolean): True if leave-one-out procedure is used for the control variate
                                    scaling estimations. Is quite slow!
             variational_distribution_obj (VariationalDistribution): Variational distribution object
-            variational_params_list (list): List of parameters from first to last iteration
             model_eval_iteration_period (int): If the iteration number is a multiple of this number
                                                the probabilistic model is sampled independent of the
                                                other conditions
             resample (bool): True is resampling should be used
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
+            iteration_data (CollectionObject): Object to store iteration data if desired
         Returns:
             bbvi_obj (obj): Instance of the BBVIIterator
         """
@@ -179,9 +177,9 @@ class BBVIIterator(VariationalInferenceIterator):
             fim_decay_start_iter,
             fim_dampening_coefficient,
             fim_dampening_lower_bound,
-            export_quantities_over_iter,
             variational_distribution_obj,
             stochastic_optimizer,
+            iteration_data,
         )
 
         self.control_variates_scaling_type = control_variates_scaling_type
@@ -197,11 +195,10 @@ class BBVIIterator(VariationalInferenceIterator):
         self.samples_list = []
         self.parameter_list = []
         self.log_posterior_unnormalized_list = []
-        self.ess_list = []
-        self.noise_list = []
-        self.weights_list = []
+        self.ess = 0
         self.sampling_bool = True
         self.sample_set = None
+        self.iteration_data = iteration_data
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -227,7 +224,12 @@ class BBVIIterator(VariationalInferenceIterator):
             model_eval_iteration_period = 1
 
         resample = method_options.get("resample", False)
-
+        valid_export_fields = ["ess", "weights"] + VALID_EXPORT_FIELDS
+        iterative_data_names = get_valid_options(
+            valid_export_fields,
+            method_options["result_description"].get("iterative_field_names", []),
+        )
+        iteration_data = CollectionObject(*iterative_data_names)
         (
             global_settings,
             model,
@@ -248,7 +250,6 @@ class BBVIIterator(VariationalInferenceIterator):
             fim_dampening_lower_bound,
             variational_distribution_obj,
             stochastic_optimizer,
-            export_quantities_over_iter,
         ) = super().get_base_attributes_from_config(config, iterator_name)
 
         return cls(
@@ -270,13 +271,13 @@ class BBVIIterator(VariationalInferenceIterator):
             fim_decay_start_iter=fim_decay_start_iter,
             fim_dampening_coefficient=fim_dampening_coefficient,
             fim_dampening_lower_bound=fim_dampening_lower_bound,
-            export_quantities_over_iter=export_quantities_over_iter,
             control_variates_scaling_type=control_variates_scaling_type,
             loo_cv_bool=loo_cv_bool,
             variational_distribution_obj=variational_distribution_obj,
             stochastic_optimizer=stochastic_optimizer,
             model_eval_iteration_period=model_eval_iteration_period,
             resample=resample,
+            iteration_data=iteration_data,
         )
 
     def core_run(self):
@@ -300,7 +301,6 @@ class BBVIIterator(VariationalInferenceIterator):
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)--> data is saved to DB
         log_likelihood = self.model.evaluate(sample_batch)
-        self.noise_list.append(self.model.normal_distribution.covariance)
 
         return log_likelihood.flatten()
 
@@ -344,18 +344,9 @@ class BBVIIterator(VariationalInferenceIterator):
         super()._verbose_output()
 
         if self.memory > 0 and self.stochastic_optimizer.iteration > 0:
-            _logger.info(
-                f"ESS: {self.ess_list[-1]:.2f} of {(self.memory + 1) * self.n_samples_per_iter}"
-            )
+            _logger.info(f"ESS: {self.ess:.2f} of {(self.memory + 1) * self.n_samples_per_iter}")
         if self.stochastic_optimizer.iteration > 1:
-            rel_noise = (
-                np.mean(np.abs(self.noise_list[-2] - self.noise_list[-1]) / self.noise_list[-2])
-                * 100
-            )
-            _logger.info(
-                f"Likelihood noise variance: {self.noise_list[-1]} (mean relative change "
-                f"{rel_noise:.2f}) %"
-            )
+            _logger.info(f"Likelihood noise variance: {self.model.normal_distribution.covariance}")
         _logger.info("-" * 80)
 
     def _prepare_result_description(self):
@@ -375,21 +366,8 @@ class BBVIIterator(VariationalInferenceIterator):
         if self.memory > 0:
             result_description.update({"memory": self.memory})
 
-        if self.export_quantities_over_iter:
-            result_description["iteration_data"].update(
-                {
-                    "likelihood_noise_var": self.noise_list,
-                    "elbo": self.elbo_list,
-                }
-            )
-            if self.memory > 0:
-                result_description["iteration_data"].update(
-                    {
-                        "ESS": self.ess_list,
-                        "importance_sampling_weights": self.weights_list,
-                    }
-                )
-
+        if self.iteration_data:
+            result_description["iteration_data"].update(self.iteration_data.to_dict())
         return result_description
 
     @staticmethod
@@ -554,7 +532,12 @@ class BBVIIterator(VariationalInferenceIterator):
         # Compute the logpdf for the elbo estimate (here no IS is used)
         self._calculate_elbo(selfnormalized_weights_is, normalizing_constant_is)
 
-        self.n_sims_list.append(self.n_sims)
+        self.iteration_data.add(
+            samples=self.sample_set,
+            n_sims=self.n_sims,
+            variational_parameters=variational_parameters,
+            likelihood_variance=self.model.normal_distribution.covariance,
+        )
 
         return grad_elbo
 
@@ -620,7 +603,7 @@ class BBVIIterator(VariationalInferenceIterator):
         self.sampling_bool = (
             self.memory == 0
             or self.stochastic_optimizer.iteration <= self.memory
-            or self.ess_list[-1] < 0.5 * max_ess
+            or self.ess < 0.5 * max_ess
             or self.stochastic_optimizer.iteration % self.model_eval_iteration_period == 0
         )
 
@@ -634,7 +617,7 @@ class BBVIIterator(VariationalInferenceIterator):
         instant_elbo = selfnormalized_weights * (
             self.log_posterior_unnormalized - self.log_variational_mat
         )
-        self.elbo_list.append(normalizing_constant * np.mean(instant_elbo))
+        self.iteration_data.add(elbo=normalizing_constant * np.mean(instant_elbo))
 
     def _prepare_importance_sampling(self):
         r"""Helper functions for the importance sampling.
@@ -671,8 +654,9 @@ class BBVIIterator(VariationalInferenceIterator):
                 # Self normalize weighs
                 normalizing_constant = np.sum(weights_is)
                 selfnormalized_weights = weights_is / normalizing_constant
-                self.ess_list.append(1 / np.sum(selfnormalized_weights**2))
-                self.weights_list.append(weights_is)
+                self.iteration_data.add(
+                    ess=1 / np.sum(selfnormalized_weights**2), weights=weights_is
+                )
 
         return selfnormalized_weights, normalizing_constant
 
