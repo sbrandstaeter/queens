@@ -534,8 +534,8 @@ class BBVIIterator(VariationalInferenceIterator):
 
         self.iteration_data.add(
             samples=self.sample_set,
+            weights=weights,
             n_sims=self.n_sims,
-            variational_parameters=variational_parameters,
             likelihood_variance=self.model.normal_distribution.covariance,
         )
 
@@ -643,6 +643,7 @@ class BBVIIterator(VariationalInferenceIterator):
 
         # If importance sampling is used
         if self.memory > 0:
+            ess = len(self.sample_set)
             self._update_sample_and_posterior_lists()
 
             # The number of iterations that we want to keep the samples and model evals
@@ -654,9 +655,9 @@ class BBVIIterator(VariationalInferenceIterator):
                 # Self normalize weighs
                 normalizing_constant = np.sum(weights_is)
                 selfnormalized_weights = weights_is / normalizing_constant
-                self.iteration_data.add(
-                    ess=1 / np.sum(selfnormalized_weights**2), weights=weights_is
-                )
+                ess = 1 / np.sum(selfnormalized_weights**2)
+
+            self.iteration_data.add(ess=ess)
 
         return selfnormalized_weights, normalizing_constant
 

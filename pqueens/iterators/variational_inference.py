@@ -10,10 +10,8 @@ import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils import variational_inference_utils
-from pqueens.utils.collection_utils import CollectionObject
 from pqueens.utils.process_outputs import write_results
 from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
-from pqueens.utils.valid_options_utils import get_valid_options
 
 _logger = logging.getLogger(__name__)
 
