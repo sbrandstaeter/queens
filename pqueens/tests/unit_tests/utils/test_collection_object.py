@@ -12,9 +12,13 @@ def test_initialization():
     collobj = CollectionObject(*field_names)
     assert set(field_names) == set(collobj.keys())
 
+
+def test_create_collection_object_from_dict():
+    """Test create_collection_from_dict."""
+    field_names = ["a", "b", "c"]
     data = [1, 2, 3]
     data_dict = dict(zip(field_names, data))
-    collobj = CollectionObject(**data_dict)
+    collobj = CollectionObject.create_collection_object_from_dict(data_dict)
     assert set(field_names) == set(collobj.keys())
     assert set(data) == set(collobj.values())
 
@@ -65,11 +69,11 @@ def test_indexing():
     field_names = ["a", "b", "c"]
     data = [[1, 1.1, 1.2], [2, 2.1, 2.2], [3, 3.1, 3.2]]
     data_dict = dict(zip(field_names, data))
-    collobj = CollectionObject(**data_dict)
+    collobj = CollectionObject.create_collection_object_from_dict(data_dict)
 
-    assert collobj[1] == {"a": 1.1, 'b': 2.1, "c": 3.1}
-    assert collobj[-1] == {"a": 1.2, 'b': 2.2, "c": 3.2}
-    assert collobj[1:] == {"a": [1.1, 1.2], 'b': [2.1, 2.2], "c": [3.1, 3.2]}
+    assert collobj[1].to_dict() == {"a": 1.1, 'b': 2.1, "c": 3.1}
+    assert collobj[-1].to_dict() == {"a": 1.2, 'b': 2.2, "c": 3.2}
+    assert collobj[1:].to_dict() == {"a": [1.1, 1.2], 'b': [2.1, 2.2], "c": [3.1, 3.2]}
 
 
 def test_indexing_failure():
@@ -77,7 +81,7 @@ def test_indexing_failure():
     field_names = ["a", "b", "c"]
     data = [[1, 1.1, 1.2], [2, 2.1, 2.2], [3, 3.1, 3.2]]
     data_dict = dict(zip(field_names, data))
-    collobj = CollectionObject(**data_dict)
+    collobj = CollectionObject.create_collection_object_from_dict(data_dict)
 
     with pytest.raises(IndexError, match="index 6 out of range for size 3"):
         print(collobj[6])

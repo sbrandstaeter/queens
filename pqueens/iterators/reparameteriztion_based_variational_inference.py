@@ -11,7 +11,7 @@ from pqueens.iterators.variational_inference import (
 from pqueens.utils import variational_inference_utils
 from pqueens.utils.collection_utils import CollectionObject
 from pqueens.utils.fd_jacobian import fd_jacobian, get_positions
-from pqueens.utils.valid_options_utils import check_if_valid_option, get_option, get_valid_options
+from pqueens.utils.valid_options_utils import check_if_valid_options, get_option
 
 _logger = logging.getLogger(__name__)
 
@@ -174,7 +174,7 @@ class RPVIIterator(VariationalInferenceIterator):
         valid_finite_difference_methods = ["2-point", "3-point"]
         finite_difference_method = method_options.get("finite_difference_method")
         if likelihood_gradient_method == "finite_difference":
-            check_if_valid_option(valid_finite_difference_methods, finite_difference_method)
+            check_if_valid_options(valid_finite_difference_methods, finite_difference_method)
 
         (
             global_settings,
@@ -198,10 +198,8 @@ class RPVIIterator(VariationalInferenceIterator):
             stochastic_optimizer,
         ) = super().get_base_attributes_from_config(config, iterator_name)
 
-        iterative_data_names = get_valid_options(
-            VALID_EXPORT_FIELDS,
-            method_options["result_description"].get("iterative_field_names", []),
-        )
+        iterative_data_names = method_options["result_description"].get("iterative_field_names", [])
+        check_if_valid_options(VALID_EXPORT_FIELDS, iterative_data_names)
         iteration_data = CollectionObject(*iterative_data_names)
         return cls(
             global_settings=global_settings,

@@ -8,7 +8,7 @@ from pqueens.iterators.variational_inference import (
     VariationalInferenceIterator,
 )
 from pqueens.utils.collection_utils import CollectionObject
-from pqueens.utils.valid_options_utils import get_valid_options
+from pqueens.utils.valid_options_utils import check_if_valid_options
 
 _logger = logging.getLogger(__name__)
 
@@ -225,10 +225,8 @@ class BBVIIterator(VariationalInferenceIterator):
 
         resample = method_options.get("resample", False)
         valid_export_fields = ["ess", "weights"] + VALID_EXPORT_FIELDS
-        iterative_data_names = get_valid_options(
-            valid_export_fields,
-            method_options["result_description"].get("iterative_field_names", []),
-        )
+        iterative_data_names = method_options["result_description"].get("iterative_field_names", [])
+        check_if_valid_options(valid_export_fields, iterative_data_names)
         iteration_data = CollectionObject(*iterative_data_names)
         (
             global_settings,

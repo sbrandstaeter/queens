@@ -12,16 +12,28 @@ class CollectionObject:
         lists of the data that is stored in the object
     """
 
-    def __init__(self, *field_names, **data_dict):
+    def __init__(self, *field_names):
         """Initialze the collection item.
 
         Args:
             field_names (tuple): Name of fields to be stored
-            data_dict (dict): Dictionary with values to be stored in this object
         """
         for key in field_names:
             self.__dict__.update({key: []})
-        self.__dict__.update(data_dict)
+
+    @classmethod
+    def create_collection_object_from_dict(cls, data_dict):
+        """Create collection item from dict.
+
+        Args:
+            data_dict (dict): Dictionary with values to be stored in this object
+
+        Returns:
+            CollectionObject: collection object created from dict
+        """
+        collection_object = cls()
+        collection_object.__dict__.update(data_dict)
+        return collection_object
 
     def add(self, **field_names_and_values):
         """Add data to the object.
@@ -39,9 +51,12 @@ class CollectionObject:
         for key, value in field_names_to_be_stored.items():
             # Check if current iteration is completed
             if len(self.__dict__[key]) > min(self._get_lens()):
+                fields_with_lens = ', '.join(
+                    [f'{key}: {length}' for key, length in zip(self.keys(), self._get_lens())]
+                )
                 raise ValueError(
                     f"Can not add value to {key} list as it has length {len(self.__dict__[key])} "
-                    f"but the other entries are at {min(self._get_lens())}"
+                    f"but the other entries are at {len(self)}: {fields_with_lens}"
                 )
 
             self.__dict__[key].append(value)
@@ -52,7 +67,7 @@ class CollectionObject:
         Returns:
             list: List of number of elements per field
         """
-        return [len(value) for value in self.__dict__.values()]
+        return [len(value) for value in self.values()]
 
     def __str__(self):
         """Print table of current collection.
@@ -113,16 +128,16 @@ class CollectionObject:
             i (int, slice): int or slice
 
         Returns:
-            dict: dict with values and field names for provided indexes
+            CollectionObject: collection object with values and field names for provided indexes
         """
         if isinstance(i, int):
             if i > len(self):
                 raise IndexError(f"index {i} out of range for size {self.__len__()}")
 
-        return_dict = {}
-        for key, value in self.__dict__.items():
-            return_dict.update({key: value[i]})
-        return return_dict
+        new_dict = {}
+        for key, value in self.items():
+            new_dict.update({key: value[i]})
+        return self.create_collection_object_from_dict(new_dict)
 
     def to_dict(self):
         """Create a dictionary from the collection object.
