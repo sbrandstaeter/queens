@@ -654,7 +654,7 @@ class BBVIIterator(VariationalInferenceIterator):
                 normalizing_constant = np.sum(weights_is)
                 selfnormalized_weights = weights_is / normalizing_constant
                 ess = 1 / np.sum(selfnormalized_weights**2)
-
+            self.ess = ess
             self.iteration_data.add(ess=ess)
 
         return selfnormalized_weights, normalizing_constant
