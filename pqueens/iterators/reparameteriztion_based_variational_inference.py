@@ -4,10 +4,14 @@ import logging
 import numpy as np
 from scipy.stats import multivariate_normal as mvn
 
-from pqueens.iterators.variational_inference import VariationalInferenceIterator
+from pqueens.iterators.variational_inference import (
+    VALID_EXPORT_FIELDS,
+    VariationalInferenceIterator,
+)
 from pqueens.utils import variational_inference_utils
+from pqueens.utils.collection_utils import CollectionObject
 from pqueens.utils.fd_jacobian import fd_jacobian, get_positions
-from pqueens.utils.valid_options_utils import check_if_valid_option, get_option
+from pqueens.utils.valid_options_utils import check_if_valid_options, get_option
 
 _logger = logging.getLogger(__name__)
 
@@ -51,7 +55,6 @@ class RPVIIterator(VariationalInferenceIterator):
                         - '3-point': more exact but needs twice as many function evaluations
         likelihood_gradient_method (str): Method for how to calculate the gradient
                                                         of the log-likelihood
-        noise_list (list): Gaussian likelihood noise variance values.
 
     Returns:
         rpvi_obj (obj): Instance of the RPVIIterator
@@ -76,13 +79,13 @@ class RPVIIterator(VariationalInferenceIterator):
         fim_decay_start_iter,
         fim_dampening_coefficient,
         fim_dampening_lower_bound,
-        export_quantities_over_iter,
         variational_distribution_obj,
         stochastic_optimizer,
         score_function_bool,
         finite_difference_step,
         likelihood_gradient_method,
         finite_difference_method,
+        iteration_data,
     ):
         """Initialize RPVI iterator.
 
@@ -108,8 +111,6 @@ class RPVIIterator(VariationalInferenceIterator):
             fim_decay_start_iter (float): Iteration at which the FIM dampening is started
             fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
             fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-            export_quantities_over_iter (boolean): True if data (variational_params, elbo, ESS)
-                                                   should be exported in the pickle file
             variational_distribution_obj (VariationalDistribution): Variational distribution object
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
             score_function_bool (bool): Boolean flag to decide whether the score function term
@@ -123,6 +124,7 @@ class RPVIIterator(VariationalInferenceIterator):
 
                             - '2-point': a one sided scheme by definition
                             - '3-point': more exact but needs twice as many function evaluations
+            iteration_data (CollectionObject): Object to store iteration data if desired
         """
         super().__init__(
             global_settings,
@@ -142,14 +144,13 @@ class RPVIIterator(VariationalInferenceIterator):
             fim_decay_start_iter,
             fim_dampening_coefficient,
             fim_dampening_lower_bound,
-            export_quantities_over_iter,
             variational_distribution_obj,
             stochastic_optimizer,
+            iteration_data,
         )
         self.score_function_bool = score_function_bool
         self.finite_difference_step = finite_difference_step
         self.likelihood_gradient_method = likelihood_gradient_method
-        self.noise_list = []
         self.finite_difference_method = finite_difference_method
 
     @classmethod
@@ -173,7 +174,7 @@ class RPVIIterator(VariationalInferenceIterator):
         valid_finite_difference_methods = ["2-point", "3-point"]
         finite_difference_method = method_options.get("finite_difference_method")
         if likelihood_gradient_method == "finite_difference":
-            check_if_valid_option(valid_finite_difference_methods, finite_difference_method)
+            check_if_valid_options(valid_finite_difference_methods, finite_difference_method)
 
         (
             global_settings,
@@ -195,9 +196,11 @@ class RPVIIterator(VariationalInferenceIterator):
             fim_dampening_lower_bound,
             variational_distribution_obj,
             stochastic_optimizer,
-            export_quantities_over_iter,
         ) = super().get_base_attributes_from_config(config, iterator_name)
 
+        iterative_data_names = method_options["result_description"].get("iterative_field_names", [])
+        check_if_valid_options(VALID_EXPORT_FIELDS, iterative_data_names)
+        iteration_data = CollectionObject(*iterative_data_names)
         return cls(
             global_settings=global_settings,
             model=model,
@@ -216,13 +219,13 @@ class RPVIIterator(VariationalInferenceIterator):
             fim_decay_start_iter=fim_decay_start_iter,
             fim_dampening_coefficient=fim_dampening_coefficient,
             fim_dampening_lower_bound=fim_dampening_lower_bound,
-            export_quantities_over_iter=export_quantities_over_iter,
             variational_distribution_obj=variational_distribution_obj,
             stochastic_optimizer=stochastic_optimizer,
             score_function_bool=score_function_bool,
             finite_difference_step=finite_difference_step,
             likelihood_gradient_method=likelihood_gradient_method,
             finite_difference_method=finite_difference_method,
+            iteration_data=iteration_data,
         )
 
     def core_run(self):
@@ -450,7 +453,7 @@ class RPVIIterator(VariationalInferenceIterator):
             ).flatten()
         )
         elbo = float(mvn.entropy(mean.flatten(), covariance) + log_unnormalized_posterior_mean)
-        self.elbo_list.append(elbo)
+        self.iteration_data.add(elbo=elbo)
 
     def _verbose_output(self):
         """Give some informative outputs during the VI iterations."""
@@ -460,14 +463,7 @@ class RPVIIterator(VariationalInferenceIterator):
         super()._verbose_output()
 
         if self.stochastic_optimizer.iteration > 1:
-            rel_noise = (
-                np.mean(np.abs(self.noise_list[-2] - self.noise_list[-1]) / self.noise_list[-2])
-                * 100
-            )
-            _logger.info(
-                f"Likelihood noise variance: {self.noise_list[-1]} (mean relative change "
-                f"{rel_noise:.2f}) %"
-            )
+            _logger.info(f"Likelihood noise variance: {self.model.normal_distribution.covariance}%")
         _logger.info("-" * 80)
 
     def _prepare_result_description(self):
@@ -477,13 +473,8 @@ class RPVIIterator(VariationalInferenceIterator):
             result_description (dict): Dictionary with result summary of the analysis
         """
         result_description = super()._prepare_result_description()
-        if self.export_quantities_over_iter:
-            result_description["iteration_data"].update(
-                {
-                    "likelihood_noise_var": self.noise_list,
-                    "elbo": self.elbo_list,
-                }
-            )
+        if self.iteration_data:
+            result_description["iteration_data"].update(self.iteration_data.to_dict())
         return result_description
 
     def eval_log_likelihood(self, sample_batch, gradient_bool=False):
@@ -508,8 +499,11 @@ class RPVIIterator(VariationalInferenceIterator):
             sample_batch.reshape(-1, self.num_parameters), gradient_bool=gradient_bool
         )
         self.n_sims += len(sample_batch)
-        self.n_sims_list.append(self.n_sims)
-        self.noise_list.append(self.model.normal_distribution.covariance)
+        self.iteration_data.add(
+            n_sims=self.n_sims,
+            likelihood_variance=self.model.normal_distribution.covariance,
+            samples=sample_batch,
+        )
 
         return likelihood_return_tuple
 

@@ -38,7 +38,6 @@
       "random_seed": 1,
       "result_description": {
         "write_results": true,
-        "export_iteration_data": true,
         "plotting_options": {
           "plot_boolean": false,
           "plotting_dir": "{plot_dir}",

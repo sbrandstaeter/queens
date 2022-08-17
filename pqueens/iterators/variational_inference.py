@@ -15,6 +15,8 @@ from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 _logger = logging.getLogger(__name__)
 
+VALID_EXPORT_FIELDS = ["elbo", "n_sims", "samples", "likelihood_variance", "variational_parameters"]
+
 
 class VariationalInferenceIterator(Iterator):
     """Stochastic variational inference iterator.
@@ -51,20 +53,16 @@ class VariationalInferenceIterator(Iterator):
         fim_decay_start_iter (float): Iteration at which the FIM dampening is started
         fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
         fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-        export_quantities_over_iter (boolean): True if data (variational_params, elbo) should
-                                               be exported in the pickle file
         n_sims (int): Number of probabilistic model calls
         variational_distribution_obj (VariationalDistribution): Variational distribution object
         variational_params (np.array): Rowvector containing the variatonal parameters
-        elbo_list (list): ELBO value of every iteration
-        parameter_list (list): List of parameters from previous iterations for the ISMC gradient
-        variational_params_list (list): List of parameters from first to last iteration
         model_eval_iteration_period (int): If the iteration number is a multiple of this number
                                            the probabilistic model is sampled independent of the
                                            other conditions
         stochastic_optimizer (obj): QUEENS stochastic optimizer object
         nan_in_gradient_counter (int): Count how many times NaNs appeared in the gradient estimate
                                        in a row
+        iteration_data (CollectionObject): Object to store iteration data if desired
     """
 
     def __init__(
@@ -86,9 +84,9 @@ class VariationalInferenceIterator(Iterator):
         fim_decay_start_iter,
         fim_dampening_coefficient,
         fim_dampening_lower_bound,
-        export_quantities_over_iter,
         variational_distribution_obj,
         stochastic_optimizer,
+        iteration_data,
     ):
         """Initialize VI iterator.
 
@@ -114,11 +112,9 @@ class VariationalInferenceIterator(Iterator):
             fim_decay_start_iter (float): Iteration at which the FIM dampening is started
             fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
             fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-            export_quantities_over_iter (boolean): True if data (variational_params, elbo, ESS)
-                                                   should be exported in the pickle file
             variational_distribution_obj (VariationalDistribution): Variational distribution object
-            variational_params_list (list): List of parameters from first to last iteration
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
+            iteration_data (CollectionObject): Object to store iteration data if desired
         Returns:
             Initialise variational inference iterator
         """
@@ -141,13 +137,11 @@ class VariationalInferenceIterator(Iterator):
         self.variational_family = variational_family
         self.stochastic_optimizer = stochastic_optimizer
         self.variational_distribution_obj = variational_distribution_obj
-        self.export_quantities_over_iter = export_quantities_over_iter
         self.n_sims = 0
         self.variational_params = None
-        self.variational_params_list = []
-        self.elbo_list = []
-        self.n_sims_list = []
+        self.elbo = -np.inf
         self.nan_in_gradient_counter = 0
+        self.iteration_data = iteration_data
 
     @staticmethod
     def get_base_attributes_from_config(config, iterator_name, model=None):
@@ -180,10 +174,7 @@ class VariationalInferenceIterator(Iterator):
             fim_decay_start_iter (float): Iteration at which the FIM dampening is started
             fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
             fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-            export_quantities_over_iter (boolean): True if data (variational_params, elbo, ESS)
-                                                   should be exported in the pickle file
             variational_distribution_obj (VariationalDistribution): Variational distribution object
-            variational_params_list (list): List of parameters from first to last iteration
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
         """
         method_options = config[iterator_name]['method_options']
@@ -191,8 +182,8 @@ class VariationalInferenceIterator(Iterator):
             model_name = method_options['model']
             model = from_config_create_model(model_name, config)
 
-        result_description = method_options.get('result_description', None)
-        global_settings = config.get('global_settings', None)
+        result_description = method_options.get('result_description')
+        global_settings = config.get('global_settings')
 
         db = DB_module.database
         experiment_name = config['global_settings']['experiment_name']
@@ -222,8 +213,6 @@ class VariationalInferenceIterator(Iterator):
             "variational_parameter_initialization", None
         )
 
-        export_quantities_over_iter = result_description.get("export_iteration_data")
-
         stochastic_optimizer = from_config_create_optimizer(method_options, "optimization_options")
         return (
             global_settings,
@@ -245,17 +234,18 @@ class VariationalInferenceIterator(Iterator):
             fim_dampening_lower_bound,
             variational_distribution_obj,
             stochastic_optimizer,
-            export_quantities_over_iter,
         )
 
     def core_run(self):
         """Core run for stochastic variational inference."""
         start = time.time()
 
+        old_parameters = self.variational_params.copy()
+
         # Stochastic optimization
         for _ in self.stochastic_optimizer:
 
-            self._catch_non_converging_simulations()
+            self._catch_non_converging_simulations(old_parameters)
 
             # Just to avoid constant spamming
             if self.stochastic_optimizer.iteration % 10 == 0:
@@ -263,10 +253,11 @@ class VariationalInferenceIterator(Iterator):
                 self._write_results()
 
             # Stop the optimizer in case of too many simulations
-            if self.n_sims > self.max_feval:
+            if self.n_sims >= self.max_feval:
                 break
 
-            self.variational_params_list.append(self.variational_params.copy())
+            self.iteration_data.add(variational_parameters=self.variational_params)
+            old_parameters = self.variational_params.copy()
             self._clearing_and_plots()
 
         end = time.time()
@@ -279,10 +270,10 @@ class VariationalInferenceIterator(Iterator):
             _logger.info("Finished sucessfully! :-)")
         _logger.info(f"Variational inference took {end-start} seconds.")
 
-    def _catch_non_converging_simulations(self):
+    def _catch_non_converging_simulations(self, old_parameters):
         """Reset variational parameters in case of failed simulations."""
         if np.isnan(self.stochastic_optimizer.rel_L2_change):
-            self.variational_params = self.variational_params_list[-2]
+            self.variational_params = old_parameters
             self.variational_distribution_obj.update_distribution_params(self.variational_params)
 
     def initialize_run(self):
@@ -316,7 +307,7 @@ class VariationalInferenceIterator(Iterator):
         mean_change = self.stochastic_optimizer.rel_L2_change * 100
         _logger.info(f"So far {self.n_sims} simulation runs")
         _logger.info(f"L2 change of all variational parameters: " f"" f"{mean_change:.4f} %")
-        _logger.info(f"The elbo is: {self.elbo_list[-1]:.2f}")
+        _logger.info(f"The elbo is: {self.elbo:.2f}")
         # Avoids a busy screen
         if self.variational_params.shape[0] > 24:
             _logger.info(
@@ -433,7 +424,7 @@ class VariationalInferenceIterator(Iterator):
             result_description (dict): Dictionary with result summary of the analysis
         """
         result_description = {
-            "final_elbo": self.elbo_list[-1],
+            "final_elbo": self.elbo,
             "final_variational_parameters": self.variational_params,
             "batch_size": self.n_samples_per_iter,
             "number_of_sim": self.n_sims,
@@ -442,15 +433,8 @@ class VariationalInferenceIterator(Iterator):
             "variational_parameter_initialization": self.variational_params_initialization_approach,
         }
 
-        if self.export_quantities_over_iter:
-            result_description.update(
-                {
-                    "iteration_data": {
-                        "variational_parameters": self.variational_params_list,
-                        "elbo": self.elbo_list,
-                    }
-                }
-            )
+        if self.iteration_data:
+            result_description.update({"iteration_data": self.iteration_data.to_dict()})
 
         distribution_dict = self.variational_distribution_obj.export_dict(self.variational_params)
         if self.variational_transformation == "exp":
@@ -475,11 +459,12 @@ class VariationalInferenceIterator(Iterator):
     def _clearing_and_plots(self):
         """Visualization and clear some internal variables."""
         # some plotting and output
-        vis.vi_visualization_instance.plot_convergence(
-            self.stochastic_optimizer.iteration,
-            self.variational_params_list,
-            self.elbo_list,
-        )
+        if vis.vi_visualization_instance.plot_boolean:
+            vis.vi_visualization_instance.plot_convergence(
+                self.stochastic_optimizer.iteration,
+                self.iteration_data.variational_parameters,
+                self.iteration_data.elbo,
+            )
 
     def _get_fim(self):
         """Get the FIM for the current variational distribution.

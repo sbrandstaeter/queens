@@ -1,4 +1,6 @@
 """Utils for input/output handling."""
+from pathlib import Path
+
 import yaml
 
 from pqueens.utils.exceptions import FileTypeError
@@ -49,5 +51,6 @@ def load_result(path_to_result_file):
     Returns:
         dict: results
     """
+    path_to_result_file = Path(path_to_result_file)
     results = load_pickle(path_to_result_file)
     return results
