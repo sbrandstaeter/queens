@@ -24,8 +24,8 @@ def from_config_create_model(model_name, config):
         'datafit_surrogate_model_mf': ['.data_fit_surrogate_model_mf', 'MFDataFitSurrogateModel'],
         'multi_fidelity_model': ['.multifidelity_model', 'MultifidelityModel'],
         'bmfmc_model': ['.bmfmc_model', 'BMFMCModel'],
-        'gaussian': ['.gaussian_likelihood', 'GaussianLikelihood'],
-        'bmf_gaussian': ['.bayesian_mf_gaussian_likelihood', 'BMFGaussianModel'],
+        'gaussian': ['.likelihood_models.gaussian_likelihood', 'GaussianLikelihood'],
+        'bmf_gaussian': ['.likelihood_models.bayesian_mf_gaussian_likelihood', 'BMFGaussianModel'],
     }
 
     model_options = config[model_name]

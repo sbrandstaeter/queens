@@ -204,7 +204,7 @@ def write_custom_likelihood_model(module_path):
     """Write custom likelihood class to file."""
     # pylint: disable=line-too-long
     custom_class_lst = [
-        "from pqueens.models.gaussian_likelihood import GaussianLikelihood\n",
+        "from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood\n",
         "class MyLikelihood(GaussianLikelihood):\n",
         "   pass",
     ]
