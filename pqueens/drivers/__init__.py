@@ -7,6 +7,8 @@ directly or wrapped in a docker container.
 """
 from pqueens.utils.import_utils import get_module_class
 
+valid_types = {'baci': ["pqueens.drivers.baci_driver", "BaciDriver"]}
+
 
 def from_config_create_driver(
     config,
@@ -28,8 +30,6 @@ def from_config_create_driver(
     Returns:
         driver (obj):   Driver object
     """
-    valid_types = {'baci': [".baci_driver", "BaciDriver"]}
-
     driver_options = config[driver_name]
     driver_type = driver_options.get("driver_type")
     driver_class = get_module_class(driver_options, valid_types, driver_type)
@@ -42,5 +42,4 @@ def from_config_create_driver(
         workdir,
         cluster_options,
     )
-
     return driver

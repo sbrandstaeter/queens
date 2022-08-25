@@ -9,6 +9,8 @@ models.
 """
 from pqueens.utils.import_utils import get_module_class
 
+valid_types = {"mongodb": ["pqueens.database.mongodb", "MongoDB"]}
+
 
 def from_config_create_database(config):
     """Create new QUEENS database object from config.
@@ -19,8 +21,6 @@ def from_config_create_database(config):
     Returns:
         database (obj): Database object
     """
-    valid_types = {"mongodb": [".mongodb", "MongoDB"]}
-
     db_options = config.get("database")
     db_type = db_options.get("type")
     db_class = get_module_class(db_options, valid_types, db_type)

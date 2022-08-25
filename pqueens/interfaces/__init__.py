@@ -14,6 +14,22 @@ direct_python_interface or running an external software through the job_interfac
 """
 from pqueens.utils.import_utils import get_module_class
 
+valid_types = {
+    'job_interface': ['pqueens.interfaces.job_interface', 'JobInterface'],
+    'direct_python_interface': [
+        'pqueens.interfaces.direct_python_interface',
+        'DirectPythonInterface',
+    ],
+    'approximation_interface': [
+        'pqueens.interfaces.approximation_interface',
+        'ApproximationInterface',
+    ],
+    'approximation_interface_mf': [
+        'pqueens.interfaces.approximation_interface_mf',
+        'ApproximationInterfaceMF',
+    ],
+}
+
 
 def from_config_create_interface(interface_name, config):
     """Create Interface from config dictionary.
@@ -25,15 +41,8 @@ def from_config_create_interface(interface_name, config):
     Returns:
         interface:              Instance of one of the derived interface classes
     """
-    valid_types = {
-        'job_interface': ['.job_interface', 'JobInterface'],
-        'direct_python_interface': ['.direct_python_interface', 'DirectPythonInterface'],
-        'approximation_interface': ['.approximation_interface', 'ApproximationInterface'],
-        'approximation_interface_mf': ['.approximation_interface_mf', 'ApproximationInterfaceMF'],
-    }
-
     interface_options = config[interface_name]
     interface_type = interface_options.get("type")
     interface_class = get_module_class(interface_options, valid_types, interface_type)
-
-    return interface_class.from_config_create_interface(interface_name, config)
+    interface = interface_class.from_config_create_interface(interface_name, config)
+    return interface

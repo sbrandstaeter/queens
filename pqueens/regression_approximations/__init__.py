@@ -20,6 +20,33 @@ Todo:
 """
 from pqueens.utils.import_utils import get_module_class
 
+valid_types = {
+    'gp_approximation_gpy': [
+        'pqueens.regression_approximations.gp_approximation_gpy',
+        'GPGPyRegression',
+    ],
+    'heteroskedastic_gp': [
+        'pqueens.regression_approximations.heteroskedastic_GPflow',
+        'HeteroskedasticGP',
+    ],
+    'gp_approximation_gpflow': [
+        'pqueens.regression_approximations.gp_approximation_gpflow',
+        'GPFlowRegression',
+    ],
+    'gaussian_bayesian_neural_network': [
+        'pqueens.regression_approximations.bayesian_neural_network',
+        'GaussianBayesianNeuralNetwork',
+    ],
+    'gp_precompiled': [
+        'pqueens.regression_approximations.gp_approximation_precompiled',
+        'GPPrecompiled',
+    ],
+    'gp_approximation_gpflow_svgp': [
+        'pqueens.regression_approximations.gp_approximation_gpflow_svgp',
+        'GPflowSVGP',
+    ],
+}
+
 
 def from_config_create_regression_approximation(config, approx_name, x_train, y_train):
     """Create approximation from options dict.
@@ -33,19 +60,8 @@ def from_config_create_regression_approximation(config, approx_name, x_train, y_
     Returns:
         regression_approximation (obj): Approximation object
     """
-    valid_types = {
-        'gp_approximation_gpy': ['.gp_approximation_gpy', 'GPGPyRegression'],
-        'heteroskedastic_gp': ['.heteroskedastic_GPflow', 'HeteroskedasticGP'],
-        'gp_approximation_gpflow': ['.gp_approximation_gpflow', 'GPFlowRegression'],
-        'gaussian_bayesian_neural_network': [
-            '.bayesian_neural_network',
-            'GaussianBayesianNeuralNetwork',
-        ],
-        'gp_precompiled': ['.gp_approximation_precompiled', 'GPPrecompiled'],
-        'gp_approximation_gpflow_svgp': ['.gp_approximation_gpflow_svgp', 'GPflowSVGP'],
-    }
     approx_options = config[approx_name]
     approx_type = approx_options.get("type")
     approx_class = get_module_class(approx_options, valid_types, approx_type)
-
-    return approx_class.from_config_create(config, approx_name, x_train, y_train)
+    approx_obj = approx_class.from_config_create(config, approx_name, x_train, y_train)
+    return approx_obj

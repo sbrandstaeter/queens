@@ -7,6 +7,22 @@ data.
 """
 from pqueens.utils.import_utils import get_module_class
 
+valid_types = {
+    'simulation_model': ['pqueens.models.simulation_model', 'SimulationModel'],
+    'datafit_surrogate_model': ['pqueens.models.data_fit_surrogate_model', 'DataFitSurrogateModel'],
+    'datafit_surrogate_model_mf': [
+        'pqueens.models.data_fit_surrogate_model_mf',
+        'MFDataFitSurrogateModel',
+    ],
+    'multi_fidelity_model': ['pqueens.models.multifidelity_model', 'MultifidelityModel'],
+    'bmfmc_model': ['pqueens.models.bmfmc_model', 'BMFMCModel'],
+    'gaussian': ['pqueens.models.likelihood_models.gaussian_likelihood', 'GaussianLikelihood'],
+    'bmf_gaussian': [
+        'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood',
+        'BMFGaussianModel',
+    ],
+}
+
 
 def from_config_create_model(model_name, config):
     """Create model from problem description.
@@ -18,16 +34,6 @@ def from_config_create_model(model_name, config):
     Returns:
         model: Instance of model class
     """
-    valid_types = {
-        'simulation_model': ['.simulation_model', 'SimulationModel'],
-        'datafit_surrogate_model': ['.data_fit_surrogate_model', 'DataFitSurrogateModel'],
-        'datafit_surrogate_model_mf': ['.data_fit_surrogate_model_mf', 'MFDataFitSurrogateModel'],
-        'multi_fidelity_model': ['.multifidelity_model', 'MultifidelityModel'],
-        'bmfmc_model': ['.bmfmc_model', 'BMFMCModel'],
-        'gaussian': ['.likelihood_models.gaussian_likelihood', 'GaussianLikelihood'],
-        'bmf_gaussian': ['.likelihood_models.bayesian_mf_gaussian_likelihood', 'BMFGaussianModel'],
-    }
-
     model_options = config[model_name]
     model_type = model_options.get("type")
     model_class = get_module_class(model_options, valid_types, model_type)

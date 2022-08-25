@@ -1,6 +1,5 @@
 """Import utils."""
 import importlib.util
-import inspect
 import logging
 import sys
 from importlib import import_module
@@ -68,14 +67,12 @@ def get_module_class(input_options, valid_types, module_type):
     Returns:
         module_class (class): class from the module
     """
-    caller = inspect.getmodule(inspect.stack()[1][0]).__name__
-
     # determine which object to create
     if input_options.get("external_python_module"):
         module_path = input_options["external_python_module"]
         module_class = get_module_attribute(module_path, module_type)
     else:
         module_path, module_attribute = get_option(valid_types, module_type)
-        module_class = getattr(import_module(module_path, caller), module_attribute)
+        module_class = getattr(import_module(module_path), module_attribute)
 
     return module_class

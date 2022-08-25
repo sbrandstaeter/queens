@@ -4,6 +4,15 @@ Extract data from simulation output.
 """
 from pqueens.utils.import_utils import get_module_class
 
+valid_types = {
+    'csv': ['pqueens.data_processor.data_processor_csv_data', 'DataProcessorCsv'],
+    'ensight': ['pqueens.data_processor.data_processor_ensight', 'DataProcessorEnsight'],
+    'ensight_interface_discrepancy': [
+        'pqueens.data_processor.data_processor_ensight_interface',
+        'DataProcessorEnsightInterfaceDiscrepancy',
+    ],
+}
+
 
 def from_config_create_data_processor(config, data_processor_name):
     """Create DataProcessor object from problem description.
@@ -15,15 +24,6 @@ def from_config_create_data_processor(config, data_processor_name):
     Returns:
         data_processor (obj): data_processor object
     """
-    valid_types = {
-        'csv': ['.data_processor_csv_data', 'DataProcessorCsv'],
-        'ensight': ['.data_processor_ensight', 'DataProcessorEnsight'],
-        'ensight_interface_discrepancy': [
-            '.data_processor_ensight_interface',
-            'DataProcessorEnsightInterfaceDiscrepancy',
-        ],
-    }
-
     data_processor_options = config.get(data_processor_name)
     if not data_processor_options:
         raise ValueError(
@@ -40,5 +40,4 @@ def from_config_create_data_processor(config, data_processor_name):
     data_processor = data_processor_class.from_config_create_data_processor(
         config, data_processor_name
     )
-
     return data_processor
