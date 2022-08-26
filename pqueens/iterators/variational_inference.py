@@ -276,7 +276,7 @@ class VariationalInferenceIterator(Iterator):
             self.variational_params = old_parameters
             self.variational_distribution_obj.update_distribution_params(self.variational_params)
 
-    def initialize_run(self):
+    def pre_run(self):
         """Initialize the prior model and variational parameters."""
         _logger.info("Initialize Optimization run.")
         if self.parameters.random_field_flag:
