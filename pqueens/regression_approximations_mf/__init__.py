@@ -13,7 +13,7 @@ models external third party libraries are used, such as `GPy`_, `GPFlow`_.
 """
 from pqueens.utils.import_utils import get_module_class
 
-valid_types = {
+VALID_TYPES = {
     'mf_icm_gp_approximation_gpy': [
         'pqueens.regression_approximations_mf.mf_icm_gp_regression',
         'MF_ICM_GP_Regression',
@@ -40,7 +40,6 @@ def from_comfig_create_regression_approximators_mf(approx_options, x_train, y_tr
     Returns:
         RegressionApproximationMF: Multi-Fidelity regression approximation object
     """
-    approx_type = approx_options.get("type")
-    approx_class = get_module_class(approx_options, valid_types, approx_type)
+    approx_class = get_module_class(approx_options, VALID_TYPES)
     approx_obj = approx_class.from_options(approx_options, x_train, y_train)
     return approx_obj

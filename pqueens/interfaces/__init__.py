@@ -14,7 +14,7 @@ direct_python_interface or running an external software through the job_interfac
 """
 from pqueens.utils.import_utils import get_module_class
 
-valid_types = {
+VALID_TYPES = {
     'job_interface': ['pqueens.interfaces.job_interface', 'JobInterface'],
     'direct_python_interface': [
         'pqueens.interfaces.direct_python_interface',
@@ -42,7 +42,6 @@ def from_config_create_interface(interface_name, config):
         interface:              Instance of one of the derived interface classes
     """
     interface_options = config[interface_name]
-    interface_type = interface_options.get("type")
-    interface_class = get_module_class(interface_options, valid_types, interface_type)
+    interface_class = get_module_class(interface_options, VALID_TYPES)
     interface = interface_class.from_config_create_interface(interface_name, config)
     return interface

@@ -4,7 +4,7 @@ Read in external geometry to QUEENS.
 """
 from pqueens.utils.import_utils import get_module_class
 
-valid_types = {
+VALID_TYPES = {
     'baci_dat': ["pqueens.external_geometry.baci_dat_geometry", "BaciDatExternalGeometry"]
 }
 
@@ -21,10 +21,8 @@ def from_config_create_external_geometry(config, geometry_name):
     """
     geometry_options = config.get(geometry_name)
     if geometry_options:
-        geometry_type = geometry_options.get("type")
-        geometry_class = get_module_class(geometry_options, valid_types, geometry_type)
+        geometry_class = get_module_class(geometry_options, VALID_TYPES)
         geometry_obj = geometry_class.from_config_create_external_geometry(config, geometry_name)
     else:
         geometry_obj = None
-
     return geometry_obj

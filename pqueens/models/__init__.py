@@ -7,7 +7,7 @@ data.
 """
 from pqueens.utils.import_utils import get_module_class
 
-valid_types = {
+VALID_TYPES = {
     'simulation_model': ['pqueens.models.simulation_model', 'SimulationModel'],
     'datafit_surrogate_model': ['pqueens.models.data_fit_surrogate_model', 'DataFitSurrogateModel'],
     'datafit_surrogate_model_mf': [
@@ -35,8 +35,6 @@ def from_config_create_model(model_name, config):
         model: Instance of model class
     """
     model_options = config[model_name]
-    model_type = model_options.get("type")
-    model_class = get_module_class(model_options, valid_types, model_type)
+    model_class = get_module_class(model_options, VALID_TYPES)
     model = model_class.from_config_create_model(model_name, config)
-
     return model

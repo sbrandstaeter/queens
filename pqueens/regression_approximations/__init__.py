@@ -20,7 +20,7 @@ Todo:
 """
 from pqueens.utils.import_utils import get_module_class
 
-valid_types = {
+VALID_TYPES = {
     'gp_approximation_gpy': [
         'pqueens.regression_approximations.gp_approximation_gpy',
         'GPGPyRegression',
@@ -61,7 +61,6 @@ def from_config_create_regression_approximation(config, approx_name, x_train, y_
         regression_approximation (obj): Approximation object
     """
     approx_options = config[approx_name]
-    approx_type = approx_options.get("type")
-    approx_class = get_module_class(approx_options, valid_types, approx_type)
+    approx_class = get_module_class(approx_options, VALID_TYPES)
     approx_obj = approx_class.from_config_create(config, approx_name, x_train, y_train)
     return approx_obj

@@ -9,7 +9,7 @@ or surrogate based UQ approaches.
 """
 from pqueens.utils.import_utils import get_module_class
 
-valid_types = {
+VALID_TYPES = {
     'lhs': ['pqueens.iterators.lhs_iterator', 'LHSIterator'],
     'lhs_mf': ['pqueens.iterators.lhs_iterator_mf', 'MFLHSIterator'],
     'metropolis_hastings': [
@@ -58,8 +58,6 @@ def from_config_create_iterator(config, iterator_name='method', model=None):
         iterator: Iterator object
     """
     iterator_options = config.get(iterator_name)
-    iterator_type = iterator_options.get("method_name")
-    iterator_class = get_module_class(iterator_options, valid_types, iterator_type)
+    iterator_class = get_module_class(iterator_options, VALID_TYPES, "method_name")
     iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
-
     return iterator

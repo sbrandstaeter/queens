@@ -56,18 +56,19 @@ def get_module_attribute(path_to_module, function_or_class_name):
     return function
 
 
-def get_module_class(input_options, valid_types, module_type):
+def get_module_class(input_options, valid_types, module_type_specifier='type'):
     """Return module class defined in config file.
 
     Args:
         input_options (dict): Part of config options
         valid_types (dict): Dict of valid types with corresponding module paths and class names
-        module_type (str): Chosen module type
+        module_type_specifier (str): Specifier for the module type
 
     Returns:
         module_class (class): class from the module
     """
     # determine which object to create
+    module_type = input_options.get(module_type_specifier)
     if input_options.get("external_python_module"):
         module_path = input_options["external_python_module"]
         module_class = get_module_attribute(module_path, module_type)

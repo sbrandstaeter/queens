@@ -1,7 +1,7 @@
 """Distributions."""
 from pqueens.utils.import_utils import get_module_class
 
-valid_types = {
+VALID_TYPES = {
     'normal': ["pqueens.distributions.normal", "NormalDistribution"],
     'uniform': ["pqueens.distributions.uniform", "UniformDistribution"],
     'lognormal': ["pqueens.distributions.lognormal", "LogNormalDistribution"],
@@ -18,7 +18,6 @@ def from_config_create_distribution(distribution_options):
     Returns:
         distribution: Distribution object
     """
-    distribution_type = distribution_options.get("distribution")
-    distribution_class = get_module_class(distribution_options, valid_types, distribution_type)
+    distribution_class = get_module_class(distribution_options, VALID_TYPES, "distribution")
     distribution = distribution_class.from_config_create_distribution(distribution_options)
     return distribution

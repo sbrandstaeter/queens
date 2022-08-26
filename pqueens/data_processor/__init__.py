@@ -4,7 +4,7 @@ Extract data from simulation output.
 """
 from pqueens.utils.import_utils import get_module_class
 
-valid_types = {
+VALID_TYPES = {
     'csv': ['pqueens.data_processor.data_processor_csv_data', 'DataProcessorCsv'],
     'ensight': ['pqueens.data_processor.data_processor_ensight', 'DataProcessorEnsight'],
     'ensight_interface_discrepancy': [
@@ -32,11 +32,7 @@ def from_config_create_data_processor(config, data_processor_name):
         )
 
     data_processor_options = config[data_processor_name]
-    data_processor_type = data_processor_options.get("type")
-    data_processor_class = get_module_class(
-        data_processor_options, valid_types, data_processor_type
-    )
-
+    data_processor_class = get_module_class(data_processor_options, VALID_TYPES)
     data_processor = data_processor_class.from_config_create_data_processor(
         config, data_processor_name
     )

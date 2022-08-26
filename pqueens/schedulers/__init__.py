@@ -6,7 +6,7 @@ simple system call.
 """
 from pqueens.utils.import_utils import get_module_class
 
-valid_types = {
+VALID_TYPES = {
     'standard': ['pqueens.schedulers.standard_scheduler', 'StandardScheduler'],
     'pbs': ['pqueens.schedulers..cluster_scheduler', 'ClusterScheduler'],
     'slurm': ['pqueens.schedulers..cluster_scheduler', 'ClusterScheduler'],
@@ -30,7 +30,6 @@ def from_config_create_scheduler(config, scheduler_name=None, driver_name=None):
     if not scheduler_name:
         scheduler_name = "scheduler"
     scheduler_options = config[scheduler_name]
-    scheduler_type = scheduler_options.get("scheduler_type")
-    scheduler_class = get_module_class(scheduler_options, valid_types, scheduler_type)
+    scheduler_class = get_module_class(scheduler_options, VALID_TYPES, "scheduler_type")
     scheduler = scheduler_class.from_config_create_scheduler(config, scheduler_name, driver_name)
     return scheduler
