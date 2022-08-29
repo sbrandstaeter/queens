@@ -46,6 +46,7 @@ class ExponentialDistribution(Distribution):
         """
         rate = np.array(distribution_options['rate']).reshape(-1)
         scale = 1 / rate
+        super().check_positivity({'rate': rate})
 
         mean = scale
         covariance = np.diag(scale**2)
@@ -74,7 +75,8 @@ class ExponentialDistribution(Distribution):
             cdf (np.ndarray): CDF at evaluated positions
         """
         x = x.reshape(-1, self.dimension)
-        cdf = np.prod(np.where((x >= 0).all(axis=1), 1 - np.exp(-self.rate * x), 0), axis=1)
+        condition = (x >= 0).all(axis=1)
+        cdf = np.where(condition, np.prod(1 - np.exp(-self.rate * x), axis=1), 0)
         return cdf
 
     def draw(self, num_draws=1):
@@ -99,7 +101,8 @@ class ExponentialDistribution(Distribution):
             logpdf (np.ndarray): log pdf at evaluated positions
         """
         x = x.reshape(-1, self.dimension)
-        logpdf = np.where((x >= 0).all(axis=1), self.logpdf_const - self.rate * x, -np.inf)
+        condition = (x >= 0).all(axis=1)
+        logpdf = self.logpdf_const + np.where(condition, np.sum(-self.rate * x, axis=1), -np.inf)
         return logpdf
 
     def grad_logpdf(self, x):
@@ -112,7 +115,8 @@ class ExponentialDistribution(Distribution):
             grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
         """
         x = x.reshape(-1, self.dimension)
-        grad_logpdf = np.where((x >= 0).all(axis=1), -self.rate, np.nan)
+        condition = (x >= 0).all(axis=1).reshape(-1, 1)
+        grad_logpdf = np.where(condition, -self.rate, np.nan)
         return grad_logpdf
 
     def pdf(self, x):

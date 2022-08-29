@@ -10,19 +10,20 @@ def from_config_create_distribution(distribution_options):
     Returns:
         distribution: Distribution object
     """
+    from pqueens.distributions.beta import BetaDistribution
+    from pqueens.distributions.exponential import ExponentialDistribution
+    from pqueens.distributions.lognormal import LogNormalDistribution
+    from pqueens.distributions.normal import NormalDistribution
+    from pqueens.distributions.uniform import UniformDistribution
     from pqueens.utils.import_utils import get_module_attribute
     from pqueens.utils.valid_options_utils import get_option
-
-    from .beta import BetaDistribution
-    from .lognormal import LogNormalDistribution
-    from .normal import NormalDistribution
-    from .uniform import UniformDistribution
 
     valid_options = {
         'normal': NormalDistribution,
         'uniform': UniformDistribution,
         'lognormal': LogNormalDistribution,
         'beta': BetaDistribution,
+        'exponential': ExponentialDistribution,
     }
 
     if distribution_options.get("external_python_module"):
