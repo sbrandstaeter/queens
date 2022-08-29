@@ -17,7 +17,9 @@ stages:
   - update_requirements
   - build
   - codechecks
+  - trigger_codechecks_badges
   - tests
+  - trigger_tests_badges
   - pages
   - cleanup
 
@@ -69,17 +71,19 @@ stages:
   tags:
     - queens-ubuntu
 #----------------------------------------------------------------------------------------------
-.codechecks_settings:
-  extends:
-    - .ubuntu_settings
-  stage: codechecks
+.codechecks_conditions:
   except:
     variables:
       - $CLUSTER_TESTS == "1"
       - $BENCHMARKS == "1"
+#----------------------------------------------------------------------------------------------
+.codechecks_settings:
+  extends:
+    - .ubuntu_settings
+    - .codechecks_conditions
+  stage: codechecks
   tags:
     - codechecks
-
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: build conda and remove
 #---------------------------------------------------------------------------------------------------
@@ -171,7 +175,7 @@ documentation:
     - build_conda_env
 #----------------------------------------------------------------------------------------------
 license_check:
-  # check licence compliance
+  # check license compliance
   extends:
     - .codechecks_settings
   stage: codechecks
@@ -181,38 +185,74 @@ license_check:
     - build_conda_env
 
 #---------------------------------------------------------------------------------------------------
+# Jobs of stage: trigger_codechecks_badges
+#---------------------------------------------------------------------------------------------------
+# Basic setting to trigger pipeline to create documentation badge
+#---------------------------------------------------------------------------------------------------
+.trigger_documentation_badge:
+  extends:
+    - .codechecks_conditions
+  stage: trigger_codechecks_badges
+  needs: ["documentation"]
+  only:
+    refs:
+      - master
+  trigger:
+    project: queens_community/queens_badges/documentation-badge
+#---------------------------------------------------------------------------------------------------
+# Create documentation badge in case of success
+#---------------------------------------------------------------------------------------------------
+trigger_documentation_badge_success:
+  extends:
+    - .trigger_documentation_badge
+  when: on_success
+  variables:
+    BUILD_DOCUMENTATION_BADGE: "1"
+    SUCCESS_DOCUMENTATION_BUILD: "1"
+#---------------------------------------------------------------------------------------------------
+# Create documentation badge in case of failure
+#---------------------------------------------------------------------------------------------------
+trigger_documentation_badge_fail:
+  extends:
+    - .trigger_documentation_badge
+  when: on_failure
+  needs: ["documentation"]
+  variables:
+    BUILD_DOCUMENTATION_BADGE: "1"
+    SUCCESS_DOCUMENTATION_BUILD: "0"
+#---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------
 # Docker tests
 #---------------------------------------------------------------------------------------------------
 docker_full_test_suite:
-  stage: tests
-  extends:
-    - .docker_settings
-  script:
-    - pytest -m "unit_tests or integration_tests" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
-  needs: []
-  when: always
+ stage: tests
+ extends:
+   - .docker_settings
+ script:
+   - pytest -m "unit_tests or integration_tests" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
+ needs: []
+ when: always
 #---------------------------------------------------------------------------------------------------
 # ubuntu tests
 #---------------------------------------------------------------------------------------------------
 ubuntu_full_test_suite_develop:
-  stage: tests
-  extends:
-    - .ubuntu_settings
-  script:
-    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-    - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
-  coverage: '/TOTAL.*\s+(\d+%)/'
-  needs:
-    - build_conda_env
-    - build_singularity
-  except:
-    variables:
-      - $CLUSTER_TESTS == "1"
-      - $BENCHMARKS == "1"
-    refs:
-      - master
+ stage: tests
+ extends:
+   - .ubuntu_settings
+ script:
+   - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
+   - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
+ coverage: '/TOTAL.*\s+(\d+%)/'
+ needs:
+   - build_conda_env
+   - build_singularity
+ except:
+   variables:
+     - $CLUSTER_TESTS == "1"
+     - $BENCHMARKS == "1"
+   refs:
+     - master
 #----------------------------------------------------------------------------------------------
 # Master tests
 #---------------------------------------------------------------------------------------------------
@@ -243,33 +283,107 @@ ubuntu_full_test_suite_master:
 #----------------------------------------------------------------------------------------------
 # Weekly tests
 #---------------------------------------------------------------------------------------------------
+# CLUSTER TESTS
+#---------------------------------------------------------------------------------------------------
+.cluster_tests_conditions:
+  only:
+    variables:
+    - $CLUSTER_TESTS == "1"
+#----------------------------------------------------------------------------------------------
 cluster_tests:
-  stage: tests
   extends:
     - .ubuntu_settings
+    - .cluster_tests_conditions
+  stage: tests
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
     - pytest -m lnm_cluster --no-cov
   needs:
     - build_conda_env
     - build_singularity
+#---------------------------------------------------------------------------------------------------
+# BENCHMARKS
+#---------------------------------------------------------------------------------------------------
+.benchmarks_conditions:
   only:
     variables:
-    - $CLUSTER_TESTS == "1"
+    - $BENCHMARKS == "1"
 #---------------------------------------------------------------------------------------------------
 benchmarks:
   stage: tests
   extends:
     - .ubuntu_settings
+    - .benchmarks_conditions
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
     - pytest -m benchmark --no-cov
   needs:
     - build_conda_env
     - build_singularity
-  only:
-    variables:
-    - $BENCHMARKS == "1"
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: trigger_tests_badges
+#---------------------------------------------------------------------------------------------------
+# Basic setting to trigger pipeline to create benchmarks badge
+#---------------------------------------------------------------------------------------------------
+.trigger_benchmarks_badge:
+  extends:
+    - .benchmarks_conditions
+  stage: trigger_tests_badges
+  needs: ["benchmarks"]
+  trigger:
+    project: queens_community/queens_badges/benchmarks-badge
+#---------------------------------------------------------------------------------------------------
+# Create benchmarks badge in case of success
+#---------------------------------------------------------------------------------------------------
+trigger_benchmarks_badge_success:
+  extends:
+    - .trigger_benchmarks_badge
+  when: on_success
+  variables:
+    BUILD_BENCHMARKS_BADGE: "1"
+    SUCCESS_BENCHMARKS_PIPELINE: "1"
+#---------------------------------------------------------------------------------------------------
+# Create benchmarks badge in case of failure
+#---------------------------------------------------------------------------------------------------
+trigger_benchmarks_badge_fail:
+  extends:
+    - .trigger_benchmarks_badge
+  when: on_failure
+  variables:
+    BUILD_BENCHMARKS_BADGE: "1"
+    SUCCESS_BENCHMARKS_PIPELINE: "0"
+#---------------------------------------------------------------------------------------------------
+# Basic setting to trigger pipeline to create cluster badge
+#---------------------------------------------------------------------------------------------------
+.trigger_cluster_badge:
+  extends:
+    - .cluster_tests_conditions
+  stage: trigger_tests_badges
+  needs: ["cluster_tests"]
+  trigger:
+    project: queens_community/queens_badges/cluster-badge
+#---------------------------------------------------------------------------------------------------
+# Create cluster badge in case of success
+#---------------------------------------------------------------------------------------------------
+trigger_cluster_badge_success:
+  extends:
+    - .trigger_cluster_badge
+  when: on_success
+  variables:
+    BUILD_CLUSTER_BADGE: "1"
+    SUCCESS_CLUSTER_PIPELINE: "1"
+#---------------------------------------------------------------------------------------------------
+# Create cluster badge in case of failure
+#---------------------------------------------------------------------------------------------------
+trigger_cluster_badge_fail:
+  extends:
+    - .trigger_cluster_badge
+  when: on_failure
+  variables:
+    BUILD_CLUSTER_BADGE: "1"
+    SUCCESS_CLUSTER_PIPELINE: "0"
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: update_requirements
 #---------------------------------------------------------------------------------------------------
 update:
   stage: update_requirements
@@ -316,18 +430,9 @@ pages:
   dependencies:
     - documentation
     - ubuntu_full_test_suite_master
-  before_script:
-    # use the base environment for badge creation
-    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
-    - conda activate base
-    - conda install pip
-    - pip install anybadge
-    - mkdir public
   script:
     - mv html_coverage_report public/coverage_report
     - mv doc/build/html public/docs
-    # Create sphinx badge
-    - anybadge -l sphinx -v passed --color=green -f public/sphinx-badge.svg
   artifacts:
     # store the public path in artifact
     # this is needed since in a subsequent deploy stage (automatically generated by GitLab)
