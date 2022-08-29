@@ -189,7 +189,7 @@ def test_init_uniform_2d_wrong_interval(lower_bound_2d):
         distribution_options = {
             'distribution': 'uniform',
             'lower_bound': lower_bound_2d,
-            'upper_bound': lower_bound_2d + np.array([0.0, -0.1]),
+            'upper_bound': lower_bound_2d + np.array([0.1, -0.1]),
         }
         from_config_create_distribution(distribution_options)
 

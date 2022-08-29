@@ -84,7 +84,7 @@ class Distribution:
             parameters (dict): Checked parameters
         """
         for name, value in parameters.items():
-            if value <= 0:
+            if (value <= 0).any():
                 raise ValueError(
                     f"The parameter {name} has to be positive. " f"You specified {name}={value}."
                 )
@@ -97,7 +97,7 @@ class Distribution:
             lower_bound (np.ndarray): Lower bound(s) of distribution
             upper_bound (np.ndarray): Upper bound(s) of distribution
         """
-        if (upper_bound <= lower_bound).all():
+        if (upper_bound <= lower_bound).any():
             raise ValueError(
                 f"Lower bound must be smaller than upper bound. "
                 f"You specified lower_bound={lower_bound} and upper_bound={upper_bound}"

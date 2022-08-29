@@ -1,31 +1,27 @@
-"""Uniform distribution."""
+"""Exponential distribution."""
 import numpy as np
-import scipy.linalg
-import scipy.stats
 
 from pqueens.distributions.distributions import Distribution
 
 
-class UniformDistribution(Distribution):
-    """Uniform distribution class.
+class ExponentialDistribution(Distribution):
+    """Exponential distribution class.
+
+    For a multivariate distribution the components are assumed to be independent.
 
     Attributes:
-        lower_bound (np.ndarray): Lower bound(s) of the distribution
-        upper_bound (np.ndarray): Upper bound(s) of the distribution
-        width (np.ndarray): Width(s) of the distribution
+        rate (np.ndarray): rate parameter(s) of the distribution
+        scale (np.ndarray): scale parameters(s) of the distribution (scale = 1 / rate)
         pdf_const (float): Constant for the evaluation of the pdf
         logpdf_const (float): Constant for the evaluation of the log pdf
     """
 
-    def __init__(
-        self, lower_bound, upper_bound, width, pdf_const, logpdf_const, mean, covariance, dimension
-    ):
-        """Initialize uniform distribution.
+    def __init__(self, rate, scale, pdf_const, logpdf_const, mean, covariance, dimension):
+        """Initialize exponential distribution.
 
         Args:
-            lower_bound (np.ndarray): Lower bound(s) of the distribution
-            upper_bound (np.ndarray): Upper bound(s) of the distribution
-            width (np.ndarray): Width(s) of the distribution
+            rate (np.ndarray): rate parameter(s) of the distribution
+            scale (np.ndarray): scale parameters(s) of the distribution (scale = 1 / rate)
             pdf_const (float): Constant for the evaluation of the pdf
             logpdf_const (float): Constant for the evaluation of the log pdf
             mean (np.ndarray): Mean of the distribution
@@ -33,38 +29,34 @@ class UniformDistribution(Distribution):
             dimension (int): Dimensionality of the distribution
         """
         super().__init__(mean=mean, covariance=covariance, dimension=dimension)
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.width = width
+        self.rate = rate
+        self.scale = scale
         self.pdf_const = pdf_const
         self.logpdf_const = logpdf_const
 
     @classmethod
     def from_config_create_distribution(cls, distribution_options):
-        """Create uniform distribution object from parameter dictionary.
+        """Create exponential distribution object from parameter dictionary.
 
         Args:
             distribution_options (dict): Dictionary with distribution description
 
         Returns:
-            distribution: UniformDistribution object
+            distribution: ExponentialDistribution object
         """
-        lower_bound = np.array(distribution_options['lower_bound']).reshape(-1)
-        upper_bound = np.array(distribution_options['upper_bound']).reshape(-1)
-        super().check_bounds(lower_bound, upper_bound)
-        width = upper_bound - lower_bound
+        rate = np.array(distribution_options['rate']).reshape(-1)
+        scale = 1 / rate
 
-        mean = (lower_bound + upper_bound) / 2.0
-        covariance = np.diag(width**2 / 12.0)
+        mean = scale
+        covariance = np.diag(scale**2)
         dimension = mean.size
 
-        pdf_const = 1.0 / np.prod(width)
-        logpdf_const = np.log(pdf_const)
+        pdf_const = np.prod(rate)
+        logpdf_const = np.sum(np.log(rate))
 
         return cls(
-            lower_bound=lower_bound,
-            upper_bound=upper_bound,
-            width=width,
+            rate=rate,
+            scale=scale,
             pdf_const=pdf_const,
             logpdf_const=logpdf_const,
             mean=mean,
@@ -81,14 +73,8 @@ class UniformDistribution(Distribution):
         Returns:
             cdf (np.ndarray): CDF at evaluated positions
         """
-        cdf = np.prod(
-            np.clip(
-                (x.reshape(-1, self.dimension) - self.lower_bound) / self.width,
-                a_min=np.zeros(self.dimension),
-                a_max=np.ones(self.dimension),
-            ),
-            axis=1,
-        )
+        x = x.reshape(-1, self.dimension)
+        cdf = np.prod(np.where((x >= 0).all(axis=1), 1 - np.exp(-self.rate * x), 0), axis=1)
         return cdf
 
     def draw(self, num_draws=1):
@@ -100,9 +86,7 @@ class UniformDistribution(Distribution):
         Returns:
             samples (np.ndarray): Drawn samples from the distribution
         """
-        samples = np.random.uniform(
-            low=self.lower_bound, high=self.upper_bound, size=(num_draws, self.dimension)
-        )
+        samples = np.random.exponential(scale=self.scale, size=(num_draws, self.dimension))
         return samples
 
     def logpdf(self, x):
@@ -115,8 +99,7 @@ class UniformDistribution(Distribution):
             logpdf (np.ndarray): log pdf at evaluated positions
         """
         x = x.reshape(-1, self.dimension)
-        within_bounds = (x >= self.lower_bound).all(axis=1) * (x <= self.upper_bound).all(axis=1)
-        logpdf = np.where(within_bounds, self.logpdf_const, -np.inf)
+        logpdf = np.where((x >= 0).all(axis=1), self.logpdf_const - self.rate * x, -np.inf)
         return logpdf
 
     def grad_logpdf(self, x):
@@ -128,7 +111,8 @@ class UniformDistribution(Distribution):
         Returns:
             grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
         """
-        grad_logpdf = np.zeros((-1, self.dimension))
+        x = x.reshape(-1, self.dimension)
+        grad_logpdf = np.where((x >= 0).all(axis=1), -self.rate, np.nan)
         return grad_logpdf
 
     def pdf(self, x):
@@ -140,11 +124,8 @@ class UniformDistribution(Distribution):
         Returns:
             pdf (np.ndarray): pdf at evaluated positions
         """
-        x = x.reshape(-1, self.dimension)
-        # Check if positions are within bounds of the uniform distribution
-        within_bounds = (x >= self.lower_bound).all(axis=1) * (x <= self.upper_bound).all(axis=1)
-        logpdf = within_bounds * self.pdf_const
-        return logpdf
+        pdf = np.exp(self.logpdf(x))
+        return pdf
 
     def ppf(self, q):
         """Percent point function (inverse of cdf — quantiles).
@@ -156,5 +137,5 @@ class UniformDistribution(Distribution):
             ppf (np.ndarray): Positions which correspond to given quantiles
         """
         self.check_1d()
-        ppf = scipy.stats.uniform.ppf(q=q, loc=self.lower_bound, scale=self.width).reshape(-1)
+        ppf = -self.scale * np.log(1 - q)
         return ppf
