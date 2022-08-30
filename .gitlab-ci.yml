@@ -57,7 +57,7 @@ stages:
     variables:
       - $UBUNTU_TESTS == "1"
   tags:
-    - queens-ubuntu
+    - queens-build
 #----------------------------------------------------------------------------------------------
 .ubuntu_settings:
   before_script:
@@ -113,7 +113,7 @@ remove_conda_env_and_singularity_image:
     variables:
       - $UBUNTU_TESTS == "1"
   tags:
-    - queens-ubuntu
+    - queens-build
 
 build_singularity:
   stage: build
@@ -124,7 +124,7 @@ build_singularity:
     variables:
       - $UBUNTU_TESTS == "1"
   tags:
-    - queens-ubuntu
+    - queens-build
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: codechecks
