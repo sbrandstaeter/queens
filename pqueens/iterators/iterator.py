@@ -28,10 +28,6 @@ class Iterator(metaclass=abc.ABCMeta):
         self.global_settings = global_settings
         self.parameters = parameters_module.parameters
 
-    def initialize_run(self):
-        """Optional setup step."""
-        pass
-
     def pre_run(self):
         """Optional pre-run portion of run.
 
@@ -52,14 +48,8 @@ class Iterator(metaclass=abc.ABCMeta):
         """
         pass
 
-    def finalize_run(self):
-        """Optional cleanup step."""
-        pass
-
     def run(self):
         """Orchestrate initialize/pre/core/post/finalize phases."""
-        self.initialize_run()
         self.pre_run()
         self.core_run()
         self.post_run()
-        self.finalize_run()

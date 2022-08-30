@@ -303,7 +303,7 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
 
 
 @pytest.mark.unit_tests
-def test_initialize_run(mocker, fix_true_false_param, default_baci_lm_iterator):
+def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator):
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
     m1 = mocker.patch(
@@ -311,7 +311,7 @@ def test_initialize_run(mocker, fix_true_false_param, default_baci_lm_iterator):
     )
     m2 = mocker.patch('pandas.core.generic.NDFrame.to_csv')
 
-    default_baci_lm_iterator.initialize_run()
+    default_baci_lm_iterator.pre_run()
 
     if fix_true_false_param:
         m1.assert_called_once_with(os.path.join('dummy_output', 'OptimizeLM' + '.csv'), 'w')
@@ -321,7 +321,7 @@ def test_initialize_run(mocker, fix_true_false_param, default_baci_lm_iterator):
         assert not m1.called
         assert not m2.called
         default_baci_lm_iterator.result_description = None
-        default_baci_lm_iterator.initialize_run()
+        default_baci_lm_iterator.pre_run()
 
 
 @pytest.mark.unit_tests
