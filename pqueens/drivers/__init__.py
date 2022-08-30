@@ -7,7 +7,7 @@ directly or wrapped in a docker container.
 """
 from pqueens.utils.import_utils import get_module_class
 
-VALID_TYPES = {'baci': ["pqueens.drivers.baci_driver", "BaciDriver"]}
+VALID_TYPES = {'mpi': ["pqueens.drivers.mpi_driver", "MpiDriver"]}
 
 
 def from_config_create_driver(

@@ -14,18 +14,15 @@ class Scheduler(metaclass=abc.ABCMeta):
 
     Attributes:
             experiment_name (str):     name of QUEENS experiment
-            input_file (str):          path to QUEENS input file
-            experiment_dir (str):      path to QUEENS experiment directory
+            input_file (path):         path to QUEENS input file
+            experiment_dir (path):     path to QUEENS experiment directory
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
-            remote (bool):             flag for remote scheduling
             remote connect (str):      (only for remote scheduling) address of remote
                                        computing resource
-            port (int):                (only for remote scheduling with Singularity) port of
-                                       remote resource for ssh port-forwarding to database
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
             singularity (bool):        flag for use of Singularity containers
@@ -49,18 +46,15 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         Args:
             experiment_name (str):     name of QUEENS experiment
-            input_file (str):          path to QUEENS input file
-            experiment_dir (str):      path to QUEENS experiment directory
+            input_file (path):         path to QUEENS input file
+            experiment_dir (path):     path to QUEENS experiment directory
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
-            remote (bool):             flag for remote scheduling
             remote connect (str):      (only for remote scheduling) address of remote
                                        computing resource
-            port (int):                (only for remote scheduling with Singularity) port of
-                                       remote resource for ssh port-forwarding to database
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
             singularity (bool):        flag for use of Singularity containers
@@ -119,12 +113,10 @@ class Scheduler(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def pre_run(self):
         """Pre run routine."""
-        pass
 
     @abc.abstractmethod
     def _submit_singularity(self, job_id, batch):
         """Submit job using singularity."""
-        pass
 
     @abc.abstractmethod
     def check_job_completion(self, job):
@@ -137,14 +129,11 @@ class Scheduler(metaclass=abc.ABCMeta):
             completed (bool): If job is completed
             failed (bool): If job failed.
         """
-        pass
 
     @abc.abstractmethod
     def post_run(self):
         """Post run routine."""
-        pass
 
     @abc.abstractmethod
     def _submit_driver(self, job_id, batch):
         """Submit job to driver."""
-        pass

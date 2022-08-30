@@ -1,5 +1,6 @@
 """Job interface class."""
 import logging
+import pathlib
 import time
 
 import numpy as np
@@ -25,7 +26,7 @@ class JobInterface(Interface):
         experiment_name (string):                name of experiment
         db (mongodb):                            mongodb to store results and job info
         polling_time (int):                      how frequently do we check if jobs are done
-        output_dir (string):                     directory to write output to
+        output_dir (path):                       directory to write output to
         parameters (dict):                       dictionary with parameters
         time_for_data_copy (float): Time (s) to wait such that copying process of simulation
                                     input file can finish, and we do not overload the network
@@ -57,7 +58,7 @@ class JobInterface(Interface):
             experiment_name (string):   name of experiment
             db (mongodb):               mongodb to store results and job info
             polling_time (int):         how frequently do we check if jobs are done
-            output_dir (string):        directory to write output to
+            output_dir (path):          directory to write output to
             remote (bool):              true of remote computation
             remote_connect (str):       connection to computing resource
             scheduler_type (str):       scheduler type
@@ -112,7 +113,7 @@ class JobInterface(Interface):
         first = list(config['resources'])[0]
         scheduler_name = config['resources'][first]['scheduler']
         scheduler_options = config[scheduler_name]
-        output_dir = scheduler_options["experiment_dir"]
+        output_dir = pathlib.Path(scheduler_options["experiment_dir"])
         scheduler_type = scheduler_options['scheduler_type']
 
         # get flag for remote scheduling
@@ -272,8 +273,8 @@ class JobInterface(Interface):
             job,
             self.experiment_name,
             'jobs_' + self.driver_name,
-            self.batch_number,
-            {'id': job['id'], 'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
+            str(self.batch_number),
+            {'id': job['id'], 'expt_dir': str(self.output_dir), 'expt_name': self.experiment_name},
         )
 
     def create_new_job(self, variables, resource_name, new_id=None):
@@ -297,7 +298,7 @@ class JobInterface(Interface):
         job = {
             'id': job_id,
             'params': variables,
-            'expt_dir': self.output_dir,
+            'expt_dir': str(self.output_dir),
             'expt_name': self.experiment_name,
             'resource': resource_name,
             'status': "",  # TODO: before: 'new'
@@ -356,7 +357,7 @@ class JobInterface(Interface):
             print("Not all jobs are finished yet, try again later")
         else:
             jobs = self.load_jobs(
-                field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
+                field_filters={'expt_dir': str(self.output_dir), 'expt_name': self.experiment_name}
             )
 
             # Sort job IDs in ascending order to match ordering of samples
@@ -405,7 +406,7 @@ class JobInterface(Interface):
     def _check_job_completions(self, jobid_range):
         """Check AWS tasks to determine completed jobs."""
         jobs = self.load_jobs(
-            field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
+            field_filters={'expt_dir': str(self.output_dir), 'expt_name': self.experiment_name}
         )
         for check_jobid in jobid_range:
             for resource in self.resources.values():
@@ -460,7 +461,7 @@ class JobInterface(Interface):
                         current_job = self.load_jobs(
                             field_filters={
                                 'id': jobid,
-                                'expt_dir': self.output_dir,
+                                'expt_dir': str(self.output_dir),
                                 'expt_name': self.experiment_name,
                             }
                         )
@@ -508,7 +509,7 @@ class JobInterface(Interface):
             jobid_range (range):     range of job IDs which are submitted
         """
         jobs = self.load_jobs(
-            field_filters={'expt_dir': self.output_dir, 'expt_name': self.experiment_name}
+            field_filters={'expt_dir': str(self.output_dir), 'expt_name': self.experiment_name}
         )
         for jobid in jobid_range:
             for resource in self.resources.values():

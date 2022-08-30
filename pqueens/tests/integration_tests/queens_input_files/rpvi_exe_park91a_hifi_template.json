@@ -70,19 +70,24 @@
     "resources": "resources",
     "driver": "driver"
   },
-  "driver": {
-    "driver_type": "baci",
-    "driver_params": {
-      "input_template": "{input_file}",
-      "path_to_executable": "{executable}",
-      "path_to_postprocessor": "",
-      "post_file_name_prefix_lst": [],
-      "post_process_options": [],
-      "data_processor": "data_processor_output",
-      "gradient_data_processor": "gradient_data_processor"
-    }
-  },
-  "data_processor_output": {
+    "driver": {
+        "driver_type": "mpi",
+        "input_template": "{input_file}",
+        "path_to_executable": "{executable}",
+        "data_processor": "data_processor_output",
+        "gradient_data_processor": "gradient_data_processor"
+    },
+    "data_processor_output": {
+        "type": "csv",
+        "file_name_identifier": "*_output.csv",
+        "file_options_dict": {
+            "delete_field_data": false,
+            "filter": {
+                "type": "entire_file"
+            }
+        }
+    },
+  "gradient_data_processor":{
     "type": "csv",
     "file_name_identifier": "*_output.csv",
     "file_options_dict": {

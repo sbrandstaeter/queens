@@ -1,7 +1,7 @@
 """Cluster scheduler for QUEENS runs."""
 import atexit
 import logging
-import os
+import pathlib
 
 import numpy as np
 
@@ -22,24 +22,12 @@ class ClusterScheduler(Scheduler):
     """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS.
 
     Attributes:
-        experiment_name (str):     name of QUEENS experiment
-        input_file (str):          path to QUEENS input file
-        experiment_dir (str):      path to QUEENS experiment directory
-        driver_name (str):         Name of the driver that shall be used for job submission
-        config (dict):             dictionary containing configuration as provided in
-                                   QUEENS input file
-        cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
-                                   cluster options
-        singularity (bool):        flag for use of Singularity containers
-        scheduler_type (str):      type of scheduler chosen in QUEENS input file
-        singularity_manager (obj): instance of Singularity-manager class
-        remote (bool):             flag for remote scheduling
-        remote connect (str):      (only for remote scheduling) adress of remote
-                                   computing resource
         port (int):                (only for remote scheduling with Singularity) port of
                                    remote resource for ssh port-forwarding to database
-        process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids as
-                           keys
+        remote (bool):             flag for remote scheduling
+        remote connect (str):      (only for remote scheduling) address of remote
+                                   computing resource
+        singularity_manager (obj): instance of Singularity-manager class
     """
 
     def __init__(
@@ -60,8 +48,8 @@ class ClusterScheduler(Scheduler):
 
         Args:
             experiment_name (str):     name of QUEENS experiment
-            input_file (str):          path to QUEENS input file
-            experiment_dir (str):      path to QUEENS experiment directory
+            input_file (path):         path to QUEENS input file
+            experiment_dir (path):     path to QUEENS experiment directory
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
@@ -73,10 +61,6 @@ class ClusterScheduler(Scheduler):
             remote (bool):             flag for remote scheduling
             remote_connect (str):      (only for remote scheduling) address of remote
                                        computing resource
-            port (int):                (only for remote scheduling with Singularity) port of
-                                       remote resource for ssh port-forwarding to database
-            process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids
-                                as keys
         """
         super().__init__(
             experiment_name,
@@ -113,8 +97,8 @@ class ClusterScheduler(Scheduler):
         scheduler_options = config[scheduler_name]
 
         experiment_name = config['global_settings']['experiment_name']
-        experiment_dir = scheduler_options['experiment_dir']
-        input_file = config["input_file"]
+        experiment_dir = pathlib.Path(scheduler_options['experiment_dir'])
+        input_file = pathlib.Path(config["input_file"])
         singularity = scheduler_options.get('singularity', False)
         if not isinstance(singularity, bool):
             raise TypeError(
@@ -125,20 +109,27 @@ class ClusterScheduler(Scheduler):
         scheduler_type = scheduler_options["scheduler_type"]
 
         cluster_options = scheduler_options.get("cluster", {})
-        if scheduler_options.get('remote'):
-            remote = True
+        remote = scheduler_options.get('remote', False)
+        if remote:
             remote_connect = scheduler_options['remote']['connect']
         else:
-            remote = False
             remote_connect = None
 
+        if remote and not singularity:
+            raise NotImplementedError(
+                "The combination of 'remote: true' and 'singularity: false' in the "
+                "'scheduler section' is not implemented! "
+                "Abort..."
+            )
+
         if singularity:
-            singularity_options = scheduler_options['singularity_settings']
             singularity_manager = SingularityManager(
                 remote=remote,
                 remote_connect=remote_connect,
-                singularity_bind=singularity_options['cluster_bind'],
-                singularity_path=singularity_options['cluster_path'],
+                singularity_bind=scheduler_options['singularity_settings']['cluster_bind'],
+                singularity_path=pathlib.Path(
+                    scheduler_options['singularity_settings']['cluster_path']
+                ),
                 input_file=input_file,
             )
         else:
@@ -148,46 +139,17 @@ class ClusterScheduler(Scheduler):
         cluster_options['job_name'] = None
         cluster_options['CLUSTERSCRIPT'] = cluster_options.get('script', None)
         cluster_options['nposttasks'] = scheduler_options.get('num_procs_post', 1)
-        num_procs = scheduler_options.get('num_procs', 1)
 
         # set cluster options required specifically for PBS or Slurm
         if scheduler_type == 'pbs':
             cluster_options['start_cmd'] = 'qsub'
-
             rel_path = 'utils/jobscript_pbs.sh'
-
             cluster_options['pbs_queue'] = cluster_options.get('pbs_queue', 'batch')
-            ppn = scheduler_options.get('pbs_num_avail_ppn', 16)
-            if num_procs <= ppn:
-                cluster_options['pbs_nodes'] = '1'
-                cluster_options['pbs_ppn'] = str(num_procs)
-            else:
-                num_nodes = np.ceil(num_procs / ppn)
-                if num_procs % num_nodes == 0:
-                    cluster_options['pbs_ppn'] = str(num_procs / num_nodes)
-                else:
-                    raise ValueError(
-                        "Number of tasks not evenly distributable, as required for PBS scheduler!"
-                    )
+            cls._set_number_procs_pbs(cluster_options, scheduler_options)
         elif scheduler_type == "slurm":
             cluster_options['start_cmd'] = 'sbatch'
-
             rel_path = 'utils/jobscript_slurm.sh'
-
-            cluster_options['slurm_ntasks'] = str(num_procs)
-
-            # What is slurm exclusive?
-            if cluster_options.get('slurm_exclusive', False):
-                cluster_options['slurm_exclusive'] = ''
-            else:
-                cluster_options['slurm_exclusive'] = '#'
-
-            if cluster_options.get('slurm_exclude', False):
-                cluster_options['slurm_exclude'] = ''
-                cluster_options['slurm_excl_node'] = cluster_options['slurm_excl_node']
-            else:
-                cluster_options['slurm_exclude'] = '#'
-                cluster_options['slurm_excl_node'] = ''
+            cluster_options['slurm_ntasks'] = str(scheduler_options.get('num_procs', 1))
         else:
             raise ValueError("Know cluster scheduler types are pbs or slurm")
 
@@ -195,15 +157,15 @@ class ClusterScheduler(Scheduler):
         cluster_options['jobscript_template'] = abs_path
 
         if singularity:
-            singularity_path = singularity_options['cluster_path']
-            cluster_options['singularity_path'] = singularity_path
-            cluster_options['EXE'] = os.path.join(singularity_path, 'singularity_image.sif')
-
-            cluster_options['singularity_bind'] = singularity_options['cluster_bind']
-
+            singularity_path = pathlib.Path(
+                scheduler_options['singularity_settings']['cluster_path']
+            )
+            cluster_options['singularity_path'] = str(singularity_path)
+            cluster_options['EXE'] = str(singularity_path.joinpath('singularity_image.sif'))
+            cluster_options['singularity_bind'] = scheduler_options['singularity_settings'][
+                'cluster_bind'
+            ]
             cluster_options['OUTPUTPREFIX'] = ''
-            cluster_options['POSTPROCESSFLAG'] = 'false'
-            cluster_options['POSTEXE'] = ''
             cluster_options['DATAPROCESSINGFLAG'] = 'true'
         else:
             cluster_options['singularity_path'] = None
@@ -232,11 +194,28 @@ class ClusterScheduler(Scheduler):
             remote_connect=remote_connect,
         )
 
+    @classmethod
+    def _set_number_procs_pbs(cls, cluster_options, scheduler_options):
+        """Set number of procs and nodes."""
+        num_procs = scheduler_options.get('num_procs', 1)
+        ppn = scheduler_options.get('pbs_num_avail_ppn', 16)
+        if num_procs <= ppn:
+            cluster_options['pbs_nodes'] = '1'
+            cluster_options['pbs_ppn'] = str(num_procs)
+        else:
+            num_nodes = np.ceil(num_procs / ppn)
+            if num_procs % num_nodes == 0:
+                cluster_options['pbs_ppn'] = str(num_procs / num_nodes)
+            else:
+                raise ValueError(
+                    "Number of tasks not evenly distributable, as required for PBS scheduler!"
+                )
+
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
         """Pre-run routine for local and remote computing with Singularity.
 
-        Do automated port-forwarding and copying files/folders.
+        Do automatic port-forwarding and copying files/folders.
         """
         # pre-run routines required when using Singularity both local and remote
         if self.singularity is True:
@@ -262,7 +241,7 @@ class ClusterScheduler(Scheduler):
 
         Args:
             job_id (int):    ID of job to submit
-            batch (str):     Batch number of job
+            batch (int):     Batch number of job
 
         Returns:
             int:            process ID
@@ -270,24 +249,22 @@ class ClusterScheduler(Scheduler):
         if self.remote:
             # set job name as well as paths to input file and
             # destination directory for jobscript
-            self.cluster_options['job_name'] = '{}_{}_{}'.format(
-                self.experiment_name, 'queens', job_id
-            )
+            self.cluster_options['job_name'] = f"{self.experiment_name}_{job_id}"
             self.cluster_options['INPUT'] = (
                 f"--job_id={job_id} --batch={batch} --port={self.port} --path_json="
                 + f"{self.cluster_options['singularity_path']} --driver_name="
                 + f"{self.driver_name} --workdir"
             )
 
-            self.cluster_options['DESTDIR'] = os.path.join(
-                str(self.experiment_dir), str(job_id), 'output'
+            self.cluster_options['DESTDIR'] = str(
+                self.experiment_dir.joinpath(str(job_id), 'output')
             )
 
             # generate jobscript for submission
-            submission_script_path = os.path.join(self.experiment_dir, 'jobfile.sh')
+            submission_script_path = self.experiment_dir.joinpath('jobfile.sh')
             generate_submission_script(
                 self.cluster_options,
-                submission_script_path,
+                str(submission_script_path),
                 self.cluster_options['jobscript_template'],
                 self.remote_connect,
             )
@@ -297,10 +274,10 @@ class ClusterScheduler(Scheduler):
                 'ssh',
                 self.remote_connect,
                 '"cd',
-                self.experiment_dir,
+                str(self.experiment_dir),
                 ';',
                 self.cluster_options['start_cmd'],
-                submission_script_path,
+                str(submission_script_path),
                 '"',
             ]
             cmd_remote_main = ' '.join(cmdlist_remote_main)
@@ -398,7 +375,7 @@ class ClusterScheduler(Scheduler):
 
         Args:
             job_id (int):    ID of job to submit
-            batch (str):     Batch number of job
+            batch (int):     Batch number of job
 
         Returns:
             driver_obj.pid (int): process ID

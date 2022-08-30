@@ -59,8 +59,8 @@ class SingularityManager:
             remote (bool): True if the simulation runs are remote
             remote_connect (str): String of user@remote_machine
             singularity_bind (str): Binds for the singularity runs
-            singularity_path (str): Path to singularity exec
-            input_file (str): Path to QUEENS input file
+            singularity_path (path): Path to singularity exec
+            input_file (path): Path to QUEENS input file
         """
         self.remote = remote
         self.remote_connect = remote_connect
@@ -167,7 +167,7 @@ class SingularityManager:
         command_list = [
             "scp",
             abs_singularity_image_path,
-            self.remote_connect + ':' + self.singularity_path,
+            self.remote_connect + ':' + str(self.singularity_path),
         ]
         command_string = ' '.join(command_list)
         run_subprocess(
@@ -201,7 +201,8 @@ class SingularityManager:
         if self.remote and not copy_to_remote:
             try:
                 remote_hash = sha1sum(
-                    self.singularity_path + "/singularity_image.sif", self.remote_connect
+                    str(self.singularity_path.joinpath('singularity_image.sif')),
+                    self.remote_connect,
                 )
                 local_hash = sha1sum(abs_singularity_image_path)
                 copy_to_remote = remote_hash != local_hash
@@ -274,8 +275,9 @@ class SingularityManager:
                     )
                 else:
                     _logger.info(
-                        f'The input "{answer}" is not an appropriate choice! '
-                        'Only "y" or "n" are valid inputs!'
+                        'The input %s is not an appropriate choice! '
+                        'Only "y" or "n" are valid inputs!',
+                        answer,
                     )
                     _logger.info('Try again!')
         else:
@@ -311,7 +313,7 @@ class SingularityManager:
             command_string = ' '.join(command_list)
             port_fail = os.popen(command_string).read()
             time.sleep(0.1)
-        _logger.info(f'Remote port-forwarding successfully established for port {port}')
+        _logger.info('Remote port-forwarding successfully established for port %s', port)
 
         return port
 
@@ -418,7 +420,7 @@ class SingularityManager:
         command_list = [
             "scp",
             str(self.input_file),
-            self.remote_connect + ':' + self.singularity_path + '/temp.json',
+            self.remote_connect + ':' + str(self.singularity_path.joinpath('temp.json')),
         ]
         command_string = ' '.join(command_list)
         run_subprocess(

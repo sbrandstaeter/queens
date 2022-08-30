@@ -58,6 +58,7 @@ def main(args):
     try:
         # If singularity is called remotely
         if is_remote:
+            setup_cluster_logging()
             input_path = Path(path_json).joinpath('temp.json')
             # output_dir is not needed but required in get_config_dict
             output_dir = Path(path_json)
@@ -84,7 +85,6 @@ def main(args):
             # Run the singularity image in two steps and two different singularity calls to have
             # more freedom concerning mpi ranks
             if is_remote:
-                setup_cluster_logging()
                 if post == 'true':
                     driver_obj.post_job_run()
                 else:

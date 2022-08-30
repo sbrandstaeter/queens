@@ -19,23 +19,19 @@ def job(tmpdir_factory):
 
 @pytest.fixture(scope='session')
 def baci_job(job, tmpdir_factory):
-    """Generic job dictionary for testing BACI drivers."""
+    """Generic job dictionary for testing Baci."""
 
     baci_dir = tmpdir_factory.mktemp('baci_dir')
 
-    driver_params = {}
-    driver_params['simulation_input_template'] = str(
+    job['simulation_input_template'] = str(
         tmpdir_factory.mktemp('template_dir').join('template.dat')
     )
-    driver_params['path_to_executable'] = str(baci_dir.join('baci_release'))
-    driver_params['path_to_postprocessor'] = str(baci_dir.join('post_processor'))
-    driver_params['post_process_options'] = ['post_process_options_1', 'post_process_options_2']
-    driver_params['data_processor_script'] = str(
+    job['path_to_executable'] = str(baci_dir.join('baci_release'))
+    job['path_to_postprocessor'] = str(baci_dir.join('post_processor'))
+    job['post_process_options'] = ['post_process_options_1', 'post_process_options_2']
+    job['data_processor_script'] = str(
         tmpdir_factory.mktemp('data_processor_dir').join('data_processor_script.py')
     )
-
-    job['driver_params'] = driver_params
-
     return job
 
 
@@ -55,13 +51,7 @@ def baci_output_file(job):
 
 @pytest.fixture(scope='session')
 def baci_cmd(baci_job, baci_input_file, baci_output_file):
-    baci_cmd = (
-        baci_job['driver_params']['path_to_executable']
-        + ' '
-        + baci_input_file
-        + ' '
-        + baci_output_file
-    )
+    baci_cmd = baci_job['path_to_executable'] + ' ' + baci_input_file + ' ' + baci_output_file
     return baci_cmd
 
 
@@ -69,11 +59,9 @@ def baci_cmd(baci_job, baci_input_file, baci_output_file):
 def baci_post_cmds(baci_job, baci_output_file):
 
     post_cmds = []
-    for id, baci_post_process_option in enumerate(
-        baci_job['driver_params']['post_process_options']
-    ):
+    for id, baci_post_process_option in enumerate(baci_job['post_process_options']):
         post_cmd = (
-            baci_job['driver_params']['path_to_postprocessor']
+            baci_job['path_to_postprocessor']
             + ' '
             + baci_post_process_option
             + ' --file='
