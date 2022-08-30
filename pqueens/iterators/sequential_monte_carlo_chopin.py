@@ -207,7 +207,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             )
         return feynman_kac_model
 
-    def initialize_run(self):
+    def pre_run(self):
         """Draw initial sample."""
         _logger.info("Initialize run.")
         self._initialize_prior_model()

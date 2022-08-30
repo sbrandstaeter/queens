@@ -179,7 +179,7 @@ class SingularityManager:
         """Checks if local and remote singularity images are existent.
 
         Compares a hash-file to the current hash of the files to determine if
-        the singularity image is up to date. The method furthermore triggers
+        the singularity image is up-to-date. The method furthermore triggers
         the build of a new singularity image if necessary.
 
         Returns:
@@ -275,7 +275,7 @@ class SingularityManager:
                 else:
                     _logger.info(
                         f'The input "{answer}" is not an appropriate choice! '
-                        f'Only "y" or "n" are valid inputs!'
+                        'Only "y" or "n" are valid inputs!'
                     )
                     _logger.info('Try again!')
         else:
@@ -334,14 +334,14 @@ class SingularityManager:
             r'9001:' + remote_address + r':22',
             address_localhost,
         ]
-        ssh_proc = subprocess.Popen(
+        with subprocess.Popen(
             command_list, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE
-        )
-        stat = ssh_proc.poll()
-        while stat is None:
+        ) as ssh_proc:
             stat = ssh_proc.poll()
-        # Think of some kind of error catching here;
-        # so far it works but error might be cryptical
+            while stat is None:
+                stat = ssh_proc.poll()
+            # Think of some kind of error catching here;
+            # so far it works but error might be cryptical
 
     def close_local_port_forwarding(self):
         """Closes port forwarding from local to remote machine."""
@@ -417,7 +417,7 @@ class SingularityManager:
         """
         command_list = [
             "scp",
-            self.input_file,
+            str(self.input_file),
             self.remote_connect + ':' + self.singularity_path + '/temp.json',
         ]
         command_string = ' '.join(command_list)

@@ -32,7 +32,8 @@ method:
     loo_control_variates_scaling: false
     result_description:
       write_results: true
-      export_iteration_data: true
+      iterative_field_names:
+      - elbo # is used in the assert statement
       plotting_options:
         plot_boolean: false
         plotting_dir: "{plot_dir}"

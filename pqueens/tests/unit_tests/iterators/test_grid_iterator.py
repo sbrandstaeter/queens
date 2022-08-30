@@ -251,23 +251,6 @@ def test_pre_run_three(
 
 
 @pytest.mark.unit_tests
-def test_pre_run_four(
-    grid_dict_four, parameters_four, result_description, default_model, global_settings
-):
-    num_params = 4
-    grid_iterator = GridIterator(
-        default_model,
-        result_description,
-        global_settings,
-        grid_dict_four,
-        num_params,
-    )
-    with pytest.raises(ValueError) as e:
-        grid_iterator.pre_run()
-    assert str(e.value) == "More than 3 grid parameters are currently not supported! Abort..."
-
-
-@pytest.mark.unit_tests
 def test_core_run(mocker, default_grid_iterator, expected_samples_two):
     mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate', return_value=2)
     default_grid_iterator.samples = expected_samples_two

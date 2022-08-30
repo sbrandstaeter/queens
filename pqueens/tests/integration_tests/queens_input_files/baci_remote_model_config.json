@@ -14,7 +14,7 @@
   },
   "model": {
     "type": "simulation_model",
-    "interface": "interface"
+    "interface": "interface",
     "coordinate_labels": [
       "x1",
       "x2",

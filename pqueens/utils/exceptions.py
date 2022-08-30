@@ -25,7 +25,7 @@ class InvalidOptionError(Exception):
             InvalidOptionError
         """
         message = "\n" + additional_message
-        message += f"\nInvalid option '{desired_option}'. Valid options are:\n" + ", ".join(
+        message += f"\nInvalid option(s) '{desired_option}'. Valid options are:\n" + ", ".join(
             sorted(valid_options)
         )
         return cls(message)

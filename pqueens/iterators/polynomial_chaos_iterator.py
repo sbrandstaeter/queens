@@ -158,7 +158,7 @@ class PolynomialChaosIterator(Iterator):
             distribution=distribution,
         )
 
-    def initialize_run(self):
+    def pre_run(self):
         """Initiliaze run."""
         np.random.seed(self.seed)
 

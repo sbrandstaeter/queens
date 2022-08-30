@@ -210,7 +210,6 @@ class MetropolisHastingsIterator(Iterator):
 
     def do_mh_step(self, step_id):
         """Metropolis (Hastings) step."""
-
         # tune covariance of proposal
         if not step_id % self.tune_interval and self.tune:
             accept_rate_interval = np.exp(
@@ -250,7 +249,7 @@ class MetropolisHastingsIterator(Iterator):
             accepted, log_posterior_prop, self.log_posterior[step_id - 1]
         )
 
-    def initialize_run(
+    def pre_run(
         self,
         initial_samples=None,
         initial_log_like=None,
@@ -308,7 +307,6 @@ class MetropolisHastingsIterator(Iterator):
 
     def post_run(self):
         """Analyze the resulting chain."""
-
         avg_accept_rate = np.exp(
             np.log(np.sum(self.accepted)) - np.log((self.num_samples * self.num_chains))
         )

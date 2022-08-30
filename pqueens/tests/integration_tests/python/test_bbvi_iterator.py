@@ -1,6 +1,7 @@
 """Integration tests for the BBVI iterator."""
 import os
 import pickle
+from collections import namedtuple
 from pathlib import Path
 
 import numpy as np
@@ -18,6 +19,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a import 
     x4_vec,
 )
 from pqueens.utils import injector, variational_inference_utils
+from pqueens.utils.collection_utils import CollectionObject
 from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 
@@ -35,7 +37,7 @@ def test_bbvi_density_match(
 
     # mock all parts of the algorithm that has to do with initialization or an underlying model
     mocker.patch(
-        "pqueens.iterators.black_box_variational_bayes.BBVIIterator.initialize_run",
+        "pqueens.iterators.black_box_variational_bayes.BBVIIterator.pre_run",
         return_value=None,
     )
 
@@ -57,7 +59,7 @@ def test_bbvi_density_match(
 
         opt_variational_params = np.array(dummy_bbvi_instance.variational_params)
 
-        elbo = dummy_bbvi_instance.elbo_list
+        elbo = dummy_bbvi_instance.iteration_data.elbo
 
     # Actual tests
     opt_variational_samples = variational_distr_obj.draw(opt_variational_params, 10000)
@@ -150,10 +152,13 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
     stochastic_optimizer = from_config_create_optimizer(optimizer_config)
 
     # ------ other params ----------------------------------------------------------
-    model = 'fake_model'
+    model = namedtuple("model", "normal_distribution")(
+        normal_distribution=namedtuple("normal_distribution", "covariance")(covariance=0)
+    )
     global_settings = {'output_dir': tmpdir, 'experiment_name': experiment_name}
     db = 'dummy'
     random_seed = 1
+    iteration_data = CollectionObject("elbo")
 
     bbvi_instance = BBVIIterator(
         global_settings=global_settings,
@@ -173,7 +178,6 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         fim_decay_start_iter=fim_decay_start_iter,
         fim_dampening_coefficient=fim_dampening_coefficient,
         fim_dampening_lower_bound=fim_dampening_lower_bound,
-        export_quantities_over_iter=export_quantities_over_iter,
         control_variates_scaling_type=control_variates_scaling_type,
         loo_cv_bool=loo_cv_bool,
         variational_distribution_obj=my_variational_distribution_obj,
@@ -181,6 +185,7 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         stochastic_optimizer=stochastic_optimizer,
         model_eval_iteration_period=1,
         resample=True,
+        iteration_data=iteration_data,
     )
     return bbvi_instance
 
