@@ -175,8 +175,9 @@ def test_connection():
 def test_connection_fails():
     """Test for correct exception in case of failing connection to MongoDB
     service."""
+    wrong_address = "localhos:2016"
     with pytest.raises(ServerSelectionTimeoutError):
-        db = MongoDB.from_config_create_database({"database": {"address": "localhos:2016"}})
+        db = MongoDB.from_config_create_database({"database": {"address": wrong_address}})
         db._connect()
 
 
