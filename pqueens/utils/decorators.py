@@ -6,7 +6,7 @@ from time import sleep
 _logger = logging.getLogger(__name__)
 
 
-def safe_operation(function, max_number_of_attempts=10, waiting_time=0.01):
+def safe_operation(function, max_number_of_attempts=10, waiting_time=0):
     """Method decorator in order to process database methods safely.
 
     The safe procedure consists of:
@@ -22,7 +22,7 @@ def safe_operation(function, max_number_of_attempts=10, waiting_time=0.01):
     """
 
     @wraps(function)
-    def wrapper(*args, **kwargs):
+    def wrapper(self, *args, **kwargs):
         """Function in which the method `function` is wrapped in.
 
         In here exceptions are caught and the operation is retried up to
@@ -34,7 +34,7 @@ def safe_operation(function, max_number_of_attempts=10, waiting_time=0.01):
         # Repeat function call if failed
         for attempt in range(1, max_number_of_attempts + 1):
             try:
-                return function(*args, **kwargs)
+                return function(self, *args, **kwargs)
             except Exception as error:
                 function_name = function.__module__ + ":" + function.__name__
                 if attempt < max_number_of_attempts:
@@ -46,7 +46,8 @@ def safe_operation(function, max_number_of_attempts=10, waiting_time=0.01):
                 else:
                     # Raise the same error type as the original exception did
                     raise type(error)(
-                        f"Function {function_name} failed after {max_number_of_attempts} attempts!"
+                        f"Function {function_name} failed after {max_number_of_attempts} attempts"
+                        f" for the database\n{str(self)}"
                     ) from error
 
     return wrapper
