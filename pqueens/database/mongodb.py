@@ -7,11 +7,12 @@ import pandas as pd
 import xarray as xr
 from pymongo import MongoClient
 
-from pqueens.utils.decorators import safe_operation as safe_mongodb_operation
-from pqueens.utils.restructure_data_format import (
+from pqueens.utils.decorators import safe_operation
+from pqueens.utils.mongodb import (
     convert_nested_data_to_db_dict,
     convert_nested_db_dicts_to_lists_or_arrays,
 )
+from pqueens.utils.print_utils import get_str_table
 
 from .database import Database
 
@@ -115,6 +116,7 @@ class MongoDB(Database):
             mongo_client=mongo_client,
         )
 
+    @safe_operation
     def _connect(self):
         """Connect to the database."""
         # Construct the Mongodb client
@@ -124,7 +126,7 @@ class MongoDB(Database):
 
         # Try the connection
         # Here the decorator is called directly rather than the whole function
-        safe_mongodb_operation(self.mongo_client.server_info)()
+        self.mongo_client.server_info()
         self.db_obj = self.mongo_client[self.db_name]
 
         _logger.info(f"Connected to {self.db_address}")
@@ -174,7 +176,7 @@ class MongoDB(Database):
 
         _logger.info(f"Databases with prefix {prefix} were deleted!")
 
-    @safe_mongodb_operation
+    @safe_operation
     def save(self, save_doc, experiment_name, experiment_field, batch, field_filters=None):
         """Save a document to the database.
 
@@ -210,7 +212,7 @@ class MongoDB(Database):
         result = dbcollection.replace_one(field_filters, save_doc, upsert=True)
         return result.acknowledged
 
-    @safe_mongodb_operation
+    @safe_operation
     def count_documents(self, experiment_name, batch, experiment_field, field_filters=None):
         """Return number of document(s) in collection.
 
@@ -232,7 +234,7 @@ class MongoDB(Database):
 
         return doc_count
 
-    @safe_mongodb_operation
+    @safe_operation
     def estimated_count(self, experiment_name, batch, experiment_field):
         """Return estimated count of document(s) in collection.
 
@@ -252,7 +254,7 @@ class MongoDB(Database):
 
         return doc_count
 
-    @safe_mongodb_operation
+    @safe_operation
     def load(self, experiment_name, batch, experiment_field, field_filters=None):
         """Load document(s) from the database.
 
@@ -283,7 +285,7 @@ class MongoDB(Database):
         else:
             return [convert_nested_db_dicts_to_lists_or_arrays(dbdoc) for dbdoc in dbdocs]
 
-    @safe_mongodb_operation
+    @safe_operation
     def remove(self, experiment_name, experiment_field, batch, field_filters=None):
         """Remove a list of documents from the database.
 
@@ -385,9 +387,6 @@ class MongoDB(Database):
         Returns:
             string (str): MongoDB obj description
         """
-        string = "\n" + "-" * 80
-        string += "\nQUEENS MongoDB object wrapper\n\n"
-        string += "Database address:\t" + self.db_address + "\n"
-        string += "Database name:\t\t" + self.db_name + "\n"
-        string += "-" * 80 + "\n"
-        return string
+        name = "QUEENS MongoDB object wrapper"
+        print_dict = {"Database address": self.db_address, "Database name ": self.db_name}
+        return get_str_table(name, print_dict)
