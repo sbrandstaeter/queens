@@ -207,7 +207,6 @@ trigger_documentation_badge_success:
     - .trigger_documentation_badge
   when: on_success
   variables:
-    BUILD_DOCUMENTATION_BADGE: "1"
     SUCCESS_DOCUMENTATION_BUILD: "1"
 #---------------------------------------------------------------------------------------------------
 # Create documentation badge in case of failure
@@ -216,9 +215,7 @@ trigger_documentation_badge_fail:
   extends:
     - .trigger_documentation_badge
   when: on_failure
-  needs: ["documentation"]
   variables:
-    BUILD_DOCUMENTATION_BADGE: "1"
     SUCCESS_DOCUMENTATION_BUILD: "0"
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
@@ -340,7 +337,6 @@ trigger_benchmarks_badge_success:
     - .trigger_benchmarks_badge
   when: on_success
   variables:
-    BUILD_BENCHMARKS_BADGE: "1"
     SUCCESS_BENCHMARKS_PIPELINE: "1"
 #---------------------------------------------------------------------------------------------------
 # Create benchmarks badge in case of failure
@@ -350,7 +346,6 @@ trigger_benchmarks_badge_fail:
     - .trigger_benchmarks_badge
   when: on_failure
   variables:
-    BUILD_BENCHMARKS_BADGE: "1"
     SUCCESS_BENCHMARKS_PIPELINE: "0"
 #---------------------------------------------------------------------------------------------------
 # Basic setting to trigger pipeline to create cluster badge
@@ -370,7 +365,6 @@ trigger_cluster_badge_success:
     - .trigger_cluster_badge
   when: on_success
   variables:
-    BUILD_CLUSTER_BADGE: "1"
     SUCCESS_CLUSTER_PIPELINE: "1"
 #---------------------------------------------------------------------------------------------------
 # Create cluster badge in case of failure
@@ -380,7 +374,6 @@ trigger_cluster_badge_fail:
     - .trigger_cluster_badge
   when: on_failure
   variables:
-    BUILD_CLUSTER_BADGE: "1"
     SUCCESS_CLUSTER_PIPELINE: "0"
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: update_requirements
