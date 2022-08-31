@@ -196,7 +196,7 @@ def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
         db = MongoDB.from_config_create_database(
             {
                 "global_settings": {"experiment_name": experiment_name},
-                "database": {"address": "localhost:27017", "drop_all_existing_dbs": True},
+                "database": {"address": "localhost:27017", "reset_existing_db": True},
             }
         )
     except:
@@ -204,7 +204,7 @@ def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
         db = MongoDB.from_config_create_database(
             {
                 "global_settings": {"experiment_name": experiment_name},
-                "database": {"address": "mongodb:27017", "drop_all_existing_dbs": True},
+                "database": {"address": "mongodb:27017", "reset_existing_db": True},
             }
         )
     with db:
@@ -261,12 +261,12 @@ def test_write_multiple_entries(dummy_job, experiment_name, batch_id_2, job_id):
 def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "localhost:27017", "reset_existing_db": True}}
         )
     except ServerSelectionTimeoutError:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "mongodb:27017", "reset_existing_db": True}}
         )
 
     with db:
@@ -290,12 +290,12 @@ def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):
 def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "localhost:27017", "reset_existing_db": True}}
         )
     except ServerSelectionTimeoutError:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "mongodb:27017", "reset_existing_db": True}}
         )
 
     with db:
@@ -318,12 +318,12 @@ def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
 def test_pack_xarrays(dummy_doc_with_xarray_dataarray):
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "localhost:27017", "reset_existing_db": True}}
         )
     except ServerSelectionTimeoutError:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "mongodb:27017", "reset_existing_db": True}}
         )
 
     # should cause problems: missing packing method for xarrays
@@ -334,12 +334,12 @@ def test_pack_xarrays(dummy_doc_with_xarray_dataarray):
 def test_unpack_labeled_data(dummy_job_with_result):
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "localhost:27017", "reset_existing_db": True}}
         )
     except ServerSelectionTimeoutError:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "mongodb:27017", "reset_existing_db": True}}
         )
     db._unpack_labeled_data(dummy_job_with_result)
 
@@ -350,12 +350,12 @@ def test_unpack_labeled_data(dummy_job_with_result):
 def test_unpack_list(dummy_job_with_list):
     try:
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "localhost:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "localhost:27017", "reset_existing_db": True}}
         )
     except ServerSelectionTimeoutError:
         # if local host fails try to use alias if db is in docker container
         db = MongoDB.from_config_create_database(
-            {"database": {"address": "mongodb:27017", "drop_all_existing_dbs": True}}
+            {"database": {"address": "mongodb:27017", "reset_existing_db": True}}
         )
     db._unpack_labeled_data(dummy_job_with_list)
 
