@@ -1,17 +1,16 @@
 """Sqlite module."""
 import logging
 import sqlite3
-from functools import partial
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import xarray as xr
 
-from pqueens.utils.decorators import safe_operation
-from pqueens.utils.dictionary_utils import findkeys
+from pqueens.database.database import Database, QUEENSDatabaseError
+from pqueens.utils.dictionary_utils import get_value_in_nested_dictionary
 from pqueens.utils.print_utils import get_str_table
-from pqueens.utils.restructure_data_format import (
+from pqueens.utils.sqlite import (
     boolean_from_binary,
     boolean_to_binary,
     np_array_from_binary,
@@ -20,68 +19,20 @@ from pqueens.utils.restructure_data_format import (
     obj_to_binary,
     pd_dataframe_from_binary,
     pd_dataframe_to_binary,
+    safe_sqlitedb_operation,
+    type_to_sqlite,
 )
-
-from .database import Database, QUEENSDatabaseError
-
-# For sqlite the waiting times need to be higher, especially if fast models are used.
-safe_sqlitedb_operation = partial(safe_operation, max_number_of_attempts=10, waiting_time=0.1)
 
 _logger = logging.getLogger(__name__)
 
 
-def sqlite_binary_wrapper(function):
-    """Wrap binary output of function to sqlite binary type.
-
-    Args:
-        function (fun): Function to be wrapped
-    Returns:
-        (function) binarized function
-    """
-
-    def binarizer(*args, **kwargs):
-        binary_out = function(*args, **kwargs)
-        return sqlite3.Binary(binary_out)
-
-    return binarizer
-
-
-def type_to_sqlite(object):
-    """Get sqlite type from object.
-
-    Args:
-        object: object to be stored in the db
-
-    Returns:
-        (str) sqlite data type
-    """
-    if isinstance(object, bool):
-        return "BOOLEAN"
-    if isinstance(object, str):
-        return "TEXT"
-    if isinstance(object, int):
-        return "INT"
-    if isinstance(object, float):
-        return "REAL"
-    if isinstance(object, xr.DataArray):
-        return "XARRAY"
-    if isinstance(object, pd.DataFrame):
-        return "PDDATAFRAME"
-    if isinstance(object, np.ndarray):
-        return "NPARRAY"
-    if isinstance(object, list):
-        return "LIST"
-    if isinstance(object, dict):
-        return "DICT"
-
-
 # Add the adapters for different types to sqlite
-sqlite3.register_adapter(np.ndarray, sqlite_binary_wrapper(np_array_to_binary))
-sqlite3.register_adapter(xr.DataArray, sqlite_binary_wrapper(obj_to_binary))
-sqlite3.register_adapter(pd.DataFrame, sqlite_binary_wrapper(pd_dataframe_to_binary))
-sqlite3.register_adapter(list, sqlite_binary_wrapper(obj_to_binary))
-sqlite3.register_adapter(dict, sqlite_binary_wrapper(obj_to_binary))
-sqlite3.register_adapter(bool, sqlite_binary_wrapper(boolean_to_binary))
+sqlite3.register_adapter(np.ndarray, np_array_to_binary)
+sqlite3.register_adapter(xr.DataArray, obj_to_binary)
+sqlite3.register_adapter(pd.DataFrame, pd_dataframe_to_binary)
+sqlite3.register_adapter(list, obj_to_binary)
+sqlite3.register_adapter(dict, obj_to_binary)
+sqlite3.register_adapter(bool, boolean_to_binary)
 
 # Add the converters, i.e. back to the objects
 sqlite3.register_converter("NPARRAY", np_array_from_binary)
@@ -93,7 +44,14 @@ sqlite3.register_converter("BOOLEAN", boolean_from_binary)
 
 
 class SQLite(Database):
-    """SQLite wrapper for QUEENS."""
+    """SQLite wrapper for QUEENS.
+
+    Attributes:
+        db_name (str): Database name
+        reset_existing_db (bool): Bool to reset database if desired
+        database_path (Pathlib.Path): Path to database object
+        tables (dict): dict of tables containing a dict with their column names and types
+    """
 
     @classmethod
     def from_config_create_database(cls, config):
@@ -120,12 +78,11 @@ class SQLite(Database):
         reset_existing_db = config['database'].get('reset_existing_db', True)
 
         # Check if the QUEENS run is remote
-        for remote_bool in findkeys(config, "remote"):
-            if remote_bool:
-                raise NotImplementedError(
-                    "QUEENS with Sqlite can currently not be used for remote computations! Switch"
-                    " to MongoDB if available"
-                )
+        if get_value_in_nested_dictionary(config, "remote", False):
+            raise NotImplementedError(
+                "QUEENS with Sqlite can currently not be used for remote computations! Switch"
+                " to MongoDB if available"
+            )
 
         return cls(db_name=db_name, reset_existing_db=reset_existing_db, database_path=db_path)
 
@@ -139,33 +96,24 @@ class SQLite(Database):
         """
         super().__init__(db_name, reset_existing_db)
         self.database_path = database_path
-        self.existing_tables = {}
+        self.tables = {}
 
-    def _check_connection(self):
-        """Try to connect to the database.
+    def _connect(self):
+        """Connect to the database.
 
-        Returns:
-            True: if sucessfull connection
+        There is no need connect, so we just check the the connection
+        here.
         """
         try:
             connection = sqlite3.connect(
                 self.database_path, detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False
             )
             connection.cursor()
-
-            return True
+            _logger.info(f"Connected to {self.database_path}")
         except Exception as exception:
             raise QUEENSDatabaseError(
                 "Could not connect to sqlite database from path {self.database_path}"
             ) from exception
-
-    def _connect(self):
-        """Connect to the database.
-
-        Here the connection is checked.
-        """
-        self._check_connection()
-        _logger.info(f"Connected to {self.database_path}")
 
     @safe_sqlitedb_operation
     def _execute(self, query, commit=False, parameters=None):
@@ -195,7 +143,7 @@ class SQLite(Database):
         """Disconnect the database."""
         _logger.info("Disconnected the database")
 
-    def _get_all_table_names(self):
+    def _load_table_names(self):
         """Get all table names in the database file.
 
         Returns:
@@ -213,7 +161,9 @@ class SQLite(Database):
         """
         query = f"DROP TABLE {table_name};"
         self._execute(query, commit=True)
-        self.existing_tables.pop(table_name)
+
+        if table_name in self.tables.keys():
+            self.tables.pop(table_name)
 
     def _get_table_info_from_query(self, table_name):
         """Get column names and types through query.
@@ -236,31 +186,31 @@ class SQLite(Database):
         return column_names, column_data_types
 
     def _delete_all_tables(self):
-        """Delete all tables."""
-        table_names = self._get_all_table_names()
-        for table_name in table_names:
+        """Delete all tables in db file."""
+        for table_name in self._load_table_names():
             self._delete_table(table_name)
 
-    def _get_exsiting_tables(self):
+    def _load_tables(self):
         """Query table info from database."""
-        table_names = self._get_all_table_names()
-        for table_name in table_names:
+        for table_name in self._load_table_names():
             column_names, column_data_types = self._get_table_info_from_query(table_name)
-            self.existing_tables[table_name] = dict(zip(column_names, column_data_types))
+            self.tables[table_name] = dict(zip(column_names, column_data_types))
 
     def _clean_database(self):
-        """Delete all tables."""
+        """Deletes or reloads database from a previous queens run."""
         if self.database_path.is_file():
             if self.reset_existing_db:
+                # Reset the database for this run
                 self._delete_all_tables()
             else:
-                self._get_exsiting_tables()
+                # Load from an existing db file
+                self._load_tables()
 
     def _delete_database(self):
         """Delete database file."""
         self._disconnect()
 
-    def _update_tables_if_necessary(self, table_name):
+    def _add_table(self, table_name):
         """Add table if it does not exist.
 
         Args:
@@ -269,13 +219,13 @@ class SQLite(Database):
         Returns:
             boolean: True if table already existed, False if not
         """
-        if table_name in self.existing_tables:
-            return self.existing_tables[table_name]
+        if table_name in self.tables:
+            return self.tables[table_name]
         query = f"SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{table_name}';"
         cursor = self._execute(query)
         counter = cursor.fetchone()[0]
         if counter == 0:
-            self.existing_tables.update({table_name: {}})
+            self.tables.update({table_name: {}})
             self._create_table(table_name)
             return False
 
@@ -295,11 +245,11 @@ class SQLite(Database):
             table_name (str): Name of the table
 
         Returns:
-            tuple: names of the column
+            list: names of the column
         """
-        return self.existing_tables[table_name].keys()
+        return list(self.tables[table_name].keys())
 
-    def _update_columns_if_necessary(self, table_name, column_names, column_types):
+    def _add_column(self, table_name, column_names, column_types):
         """Add columns if necessary.
 
         Args:
@@ -308,12 +258,10 @@ class SQLite(Database):
             column_types (list): List of data types for the columns
         """
         current_column_names = self._get_table_column_names(table_name)
-        if isinstance(column_names, str):
-            column_names = [column_names]
         for i, column_name in enumerate(column_names):
             if not column_name in current_column_names and column_name:
                 column_type = column_types[i]
-                self.existing_tables[table_name].update({column_name: column_type})
+                self.tables[table_name].update({column_name: column_type})
                 if column_name != "id":
                     query = f"ALTER TABLE {table_name} ADD COLUMN {column_name} {column_type}"
                     self._execute(query, commit=True)
@@ -332,25 +280,25 @@ class SQLite(Database):
             bool: is this the result of an acknowledged write operation ?
         """
         table_name = experiment_field
-        self._update_tables_if_necessary(table_name)
-        save_doc = dictionary.copy()
-        save_doc.update({"batch": batch})
-        keys = list(save_doc.keys())
-        items = list(save_doc.values())
-        data_types = list(type_to_sqlite(item) for item in items)
-        self._update_columns_if_necessary(table_name, keys, data_types)
-        if len(keys) == 1:
+        self._add_table(table_name)
+        data_dictionary = dictionary.copy()
+        data_dictionary.update({"batch": batch})
+        column_names = list(data_dictionary.keys())
+        values = list(data_dictionary.values())
+        data_types = list(type_to_sqlite(item) for item in values)
+        self._add_column(table_name, column_names, data_types)
+        if len(column_names) == 1:
             placeholder = "?"
-            joint_keys = keys[0]
+            joint_keys = column_names[0]
         else:
-            placeholder = "?," * len(keys)
+            placeholder = "?," * len(column_names)
             placeholder = placeholder[:-1]
-            joint_keys = ", ".join(list(keys))
+            joint_keys = ", ".join(list(column_names))
 
-        fields_setter = [f"{column_name}=?" for column_name in keys]
+        fields_setter = [f"{column_name}=?" for column_name in column_names]
         query = f"INSERT INTO {table_name}"
         query += f" ({joint_keys}) VALUES ({placeholder})"
-        fields_setter = [f"{column_name}=excluded.{column_name}" for column_name in keys]
+        fields_setter = [f"{column_name}=excluded.{column_name}" for column_name in column_names]
         query += f" ON CONFLICT(id) DO UPDATE SET {', '.join(fields_setter)}"
         if field_filters is None:
             query += " WHERE id=excluded.id"
@@ -359,8 +307,8 @@ class SQLite(Database):
                 f"{filter_column}=?" for filter_column, filter_item in field_filters.items()
             ]
             query += f" WHERE {' AND '.join(filter_conditions)}"
-            items += tuple(field_filters.values())
-        self._execute(query, parameters=items, commit=True)
+            values += tuple(field_filters.values())
+        self._execute(query, parameters=values, commit=True)
 
     def load(self, experiment_name, batch, experiment_field, field_filters=None):
         """Load document(s) from the database.
@@ -378,8 +326,8 @@ class SQLite(Database):
             list: list of documents matching query
         """
         table_name = experiment_field
-        if self._update_tables_if_necessary(table_name):
-            column_names = self.existing_tables[table_name].keys()
+        if self._add_table(table_name):
+            column_names = self.tables[table_name].keys()
             query = f"SELECT {', '.join(column_names)} FROM {table_name} WHERE BATCH={batch}"
             if field_filters is not None:
                 filter_conditions = [
@@ -465,7 +413,7 @@ class SQLite(Database):
         """
         table_name = experiment_field
 
-        if self._update_tables_if_necessary(table_name):
+        if self._add_table(table_name):
             query = f"SELECT COUNT(*) FROM {table_name} WHERE BATCH={batch}"
             if field_filters is not None:
                 filter_conditions = [

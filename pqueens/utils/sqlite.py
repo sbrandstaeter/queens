@@ -75,7 +75,6 @@ def np_array_to_binary(np_array):
     return out.read()
 
 
-@sqlite_binary_wrapper
 def np_array_from_binary(binarized_array):
     """Decode binary back to numpy array.
 
@@ -104,7 +103,6 @@ def obj_to_binary(python_object):
     return out
 
 
-@sqlite_binary_wrapper
 def obj_from_binary(binarized_object):
     """Decode binary back to python object.
 
@@ -133,7 +131,6 @@ def pd_dataframe_to_binary(pd_dataframe):
     return out.read()
 
 
-@sqlite_binary_wrapper
 def pd_dataframe_from_binary(binarized_dataframe):
     """Decode binary back to pd dataframe.
 
@@ -161,7 +158,6 @@ def boolean_to_binary(boolean):
     return bytes(boolean)
 
 
-@sqlite_binary_wrapper
 def boolean_from_binary(binarized_boolean):
     """Decode binary back to bool.
 

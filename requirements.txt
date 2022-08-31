@@ -256,8 +256,6 @@ pyparsing==3.0.9
     # via
     #   matplotlib
     #   packaging
-pysqlite3==0.4.7
-    # via -r requirements.in
 pytest==7.1.2
     # via
     #   -r requirements.in
