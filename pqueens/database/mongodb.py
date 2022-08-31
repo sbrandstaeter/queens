@@ -3,17 +3,15 @@ import logging
 
 import numpy as np
 import pandas as pd
-import pymongo
 import xarray as xr
 from pymongo import MongoClient
 
+from pqueens.database.database import Database
 from pqueens.utils.decorators import safe_mongodb_operation
 from pqueens.utils.restructure_data_format import (
     convert_nested_data_to_db_dict,
     convert_nested_db_dicts_to_lists_or_arrays,
 )
-
-from .database import Database
 
 _logger = logging.getLogger(__name__)
 COMPRESS_TYPE = 'compressed array'
@@ -68,7 +66,6 @@ class MongoDB(Database):
         Returns:
             MongoDB (obj): Instance of MongoDB class
         """
-
         db_name = config['database'].get('name')
 
         #  if the database name is not defined in the input file, create a unique name now
@@ -112,7 +109,6 @@ class MongoDB(Database):
     @safe_mongodb_operation
     def _connect(self):
         """(Trying to) connect to the database."""
-
         # Construct the Mongodb client
         self.mongo_client = MongoClient(
             host=[self.db_address], serverSelectionTimeoutMS=1000, connect=False
@@ -132,7 +128,6 @@ class MongoDB(Database):
 
     def _clean_database(self):
         """If desired reset the current database."""
-
         # get list of all existing databases
         complete_db_list = self.mongo_client.list_database_names()
 

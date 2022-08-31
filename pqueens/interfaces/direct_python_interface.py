@@ -3,13 +3,12 @@
 import numpy as np
 from tqdm import tqdm
 
+from pqueens.interfaces.interface import Interface
 from pqueens.tests.integration_tests.example_simulator_functions import (
     example_simulator_function_by_name,
 )
 from pqueens.utils.import_utils import get_module_attribute
 from pqueens.utils.pool_utils import create_pool
-
-from .interface import Interface
 
 
 class DirectPythonInterface(Interface):

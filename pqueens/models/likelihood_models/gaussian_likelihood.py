@@ -81,7 +81,7 @@ class GaussianLikelihood(LikelihoodModel):
         self.normal_distribution = normal_distribution
 
     @classmethod
-    def from_config_create_likelihood(
+    def from_config_create_model(
         cls,
         model_name,
         config,

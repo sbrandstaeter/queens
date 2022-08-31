@@ -25,7 +25,7 @@ def test_create_distribution_normal():
 def test_create_distribution_invalid():
     """Test creation routine of distribution objects."""
     invalid_options = {'distribution': 'UnsupportedType', 'lower_bound': 0.0, 'upper_bound': 1.0}
-    with pytest.raises(InvalidOptionError, match=r'Requested distribution type not supported.*'):
+    with pytest.raises(InvalidOptionError):
         from_config_create_distribution(invalid_options)
 
 

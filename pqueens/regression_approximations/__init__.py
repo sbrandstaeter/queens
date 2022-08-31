@@ -18,44 +18,49 @@ Todo:
  .. _TensorFlow:
      https://www.tensorflow.org/
 """
+from pqueens.utils.import_utils import get_module_class
+
+VALID_TYPES = {
+    'gp_approximation_gpy': [
+        'pqueens.regression_approximations.gp_approximation_gpy',
+        'GPGPyRegression',
+    ],
+    'heteroskedastic_gp': [
+        'pqueens.regression_approximations.heteroskedastic_GPflow',
+        'HeteroskedasticGP',
+    ],
+    'gp_approximation_gpflow': [
+        'pqueens.regression_approximations.gp_approximation_gpflow',
+        'GPFlowRegression',
+    ],
+    'gaussian_bayesian_neural_network': [
+        'pqueens.regression_approximations.bayesian_neural_network',
+        'GaussianBayesianNeuralNetwork',
+    ],
+    'gp_precompiled': [
+        'pqueens.regression_approximations.gp_approximation_precompiled',
+        'GPPrecompiled',
+    ],
+    'gp_approximation_gpflow_svgp': [
+        'pqueens.regression_approximations.gp_approximation_gpflow_svgp',
+        'GPflowSVGP',
+    ],
+}
 
 
-def from_config_create_regression_approximation(config, approx_name, Xtrain, Ytrain):
+def from_config_create_regression_approximation(config, approx_name, x_train, y_train):
     """Create approximation from options dict.
 
     Args:
         config (dict): Dictionary with problem description
         approx_name (str): Name of the approximation model
-        Xtrain (npq.array):     Training inputs
-        Ytrain (np.array):     Training outputs
+        x_train (np.array):     Training inputs
+        y_train (np.array):     Training outputs
 
     Returns:
         regression_approximation (obj): Approximation object
     """
-    from pqueens.utils.import_utils import get_module_attribute
-    from pqueens.utils.valid_options_utils import get_option
-
-    from .bayesian_neural_network import GaussianBayesianNeuralNetwork
-    from .gp_approximation_gpflow import GPFlowRegression
-    from .gp_approximation_gpflow_svgp import GPflowSVGP
-    from .gp_approximation_gpy import GPGPyRegression
-    from .gp_approximation_precompiled import GPPrecompiled
-    from .heteroskedastic_GPflow import HeteroskedasticGP
-
-    approx_dict = {
-        'gp_approximation_gpy': GPGPyRegression,
-        'heteroskedastic_gp': HeteroskedasticGP,
-        'gp_approximation_gpflow': GPFlowRegression,
-        'gaussian_bayesian_neural_network': GaussianBayesianNeuralNetwork,
-        'gp_precompiled': GPPrecompiled,
-        'gp_approximation_gpflow_svgp': GPflowSVGP,
-    }
     approx_options = config[approx_name]
-    if approx_options.get("external_python_module"):
-        module_path = approx_options["external_python_module"]
-        module_attribute = approx_options.get("type")
-        approximation_class = get_module_attribute(module_path, module_attribute)
-    else:
-        approximation_class = get_option(approx_dict, approx_options.get("type"))
-
-    return approximation_class.from_config_create(config, approx_name, Xtrain, Ytrain)
+    approx_class = get_module_class(approx_options, VALID_TYPES)
+    approx_obj = approx_class.from_config_create(config, approx_name, x_train, y_train)
+    return approx_obj

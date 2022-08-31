@@ -215,7 +215,7 @@ class SequentialMonteCarloIterator(Iterator):
         log_likelihood = self.model.evaluate(sample_batch)
         return log_likelihood
 
-    def initialize_run(self):
+    def pre_run(self):
         """Draw initial sample."""
         print("Initialize run.")
         np.random.seed(self.seed)
@@ -401,7 +401,7 @@ class SequentialMonteCarloIterator(Iterator):
             cov_mat *= scale_prop_cov**2
 
             # Rejuvenate
-            self.mcmc_kernel.initialize_run(
+            self.mcmc_kernel.pre_run(
                 self.particles, self.log_likelihood, self.log_prior, self.gamma_cur, cov_mat
             )
             self.mcmc_kernel.core_run()

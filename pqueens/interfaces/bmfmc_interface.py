@@ -24,16 +24,13 @@ class BmfmcInterface(Interface):
         BMFMCInterface (obj): Instance of the BMFMCInterface
     """
 
-    def __init__(self, config, approx_name, variables=None):
+    def __init__(self, config, approx_name):
         """Initialize the interface.
 
         Args:
             config (dict): Dictionary with problem description
             approx_name (str): Name of the approximation model
-            variables (dict): Dictionary with variables
         """
-        # TODO we should think about using the parent class interface here
-        self.variables = variables  # TODO: This is not used at the moment!
         self.config = config
         self.approx_name = approx_name
         self.probabilistic_mapping_obj = None

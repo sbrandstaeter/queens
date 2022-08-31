@@ -29,7 +29,7 @@ def test_bbvi_density_match_high_dimensional(
 
     # mock all parts of the algorithm that has to do with initialization or an underlying model
     mocker.patch(
-        "pqueens.iterators.black_box_variational_bayes.BBVIIterator.initialize_run",
+        "pqueens.iterators.black_box_variational_bayes.BBVIIterator.pre_run",
         return_value=None,
     )
 

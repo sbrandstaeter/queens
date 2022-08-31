@@ -1,3 +1,4 @@
+"""Levenberg Marquardt iterator."""
 import os
 
 import numpy as np
@@ -150,13 +151,12 @@ class BaciLMIterator(Iterator):
 
         return J, f0
 
-    def initialize_run(self):
+    def pre_run(self):
         """Initialize run.
 
         Print console output and optionally open .csv file for results
         and write header.
         """
-
         print("Initialize BACI Levenberg-Marquardt run.")
 
         # produce .csv file and write header
@@ -366,8 +366,9 @@ class BaciLMIterator(Iterator):
         return positions, delta_positions
 
     def printstep(self, i, resnorm, gradnorm, param_delta):
-        """Print iteration data to console and optionally to file. Opens file
-        in append mode, so that file is updated frequently.
+        """Print iteration data to console and optionally to file.
+
+        Opens file in append mode, so that file is updated frequently.
 
         Args:
             i (int): iteration number
