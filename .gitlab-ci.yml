@@ -17,9 +17,8 @@ stages:
   - update_requirements
   - build
   - codechecks
-  - trigger_codechecks_badges
   - tests
-  - trigger_tests_badges
+  - badges
   - pages
   - cleanup
 
@@ -185,39 +184,6 @@ license_check:
     - build_conda_env
 
 #---------------------------------------------------------------------------------------------------
-# Jobs of stage: trigger_codechecks_badges
-#---------------------------------------------------------------------------------------------------
-# Basic setting to trigger pipeline to create documentation badge
-#---------------------------------------------------------------------------------------------------
-.trigger_documentation_badge:
-  extends:
-    - .codechecks_conditions
-  stage: trigger_codechecks_badges
-  needs: ["documentation"]
-  only:
-    refs:
-      - master
-  trigger:
-    project: queens_community/queens_badges/documentation-badge
-#---------------------------------------------------------------------------------------------------
-# Create documentation badge in case of success
-#---------------------------------------------------------------------------------------------------
-trigger_documentation_badge_success:
-  extends:
-    - .trigger_documentation_badge
-  when: on_success
-  variables:
-    SUCCESS_DOCUMENTATION_BUILD: "1"
-#---------------------------------------------------------------------------------------------------
-# Create documentation badge in case of failure
-#---------------------------------------------------------------------------------------------------
-trigger_documentation_badge_fail:
-  extends:
-    - .trigger_documentation_badge
-  when: on_failure
-  variables:
-    SUCCESS_DOCUMENTATION_BUILD: "0"
-#---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------
 # Docker tests
@@ -318,14 +284,45 @@ benchmarks:
     - build_conda_env
     - build_singularity
 #---------------------------------------------------------------------------------------------------
-# Jobs of stage: trigger_tests_badges
+# Jobs of stage: badges
+#---------------------------------------------------------------------------------------------------
+# Basic setting to trigger pipeline to create documentation badge
+#---------------------------------------------------------------------------------------------------
+.trigger_documentation_badge:
+  extends:
+    - .codechecks_conditions
+  stage: badges
+  needs: ["documentation"]
+  only:
+    refs:
+      - master
+  trigger:
+    project: queens_community/queens_badges/documentation-badge
+#---------------------------------------------------------------------------------------------------
+# Create documentation badge in case of success
+#---------------------------------------------------------------------------------------------------
+trigger_documentation_badge_success:
+  extends:
+    - .trigger_documentation_badge
+  when: on_success
+  variables:
+    SUCCESS_DOCUMENTATION_BUILD: "1"
+#---------------------------------------------------------------------------------------------------
+# Create documentation badge in case of failure
+#---------------------------------------------------------------------------------------------------
+trigger_documentation_badge_fail:
+  extends:
+    - .trigger_documentation_badge
+  when: on_failure
+  variables:
+    SUCCESS_DOCUMENTATION_BUILD: "0"
 #---------------------------------------------------------------------------------------------------
 # Basic setting to trigger pipeline to create benchmarks badge
 #---------------------------------------------------------------------------------------------------
 .trigger_benchmarks_badge:
   extends:
     - .benchmarks_conditions
-  stage: trigger_tests_badges
+  stage: badges
   needs: ["benchmarks"]
   trigger:
     project: queens_community/queens_badges/benchmarks-badge
@@ -353,7 +350,7 @@ trigger_benchmarks_badge_fail:
 .trigger_cluster_badge:
   extends:
     - .cluster_tests_conditions
-  stage: trigger_tests_badges
+  stage: badges
   needs: ["cluster_tests"]
   trigger:
     project: queens_community/queens_badges/cluster-badge
