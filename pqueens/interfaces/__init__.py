@@ -12,6 +12,23 @@ essentially then evaluate a regression model themselves.
 The alternatives are the evaluation of simple python function using the
 direct_python_interface or running an external software through the job_interface.
 """
+from pqueens.utils.import_utils import get_module_class
+
+VALID_TYPES = {
+    'job_interface': ['pqueens.interfaces.job_interface', 'JobInterface'],
+    'direct_python_interface': [
+        'pqueens.interfaces.direct_python_interface',
+        'DirectPythonInterface',
+    ],
+    'approximation_interface': [
+        'pqueens.interfaces.approximation_interface',
+        'ApproximationInterface',
+    ],
+    'approximation_interface_mf': [
+        'pqueens.interfaces.approximation_interface_mf',
+        'ApproximationInterfaceMF',
+    ],
+}
 
 
 def from_config_create_interface(interface_name, config):
@@ -24,27 +41,7 @@ def from_config_create_interface(interface_name, config):
     Returns:
         interface:              Instance of one of the derived interface classes
     """
-    from pqueens.interfaces.approximation_interface import ApproximationInterface
-    from pqueens.interfaces.approximation_interface_mf import ApproximationInterfaceMF
-    from pqueens.interfaces.direct_python_interface import DirectPythonInterface
-    from pqueens.interfaces.job_interface import JobInterface
-    from pqueens.utils.import_utils import get_module_attribute
-    from pqueens.utils.valid_options_utils import get_option
-
-    interface_dict = {
-        'job_interface': JobInterface,
-        'direct_python_interface': DirectPythonInterface,
-        'approximation_interface': ApproximationInterface,
-        'approximation_interface_mf': ApproximationInterfaceMF,
-    }
-
     interface_options = config[interface_name]
-    # determine which object to create
-    if interface_options.get("external_python_module"):
-        module_path = interface_options["external_python_module"]
-        module_attribute = interface_options.get("type")
-        interface_class = get_module_attribute(module_path, module_attribute)
-    else:
-        interface_class = get_option(interface_dict, interface_options.get("type"))
-
-    return interface_class.from_config_create_interface(interface_name, config)
+    interface_class = get_module_class(interface_options, VALID_TYPES)
+    interface = interface_class.from_config_create_interface(interface_name, config)
+    return interface

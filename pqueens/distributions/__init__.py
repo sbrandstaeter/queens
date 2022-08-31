@@ -1,4 +1,12 @@
 """Distributions."""
+from pqueens.utils.import_utils import get_module_class
+
+VALID_TYPES = {
+    'normal': ["pqueens.distributions.normal", "NormalDistribution"],
+    'uniform': ["pqueens.distributions.uniform", "UniformDistribution"],
+    'lognormal': ["pqueens.distributions.lognormal", "LogNormalDistribution"],
+    'beta': ["pqueens.distributions.beta", "BetaDistribution"],
+}
 
 
 def from_config_create_distribution(distribution_options):
@@ -10,29 +18,6 @@ def from_config_create_distribution(distribution_options):
     Returns:
         distribution: Distribution object
     """
-    from pqueens.utils.import_utils import get_module_attribute
-    from pqueens.utils.valid_options_utils import get_option
-
-    from .beta import BetaDistribution
-    from .lognormal import LogNormalDistribution
-    from .normal import NormalDistribution
-    from .uniform import UniformDistribution
-
-    valid_options = {
-        'normal': NormalDistribution,
-        'uniform': UniformDistribution,
-        'lognormal': LogNormalDistribution,
-        'beta': BetaDistribution,
-    }
-
-    if distribution_options.get("external_python_module"):
-        module_path = distribution_options["external_python_module"]
-        module_attribute = distribution_options.get("distribution")
-        distribution_class = get_module_attribute(module_path, module_attribute)
-    else:
-        distribution_class = get_option(
-            valid_options,
-            distribution_options.get("distribution"),
-            error_message="Requested distribution type not supported.",
-        )
-    return distribution_class.from_config_create_distribution(distribution_options)
+    distribution_class = get_module_class(distribution_options, VALID_TYPES, "distribution")
+    distribution = distribution_class.from_config_create_distribution(distribution_options)
+    return distribution
