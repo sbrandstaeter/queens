@@ -115,7 +115,7 @@ class BetaDistribution(Distribution):
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated
         """
         raise NotImplementedError(
-            'This method is currently not implemented for the beta ' 'distribution.'
+            'This method is currently not implemented for the beta distribution.'
         )
 
     def pdf(self, x):

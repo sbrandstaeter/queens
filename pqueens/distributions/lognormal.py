@@ -37,13 +37,13 @@ class LogNormalDistribution(Distribution):
 
     @classmethod
     def from_config_create_distribution(cls, distribution_options):
-        """Create beta distribution object from parameter dictionary.
+        """Create lognormal distribution object from parameter dictionary.
 
         Args:
             distribution_options (dict): Dictionary with distribution description
 
         Returns:
-            distribution: BetaDistribution object
+            distribution: LogNormalDistribution object
         """
         normal_mean = distribution_options['normal_mean']
         normal_covariance = distribution_options['normal_covariance']

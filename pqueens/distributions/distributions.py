@@ -1,6 +1,8 @@
 """Distributions."""
 import abc
 
+import numpy as np
+
 
 class Distribution:
     """Base class for probability distributions.
@@ -84,9 +86,10 @@ class Distribution:
             parameters (dict): Checked parameters
         """
         for name, value in parameters.items():
-            if value <= 0:
+            if (np.array(value) <= 0).any():
                 raise ValueError(
-                    f"The parameter {name} has to be positive. " f"You specified {name}={value}."
+                    f"The parameter \'{name}\' has to be positive. "
+                    f"You specified {name}={value}."
                 )
 
     @staticmethod
@@ -97,7 +100,7 @@ class Distribution:
             lower_bound (np.ndarray): Lower bound(s) of distribution
             upper_bound (np.ndarray): Upper bound(s) of distribution
         """
-        if (upper_bound <= lower_bound).all():
+        if (upper_bound <= lower_bound).any():
             raise ValueError(
                 f"Lower bound must be smaller than upper bound. "
                 f"You specified lower_bound={lower_bound} and upper_bound={upper_bound}"
