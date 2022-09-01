@@ -401,6 +401,7 @@ pages:
     - documentation
     - ubuntu_full_test_suite_master
   script:
+    - mkdir public
     - mv html_coverage_report public/coverage_report
     - mv doc/build/html public/docs
   artifacts:
