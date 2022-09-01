@@ -18,6 +18,7 @@ stages:
   - build
   - codechecks
   - tests
+  - badges
   - pages
   - cleanup
 
@@ -69,19 +70,59 @@ stages:
   tags:
     - queens-ubuntu
 #----------------------------------------------------------------------------------------------
-.codechecks_settings:
-  extends:
-    - .ubuntu_settings
-  stage: codechecks
+.codechecks_conditions:
   except:
     variables:
       - $CLUSTER_TESTS == "1"
       - $BENCHMARKS == "1"
+#----------------------------------------------------------------------------------------------
+.codechecks_settings:
+  extends:
+    - .ubuntu_settings
+    - .codechecks_conditions
+  stage: codechecks
   tags:
     - codechecks
 
 #---------------------------------------------------------------------------------------------------
-# Jobs of stage: build conda and remove
+# Jobs of stage: update_requirements
+#---------------------------------------------------------------------------------------------------
+update:
+  stage: update_requirements
+  script:
+    - cd $CI_PROJECT_DIR
+    # create simply environment to use pip-tools
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
+    - conda activate piptools-env
+    - pip-compile --upgrade
+    - conda deactivate
+    - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
+    - GITLAB_USER_NAME=project_${CI_PROJECT_ID}_bot
+    - git config --global user.name "${AUTO_COMMITTER_NAME}"
+    - git config --global user.email "${AUTO_COMMITTER_EMAIL}"
+    # Checkout to a new branch so we push the changes to a new branch
+    - git branch -f $UPDATE_BRANCH_NAME && git checkout $UPDATE_BRANCH_NAME
+    - git add requirements.txt
+    - git commit -m "Update requirements based on pip-tools"
+    - git push --force "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
+    - >
+      BODY="{\"id\": \"${CI_PROJECT_ID}\",
+      \"source_branch\": \"${UPDATE_BRANCH_NAME}\",
+      \"target_branch\": \"${CI_DEFAULT_BRANCH}\",
+      \"remove_source_branch\": true,
+      \"title\": \"Pip-tools update $(date '+%Y-%m-%d')\"}"
+    - >
+      MR_IID=$(curl -sS -X POST "https://gitlab.lrz.de/api/v4/projects/${CI_PROJECT_ID}/merge_requests" \
+              --header "PRIVATE-TOKEN:${GIT_PUSH_TOKEN}" \
+              --header "Content-Type: application/json" \
+              --data "${BODY}" \
+      | jq '.iid')
+    - echo "Opened MR !${MR_IID}"
+  rules:
+    - if: $UPDATE_REQUIREMENTS == "1"
+
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: build
 #---------------------------------------------------------------------------------------------------
 build_conda_env:
   extends:
@@ -100,20 +141,6 @@ build_conda_env:
     when: always
     expire_in: 4 weeks
 
-remove_conda_env_and_singularity_image:
-  stage: cleanup
-  script:
-    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
-    - conda env remove -n queens-$CI_PIPELINE_ID
-    - rm /tmp/singularity_image.sif-$CI_PIPELINE_ID
-  when: always
-  variables:
-    GIT_STRATEGY: none
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
-  tags:
-    - queens-build
 
 build_singularity:
   stage: build
@@ -171,7 +198,7 @@ documentation:
     - build_conda_env
 #----------------------------------------------------------------------------------------------
 license_check:
-  # check licence compliance
+  # check license compliance
   extends:
     - .codechecks_settings
   stage: codechecks
@@ -186,34 +213,34 @@ license_check:
 # Docker tests
 #---------------------------------------------------------------------------------------------------
 docker_full_test_suite:
-  stage: tests
-  extends:
-    - .docker_settings
-  script:
-    - pytest -m "unit_tests or integration_tests" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
-  needs: []
-  when: always
+ stage: tests
+ extends:
+   - .docker_settings
+ script:
+   - pytest -m "unit_tests or integration_tests" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
+ needs: []
+ when: always
 #---------------------------------------------------------------------------------------------------
 # ubuntu tests
 #---------------------------------------------------------------------------------------------------
 ubuntu_full_test_suite_develop:
-  stage: tests
-  extends:
-    - .ubuntu_settings
-  script:
-    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-    - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
-  coverage: '/TOTAL.*\s+(\d+%)/'
-  needs:
-    - build_conda_env
-    - build_singularity
-  except:
-    variables:
-      - $CLUSTER_TESTS == "1"
-      - $BENCHMARKS == "1"
-    refs:
-      - master
-#----------------------------------------------------------------------------------------------
+ stage: tests
+ extends:
+   - .ubuntu_settings
+ script:
+   - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
+   - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
+ coverage: '/TOTAL.*\s+(\d+%)/'
+ needs:
+   - build_conda_env
+   - build_singularity
+ except:
+   variables:
+     - $CLUSTER_TESTS == "1"
+     - $BENCHMARKS == "1"
+   refs:
+     - master
+#---------------------------------------------------------------------------------------------------
 # Master tests
 #---------------------------------------------------------------------------------------------------
 ubuntu_full_test_suite_master:
@@ -240,70 +267,127 @@ ubuntu_full_test_suite_master:
     variables:
       - $CLUSTER_TESTS == "1"
       - $BENCHMARKS == "1"
-#----------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 # Weekly tests
 #---------------------------------------------------------------------------------------------------
+# Cluster tests
+#---------------------------------------------------------------------------------------------------
+.cluster_tests_conditions:
+  only:
+    variables:
+    - $CLUSTER_TESTS == "1"
+#---------------------------------------------------------------------------------------------------
 cluster_tests:
-  stage: tests
   extends:
     - .ubuntu_settings
+    - .cluster_tests_conditions
+  stage: tests
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
     - pytest -m lnm_cluster --no-cov
   needs:
     - build_conda_env
     - build_singularity
+#---------------------------------------------------------------------------------------------------
+# Benchmarks
+#---------------------------------------------------------------------------------------------------
+.benchmarks_conditions:
   only:
     variables:
-    - $CLUSTER_TESTS == "1"
+    - $BENCHMARKS == "1"
 #---------------------------------------------------------------------------------------------------
 benchmarks:
   stage: tests
   extends:
     - .ubuntu_settings
+    - .benchmarks_conditions
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
     - pytest -m benchmark --no-cov
   needs:
     - build_conda_env
     - build_singularity
-  only:
-    variables:
-    - $BENCHMARKS == "1"
+
 #---------------------------------------------------------------------------------------------------
-update:
-  stage: update_requirements
-  script:
-    - cd $CI_PROJECT_DIR
-    # create simply environment to use pip-tools
-    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
-    - conda activate piptools-env
-    - pip-compile --upgrade
-    - conda deactivate
-    - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
-    - GITLAB_USER_NAME=project_${CI_PROJECT_ID}_bot
-    - git config --global user.name "${AUTO_COMMITTER_NAME}"
-    - git config --global user.email "${AUTO_COMMITTER_EMAIL}"
-    # Checkout to a new branch so we push the changes to a new branch
-    - git branch -f $UPDATE_BRANCH_NAME && git checkout $UPDATE_BRANCH_NAME
-    - git add requirements.txt
-    - git commit -m "Update requirements based on pip-tools"
-    - git push --force "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
-    - >
-      BODY="{\"id\": \"${CI_PROJECT_ID}\",
-      \"source_branch\": \"${UPDATE_BRANCH_NAME}\",
-      \"target_branch\": \"${CI_DEFAULT_BRANCH}\",
-      \"remove_source_branch\": true,
-      \"title\": \"Pip-tools update $(date '+%Y-%m-%d')\"}"
-    - >
-      MR_IID=$(curl -sS -X POST "https://gitlab.lrz.de/api/v4/projects/${CI_PROJECT_ID}/merge_requests" \
-              --header "PRIVATE-TOKEN:${GIT_PUSH_TOKEN}" \
-              --header "Content-Type: application/json" \
-              --data "${BODY}" \
-      | jq '.iid')
-    - echo "Opened MR !${MR_IID}"
-  rules:
-    - if: $UPDATE_REQUIREMENTS == "1"
+# Jobs of stage: badges
+#---------------------------------------------------------------------------------------------------
+# Basic setting to trigger the creation of a documentation badge in a downstream project
+.trigger_documentation_badge:
+  extends:
+    - .codechecks_conditions
+  stage: badges
+  needs: ["documentation"]
+  only:
+    refs:
+      - master
+  trigger:
+    project: queens_community/queens_badges/documentation-badge
+#---------------------------------------------------------------------------------------------------
+# Create documentation badge in case of a successful documentation job
+trigger_documentation_badge_success:
+  extends:
+    - .trigger_documentation_badge
+  when: on_success
+  variables:
+    SUCCESS_DOCUMENTATION_BUILD: "1"
+#---------------------------------------------------------------------------------------------------
+# Create documentation badge in case of a failed documentation job
+trigger_documentation_badge_fail:
+  extends:
+    - .trigger_documentation_badge
+  when: on_failure
+  variables:
+    SUCCESS_DOCUMENTATION_BUILD: "0"
+#---------------------------------------------------------------------------------------------------
+# Basic setting to trigger the creation of a benchmarks badge in a downstream project
+.trigger_benchmarks_badge:
+  extends:
+    - .benchmarks_conditions
+  stage: badges
+  needs: ["benchmarks"]
+  trigger:
+    project: queens_community/queens_badges/benchmarks-badge
+#---------------------------------------------------------------------------------------------------
+# Create benchmarks badge in case of a successful benchmarks job
+trigger_benchmarks_badge_success:
+  extends:
+    - .trigger_benchmarks_badge
+  when: on_success
+  variables:
+    SUCCESS_BENCHMARKS_PIPELINE: "1"
+#---------------------------------------------------------------------------------------------------
+# Create benchmarks badge in case of a failed benchmarks job
+trigger_benchmarks_badge_fail:
+  extends:
+    - .trigger_benchmarks_badge
+  when: on_failure
+  variables:
+    SUCCESS_BENCHMARKS_PIPELINE: "0"
+#---------------------------------------------------------------------------------------------------
+# Basic setting to trigger the creation of a cluster badge in a downstream project
+.trigger_cluster_badge:
+  extends:
+    - .cluster_tests_conditions
+  stage: badges
+  needs: ["cluster_tests"]
+  trigger:
+    project: queens_community/queens_badges/cluster-badge
+#---------------------------------------------------------------------------------------------------
+# Create cluster badge in case of a successful cluster job
+trigger_cluster_badge_success:
+  extends:
+    - .trigger_cluster_badge
+  when: on_success
+  variables:
+    SUCCESS_CLUSTER_PIPELINE: "1"
+#---------------------------------------------------------------------------------------------------
+# Create cluster badge in case of a failed cluster job
+trigger_cluster_badge_fail:
+  extends:
+    - .trigger_cluster_badge
+  when: on_failure
+  variables:
+    SUCCESS_CLUSTER_PIPELINE: "0"
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: pages
@@ -316,18 +400,9 @@ pages:
   dependencies:
     - documentation
     - ubuntu_full_test_suite_master
-  before_script:
-    # use the base environment for badge creation
-    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
-    - conda activate base
-    - conda install pip
-    - pip install anybadge
-    - mkdir public
   script:
     - mv html_coverage_report public/coverage_report
     - mv doc/build/html public/docs
-    # Create sphinx badge
-    - anybadge -l sphinx -v passed --color=green -f public/sphinx-badge.svg
   artifacts:
     # store the public path in artifact
     # this is needed since in a subsequent deploy stage (automatically generated by GitLab)
@@ -343,3 +418,21 @@ pages:
     variables:
       - $CLUSTER_TESTS == "1"
       - $BENCHMARKS == "1"
+
+#---------------------------------------------------------------------------------------------------
+# Jobs of stage: cleanup
+#---------------------------------------------------------------------------------------------------
+remove_conda_env_and_singularity_image:
+  stage: cleanup
+  script:
+    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
+    - conda env remove -n queens-$CI_PIPELINE_ID
+    - rm /tmp/singularity_image.sif-$CI_PIPELINE_ID
+  when: always
+  variables:
+    GIT_STRATEGY: none
+  only:
+    variables:
+      - $UBUNTU_TESTS == "1"
+  tags:
+    - queens-build
