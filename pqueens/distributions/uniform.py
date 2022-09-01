@@ -144,8 +144,8 @@ class UniformDistribution(Distribution):
         x = x.reshape(-1, self.dimension)
         # Check if positions are within bounds of the uniform distribution
         within_bounds = (x >= self.lower_bound).all(axis=1) * (x <= self.upper_bound).all(axis=1)
-        logpdf = within_bounds * self.pdf_const
-        return logpdf
+        pdf = within_bounds * self.pdf_const
+        return pdf
 
     def ppf(self, q):
         """Percent point function (inverse of cdf — quantiles).

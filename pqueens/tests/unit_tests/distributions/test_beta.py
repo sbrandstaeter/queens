@@ -90,7 +90,7 @@ def test_init_beta_wrong_interval(lower_bound, shape_a, shape_b):
 @pytest.mark.unit_tests
 def test_init_beta_negative_shape(lower_bound, shape_a, shape_b):
     """Test init method of Beta Distribution class."""
-    with pytest.raises(ValueError, match=r'The parameter b has to be positive.*'):
+    with pytest.raises(ValueError, match=r'The parameter \'b\' has to be positive.*'):
         distribution_options = {
             'distribution': 'beta',
             'lower_bound': lower_bound,

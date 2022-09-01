@@ -1,6 +1,8 @@
 """Distributions."""
 import abc
 
+import numpy as np
+
 
 class Distribution:
     """Base class for probability distributions.
@@ -84,9 +86,10 @@ class Distribution:
             parameters (dict): Checked parameters
         """
         for name, value in parameters.items():
-            if (value <= 0).any():
+            if (np.array(value) <= 0).any():
                 raise ValueError(
-                    f"The parameter {name} has to be positive. " f"You specified {name}={value}."
+                    f"The parameter \'{name}\' has to be positive. "
+                    f"You specified {name}={value}."
                 )
 
     @staticmethod

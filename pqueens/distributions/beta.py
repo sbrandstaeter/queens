@@ -52,8 +52,8 @@ class BetaDistribution(Distribution):
         """
         lower_bound = np.array(distribution_options['lower_bound']).reshape(-1)
         upper_bound = np.array(distribution_options['upper_bound']).reshape(-1)
-        a = np.array(distribution_options['a'])
-        b = np.array(distribution_options['b'])
+        a = distribution_options['a']
+        b = distribution_options['b']
 
         super().check_positivity({'a': a, 'b': b})
         super().check_bounds(lower_bound, upper_bound)
@@ -115,7 +115,7 @@ class BetaDistribution(Distribution):
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated
         """
         raise NotImplementedError(
-            'This method is currently not implemented for the beta ' 'distribution.'
+            'This method is currently not implemented for the beta distribution.'
         )
 
     def pdf(self, x):
