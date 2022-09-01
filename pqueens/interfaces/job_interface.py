@@ -225,7 +225,7 @@ class JobInterface(Interface):
 
         return process_id
 
-    def count_jobs(self, field_filters={}):
+    def count_jobs(self, field_filters=None):
         """Count jobs matching field_filters in the database.
 
         default: count all jobs in the database
@@ -243,7 +243,7 @@ class JobInterface(Interface):
 
         return total_num_jobs
 
-    def load_jobs(self, field_filters={}):
+    def load_jobs(self, field_filters=None):
         """Load jobs that match field_filters from the jobs database.
 
         Returns:
@@ -272,7 +272,7 @@ class JobInterface(Interface):
             job,
             self.experiment_name,
             'jobs_' + self.driver_name,
-            str(self.batch_number),
+            self.batch_number,
             {'id': job['id'], 'expt_dir': self.output_dir, 'expt_name': self.experiment_name},
         )
 
@@ -300,10 +300,10 @@ class JobInterface(Interface):
             'expt_dir': self.output_dir,
             'expt_name': self.experiment_name,
             'resource': resource_name,
-            'status': None,  # TODO: before: 'new'
-            'submit time': time.time(),
-            'start time': None,
-            'end time': None,
+            'status': "",  # TODO: before: 'new'
+            'submit_time': time.time(),
+            'start_time': 0.0,
+            'end_time': 0.0,
             'driver_name': self.driver_name,
         }
 
@@ -422,9 +422,9 @@ class JobInterface(Interface):
                         # determine if this a completed job and return if yes
                         if completed:
                             current_check_job['status'] = 'complete'
-                            current_check_job['end time'] = time.time()
+                            current_check_job['end_time'] = time.time()
                             computing_time = (
-                                current_check_job['end time'] - current_check_job['start time']
+                                current_check_job['end_time'] - current_check_job['start_time']
                             )
                             _logger.info(
                                 f'Successfully completed job {current_check_job["id"]} '

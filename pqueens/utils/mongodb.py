@@ -1,11 +1,11 @@
+"""MongoDB utils."""
 import numpy as np
 
 COMPRESS_TYPE = 'uncompressed array'
 
 
 def convert_array_to_db_dict(numpy_array):
-    """Convert numpy arrays in a dictionary format that can be understood by
-    MongoDb.
+    """Convert numpy arrays in a dictionary format for MongoDb.
 
     Args:
         numpy_array (np.array): array to compress
@@ -37,8 +37,7 @@ def convert_db_dict_to_array(db_dict):
 
 
 def convert_nested_data_to_db_dict(u_container):
-    """Restructure nested input data formats into dictionaries that are
-    compatible with the MongoDB.
+    """Restructure nested input data into dictionaries for MongoDB.
 
     Args:
         u_container (dict,list): list or dict with data to compress
@@ -51,7 +50,7 @@ def convert_nested_data_to_db_dict(u_container):
         for key, value in u_container.items():
 
             # call method recursive in case another dict is encountered
-            if isinstance(value, dict) or isinstance(value, list):
+            if isinstance(value, (dict, list)):
                 cdict[key] = convert_nested_data_to_db_dict(value)
 
             # convert np.array to compatible dict
@@ -63,10 +62,10 @@ def convert_nested_data_to_db_dict(u_container):
 
         return cdict
 
-    elif isinstance(u_container, list):
+    if isinstance(u_container, list):
         clist = []
         for value in u_container:
-            if isinstance(value, dict) or isinstance(value, list):
+            if isinstance(value, (dict, list)):
                 clist.append(convert_nested_data_to_db_dict(value))
             else:
                 if isinstance(value, np.ndarray):
@@ -78,8 +77,9 @@ def convert_nested_data_to_db_dict(u_container):
 
 
 def convert_nested_db_dicts_to_lists_or_arrays(db_data):
-    """Restructure nested dictionaries in the MongoDb compatible format to
-    return the original input format of either list or dict type.
+    """Restructure nested dictionaries in the MongoDb compatible format.
+
+    Return the original input format of either list or dict type.
 
     Args:
         db_data (dict,list): dict or list in MongoDb compatible format
@@ -91,12 +91,12 @@ def convert_nested_db_dicts_to_lists_or_arrays(db_data):
         if 'ctype' in db_data and db_data['ctype'] == COMPRESS_TYPE:
             try:
                 return convert_db_dict_to_array(db_data)
-            except:
-                raise Exception('Container does not contain a valid array.')
+            except Exception as exception:
+                raise Exception('Container does not contain a valid array.') from exception
         else:
             udict = {}
             for key, value in db_data.items():
-                if isinstance(value, dict) or isinstance(value, list):
+                if isinstance(value, (dict, list)):
                     udict[key] = convert_nested_db_dicts_to_lists_or_arrays(value)
                 else:
                     udict[key] = value
@@ -105,7 +105,7 @@ def convert_nested_db_dicts_to_lists_or_arrays(db_data):
     elif isinstance(db_data, list):
         ulist = []
         for value in db_data:
-            if isinstance(value, dict) or isinstance(value, list):
+            if isinstance(value, (dict, list)):
                 ulist.append(convert_nested_db_dicts_to_lists_or_arrays(value))
             else:
                 ulist.append(value)

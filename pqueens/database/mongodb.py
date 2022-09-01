@@ -1,3 +1,4 @@
+"""MongoDB module."""
 import getpass
 import logging
 
@@ -7,11 +8,12 @@ import xarray as xr
 from pymongo import MongoClient
 
 from pqueens.database.database import Database
-from pqueens.utils.decorators import safe_mongodb_operation
-from pqueens.utils.restructure_data_format import (
+from pqueens.utils.decorators import safe_operation
+from pqueens.utils.mongodb import (
     convert_nested_data_to_db_dict,
     convert_nested_db_dicts_to_lists_or_arrays,
 )
+from pqueens.utils.print_utils import get_str_table
 
 _logger = logging.getLogger(__name__)
 COMPRESS_TYPE = 'compressed array'
@@ -27,11 +29,8 @@ class MongoDB(Database):
         db_address (str): Database address
         db_list (list): List with names of existing QUEENS databases
         db_already_existent (bool): Boolean which is True if database name already exists
-        drop_alle_existing_dbs (bool): Flag to drop all user databases if desired
+        drop_all_existing_dbs (bool): Flag to drop all user databases if desired
         mongo_client (MongoClient): Mongodb client object
-        max_number_of_attempts (int): Max number of attempts to perform a db action
-    Returns:
-        MongoDB (obj): Instance of MongoDB class
     """
 
     def __init__(
@@ -44,8 +43,21 @@ class MongoDB(Database):
         db_already_existent=False,
         drop_all_existing_dbs=False,
         mongo_client=None,
-        max_number_of_attempts=10,
     ):
+        """Initialize mongodb object.
+
+        Args:
+            db_name (str): Name of the current database
+            reset_existing_db (boolean): Flag to reset the database if necessary
+            db_obj (obj): Mongo DB database object
+            db_address (str): Database address
+            db_list (list): List with names of existing QUEENS databases
+            db_already_existent (bool): Boolean which is True if database name already exists
+            drop_all_existing_dbs (bool): Flag to drop all user databases if desired
+            mongo_client (MongoClient): Mongodb client object
+        Returns:
+            MongoDB (obj): Instance of MongoDB class
+        """
         super().__init__(db_name, reset_existing_db)
         self.db_address = db_address
         self.db_obj = db_obj
@@ -53,7 +65,6 @@ class MongoDB(Database):
         self.db_already_existent = db_already_existent
         self.drop_all_existing_dbs = drop_all_existing_dbs
         self.mongo_client = mongo_client
-        self.max_number_of_attempts = max_number_of_attempts
 
     @classmethod
     def from_config_create_database(cls, config):
@@ -74,7 +85,7 @@ class MongoDB(Database):
             try:
                 db_name_suffix = config['global_settings'].get('experiment_name', 'dummy')
             # in case global settings do not exist
-            except KeyError as key_error:
+            except KeyError:
                 db_name_suffix = 'dummy'
                 _logger.warning(f"Global settings missing, db_suffix was set to 'dummy'")
 
@@ -85,7 +96,6 @@ class MongoDB(Database):
         reset_existing_db = config['database'].get('reset_existing_db', True)
         drop_all_existing_dbs = config['database'].get('drop_all_existing_dbs', False)
         db_address = config['database'].get('address', 'localhost:27017')
-        max_number_of_attempts = config['database'].get('max_number_of_attempts', 10)
         db_name_prefix = db_name
 
         # Pass empty arguments. These are later established in the _connect function
@@ -95,20 +105,19 @@ class MongoDB(Database):
         db_already_existent = False
 
         return cls(
-            db_name,
-            reset_existing_db,
-            db_obj,
-            db_address,
-            db_list,
-            db_already_existent,
-            drop_all_existing_dbs,
-            mongo_client,
-            max_number_of_attempts,
+            db_name=db_name,
+            reset_existing_db=reset_existing_db,
+            db_obj=db_obj,
+            db_address=db_address,
+            db_list=db_list,
+            db_already_existent=db_already_existent,
+            drop_all_existing_dbs=drop_all_existing_dbs,
+            mongo_client=mongo_client,
         )
 
-    @safe_mongodb_operation
+    @safe_operation
     def _connect(self):
-        """(Trying to) connect to the database."""
+        """Connect to the database."""
         # Construct the Mongodb client
         self.mongo_client = MongoClient(
             host=[self.db_address], serverSelectionTimeoutMS=1000, connect=False
@@ -122,8 +131,7 @@ class MongoDB(Database):
         _logger.info(f"Connected to {self.db_address}")
 
     def _disconnect(self):
-        """MongoDB automatically closed connections so that there is not need
-        to close the connection."""
+        """Mongodb automatically closes the connection."""
         _logger.info(f"Disconnected the database")
 
     def _clean_database(self):
@@ -151,13 +159,11 @@ class MongoDB(Database):
         _logger.info(f"{db_name} was dropped")
 
     def _delete_databases_by_prefix(self, prefix):
-        """Remove databases from the database server of which the name starts
-        with the prefix.
+        """Remove databases from the database server by prefix.
 
         Args:
             prefix (str): Databases with this prefix in the name are deleted
         """
-
         # get list of all existing databases
         complete_db_list = self.mongo_client.list_database_names()
 
@@ -169,8 +175,8 @@ class MongoDB(Database):
 
         _logger.info(f"Databases with prefix {prefix} were deleted!")
 
-    @safe_mongodb_operation
-    def save(self, save_doc, experiment_name, experiment_field, batch, field_filters={}):
+    @safe_operation
+    def save(self, save_doc, experiment_name, experiment_field, batch, field_filters=None):
         """Save a document to the database.
 
         Any numpy arrays in the document are compressed so that they can be
@@ -182,12 +188,14 @@ class MongoDB(Database):
             save_doc (dict,list):       document to be saved to the db
             experiment_name (string):   experiment the data belongs to
             experiment_field (string):  experiment field data belongs to
-            batch (string):             batch the data belongs to
+            batch (int):                batch the data belongs to
             field_filters (dict):       filter to find appropriate document
                                         to create or update
         Returns:
             bool: is this the result of an acknowledged write operation ?
         """
+        if field_filters is None:
+            field_filters = {}
         self._pack_labeled_data(save_doc)
 
         save_doc = convert_nested_data_to_db_dict(save_doc)
@@ -203,27 +211,29 @@ class MongoDB(Database):
         result = dbcollection.replace_one(field_filters, save_doc, upsert=True)
         return result.acknowledged
 
-    @safe_mongodb_operation
-    def count_documents(self, experiment_name, batch, experiment_field, field_filters={}):
+    @safe_operation
+    def count_documents(self, experiment_name, batch, experiment_field, field_filters=None):
         """Return number of document(s) in collection.
 
         Args:
             experiment_name (string):  experiment the data belongs to
             experiment_field (string): experiment field data belongs to
-            batch (string):            batch the data belongs to
+            batch (int):               batch the data belongs to
             field_filters (dict):      filter to find appropriate document(s)
                                        to load
 
         Returns:
             int: number of documents in collection
         """
+        if field_filters is None:
+            field_filters = {}
 
         dbcollection = self.db_obj[experiment_name][batch][experiment_field]
         doc_count = dbcollection.count_documents(field_filters)
 
         return doc_count
 
-    @safe_mongodb_operation
+    @safe_operation
     def estimated_count(self, experiment_name, batch, experiment_field):
         """Return estimated count of document(s) in collection.
 
@@ -231,20 +241,19 @@ class MongoDB(Database):
         Args:
             experiment_name (string):  experiment the data belongs to
             experiment_field (string): experiment field data belongs to
-            batch (string):            batch the data belongs to
+            batch (int):               batch the data belongs to
             field_filters (dict):      filter to find appropriate document(s)
                                        to load
 
         Returns:
             int: number of documents in collection
         """
-
         dbcollection = self.db_obj[experiment_name][batch][experiment_field]
         doc_count = dbcollection.estimated_document_count()
 
         return doc_count
 
-    @safe_mongodb_operation
+    @safe_operation
     def load(self, experiment_name, batch, experiment_field, field_filters=None):
         """Load document(s) from the database.
 
@@ -253,14 +262,13 @@ class MongoDB(Database):
         Args:
             experiment_name (string):  experiment the data belongs to
             experiment_field (string): experiment field data belongs to
-            batch (string):            batch the data belongs to
+            batch (int):               batch the data belongs to
             field_filters (dict):      filter to find appropriate document(s)
                                        to load
 
         Returns:
             list: list of documents matching query
         """
-
         if field_filters is None:
             field_filters = {}
 
@@ -276,17 +284,19 @@ class MongoDB(Database):
         else:
             return [convert_nested_db_dicts_to_lists_or_arrays(dbdoc) for dbdoc in dbdocs]
 
-    @safe_mongodb_operation
-    def remove(self, experiment_name, experiment_field, batch, field_filters={}):
+    @safe_operation
+    def remove(self, experiment_name, experiment_field, batch, field_filters=None):
         """Remove a list of documents from the database.
 
         Args:
             experiment_name (string):  experiment the data belongs to
             experiment_field (string): experiment field data belongs to
-            batch (string):            batch the data belongs to
+            batch (int):               batch the data belongs to
             field_filters (dict):      filter to find appropriate document(s)
                                        to delete
         """
+        if field_filters is None:
+            field_filters = {}
         self.db_obj[experiment_name][batch][experiment_field].delete_many(field_filters)
 
     def _pack_labeled_data(self, save_doc):
@@ -298,9 +308,7 @@ class MongoDB(Database):
         if isinstance(save_doc.get('result', None), pd.DataFrame):
             self._pack_pandas_dataframe(save_doc)
 
-        elif isinstance(save_doc.get('result', None), xr.DataArray) or isinstance(
-            save_doc.get('result', None), xr.Dataset
-        ):
+        elif isinstance(save_doc.get('result', None), (xr.DataArray, xr.Dataset)):
             raise Exception('Packing method for xarrays not implemented.')
 
     @staticmethod
@@ -327,12 +335,12 @@ class MongoDB(Database):
         save_doc['result'] = result.tolist()
 
     def _unpack_labeled_data(self, dbdocs):
-        """Unpack data from database to labeled data format (e.g. pandas
-        DataFrame or xarrays)
+        """Unpack data from database to labeled data format.
 
         Args:
             dbdocs (list): documents from database
         """
+        # TODO: we should use a return statement, reference based is a dangerous game
         for idx in range(len(dbdocs)):
             current_doc = dbdocs[idx]
             current_result = current_doc.get('result', None)
@@ -373,17 +381,11 @@ class MongoDB(Database):
         return data, index
 
     def __str__(self):
-        """Internal python function which creates a string describing the
-        MongoDB object.
-
-        Is usefull for debugging
+        """Creates a string describing the MongoDB object.
 
         Returns:
             string (str): MongoDB obj description
         """
-        string = "\n" + "-" * 80
-        string += "\nQUEENS MongoDB object wrapper\n\n"
-        string += "Database address:\t" + self.db_address + "\n"
-        string += "Database name:\t\t" + self.db_name + "\n"
-        string += "-" * 80 + "\n"
-        return string
+        name = "QUEENS MongoDB object wrapper"
+        print_dict = {"Database address": self.db_address, "Database name ": self.db_name}
+        return get_str_table(name, print_dict)

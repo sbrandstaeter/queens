@@ -2,11 +2,33 @@
 from collections import namedtuple
 
 
-def findkeys(dictionary, key):
+def get_value_in_nested_dictionary(dictionary, key, default=None):
+    """Get a value from unique key in a nested dictionary.
+
+    Args:
+        key (str): String of key in dictionary we are interested in
+        dictionary (dict): Actual dictionary variable
+        default(obj, optional): Default value if key is not found
+    Returns:
+        unique value in dictionary
+    """
+    list_of_values = list(find_keys(dictionary, key))
+
+    if len(list_of_values) > 1:
+        raise KeyError(f"Multiple keys '{key}' in the nested dictionary:\n {dictionary}")
+
+    if list_of_values:
+        # Return the unique value
+        return list_of_values[0]
+
+    return default
+
+
+def find_keys(dictionary, key):
     """Get all the values of a 'key' in a nested dictionary.
 
     Args:
-        key ('str'): String of key in dictionary we are interested in
+        key (str): String of key in dictionary we are interested in
         dictionary (dict): Actual dictionary variable
 
     Returns:
@@ -14,14 +36,14 @@ def findkeys(dictionary, key):
     """
     if isinstance(dictionary, list):
         for i in dictionary:
-            for x in findkeys(i, key):
-                yield x
+            for value in find_keys(i, key):
+                yield value
     elif isinstance(dictionary, dict):
         if key in dictionary:
             yield dictionary[key]
         for j in dictionary.values():
-            for x in findkeys(j, key):
-                yield x
+            for value in find_keys(j, key):
+                yield value
 
 
 def to_named_tuple(dict_data, tuple_name="named_tuple"):
@@ -50,5 +72,7 @@ def to_named_tuple_nested(dict_data, tuple_name="named_tuple"):
         namedtuple: Named tuple
     """
     return namedtuple(tuple_name, dict_data.keys())(
-        *tuple(map(lambda x: x if not isinstance(x, dict) else toNametuple(x), dict_data.values()))
+        *tuple(
+            map(lambda x: x if not isinstance(x, dict) else to_named_tuple(x), dict_data.values())
+        )
     )

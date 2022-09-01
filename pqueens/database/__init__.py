@@ -9,7 +9,10 @@ models.
 """
 from pqueens.utils.import_utils import get_module_class
 
-VALID_TYPES = {"mongodb": ["pqueens.database.mongodb", "MongoDB"]}
+VALID_TYPES = {
+    "mongodb": ["pqueens.database.mongodb", "MongoDB"],
+    "sqlite": ["pqueens.database.sqlite", "SQLite"],
+}
 
 
 def from_config_create_database(config):

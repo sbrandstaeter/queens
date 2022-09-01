@@ -2,8 +2,7 @@
   "experiment_name": "baci_write_random_field_to_dat",
   "restart": false,
   "database": {
-    "type": "mongodb",
-    "address": "localhost:27017"
+    "type": "sqlite"
   },
   "method": {
     "method_name": "monte_carlo",
@@ -29,7 +28,7 @@
       ]
     ],
     "random_fields": [
-        {
+      {
         "name": "mat_param",
         "type": "material",
         "external_instance": "DSURFACE 1"
@@ -73,7 +72,9 @@
       "skip_rows": 4,
       "filter": {
         "type": "by_row_index",
-        "rows": [-1]
+        "rows": [
+          -1
+        ]
       }
     }
   },

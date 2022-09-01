@@ -3,7 +3,7 @@ import logging
 from threading import Thread
 
 from pqueens.drivers import from_config_create_driver
-from pqueens.utils.dictionary_utils import findkeys
+from pqueens.utils.dictionary_utils import find_keys
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import _check_if_new_image_needed, create_singularity_image
 from pqueens.utils.path_utils import relative_path_from_queens
@@ -133,7 +133,7 @@ class StandardScheduler(Scheduler):
             singularity,
         )
         # find the max_concurrent key in the input file
-        max_concurrent_lst = [value for value in findkeys(config, "max-concurrent")]
+        max_concurrent_lst = [value for value in find_keys(config, "max-concurrent")]
         if max_concurrent_lst:
             max_concurrent = max_concurrent_lst[0]
         else:

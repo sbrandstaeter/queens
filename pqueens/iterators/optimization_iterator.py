@@ -438,9 +438,7 @@ class OptimizationIterator(Iterator):
             # potentially scale experimental data
             self._scale_experimental_data()
 
-            self.db.save(
-                self.experimental_data_dict, self.experiment_name, 'experimental_data', '1'
-            )
+            self.db.save(self.experimental_data_dict, self.experiment_name, 'experimental_data', 1)
 
     def _scale_experimental_data(self):
         # scale the experimental coordinates
