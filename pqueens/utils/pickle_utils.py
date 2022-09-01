@@ -1,16 +1,19 @@
 """Utils to handle pickle files."""
 import pickle
+from pathlib import Path
 
 
 def load_pickle(file_path):
     """Load a pickle file directly from path.
 
     Args:
-        file_path (str): Path to pickle-file
+        file_path (pathlib.path): Path to pickle-file
 
     Returns:
         data (dict) in the pickle file.
     """
+    if not file_path.is_file():
+        raise FileNotFoundError(f"File {file_path} does not exist.")
     try:
         data = pickle.load(open(file_path, "rb"))
         return data
@@ -27,7 +30,7 @@ def print_pickled_data(file_path):
     Args:
         file_path (str): Path to pickle-file
     """
-    data = load_pickle(file_path)
+    data = load_pickle(Path(file_path))
     print(f"\n\npickle file: {file_path}")
     for key, item in data.items():
         item_type = type(item)

@@ -2,9 +2,8 @@
 import numpy as np
 from sklearn.model_selection import KFold
 
+from pqueens.interfaces.interface import Interface
 from pqueens.regression_approximations import from_config_create_regression_approximation
-
-from .interface import Interface
 
 
 class ApproximationInterface(Interface):
@@ -26,41 +25,36 @@ class ApproximationInterface(Interface):
                                        initialized
     """
 
-    def __init__(self, interface_name, config, approximation_name, variables):
+    def __init__(self, interface_name, config, approximation_name):
         """Create interface.
 
         Args:
             interface_name (string):     Name of interface
             config (dict): Problem description (input file)
             approximation_name (str): Name of approximation model in config
-            variables (dict):  Dictionary with variables
         """
-        self.name = interface_name
-        self.variables = variables
+        super().__init__(interface_name)
         self.config = config
         self.approximation_name = approximation_name
         self.approximation = None
         self.approximation_init = False
 
     @classmethod
-    def from_config_create_interface(cls, interface_name, config, driver_name):
+    def from_config_create_interface(cls, interface_name, config):
         """Create interface from config dictionary.
 
         Args:
             interface_name (str):   Name of interface
             config (dict):          Dictionary containing problem description
-            _driver_name (str): Name of the driver that uses this interface
-                               (not used here; only for compatibility reasons)
 
         Returns:
             interface:              Instance of ApproximationInterface
         """
         interface_options = config[interface_name]
         approximation_name = interface_options["approximation"]
-        parameters = config['parameters']
 
         # initialize object
-        return cls(interface_name, config, approximation_name, parameters)
+        return cls(interface_name, config, approximation_name)
 
     def evaluate(self, samples, gradient_bool=False):
         """Call the regression approximation prediction.

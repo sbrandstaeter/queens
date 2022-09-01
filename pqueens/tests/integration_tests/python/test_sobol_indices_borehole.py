@@ -1,22 +1,19 @@
 """Test Sobol indices estimation for borehole function."""
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 
 
 @pytest.mark.integration_tests
 def test_sobol_indices_borehole(inputdir, tmpdir):
     """Test case for Sobol Index iterator."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'sobol_indices_borehole.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'sobol_indices_borehole.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

@@ -1,11 +1,12 @@
 """Test Sobol indices estimation for Sobol G function."""
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 
 
 @pytest.mark.integration_tests
@@ -16,12 +17,8 @@ def test_sobol_indices_sobol(inputdir, tmpdir):
     converge to the analytical solution defined in the Sobol G function
     implementation (see sobol.py).
     """
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'sobol_indices_sobol.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'sobol_indices_sobol.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

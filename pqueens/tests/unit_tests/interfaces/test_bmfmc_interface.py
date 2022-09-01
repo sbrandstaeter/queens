@@ -68,10 +68,9 @@ def approx_name():
 @pytest.mark.unit_tests
 def test_init(config, approx_name):
     """Test initialization."""
-    interface = BmfmcInterface(config, approx_name, variables=None)
+    interface = BmfmcInterface(config, approx_name)
 
     # asserts / tests
-    assert interface.variables is None
     assert interface.config == config
     assert interface.probabilistic_mapping_obj is None
 

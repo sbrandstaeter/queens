@@ -14,8 +14,6 @@ from pqueens.utils.mongodb import (
 )
 from pqueens.utils.print_utils import get_str_table
 
-from .database import Database
-
 _logger = logging.getLogger(__name__)
 COMPRESS_TYPE = 'compressed array'
 
@@ -125,8 +123,8 @@ class MongoDB(Database):
         )
 
         # Try the connection
-        # Here the decorator is called directly rather than the whole function
         self.mongo_client.server_info()
+
         self.db_obj = self.mongo_client[self.db_name]
 
         _logger.info(f"Connected to {self.db_address}")

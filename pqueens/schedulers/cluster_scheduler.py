@@ -2,12 +2,12 @@
 import atexit
 import logging
 import os
-import sys
 
 import numpy as np
 
+from pqueens.drivers import from_config_create_driver
 from pqueens.utils.cluster_utils import get_cluster_job_id
-from pqueens.utils.information_output import print_driver_information, print_scheduling_information
+from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.path_utils import relative_path_from_pqueens
 from pqueens.utils.run_subprocess import run_subprocess
@@ -21,10 +21,9 @@ _logger = logging.getLogger(__name__)
 class ClusterScheduler(Scheduler):
     """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS.
 
-    Args:
+    Attributes:
         experiment_name (str):     name of QUEENS experiment
         input_file (str):          path to QUEENS input file
-        restart (bool):            flag for restart
         experiment_dir (str):      path to QUEENS experiment directory
         driver_name (str):         Name of the driver that shall be used for job submission
         config (dict):             dictionary containing configuration as provided in
@@ -47,7 +46,6 @@ class ClusterScheduler(Scheduler):
         self,
         experiment_name,
         input_file,
-        restart,
         experiment_dir,
         driver_name,
         config,
@@ -63,7 +61,6 @@ class ClusterScheduler(Scheduler):
         Args:
             experiment_name (str):     name of QUEENS experiment
             input_file (str):          path to QUEENS input file
-            restart (bool):            flag for restart
             experiment_dir (str):      path to QUEENS experiment directory
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
@@ -74,7 +71,7 @@ class ClusterScheduler(Scheduler):
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             singularity_manager (obj): instance of Singularity-manager class
             remote (bool):             flag for remote scheduling
-            remote_connect (str):      (only for remote scheduling) adress of remote
+            remote_connect (str):      (only for remote scheduling) address of remote
                                        computing resource
             port (int):                (only for remote scheduling with Singularity) port of
                                        remote resource for ssh port-forwarding to database
@@ -84,7 +81,6 @@ class ClusterScheduler(Scheduler):
         super().__init__(
             experiment_name,
             input_file,
-            restart,
             experiment_dir,
             driver_name,
             config,
@@ -119,7 +115,6 @@ class ClusterScheduler(Scheduler):
         experiment_name = config['global_settings']['experiment_name']
         experiment_dir = scheduler_options['experiment_dir']
         input_file = config["input_file"]
-        restart = config.get("restart", False)
         singularity = scheduler_options.get('singularity', False)
         if not isinstance(singularity, bool):
             raise TypeError(
@@ -226,7 +221,6 @@ class ClusterScheduler(Scheduler):
         return cls(
             experiment_name=experiment_name,
             input_file=input_file,
-            restart=restart,
             experiment_dir=experiment_dir,
             driver_name=driver_name,
             config=config,
@@ -263,7 +257,7 @@ class ClusterScheduler(Scheduler):
 
                 self.singularity_manager.copy_temp_json()
 
-    def _submit_singularity(self, job_id, batch, restart):
+    def _submit_singularity(self, job_id, batch):
         """Submit job remotely to Singularity.
 
         Args:
@@ -274,92 +268,56 @@ class ClusterScheduler(Scheduler):
             int:            process ID
         """
         if self.remote:
-            # "normal" submission
-            if not restart:
-                # set job name as well as paths to input file and
-                # destination directory for jobscript
-                self.cluster_options['job_name'] = '{}_{}_{}'.format(
-                    self.experiment_name, 'queens', job_id
-                )
-                self.cluster_options['INPUT'] = (
-                    f"--job_id={job_id} --batch={batch} --port={self.port} --path_json="
-                    + f"{self.cluster_options['singularity_path']} --driver_name="
-                    + f"{self.driver_name} --workdir"
-                )
+            # set job name as well as paths to input file and
+            # destination directory for jobscript
+            self.cluster_options['job_name'] = '{}_{}_{}'.format(
+                self.experiment_name, 'queens', job_id
+            )
+            self.cluster_options['INPUT'] = (
+                f"--job_id={job_id} --batch={batch} --port={self.port} --path_json="
+                + f"{self.cluster_options['singularity_path']} --driver_name="
+                + f"{self.driver_name} --workdir"
+            )
 
-                self.cluster_options['DESTDIR'] = os.path.join(
-                    str(self.experiment_dir), str(job_id), 'output'
-                )
+            self.cluster_options['DESTDIR'] = os.path.join(
+                str(self.experiment_dir), str(job_id), 'output'
+            )
 
-                # generate jobscript for submission
-                submission_script_path = os.path.join(self.experiment_dir, 'jobfile.sh')
-                generate_submission_script(
-                    self.cluster_options,
-                    submission_script_path,
-                    self.cluster_options['jobscript_template'],
-                    self.remote_connect,
-                )
+            # generate jobscript for submission
+            submission_script_path = os.path.join(self.experiment_dir, 'jobfile.sh')
+            generate_submission_script(
+                self.cluster_options,
+                submission_script_path,
+                self.cluster_options['jobscript_template'],
+                self.remote_connect,
+            )
 
-                # submit subscript remotely
-                cmdlist_remote_main = [
-                    'ssh',
-                    self.remote_connect,
-                    '"cd',
-                    self.experiment_dir,
-                    ';',
-                    self.cluster_options['start_cmd'],
-                    submission_script_path,
-                    '"',
-                ]
-                cmd_remote_main = ' '.join(cmdlist_remote_main)
-                _, _, stdout, _ = run_subprocess(
-                    cmd_remote_main,
-                    additional_message_error="The file 'remote_main' in remote singularity image "
-                    "could not be executed properly!",
-                )
+            # submit subscript remotely
+            cmdlist_remote_main = [
+                'ssh',
+                self.remote_connect,
+                '"cd',
+                self.experiment_dir,
+                ';',
+                self.cluster_options['start_cmd'],
+                submission_script_path,
+                '"',
+            ]
+            cmd_remote_main = ' '.join(cmdlist_remote_main)
+            _, _, stdout, _ = run_subprocess(
+                cmd_remote_main,
+                additional_message_error="The file 'remote_main' in remote singularity image "
+                "could not be executed properly!",
+            )
 
-                # check matching of job ID
-                match = get_cluster_job_id(self.scheduler_type, stdout)
+            # check matching of job ID
+            match = get_cluster_job_id(self.scheduler_type, stdout)
 
-                try:
-                    return int(match)
-                except ValueError:
-                    _logger.error(stdout)
-                    return None
-            # restart submission
-            else:
-                self.cluster_options['EXE'] = (
-                    self.cluster_options['singularity_path'] + '/singularity_image.sif'
-                )
-                self.cluster_options[
-                    'INPUT'
-                ] = '--job_id={} --batch={} --port={} --path_json={} --driver_name={}'.format(
-                    job_id,
-                    batch,
-                    self.port,
-                    self.cluster_options['singularity_path'],
-                    self.driver_name,
-                )
-                command_list = [
-                    'singularity run',
-                    self.cluster_options['EXE'],
-                    self.cluster_options['INPUT'],
-                    '--post=true',
-                ]
-                submission_script_path = ' '.join(command_list)
-                cmdlist_remote_main = [
-                    'ssh',
-                    self.remote_connect,
-                    '"cd',
-                    self.experiment_dir,
-                    ';',
-                    submission_script_path,
-                    '"',
-                ]
-                cmd_remote_main = ' '.join(cmdlist_remote_main)
-                run_subprocess(cmd_remote_main)
-
-                return 0
+            try:
+                return int(match)
+            except ValueError:
+                _logger.error(stdout)
+                return None
         else:
             raise ValueError("\nSingularity cannot yet be used locally on computing clusters!")
 
@@ -434,3 +392,26 @@ class ClusterScheduler(Scheduler):
             self.singularity_manager.close_local_port_forwarding()
             self.singularity_manager.close_remote_port(self.port)
             print('All port-forwardings were closed again.')
+
+    def _submit_driver(self, job_id, batch):
+        """Submit job to driver.
+
+        Args:
+            job_id (int):    ID of job to submit
+            batch (str):     Batch number of job
+
+        Returns:
+            driver_obj.pid (int): process ID
+        """
+        # create driver
+        # TODO we should not create the object here everytime!
+        # TODO instead only update the attributes of the instance.
+        # TODO we should specify the data base sheet as well
+        driver_obj = from_config_create_driver(
+            self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
+        )
+        # run driver and get process ID
+        driver_obj.pre_job_run_and_run_job()
+        pid = driver_obj.pid
+
+        return pid

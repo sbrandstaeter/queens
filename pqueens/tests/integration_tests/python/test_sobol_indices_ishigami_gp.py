@@ -1,20 +1,17 @@
 """Test Sobol indices estimation with Gaussian process surrogate."""
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 
-from pqueens.main import main
+from pqueens import run
 
 
 def test_sobol_indices_ishigami_gp(inputdir, tmpdir):
     """Test Sobol indices estimation with Gaussian process surrogate."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'sobol_indices_ishigami_gp.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

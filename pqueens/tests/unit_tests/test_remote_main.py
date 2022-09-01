@@ -1,11 +1,8 @@
 """Test if the remote main function catches failed singularity runs."""
 
-import json
-import os
 
 import pytest
 
-import pqueens
 from pqueens.remote_main import main
 
 
@@ -23,30 +20,26 @@ def port(request):
 
 
 @pytest.mark.unit_tests
-def test_exit_conditions_remote_main(mocker, monkeypatch, finalize_fail, port):
+def test_exit_conditions_remote_main(mocker, finalize_fail, port):
     """Test if an error is raised."""
-    # Patch open() function
-    mocker.patch("builtins.open", create=True)
+    if finalize_fail:
+        error = "Mock finalize_job_in_db error"
+    else:
+        error = "Mock singularity error"
 
-    # Patch os.path.join function
-    def os_path_join_response(*args, **kwargs):
-        return "dummy"
+    dummy_dict = {
+        "experiment_name": "entry",
+        "database": {
+            "type": "mongodb",
+            "name": "test_remote_main",
+        },
+        "scheduler": {"singularity_settings": {"remote_ip": "localhost"}},
+    }
 
-    monkeypatch.setattr(os.path, "join", os_path_join_response)
-
-    # Patch json.load function
-    def json_load_response(*args, **kwargs):
-        dummy_dict = {
-            "experiment_name": "entry",
-            "database": {
-                "type": "mongodb",
-                "name": "test_remote_main",
-            },
-            "scheduler": {"singularity_settings": {"remote_ip": "localhost"}},
-        }
-        return dummy_dict
-
-    monkeypatch.setattr(json, "load", json_load_response)
+    mocker.patch(
+        'pqueens.remote_main.get_config_dict',
+        return_value=dummy_dict,
+    )
 
     # Mock driver class
     class driver_mock:
@@ -63,10 +56,16 @@ def test_exit_conditions_remote_main(mocker, monkeypatch, finalize_fail, port):
             if self.raise_error_in_finalize:
                 raise ValueError(f"Mock finalize_job_in_db error")
 
-    def driver_mock_response(*args, **kwargs):
-        return driver_mock(finalize_fail)
+    mocker.patch(
+        'pqueens.remote_main.from_config_create_driver',
+        return_value=driver_mock(finalize_fail),
+    )
 
-    monkeypatch.setattr(pqueens.remote_main, "from_config_create_driver", driver_mock_response)
+    mocker.patch(
+        'pqueens.remote_main.DB_module.from_config_create_database',
+    )
+
+    mocker.patch("pqueens.remote_main.DB_module.database")
 
     # Dummy arguments
     args = [
@@ -77,11 +76,6 @@ def test_exit_conditions_remote_main(mocker, monkeypatch, finalize_fail, port):
         "--post=true",
         "--workdir=dummy_workdir",
     ]
-
-    if finalize_fail:
-        error = "Mock finalize_job_in_db error"
-    else:
-        error = "Mock singularity error"
 
     with pytest.raises(ValueError) as excinfo:
         # Call the remote main

@@ -2,12 +2,13 @@
 
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 import pqueens.visualization.bmfia_visualization as qvis
-from pqueens.main import main
+from pqueens import run
 from pqueens.utils import injector
 
 
@@ -44,13 +45,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    arguments = [
-        '--input=' + input_file,
-        '--output=' + str(tmpdir),
-    ]
-
-    # actual main call of smc
-    main(arguments)
+    run(Path(input_file), Path(tmpdir))
 
     # get the results of the QUEENS run
     result_file = os.path.join(tmpdir, 'bmfia_baci_scatra_smc.pickle')

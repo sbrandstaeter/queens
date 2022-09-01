@@ -1,12 +1,12 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 from pqueens.utils import injector
-from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.mark.integration_tests_baci
@@ -33,10 +33,9 @@ def test_write_random_dirichlet_to_dat(
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
-    arguments = ['--input=' + input_file, '--output=' + str(tmpdir)]
+    run(Path(input_file), Path(tmpdir))
 
     # run a MC simulation with random input for now
-    main(arguments)
 
     # Check if we got the expected results
     experiment_name = "baci_write_random_field_to_dat"

@@ -276,7 +276,7 @@ class OptimizationIterator(Iterator):
                 )
         return J
 
-    def initialize_run(self):
+    def pre_run(self):
         """Get initial guess."""
         print("Initialize Optimization run.")
         self._get_experimental_data_and_write_to_db()

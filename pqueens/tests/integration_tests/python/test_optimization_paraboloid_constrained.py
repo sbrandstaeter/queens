@@ -1,16 +1,16 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 from pqueens.utils import injector
 
 
 @pytest.fixture(params=['COBYLA', 'SLSQP'])
 def algorithm(request):
-
     return request.param
 
 
@@ -29,9 +29,8 @@ def test_optimization_paraboloid_constrained(inputdir, tmpdir, algorithm):
 
     injector.inject(algorithm_dict, template, input_file)
 
-    arguments = ['--input=' + input_file, '--output=' + str(tmpdir)]
+    run(Path(input_file), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'Paraboloid.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

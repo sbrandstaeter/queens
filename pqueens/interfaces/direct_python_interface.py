@@ -3,13 +3,12 @@
 import numpy as np
 from tqdm import tqdm
 
+from pqueens.interfaces.interface import Interface
 from pqueens.tests.integration_tests.example_simulator_functions import (
     example_simulator_function_by_name,
 )
-from pqueens.utils.import_utils import load_function_or_class_by_name_from_path
+from pqueens.utils.import_utils import get_module_attribute
 from pqueens.utils.pool_utils import create_pool
-
-from .interface import Interface
 
 
 class DirectPythonInterface(Interface):
@@ -45,7 +44,7 @@ class DirectPythonInterface(Interface):
         self.latest_job_id = 1
 
     @classmethod
-    def from_config_create_interface(cls, interface_name, config, **_kargs):
+    def from_config_create_interface(cls, interface_name, config):
         """Create interface from config dictionary.
 
         Args:
@@ -59,19 +58,17 @@ class DirectPythonInterface(Interface):
 
         num_workers = interface_options.get('num_workers', 1)
         function_name = interface_options.get("function_name", None)
-        external_python_module = interface_options.get("external_python_module", None)
+        external_python_function = interface_options.get("external_python_module_function", None)
 
         if function_name is None:
             raise ValueError(f"Keyword 'function_name' is missing in interface '{interface_name}'")
 
-        if external_python_module is None:
+        if external_python_function is None:
             # Try to load existing simulator functions
             my_function = example_simulator_function_by_name(function_name)
         else:
             # Try to load external simulator functions
-            my_function = load_function_or_class_by_name_from_path(
-                external_python_module, function_name
-            )
+            my_function = get_module_attribute(external_python_function, function_name)
 
         pool = create_pool(num_workers)
 

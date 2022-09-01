@@ -1,3 +1,4 @@
+"""Grid Iterator."""
 import numpy as np
 
 import pqueens.visualization.grid_iterator_visualization as qvis
@@ -85,7 +86,6 @@ class GridIterator(Iterator):
 
     def pre_run(self):
         """Generate samples based on description in grid_dict."""
-
         # Sanity check for random fields
         if self.parameters.random_field_flag:
             raise RuntimeError(
@@ -127,8 +127,7 @@ class GridIterator(Iterator):
                         retstep=False,
                     )
                 )
-
-            if axis_type == 'log10':
+            elif axis_type == 'log10':
                 grid_point_list.append(
                     np.logspace(
                         np.log10(start_value),
@@ -138,8 +137,7 @@ class GridIterator(Iterator):
                         base=10,
                     )
                 )
-
-            if axis_type == "ln":
+            elif axis_type == "ln":
                 grid_point_list.append(
                     np.logspace(
                         np.log(start_value),
@@ -148,6 +146,11 @@ class GridIterator(Iterator):
                         endpoint=True,
                         base=np.e,
                     )
+                )
+            else:
+                raise NotImplementedError(
+                    "Invalid option for \'axis_type\'. Valid options are: "
+                    f"\'lin\', \'log10\', \'ln\'. You chose {axis_type}."
                 )
 
             # handle data types different from float (default)
@@ -163,31 +166,10 @@ class GridIterator(Iterator):
                     " grid iterator (possible: 'FLOAT' or 'INT') "
                 )
 
-        if self.num_parameters == 1:
-            # change to correct order of samples array
-            self.samples = np.atleast_2d(grid_point_list[0]).T
-
-        elif self.num_parameters == 2:
-            # get mesh_grid coordinates
-            grid_coord0, grid_coord1 = np.meshgrid(grid_point_list[0], grid_point_list[1])
-            # flatten to 2D array
-            self.samples = np.empty([np.prod(self.num_grid_points_per_axis), self.num_parameters])
-            self.samples[:, 0] = grid_coord0.flatten()
-            self.samples[:, 1] = grid_coord1.flatten()
-
-        elif self.num_parameters == 3:
-            # get mesh_grid coordinates
-            grid_coord0, grid_coord1, grid_coord2 = np.meshgrid(
-                grid_point_list[0], grid_point_list[1], grid_point_list[2]
-            )
-            # flatten to 2D array
-            self.samples = np.empty([np.prod(self.num_grid_points_per_axis), self.num_parameters])
-            self.samples[:, 0] = grid_coord0.flatten()
-            self.samples[:, 1] = grid_coord1.flatten()
-            self.samples[:, 2] = grid_coord2.flatten()
-
-        else:
-            raise ValueError("More than 3 grid parameters are currently not supported! Abort...")
+        grid_coords = np.meshgrid(*grid_point_list)
+        self.samples = np.empty([np.prod(self.num_grid_points_per_axis), self.num_parameters])
+        for i in range(self.num_parameters):
+            self.samples[:, i] = grid_coords[i].flatten()
 
     def core_run(self):
         """Evaluate the meshgrid on model."""

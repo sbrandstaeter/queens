@@ -1,20 +1,17 @@
 import os
 import pickle
+from pathlib import Path
 
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 
 
 @pytest.mark.integration_tests
 def test_latin_hyper_cube_borehole(inputdir, tmpdir):
     """Test case for latin hyper cube iterator."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'latin_hyper_cube_borehole.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'latin_hyper_cube_borehole.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

@@ -81,16 +81,10 @@ class GaussianLikelihood(LikelihoodModel):
         self.normal_distribution = normal_distribution
 
     @classmethod
-    def from_config_create_likelihood(
+    def from_config_create_model(
         cls,
         model_name,
         config,
-        forward_model,
-        coords_mat,
-        time_vec,
-        y_obs,
-        output_label,
-        coord_labels,
     ):
         """Create Gaussian likelihood model from problem description.
 
@@ -107,6 +101,16 @@ class GaussianLikelihood(LikelihoodModel):
         Returns:
             instance of GaussianLikelihood class
         """
+        (
+            forward_model,
+            coords_mat,
+            time_vec,
+            y_obs,
+            output_label,
+            coord_labels,
+        ) = super().get_base_attributes_from_config(model_name, config)
+        y_obs_dim = y_obs.size
+
         # get options
         model_options = config[model_name]
 
@@ -121,7 +125,6 @@ class GaussianLikelihood(LikelihoodModel):
                 noise_var_iterative_averaging
             )
 
-        y_obs_dim = y_obs.size
         if noise_type == 'fixed_variance':
             covariance = noise_value * np.eye(y_obs_dim)
         elif noise_type == 'fixed_variance_vector':
@@ -139,7 +142,6 @@ class GaussianLikelihood(LikelihoodModel):
 
         distribution_options = {"distribution": "normal", "mean": y_obs, "covariance": covariance}
         normal_distribution = from_config_create_distribution(distribution_options)
-
         return cls(
             model_name=model_name,
             nugget_noise_variance=nugget_noise_variance,

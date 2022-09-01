@@ -1,15 +1,7 @@
 """QUEENS scheduler parent class."""
-try:
-    import simplejson as json
-except ImportError:
-    import json
-
 import abc
 
-import pqueens.interfaces.job_interface as job_interface
 from pqueens.drivers import from_config_create_driver
-from pqueens.utils.information_output import print_driver_information, print_scheduling_information
-from pqueens.utils.manage_singularity import SingularityManager
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -23,12 +15,10 @@ class Scheduler(metaclass=abc.ABCMeta):
     Attributes:
             experiment_name (str):     name of QUEENS experiment
             input_file (str):          path to QUEENS input file
-            restart (bool):            flag for restart
             experiment_dir (str):      path to QUEENS experiment directory
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
-            restart (bool):            flag for restart
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
             remote (bool):             flag for remote scheduling
@@ -48,7 +38,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         self,
         experiment_name,
         input_file,
-        restart,
         experiment_dir,
         driver_name,
         config,
@@ -61,12 +50,10 @@ class Scheduler(metaclass=abc.ABCMeta):
         Args:
             experiment_name (str):     name of QUEENS experiment
             input_file (str):          path to QUEENS input file
-            restart (bool):            flag for restart
             experiment_dir (str):      path to QUEENS experiment directory
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
-            restart (bool):            flag for restart
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
             remote (bool):             flag for remote scheduling
@@ -84,7 +71,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         """
         self.experiment_name = experiment_name
         self.input_file = input_file
-        self.restart = restart
         self.experiment_dir = experiment_dir
         self.driver_name = driver_name
         self.config = config
@@ -104,13 +90,10 @@ class Scheduler(metaclass=abc.ABCMeta):
         Returns:
             pid (int):               process id of job
         """
-        # get restart flag from job interface
-        restart = job_interface.restart_flag
-
         if self.singularity:
-            pid = self._submit_singularity(job_id, batch, restart)
+            pid = self._submit_singularity(job_id, batch)
         else:
-            pid = self._submit_driver(job_id, batch, restart)
+            pid = self._submit_driver(job_id, batch)
 
         self.process_ids[str(job_id)] = pid
 
@@ -139,7 +122,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def _submit_singularity(self, job_id, batch, restart):
+    def _submit_singularity(self, job_id, batch):
         """Submit job using singularity."""
         pass
 
@@ -161,37 +144,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         """Post run routine."""
         pass
 
-    # ------------- private helper methods ----------------#
-    def _submit_driver(self, job_id, batch, restart):
-        """Submit job to driver.
-
-        Args:
-            job_id (int):    ID of job to submit
-            batch (str):     Batch number of job
-
-        Returns:
-            driver_obj.pid (int): process ID
-        """
-        # create driver
-        # TODO we should not create the object here everytime!
-        # TODO instead only update the attributes of the instance.
-        # TODO we should specify the data base sheet as well
-        driver_obj = from_config_create_driver(
-            self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
-        )
-
-        if not restart:
-            # run driver and get process ID, if not restart
-            driver_obj.pre_job_run_and_run_job()
-            pid = driver_obj.pid
-
-            # only required for standard scheduling: finish-and-clean call
-            # (taken care of by submit_data_processor for other schedulers)
-            if self.scheduler_type == 'standard':
-                driver_obj.post_job_run()
-        else:
-            # set process ID to zero as well as finish and clean, if restart
-            pid = 0
-            driver_obj.post_job_run()
-
-        return pid
+    @abc.abstractmethod
+    def _submit_driver(self, job_id, batch):
+        """Submit job to driver."""
+        pass

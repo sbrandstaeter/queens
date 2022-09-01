@@ -5,6 +5,9 @@ This package contains a set of driver scripts which are used to make the
 actual call to the simulation software running either on the system
 directly or wrapped in a docker container.
 """
+from pqueens.utils.import_utils import get_module_class
+
+VALID_TYPES = {'baci': ["pqueens.drivers.baci_driver", "BaciDriver"]}
 
 
 def from_config_create_driver(
@@ -27,18 +30,8 @@ def from_config_create_driver(
     Returns:
         driver (obj):   Driver object
     """
-    from pqueens.drivers.baci_driver import BaciDriver
-
-    # determine Driver class
-    driver_dict = {
-        'baci': BaciDriver,
-    }
-    if driver_name:
-        driver_version = config[driver_name]['driver_type']
-    else:
-        driver_version = config['driver']['driver_type']
-
-    driver_class = driver_dict[driver_version]
+    driver_options = config[driver_name]
+    driver_class = get_module_class(driver_options, VALID_TYPES, "driver_type")
     driver = driver_class.from_config_create_driver(
         config,
         job_id,
@@ -47,5 +40,4 @@ def from_config_create_driver(
         workdir,
         cluster_options,
     )
-
     return driver

@@ -1,10 +1,11 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 from pqueens.utils import injector
 
 
@@ -32,11 +33,8 @@ def test_write_random_material_to_dat(
     input_file = os.path.join(tmpdir, "baci_write_random_field_material.json")
     injector.inject(dir_dict, template, input_file)
 
-    # get json file as config dictionary
-    arguments = ['--input=' + input_file, '--output=' + str(tmpdir)]
-
     # run a MC simulation with random input for now
-    main(arguments)
+    run(Path(input_file), Path(tmpdir))
 
     # Check if we got the expected results
     experiment_name = "baci_write_random_field_to_dat"

@@ -13,30 +13,27 @@ class ApproximationInterfaceMF(Interface):
 
         The ApproximationInterface uses a so-called regression approximation,
         which just another name for a regression model that is used in this context
-        to avoid confusion and not having to call everthing a model.
+        to avoid confusion and not having to call everything a model.
 
         For now this interface holds only one approximation object. In the future,
-        this could be extendend to multiple objects
+        this could be extended to multiple objects
 
     Attributes:
         name (string):                 Name of interface
         variables (dict):              Dictionary with variables
         approximation_config (dict):   Config options for approximation
         approximation (regression_approximation_mf):   Approximation object
-        approx_init (bool):            Flag wether or not approximation has been
-                                       initialized
+        approx_init (bool):            Flag whether approximation has been initialized
     """
 
-    def __init__(self, interface_name, approximation_config, variables):
+    def __init__(self, interface_name, approximation_config):
         """Create interface.
 
         Args:
             interface_name (string):     Name of interface
             approximation_config (dict): Config options for approximation
-            variables (dict):            Dictionary with variables
         """
-        self.name = interface_name
-        self.variables = variables
+        super().__init__(interface_name)
         self.approximation_config = approximation_config
         self.approximation = None
         self.approx_init = False

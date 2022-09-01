@@ -1,21 +1,18 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 
 
 @pytest.mark.integration_tests
 def test_optimization_lsq_rosenbrock(inputdir, tmpdir):
     """Test case for optimization iterator with least squares."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'optimization_lsq_rosenbrock.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'optimization_lsq_rosenbrock.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'ResRosenbrockLSQ.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

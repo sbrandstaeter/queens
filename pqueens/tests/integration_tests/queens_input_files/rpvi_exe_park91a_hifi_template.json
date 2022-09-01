@@ -37,7 +37,6 @@
       "random_seed": 1,
       "result_description": {
         "write_results": true,
-        "export_iteration_data": true,
         "plotting_options": {
           "plot_boolean": false,
           "plotting_dir": "{plot_dir}",
@@ -48,8 +47,7 @@
     }
   },
   "model": {
-    "type": "likelihood_model",
-    "subtype": "gaussian",
+    "type": "gaussian",
     "forward_model": "forward_model",
     "output_label": "y_obs",
     "coordinate_labels": [
@@ -69,56 +67,55 @@
   },
   "interface": {
     "type": "job_interface",
-        "resources": "resources",
-        "driver": "driver"
+    "resources": "resources",
+    "driver": "driver"
   },
-    "driver": {
-        "driver_type": "baci",
-        "driver_params": {
-            "input_template": "{input_file}",
-            "path_to_executable": "{executable}",
-            "path_to_postprocessor": "",
-            "post_file_name_prefix_lst": [],
-            "post_process_options": [],
-            "data_processor": "data_processor_output",
-            "gradient_data_processor": "gradient_data_processor"
-        }
-    },
-    "data_processor_output": {
-        "type": "csv",
-        "file_name_identifier": "*_output.csv",
-        "file_options_dict": {
-            "delete_field_data": false,
-            "filter": {
-                "type": "entire_file"
-            }
-        }
-    },
-  "gradient_data_processor":{
+  "driver": {
+    "driver_type": "baci",
+    "driver_params": {
+      "input_template": "{input_file}",
+      "path_to_executable": "{executable}",
+      "path_to_postprocessor": "",
+      "post_file_name_prefix_lst": [],
+      "post_process_options": [],
+      "data_processor": "data_processor_output",
+      "gradient_data_processor": "gradient_data_processor"
+    }
+  },
+  "data_processor_output": {
+    "type": "csv",
+    "file_name_identifier": "*_output.csv",
+    "file_options_dict": {
+      "delete_field_data": false,
+      "filter": {
+        "type": "entire_file"
+      }
+    }
+  },
+  "gradient_data_processor": {
     "type": "csv",
     "file_name_identifier": "*_gradient.csv",
     "file_options_dict": {
-        "delete_field_data": false,
-        "filter": {
-            "type": "entire_file"
-        }
+      "delete_field_data": false,
+      "filter": {
+        "type": "entire_file"
+      }
     }
   },
-    "resources": {
-        "local_machine": {
-            "scheduler": "local_scheduler",
-            "max-concurrent": 1,
-            "max-finished-jobs": 1000
-        }
-    },
-    "local_scheduler": {
-        "experiment_dir": "{experiment_dir}",
-        "scheduler_type": "standard",
-        "singularity": false,
-        "num_procs": 1,
-        "num_procs_post": 1
-    },
-
+  "resources": {
+    "local_machine": {
+      "scheduler": "local_scheduler",
+      "max-concurrent": 1,
+      "max-finished-jobs": 1000
+    }
+  },
+  "local_scheduler": {
+    "experiment_dir": "{experiment_dir}",
+    "scheduler_type": "standard",
+    "singularity": false,
+    "num_procs": 1,
+    "num_procs_post": 1
+  },
   "parameters": {
     "random_variables": {
       "x1": {

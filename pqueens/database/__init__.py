@@ -4,9 +4,15 @@
 This package in essence contains a module to store data related to
 computer experiments in a mongodb based database. The class in the
 module provides a convenience layer around certain functions which are
-needed in QUEENS to read and write input/ouput data of simulation
+needed in QUEENS to read and write input/output data of simulation
 models.
 """
+from pqueens.utils.import_utils import get_module_class
+
+VALID_TYPES = {
+    "mongodb": ["pqueens.database.mongodb", "MongoDB"],
+    "sqlite": ["pqueens.database.sqlite", "SQLite"],
+}
 
 
 def from_config_create_database(config):
@@ -16,18 +22,9 @@ def from_config_create_database(config):
         config (dict): Problem configuration
 
     Returns:
-        Database object
+        database (obj): Database object
     """
-    db_type = config["database"].get("type")
-
-    from pqueens.database.mongodb import MongoDB
-    from pqueens.database.sqlite import SQLite
-
-    valid_options = {"mongodb": MongoDB, "sqlite": SQLite}
-
-    if db_type in valid_options.keys():
-        return valid_options[db_type].from_config_create_database(config)
-    else:
-        raise KeyError(
-            f"Database type '{db_type}' unknown, valid options are {list(valid_options.keys())}"
-        )
+    db_options = config.get("database")
+    db_class = get_module_class(db_options, VALID_TYPES)
+    database = db_class.from_config_create_database(config)
+    return database

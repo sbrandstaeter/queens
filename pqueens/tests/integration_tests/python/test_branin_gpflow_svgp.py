@@ -1,21 +1,18 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 
 
 @pytest.mark.integration_tests
 def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
     """Test case for GPflow based SVGP model."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'gpflow_svgp_surrogate_branin.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'gpflow_svgp_surrogate_branin.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

@@ -4,6 +4,7 @@ import subprocess
 
 _logger = logging.getLogger(__name__)
 
+from pqueens.utils.exceptions import SubprocessError
 from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
 from pqueens.utils.valid_options_utils import get_option
 
@@ -232,7 +233,7 @@ def _raise_or_warn_error(command, stdout, stderr, **kwargs):
         if raise_error_on_subprocess_failure:
             raise subprocess_error
         else:
-            _logger.warning(subprocess_error.message)
+            _logger.warning(str(subprocess_error))
 
 
 def _remove_allowed_errors(stderr, allowed_errors):
@@ -256,82 +257,3 @@ def _remove_allowed_errors(stderr, allowed_errors):
         stderr = ""
 
     return stderr
-
-
-class SubprocessError(Exception):
-    """Custom error class for the QUEENS subprocess wrapper."""
-
-    def __init__(
-        self,
-        message,
-        command=None,
-        command_output=None,
-        error_message=None,
-        additional_message=None,
-    ):
-        """Initialize SubprocessError.
-
-        Do not create an error with this method. Instead use construct_error from command method.
-        This makes it easier to handle this error within a context.
-
-        Args:
-            message (str): Error message
-            command (str): Command used that raised the error. Defaults to None.
-            command_output (str): Command output. Defaults to None.
-            error_message (str): Error message of the command. Defaults to None.
-            additional_message (str, optional): Additional message to pass. Defaults to None.
-        """
-        self.command = command
-        self.command_output = command_output
-        self.error_message = error_message
-        self.additional_message = additional_message
-        self.message = message
-        super().__init__(self.message)
-
-    @classmethod
-    def construct_error_from_command(
-        cls, command, command_output, error_message, additional_message=""
-    ):
-        """Construct a Subprocess error from a command and its outputs.
-
-        Args:
-            command (str): Command used that raised the error
-            command_output (str): Command output
-            error_message (str): Error message of the command
-            additional_message (str, optional): Additional message to pass
-
-        Returns:
-            SubprocessError
-        """
-        message = cls.construct_error_message(
-            command, command_output, error_message, additional_message
-        )
-        return cls(
-            message,
-            command=command,
-            command_output=command_output,
-            error_message=error_message,
-            additional_message=additional_message,
-        )
-
-    @staticmethod
-    def construct_error_message(command, command_output, error_message, additional_message):
-        """Construct the error message based on the command and its outputs.
-
-        Args:
-            command (str): Command used that raised the error
-            command_output (str): Command output
-            error_message (str): Error message of the command
-            additional_message (str, optional): Additional message to pass
-
-        Returns:
-            message (str): Error message that is display once the error is raised
-        """
-        message = "\n\nQUEENS' subprocess wrapper caught the following error:\n"
-        message += error_message
-        message += "\n\n\nwith commandline output:\n"
-        message += str(command_output)
-        message += "\n\n\nwhile executing the command:\n" + command
-        if additional_message:
-            message += '\n\n' + additional_message
-        return message

@@ -38,7 +38,6 @@
       "random_seed": 1,
       "result_description": {
         "write_results": true,
-        "export_iteration_data": true,
         "plotting_options": {
           "plot_boolean": false,
           "plotting_dir": "{plot_dir}",
@@ -49,8 +48,8 @@
     }
   },
   "model": {
-    "type": "likelihood_model",
-    "subtype": "gaussian",
+    "type": "{likelihood_model_type}",
+    "external_python_module": "{external_python_module}",
     "forward_model": "forward_model",
     "output_label": "y_obs",
     "coordinate_labels": [

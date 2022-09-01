@@ -1,21 +1,18 @@
 import os
 import pickle
+from pathlib import Path
 
 import numpy as np
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 
 
 @pytest.mark.integration_tests
 def test_elementary_effects_sobol(inputdir, tmpdir):
     """Test case for elementary effects on Sobol's G-function."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'elementary_effects_sobol.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'elementary_effects_sobol.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

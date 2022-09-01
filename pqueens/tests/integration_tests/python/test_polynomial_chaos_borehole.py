@@ -1,21 +1,20 @@
 """Test chaospy wrapper."""
 import os
 import pickle
+from pathlib import Path
 
 import pytest
 
-from pqueens.main import main
+from pqueens import run
 
 
 @pytest.mark.integration_tests
 def test_polynomial_chaos_pseudo_spectral_borehole(inputdir, tmpdir):
     """Test case for the pc iterator using a pseudo spectral approach."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'polynomial_chaos_pseudo_spectral_borehole.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(
+        Path(os.path.join(inputdir, 'polynomial_chaos_pseudo_spectral_borehole.json')), Path(tmpdir)
+    )
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
@@ -26,12 +25,8 @@ def test_polynomial_chaos_pseudo_spectral_borehole(inputdir, tmpdir):
 @pytest.mark.integration_tests
 def test_polynomial_chaos_collocation_borehole(inputdir, tmpdir):
     """Test for the pc iterator using a collocation approach."""
-    arguments = [
-        '--input=' + os.path.join(inputdir, 'polynomial_chaos_collocation_borehole.json'),
-        '--output=' + str(tmpdir),
-    ]
+    run(Path(os.path.join(inputdir, 'polynomial_chaos_collocation_borehole.json')), Path(tmpdir))
 
-    main(arguments)
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

@@ -1,20 +1,5 @@
 """QUEENS setup file for remote runs."""
-import os
-
 from setuptools import setup
-
-
-def read(fname):
-    """Function to read the README file.
-
-    Args:
-        fname (str): File name to be read
-
-    Returns:
-        The content of the file fname
-    """
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
-
 
 setup(
     name="pqueens-remote",
@@ -34,12 +19,14 @@ setup(
         "netcdf4",
         "cython",
         "numpy",
-        "pymongo==3.12.0",
+        "pymongo",
         "matplotlib",
         "plotly",
         "pandas",
         "vtk",
         "xarray",
         "scipy",
+        "pyyaml",
+        "pyfiglet",
     ],
 )

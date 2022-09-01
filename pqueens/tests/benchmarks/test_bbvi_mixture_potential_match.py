@@ -1,12 +1,10 @@
 """Rezende potential matching case with GMM."""
 import numpy as np
 import pytest
-import scipy.stats
 from mock import patch
 
 import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.black_box_variational_bayes import BBVIIterator
-from pqueens.main import main
 from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 from pqueens.utils.variational_inference_utils import create_variational_distribution
 
@@ -28,7 +26,7 @@ def test_bbvi_GMM_density_match(
     np.random.seed(1)
     # mock all parts of the algorithm that has to do with initialization or an underlying model
     mocker.patch(
-        "pqueens.iterators.black_box_variational_bayes.BBVIIterator.initialize_run",
+        "pqueens.iterators.black_box_variational_bayes.BBVIIterator.pre_run",
         return_value=None,
     )
 
