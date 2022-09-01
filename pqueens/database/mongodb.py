@@ -7,6 +7,7 @@ import pandas as pd
 import xarray as xr
 from pymongo import MongoClient
 
+from pqueens.database.database import Database
 from pqueens.utils.decorators import safe_operation
 from pqueens.utils.mongodb import (
     convert_nested_data_to_db_dict,
