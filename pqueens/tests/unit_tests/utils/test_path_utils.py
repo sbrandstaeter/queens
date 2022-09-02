@@ -13,6 +13,8 @@ from pqueens.utils.path_utils import (
     relative_path_from_queens,
 )
 
+pytestmark = pytest.mark.unit_tests
+
 
 @pytest.fixture(name="path_to_queens")
 def fixture_path_to_queens():
@@ -26,26 +28,22 @@ def fixture_path_to_pqueens():
     return os.path.dirname(__file__).split("tests")[0]
 
 
-@pytest.mark.unit_test
 def test_path_to_pqueens(path_to_pqueens):
     """Test path to pqueens."""
     assert os.path.abspath(path_to_pqueens) == os.path.abspath(str(PATH_TO_PQUEENS))
 
 
-@pytest.mark.unit_test
 def test_path_to_queens(path_to_queens):
     """Test path to queens."""
     assert os.path.abspath(path_to_queens) == os.path.abspath(str(PATH_TO_QUEENS))
 
 
-@pytest.mark.unit_test
 def test_check_if_path_exists():
     """Test if path exists."""
     current_folder = os.path.dirname(__file__)
     assert check_if_path_exists(current_folder)
 
 
-@pytest.mark.unit_test
 def test_check_if_path_exists_not_existing():
     """Test if path does not exist."""
     test_path = os.path.dirname(__file__) + "_not_existing"
@@ -53,7 +51,6 @@ def test_check_if_path_exists_not_existing():
         check_if_path_exists(test_path)
 
 
-@pytest.mark.unit_test
 def test_create_folder_if_not_existent(tmp_path):
     """Test if folder is created."""
     new_path = PurePath(tmp_path, "new/path")
@@ -61,7 +58,6 @@ def test_create_folder_if_not_existent(tmp_path):
     assert check_if_path_exists(new_path)
 
 
-@pytest.mark.unit_test
 def test_relative_path_from_pqueens():
     """Test relative path from pqueens."""
     current_folder = os.path.dirname(__file__)
@@ -69,7 +65,6 @@ def test_relative_path_from_pqueens():
     assert os.path.abspath(path_from_pqueens) == os.path.abspath(current_folder)
 
 
-@pytest.mark.unit_test
 def test_relative_path_from_queens():
     """Test relative path from queens."""
     current_folder = os.path.dirname(__file__)
