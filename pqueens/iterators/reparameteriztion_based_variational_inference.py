@@ -269,7 +269,8 @@ class RPVIIterator(VariationalInferenceIterator):
         )
 
         # check if score function should be added to the derivative
-        # Using the score function might lead to a large bias, in doubt turn it off
+        # Using the score function might lead to a larger variance in the estimate, in doubt turn
+        # it off
         if self.score_function_bool:
             score_function = self.variational_distribution_obj.grad_params_logpdf(
                 self.variational_params, sample_batch
