@@ -1,5 +1,5 @@
+--- #---------------------------------------------------------------------------------------------------
 # Define variables
-#---------------------------------------------------------------------------------------------------
 variables:
   # flags to turn on/ off tests for specific platforms
   DOCKER_TESTS: "1"
@@ -116,7 +116,6 @@ build_conda_env:
     when: always
     expire_in: 4 weeks
 
-
 build_singularity:
   stage: build
   script:
@@ -188,22 +187,22 @@ license_check:
 # ubuntu tests
 #---------------------------------------------------------------------------------------------------
 ubuntu_full_test_suite_develop:
- stage: tests
- extends:
-   - .ubuntu_settings
- script:
-   - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-   - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
- coverage: '/TOTAL.*\s+(\d+%)/'
- needs:
-   - build_conda_env
-   - build_singularity
- except:
-   variables:
-     - $CLUSTER_TESTS == "1"
-     - $BENCHMARKS == "1"
-   refs:
-     - master
+  stage: tests
+  extends:
+    - .ubuntu_settings
+  script:
+    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
+    - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
+  coverage: '/TOTAL.*\s+(\d+%)/'
+  needs:
+    - build_conda_env
+    - build_singularity
+  except:
+    variables:
+      - $CLUSTER_TESTS == "1"
+      - $BENCHMARKS == "1"
+    refs:
+      - master
 #---------------------------------------------------------------------------------------------------
 # Master tests
 #---------------------------------------------------------------------------------------------------
@@ -239,7 +238,7 @@ ubuntu_full_test_suite_master:
 .cluster_tests_conditions:
   only:
     variables:
-    - $CLUSTER_TESTS == "1"
+      - $CLUSTER_TESTS == "1"
 #---------------------------------------------------------------------------------------------------
 cluster_tests:
   extends:
@@ -258,7 +257,7 @@ cluster_tests:
 .benchmarks_conditions:
   only:
     variables:
-    - $BENCHMARKS == "1"
+      - $BENCHMARKS == "1"
 #---------------------------------------------------------------------------------------------------
 benchmarks:
   stage: tests
@@ -309,6 +308,9 @@ trigger_documentation_badge_fail:
     - .benchmarks_conditions
   stage: badges
   needs: ["benchmarks"]
+  only:
+    refs:
+      - master
   trigger:
     project: queens_community/queens_badges/benchmarks-badge
 #---------------------------------------------------------------------------------------------------
@@ -334,6 +336,9 @@ trigger_benchmarks_badge_fail:
     - .cluster_tests_conditions
   stage: badges
   needs: ["cluster_tests"]
+  only:
+    refs:
+      - master
   trigger:
     project: queens_community/queens_badges/cluster-badge
 #---------------------------------------------------------------------------------------------------
