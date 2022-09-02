@@ -166,7 +166,7 @@ class RPVIIterator(VariationalInferenceIterator):
             iterator (obj): RPVI object
         """
         method_options = config[iterator_name]['method_options']
-        score_function_bool = method_options.get("score_function_bool", True)
+        score_function_bool = method_options.get("score_function_bool", False)
         finite_difference_step = method_options.get("finite_difference_step")
         likelihood_gradient_method = method_options.get(
             "likelihood_gradient_method", "finite_difference"
@@ -269,14 +269,13 @@ class RPVIIterator(VariationalInferenceIterator):
         )
 
         # check if score function should be added to the derivative
+        # Using the score function might lead to a large bias, in doubt turn it off
         if self.score_function_bool:
-            # pylint: disable=line-too-long
-            grad_log_variational_distr_variational_params_lst = (
-                variational_inference_utils.calculate_grad_log_variational_distr_variational_params(
-                    jacobi_reparameterization_lst, grad_variational_lst
-                )
-            )
-            # pylint: enable=line-too-long
+            score_function = self.variational_distribution_obj.grad_params_logpdf(
+                self.variational_params, sample_batch
+            ).T
+        else:
+            score_function = np.zeros((1, self.variational_params.size))
 
         log_likelihood_batch, grad_log_likelihood_batch = self.calculate_grad_log_likelihood_params(
             sample_batch
@@ -296,7 +295,7 @@ class RPVIIterator(VariationalInferenceIterator):
             grad_log_prior_lst,
             grad_variational_lst,
             jacobi_reparameterization_lst,
-            grad_log_variational_distr_variational_params_lst,
+            score_function,
             log_likelihood_batch,
             log_prior_lst,
         ):
