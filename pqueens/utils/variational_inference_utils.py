@@ -147,8 +147,8 @@ class MeanFieldNormalVariational(VariationalDistribution):
                                                 w.r.t. the variational parameters
         """
         grad_mean = np.ones((1, self.dimension))
-        grad_cov = (np.exp(2 * variational_params[self.dimension :]) * 2).reshape(1, -1)
-        grad_reconstruct_params = np.hstack((grad_mean, grad_cov))
+        grad_std = (np.exp(variational_params[self.dimension :])).reshape(1, -1)
+        grad_reconstruct_params = np.hstack((grad_mean, grad_std))
         return grad_reconstruct_params
 
     def draw(self, variational_params, num_draws=1):
@@ -994,38 +994,3 @@ def create_variational_distribution(distribution_options):
             f"Supported types:  {supported_distributions}."
         )
     return distribution_obj
-
-
-def calculate_grad_log_variational_distr_variational_params(
-    jacobi_reparameterization_variational_params_lst, grad_log_variational_distr_params_lst
-):
-    """Calculate the gradient of the log-variational distribution.
-
-    w.r.t. variational parameters, evaluated at the current value of the variational
-    params.
-
-    Args:
-        jacobi_reparameterization_variational_params_lst (lst): List of Jacobi matrices of the
-                                                                reparameterization w.r.t. the
-                                                                variational parameters.
-        grad_log_variational_distr_params_lst (lst): List of gradients of the variational
-                                                     distribution w.r.t. to the input
-                                                     parameters per sample
-
-    Returns:
-        grad_log_variational_distr_variational_params_lst (np.array): List of gradients of the
-                                                                  log-variational
-                                                                  distribution w.r.t. variational
-                                                                  parameters
-    """
-    # pylint: disable=line-too-long
-    grad_log_variational_distr_variational_params_lst = []
-    for (jacobi_reparameterization_variational_params, grad_log_variational_distr_params) in zip(
-        jacobi_reparameterization_variational_params_lst, grad_log_variational_distr_params_lst
-    ):
-        grad_log_variational_distr_variational_params_lst.append(
-            np.dot(jacobi_reparameterization_variational_params, grad_log_variational_distr_params)
-        )
-    # pyplint: enable=line-too-long
-
-    return grad_log_variational_distr_variational_params_lst
