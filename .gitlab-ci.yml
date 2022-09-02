@@ -25,31 +25,6 @@ stages:
 #---------------------------------------------------------------------------------------------------
 # Define platform specific settings
 #---------------------------------------------------------------------------------------------------
-.docker_settings:
-  image: continuumio/miniconda3:latest
-  services:
-    - name: mongo:4.1
-      alias: localhost
-  before_script:
-    - export PIP_CACHE_DIR="/opt/cache/pip"
-    - apt-get update
-    - apt-get install gcc -y
-    - apt-get install libgl1-mesa-glx -y
-    - apt-get install libxt6 -y
-    - apt-get install libtbb2 -y
-    - apt-get install gfortran -y
-    - conda env create -f environment.yml -n queens
-    - source activate queens
-    - pip install -e .[develop]
-  only:
-    variables:
-      - $DOCKER_TESTS == "1"
-  tags:
-    - queens-docker
-
-#----------------------------------------------------------------------------------------------
-# Settings
-#----------------------------------------------------------------------------------------------
 .ubuntu_build_settings:
   before_script:
     - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
@@ -209,17 +184,6 @@ license_check:
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
-#---------------------------------------------------------------------------------------------------
-# Docker tests
-#---------------------------------------------------------------------------------------------------
-docker_full_test_suite:
- stage: tests
- extends:
-   - .docker_settings
- script:
-   - pytest -m "unit_tests or integration_tests" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
- needs: []
- when: always
 #---------------------------------------------------------------------------------------------------
 # ubuntu tests
 #---------------------------------------------------------------------------------------------------
