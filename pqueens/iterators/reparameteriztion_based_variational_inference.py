@@ -454,6 +454,7 @@ class RPVIIterator(VariationalInferenceIterator):
         )
         elbo = float(mvn.entropy(mean.flatten(), covariance) + log_unnormalized_posterior_mean)
         self.iteration_data.add(elbo=elbo)
+        self.elbo = elbo
 
     def _verbose_output(self):
         """Give some informative outputs during the VI iterations."""

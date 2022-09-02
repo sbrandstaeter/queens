@@ -615,7 +615,9 @@ class BBVIIterator(VariationalInferenceIterator):
         instant_elbo = selfnormalized_weights * (
             self.log_posterior_unnormalized - self.log_variational_mat
         )
-        self.iteration_data.add(elbo=normalizing_constant * np.mean(instant_elbo))
+        elbo = normalizing_constant * np.mean(instant_elbo)
+        self.iteration_data.add(elbo=elbo)
+        self.elbo = elbo
 
     def _prepare_importance_sampling(self):
         r"""Helper functions for the importance sampling.
