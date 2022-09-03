@@ -4,14 +4,16 @@ import pathlib
 from threading import Thread
 
 from pqueens.drivers import from_config_create_driver
+from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.dictionary_utils import find_keys
 from pqueens.utils.information_output import print_scheduling_information
-from pqueens.utils.manage_singularity import _check_if_new_image_needed, create_singularity_image
-from pqueens.utils.path_utils import relative_path_from_queens
+from pqueens.utils.manage_singularity import (
+    ABS_SINGULARITY_IMAGE_PATH,
+    _check_if_new_image_needed,
+    create_singularity_image,
+)
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.string_extractor_and_checker import check_if_string_in_file
-
-from .scheduler import Scheduler
 
 _logger = logging.getLogger(__name__)
 
@@ -150,11 +152,10 @@ class StandardScheduler(Scheduler):
             f"--job_id={job_id} --batch={batch} --port=000 "
             f"--path_json={str(self.input_file)} --driver_name={self.driver_name}"
         )
-        local_singularity_path = relative_path_from_queens("singularity_image.sif")
 
         cmdlist_remote_main = [
             'singularity run',
-            local_singularity_path,
+            ABS_SINGULARITY_IMAGE_PATH,
             remote_args,
         ]
         cmd_remote_main = ' '.join(cmdlist_remote_main)

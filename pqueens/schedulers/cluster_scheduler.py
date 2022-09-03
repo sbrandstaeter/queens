@@ -1,11 +1,14 @@
 """Cluster scheduler for QUEENS runs."""
 import atexit
+import getpass
 import logging
 import pathlib
+import socket
 
 import numpy as np
 
 from pqueens.drivers import from_config_create_driver
+from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
@@ -13,9 +16,12 @@ from pqueens.utils.path_utils import relative_path_from_pqueens
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
-from .scheduler import Scheduler
-
 _logger = logging.getLogger(__name__)
+
+VALID_PBS_SCHEDULER_TYPES = ["pbs-deep"]
+VALID_SLURM_SCHEDULER_TYPES = ["slurm-bruteforce", "slurm-charon"]
+
+VALID_CLUSTER_SCHEDULER_TYPES = VALID_PBS_SCHEDULER_TYPES + VALID_SLURM_SCHEDULER_TYPES
 
 
 class ClusterScheduler(Scheduler):
@@ -43,6 +49,8 @@ class ClusterScheduler(Scheduler):
         singularity_manager,
         remote,
         remote_connect,
+        job_status_command,
+        job_status_location,
     ):
         """Init method for the cluster scheduler.
 
@@ -61,6 +69,8 @@ class ClusterScheduler(Scheduler):
             remote (bool):             flag for remote scheduling
             remote_connect (str):      (only for remote scheduling) address of remote
                                        computing resource
+            job_status_command (str):command to check job status on cluster
+            job_status_location (str): location of job status in return of check_cmd
         """
         super().__init__(
             experiment_name,
@@ -76,8 +86,10 @@ class ClusterScheduler(Scheduler):
         self.remote = remote
         self.port = None
         self.remote_connect = remote_connect
+        self.job_status_command = job_status_command
+        self.job_status_location = job_status_location
 
-        # Close the ssh ports at when exiting after the queens run
+        # Close the ssh ports when exiting after the queens run
         atexit.register(self.post_run)
 
     @classmethod
@@ -141,35 +153,43 @@ class ClusterScheduler(Scheduler):
         cluster_options['nposttasks'] = scheduler_options.get('num_procs_post', 1)
 
         # set cluster options required specifically for PBS or Slurm
-        if scheduler_type == 'pbs':
+        if scheduler_type in VALID_PBS_SCHEDULER_TYPES:
             cluster_options['start_cmd'] = 'qsub'
-            rel_path = 'utils/jobscript_pbs.sh'
+            jobscript_relative_path = 'utils/jobscript_deep.sh'
             cluster_options['pbs_queue'] = cluster_options.get('pbs_queue', 'batch')
             cls._set_number_procs_pbs(cluster_options, scheduler_options)
-        elif scheduler_type == "slurm":
+            job_status_command = 'qstat'
+            job_status_location = -2
+        elif scheduler_type in VALID_SLURM_SCHEDULER_TYPES:
             cluster_options['start_cmd'] = 'sbatch'
-            rel_path = 'utils/jobscript_slurm.sh'
             cluster_options['slurm_ntasks'] = str(scheduler_options.get('num_procs', 1))
+            if scheduler_type == VALID_SLURM_SCHEDULER_TYPES[0]:
+                jobscript_relative_path = 'utils/jobscript_bruteforce.sh'
+            elif scheduler_type == VALID_SLURM_SCHEDULER_TYPES[1]:
+                jobscript_relative_path = 'utils/jobscript_charon.sh'
+            job_status_command = 'squeue --job'
+            job_status_location = -4
         else:
-            raise ValueError("Know cluster scheduler types are pbs or slurm")
+            raise ValueError(f"Know cluster scheduler types are {VALID_CLUSTER_SCHEDULER_TYPES}")
 
-        abs_path = relative_path_from_pqueens(rel_path)
-        cluster_options['jobscript_template'] = abs_path
+        cluster_options['jobscript_template'] = relative_path_from_pqueens(jobscript_relative_path)
 
         if singularity:
             singularity_path = pathlib.Path(
                 scheduler_options['singularity_settings']['cluster_path']
             )
             cluster_options['singularity_path'] = str(singularity_path)
-            cluster_options['EXE'] = str(singularity_path.joinpath('singularity_image.sif'))
-            cluster_options['singularity_bind'] = scheduler_options['singularity_settings'][
-                'cluster_bind'
-            ]
+            singularity_run_options = (
+                ' --bind ' + scheduler_options['singularity_settings'].get('cluster_bind', '') + ' '
+            )
+            singularity_image_path = singularity_path / 'singularity_image.sif'
+            cluster_options['EXE'] = (
+                'singularity run ' + singularity_run_options + str(singularity_image_path)
+            )
             cluster_options['OUTPUTPREFIX'] = ''
             cluster_options['DATAPROCESSINGFLAG'] = 'true'
         else:
             cluster_options['singularity_path'] = None
-            cluster_options['singularity_bind'] = None
             cluster_options['DATAPROCESSINGFLAG'] = 'false'
 
         # TODO move this to a different place
@@ -192,6 +212,8 @@ class ClusterScheduler(Scheduler):
             singularity_manager=singularity_manager,
             remote=remote,
             remote_connect=remote_connect,
+            job_status_command=job_status_command,
+            job_status_location=job_status_location,
         )
 
     @classmethod
@@ -219,13 +241,14 @@ class ClusterScheduler(Scheduler):
         """
         # pre-run routines required when using Singularity both local and remote
         if self.singularity is True:
-            self.singularity_manager.check_singularity_system_vars()
             self.singularity_manager.prepare_singularity_files()
 
             # pre-run routines required when using Singularity remote only
             if self.remote:
-                _, _, hostname, _ = run_subprocess('hostname -i')
-                _, _, username, _ = run_subprocess('whoami')
+                hostname = socket.gethostname()
+                # this is a hack as long as the LNM dns-server is not fixed (revisit end of 2022)
+                hostname = hostname.replace("lnm.mw.tum.de", "lnm.ed.tum.de")
+                username = getpass.getuser()
                 address_localhost = username.rstrip() + r'@' + hostname.rstrip()
 
                 self.singularity_manager.kill_previous_queens_ssh_remote(username)
@@ -288,10 +311,12 @@ class ClusterScheduler(Scheduler):
             )
 
             # check matching of job ID
-            match = get_cluster_job_id(self.scheduler_type, stdout)
+            cluster_job_id = get_cluster_job_id(
+                self.scheduler_type, stdout, VALID_PBS_SCHEDULER_TYPES
+            )
 
             try:
-                return int(match)
+                return int(cluster_job_id)
             except ValueError:
                 _logger.error(stdout)
                 return None
@@ -317,32 +342,21 @@ class ClusterScheduler(Scheduler):
         failed = False
         job_id = job['id']
 
-        if self.scheduler_type == 'pbs':
-            check_cmd = 'qstat'
-            check_loc = -2
-        elif self.scheduler_type == 'slurm':
-            check_cmd = 'squeue --job'
-            check_loc = -4
-        else:
-            raise RuntimeError(
-                f'Unknown scheduler type "{self.scheduler_type}"! Valid options are pbs, slurm'
-            )
-
         if self.remote:
-            # set check command, check location and delete command for PBS or SLURM
+            # check location and delete command for PBS or SLURM
             # generate check command
             command_list = [
                 'ssh',
                 self.remote_connect,
                 '"',
-                check_cmd,
+                self.job_status_command,
                 str(self.process_ids[str(job_id)]),
                 '"',
             ]
         else:
             # generate check command
             command_list = [
-                check_cmd,
+                self.job_status_command,
                 str(self.process_ids[str(job_id)]),
             ]
 
@@ -354,7 +368,7 @@ class ClusterScheduler(Scheduler):
             output = stdout.split()
 
             # second/fourth to last entry should be job status
-            status = output[check_loc]
+            status = output[self.job_status_location]
             if status in ['Q', 'R', 'H', 'S']:
                 completed = False
 

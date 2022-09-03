@@ -15,7 +15,15 @@ from pqueens.utils import injector
 from pqueens.utils.run_subprocess import run_subprocess
 
 
-@pytest.mark.lnm_cluster
+@pytest.mark.parametrize(
+    "cluster",
+    [
+        pytest.param("deep", marks=pytest.mark.lnm_cluster),
+        pytest.param("bruteforce", marks=pytest.mark.lnm_cluster),
+        pytest.param("charon", marks=pytest.mark.imcs_cluster),
+    ],
+    indirect=True,
+)
 def test_cluster_baci_elementary_effects(
     inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
 ):

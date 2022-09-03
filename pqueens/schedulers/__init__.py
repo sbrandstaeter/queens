@@ -2,15 +2,20 @@
 
 The scheduler package contains a set of scheduler classes which submit
 compute jobs either through a job-scheduling software or through a
-simple system call.
+system call.
 """
+from pqueens.schedulers.cluster_scheduler import VALID_CLUSTER_SCHEDULER_TYPES
 from pqueens.utils.import_utils import get_module_class
 
 VALID_TYPES = {
     'standard': ['pqueens.schedulers.standard_scheduler', 'StandardScheduler'],
-    'pbs': ['pqueens.schedulers..cluster_scheduler', 'ClusterScheduler'],
-    'slurm': ['pqueens.schedulers..cluster_scheduler', 'ClusterScheduler'],
 }
+VALID_TYPES.update(
+    {
+        valid_cluster_scheduler_type: ['pqueens.schedulers.cluster_scheduler', 'ClusterScheduler']
+        for valid_cluster_scheduler_type in VALID_CLUSTER_SCHEDULER_TYPES
+    }
+)
 
 
 def from_config_create_scheduler(config, scheduler_name=None, driver_name=None):
