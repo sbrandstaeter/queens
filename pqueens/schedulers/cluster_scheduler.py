@@ -167,12 +167,6 @@ class ClusterScheduler(Scheduler):
         elif scheduler_type in VALID_SLURM_SCHEDULER_TYPES:
             cluster_options['start_cmd'] = 'sbatch'
             cluster_options['slurm_ntasks'] = str(scheduler_options.get('num_procs', 1))
-            if scheduler_type == BRUTEFORCE_SCHEDULER_TYPE:
-                jobscript_relative_path = 'utils/jobscript_bruteforce.sh'
-            elif scheduler_type == CHARON_SCHEDULER_TYPE:
-                jobscript_relative_path = 'utils/jobscript_charon.sh'
-            job_status_command = 'squeue --job'
-            job_status_location = -4
         else:
             raise ValueError(f"Know cluster scheduler types are {VALID_CLUSTER_SCHEDULER_TYPES}")
 
