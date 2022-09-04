@@ -247,7 +247,7 @@ cluster_tests:
   stage: tests
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-    - pytest -m lnm_cluster --no-cov
+    - pytest -m lnm_cluster --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - build_conda_env
     - build_singularity
@@ -266,7 +266,7 @@ benchmarks:
     - .benchmarks_conditions
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-    - pytest -m benchmark --no-cov
+    - pytest -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - build_conda_env
     - build_singularity
