@@ -213,7 +213,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         current_file = None
         try:
             for regex in self.files_to_be_deleted_regex_lst:
-                for file in Path(base_dir_file).glob(regex):
+                for file in sorted(Path(base_dir_file).glob(regex)):
                     current_file = file
                     file.unlink()
         except Exception as exception:
