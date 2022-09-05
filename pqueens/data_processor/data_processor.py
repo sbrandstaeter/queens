@@ -3,7 +3,7 @@
 import abc
 import glob
 import logging
-import os
+from pathlib import Path
 
 import numpy as np
 
@@ -22,7 +22,9 @@ class DataProcessor(metaclass=abc.ABCMeta):
         file_options_dict (dict): Dictionary with read-in options for
                                 the file
         files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
-                                                The paths can contain regex expressions.
+                                             The paths can contain regex expressions. The paths are
+                                             relative to the particular simulation output folder:
+                                             experiment_dir/<job_id>/output/<here comes your regex>
         data_processor_name (str): Name of the data processor.
         raw_file_data (np.array): Raw data from file.
         processed_data (np.array): Cleaned, filtered or manipulated data_processor data
@@ -139,9 +141,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
             self._filter_and_manipulate_raw_data()
             self._subsequent_data_manipulation()
 
-        for file_path in self.files_to_be_deleted_regex_lst:
-            self._clean_up(file_path)
-
+        self._clean_up(base_dir_file)
         return self.processed_data
 
     def _generate_path_to_file(self, base_dir_file):
@@ -155,8 +155,8 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                         contains wildcards or regex expressions
         """
         file_identifier = self.file_name_identifier
-        file_path_regex = os.path.join(base_dir_file, file_identifier)
-        return file_path_regex
+        file_path_regex = Path(base_dir_file).joinpath(file_identifier)
+        return str(file_path_regex)
 
     def _check_file_exist_and_is_unique(self, file_path_regex):
         """Check if file exists.
@@ -203,21 +203,21 @@ class DataProcessor(metaclass=abc.ABCMeta):
         this file.
         """
 
-    @staticmethod
-    def _clean_up(file_path):
+    def _clean_up(self, base_dir_file):
         """Clean-up files in the output directory.
 
         Args:
-            file_path (str): File path with optional regex for the file that
-                             should be deleted.
-
-        Returns:
-            None
+            base_dir_file (str): Path of the base directory that
+                                 contains the file of interest.
         """
+        current_file = None
         try:
-            os.remove(file_path)
-        except (OSError, FileNotFoundError) as exception:
+            for regex in self.files_to_be_deleted_regex_lst:
+                for file in sorted(Path(base_dir_file).glob(regex)):
+                    current_file = file
+                    file.unlink()
+        except Exception as exception:
             _logger.debug(
-                f"Could not remove file with path: '{file_path}'. "
+                f"Could not remove file with path: '{str(current_file.resolve())}'. "
                 f"The following error was raised: {exception}"
             )
