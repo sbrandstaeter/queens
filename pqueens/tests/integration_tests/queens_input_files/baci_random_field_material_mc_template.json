@@ -47,19 +47,13 @@
     "driver": "driver"
   },
   "driver": {
-    "driver_type": "baci",
-    "driver_params": {
-      "input_template": "{baci_input_preprocessed}",
-      "path_to_executable": "{baci-release}",
-      "path_to_postprocessor": "{post_drt_monitor}",
-      "post_process_options": [
-        "--field=structure --node=81 --start=1"
-      ],
-      "post_file_name_prefix_lst": [
-        "baci_write_random_field_to_dat"
-      ],
-      "data_processor": "data_processor_baci"
-    }
+    "driver_type": "mpi",
+    "input_template": "{baci_input_preprocessed}",
+    "path_to_executable": "{baci-release}",
+    "path_to_postprocessor": "{post_drt_monitor}",
+    "post_process_options": "--field=structure --node=81 --start=1",
+    "post_file_prefix": "baci_write_random_field_to_dat",
+    "data_processor": "data_processor_baci"
   },
   "data_processor_baci": {
     "type": "csv",

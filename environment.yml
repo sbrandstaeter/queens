@@ -5,11 +5,10 @@ channels:
 dependencies:
 ###### use requirements without version fixed specifier where possible ######
   - python==3.8
-  - cython==0.29.26
-  - numpy==1.21.2
+  - cython==0.29.30
+  - numpy==1.21.5
   - scipy==1.7.3
-  - numba==0.53.1
-  - scikit-learn==1.0.1
-  - pandas==1.2.4
+  - numba==0.55.1
+  - scikit-learn==1.1.1
+  - pandas==1.4.3
   - pip
-  - gpy==1.10.0

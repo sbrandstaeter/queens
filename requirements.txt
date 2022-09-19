@@ -45,7 +45,7 @@ coverage[toml]==6.4.3
     # via pytest-cov
 cycler==0.11.0
     # via matplotlib
-cython==0.29.26
+cython==0.29.30
     # via
     #   -r requirements.in
     #   gpy
@@ -129,7 +129,7 @@ lark==1.1.2
     # via gpflow
 libclang==14.0.6
     # via tensorflow
-llvmlite==0.36.0
+llvmlite==0.38.1
     # via numba
 markdown==3.4.1
     # via tensorboard
@@ -154,13 +154,13 @@ multiprocess==0.70.13
     # via pathos
 netcdf4==1.6.0
     # via arviz
-numba==0.53.1
+numba==0.55.1
     # via
     #   -r requirements.in
     #   particles
 numpoly==1.2.3
     # via chaospy
-numpy==1.21.2
+numpy==1.21.5
     # via
     #   -r requirements.in
     #   arviz
@@ -209,7 +209,7 @@ packaging==21.3
     #   pytest
     #   tensorflow
     #   xarray
-pandas==1.2.4
+pandas==1.4.3
     # via
     #   -r requirements.in
     #   arviz
@@ -296,7 +296,7 @@ rsa==4.9
     # via google-auth
 salib==1.4.5
     # via -r requirements.in
-scikit-learn==1.0.1
+scikit-learn==1.1.1
     # via -r requirements.in
 scipy==1.7.3
     # via

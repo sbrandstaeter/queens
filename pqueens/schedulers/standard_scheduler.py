@@ -1,5 +1,6 @@
 """Standard scheduler for QUEENS runs."""
 import logging
+import pathlib
 from threading import Thread
 
 from pqueens.drivers import from_config_create_driver
@@ -19,23 +20,6 @@ class StandardScheduler(Scheduler):
     """Standard scheduler class for QUEENS.
 
     Attributes:
-        experiment_name (str):     name of QUEENS experiment
-        input_file (str):          path to QUEENS input file
-        experiment_dir (str):      path to QUEENS experiment directory
-        driver_name (str):         Name of the driver that shall be used for job submission
-        config (dict):             dictionary containing configuration as provided in
-                                   QUEENS input file
-        remote (bool):             flag for remote scheduling
-        remote connect (str):      (only for remote scheduling) address of remote
-                                   computing resource
-        port (int):                (only for remote scheduling with Singularity) port of
-                                   remote resource for ssh port-forwarding to database
-        cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
-                                   cluster options
-        singularity (bool):        flag for use of Singularity containers
-        scheduler_type (str):      type of scheduler chosen in QUEENS input file
-        process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids as
-                           keys
         max_concurrent (int): Number of maximum jobs that run in parallel
     """
 
@@ -55,24 +39,19 @@ class StandardScheduler(Scheduler):
 
         Args:
             experiment_name (str):     name of QUEENS experiment
-            input_file (str):          path to QUEENS input file
-            experiment_dir (str):      path to QUEENS experiment directory
+            input_file (path):         path to QUEENS input file
+            experiment_dir (path):     path to QUEENS experiment directory
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
-            remote (bool):             flag for remote scheduling
             remote connect (str):      (only for remote scheduling) address of remote
                                        computing resource
-            port (int):                (only for remote scheduling with Singularity) port of
-                                       remote resource for ssh port-forwarding to database
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
             singularity (bool):        flag for use of Singularity containers
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
-            process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids
-                                as keys
             max_concurrent (int): Number of maximum jobs that run in parallel
         """
         super().__init__(
@@ -95,7 +74,6 @@ class StandardScheduler(Scheduler):
             config (dict): QUEENS input dictionary
             scheduler_name (str): Name of the scheduler
             driver_name (str): Name of the driver
-            max_concurrent (int): Number of maximum jobs that run in parallel
 
         Returns:
             instance of standard scheduler class
@@ -108,8 +86,8 @@ class StandardScheduler(Scheduler):
             raise NotImplementedError("Standard scheduler can not be used remotely")
 
         experiment_name = config['global_settings']['experiment_name']
-        experiment_dir = scheduler_options['experiment_dir']
-        input_file = config["input_file"]
+        experiment_dir = pathlib.Path(scheduler_options['experiment_dir'])
+        input_file = pathlib.Path(config["input_file"])
         singularity = scheduler_options.get('singularity', False)
         if not isinstance(singularity, bool):
             raise TypeError(
@@ -133,7 +111,7 @@ class StandardScheduler(Scheduler):
             singularity,
         )
         # find the max_concurrent key in the input file
-        max_concurrent_lst = [value for value in find_keys(config, "max-concurrent")]
+        max_concurrent_lst = list(find_keys(config, 'max-concurrent'))
         if max_concurrent_lst:
             max_concurrent = max_concurrent_lst[0]
         else:
@@ -157,7 +135,6 @@ class StandardScheduler(Scheduler):
 
         Not needed as here no remote operations are done.
         """
-        pass
 
     def _submit_singularity(self, job_id, batch):
         """Submit job locally to Singularity.
@@ -169,9 +146,9 @@ class StandardScheduler(Scheduler):
         Returns:
             int:            process ID
         """
-        local_path_json = self.input_file
-        remote_args = '--job_id={} --batch={} --port={} --path_json={} --driver_name={}'.format(
-            job_id, batch, '000', local_path_json, self.driver_name
+        remote_args = (
+            f"--job_id={job_id} --batch={batch} --port=000 "
+            f"--path_json={str(self.input_file)} --driver_name={self.driver_name}"
         )
         local_singularity_path = relative_path_from_queens("singularity_image.sif")
 
@@ -208,7 +185,6 @@ class StandardScheduler(Scheduler):
 
     def post_run(self):
         """Post run routines."""
-        pass
 
     def _submit_driver(self, job_id, batch):
         """Submit job to driver.

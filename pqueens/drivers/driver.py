@@ -15,32 +15,27 @@ class Driver(metaclass=abc.ABCMeta):
 
     Attributes:
         batch (int):               Current batch of driver calls.
-        direct_scheduling(bool):   flag for direct scheduling
-        post_processor_location (str):   string for identifying either local post-processing
-                                   ('local') or remote post-processing ('remote') or 'None'
         driver_name (str):         Name of the driver used for the analysis. The name is
                                    specified in the json-input file.
-        experiment_dir (str):      path to QUEENS experiment directory
+        experiment_dir (path):     path to QUEENS experiment directory
         experiment_name (str):     name of QUEENS experiment
-        job (dict):                dictionary containing description of current job
+        job (dict,None):           dictionary containing description of current job
         job_id (int):              job ID as provided in database within range [1, n_jobs]
         num_procs (int):           number of processors for processing
-        output_directory (str):    path to output directory (on remote computing resource for
+        output_directory (path):   path to output directory (on remote computing resource for
                                    remote scheduling)
-        remote (bool):             flag for remote scheduling
-        remote_connect (str):      (only for remote scheduling) adress of remote
-                                   computing resource
         result (np.array):         simulation result to be stored in database
         gradient (np.array): gradient of the simulation output w.r.t. to the input
-        singularity (bool):        flag for use of Singularity containers
         database (obj):            database object
+        post_processor (path):     (only for post-processing) path to post_processor of
+                                   respective CAE software
+        data_processor (obj):   instance of data processor class
+        gradient_data_processor (obj):   instance of data processor class for gradient data
     """
 
     def __init__(
         self,
         batch,
-        direct_scheduling,
-        post_processor_location,
         driver_name,
         experiment_dir,
         experiment_name,
@@ -48,40 +43,35 @@ class Driver(metaclass=abc.ABCMeta):
         job_id,
         num_procs,
         output_directory,
-        remote,
-        remote_connect,
         result,
         gradient,
-        singularity,
         database,
+        post_processor,
+        gradient_data_processor,
+        data_processor,
     ):
         """Initialize driver obj.
 
         Args:
             batch (int):               Current batch of driver calls.
-            direct_scheduling(bool):   flag for direct scheduling
-            post_processor_location (str):   string for identifying either local post-processing
-                                       ('local') or remote post-processing ('remote') or 'None'
             driver_name (str):         Name of the driver used for the analysis. The name is
                                        specified in the json-input file.
-            experiment_dir (str):      path to QUEENS experiment directory
+            experiment_dir (path):     path to QUEENS experiment directory
             experiment_name (str):     name of QUEENS experiment
-            job (dict):                dictionary containing description of current job
+            job (dict,None):           dictionary containing description of current job
             job_id (int):              job ID as provided in database within range [1, n_jobs]
             num_procs (int):           number of processors for processing
-            output_directory (str):    path to output directory (on remote computing resource for
+            output_directory (path):   path to output directory (on remote computing resource for
                                        remote scheduling)
-            remote (bool):             flag for remote scheduling
-            remote_connect (str):      (only for remote scheduling) adress of remote
-                                       computing resource
             result (np.array):         simulation result to be stored in database
             gradient (np.array): gradient of the simulation output w.r.t. to the input
-            singularity (bool):        flag for use of Singularity containers
             database (obj):            database object
+            post_processor (path):     (only for post-processing) path to post_processor of
+                                       respective CAE software
+            data_processor (obj):      instance of data processor class
+            gradient_data_processor (obj):   instance of data processor class for gradient data
         """
         self.batch = batch
-        self.direct_scheduling = direct_scheduling
-        self.post_processor_location = post_processor_location
         self.driver_name = driver_name
         self.experiment_dir = experiment_dir
         self.experiment_name = experiment_name
@@ -89,12 +79,12 @@ class Driver(metaclass=abc.ABCMeta):
         self.job_id = job_id
         self.num_procs = num_procs
         self.output_directory = output_directory
-        self.remote = remote
-        self.remote_connect = remote_connect
         self.result = result
         self.gradient = gradient
-        self.singularity = singularity
         self.database = database
+        self.post_processor = post_processor
+        self.gradient_data_processor = gradient_data_processor
+        self.data_processor = data_processor
 
     # ------ Core methods ----------------------------------------------------- #
     def pre_job_run_and_run_job(self):
@@ -131,42 +121,18 @@ class Driver(metaclass=abc.ABCMeta):
             # has not been any data-processing before
             self.result = 'no processed data result'
             if self.job is None:
-                self.job = self.database.load(
-                    self.experiment_name,
-                    self.batch,
-                    'jobs_' + self.driver_name,
-                    {'id': self.job_id},
-                )
+                self.job = self._load_job_from_db()
 
         self.finalize_job_in_db()
 
     # ------ Base class methods ------------------------------------------------ #
     def initialize_job_in_db(self):
-        """Initialize job in database.
+        """Initialize job in database."""
+        self.job = self._load_job_from_db()
 
-        Returns:
-            None
-        """
-        # load job from database
-        self.job = self.database.load(
-            self.experiment_name,
-            self.batch,
-            'jobs_' + self.driver_name,
-            {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
-        )
-
-        # set start time and store it in database
         start_time = time.time()
         self.job['start_time'] = start_time
-
-        # save start time in database to make it accessible for the second post-processing call
-        self.database.save(
-            self.job,
-            self.experiment_name,
-            'jobs_' + self.driver_name,
-            str(self.batch),
-            {'id': self.job_id, 'expt_dir': self.experiment_dir, 'expt_name': self.experiment_name},
-        )
+        self._save_job_in_db()
 
     def data_processor_job(self):
         """Extract data of interest from post-processed file.
@@ -175,18 +141,11 @@ class Driver(metaclass=abc.ABCMeta):
         """
         # load job from database if existent
         if self.job is None:
-            self.job = self.database.load(
-                self.experiment_name,
-                self.batch,
-                'jobs_' + self.driver_name,
-                {'id': self.job_id},
-            )
+            self.job = self._load_job_from_db()
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
-            # call data-processing
-            self.result = self.data_processor.get_data_from_file(self.output_directory)
-
-            _logger.info(f"Got result: {self.result}")
+            self.result = self.data_processor.get_data_from_file(str(self.output_directory))
+            _logger.debug("Got result: %s", self.result)
 
     def gradient_data_processor_job(self):
         """Extract gradient data from post-processed file.
@@ -195,86 +154,64 @@ class Driver(metaclass=abc.ABCMeta):
         """
         # load job from database if existent
         if self.job is None:
-            self.job = self.database.load(
-                self.experiment_name,
-                self.batch,
-                'jobs_' + self.driver_name,
-                {'id': self.job_id},
-            )
+            self.job = self._load_job_from_db()
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
-            # call data-processing
-            self.gradient = self.gradient_data_processor.get_data_from_file(self.output_directory)
-            _logger.debug(f"Got gradient: {self.gradient}")
+            self.gradient = self.gradient_data_processor.get_data_from_file(
+                str(self.output_directory)
+            )
+            _logger.debug("Got gradient: %s", self.gradient)
 
     def finalize_job_in_db(self):
         """Finalize job in database."""
         if self.result is None:
-            self.job['result'] = None  # TODO: maybe we should better use a pandas format here
+            self.job['result'] = None
             self.job['gradient'] = None
             self.job['status'] = 'failed'
-            if not self.direct_scheduling:
-                self.job['end_time'] = time.time()
-            self.database.save(
-                self.job,
-                self.experiment_name,
-                'jobs_' + self.driver_name,
-                str(self.batch),
-                {
-                    'id': self.job_id,
-                    'expt_dir': self.experiment_dir,
-                    'expt_name': self.experiment_name,
-                },
-            )
+            self.job['end_time'] = time.time()
+            self._save_job_in_db()
         else:
             self.job['result'] = self.result
             self.job['gradient'] = self.gradient
             self.job['status'] = 'complete'
-            if self.job['start_time'] and not self.direct_scheduling:
+            if self.job['start_time']:
                 self.job['end_time'] = time.time()
                 computing_time = self.job['end_time'] - self.job['start_time']
                 _logger.info(
-                    "Successfully completed job {:d} (No. of proc.: {:d}, "
-                    "computing time: {:08.2f} s).\n".format(
-                        self.job_id, self.num_procs, computing_time
-                    )
+                    "Successfully completed job %s (No. of proc.: %s, computing time: %s s).\n",
+                    self.job_id,
+                    self.num_procs,
+                    computing_time,
                 )
-            self.database.save(
-                self.job,
-                self.experiment_name,
-                'jobs_' + self.driver_name,
-                str(self.batch),
-                {
-                    'id': self.job_id,
-                    'expt_dir': self.experiment_dir,
-                    'expt_name': self.experiment_name,
-                },
-            )
+            self._save_job_in_db()
+            _logger.info("Saved job %s to database.", self.job_id)
 
-    # ---------------- COMMAND-ASSEMBLY METHODS ----------------------------------
-    def assemble_remote_run_cmd(self, run_cmd):
-        """Assemble command for remote run.
+    def _load_job_from_db(self):
+        """Load job from database."""
+        return self.database.load(
+            self.experiment_name,
+            self.batch,
+            'jobs_' + self.driver_name,
+            {'id': self.job_id},
+        )
 
-        Returns:
-            remote run command
-        """
-        command_list = [
-            'ssh',
-            self.remote_connect,
-            '"cd',
-            self.experiment_dir,
-            ';',
-            run_cmd,
-            '"',
-        ]
+    def _save_job_in_db(self):
+        """Save job in database."""
+        self.database.save(
+            self.job,
+            self.experiment_name,
+            'jobs_' + self.driver_name,
+            str(self.batch),
+            {
+                'id': self.job_id,
+                'expt_dir': str(self.experiment_dir),
+                'expt_name': self.experiment_name,
+            },
+        )
 
-        return ' '.join(filter(None, command_list))
-
-    # ---------------- CHILD METHODS THAT NEED TO BE IMPLEMENTED ---------------
     @abc.abstractmethod
     def prepare_input_files(self):
         """Abstract method for preparing input file(s)."""
-        pass
 
     @abc.abstractmethod
     def run_job(self):
@@ -283,7 +220,6 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             None
         """
-        pass
 
     @abc.abstractmethod
     def post_processor_job(self):
@@ -292,4 +228,3 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             None
         """
-        pass

@@ -1,7 +1,5 @@
 """Function to generate a job or task script for submission."""
 
-import os
-
 from pqueens.utils.injector import inject
 from pqueens.utils.path_utils import relative_path_from_pqueens
 from pqueens.utils.run_subprocess import run_subprocess
@@ -12,7 +10,7 @@ def generate_submission_script(
 ):
     """Generate a submission script.
 
-    Based on based on a job-script template.
+    Based on a job-script template.
 
     Args:
         script_options (dict): Options for the submission
@@ -27,7 +25,7 @@ def generate_submission_script(
     inject(script_options, submission_script_template, local_dummy_path)
 
     # copy submission script to specified local or remote location
-    if connect_to_resource == None:
+    if connect_to_resource is None:
         command_list = ['cp', local_dummy_path, submission_script_path]
     else:
         command_list = ['scp', local_dummy_path, connect_to_resource + ':' + submission_script_path]

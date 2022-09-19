@@ -1,6 +1,6 @@
 """Python function module.
 
-This module is outdated and should therefore no be used.
+This module is outdated and should therefore not be used.
 """
 import logging
 import os
@@ -28,7 +28,7 @@ def python_function_driver(job):
 
     # change to directory.
     os.chdir(job['expt_dir'])
-    _logger.info("Changed to directory %s\n" % (os.getcwd()))
+    _logger.info("Changed to directory %s\n", os.getcwd())
 
     # convert dict to vector of parameters.
     params = {}
@@ -44,17 +44,17 @@ def python_function_driver(job):
             raise Exception("Unknown parameter type.")
 
     # load module and run
-    main_file = job['driver_params']['main-file']
+    main_file = job['main-file']
     if main_file[-3:] == '.py':
         main_file = main_file[:-3]
-    _logger.info('Importing %s.py\n' % main_file)
+    _logger.info('Importing %s.py\n', main_file)
     module = __import__(main_file)
-    _logger.info('Running %s.main()\n' % main_file)
+    _logger.info('Running %s.main()\n', main_file)
     result = module.main(job['id'], params)
 
     # change back
     os.chdir('..')
 
-    _logger.info("Got result %s\n" % (result))
+    _logger.info("Got result %s\n", result)
 
     return result

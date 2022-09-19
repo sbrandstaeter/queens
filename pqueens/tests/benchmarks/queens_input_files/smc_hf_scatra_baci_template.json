@@ -100,19 +100,12 @@
     "num_procs_post": 1
   },
   "driver": {
-    "driver_type": "baci",
-    "driver_params": {
-      "input_template": "{baci_hf_input}",
-      "path_to_executable": "{baci-release}",
-      "path_to_postprocessor": "{post_drt_ensight}",
-      "post_file_name_prefix_lst": [
-        "scatra"
-      ],
-      "post_process_options": [
-        ""
-      ],
-      "data_processor": "data_processor_baci"
-    }
+    "driver_type": "mpi",
+    "input_template": "{baci_hf_input}",
+    "path_to_executable": "{baci-release}",
+    "path_to_postprocessor": "{post_drt_ensight}",
+    "post_file_name_prefix": "scatra",
+    "data_processor": "data_processor_baci"
   },
   "data_processor_baci": {
     "type": "ensight",

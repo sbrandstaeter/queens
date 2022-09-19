@@ -10,10 +10,6 @@
 #SBATCH --ntasks={slurm_ntasks}
 # Walltime: (hours:minutes:seconds)
 #SBATCH --time={walltime}
-# Exclusivity:
-#{slurm_exclusive}SBATCH --exclusive
-# Exclude nodes: (e.g. exclude node07)
-#{slurm_exclude}SBATCH --exclude={slurm_excl_node}
 ###########################################
 
 ##########################################
@@ -35,12 +31,10 @@ RESTART_FROM_PREFIX=xxx                  #
 
 ##########################################
 #                                        #
-#     POST- AND DATA-PROCESSING     #
+#     POST- AND DATA-PROCESSING          #
 #     SPECIFICATION                      #
 #                                        #
 ##########################################
-DoPostprocess={POSTPROCESSFLAG} # post-processing flag for non-singularity run
-POSTEXE={POSTEXE} # post-processing executable for non-singularity run
 DoDataProcessing={DATAPROCESSINGFLAG} # post- and data-processing flag for singularity run
 
 #################################################################
@@ -53,21 +47,6 @@ trap 'EarlyTermination; StageOut' 2 9 15 18
 DoChecks
 StageIn
 RunProgram
-wait
-#RunPostprocessor
-# Post-processing for non-singularity run
-# (only for post-processor without additional options so far)
-if [ $DoPostprocess = true ]
-then
-  if [ $RESTART -le 0 ]
-  then
-    $MPI_RUN $MPIFLAGS -np {nposttasks} $POSTEXE --file=$WORKDIR/$OUTPUTPREFIX
-  else
-    echo Attention! You are postprocessing files from a restarted simulation. Only the new data is postprocessed, as only this data is available.
-    echo
-    $MPI_RUN $MPIFLAGS -np {nposttasks} $POSTEXE --file=$WORKDIR/$OUTPUTPREFIX
-  fi
-fi
 wait
 StageOut
 #Show
