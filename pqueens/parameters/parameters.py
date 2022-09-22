@@ -58,8 +58,8 @@ def from_config_create_parameters(config, pre_processor=None):
 def _add_parameters_keys(parameters_keys, parameter_name, dimension):
     """Add parameter keys to existing parameter keys.
 
-    If the dimension of a parameter is larger than one, a separate unique key is added for each parameter
-    member.
+    If the dimension of a parameter is larger than one, a separate unique key is added for each
+    parameter member.
     Example: If parameter x1 is 3-dimensional the keys x1_0, x1_1, x1_2 is added.
              If parameter x1 is 1-dimensional the key x1 is added.
 
@@ -112,7 +112,7 @@ class Parameters:
         """
         samples = np.zeros((num_samples, self.num_parameters))
         current_index = 0
-        for parameter in self.dict.values():
+        for parameter in self.to_list():
             samples[
                 :, current_index : current_index + parameter.dimension
             ] = parameter.draw_samples(num_samples)
@@ -128,10 +128,26 @@ class Parameters:
         samples = samples.reshape(-1, self.num_parameters)
         logpdf = 0
         i = 0
-        for parameter in self.dict.values():
+        for parameter in self.to_list():
             logpdf += parameter.distribution.logpdf(samples[:, i : i + parameter.dimension])
             i += parameter.dimension
         return logpdf
+
+    def grad_joint_logpdf(self, samples):
+        """Evaluate the gradient of the joint logpdf w.r.t. the samples.
+
+        Returns:
+            grad_logpdf (np.ndarray): Gradient of the joint logpdf w.r.t. the samples
+        """
+        samples = samples.reshape(-1, self.num_parameters)
+        grad_logpdf = np.zeros(samples.shape)
+        j = 0
+        for parameter in self.to_list():
+            grad_logpdf[:, j : j + parameter.dimension] = parameter.distribution.grad_logpdf(
+                samples[:, j : j + parameter.dimension]
+            )
+            j += parameter.dimension
+        return grad_logpdf
 
     def inverse_cdf_transform(self, samples):
         """Transform samples to unit interval.
