@@ -176,13 +176,13 @@ class GaussianLikelihood(LikelihoodModel):
         log_likelihood_output = self.normal_distribution.logpdf(model_output)
 
         if gradient_bool:
-            model_gradient_batch = model_output_dict['gradient']
-            grad_log_likelihood_lst = []
-            for output, model_gradient in zip(model_output, model_gradient_batch):
-                grad_log_likelihood_lst.append(
-                    np.dot(self.normal_distribution.grad_logpdf(output), model_gradient).T
-                )
-            log_likelihood_output = (log_likelihood_output, grad_log_likelihood_lst)
+            model_gradient = model_output_dict['gradient']
+            grad_log_likelihood = np.sum(
+                self.normal_distribution.grad_logpdf(model_output)[:, :, np.newaxis]
+                * model_gradient,
+                axis=1,
+            )
+            log_likelihood_output = (log_likelihood_output, grad_log_likelihood)
 
         return log_likelihood_output
 

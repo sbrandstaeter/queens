@@ -8,7 +8,6 @@ from pqueens.iterators.variational_inference import (
     VALID_EXPORT_FIELDS,
     VariationalInferenceIterator,
 )
-from pqueens.utils import variational_inference_utils
 from pqueens.utils.collection_utils import CollectionObject
 from pqueens.utils.fd_jacobian import fd_jacobian, get_positions
 from pqueens.utils.valid_options_utils import check_if_valid_options, get_option
@@ -262,10 +261,21 @@ class RPVIIterator(VariationalInferenceIterator):
             )
         )
 
-        grad_log_prior_lst = self.calculate_grad_log_prior_params(sample_batch)
-        log_prior_lst = self.get_log_prior(sample_batch)
+        grad_log_priors = self.parameters.grad_joint_logpdf(sample_batch)
+        log_priors = self.parameters.joint_logpdf(sample_batch)
         grad_variational_lst = self.variational_distribution_obj.grad_logpdf_sample(
             sample_batch, self.variational_params
+        ).reshape(self.n_samples_per_iter, -1)
+
+        log_likelihood_batch, grad_log_likelihood_batch = self.calculate_grad_log_likelihood_params(
+            sample_batch
+        )
+
+        # calculate the elbo gradient per sample
+        sample_elbo_grad = np.sum(
+            (grad_log_likelihood_batch + grad_log_priors - grad_variational_lst)[:, np.newaxis, :]
+            * jacobi_reparameterization_lst,
+            axis=2,
         )
 
         # check if score function should be added to the derivative
@@ -275,70 +285,17 @@ class RPVIIterator(VariationalInferenceIterator):
             score_function = self.variational_distribution_obj.grad_params_logpdf(
                 self.variational_params, sample_batch
             ).T
-        else:
-            score_function = np.zeros((1, self.variational_params.size))
-
-        log_likelihood_batch, grad_log_likelihood_batch = self.calculate_grad_log_likelihood_params(
-            sample_batch
-        )
-        sample_elbo_grad = np.zeros((1, self.variational_params.size))
-        log_unnormalized_posterior = 0
-        for (
-            grad_log_likelihood,
-            grad_log_prior,
-            grad_variational,
-            jacobi_reparameterization,
-            grad_log_variational_distr_variational_params,
-            log_likelihood,
-            log_prior,
-        ) in zip(
-            grad_log_likelihood_batch,
-            grad_log_prior_lst,
-            grad_variational_lst,
-            jacobi_reparameterization_lst,
-            score_function,
-            log_likelihood_batch,
-            log_prior_lst,
-        ):
-
-            # calculate the elbo gradient for one sample
-            sample_elbo_grad += np.dot(
-                (grad_log_likelihood + grad_log_prior - grad_variational).T,
-                jacobi_reparameterization.T,
-            )
-            if self.score_function_bool:
-                sample_elbo_grad = (
-                    sample_elbo_grad - grad_log_variational_distr_variational_params.T
-                )
-
-            # calculate the unnormalized posterior for one sample
-            log_unnormalized_posterior += log_likelihood + np.sum(log_prior)
+            sample_elbo_grad = sample_elbo_grad - score_function
 
         # MC estimate of elbo gradient
-        grad_elbo = sample_elbo_grad / self.n_samples_per_iter
+        grad_elbo = np.sum(sample_elbo_grad, axis=0) / self.n_samples_per_iter
         # MC estimate for unnormalized posterior
-        log_unnormalized_posterior = log_unnormalized_posterior / self.n_samples_per_iter
+        log_unnormalized_posterior = (
+            np.sum(log_likelihood_batch + log_priors) / self.n_samples_per_iter
+        )
 
         self._calculate_elbo(log_unnormalized_posterior)
         return grad_elbo.reshape(-1, 1)
-
-    def calculate_grad_log_prior_params(self, sample_batch):
-        """Gradient of the log-prior distribution w.r.t. the random parameters.
-
-        Args:
-            sample_batch (np.array): Current parameter sample batch
-
-        Returns:
-            grad_log_prior_lst (lst): List of gradients of log-prior distribution w.r.t. the
-                                      input parameters,
-                                      evaluated at the parameter value
-        """
-        grad_log_prior_lst = []
-        for parameter, sample in zip(self.parameters.to_list(), sample_batch):
-            grad_log_prior_lst.append(parameter.distribution.grad_logpdf(sample).reshape(-1))
-
-        grad_log_priors = np.array(grad_log_prior_lst).flatten()
-        return grad_log_priors
 
     def calculate_grad_log_likelihood_params(self, sample_batch):
         """Calculate the gradient/jacobian of the log-likelihood function.
@@ -370,14 +327,14 @@ class RPVIIterator(VariationalInferenceIterator):
             sample_batch (np.array): Current sample batch of the random parameters
 
         Returns:
-            grad_log_likelihood_lst (list): List of gradients of the log-likelihood function
-                                            w.r.t. the input sample
+            grad_log_likelihood (np.ndarray): Gradients of the log-likelihood function
+                                              w.r.t. the input sample
             log_likelihood (float): Value of the log-likelihood function
         """
-        log_likelihood, grad_log_likelihood_lst = self.eval_log_likelihood(
+        log_likelihood, grad_log_likelihood = self.eval_log_likelihood(
             sample_batch, gradient_bool=True
         )
-        return log_likelihood, grad_log_likelihood_lst
+        return log_likelihood, grad_log_likelihood
 
     def _calculate_grad_log_lik_params_finite_difference(self, sample_batch):
         """Gradient of the log likelihood with finite differences.
@@ -389,8 +346,8 @@ class RPVIIterator(VariationalInferenceIterator):
             sample_batch (np.array): Current sample batch of the random parameters
 
         Returns:
-            grad_log_likelihood_lst (list): List with gradients of the log-likelihood function
-                                            per sample, w.r.t. to the current sample
+            grad_log_likelihood (np.ndarray): Gradients of the log-likelihood function
+                                              per sample, w.r.t. to the current sample
             log_likelihood_batch (float): Value of the log-likelihood function for the batch of
                                           input samples
         """
@@ -433,8 +390,8 @@ class RPVIIterator(VariationalInferenceIterator):
                     method=self.finite_difference_method,
                 )
             )
-
-        return log_likelihood_batch, grad_log_likelihood_lst
+        grad_log_likelihood = np.array(grad_log_likelihood_lst).reshape(sample_batch.shape[0], -1)
+        return log_likelihood_batch, grad_log_likelihood
 
     def _calculate_elbo(self, log_unnormalized_posterior_mean):
         """Calculate the ELBO of the current variational approximation.
@@ -507,15 +464,3 @@ class RPVIIterator(VariationalInferenceIterator):
         )
 
         return likelihood_return_tuple
-
-    def get_log_prior(self, sample_batch):
-        """Evaluate the log prior of the model for current sample batch.
-
-        Args:
-            sample_batch (np.array): Sample batch for which the model should be evaluated
-
-        Returns:
-            log_prior (np.array): log-prior vector evaluated for current sample batch
-        """
-        log_prior = self.parameters.joint_logpdf(sample_batch)
-        return log_prior
