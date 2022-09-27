@@ -20,7 +20,6 @@ def job(tmpdir_factory):
 @pytest.fixture(scope='session')
 def baci_job(job, tmpdir_factory):
     """Generic job dictionary for testing Baci."""
-
     baci_dir = tmpdir_factory.mktemp('baci_dir')
 
     job['simulation_input_template'] = str(
@@ -85,7 +84,6 @@ def baci_post_cmds(baci_job, baci_output_file):
 @pytest.fixture(scope='session')
 def driver_base_settings(job):
     """A base settings dict that can be used to create Driver object."""
-
     base_settings = dict()
 
     base_settings['driver_name'] = 'my_driver'

@@ -14,7 +14,6 @@ from pqueens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get
 @pytest.fixture(scope='module', params=['2-point', '3-point'])
 def method(request):
     """All possible finite difference schemes."""
-
     return request.param
 
 
@@ -27,7 +26,6 @@ def rel_step(request):
 @pytest.fixture(scope='module')
 def x0():
     """Position where Jacobian should be evaluated."""
-
     return np.array([-3.0, 4.0])
 
 
@@ -44,7 +42,6 @@ def x0():
 )
 def bounds(request):
     """Possible combination of bounds."""
-
     return request.param
 
 

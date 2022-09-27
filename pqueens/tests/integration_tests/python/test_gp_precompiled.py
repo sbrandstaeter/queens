@@ -13,7 +13,6 @@ from pqueens.utils import injector
 
 def test_gp_precompiled_one_dim(inputdir, tmpdir):
     """Test case for GPPrecompiled based GP model."""
-
     template = os.path.join(inputdir, 'gp_precompiled_template.json')
     input_file = os.path.join(tmpdir, 'gp_precompiled.json')
 

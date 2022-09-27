@@ -73,7 +73,6 @@ class TestLHSIterator(unittest.TestCase):
 
     def test_correct_sampling(self):
         """Test if we get correct samples."""
-
         # np.set_printoptions(precision=10)
         # print("Samples first row {}".format(self.my_iterator.samples[0,:]))
         # print("Sample mean {}".format(my_means))

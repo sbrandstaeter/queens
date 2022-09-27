@@ -69,7 +69,6 @@ class TestMCIterator(unittest.TestCase):
 
     def test_correct_sampling(self):
         """Test if we get correct samples."""
-
         self.my_iterator.pre_run()
 
         # check if mean and std match

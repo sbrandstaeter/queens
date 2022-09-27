@@ -76,7 +76,6 @@ def default_qmc_iterator(default_model, global_settings):
 
 def test_correct_sampling(default_qmc_iterator):
     """Test if we get correct samples."""
-
     default_qmc_iterator.pre_run()
 
     # check if mean and std match

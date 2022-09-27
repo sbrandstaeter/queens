@@ -64,8 +64,7 @@ def dummy_sensitivity_indices():
 
 
 def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
-    """Test whether bar plot of sensitivity indices is plotting and saving the
-    plot as a file.
+    """Test whether bar plot of sensitivity indices is plotting and saving the plot as a file.
 
     Raises:
         AssertionError: If no file was saved.
@@ -77,13 +76,11 @@ def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
 
 
 def test_sa_visualization_scatter(tmpdir, dummy_vis, dummy_sensitivity_indices):
-    """Test whether scatter plot of sensitivity indices is plotting and saving
-    the plot as a file.
+    """Test whether scatter plot of sensitivity indices is plotting and saving the plot as a file.
 
     Raises:
         AssertionError: If no file was saved.
     """
-
     dummy_vis.plot_si_scatter(dummy_sensitivity_indices)
 
     path_output_image = os.path.join(tmpdir, "test_sa_visualization_scatter.png")

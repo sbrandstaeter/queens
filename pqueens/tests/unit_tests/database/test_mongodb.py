@@ -162,7 +162,6 @@ def batch_id_2():
 
 def test_connection():
     """Test connection to mongodb service."""
-
     try:
         db = MongoDB.from_config_create_database({"database": {"address": "localhost:27017"}})
     except:

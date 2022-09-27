@@ -11,7 +11,6 @@ from pqueens.utils import smc_utils
 @pytest.fixture(scope='module', params=[1, 10])
 def num_particles(request):
     """Return possible number of weights."""
-
     return request.param
 
 

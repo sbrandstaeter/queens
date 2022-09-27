@@ -31,7 +31,6 @@ def accept_rate_and_scale_covariance(request):
 
 def test_tune_scale_covariance(accept_rate_and_scale_covariance):
     """Test the tuning of scale covariance in MCMC methods."""
-
     accept_rate = accept_rate_and_scale_covariance[0]
     expected_scale = accept_rate_and_scale_covariance[1]
     current_scale = 1.0
@@ -45,7 +44,6 @@ def test_tune_scale_covariance_multiple_chains():
     We assume here to have 7 parallel chains, that correspond to all
     possible tuning factors.
     """
-
     accept_rate = np.array([[1e-4, 1e-2, 1e-1, 4e-1, 6e-1, 8e-1, 9.9e-1]]).T
     expected_scale = np.array([[0.1, 0.5, 0.9, 1.0, 1.1, 2.0, 10.0]]).T
 

@@ -42,7 +42,6 @@ def logpdf1(request):
 
 def test_temper_factory(temper_keyword_and_temper_type):
     """Test the function factory for valid tempering functions."""
-
     temper, temper_type_sol = temper_keyword_and_temper_type
     temper_type = smc_utils.temper_factory(temper)
 
@@ -51,7 +50,6 @@ def test_temper_factory(temper_keyword_and_temper_type):
 
 def test_temper_factory_invalid():
     """Test the function factory for invalid keyword."""
-
     temper = "invalid"
     with pytest.raises(ValueError, match=r'Unknown type.*'):
         smc_utils.temper_factory(temper)
@@ -59,7 +57,6 @@ def test_temper_factory_invalid():
 
 def test_temper_logpdf_bayes(logpdf0, logpdf1, temper_parameter):
     """Test the bayesian tempering function."""
-
     sum1 = temper_parameter * logpdf1
     if math.isclose(temper_parameter, 0.0, abs_tol=1e-8):
         sum1 = 0.0
@@ -71,7 +68,6 @@ def test_temper_logpdf_bayes(logpdf0, logpdf1, temper_parameter):
 
 def test_temper_logpdf_bayes_posinf_invalid(logpdf0, temper_parameter):
     """Test the bayesian tempering function is invalid for infinity."""
-
     with pytest.raises(ValueError):
         smc_utils.temper_logpdf_bayes(np.inf, logpdf0, temper_parameter)
     with pytest.raises(ValueError):
@@ -80,7 +76,6 @@ def test_temper_logpdf_bayes_posinf_invalid(logpdf0, temper_parameter):
 
 def test_temper_logpdf_generic(logpdf0, logpdf1, temper_parameter):
     """Test the generic tempering function."""
-
     if math.isclose(temper_parameter, 0.0, abs_tol=1e-8):
         tempered_logpdf_sol = logpdf0
     elif math.isclose(temper_parameter, 1.0):
@@ -94,7 +89,6 @@ def test_temper_logpdf_generic(logpdf0, logpdf1, temper_parameter):
 
 def test_temper_logpdf_generic_posinf_invalid(logpdf0, temper_parameter):
     """Test the generic tempering function is invalid for infinity."""
-
     with pytest.raises(ValueError):
         smc_utils.temper_logpdf_generic(np.inf, logpdf0, temper_parameter)
     with pytest.raises(ValueError):
