@@ -4,20 +4,17 @@ import pytest
 from pqueens.utils.valid_options_utils import InvalidOptionError, check_if_valid_options, get_option
 
 
-@pytest.mark.unit_tests
 def test_check_if_valid_options_valid(requested_options_valid, valid_options):
     """Test check_if_valid_options for valid options."""
     assert check_if_valid_options(valid_options, requested_options_valid) is None
 
 
-@pytest.mark.unit_tests
 def test_check_if_valid_options_invalid(requested_options_invalid, valid_options):
     """Test check_if_valid_options for invalid options."""
     with pytest.raises(InvalidOptionError):
         check_if_valid_options(valid_options, requested_options_invalid)
 
 
-@pytest.mark.unit_tests
 def test_check_if_valid_options_error_message(valid_options):
     """Test error message raised by check_if_valid_options."""
     requested_option = "not_a_valid_option"
@@ -30,14 +27,12 @@ def test_check_if_valid_options_error_message(valid_options):
         assert "a_valid_option, another_valid_option" in error_message
 
 
-@pytest.mark.unit_tests
 def test_get_option_valid(valid_options):
     """Test get_option for a valid option."""
     requested_option = "a_valid_option"
     assert get_option(valid_options, requested_option) == valid_options[requested_option]
 
 
-@pytest.mark.unit_tests
 def test_get_option_invalid(valid_options):
     """Test get_option for an invalid option."""
     requested_option = "not_a_valid_option"

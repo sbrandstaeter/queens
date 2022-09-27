@@ -14,7 +14,6 @@ def algorithm(request):
     return request.param
 
 
-@pytest.mark.integration_tests
 def test_optimization_paraboloid_constrained(inputdir, tmpdir, algorithm):
     """Test different solution algorithms in optimization iterator.
 

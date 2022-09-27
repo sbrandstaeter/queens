@@ -74,7 +74,6 @@ def default_qmc_iterator(default_model, global_settings):
     return my_iterator
 
 
-@pytest.mark.unit_tests
 def test_correct_sampling(default_qmc_iterator):
     """Test if we get correct samples."""
 
@@ -98,7 +97,6 @@ def test_correct_sampling(default_qmc_iterator):
     )
 
 
-@pytest.mark.unit_tests
 def test_correct_results(default_qmc_iterator):
     """Test if we get correct results."""
     default_qmc_iterator.pre_run()

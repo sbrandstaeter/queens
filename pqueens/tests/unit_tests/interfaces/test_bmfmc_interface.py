@@ -65,7 +65,6 @@ def approx_name():
 
 
 # --------- actual unit_tests ---------------------------
-@pytest.mark.unit_tests
 def test_init(config, approx_name):
     """Test initialization."""
     interface = BmfmcInterface(config, approx_name)
@@ -75,7 +74,6 @@ def test_init(config, approx_name):
     assert interface.probabilistic_mapping_obj is None
 
 
-@pytest.mark.unit_tests
 def test_map(mocker, default_interface, probabilistic_mapping_obj, map_output_dict):
     """Test mapping."""
     mocker.patch(
@@ -97,7 +95,6 @@ def test_map(mocker, default_interface, probabilistic_mapping_obj, map_output_di
     np.testing.assert_array_almost_equal(var_Y_HF_given_Z_LF, expected_Y_HF_var, decimal=6)
 
 
-@pytest.mark.unit_tests
 def test_build_approximation(mocker, default_interface):
     """Test training of surrogate model."""
     Z = np.atleast_2d(np.linspace(0.0, 1.0, 10))

@@ -15,7 +15,6 @@ def num_particles(request):
     return request.param
 
 
-@pytest.mark.unit_tests
 def test_calc_ess_equal_weights(num_particles):
     """Test special case of resampled particles.
 
@@ -29,7 +28,6 @@ def test_calc_ess_equal_weights(num_particles):
     assert np.isclose(ess, ess_sol)
 
 
-@pytest.mark.unit_tests
 def test_calc_ess():
     """Test ESS=0.5*N.
 

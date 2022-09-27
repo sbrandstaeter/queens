@@ -96,7 +96,6 @@ def uncorrelated_vector_2d(num_draws):
 # -----------------------------------------------------------------------
 
 # ------------- univariate --------------
-@pytest.mark.unit_tests
 def test_init_lognormal_1d(lognormal_1d, mean_1d, covariance_1d):
     """Test init method of LogNormal Distribution class."""
     std = np.sqrt(covariance_1d)
@@ -110,7 +109,6 @@ def test_init_lognormal_1d(lognormal_1d, mean_1d, covariance_1d):
     np.testing.assert_allclose(lognormal_1d.covariance, var_ref)
 
 
-@pytest.mark.unit_tests
 def test_init_lognormal_1d_incovariance(mean_1d, covariance_1d):
     """Test init method of LogNormal Distribution class."""
     with pytest.raises(np.linalg.LinAlgError, match=r'Cholesky decomposition failed *'):
@@ -122,7 +120,6 @@ def test_init_lognormal_1d_incovariance(mean_1d, covariance_1d):
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_cdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d):
     """Test cdf method of LogNormal distribution class."""
     std = np.sqrt(covariance_1d)
@@ -130,7 +127,6 @@ def test_cdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d):
     np.testing.assert_allclose(lognormal_1d.cdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_draw_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, uncorrelated_vector_1d, mocker):
     """Test the draw method of lognormal distribution."""
     mocker.patch('numpy.random.randn', return_value=uncorrelated_vector_1d)
@@ -139,7 +135,6 @@ def test_draw_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, uncorrelated_ve
     np.testing.assert_equal(draw, ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_logpdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d):
     """Test logpdf method of LogNormal distribution class."""
     std = np.sqrt(covariance_1d)
@@ -148,7 +143,6 @@ def test_logpdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d
     np.testing.assert_allclose(lognormal_1d.logpdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_grad_logpdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d):
     """Test grad_logpdf method of LogNormal distribution class."""
     sample_pos_1d = sample_pos_1d.reshape(-1, 1)
@@ -165,7 +159,6 @@ def test_grad_logpdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_p
     np.testing.assert_allclose(lognormal_1d.grad_logpdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_pdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d):
     """Test pdf method of LogNormal distribution class."""
     std = np.sqrt(covariance_1d)
@@ -174,7 +167,6 @@ def test_pdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d):
     np.testing.assert_allclose(lognormal_1d.pdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_ppf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d):
     """Test ppf method of LogNormal distribution class."""
     std = np.sqrt(covariance_1d)
@@ -184,7 +176,6 @@ def test_ppf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d):
 
 
 # ------------- multivariate --------------
-@pytest.mark.unit_tests
 def test_init_lognormal_2d(lognormal_2d, mean_2d, covariance_2d):
     """Test init method of LogNormal Distribution class."""
     std = np.diag(np.sqrt(covariance_2d))
@@ -208,7 +199,6 @@ def test_init_lognormal_2d(lognormal_2d, mean_2d, covariance_2d):
     np.testing.assert_allclose(lognormal_2d.covariance, var_ref)
 
 
-@pytest.mark.unit_tests
 def test_cdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
     """Test cdf method of LogNormal distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
@@ -220,7 +210,6 @@ def test_cdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
     np.testing.assert_allclose(lognormal_2d.cdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_draw_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, uncorrelated_vector_2d, mocker):
     """Test the draw method of lognormal distribution."""
     mocker.patch('numpy.random.randn', return_value=uncorrelated_vector_2d)
@@ -229,7 +218,6 @@ def test_draw_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, uncorrelated_ve
     np.testing.assert_equal(draw, ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_logpdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
     """Test logpdf method of LogNormal distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
@@ -241,7 +229,6 @@ def test_logpdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d
     np.testing.assert_allclose(lognormal_2d.logpdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_grad_logpdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
     """Test grad_logpdf method of LogNormal distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
@@ -256,7 +243,6 @@ def test_grad_logpdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_p
     np.testing.assert_allclose(lognormal_2d.grad_logpdf(sample_pos_2d), np.array(ref_sol_list))
 
 
-@pytest.mark.unit_tests
 def test_pdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
     """Test pdf method of LogNormal distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
@@ -268,14 +254,12 @@ def test_pdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
     np.testing.assert_allclose(lognormal_2d.pdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_ppf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d):
     """Test ppf method of LogNormal distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
         lognormal_2d.ppf(np.zeros(2))
 
 
-@pytest.mark.unit_tests
 def test_init_lognormal_wrong_dimension(mean_2d):
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[[1.0, 0.1], [1.0, 0.1]], [[0.2, 2.0], [0.2, 2.0]]])
@@ -288,7 +272,6 @@ def test_init_lognormal_wrong_dimension(mean_2d):
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_init_lognormal_not_quadratic():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0], [3.0, 0.3]])
@@ -301,7 +284,6 @@ def test_init_lognormal_not_quadratic():
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_init_lognormal_not_symmetric():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0]])
@@ -314,7 +296,6 @@ def test_init_lognormal_not_symmetric():
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_init_lognormal_not_symmetric():
     """Test ValueError of init method of LogNormal Distribution class."""
     covariance = np.array([[1.0, 0.0], [0.0, 2.0]])

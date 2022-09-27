@@ -18,7 +18,6 @@ from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests
 def test_smc_generic_temper_multivariate_gaussian(inputdir, tmpdir, dummy_data):
     """Test SMC with a multivariate Gaussian and generic tempering."""
     template = os.path.join(inputdir, "smc_generic_temper_multivariate_gaussian.json")

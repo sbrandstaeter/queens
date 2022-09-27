@@ -9,7 +9,6 @@ from pqueens import run
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests_baci
 def test_write_random_dirichlet_to_dat(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, expected_result
 ):

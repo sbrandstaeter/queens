@@ -9,7 +9,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_sobol_indices_borehole(inputdir, tmpdir):
     """Test case for Sobol Index iterator."""
     run(Path(os.path.join(inputdir, 'sobol_indices_borehole.json')), Path(tmpdir))

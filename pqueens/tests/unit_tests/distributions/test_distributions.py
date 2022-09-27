@@ -9,7 +9,6 @@ from pqueens.distributions.normal import NormalDistribution
 from pqueens.utils.valid_options_utils import InvalidOptionError
 
 
-@pytest.mark.unit_tests
 def test_create_distribution_normal():
     """Test creation routine of distribution objects."""
     normal_options = {
@@ -21,7 +20,6 @@ def test_create_distribution_normal():
     assert isinstance(distribution, NormalDistribution)
 
 
-@pytest.mark.unit_tests
 def test_create_distribution_invalid():
     """Test creation routine of distribution objects."""
     invalid_options = {'distribution': 'UnsupportedType', 'lower_bound': 0.0, 'upper_bound': 1.0}
@@ -29,7 +27,6 @@ def test_create_distribution_invalid():
         from_config_create_distribution(invalid_options)
 
 
-@pytest.mark.unit_tests
 def test_create_export_dict():
     """Test creation routine of distribution dict."""
     normal_options = {

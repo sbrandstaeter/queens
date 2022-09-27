@@ -23,7 +23,6 @@ from pqueens.utils.collection_utils import CollectionObject
 from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 
 
-@pytest.mark.integration_tests
 def test_bbvi_density_match(
     mocker,
     inputdir,
@@ -74,7 +73,6 @@ def test_bbvi_density_match(
     assert np.mean(elbo[-3:]) > np.mean(elbo[:3])
 
 
-@pytest.mark.integration_tests
 def test_bbvi_iterator_park91a_hifi(
     inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
 ):

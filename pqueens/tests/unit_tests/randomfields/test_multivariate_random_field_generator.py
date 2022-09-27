@@ -49,7 +49,6 @@ class TestMultivariateRandomFieldGenerator(unittest.TestCase):
         for i in range(self.num_fields + 1):
             self.marginal_pdfs_to_many.append(norm(0, 1))
 
-    @pytest.mark.unit_tests
     def test_constructor(self):
         my_field_generator = MultiVariateRandomFieldGenerator(
             marginal_distributions=self.marginal_pdfs,
@@ -92,7 +91,6 @@ class TestMultivariateRandomFieldGenerator(unittest.TestCase):
                 total_terms=self.total_terms,
             )
 
-    @pytest.mark.unit_tests
     def test_generator(self):
         my_field_generator = MultiVariateRandomFieldGenerator(
             marginal_distributions=self.marginal_pdfs,
@@ -114,7 +112,6 @@ class TestMultivariateRandomFieldGenerator(unittest.TestCase):
         # chose lose tolerance as this differs quite a bit from machine to machine
         np.testing.assert_allclose(my_vals, ref_vals, 1e-3, 0)
 
-    @pytest.mark.unit_tests
     def test_cross_correlation(self):
 
         my_field_generator = MultiVariateRandomFieldGenerator(

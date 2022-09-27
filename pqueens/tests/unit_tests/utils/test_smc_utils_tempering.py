@@ -40,7 +40,6 @@ def logpdf1(request):
     return request.param
 
 
-@pytest.mark.unit_tests
 def test_temper_factory(temper_keyword_and_temper_type):
     """Test the function factory for valid tempering functions."""
 
@@ -50,7 +49,6 @@ def test_temper_factory(temper_keyword_and_temper_type):
     assert type(temper_type) == temper_type_sol
 
 
-@pytest.mark.unit_tests
 def test_temper_factory_invalid():
     """Test the function factory for invalid keyword."""
 
@@ -59,7 +57,6 @@ def test_temper_factory_invalid():
         smc_utils.temper_factory(temper)
 
 
-@pytest.mark.unit_tests
 def test_temper_logpdf_bayes(logpdf0, logpdf1, temper_parameter):
     """Test the bayesian tempering function."""
 
@@ -72,7 +69,6 @@ def test_temper_logpdf_bayes(logpdf0, logpdf1, temper_parameter):
     assert np.isclose(tempered_logpdf, tempered_logpdf_sol)
 
 
-@pytest.mark.unit_tests
 def test_temper_logpdf_bayes_posinf_invalid(logpdf0, temper_parameter):
     """Test the bayesian tempering function is invalid for infinity."""
 
@@ -82,7 +78,6 @@ def test_temper_logpdf_bayes_posinf_invalid(logpdf0, temper_parameter):
         smc_utils.temper_logpdf_bayes(logpdf0, np.inf, temper_parameter)
 
 
-@pytest.mark.unit_tests
 def test_temper_logpdf_generic(logpdf0, logpdf1, temper_parameter):
     """Test the generic tempering function."""
 
@@ -97,7 +92,6 @@ def test_temper_logpdf_generic(logpdf0, logpdf1, temper_parameter):
     assert np.isclose(tempered_logpdf, tempered_logpdf_sol)
 
 
-@pytest.mark.unit_tests
 def test_temper_logpdf_generic_posinf_invalid(logpdf0, temper_parameter):
     """Test the generic tempering function is invalid for infinity."""
 

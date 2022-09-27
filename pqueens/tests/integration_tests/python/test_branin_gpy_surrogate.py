@@ -8,7 +8,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_branin_gpy_surrogate(inputdir, tmpdir, expected_pdf):
     """Test case for GP based surrogate model."""
     run(Path(os.path.join(inputdir, 'gpy_surrogate_branin.json')), Path(tmpdir))

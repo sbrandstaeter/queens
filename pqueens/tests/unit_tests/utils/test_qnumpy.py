@@ -18,7 +18,6 @@ def arrays():
     return arr1, arr2
 
 
-@pytest.mark.unit_tests
 def test_dot_product(arrays, expected_result):
     """Test the dot product."""
     res = qnp.tensordot(

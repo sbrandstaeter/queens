@@ -9,7 +9,6 @@ from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 from pqueens.utils.variational_inference_utils import create_variational_distribution
 
 
-@pytest.mark.benchmark
 def test_bbvi_GMM_density_match(
     mocker,
     inputdir,

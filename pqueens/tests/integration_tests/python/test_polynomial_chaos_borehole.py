@@ -8,7 +8,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_polynomial_chaos_pseudo_spectral_borehole(inputdir, tmpdir):
     """Test case for the pc iterator using a pseudo spectral approach."""
     run(
@@ -22,7 +21,6 @@ def test_polynomial_chaos_pseudo_spectral_borehole(inputdir, tmpdir):
     assert results["covariance"] == pytest.approx([1312.23414971])
 
 
-@pytest.mark.integration_tests
 def test_polynomial_chaos_collocation_borehole(inputdir, tmpdir):
     """Test for the pc iterator using a collocation approach."""
     run(Path(os.path.join(inputdir, 'polynomial_chaos_collocation_borehole.json')), Path(tmpdir))

@@ -17,7 +17,6 @@ from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests
 def test_gaussian_smc(inputdir, tmpdir, dummy_data):
     """Test Sequential Monte Carlo with univariate Gaussian."""
     template = os.path.join(inputdir, "smc_gaussian.json")

@@ -124,7 +124,6 @@ def my_mock_design(*args):
 
 
 # -------------- Actual tests -------------------------------------
-@pytest.mark.unit_tests
 def test_init(result_description, global_settings, dummy_model, settings_probab_mapping):
     """Test the init of the Bayesian multi-fidelity iterator."""
     features_config = 'no_features'
@@ -179,7 +178,6 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
     assert iterator.db == db
 
 
-@pytest.mark.unit_tests
 def test_calculate_optimal_x_train(dummy_model, mocker):
     """Test calculation of optimal x_train.
 
@@ -204,7 +202,6 @@ def test_calculate_optimal_x_train(dummy_model, mocker):
     assert arg1 == dummy_model
 
 
-@pytest.mark.unit_tests
 def test_get_design_method(mocker):
     """Test the selection of the design method."""
     # test the random design
@@ -233,7 +230,6 @@ def test_get_design_method(mocker):
         BMFIAIterator._get_design_method(initial_design_dict)
 
 
-@pytest.mark.unit_tests
 def test_random_design(dummy_model, parameters):
     """Test for the uniformly random design method."""
     initial_design_dict = {"seed": 1, "num_HF_eval": 1}
@@ -243,7 +239,6 @@ def test_random_design(dummy_model, parameters):
     np.testing.assert_array_almost_equal(x_train, x_out, decimal=4)
 
 
-@pytest.mark.unit_tests
 def test_core_run(default_bmfia_iterator, mocker):
     """Test the core run of the iterator."""
     z_train_in = np.array([[4], [5]])
@@ -269,7 +264,6 @@ def test_core_run(default_bmfia_iterator, mocker):
     np.testing.assert_array_equal(y_hf_train_out, y_hf_train_in)
 
 
-@pytest.mark.unit_tests
 def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
     """Test evaluation of LF model with test data."""
     with patch.object(
@@ -282,7 +276,6 @@ def test_evaluate_LF_model_for_X_train(default_bmfia_iterator):
         np.testing.assert_array_equal(np.array([[1, 1]]), default_bmfia_iterator.Y_LF_train)
 
 
-@pytest.mark.unit_tests
 def test_evaluate_HF_model_for_X_train(default_bmfia_iterator):
     """Test evaluation of HF model with test data."""
     with patch.object(
@@ -296,7 +289,6 @@ def test_evaluate_HF_model_for_X_train(default_bmfia_iterator):
         np.testing.assert_array_equal(np.array([[1, 1]]), default_bmfia_iterator.Y_HF_train)
 
 
-@pytest.mark.unit_tests
 def test_set_feature_strategy(default_bmfia_iterator, mocker):
     """Test the generation of low fidelity informative features."""
     # test wrong input dimensions 1) of y_lf_mat
@@ -362,7 +354,6 @@ def test_set_feature_strategy(default_bmfia_iterator, mocker):
     mo_time.assert_called_once()
 
 
-@pytest.mark.unit_tests
 def test_get_man_features(default_bmfia_iterator):
     """Test generation of manual features."""
     y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
@@ -407,7 +398,6 @@ def test_get_man_features(default_bmfia_iterator):
     np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
 
 
-@pytest.mark.unit_tests
 def test_get_opt_features(default_bmfia_iterator):
     """Test generation of optimal features."""
     y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
@@ -433,7 +423,6 @@ def test_get_opt_features(default_bmfia_iterator):
         default_bmfia_iterator._set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
 
-@pytest.mark.unit_tests
 def test_get_coord_features(default_bmfia_iterator):
     """Test generation of coordinate features."""
     y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
@@ -467,7 +456,6 @@ def test_get_coord_features(default_bmfia_iterator):
     np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
 
 
-@pytest.mark.unit_tests
 def test_get_no_features(default_bmfia_iterator):
     """Test output without additional features."""
     y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
@@ -480,7 +468,6 @@ def test_get_no_features(default_bmfia_iterator):
     np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
 
 
-@pytest.mark.unit_tests
 def test_get_time_features(default_bmfia_iterator):
     """Test generation of time-based features."""
     y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
@@ -494,14 +481,12 @@ def test_get_time_features(default_bmfia_iterator):
     np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
 
 
-@pytest.mark.unit_tests
 def test_update_probabilistic_mapping_with_features(default_bmfia_iterator):
     """Test for updating with optimal informative features."""
     with pytest.raises(NotImplementedError):
         default_bmfia_iterator._update_probabilistic_mapping_with_features()
 
 
-@pytest.mark.unit_tests
 def test_eval_model(default_bmfia_iterator, mocker):
     """Test for evaluating the underlying model."""
     mo_1 = mocker.patch(

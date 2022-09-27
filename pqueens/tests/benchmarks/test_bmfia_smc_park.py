@@ -14,7 +14,6 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a import 
 from pqueens.utils import injector
 
 
-@pytest.mark.benchmark
 def test_bmfia_park_hf_smc(
     inputdir,
     tmpdir,

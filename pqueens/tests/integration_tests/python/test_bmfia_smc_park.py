@@ -13,7 +13,6 @@ from pqueens import run
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests
 def test_smc_park_hf(
     inputdir,
     tmpdir,

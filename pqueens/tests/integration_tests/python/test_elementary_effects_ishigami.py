@@ -7,7 +7,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_elementary_effects_ishigami(inputdir, tmpdir):
     """Test case for elementary effects iterator."""
     run(Path(os.path.join(inputdir, 'elementary_effects_ishigami.json')), Path(tmpdir))

@@ -9,7 +9,6 @@ from pqueens.main import get_config_dict
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests_baci
 def test_geometry_from_dat(
     inputdir, tmpdir, third_party_inputs, expected_node_coordinates, expected_surface_topology
 ):

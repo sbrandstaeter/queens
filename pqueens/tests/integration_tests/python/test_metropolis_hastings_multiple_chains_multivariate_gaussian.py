@@ -17,7 +17,6 @@ from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests
 def test_metropolis_hastings_multiple_chains_multivariate_gaussian(inputdir, tmpdir, dummy_data):
     """Test case for metropolis hastings iterator."""
     template = os.path.join(

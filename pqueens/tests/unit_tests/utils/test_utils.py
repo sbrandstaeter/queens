@@ -21,7 +21,6 @@ class TestPDFEstimation(unittest.TestCase):
         self.samples = np.random.randn(100)
         self.bandwidth = 0.4
 
-    @pytest.mark.unit_tests
     def test_compute_kernel_bandwidth(self):
         """Test computation of kernel bandwidth."""
         min_samples = -3
@@ -29,7 +28,6 @@ class TestPDFEstimation(unittest.TestCase):
         bandwidth = estimate_bandwidth_for_kde(self.samples, min_samples, max_samples)
         np.testing.assert_almost_equal(bandwidth, 0.42928730252308495, 7)
 
-    @pytest.mark.unit_tests
     def test_density_estimation(self):
         """Test density estimations."""
         supp_points = np.linspace(-1, 1, 10)

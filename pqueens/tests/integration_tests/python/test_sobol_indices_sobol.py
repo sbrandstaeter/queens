@@ -9,7 +9,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_sobol_indices_sobol(inputdir, tmpdir):
     """Test Sobol Index iterator with Sobol G function.
 

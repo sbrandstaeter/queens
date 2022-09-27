@@ -17,7 +17,6 @@ from pqueens.tests.integration_tests.example_simulator_functions.gaussian_mixtur
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests
 def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmpdir, dummy_data):
     """Test SMC with a multivariate Gaussian mixture (multimodal)."""
     template = os.path.join(inputdir, "smc_bayes_temper_multivariate_gaussian_mixture.json")

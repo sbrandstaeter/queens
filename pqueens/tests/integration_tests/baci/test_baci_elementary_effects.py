@@ -80,7 +80,6 @@ def remove_job_output_directory(experiment_directory, jobid):
     run_subprocess(rm_cmd)
 
 
-@pytest.mark.integration_tests_baci
 def test_baci_elementary_effects(
     inputdir, third_party_inputs, baci_link_paths, singularity_bool, experiment_directory
 ):

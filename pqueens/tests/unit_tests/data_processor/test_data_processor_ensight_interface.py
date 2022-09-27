@@ -118,7 +118,6 @@ def vtkUnstructuredGridExample3d():
 # --------------- actual tests -------------------------
 
 
-@pytest.mark.unit_tests
 def test_init(mocker):
     """Test the init method."""
     file_name_identifier = ('dummy_prefix*dummyfix',)
@@ -158,7 +157,6 @@ def test_init(mocker):
     assert my_data_processor.raw_file_data is None
 
 
-@pytest.mark.unit_tests
 def test_from_config_create_data_processor(mocker):
     """Test the config method."""
     experimental_ref_data = np.array([[1, 2], [3, 4]])
@@ -217,7 +215,6 @@ def test_from_config_create_data_processor(mocker):
     )
 
 
-@pytest.mark.unit_tests
 def test_read_monitorfile(mocker):
     """Test reading of monitor file."""
     # monitor_string will be used to mock the content of a monitor file that is linked at
@@ -269,7 +266,6 @@ steps 2 npoints 4
         DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile('some_path')
 
 
-@pytest.mark.unit_tests
 def test_stretch_vector(default_data_processor):
     """Test for stretch vector helpre method."""
     assert default_data_processor._stretch_vector([1, 2, 3], [2, 4, 6], 2) == [
@@ -278,7 +274,6 @@ def test_stretch_vector(default_data_processor):
     ]
 
 
-@pytest.mark.unit_tests
 def test_compute_distance(default_data_processor):
     """Test for distance computation."""
     assert default_data_processor._compute_distance(

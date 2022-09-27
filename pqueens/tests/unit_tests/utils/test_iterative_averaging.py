@@ -5,7 +5,6 @@ import pytest
 from pqueens.utils.iterative_averaging_utils import *
 
 
-@pytest.mark.unit_tests
 def test_L1_norm():
     """Test L1 norm."""
     x = 2 * np.ones(10)
@@ -15,7 +14,6 @@ def test_L1_norm():
     np.testing.assert_almost_equal(norm_L1_avg, 2)
 
 
-@pytest.mark.unit_tests
 def test_L2_norm():
     """Test L2 norm."""
     x = 2 * np.ones(10)
@@ -25,7 +23,6 @@ def test_L2_norm():
     np.testing.assert_almost_equal(norm_L2_avg, 2)
 
 
-@pytest.mark.unit_tests
 def test_relative_change():
     """Test relative change."""
     old = np.ones(10)
@@ -34,7 +31,6 @@ def test_relative_change():
     np.testing.assert_almost_equal(rel_change, 1)
 
 
-@pytest.mark.unit_tests
 def test_polyak_averaging(type_of_averaging_quantity):
     """Test Polyak averaging."""
     polyak = PolyakAveraging()
@@ -45,7 +41,6 @@ def test_polyak_averaging(type_of_averaging_quantity):
     )
 
 
-@pytest.mark.unit_tests
 def test_moving_averaging(type_of_averaging_quantity):
     """Test moving averaging."""
     moving = MovingAveraging(5)
@@ -56,7 +51,6 @@ def test_moving_averaging(type_of_averaging_quantity):
     )
 
 
-@pytest.mark.unit_tests
 def test_exponential_averaging(type_of_averaging_quantity):
     """Test exponential averaging."""
     alpha = 0.25

@@ -8,7 +8,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_baci_lm_rosenbrock_res(inputdir, tmpdir):
     """Test case for Levenberg Marquardt iterator."""
     run(Path(os.path.join(inputdir, 'baci_lm_rosenbrock_res.json')), Path(tmpdir))

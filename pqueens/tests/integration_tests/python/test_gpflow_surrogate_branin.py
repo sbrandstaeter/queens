@@ -8,7 +8,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_gpflow_surrogate_branin(inputdir, tmpdir, expected_mean, expected_var):
     """Test case for GPflow based GP model."""
     run(Path(os.path.join(inputdir, 'gpflow_surrogate_branin.json')), Path(tmpdir))

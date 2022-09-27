@@ -60,7 +60,6 @@ def exponential_2d(rate_2d):
 # -----------------------------------------------------------------------
 
 # ------------- univariate --------------
-@pytest.mark.unit_tests
 def test_init_exponential_1d(exponential_1d, rate_1d):
     """Test init method of Exponential Distribution class."""
     rate_1d = np.array(rate_1d).reshape(1)
@@ -75,7 +74,6 @@ def test_init_exponential_1d(exponential_1d, rate_1d):
     np.testing.assert_equal(exponential_1d.scale, scale_1d)
 
 
-@pytest.mark.unit_tests
 def test_init_exponential_1d_wrong_rate(rate_1d):
     """Test init method of Exponential Distribution class."""
     with pytest.raises(ValueError, match=r'The parameter \'rate\' has to be positive.*'):
@@ -83,7 +81,6 @@ def test_init_exponential_1d_wrong_rate(rate_1d):
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_cdf_exponential_1d(exponential_1d, rate_1d, sample_pos_1d):
     """Test cdf method of Exponential distribution class."""
     scale_1d = 1 / rate_1d
@@ -91,7 +88,6 @@ def test_cdf_exponential_1d(exponential_1d, rate_1d, sample_pos_1d):
     np.testing.assert_allclose(exponential_1d.cdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_draw_exponential_1d(exponential_1d, rate_1d):
     """Test the draw method of exponential distribution."""
     np.random.seed(1)
@@ -101,7 +97,6 @@ def test_draw_exponential_1d(exponential_1d, rate_1d):
     np.testing.assert_equal(draw, sample)
 
 
-@pytest.mark.unit_tests
 def test_logpdf_exponential_1d(exponential_1d, rate_1d, sample_pos_1d):
     """Test pdf method of Exponential distribution class."""
     scale_1d = 1 / rate_1d
@@ -109,7 +104,6 @@ def test_logpdf_exponential_1d(exponential_1d, rate_1d, sample_pos_1d):
     np.testing.assert_allclose(exponential_1d.logpdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_grad_logpdf_exponential_1d(exponential_1d, sample_pos_1d):
     """Test grad_logpdf method of exponential distribution class."""
     sample_pos_1d = sample_pos_1d.reshape(-1, 1)
@@ -118,7 +112,6 @@ def test_grad_logpdf_exponential_1d(exponential_1d, sample_pos_1d):
     np.testing.assert_allclose(exponential_1d.grad_logpdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_pdf_exponential_1d(exponential_1d, rate_1d, sample_pos_1d):
     """Test pdf method of Exponential distribution class."""
     scale_1d = 1 / rate_1d
@@ -126,7 +119,6 @@ def test_pdf_exponential_1d(exponential_1d, rate_1d, sample_pos_1d):
     np.testing.assert_allclose(exponential_1d.pdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_ppf_exponential_1d(exponential_1d, rate_1d):
     """Test ppf method of Exponential distribution class."""
     quantile = 0.5
@@ -136,7 +128,6 @@ def test_ppf_exponential_1d(exponential_1d, rate_1d):
 
 
 # ------------- multivariate --------------
-@pytest.mark.unit_tests
 def test_init_exponential_2d(exponential_2d, rate_2d):
     """Test init method of Exponential Distribution class."""
     scale_2d = 1 / rate_2d
@@ -160,7 +151,6 @@ def test_init_exponential_2d(exponential_2d, rate_2d):
     np.testing.assert_equal(exponential_2d.scale, scale_2d)
 
 
-@pytest.mark.unit_tests
 def test_init_exponential_2d_wrong_rate():
     """Test init method of Exponential Distribution class."""
     with pytest.raises(ValueError, match=r'The parameter \'rate\' has to be positive.*'):
@@ -168,7 +158,6 @@ def test_init_exponential_2d_wrong_rate():
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_cdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):
     """Test cdf method of Exponential distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
@@ -179,7 +168,6 @@ def test_cdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):
     np.testing.assert_allclose(exponential_2d.cdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_draw_exponential_2d(exponential_2d, rate_2d):
     """Test the draw method of exponential distribution."""
     np.random.seed(1)
@@ -189,7 +177,6 @@ def test_draw_exponential_2d(exponential_2d, rate_2d):
     np.testing.assert_equal(draw, sample)
 
 
-@pytest.mark.unit_tests
 def test_logpdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):
     """Test pdf method of Exponential distribution class."""
     scale_2d = 1 / rate_2d
@@ -200,7 +187,6 @@ def test_logpdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):
     np.testing.assert_allclose(exponential_2d.logpdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_grad_logpdf_exponential_2d(exponential_2d, sample_pos_2d):
     """Test grad_logpdf method of exponential distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
@@ -209,7 +195,6 @@ def test_grad_logpdf_exponential_2d(exponential_2d, sample_pos_2d):
     np.testing.assert_allclose(exponential_2d.grad_logpdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_pdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):
     """Test pdf method of Exponential distribution class."""
     scale_2d = 1 / rate_2d
@@ -220,7 +205,6 @@ def test_pdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):
     np.testing.assert_allclose(exponential_2d.pdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_ppf_exponential_2d(exponential_2d, rate_2d):
     """Test ppf method of Exponential distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):

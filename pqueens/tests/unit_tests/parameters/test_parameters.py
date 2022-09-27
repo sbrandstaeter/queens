@@ -62,7 +62,6 @@ def create_parameters_singleton(options, pre_processor=None):
     return parameters_module.parameters
 
 
-@pytest.mark.unit_tests
 def test_from_config_create_parameters(parameters_set_1):
     """Test from_config_create_parameters method."""
     parameters = create_parameters_singleton(parameters_set_1)
@@ -83,7 +82,6 @@ def test_from_config_create_parameters(parameters_set_1):
     assert rv_x2.type is None
 
 
-@pytest.mark.unit_tests
 def test_draw_samples(parameters_set_1):
     """Test draw_samples method."""
     parameters = create_parameters_singleton(parameters_set_1)
@@ -101,7 +99,6 @@ def test_draw_samples(parameters_set_1):
     np.testing.assert_almost_equal(variance, np.array([19.00948, 1.03104, 2.09257]), decimal=5)
 
 
-@pytest.mark.unit_tests
 def test_joint_logpdf(parameters_set_1):
     """Test joint_logpdf method."""
     parameters = create_parameters_singleton(parameters_set_1)
@@ -113,7 +110,6 @@ def test_joint_logpdf(parameters_set_1):
     np.testing.assert_almost_equal(logpdf, np.array([-np.inf, -15.14250]), decimal=5)
 
 
-@pytest.mark.unit_tests
 def test_inverse_cdf_transform(parameters_set_1, parameters_set_2):
     """Test inverse_cdf_transform method."""
     parameters = create_parameters_singleton(parameters_set_1)
@@ -133,7 +129,6 @@ def test_inverse_cdf_transform(parameters_set_1, parameters_set_2):
     )
 
 
-@pytest.mark.unit_tests
 def test_sample_as_dict(parameters_set_1):
     """Test sample_as_dict method."""
     parameters = create_parameters_singleton(parameters_set_1)
@@ -142,7 +137,6 @@ def test_sample_as_dict(parameters_set_1):
     assert sample_dict == {'x1': 0.5, 'x2_0': 0.1, 'x2_1': 0.6}
 
 
-@pytest.mark.unit_tests
 def test_to_list(parameters_set_1):
     """Test to_list method."""
     parameters = create_parameters_singleton(parameters_set_1)
@@ -206,7 +200,6 @@ def pre_processor():
     return PreProcessor()
 
 
-@pytest.mark.unit_tests
 def test_from_config_create_parameters(parameters_set_3, pre_processor):
     """Test from_config_create_parameters method with random fields."""
     parameters = create_parameters_singleton(parameters_set_3, pre_processor)

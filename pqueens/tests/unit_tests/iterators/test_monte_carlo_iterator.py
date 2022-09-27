@@ -67,7 +67,6 @@ class TestMCIterator(unittest.TestCase):
             db=dummy_db,
         )
 
-    @pytest.mark.unit_tests
     def test_correct_sampling(self):
         """Test if we get correct samples."""
 
@@ -90,7 +89,6 @@ class TestMCIterator(unittest.TestCase):
             self.my_iterator.samples[0, :], ref_sample_first_row, 1e-07, 1e-07
         )
 
-    @pytest.mark.unit_tests
     def test_correct_results(self):
         """Test if we get correct results."""
         self.my_iterator.pre_run()

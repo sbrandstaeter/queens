@@ -79,7 +79,6 @@ def responses():
     return responses
 
 
-@pytest.mark.unit_tests
 def test_init(model, model_name, uncertain_parameters):
     """Test get_parameters."""
     assert model.parameters is uncertain_parameters

@@ -21,7 +21,6 @@ from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests
 def test_metropolis_hastings_multivariate_gaussian(inputdir, tmpdir, dummy_data):
     """Test case for metropolis hastings iterator."""
     template = os.path.join(inputdir, "metropolis_hastings_multivariate_gaussian.json")
@@ -34,7 +33,7 @@ def test_metropolis_hastings_multivariate_gaussian(inputdir, tmpdir, dummy_data)
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
         with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
             run(Path(input_file), Path(tmpdir))
-            
+
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

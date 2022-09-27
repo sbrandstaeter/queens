@@ -8,7 +8,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_optimization_lsq_rosenbrock_1d(inputdir, tmpdir):
     """Test special case for optimization iterator with least squares.
 

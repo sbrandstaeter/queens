@@ -179,7 +179,6 @@ def default_topology_vol():
 
 
 # ----------------- actual unit_tests -------------------------------------------------------------
-@pytest.mark.unit_tests
 def test_init(mocker, tmpdir):
     path_to_dat_file = 'dummy_path'
     list_geometric_sets = ["DSURFACE 9"]
@@ -226,7 +225,6 @@ def test_init(mocker, tmpdir):
     assert geo_obj.random_fields == random_fields
 
 
-@pytest.mark.unit_tests
 def test_read_external_data_comment(mocker, tmpdir, dat_dummy_comment, default_geo_obj):
     filepath = tmpdir.join("myfile.dat")
     write_to_file(dat_dummy_comment, filepath)
@@ -276,7 +274,6 @@ def test_read_external_data_comment(mocker, tmpdir, dat_dummy_comment, default_g
     assert default_geo_obj._get_elements_belonging_to_desired_material.call_count == 0
 
 
-@pytest.mark.unit_tests
 def test_read_external_data_get_functions(mocker, tmpdir, dat_dummy_get_fun, default_geo_obj):
     filepath = tmpdir.join("myfile.dat")
     write_to_file(dat_dummy_get_fun, filepath)
@@ -328,7 +325,6 @@ def test_read_external_data_get_functions(mocker, tmpdir, dat_dummy_get_fun, def
     assert default_geo_obj._get_elements_belonging_to_desired_material.call_count == 4
 
 
-@pytest.mark.unit_tests
 def test_organize_sections(default_geo_obj):
     """Wrapper for _get_desired_dat_sections."""
     desired_geo_sets = ['DSURFACE 9', 'DVOL 2', 'DLINE 1', 'DSURFACE 8']
@@ -343,7 +339,6 @@ def test_organize_sections(default_geo_obj):
     assert default_geo_obj.desired_dat_sections == expected_dat_section
 
 
-@pytest.mark.unit_tests
 def test_get_current_dat_section_true(default_geo_obj, dat_section_true):
     default_geo_obj._get_current_dat_section(dat_section_true)
     clean_section_name = dat_section_true.strip()
@@ -351,13 +346,11 @@ def test_get_current_dat_section_true(default_geo_obj, dat_section_true):
     assert default_geo_obj.current_dat_section == clean_section_name
 
 
-@pytest.mark.unit_tests
 def test_get_current_dat_section_false(default_geo_obj, dat_section_false):
     default_geo_obj._get_current_dat_section(dat_section_false)
     assert default_geo_obj.current_dat_section is None
 
 
-@pytest.mark.unit_tests
 def test_check_if_in_desired_dat_section(default_geo_obj):
     default_geo_obj.desired_dat_sections = {
         'DLINE-NODE TOPOLOGY': ['DLINE 1'],
@@ -375,7 +368,6 @@ def test_check_if_in_desired_dat_section(default_geo_obj):
     assert not return_value
 
 
-@pytest.mark.unit_tests
 def test_get_topology(
     tmpdir,
     default_geo_obj,
@@ -414,7 +406,6 @@ def test_get_topology(
         assert default_geo_obj.volume_topology[0]['volume_topology'] == [1, 1, 1, 1, 1]
 
 
-@pytest.mark.unit_tests
 def test_get_only_desired_topology(default_geo_obj, mocker):
     line = 'dummy'
     mocker.patch(
@@ -439,7 +430,6 @@ def test_get_only_desired_topology(default_geo_obj, mocker):
     assert mp1.call_count == 1
 
 
-@pytest.mark.unit_tests
 def test_get_only_desired_coordinates(default_geo_obj, mocker):
     line = 'dummy 2'
     mp1 = mocker.patch(
@@ -463,7 +453,6 @@ def test_get_only_desired_coordinates(default_geo_obj, mocker):
     mp2.assert_called_once()
 
 
-@pytest.mark.unit_tests
 def test_get_coordinates_of_desired_geometric_sets(default_geo_obj, default_coords):
     for line in default_coords:
         node_list = line.split()
@@ -482,7 +471,6 @@ def test_get_coordinates_of_desired_geometric_sets(default_geo_obj, default_coor
     )
 
 
-@pytest.mark.unit_tests
 def test_get_nodes_of_interest(default_geo_obj):
     default_geo_obj.node_topology[-1]['node_mesh'] = [1, 2, 4, 9, 13]
     default_geo_obj.node_topology[-1]['node_topology'] = [1, 1, 1, 1, 1]

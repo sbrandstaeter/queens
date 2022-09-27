@@ -8,7 +8,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_neural_network_gauss_bayesian_branin(inputdir, tmpdir, expected_mean, expected_var):
     """Test case for bayesian neural network model."""
     run(Path(os.path.join(inputdir, 'neural_network_gauss_bayesian_branin.json')), Path(tmpdir))
