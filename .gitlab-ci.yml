@@ -2,7 +2,6 @@
 # Define variables
 variables:
   # flags to turn on/ off tests for specific platforms
-  DOCKER_TESTS: "1"
   UBUNTU_TESTS: "1"
   CLUSTER_TESTS: "0"
   BENCHMARKS: "0"
