@@ -527,9 +527,8 @@ class JobInterface(Interface):
         _logger.info('\nResources:      ')
         left_indent = 16
         indentation = ' ' * left_indent
-        _logger.info('NAME            PENDING      COMPLETED    FAILED   \n')
-        _logger.info(indentation)
-        _logger.info('------------    ---------    ---------    ---------\n')
+        _logger.info('NAME            PENDING      COMPLETED    FAILED   ')
+        _logger.info('------------    ---------    ---------    ---------')
         total_pending = 0
         total_complete = 0
         total_failed = 0
@@ -543,10 +542,10 @@ class JobInterface(Interface):
             total_complete += complete
             total_failed += failed
             _logger.info(
-                f'{resource.name:12.12}    {pending:<9d}    {complete:<9d}    {failed:<9d}\n'
+                f'{resource.name:12.12}    {pending:<9d}    {complete:<9d}    {failed:<9d}'
             )
         _logger.info(
             f'{"*TOTAL*":12.12}    {total_pending:<9d}    {total_complete:<9d}    '
-            f'{total_failed:<9d}\n'
+            f'{total_failed:<9d}'
         )
         _logger.info('\n')

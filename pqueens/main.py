@@ -1,4 +1,5 @@
 """Main module of QUEENS containing the high-level control routine."""
+import logging
 import sys
 import time
 from pathlib import Path
@@ -12,6 +13,8 @@ from pqueens.utils.cli_utils import get_cli_options, print_greeting_message
 from pqueens.utils.io_utils import load_input_file
 from pqueens.utils.logger_settings import setup_basic_logging
 
+_logger = logging.getLogger(__name__)
+
 
 def run(input_file, output_dir, debug=False):
     """Do a QUEENS run.
@@ -21,8 +24,6 @@ def run(input_file, output_dir, debug=False):
         output_dir (pathlib.Path): Path object to the output directory
         debug (bool): True if debug mode is to be used
     """
-    print_banner_and_description()
-
     start_time_input = time.time()
 
     # read input and create config
@@ -34,6 +35,7 @@ def run(input_file, output_dir, debug=False):
         config["global_settings"]["experiment_name"],
     )
 
+    print_banner_and_description()
     # create database
     DB_module.from_config_create_database(config)
 
@@ -53,23 +55,23 @@ def run(input_file, output_dir, debug=False):
 
         end_time_input = time.time()
 
-        print("")
-        print(f"Time for INPUT: {end_time_input - start_time_input} s")
-        print("")
+        _logger.info("")
+        _logger.info(f"Time for INPUT: {end_time_input - start_time_input} s")
+        _logger.info("")
 
         start_time_calc = time.time()
 
-        print("")
-        print("Starting Analysis...")
-        print("")
+        _logger.info("")
+        _logger.info("Starting Analysis...")
+        _logger.info("")
 
         # perform analysis
         my_iterator.run()
 
     end_time_calc = time.time()
-    print("")
-    print(f"Time for CALCULATION: {end_time_calc - start_time_calc} s")
-    print("")
+    _logger.info("")
+    _logger.info(f"Time for CALCULATION: {end_time_calc - start_time_calc} s")
+    _logger.info("")
 
 
 def get_config_dict(input_file, output_dir, debug=False):

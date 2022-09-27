@@ -53,14 +53,14 @@ class Database(metaclass=abc.ABCMeta):
         prior to entering the context
         In this function:
             1. the connection is established
-            2. the database may be resetted
+            2. the database may be reset
 
         Returns:
             self
         """
         self._connect()
         self._clean_database()
-        print(self)
+        _logger.info(self)
         return self
 
     def __exit__(self, exception_type, exception_value, traceback):
@@ -113,7 +113,7 @@ class Database(metaclass=abc.ABCMeta):
     def _clean_database(self):
         """Clean up the database prior to a queens run.
 
-        This includes actions like reseting existing databases delete
+        This includes actions like resetting existing databases delete
         all related databases or similar.
         """
 
