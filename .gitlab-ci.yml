@@ -2,7 +2,6 @@
 # Define variables
 variables:
   # flags to turn on/ off tests for specific platforms
-  DOCKER_TESTS: "1"
   UBUNTU_TESTS: "1"
   CLUSTER_TESTS: "0"
   BENCHMARKS: "0"
@@ -192,7 +191,7 @@ ubuntu_full_test_suite_develop:
     - .ubuntu_settings
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-    - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
   needs:
     - build_conda_env
@@ -212,7 +211,7 @@ ubuntu_full_test_suite_master:
     - .ubuntu_settings
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-    - pytest -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
   artifacts:
     name: coverage_report
@@ -247,7 +246,7 @@ cluster_tests:
   stage: tests
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-    - pytest -m lnm_cluster --no-cov $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m lnm_cluster --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - build_conda_env
     - build_singularity
@@ -266,7 +265,7 @@ benchmarks:
     - .benchmarks_conditions
   script:
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-    - pytest -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - build_conda_env
     - build_singularity
