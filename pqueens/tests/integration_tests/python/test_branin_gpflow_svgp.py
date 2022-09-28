@@ -8,7 +8,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
     """Test case for GPflow based SVGP model."""
     run(Path(os.path.join(inputdir, 'gpflow_svgp_surrogate_branin.json')), Path(tmpdir))

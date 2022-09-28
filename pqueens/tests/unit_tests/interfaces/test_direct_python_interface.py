@@ -116,7 +116,6 @@ def direct_python_interface_parallel(parameters):
     return DirectPythonInterface(interface_name, function, pool)
 
 
-@pytest.mark.unit_tests
 def test_map(samples, expected_results, direct_python_interface):
     """Test mapping from input to response/ output."""
     output = direct_python_interface.evaluate(samples)
@@ -125,7 +124,6 @@ def test_map(samples, expected_results, direct_python_interface):
     np.testing.assert_allclose(output["mean"], expected_results)
 
 
-@pytest.mark.unit_tests
 def test_map_parallel(samples, expected_results, direct_python_interface_parallel):
     """Test parallel mapping.
 
@@ -138,7 +136,6 @@ def test_map_parallel(samples, expected_results, direct_python_interface_paralle
     np.testing.assert_allclose(output["mean"], expected_results)
 
 
-@pytest.mark.unit_tests
 def test_create_from_config(parameters, config):
     """Given a config dict instantiate DirectPythonInterface."""
     direct_python_interface = from_config_create_interface('test_interface', config)
@@ -147,7 +144,6 @@ def test_create_from_config(parameters, config):
     assert isinstance(direct_python_interface, DirectPythonInterface)
 
 
-@pytest.mark.unit_tests
 def test_create_from_config_parallel(parameters, config_parallel):
     """Test creation from config file.
 
@@ -162,7 +158,6 @@ def test_create_from_config_parallel(parameters, config_parallel):
     assert isinstance(direct_python_interface_parallel, DirectPythonInterface)
 
 
-@pytest.mark.unit_tests
 def test_function_keywords(samples, config, config_by_path):
     """Test interface using by path and by name."""
     direct_python_interface_function_name = from_config_create_interface('test_interface', config)

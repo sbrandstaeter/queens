@@ -46,7 +46,6 @@ def experiment_directory(output_directory_forward, singularity_bool):
     return output_directory_forward[singularity_bool]
 
 
-@pytest.mark.integration_tests_baci
 def test_baci_lm_shape(
     inputdir,
     third_party_inputs,

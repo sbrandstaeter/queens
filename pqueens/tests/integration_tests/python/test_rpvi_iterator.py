@@ -15,7 +15,6 @@ from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelih
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests
 def test_rpvi_iterator_park91a_hifi(
     inputdir,
     tmpdir,
@@ -60,7 +59,6 @@ def test_rpvi_iterator_park91a_hifi(
     assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
 
 
-@pytest.mark.integration_tests
 def test_rpvi_iterator_park91a_hifi_external_module(
     inputdir,
     tmpdir,
@@ -107,7 +105,6 @@ def test_rpvi_iterator_park91a_hifi_external_module(
     assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
 
 
-@pytest.mark.integration_tests
 def test_rpvi_iterator_park91a_hifi_provided_gradient(
     inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
 ):
@@ -173,7 +170,6 @@ def gradient_method(request):
     return request.param
 
 
-@pytest.mark.integration_tests
 def test_gaussian_rpvi(inputdir, tmpdir, dummy_data, gradient_method):
     """Test RPVI with univariate Gaussian."""
     template = os.path.join(inputdir, "rpvi_gaussian_template.yml")

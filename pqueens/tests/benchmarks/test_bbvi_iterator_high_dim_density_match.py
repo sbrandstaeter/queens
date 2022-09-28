@@ -13,7 +13,6 @@ from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 np.random.seed(666)
 
 
-@pytest.mark.benchmark
 def test_bbvi_density_match_high_dimensional(
     mocker,
     inputdir,

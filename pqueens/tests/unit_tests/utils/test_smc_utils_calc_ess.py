@@ -11,11 +11,9 @@ from pqueens.utils import smc_utils
 @pytest.fixture(scope='module', params=[1, 10])
 def num_particles(request):
     """Return possible number of weights."""
-
     return request.param
 
 
-@pytest.mark.unit_tests
 def test_calc_ess_equal_weights(num_particles):
     """Test special case of resampled particles.
 
@@ -29,7 +27,6 @@ def test_calc_ess_equal_weights(num_particles):
     assert np.isclose(ess, ess_sol)
 
 
-@pytest.mark.unit_tests
 def test_calc_ess():
     """Test ESS=0.5*N.
 

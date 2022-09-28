@@ -53,7 +53,6 @@ class TestSobolIndices(unittest.TestCase):
             global_settings=some_settings,
         )
 
-    @pytest.mark.unit_tests
     def test_correct_sampling(self):
         """Test correct sampling."""
         self.my_iterator.pre_run()
@@ -81,7 +80,6 @@ class TestSobolIndices(unittest.TestCase):
 
         np.testing.assert_allclose(self.my_iterator.samples, ref_vals, 1e-07, 1e-07)
 
-    @pytest.mark.unit_tests
     def test_correct_sensitivity_indices(self):
         """Test sobol indices results."""
         self.my_iterator.pre_run()

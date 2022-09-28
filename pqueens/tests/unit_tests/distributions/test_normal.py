@@ -100,7 +100,6 @@ def uncorrelated_vector_3d(num_draws):
 # -----------------------------------------------------------------------
 
 # ------------- univariate --------------
-@pytest.mark.unit_tests
 def test_init_normal_1d(normal_1d, mean_1d, covariance_1d):
     """Test init method of Normal Distribution class."""
     assert normal_1d.dimension == 1
@@ -108,7 +107,6 @@ def test_init_normal_1d(normal_1d, mean_1d, covariance_1d):
     np.testing.assert_equal(normal_1d.covariance, np.array(covariance_1d).reshape(1, 1))
 
 
-@pytest.mark.unit_tests
 def test_init_normal_1d_incovariance(mean_1d, covariance_1d):
     """Test init method of Normal Distribution class."""
     with pytest.raises(np.linalg.LinAlgError, match=r'Cholesky decomposition failed *'):
@@ -120,7 +118,6 @@ def test_init_normal_1d_incovariance(mean_1d, covariance_1d):
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_cdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d):
     """Test cdf method of Normal distribution class."""
     std = np.sqrt(covariance_1d)
@@ -128,7 +125,6 @@ def test_cdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d):
     np.testing.assert_allclose(normal_1d.cdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_draw_normal_1d(normal_1d, mean_1d, covariance_1d, uncorrelated_vector_1d, mocker):
     """Test the draw method of normal distribution."""
     mocker.patch('numpy.random.randn', return_value=uncorrelated_vector_1d)
@@ -137,7 +133,6 @@ def test_draw_normal_1d(normal_1d, mean_1d, covariance_1d, uncorrelated_vector_1
     np.testing.assert_equal(draw, ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_logpdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d):
     """Test pdf method of Normal distribution class."""
     std = np.sqrt(covariance_1d)
@@ -145,7 +140,6 @@ def test_logpdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d):
     np.testing.assert_allclose(normal_1d.logpdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_grad_logpdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d):
     """Test pdf method of normal distribution class."""
     sample_pos_1d = sample_pos_1d.reshape(-1, 1)
@@ -158,7 +152,6 @@ def test_grad_logpdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d)
     np.testing.assert_allclose(normal_1d.grad_logpdf(sample_pos_1d), np.array(ref_sol_list))
 
 
-@pytest.mark.unit_tests
 def test_pdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d):
     """Test pdf method of Normal distribution class."""
     std = np.sqrt(covariance_1d)
@@ -166,7 +159,6 @@ def test_pdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d):
     np.testing.assert_allclose(normal_1d.pdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_ppf_normal_1d(normal_1d, mean_1d, covariance_1d):
     """Test ppf method of Normal distribution class."""
     std = np.sqrt(covariance_1d)
@@ -176,7 +168,6 @@ def test_ppf_normal_1d(normal_1d, mean_1d, covariance_1d):
 
 
 # ------------- multivariate --------------
-@pytest.mark.unit_tests
 def test_init_normal_3d(normal_3d, mean_3d, covariance_3d):
     """Test init method of Normal Distribution class."""
     assert normal_3d.dimension == 3
@@ -184,7 +175,6 @@ def test_init_normal_3d(normal_3d, mean_3d, covariance_3d):
     np.testing.assert_equal(normal_3d.covariance, covariance_3d.reshape(3, 3))
 
 
-@pytest.mark.unit_tests
 def test_cdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
     """Test cdf method of Normal distribution class."""
     sample_pos_3d = sample_pos_3d.reshape(-1, 3)
@@ -195,7 +185,6 @@ def test_cdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
     np.testing.assert_allclose(normal_3d.cdf(sample_pos_3d), ref_sol, rtol=1e-3)
 
 
-@pytest.mark.unit_tests
 def test_draw_normal_3d(normal_3d, mean_3d, low_chol_3d, uncorrelated_vector_3d, mocker):
     """Test the draw method of normal distribution."""
     mocker.patch('numpy.random.randn', return_value=uncorrelated_vector_3d)
@@ -204,7 +193,6 @@ def test_draw_normal_3d(normal_3d, mean_3d, low_chol_3d, uncorrelated_vector_3d,
     np.testing.assert_equal(draw, ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_logpdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
     """Test pdf method of Normal distribution class."""
     sample_pos_3d = sample_pos_3d.reshape(-1, 3)
@@ -212,7 +200,6 @@ def test_logpdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
     np.testing.assert_allclose(normal_3d.logpdf(sample_pos_3d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_grad_logpdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
     """Test pdf method of normal distribution class."""
     sample_pos_3d = sample_pos_3d.reshape(-1, 3)
@@ -227,7 +214,6 @@ def test_grad_logpdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d)
     )
 
 
-@pytest.mark.unit_tests
 def test_pdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
     """Test pdf method of Normal distribution class."""
     sample_pos_3d = sample_pos_3d.reshape(-1, 3)
@@ -235,14 +221,12 @@ def test_pdf_normal_3d(normal_3d, mean_3d, covariance_3d, sample_pos_3d):
     np.testing.assert_allclose(normal_3d.pdf(sample_pos_3d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_ppf_normal_3d(normal_3d, mean_3d, covariance_3d):
     """Test ppf method of Normal distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):
         normal_3d.ppf(np.zeros(2))
 
 
-@pytest.mark.unit_tests
 def test_init_normal_wrong_dimension(mean_3d):
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[[1.0, 0.1], [1.0, 0.1]], [[0.2, 2.0], [0.2, 2.0]]])
@@ -255,7 +239,6 @@ def test_init_normal_wrong_dimension(mean_3d):
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_init_normal_not_quadratic(mean_3d):
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0], [3.0, 0.3]])
@@ -268,7 +251,6 @@ def test_init_normal_not_quadratic(mean_3d):
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_init_normal_not_symmetric():
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0]])

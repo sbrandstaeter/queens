@@ -217,7 +217,6 @@ def mock_model():
 
 
 # ------------ unit_tests -------------------------
-@pytest.mark.unit_tests
 def test_init(
     dummy_model, parameters, default_interface, settings_probab_mapping, default_bmfia_iterator
 ):
@@ -299,7 +298,6 @@ def test_init(
     assert model.noise_var_lst == []
 
 
-@pytest.mark.unit_tests
 def test_evaluate(default_mf_likelihood, mocker, default_bmfia_iterator):
     """Compare return value with the expected value using a single point."""
     mf_log_likelihood_exp = np.array([1, 2])
@@ -333,7 +331,6 @@ def test_evaluate(default_mf_likelihood, mocker, default_bmfia_iterator):
     np.testing.assert_array_equal(mf_log_likelihood, mf_log_likelihood_exp)
 
 
-@pytest.mark.unit_tests
 def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
     """Test the evaluation of the log multi-fidelity Gaussian likelihood."""
     # --- define some vectors and matrices -----
@@ -373,7 +370,6 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
     np.testing.assert_array_equal(log_lik_mf, np.array([[1], [1]]))
 
 
-@pytest.mark.unit_tests
 def test_calculate_distance_vector_and_var_y(default_mf_likelihood, mocker):
     """Test the calculation of the distance vector."""
     x_batch = np.array([[0, 0], [0, 1]])  # make points have distance 1
@@ -410,7 +406,6 @@ def test_calculate_distance_vector_and_var_y(default_mf_likelihood, mocker):
     np.testing.assert_equal(var_y_mat_exp, var_y_mat_out)
 
 
-@pytest.mark.unit_tests
 def test_calculate_likelihood_noise_var(default_mf_likelihood):
     """Test for (iterative) calculation of likelihood noise variance."""
     diff_mat = np.array([[1, 2], [2, 3]])
@@ -424,7 +419,6 @@ def test_calculate_likelihood_noise_var(default_mf_likelihood):
     assert default_mf_likelihood.noise_var == 3.6
 
 
-@pytest.mark.unit_tests
 def test_calculate_rkhs_inner_product(default_mf_likelihood):
     """Test the calculation of the inner product and the differnt cases."""
     with pytest.raises(AssertionError):
@@ -453,7 +447,6 @@ def test_calculate_rkhs_inner_product(default_mf_likelihood):
         inner_prod_rkhs = default_mf_likelihood._calculate_rkhs_inner_prod(diff_vec, inv_k_mf_mat)
 
 
-@pytest.mark.unit_tests
 def test_log_likelihood_fun(default_mf_likelihood):
     """Test the calculation of the actual multi-fidelity log-likelihood.
 
@@ -516,7 +509,6 @@ def test_log_likelihood_fun(default_mf_likelihood):
         log_mf_lik = default_mf_likelihood._log_likelihood_fun(mf_variance_vec, diff_vec)
 
 
-@pytest.mark.unit_tests
 def test_initialize(default_mf_likelihood, mocker):
     """Test the initialization of the mf likelihood model."""
     coords_mat = np.array([[1, 2, 3], [2, 2, 2]])
@@ -553,7 +545,6 @@ def test_initialize(default_mf_likelihood, mocker):
     )
 
 
-@pytest.mark.unit_tests
 def test_build_approximation(default_mf_likelihood, mocker):
     """Test for the build stage of the probabilistic regression model."""
     z_train = np.array([[1, 1, 1], [2, 2, 2]])
@@ -592,7 +583,6 @@ def test_build_approximation(default_mf_likelihood, mocker):
     )
 
 
-@pytest.mark.unit_tests
 def test_input_dim_red(default_mf_likelihood, mocker):
     """Test for the input dimensionality reduction routine."""
     # pylint: disable=line-too-long
@@ -604,14 +594,12 @@ def test_input_dim_red(default_mf_likelihood, mocker):
     mo_1.assert_called_once()
 
 
-@pytest.mark.unit_tests
 def test_get_random_fields_and_truncated_basis(default_mf_likelihood):
     """Test the get-method for truncated random fields."""
     with pytest.raises(NotImplementedError):
         default_mf_likelihood.get_random_fields_and_truncated_basis()
 
 
-@pytest.mark.unit_tests
 def test_evaluate_forward_model(default_mf_likelihood, mock_model):
     """Test if forward model (lf model) is updated and evaluated correctly."""
     y_mat_expected = 1
@@ -622,7 +610,6 @@ def test_evaluate_forward_model(default_mf_likelihood, mock_model):
     np.testing.assert_array_almost_equal(y_mat, y_mat_expected, decimal=4)
 
 
-@pytest.mark.unit_tests
 def test_project_samples_on_truncated_basis(default_mf_likelihood):
     """Test projection of samples on the truncated basis for random fields."""
     expected_coefs_mat = np.array([[12, 18], [30, 45]])

@@ -11,10 +11,8 @@ from pqueens.tests.integration_tests.example_simulator_functions.sinus import si
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests
 def test_gp_precompiled_one_dim(inputdir, tmpdir):
     """Test case for GPPrecompiled based GP model."""
-
     template = os.path.join(inputdir, 'gp_precompiled_template.json')
     input_file = os.path.join(tmpdir, 'gp_precompiled.json')
 
@@ -44,7 +42,6 @@ def test_gp_precompiled_one_dim(inputdir, tmpdir):
     )
 
 
-@pytest.mark.integration_tests
 def test_gp_precompiled_two_dim(inputdir, tmpdir):
     """Test case for GPPrecompiled based GP model."""
     template = os.path.join(inputdir, 'gp_precompiled_template.json')

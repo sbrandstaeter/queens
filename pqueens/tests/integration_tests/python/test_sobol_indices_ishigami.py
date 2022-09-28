@@ -9,7 +9,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_sobol_indices_ishigami(inputdir, tmpdir):
     """Test case for salib based saltelli iterator."""
     run(Path(os.path.join(inputdir, 'sobol_indices_ishigami.json')), Path(tmpdir))

@@ -144,7 +144,6 @@ def mock_visualization():
 
 
 # ------ actual unit_tests --------------------------------------------
-@pytest.mark.unit_tests
 def test_init(
     mocker,
     global_settings,
@@ -175,7 +174,6 @@ def test_init(
     assert my_bmfmc_iterator.BMFMC_reference == BMFMC_reference
 
 
-@pytest.mark.unit_tests
 def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.load_sampling_data')
     mp2 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator.calculate_optimal_X_train')
@@ -193,7 +191,6 @@ def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
     mp3.assert_called_once()
 
 
-@pytest.mark.unit_tests
 def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
     mp1 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator._diverse_subset_design')
     mocker.patch(
@@ -216,7 +213,6 @@ def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
     )
 
 
-@pytest.mark.unit_tests
 def test_get_design_method(mocker, default_bmfmc_iterator):
     mocker.patch(
         'pqueens.iterators.bmfmc_iterator.BMFMCIterator._random_design', return_value='random'
@@ -237,7 +233,6 @@ def test_get_design_method(mocker, default_bmfmc_iterator):
         default_bmfmc_iterator._get_design_method('blabla')
 
 
-@pytest.mark.unit_tests
 def test_diverse_subset_design(mocker, default_bmfmc_iterator):
     mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas')
     n_points = 3
@@ -257,7 +252,6 @@ def test_diverse_subset_design(mocker, default_bmfmc_iterator):
     np.testing.assert_array_almost_equal(Y_LFs_train, expected_Y_LFs_train, decimal=6)
 
 
-@pytest.mark.unit_tests
 def test_random_design(mocker, default_bmfmc_iterator):
     mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas')
     n_points = 3
@@ -284,14 +278,12 @@ def test_random_design(mocker, default_bmfmc_iterator):
     np.testing.assert_array_almost_equal(Y_LFs_train, expected_Y_LFs_train, decimal=6)
 
 
-@pytest.mark.unit_tests
 def test_model_evaluate(mocker, default_bmfmc_iterator):
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.evaluate')
     default_bmfmc_iterator.model.evaluate(None)
     mp1.assert_called_once()
 
 
-@pytest.mark.unit_tests
 def test_post_run(mocker, default_bmfmc_iterator):
     mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',

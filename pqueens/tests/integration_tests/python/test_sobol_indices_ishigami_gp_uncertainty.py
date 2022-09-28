@@ -62,7 +62,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmpdir):
     #   - GP predictions change in the twelfth decimal place
     #   - first- and second-order results change in the tenth decimal place
     #   - all those changes drastically add up in the third order indices
-    np.testing.assert_allclose(results['third_order'].values, expected_s3, atol=1e-02)
+    np.testing.assert_allclose(results['third_order'].values, expected_s3, atol=1e-01)
 
 
 def test_sobol_indices_ishigami_gp_mean(inputdir, tmpdir):

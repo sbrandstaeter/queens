@@ -19,7 +19,6 @@ def port(request):
     return request.param
 
 
-@pytest.mark.unit_tests
 def test_exit_conditions_remote_main(mocker, finalize_fail, port):
     """Test if an error is raised."""
     if finalize_fail:

@@ -29,7 +29,6 @@ def arr_3d():
     return np.random.rand(3, 2, 5)
 
 
-@pytest.mark.unit_tests
 def test_at_least_2d(arr_0d, arr_1d, arr_2d):
     """Test numpy utils function at_least_2d."""
     np.testing.assert_equal(at_least_2d(arr_0d).shape, (1, 1))
@@ -37,7 +36,6 @@ def test_at_least_2d(arr_0d, arr_1d, arr_2d):
     np.testing.assert_equal(at_least_2d(arr_2d).shape, arr_2d.shape)
 
 
-@pytest.mark.unit_tests
 def test_at_least_3d(arr_0d, arr_1d, arr_2d, arr_3d):
     """Test numpy utils function at_least_3d."""
     np.testing.assert_equal(at_least_3d(arr_0d).shape, (1, 1, 1))

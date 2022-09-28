@@ -88,7 +88,6 @@ class MyContextManagerPool:
 
 
 # ---- Actual unit_tests ------------------------------
-@pytest.mark.unit_tests
 def test__init__():
     """Test the instantiation of the interface object."""
     config = {'test': 'test'}
@@ -102,7 +101,6 @@ def test__init__():
     assert interface.num_processors_multi_processing == 3
 
 
-@pytest.mark.unit_tests
 def test_map(default_bmfia_interface, default_probabilistic_obj_lst):
     """Test the mapping for the multi-fidelity interface."""
     mean_in = np.array([[1, 1, 1], [2, 2, 2]])
@@ -136,7 +134,6 @@ def test_map(default_bmfia_interface, default_probabilistic_obj_lst):
     np.testing.assert_array_equal(variance_in, variance_out)
 
 
-@pytest.mark.unit_tests
 def test_build_approximation(default_bmfia_interface, mocker):
     """Test the set-up / build of the probabilsitic regression models."""
     Z_LF_train = np.zeros((2, 30))
@@ -175,7 +172,6 @@ def test_build_approximation(default_bmfia_interface, mocker):
     np.testing.assert_array_equal(mock_optimize_state.call_args[0][0], dummy_lst)
 
 
-@pytest.mark.unit_tests
 def test_instantiate_probabilistic_mappings(
     default_bmfia_interface, mocker, dummy_reg_obj, default_probabilistic_obj_lst
 ):
@@ -198,7 +194,6 @@ def test_instantiate_probabilistic_mappings(
     assert mp_1.call_args[0][1] == default_bmfia_interface.approx_name
 
 
-@pytest.mark.unit_tests
 def test_train_probabilistic_mappings_in_parallel(
     default_bmfia_interface, mocker, my_state_lst, default_probabilistic_obj_lst
 ):
@@ -245,7 +240,6 @@ def test_train_probabilistic_mappings_in_parallel(
         default_bmfia_interface._train_probabilistic_mappings_in_parallel(Z_LF_train)
 
 
-@pytest.mark.unit_tests
 def test_set_optimized_state_of_probabilistic_mappings(
     default_bmfia_interface, my_state_lst, mocker, default_probabilistic_obj_lst
 ):
@@ -260,7 +254,6 @@ def test_set_optimized_state_of_probabilistic_mappings(
         assert obj.state == 1
 
 
-@pytest.mark.unit_tests
 def test_optimize_hyper_params(mocker, dummy_reg_obj):
     """Test the training of a single mapping."""
     mo_1 = mocker.patch(__name__ + '.DummyRegression.train')

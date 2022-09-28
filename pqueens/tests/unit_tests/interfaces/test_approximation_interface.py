@@ -37,7 +37,6 @@ class TestApproximationInterface(unittest.TestCase):
         self.config['parameters'] = uncertain_parameters
         self.config['dummy_approximation'] = 'some_stuff'
 
-    @pytest.mark.unit_tests
     def test_construction(self):
         interface = from_config_create_interface('test_interface', self.config)
         # ensure correct type

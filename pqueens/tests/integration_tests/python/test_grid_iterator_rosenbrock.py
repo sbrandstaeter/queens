@@ -8,7 +8,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
     """Integration test for the grid iterator."""
     run(Path(os.path.join(inputdir, 'grid_iterator_rosenbrock.json')), Path(tmpdir))

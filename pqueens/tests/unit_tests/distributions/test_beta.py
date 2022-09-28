@@ -55,7 +55,6 @@ def beta(lower_bound, upper_bound, shape_a, shape_b):
 # -----------------------------------------------------------------------
 
 
-@pytest.mark.unit_tests
 def test_init_beta(beta, lower_bound, upper_bound, shape_a, shape_b):
     """Test init method of Beta Distribution class."""
     lower_bound = np.array(lower_bound).reshape(1)
@@ -73,7 +72,6 @@ def test_init_beta(beta, lower_bound, upper_bound, shape_a, shape_b):
     np.testing.assert_equal(beta.b, shape_b)
 
 
-@pytest.mark.unit_tests
 def test_init_beta_wrong_interval(lower_bound, shape_a, shape_b):
     """Test init method of Beta Distribution class."""
     with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
@@ -87,7 +85,6 @@ def test_init_beta_wrong_interval(lower_bound, shape_a, shape_b):
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_init_beta_negative_shape(lower_bound, shape_a, shape_b):
     """Test init method of Beta Distribution class."""
     with pytest.raises(ValueError, match=r'The parameter \'b\' has to be positive.*'):
@@ -101,7 +98,6 @@ def test_init_beta_negative_shape(lower_bound, shape_a, shape_b):
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_cdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_b):
     """Test cdf method of beta distribution class."""
     width = upper_bound - lower_bound
@@ -111,7 +107,6 @@ def test_cdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_b):
     np.testing.assert_equal(beta.cdf(sample_pos), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_draw_beta(beta, lower_bound, upper_bound, mocker):
     """Test the draw method of beta distribution."""
     sample = np.asarray(0.5 * (lower_bound + upper_bound)).reshape(1, 1)
@@ -120,7 +115,6 @@ def test_draw_beta(beta, lower_bound, upper_bound, mocker):
     np.testing.assert_equal(draw, sample)
 
 
-@pytest.mark.unit_tests
 def test_logpdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_b):
     """Test pdf method of beta distribution class."""
     width = upper_bound - lower_bound
@@ -130,7 +124,6 @@ def test_logpdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_
     np.testing.assert_equal(beta.logpdf(sample_pos), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_grad_logpdf_beta(beta, sample_pos):
     """Test grad_logpdf method of beta distribution class."""
     with pytest.raises(
@@ -140,7 +133,6 @@ def test_grad_logpdf_beta(beta, sample_pos):
         beta.grad_logpdf(sample_pos)
 
 
-@pytest.mark.unit_tests
 def test_pdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_b):
     """Test pdf method of beta distribution class."""
     width = upper_bound - lower_bound
@@ -150,7 +142,6 @@ def test_pdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_b):
     np.testing.assert_equal(beta.pdf(sample_pos), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_ppf_beta(beta, lower_bound, upper_bound, shape_a, shape_b):
     """Test ppf method of beta distribution class."""
     quantile = 0.5

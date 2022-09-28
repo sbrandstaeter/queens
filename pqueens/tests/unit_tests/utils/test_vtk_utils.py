@@ -49,7 +49,6 @@ def fixture_point_data_vtkarray(request):
     return array
 
 
-@pytest.mark.unit_tests
 def test_load_vtu_file_failure():
     """Test if expection is raised if file not found."""
     file = "none/existing/file"
@@ -57,14 +56,12 @@ def test_load_vtu_file_failure():
         load_vtu_file(file)
 
 
-@pytest.mark.unit_tests
 def test_load_vtu_file(template_file_path):
     """Test if file is loaded correctly."""
     # Test if the number of nodes matches
     assert load_vtu_file(template_file_path).GetNumberOfPoints() == 121
 
 
-@pytest.mark.unit_tests
 def test_get_node_coordinates_from_vtu_file_vtk(template_file_path):
     """Check if nodes are read in correctly vtk format."""
     vtk_array = get_node_coordinates_from_vtu_file(template_file_path, as_numpy=False)
@@ -72,7 +69,6 @@ def test_get_node_coordinates_from_vtu_file_vtk(template_file_path):
     assert vtk_array.GetNumberOfPoints() == 121
 
 
-@pytest.mark.unit_tests
 def test_get_node_coordinates_from_vtu_file_numpy(template_file_path):
     """Check if nodes are read in correctly numpy format."""
     vtk_array = get_node_coordinates_from_vtu_file(template_file_path)
@@ -83,7 +79,6 @@ def test_get_node_coordinates_from_vtu_file_numpy(template_file_path):
     np.testing.assert_almost_equal(np.min(vtk_array, axis=0), np.array([0, 0, 0]))
 
 
-@pytest.mark.unit_tests
 def test_add_point_array_to_vtu_object_invalid_type(template_file_path):
     """Check if invalid type raises an error."""
     vtu_object = load_vtu_file(template_file_path)
@@ -91,7 +86,6 @@ def test_add_point_array_to_vtu_object_invalid_type(template_file_path):
         add_point_array_to_vtu_object(vtu_object, "test_array", "Not an array")
 
 
-@pytest.mark.unit_tests
 def test_add_point_array_to_vtu_object_vtk_failure(template_file_path):
     """Check if wrong dimension of the vtkarray raises an error."""
     vtu_object = load_vtu_file(template_file_path)
@@ -100,7 +94,6 @@ def test_add_point_array_to_vtu_object_vtk_failure(template_file_path):
         add_point_array_to_vtu_object(vtu_object, "test_array", data_array)
 
 
-@pytest.mark.unit_tests
 def test_add_point_array_to_vtu_object_numpy_failure(template_file_path):
     """Check if wrong dimension of the array raises an error."""
     vtu_object = load_vtu_file(template_file_path)
@@ -109,7 +102,6 @@ def test_add_point_array_to_vtu_object_numpy_failure(template_file_path):
         add_point_array_to_vtu_object(vtu_object, "test_array", data_array)
 
 
-@pytest.mark.unit_tests
 def test_add_point_array_to_vtu_object_numpy(template_file_path, point_data_array):
     """Test if adding a numpy array works."""
     vtu_object = load_vtu_file(template_file_path)
@@ -122,7 +114,6 @@ def test_add_point_array_to_vtu_object_numpy(template_file_path, point_data_arra
     assert not_existing_array is None
 
 
-@pytest.mark.unit_tests
 def test_add_point_array_to_vtu_object_vtkarray(template_file_path, point_data_vtkarray):
     """Test if adding a vtkArray works."""
     vtu_object = load_vtu_file(template_file_path)
@@ -135,7 +126,6 @@ def test_add_point_array_to_vtu_object_vtkarray(template_file_path, point_data_v
     assert not_existing_array is None
 
 
-@pytest.mark.unit_tests
 def test_add_cell_array_to_vtu_object_invalid_type(template_file_path):
     """Check if invalid type raises an error."""
     vtu_object = load_vtu_file(template_file_path)
@@ -143,7 +133,6 @@ def test_add_cell_array_to_vtu_object_invalid_type(template_file_path):
         add_cell_array_to_vtu_object(vtu_object, "test_array", "Not an array")
 
 
-@pytest.mark.unit_tests
 def test_add_cell_array_to_vtu_object_vtk_failure(template_file_path):
     """Check if wrong dimension of the vtkarray raises an error."""
     vtu_object = load_vtu_file(template_file_path)
@@ -152,7 +141,6 @@ def test_add_cell_array_to_vtu_object_vtk_failure(template_file_path):
         add_cell_array_to_vtu_object(vtu_object, "test_array", data_array)
 
 
-@pytest.mark.unit_tests
 def test_add_cell_array_to_vtu_object_numpy_failure(template_file_path):
     """Check if wrong dimension of the numpy array raises an error."""
     vtu_object = load_vtu_file(template_file_path)
@@ -161,7 +149,6 @@ def test_add_cell_array_to_vtu_object_numpy_failure(template_file_path):
         add_cell_array_to_vtu_object(vtu_object, "test_array", data_array)
 
 
-@pytest.mark.unit_tests
 def test_add_cell_array_to_vtu_object_numpy(template_file_path, cell_data_array):
     """Test if adding a numpy array works."""
     vtu_object = load_vtu_file(template_file_path)
@@ -174,7 +161,6 @@ def test_add_cell_array_to_vtu_object_numpy(template_file_path, cell_data_array)
     assert not_existing_array is None
 
 
-@pytest.mark.unit_tests
 def test_add_cell_array_to_vtu_object_vtkarray(template_file_path, cell_data_vtkarray):
     """Test if adding a vtkArray works."""
     vtu_object = load_vtu_file(template_file_path)
@@ -187,7 +173,6 @@ def test_add_cell_array_to_vtu_object_vtkarray(template_file_path, cell_data_vtk
     assert not_existing_array is None
 
 
-@pytest.mark.unit_tests
 def test_export_vtu_file(template_file_path, tmp_path):
     """Test exporting vtu file."""
     vtu_input = load_vtu_file(template_file_path)

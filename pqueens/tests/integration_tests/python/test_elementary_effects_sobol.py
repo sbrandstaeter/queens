@@ -8,7 +8,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_elementary_effects_sobol(inputdir, tmpdir):
     """Test case for elementary effects on Sobol's G-function."""
     run(Path(os.path.join(inputdir, 'elementary_effects_sobol.json')), Path(tmpdir))

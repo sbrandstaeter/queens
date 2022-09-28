@@ -11,7 +11,6 @@ from pqueens import run
 from pqueens.utils import injector
 
 
-@pytest.mark.integration_tests_baci
 def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     inputdir,
     tmpdir,

@@ -7,7 +7,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_branin_latin_hyper_cube(inputdir, tmpdir):
     """Test case for latin hyper cube iterator."""
     run(Path(os.path.join(inputdir, 'latin_hyper_cube_branin.json')), Path(tmpdir))

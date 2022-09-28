@@ -77,7 +77,6 @@ def uniform_2d(lower_bound_2d, upper_bound_2d):
 # -----------------------------------------------------------------------
 
 # ------------- univariate --------------
-@pytest.mark.unit_tests
 def test_init_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d):
     """Test init method of Uniform Distribution class."""
     width = np.array(upper_bound_1d - lower_bound_1d).reshape(1)
@@ -94,7 +93,6 @@ def test_init_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d):
     np.testing.assert_equal(uniform_1d.width, width)
 
 
-@pytest.mark.unit_tests
 def test_init_uniform_1d_wrong_interval(lower_bound_1d):
     """Test init method of Uniform Distribution class."""
     with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
@@ -106,7 +104,6 @@ def test_init_uniform_1d_wrong_interval(lower_bound_1d):
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_cdf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, sample_pos_1d):
     """Test cdf method of Uniform distribution class."""
     width = upper_bound_1d - lower_bound_1d
@@ -114,7 +111,6 @@ def test_cdf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, sample_pos_1
     np.testing.assert_allclose(uniform_1d.cdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_draw_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, mocker):
     """Test the draw method of uniform distribution."""
     sample = np.asarray(0.5 * (lower_bound_1d + upper_bound_1d)).reshape(1, 1)
@@ -123,7 +119,6 @@ def test_draw_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, mocker):
     np.testing.assert_equal(draw, sample)
 
 
-@pytest.mark.unit_tests
 def test_logpdf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, sample_pos_1d):
     """Test pdf method of Uniform distribution class."""
     width = upper_bound_1d - lower_bound_1d
@@ -131,7 +126,6 @@ def test_logpdf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, sample_po
     np.testing.assert_allclose(uniform_1d.logpdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_grad_logpdf_uniform_1d(uniform_1d, sample_pos_1d):
     """Test grad_logpdf method of uniform distribution class."""
     sample_pos_1d = sample_pos_1d.reshape(-1, 1)
@@ -139,7 +133,6 @@ def test_grad_logpdf_uniform_1d(uniform_1d, sample_pos_1d):
     np.testing.assert_allclose(uniform_1d.grad_logpdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_pdf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, sample_pos_1d):
     """Test pdf method of Uniform distribution class."""
     width = upper_bound_1d - lower_bound_1d
@@ -147,7 +140,6 @@ def test_pdf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, sample_pos_1
     np.testing.assert_allclose(uniform_1d.pdf(sample_pos_1d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_ppf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d):
     """Test ppf method of Uniform distribution class."""
     quantile = 0.5
@@ -157,7 +149,6 @@ def test_ppf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d):
 
 
 # ------------- multivariate --------------
-@pytest.mark.unit_tests
 def test_init_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d):
     """Test init method of Uniform Distribution class."""
     width = upper_bound_2d - lower_bound_2d
@@ -182,7 +173,6 @@ def test_init_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d):
     np.testing.assert_equal(uniform_2d.width, width)
 
 
-@pytest.mark.unit_tests
 def test_init_uniform_2d_wrong_interval(lower_bound_2d):
     """Test init method of Uniform Distribution class."""
     with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
@@ -194,7 +184,6 @@ def test_init_uniform_2d_wrong_interval(lower_bound_2d):
         from_config_create_distribution(distribution_options)
 
 
-@pytest.mark.unit_tests
 def test_cdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2d):
     """Test cdf method of Uniform distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
@@ -205,7 +194,6 @@ def test_cdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2
     np.testing.assert_allclose(uniform_2d.cdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_draw_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, mocker):
     """Test the draw method of uniform distribution."""
     sample = np.asarray(0.5 * (lower_bound_2d + upper_bound_2d)).reshape(1, 2)
@@ -214,7 +202,6 @@ def test_draw_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, mocker):
     np.testing.assert_equal(draw, sample)
 
 
-@pytest.mark.unit_tests
 def test_logpdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2d):
     """Test pdf method of Uniform distribution class."""
     width = upper_bound_2d - lower_bound_2d
@@ -225,7 +212,6 @@ def test_logpdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_po
     np.testing.assert_allclose(uniform_2d.logpdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_grad_logpdf_uniform_2d(uniform_2d, sample_pos_2d):
     """Test grad_logpdf method of uniform distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
@@ -233,7 +219,6 @@ def test_grad_logpdf_uniform_2d(uniform_2d, sample_pos_2d):
     np.testing.assert_allclose(uniform_2d.grad_logpdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_pdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2d):
     """Test pdf method of Uniform distribution class."""
     width = upper_bound_2d - lower_bound_2d
@@ -244,7 +229,6 @@ def test_pdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2
     np.testing.assert_allclose(uniform_2d.pdf(sample_pos_2d), ref_sol)
 
 
-@pytest.mark.unit_tests
 def test_ppf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d):
     """Test ppf method of Uniform distribution class."""
     with pytest.raises(ValueError, match='Method does not support multivariate distributions!'):

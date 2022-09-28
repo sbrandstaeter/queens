@@ -8,7 +8,6 @@ import pytest
 from pqueens import run
 
 
-@pytest.mark.integration_tests
 def test_branin_gpflow_heteroskedastic(inputdir, tmpdir, expected_mean, expected_var):
     """Test case for GPflow based heteroskedastic model."""
     run(Path(os.path.join(inputdir, 'gp_heteroskedastic_surrogate_branin.json')), Path(tmpdir))

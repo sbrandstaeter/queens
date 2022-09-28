@@ -104,7 +104,6 @@ def default_data_processor():
     return pp
 
 
-@pytest.mark.unit_tests
 def test_init():
     """Test the init method."""
     file_name_identifier = 'dummy_prefix*dummyfix'
@@ -158,7 +157,6 @@ def test_init():
     assert my_data_processor.returned_filter_format == filter_format
 
 
-@pytest.mark.unit_tests
 def test_check_valid_filter_options_entire_file():
     """Test checking of valid filter options."""
     DataProcessorCsv._check_valid_filter_options({'type': 'entire_file'})
@@ -171,7 +169,6 @@ def test_check_valid_filter_options_entire_file():
         DataProcessorCsv._check_valid_filter_options({'type': 'entire_file', 'tolerance': 0})
 
 
-@pytest.mark.unit_tests
 def test_check_valid_filter_options_by_range():
     """Test checking of valid filter by range options."""
     DataProcessorCsv._check_valid_filter_options(
@@ -187,7 +184,6 @@ def test_check_valid_filter_options_by_range():
         DataProcessorCsv._check_valid_filter_options({'type': 'by_range', 'range': [1.0, 2.0]})
 
 
-@pytest.mark.unit_tests
 def test_check_valid_filter_options_by_row_index():
     """Test checking of valid filter by row index options."""
     DataProcessorCsv._check_valid_filter_options({'type': 'by_row_index', 'rows': [1, 2]})
@@ -203,7 +199,6 @@ def test_check_valid_filter_options_by_row_index():
         )
 
 
-@pytest.mark.unit_tests
 def test_check_valid_filter_options_by_target_values():
     """Test checking of valid filter by target values."""
     DataProcessorCsv._check_valid_filter_options(
@@ -221,7 +216,6 @@ def test_check_valid_filter_options_by_target_values():
         )
 
 
-@pytest.mark.unit_tests
 def test_from_config_create_data_processor(mocker):
     """Test the config method."""
     mp = mocker.patch(
@@ -283,7 +277,6 @@ def test_from_config_create_data_processor(mocker):
     )
 
 
-@pytest.mark.unit_tests
 def test_get_raw_data_from_file_with_index(
     dummy_csv_file, default_data_processor, default_raw_data
 ):
@@ -299,7 +292,6 @@ def test_get_raw_data_from_file_with_index(
     pd.testing.assert_frame_equal(default_data_processor.raw_file_data, default_raw_data)
 
 
-@pytest.mark.unit_tests
 def test_get_raw_data_from_file_without_index(dummy_csv_file, default_data_processor):
     """Test get raw data from file without setting index."""
     default_data_processor.header_row = 0
@@ -329,7 +321,6 @@ def test_get_raw_data_from_file_without_index(dummy_csv_file, default_data_proce
     pd.testing.assert_frame_equal(default_data_processor.raw_file_data, expected_raw_data)
 
 
-@pytest.mark.unit_tests
 def test_filter_entire_file(default_data_processor, default_raw_data):
     """Test filter entire file."""
     default_data_processor.filter_type = 'entire_file'
@@ -344,7 +335,6 @@ def test_filter_entire_file(default_data_processor, default_raw_data):
     np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
 
 
-@pytest.mark.unit_tests
 def test_filter_by_range(default_data_processor, default_raw_data):
     """Test filter by range."""
     default_data_processor.filter_type = 'by_range'
@@ -359,7 +349,6 @@ def test_filter_by_range(default_data_processor, default_raw_data):
     np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
 
 
-@pytest.mark.unit_tests
 def test_filter_by_target_values(default_data_processor, default_raw_data):
     """Test filter by target values."""
     default_data_processor.filter_type = 'by_target_values'
@@ -374,7 +363,6 @@ def test_filter_by_target_values(default_data_processor, default_raw_data):
     np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
 
 
-@pytest.mark.unit_tests
 def test_filter_by_row_index(default_data_processor, default_raw_data):
     """Test filter by row index."""
     default_data_processor.filter_type = 'by_row_index'
@@ -387,7 +375,6 @@ def test_filter_by_row_index(default_data_processor, default_raw_data):
     np.testing.assert_allclose(expected_data, default_data_processor.processed_data)
 
 
-@pytest.mark.unit_tests
 def test_filter_and_manipulate_raw_data_numpy(default_data_processor, default_raw_data):
     """Test output format in numpy."""
     default_data_processor.returned_filter_format = 'numpy'
@@ -397,7 +384,6 @@ def test_filter_and_manipulate_raw_data_numpy(default_data_processor, default_ra
     np.testing.assert_array_equal(expected_data, default_data_processor.processed_data)
 
 
-@pytest.mark.unit_tests
 def test_filter_and_manipulate_raw_data_dict(default_data_processor, default_raw_data):
     """Test output format as dict."""
     default_data_processor.returned_filter_format = 'dict'
@@ -407,7 +393,6 @@ def test_filter_and_manipulate_raw_data_dict(default_data_processor, default_raw
     np.testing.assert_array_equal(expected_data, default_data_processor.processed_data)
 
 
-@pytest.mark.unit_tests
 def test_filter_and_manipulate_raw_data_error(default_data_processor, default_raw_data):
     """Test wrong output format."""
     default_data_processor.returned_filter_format = 'stuff'

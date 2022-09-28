@@ -5,7 +5,6 @@ from pqueens.utils.exceptions import SubprocessError
 from pqueens.utils.run_subprocess import _run_subprocess_simple
 
 
-@pytest.mark.unit_tests
 def test_subprocess_correct_message_construction():
     """Check if SubprocessError message is constructed correctly."""
     command = "dummy command"
@@ -28,7 +27,6 @@ def test_subprocess_correct_message_construction():
     assert expected_message == str(sp_error)
 
 
-@pytest.mark.unit_tests
 def test_subprocess_raises_error():
     """Check if non existing command raises an SubprocessError."""
     with pytest.raises(SubprocessError):
