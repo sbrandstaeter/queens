@@ -6,11 +6,9 @@ import pathlib
 import socket
 from dataclasses import dataclass
 
-import numpy as np
-
 from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
-from pqueens.utils.cluster_utils import get_cluster_job_id
+from pqueens.utils.cluster_utils import distribute_procs_on_nodes_pbs, get_cluster_job_id
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.path_utils import relative_path_from_pqueens
@@ -169,6 +167,7 @@ class ClusterScheduler(Scheduler):
         experiment_name = config['global_settings']['experiment_name']
         experiment_dir = pathlib.Path(scheduler_options['experiment_dir'])
         input_file = pathlib.Path(config["input_file"])
+
         singularity = scheduler_options.get('singularity', False)
         if not isinstance(singularity, bool):
             raise TypeError(
@@ -176,6 +175,7 @@ class ClusterScheduler(Scheduler):
                 f" boolean, however you provided '{singularity}' which is of type "
                 f"{type(singularity)} "
             )
+
         remote = scheduler_options.get('remote', False)
         if remote:
             remote_connect = scheduler_options['remote']['connect']
@@ -222,12 +222,18 @@ class ClusterScheduler(Scheduler):
         cluster_options['CLUSTERSCRIPT'] = cluster_options.get('script', None)
         cluster_options['nposttasks'] = scheduler_options.get('num_procs_post', 1)
 
+        num_procs = scheduler_options.get('num_procs', 1)
         # set cluster options required specifically for PBS or Slurm
         if scheduler_type in VALID_PBS_SCHEDULER_TYPES:
             cluster_options['pbs_queue'] = cluster_options.get('pbs_queue', 'batch')
-            cls._set_number_procs_pbs(cluster_options, scheduler_options)
+            max_procs_per_node = scheduler_options.get('pbs_num_avail_ppn', 16)
+            num_nodes, procs_per_node = distribute_procs_on_nodes_pbs(
+                num_procs=num_procs, max_procs_per_node=max_procs_per_node
+            )
+            cluster_options['pbs_nodes'] = str(num_nodes)
+            cluster_options['pbs_ppn'] = str(procs_per_node)
         elif scheduler_type in VALID_SLURM_SCHEDULER_TYPES:
-            cluster_options['slurm_ntasks'] = str(scheduler_options.get('num_procs', 1))
+            cluster_options['slurm_ntasks'] = str(num_procs)
         else:
             raise ValueError(
                 f"Unknown cluster scheduler type: {scheduler_type}.\n"
@@ -274,23 +280,6 @@ class ClusterScheduler(Scheduler):
             remote=remote,
             remote_connect=remote_connect,
         )
-
-    @classmethod
-    def _set_number_procs_pbs(cls, cluster_options, scheduler_options):
-        """Set number of procs and nodes."""
-        num_procs = scheduler_options.get('num_procs', 1)
-        ppn = scheduler_options.get('pbs_num_avail_ppn', 16)
-        if num_procs <= ppn:
-            cluster_options['pbs_nodes'] = '1'
-            cluster_options['pbs_ppn'] = str(num_procs)
-        else:
-            num_nodes = np.ceil(num_procs / ppn)
-            if num_procs % num_nodes == 0:
-                cluster_options['pbs_ppn'] = str(num_procs / num_nodes)
-            else:
-                raise ValueError(
-                    "Number of tasks not evenly distributable, as required for PBS scheduler!"
-                )
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
