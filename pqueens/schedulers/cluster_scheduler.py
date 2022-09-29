@@ -82,10 +82,10 @@ class ClusterScheduler(Scheduler):
             experiment_dir,
             driver_name,
             config,
-            cluster_options,
             singularity,
             scheduler_type,
         )
+        self.cluster_options = cluster_options
         self.singularity_manager = singularity_manager
         self.remote = remote
         self.port = None
@@ -124,7 +124,6 @@ class ClusterScheduler(Scheduler):
             )
         scheduler_type = scheduler_options["scheduler_type"]
 
-        cluster_options = scheduler_options.get("cluster", {})
         remote = scheduler_options.get('remote', False)
         if remote:
             remote_connect = scheduler_options['remote']['connect']
@@ -152,6 +151,7 @@ class ClusterScheduler(Scheduler):
             singularity_manager = None
 
         # This hurts my brain
+        cluster_options = scheduler_options.get("cluster", {})
         cluster_options['job_name'] = None
         cluster_options['CLUSTERSCRIPT'] = cluster_options.get('script', None)
         cluster_options['nposttasks'] = scheduler_options.get('num_procs_post', 1)

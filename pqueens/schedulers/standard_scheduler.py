@@ -32,7 +32,6 @@ class StandardScheduler(Scheduler):
         experiment_dir,
         driver_name,
         config,
-        cluster_options,
         singularity,
         scheduler_type,
         max_concurrent,
@@ -46,12 +45,8 @@ class StandardScheduler(Scheduler):
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
-            cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
-                                       cluster options
             remote connect (str):      (only for remote scheduling) address of remote
                                        computing resource
-            cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
-                                       cluster options
             singularity (bool):        flag for use of Singularity containers
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             max_concurrent (int): Number of maximum jobs that run in parallel
@@ -62,7 +57,6 @@ class StandardScheduler(Scheduler):
             experiment_dir,
             driver_name,
             config,
-            cluster_options,
             singularity,
             scheduler_type,
         )
@@ -101,7 +95,6 @@ class StandardScheduler(Scheduler):
             if _check_if_new_image_needed():
                 _logger.info("Local singularity image is outdated/missing, building a new one!")
                 create_singularity_image()
-        cluster_options = {}
         scheduler_type = scheduler_options["scheduler_type"]
 
         # TODO move this to a different place
@@ -125,7 +118,6 @@ class StandardScheduler(Scheduler):
             experiment_dir,
             driver_name,
             config,
-            cluster_options,
             singularity,
             scheduler_type,
             max_concurrent,
