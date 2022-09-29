@@ -4,6 +4,7 @@ import getpass
 import logging
 import pathlib
 import socket
+from dataclasses import dataclass
 
 import numpy as np
 
@@ -28,14 +29,70 @@ VALID_SLURM_SCHEDULER_TYPES = (BRUTEFORCE_SCHEDULER_TYPE, CHARON_SCHEDULER_TYPE)
 VALID_CLUSTER_SCHEDULER_TYPES = VALID_PBS_SCHEDULER_TYPES + VALID_SLURM_SCHEDULER_TYPES
 
 
+@dataclass(frozen=True)
+class ClusterConfig:
+    """Configuration data of cluster.
+
+    Attributes:
+        name (str):                         name of cluster
+        work_load_scheduler (str):          type of work load scheduling software (PBS or SLURM)
+        start_cmd (str):                    command to start a job on the cluster
+        jobscript_template (pathlib.Path):  absolute path to jobscript template file
+        job_status_command (str):           command to check job status on cluster
+        job_status_location (int):          location of job status in return of job_status_command
+    """
+
+    name: str
+    work_load_scheduler: str
+    start_cmd: str
+    jobscript_template: pathlib.Path
+    job_status_command: str
+    job_status_location: int
+
+
+DEEP_CONFIG = ClusterConfig(
+    name="deep",
+    work_load_scheduler="pbs",
+    start_cmd="qsub",
+    jobscript_template=relative_path_from_pqueens("utils/jobscript_deep.sh"),
+    job_status_command="qstat",
+    job_status_location=-2,
+)
+BRUTEFORCE_CONFIG = ClusterConfig(
+    name="bruteforce",
+    work_load_scheduler="slurm",
+    start_cmd="sbatch",
+    jobscript_template=relative_path_from_pqueens("utils/jobscript_bruteforce.sh"),
+    job_status_command="squeue --job",
+    job_status_location=-4,
+)
+CHARON_CONFIG = ClusterConfig(
+    name="charon",
+    work_load_scheduler="slurm",
+    start_cmd="sbatch",
+    jobscript_template=relative_path_from_pqueens("utils/jobscript_charon.sh"),
+    job_status_command="squeue --job",
+    job_status_location=-4,
+)
+
+CLUSTER_CONFIGS = {
+    DEEP_SCHEDULER_TYPE: DEEP_CONFIG,
+    BRUTEFORCE_SCHEDULER_TYPE: BRUTEFORCE_CONFIG,
+    CHARON_SCHEDULER_TYPE: CHARON_CONFIG,
+}
+
+
 class ClusterScheduler(Scheduler):
     """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS.
 
     Attributes:
         port (int):                (only for remote scheduling with Singularity) port of
                                    remote resource for ssh port-forwarding to database
+        cluster_config (dict):     configuration data of the cluster
+        cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
+                                   cluster options
         remote (bool):             flag for remote scheduling
-        remote connect (str):      (only for remote scheduling) address of remote
+        remote_connect (str):      (only for remote scheduling) address of remote
                                    computing resource
         singularity_manager (obj): instance of Singularity-manager class
     """
@@ -47,14 +104,13 @@ class ClusterScheduler(Scheduler):
         experiment_dir,
         driver_name,
         config,
+        cluster_config,
         cluster_options,
         singularity,
         scheduler_type,
         singularity_manager,
         remote,
         remote_connect,
-        job_status_command,
-        job_status_location,
     ):
         """Init method for the cluster scheduler.
 
@@ -65,6 +121,7 @@ class ClusterScheduler(Scheduler):
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
+            cluster_config (dict):     configuration data of the cluster
             cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
                                        cluster options
             singularity (bool):        flag for use of Singularity containers
@@ -73,8 +130,6 @@ class ClusterScheduler(Scheduler):
             remote (bool):             flag for remote scheduling
             remote_connect (str):      (only for remote scheduling) address of remote
                                        computing resource
-            job_status_command (str):command to check job status on cluster
-            job_status_location (str): location of job status in return of check_cmd
         """
         super().__init__(
             experiment_name,
@@ -85,13 +140,12 @@ class ClusterScheduler(Scheduler):
             singularity,
             scheduler_type,
         )
+        self.cluster_config = cluster_config
         self.cluster_options = cluster_options
         self.singularity_manager = singularity_manager
         self.remote = remote
         self.port = None
         self.remote_connect = remote_connect
-        self.job_status_command = job_status_command
-        self.job_status_location = job_status_location
 
         # Close the ssh ports when exiting after the queens run
         atexit.register(self.post_run)
@@ -122,8 +176,6 @@ class ClusterScheduler(Scheduler):
                 f" boolean, however you provided '{singularity}' which is of type "
                 f"{type(singularity)} "
             )
-        scheduler_type = scheduler_options["scheduler_type"]
-
         remote = scheduler_options.get('remote', False)
         if remote:
             remote_connect = scheduler_options['remote']['connect']
@@ -150,6 +202,20 @@ class ClusterScheduler(Scheduler):
         else:
             singularity_manager = None
 
+        scheduler_type = scheduler_options["scheduler_type"]
+        if not scheduler_type in VALID_CLUSTER_SCHEDULER_TYPES:
+            raise ValueError(
+                f"Unknown cluster scheduler type: {scheduler_type}.\n"
+                f"Known types are: {VALID_CLUSTER_SCHEDULER_TYPES}"
+            )
+
+        cluster_config = CLUSTER_CONFIGS.get(scheduler_type)
+        if cluster_config is None:
+            raise ValueError(
+                f"Unable to find cluster_config for scheduler type: {scheduler_type}.\n"
+                f"Available configs are: {CLUSTER_CONFIGS.items()}"
+            )
+
         # This hurts my brain
         cluster_options = scheduler_options.get("cluster", {})
         cluster_options['job_name'] = None
@@ -158,19 +224,15 @@ class ClusterScheduler(Scheduler):
 
         # set cluster options required specifically for PBS or Slurm
         if scheduler_type in VALID_PBS_SCHEDULER_TYPES:
-            cluster_options['start_cmd'] = 'qsub'
-            jobscript_relative_path = 'utils/jobscript_deep.sh'
             cluster_options['pbs_queue'] = cluster_options.get('pbs_queue', 'batch')
             cls._set_number_procs_pbs(cluster_options, scheduler_options)
-            job_status_command = 'qstat'
-            job_status_location = -2
         elif scheduler_type in VALID_SLURM_SCHEDULER_TYPES:
-            cluster_options['start_cmd'] = 'sbatch'
             cluster_options['slurm_ntasks'] = str(scheduler_options.get('num_procs', 1))
         else:
-            raise ValueError(f"Know cluster scheduler types are {VALID_CLUSTER_SCHEDULER_TYPES}")
-
-        cluster_options['jobscript_template'] = relative_path_from_pqueens(jobscript_relative_path)
+            raise ValueError(
+                f"Unknown cluster scheduler type: {scheduler_type}.\n"
+                f"Known types are: {VALID_CLUSTER_SCHEDULER_TYPES}"
+            )
 
         if singularity:
             singularity_path = pathlib.Path(
@@ -204,14 +266,13 @@ class ClusterScheduler(Scheduler):
             experiment_dir=experiment_dir,
             driver_name=driver_name,
             config=config,
+            cluster_config=cluster_config,
             cluster_options=cluster_options,
             singularity=singularity,
             scheduler_type=scheduler_type,
             singularity_manager=singularity_manager,
             remote=remote,
             remote_connect=remote_connect,
-            job_status_command=job_status_command,
-            job_status_location=job_status_location,
         )
 
     @classmethod
@@ -286,7 +347,7 @@ class ClusterScheduler(Scheduler):
             generate_submission_script(
                 self.cluster_options,
                 str(submission_script_path),
-                self.cluster_options['jobscript_template'],
+                self.cluster_config.jobscript_template,
                 self.remote_connect,
             )
 
@@ -297,7 +358,7 @@ class ClusterScheduler(Scheduler):
                 '"cd',
                 str(self.experiment_dir),
                 ';',
-                self.cluster_options['start_cmd'],
+                self.cluster_config.start_cmd,
                 str(submission_script_path),
                 '"',
             ]
@@ -347,14 +408,14 @@ class ClusterScheduler(Scheduler):
                 'ssh',
                 self.remote_connect,
                 '"',
-                self.job_status_command,
+                self.cluster_config.job_status_command,
                 str(self.process_ids[str(job_id)]),
                 '"',
             ]
         else:
             # generate check command
             command_list = [
-                self.job_status_command,
+                self.cluster_config.job_status_command,
                 str(self.process_ids[str(job_id)]),
             ]
 
@@ -366,7 +427,7 @@ class ClusterScheduler(Scheduler):
             output = stdout.split()
 
             # second/fourth to last entry should be job status
-            status = output[self.job_status_location]
+            status = output[self.cluster_config.job_status_location]
             if status in ['Q', 'R', 'H', 'S']:
                 completed = False
 

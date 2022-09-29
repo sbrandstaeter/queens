@@ -55,6 +55,7 @@ class MpiDriver(Driver):
         singularity,
         database,
         cae_output_streaming,
+        cluster_config,
         cluster_options,
         error_file,
         executable,
@@ -87,6 +88,7 @@ class MpiDriver(Driver):
             singularity (bool): flag for use of a singularity container
             database (obj): database object
             cae_output_streaming (bool): flag for additional streaming to given stream
+            cluster_config (ClusterConfig): configuration data of cluster
             cluster_options (dict): cluster options for pbs or slurm
             error_file (path): path to error file
             executable (path): path to main executable of respective software (e.g. baci)
@@ -124,6 +126,7 @@ class MpiDriver(Driver):
         )
         self.cae_output_streaming = cae_output_streaming
         self.cluster_job = cluster_job
+        self.cluster_config = cluster_config
         self.cluster_options = cluster_options
         self.error_file = error_file
         self.executable = executable
@@ -149,6 +152,7 @@ class MpiDriver(Driver):
         batch,
         driver_name,
         workdir=None,
+        cluster_config=None,
         cluster_options=None,
     ):
         """Create Driver to run executable from input configuration.
@@ -159,8 +163,9 @@ class MpiDriver(Driver):
             config (dict): dictionary containing configuration from QUEENS input file
             job_id (int): job ID as provided in database within range [1, n_jobs]
             batch (int): job batch number (multiple batches possible)
-            workdir (str): path to working directory on remote resource
             driver_name (str): name of driver instance that should be realized
+            workdir (str): path to working directory on remote resource
+            cluster_config (ClusterConfig): configuration data of cluster
             cluster_options (dict): cluster options for pbs or slurm
 
         Returns:
@@ -235,6 +240,7 @@ class MpiDriver(Driver):
             singularity=singularity,
             database=database,
             cae_output_streaming=cae_output_streaming,
+            cluster_config=cluster_config,
             cluster_options=cluster_options,
             error_file=error_file,
             executable=executable,
@@ -378,11 +384,9 @@ class MpiDriver(Driver):
         self.cluster_options['OUTPUTPREFIX'] = self.output_prefix
 
         submission_script_path = str(self.experiment_dir.joinpath('jobfile.sh'))
-        inject(
-            self.cluster_options, self.cluster_options['jobscript_template'], submission_script_path
-        )
+        inject(self.cluster_options, self.cluster_config.jobscript_template, submission_script_path)
 
-        command_list = [self.cluster_options['start_cmd'], submission_script_path]
+        command_list = [self.cluster_config.start_cmd, submission_script_path]
 
         return ' '.join(command_list)
 
