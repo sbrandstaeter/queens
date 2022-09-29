@@ -5,6 +5,11 @@ import pathlib
 
 import pytest
 
+from pqueens.schedulers.cluster_scheduler import (
+    BRUTEFORCE_SCHEDULER_TYPE,
+    CHARON_SCHEDULER_TYPE,
+    DEEP_SCHEDULER_TYPE,
+)
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_from_queens
 from pqueens.utils.run_subprocess import run_subprocess
@@ -83,6 +88,11 @@ def cluster_user(user):
 
 @pytest.fixture(scope="session")
 def cluster(request):
+    """Helper fixture to iterate over clusters.
+
+    The actual parameterization is done on a per test basis which also
+    defines the parameterized markers of the tests.
+    """
     return request.param
 
 
@@ -105,6 +115,10 @@ def connect_to_resource(cluster_user, cluster_address):
 
 @pytest.fixture(scope="session")
 def cluster_bind(cluster):
+    """Bind variable necessary to run singularity on cluster.
+
+    For more information refer to the manual of singularity --bind
+    """
     if cluster == "deep":
         cluster_bind = (
             "/scratch:/scratch,/opt:/opt,/lnm:/lnm,/bin:/bin,/etc:/etc/,/lib:/lib,/lib64:/lib64"
@@ -122,6 +136,7 @@ def cluster_bind(cluster):
 
 @pytest.fixture(scope="session")
 def cluster_singularity_ip(cluster):
+    """Identify IP address of cluster."""
     if cluster == "deep":
         cluster_singularity_ip = '129.187.58.20'
     elif cluster == "bruteforce":
@@ -137,11 +152,11 @@ def cluster_singularity_ip(cluster):
 def scheduler_type(cluster):
     """Switch type of scheduler according to cluster."""
     if cluster == "deep":
-        scheduler_type = "pbs-deep"
+        scheduler_type = DEEP_SCHEDULER_TYPE
     elif cluster == "bruteforce":
-        scheduler_type = "slurm-bruteforce"
+        scheduler_type = BRUTEFORCE_SCHEDULER_TYPE
     elif cluster == "charon":
-        scheduler_type = "slurm-charon"
+        scheduler_type = CHARON_SCHEDULER_TYPE
     return scheduler_type
 
 
@@ -265,6 +280,10 @@ def cluster_testsuite_settings(
 
 @pytest.fixture(scope="session")
 def baci_cluster_paths(cluster_user, cluster_address):
+    """Paths to executables on the clusters.
+
+    Checks also for existance of the executables.
+    """
     path_to_executable = pathlib.Path("/home", cluster_user, "workspace", "build", "baci-release")
 
     path_to_drt_monitor = pathlib.Path(

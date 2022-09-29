@@ -18,8 +18,12 @@ from pqueens.utils.script_generator import generate_submission_script
 
 _logger = logging.getLogger(__name__)
 
-VALID_PBS_SCHEDULER_TYPES = ["pbs-deep"]
-VALID_SLURM_SCHEDULER_TYPES = ["slurm-bruteforce", "slurm-charon"]
+DEEP_SCHEDULER_TYPE = "pbs-deep"
+BRUTEFORCE_SCHEDULER_TYPE = "slurm-bruteforce"
+CHARON_SCHEDULER_TYPE = "slurm-charon"
+
+VALID_PBS_SCHEDULER_TYPES = (DEEP_SCHEDULER_TYPE,)
+VALID_SLURM_SCHEDULER_TYPES = (BRUTEFORCE_SCHEDULER_TYPE, CHARON_SCHEDULER_TYPE)
 
 VALID_CLUSTER_SCHEDULER_TYPES = VALID_PBS_SCHEDULER_TYPES + VALID_SLURM_SCHEDULER_TYPES
 
@@ -163,9 +167,9 @@ class ClusterScheduler(Scheduler):
         elif scheduler_type in VALID_SLURM_SCHEDULER_TYPES:
             cluster_options['start_cmd'] = 'sbatch'
             cluster_options['slurm_ntasks'] = str(scheduler_options.get('num_procs', 1))
-            if scheduler_type == VALID_SLURM_SCHEDULER_TYPES[0]:
+            if scheduler_type == BRUTEFORCE_SCHEDULER_TYPE:
                 jobscript_relative_path = 'utils/jobscript_bruteforce.sh'
-            elif scheduler_type == VALID_SLURM_SCHEDULER_TYPES[1]:
+            elif scheduler_type == CHARON_SCHEDULER_TYPE:
                 jobscript_relative_path = 'utils/jobscript_charon.sh'
             job_status_command = 'squeue --job'
             job_status_location = -4
