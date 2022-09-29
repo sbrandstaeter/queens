@@ -4,7 +4,6 @@ Is printed at the beginning of each QUEENS run.
 """
 
 import logging
-import sys
 
 _logger = logging.getLogger(__name__)
 
@@ -12,34 +11,26 @@ _logger = logging.getLogger(__name__)
 def print_scheduling_information(scheduler_type, remote, remote_connect, singularity):
     """Print out information on chosen scheduling."""
     # determine scheduler name
-    scheduler_dict = {
-        'standard': 'standard',
-        'slurm': 'Slurm',
-        'pbs': 'PBS/Torque',
-    }
-    scheduler_name = scheduler_dict[scheduler_type]
 
-    _logger.info('\n=====================================================================')
-    _logger.info('\nScheduling Information:      ')
-    _logger.info('\n=====================================================================')
+    _logger.info('=================================================================')
+    _logger.info('Scheduling Information:')
+    _logger.info('=================================================================')
+    _logger.info('Chosen type of scheduling:')
+    _logger.info(f'\t{scheduler_type}')
     if not remote:
-        _logger.info('\nJobs will be run on local computing resource.')
+        _logger.info('Jobs will be run on local computing resource.')
     else:
-        _logger.info(
-            '\nJobs will be run on remote computing resource with host name'
-            '\n(or IP address):\n\t%s',
-            remote_connect,
-        )
-    _logger.info('\nChosen type of scheduling:\n\t%s', scheduler_name)
+        _logger.info('Jobs will be run on remote computing resource as')
+        _logger.info(f'\t{remote_connect}')
     if singularity:
-        _logger.info('\nAs requested, all jobs will be run in Singularity containers.')
+        _logger.info('All jobs will be run in Singularity containers.')
     else:
         if remote:
             _logger.info(
-                '\nPlease note that remote scheduling without using Singularity'
-                '\ncontainers might result in enhanced network traffic!'
+                'Please note that remote scheduling without using Singularity\n'
+                'containers might result in enhanced network traffic!'
             )
-    _logger.info('\n=====================================================================')
+    _logger.info('=================================================================')
     _logger.info('\n')
 
 

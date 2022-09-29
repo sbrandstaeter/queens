@@ -14,7 +14,7 @@ from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 _logger = logging.getLogger(__name__)
-abs_singularity_image_path = relative_path_from_queens("singularity_image.sif")
+ABS_SINGULARITY_IMAGE_PATH = relative_path_from_queens("singularity_image.sif")
 
 
 def create_singularity_image():
@@ -30,7 +30,7 @@ def create_singularity_image():
         str(PATH_TO_QUEENS),
         "&& unset SINGULARITY_BIND &&",
         "singularity build --force --fakeroot",
-        abs_singularity_image_path,
+        ABS_SINGULARITY_IMAGE_PATH,
         abs_definition_path,
     ]
     command_string = ' '.join(command_list)
@@ -45,8 +45,8 @@ def create_singularity_image():
         if str(sp_error).find("INFO:    Build complete:") < 0:
             raise sp_error
 
-    if not os.path.isfile(abs_singularity_image_path):
-        raise FileNotFoundError(f'No singularity image "{abs_singularity_image_path}" found')
+    if not os.path.isfile(ABS_SINGULARITY_IMAGE_PATH):
+        raise FileNotFoundError(f'No singularity image "{ABS_SINGULARITY_IMAGE_PATH}" found')
 
 
 class SingularityManager:
@@ -67,6 +67,11 @@ class SingularityManager:
         self.singularity_bind = singularity_bind
         self.singularity_path = singularity_path
         self.input_file = input_file
+
+        if self.remote and self.remote_connect is None:
+            raise ValueError(
+                "Remote singularity option is set to true but no remote connect is supplied."
+            )
 
     def check_singularity_system_vars(self):
         """Check and establish system variables for the singularity image.
@@ -161,12 +166,12 @@ class SingularityManager:
             run_subprocess(command_string)
 
     def copy_image_to_remote(self):
-        """Copy the local singularity image to the remote recsource."""
+        """Copy the local singularity image to the remote resource."""
         _logger.info("Updating remote image from local image...")
         _logger.info("(This might take a couple of seconds, but needs only to be done once)")
         command_list = [
             "scp",
-            abs_singularity_image_path,
+            ABS_SINGULARITY_IMAGE_PATH,
             self.remote_connect + ':' + str(self.singularity_path),
         ]
         command_string = ' '.join(command_list)
@@ -197,6 +202,8 @@ class SingularityManager:
 
             if self.remote:
                 copy_to_remote = True
+        else:
+            _logger.info("Found an up-to-date local singularity image.")
 
         if self.remote and not copy_to_remote:
             try:
@@ -204,7 +211,7 @@ class SingularityManager:
                     str(self.singularity_path.joinpath('singularity_image.sif')),
                     self.remote_connect,
                 )
-                local_hash = sha1sum(abs_singularity_image_path)
+                local_hash = sha1sum(ABS_SINGULARITY_IMAGE_PATH)
                 copy_to_remote = remote_hash != local_hash
             except:
                 copy_to_remote = True
@@ -247,7 +254,8 @@ class SingularityManager:
             # _logger.info the queens related open ports
             _logger.info('The following QUEENS sessions are still occupying ports on the remote:')
             _logger.info('----------------------------------------------------------------------')
-            _logger.info(active_ssh)
+            for line in active_ssh:
+                _logger.info(line)
             _logger.info('----------------------------------------------------------------------')
             _logger.info('')
             _logger.info('Do you want to close these connections (recommended)?')
@@ -295,8 +303,11 @@ class SingularityManager:
         Returns:
             None
         """
+        _logger.info('Establish remote port-forwarding')
         port_fail = 1
-        while port_fail != "":
+        max_attempts = 100
+        attempts = 1
+        while port_fail != "" and attempts < max_attempts:
             port = random.randrange(2030, 20000, 1)
             command_list = [
                 'ssh',
@@ -312,8 +323,10 @@ class SingularityManager:
             ]
             command_string = ' '.join(command_list)
             port_fail = os.popen(command_string).read()
+            _logger.info(f'attempt #{attempts}: {command_string}')
+            _logger.debug('which returned: {port_fail}')
             time.sleep(0.1)
-        _logger.info('Remote port-forwarding successfully established for port %s', port)
+        _logger.info('Remote port-forwarding established successfully for port %s', port)
 
         return port
 
@@ -437,7 +450,7 @@ def _check_if_new_image_needed():
     Returns:
         (bool): True if new image is needed.
     """
-    if os.path.exists(abs_singularity_image_path):
+    if os.path.exists(ABS_SINGULARITY_IMAGE_PATH):
         return _check_if_files_changed()
     return True
 
@@ -478,7 +491,7 @@ def _check_if_files_changed():
 
         # Compare the queens source files with the ones inside the container
         command_string = (
-            f"singularity exec {abs_singularity_image_path} "
+            f"singularity exec {ABS_SINGULARITY_IMAGE_PATH} "
             + f"cmp {file} {filepath_in_singularity}"
         )
         _, _, stdout, stderr = run_subprocess(

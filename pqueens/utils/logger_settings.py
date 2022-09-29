@@ -63,7 +63,7 @@ def setup_basic_logging(output_dir, experiment_name):
     console_stderr.setLevel(max(console_level_min, logging.ERROR))
 
     # set a format which is simpler for console use
-    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    formatter = logging.Formatter('%(message)s')
     console_stdout.setFormatter(formatter)
     console_stderr.setFormatter(formatter)
 

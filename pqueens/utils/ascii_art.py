@@ -1,5 +1,9 @@
 """ASCII art module."""
+import logging
+
 import pyfiglet
+
+_logger = logging.getLogger(__name__)
 
 
 def print_bmfia_acceleration():
@@ -79,7 +83,7 @@ def print_centered_multiline_block(string, output_width=63):
     if max_line_width % 2:
         output_width += 1
     for line in lines:
-        print(line.ljust(max_line_width).center(output_width))
+        _logger.info(line.ljust(max_line_width).center(output_width))
 
 
 def print_centered_multiline(string, output_width=63):
@@ -91,7 +95,7 @@ def print_centered_multiline(string, output_width=63):
     """
     lines = string.split("\n")
     for line in lines:
-        print(line.strip().center(output_width))
+        _logger.info(line.strip().center(output_width))
 
 
 def print_banner_and_description():
