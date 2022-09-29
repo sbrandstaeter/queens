@@ -37,14 +37,11 @@
 echo $HOME
 cd $HOME
 source /etc/profile.d/modules.sh
-#source /home/opt/cluster_tools/core/load_baci_environment.sh
 source $HOME/queens_cluster_suite/load_queens_baci_environment.sh
 
 ############################
 # SINGULARITY SPECIFICATIONS
 ############################
-# export SINGULARITY_BIND=/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/imcs:/imcs,/home/opt:/home/opt
-# export SINGULARITYENV_APPEND_PATH=$PATH
 export SINGULARITYENV_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 
 ########################
@@ -81,8 +78,6 @@ RESTART_FROM_PREFIX="" # <= specify the result prefix from which restart is to b
 ###############################
 # POST PROCESSING SPECIFICATION
 ###############################
-DoPostprocess={POSTPROCESSFLAG} # post-processing flag for non-singularity run
-POSTEXE={POSTEXE} # post-processing executable for non-singularity run
 DoDataProcessing={DATAPROCESSINGFLAG} # post- and data-processing flag for singularity run
 
 #################################################################
@@ -94,21 +89,6 @@ trap 'early; stageout' 2 9 15 18
 dochecks
 stagein
 runprogram
-wait
-#RunPostprocessor
-# Post-processing for non-singularity run
-# (only for post-processor without additional options so far)
-if [ $DoPostprocess = true ]
-then
-  if [ $RESTART -le 0 ]
-  then
-    $MPI_RUN $MPIFLAGS -np {nposttasks} $POSTEXE --file=$WORKDIR/$OUTPUT_PREFIX
-  else
-    echo Attention! You are postprocessing files from a restarted simulation. Only the new data is postprocessed, as only this data is available.
-    echo
-    $MPI_RUN $MPIFLAGS -np {nposttasks} $POSTEXE --file=$WORKDIR/$OUTPUT_PREFIX
-  fi
-fi
 wait
 stageout
 show
