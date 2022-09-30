@@ -11,59 +11,7 @@ from pqueens.schedulers.cluster_scheduler import (
     DEEP_SCHEDULER_TYPE,
 )
 from pqueens.utils.manage_singularity import SingularityManager
-from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_from_queens
 from pqueens.utils.run_subprocess import run_subprocess
-
-
-@pytest.fixture(scope='session')
-def inputdir():
-    """Return the path to the json input-files of the function test."""
-    input_files_path = relative_path_from_pqueens("tests/integration_tests/queens_input_files")
-    return input_files_path
-
-
-@pytest.fixture(scope='session')
-def third_party_inputs():
-    """Return the path to the json input-files of the function test."""
-    input_files_path = relative_path_from_pqueens("tests/integration_tests/third_party_input_files")
-    return input_files_path
-
-
-@pytest.fixture(scope='session')
-def config_dir():
-    """Return the path to the json input-files of the function test."""
-    config_dir_path = relative_path_from_queens("config")
-    return config_dir_path
-
-
-@pytest.fixture(scope="session")
-def baci_link_paths(config_dir):
-    """Set symbolic links for baci on testing machine."""
-    baci = str(pathlib.Path(config_dir).joinpath('baci-release'))
-    post_drt_monitor = str(pathlib.Path(config_dir).joinpath('post_drt_monitor'))
-    post_drt_ensight = str(pathlib.Path(config_dir).joinpath('post_drt_ensight'))
-    post_processor = str(pathlib.Path(config_dir).joinpath('post_processor'))
-    return baci, post_drt_monitor, post_drt_ensight, post_processor
-
-
-@pytest.fixture(scope="session")
-def baci_source_paths_for_gitlab_runner():
-    """Set symbolic links for baci on testing machine."""
-    home = pathlib.Path.home()
-    src_baci = pathlib.Path.joinpath(home, 'workspace/build/baci-release')
-    src_drt_monitor = pathlib.Path.joinpath(home, 'workspace/build/post_drt_monitor')
-    src_post_drt_ensight = pathlib.Path.joinpath(home, 'workspace/build/post_drt_ensight')
-    src_post_processor = pathlib.Path.joinpath(home, 'workspace/build/post_processor')
-    return src_baci, src_drt_monitor, src_post_drt_ensight, src_post_processor
-
-
-@pytest.fixture(scope='session')
-def example_simulator_fun_dir():
-    """Return the path to the example simulator functions."""
-    input_files_path = relative_path_from_pqueens(
-        "tests/integration_tests/example_simulator_functions"
-    )
-    return input_files_path
 
 
 # CLUSTER TESTS ------------------------------------------------------------------------------------
@@ -111,27 +59,6 @@ def connect_to_resource(cluster_user, cluster_address):
     """String used for ssh connect to the cluster."""
     connect_to_resource = cluster_user + '@' + cluster_address
     return connect_to_resource
-
-
-@pytest.fixture(scope="session")
-def cluster_bind(cluster):
-    """Bind variable necessary to run singularity on cluster.
-
-    For more information refer to the manual of singularity --bind
-    """
-    if cluster == "deep":
-        cluster_bind = (
-            "/scratch:/scratch,/opt:/opt,/lnm:/lnm,/bin:/bin,/etc:/etc/,/lib:/lib,/lib64:/lib64"
-        )
-    elif cluster == "bruteforce":
-        # pylint: disable=line-too-long
-        cluster_bind = "/scratch:/scratch,/opt:/opt,/lnm:/lnm,/cluster:/cluster,/bin:/bin,/etc:/etc/,/lib:/lib,/lib64:/lib64"
-        # pylint: enable=line-too-long
-    elif cluster == "charon":
-        cluster_bind = (
-            "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/imcs:/imcs,/home/opt:/home/opt"
-        )
-    return cluster_bind
 
 
 @pytest.fixture(scope="session")
@@ -220,7 +147,6 @@ def prepare_cluster_testing_environment(
 @pytest.fixture(scope="session")
 def prepare_singularity(
     connect_to_resource,
-    cluster_bind,
     cluster_path_to_singularity,
     prepare_cluster_testing_environment,
 ):
@@ -235,7 +161,7 @@ def prepare_singularity(
     remote_flag = True
     singularity_manager = SingularityManager(
         singularity_path=str(cluster_path_to_singularity),
-        singularity_bind=cluster_bind,
+        singularity_bind=None,
         input_file=None,
         remote=remote_flag,
         remote_connect=connect_to_resource,
@@ -250,7 +176,6 @@ def cluster_testsuite_settings(
     cluster,
     cluster_user,
     cluster_address,
-    cluster_bind,
     connect_to_resource,
     cluster_queens_testing_folder,
     cluster_path_to_singularity,
@@ -268,7 +193,6 @@ def cluster_testsuite_settings(
     cluster_testsuite_settings["cluster"] = cluster
     cluster_testsuite_settings["cluster_user"] = cluster_user
     cluster_testsuite_settings["cluster_address"] = cluster_address
-    cluster_testsuite_settings["cluster_bind"] = cluster_bind
     cluster_testsuite_settings["connect_to_resource"] = connect_to_resource
     cluster_testsuite_settings["cluster_queens_testing_folder"] = cluster_queens_testing_folder
     cluster_testsuite_settings["cluster_path_to_singularity"] = cluster_path_to_singularity

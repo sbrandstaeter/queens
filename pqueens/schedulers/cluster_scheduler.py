@@ -46,6 +46,7 @@ class ClusterConfig:
     jobscript_template: pathlib.Path
     job_status_command: str
     job_status_location: int
+    singularity_bind: str
 
 
 DEEP_CONFIG = ClusterConfig(
@@ -55,6 +56,13 @@ DEEP_CONFIG = ClusterConfig(
     jobscript_template=relative_path_from_pqueens("utils/jobscript_deep.sh"),
     job_status_command="qstat",
     job_status_location=-2,
+    singularity_bind=(
+        "/scratch:/scratch,"
+        "/opt:/opt,/lnm:/lnm,"
+        "/bin:/bin,/etc:/etc/,"
+        "/lib:/lib,"
+        "/lib64:/lib64"
+    ),
 )
 BRUTEFORCE_CONFIG = ClusterConfig(
     name="bruteforce",
@@ -63,6 +71,15 @@ BRUTEFORCE_CONFIG = ClusterConfig(
     jobscript_template=relative_path_from_pqueens("utils/jobscript_bruteforce.sh"),
     job_status_command="squeue --job",
     job_status_location=-4,
+    singularity_bind=(
+        "/scratch:/scratch,"
+        "/opt:/opt,/lnm:/lnm,"
+        "/cluster:/cluster,"
+        "/bin:/bin,"
+        "/etc:/etc/,"
+        "/lib:/lib,"
+        "/lib64:/lib64"
+    ),
 )
 CHARON_CONFIG = ClusterConfig(
     name="charon",
@@ -71,6 +88,15 @@ CHARON_CONFIG = ClusterConfig(
     jobscript_template=relative_path_from_pqueens("utils/jobscript_charon.sh"),
     job_status_command="squeue --job",
     job_status_location=-4,
+    singularity_bind=(
+        "/opt:/opt,"
+        "/bin:/bin,"
+        "/etc:/etc,"
+        "/lib:/lib,"
+        "/lib64:/lib64,"
+        "/imcs:/imcs,"
+        "/home/opt:/home/opt"
+    ),
 )
 
 CLUSTER_CONFIGS = {
@@ -189,19 +215,6 @@ class ClusterScheduler(Scheduler):
                 "Abort..."
             )
 
-        if singularity:
-            singularity_manager = SingularityManager(
-                remote=remote,
-                remote_connect=remote_connect,
-                singularity_bind=scheduler_options['singularity_settings']['cluster_bind'],
-                singularity_path=pathlib.Path(
-                    scheduler_options['singularity_settings']['cluster_path']
-                ),
-                input_file=input_file,
-            )
-        else:
-            singularity_manager = None
-
         scheduler_type = scheduler_options["scheduler_type"]
         if not scheduler_type in VALID_CLUSTER_SCHEDULER_TYPES:
             raise ValueError(
@@ -215,6 +228,19 @@ class ClusterScheduler(Scheduler):
                 f"Unable to find cluster_config for scheduler type: {scheduler_type}.\n"
                 f"Available configs are: {CLUSTER_CONFIGS.items()}"
             )
+
+        if singularity:
+            singularity_manager = SingularityManager(
+                remote=remote,
+                remote_connect=remote_connect,
+                singularity_bind=cluster_config.singularity_bind,
+                singularity_path=pathlib.Path(
+                    scheduler_options['singularity_settings']['cluster_path']
+                ),
+                input_file=input_file,
+            )
+        else:
+            singularity_manager = None
 
         # This hurts my brain
         cluster_options = scheduler_options.get("cluster", {})
@@ -241,21 +267,14 @@ class ClusterScheduler(Scheduler):
             )
 
         if singularity:
-            singularity_path = pathlib.Path(
-                scheduler_options['singularity_settings']['cluster_path']
-            )
-            cluster_options['singularity_path'] = str(singularity_path)
-            singularity_run_options = (
-                ' --bind ' + scheduler_options['singularity_settings'].get('cluster_bind', '') + ' '
-            )
-            singularity_image_path = singularity_path / 'singularity_image.sif'
+            singularity_run_options = ' --bind ' + singularity_manager.singularity_bind + ' '
+            singularity_image_path = singularity_manager.singularity_path / 'singularity_image.sif'
             cluster_options['EXE'] = (
                 'singularity run ' + singularity_run_options + str(singularity_image_path)
             )
             cluster_options['OUTPUTPREFIX'] = ''
             cluster_options['DATAPROCESSINGFLAG'] = 'true'
         else:
-            cluster_options['singularity_path'] = None
             cluster_options['DATAPROCESSINGFLAG'] = 'false'
 
         # TODO move this to a different place
@@ -323,7 +342,7 @@ class ClusterScheduler(Scheduler):
             self.cluster_options['job_name'] = f"{self.experiment_name}_{job_id}"
             self.cluster_options['INPUT'] = (
                 f"--job_id={job_id} --batch={batch} --port={self.port} --path_json="
-                + f"{self.cluster_options['singularity_path']} --driver_name="
+                + f"{self.singularity_manager.singularity_path} --driver_name="
                 + f"{self.driver_name} --workdir"
             )
 

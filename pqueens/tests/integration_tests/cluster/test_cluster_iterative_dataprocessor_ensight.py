@@ -49,7 +49,6 @@ def test_cluster_baci_data_processor_ensight(
     cluster = cluster_testsuite_settings["cluster"]
     cluster_user = cluster_testsuite_settings["cluster_user"]
     cluster_address = cluster_testsuite_settings["cluster_address"]
-    cluster_bind = cluster_testsuite_settings["cluster_bind"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
     cluster_queens_testing_folder = cluster_testsuite_settings["cluster_queens_testing_folder"]
     cluster_path_to_singularity = cluster_testsuite_settings["cluster_path_to_singularity"]
@@ -118,7 +117,6 @@ def test_cluster_baci_data_processor_ensight(
         'path_to_post_processor': str(path_to_post_processor),
         'experiment_dir': str(experiment_dir),
         'connect_to_resource': connect_to_resource,
-        'cluster_bind': cluster_bind,
         'cluster': cluster,
         'scheduler_type': scheduler_type,
         'singularity_remote_ip': singularity_remote_ip,

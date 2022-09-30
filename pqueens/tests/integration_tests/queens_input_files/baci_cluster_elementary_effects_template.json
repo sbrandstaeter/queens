@@ -71,7 +71,7 @@
     }
   },
   "resources": {
-    "deep": {
+    "{cluster}": {
       "scheduler": "scheduler",
       "max-concurrent": 10,
       "max-finished-jobs": 1000
@@ -92,8 +92,7 @@
     "singularity": true,
     "singularity_settings": {
       "remote_ip": "{singularity_remote_ip}",
-      "cluster_path": "{path_to_singularity}",
-      "cluster_bind": "{cluster_bind}"
+      "cluster_path": "{path_to_singularity}"
     }
   },
   "parameters": {
