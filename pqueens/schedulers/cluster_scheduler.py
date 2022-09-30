@@ -354,7 +354,7 @@ class ClusterScheduler(Scheduler):
             cmd_remote_main = ' '.join(cmdlist_remote_main)
             _, _, stdout, _ = run_subprocess(
                 cmd_remote_main,
-                additional_message_error="The file 'remote_main' in remote singularity image "
+                additional_error_message="The file 'remote_main' in remote singularity image "
                 "could not be executed properly!",
             )
 
