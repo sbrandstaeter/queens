@@ -47,8 +47,6 @@ def test_cluster_baci_data_processor_ensight(
     """
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
-    cluster_user = cluster_testsuite_settings["cluster_user"]
-    cluster_address = cluster_testsuite_settings["cluster_address"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
     cluster_queens_testing_folder = cluster_testsuite_settings["cluster_queens_testing_folder"]
     cluster_path_to_singularity = cluster_testsuite_settings["cluster_path_to_singularity"]
@@ -82,8 +80,7 @@ def test_cluster_baci_data_processor_ensight(
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
-        remote_user=cluster_user,
-        remote_address=cluster_address,
+        remote_connect=connect_to_resource,
     )
     print(stdout)
 
@@ -91,8 +88,7 @@ def test_cluster_baci_data_processor_ensight(
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
-        remote_user=cluster_user,
-        remote_address=cluster_address,
+        remote_connect=connect_to_resource,
     )
     print(stdout)
 

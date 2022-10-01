@@ -103,7 +103,7 @@ def cluster_path_to_singularity(cluster_queens_testing_folder):
 
 @pytest.fixture(scope="session")
 def prepare_cluster_testing_environment(
-    cluster_user, cluster_address, cluster_queens_testing_folder, cluster_path_to_singularity
+    connect_to_resource, cluster_queens_testing_folder, cluster_path_to_singularity
 ):
     """Create a clean testing environment on the cluster."""
     # remove old folder
@@ -112,8 +112,7 @@ def prepare_cluster_testing_environment(
     returncode, pid, stdout, stderr = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
-        remote_user=cluster_user,
-        remote_address=cluster_address,
+        remote_connect=connect_to_resource,
     )
     print(stdout)
     if returncode:
@@ -125,8 +124,7 @@ def prepare_cluster_testing_environment(
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
-        remote_user=cluster_user,
-        remote_address=cluster_address,
+        remote_connect=connect_to_resource,
     )
     print(stdout)
 
@@ -136,8 +134,7 @@ def prepare_cluster_testing_environment(
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
-        remote_user=cluster_user,
-        remote_address=cluster_address,
+        remote_connect=connect_to_resource,
     )
     print(stdout)
 
@@ -203,7 +200,7 @@ def cluster_testsuite_settings(
 
 
 @pytest.fixture(scope="session")
-def baci_cluster_paths(cluster_user, cluster_address):
+def baci_cluster_paths(cluster_user, cluster_address, connect_to_resource):
     """Paths to executables on the clusters.
 
     Checks also for existance of the executables.
@@ -226,8 +223,7 @@ def baci_cluster_paths(cluster_user, cluster_address):
     run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
-        remote_user=cluster_user,
-        remote_address=cluster_address,
+        remote_connect=connect_to_resource,
         additional_error_message=f"Could not find executable on {cluster_address}.\n"
         f"Was looking here: {path_to_executable}",
     )
@@ -236,8 +232,7 @@ def baci_cluster_paths(cluster_user, cluster_address):
     run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
-        remote_user=cluster_user,
-        remote_address=cluster_address,
+        remote_connect=connect_to_resource,
         additional_error_message=f"Could not find postprocessor on {cluster_address}.\n"
         f"Was looking here: {path_to_drt_monitor}",
     )
@@ -246,8 +241,7 @@ def baci_cluster_paths(cluster_user, cluster_address):
     run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
-        remote_user=cluster_user,
-        remote_address=cluster_address,
+        remote_connect=connect_to_resource,
         additional_error_message=f"Could not find postprocessor on {cluster_address}.\n"
         f"Was looking here: {path_to_drt_ensight}",
     )
@@ -256,8 +250,7 @@ def baci_cluster_paths(cluster_user, cluster_address):
     run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
-        remote_user=cluster_user,
-        remote_address=cluster_address,
+        remote_connect=connect_to_resource,
         additional_error_message=f"Could not find postprocessor on {cluster_address}.\n"
         f"Was looking here: {path_to_post_processor}",
     )
