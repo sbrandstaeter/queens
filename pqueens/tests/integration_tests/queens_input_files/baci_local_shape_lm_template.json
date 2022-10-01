@@ -50,7 +50,6 @@
     "path_to_executable": "{baci-release}",
     "path_to_postprocessor": "{post_processor}",
     "post_process_options": "--filter=ensight",
-    "experiment_dir": "{experiment_dir}",
     "post_file_prefix": "xx",
     "data_processor": "data_processor_baci"
   },

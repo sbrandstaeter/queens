@@ -28,7 +28,6 @@
   },
   "driver": {
     "driver_type": "mpi",
-    "experiment_dir": "{experiment_dir}",
     "input_template": "{input_template}",
     "path_to_executable": "{path_to_executable}",
     "path_to_postprocessor": "{path_to_drt_ensight}",
