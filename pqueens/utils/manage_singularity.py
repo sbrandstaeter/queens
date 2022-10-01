@@ -374,7 +374,8 @@ def _files_changed():
 
     # Specific files in the singularity image relevant for a run
     files_to_compare_list = [
-        "database/mongodb.py",
+        'schedulers/cluster_scheduler.py',
+        'database/mongodb.py',
         '../setup_remote.py',
         'remote_main.py',
     ]
