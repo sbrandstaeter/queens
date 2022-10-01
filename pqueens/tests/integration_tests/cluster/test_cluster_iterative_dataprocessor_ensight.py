@@ -125,7 +125,7 @@ def test_cluster_baci_data_processor_ensight(
     injector.inject(dir_dict, template, input_file)
 
     # Patch the missing config arguments
-    with open(str(input_file), encoding="utf8") as f:
+    with open(input_file, encoding="utf8") as f:
         config = json.load(f)
         global_settings = {
             "output_dir": str(tmpdir),

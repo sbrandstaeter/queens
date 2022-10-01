@@ -331,10 +331,8 @@ class MpiDriver(Driver):
             self.pid = get_cluster_job_id(self.scheduler_type, stdout, VALID_PBS_SCHEDULER_TYPES)
 
         # redirect stdout/stderr output to log and error file
-        with open(str(self.log_file), "a", encoding='utf-8') as text_file:
-            print(stdout, file=text_file)
-        with open(str(self.error_file), "a", encoding='utf-8') as text_file:
-            print(stderr, file=text_file)
+        self.log_file.write_text(stdout, encoding='utf-8')
+        self.error_file.write_text(stderr, encoding='utf-8')
 
         return returncode
 
