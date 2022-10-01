@@ -18,9 +18,9 @@ from pqueens.utils.script_generator import generate_submission_script
 
 _logger = logging.getLogger(__name__)
 
-DEEP_SCHEDULER_TYPE = "pbs-deep"
-BRUTEFORCE_SCHEDULER_TYPE = "slurm-bruteforce"
-CHARON_SCHEDULER_TYPE = "slurm-charon"
+DEEP_SCHEDULER_TYPE = "deep"
+BRUTEFORCE_SCHEDULER_TYPE = "bruteforce"
+CHARON_SCHEDULER_TYPE = "charon"
 
 VALID_PBS_SCHEDULER_TYPES = (DEEP_SCHEDULER_TYPE,)
 VALID_SLURM_SCHEDULER_TYPES = (BRUTEFORCE_SCHEDULER_TYPE, CHARON_SCHEDULER_TYPE)
