@@ -75,59 +75,49 @@ class SingularityManager:
                 "Remote singularity option is set to true but no remote connect is supplied."
             )
 
-    def copy_image_to_remote(self):
-        """Copy the local singularity image to the remote resource."""
-        _logger.info("Updating remote image from local image...")
-        _logger.info("(This might take a couple of seconds, but needs only to be done once)")
+    def sync_remote_image(self):
+        """Sync image on remote resource with local singularity."""
+        _logger.info("Syncing remote image with local image...")
+        _logger.info("(This takes a couple of seconds)")
         command_list = [
-            "scp",
+            "rsync --archive --checksum --verbose --verbose",
             ABS_SINGULARITY_IMAGE_PATH,
-            self.remote_connect + ':' + str(self.singularity_path),
+            self.remote_connect + ':' + str(self.singularity_path / 'singularity_image.sif'),
         ]
         command_string = ' '.join(command_list)
-        run_subprocess(
+        _, _, stdout, _ = run_subprocess(
             command_string,
-            additional_error_message="Was not able to copy local singularity image to remote! ",
+            additional_error_message="Was not able to sync local singularity image to remote! ",
         )
+        _logger.debug(stdout)
+        _logger.info("Sync of remote image was successful.\n")
 
     def prepare_singularity_files(self):
-        """Checks if local and remote singularity images are existent.
+        """Prepare local and remote singularity images.
 
-        Compares a hash-file to the current hash of the files to determine if
-        the singularity image is up-to-date. The method furthermore triggers
-        the build of a new singularity image if necessary.
+        Make sure that an up-to-date singularity image is available where it is needed,
+        locally and remotely.
+        If no image exists or the existing image is outdated, a new image is built.
+        The local image is synced with the remote machine to ensure that the image on the
+        remote machine is up-to-date.
 
         Returns:
             None
         """
-        copy_to_remote = False
-        if _check_if_new_image_needed():
+        if new_singularity_image_needed():
             _logger.info(
                 "Local singularity image is not up-to-date with QUEENS! "
-                "Writing new local image..."
+                "Building new local image..."
             )
-            _logger.info("(This will take 3 min or so, but needs only to be done once)")
+            _logger.info("(This takes a couple of minutes.)")
             create_singularity_image()
-            _logger.info("Local singularity image written successfully!")
+            _logger.info("Local singularity image built successfully!\n")
 
-            if self.remote:
-                copy_to_remote = True
         else:
-            _logger.info("Found an up-to-date local singularity image.")
+            _logger.info("Found an up-to-date local singularity image.\n")
 
-        if self.remote and not copy_to_remote:
-            try:
-                remote_hash = sha1sum(
-                    str(self.singularity_path.joinpath('singularity_image.sif')),
-                    self.remote_connect,
-                )
-                local_hash = sha1sum(ABS_SINGULARITY_IMAGE_PATH)
-                copy_to_remote = remote_hash != local_hash
-            except:
-                copy_to_remote = True
-
-        if copy_to_remote:
-            self.copy_image_to_remote()
+        if self.remote:
+            self.sync_remote_image()
 
     def kill_previous_queens_ssh_remote(self, username):
         """Kill existing ssh-port-forwardings on the remote machine.
@@ -234,7 +224,7 @@ class SingularityManager:
             command_string = ' '.join(command_list)
             port_fail = os.popen(command_string).read()
             _logger.info(f'attempt #{attempts}: {command_string}')
-            _logger.debug('which returned: {port_fail}')
+            _logger.debug(f'which returned: {port_fail}')
             time.sleep(0.1)
             attempts += 1
 
@@ -354,7 +344,7 @@ class SingularityManager:
         )
 
 
-def _check_if_new_image_needed():
+def new_singularity_image_needed():
     """Indicate if a new singularity image needs to be build.
 
     Before checking if the files changed, a check is performed to see if there is an image first.
@@ -363,11 +353,11 @@ def _check_if_new_image_needed():
         (bool): True if new image is needed.
     """
     if os.path.exists(ABS_SINGULARITY_IMAGE_PATH):
-        return _check_if_files_changed()
+        return _files_changed()
     return True
 
 
-def _check_if_files_changed():
+def _files_changed():
     """Indicates if the source files deviate w.r.t. to singularity container.
 
     Returns:

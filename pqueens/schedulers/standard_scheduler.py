@@ -9,8 +9,8 @@ from pqueens.utils.dictionary_utils import find_keys
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import (
     ABS_SINGULARITY_IMAGE_PATH,
-    _check_if_new_image_needed,
     create_singularity_image,
+    new_singularity_image_needed,
 )
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.string_extractor_and_checker import check_if_string_in_file
@@ -92,7 +92,7 @@ class StandardScheduler(Scheduler):
                 f"{type(singularity)} "
             )
         if singularity:
-            if _check_if_new_image_needed():
+            if new_singularity_image_needed():
                 _logger.info("Local singularity image is outdated/missing, building a new one!")
                 create_singularity_image()
         scheduler_type = scheduler_options["scheduler_type"]
