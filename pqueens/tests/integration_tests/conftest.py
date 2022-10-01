@@ -160,7 +160,7 @@ def prepare_singularity(
 
     remote_flag = True
     singularity_manager = SingularityManager(
-        singularity_path=str(cluster_path_to_singularity),
+        singularity_path=cluster_path_to_singularity,
         singularity_bind=None,
         input_file=None,
         remote=remote_flag,
