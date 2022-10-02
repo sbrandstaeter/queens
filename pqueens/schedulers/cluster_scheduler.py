@@ -9,6 +9,7 @@ from dataclasses import dataclass
 from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.cluster_utils import distribute_procs_on_nodes_pbs, get_cluster_job_id
+from pqueens.utils.config_directories import experiment_directory, local_base_dir, remote_base_dir
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.path_utils import relative_path_from_pqueens
@@ -38,6 +39,8 @@ class ClusterConfig:
         jobscript_template (pathlib.Path):  absolute path to jobscript template file
         job_status_command (str):           command to check job status on cluster
         job_status_location (int):          location of job status in return of job_status_command
+        singularity_bind (str):             variable for binding directories on the host
+                                            to directories in the container
     """
 
     name: str
@@ -191,7 +194,6 @@ class ClusterScheduler(Scheduler):
         scheduler_options = config[scheduler_name]
 
         experiment_name = config['global_settings']['experiment_name']
-        experiment_dir = pathlib.Path(scheduler_options['experiment_dir'])
         input_file = pathlib.Path(config["input_file"])
 
         singularity = scheduler_options.get('singularity', False)
@@ -205,8 +207,14 @@ class ClusterScheduler(Scheduler):
         remote = scheduler_options.get('remote', False)
         if remote:
             remote_connect = scheduler_options['remote']['connect']
+            base_dir = remote_base_dir(remote_connect)
         else:
             remote_connect = None
+            base_dir = local_base_dir()
+
+        experiment_dir = experiment_directory(
+            experiment_name=experiment_name, remote_connect=remote_connect
+        )
 
         if remote and not singularity:
             raise NotImplementedError(
@@ -234,9 +242,7 @@ class ClusterScheduler(Scheduler):
                 remote=remote,
                 remote_connect=remote_connect,
                 singularity_bind=cluster_config.singularity_bind,
-                singularity_path=pathlib.Path(
-                    scheduler_options['singularity_settings']['cluster_path']
-                ),
+                singularity_path=base_dir,
                 input_file=input_file,
             )
         else:
@@ -343,12 +349,12 @@ class ClusterScheduler(Scheduler):
             self.cluster_options['INPUT'] = (
                 f"--job_id={job_id} --batch={batch} --port={self.port} --path_json="
                 + f"{self.singularity_manager.singularity_path} --driver_name="
-                + f"{self.driver_name} --workdir"
+                + f"{self.driver_name} --experiment_dir"
             )
 
-            self.cluster_options['DESTDIR'] = str(
-                self.experiment_dir.joinpath(str(job_id), 'output')
-            )
+            job_dir = self.experiment_dir / str(job_id)
+
+            self.cluster_options['DESTDIR'] = str(self.experiment_dir)
 
             # generate jobscript for submission
             submission_script_path = self.experiment_dir.joinpath('jobfile.sh')
@@ -363,8 +369,11 @@ class ClusterScheduler(Scheduler):
             cmdlist_remote_main = [
                 'ssh',
                 self.remote_connect,
-                '"cd',
-                str(self.experiment_dir),
+                '"mkdir -p',
+                str(job_dir),
+                ';',
+                'cd',
+                str(job_dir),
                 ';',
                 self.cluster_config.start_cmd,
                 str(submission_script_path),
@@ -466,7 +475,12 @@ class ClusterScheduler(Scheduler):
         # TODO instead only update the attributes of the instance.
         # TODO we should specify the data base sheet as well
         driver_obj = from_config_create_driver(
-            self.config, job_id, batch, self.driver_name, cluster_options=self.cluster_options
+            config=self.config,
+            job_id=job_id,
+            batch=batch,
+            driver_name=self.driver_name,
+            experiment_dir=self.experiment_dir,
+            cluster_options=self.cluster_options,
         )
         # run driver and get process ID
         driver_obj.pre_job_run_and_run_job()

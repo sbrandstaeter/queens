@@ -3,6 +3,7 @@ import pathlib
 
 import pytest
 
+from pqueens.utils import config_directories, manage_singularity
 from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_from_queens
 
 
@@ -17,6 +18,39 @@ def pytest_collection_modifyitems(items):
             item.add_marker(pytest.mark.integration_tests_baci)
         elif "unit_tests/" in item.nodeid:
             item.add_marker(pytest.mark.unit_tests)
+
+
+@pytest.fixture(autouse=True)
+def global_mock_abs_singularity_image_path(monkeypatch):
+    """Mock the absolute singularity image path.
+
+    The singularity image path depends on local_base_dir() which is
+    mocked globally and per test. This would however mean that every
+    test that needs singularity has to built the image again. Because
+    one test does not know about the other ones. To prevent this we
+    store the standard image path that is used by the user here and make
+    sure that this path is used in all tests by mocking the respective
+    variable globally. This way the image has to be built only once.
+    """
+    mock_abs_singularity_image_path = manage_singularity.ABS_SINGULARITY_IMAGE_PATH
+    monkeypatch.setattr(
+        manage_singularity, "ABS_SINGULARITY_IMAGE_PATH", mock_abs_singularity_image_path
+    )
+
+
+@pytest.fixture(autouse=True)
+def global_mock_local_base_dir(monkeypatch, tmp_path):
+    """Mock the local base directory for all tests.
+
+    This is necessary to keep the base directory of a user clean from
+    testing data. pytest temp_path supplies a perfect location for this
+    (see pytest docs).
+    """
+
+    def mock_local_base_dir():
+        return tmp_path
+
+    monkeypatch.setattr(config_directories, "local_base_dir", mock_local_base_dir)
 
 
 @pytest.fixture(scope='session')

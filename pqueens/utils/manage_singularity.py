@@ -5,6 +5,7 @@ import random
 import subprocess
 import time
 
+from pqueens.utils.config_directories import local_base_dir
 from pqueens.utils.path_utils import (
     PATH_TO_QUEENS,
     relative_path_from_pqueens,
@@ -14,7 +15,7 @@ from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 _logger = logging.getLogger(__name__)
-ABS_SINGULARITY_IMAGE_PATH = relative_path_from_queens("singularity_image.sif")
+ABS_SINGULARITY_IMAGE_PATH = local_base_dir() / "singularity_image.sif"
 
 
 def create_singularity_image():
@@ -26,11 +27,9 @@ def create_singularity_image():
     definition_path = 'singularity_recipe.def'
     abs_definition_path = relative_path_from_queens(definition_path)
     command_list = [
-        "cd",
-        str(PATH_TO_QUEENS),
+        f"cd {PATH_TO_QUEENS}",
         "&& unset SINGULARITY_BIND &&",
-        "singularity build --force --fakeroot",
-        ABS_SINGULARITY_IMAGE_PATH,
+        f"singularity build --force --fakeroot {ABS_SINGULARITY_IMAGE_PATH}",
         abs_definition_path,
     ]
     command_string = ' '.join(command_list)
@@ -45,7 +44,7 @@ def create_singularity_image():
         if str(sp_error).find("INFO:    Build complete:") < 0:
             raise sp_error
 
-    if not os.path.isfile(ABS_SINGULARITY_IMAGE_PATH):
+    if not ABS_SINGULARITY_IMAGE_PATH.is_file():
         raise FileNotFoundError(f'No singularity image "{ABS_SINGULARITY_IMAGE_PATH}" found')
 
 
@@ -80,8 +79,7 @@ class SingularityManager:
         _logger.info("Syncing remote image with local image...")
         _logger.info("(This takes a couple of seconds)")
         command_list = [
-            "rsync --archive --checksum --verbose --verbose",
-            ABS_SINGULARITY_IMAGE_PATH,
+            f"rsync --archive --checksum --verbose --verbose {ABS_SINGULARITY_IMAGE_PATH}",
             self.remote_connect + ':' + str(self.singularity_path / 'singularity_image.sif'),
         ]
         command_string = ' '.join(command_list)
@@ -352,7 +350,7 @@ def new_singularity_image_needed():
     Returns:
         (bool): True if new image is needed.
     """
-    if os.path.exists(ABS_SINGULARITY_IMAGE_PATH):
+    if ABS_SINGULARITY_IMAGE_PATH.exists():
         return _files_changed()
     return True
 

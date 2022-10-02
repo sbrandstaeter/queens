@@ -41,23 +41,28 @@ def test_exit_conditions_remote_main(mocker, finalize_fail, port):
     )
 
     # Mock driver class
-    class driver_mock:
+    class DriverMock:
+        """Mock class for the Driver class."""
+
         def __init__(self, raise_error_in_finalize):
             self.raise_error_in_finalize = raise_error_in_finalize
 
         def pre_job_run_and_run_job(self):
+            """Mock of job preparation and execution."""
             raise ValueError("Mock singularity error")
 
         def post_job_run(self):
+            """Mock of job postprocessing."""
             raise ValueError("Mock singularity error")
 
         def finalize_job_in_db(self):
+            """Mock finalization and saving of a job in the DB."""
             if self.raise_error_in_finalize:
-                raise ValueError(f"Mock finalize_job_in_db error")
+                raise ValueError("Mock finalize_job_in_db error")
 
     mocker.patch(
         'pqueens.remote_main.from_config_create_driver',
-        return_value=driver_mock(finalize_fail),
+        return_value=DriverMock(finalize_fail),
     )
 
     mocker.patch(
@@ -73,7 +78,7 @@ def test_exit_conditions_remote_main(mocker, finalize_fail, port):
         "--port=" + port,
         "--path_json=dummypath",
         "--post=true",
-        "--workdir=dummy_workdir",
+        "--experiment_dir=dummy_workdir",
     ]
 
     with pytest.raises(ValueError) as excinfo:

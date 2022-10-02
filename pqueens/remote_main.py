@@ -42,15 +42,15 @@ def main(args):
     parser.add_argument("--path_json", help="system path to temporary json file", type=str)
     parser.add_argument("--post", help="option for postprocessing", type=str)
     parser.add_argument("--driver_name", help="name of driver for the current run", type=str)
-    parser.add_argument("--workdir", help="working directory", type=str)
+    parser.add_argument("--experiment_dir", help="working directory", type=str)
 
     args = parser.parse_args(args)
     job_id = args.job_id
     batch = args.batch
     port = args.port
-    path_json = args.path_json
+    path_json = Path(args.path_json)
     post = args.post
-    workdir = args.workdir
+    experiment_dir = Path(args.experiment_dir)
     driver_name = args.driver_name
 
     driver_obj = None
@@ -59,9 +59,9 @@ def main(args):
         # If singularity is called remotely
         if is_remote:
             setup_cluster_logging()
-            input_path = Path(path_json).joinpath('temp.json')
+            input_path = path_json / 'temp.json'
             # output_dir is not needed but required in get_config_dict
-            output_dir = Path(path_json)
+            output_dir = path_json
             config = get_config_dict(input_path, output_dir)
 
             # Patch the remote address to the config
@@ -81,7 +81,13 @@ def main(args):
         # Create database
         DB_module.from_config_create_database(config)
         with DB_module.database:  # pylint: disable=no-member
-            driver_obj = from_config_create_driver(config, job_id, batch, driver_name, workdir)
+            driver_obj = from_config_create_driver(
+                config=config,
+                job_id=job_id,
+                batch=batch,
+                driver_name=driver_name,
+                experiment_dir=experiment_dir,
+            )
             # Run the singularity image in two steps and two different singularity calls to have
             # more freedom concerning mpi ranks
             if is_remote:

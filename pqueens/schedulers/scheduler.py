@@ -93,7 +93,9 @@ class Scheduler(metaclass=abc.ABCMeta):
         # create driver
         # TODO we should not create a new driver instance here every time
         # instead only update the driver attributes.
-        driver_obj = from_config_create_driver(self.config, job_id, batch, self.driver_name)
+        driver_obj = from_config_create_driver(
+            self.config, job_id, batch, self.driver_name, self.experiment_dir
+        )
 
         # do post-processing (if required), data-processing,
         # finish and clean job

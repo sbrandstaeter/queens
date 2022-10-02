@@ -5,6 +5,7 @@ from threading import Thread
 
 from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
+from pqueens.utils.config_directories import experiment_directory
 from pqueens.utils.dictionary_utils import find_keys
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import (
@@ -82,7 +83,7 @@ class StandardScheduler(Scheduler):
             raise NotImplementedError("Standard scheduler can not be used remotely")
 
         experiment_name = config['global_settings']['experiment_name']
-        experiment_dir = pathlib.Path(scheduler_options['experiment_dir'])
+        experiment_dir = experiment_directory(experiment_name=experiment_name)
         input_file = pathlib.Path(config["input_file"])
         singularity = scheduler_options.get('singularity', False)
         if not isinstance(singularity, bool):
@@ -140,18 +141,18 @@ class StandardScheduler(Scheduler):
         Returns:
             int:            process ID
         """
-        remote_args = (
-            f"--job_id={job_id} --batch={batch} --port=000 "
-            f"--path_json={str(self.input_file)} --driver_name={self.driver_name}"
-        )
-
-        cmdlist_remote_main = [
-            'singularity run',
-            ABS_SINGULARITY_IMAGE_PATH,
-            remote_args,
+        remote_args = [
+            f"--job_id={job_id}",
+            f"--batch={batch}",
+            "--port=000",
+            f"--path_json={self.input_file}",
+            f"--driver_name={self.driver_name}",
+            f"--experiment_dir={self.experiment_dir}",
         ]
+
+        cmdlist_remote_main = [f'singularity run {ABS_SINGULARITY_IMAGE_PATH}'] + remote_args
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        print(cmd_remote_main)
+        _logger.info(cmd_remote_main)
         _, pid, _, _ = run_subprocess(cmd_remote_main, subprocess_type='submit')
         return pid
 
@@ -196,20 +197,20 @@ class StandardScheduler(Scheduler):
         if self.max_concurrent == 1:
             # sequential scheduling
             pid = StandardScheduler.driver_execution_helper_fun(
-                self.config, job_id, batch, self.driver_name
+                self.config, job_id, batch, self.driver_name, self.experiment_dir
             )
         else:
             # run the drivers in separate threads to enable parallel execution
             Thread(
                 target=StandardScheduler.driver_execution_helper_fun,
-                args=(self.config, job_id, batch, self.driver_name),
+                args=(self.config, job_id, batch, self.driver_name, self.experiment_dir),
             ).start()
             pid = 0
 
         return pid
 
     @staticmethod
-    def driver_execution_helper_fun(config, job_id, batch, driver_name):
+    def driver_execution_helper_fun(config, job_id, batch, driver_name, workdir):
         """Helper function to execute driver commands.
 
         Args:
@@ -221,7 +222,7 @@ class StandardScheduler(Scheduler):
         Returns:
             pid (int): Process ID
         """
-        driver_obj = from_config_create_driver(config, job_id, batch, driver_name)
+        driver_obj = from_config_create_driver(config, job_id, batch, driver_name, workdir)
         # run driver and get process ID
         driver_obj.pre_job_run_and_run_job()
         pid = driver_obj.pid

@@ -40,7 +40,7 @@ class MpiDriver(Driver):
         scheduler_type (str): type of job scheduler (pbs or slurm)
         simulation_input_template (str): path to simulation input template (e.g. dat-file)
         singularity (bool): flag for use of a singularity container
-        workdir (path): path to working directory
+        experiment_dir (path): path to working directory
     """
 
     def __init__(
@@ -70,7 +70,6 @@ class MpiDriver(Driver):
         cluster_job,
         scheduler_type,
         simulation_input_template,
-        workdir,
         data_processor,
         gradient_data_processor,
         mpi_cmd,
@@ -103,7 +102,6 @@ class MpiDriver(Driver):
             cluster_job (bool): true if job is execute on cluster
             scheduler_type (str): type of job scheduler (pbs or slurm)
             simulation_input_template (path): path to simulation input template (e.g. dat-file)
-            workdir (str): path to working directory
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
             mpi_cmd (str): mpi command
@@ -142,7 +140,6 @@ class MpiDriver(Driver):
         self.scheduler_type = scheduler_type
         self.simulation_input_template = simulation_input_template
         self.singularity = singularity
-        self.workdir = workdir
 
     @classmethod
     def from_config_create_driver(
@@ -151,7 +148,7 @@ class MpiDriver(Driver):
         job_id,
         batch,
         driver_name,
-        workdir=None,
+        experiment_dir,
         cluster_config=None,
         cluster_options=None,
     ):
@@ -164,7 +161,7 @@ class MpiDriver(Driver):
             job_id (int): job ID as provided in database within range [1, n_jobs]
             batch (int): job batch number (multiple batches possible)
             driver_name (str): name of driver instance that should be realized
-            workdir (str): path to working directory on remote resource
+            experiment_dir (path): path to QUEENS experiment directory
             cluster_config (ClusterConfig): configuration data of cluster
             cluster_options (dict): cluster options for pbs or slurm
 
@@ -179,7 +176,6 @@ class MpiDriver(Driver):
         resource_name = list(config['resources'])[0]
         scheduler_name = config['resources'][resource_name]['scheduler']
         scheduler_options = config[scheduler_name]
-        experiment_dir = pathlib.Path(scheduler_options['experiment_dir'])
         num_procs = scheduler_options.get('num_procs', 1)
         num_procs_post = scheduler_options.get('num_procs_post', 1)
         singularity = scheduler_options.get('singularity', False)
@@ -214,17 +210,16 @@ class MpiDriver(Driver):
         else:
             gradient_data_processor = None
 
-        dest_dir = experiment_dir.joinpath(str(job_id))
-        output_directory = dest_dir.joinpath('output')
-        if not output_directory.is_dir():
-            output_directory.mkdir(parents=True)
+        job_dir = experiment_dir / str(job_id)
+        output_directory = job_dir / 'output'
+        output_directory.mkdir(parents=True, exist_ok=True)
 
         output_prefix = experiment_name + '_' + str(job_id)
         output_file = output_directory.joinpath(output_prefix)
 
         file_extension_obj = pathlib.PurePosixPath(simulation_input_template)
         input_file_str = output_prefix + file_extension_obj.suffix
-        input_file = dest_dir.joinpath(input_file_str)
+        input_file = job_dir.joinpath(input_file_str)
 
         log_file = output_directory.joinpath(output_prefix + '.log')
         error_file = output_directory.joinpath(output_prefix + '.err')
@@ -255,7 +250,6 @@ class MpiDriver(Driver):
             scheduler_type=scheduler_type,
             cluster_job=cluster_job,
             simulation_input_template=simulation_input_template,
-            workdir=workdir,
             data_processor=data_processor,
             gradient_data_processor=gradient_data_processor,
             mpi_cmd=mpi_cmd,
@@ -360,7 +354,7 @@ class MpiDriver(Driver):
         """
         command_list = [
             'cd',
-            str(self.workdir),
+            str(self.output_directory),
             r'&&',
             str(self.executable),
             str(self.input_file),
