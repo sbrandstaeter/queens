@@ -19,7 +19,7 @@ def local_base_dir():
 def remote_base_dir(remote_connect):
     """Base directory holding all queens related data on remote machine."""
     _, _, remote_home, _ = run_subprocess(
-        "echo $HOME",
+        "echo ~",
         subprocess_type="remote",
         remote_connect=remote_connect,
         additional_error_message=f"Unable to identify home on remote.\n"
