@@ -12,7 +12,7 @@ from pqueens.utils.cluster_utils import distribute_procs_on_nodes_pbs, get_clust
 from pqueens.utils.config_directories import experiment_directory, local_base_dir, remote_base_dir
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
-from pqueens.utils.path_utils import relative_path_from_pqueens
+from pqueens.utils.path_utils import relative_path_from_queens
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
@@ -56,7 +56,7 @@ DEEP_CONFIG = ClusterConfig(
     name="deep",
     work_load_scheduler="pbs",
     start_cmd="qsub",
-    jobscript_template=relative_path_from_pqueens("utils/jobscript_deep.sh"),
+    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
     job_status_command="qstat",
     job_status_location=-2,
     singularity_bind=(
@@ -71,7 +71,7 @@ BRUTEFORCE_CONFIG = ClusterConfig(
     name="bruteforce",
     work_load_scheduler="slurm",
     start_cmd="sbatch",
-    jobscript_template=relative_path_from_pqueens("utils/jobscript_bruteforce.sh"),
+    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_bruteforce.sh"),
     job_status_command="squeue --job",
     job_status_location=-4,
     singularity_bind=(
@@ -88,7 +88,7 @@ CHARON_CONFIG = ClusterConfig(
     name="charon",
     work_load_scheduler="slurm",
     start_cmd="sbatch",
-    jobscript_template=relative_path_from_pqueens("utils/jobscript_charon.sh"),
+    jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),
     job_status_command="squeue --job",
     job_status_location=-4,
     singularity_bind=(
