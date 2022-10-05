@@ -5,8 +5,10 @@ distribution.
 """
 
 import numpy as np
+import logging
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
+_logger = logging.getLogger(__name__)
 
 
 def estimate_bandwidth_for_kde(samples, min_samples, max_samples, kernel='gaussian'):
@@ -35,7 +37,7 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples, kernel='gaussi
 
     grid.fit(samples.reshape(-1, 1))
     kernel_bandwidth = grid.best_params_['bandwidth']
-    print(f'bandwidth = {kernel_bandwidth}')
+    _logger.info('bandwidth = %s', kernel_bandwidth)
 
     return kernel_bandwidth
 
