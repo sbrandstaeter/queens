@@ -1,4 +1,7 @@
 import signal
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 def interrupted():
@@ -23,9 +26,9 @@ def request_user_input(default, timeout):
         return user_input
     except:
         # timeout
-        print(
-            f"\nNo user input within time limit of {timeout}s.\n"
-            f"Returning default value: {default}\n"
+        _logger.info(
+            "\nNo user input within time limit of %s s.\n"
+            "Returning default value: %s \n", timeout, default
         )
         return default
 
