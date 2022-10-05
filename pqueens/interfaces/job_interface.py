@@ -295,7 +295,7 @@ class JobInterface(Interface):
             job: new job
         """
         if new_id is None:
-            print("Created new job")
+            _logger.info('Created new job')
             num_jobs = self.count_jobs()
             job_id = num_jobs + 1
         else:
@@ -360,7 +360,7 @@ class JobInterface(Interface):
         mean_values = []
         gradient_values = []
         if not self.all_jobs_finished():
-            print("Not all jobs are finished yet, try again later")
+            _logger.info('Not all jobs are finished yet, try again later')
         else:
             jobs = self.load_jobs(
                 field_filters={
@@ -437,10 +437,10 @@ class JobInterface(Interface):
                                 current_check_job['end_time'] - current_check_job['start_time']
                             )
                             _logger.info(
-                                f'Successfully completed job {current_check_job["id"]} '
-                                f'(No. of proc.: {current_check_job["num_procs"]}, '
-                                f'computing time: {computing_time} s).\n'
-                            )
+                                'Successfully completed job %d'
+                                'No. of proc.: %d'
+                                'computing time: %E s.\n', current_check_job["id"], current_check_job["num_procs"], computing_time)
+
                             self.save_job(current_check_job)
                             return
 
