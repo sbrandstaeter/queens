@@ -1,8 +1,9 @@
 """Unit tests for the collection utils."""
 import pytest
+import logging
 
 from pqueens.utils.collection_utils import CollectionObject
-
+_logger = logging.getLogger(__name__)
 pytestmark = pytest.mark.unit_tests
 
 
@@ -84,7 +85,7 @@ def test_indexing_failure():
     collobj = CollectionObject.create_collection_object_from_dict(data_dict)
 
     with pytest.raises(IndexError, match="index 6 out of range for size 3"):
-        print(collobj[6])
+        _logger.info(collobj[6])
 
 
 def test_bool():
