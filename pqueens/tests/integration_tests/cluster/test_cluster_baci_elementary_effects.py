@@ -2,7 +2,7 @@
 
 Elementary Effects simulations with BACI using the INVAAA minimal model.
 """
-
+import logging
 import pathlib
 import pickle
 from pathlib import Path
@@ -12,7 +12,10 @@ import pytest
 
 from pqueens import run
 from pqueens.utils import injector
+from pqueens.utils.config_directories import experiment_directory
 from pqueens.utils.run_subprocess import run_subprocess
+
+_logger = logging.getLogger(__name__)
 
 
 @pytest.mark.parametrize(
@@ -41,8 +44,6 @@ def test_cluster_baci_elementary_effects(
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
-    cluster_queens_testing_folder = cluster_testsuite_settings["cluster_queens_testing_folder"]
-    cluster_path_to_singularity = cluster_testsuite_settings["cluster_path_to_singularity"]
     scheduler_type = cluster_testsuite_settings["scheduler_type"]
     singularity_remote_ip = cluster_testsuite_settings["singularity_remote_ip"]
 
@@ -52,67 +53,58 @@ def test_cluster_baci_elementary_effects(
     path_to_post_processor = baci_cluster_paths["path_to_post_processor"]
 
     # unique experiment name
-    experiment_name = cluster + "_morris_salib"
-
-    template = pathlib.Path(inputdir, "baci_cluster_elementary_effects_template.json")
-    input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_deep_invaaa.json")
+    experiment_name = f"test_{cluster}_morris_salib"
 
     # specific folder for this test
-    cluster_experiment_dir = cluster_queens_testing_folder.joinpath(experiment_name)
-
-    baci_input_filename = "invaaa_ee.dat"
-    third_party_input_file_local = pathlib.Path(
-        third_party_inputs, "baci_input_files", baci_input_filename
+    baci_input_template_name = "invaaa_ee.dat"
+    local_baci_input_file_template = pathlib.Path(
+        third_party_inputs, "baci_input_files", baci_input_template_name
     )
-    path_to_input_file_cluster = cluster_experiment_dir.joinpath("input")
-    input_file_cluster = path_to_input_file_cluster.joinpath(baci_input_filename)
+    cluster_experiment_dir = experiment_directory(
+        experiment_name, remote_connect=connect_to_resource
+    )
+    cluster_baci_input_file_template_dir = cluster_experiment_dir.joinpath("input")
+    cluster_baci_input_file_template = cluster_baci_input_file_template_dir.joinpath(
+        baci_input_template_name
+    )
 
-    experiment_dir = cluster_experiment_dir.joinpath("output")
-
-    command_string = f'mkdir -v -p {path_to_input_file_cluster}'
+    command_string = f'mkdir -v -p {cluster_baci_input_file_template_dir}'
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_connect=connect_to_resource,
     )
-    print(stdout)
-
-    command_string = f'mkdir -v -p {experiment_dir}'
-    _, _, stdout, _ = run_subprocess(
-        command_string=command_string,
-        subprocess_type='remote',
-        remote_connect=connect_to_resource,
-    )
-    print(stdout)
+    _logger.info(stdout)
 
     # copy input file to cluster
     command = ' '.join(
         [
             'scp',
-            str(third_party_input_file_local),
-            connect_to_resource + ':' + str(input_file_cluster),
+            str(local_baci_input_file_template),
+            connect_to_resource + ':' + str(cluster_baci_input_file_template),
         ]
     )
     _, _, stdout, _ = run_subprocess(command)
-    print(stdout)
-
-    dir_dict = {
+    _logger.info(stdout)
+    template_options = {
         'experiment_name': str(experiment_name),
-        'path_to_singularity': str(cluster_path_to_singularity),
-        'input_template': str(input_file_cluster),
+        'input_template': str(cluster_baci_input_file_template),
         'path_to_executable': str(path_to_executable),
         'path_to_drt_monitor': str(path_to_drt_monitor),
         'path_to_drt_ensight': str(path_to_drt_ensight),
         'path_to_post_processor': str(path_to_post_processor),
-        'experiment_dir': str(experiment_dir),
         'connect_to_resource': connect_to_resource,
         'cluster': cluster,
         'scheduler_type': scheduler_type,
         'singularity_remote_ip': singularity_remote_ip,
     }
+    queens_input_file_template = pathlib.Path(
+        inputdir, "baci_cluster_elementary_effects_template.json"
+    )
+    queens_input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_deep_invaaa.json")
+    injector.inject(template_options, queens_input_file_template, queens_input_file)
 
-    injector.inject(dir_dict, template, input_file)
-    run(Path(input_file), Path(tmpdir))
+    run(Path(queens_input_file), Path(tmpdir))
 
     result_file = pathlib.Path(tmpdir, experiment_name + '.pickle')
     with open(result_file, 'rb') as handle:

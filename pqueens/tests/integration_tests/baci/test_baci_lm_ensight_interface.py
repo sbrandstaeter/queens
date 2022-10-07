@@ -82,7 +82,6 @@ def test_baci_lm_shape(
 
     dir_dict = {
         'experiment_name': experiment_name,
-        'experiment_dir': str(experiment_directory),
         'baci_input': third_party_input_file,
         'baci_input_monitor': third_party_input_file_monitor,
         'baci-release': baci_release,

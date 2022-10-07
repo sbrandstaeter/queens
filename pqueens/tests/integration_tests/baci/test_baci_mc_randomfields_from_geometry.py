@@ -17,7 +17,6 @@ def test_geometry_from_dat(
         third_party_inputs, "baci_input_files", "bending_wall_channel_flow_fsi_lofi.dat"
     )
     dir_dict = {
-        'experiment_dir': str(tmpdir),
         'baci_input': third_party_input_file,
     }
     template = os.path.join(inputdir, "baci_mc_randomfields_from_geometry_template.json")

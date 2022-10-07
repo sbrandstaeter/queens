@@ -5,14 +5,10 @@ from threading import Thread
 
 from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
-from pqueens.utils.config_directories import experiment_directory
+from pqueens.utils.config_directories import ABS_SINGULARITY_IMAGE_PATH, experiment_directory
 from pqueens.utils.dictionary_utils import find_keys
 from pqueens.utils.information_output import print_scheduling_information
-from pqueens.utils.manage_singularity import (
-    ABS_SINGULARITY_IMAGE_PATH,
-    create_singularity_image,
-    new_singularity_image_needed,
-)
+from pqueens.utils.manage_singularity import create_singularity_image, new_singularity_image_needed
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.string_extractor_and_checker import check_if_string_in_file
 

@@ -6,7 +6,8 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
-BASE_DATA_DIR = "queens-experiments"
+BASE_DATA_DIR = "queens"
+EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
 
 
 def local_base_dir():
@@ -30,27 +31,35 @@ def remote_base_dir(remote_connect):
     return base_dir
 
 
-def experiment_directory(experiment_name, remote_connect=None):
-    """Directory for data of an experiment."""
+def experiments_base_directory(remote_connect=None):
+    """Base directory for all experiments on the computing machine."""
     if remote_connect is None:
         base_dir = local_base_dir()
     else:
         base_dir = remote_base_dir(remote_connect)
-    experiment_dir = base_dir / experiment_name
+    experiments_base_dir = base_dir / EXPERIMENTS_BASE_FOLDER_NAME
+    create_directory(experiments_base_dir, remote_connect=remote_connect)
+    return experiments_base_dir
+
+
+def experiment_directory(experiment_name, remote_connect=None):
+    """Directory for data of a specific experiment on the computing machine."""
+    experiments_base_dir = experiments_base_directory(remote_connect=remote_connect)
+    experiment_dir = experiments_base_dir / experiment_name
     create_directory(experiment_dir, remote_connect=remote_connect)
     return experiment_dir
 
 
 def create_directory(dir_path, remote_connect=None):
     """Create a directory either local or remote."""
-    if remote_connect is not None:
-        subprocess_type = 'remote'
+    if remote_connect is None:
+        subprocess_type = 'simple'
         location = ""
     else:
-        subprocess_type = 'simple'
+        subprocess_type = 'remote'
         location = f" on {remote_connect}"
 
-    _logger.debug(f"Creating folder {dir_path}{location}.")
+    _logger.debug("Creating folder %s%s.", dir_path, location)
     command_string = f'mkdir -v -p {dir_path}'
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
@@ -60,4 +69,9 @@ def create_directory(dir_path, remote_connect=None):
     if stdout:
         _logger.debug(stdout)
     else:
-        _logger.debug(f"{dir_path} already exists{location}.")
+        _logger.debug("%s already exists%s.", dir_path, location)
+
+
+ABS_SINGULARITY_IMAGE_PATH = local_base_dir() / "singularity_image.sif"
+
+LOCAL_TEMPORARY_SUBMISSION_SCRIPT = local_base_dir() / "temporary_submission_script.sh"

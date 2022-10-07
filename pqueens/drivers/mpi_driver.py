@@ -286,7 +286,7 @@ class MpiDriver(Driver):
         run_subprocess(
             post_processor_cmd,
             additional_error_message="Post-processing failed!",
-            raise_error_on_subprocess_failure=False,
+            raise_error_on_subprocess_failure=True,
         )
 
     def _run_job_local(self):

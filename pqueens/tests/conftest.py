@@ -3,7 +3,7 @@ import pathlib
 
 import pytest
 
-from pqueens.utils import config_directories, manage_singularity
+from pqueens.utils import config_directories
 from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_from_queens
 
 
@@ -26,15 +26,15 @@ def global_mock_abs_singularity_image_path(monkeypatch):
 
     The singularity image path depends on local_base_dir() which is
     mocked globally and per test. This would however mean that every
-    test that needs singularity has to built the image again. Because
+    test that needs singularity has to build the image again. Because
     one test does not know about the other ones. To prevent this we
     store the standard image path that is used by the user here and make
     sure that this path is used in all tests by mocking the respective
     variable globally. This way the image has to be built only once.
     """
-    mock_abs_singularity_image_path = manage_singularity.ABS_SINGULARITY_IMAGE_PATH
+    mock_abs_singularity_image_path = config_directories.ABS_SINGULARITY_IMAGE_PATH
     monkeypatch.setattr(
-        manage_singularity, "ABS_SINGULARITY_IMAGE_PATH", mock_abs_singularity_image_path
+        config_directories, "ABS_SINGULARITY_IMAGE_PATH", mock_abs_singularity_image_path
     )
 
 
@@ -51,6 +51,24 @@ def global_mock_local_base_dir(monkeypatch, tmp_path):
         return tmp_path
 
     monkeypatch.setattr(config_directories, "local_base_dir", mock_local_base_dir)
+
+
+@pytest.fixture(scope="session")
+def mock_value_experiments_base_folder_name():
+    """Value to mock the experiments base folder name."""
+    return "tests"
+
+
+@pytest.fixture(autouse=True)
+def global_mock_experiments_base_folder_name(mock_value_experiments_base_folder_name, monkeypatch):
+    """Mock the name of the folders containing experiments in base directory.
+
+    Note that locally, this adds on top of the
+    global_mock_local_base_dir
+    """
+    monkeypatch.setattr(
+        config_directories, "EXPERIMENTS_BASE_FOLDER_NAME", mock_value_experiments_base_folder_name
+    )
 
 
 @pytest.fixture(scope='session')

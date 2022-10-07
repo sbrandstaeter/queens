@@ -107,7 +107,6 @@ def test_baci_elementary_effects(
 
     dir_dict = {
         'experiment_name': experiment_name,
-        'experiment_dir': str(experiment_directory),
         'baci_input': third_party_input_file,
         'baci-release': baci_release,
         'post_drt_monitor': post_drt_monitor,

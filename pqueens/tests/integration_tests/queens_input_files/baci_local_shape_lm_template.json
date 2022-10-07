@@ -89,7 +89,6 @@
   "scheduler": {
     "scheduler_type": "standard",
     "num_procs": 2,
-    "singularity": {singularity_boolean},
-    "experiment_dir": "{experiment_dir}"
+    "singularity": {singularity_boolean}
   }
 }

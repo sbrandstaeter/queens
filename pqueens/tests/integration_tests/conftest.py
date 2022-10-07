@@ -1,6 +1,7 @@
 """Collect fixtures used by the integration tests."""
 
 import getpass
+import logging
 import pathlib
 
 import pytest
@@ -10,9 +11,11 @@ from pqueens.schedulers.cluster_scheduler import (
     CHARON_SCHEDULER_TYPE,
     DEEP_SCHEDULER_TYPE,
 )
+from pqueens.utils import config_directories
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 
+_logger = logging.getLogger(__name__)
 
 # CLUSTER TESTS ------------------------------------------------------------------------------------
 @pytest.fixture(scope="session")
@@ -88,55 +91,45 @@ def scheduler_type(cluster):
 
 
 @pytest.fixture(scope="session")
-def cluster_queens_testing_folder(cluster_user):
-    """Generic folder on cluster for testing."""
-    cluster_queens_testing_folder = pathlib.Path("/home", cluster_user, "queens-testing")
-    return cluster_queens_testing_folder
+def cluster_queens_base_dir(connect_to_resource):
+    """Base directory for queens on cluster."""
+    return config_directories.remote_base_dir(remote_connect=connect_to_resource)
 
 
 @pytest.fixture(scope="session")
-def cluster_path_to_singularity(cluster_queens_testing_folder):
+def cluster_queens_testing_folder(mock_value_experiments_base_folder_name, cluster_queens_base_dir):
+    """Base directory for experiment data of tests."""
+    return cluster_queens_base_dir / mock_value_experiments_base_folder_name
+
+
+@pytest.fixture(scope="session")
+def cluster_path_to_singularity(cluster_queens_base_dir):
     """Folder on cluster where to put the singularity file."""
-    cluster_path_to_singularity = cluster_queens_testing_folder.joinpath("singularity")
-    return cluster_path_to_singularity
+    return cluster_queens_base_dir
 
 
 @pytest.fixture(scope="session")
-def prepare_cluster_testing_environment(
-    connect_to_resource, cluster_queens_testing_folder, cluster_path_to_singularity
-):
+def prepare_cluster_testing_environment(connect_to_resource, cluster_queens_testing_folder):
     """Create a clean testing environment on the cluster."""
     # remove old folder
-    print(f"Delete testing folder from {cluster_address}")
+    print(f"Delete testing folder {cluster_queens_testing_folder} on {connect_to_resource}")
     command_string = f'rm -rfv {cluster_queens_testing_folder}'
-    returncode, pid, stdout, stderr = run_subprocess(
+    _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_connect=connect_to_resource,
     )
-    print(stdout)
-    if returncode:
-        raise Exception(stderr)
+    _logger.info(stdout)
 
     # create generic testing folder
-    print(f"Create testing folder on {cluster_address}")
+    _logger.info(f"Create testing folder {cluster_queens_testing_folder} on {connect_to_resource}")
     command_string = f'mkdir -v -p {cluster_queens_testing_folder}'
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
         subprocess_type='remote',
         remote_connect=connect_to_resource,
     )
-    print(stdout)
-
-    # create folder for singularity
-    print(f"Create folder for singularity image on {cluster_address}")
-    command_string = f'mkdir -v -p {cluster_path_to_singularity}'
-    _, _, stdout, _ = run_subprocess(
-        command_string=command_string,
-        subprocess_type='remote',
-        remote_connect=connect_to_resource,
-    )
-    print(stdout)
+    _logger.info(stdout)
 
     return True
 
@@ -144,7 +137,7 @@ def prepare_cluster_testing_environment(
 @pytest.fixture(scope="session")
 def prepare_singularity(
     connect_to_resource,
-    cluster_path_to_singularity,
+    cluster_queens_base_dir,
     prepare_cluster_testing_environment,
 ):
     """Build singularity based on the code during test invocation.
@@ -155,12 +148,11 @@ def prepare_singularity(
     if not prepare_cluster_testing_environment:
         raise RuntimeError("Testing environment on cluster not successful.")
 
-    remote_flag = True
     singularity_manager = SingularityManager(
-        singularity_path=cluster_path_to_singularity,
+        singularity_path=cluster_queens_base_dir,
         singularity_bind=None,
         input_file=None,
-        remote=remote_flag,
+        remote=True,
         remote_connect=connect_to_resource,
     )
     # singularity_manager.check_singularity_system_vars()
@@ -174,8 +166,6 @@ def cluster_testsuite_settings(
     cluster_user,
     cluster_address,
     connect_to_resource,
-    cluster_queens_testing_folder,
-    cluster_path_to_singularity,
     prepare_singularity,
     scheduler_type,
     cluster_singularity_ip,
@@ -191,8 +181,6 @@ def cluster_testsuite_settings(
     cluster_testsuite_settings["cluster_user"] = cluster_user
     cluster_testsuite_settings["cluster_address"] = cluster_address
     cluster_testsuite_settings["connect_to_resource"] = connect_to_resource
-    cluster_testsuite_settings["cluster_queens_testing_folder"] = cluster_queens_testing_folder
-    cluster_testsuite_settings["cluster_path_to_singularity"] = cluster_path_to_singularity
     cluster_testsuite_settings["scheduler_type"] = scheduler_type
     cluster_testsuite_settings["singularity_remote_ip"] = cluster_singularity_ip
 
@@ -200,60 +188,34 @@ def cluster_testsuite_settings(
 
 
 @pytest.fixture(scope="session")
-def baci_cluster_paths(cluster_user, cluster_address, connect_to_resource):
+def baci_cluster_paths(cluster_user, connect_to_resource):
     """Paths to executables on the clusters.
 
-    Checks also for existance of the executables.
+    Checks also for existence of the executables.
     """
-    path_to_executable = pathlib.Path("/home", cluster_user, "workspace", "build", "baci-release")
 
-    path_to_drt_monitor = pathlib.Path(
-        "/home", cluster_user, "workspace", "build", "post_drt_monitor"
-    )
+    base_directory = pathlib.Path("/home", cluster_user, "workspace", "build")
 
-    path_to_post_processor = pathlib.Path(
-        "/home", cluster_user, "workspace", "build", "post_processor"
-    )
+    path_to_executable = base_directory / "baci-release"
+    path_to_drt_monitor = base_directory / "post_drt_monitor"
+    path_to_post_processor = base_directory / "post_processor"
+    path_to_drt_ensight = base_directory / "post_drt_ensight"
 
-    path_to_drt_ensight = pathlib.Path(
-        "/home", cluster_user, "workspace", "build", "post_drt_ensight"
-    )
+    def exists_on_remote(file_path):
+        """Check for existence of a file on remote machine."""
+        command_string = f'find {file_path}'
+        run_subprocess(
+            command_string=command_string,
+            subprocess_type='remote',
+            remote_connect=connect_to_resource,
+            additional_error_message=f"Could not find executable on {connect_to_resource}.\n"
+            f"Was looking here: {file_path}",
+        )
 
-    command_string = f'find {path_to_executable}'
-    run_subprocess(
-        command_string=command_string,
-        subprocess_type='remote',
-        remote_connect=connect_to_resource,
-        additional_error_message=f"Could not find executable on {cluster_address}.\n"
-        f"Was looking here: {path_to_executable}",
-    )
-
-    command_string = f'find {path_to_drt_monitor}'
-    run_subprocess(
-        command_string=command_string,
-        subprocess_type='remote',
-        remote_connect=connect_to_resource,
-        additional_error_message=f"Could not find postprocessor on {cluster_address}.\n"
-        f"Was looking here: {path_to_drt_monitor}",
-    )
-
-    command_string = f'find {path_to_drt_ensight}'
-    run_subprocess(
-        command_string=command_string,
-        subprocess_type='remote',
-        remote_connect=connect_to_resource,
-        additional_error_message=f"Could not find postprocessor on {cluster_address}.\n"
-        f"Was looking here: {path_to_drt_ensight}",
-    )
-
-    command_string = f'find {path_to_post_processor}'
-    run_subprocess(
-        command_string=command_string,
-        subprocess_type='remote',
-        remote_connect=connect_to_resource,
-        additional_error_message=f"Could not find postprocessor on {cluster_address}.\n"
-        f"Was looking here: {path_to_post_processor}",
-    )
+    exists_on_remote(path_to_executable)
+    exists_on_remote(path_to_drt_monitor)
+    exists_on_remote(path_to_post_processor)
+    exists_on_remote(path_to_drt_ensight)
 
     baci_cluster_paths = dict(
         path_to_executable=path_to_executable,

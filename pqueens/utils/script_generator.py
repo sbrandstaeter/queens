@@ -1,14 +1,9 @@
 """Function to generate a job or task script for submission."""
 import shutil
 
+from pqueens.utils.config_directories import LOCAL_TEMPORARY_SUBMISSION_SCRIPT
 from pqueens.utils.injector import inject
-from pqueens.utils.path_utils import relative_path_from_pqueens
 from pqueens.utils.run_subprocess import run_subprocess
-
-# local dummy path
-LOCAL_TEMPORARY_SUBMISSION_SCRIPT = relative_path_from_pqueens(
-    'utils/temporary_submission_script.sh', as_str=False
-)
 
 
 def generate_submission_script(

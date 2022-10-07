@@ -5,7 +5,7 @@ import random
 import subprocess
 import time
 
-from pqueens.utils.config_directories import local_base_dir
+from pqueens.utils.config_directories import ABS_SINGULARITY_IMAGE_PATH
 from pqueens.utils.path_utils import (
     PATH_TO_QUEENS,
     relative_path_from_pqueens,
@@ -15,7 +15,6 @@ from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
 _logger = logging.getLogger(__name__)
-ABS_SINGULARITY_IMAGE_PATH = local_base_dir() / "singularity_image.sif"
 
 
 def create_singularity_image():
@@ -221,8 +220,8 @@ class SingularityManager:
             ]
             command_string = ' '.join(command_list)
             port_fail = os.popen(command_string).read()
-            _logger.info(f'attempt #{attempts}: {command_string}')
-            _logger.debug(f'which returned: {port_fail}')
+            _logger.info('attempt #%d: %s', attempts, command_string)
+            _logger.debug('which returned: %s', port_fail)
             time.sleep(0.1)
             attempts += 1
 

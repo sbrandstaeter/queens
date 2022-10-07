@@ -37,7 +37,7 @@
   },
   "data_processor_baci": {
     "type": "ensight",
-    "file_name_identifier": "{cluster}*.case",
+    "file_name_identifier": "{experiment_name}*.case",
     "file_options_dict": {
       "delete_field_data": false,
       "geometric_target": ["experimental_data"],
@@ -62,7 +62,6 @@
   },
   "scheduler": {
     "scheduler_type": "{scheduler_type}",
-    "experiment_dir": "{experiment_dir}",
     "num_procs": 1,
     "num_procs_post": 1,
     "cluster": {
@@ -74,8 +73,7 @@
     },
     "singularity": true,
     "singularity_settings": {
-      "remote_ip": "{singularity_remote_ip}",
-      "cluster_path": "{path_to_singularity}"
+      "remote_ip": "{singularity_remote_ip}"
     }
   },
   "parameters": {

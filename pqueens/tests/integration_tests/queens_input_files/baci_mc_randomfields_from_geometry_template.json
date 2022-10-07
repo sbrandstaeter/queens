@@ -64,7 +64,6 @@
     }
   },
   "local_scheduler": {
-    "experiment_dir": "{experiment_dir}",
     "scheduler_type": "standard",
     "num_procs": 4,
     "num_procs_post": 1
