@@ -35,7 +35,7 @@ stages:
 .ubuntu_settings:
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
-    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
+    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $HOME/queens/singularity_image.sif
   only:
     variables:
       - $UBUNTU_TESTS == "1"
