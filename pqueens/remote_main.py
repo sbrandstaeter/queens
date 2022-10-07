@@ -42,7 +42,19 @@ def main(args):
     parser.add_argument("--path_json", help="system path to temporary json file", type=str)
     parser.add_argument("--post", help="option for postprocessing", type=str)
     parser.add_argument("--driver_name", help="name of driver for the current run", type=str)
-    parser.add_argument("--experiment_dir", help="working directory", type=str)
+    parser.add_argument(
+        "--experiment_dir",
+        help="experiment directory: final storage place on the login node for all data of an experiment",
+        type=str,
+    )
+    parser.add_argument(
+        "--working_dir",
+        help="working directory: temporary storage place on compute nodes for output of BACI during computation (optional)",
+        type=str,
+        nargs="?",
+        const=None,
+        default=None,
+    )
 
     args = parser.parse_args(args)
     job_id = args.job_id
@@ -52,6 +64,10 @@ def main(args):
     post = args.post
     experiment_dir = Path(args.experiment_dir)
     driver_name = args.driver_name
+    if args.working_dir is None:
+        working_dir = args.working_dir
+    else:
+        working_dir = Path(args.working_dir)
 
     driver_obj = None
     is_remote = port != "000"
@@ -87,6 +103,7 @@ def main(args):
                 batch=batch,
                 driver_name=driver_name,
                 experiment_dir=experiment_dir,
+                working_dir=working_dir,
             )
             # Run the singularity image in two steps and two different singularity calls to have
             # more freedom concerning mpi ranks

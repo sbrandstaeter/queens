@@ -48,6 +48,7 @@ class MpiDriver(Driver):
         batch,
         driver_name,
         experiment_dir,
+        working_dir,
         experiment_name,
         job_id,
         num_procs,
@@ -140,6 +141,7 @@ class MpiDriver(Driver):
         self.scheduler_type = scheduler_type
         self.simulation_input_template = simulation_input_template
         self.singularity = singularity
+        self.working_dir = working_dir
 
     @classmethod
     def from_config_create_driver(
@@ -149,6 +151,7 @@ class MpiDriver(Driver):
         batch,
         driver_name,
         experiment_dir,
+        working_dir,
         cluster_config=None,
         cluster_options=None,
     ):
@@ -214,6 +217,9 @@ class MpiDriver(Driver):
         output_directory = job_dir / 'output'
         output_directory.mkdir(parents=True, exist_ok=True)
 
+        if working_dir is None:
+            working_dir = output_directory
+
         output_prefix = experiment_name + '_' + str(job_id)
         output_file = output_directory.joinpath(output_prefix)
 
@@ -228,6 +234,7 @@ class MpiDriver(Driver):
             batch=batch,
             driver_name=driver_name,
             experiment_dir=experiment_dir,
+            working_dir=working_dir,
             experiment_name=experiment_name,
             job_id=job_id,
             num_procs=num_procs,
@@ -358,7 +365,7 @@ class MpiDriver(Driver):
             r'&&',
             str(self.executable),
             str(self.input_file),
-            str(self.output_prefix),
+            str(self.working_dir / self.output_prefix),
         ]
 
         return ' '.join(command_list)

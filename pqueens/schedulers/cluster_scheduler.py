@@ -349,12 +349,12 @@ class ClusterScheduler(Scheduler):
             self.cluster_options['INPUT'] = (
                 f"--job_id={job_id} --batch={batch} --port={self.port} --path_json="
                 + f"{self.singularity_manager.singularity_path} --driver_name="
-                + f"{self.driver_name} --experiment_dir"
+                + f"{self.driver_name} --experiment_dir {self.experiment_dir} --working_dir"
             )
 
             job_dir = self.experiment_dir / str(job_id)
 
-            self.cluster_options['DESTDIR'] = str(self.experiment_dir)
+            self.cluster_options['DESTDIR'] = str(job_dir / "output")
 
             # generate jobscript for submission
             submission_script_path = self.experiment_dir.joinpath('jobfile.sh')

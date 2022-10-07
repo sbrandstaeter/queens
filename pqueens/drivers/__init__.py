@@ -16,6 +16,7 @@ def from_config_create_driver(
     batch,
     driver_name,
     experiment_dir,
+    working_dir,
     cluster_config=None,
     cluster_options=None,
 ):
@@ -27,6 +28,7 @@ def from_config_create_driver(
         batch (int):    Job batch number (multiple batches possible)
         driver_name (str): Name of driver instance that should be realized
         experiment_dir (path):  Path to directory of experiment on remote resource
+        working_dir (path): Path to directory for output of job on compute node
         cluster_config (ClusterConfig): configuration data of cluster
         cluster_options (dict): options for cluster jobs
 
@@ -41,6 +43,7 @@ def from_config_create_driver(
         batch=batch,
         driver_name=driver_name,
         experiment_dir=experiment_dir,
+        working_dir=working_dir,
         cluster_config=cluster_config,
         cluster_options=cluster_options,
     )
