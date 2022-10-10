@@ -26,7 +26,6 @@ stages:
 #---------------------------------------------------------------------------------------------------
 .ubuntu_build_settings:
   before_script:
-    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda update -n base conda
   only:
     variables:
@@ -35,7 +34,6 @@ stages:
 #----------------------------------------------------------------------------------------------
 .ubuntu_settings:
   before_script:
-    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda activate queens-$CI_PIPELINE_ID
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
   only:
@@ -52,7 +50,6 @@ stages:
   extends:
     - .codechecks_conditions
   before_script:
-    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda activate queens-$CI_PIPELINE_ID
   only:
     variables:
@@ -69,7 +66,6 @@ update:
   script:
     - cd $CI_PROJECT_DIR
     # create simply environment to use pip-tools
-    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda activate piptools-env
     - pip-compile --upgrade
     - conda deactivate
@@ -106,7 +102,6 @@ update:
     - .ubuntu_build_settings
   stage: build
   script:
-    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
@@ -133,7 +128,7 @@ imcs-build_conda_env:
 .build_singularity:
   stage: build
   script:
-    - unset SINGULARITY_BIND && /usr/bin/singularity build --fakeroot singularity_image.sif singularity_recipe.def
+    - unset SINGULARITY_BIND && singularity build --fakeroot singularity_image.sif singularity_recipe.def
     - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
   only:
     variables:
@@ -464,7 +459,6 @@ pages:
 .remove_conda_env_and_singularity_image:
   stage: cleanup
   script:
-    - source /home/gitlab-runner/anaconda/miniconda/etc/profile.d/conda.sh
     - conda env remove -n queens-$CI_PIPELINE_ID
     - rm /tmp/singularity_image.sif-$CI_PIPELINE_ID
   when: always
