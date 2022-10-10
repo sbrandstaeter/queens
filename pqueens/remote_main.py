@@ -44,12 +44,13 @@ def main(args):
     parser.add_argument("--driver_name", help="name of driver for the current run", type=str)
     parser.add_argument(
         "--experiment_dir",
-        help="experiment directory: final storage place on the login node for all data of an experiment",
+        help="experiment directory: storage place for all data of an experiment on login node",
         type=str,
     )
     parser.add_argument(
         "--working_dir",
-        help="working directory: temporary storage place on compute nodes for output of BACI during computation (optional)",
+        help="working directory: "
+        "temporary storage place for output during computation on compute nodes (optional)",
         type=str,
         nargs="?",
         const=None,
