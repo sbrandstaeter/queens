@@ -206,7 +206,7 @@ class StandardScheduler(Scheduler):
         return pid
 
     @staticmethod
-    def driver_execution_helper_fun(config, job_id, batch, driver_name, workdir):
+    def driver_execution_helper_fun(config, job_id, batch, driver_name, experiment_dir):
         """Helper function to execute driver commands.
 
         Args:
@@ -214,11 +214,12 @@ class StandardScheduler(Scheduler):
             job_id (int): Id number of the current job
             batch (int): Number of the current batch
             driver_name (str): Name of the driver module in input file
+            experiment_dir (Path): directory of experiment
 
         Returns:
             pid (int): Process ID
         """
-        driver_obj = from_config_create_driver(config, job_id, batch, driver_name, workdir)
+        driver_obj = from_config_create_driver(config, job_id, batch, driver_name, experiment_dir)
         # run driver and get process ID
         driver_obj.pre_job_run_and_run_job()
         pid = driver_obj.pid

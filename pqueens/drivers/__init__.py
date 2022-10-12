@@ -16,7 +16,7 @@ def from_config_create_driver(
     batch,
     driver_name,
     experiment_dir,
-    working_dir,
+    working_dir=None,
     cluster_config=None,
     cluster_options=None,
 ):
