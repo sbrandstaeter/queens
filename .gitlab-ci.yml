@@ -35,7 +35,10 @@ stages:
 .ubuntu_settings:
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
-    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $HOME/queens/singularity_image.sif
+    - SINGULARITY_BASE_DIR="$HOME/queens"
+    - echo $SINGULARITY_BASE_DIR
+    - mkdir -p $SINGULARITY_BASE_DIR
+    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_BASE_DIR/singularity_image.sif
   only:
     variables:
       - $UBUNTU_TESTS == "1"
