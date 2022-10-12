@@ -4,8 +4,9 @@ Estimation of the probability density function based on samples from the
 distribution.
 """
 
-import numpy as np
 import logging
+
+import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
