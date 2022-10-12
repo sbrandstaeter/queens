@@ -30,7 +30,7 @@ def process_ouputs(output_data, output_description, input_data=None):
     try:
         processed_results = do_processing(output_data, output_description)
     except:
-        print("Could not process results properly")
+        _logger.info("Could not process results properly.")
 
     # add the actual raw input and output data
     processed_results["raw_output_data"] = output_data

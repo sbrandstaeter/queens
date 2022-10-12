@@ -74,9 +74,6 @@ class TestLHSIterator(unittest.TestCase):
     def test_correct_sampling(self):
         """Test if we get correct samples."""
         # np.set_printoptions(precision=10)
-        # print("Samples first row {}".format(self.my_iterator.samples[0,:]))
-        # print("Sample mean {}".format(my_means))
-        # print("Sample std {}".format(my_std))
         self.my_iterator.pre_run()
 
         # check if mean and std match
@@ -102,7 +99,6 @@ class TestLHSIterator(unittest.TestCase):
         self.my_iterator.core_run()
 
         # np.set_printoptions(precision=10)
-        # print("Results first 10 {}".format(self.my_iterator.outputs[0:10]))
 
         # check if samples are identical too
         ref_results = np.array(

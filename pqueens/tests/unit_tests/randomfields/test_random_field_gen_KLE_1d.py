@@ -98,7 +98,6 @@ class TestRandomFieldGeneratorKLE1D(unittest.TestCase):
             1e-09,
         )
         # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        # print(my_vals)
 
     def test_correlation(self):
         loc = np.array([[0], [10], [25], [100]])
