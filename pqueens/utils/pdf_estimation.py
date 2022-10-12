@@ -8,6 +8,7 @@ import numpy as np
 import logging
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
+
 _logger = logging.getLogger(__name__)
 
 

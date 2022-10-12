@@ -1,6 +1,6 @@
 """Command Line Interface utils collection."""
-import logging
 import argparse
+import logging
 import sys
 from pathlib import Path
 
@@ -135,4 +135,6 @@ def print_greeting_message():
     _logger.info('or\n')
     _logger.info('python -m pqueens.main --input <inputfile> --output_dir <output_dir>\n')
     _logger.info('or\n')
-    _logger.info('python path_to_queens/pqueens/main.py --input <inputfile> --output_dir <output_dir>\n')
+    _logger.info(
+        'python path_to_queens/pqueens/main.py --input <inputfile> --output_dir <output_dir>\n'
+    )

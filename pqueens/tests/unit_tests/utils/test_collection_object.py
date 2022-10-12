@@ -3,6 +3,7 @@ import pytest
 import logging
 
 from pqueens.utils.collection_utils import CollectionObject
+
 _logger = logging.getLogger(__name__)
 pytestmark = pytest.mark.unit_tests
 

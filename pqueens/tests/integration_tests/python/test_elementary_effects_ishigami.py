@@ -6,7 +6,9 @@ from pathlib import Path
 import pytest
 
 from pqueens import run
+
 _logger = logging.getLogger(__name__)
+
 
 def test_elementary_effects_ishigami(inputdir, tmpdir):
     """Test case for elementary effects iterator."""

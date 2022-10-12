@@ -1,13 +1,15 @@
 """Multi-fideliy latin hypercube sampling."""
 
-import numpy as np
 import logging
+
+import numpy as np
 from pyDOE import lhs
 
 from pqueens.models import from_config_create_model
 from pqueens.models.multifidelity_model import MultifidelityModel
 
 from .iterator import Iterator
+
 _logger = logging.getLogger(__name__)
 
 

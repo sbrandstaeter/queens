@@ -1,5 +1,5 @@
-import signal
 import logging
+import signal
 
 _logger = logging.getLogger(__name__)
 
@@ -27,8 +27,9 @@ def request_user_input(default, timeout):
     except:
         # timeout
         _logger.info(
-            "\nNo user input within time limit of %s s.\n"
-            "Returning default value: %s \n", timeout, default
+            "\nNo user input within time limit of %s s.\n" "Returning default value: %s \n",
+            timeout,
+            default,
         )
         return default
 

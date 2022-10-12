@@ -439,7 +439,11 @@ class JobInterface(Interface):
                             _logger.info(
                                 'Successfully completed job %d'
                                 'No. of proc.: %d'
-                                'computing time: %E s.\n', current_check_job["id"], current_check_job["num_procs"], computing_time)
+                                'computing time: %E s.\n',
+                                current_check_job["id"],
+                                current_check_job["num_procs"],
+                                computing_time,
+                            )
 
                             self.save_job(current_check_job)
                             return

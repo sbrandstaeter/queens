@@ -1,9 +1,10 @@
 """Utils to handle pickle files."""
-import pickle
 import logging
+import pickle
 from pathlib import Path
 
 _logger = logging.getLogger(__name__)
+
 
 def load_pickle(file_path):
     """Load a pickle file directly from path.

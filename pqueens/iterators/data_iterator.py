@@ -1,10 +1,11 @@
 """Data iterator."""
 
-import pickle
 import logging
+import pickle
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.utils.process_outputs import process_ouputs, write_results
+
 _logger = logging.getLogger(__name__)
 
 

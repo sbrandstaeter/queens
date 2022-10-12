@@ -16,7 +16,10 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
 from pqueens.utils.path_utils import relative_path_from_pqueens
 from pqueens.utils.pool_utils import create_pool
 import logging
+
 _logger = logging.getLogger(__name__)
+
+
 @pytest.fixture(scope='module')
 def parameters():
     """Options dictionary to create variables."""
