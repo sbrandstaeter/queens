@@ -1,5 +1,7 @@
 """Bayesian multi-fidelity Monte-Carlo model."""
 
+import logging
+
 import numpy as np
 import scipy.stats as st
 from sklearn.preprocessing import StandardScaler
@@ -13,6 +15,8 @@ from pqueens.models import from_config_create_model
 from pqueens.parameters.fields import RandomField
 
 from .model import Model
+
+_logger = logging.getLogger(__name__)
 
 
 class BMFMCModel(Model):
@@ -422,7 +426,7 @@ class BMFMCModel(Model):
         # check how we should get the corresponding HF simulation output
         # Directly start simulations of HF model for optimal input batch X_train
         if (self.high_fidelity_model is not None) and (self.Y_HF_mc is None):
-            print(
+            _logger.info(
                 'High-fidelity model found! Starting now simulation on HF model for BMFMC '
                 'training data...'
             )
@@ -431,7 +435,7 @@ class BMFMCModel(Model):
 
             # Get the HF-model training data for BMFMC
             self.Y_HF_train = self.high_fidelity_model.response['mean']
-            print(
+            _logger.info(
                 "High-fidelity simulations finished successfully!\n Starting now BMFMC "
                 "routine..."
             )
@@ -517,7 +521,7 @@ class BMFMCModel(Model):
         # Define the outer loop (addition of all multivariate normal distributions
         yhf_pdf_grid = np.zeros((points.shape[0],))
         i = 1
-        print('\n')
+        _logger.info('\n')
 
         # TODO we should speed this up with multiprocessing
         for num1, (mean1, var1) in enumerate(

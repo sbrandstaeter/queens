@@ -141,9 +141,11 @@ class GPflowSVGP(RegressionApproximation):
             for step in range(self.number_training_iterations):
                 optimization_step()
                 if (step + 1) % 100 == 0:
-                    print(
-                        f'Iter: {step + 1}/{self.number_training_iterations}, '
-                        f'Loss: {training_loss().numpy():.2e}'
+                    _logger.info(
+                        'Iter: %s/%s, ' 'Loss: %.2e',
+                        step + 1,
+                        self.number_training_iterations,
+                        training_loss().numpy(),
                     )
 
             print_summary(self.model[i])

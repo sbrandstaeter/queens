@@ -8,6 +8,8 @@ References:
     [1]: https://en.wikipedia.org/wiki/Metropolis%E2%80%93Hastings_algorithm
 """
 
+import logging
+
 import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
@@ -18,6 +20,8 @@ from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils import mcmc_utils, smc_utils
 from pqueens.utils.process_outputs import process_ouputs, write_results
+
+_logger = logging.getLogger(__name__)
 
 
 class MetropolisHastingsIterator(Iterator):
@@ -146,10 +150,9 @@ class MetropolisHastingsIterator(Iterator):
         Returns:
             iterator: MetropolisHastingsIterator object
         """
-        print(
-            "Metropolis-Hastings Iterator for experiment: {0}".format(
-                config.get('global_settings').get('experiment_name')
-            )
+        _logger.info(
+            "Metropolis-Hastings Iterator for experiment: %s",
+            config.get('global_settings').get('experiment_name'),
         )
         method_options = config[iterator_name]['method_options']
         if model is None:
@@ -216,7 +219,7 @@ class MetropolisHastingsIterator(Iterator):
                 np.log(self.accepted_interval) - np.log(self.tune_interval)
             )
             if not self.as_mcmc_kernel:
-                print(f"Current acceptance rate: {accept_rate_interval}.")
+                _logger.info("Current acceptance rate: %s.", accept_rate_interval)
             self.scale_covariance = mcmc_utils.tune_scale_covariance(
                 self.scale_covariance, accept_rate_interval
             )
@@ -259,7 +262,7 @@ class MetropolisHastingsIterator(Iterator):
     ):
         """Draw initial sample."""
         if not self.as_mcmc_kernel:
-            print("Initialize Metropolis-Hastings run.")
+            _logger.info("Initialize Metropolis-Hastings run.")
 
             np.random.seed(self.seed)
 
@@ -288,7 +291,7 @@ class MetropolisHastingsIterator(Iterator):
         2.) Sampling phase
         """
         if not self.as_mcmc_kernel:
-            print('Metropolis-Hastings core run.')
+            _logger.info('Metropolis-Hastings core run.')
 
         # Burn-in phase
         for i in range(1, self.num_burn_in + 1):
@@ -296,7 +299,7 @@ class MetropolisHastingsIterator(Iterator):
 
         if self.num_burn_in:
             burn_in_accept_rate = np.exp(np.log(self.accepted) - np.log(self.num_burn_in))
-            print("Acceptance rate during burn in: {0}".format(burn_in_accept_rate))
+            _logger.info("Acceptance rate during burn in: %s", burn_in_accept_rate)
         # reset number of accepted samples
         self.accepted = np.zeros((self.num_chains, 1))
         self.accepted_interval = 0
@@ -346,31 +349,28 @@ class MetropolisHastingsIterator(Iterator):
                     self.global_settings["experiment_name"],
                 )
 
-            print("Size of outputs {}".format(chain_core.shape))
+            _logger.info("Size of outputs %s", chain_core.shape)
             for i in range(self.num_chains):
-                print("#############################################")
-                print(f"Chain {i+1}")
-                print(f"\tAcceptance rate: {accept_rate[i]}")
-                print(
-                    "\tCovariance of proposal : {}".format(
-                        (self.scale_covariance[i] * self.proposal_distribution.covariance).tolist()
-                    )
+                _logger.info("#############################################")
+                _logger.info("Chain %s", i + 1)
+                _logger.info("\tAcceptance rate: %s", accept_rate[i])
+                _logger.info(
+                    "\tCovariance of proposal : %s",
+                    (self.scale_covariance[i] * self.proposal_distribution.covariance).tolist(),
                 )
-                print(
-                    "\tmean±std: {}±{}".format(
-                        results.get('mean', np.array([np.nan] * self.num_chains))[i],
-                        np.sqrt(results.get('var', np.array([np.nan] * self.num_chains))[i]),
-                    )
+                _logger.info(
+                    "\tmean±std: %s±%s",
+                    results.get('mean', np.array([np.nan] * self.num_chains))[i],
+                    np.sqrt(results.get('var', np.array([np.nan] * self.num_chains))[i]),
                 )
-                print(
-                    "\tvar: {}".format(results.get('var', np.array([np.nan] * self.num_chains))[i])
+                _logger.info(
+                    "\tvar: %s", results.get('var', np.array([np.nan] * self.num_chains))[i]
                 )
-                print(
-                    "\tcov: {}".format(
-                        results.get('cov', np.array([np.nan] * self.num_chains))[i].tolist()
-                    )
+                _logger.info(
+                    "\tcov: %s",
+                    results.get('cov', np.array([np.nan] * self.num_chains))[i].tolist(),
                 )
-            print("#############################################")
+            _logger.info("#############################################")
 
             data_dict = {
                 variable_name: np.swapaxes(chain_core[:, :, i], 1, 0)
@@ -379,9 +379,9 @@ class MetropolisHastingsIterator(Iterator):
             inference_data = az.convert_to_inference_data(data_dict)
 
             rhat = az.rhat(inference_data)
-            print(rhat)
+            _logger.info(rhat)
             ess = az.ess(inference_data, relative=True)
-            print(ess)
+            _logger.info(ess)
             az.plot_trace(inference_data)
             filebasename = (
                 f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}"

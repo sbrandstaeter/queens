@@ -67,7 +67,7 @@ class MonteCarloIterator(Iterator):
         Returns:
             iterator: MonteCarloIterator object
         """
-        print(config.get('experiment_name'))
+        _logger.info(config.get('experiment_name'))
         method_options = config[iterator_name]['method_options']
         if model is None:
             model_name = method_options['model']
@@ -128,7 +128,7 @@ class MonteCarloIterator(Iterator):
                         ax.set_xlabel(r'$C_L(t)$')
                         plt.show()
         # else:
-        _logger.debug("Size of inputs {}".format(self.samples.shape))
-        _logger.debug("Inputs {}".format(self.samples))
-        _logger.debug("Size of outputs {}".format(self.output['mean'].shape))
-        _logger.debug("Outputs {}".format(self.output['mean']))
+        _logger.debug("Size of inputs %s", self.samples.shape)
+        _logger.debug("Inputs %s", self.samples)
+        _logger.debug("Size of outputs %s", self.output['mean'].shape)
+        _logger.debug("Outputs %s", self.output['mean'])

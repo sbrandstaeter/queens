@@ -458,7 +458,7 @@ class ClusterScheduler(Scheduler):
         if self.remote and self.singularity:
             self.singularity_manager.close_local_port_forwarding()
             self.singularity_manager.close_remote_port(self.port)
-            print('All port-forwardings were closed again.')
+            _logger.info('All port-forwardings were closed again.')
 
     def _submit_driver(self, job_id, batch):
         """Submit job to driver.

@@ -1,3 +1,4 @@
+import logging
 import os
 
 import gpflow as gpf
@@ -10,13 +11,14 @@ from sklearn.preprocessing import StandardScaler
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from pqueens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
 
+_logger = logging.getLogger(__name__)
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # suppress warnings
 
 # Use GPU acceleration
 if tf.test.gpu_device_name() != '/device:GPU:0':
-    print('WARNING: GPU device not found.')
+    _logger.info('WARNING: GPU device not found.')
 else:
-    print('SUCCESS: Found GPU: {}'.format(tf.test.gpu_device_name()))
+    _logger.info('SUCCESS: Found GPU: %s', tf.test.gpu_device_name())
 
 
 class GPFlowRegression(RegressionApproximation):
@@ -179,7 +181,7 @@ class GPFlowRegression(RegressionApproximation):
             except tf.errors.InvalidArgumentError:
                 loss[i] = np.nan
                 train_logs.append('Optimization Failed')
-            print('restart {}/{}    loss = {}'.format(i, self.number_restarts, loss[i]))
+            _logger.info('restart %s/%s    loss = %s', self.number_restarts, loss[i])
 
         hyperparameters = train_logs[int(np.nanargmin(loss))].x
 

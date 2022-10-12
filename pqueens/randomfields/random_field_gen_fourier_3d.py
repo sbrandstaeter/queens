@@ -78,7 +78,6 @@ class RandomFieldGenFourier3D(RandomFieldGenFourier):
 
         self.kb = np.array(temp)
 
-        # print('sum_ck {}'.format(sum_ck))
         if sum_ck < energy_frac:
             raise RuntimeError('Error: not converged try again')
 
@@ -86,7 +85,6 @@ class RandomFieldGenFourier3D(RandomFieldGenFourier):
 
         # commpute stochastic dimension based on kb
         self.stoch_dim = self.kb.shape[0] * 8
-        # print('stoch_dim {}'.format(self.stoch_dim))
 
     def gen_sample_gauss_field(self, loc, phase_angles):
         """Generate sample of Gaussian field.
