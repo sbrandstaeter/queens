@@ -52,118 +52,28 @@ def create_singularity_image():
 class SingularityManager:
     """Singularity management class."""
 
-    def __init__(self, remote, remote_connect, singularity_bind, singularity_path, input_file):
+    def __init__(
+        self, singularity_path, singularity_bind, input_file, remote=False, remote_connect=None
+    ):
         """Init method for the singularity object.
 
         Args:
+            singularity_path (path): Path to singularity exec
+            singularity_bind (str): Binds for the singularity runs
+            input_file (path): Path to QUEENS input file
             remote (bool): True if the simulation runs are remote
             remote_connect (str): String of user@remote_machine
-            singularity_bind (str): Binds for the singularity runs
-            singularity_path (path): Path to singularity exec
-            input_file (path): Path to QUEENS input file
         """
+        self.singularity_path = singularity_path
+        self.singularity_bind = singularity_bind
+        self.input_file = input_file
         self.remote = remote
         self.remote_connect = remote_connect
-        self.singularity_bind = singularity_bind
-        self.singularity_path = singularity_path
-        self.input_file = input_file
 
         if self.remote and self.remote_connect is None:
             raise ValueError(
                 "Remote singularity option is set to true but no remote connect is supplied."
             )
-
-    def check_singularity_system_vars(self):
-        """Check and establish system variables for the singularity image.
-
-        Examples are directory bindings such that certain directories of
-        the host can be accessed on runtime within the singularity
-        image. Other system variables include path and environment
-        variables.
-        """
-        # Check if SINGULARITY_BIND exists and if not write it to .bashrc file
-        if self.remote:
-            command_list = ['ssh', self.remote_connect, '\'echo $SINGULARITY_BIND\'']
-        else:
-            command_list = ['echo $SINGULARITY_BIND']
-        command_string = ' '.join(command_list)
-        _, _, stdout, _ = run_subprocess(command_string)
-        if stdout == "\n":
-            if self.remote:
-                command_list = [
-                    'ssh',
-                    self.remote_connect,
-                    "\"echo 'export SINGULARITY_BIND="
-                    + self.singularity_bind
-                    + "\' >> ~/.bashrc && source ~/.bashrc\"",
-                ]
-            else:
-                command_list = [
-                    "echo 'export SINGULARITY_BIND="
-                    + self.singularity_bind
-                    + "\' >> ~/.bashrc && source ~/.bashrc"
-                ]
-        command_string = ' '.join(command_list)
-        run_subprocess(command_string)
-
-        # Create a Singularity PATH variable that is equal to the host PATH
-        if self.remote:
-            command_list = ['ssh', self.remote_connect, '\'echo $SINGULARITYENV_APPEND_PATH\'']
-        else:
-            command_list = ['echo $SINGULARITYENV_APPEND_PATH']
-        command_string = ' '.join(command_list)
-        _, _, stdout, _ = run_subprocess(command_string)
-        if stdout == "\n":
-            if self.remote:
-                command_list = [
-                    'ssh',
-                    self.remote_connect,
-                    # pylint: disable=line-too-long
-                    "\"echo 'export SINGULARITYENV_APPEND_PATH=$PATH' >> ~/.bashrc && source "
-                    "~/.bashrc\"",
-                    # pylint: enable=line-too-long
-                ]  # noqa
-            else:
-                command_list = [
-                    # pylint: disable=line-too-long
-                    "echo 'export SINGULARITYENV_APPEND_PATH=$PATH' >> ~/.bashrc && source "
-                    "~/.bashrc"
-                    # pylint: enable=line-too-long
-                ]  # noqa
-            command_string = ' '.join(command_list)
-            run_subprocess(command_string)
-
-        # Create a Singulartity LD_LIBRARY_PATH variable that is equal to the host
-        # LD_LIBRARY_PATH
-        if self.remote:
-            command_list = [
-                'ssh',
-                self.remote_connect,
-                '\'echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH\'',
-            ]
-        else:
-            command_list = ['echo $SINGULARITYENV_APPEND_LD_LIBRARY_PATH']
-        command_string = ' '.join(command_list)
-        _, _, stdout, _ = run_subprocess(command_string)
-        if stdout == "\n":
-            if self.remote:
-                command_list = [
-                    'ssh',
-                    self.remote_connect,
-                    # pylint: disable=line-too-long
-                    "\"echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> "
-                    "~/.bashrc && source ~/.bashrc\"",
-                    # pylint: enable=line-too-long
-                ]  # noqa
-            else:
-                command_list = [
-                    # pylint: disable=line-too-long
-                    "echo 'export SINGULARITYENV_APPEND_LD_LIBRARY_PATH=$LD_LIBRARY_PATH' >> "
-                    "~/.bashrc && source ~/.bashrc"
-                    # pylint: enable=line-too-long
-                ]  # noqa
-            command_string = ' '.join(command_list)
-            run_subprocess(command_string)
 
     def copy_image_to_remote(self):
         """Copy the local singularity image to the remote resource."""
@@ -326,6 +236,8 @@ class SingularityManager:
             _logger.info(f'attempt #{attempts}: {command_string}')
             _logger.debug('which returned: {port_fail}')
             time.sleep(0.1)
+            attempts += 1
+
         _logger.info('Remote port-forwarding established successfully for port %s', port)
 
         return port

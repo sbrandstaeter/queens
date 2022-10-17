@@ -1,11 +1,15 @@
 """Collect fixtures used by the integration tests."""
 
 import getpass
-import os
 import pathlib
 
 import pytest
 
+from pqueens.schedulers.cluster_scheduler import (
+    BRUTEFORCE_SCHEDULER_TYPE,
+    CHARON_SCHEDULER_TYPE,
+    DEEP_SCHEDULER_TYPE,
+)
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_from_queens
 from pqueens.utils.run_subprocess import run_subprocess
@@ -63,8 +67,6 @@ def example_simulator_fun_dir():
 
 
 # CLUSTER TESTS ------------------------------------------------------------------------------------
-
-
 @pytest.fixture(scope="session")
 def user():
     """Name of user calling the test suite."""
@@ -74,7 +76,7 @@ def user():
 @pytest.fixture(scope="session")
 def cluster_user(user):
     """Username of cluster account to use for tests."""
-    # user who calles the test suite
+    # user who called the test suite
     # gitlab-runner has to run simulation as different user on cluster everyone else should use
     # account with same name
     if user == "gitlab-runner":
@@ -84,27 +86,39 @@ def cluster_user(user):
     return cluster_user
 
 
-@pytest.fixture(scope="session", params=["deep", "bruteforce"])
+@pytest.fixture(scope="session")
 def cluster(request):
+    """Helper fixture to iterate over clusters.
+
+    The actual parameterization is done on a per test basis which also
+    defines the parameterized markers of the tests.
+    """
     return request.param
 
 
 @pytest.fixture(scope="session")
 def cluster_address(cluster):
     """String used for ssh connect to the cluster."""
-    address = cluster + '.lnm.ed.tum.de'
+    if cluster == "deep" or cluster == "bruteforce":
+        address = cluster + '.lnm.ed.tum.de'
+    elif cluster == "charon":
+        address = cluster + '.bauv.unibw-muenchen.de'
     return address
 
 
 @pytest.fixture(scope="session")
-def connect_to_resource(cluster_user, cluster):
+def connect_to_resource(cluster_user, cluster_address):
     """String used for ssh connect to the cluster."""
-    connect_to_resource = cluster_user + '@' + cluster + '.lnm.ed.tum.de'
+    connect_to_resource = cluster_user + '@' + cluster_address
     return connect_to_resource
 
 
 @pytest.fixture(scope="session")
 def cluster_bind(cluster):
+    """Bind variable necessary to run singularity on cluster.
+
+    For more information refer to the manual of singularity --bind
+    """
     if cluster == "deep":
         cluster_bind = (
             "/scratch:/scratch,/opt:/opt,/lnm:/lnm,/bin:/bin,/etc:/etc/,/lib:/lib,/lib64:/lib64"
@@ -113,15 +127,22 @@ def cluster_bind(cluster):
         # pylint: disable=line-too-long
         cluster_bind = "/scratch:/scratch,/opt:/opt,/lnm:/lnm,/cluster:/cluster,/bin:/bin,/etc:/etc/,/lib:/lib,/lib64:/lib64"
         # pylint: enable=line-too-long
+    elif cluster == "charon":
+        cluster_bind = (
+            "/opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/imcs:/imcs,/home/opt:/home/opt"
+        )
     return cluster_bind
 
 
 @pytest.fixture(scope="session")
 def cluster_singularity_ip(cluster):
+    """Identify IP address of cluster."""
     if cluster == "deep":
         cluster_singularity_ip = '129.187.58.20'
     elif cluster == "bruteforce":
         cluster_singularity_ip = '10.10.0.1'
+    elif cluster == "charon":
+        cluster_singularity_ip = '192.168.1.253'
     else:
         cluster_singularity_ip = None
     return cluster_singularity_ip
@@ -131,9 +152,11 @@ def cluster_singularity_ip(cluster):
 def scheduler_type(cluster):
     """Switch type of scheduler according to cluster."""
     if cluster == "deep":
-        scheduler_type = "pbs"
+        scheduler_type = DEEP_SCHEDULER_TYPE
     elif cluster == "bruteforce":
-        scheduler_type = "slurm"
+        scheduler_type = BRUTEFORCE_SCHEDULER_TYPE
+    elif cluster == "charon":
+        scheduler_type = CHARON_SCHEDULER_TYPE
     return scheduler_type
 
 
@@ -201,23 +224,23 @@ def prepare_singularity(
     cluster_path_to_singularity,
     prepare_cluster_testing_environment,
 ):
-    """Build singularity based on the code during test invokation.
+    """Build singularity based on the code during test invocation.
 
     WARNING: needs to be done AFTER prepare_cluster_testing_environment to make sure cluster testing
      folder is clean and existing
     """
     if not prepare_cluster_testing_environment:
-        raise RuntimeError("Testing environment on cluster not successfull.")
+        raise RuntimeError("Testing environment on cluster not successful.")
 
     remote_flag = True
     singularity_manager = SingularityManager(
+        singularity_path=str(cluster_path_to_singularity),
+        singularity_bind=cluster_bind,
+        input_file=None,
         remote=remote_flag,
         remote_connect=connect_to_resource,
-        singularity_bind=cluster_bind,
-        singularity_path=str(cluster_path_to_singularity),
-        input_file=None,
     )
-    singularity_manager.check_singularity_system_vars()
+    # singularity_manager.check_singularity_system_vars()
     singularity_manager.prepare_singularity_files()
     return True
 
@@ -257,6 +280,10 @@ def cluster_testsuite_settings(
 
 @pytest.fixture(scope="session")
 def baci_cluster_paths(cluster_user, cluster_address):
+    """Paths to executables on the clusters.
+
+    Checks also for existance of the executables.
+    """
     path_to_executable = pathlib.Path("/home", cluster_user, "workspace", "build", "baci-release")
 
     path_to_drt_monitor = pathlib.Path(

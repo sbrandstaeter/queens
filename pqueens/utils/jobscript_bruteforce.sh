@@ -1,17 +1,15 @@
 #!/bin/bash
 ##########################################
 #                                        #
-#  Specify your PBS directives           #
+#  Specify your SLURM directives         #
 #                                        #
 ##########################################
 # Job name:
-#PBS -N {job_name}
-# Number of nodes and processors per node (ppn)
-#PBS -l nodes={pbs_nodes}:ppn={pbs_ppn}
+#SBATCH -J {job_name}
+# Standard case: specify only number of cpus
+#SBATCH --ntasks={slurm_ntasks}
 # Walltime: (hours:minutes:seconds)
-#PBS -l walltime={walltime}
-# Executing queue
-#PBS -q {pbs_queue}
+#SBATCH --time={walltime}
 ###########################################
 
 ##########################################
@@ -19,9 +17,9 @@
 #  Specify your paths                    #
 #                                        #
 ##########################################
-WORKDIR=/scratch/PBS_$PBS_JOBID
+WORKDIR=/scratch/SLURM_$SLURM_JOB_ID
 DESTDIR={DESTDIR}  # output directory for run
-EXE={EXE} # either CAE executable or singularity image
+EXE='{EXE}' # either CAE excutable or singularity image
 INPUT='{INPUT}'  # either input file or, for singularity, list of arguments specifying run
 OUTPUTPREFIX={OUTPUTPREFIX}
 ##########################################

@@ -8,6 +8,7 @@ import numpy as np
 import pqueens.database.database as DB_module
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
+from pqueens.schedulers.cluster_scheduler import VALID_CLUSTER_SCHEDULER_TYPES
 
 _logger = logging.getLogger(__name__)
 
@@ -132,10 +133,8 @@ class JobInterface(Interface):
         # set flag for direct scheduling
         direct_scheduling = False
         if not singularity:
-            if (
-                scheduler_type == 'pbs'
-                or scheduler_type == 'slurm'
-                or (scheduler_type == 'standard' and remote)
+            if (scheduler_type in VALID_CLUSTER_SCHEDULER_TYPES) or (
+                scheduler_type == 'standard' and remote
             ):
                 direct_scheduling = True
 

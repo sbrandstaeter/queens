@@ -6,6 +6,10 @@ import pathlib
 import pqueens.database.database as DB_module
 from pqueens.data_processor import from_config_create_data_processor
 from pqueens.drivers.driver import Driver
+from pqueens.schedulers.cluster_scheduler import (
+    VALID_CLUSTER_SCHEDULER_TYPES,
+    VALID_PBS_SCHEDULER_TYPES,
+)
 from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.injector import inject
 from pqueens.utils.print_utils import get_str_table
@@ -175,7 +179,7 @@ class MpiDriver(Driver):
         num_procs_post = scheduler_options.get('num_procs_post', 1)
         singularity = scheduler_options.get('singularity', False)
         scheduler_type = scheduler_options['scheduler_type']
-        cluster_job = scheduler_type in ['pbs', 'slurm']
+        cluster_job = scheduler_type in VALID_CLUSTER_SCHEDULER_TYPES
 
         driver_options = config[driver_name]
         simulation_input_template = pathlib.Path(driver_options['input_template'])
@@ -318,7 +322,7 @@ class MpiDriver(Driver):
         if not self.singularity:
             # override the pid with cluster scheduler id
             # if singularity: pid is handled by ClusterScheduler._submit_singularity
-            self.pid = get_cluster_job_id(self.scheduler_type, stdout)
+            self.pid = get_cluster_job_id(self.scheduler_type, stdout, VALID_PBS_SCHEDULER_TYPES)
 
         # redirect stdout/stderr output to log and error file
         with open(str(self.log_file), "a", encoding='utf-8') as text_file:

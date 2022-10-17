@@ -190,13 +190,13 @@ def prepare_singularity(
 
     remote_flag = True
     singularity_manager = SingularityManager(
+        singularity_path=str(cluster_path_to_singularity),
+        singularity_bind=cluster_bind,
+        input_file=None,
         remote=remote_flag,
         remote_connect=connect_to_resource,
-        singularity_bind=cluster_bind,
-        singularity_path=str(cluster_path_to_singularity),
-        input_file=None,
     )
-    singularity_manager.check_singularity_system_vars()
+    # singularity_manager.check_singularity_system_vars()
     singularity_manager.prepare_singularity_files()
     return True
 

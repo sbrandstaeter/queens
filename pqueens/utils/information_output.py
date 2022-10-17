@@ -10,8 +10,6 @@ _logger = logging.getLogger(__name__)
 
 def print_scheduling_information(scheduler_type, remote, remote_connect, singularity):
     """Print out information on chosen scheduling."""
-    # determine scheduler name
-
     _logger.info('=================================================================')
     _logger.info('Scheduling Information:')
     _logger.info('=================================================================')
