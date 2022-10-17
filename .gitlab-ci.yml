@@ -65,8 +65,10 @@ update:
   stage: update_requirements
   script:
     - cd $CI_PROJECT_DIR
-    # create simply environment to use pip-tools
+    # create a simple environment to use pip-tools
+    - conda create -n piptools-env pip --force -y
     - conda activate piptools-env
+    - pip install pip-tools
     - pip-compile --upgrade
     - conda deactivate
     - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
