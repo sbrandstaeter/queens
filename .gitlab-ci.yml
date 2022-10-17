@@ -96,7 +96,7 @@ update:
   rules:
     - if: $UPDATE_REQUIREMENTS == "1"
   tags:
-    - update-python-dependencies
+    - lnm-build
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: build
