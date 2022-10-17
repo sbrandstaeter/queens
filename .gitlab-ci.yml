@@ -93,6 +93,8 @@ update:
     - echo "Opened MR !${MR_IID}"
   rules:
     - if: $UPDATE_REQUIREMENTS == "1"
+  tags:
+    - update-python-dependencies
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: build
