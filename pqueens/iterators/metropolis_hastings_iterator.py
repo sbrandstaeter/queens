@@ -352,7 +352,7 @@ class MetropolisHastingsIterator(Iterator):
             _logger.info("Size of outputs %s", chain_core.shape)
             for i in range(self.num_chains):
                 _logger.info("#############################################")
-                _logger.info("Chain %s", i + 1)
+                _logger.info("Chain %d", i + 1)
                 _logger.info("\tAcceptance rate: %s", accept_rate[i])
                 _logger.info(
                     "\tCovariance of proposal : %s",

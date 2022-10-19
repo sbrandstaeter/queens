@@ -96,10 +96,10 @@ class LHSIterator(Iterator):
 
         num_inputs = self.parameters.num_parameters
 
-        _logger.info(f'Number of inputs: {num_inputs}')
-        _logger.info(f'Number of samples: {self.num_samples}')
-        _logger.info(f'Criterion: {self.criterion}')
-        _logger.info(f'Number of iterations: {self.num_iterations}')
+        _logger.info('Number of inputs: %s', num_inputs)
+        _logger.info('Number of samples: %s', self.num_samples)
+        _logger.info('Criterion: %s', self.criterion)
+        _logger.info('Number of iterations: %s', self.num_iterations)
 
         # create latin hyper cube samples in unit hyper cube
         hypercube_samples = lhs(
@@ -123,7 +123,7 @@ class LHSIterator(Iterator):
                     self.global_settings["experiment_name"],
                 )
 
-        _logger.info("Size of inputs {}".format(self.samples.shape))
-        _logger.debug("Inputs {}".format(self.samples))
-        _logger.info("Size of outputs {}".format(self.output['mean'].shape))
-        _logger.debug("Outputs {}".format(self.output['mean']))
+        _logger.info("Size of inputs %s", self.samples.shape)
+        _logger.debug("Inputs %s", self.samples)
+        _logger.info("Size of outputs %s", self.output['mean'].shape)
+        _logger.debug("Outputs %s", self.output['mean'])

@@ -39,8 +39,10 @@ def safe_operation(function, max_number_of_attempts=10, waiting_time=0):
                 function_name = function.__module__ + ":" + function.__name__
                 if attempt < max_number_of_attempts:
                     _logger.warning(
-                        f"Function {function_name}: Attempt number {attempt}/"
-                        f"{max_number_of_attempts}"
+                        "Function %s: Attempt number %s/" "%s",
+                        function_name,
+                        attempt,
+                        max_number_of_attempts,
                     )
                     sleep(waiting_time)
                 else:

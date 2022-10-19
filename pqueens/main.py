@@ -56,7 +56,7 @@ def run(input_file, output_dir, debug=False):
         end_time_input = time.time()
 
         _logger.info("")
-        _logger.info(f"Time for INPUT: {end_time_input - start_time_input} s")
+        _logger.info("Time for INPUT: %s s", end_time_input - start_time_input)
         _logger.info("")
 
         start_time_calc = time.time()
@@ -70,7 +70,7 @@ def run(input_file, output_dir, debug=False):
 
     end_time_calc = time.time()
     _logger.info("")
-    _logger.info(f"Time for CALCULATION: {end_time_calc - start_time_calc} s")
+    _logger.info("Time for CALCULATION: %s s", end_time_calc - start_time_calc)
     _logger.info("")
 
 

@@ -1,8 +1,8 @@
 """Fixtures needed across all unit_tests."""
+import logging
 from pathlib import Path
 
 import pytest
-import logging
 
 _logger = logging.getLogger(__name__)
 

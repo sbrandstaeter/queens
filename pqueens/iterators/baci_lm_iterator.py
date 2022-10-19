@@ -272,7 +272,7 @@ class BaciLMIterator(Iterator):
         Write solution to console and optionally create .html plot from
         result file.
         """
-        _logger.info(f"The optimum:\t{self.solution} occured in iteration #{self.iter_opt}.")
+        _logger.info("The optimum:\t%s occurred in iteration #%s.", self.solution, self.iter_opt)
         if self.result_description:
             if self.result_description["plot_results"] and self.result_description["write_results"]:
                 data = pd.read_csv(

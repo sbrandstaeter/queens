@@ -273,8 +273,8 @@ class DataProcessorEnsight(DataProcessor):
 
         except KeyError:
             _logger.warning(
-                "No experimental data was found in database, for experiment "
-                f"name {experiment_name}."
+                "No experimental data was found in database, for experiment " "name %s.",
+                experiment_name,
             )
             experimental_data = None
 

@@ -155,7 +155,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
 
         num_procs = method_options.get("num_procs", mp.cpu_count() - 2)
 
-        _logger.info('Calculate second-order indices is {}'.format(calculate_second_order))
+        _logger.info('Calculate second-order indices is %s', calculate_second_order)
 
         return cls(
             model,
@@ -213,7 +213,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         # 4. Evaluate statistics
         self.evaluate_statistics(estimates)
 
-        _logger.info(f'Time for full calculation: {time.time() - start_run}')
+        _logger.info('Time for full calculation: %s', time.time() - start_run)
 
     def evaluate_statistics(self, estimates):
         """Evaluate statistics of Sobol index estimates.

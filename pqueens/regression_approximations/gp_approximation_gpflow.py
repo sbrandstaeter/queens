@@ -181,7 +181,7 @@ class GPFlowRegression(RegressionApproximation):
             except tf.errors.InvalidArgumentError:
                 loss[i] = np.nan
                 train_logs.append('Optimization Failed')
-            _logger.info('restart %s/%s    loss = %s', self.number_restarts, loss[i])
+            _logger.info('restart %s/%s    loss = %s', i, self.number_restarts, loss[i])
 
         hyperparameters = train_logs[int(np.nanargmin(loss))].x
 

@@ -143,7 +143,7 @@ class DataFitSurrogateModel(Model):
                 x_test=x_train, y_test=y_train, k_fold=5, measures=self.error_measures
             )
             for measure, error in error_measures.items():
-                _logger.info("Error {} is: {}".format(measure, error))
+                _logger.info("Error %s is: %s", measure, error)
         # TODO check that final surrogate is on all points
 
         if self.testing_iterator:
@@ -153,7 +153,7 @@ class DataFitSurrogateModel(Model):
 
             error_measures = self.eval_surrogate_accuracy(x_test, y_test, self.error_measures)
             for measure, error in error_measures.items():
-                _logger.info("Error {} is: {}".format(measure, error))
+                _logger.info("Error %s is: %s", measure, error)
 
     def eval_surrogate_accuracy(self, x_test, y_test, measures):
         """Evaluate the accuracy of the surrogate model based on test set.

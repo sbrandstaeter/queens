@@ -147,7 +147,7 @@ class SobolIndexIterator(Iterator):
             'dists': dists,
         }
 
-        _logger.info(f"Draw {self.num_samples} samples...")
+        _logger.info("Draw %s samples...", self.num_samples)
         self.samples = saltelli.sample(
             self.salib_problem,
             self.num_samples,
@@ -208,7 +208,7 @@ class SobolIndexIterator(Iterator):
         _logger.info("Main and Total Effects:")
         _logger.info(S_df)
         _logger.info("Additivity, sum of main effects (for independent variables):")
-        _logger.info(f'S_i = {additivity}')
+        _logger.info('S_i = %s', additivity)
 
         if self.calc_second_order:
             S2 = S["S2"]

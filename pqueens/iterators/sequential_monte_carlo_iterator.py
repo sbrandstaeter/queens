@@ -393,7 +393,7 @@ class SequentialMonteCarloIterator(Iterator):
 
                 self.update_ess(resampled=True)
 
-            _logger.info("step %s gamma: %.5 ESS: %.5", step, self.gamma_cur, self.ess_cur)
+            _logger.info("step %s gamma: %.5f ESS: %.5f", step, self.gamma_cur, self.ess_cur)
 
             # estimate current covariance matrix
             cov_mat = np.atleast_2d(

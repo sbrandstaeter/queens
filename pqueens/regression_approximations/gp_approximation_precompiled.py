@@ -587,9 +587,14 @@ class GPPrecompiled(RegressionApproximation):
 
                     # Verbose output
                     _logger.info(
-                        f"Iter {iteration}, parameters {params}, gradient log evidence: "
-                        f"{self.grad_log_evidence_value}, rel L2 change "
-                        f"{rel_L2_change_params:.6f}, log-evidence: {log_ev}"
+                        "Iter %s, parameters %s, gradient log evidence: "
+                        "%s, rel L2 change "
+                        "%.6f, log-evidence: %s",
+                        iteration,
+                        params,
+                        self.grad_log_evidence_value,
+                        rel_L2_change_params,
+                        log_ev,
                     )
 
             # store the max value for log evidence along with the parameters

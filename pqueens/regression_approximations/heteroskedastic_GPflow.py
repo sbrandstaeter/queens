@@ -152,7 +152,7 @@ class HeteroskedasticGP(RegressionApproximation):
                 data = (self.x_train, self.y_train)
                 loss_fun = self.model.training_loss_closure(data)
                 _logger.info(
-                    'Progress: %.2f %, Epoch %s, ' 'Loss: %.2f',
+                    'Progress: %.2f %%, Epoch %s, Loss: %.2f',
                     epoch / self.num_epochs * 100,
                     epoch,
                     loss_fun().numpy(),

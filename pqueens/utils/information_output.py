@@ -14,12 +14,12 @@ def print_scheduling_information(scheduler_type, remote, remote_connect, singula
     _logger.info('Scheduling Information:')
     _logger.info('=================================================================')
     _logger.info('Chosen type of scheduling:')
-    _logger.info(f'\t{scheduler_type}')
+    _logger.info('\t%s', scheduler_type)
     if not remote:
         _logger.info('Jobs will be run on local computing resource.')
     else:
         _logger.info('Jobs will be run on remote computing resource as')
-        _logger.info(f'\t{remote_connect}')
+        _logger.info('\t%s', remote_connect)
     if singularity:
         _logger.info('All jobs will be run in Singularity containers.')
     else:

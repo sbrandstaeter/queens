@@ -553,10 +553,17 @@ class JobInterface(Interface):
             total_complete += complete
             total_failed += failed
             _logger.info(
-                f'{resource.name:12.12}    {pending:<9d}    {complete:<9d}    {failed:<9d}'
+                '%s   %s    %s    %s',
+                resource.name.ljust(12),
+                str(pending).ljust(9),
+                str(complete).ljust(9),
+                str(failed).ljust(9),
             )
         _logger.info(
-            f'{"*TOTAL*":12.12}    {total_pending:<9d}    {total_complete:<9d}    '
-            f'{total_failed:<9d}'
+            '%s    %s    %s    %s',
+            "*TOTAL*".ljust(12),
+            str(total_pending).ljust(9),
+            str(total_complete).ljust(9),
+            str(total_failed).ljust(9),
         )
         _logger.info('\n')

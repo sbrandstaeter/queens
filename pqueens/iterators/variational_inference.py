@@ -268,7 +268,7 @@ class VariationalInferenceIterator(Iterator):
             _logger.warning("NaN(s) in the relative change of variational parameters")
         else:
             _logger.info("Finished sucessfully! :-)")
-        _logger.info(f"Variational inference took {end-start} seconds.")
+        _logger.info("Variational inference took %s seconds.", end - start)
 
     def _catch_non_converging_simulations(self, old_parameters):
         """Reset variational parameters in case of failed simulations."""
@@ -305,13 +305,13 @@ class VariationalInferenceIterator(Iterator):
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations."""
         mean_change = self.stochastic_optimizer.rel_L2_change * 100
-        _logger.info(f"So far {self.n_sims} simulation runs")
-        _logger.info(f"L2 change of all variational parameters: " f"" f"{mean_change:.4f} %")
-        _logger.info(f"The elbo is: {self.elbo:.2f}")
+        _logger.info("So far %s simulation runs", self.n_sims)
+        _logger.info("L2 change of all variational parameters: %.4f %%", mean_change)
+        _logger.info("The elbo is: %.2f}", self.elbo)
         # Avoids a busy screen
         if self.variational_params.shape[0] > 24:
             _logger.info(
-                f"First 24 of {self.variational_params.shape[0]} variational parameters : \n"
+                "First 24 of %s variational parameters : \n", self.variational_params.shape[0]
             )
             _logger.info(self.variational_params[:24])
         else:
@@ -521,7 +521,8 @@ class VariationalInferenceIterator(Iterator):
             if np.isnan(gradient).any():
                 _logger.warn(
                     "Gradient estimate contains NaNs (number of iterations in a row with NaNs:"
-                    f" {self.nan_in_gradient_counter})"
+                    " %s)",
+                    self.nan_in_gradient_counter,
                 )
                 gradient = np.nan_to_num(gradient)
                 self.nan_in_gradient_counter += 1

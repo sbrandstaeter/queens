@@ -245,9 +245,7 @@ class OptimizationIterator(Iterator):
         f_value = self.eval_model(x_vec)
 
         parameter_list = self.parameters.parameters_keys
-        _logger.info(
-            "The intermediate, iterated parameters " "%s are:\n\t%s", *parameter_list, x_vec
-        )
+        _logger.info("The intermediate, iterated parameters %s are:\n\t%s", parameter_list, x_vec)
 
         return f_value
 
@@ -372,7 +370,7 @@ class OptimizationIterator(Iterator):
                 options={'disp': self.verbose_output},
             )
         end = time.time()
-        _logger.info("Optimization took %s seconds.", end - start)
+        _logger.info("Optimization took %E seconds.", end - start)
 
     def post_run(self):
         """Analyze the resulting optimum."""

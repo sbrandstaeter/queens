@@ -214,7 +214,8 @@ class BmfiaInterface(Interface):
 
         _logger.info(
             "Run generation and training of probabilistic surrogates in parallel "
-            f"on {num_processors_for_job} processors..."
+            "on %s processors...",
+            num_processors_for_job,
         )
 
         # Init multi-processing pool
