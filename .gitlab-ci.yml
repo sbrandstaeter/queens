@@ -13,7 +13,6 @@ variables:
 # Define stages
 #---------------------------------------------------------------------------------------------------
 stages:
-  - update_requirements
   - build
   - codechecks
   - tests
@@ -57,42 +56,6 @@ stages:
   stage: codechecks
   tags:
     - codechecks
-
-#---------------------------------------------------------------------------------------------------
-# Jobs of stage: update_requirements
-#---------------------------------------------------------------------------------------------------
-update:
-  stage: update_requirements
-  script:
-    - cd $CI_PROJECT_DIR
-    # create simply environment to use pip-tools
-    - conda activate piptools-env
-    - pip-compile --upgrade
-    - conda deactivate
-    - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
-    - GITLAB_USER_NAME=project_${CI_PROJECT_ID}_bot
-    - git config --global user.name "${AUTO_COMMITTER_NAME}"
-    - git config --global user.email "${AUTO_COMMITTER_EMAIL}"
-    # Checkout to a new branch so we push the changes to a new branch
-    - git branch -f $UPDATE_BRANCH_NAME && git checkout $UPDATE_BRANCH_NAME
-    - git add requirements.txt
-    - git commit -m "Update requirements based on pip-tools"
-    - git push --force "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
-    - >
-      BODY="{\"id\": \"${CI_PROJECT_ID}\",
-      \"source_branch\": \"${UPDATE_BRANCH_NAME}\",
-      \"target_branch\": \"${CI_DEFAULT_BRANCH}\",
-      \"remove_source_branch\": true,
-      \"title\": \"Pip-tools update $(date '+%Y-%m-%d')\"}"
-    - >
-      MR_IID=$(curl -sS -X POST "https://gitlab.lrz.de/api/v4/projects/${CI_PROJECT_ID}/merge_requests" \
-              --header "PRIVATE-TOKEN:${GIT_PUSH_TOKEN}" \
-              --header "Content-Type: application/json" \
-              --data "${BODY}" \
-      | jq '.iid')
-    - echo "Opened MR !${MR_IID}"
-  rules:
-    - if: $UPDATE_REQUIREMENTS == "1"
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: build
@@ -145,6 +108,43 @@ imcs-build_singularity:
     - .build_singularity
   tags:
     - imcs-build
+#----------------------------------------------------------------------------------------------
+update:
+  stage: build
+  script:
+    - cd $CI_PROJECT_DIR
+    # create a simple environment to use pip-tools
+    - conda create -n piptools-env pip --force -y
+    - conda activate piptools-env
+    - pip install pip-tools
+    - pip-compile --upgrade
+    - conda deactivate
+    - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
+    - GITLAB_USER_NAME=project_${CI_PROJECT_ID}_bot
+    - git config --global user.name "${AUTO_COMMITTER_NAME}"
+    - git config --global user.email "${AUTO_COMMITTER_EMAIL}"
+    # Checkout to a new branch so we push the changes to a new branch
+    - git branch -f $UPDATE_BRANCH_NAME && git checkout $UPDATE_BRANCH_NAME
+    - git add requirements.txt
+    - git commit -m "Update requirements based on pip-tools"
+    - git push --force "https://${GITLAB_USER_NAME}:${GIT_PUSH_TOKEN}@${CI_REPOSITORY_URL#*@}"
+    - >
+      BODY="{\"id\": \"${CI_PROJECT_ID}\",
+      \"source_branch\": \"${UPDATE_BRANCH_NAME}\",
+      \"target_branch\": \"${CI_DEFAULT_BRANCH}\",
+      \"remove_source_branch\": true,
+      \"title\": \"Pip-tools update $(date '+%Y-%m-%d')\"}"
+    - >
+      MR_IID=$(curl -sS -X POST "https://gitlab.lrz.de/api/v4/projects/${CI_PROJECT_ID}/merge_requests" \
+              --header "PRIVATE-TOKEN:${GIT_PUSH_TOKEN}" \
+              --header "Content-Type: application/json" \
+              --data "${BODY}" \
+      | jq '.iid')
+    - echo "Opened MR !${MR_IID}"
+  rules:
+    - if: $UPDATE_REQUIREMENTS == "1"
+  tags:
+    - lnm-build
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: codechecks
