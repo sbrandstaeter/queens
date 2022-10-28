@@ -148,7 +148,7 @@ class StandardScheduler(Scheduler):
 
         cmdlist_remote_main = [f'singularity run {ABS_SINGULARITY_IMAGE_PATH}'] + remote_args
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        _logger.info(cmd_remote_main)
+        _logger.debug(cmd_remote_main)
         _, pid, _, _ = run_subprocess(cmd_remote_main, subprocess_type='submit')
         return pid
 
