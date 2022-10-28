@@ -16,7 +16,7 @@ from pqueens.iterators.sobol_index_gp_uncertainty.statistics import (
     StatisticsThirdOrderSobolIndexEstimates,
 )
 from pqueens.models import from_config_create_model
-from pqueens.utils.logger_settings import log_through_print
+from pqueens.utils.logger_settings import log_multiline_string
 from pqueens.utils.process_outputs import write_results
 
 from .iterator import Iterator
@@ -223,7 +223,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         """
         if self.calculate_third_order:
             self.results['third_order'] = self.statistics[0].evaluate(estimates['third_order'])
-            log_through_print(_logger, self.results['third_order'])
+            log_multiline_string(_logger, str(self.results['third_order']))
         else:
             _logger.info('First-order Sobol indices:')
             self.results['first_order'] = self.statistics[0].evaluate(estimates['first_order'])

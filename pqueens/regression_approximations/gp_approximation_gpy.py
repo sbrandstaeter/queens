@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from pqueens.regression_approximations.utils.gpy_kernels import get_gpy_kernel_type
-from pqueens.utils.logger_settings import log_through_print
+from pqueens.utils.logger_settings import log_multiline_string
 
 _logger = logging.getLogger(__name__)
 
@@ -105,7 +105,7 @@ class GPGPyRegression(RegressionApproximation):
             kernel=kernel,
             normalizer=normalize_y,
         )
-        log_through_print(_logger, model)
+        log_multiline_string(_logger, str(model))
 
         return cls(
             x_train,
@@ -129,7 +129,7 @@ class GPGPyRegression(RegressionApproximation):
             max_iters=self.number_optimizer_iterations,
             messages=True,
         )
-        log_through_print(_logger, self.model)
+        log_multiline_string(_logger, str(self.model))
 
     def predict(self, x_test, support='y', full_cov=False):
         """Predict the posterior distribution at x_test with respect to the
@@ -240,6 +240,6 @@ class GPGPyRegression(RegressionApproximation):
 
         setup_specific_kernel = get_gpy_kernel_type(kernel_type)
         kernel = setup_specific_kernel(input_dim, variance_0, lengthscale_0, ard)
-        log_through_print(_logger, kernel)
+        log_multiline_string(_logger, str(kernel))
 
         return kernel

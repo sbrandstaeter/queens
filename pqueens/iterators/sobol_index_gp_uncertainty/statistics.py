@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from pqueens.utils.logger_settings import log_through_print
+from pqueens.utils.logger_settings import log_multiline_string
 
 _logger = logging.getLogger(__name__)
 
@@ -77,7 +77,7 @@ class StatisticsSobolIndexEstimates:
             self._monte_carlo_variance(result, current_data, current_parameter)
 
         self._confidence_bounds(result, conf_level)
-        log_through_print(_logger, result)
+        log_multiline_string(_logger, str(result))
 
         return result
 
@@ -202,7 +202,7 @@ class StatisticsSecondOrderEstimates(StatisticsSobolIndexEstimates):
                     self._monte_carlo_variance(result, current_data, parameter_pair)
 
         self._confidence_bounds(result, conf_level)
-        log_through_print(_logger, result)
+        log_multiline_string(_logger, str(result))
 
         return result
 
@@ -306,7 +306,7 @@ class StatisticsThirdOrderSobolIndexEstimates(StatisticsSobolIndexEstimates):
         self._monte_carlo_variance(result, estimates, self.third_order_parameters[0])
 
         self._confidence_bounds(result, conf_level)
-        log_through_print(_logger, result)
+        log_multiline_string(_logger, str(result))
 
         return result
 

@@ -226,26 +226,16 @@ def finish_job_logger(joblogger, lfh, efh, stream_handler):
         joblogger.removeHandler(stream_handler)
 
 
-def log_through_print(logger, command):
-    """Parse print output to logger.
+def log_multiline_string(logger, string):
+    """Log multiline string line by line.
 
-    This can be used e.g. for printing a GP kernel or a pandas DataFrame.
-    It works for all objects that implement a print method.
+    Split a multiline string into lines and uses logger.info to generate output. This might enhance readability
+    as it is in line with formatting of logging.
 
     Args:
-        logger (Logger): logger to parse to print output to
-        command (object): command/object which should be printed
+        logger (Logger): logger to parse string to
+        string (str): string which should be printed
     """
-    old_stdout = sys.stdout
-    new_stdout = io.StringIO()
-    sys.stdout = new_stdout
 
-    print(command)
-
-    output = new_stdout.getvalue()
-    split_data = output.splitlines()
-    for current_line in split_data:
-        logger.info(current_line)
-    logger.info('')
-
-    sys.stdout = old_stdout
+    for line in string.splitlines():
+        logger.info(line)
