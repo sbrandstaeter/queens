@@ -1,4 +1,6 @@
 """Logging in QUEENS"""
+
+
 def log_multiline_string(logger, string):
     """Log multiline string line by line.
 
