@@ -26,10 +26,10 @@ def test_smc_park_hf(
     (bmfia) using the park91 function.
     """
     # generate json input file from template
-    template = os.path.join(inputdir, 'bmfia_smc_park.json')
+    template = Path(inputdir, 'bmfia_smc_park.json')
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path, "plot_dir": tmpdir}
-    input_file = os.path.join(tmpdir, 'smc_mf_park_realization.json')
+    input_file = Path(tmpdir, 'smc_mf_park_realization.json')
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -38,7 +38,7 @@ def test_smc_park_hf(
     # actual main call of smc
 
     # get the results of the QUEENS run
-    result_file = os.path.join(tmpdir, 'smc_park_mf.pickle')
+    result_file = Path(tmpdir, 'smc_park_mf.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

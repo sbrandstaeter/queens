@@ -10,7 +10,7 @@ from pqueens import run
 
 def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmpdir):
     """Test case for Sobol indices based on GP realizations."""
-    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp_uncertainty.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'sobol_indices_ishigami_gp_uncertainty.json')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
@@ -46,7 +46,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmpdir):
 def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmpdir):
     """Test case for third-order Sobol indices."""
     run(
-        Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp_uncertainty_third_order.json')),
+        Path(Path(inputdir, 'sobol_indices_ishigami_gp_uncertainty_third_order.json')),
         Path(tmpdir),
     )
 
@@ -67,7 +67,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmpdir):
 
 def test_sobol_indices_ishigami_gp_mean(inputdir, tmpdir):
     """Test case for Sobol indices based on GP mean."""
-    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp_mean.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'sobol_indices_ishigami_gp_mean.json')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

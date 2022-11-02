@@ -21,7 +21,7 @@ def algorithm(request):
 
 def test_optimization_rosenbrock(inputdir, tmpdir, algorithm):
     """Test different solution algorithms in optimization iterator."""
-    template = os.path.join(inputdir, 'optimization_rosenbrock_template.json')
+    template = Path(inputdir, 'optimization_rosenbrock_template.json')
     input_file = str(tmpdir) + 'rosenbrock_opt.json'
 
     algorithm_dict = {'algorithm': algorithm}

@@ -13,8 +13,8 @@ from pqueens.utils import injector
 
 def test_gp_precompiled_one_dim(inputdir, tmpdir):
     """Test case for GPPrecompiled based GP model."""
-    template = os.path.join(inputdir, 'gp_precompiled_template.json')
-    input_file = os.path.join(tmpdir, 'gp_precompiled.json')
+    template = Path(inputdir, 'gp_precompiled_template.json')
+    input_file = Path(tmpdir, 'gp_precompiled.json')
 
     dir_dict = {
         'test_fun': 'sinus_test_fun',
@@ -44,8 +44,8 @@ def test_gp_precompiled_one_dim(inputdir, tmpdir):
 
 def test_gp_precompiled_two_dim(inputdir, tmpdir):
     """Test case for GPPrecompiled based GP model."""
-    template = os.path.join(inputdir, 'gp_precompiled_template.json')
-    input_file = os.path.join(tmpdir, 'gp_precompiled.json')
+    template = Path(inputdir, 'gp_precompiled_template.json')
+    input_file = Path(tmpdir, 'gp_precompiled.json')
 
     dir_dict = {
         'test_fun': 'branin78_hifi',

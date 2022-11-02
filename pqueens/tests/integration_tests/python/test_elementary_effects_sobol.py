@@ -10,7 +10,7 @@ from pqueens import run
 
 def test_elementary_effects_sobol(inputdir, tmpdir):
     """Test case for elementary effects on Sobol's G-function."""
-    run(Path(os.path.join(inputdir, 'elementary_effects_sobol.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'elementary_effects_sobol.json')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

@@ -10,9 +10,9 @@ from pqueens import run
 
 def test_baci_lm_rosenbrock_res(inputdir, tmpdir):
     """Test case for Levenberg Marquardt iterator."""
-    run(Path(os.path.join(inputdir, 'baci_lm_rosenbrock_res.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'baci_lm_rosenbrock_res.json')), Path(tmpdir))
 
-    result_file = os.path.join(tmpdir, 'OptimizeLM.csv')
+    result_file = Path(tmpdir, 'OptimizeLM.csv')
 
     data = pd.read_csv(
         result_file,
@@ -26,6 +26,6 @@ def test_baci_lm_rosenbrock_res(inputdir, tmpdir):
 
     np.testing.assert_allclose(numpyparams, np.array([[+1.0], [+1.0]]), rtol=1.0e-5)
 
-    assert os.path.isfile(os.path.join(tmpdir, 'OptimizeLM.html'))
+    assert Path(tmpdir, 'OptimizeLM.html').is_file()
 
     pass

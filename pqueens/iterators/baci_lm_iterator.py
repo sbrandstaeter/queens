@@ -1,6 +1,7 @@
 """Levenberg Marquardt iterator."""
 import logging
 import os
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -168,10 +169,10 @@ class BaciLMIterator(Iterator):
                     columns=['iter', 'resnorm', 'gradnorm', 'params', 'delta_params', 'mu'],
                 )
                 with open(
-                    os.path.join(
-                        self.global_settings["output_dir"], self.global_settings["experiment_name"]
-                    )
-                    + '.csv',
+                    Path(
+                        self.global_settings["output_dir"],
+                        self.global_settings["experiment_name"] + '.csv',
+                    ),
                     'w',
                 ) as f:
                     df.to_csv(f, sep='\t', index=None)
@@ -276,10 +277,10 @@ class BaciLMIterator(Iterator):
         if self.result_description:
             if self.result_description["plot_results"] and self.result_description["write_results"]:
                 data = pd.read_csv(
-                    os.path.join(
-                        self.global_settings["output_dir"], self.global_settings["experiment_name"]
-                    )
-                    + '.csv',
+                    Path(
+                        self.global_settings["output_dir"],
+                        self.global_settings["experiment_name"] + '.csv',
+                    ),
                     sep='\t',
                 )
                 xydata = data['params']
@@ -335,10 +336,10 @@ class BaciLMIterator(Iterator):
                     raise ValueError('You shouldn\'t be here without parameters.')
 
                 fig.write_html(
-                    os.path.join(
-                        self.global_settings["output_dir"], self.global_settings["experiment_name"]
+                    Path(
+                        self.global_settings["output_dir"],
+                        self.global_settings["experiment_name"] + '.html',
                     )
-                    + '.html'
                 )
 
     def get_positions_raw_2pointperturb(self, x0):
@@ -388,10 +389,10 @@ class BaciLMIterator(Iterator):
         if self.result_description:
             if self.result_description["write_results"]:
                 with open(
-                    os.path.join(
-                        self.global_settings["output_dir"], self.global_settings["experiment_name"]
-                    )
-                    + '.csv',
+                    Path(
+                        self.global_settings["output_dir"],
+                        self.global_settings["experiment_name"] + '.csv',
+                    ),
                     'a',
                 ) as f:
                     df = pd.DataFrame(

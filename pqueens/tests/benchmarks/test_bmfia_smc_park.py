@@ -27,17 +27,17 @@ def test_bmfia_park_hf_smc(
     code.
     """
     # generate json input file from template
-    template = os.path.join(inputdir, 'bmfia_smc_park.json')
+    template = Path(inputdir, 'bmfia_smc_park.json')
     experimental_data_path = tmpdir
     dir_dict = {'experimental_data_path': experimental_data_path, 'plot_dir': tmpdir}
-    input_file = os.path.join(tmpdir, 'smc_mf_park_realization.json')
+    input_file = Path(tmpdir, 'smc_mf_park_realization.json')
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
     run(Path(input_file), Path(tmpdir))
 
     # get the results of the QUEENS run
-    result_file = os.path.join(tmpdir, 'smc_park_mf.pickle')
+    result_file = Path(tmpdir, 'smc_park_mf.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -86,7 +86,7 @@ def create_experimental_data_park91a_hifi_on_grid(tmpdir):
         'x4': x4_vec,
         'y_obs': y_fake,
     }
-    experimental_data_path = os.path.join(tmpdir, 'experimental_data.csv')
+    experimental_data_path = Path(tmpdir, 'experimental_data.csv')
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)
 

@@ -13,6 +13,7 @@ import logging
 import os
 import pprint
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -402,9 +403,9 @@ class OptimizationIterator(Iterator):
             all_files_list = []
             for experimental_data_path in self.experimental_data_path_list:
                 prefix_expr = '*.csv'  # only read csv files
-                files_of_interest_paths = os.path.join(experimental_data_path, prefix_expr)
+                files_of_interest_paths = Path(experimental_data_path, prefix_expr)
                 files_of_interest_list.extend(glob.glob(files_of_interest_paths))
-                all_files_path = os.path.join(experimental_data_path, '*')
+                all_files_path = Path(experimental_data_path, '*')
                 all_files_list.extend(glob.glob(all_files_path))
 
             #  check if some files are not csv files and throw a warning

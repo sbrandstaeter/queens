@@ -19,12 +19,10 @@ from pqueens.utils import injector
 
 def test_metropolis_hastings_multiple_chains_multivariate_gaussian(inputdir, tmpdir, dummy_data):
     """Test case for metropolis hastings iterator."""
-    template = os.path.join(
-        inputdir, "metropolis_hastings_multiple_chains_multivariate_gaussian.json"
-    )
+    template = Path(inputdir, "metropolis_hastings_multiple_chains_multivariate_gaussian.json")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = os.path.join(
+    input_file = Path(
         tmpdir, "multivariate_gaussian_metropolis_hastings_multiple_chains_realiz.json"
     )
     injector.inject(dir_dict, template, input_file)
@@ -88,6 +86,6 @@ def dummy_data(tmpdir):
 
     # write the data to a csv file in tmpdir
     data_dict = {'y_obs': pdf}
-    experimental_data_path = os.path.join(tmpdir, 'experimental_data.csv')
+    experimental_data_path = Path(tmpdir, 'experimental_data.csv')
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)

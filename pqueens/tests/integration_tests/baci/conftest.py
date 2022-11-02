@@ -161,6 +161,6 @@ def create_experimental_data_park91a_hifi_on_grid(tmpdir):
         'x4': x4_vec,
         'y_obs': y_fake,
     }
-    experimental_data_path = os.path.join(tmpdir, 'experimental_data.csv')
+    experimental_data_path = pathlib.Path(tmpdir, 'experimental_data.csv')
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)

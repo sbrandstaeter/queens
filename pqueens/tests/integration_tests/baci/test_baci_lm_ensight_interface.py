@@ -68,12 +68,12 @@ def test_baci_lm_shape(
     Returns:
         None
     """
-    template = os.path.join(inputdir, "baci_local_shape_lm_template.json")
-    input_file = os.path.join(experiment_directory, "baci_local_shape_lm.json")
-    third_party_input_file = os.path.join(
+    template = Path(inputdir, "baci_local_shape_lm_template.json")
+    input_file = Path(experiment_directory, "baci_local_shape_lm.json")
+    third_party_input_file = Path(
         third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_template.dat"
     )
-    third_party_input_file_monitor = os.path.join(
+    third_party_input_file_monitor = Path(
         third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_E2000_nue03_p.monitor"
     )
     experiment_name = "OptmizeBaciLM_" + json.dumps(singularity_bool)
@@ -93,7 +93,7 @@ def test_baci_lm_shape(
     run(Path(input_file), Path(experiment_directory))
 
     result_file_name = experiment_name + ".csv"
-    result_file = os.path.join(experiment_directory, result_file_name)
+    result_file = Path(experiment_directory, result_file_name)
 
     result_data = pd.read_csv(
         result_file,

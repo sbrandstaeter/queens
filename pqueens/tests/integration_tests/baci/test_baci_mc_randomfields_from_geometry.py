@@ -13,14 +13,14 @@ def test_geometry_from_dat(
     inputdir, tmpdir, third_party_inputs, expected_node_coordinates, expected_surface_topology
 ):
     # generate json input file from template
-    third_party_input_file = os.path.join(
+    third_party_input_file = Path(
         third_party_inputs, "baci_input_files", "bending_wall_channel_flow_fsi_lofi.dat"
     )
     dir_dict = {
         'baci_input': third_party_input_file,
     }
-    template = os.path.join(inputdir, "baci_mc_randomfields_from_geometry_template.json")
-    input_file = os.path.join(tmpdir, "baci_mc_randomfields_from_geometry.json")
+    template = Path(inputdir, "baci_mc_randomfields_from_geometry_template.json")
+    input_file = Path(tmpdir, "baci_mc_randomfields_from_geometry.json")
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary

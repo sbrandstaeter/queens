@@ -66,8 +66,8 @@ def count_subdirectories(current_directory):
     """
     number_subdirectories = 0
     for current_subdirectory in os.listdir(current_directory):
-        path_current_subdirectory = os.path.join(current_directory, current_subdirectory)
-        if os.path.isdir(path_current_subdirectory):
+        path_current_subdirectory = Path(current_directory, current_subdirectory)
+        if path_current_subdirectory.is_dir():
             number_subdirectories += 1
     return number_subdirectories
 
@@ -102,9 +102,9 @@ def test_baci_elementary_effects(
     Returns:
         None
     """
-    template = os.path.join(inputdir, "baci_local_elementary_effects_template.json")
-    input_file = os.path.join(experiment_directory, "elementary_effects_baci_local_invaaa.json")
-    third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
+    template = Path(inputdir, "baci_local_elementary_effects_template.json")
+    input_file = Path(experiment_directory, "elementary_effects_baci_local_invaaa.json")
+    third_party_input_file = Path(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
@@ -121,5 +121,22 @@ def test_baci_elementary_effects(
     run(Path(input_file), Path(experiment_directory))
 
     result_file_name = experiment_name + ".pickle"
-    result_file = os.path.join(experiment_directory, result_file_name)
+    result_file = Path(experiment_directory, result_file_name)
+    with open(result_file, 'rb') as handle:
+        results = pickle.load(handle)
+
+    # test results of SA analysis
+    np.testing.assert_allclose(
+        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
+    )
+    np.testing.assert_allclose(
+        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
+    )
+    np.testing.assert_allclose(
+        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
+    )
+    np.testing.assert_allclose(
+        results["sensitivity_indices"]["mu_star_conf"], np.array([0.136631, 0.140794]), rtol=1.0e-3
+    )
+    result_file = Path(experiment_directory, result_file_name)
     baci_elementary_effects_check_results(result_file)

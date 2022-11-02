@@ -10,7 +10,7 @@ from pqueens import run
 
 def test_neural_network_gauss_bayesian_branin(inputdir, tmpdir, expected_mean, expected_var):
     """Test case for bayesian neural network model."""
-    run(Path(os.path.join(inputdir, 'neural_network_gauss_bayesian_branin.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'neural_network_gauss_bayesian_branin.json')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

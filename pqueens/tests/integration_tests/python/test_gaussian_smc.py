@@ -19,10 +19,10 @@ from pqueens.utils import injector
 
 def test_gaussian_smc(inputdir, tmpdir, dummy_data):
     """Test Sequential Monte Carlo with univariate Gaussian."""
-    template = os.path.join(inputdir, "smc_gaussian.json")
+    template = Path(inputdir, "smc_gaussian.json")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = os.path.join(tmpdir, "gaussian_smc_realiz.json")
+    input_file = Path(tmpdir, "gaussian_smc_realiz.json")
     injector.inject(dir_dict, template, input_file)
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
@@ -63,6 +63,6 @@ def dummy_data(tmpdir):
 
     # write the data to a csv file in tmpdir
     data_dict = {'y_obs': pdf}
-    experimental_data_path = os.path.join(tmpdir, 'experimental_data.csv')
+    experimental_data_path = Path(tmpdir, 'experimental_data.csv')
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)

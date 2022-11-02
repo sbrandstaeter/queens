@@ -1,4 +1,5 @@
 import os
+import pathlib
 import re
 
 import numpy as np
@@ -11,7 +12,7 @@ from pqueens.visualization.grid_iterator_visualization import GridIteratorVisual
 # general input fixtures
 @pytest.fixture()
 def dummy_vis(tmpdir):
-    paths = [os.path.join(tmpdir, 'myplot.png')]
+    paths = [pathlib.Path(tmpdir, 'myplot.png')]
     save_bools = [True]
     plot_booleans = [False]
     scale_types_list = ["lin", "lin"]
@@ -25,7 +26,7 @@ def dummy_vis(tmpdir):
 # -------------------------------- actual unit_tests ---------------------------------------------
 def test_init(tmpdir):
     # expected attributes
-    paths = [os.path.join(tmpdir, 'myplot.png')]
+    paths = [pathlib.Path(tmpdir, 'myplot.png')]
     save_bools = [True]
     plot_booleans = [False]
     scale_types_list = ["lin", "lin"]
@@ -51,8 +52,8 @@ def test_plot_QoI_grid(tmpdir, dummy_vis):
     num_params = 2
     n_grid_p = [2, 2]
     qvis.grid_iterator_visualization_instance.plot_QoI_grid(output, samples, num_params, n_grid_p)
-    filepath = os.path.join(tmpdir, 'myplot.png')
-    assert os.path.isfile(filepath)
+    filepath = pathlib.Path(tmpdir, 'myplot.png')
+    assert filepath.is_file()
 
 
 def test_get_plotter_one(dummy_vis):

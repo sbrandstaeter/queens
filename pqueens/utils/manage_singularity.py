@@ -4,6 +4,7 @@ import os
 import random
 import subprocess
 import time
+from pathlib import Path
 
 from pqueens.utils.config_directories import ABS_SINGULARITY_IMAGE_PATH
 from pqueens.utils.path_utils import PATH_TO_QUEENS, relative_path_from_pqueens
@@ -394,9 +395,7 @@ def _get_python_files_in_folder(relative_path):
     abs_path = relative_path_from_pqueens(relative_path)
     elements = os.listdir(abs_path)
     elements.sort()
-    file_paths = [
-        os.path.join(abs_path, ele) for _, ele in enumerate(elements) if ele.endswith('.py')
-    ]
+    file_paths = [Path(abs_path, ele) for _, ele in enumerate(elements) if ele.endswith('.py')]
     return file_paths
 
 

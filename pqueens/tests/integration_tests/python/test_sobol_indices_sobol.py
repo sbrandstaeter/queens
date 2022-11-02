@@ -16,7 +16,7 @@ def test_sobol_indices_sobol(inputdir, tmpdir):
     converge to the analytical solution defined in the Sobol G function
     implementation (see sobol.py).
     """
-    run(Path(os.path.join(inputdir, 'sobol_indices_sobol.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'sobol_indices_sobol.json')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

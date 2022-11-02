@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 import pytest
 
@@ -16,7 +17,7 @@ def dummy_vis(tmpdir):
         sa_vis (SAVisualization object): Instance of class SAVisualization
     """
     paths = [
-        os.path.join(tmpdir, name)
+        Path(tmpdir, name)
         for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
     ]
     saving_paths = dict(zip(["bar", "scatter"], paths))
@@ -35,7 +36,7 @@ def test_init(tmpdir, dummy_vis):
     """
     # expected attributes
     paths = [
-        os.path.join(tmpdir, name)
+        Path(tmpdir, name)
         for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
     ]
     saving_paths = dict(zip(["bar", "scatter"], paths))
@@ -71,8 +72,8 @@ def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
     """
     dummy_vis.plot_si_bar(dummy_sensitivity_indices)
 
-    path_output_image = os.path.join(tmpdir, "test_sa_visualization_bar.png")
-    assert os.path.isfile(path_output_image)
+    path_output_image = Path(tmpdir, "test_sa_visualization_bar.png")
+    assert path_output_image.is_file()
 
 
 def test_sa_visualization_scatter(tmpdir, dummy_vis, dummy_sensitivity_indices):
@@ -83,5 +84,5 @@ def test_sa_visualization_scatter(tmpdir, dummy_vis, dummy_sensitivity_indices):
     """
     dummy_vis.plot_si_scatter(dummy_sensitivity_indices)
 
-    path_output_image = os.path.join(tmpdir, "test_sa_visualization_scatter.png")
-    assert os.path.isfile(path_output_image)
+    path_output_image = Path(tmpdir, "test_sa_visualization_scatter.png")
+    assert path_output_image.is_file()

@@ -1,6 +1,7 @@
 """QUEENS setup file."""
 import os
 import sys
+from pathlib import Path
 
 from setuptools import find_packages, setup
 
@@ -14,7 +15,7 @@ def read(fname):
     Returns:
         The content of the file fname
     """
-    return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8").read()
+    return open(Path(os.path.dirname(__file__), fname), encoding="utf-8").read()
 
 
 def read_requirements(fname):
@@ -27,7 +28,7 @@ def read_requirements(fname):
         packages (list): List of the required packages
     """
     packages = []
-    with open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8") as f:
+    with open(Path(os.path.dirname(__file__), fname), encoding="utf-8") as f:
         for line in f:
             line = line.partition('#')[0].rstrip()
             if line:

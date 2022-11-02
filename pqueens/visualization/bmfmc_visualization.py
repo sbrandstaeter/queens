@@ -15,6 +15,7 @@ Returns:
 """
 import os
 import sys
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -84,7 +85,7 @@ class BMFMCVisualization(object):
         method_options = config["method"].get("method_options")
         plotting_options = method_options["result_description"].get("plotting_options")
         paths = [
-            os.path.join(plotting_options.get("plotting_dir"), name)
+            Path(plotting_options.get("plotting_dir"), name)
             for name in plotting_options["plot_names"]
         ]
         save_bools = plotting_options.get("save_bool")

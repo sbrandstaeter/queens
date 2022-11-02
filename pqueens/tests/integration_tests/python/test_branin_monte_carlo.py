@@ -9,7 +9,7 @@ from pqueens import run
 
 def test_branin_monte_carlo(inputdir, tmpdir):
     """Test case for monte carlo iterator."""
-    run(Path(os.path.join(inputdir, 'monte_carlo_branin.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'monte_carlo_branin.json')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

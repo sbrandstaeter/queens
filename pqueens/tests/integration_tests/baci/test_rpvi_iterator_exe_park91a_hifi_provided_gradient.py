@@ -1,4 +1,4 @@
-"""Integration test for reparameerization trick VI as executable."""
+"""Integration test for reparametrization trick VI as executable."""
 
 import os
 import pickle
@@ -22,10 +22,10 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
 ):
     """Test for the rpvi iterator based on the park91a_hifi function."""
     # generate json input file from template
-    template = os.path.join(inputdir, "rpvi_exe_park91a_hifi_template.json")
+    template = Path(inputdir, "rpvi_exe_park91a_hifi_template.json")
     third_party_input_file = tmpdir.join("input_file_executable_park91a_hifi_on_grid.csv")
     experimental_data_path = tmpdir
-    executable = os.path.join(
+    executable = Path(
         example_simulator_fun_dir, "executable_park91a_hifi_on_grid_with_gradients.py"
     )
     plot_dir = tmpdir
@@ -37,7 +37,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         "experiment_dir": tmpdir,
         "gradient_method": gradient_method,
     }
-    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
+    input_file = Path(tmpdir, "rpvi_park91a_hifi.json")
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -49,7 +49,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     # actual main call of vi_rp
 
     # get the results of the QUEENS run
-    result_file = os.path.join(tmpdir, "inverse_rpvi_park91a_hifi.pickle")
+    result_file = Path(tmpdir, "inverse_rpvi_park91a_hifi.pickle")
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
 

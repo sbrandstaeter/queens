@@ -10,7 +10,7 @@ from pqueens import run
 
 def test_branin_gpflow_heteroskedastic(inputdir, tmpdir, expected_mean, expected_var):
     """Test case for GPflow based heteroskedastic model."""
-    run(Path(os.path.join(inputdir, 'gp_heteroskedastic_surrogate_branin.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'gp_heteroskedastic_surrogate_branin.json')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
