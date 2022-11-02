@@ -6,7 +6,7 @@ from sklearn.preprocessing import StandardScaler
 
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from pqueens.regression_approximations.utils.gpy_kernels import get_gpy_kernel_type
-from pqueens.utils.logger_settings import log_multiline_string
+from pqueens.utils.logger_utils import log_multiline_string
 
 _logger = logging.getLogger(__name__)
 

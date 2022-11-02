@@ -16,7 +16,7 @@ from pqueens.iterators.sobol_index_gp_uncertainty.statistics import (
     StatisticsThirdOrderSobolIndexEstimates,
 )
 from pqueens.models import from_config_create_model
-from pqueens.utils.logger_settings import log_multiline_string
+from pqueens.utils.logger_utils import log_multiline_string
 from pqueens.utils.process_outputs import write_results
 
 from .iterator import Iterator

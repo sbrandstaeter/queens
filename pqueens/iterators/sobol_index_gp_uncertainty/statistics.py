@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from pqueens.utils.logger_settings import log_multiline_string
+from pqueens.utils.logger_utils import log_multiline_string
 
 _logger = logging.getLogger(__name__)
 
