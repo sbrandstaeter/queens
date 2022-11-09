@@ -15,7 +15,7 @@ def read(fname):
     Returns:
         The content of the file fname
     """
-    return open(Path(os.path.dirname(__file__), fname), encoding="utf-8").read()
+    return open(str(Path(__file__).parent, fname), encoding="utf-8").read()
 
 
 def read_requirements(fname):
@@ -28,7 +28,7 @@ def read_requirements(fname):
         packages (list): List of the required packages
     """
     packages = []
-    with open(Path(os.path.dirname(__file__), fname), encoding="utf-8") as f:
+    with open(str(Path(__file__).parent, fname), encoding="utf-8") as f:
         for line in f:
             line = line.partition('#')[0].rstrip()
             if line:
