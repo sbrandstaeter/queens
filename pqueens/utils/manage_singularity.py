@@ -363,6 +363,7 @@ def _files_changed():
     files_changed = False
     for file in files_to_compare_list:
         # File path inside the container
+        file = str(file)
         filepath_in_singularity = '/queens/pqueens/' + file.split("pqueens/")[-1]
 
         # Compare the queens source files with the ones inside the container
