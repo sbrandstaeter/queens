@@ -28,7 +28,7 @@ def python_function_driver(job):
 
     # change to directory.
     os.chdir(job['experiment_dir'])
-    _logger.info("Changed to directory %s\n", os.getcwd())
+    _logger.info("Changed to directory %s\n", Path.cwd())
 
     # convert dict to vector of parameters.
     params = {}

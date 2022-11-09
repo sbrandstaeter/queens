@@ -5,7 +5,6 @@ INVAAA minimal model.
 """
 
 import json
-import os
 from pathlib import Path
 
 import pytest
@@ -65,7 +64,7 @@ def count_subdirectories(current_directory):
         number_subdirectories (int): number of subdirectories
     """
     number_subdirectories = 0
-    for current_subdirectory in os.listdir(current_directory):
+    for current_subdirectory in Path(current_directory).iterdir():
         path_current_subdirectory = Path(current_directory, current_subdirectory)
         if path_current_subdirectory.is_dir():
             number_subdirectories += 1
