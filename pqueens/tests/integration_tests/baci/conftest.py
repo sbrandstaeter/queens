@@ -42,47 +42,47 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
     # check if symbolic links are existent
     try:
         # create link to default baci-release location if no link is available
-        if not os.path.islink(dst_baci_release):
-            if not os.path.isfile(src_baci_release):
+        if not pathlib.Path(dst_baci_release).is_symlink():
+            if not pathlib.Path(src_baci_release).is_file:
                 raise FileNotFoundError(
                     f'Failed to create link to default baci-release location.\n'
                     f'No baci-release found under default location:\n'
                     f'\t{src_baci_release}\n'
                 )
             else:
-                os.symlink(src_baci_release, dst_baci_release)
+                pathlib.Path(dst_baci_release).symlink_to(src_baci_release)
         # create link to default post_drt_monitor location if no link is available
-        if not os.path.islink(dst_post_drt_monitor):
-            if not os.path.isfile(src_post_drt_monitor):
+        if not pathlib.Path(dst_post_drt_monitor).is_symlink:
+            if not pathlib.Path(src_post_drt_monitor).is_file:
                 raise FileNotFoundError(
                     f'Failed to create link to default post_drt_monitor location.\n'
                     f'No post_drt_monitor found under default location:\n'
                     f'\t{src_post_drt_monitor}\n'
                 )
             else:
-                os.symlink(src_post_drt_monitor, dst_post_drt_monitor)
+                pathlib.Path(dst_post_drt_monitor).symlink_to(src_post_drt_monitor)
         # create link to default post_drt_ensight location if no link is available
-        if not os.path.islink(dst_post_drt_ensight):
-            if not os.path.isfile(src_post_drt_ensight):
+        if not pathlib.Path(dst_post_drt_ensight).is_symlink:
+            if not pathlib.Path(src_post_drt_ensight).is_file:
                 raise FileNotFoundError(
                     f'Failed to create link to default post_drt_ensight location.\n'
                     f'No post_drt_ensight found under default location:\n'
                     f'\t{src_post_drt_ensight}\n'
                 )
             else:
-                os.symlink(src_post_drt_ensight, dst_post_drt_ensight)
+                pathlib.Path(dst_post_drt_ensight).symlink_to(src_post_drt_ensight)
         # create link to default post_processor location if no link is available
-        if not os.path.islink(dst_post_processor):
-            if not os.path.isfile(src_post_processor):
+        if not pathlib.Path(dst_post_processor).is_symlink:
+            if not pathlib.Path(src_post_processor).is_file:
                 raise FileNotFoundError(
                     f'Failed to create link to default post_processor location.\n'
                     f'No post_processor found under default location:\n'
                     f'\t{src_post_processor}\n'
                 )
             else:
-                os.symlink(src_post_processor, dst_post_processor)
+                pathlib.Path(dst_post_processor).symlink_to(src_post_processor)
 
-        # check if exitisting link to baci-release works and points to a valid file
+        # check if existing link to baci-release works and points to a valid file
         if not pathlib.Path(dst_baci_release).resolve().exists():
             raise FileNotFoundError(
                 f'The following link seems to be dead: {dst_baci_release}\n'

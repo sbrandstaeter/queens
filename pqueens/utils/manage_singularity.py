@@ -404,7 +404,7 @@ def sha1sum(file_path, remote_connect=None):
     """Hash files using sha1sum.
 
     sha1sum is a computer program that calculates hashes and is the default on most Linux
-    distributions. It it is not available on your OS under the same name you can still create a
+    distributions. If it is not available on your OS under the same name you can still create a
     symlink.
     Args:
         file_path (str): Absolute path to the file to hash.
