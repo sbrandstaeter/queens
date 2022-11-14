@@ -262,10 +262,10 @@ class ClusterScheduler(Scheduler):
             num_nodes, procs_per_node = distribute_procs_on_nodes_pbs(
                 num_procs=num_procs, max_procs_per_node=max_procs_per_node
             )
-            cluster_options['pbs_nodes'] = str(num_nodes)
-            cluster_options['pbs_ppn'] = str(procs_per_node)
+            cluster_options['pbs_nodes'] = num_nodes
+            cluster_options['pbs_ppn'] = procs_per_node
         elif scheduler_type in VALID_SLURM_SCHEDULER_TYPES:
-            cluster_options['slurm_ntasks'] = str(num_procs)
+            cluster_options['slurm_ntasks'] = num_procs
         else:
             raise ValueError(
                 f"Unknown cluster scheduler type: {scheduler_type}.\n"
