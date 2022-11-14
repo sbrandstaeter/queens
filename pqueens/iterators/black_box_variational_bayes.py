@@ -212,7 +212,7 @@ class BBVIIterator(VariationalInferenceIterator):
         Returns:
             iterator (obj): BBVI object
         """
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
 
         memory = method_options.get("memory", 0)
         control_variates_scaling_type = method_options.get("control_variates_scaling_type")

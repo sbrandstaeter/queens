@@ -272,7 +272,7 @@ def cluster_testsuite_settings(
     cluster_testsuite_settings["connect_to_resource"] = connect_to_resource
     cluster_testsuite_settings["cluster_queens_testing_folder"] = cluster_queens_testing_folder
     cluster_testsuite_settings["cluster_path_to_singularity"] = cluster_path_to_singularity
-    cluster_testsuite_settings["scheduler_type"] = scheduler_type
+    cluster_testsuite_settings["type"] = scheduler_type
     cluster_testsuite_settings["singularity_remote_ip"] = cluster_singularity_ip
 
     return cluster_testsuite_settings

@@ -3,18 +3,17 @@ database:
   type: mongodb
   address: localhost:27017
 method:
-  method_name: metropolis_hastings
-  method_options:
-    seed: 42
-    num_samples: 10
-    num_burn_in: 5
-    scale_covariance: 1.0
-    model: model
-    proposal_distribution: proposal_distribution
-    result_description:
-      write_results: true
-      plot_results: false
-      cov: true
+  type: metropolis_hastings
+  seed: 42
+  num_samples: 10
+  num_burn_in: 5
+  scale_covariance: 1.0
+  model: model
+  proposal_distribution: proposal_distribution
+  result_description:
+    write_results: true
+    plot_results: false
+    cov: true
 model:
   type: gaussian
   forward_model: forward_model
@@ -29,14 +28,8 @@ forward_model:
   interface: interface
 proposal_distribution:
   distribution: normal
-  mean:
-  - 0.0
-  - 0.0
-  covariance:
-  - - 1.0
-    - 0.0
-  - - 0.0
-    - 0.1
+  mean: [0.0, 0.0]
+  covariance: [[1.0, 0.0], [0.0, 0.1]]
 interface:
   type: direct_python_interface
   function_name: patch_for_likelihood

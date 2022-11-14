@@ -178,7 +178,7 @@ class MpiDriver(Driver):
         num_procs = scheduler_options.get('num_procs', 1)
         num_procs_post = scheduler_options.get('num_procs_post', 1)
         singularity = scheduler_options.get('singularity', False)
-        scheduler_type = scheduler_options['scheduler_type']
+        scheduler_type = scheduler_options['type']
         cluster_job = scheduler_type in VALID_CLUSTER_SCHEDULER_TYPES
 
         driver_options = config[driver_name]

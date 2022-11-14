@@ -4,31 +4,26 @@ database:
   type: mongodb
   drop_existing: true
 method:
-  method_name: sobol_indices_gp_uncertainty
-  method_options:
-    seed_monte_carlo: 42
-    number_monte_carlo_samples: 1000
-    number_gp_realizations: 20
-    number_bootstrap_samples: 10
-    third_order: true
-    third_order_parameters:
-    - x1
-    - x2
-    - x3
-    sampling_approach: pseudo_random
-    num_procs: 6
-    seed_posterior_samples: 42
-    first_order_estimator: Saltelli2010
-    model: gp_surrogate_model
-    result_description:
-      write_results: true
+  type: sobol_indices_gp_uncertainty
+  seed_monte_carlo: 42
+  number_monte_carlo_samples: 1000
+  number_gp_realizations: 20
+  number_bootstrap_samples: 10
+  third_order: true
+  third_order_parameters: [x1, x2, x3]
+  sampling_approach: pseudo_random
+  num_procs: 6
+  seed_posterior_samples: 42
+  first_order_estimator: Saltelli2010
+  model: gp_surrogate_model
+  result_description:
+    write_results: true
 truth_model_iterator:
-  method_name: lhs
-  method_options:
-    seed: 42
-    num_samples: 100
-    model: truth_model
-    num_iterations: 10
+  type: lhs
+  seed: 42
+  num_samples: 100
+  model: truth_model
+  num_iterations: 10
 interface:
   type: direct_python_interface
   function_name: ishigami90
@@ -40,12 +35,11 @@ gp_surrogate_model:
   testing_iterator: testing_iterator
   nash_sutcliffe_efficiency: true
 testing_iterator:
-  method_name: lhs
-  method_options:
-    seed: 30
-    num_samples: 100
-    model: truth_model
-    num_iterations: 10
+  type: lhs
+  seed: 30
+  num_samples: 100
+  model: truth_model
+  num_iterations: 10
 approximation_interface:
   type: approximation_interface
   approximation: gpy_regression

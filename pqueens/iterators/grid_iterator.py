@@ -65,7 +65,7 @@ class GridIterator(Iterator):
         Returns:
             iterator (obj): GridIterator object
         """
-        method_options = config[iterator_name]["method_options"]
+        method_options = config[iterator_name]
         if model is None:
             model_name = method_options["model"]
             model = from_config_create_model(model_name, config)

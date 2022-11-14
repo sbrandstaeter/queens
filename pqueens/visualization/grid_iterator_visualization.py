@@ -120,7 +120,7 @@ class GridIteratorVisualization(object):
             Instance of GridIteratorVisualization (obj)
 
         """
-        method_options = config[iterator_name].get("method_options")
+        method_options = config[iterator_name]
 
         plotting_options = method_options["result_description"].get("plotting_options")
         paths = [

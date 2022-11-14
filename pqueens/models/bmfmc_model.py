@@ -219,7 +219,7 @@ class BMFMCModel(Model):
         hf_model_name = model_options.get("high_fidelity_model")
 
         # get some method options
-        method_options = config["method"]["method_options"]
+        method_options = config["method"]
         no_features_comparison_bool = method_options["BMFMC_reference"]
         predictive_var_bool = method_options["predictive_var"]
         y_pdf_support_max = method_options["y_pdf_support_max"]

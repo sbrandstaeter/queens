@@ -63,7 +63,7 @@ class MFLHSIterator(Iterator):
         Returns:
             iterator: MFLHSIterator object
         """
-        method_options = config[iterator_name]["method_options"]
+        method_options = config[iterator_name]
         print("Method options {}".format(method_options))
         if model is None:
             model_name = method_options["model"]

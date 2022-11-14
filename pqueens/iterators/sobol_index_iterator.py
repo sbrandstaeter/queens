@@ -90,7 +90,7 @@ class SobolIndexIterator(Iterator):
         Returns:
             iterator: Saltelli SALib iterator object
         """
-        method_options = config[iterator_name]["method_options"]
+        method_options = config[iterator_name]
 
         if model is None:
             model_name = method_options["model"]

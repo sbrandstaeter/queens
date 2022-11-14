@@ -5,22 +5,18 @@ database:
   reset_existing_db: true
   name: queens_db_{cluster}_remote_test
 method:
-  method_name: dummy
-  method_options:
-    model: model
+  type: dummy
+  model: model
 model:
   type: simulation_model
   interface: interface
-  coordinate_labels:
-  - x1
-  - x2
-  - x3
+  coordinate_labels: [x1, x2, x3]
 interface:
   type: job_interface
   resources: resources
   driver: driver
 driver:
-  driver_type: mpi
+  type: mpi
   experiment_dir: {experiment_dir}
   input_template: {input_template}
   path_to_executable: {path_to_executable}
@@ -33,16 +29,13 @@ data_processor_baci:
   file_name_identifier: '{cluster}*.case'
   file_options_dict:
     delete_field_data: false
-    geometric_target:
-    - experimental_data
+    geometric_target: [experimental_data]
     physical_field_dict:
       vtk_field_type: structure
       vtk_array_type: point_array
       vtk_field_label: displacement
-      field_components:
-      - 0
-    target_time_lst:
-    - 0.5
+      field_components: [0]
+    target_time_lst: [0.5]
     time_tol: 0.001
 resources:
   cluster:
@@ -50,7 +43,7 @@ resources:
     max-concurrent: 2
     max-finished-jobs: 10
 scheduler:
-  scheduler_type: {scheduler_type}
+  type: {scheduler_type}
   experiment_dir: {experiment_dir}
   num_procs: 1
   num_procs_post: 1

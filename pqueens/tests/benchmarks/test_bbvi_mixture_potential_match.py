@@ -188,14 +188,12 @@ def visualization_obj(tmpdir):
     """Create visualization module."""
     visualization_dict = {
         "method": {
-            "method_options": {
-                "result_description": {
-                    "plotting_options": {
-                        "plotting_dir": tmpdir,
-                        "save_bool": False,
-                        "plot_boolean": False,
-                        "plot_name": "variat_params_convergence.eps",
-                    }
+            "result_description": {
+                "plotting_options": {
+                    "plotting_dir": tmpdir,
+                    "save_bool": False,
+                    "plot_boolean": False,
+                    "plot_name": "variat_params_convergence.eps",
                 }
             }
         }

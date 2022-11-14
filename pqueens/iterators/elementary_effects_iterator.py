@@ -105,7 +105,7 @@ class ElementaryEffectsIterator(Iterator):
         """
         qvis.from_config_create(config)
 
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
 
         if model is None:
             model_name = method_options["model"]

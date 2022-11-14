@@ -122,7 +122,7 @@ class ClusterScheduler(Scheduler):
                 f" boolean, however you provided '{singularity}' which is of type "
                 f"{type(singularity)} "
             )
-        scheduler_type = scheduler_options["scheduler_type"]
+        scheduler_type = scheduler_options["type"]
 
         cluster_options = scheduler_options.get("cluster", {})
         remote = scheduler_options.get('remote', False)

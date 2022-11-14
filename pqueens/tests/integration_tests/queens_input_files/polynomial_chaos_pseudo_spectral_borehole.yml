@@ -3,17 +3,16 @@ database:
   type: mongodb
   address: localhost:27017
 method:
-  method_name: polynomial_chaos
-  method_options:
-    approach: pseudo_spectral
-    seed: 42
-    num_collocation_points: 50
-    sampling_rule: gaussian
-    model: model
-    sparse: true
-    polynomial_order: 2
-    result_description:
-      write_results: true
+  type: polynomial_chaos
+  approach: pseudo_spectral
+  seed: 42
+  num_collocation_points: 50
+  sampling_rule: gaussian
+  model: model
+  sparse: true
+  polynomial_order: 2
+  result_description:
+    write_results: true
 model:
   type: simulation_model
   interface: interface

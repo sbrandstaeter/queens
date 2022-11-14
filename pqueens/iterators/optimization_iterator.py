@@ -151,7 +151,7 @@ class OptimizationIterator(Iterator):
                 config.get('global_settings').get('experiment_name')
             )
         )
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
         if model is None:
             model_name = method_options['model']
             model = from_config_create_model(model_name, config)
@@ -190,14 +190,10 @@ class OptimizationIterator(Iterator):
         else:
             db = None
         experiment_name = config['global_settings']['experiment_name']
-        coordinate_labels = config['method']['method_options'].get('coordinate_labels')
-        output_label = config['method']['method_options'].get('output_label')
-        axis_scaling_experimental = config['method']['method_options'].get(
-            'axis_scaling_experimental'
-        )
-        output_scaling_experimental = config['method']['method_options'].get(
-            'output_scaling_experimental'
-        )
+        coordinate_labels = config['method'].get('coordinate_labels')
+        output_label = config['method'].get('output_label')
+        axis_scaling_experimental = config['method'].get('axis_scaling_experimental')
+        output_scaling_experimental = config['method'].get('output_scaling_experimental')
 
         # initialize objective function
         return cls(

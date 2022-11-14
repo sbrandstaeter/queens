@@ -3,26 +3,22 @@ database:
   type: mongodb
   address: localhost:27017
 method:
-  method_name: grid
-  method_options:
-    model: model
-    grid_design:
-      x1:
-        num_grid_points: 5
-        axis_type: lin
-      x2:
-        num_grid_points: 5
-        axis_type: lin
-    result_description:
-      write_results: true
-      plotting_options:
-        plot_booleans:
-        - true
-        plotting_dir: some/plotting/dir
-        plot_names:
-        - grid_plot.eps
-        save_bool:
-        - false
+  type: grid
+  model: model
+  grid_design:
+    x1:
+      num_grid_points: 5
+      axis_type: lin
+    x2:
+      num_grid_points: 5
+      axis_type: lin
+  result_description:
+    write_results: true
+    plotting_options:
+      plot_booleans: [true]
+      plotting_dir: some/plotting/dir
+      plot_names: [grid_plot.eps]
+      save_bool: [false]
 model:
   type: simulation_model
   interface: interface

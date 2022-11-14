@@ -3,24 +3,22 @@ database:
   type: mongodb
   address: localhost:27017
 method:
-  method_name: smc
-  method_options:
-    seed: 42
-    num_particles: 10
-    model: model
-    temper_type: bayes
-    plot_trace_every: 0
-    result_description:
-      write_results: true
-      plot_results: true
-      cov: false
+  type: smc
+  seed: 42
+  num_particles: 10
+  model: model
+  temper_type: bayes
+  plot_trace_every: 0
+  result_description:
+    write_results: true
+    plot_results: true
+    cov: false
 MCMC_Kernel:
-  method_name: metropolis-hastings
-  method_options:
-    as_mcmc_kernel: true
-    num_chains: 10
-    num_samples: 3
-    proposal_distribution: proposal_distribution
+  type: metropolis-hastings
+  as_mcmc_kernel: true
+  num_chains: 10
+  num_samples: 3
+  proposal_distribution: proposal_distribution
 model:
   type: gaussian
   forward_model: forward_model

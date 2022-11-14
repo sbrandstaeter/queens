@@ -17,14 +17,12 @@
 #        self.dummy_config = {
 #            "global_settings": {"experiment_name": "test", "output_dir": "/dummy/dir"},
 #            "method": {
-#                "method_name": "bayesian_optimization",
-#                "method_options": {
-#                    "seed": 42,
-#                    "model": "model",
-#                    "num_iter": 10,
-#                    "use_ard": "True",
-#                    "num_initial_samples": 5,
-#                },
+#                "type": "bayesian_optimization",
+#                "seed": 42,
+#                "model": "model",
+#                "num_iter": 10,
+#                "use_ard": "True",
+#                "num_initial_samples": 5,
 #            },
 #            "model": {
 #                "type": "simulation_model",

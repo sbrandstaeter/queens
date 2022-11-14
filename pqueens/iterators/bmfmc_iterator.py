@@ -130,7 +130,7 @@ class BMFMCIterator(Iterator):
             iterator (obj): BMFMCIterator object
         """
         # Initialize Iterator and model
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
 
         BMFMC_reference = method_options["BMFMC_reference"]
         result_description = method_options["result_description"]

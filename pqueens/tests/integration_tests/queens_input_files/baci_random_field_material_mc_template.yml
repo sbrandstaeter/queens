@@ -3,23 +3,18 @@ restart: false
 database:
   type: sqlite
 method:
-  method_name: monte_carlo
-  method_options:
-    seed: 1
-    num_samples: 3
-    model: model
-    result_description:
-      write_results: true
-      plot_results: false
+  type: monte_carlo
+  seed: 1
+  num_samples: 3
+  model: model
+  result_description:
+    write_results: true
+    plot_results: false
 pre_processing:
   type: baci_dat
-  list_geometric_sets:
-  - DSURFACE 1
-  associated_material_numbers_geometric_set:
-  - - 10
-    - 11
-  random_fields:
-  - name: mat_param
+  list_geometric_sets: [DSURFACE 1]
+  associated_material_numbers_geometric_set: [[10, 11]]
+  random_fields: [name: mat_param]
     type: material
     external_instance: DSURFACE 1
   input_template: {baci_input}
@@ -32,7 +27,7 @@ interface:
   resources: resources
   driver: driver
 driver:
-  driver_type: mpi
+  type: mpi
   input_template: {baci_input_preprocessed}
   path_to_executable: {baci-release}
   path_to_postprocessor: {post_drt_monitor}
@@ -44,20 +39,18 @@ data_processor_baci:
   file_name_identifier: baci_write_random_field_to_dat.mon
   file_options_dict:
     delete_field_data: false
-    use_cols_lst:
-    - 3
+    use_cols_lst: [3]
     skip_rows: 4
     filter:
       type: by_row_index
-      rows:
-      - -1
+      rows: [-1]
 resources:
   local_machine:
     scheduler: local_scheduler
     max-concurrent: 1
     max-finished-jobs: 10
 local_scheduler:
-  scheduler_type: standard
+  type: standard
   experiment_dir: {experiment_dir}
   num_procs: 1
   num_procs_post: 1

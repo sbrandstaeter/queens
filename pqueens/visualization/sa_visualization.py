@@ -16,12 +16,12 @@ A module that provides utilities and a class for visualization in sensitivity an
 It is designed such that the SAVisualization class needs only to be initialized one
 and can then be accessed and modified in the entire project.
 
-In this context "this" is a pointer to the module object instance itself and can be compared to the 
+In this context "this" is a pointer to the module object instance itself and can be compared to the
 "self" keyword in classes.
 
 Attributes:
     sa_visualization_instance (obj): Instance of the SAVisualization class
-    
+
 Returns:
     None
 """
@@ -120,7 +120,7 @@ class SAVisualization(object):
 
         """
 
-        method_options = config["method"].get("method_options")
+        method_options = config["method"]
         plotting_options = method_options["result_description"].get("plotting_options")
 
         paths = [

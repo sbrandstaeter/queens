@@ -3,24 +3,22 @@ database:
   type: mongodb
   address: localhost:27017
 method:
-  method_name: smc
-  method_options:
-    seed: 42
-    num_particles: 200
-    model: model
-    temper_type: generic
-    plot_trace_every: 0
-    result_description:
-      write_results: true
-      plot_results: false
-      cov: true
+  type: smc
+  seed: 42
+  num_particles: 200
+  model: model
+  temper_type: generic
+  plot_trace_every: 0
+  result_description:
+    write_results: true
+    plot_results: false
+    cov: true
 MCMC_Kernel:
-  method_name: metropolis-hastings
-  method_options:
-    as_mcmc_kernel: true
-    num_chains: 200
-    num_samples: 20
-    proposal_distribution: proposal_distribution
+  type: metropolis-hastings
+  as_mcmc_kernel: true
+  num_chains: 200
+  num_samples: 20
+  proposal_distribution: proposal_distribution
 model:
   type: gaussian
   forward_model: forward_model
@@ -36,28 +34,8 @@ forward_model:
   interface: interface
 proposal_distribution:
   distribution: normal
-  mean:
-  - 0.0
-  - 0.0
-  - 0.0
-  - 0.0
-  covariance:
-  - - 1.0
-    - 0.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 1.0
-    - 0.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 1.0
-    - 0.0
-  - - 0.0
-    - 0.0
-    - 0.0
-    - 1.0
+  mean: [0.0, 0.0, 0.0, 0.0]
+  covariance: [[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
 interface:
   type: direct_python_interface
   function_name: patch_for_likelihood

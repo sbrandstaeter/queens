@@ -4,18 +4,16 @@ database:
   type: mongodb
   address: localhost:27017
 method:
-  method_name: monte_carlo
-  method_options:
-    seed: 42
-    num_samples: 5
-    model: model
-    result_description:
-      write_results: true
-      plot_results: false
+  type: monte_carlo
+  seed: 42
+  num_samples: 5
+  model: model
+  result_description:
+    write_results: true
+    plot_results: false
 external_geometry:
   type: baci_dat
-  list_geometric_sets:
-  - DSURFACE 4
+  list_geometric_sets: [DSURFACE 4]
   input_template: {baci_input}
 model:
   type: simulation_model
@@ -25,7 +23,7 @@ interface:
   resources: resources
   driver: driver
 driver:
-  driver_type: mpi
+  type: mpi
   input_template: {baci_input}
   path_to_executable: {baci-release}
   path_to_postprocessor: {post_drt_ensight}
@@ -36,25 +34,20 @@ data_processor_baci:
   file_name_identifier: baci_ensight*structure.case
   file_options_dict:
     delete_field_data: false
-    geometric_target:
-    - geometric_set
-    - DSURFACE 4
+    geometric_target: [geometric_set, DSURFACE 4]
     physical_field_dict:
       vtk_field_type: structure
       vtk_array_type: point_array
       vtk_field_label: displacement
-      field_components:
-      - 0
-      - 1
-    target_time_lst:
-    - last
+      field_components: [0, 1]
+    target_time_lst: [last]
 resources:
   local_machine:
     scheduler: local_scheduler
     max-concurrent: 1
     max-finished-jobs: 10
 local_scheduler:
-  scheduler_type: standard
+  type: standard
   experiment_dir: {experiment_dir}
   num_procs: 1
   num_procs_post: 1

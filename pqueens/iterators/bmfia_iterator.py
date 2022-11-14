@@ -98,7 +98,7 @@ class BMFIAIterator(Iterator):
             iterator (obj): BMFIAIterator object
         """
         # Get appropriate sections in the config file
-        method_options = config["method"]["method_options"]
+        method_options = config["method"]
         model_name = method_options["model"]
         global_settings = config.get('global_settings', None)
         result_description = method_options["result_description"]

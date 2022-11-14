@@ -120,7 +120,7 @@ def test_cluster_baci_data_processor_ensight(
         'connect_to_resource': connect_to_resource,
         'cluster_bind': cluster_bind,
         'cluster': cluster,
-        'scheduler_type': scheduler_type,
+        'type': scheduler_type,
         'singularity_remote_ip': singularity_remote_ip,
     }
 

@@ -56,12 +56,12 @@ class TestJobInterface(unittest.TestCase):
 
         self.config['my_local_scheduler'] = {}
         self.config['my_local_scheduler']['experiment_dir'] = 'dummy_dir'
-        self.config['my_local_scheduler']['scheduler_type'] = 'standard'
+        self.config['my_local_scheduler']['type'] = 'standard'
         self.config['my_local_scheduler']['remote'] = False
         self.config['my_local_scheduler']['singularity'] = False
 
         self.config['driver'] = {}
-        self.config['driver']['driver_type'] = 'mpi'
+        self.config['driver']['type'] = 'mpi'
         self.config['driver']['data_processor'] = {}
         self.config['driver']['data_processor']['file_prefix'] = 'test-file-prefix'
 

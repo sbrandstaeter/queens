@@ -164,7 +164,7 @@ class RPVIIterator(VariationalInferenceIterator):
         Returns:
             iterator (obj): RPVI object
         """
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
         score_function_bool = method_options.get("score_function_bool", False)
         finite_difference_step = method_options.get("finite_difference_step")
         likelihood_gradient_method = method_options.get(

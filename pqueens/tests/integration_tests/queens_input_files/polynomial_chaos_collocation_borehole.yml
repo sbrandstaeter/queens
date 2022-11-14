@@ -3,16 +3,15 @@ database:
   type: mongodb
   address: localhost:27017
 method:
-  method_name: polynomial_chaos
-  method_options:
-    approach: collocation
-    seed: 42
-    num_collocation_points: 50
-    sampling_rule: sobol
-    model: model
-    polynomial_order: 2
-    result_description:
-      write_results: true
+  type: polynomial_chaos
+  approach: collocation
+  seed: 42
+  num_collocation_points: 50
+  sampling_rule: sobol
+  model: model
+  polynomial_order: 2
+  result_description:
+    write_results: true
 model:
   type: simulation_model
   interface: interface

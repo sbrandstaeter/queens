@@ -81,7 +81,7 @@ class BMFMCVisualization(object):
         Returns:
             Instance of BMFMCVisualization (obj)
         """
-        method_options = config["method"].get("method_options")
+        method_options = config["method"]
         plotting_options = method_options["result_description"].get("plotting_options")
         paths = [
             os.path.join(plotting_options.get("plotting_dir"), name)

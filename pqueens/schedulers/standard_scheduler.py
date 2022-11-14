@@ -102,7 +102,7 @@ class StandardScheduler(Scheduler):
                 _logger.info("Local singularity image is outdated/missing, building a new one!")
                 create_singularity_image()
         cluster_options = {}
-        scheduler_type = scheduler_options["scheduler_type"]
+        scheduler_type = scheduler_options["type"]
 
         # TODO move this to a different place
         # print out scheduling information

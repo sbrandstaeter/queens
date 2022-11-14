@@ -115,7 +115,7 @@ class JobInterface(Interface):
         scheduler_name = config['resources'][first]['scheduler']
         scheduler_options = config[scheduler_name]
         output_dir = pathlib.Path(scheduler_options["experiment_dir"])
-        scheduler_type = scheduler_options['scheduler_type']
+        scheduler_type = scheduler_options['type']
 
         # get flag for remote scheduling
         if scheduler_options.get('remote'):

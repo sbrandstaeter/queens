@@ -3,22 +3,21 @@ database:
   type: mongodb
   address: localhost:27017
 method:
-  method_name: smc_chopin
-  method_options:
-    seed: 42
-    num_particles: 100
-    resampling_threshold: 0.5
-    resampling_method: residual
-    feynman_kac_model: adaptive_tempering
-    waste_free: true
-    num_rejuvenation_steps: 9
-    model: model
-    max_feval: 10000
-    result_description:
-      write_results: true
-      plot_results: true
+  type: smc_chopin
+  seed: 42
+  num_particles: 100
+  resampling_threshold: 0.5
+  resampling_method: residual
+  feynman_kac_model: adaptive_tempering
+  waste_free: true
+  num_rejuvenation_steps: 9
+  model: model
+  max_feval: 10000
+  result_description:
+    write_results: true
+    plot_results: true
 MCMC_Kernel:
-  method_name: metropolis-hastings
+  type: metropolis-hastings
 model:
   type: gaussian
   forward_model: forward_model
