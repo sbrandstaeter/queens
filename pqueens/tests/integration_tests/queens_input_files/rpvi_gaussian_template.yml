@@ -7,7 +7,7 @@ method:
   method_options:
     model: model
     max_feval: 100000
-    likelihood_gradient_method: "{gradient_method}"
+    likelihood_gradient_method: {gradient_method}
     finite_difference_method: 2-point
     finite_difference_step: 1.0e-05
     n_samples_per_iter: 10
@@ -36,7 +36,7 @@ method:
       write_results: true
       plotting_options:
         plot_boolean: false
-        plotting_dir: "{plot_dir}"
+        plotting_dir: {plot_dir}
         plot_name: variational_params_convergence.eps
         save_bool: false
 model:
@@ -47,7 +47,7 @@ model:
   noise_type: fixed_variance
   noise_value: 1
   experimental_file_name_identifier: "*.csv"
-  experimental_csv_data_base_dir: "{experimental_data_path}"
+  experimental_csv_data_base_dir: {experimental_data_path}
 forward_model:
   type: simulation_model
   interface: interface

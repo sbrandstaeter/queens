@@ -10,7 +10,7 @@ from pqueens import run
 
 def test_optimization_lsq_rosenbrock(inputdir, tmpdir):
     """Test case for optimization iterator with least squares."""
-    run(Path(os.path.join(inputdir, 'optimization_lsq_rosenbrock.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'optimization_lsq_rosenbrock.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'ResRosenbrockLSQ.pickle'
     with open(result_file, 'rb') as handle:

@@ -19,10 +19,10 @@ from pqueens.utils import injector
 
 def test_gaussian_smc(inputdir, tmpdir, dummy_data):
     """Test Sequential Monte Carlo with univariate Gaussian."""
-    template = os.path.join(inputdir, "smc_gaussian.json")
+    template = os.path.join(inputdir, "smc_gaussian.yml")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = os.path.join(tmpdir, "gaussian_smc_realiz.json")
+    input_file = os.path.join(tmpdir, "gaussian_smc_realiz.yml")
     injector.inject(dir_dict, template, input_file)
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):

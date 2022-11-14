@@ -9,7 +9,7 @@ from pqueens import run
 
 def test_elementary_effects_ishigami(inputdir, tmpdir):
     """Test case for elementary effects iterator."""
-    run(Path(os.path.join(inputdir, 'elementary_effects_ishigami.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'elementary_effects_ishigami.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

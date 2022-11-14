@@ -21,8 +21,8 @@ def test_ensight_reader_writer(
         'post_drt_ensight': post_drt_ensight,
         'baci-release': baci_release,
     }
-    template = os.path.join(inputdir, "baci_ensight_template.json")
-    input_file = os.path.join(tmpdir, "baci_ensight.json")
+    template = os.path.join(inputdir, "baci_ensight_template.yml")
+    input_file = os.path.join(tmpdir, "baci_ensight.yml")
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary

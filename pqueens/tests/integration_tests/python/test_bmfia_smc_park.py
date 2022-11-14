@@ -26,10 +26,10 @@ def test_smc_park_hf(
     (bmfia) using the park91 function.
     """
     # generate json input file from template
-    template = os.path.join(inputdir, 'bmfia_smc_park.json')
+    template = os.path.join(inputdir, 'bmfia_smc_park.yml')
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path, "plot_dir": tmpdir}
-    input_file = os.path.join(tmpdir, 'smc_mf_park_realization.json')
+    input_file = os.path.join(tmpdir, 'smc_mf_park_realization.yml')
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS

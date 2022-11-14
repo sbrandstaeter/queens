@@ -11,7 +11,7 @@ from pqueens import run
 
 def test_sobol_indices_ishigami(inputdir, tmpdir):
     """Test case for salib based saltelli iterator."""
-    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

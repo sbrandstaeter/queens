@@ -1,0 +1,61 @@
+experiment_name: bmfmc_currin88
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  method_name: bmfmc
+  method_options:
+    model: joint_density_approx
+    predictive_var: false
+    BMFMC_reference: false
+    y_pdf_support_min: -0.5
+    y_pdf_support_max: 15.0
+    result_description:
+      write_results: true
+      plotting_options:
+        plot_booleans:
+        - false
+        - false
+        - false
+        plotting_dir: {plot_dir}
+        plot_names:
+        - pdfs.eps
+        - manifold.eps
+        - ranking.eps
+        save_bool:
+        - false
+        - false
+        - false
+        animation_bool: false
+  initial_design:
+    num_HF_eval: 100
+    num_bins: 50
+    method: {design_method}
+    seed: 1
+    master_LF: 0
+joint_density_approx:
+  path_to_lf_mc_data:
+  - {lf_mc_pickle_file}
+  high_fidelity_model: high_fidelity_model
+  path_to_hf_mc_reference_data: null
+  type: gp_approximation_gpy
+  features_config: opt_features
+  num_features: 1
+high_fidelity_model:
+  type: simulation_model
+  interface: interface
+interface:
+  type: direct_python_interface
+  function_name: currin88_hifi
+parameters:
+  random_variables:
+    x1:
+      dimension: 1
+      distribution: uniform
+      lower_bound: 0.0
+      upper_bound: 1.0
+    x2:
+      dimension: 1
+      distribution: uniform
+      lower_bound: 0.0
+      upper_bound: 1.0

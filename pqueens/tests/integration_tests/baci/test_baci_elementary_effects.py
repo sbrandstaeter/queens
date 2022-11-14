@@ -98,8 +98,8 @@ def test_baci_elementary_effects(
     Returns:
         None
     """
-    template = os.path.join(inputdir, "baci_local_elementary_effects_template.json")
-    input_file = os.path.join(experiment_directory, "elementary_effects_baci_local_invaaa.json")
+    template = os.path.join(inputdir, "baci_local_elementary_effects_template.yml")
+    input_file = os.path.join(experiment_directory, "elementary_effects_baci_local_invaaa.yml")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 

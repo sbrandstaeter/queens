@@ -10,7 +10,7 @@ from pqueens import run
 
 def test_sobol_indices_ishigami_gp(inputdir, tmpdir):
     """Test Sobol indices estimation with Gaussian process surrogate."""
-    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

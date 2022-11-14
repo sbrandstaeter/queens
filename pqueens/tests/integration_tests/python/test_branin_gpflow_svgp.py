@@ -10,7 +10,7 @@ from pqueens import run
 
 def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
     """Test case for GPflow based SVGP model."""
-    run(Path(os.path.join(inputdir, 'gpflow_svgp_surrogate_branin.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'gpflow_svgp_surrogate_branin.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

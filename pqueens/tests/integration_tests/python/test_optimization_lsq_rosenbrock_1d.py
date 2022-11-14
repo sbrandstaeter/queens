@@ -13,7 +13,7 @@ def test_optimization_lsq_rosenbrock_1d(inputdir, tmpdir):
 
     Special case: 1 unknown but 2 residuals
     """
-    run(Path(os.path.join(inputdir, 'optimization_lsq_rosenbrock_1d.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'optimization_lsq_rosenbrock_1d.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'ResRosenbrock1DLSQ.pickle'
     with open(result_file, 'rb') as handle:

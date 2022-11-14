@@ -1,0 +1,27 @@
+experiment_name: ParabulaResLSQ
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  method_name: optimization
+  method_options:
+    model: model
+    algorithm: LSQ
+    initial_guess:
+    - 0.75
+    result_description:
+      write_results: true
+    bounds:
+    - - -Infinity
+    - - .inf
+model:
+  type: simulation_model
+  interface: interface
+interface:
+  type: direct_python_interface
+  function_name: parabula_residual
+parameters:
+  random_variables:
+    x1:
+      type: FLOAT
+      dimension: 1

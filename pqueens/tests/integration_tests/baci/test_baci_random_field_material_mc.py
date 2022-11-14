@@ -28,8 +28,8 @@ def test_write_random_material_to_dat(
         'post_drt_monitor': post_drt_monitor,
         'baci-release': baci_release,
     }
-    template = os.path.join(inputdir, "baci_random_field_material_mc_template.json")
-    input_file = os.path.join(tmpdir, "baci_write_random_field_material.json")
+    template = os.path.join(inputdir, "baci_random_field_material_mc_template.yml")
+    input_file = os.path.join(tmpdir, "baci_write_random_field_material.yml")
     injector.inject(dir_dict, template, input_file)
 
     # run a MC simulation with random input for now
