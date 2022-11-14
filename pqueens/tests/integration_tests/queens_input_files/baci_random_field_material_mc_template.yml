@@ -14,7 +14,8 @@ pre_processing:
   type: baci_dat
   list_geometric_sets: [DSURFACE 1]
   associated_material_numbers_geometric_set: [[10, 11]]
-  random_fields: [name: mat_param]
+  random_fields:
+  - name: mat_param
     type: material
     external_instance: DSURFACE 1
   input_template: {baci_input}

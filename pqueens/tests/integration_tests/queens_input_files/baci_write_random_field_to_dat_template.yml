@@ -14,7 +14,8 @@ method:
 pre_processing:
   type: baci_dat
   list_geometric_sets: [DSURFACE 4]
-  random_fields: [name: random_inflow]
+  random_fields:
+  - name: random_inflow
     type: dirichlet
     external_instance: DSURFACE 4
     dof_for_field: 3
@@ -44,7 +45,7 @@ data_processor_baci:
   file_name_identifier: QoI*
   file_options_dict:
     delete_field_data: false
-    use_cols_lst: [1, 3
+    use_cols_lst: [1, 3]
     index_column: 0
     skip_rows: 4
     filter:
