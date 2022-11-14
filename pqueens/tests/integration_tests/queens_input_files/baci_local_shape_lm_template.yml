@@ -17,7 +17,7 @@ method:
   result_description:
     write_results: true
     plot_results: true
-  bounds: [[ 0, -0.5], [Infinity, 0.49]]
+  bounds: [[ 0, -0.5], [.inf, 0.49]]
 model:
   type: simulation_model
   interface: interface

@@ -9,7 +9,7 @@ method:
   initial_guess: [-3.0, -4.0]
   result_description:
     write_results: true
-  bounds: [[-Infinity, -Infinity], [Infinity, Infinity]]
+  bounds: [[-.inf, -.inf], [.inf, .inf]]
 model:
   type: simulation_model
   interface: interface
