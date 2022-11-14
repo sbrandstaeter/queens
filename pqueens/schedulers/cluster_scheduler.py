@@ -443,8 +443,18 @@ class ClusterScheduler(Scheduler):
             # split output string
             output = stdout.split()
 
-            # second/fourth to last entry should be job status
+            # entry at job_status_location is job status
             status = output[self.cluster_config.job_status_location]
+
+            # possible pbs job states:
+            # E - Job is exiting after having run.
+            # H - Job is held.
+            # Q - job is queued, eligable to run or routed.
+            # R - job is running.
+            # T - job is being moved to new location.
+            # W - job is waiting for its execution time
+            # S - (Unicos only) job is suspend.
+            # therefore:
             if status in ['Q', 'R', 'H', 'S']:
                 completed = False
 
