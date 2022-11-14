@@ -480,6 +480,7 @@ class ClusterScheduler(Scheduler):
             batch=batch,
             driver_name=self.driver_name,
             experiment_dir=self.experiment_dir,
+            cluster_config=self.cluster_config,
             cluster_options=self.cluster_options,
         )
         # run driver and get process ID
