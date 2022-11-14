@@ -413,7 +413,7 @@ class JobInterface(Interface):
         return np.array(job_ids_generator)
 
     def _check_job_completions(self, jobid_range):
-        """Check AWS tasks to determine completed jobs."""
+        """Check job completion for cluster native workflow."""
         jobs = self.load_jobs(
             field_filters={'expt_dir': str(self.experiment_dir), 'expt_name': self.experiment_name}
         )
