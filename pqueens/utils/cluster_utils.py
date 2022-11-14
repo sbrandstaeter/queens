@@ -25,7 +25,16 @@ def get_cluster_job_id(scheduler_type, output_str_cluster, pbs_scheduler_types):
 
 
 def distribute_procs_on_nodes_pbs(num_procs=1, max_procs_per_node=16):
-    """Compute the distribution of processors on nodes of a PBS cluster."""
+    """Compute the distribution of processors on nodes of a PBS cluster.
+
+    Args:
+        num_procs (int): total number of requested processors
+        max_procs_per_node (int):maximum number of processors of a node on the cluster
+
+    Returns:
+         - num_nodes (int): number of nodes needed for the job
+         - procs_per_node (int): number of processors needed on each node
+    """
     num_nodes = int(np.ceil(num_procs / max_procs_per_node))
     if num_procs % num_nodes == 0:
         procs_per_node = int(num_procs / num_nodes)
