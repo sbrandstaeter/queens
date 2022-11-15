@@ -278,8 +278,8 @@ class JobInterface(Interface):
             str(self.batch_number),
             {
                 'id': job['id'],
-                'expt_dir': str(self.experiment_dir),
-                'expt_name': self.experiment_name,
+                'experiment_dir': str(self.experiment_dir),
+                'experiment_name': self.experiment_name,
             },
         )
 
@@ -304,8 +304,8 @@ class JobInterface(Interface):
         job = {
             'id': job_id,
             'params': variables,
-            'expt_dir': str(self.experiment_dir),
-            'expt_name': self.experiment_name,
+            'experiment_dir': str(self.experiment_dir),
+            'experiment_name': self.experiment_name,
             'resource': resource_name,
             'status': "",  # TODO: before: 'new'
             'submit_time': time.time(),
@@ -364,8 +364,8 @@ class JobInterface(Interface):
         else:
             jobs = self.load_jobs(
                 field_filters={
-                    'expt_dir': str(self.experiment_dir),
-                    'expt_name': self.experiment_name,
+                    'experiment_dir': str(self.experiment_dir),
+                    'experiment_name': self.experiment_name,
                 }
             )
 
@@ -415,7 +415,10 @@ class JobInterface(Interface):
     def _check_job_completions(self, jobid_range):
         """Check job completion for cluster native workflow."""
         jobs = self.load_jobs(
-            field_filters={'expt_dir': str(self.experiment_dir), 'expt_name': self.experiment_name}
+            field_filters={
+                'experiment_dir': str(self.experiment_dir),
+                'experiment_name': self.experiment_name,
+            }
         )
         for check_jobid in jobid_range:
             for resource in self.resources.values():
@@ -470,8 +473,8 @@ class JobInterface(Interface):
                         current_job = self.load_jobs(
                             field_filters={
                                 'id': jobid,
-                                'expt_dir': str(self.experiment_dir),
-                                'expt_name': self.experiment_name,
+                                'experiment_dir': str(self.experiment_dir),
+                                'experiment_name': self.experiment_name,
                             }
                         )
                         if len(current_job) == 1:
@@ -518,7 +521,10 @@ class JobInterface(Interface):
             jobid_range (range):     range of job IDs which are submitted
         """
         jobs = self.load_jobs(
-            field_filters={'expt_dir': str(self.experiment_dir), 'expt_name': self.experiment_name}
+            field_filters={
+                'experiment_dir': str(self.experiment_dir),
+                'experiment_name': self.experiment_name,
+            }
         )
         for jobid in jobid_range:
             for resource in self.resources.values():
