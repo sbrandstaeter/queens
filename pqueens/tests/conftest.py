@@ -24,8 +24,8 @@ def pytest_collection_modifyitems(items):
 def global_mock_abs_singularity_image_path(monkeypatch):
     """Mock the absolute singularity image path.
 
-    The singularity image path depends on local_base_dir() which is
-    mocked globally and per test. This would however mean that every
+    The singularity image path depends on local_base_directory() which
+    is mocked globally and per test. This would however mean that every
     test that needs singularity has to build the image again. Because
     one test does not know about the other ones. To prevent this we
     store the standard image path that is used by the user here and make
@@ -50,7 +50,7 @@ def global_mock_local_base_dir(monkeypatch, tmp_path):
     def mock_local_base_dir():
         return tmp_path
 
-    monkeypatch.setattr(config_directories, "local_base_dir", mock_local_base_dir)
+    monkeypatch.setattr(config_directories, "local_base_directory", mock_local_base_dir)
 
 
 @pytest.fixture(scope="session")

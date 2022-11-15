@@ -93,7 +93,7 @@ def scheduler_type(cluster):
 @pytest.fixture(scope="session")
 def cluster_queens_base_dir(connect_to_resource):
     """Base directory for queens on cluster."""
-    return config_directories.remote_base_dir(remote_connect=connect_to_resource)
+    return config_directories.remote_base_directory(remote_connect=connect_to_resource)
 
 
 @pytest.fixture(scope="session")
@@ -193,7 +193,6 @@ def baci_cluster_paths(cluster_user, connect_to_resource):
 
     Checks also for existence of the executables.
     """
-
     base_directory = pathlib.Path("/home", cluster_user, "workspace", "build")
 
     path_to_executable = base_directory / "baci-release"

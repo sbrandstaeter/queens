@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.cluster_utils import distribute_procs_on_nodes_pbs, get_cluster_job_id
-from pqueens.utils.config_directories import experiment_directory, local_base_dir, remote_base_dir
+from pqueens.utils.config_directories import base_directory, experiment_directory
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.path_utils import relative_path_from_queens
@@ -207,10 +207,10 @@ class ClusterScheduler(Scheduler):
         remote = scheduler_options.get('remote', False)
         if remote:
             remote_connect = scheduler_options['remote']['connect']
-            base_dir = remote_base_dir(remote_connect)
         else:
             remote_connect = None
-            base_dir = local_base_dir()
+
+        base_dir = base_directory(remote_connect)
 
         experiment_dir = experiment_directory(
             experiment_name=experiment_name, remote_connect=remote_connect

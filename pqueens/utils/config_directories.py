@@ -10,14 +10,14 @@ BASE_DATA_DIR = "queens"
 EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
 
 
-def local_base_dir():
+def local_base_directory():
     """Base directory holding all queens related data on local machine."""
     base_dir = pathlib.Path().home() / BASE_DATA_DIR
     create_directory(base_dir)
     return base_dir
 
 
-def remote_base_dir(remote_connect):
+def remote_base_directory(remote_connect):
     """Base directory holding all queens related data on remote machine."""
     _, _, remote_home, _ = run_subprocess(
         "echo ~",
@@ -31,12 +31,17 @@ def remote_base_dir(remote_connect):
     return base_dir
 
 
+def base_directory(remote_connect=None):
+    """Base directory holding all queens related data."""
+    if remote_connect is None:
+        return local_base_directory()
+    else:
+        return remote_base_directory(remote_connect)
+
+
 def experiments_base_directory(remote_connect=None):
     """Base directory for all experiments on the computing machine."""
-    if remote_connect is None:
-        base_dir = local_base_dir()
-    else:
-        base_dir = remote_base_dir(remote_connect)
+    base_dir = base_directory(remote_connect=remote_connect)
     experiments_base_dir = base_dir / EXPERIMENTS_BASE_FOLDER_NAME
     create_directory(experiments_base_dir, remote_connect=remote_connect)
     return experiments_base_dir
@@ -72,6 +77,6 @@ def create_directory(dir_path, remote_connect=None):
         _logger.debug("%s already exists%s.", dir_path, location)
 
 
-ABS_SINGULARITY_IMAGE_PATH = local_base_dir() / "singularity_image.sif"
+ABS_SINGULARITY_IMAGE_PATH = local_base_directory() / "singularity_image.sif"
 
-LOCAL_TEMPORARY_SUBMISSION_SCRIPT = local_base_dir() / "temporary_submission_script.sh"
+LOCAL_TEMPORARY_SUBMISSION_SCRIPT = local_base_directory() / "temporary_submission_script.sh"
