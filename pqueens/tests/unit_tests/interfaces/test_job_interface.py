@@ -41,8 +41,8 @@ class TestJobInterface(unittest.TestCase):
         dummy_resource = {}
         dummy_resource['my_machine'] = {
             'scheduler': 'my_local_scheduler',
-            'max-concurrent': 1,
-            'max-finished-jobs': 100,
+            'max_concurrent': 1,
+            'max_finished_jobs': 100,
         }
         self.config['restart'] = False
 

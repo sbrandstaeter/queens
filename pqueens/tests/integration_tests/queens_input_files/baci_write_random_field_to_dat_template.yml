@@ -55,8 +55,8 @@ data_processor_baci:
 resources:
   local_machine:
     scheduler: local_scheduler
-    max-concurrent: 1
-    max-finished-jobs: 10001
+    max_concurrent: 1
+    max_finished_jobs: 10001
 local_scheduler:
   type: standard
   experiment_dir: {experiment_dir}

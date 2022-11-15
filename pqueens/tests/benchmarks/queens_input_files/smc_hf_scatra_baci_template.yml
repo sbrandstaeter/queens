@@ -64,8 +64,8 @@ interface:
 resources:
   local_machine:
     scheduler: local_scheduler
-    max-concurrent: 1
-    max-finished-jobs: 10000
+    max_concurrent: 1
+    max_finished_jobs: 10000
 local_scheduler:
   experiment_dir: {experiment_dir}
   type: standard

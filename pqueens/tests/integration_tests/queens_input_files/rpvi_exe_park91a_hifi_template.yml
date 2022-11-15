@@ -78,8 +78,8 @@ gradient_data_processor:
 resources:
   local_machine:
     scheduler: local_scheduler
-    max-concurrent: 1
-    max-finished-jobs: 1000
+    max_concurrent: 1
+    max_finished_jobs: 1000
 local_scheduler:
   experiment_dir: {experiment_dir}
   type: standard

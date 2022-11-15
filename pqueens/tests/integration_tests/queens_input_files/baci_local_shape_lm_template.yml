@@ -46,10 +46,10 @@ data_processor_baci:
     problem_dimension: 2d
     visualization: false
 resources:
-  my-machine:
+  my_machine:
     scheduler: scheduler
-    max-concurrent: 3
-    max-finished-jobs: 10
+    max_concurrent: 3
+    max_finished_jobs: 10
 parameters:
   random_variables:
     E:

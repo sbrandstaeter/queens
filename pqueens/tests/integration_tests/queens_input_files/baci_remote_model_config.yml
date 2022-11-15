@@ -40,8 +40,8 @@ data_processor_baci:
 resources:
   cluster:
     scheduler: scheduler
-    max-concurrent: 2
-    max-finished-jobs: 10
+    max_concurrent: 2
+    max_finished_jobs: 10
 scheduler:
   type: {scheduler_type}
   experiment_dir: {experiment_dir}
