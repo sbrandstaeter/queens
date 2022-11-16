@@ -23,8 +23,8 @@ def create_singularity_image():
     command_string = 'singularity --version'
     run_subprocess(command_string, additional_error_message='Singularity could not be executed!')
 
-    definition_path = 'singularity_recipe.def'
-    abs_definition_path = relative_path_from_queens(definition_path)
+    definition_path = 'singularity/singularity_recipe.def'
+    abs_definition_path = relative_path_from_pqueens(definition_path)
     command_list = [
         "cd",
         str(PATH_TO_QUEENS),
@@ -380,14 +380,12 @@ def _check_if_files_changed():
         'utils/',
         'external_geometry/',
         'randomfields/',
+        'singularity/',
     ]
 
     # Specific files in the singularity image relevant for a run
-    files_to_compare_list = [
-        "database/mongodb.py",
-        '../setup_remote.py',
-        'remote_main.py',
-    ]
+    files_to_compare_list = ["database/mongodb.py"]
+
     # generate absolute paths
     files_to_compare_list = [relative_path_from_pqueens(file) for file in files_to_compare_list]
     folders_to_compare_list = [relative_path_from_pqueens(file) for file in folders_to_compare_list]

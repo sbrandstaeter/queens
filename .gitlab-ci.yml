@@ -91,7 +91,7 @@ imcs-build_conda_env:
 .build_singularity:
   stage: build
   script:
-    - unset SINGULARITY_BIND && singularity build --fakeroot singularity_image.sif singularity_recipe.def
+    - unset SINGULARITY_BIND && singularity build --fakeroot singularity_image.sif pqueens/singularity/singularity_recipe.def
     - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
   only:
     variables:
@@ -118,6 +118,10 @@ update:
     - conda activate piptools-env
     - pip install pip-tools
     - pip-compile --upgrade
+    # Update singularity image requirements
+    - cd pqueens/singularity
+    - pip-compile --upgrade
+    - cd $CI_PROJECT_DIR
     - conda deactivate
     - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
     - GITLAB_USER_NAME=project_${CI_PROJECT_ID}_bot
