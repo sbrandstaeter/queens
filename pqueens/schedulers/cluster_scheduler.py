@@ -18,14 +18,14 @@ from pqueens.utils.script_generator import generate_submission_script
 
 _logger = logging.getLogger(__name__)
 
-DEEP_SCHEDULER_TYPE = "deep"
-BRUTEFORCE_SCHEDULER_TYPE = "bruteforce"
-CHARON_SCHEDULER_TYPE = "charon"
+DEEP_CLUSTER_TYPE = "deep"
+BRUTEFORCE_CLUSTER_TYPE = "bruteforce"
+CHARON_CLUSTER_TYPE = "charon"
 
-VALID_PBS_SCHEDULER_TYPES = (DEEP_SCHEDULER_TYPE,)
-VALID_SLURM_SCHEDULER_TYPES = (BRUTEFORCE_SCHEDULER_TYPE, CHARON_SCHEDULER_TYPE)
+VALID_PBS_CLUSTER_TYPES = (DEEP_CLUSTER_TYPE,)
+VALID_SLURM_CLUSTER_TYPES = (BRUTEFORCE_CLUSTER_TYPE, CHARON_CLUSTER_TYPE)
 
-VALID_CLUSTER_SCHEDULER_TYPES = VALID_PBS_SCHEDULER_TYPES + VALID_SLURM_SCHEDULER_TYPES
+VALID_CLUSTER_CLUSTER_TYPES = VALID_PBS_CLUSTER_TYPES + VALID_SLURM_CLUSTER_TYPES
 
 
 @dataclass(frozen=True)
@@ -103,9 +103,9 @@ CHARON_CONFIG = ClusterConfig(
 )
 
 CLUSTER_CONFIGS = {
-    DEEP_SCHEDULER_TYPE: DEEP_CONFIG,
-    BRUTEFORCE_SCHEDULER_TYPE: BRUTEFORCE_CONFIG,
-    CHARON_SCHEDULER_TYPE: CHARON_CONFIG,
+    DEEP_CLUSTER_TYPE: DEEP_CONFIG,
+    BRUTEFORCE_CLUSTER_TYPE: BRUTEFORCE_CONFIG,
+    CHARON_CLUSTER_TYPE: CHARON_CONFIG,
 }
 
 
@@ -113,6 +113,7 @@ class ClusterScheduler(Scheduler):
     """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS.
 
     Attributes:
+        cluster_type (str):        type of cluster chosen in QUEENS input file
         port (int):                (only for remote scheduling with Singularity) port of
                                    remote resource for ssh port-forwarding to database
         cluster_config (dict):     configuration data of the cluster
@@ -135,6 +136,7 @@ class ClusterScheduler(Scheduler):
         cluster_options,
         singularity,
         scheduler_type,
+        cluster_type,
         singularity_manager,
         remote,
         remote_connect,
@@ -153,6 +155,7 @@ class ClusterScheduler(Scheduler):
                                        cluster options
             singularity (bool):        flag for use of Singularity containers
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
+            cluster_type (str):        type of cluster chosen in QUEENS input file
             singularity_manager (obj): instance of Singularity-manager class
             remote (bool):             flag for remote scheduling
             remote_connect (str):      (only for remote scheduling) address of remote
@@ -167,6 +170,7 @@ class ClusterScheduler(Scheduler):
             singularity,
             scheduler_type,
         )
+        self.cluster_type = cluster_type
         self.cluster_config = cluster_config
         self.cluster_options = cluster_options
         self.singularity_manager = singularity_manager
@@ -196,6 +200,8 @@ class ClusterScheduler(Scheduler):
         experiment_name = config['global_settings']['experiment_name']
         input_file = pathlib.Path(config["input_file"])
 
+        scheduler_type = scheduler_options["scheduler_type"]
+
         singularity = scheduler_options.get('singularity', False)
         if not isinstance(singularity, bool):
             raise TypeError(
@@ -223,17 +229,17 @@ class ClusterScheduler(Scheduler):
                 "Abort..."
             )
 
-        scheduler_type = scheduler_options["scheduler_type"]
-        if not scheduler_type in VALID_CLUSTER_SCHEDULER_TYPES:
+        cluster_type = scheduler_options["cluster_type"]
+        if not cluster_type in VALID_CLUSTER_CLUSTER_TYPES:
             raise ValueError(
-                f"Unknown cluster scheduler type: {scheduler_type}.\n"
-                f"Known types are: {VALID_CLUSTER_SCHEDULER_TYPES}"
+                f"Unknown cluster scheduler type: {cluster_type}.\n"
+                f"Known types are: {VALID_CLUSTER_CLUSTER_TYPES}"
             )
 
-        cluster_config = CLUSTER_CONFIGS.get(scheduler_type)
+        cluster_config = CLUSTER_CONFIGS.get(cluster_type)
         if cluster_config is None:
             raise ValueError(
-                f"Unable to find cluster_config for scheduler type: {scheduler_type}.\n"
+                f"Unable to find cluster_config for scheduler type: {cluster_type}.\n"
                 f"Available configs are: {CLUSTER_CONFIGS.items()}"
             )
 
@@ -256,7 +262,7 @@ class ClusterScheduler(Scheduler):
 
         num_procs = scheduler_options.get('num_procs', 1)
         # set cluster options required specifically for PBS or Slurm
-        if scheduler_type in VALID_PBS_SCHEDULER_TYPES:
+        if cluster_type in VALID_PBS_CLUSTER_TYPES:
             cluster_options['pbs_queue'] = cluster_options.get('pbs_queue', 'batch')
             max_procs_per_node = scheduler_options.get('pbs_num_avail_ppn', 16)
             num_nodes, procs_per_node = distribute_procs_on_nodes_pbs(
@@ -264,12 +270,12 @@ class ClusterScheduler(Scheduler):
             )
             cluster_options['pbs_nodes'] = num_nodes
             cluster_options['pbs_ppn'] = procs_per_node
-        elif scheduler_type in VALID_SLURM_SCHEDULER_TYPES:
+        elif cluster_type in VALID_SLURM_CLUSTER_TYPES:
             cluster_options['slurm_ntasks'] = num_procs
         else:
             raise ValueError(
-                f"Unknown cluster scheduler type: {scheduler_type}.\n"
-                f"Known types are: {VALID_CLUSTER_SCHEDULER_TYPES}"
+                f"Unknown cluster scheduler type: {cluster_type}.\n"
+                f"Known types are: {VALID_CLUSTER_CLUSTER_TYPES}"
             )
 
         if singularity:
@@ -301,6 +307,7 @@ class ClusterScheduler(Scheduler):
             cluster_options=cluster_options,
             singularity=singularity,
             scheduler_type=scheduler_type,
+            cluster_type=cluster_type,
             singularity_manager=singularity_manager,
             remote=remote,
             remote_connect=remote_connect,
@@ -387,9 +394,7 @@ class ClusterScheduler(Scheduler):
             )
 
             # check matching of job ID
-            cluster_job_id = get_cluster_job_id(
-                self.scheduler_type, stdout, VALID_PBS_SCHEDULER_TYPES
-            )
+            cluster_job_id = get_cluster_job_id(self.cluster_type, stdout, VALID_PBS_CLUSTER_TYPES)
 
             try:
                 return int(cluster_job_id)

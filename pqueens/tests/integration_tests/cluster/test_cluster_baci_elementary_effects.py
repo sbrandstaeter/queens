@@ -11,6 +11,11 @@ import numpy as np
 import pytest
 
 from pqueens import run
+from pqueens.schedulers.cluster_scheduler import (
+    BRUTEFORCE_CLUSTER_TYPE,
+    CHARON_CLUSTER_TYPE,
+    DEEP_CLUSTER_TYPE,
+)
 from pqueens.utils import injector
 from pqueens.utils.config_directories import experiment_directory
 from pqueens.utils.run_subprocess import run_subprocess
@@ -21,9 +26,9 @@ _logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     "cluster",
     [
-        pytest.param("deep", marks=pytest.mark.lnm_cluster),
-        pytest.param("bruteforce", marks=pytest.mark.lnm_cluster),
-        pytest.param("charon", marks=pytest.mark.imcs_cluster),
+        pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(CHARON_CLUSTER_TYPE, marks=pytest.mark.imcs_cluster),
     ],
     indirect=True,
 )
@@ -44,7 +49,6 @@ def test_cluster_baci_elementary_effects(
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
-    scheduler_type = cluster_testsuite_settings["scheduler_type"]
     singularity_remote_ip = cluster_testsuite_settings["singularity_remote_ip"]
 
     path_to_executable = baci_cluster_paths["path_to_executable"]
@@ -95,7 +99,6 @@ def test_cluster_baci_elementary_effects(
         'path_to_post_processor': str(path_to_post_processor),
         'connect_to_resource': connect_to_resource,
         'cluster': cluster,
-        'scheduler_type': scheduler_type,
         'singularity_remote_ip': singularity_remote_ip,
     }
     queens_input_file_template = pathlib.Path(

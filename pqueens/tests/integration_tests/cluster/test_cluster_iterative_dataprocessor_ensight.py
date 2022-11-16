@@ -52,7 +52,6 @@ def test_cluster_baci_data_processor_ensight(
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
-    scheduler_type = cluster_testsuite_settings["scheduler_type"]
     singularity_remote_ip = cluster_testsuite_settings["singularity_remote_ip"]
 
     path_to_executable = baci_cluster_paths["path_to_executable"]
@@ -104,7 +103,6 @@ def test_cluster_baci_data_processor_ensight(
         'path_to_post_processor': str(path_to_post_processor),
         'connect_to_resource': connect_to_resource,
         'cluster': cluster,
-        'scheduler_type': scheduler_type,
         'singularity_remote_ip': singularity_remote_ip,
     }
     queens_input_file_template = pathlib.Path(inputdir, "baci_remote_model_config.json")

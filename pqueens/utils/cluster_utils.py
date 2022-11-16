@@ -2,19 +2,19 @@
 import numpy as np
 
 
-def get_cluster_job_id(scheduler_type, output_str_cluster, pbs_scheduler_types):
+def get_cluster_job_id(cluster_type, output_str_cluster, pbs_cluster_types):
     """Retrieve id of a job after submitting it to the cluster.
 
     Args:
-        scheduler_type (str): Type of cluster scheduler
+        cluster_type (str): Type of cluster
         output_str_cluster (string): Output returned when submitting the job
-        pbs_scheduler_types (list): List of valid schedulers with pbs
+        pbs_cluster_types (list): List of valid clusters with pbs scheduler
 
     Returns:
          job_id_return (str/None): job ID return value
     """
     if output_str_cluster:
-        if scheduler_type in pbs_scheduler_types:
+        if cluster_type in pbs_cluster_types:
             job_cluster_id_return = int(output_str_cluster.split('.')[0])
         else:
             job_cluster_id_return = int(output_str_cluster.split()[-1])

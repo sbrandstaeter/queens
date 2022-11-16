@@ -7,9 +7,9 @@ import pathlib
 import pytest
 
 from pqueens.schedulers.cluster_scheduler import (
-    BRUTEFORCE_SCHEDULER_TYPE,
-    CHARON_SCHEDULER_TYPE,
-    DEEP_SCHEDULER_TYPE,
+    BRUTEFORCE_CLUSTER_TYPE,
+    CHARON_CLUSTER_TYPE,
+    DEEP_CLUSTER_TYPE,
 )
 from pqueens.utils import config_directories
 from pqueens.utils.manage_singularity import SingularityManager
@@ -50,9 +50,9 @@ def cluster(request):
 @pytest.fixture(scope="session")
 def cluster_address(cluster):
     """String used for ssh connect to the cluster."""
-    if cluster == "deep" or cluster == "bruteforce":
+    if cluster == DEEP_CLUSTER_TYPE or cluster == BRUTEFORCE_CLUSTER_TYPE:
         address = cluster + '.lnm.ed.tum.de'
-    elif cluster == "charon":
+    elif cluster == CHARON_CLUSTER_TYPE:
         address = cluster + '.bauv.unibw-muenchen.de'
     return address
 
@@ -60,34 +60,21 @@ def cluster_address(cluster):
 @pytest.fixture(scope="session")
 def connect_to_resource(cluster_user, cluster_address):
     """String used for ssh connect to the cluster."""
-    connect_to_resource = cluster_user + '@' + cluster_address
-    return connect_to_resource
+    return cluster_user + '@' + cluster_address
 
 
 @pytest.fixture(scope="session")
 def cluster_singularity_ip(cluster):
     """Identify IP address of cluster."""
-    if cluster == "deep":
+    if cluster == DEEP_CLUSTER_TYPE:
         cluster_singularity_ip = '129.187.58.20'
-    elif cluster == "bruteforce":
+    elif cluster == BRUTEFORCE_CLUSTER_TYPE:
         cluster_singularity_ip = '10.10.0.1'
-    elif cluster == "charon":
+    elif cluster == CHARON_CLUSTER_TYPE:
         cluster_singularity_ip = '192.168.1.253'
     else:
         cluster_singularity_ip = None
     return cluster_singularity_ip
-
-
-@pytest.fixture(scope="session")
-def scheduler_type(cluster):
-    """Switch type of scheduler according to cluster."""
-    if cluster == "deep":
-        scheduler_type = DEEP_SCHEDULER_TYPE
-    elif cluster == "bruteforce":
-        scheduler_type = BRUTEFORCE_SCHEDULER_TYPE
-    elif cluster == "charon":
-        scheduler_type = CHARON_SCHEDULER_TYPE
-    return scheduler_type
 
 
 @pytest.fixture(scope="session")
@@ -167,7 +154,6 @@ def cluster_testsuite_settings(
     cluster_address,
     connect_to_resource,
     prepare_singularity,
-    scheduler_type,
     cluster_singularity_ip,
 ):
     """Collection of settings needed for all cluster tests."""
@@ -181,7 +167,6 @@ def cluster_testsuite_settings(
     cluster_testsuite_settings["cluster_user"] = cluster_user
     cluster_testsuite_settings["cluster_address"] = cluster_address
     cluster_testsuite_settings["connect_to_resource"] = connect_to_resource
-    cluster_testsuite_settings["scheduler_type"] = scheduler_type
     cluster_testsuite_settings["singularity_remote_ip"] = cluster_singularity_ip
 
     return cluster_testsuite_settings

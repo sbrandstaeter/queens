@@ -77,7 +77,8 @@
     }
   },
   "scheduler": {
-    "scheduler_type": "{scheduler_type}",
+    "scheduler_type": "cluster",
+    "cluster_type": "{cluster}",
     "num_procs": 1,
     "num_procs_post": 1,
     "cluster": {
