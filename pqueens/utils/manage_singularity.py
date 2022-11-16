@@ -380,14 +380,12 @@ def _check_if_files_changed():
         'utils/',
         'external_geometry/',
         'randomfields/',
+        'singularity/',
     ]
 
     # Specific files in the singularity image relevant for a run
-    files_to_compare_list = [
-        "database/mongodb.py",
-        '../setup_remote.py',
-        'remote_main.py',
-    ]
+    files_to_compare_list = ["database/mongodb.py"]
+
     # generate absolute paths
     files_to_compare_list = [relative_path_from_pqueens(file) for file in files_to_compare_list]
     folders_to_compare_list = [relative_path_from_pqueens(file) for file in folders_to_compare_list]
