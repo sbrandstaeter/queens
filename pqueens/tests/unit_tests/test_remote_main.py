@@ -3,7 +3,7 @@
 
 import pytest
 
-from pqueens.remote_main import main
+from pqueens.singularity.remote_main import main
 
 
 @pytest.fixture(scope="module", params=[True, False])
@@ -36,7 +36,7 @@ def test_exit_conditions_remote_main(mocker, finalize_fail, port):
     }
 
     mocker.patch(
-        'pqueens.remote_main.get_config_dict',
+        'pqueens.singularity.remote_main.get_config_dict',
         return_value=dummy_dict,
     )
 
@@ -56,15 +56,15 @@ def test_exit_conditions_remote_main(mocker, finalize_fail, port):
                 raise ValueError(f"Mock finalize_job_in_db error")
 
     mocker.patch(
-        'pqueens.remote_main.from_config_create_driver',
+        'pqueens.singularity.remote_main.from_config_create_driver',
         return_value=driver_mock(finalize_fail),
     )
 
     mocker.patch(
-        'pqueens.remote_main.DB_module.from_config_create_database',
+        'pqueens.singularity.remote_main.DB_module.from_config_create_database',
     )
 
-    mocker.patch("pqueens.remote_main.DB_module.database")
+    mocker.patch("pqueens.singularity.remote_main.DB_module.database")
 
     # Dummy arguments
     args = [

@@ -13,8 +13,9 @@ variables at runtime.
 %files
   pqueens /queens/pqueens
   environment.yml /queens/environment.yml
-  requirements.txt /queens/requirements.txt
-  setup_remote.py /queens/setup_remote.py
+  pqueens/singularity/requirements.txt /queens/requirements.txt
+  pqueens/singularity/setup_remote.py /queens/setup_remote.py
+  pqueens/singularity/remote_main.py /queens/pqueens/remote_main.py
 
 %setup
   mkdir $SINGULARITY_ROOTFS/lnm
