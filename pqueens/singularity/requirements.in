@@ -1,0 +1,13 @@
+docker
+netcdf4
+cython
+numpy
+pymongo
+matplotlib
+plotly
+pandas
+vtk
+xarray
+scipy
+pyyaml
+pyfiglet
