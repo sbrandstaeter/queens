@@ -6,10 +6,8 @@ INVAAA minimal model.
 
 import json
 import os
-import pickle
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 from pqueens import run
@@ -81,7 +79,12 @@ def remove_job_output_directory(experiment_directory, jobid):
 
 
 def test_baci_elementary_effects(
-    inputdir, third_party_inputs, baci_link_paths, singularity_bool, experiment_directory
+    inputdir,
+    third_party_inputs,
+    baci_link_paths,
+    singularity_bool,
+    experiment_directory,
+    baci_elementary_effects_check_results,
 ):
     """Integration test for the Elementary Effects Iterator together with BACI.
 
@@ -94,6 +97,7 @@ def test_baci_elementary_effects(
         baci_link_paths(str): Path to the links pointing to baci-release and post_drt_monitor
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
         experiment_directory (LocalPath): experiment directory depending on singularity_bool
+        baci_elementary_effects_check_results (function): function to check the results
 
     Returns:
         None
@@ -119,19 +123,4 @@ def test_baci_elementary_effects(
 
     result_file_name = experiment_name + ".pickle"
     result_file = os.path.join(experiment_directory, result_file_name)
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
-
-    # test results of SA analysis
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
-    )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
-    )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
-    )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.136631, 0.140794]), rtol=1.0e-3
-    )
+    baci_elementary_effects_check_results(result_file)

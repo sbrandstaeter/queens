@@ -22,7 +22,7 @@ from pqueens.utils.run_subprocess import run_subprocess
     indirect=True,
 )
 def test_cluster_baci_data_processor_ensight(
-    inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
+    inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths, user
 ):
     """Test remote BACI simulations with ensight data-processor.
 
@@ -62,10 +62,10 @@ def test_cluster_baci_data_processor_ensight(
     path_to_post_processor = baci_cluster_paths["path_to_post_processor"]
 
     # unique experiment name
-    experiment_name = cluster + "_remote_data_processor_ensight"
+    experiment_name = cluster + "_data_processor_ensight"
 
-    template = pathlib.Path(inputdir, "baci_remote_model_config.json")
-    input_file = pathlib.Path(tmpdir, "baci_remote_model_config.json")
+    template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.json")
+    input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.json")
 
     # specific folder for this test
     cluster_experiment_dir = cluster_queens_testing_folder.joinpath(experiment_name)
@@ -122,6 +122,7 @@ def test_cluster_baci_data_processor_ensight(
         'cluster': cluster,
         'scheduler_type': scheduler_type,
         'singularity_remote_ip': singularity_remote_ip,
+        'user': user,
     }
 
     injector.inject(dir_dict, template, input_file)

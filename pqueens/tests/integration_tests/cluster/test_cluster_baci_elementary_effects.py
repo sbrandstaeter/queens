@@ -4,10 +4,8 @@ Elementary Effects simulations with BACI using the INVAAA minimal model.
 """
 
 import pathlib
-import pickle
 from pathlib import Path
 
-import numpy as np
 import pytest
 
 from pqueens import run
@@ -25,7 +23,12 @@ from pqueens.utils.run_subprocess import run_subprocess
     indirect=True,
 )
 def test_cluster_baci_elementary_effects(
-    inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
+    inputdir,
+    tmpdir,
+    third_party_inputs,
+    cluster_testsuite_settings,
+    baci_cluster_paths,
+    baci_elementary_effects_check_results,
 ):
     """Test for the Elementary Effects Iterator on the clusters with BACI.
 
@@ -34,6 +37,7 @@ def test_cluster_baci_elementary_effects(
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         cluster_testsuite_settings (dict): Collection of cluster specific settings
+        baci_elementary_effects_check_results (function): function to check the results
 
     Returns:
         None
@@ -122,19 +126,4 @@ def test_cluster_baci_elementary_effects(
     run(Path(input_file), Path(tmpdir))
 
     result_file = pathlib.Path(tmpdir, experiment_name + '.pickle')
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
-
-    # test results of SA analysis
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
-    )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
-    )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
-    )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.136631, 0.140794]), rtol=1.0e-3
-    )
+    baci_elementary_effects_check_results(result_file)
