@@ -6,7 +6,7 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
-BASE_DATA_DIR = "queens"
+BASE_DATA_DIR = "queens-simulation-data"
 EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
 
 
@@ -35,8 +35,8 @@ def base_directory(remote_connect=None):
     """Base directory holding all queens related data."""
     if remote_connect is None:
         return local_base_directory()
-    else:
-        return remote_base_directory(remote_connect)
+
+    return remote_base_directory(remote_connect)
 
 
 def experiments_base_directory(remote_connect=None):
