@@ -373,7 +373,7 @@ class ClusterScheduler(Scheduler):
 
             # second/fourth to last entry should be job status
             status = output[self.job_status_location]
-            if status in ['Q', 'R', 'H', 'S']:
+            if status in ['Q', 'R', 'H', 'E', 'S', 'PD', 'CG']:
                 completed = False
 
         return completed, failed

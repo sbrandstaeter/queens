@@ -4,6 +4,7 @@ variables:
   # flags to turn on/ off tests for specific platforms
   UBUNTU_TESTS: "1"
   CLUSTER_TESTS: "0"
+  CLUSTER_NATIVE_TESTS: "0"
   BENCHMARKS: "0"
   UPDATE_REQUIREMENTS: "0"
   # optional parameters for pytest calls
@@ -43,6 +44,7 @@ stages:
   except:
     variables:
       - $CLUSTER_TESTS == "1"
+      - $CLUSTER_NATIVE_TESTS == "1"
       - $BENCHMARKS == "1"
 #----------------------------------------------------------------------------------------------
 .codechecks_settings:
@@ -76,6 +78,23 @@ stages:
     when: always
     expire_in: 4 weeks
 
+.build_conda_env_cluster_native:
+  stage: build
+  script:
+    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - conda activate queens-$CI_PIPELINE_ID
+    - pip install -e .[develop]
+    - conda env export > pipeline_conda_environment.yml
+  only:
+    variables:
+      - $CLUSTER_NATIVE_TESTS == "1"
+  artifacts:
+    name: "conda_env-$CI_PIPELINE_ID.yml"
+    paths:
+      - pipeline_conda_environment.yml
+    when: always
+    expire_in: 4 weeks
+
 lnm-build_conda_env:
   extends:
     - .build_conda_env
@@ -87,6 +106,18 @@ imcs-build_conda_env:
     - .build_conda_env
   tags:
     - imcs-build
+
+bruteforce-native-build_conda_env:
+  extends:
+    - .build_conda_env_cluster_native
+  tags:
+    - bruteforce-native-test
+
+deep-native-build_conda_env:
+  extends:
+    - .build_conda_env_cluster_native
+  tags:
+    - deep-native-test
 #----------------------------------------------------------------------------------------------
 .build_singularity:
   stage: build
@@ -219,6 +250,7 @@ license_check:
   except:
     variables:
       - $CLUSTER_TESTS == "1"
+      - $CLUSTER_NATIVE_TESTS == "1"
       - $BENCHMARKS == "1"
     refs:
       - master
@@ -262,6 +294,7 @@ imcs-ubuntu_full_test_suite_develop:
   except:
     variables:
       - $CLUSTER_TESTS == "1"
+      - $CLUSTER_NATIVE_TESTS == "1"
       - $BENCHMARKS == "1"
 
 lnm-ubuntu_full_test_suite_master:
@@ -320,6 +353,41 @@ imcs-cluster_tests:
     - imcs-build_singularity
   tags:
     - imcs-ubuntu
+#---------------------------------------------------------------------------------------------------
+# Cluster tests native
+#---------------------------------------------------------------------------------------------------
+.cluster_tests_native_conditions:
+  only:
+    variables:
+      - $CLUSTER_NATIVE_TESTS == "1"
+#---------------------------------------------------------------------------------------------------
+bruteforce-native-cluster_tests:
+  extends:
+    - .cluster_tests_native_conditions
+  stage: tests
+  before_script:
+    - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
+  script:
+    - conda activate queens-$CI_PIPELINE_ID
+    - pytest -v -m lnm_cluster_bruteforce_native --no-cov
+  needs:
+    - bruteforce-native-build_conda_env
+  tags:
+    - bruteforce-native-test
+
+deep-native-cluster_tests:
+  extends:
+    - .cluster_tests_native_conditions
+  stage: tests
+  before_script:
+    - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
+  script:
+    - conda activate queens-$CI_PIPELINE_ID
+    - pytest -v -m lnm_cluster_deep_native --no-cov
+  needs:
+    - deep-native-build_conda_env
+  tags:
+    - deep-native-test
 #---------------------------------------------------------------------------------------------------
 # Benchmarks
 #---------------------------------------------------------------------------------------------------
@@ -455,6 +523,7 @@ pages:
   except:
     variables:
       - $CLUSTER_TESTS == "1"
+      - $CLUSTER_NATIVE_TESTS == "1"
       - $BENCHMARKS == "1"
 
 #---------------------------------------------------------------------------------------------------
@@ -472,14 +541,45 @@ pages:
     variables:
       - $UBUNTU_TESTS == "1"
 
+.remove_conda_env_cluster_native:
+  stage: cleanup
+  script:
+    - conda env remove -n queens-$CI_PIPELINE_ID
+  when: always
+  variables:
+    GIT_STRATEGY: none
+  only:
+    variables:
+      - $CLUSTER_NATIVE_TESTS == "1"
+
 lnm-remove_conda_env_and_singularity_image:
   extends:
     - .remove_conda_env_and_singularity_image
+  dependencies:
+    - lnm-build_conda_env
   tags:
     - lnm-build
 
 imcs-remove_conda_env_and_singularity_image:
   extends:
     - .remove_conda_env_and_singularity_image
+  dependencies:
+    - imcs-build_conda_env
   tags:
     - imcs-build
+
+bruteforce-cluster-native-remove_conda_env:
+  extends:
+    - .remove_conda_env_cluster_native
+  dependencies:
+    - bruteforce-native-build_conda_env
+  tags:
+    - bruteforce-native-test
+
+deep-cluster-native-remove_conda_env:
+  extends:
+    - .remove_conda_env_cluster_native
+  dependencies:
+    - deep-native-build_conda_env
+  tags:
+    - deep-native-test
