@@ -141,7 +141,7 @@ class StandardScheduler(Scheduler):
             f"--job_id={job_id}",
             f"--batch={batch}",
             "--port=000",
-            f"--path_json={self.input_file}",
+            f"--input={self.input_file}",
             f"--driver_name={self.driver_name}",
             f"--experiment_dir={self.experiment_dir}",
         ]

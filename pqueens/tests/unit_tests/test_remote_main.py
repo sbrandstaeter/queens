@@ -76,7 +76,7 @@ def test_exit_conditions_remote_main(mocker, finalize_fail, port):
         "--job_id=2",
         "--batch=10",
         "--port=" + port,
-        "--path_json=dummypath",
+        "--input=dummypath",
         "--post=true",
         "--experiment_dir=dummy_workdir",
     ]

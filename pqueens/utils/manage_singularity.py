@@ -316,26 +316,6 @@ class SingularityManager:
                 run_subprocess(command_string)
             _logger.info('Active QUEENS remote to local port-forwardings were closed successfully!')
 
-    def copy_temp_json(self):
-        """Copies a (temporary) JSON input-file to the remote machine.
-
-        Is needed to execute some parts of QUEENS within the singularity image on the remote,
-        given the input configurations.
-
-        Returns:
-            None
-        """
-        command_list = [
-            "scp",
-            str(self.input_file),
-            self.remote_connect + ':' + str(self.singularity_path.joinpath('temp.json')),
-        ]
-        command_string = ' '.join(command_list)
-        run_subprocess(
-            command_string,
-            additional_error_message="Was not able to copy temporary input file to remote!",
-        )
-
 
 def new_singularity_image_needed():
     """Indicate if a new singularity image needs to be build.

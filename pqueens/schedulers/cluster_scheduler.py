@@ -130,6 +130,7 @@ class ClusterScheduler(Scheduler):
         experiment_name,
         input_file,
         experiment_dir,
+        remote_input_file,
         driver_name,
         config,
         cluster_config,
@@ -147,6 +148,7 @@ class ClusterScheduler(Scheduler):
             experiment_name (str):     name of QUEENS experiment
             input_file (path):         path to QUEENS input file
             experiment_dir (path):     path to QUEENS experiment directory
+            remote_input_file (path):  path to QUEENS input file on remote
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
@@ -175,6 +177,7 @@ class ClusterScheduler(Scheduler):
         self.cluster_options = cluster_options
         self.singularity_manager = singularity_manager
         self.remote = remote
+        self.remote_input_file = remote_input_file
         self.port = None
         self.remote_connect = remote_connect
 
@@ -221,6 +224,11 @@ class ClusterScheduler(Scheduler):
         experiment_dir = experiment_directory(
             experiment_name=experiment_name, remote_connect=remote_connect
         )
+
+        if remote:
+            remote_input_file = experiment_dir / input_file.name
+        else:
+            remote_input_file = None
 
         if remote and not singularity:
             raise NotImplementedError(
@@ -301,6 +309,7 @@ class ClusterScheduler(Scheduler):
             experiment_name=experiment_name,
             input_file=input_file,
             experiment_dir=experiment_dir,
+            remote_input_file=remote_input_file,
             driver_name=driver_name,
             config=config,
             cluster_config=cluster_config,
@@ -337,7 +346,27 @@ class ClusterScheduler(Scheduler):
                     address_localhost
                 )
 
-                self.singularity_manager.copy_temp_json()
+                self._copy_input_file_to_remote()
+
+    def _copy_input_file_to_remote(self):
+        """Copies a (temporary) JSON input-file to the remote machine.
+
+        Is needed to execute some parts of QUEENS within the singularity image on the remote,
+        given the input configurations.
+
+        Returns:
+            None
+        """
+        command_list = [
+            "rsync -av",
+            str(self.input_file),
+            self.remote_connect + ':' + str(self.remote_input_file),
+        ]
+        command_string = ' '.join(command_list)
+        run_subprocess(
+            command_string,
+            additional_error_message="Was not able to copy temporary input file to remote!",
+        )
 
     def _submit_singularity(self, job_id, batch):
         """Submit job remotely to Singularity.
@@ -354,9 +383,13 @@ class ClusterScheduler(Scheduler):
             # destination directory for jobscript
             self.cluster_options['job_name'] = f"{self.experiment_name}_{job_id}"
             self.cluster_options['INPUT'] = (
-                f"--job_id={job_id} --batch={batch} --port={self.port} --path_json="
-                + f"{self.singularity_manager.singularity_path} --driver_name="
-                + f"{self.driver_name} --experiment_dir {self.experiment_dir} --working_dir"
+                f"--job_id {job_id} "
+                f"--batch {batch} "
+                f"--port {self.port} "
+                f"--input {self.remote_input_file} "
+                f"--driver_name {self.driver_name} "
+                f"--experiment_dir {self.experiment_dir} "
+                f"--working_dir"
             )
 
             job_dir = self.experiment_dir / str(job_id)
