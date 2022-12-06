@@ -255,14 +255,6 @@ license_check:
   script:
     - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
-  rules:
-    - if: $UBUNTU_TESTS == "1"
-    - if: $CLUSTER_TESTS == "1"
-      when: never
-    - if: $CLUSTER_NATIVE_TESTS == "1"
-      when: never
-    - if: $BENCHMARKS == "1"
-      when: never
 
 lnm-ubuntu_full_test_suite_develop:
   extends:
@@ -298,13 +290,13 @@ imcs-ubuntu_full_test_suite_develop:
     when: on_success
     expire_in: 3 days
   rules:
-    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
     - if: $CLUSTER_TESTS == "1"
       when: never
     - if: $CLUSTER_NATIVE_TESTS == "1"
       when: never
     - if: $BENCHMARKS == "1"
       when: never
+    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
 
 lnm-ubuntu_full_test_suite_master:
   extends:
