@@ -28,6 +28,8 @@ stages:
   before_script:
     - conda update -n base conda
   rules:
+    - if: ($CLUSTER_NATIVE_TESTS == "1") && ($CLUSTER_TESTS == "0")
+      when: never
     - if: ($UBUNTU_TESTS == "1") || ($CLUSTER_TESTS == "1")
 
 #----------------------------------------------------------------------------------------------
