@@ -27,9 +27,9 @@ stages:
 .ubuntu_build_settings:
   before_script:
     - conda update -n base conda
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
+  rules:
+    - if: $UBUNTU_TESTS == "1"
+    - if: $CLUSTER_TESTS == "1"
 
 #----------------------------------------------------------------------------------------------
 .ubuntu_settings:
@@ -39,25 +39,26 @@ stages:
     - echo $SINGULARITY_BASE_DIR
     - mkdir -p $SINGULARITY_BASE_DIR
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_BASE_DIR/singularity_image.sif
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
+  rules:
+    - if: $UBUNTU_TESTS == "1"
+
 #----------------------------------------------------------------------------------------------
 .codechecks_conditions:
-  except:
-    variables:
-      - $CLUSTER_TESTS == "1"
-      - $CLUSTER_NATIVE_TESTS == "1"
-      - $BENCHMARKS == "1"
+  rules:
+    - if: $CLUSTER_TESTS == "1"
+      when: never
+    - if: $CLUSTER_NATIVE_TESTS == "1"
+      when: never
+    - if: $BENCHMARKS == "1"
+      when: never
 #----------------------------------------------------------------------------------------------
 .codechecks_settings:
   extends:
     - .codechecks_conditions
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
+  rules:
+    - if: $UBUNTU_TESTS == "1"
   stage: codechecks
   tags:
     - codechecks
@@ -88,9 +89,8 @@ stages:
     - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
-  only:
-    variables:
-      - $CLUSTER_NATIVE_TESTS == "1"
+  rules:
+    - if: $CLUSTER_NATIVE_TESTS == "1"
   artifacts:
     name: "conda_env-$CI_PIPELINE_ID.yml"
     paths:
@@ -127,9 +127,8 @@ deep-native-build_conda_env:
   script:
     - unset SINGULARITY_BIND && singularity build --fakeroot singularity_image.sif pqueens/singularity/singularity_recipe.def
     - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
+  rules:
+    - if: $UBUNTU_TESTS == "1"
 
 lnm-build_singularity:
   extends:
@@ -250,13 +249,14 @@ license_check:
   script:
     - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
-  except:
-    variables:
-      - $CLUSTER_TESTS == "1"
-      - $CLUSTER_NATIVE_TESTS == "1"
-      - $BENCHMARKS == "1"
-    refs:
-      - master
+  rules:
+    - if: $UBUNTU_TESTS == "1" && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
+    - if: $CLUSTER_TESTS == "1"
+      when: never
+    - if: $CLUSTER_NATIVE_TESTS == "1"
+      when: never
+    - if: $BENCHMARKS == "1"
+      when: never
 
 lnm-ubuntu_full_test_suite_develop:
   extends:
@@ -291,14 +291,14 @@ imcs-ubuntu_full_test_suite_develop:
       - html_coverage_report
     when: on_success
     expire_in: 3 days
-  only:
-    refs:
-      - master
-  except:
-    variables:
-      - $CLUSTER_TESTS == "1"
-      - $CLUSTER_NATIVE_TESTS == "1"
-      - $BENCHMARKS == "1"
+  rules:
+    - if: $UBUNTU_TESTS == "1" && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
+    - if: $CLUSTER_TESTS == "1"
+      when: never
+    - if: $CLUSTER_NATIVE_TESTS == "1"
+      when: never
+    - if: $BENCHMARKS == "1"
+      when: never
 
 lnm-ubuntu_full_test_suite_master:
   extends:
@@ -323,9 +323,8 @@ imcs-ubuntu_full_test_suite_master:
 # Cluster tests
 #---------------------------------------------------------------------------------------------------
 .cluster_tests_conditions:
-  only:
-    variables:
-      - $CLUSTER_TESTS == "1"
+  rules:
+    - if: $CLUSTER_TESTS == "1"
 #---------------------------------------------------------------------------------------------------
 .cluster_tests:
   extends:
@@ -360,9 +359,8 @@ imcs-cluster_tests:
 # Cluster tests native
 #---------------------------------------------------------------------------------------------------
 .cluster_tests_native_conditions:
-  only:
-    variables:
-      - $CLUSTER_NATIVE_TESTS == "1"
+  rules:
+    - if: $CLUSTER_NATIVE_TESTS == "1"
 #---------------------------------------------------------------------------------------------------
 bruteforce-native-cluster_tests:
   extends:
@@ -395,9 +393,8 @@ deep-native-cluster_tests:
 # Benchmarks
 #---------------------------------------------------------------------------------------------------
 .benchmarks_conditions:
-  only:
-    variables:
-      - $BENCHMARKS == "1"
+  rules:
+    - if: $BENCHMARKS == "1"
 #---------------------------------------------------------------------------------------------------
 benchmarks:
   stage: tests
@@ -419,9 +416,8 @@ benchmarks:
     - .codechecks_conditions
   stage: badges
   needs: ["documentation"]
-  only:
-    refs:
-      - master
+  rules:
+    - if: $UBUNTU_TESTS == "1" && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
   trigger:
     project: queens_community/queens_badges/documentation-badge
 #---------------------------------------------------------------------------------------------------
@@ -447,9 +443,8 @@ trigger_documentation_badge_fail:
     - .benchmarks_conditions
   stage: badges
   needs: ["benchmarks"]
-  only:
-    refs:
-      - master
+  rules:
+    - if: ($BENCHMARKS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
   trigger:
     project: queens_community/queens_badges/benchmarks-badge
 #---------------------------------------------------------------------------------------------------
@@ -475,9 +470,8 @@ trigger_benchmarks_badge_fail:
     - .cluster_tests_conditions
   stage: badges
   needs: ["lnm-cluster_tests", "imcs-cluster_tests"]
-  only:
-    refs:
-      - master
+  rules:
+    - if: $CLUSTER_TESTS == "1" && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
   trigger:
     project: queens_community/queens_badges/cluster-badge
 #---------------------------------------------------------------------------------------------------
@@ -520,14 +514,14 @@ pages:
       - public
   tags:
     - lnm-ubuntu
-  only:
-    refs:
-      - master
-  except:
-    variables:
-      - $CLUSTER_TESTS == "1"
-      - $CLUSTER_NATIVE_TESTS == "1"
-      - $BENCHMARKS == "1"
+  rules:
+    - if: $UBUNTU_TESTS == "1" && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
+    - if: $CLUSTER_TESTS == "1"
+      when: never
+    - if: $CLUSTER_NATIVE_TESTS == "1"
+      when: never
+    - if: $BENCHMARKS == "1"
+      when: never
 
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: cleanup
@@ -540,9 +534,8 @@ pages:
   when: always
   variables:
     GIT_STRATEGY: none
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
+  rules:
+    - if: $UBUNTU_TESTS == "1"
 
 .remove_conda_env_cluster_native:
   stage: cleanup
@@ -551,9 +544,8 @@ pages:
   when: always
   variables:
     GIT_STRATEGY: none
-  only:
-    variables:
-      - $CLUSTER_NATIVE_TESTS == "1"
+  rules:
+    - if: $CLUSTER_NATIVE_TESTS == "1"
 
 lnm-remove_conda_env_and_singularity_image:
   extends:
