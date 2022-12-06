@@ -3,7 +3,10 @@
 import getpass
 import logging
 import pathlib
+import shutil
+import socket
 
+import numpy as np
 import pytest
 
 from pqueens.schedulers.cluster_scheduler import (
@@ -12,6 +15,7 @@ from pqueens.schedulers.cluster_scheduler import (
     DEEP_CLUSTER_TYPE,
 )
 from pqueens.utils import config_directories
+from pqueens.utils.io_utils import load_result
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -30,7 +34,8 @@ def cluster_user(user):
     # user who called the test suite
     # gitlab-runner has to run simulation as different user on cluster everyone else should use
     # account with same name
-    if user == "gitlab-runner":
+    hostname = socket.gethostname()
+    if user == "gitlab-runner" and (hostname not in ["master.service", "login.cluster"]):
         cluster_user = "queens"
     else:
         cluster_user = user
@@ -156,7 +161,7 @@ def cluster_testsuite_settings(
     prepare_singularity,
     cluster_singularity_ip,
 ):
-    """Collection of settings needed for all cluster tests."""
+    """Collection of settings needed for cluster tests with singularity."""
     if not prepare_singularity:
         raise RuntimeError(
             "Preparation of singularity for cluster failed."
@@ -208,3 +213,73 @@ def baci_cluster_paths(cluster_user, connect_to_resource):
         path_to_post_processor=path_to_post_processor,
     )
     return baci_cluster_paths
+
+
+@pytest.fixture(scope="session")
+def prepare_cluster_testing_environment_native(cluster_queens_testing_folder):
+    """Create a clean testing environment."""
+    _logger.info(f"Delete testing folder")
+    shutil.rmtree(cluster_queens_testing_folder)
+
+    _logger.info(f"Create testing folder")
+    cluster_queens_testing_folder.mkdir(parents=True, exist_ok=True)
+
+    return True
+
+
+@pytest.fixture(scope="session")
+def baci_cluster_paths_native(cluster_user, prepare_cluster_testing_environment_native):
+    """Paths to baci for native cluster tests."""
+    path_to_executable = pathlib.Path(
+        "/home", cluster_user, "workspace_for_queens", "build", "baci-release"
+    )
+    if not path_to_executable.is_file():
+        raise RuntimeError(
+            f"Could not find executable on {cluster_address}.\n"
+            f"Was looking here: {path_to_executable}"
+        )
+
+    path_to_drt_monitor = pathlib.Path(
+        "/home", cluster_user, "workspace_for_queens", "build", "post_drt_monitor"
+    )
+    if not path_to_drt_monitor.is_file():
+        raise RuntimeError(
+            f"Could not find postprocessor on {cluster_address}.\n"
+            f"Was looking here: {path_to_drt_monitor}"
+        )
+
+    baci_cluster_paths_native = dict(
+        path_to_executable=path_to_executable,
+        path_to_drt_monitor=path_to_drt_monitor,
+    )
+    return baci_cluster_paths_native
+
+
+@pytest.fixture(scope="session")
+def baci_elementary_effects_check_results():
+    """Check results for baci elementary effects tests."""
+
+    def check_results(result_file):
+        """Check results for baci elementary effects tests.
+
+        Args:
+            result_file (path): path to result file
+        """
+        results = load_result(result_file)
+
+        np.testing.assert_allclose(
+            results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
+        )
+        np.testing.assert_allclose(
+            results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
+        )
+        np.testing.assert_allclose(
+            results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
+        )
+        np.testing.assert_allclose(
+            results["sensitivity_indices"]["mu_star_conf"],
+            np.array([0.136631, 0.140794]),
+            rtol=1.0e-3,
+        )
+
+    return check_results

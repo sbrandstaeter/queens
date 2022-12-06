@@ -496,7 +496,7 @@ class ClusterScheduler(Scheduler):
             # W - job is waiting for its execution time
             # S - (Unicos only) job is suspend.
             # therefore:
-            if status in ['Q', 'R', 'H', 'S']:
+            if status in ['Q', 'R', 'H', 'E', 'S', 'PD', 'CG']:
                 completed = False
 
         return completed, failed

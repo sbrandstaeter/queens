@@ -26,7 +26,7 @@ _logger = logging.getLogger(__name__)
     indirect=True,
 )
 def test_cluster_baci_data_processor_ensight(
-    inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
+    inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths, user
 ):
     """Test remote BACI simulations with ensight data-processor.
 
@@ -60,7 +60,10 @@ def test_cluster_baci_data_processor_ensight(
     path_to_post_processor = baci_cluster_paths["path_to_post_processor"]
 
     # unique experiment name
-    experiment_name = f"test_{cluster}_remote_data_processor_ensight"
+    experiment_name = f"test_{cluster}_data_processor_ensight"
+
+    template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.json")
+    input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.json")
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
@@ -104,6 +107,7 @@ def test_cluster_baci_data_processor_ensight(
         'connect_to_resource': connect_to_resource,
         'cluster': cluster,
         'singularity_remote_ip': singularity_remote_ip,
+        'user': user,
     }
     queens_input_file_template = pathlib.Path(inputdir, "baci_remote_model_config.json")
     queens_input_file = pathlib.Path(tmpdir, "baci_remote_model_config.json")
