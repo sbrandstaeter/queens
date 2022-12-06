@@ -372,7 +372,7 @@ bruteforce-native-cluster_tests:
     - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
   script:
     - conda activate queens-$CI_PIPELINE_ID
-    - pytest -v -m lnm_cluster_bruteforce_native --no-cov
+    - pytest -v -m lnm_cluster_bruteforce_native --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - bruteforce-native-build_conda_env
   tags:
@@ -386,7 +386,7 @@ deep-native-cluster_tests:
     - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
   script:
     - conda activate queens-$CI_PIPELINE_ID
-    - pytest -v -m lnm_cluster_deep_native --no-cov
+    - pytest -v -m lnm_cluster_deep_native --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - deep-native-build_conda_env
   tags:
