@@ -384,7 +384,9 @@ class MpiDriver(Driver):
         self.cluster_options['INPUT'] = str(self.input_file)
         self.cluster_options['OUTPUTPREFIX'] = self.output_prefix
 
-        submission_script_path = str(self.experiment_dir.joinpath('jobfile.sh'))
+        submission_script_path = (
+            self.experiment_dir / str(self.job_id) / f"{self.experiment_name}_{self.job_id}.sh"
+        )
         inject(self.cluster_options, self.cluster_config.jobscript_template, submission_script_path)
 
         command_list = [self.cluster_config.start_cmd, submission_script_path]

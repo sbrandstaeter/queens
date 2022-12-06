@@ -9,8 +9,8 @@ def inject(params, file_template, output_file):
 
     Args:
         params (dict):          dict with parameters to inject
-        file_template (str):    file name including path to template
-        output_file (str):      name of output file with injected parameters
+        file_template (Path):    file name including path to template
+        output_file (Path):      name of output file with injected parameters
     """
 
     with open(file_template, encoding='utf-8') as f:

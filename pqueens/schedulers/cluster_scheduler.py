@@ -9,7 +9,7 @@ from dataclasses import dataclass
 from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.cluster_utils import distribute_procs_on_nodes_pbs, get_cluster_job_id
-from pqueens.utils.config_directories import base_directory, experiment_directory
+from pqueens.utils.config_directories import base_directory, create_directory, experiment_directory
 from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.path_utils import relative_path_from_queens
@@ -393,14 +393,17 @@ class ClusterScheduler(Scheduler):
             )
 
             job_dir = self.experiment_dir / str(job_id)
+            create_directory(job_dir, remote_connect=self.remote_connect)
 
             self.cluster_options['DESTDIR'] = str(job_dir / "output")
 
             # generate jobscript for submission
-            submission_script_path = self.experiment_dir.joinpath('jobfile.sh')
+            submission_script_path = (
+                self.experiment_dir / str(job_id) / f"{self.experiment_name}_{job_id}.sh"
+            )
             generate_submission_script(
                 self.cluster_options,
-                str(submission_script_path),
+                submission_script_path,
                 self.cluster_config.jobscript_template,
                 self.remote_connect,
             )
