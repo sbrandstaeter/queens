@@ -41,6 +41,10 @@ stages:
     - mkdir -p $SINGULARITY_BASE_DIR
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_BASE_DIR/singularity_image.sif
   rules:
+    - if: $CLUSTER_NATIVE_TESTS == "1"
+      when: never
+    - if: $CLUSTER_TESTS == "1"
+      when: never
     - if: $UBUNTU_TESTS == "1"
 
 #----------------------------------------------------------------------------------------------
@@ -394,15 +398,12 @@ deep-native-cluster_tests:
 #---------------------------------------------------------------------------------------------------
 # Benchmarks
 #---------------------------------------------------------------------------------------------------
-.benchmarks_conditions:
-  rules:
-    - if: $BENCHMARKS == "1"
-#---------------------------------------------------------------------------------------------------
 benchmarks:
   stage: tests
   extends:
     - .ubuntu_settings
-    - .benchmarks_conditions
+  rules:
+    - if: $BENCHMARKS == "1"
   script:
     - pytest -v -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
@@ -440,8 +441,6 @@ trigger_documentation_badge_fail:
 #---------------------------------------------------------------------------------------------------
 # Basic setting to trigger the creation of a benchmarks badge in a downstream project
 .trigger_benchmarks_badge:
-  extends:
-    - .benchmarks_conditions
   stage: badges
   needs: ["benchmarks"]
   rules:
