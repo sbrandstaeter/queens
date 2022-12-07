@@ -24,13 +24,18 @@ stages:
 #---------------------------------------------------------------------------------------------------
 # Define platform specific settings
 #---------------------------------------------------------------------------------------------------
-.ubuntu_build_settings:
-  before_script:
-    - conda update -n base conda
+.ubuntu_build_conditions:
   rules:
     - if: ($CLUSTER_NATIVE_TESTS == "1") && ($CLUSTER_TESTS == "0")
       when: never
     - if: ($UBUNTU_TESTS == "1") || ($CLUSTER_TESTS == "1")
+
+#---------------------------------------------------------------------------------------------------
+.ubuntu_build_settings:
+  before_script:
+    - conda update -n base conda
+  rules:
+    - !reference [.ubuntu_build_conditions, rules]
 
 #----------------------------------------------------------------------------------------------
 .ubuntu_settings:
@@ -134,7 +139,7 @@ deep-native-build_conda_env:
     - unset SINGULARITY_BIND && singularity build --fakeroot singularity_image.sif pqueens/singularity/singularity_recipe.def
     - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
   rules:
-    - if: $UBUNTU_TESTS == "1"
+    - !reference [.ubuntu_build_conditions, rules]
 
 lnm-build_singularity:
   extends:
