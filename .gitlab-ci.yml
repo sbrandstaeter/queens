@@ -532,7 +532,7 @@ pages:
   variables:
     GIT_STRATEGY: none
   rules:
-    - if: $UBUNTU_TESTS == "1"
+    - !reference [.ubuntu_build_conditions, rules]
 
 .remove_conda_env_cluster_native:
   stage: cleanup
