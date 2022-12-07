@@ -57,8 +57,8 @@ source_suffix = '.rst'
 #
 # source_encoding = 'utf-8-sig'
 
-# The master toctree document.
-master_doc = 'index'
+# The main toctree document.
+main_doc = 'index'
 
 # General information about the project.
 project = 'pqueens'
@@ -270,7 +270,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'pqueens.tex', 'pqueens Documentation', 'Jonas Biehler', 'manual'),
+    (main_doc, 'pqueens.tex', 'pqueens Documentation', 'Jonas Biehler', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -310,7 +310,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, 'pqueens', 'pqueens Documentation', [author], 1)]
+man_pages = [(main_doc, 'pqueens', 'pqueens Documentation', [author], 1)]
 
 # If true, show URL addresses after external links.
 #
@@ -324,7 +324,7 @@ man_pages = [(master_doc, 'pqueens', 'pqueens Documentation', [author], 1)]
 #  dir menu entry, description, category)
 texinfo_documents = [
     (
-        master_doc,
+        main_doc,
         'pqueens',
         'pqueens Documentation',
         author,

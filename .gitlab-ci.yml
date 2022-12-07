@@ -271,9 +271,9 @@ imcs-ubuntu_full_test_suite_develop:
   tags:
     - imcs-ubuntu
 #---------------------------------------------------------------------------------------------------
-# Master tests
+# main tests
 #---------------------------------------------------------------------------------------------------
-.ubuntu_full_test_suite_master:
+.ubuntu_full_test_suite_main:
   stage: tests
   extends:
     - .ubuntu_settings
@@ -295,18 +295,18 @@ imcs-ubuntu_full_test_suite_develop:
       when: never
     - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
 
-lnm-ubuntu_full_test_suite_master:
+lnm-ubuntu_full_test_suite_main:
   extends:
-    - .ubuntu_full_test_suite_master
+    - .ubuntu_full_test_suite_main
   needs:
     - lnm-build_conda_env
     - lnm-build_singularity
   tags:
     - lnm-ubuntu
 
-imcs-ubuntu_full_test_suite_master:
+imcs-ubuntu_full_test_suite_main:
   extends:
-    - .ubuntu_full_test_suite_master
+    - .ubuntu_full_test_suite_main
   needs:
     - imcs-build_conda_env
     - imcs-build_singularity
@@ -489,7 +489,7 @@ pages:
   # disable cache on this job since we do not need conda env here
   dependencies:
     - documentation
-    - lnm-ubuntu_full_test_suite_master
+    - lnm-ubuntu_full_test_suite_main
   script:
     - mkdir public
     - mv html_coverage_report public/coverage_report
