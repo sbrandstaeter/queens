@@ -109,8 +109,8 @@ def test_cluster_baci_data_processor_ensight(
         'singularity_remote_ip': singularity_remote_ip,
         'user': user,
     }
-    queens_input_file_template = pathlib.Path(inputdir, "baci_remote_model_config.json")
-    queens_input_file = pathlib.Path(tmpdir, "baci_remote_model_config.json")
+    queens_input_file_template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.json")
+    queens_input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.json")
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     # Patch the missing config arguments

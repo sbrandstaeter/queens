@@ -4,7 +4,6 @@ Elementary Effects simulations with BACI using the INVAAA minimal model.
 """
 import logging
 import pathlib
-from pathlib import Path
 
 import pytest
 
@@ -108,10 +107,10 @@ def test_cluster_baci_elementary_effects(
     queens_input_file_template = pathlib.Path(
         inputdir, "baci_cluster_elementary_effects_template.json"
     )
-    queens_input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_deep_invaaa.json")
+    queens_input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_invaaa.json")
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
-    run(Path(queens_input_file), Path(tmpdir))
+    run(queens_input_file, tmpdir)
 
     result_file = pathlib.Path(tmpdir, experiment_name + '.pickle')
     baci_elementary_effects_check_results(result_file)
