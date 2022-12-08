@@ -389,7 +389,7 @@ class MpiDriver(Driver):
         )
         inject(self.cluster_options, self.cluster_config.jobscript_template, submission_script_path)
 
-        command_list = [self.cluster_config.start_cmd, submission_script_path]
+        command_list = [self.cluster_config.start_cmd, str(submission_script_path)]
 
         return ' '.join(command_list)
 

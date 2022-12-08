@@ -95,6 +95,12 @@ def cluster_queens_testing_folder(mock_value_experiments_base_folder_name, clust
 
 
 @pytest.fixture(scope="session")
+def cluster_native_queens_testing_folder(mock_value_experiments_base_folder_name):
+    """Base directory for experiment data of tests."""
+    return config_directories.local_base_directory() / mock_value_experiments_base_folder_name
+
+
+@pytest.fixture(scope="session")
 def cluster_path_to_singularity(cluster_queens_base_dir):
     """Folder on cluster where to put the singularity file."""
     return cluster_queens_base_dir
@@ -216,13 +222,17 @@ def baci_cluster_paths(cluster_user, connect_to_resource):
 
 
 @pytest.fixture(scope="session")
-def prepare_cluster_testing_environment_native(cluster_queens_testing_folder):
+def prepare_cluster_testing_environment_native(cluster_native_queens_testing_folder):
     """Create a clean testing environment."""
-    _logger.info(f"Delete testing folder")
-    shutil.rmtree(cluster_queens_testing_folder)
+    if (
+        cluster_native_queens_testing_folder.exists()
+        and cluster_native_queens_testing_folder.is_dir()
+    ):
+        _logger.info(f"Delete testing folder")
+        shutil.rmtree(cluster_native_queens_testing_folder)
 
     _logger.info(f"Create testing folder")
-    cluster_queens_testing_folder.mkdir(parents=True, exist_ok=True)
+    cluster_native_queens_testing_folder.mkdir(parents=True, exist_ok=True)
 
     return True
 
