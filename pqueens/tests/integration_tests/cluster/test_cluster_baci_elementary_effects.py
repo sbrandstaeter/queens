@@ -110,7 +110,7 @@ def test_cluster_baci_elementary_effects(
     queens_input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_invaaa.json")
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
-    run(queens_input_file, tmpdir)
+    run(queens_input_file, pathlib.Path(tmpdir))
 
     result_file = pathlib.Path(tmpdir, experiment_name + '.pickle')
     baci_elementary_effects_check_results(result_file)
