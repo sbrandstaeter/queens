@@ -9,7 +9,6 @@ import pytest
 
 from pqueens import run
 from pqueens.utils import injector
-from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
@@ -60,7 +59,7 @@ def test_cluster_native_baci_elementary_effects(
         'input_template': str(third_party_input_file_local),
         'path_to_executable': str(path_to_executable),
         'path_to_drt_monitor': str(path_to_drt_monitor),
-        'cluster': cluster
+        'cluster': cluster,
     }
 
     injector.inject(dir_dict, template, input_file)
