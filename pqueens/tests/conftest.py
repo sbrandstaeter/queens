@@ -82,7 +82,7 @@ def global_mock_local_base_dir(monkeypatch, tmp_path):
         return tmp_path
 
     monkeypatch.setattr(config_directories, "local_base_directory", mock_local_base_dir)
-    _logger.debug("Mocking of local base dir was successfull.")
+    _logger.debug("Mocking of local base dir was successful.")
 
 
 @pytest.fixture(scope="session")
