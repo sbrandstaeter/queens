@@ -26,13 +26,7 @@ stages:
   rules:
     - if: ($CLUSTER_NATIVE_TESTS == "1") && ($CLUSTER_TESTS == "0")
       when: never
-    - if: ($UBUNTU_TESTS == "1") || ($CLUSTER_TESTS == "1")
-#---------------------------------------------------------------------------------------------------
-.ubuntu_build_settings:
-  before_script:
-    - conda update -n base conda
-  rules:
-    - !reference [.ubuntu_build_conditions, rules]
+    - if: ($UBUNTU_TESTS == "1") || ($CLUSTER_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
 .ubuntu_settings:
   before_script:
@@ -46,9 +40,9 @@ stages:
       when: never
     - if: $CLUSTER_TESTS == "1"
       when: never
-    - if: $UBUNTU_TESTS == "1"
+    - if: ($UBUNTU_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
-.codechecks_conditions:
+.default_test_conditions:
   rules:
     - if: $CLUSTER_TESTS == "1"
       when: never
@@ -57,13 +51,16 @@ stages:
     - if: $BENCHMARKS == "1"
       when: never
 #----------------------------------------------------------------------------------------------
+.default_test_conditions_default_branch:
+  rules:
+    - !reference [.default_test_conditions, rules]
+    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
+#----------------------------------------------------------------------------------------------
 .codechecks_settings:
-  extends:
-    - .codechecks_conditions
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
   rules:
-    - !reference [.codechecks_conditions, rules]
+    - !reference [.default_test_conditions, rules]
     - if: $UBUNTU_TESTS == "1"
   stage: codechecks
   tags:
@@ -72,9 +69,11 @@ stages:
 # Jobs of stage: build
 #---------------------------------------------------------------------------------------------------
 .build_conda_env:
-  extends:
-    - .ubuntu_build_settings
   stage: build
+  rules:
+    - !reference [.ubuntu_build_conditions, rules]
+  before_script:
+    - conda update -n base conda
   script:
     - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
@@ -274,9 +273,11 @@ imcs-ubuntu_full_test_suite_develop:
 # main tests
 #---------------------------------------------------------------------------------------------------
 .ubuntu_full_test_suite_main:
-  stage: tests
   extends:
     - .ubuntu_settings
+  stage: tests
+  rules:
+    - !reference [.default_test_conditions_default_branch, rules]
   script:
     - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
@@ -286,14 +287,6 @@ imcs-ubuntu_full_test_suite_develop:
       - html_coverage_report
     when: on_success
     expire_in: 3 days
-  rules:
-    - if: $CLUSTER_TESTS == "1"
-      when: never
-    - if: $CLUSTER_NATIVE_TESTS == "1"
-      when: never
-    - if: $BENCHMARKS == "1"
-      when: never
-    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
 
 lnm-ubuntu_full_test_suite_main:
   extends:
@@ -407,8 +400,7 @@ benchmarks:
   stage: badges
   needs: ["documentation"]
   rules:
-    - !reference [.codechecks_conditions, rules]
-    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
+    - !reference [.default_test_conditions_default_branch, rules]
   trigger:
     project: queens_community/queens_badges/documentation-badge
 #---------------------------------------------------------------------------------------------------
@@ -486,7 +478,8 @@ pages:
   # used to deploy the coverage report and the documentation to GitLab pages
   # job name has to be pages and triggers deploy stage
   stage: pages
-  # disable cache on this job since we do not need conda env here
+  rules:
+    - !reference [.default_test_conditions_default_branch, rules]
   dependencies:
     - documentation
     - lnm-ubuntu_full_test_suite_main
@@ -502,14 +495,6 @@ pages:
       - public
   tags:
     - lnm-ubuntu
-  rules:
-    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
-    - if: $CLUSTER_TESTS == "1"
-      when: never
-    - if: $CLUSTER_NATIVE_TESTS == "1"
-      when: never
-    - if: $BENCHMARKS == "1"
-      when: never
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: cleanup
 #---------------------------------------------------------------------------------------------------
