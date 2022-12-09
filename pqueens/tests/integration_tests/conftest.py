@@ -4,7 +4,6 @@ import getpass
 import logging
 import pathlib
 import shutil
-import socket
 
 import numpy as np
 import pytest
@@ -29,12 +28,11 @@ def user():
 
 
 @pytest.fixture(scope="session")
-def cluster_user(user):
+def cluster_user(user, hostname):
     """Username of cluster account to use for tests."""
     # user who called the test suite
     # gitlab-runner has to run simulation as different user on cluster everyone else should use
     # account with same name
-    hostname = socket.gethostname()
     if user == "gitlab-runner" and (hostname not in ["master.service", "login.cluster"]):
         cluster_user = "queens"
     else:

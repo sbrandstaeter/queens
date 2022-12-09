@@ -1,5 +1,6 @@
 """Configuration module for the entire test suite (highest level)."""
 import pathlib
+import socket
 
 import pytest
 
@@ -20,6 +21,12 @@ def pytest_collection_modifyitems(items):
             item.add_marker(pytest.mark.unit_tests)
 
 
+@pytest.fixture(scope="session")
+def hostname():
+    """Hostname calling the test suite."""
+    return socket.gethostname()
+
+
 @pytest.fixture(autouse=True)
 def global_mock_abs_singularity_image_path(monkeypatch):
     """Mock the absolute singularity image path.
@@ -38,7 +45,23 @@ def global_mock_abs_singularity_image_path(monkeypatch):
     )
 
 
-@pytest.fixture(autouse=True)
+def mock_local_base_dir(hostname):
+    """Decide if local base directory should be mocked.
+
+    For most tests the local base directory should be mocked to the
+    standard pytest temp folder. The only exceptions are the cluster
+    native tests, where the jobs don't have access to that folder. For
+    this reason, the local base dir is not mocked for the cluster native
+    tests. Whether the tests are run on the cluster natively is detected
+    based on the hostname.
+    """
+    if hostname in ["master.service", "login.cluster"]:
+        return False
+
+    return True
+
+
+@pytest.fixture(autouse=mock_local_base_dir)
 def global_mock_local_base_dir(monkeypatch, tmp_path):
     """Mock the local base directory for all tests.
 
