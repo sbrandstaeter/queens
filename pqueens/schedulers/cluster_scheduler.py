@@ -49,6 +49,7 @@ class ClusterConfig:
     jobscript_template: pathlib.Path
     job_status_command: str
     job_status_location: int
+    job_status_incomplete: list
     singularity_bind: str
 
 
@@ -59,6 +60,21 @@ DEEP_CONFIG = ClusterConfig(
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_deep.sh"),
     job_status_command="qstat",
     job_status_location=-2,
+    # possible pbs job states:
+    # E - Job is exiting after having run.
+    # H - Job is held.
+    # Q - job is queued, eligable to run or routed.
+    # R - job is running.
+    # T - job is being moved to new location.
+    # W - job is waiting for its execution time
+    # S - (Unicos only) job is suspend.
+    # therefore incomplete:
+    job_status_incomplete=[
+        'Q',
+        'R',
+        'H',
+        'E',
+    ],
     singularity_bind=(
         "/scratch:/scratch,"
         "/opt:/opt,/lnm:/lnm,"
@@ -74,6 +90,7 @@ BRUTEFORCE_CONFIG = ClusterConfig(
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_bruteforce.sh"),
     job_status_command="squeue --job",
     job_status_location=-4,
+    job_status_incomplete=['R', 'PD', 'CG'],
     singularity_bind=(
         "/scratch:/scratch,"
         "/opt:/opt,/lnm:/lnm,"
@@ -91,6 +108,11 @@ CHARON_CONFIG = ClusterConfig(
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),
     job_status_command="squeue --job",
     job_status_location=-4,
+    # possible status for incomplete jobs;
+    # R - running
+    # PD - pending
+    # CG - completing
+    job_status_incomplete=['R', 'PD', 'CG'],
     singularity_bind=(
         "/opt:/opt,"
         "/bin:/bin,"
@@ -487,16 +509,7 @@ class ClusterScheduler(Scheduler):
             # entry at job_status_location is job status
             status = output[self.cluster_config.job_status_location]
 
-            # possible pbs job states:
-            # E - Job is exiting after having run.
-            # H - Job is held.
-            # Q - job is queued, eligable to run or routed.
-            # R - job is running.
-            # T - job is being moved to new location.
-            # W - job is waiting for its execution time
-            # S - (Unicos only) job is suspend.
-            # therefore:
-            if status in ['Q', 'R', 'H', 'E', 'S', 'PD', 'CG']:
+            if status in self.cluster_config.job_status_incomplete:
                 completed = False
 
         return completed, failed
