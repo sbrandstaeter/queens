@@ -10,9 +10,9 @@ from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.cluster_utils import distribute_procs_on_nodes_pbs, get_cluster_job_id
 from pqueens.utils.config_directories import base_directory, create_directory, experiment_directory
-from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.path_utils import relative_path_from_queens
+from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.script_generator import generate_submission_script
 
@@ -319,14 +319,6 @@ class ClusterScheduler(Scheduler):
         else:
             cluster_options['DATAPROCESSINGFLAG'] = 'false'
 
-        # TODO move this to a different place
-        # print out scheduling information
-        print_scheduling_information(
-            scheduler_type,
-            remote,
-            remote_connect,
-            singularity,
-        )
         return cls(
             experiment_name=experiment_name,
             input_file=input_file,
@@ -343,6 +335,18 @@ class ClusterScheduler(Scheduler):
             remote=remote,
             remote_connect=remote_connect,
         )
+
+    def __str__(self):
+        """String description of the ClusterScheduler object.
+
+        Returns:
+            string (str): ClusterScheduler object description
+        """
+        name = "Cluster Scheduler"
+        print_dict = self._create_base_print_dict()
+        print_dict.update({"Type of cluster": self.cluster_type})
+
+        return get_str_table(name, print_dict)
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
