@@ -39,7 +39,7 @@ def main(args):
     )
     parser.add_argument("--batch", help="specify the batch number of the simulation", type=int)
     parser.add_argument("--port", help="port number chosen for port-forwarding", type=str)
-    parser.add_argument("--path_json", help="system path to temporary json file", type=str)
+    parser.add_argument("--input", help="system path to (temporary) input file", type=str)
     parser.add_argument("--post", help="option for postprocessing", type=str)
     parser.add_argument("--driver_name", help="name of driver for the current run", type=str)
     parser.add_argument(
@@ -61,7 +61,7 @@ def main(args):
     job_id = args.job_id
     batch = args.batch
     port = args.port
-    path_json = Path(args.path_json)
+    input_file = Path(args.input)
     post = args.post
     experiment_dir = Path(args.experiment_dir)
     driver_name = args.driver_name
@@ -73,24 +73,19 @@ def main(args):
     driver_obj = None
     is_remote = port != "000"
     try:
+        # output_dir is not needed but required in get_config_dict
+        output_dir = input_file.parent
+        config = get_config_dict(input_file, output_dir)
+
         # If singularity is called remotely
         if is_remote:
             setup_cluster_logging()
-            input_path = path_json / 'temp.json'
-            # output_dir is not needed but required in get_config_dict
-            output_dir = path_json
-            config = get_config_dict(input_path, output_dir)
 
             # Patch the remote address to the config
             remote_address = (
                 str(config["scheduler"]["singularity_settings"]["remote_ip"]) + ":" + str(port)
             )
             config["database"]["address"] = remote_address
-        else:
-            input_path = Path(path_json)
-            # output_dir is not needed but required in get_config_dict
-            output_dir = input_path.parent
-            config = get_config_dict(input_path, output_dir)
 
         # Do not delete existing db
         config["database"]["reset_existing_db"] = False

@@ -115,7 +115,7 @@ class LHSIterator(Iterator):
     def post_run(self):
         """Analyze the results."""
         if self.result_description is not None:
-            results = process_ouputs(self.output, self.result_description)
+            results = process_ouputs(self.output, self.result_description, input_data=self.samples)
             if self.result_description["write_results"] is True:
                 write_results(
                     results,

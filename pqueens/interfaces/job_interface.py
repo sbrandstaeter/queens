@@ -7,7 +7,7 @@ import numpy as np
 import pqueens.database.database as DB_module
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
-from pqueens.schedulers.cluster_scheduler import VALID_CLUSTER_SCHEDULER_TYPES
+from pqueens.schedulers.cluster_scheduler import VALID_CLUSTER_CLUSTER_TYPES
 from pqueens.utils.config_directories import experiment_directory
 
 _logger = logging.getLogger(__name__)
@@ -136,9 +136,7 @@ class JobInterface(Interface):
         # set flag for direct scheduling
         direct_scheduling = False
         if not singularity:
-            if (scheduler_type in VALID_CLUSTER_SCHEDULER_TYPES) or (
-                scheduler_type == 'standard' and remote
-            ):
+            if (scheduler_type == 'cluster') or (scheduler_type == 'standard' and remote):
                 direct_scheduling = True
 
         db = DB_module.database
@@ -278,8 +276,8 @@ class JobInterface(Interface):
             str(self.batch_number),
             {
                 'id': job['id'],
-                'expt_dir': str(self.experiment_dir),
-                'expt_name': self.experiment_name,
+                'experiment_dir': str(self.experiment_dir),
+                'experiment_name': self.experiment_name,
             },
         )
 
@@ -304,8 +302,8 @@ class JobInterface(Interface):
         job = {
             'id': job_id,
             'params': variables,
-            'expt_dir': str(self.experiment_dir),
-            'expt_name': self.experiment_name,
+            'experiment_dir': str(self.experiment_dir),
+            'experiment_name': self.experiment_name,
             'resource': resource_name,
             'status': "",  # TODO: before: 'new'
             'submit_time': time.time(),
@@ -364,8 +362,8 @@ class JobInterface(Interface):
         else:
             jobs = self.load_jobs(
                 field_filters={
-                    'expt_dir': str(self.experiment_dir),
-                    'expt_name': self.experiment_name,
+                    'experiment_dir': str(self.experiment_dir),
+                    'experiment_name': self.experiment_name,
                 }
             )
 
@@ -413,9 +411,12 @@ class JobInterface(Interface):
         return np.array(job_ids_generator)
 
     def _check_job_completions(self, jobid_range):
-        """Check AWS tasks to determine completed jobs."""
+        """Check job completion for cluster native workflow."""
         jobs = self.load_jobs(
-            field_filters={'expt_dir': str(self.experiment_dir), 'expt_name': self.experiment_name}
+            field_filters={
+                'experiment_dir': str(self.experiment_dir),
+                'experiment_name': self.experiment_name,
+            }
         )
         for check_jobid in jobid_range:
             for resource in self.resources.values():
@@ -474,8 +475,8 @@ class JobInterface(Interface):
                         current_job = self.load_jobs(
                             field_filters={
                                 'id': jobid,
-                                'expt_dir': str(self.experiment_dir),
-                                'expt_name': self.experiment_name,
+                                'experiment_dir': str(self.experiment_dir),
+                                'experiment_name': self.experiment_name,
                             }
                         )
                         if len(current_job) == 1:
@@ -522,7 +523,10 @@ class JobInterface(Interface):
             jobid_range (range):     range of job IDs which are submitted
         """
         jobs = self.load_jobs(
-            field_filters={'expt_dir': str(self.experiment_dir), 'expt_name': self.experiment_name}
+            field_filters={
+                'experiment_dir': str(self.experiment_dir),
+                'experiment_name': self.experiment_name,
+            }
         )
         for jobid in jobid_range:
             for resource in self.resources.values():

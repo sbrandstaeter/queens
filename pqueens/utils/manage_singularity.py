@@ -6,11 +6,7 @@ import subprocess
 import time
 
 from pqueens.utils.config_directories import ABS_SINGULARITY_IMAGE_PATH
-from pqueens.utils.path_utils import (
-    PATH_TO_QUEENS,
-    relative_path_from_pqueens,
-    relative_path_from_queens,
-)
+from pqueens.utils.path_utils import PATH_TO_QUEENS, relative_path_from_pqueens
 from pqueens.utils.run_subprocess import SubprocessError, run_subprocess
 from pqueens.utils.user_input import request_user_input_with_default_and_timeout
 
@@ -23,8 +19,8 @@ def create_singularity_image():
     command_string = 'singularity --version'
     run_subprocess(command_string, additional_error_message='Singularity could not be executed!')
 
-    definition_path = 'singularity_recipe.def'
-    abs_definition_path = relative_path_from_queens(definition_path)
+    definition_path = 'singularity/singularity_recipe.def'
+    abs_definition_path = relative_path_from_pqueens(definition_path)
     command_list = [
         f"cd {PATH_TO_QUEENS}",
         "&& unset SINGULARITY_BIND &&",
@@ -320,26 +316,6 @@ class SingularityManager:
                 run_subprocess(command_string)
             _logger.info('Active QUEENS remote to local port-forwardings were closed successfully!')
 
-    def copy_temp_json(self):
-        """Copies a (temporary) JSON input-file to the remote machine.
-
-        Is needed to execute some parts of QUEENS within the singularity image on the remote,
-        given the input configurations.
-
-        Returns:
-            None
-        """
-        command_list = [
-            "scp",
-            str(self.input_file),
-            self.remote_connect + ':' + str(self.singularity_path.joinpath('temp.json')),
-        ]
-        command_string = ' '.join(command_list)
-        run_subprocess(
-            command_string,
-            additional_error_message="Was not able to copy temporary input file to remote!",
-        )
-
 
 def new_singularity_image_needed():
     """Indicate if a new singularity image needs to be build.
@@ -367,14 +343,13 @@ def _files_changed():
         'utils/',
         'external_geometry/',
         'randomfields/',
+        'singularity/',
     ]
 
     # Specific files in the singularity image relevant for a run
     files_to_compare_list = [
-        'schedulers/cluster_scheduler.py',
         'database/mongodb.py',
-        '../setup_remote.py',
-        'remote_main.py',
+        'schedulers/cluster_scheduler.py',
     ]
     # generate absolute paths
     files_to_compare_list = [relative_path_from_pqueens(file) for file in files_to_compare_list]
@@ -387,7 +362,7 @@ def _files_changed():
     files_changed = False
     for file in files_to_compare_list:
         # File path inside the container
-        filepath_in_singularity = '/queens/pqueens/' + file.split("queens/pqueens/")[-1]
+        filepath_in_singularity = '/queens/pqueens/' + file.split("pqueens/")[-1]
 
         # Compare the queens source files with the ones inside the container
         command_string = (

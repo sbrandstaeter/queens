@@ -241,7 +241,7 @@ Updates from time to time are recommended:
    conda env update --verbose --name <your-custom-queens-env-name> -f <your-path-to-QUEENS>/environment.yml
    ```
 
-- Update Python version of your Conda environment: to be in sync with the latest Python version recommended for QUEENS, act in sync with the latest changes on the  `master` branch and follow the normal update procedure described above. This will keep both your environment-related file `environment.yml` and your environment up to date.
+- Update Python version of your Conda environment: to be in sync with the latest Python version recommended for QUEENS, act in sync with the latest changes on the  `main` branch and follow the normal update procedure described above. This will keep both your environment-related file `environment.yml` and your environment up to date.
 
 Furthermore, you might be interested in using Jupyter notebooks:
 

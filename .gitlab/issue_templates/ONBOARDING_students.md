@@ -36,10 +36,10 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [x] Register an account on LRZ GitLab (you wouldn't be here without it :wink:)
 - [ ] Sign the LNM software agreement (if you haven't yet, contact your supervisor)
 - [ ] Complete the brief introduction of the new team member
-- [ ] Read through our [README](https://gitlab.lrz.de/queens_community/queens/-/blob/master/README.md) and follow the instructions to
-   - [ ] Configure git including the git hooks. (See [Here](https://gitlab.lrz.de/queens_community/queens/-/blob/master/README.md))
-   - [ ] Download the project and run the tests for verification (see [README](https://gitlab.lrz.de/queens_community/queens/-/blob/master/README.md))
-- [ ] Read through our [CONTRIBUTING](https://gitlab.lrz.de/queens_community/queens/-/blob/master/CONTRIBUTING.md) guidelines
+- [ ] Read through our [README](https://gitlab.lrz.de/queens_community/queens/-/blob/main/README.md) and follow the instructions to
+   - [ ] Configure git including the git hooks. (See [Here](https://gitlab.lrz.de/queens_community/queens/-/blob/main/README.md))
+   - [ ] Download the project and run the tests for verification (see [README](https://gitlab.lrz.de/queens_community/queens/-/blob/main/README.md))
+- [ ] Read through our [CONTRIBUTING](https://gitlab.lrz.de/queens_community/queens/-/blob/main/CONTRIBUTING.md) guidelines
 - [ ] [Set up your Integrated Development Environment (IDE)](https://gitlab.lrz.de/queens_community/queens/-/wikis/Set-up-your-Integrated-Development-Environment)
 - [ ] Browse through some open [issues](https://gitlab.lrz.de/queens_community/queens/-/issues) and [merge requests](https://gitlab.lrz.de/queens_community/queens/-/merge_requests) to get a first impression
 - [ ] Browse through the [Wiki pages](https://gitlab.lrz.de/queens_community/queens/-/wikis/home) containing a loose collection of further helpful information

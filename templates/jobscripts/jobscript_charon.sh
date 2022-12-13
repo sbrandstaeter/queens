@@ -63,6 +63,8 @@ INPUT='{INPUT}'
 # OUTPUT SPECIFICATION
 ######################
 OUTPUT_PREFIX={OUTPUTPREFIX}
+BACI_OUTPUT_DIR={DESTDIR}
+WORKDIR=$BACI_OUTPUT_DIR
 ENSIGHT_OUTPUT_DIR=""
 ENSIGHT_OPTIONS=""
 #######################
@@ -99,6 +101,6 @@ wait
 # (cd back into home since pwd does not exist anymore)
 if [ $DoDataProcessing = true ]
 then
-  $MPI_RUN $MPIFLAGS -np {nposttasks} $EXE $INPUT '--post=true'
+  $MPI_RUN $MPIFLAGS -np {nposttasks} $EXE $INPUT $WORKDIR '--post=true'
 fi
 # END ################## DO NOT TOUCH ME #########################

@@ -2,19 +2,19 @@
 import numpy as np
 
 
-def get_cluster_job_id(scheduler_type, output_str_cluster, pbs_scheduler_types):
+def get_cluster_job_id(cluster_type, output_str_cluster, pbs_cluster_types):
     """Retrieve id of a job after submitting it to the cluster.
 
     Args:
-        scheduler_type (str): Type of cluster scheduler
+        cluster_type (str): Type of cluster
         output_str_cluster (string): Output returned when submitting the job
-        pbs_scheduler_types (list): List of valid schedulers with pbs
+        pbs_cluster_types (list): List of valid clusters with pbs scheduler
 
     Returns:
          job_id_return (str/None): job ID return value
     """
     if output_str_cluster:
-        if scheduler_type in pbs_scheduler_types:
+        if cluster_type in pbs_cluster_types:
             job_cluster_id_return = int(output_str_cluster.split('.')[0])
         else:
             job_cluster_id_return = int(output_str_cluster.split()[-1])
@@ -25,7 +25,16 @@ def get_cluster_job_id(scheduler_type, output_str_cluster, pbs_scheduler_types):
 
 
 def distribute_procs_on_nodes_pbs(num_procs=1, max_procs_per_node=16):
-    """Compute the distribution of processors on nodes of a PBS cluster."""
+    """Compute the distribution of processors on nodes of a PBS cluster.
+
+    Args:
+        num_procs (int): total number of requested processors
+        max_procs_per_node (int):maximum number of processors of a node on the cluster
+
+    Returns:
+         - num_nodes (int): number of nodes needed for the job
+         - procs_per_node (int): number of processors needed on each node
+    """
     num_nodes = int(np.ceil(num_procs / max_procs_per_node))
     if num_procs % num_nodes == 0:
         procs_per_node = int(num_procs / num_nodes)

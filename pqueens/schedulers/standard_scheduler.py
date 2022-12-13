@@ -7,8 +7,8 @@ from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.config_directories import ABS_SINGULARITY_IMAGE_PATH, experiment_directory
 from pqueens.utils.dictionary_utils import find_keys
-from pqueens.utils.information_output import print_scheduling_information
 from pqueens.utils.manage_singularity import create_singularity_image, new_singularity_image_needed
+from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.string_extractor_and_checker import check_if_string_in_file
 
@@ -94,14 +94,6 @@ class StandardScheduler(Scheduler):
                 create_singularity_image()
         scheduler_type = scheduler_options["scheduler_type"]
 
-        # TODO move this to a different place
-        # print out scheduling information
-        print_scheduling_information(
-            scheduler_type,
-            False,
-            None,
-            singularity,
-        )
         # find the max_concurrent key in the input file
         max_concurrent_lst = list(find_keys(config, 'max-concurrent'))
         if max_concurrent_lst:
@@ -119,6 +111,16 @@ class StandardScheduler(Scheduler):
             scheduler_type,
             max_concurrent,
         )
+
+    def __str__(self):
+        """String description of the ClusterScheduler object.
+
+        Returns:
+            string (str): ClusterScheduler object description
+        """
+        name = "Standard Scheduler"
+        print_dict = self._create_base_print_dict()
+        return get_str_table(name, print_dict)
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
     def pre_run(self):
@@ -141,7 +143,7 @@ class StandardScheduler(Scheduler):
             f"--job_id={job_id}",
             f"--batch={batch}",
             "--port=000",
-            f"--path_json={self.input_file}",
+            f"--input={self.input_file}",
             f"--driver_name={self.driver_name}",
             f"--experiment_dir={self.experiment_dir}",
         ]

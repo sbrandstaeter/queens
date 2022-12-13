@@ -7,8 +7,8 @@ import pqueens.database.database as DB_module
 from pqueens.data_processor import from_config_create_data_processor
 from pqueens.drivers.driver import Driver
 from pqueens.schedulers.cluster_scheduler import (
-    VALID_CLUSTER_SCHEDULER_TYPES,
-    VALID_PBS_SCHEDULER_TYPES,
+    VALID_CLUSTER_CLUSTER_TYPES,
+    VALID_PBS_CLUSTER_TYPES,
 )
 from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.injector import inject
@@ -37,7 +37,7 @@ class MpiDriver(Driver):
         post_file_prefix (str): unique prefix to name the post-processed file
         post_options (str): options for post-processing
         result (np.array): simulation result to be stored in database
-        scheduler_type (str): type of job scheduler (pbs or slurm)
+        cluster_type (str): type of cluster that the jobs are executed on
         simulation_input_template (str): path to simulation input template (e.g. dat-file)
         singularity (bool): flag for use of a singularity container
         experiment_dir (path): path to working directory
@@ -69,7 +69,7 @@ class MpiDriver(Driver):
         post_options,
         post_processor,
         cluster_job,
-        scheduler_type,
+        cluster_type,
         simulation_input_template,
         data_processor,
         gradient_data_processor,
@@ -81,6 +81,7 @@ class MpiDriver(Driver):
             batch (int): current batch of driver calls.
             driver_name (str): name of the driver used for the analysis
             experiment_dir (path): path to QUEENS experiment directory
+            working_dir (path): folder were simulation is run in on compute node
             experiment_name (str): name of QUEENS experiment
             job_id (int):  job ID as provided in database within range [1, n_jobs]
             num_procs (int): number of processors for processing
@@ -101,7 +102,7 @@ class MpiDriver(Driver):
             post_options (str): options for post-processing
             post_processor (path): path to post_processor
             cluster_job (bool): true if job is execute on cluster
-            scheduler_type (str): type of job scheduler (pbs or slurm)
+            cluster_type (str): type of cluster
             simulation_input_template (path): path to simulation input template (e.g. dat-file)
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
@@ -138,7 +139,7 @@ class MpiDriver(Driver):
         self.pid = None
         self.post_file_prefix = post_file_prefix
         self.post_options = post_options
-        self.scheduler_type = scheduler_type
+        self.cluster_type = cluster_type
         self.simulation_input_template = simulation_input_template
         self.singularity = singularity
         self.working_dir = working_dir
@@ -182,8 +183,9 @@ class MpiDriver(Driver):
         num_procs = scheduler_options.get('num_procs', 1)
         num_procs_post = scheduler_options.get('num_procs_post', 1)
         singularity = scheduler_options.get('singularity', False)
-        scheduler_type = scheduler_options['scheduler_type']
-        cluster_job = scheduler_type in VALID_CLUSTER_SCHEDULER_TYPES
+
+        cluster_type = scheduler_options.get('cluster_type')
+        cluster_job = cluster_type in VALID_CLUSTER_CLUSTER_TYPES
 
         driver_options = config[driver_name]
         simulation_input_template = pathlib.Path(driver_options['input_template'])
@@ -254,7 +256,7 @@ class MpiDriver(Driver):
             post_file_prefix=post_file_prefix,
             post_options=post_options,
             post_processor=post_processor,
-            scheduler_type=scheduler_type,
+            cluster_type=cluster_type,
             cluster_job=cluster_job,
             simulation_input_template=simulation_input_template,
             data_processor=data_processor,
@@ -329,7 +331,7 @@ class MpiDriver(Driver):
         if not self.singularity:
             # override the pid with cluster scheduler id
             # if singularity: pid is handled by ClusterScheduler._submit_singularity
-            self.pid = get_cluster_job_id(self.scheduler_type, stdout, VALID_PBS_SCHEDULER_TYPES)
+            self.pid = get_cluster_job_id(self.cluster_type, stdout, VALID_PBS_CLUSTER_TYPES)
 
         # redirect stdout/stderr output to log and error file
         self.log_file.write_text(stdout, encoding='utf-8')
@@ -382,10 +384,12 @@ class MpiDriver(Driver):
         self.cluster_options['INPUT'] = str(self.input_file)
         self.cluster_options['OUTPUTPREFIX'] = self.output_prefix
 
-        submission_script_path = str(self.experiment_dir.joinpath('jobfile.sh'))
+        submission_script_path = (
+            self.experiment_dir / str(self.job_id) / f"{self.experiment_name}_{self.job_id}.sh"
+        )
         inject(self.cluster_options, self.cluster_config.jobscript_template, submission_script_path)
 
-        command_list = [self.cluster_config.start_cmd, submission_script_path]
+        command_list = [self.cluster_config.start_cmd, str(submission_script_path)]
 
         return ' '.join(command_list)
 
@@ -428,7 +432,7 @@ class MpiDriver(Driver):
             "Executable": self.executable,
             "MPI command": self.mpi_cmd,
             "Process ID": self.pid,
-            "Scheduler type": self.scheduler_type,
+            "Cluster type": self.cluster_type,
             "Singularity": self.singularity,
             "Cluster job": self.cluster_job,
             "Post-processor": self.post_processor,

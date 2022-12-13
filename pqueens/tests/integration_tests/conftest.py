@@ -3,15 +3,18 @@
 import getpass
 import logging
 import pathlib
+import shutil
 
+import numpy as np
 import pytest
 
 from pqueens.schedulers.cluster_scheduler import (
-    BRUTEFORCE_SCHEDULER_TYPE,
-    CHARON_SCHEDULER_TYPE,
-    DEEP_SCHEDULER_TYPE,
+    BRUTEFORCE_CLUSTER_TYPE,
+    CHARON_CLUSTER_TYPE,
+    DEEP_CLUSTER_TYPE,
 )
 from pqueens.utils import config_directories
+from pqueens.utils.io_utils import load_result
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -25,12 +28,12 @@ def user():
 
 
 @pytest.fixture(scope="session")
-def cluster_user(user):
+def cluster_user(user, hostname):
     """Username of cluster account to use for tests."""
     # user who called the test suite
     # gitlab-runner has to run simulation as different user on cluster everyone else should use
     # account with same name
-    if user == "gitlab-runner":
+    if user == "gitlab-runner" and (hostname not in ["master.service", "login.cluster"]):
         cluster_user = "queens"
     else:
         cluster_user = user
@@ -50,9 +53,9 @@ def cluster(request):
 @pytest.fixture(scope="session")
 def cluster_address(cluster):
     """String used for ssh connect to the cluster."""
-    if cluster == "deep" or cluster == "bruteforce":
+    if cluster == DEEP_CLUSTER_TYPE or cluster == BRUTEFORCE_CLUSTER_TYPE:
         address = cluster + '.lnm.ed.tum.de'
-    elif cluster == "charon":
+    elif cluster == CHARON_CLUSTER_TYPE:
         address = cluster + '.bauv.unibw-muenchen.de'
     return address
 
@@ -60,18 +63,17 @@ def cluster_address(cluster):
 @pytest.fixture(scope="session")
 def connect_to_resource(cluster_user, cluster_address):
     """String used for ssh connect to the cluster."""
-    connect_to_resource = cluster_user + '@' + cluster_address
-    return connect_to_resource
+    return cluster_user + '@' + cluster_address
 
 
 @pytest.fixture(scope="session")
 def cluster_singularity_ip(cluster):
     """Identify IP address of cluster."""
-    if cluster == "deep":
+    if cluster == DEEP_CLUSTER_TYPE:
         cluster_singularity_ip = '129.187.58.20'
-    elif cluster == "bruteforce":
+    elif cluster == BRUTEFORCE_CLUSTER_TYPE:
         cluster_singularity_ip = '10.10.0.1'
-    elif cluster == "charon":
+    elif cluster == CHARON_CLUSTER_TYPE:
         cluster_singularity_ip = '192.168.1.253'
     else:
         cluster_singularity_ip = None
@@ -79,27 +81,21 @@ def cluster_singularity_ip(cluster):
 
 
 @pytest.fixture(scope="session")
-def scheduler_type(cluster):
-    """Switch type of scheduler according to cluster."""
-    if cluster == "deep":
-        scheduler_type = DEEP_SCHEDULER_TYPE
-    elif cluster == "bruteforce":
-        scheduler_type = BRUTEFORCE_SCHEDULER_TYPE
-    elif cluster == "charon":
-        scheduler_type = CHARON_SCHEDULER_TYPE
-    return scheduler_type
-
-
-@pytest.fixture(scope="session")
 def cluster_queens_base_dir(connect_to_resource):
     """Base directory for queens on cluster."""
-    return config_directories.remote_base_dir(remote_connect=connect_to_resource)
+    return config_directories.remote_base_directory(remote_connect=connect_to_resource)
 
 
 @pytest.fixture(scope="session")
 def cluster_queens_testing_folder(mock_value_experiments_base_folder_name, cluster_queens_base_dir):
     """Base directory for experiment data of tests."""
     return cluster_queens_base_dir / mock_value_experiments_base_folder_name
+
+
+@pytest.fixture(scope="session")
+def cluster_native_queens_testing_folder(mock_value_experiments_base_folder_name):
+    """Base directory for experiment data of tests."""
+    return config_directories.local_base_directory() / mock_value_experiments_base_folder_name
 
 
 @pytest.fixture(scope="session")
@@ -171,10 +167,9 @@ def cluster_testsuite_settings(
     cluster_address,
     connect_to_resource,
     prepare_singularity,
-    scheduler_type,
     cluster_singularity_ip,
 ):
-    """Collection of settings needed for all cluster tests."""
+    """Collection of settings needed for cluster tests with singularity."""
     if not prepare_singularity:
         raise RuntimeError(
             "Preparation of singularity for cluster failed."
@@ -185,7 +180,6 @@ def cluster_testsuite_settings(
     cluster_testsuite_settings["cluster_user"] = cluster_user
     cluster_testsuite_settings["cluster_address"] = cluster_address
     cluster_testsuite_settings["connect_to_resource"] = connect_to_resource
-    cluster_testsuite_settings["scheduler_type"] = scheduler_type
     cluster_testsuite_settings["singularity_remote_ip"] = cluster_singularity_ip
 
     return cluster_testsuite_settings
@@ -197,7 +191,6 @@ def baci_cluster_paths(cluster_user, connect_to_resource):
 
     Checks also for existence of the executables.
     """
-
     base_directory = pathlib.Path("/home", cluster_user, "workspace", "build")
 
     path_to_executable = base_directory / "baci-release"
@@ -228,3 +221,77 @@ def baci_cluster_paths(cluster_user, connect_to_resource):
         path_to_post_processor=path_to_post_processor,
     )
     return baci_cluster_paths
+
+
+@pytest.fixture(scope="session")
+def prepare_cluster_testing_environment_native(cluster_native_queens_testing_folder):
+    """Create a clean testing environment."""
+    if (
+        cluster_native_queens_testing_folder.exists()
+        and cluster_native_queens_testing_folder.is_dir()
+    ):
+        _logger.info(f"Delete testing folder")
+        shutil.rmtree(cluster_native_queens_testing_folder)
+
+    _logger.info(f"Create testing folder")
+    cluster_native_queens_testing_folder.mkdir(parents=True, exist_ok=True)
+
+    return True
+
+
+@pytest.fixture(scope="session")
+def baci_cluster_paths_native(cluster_user, prepare_cluster_testing_environment_native):
+    """Paths to baci for native cluster tests."""
+    path_to_executable = pathlib.Path(
+        "/home", cluster_user, "workspace_for_queens", "build", "baci-release"
+    )
+    if not path_to_executable.is_file():
+        raise RuntimeError(
+            f"Could not find executable on {cluster_address}.\n"
+            f"Was looking here: {path_to_executable}"
+        )
+
+    path_to_drt_monitor = pathlib.Path(
+        "/home", cluster_user, "workspace_for_queens", "build", "post_drt_monitor"
+    )
+    if not path_to_drt_monitor.is_file():
+        raise RuntimeError(
+            f"Could not find postprocessor on {cluster_address}.\n"
+            f"Was looking here: {path_to_drt_monitor}"
+        )
+
+    baci_cluster_paths_native = dict(
+        path_to_executable=path_to_executable,
+        path_to_drt_monitor=path_to_drt_monitor,
+    )
+    return baci_cluster_paths_native
+
+
+@pytest.fixture(scope="session")
+def baci_elementary_effects_check_results():
+    """Check results for baci elementary effects tests."""
+
+    def check_results(result_file):
+        """Check results for baci elementary effects tests.
+
+        Args:
+            result_file (path): path to result file
+        """
+        results = load_result(result_file)
+
+        np.testing.assert_allclose(
+            results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
+        )
+        np.testing.assert_allclose(
+            results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
+        )
+        np.testing.assert_allclose(
+            results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
+        )
+        np.testing.assert_allclose(
+            results["sensitivity_indices"]["mu_star_conf"],
+            np.array([0.136631, 0.140794]),
+            rtol=1.0e-3,
+        )
+
+    return check_results

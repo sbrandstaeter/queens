@@ -15,8 +15,8 @@ def generate_submission_script(
 
     Args:
         script_options (dict): Options for the submission
-        submission_script_path (str): Destination path for the script
-        submission_script_template (str): Path to submission template
+        submission_script_path (Path): Destination path for the script
+        submission_script_template (Path): Path to submission template
         user_at_host (str, optional): Resource connection string in the form of username@hostname
     """
     # create actual submission file with parsed parameters
@@ -29,7 +29,7 @@ def generate_submission_script(
         command_list = [
             'scp',
             str(LOCAL_TEMPORARY_SUBMISSION_SCRIPT),
-            user_at_host + ':' + submission_script_path,
+            user_at_host + ':' + str(submission_script_path),
         ]
         command_string = ' '.join(command_list)
         run_subprocess(command_string)

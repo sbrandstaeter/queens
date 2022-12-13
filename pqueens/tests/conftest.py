@@ -1,10 +1,14 @@
 """Configuration module for the entire test suite (highest level)."""
+import logging
 import pathlib
+import socket
 
 import pytest
 
 from pqueens.utils import config_directories
 from pqueens.utils.path_utils import relative_path_from_pqueens, relative_path_from_queens
+
+_logger = logging.getLogger(__name__)
 
 
 def pytest_collection_modifyitems(items):
@@ -20,12 +24,22 @@ def pytest_collection_modifyitems(items):
             item.add_marker(pytest.mark.unit_tests)
 
 
+NAME_OF_HOST = socket.gethostname()
+
+
+@pytest.fixture(scope="session")
+def hostname(name_of_host=NAME_OF_HOST):
+    """Hostname calling the test suite."""
+    _logger.debug("Tests are run on: %s", name_of_host)
+    return name_of_host
+
+
 @pytest.fixture(autouse=True)
 def global_mock_abs_singularity_image_path(monkeypatch):
     """Mock the absolute singularity image path.
 
-    The singularity image path depends on local_base_dir() which is
-    mocked globally and per test. This would however mean that every
+    The singularity image path depends on local_base_directory() which
+    is mocked globally and per test. This would however mean that every
     test that needs singularity has to build the image again. Because
     one test does not know about the other ones. To prevent this we
     store the standard image path that is used by the user here and make
@@ -38,7 +52,24 @@ def global_mock_abs_singularity_image_path(monkeypatch):
     )
 
 
-@pytest.fixture(autouse=True)
+if NAME_OF_HOST in ["master.service", "login.cluster"]:
+    # Decide if local base directory should be mocked.
+    #
+    # For most tests the local base directory should be mocked to the
+    # standard pytest temp folder. The only exceptions are the cluster
+    # native tests, where the jobs don't have access to that folder. For
+    # this reason, the local base dir is not mocked for the cluster native
+    # tests. Whether the tests are run on the cluster natively is detected
+    # based on the hostname.
+    #
+    _logger.debug("Deactivating mocking of local base dir.")
+    MOCK_LOCAL_BASE_DIR = False
+else:
+    _logger.debug("Activating mocking of local base dir.")
+    MOCK_LOCAL_BASE_DIR = True
+
+
+@pytest.fixture(autouse=MOCK_LOCAL_BASE_DIR)
 def global_mock_local_base_dir(monkeypatch, tmp_path):
     """Mock the local base directory for all tests.
 
@@ -50,7 +81,8 @@ def global_mock_local_base_dir(monkeypatch, tmp_path):
     def mock_local_base_dir():
         return tmp_path
 
-    monkeypatch.setattr(config_directories, "local_base_dir", mock_local_base_dir)
+    monkeypatch.setattr(config_directories, "local_base_directory", mock_local_base_dir)
+    _logger.debug("Mocking of local base dir was successful.")
 
 
 @pytest.fixture(scope="session")

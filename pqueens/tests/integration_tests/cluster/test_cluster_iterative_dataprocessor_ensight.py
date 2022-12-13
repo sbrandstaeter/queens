@@ -26,7 +26,7 @@ _logger = logging.getLogger(__name__)
     indirect=True,
 )
 def test_cluster_baci_data_processor_ensight(
-    inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths
+    inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths, user
 ):
     """Test remote BACI simulations with ensight data-processor.
 
@@ -52,7 +52,6 @@ def test_cluster_baci_data_processor_ensight(
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
-    scheduler_type = cluster_testsuite_settings["scheduler_type"]
     singularity_remote_ip = cluster_testsuite_settings["singularity_remote_ip"]
 
     path_to_executable = baci_cluster_paths["path_to_executable"]
@@ -61,7 +60,10 @@ def test_cluster_baci_data_processor_ensight(
     path_to_post_processor = baci_cluster_paths["path_to_post_processor"]
 
     # unique experiment name
-    experiment_name = f"test_{cluster}_remote_data_processor_ensight"
+    experiment_name = f"test_{cluster}_data_processor_ensight"
+
+    template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.json")
+    input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.json")
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
@@ -104,11 +106,11 @@ def test_cluster_baci_data_processor_ensight(
         'path_to_post_processor': str(path_to_post_processor),
         'connect_to_resource': connect_to_resource,
         'cluster': cluster,
-        'scheduler_type': scheduler_type,
         'singularity_remote_ip': singularity_remote_ip,
+        'user': user,
     }
-    queens_input_file_template = pathlib.Path(inputdir, "baci_remote_model_config.json")
-    queens_input_file = pathlib.Path(tmpdir, "baci_remote_model_config.json")
+    queens_input_file_template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.json")
+    queens_input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.json")
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     # Patch the missing config arguments

@@ -63,6 +63,25 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.singularity = singularity
         self.process_ids = {}
 
+    def _create_base_print_dict(self):
+        """String description of the ClusterScheduler object.
+
+        Returns:
+            string (str): ClusterScheduler object description
+        """
+        if self.remote:
+            resource_info = f'remote ({self.remote_connect})'
+        else:
+            resource_info = 'local'
+
+        print_dict = {
+            "Type of scheduler": self.scheduler_type,
+            "Jobs will be run": resource_info,
+            "Use singularity": self.singularity,
+        }
+
+        return print_dict
+
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
     def submit(self, job_id, batch):
         """Function to submit job to scheduling software on a resource.
