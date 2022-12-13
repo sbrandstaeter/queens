@@ -19,6 +19,9 @@ doc/source/*.rst
 singularity_image.sif
 hashfile.txt
 
+# temporary files
+temporary_submission_script.sh
+
 # windows pycharm idea files
 .idea
 

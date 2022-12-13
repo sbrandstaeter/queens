@@ -11,8 +11,6 @@ from pqueens.utils.variational_inference_utils import create_variational_distrib
 
 def test_bbvi_GMM_density_match(
     mocker,
-    inputdir,
-    tmpdir,
     variational_distribution_obj,
     dummy_bbvi_instance,
     visualization_obj,

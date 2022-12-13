@@ -188,7 +188,7 @@ class UniVarRandomFieldGeneratorFactory(object):
             experiment_name,
             batch,
             'jobs_' + driver_name,
-            {'id': job_id, 'expt_dir': experiment_dir, 'expt_name': experiment_name},
+            {'id': job_id, 'experiment_dir': experiment_dir, 'experiment_name': experiment_name},
         )
 
         # calculate high dim realization of random field from basis functions

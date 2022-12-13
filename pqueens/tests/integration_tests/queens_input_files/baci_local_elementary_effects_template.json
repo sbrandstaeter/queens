@@ -77,7 +77,6 @@
         }
     },
     "local_scheduler": {
-        "experiment_dir": "{experiment_dir}",
         "scheduler_type": "standard",
         "singularity": {singularity_boolean},
         "num_procs": 1,

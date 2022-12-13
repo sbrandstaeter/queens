@@ -1,3 +1,4 @@
+import logging
 import os
 from collections import OrderedDict
 
@@ -8,6 +9,8 @@ import pytest
 
 import pqueens.parameters.parameters as parameters_module
 from pqueens.iterators.baci_lm_iterator import BaciLMIterator
+
+_logger = logging.getLogger(__name__)
 
 
 @pytest.fixture(scope='module', params=['method'])
@@ -422,7 +425,7 @@ def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig):
     m6.assert_called_once()
 
 
-def test_post_run_3param(mocker, default_baci_lm_iterator):
+def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
 
@@ -430,7 +433,6 @@ def test_post_run_3param(mocker, default_baci_lm_iterator):
     m4 = mocker.patch('plotly.basedatatypes.BaseFigure.write_html', return_value=None)
     pdata = pd.DataFrame({'params': ['[1.0e3 2.0e-2 3.]', '[1.1 2.1 3.1]'], 'resnorm': [1.2, 2.2]})
     mocker.patch('pandas.read_csv', return_value=pdata)
-    m5 = mocker.patch('builtins.print')
 
     options = {
         "parameters": {
@@ -444,11 +446,12 @@ def test_post_run_3param(mocker, default_baci_lm_iterator):
     parameters_module.from_config_create_parameters(options)
     default_baci_lm_iterator.parameters = parameters_module.parameters
 
-    default_baci_lm_iterator.post_run()
-    m5.assert_called_with(
-        'write_results for more than 2 parameters not implemented, because we are limited '
-        + 'to 3 dimensions. You have: 3. Plotting is skipped.'
-    )
+    with caplog.at_level(logging.WARNING):
+        default_baci_lm_iterator.post_run()
+
+    expected_warning = 'write_results for more than 2 parameters not implemented, because we are limited to 3 dimensions. You have: 3. Plotting is skipped.'
+    assert expected_warning in caplog.text
+
     m4.assert_not_called()
 
 
@@ -505,16 +508,17 @@ def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
         default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
 
 
-def test_checkbounds(mocker, default_baci_lm_iterator):
+def test_checkbounds(mocker, default_baci_lm_iterator, caplog):
 
     default_baci_lm_iterator.bounds = np.array([[0.0, 0.0], [5.0, 2.0]])
-    m1 = mocker.patch('builtins.print')
-
-    stepoutside = default_baci_lm_iterator.checkbounds(np.array([1.0, 2.1]), 3)
+    with caplog.at_level(logging.WARNING):
+        stepoutside = default_baci_lm_iterator.checkbounds(np.array([1.0, 2.1]), 3)
 
     assert stepoutside == True
     assert default_baci_lm_iterator.reg_param == 2.0
-    m1.assert_called_with(
-        f'WARNING: STEP #{3} IS OUT OF BOUNDS; double reg_param and compute new iteration.'
-        f'\n declined step was: {np.array([1.1, 2.3])}'
+
+    expected_warning = (
+        'WARNING: STEP #%d IS OUT OF BOUNDS; double reg_param and compute new iteration.\n declined step was: %s'
+        % (3, np.array([1.1, 2.3]))
     )
+    assert expected_warning in caplog.text

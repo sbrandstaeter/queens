@@ -1,4 +1,4 @@
---- #---------------------------------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 # Define variables
 variables:
   # flags to turn on/ off tests for specific platforms
@@ -9,7 +9,6 @@ variables:
   UPDATE_REQUIREMENTS: "0"
   # optional parameters for pytest calls
   PYTEST_OPTIONAL_PARAMETERS: ""
-
 #---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
@@ -20,74 +19,80 @@ stages:
   - badges
   - pages
   - cleanup
-
+#---------------------------------------------------------------------------------------------------
+# Define general workflow
+#---------------------------------------------------------------------------------------------------
+# in order to run at all any pipeline has to fulfill one of the  following conditions
+workflow:
+  rules:
+      # for merge requests
+      - if: $CI_MERGE_REQUEST_IID
+      # for tags
+      - if: $CI_COMMIT_TAG
+      # for the master branch
+      - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      # if manually triggered with the web interface's "run pipeline"
+      - if: '$CI_PIPELINE_SOURCE == "web"'
 #---------------------------------------------------------------------------------------------------
 # Define platform specific settings
 #---------------------------------------------------------------------------------------------------
-.ubuntu_build_settings:
-  before_script:
-    - conda update -n base conda
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
-
+.ubuntu_build_conditions:
+  rules:
+    - if: ($CLUSTER_NATIVE_TESTS == "1") && ($CLUSTER_TESTS == "0")
+      when: never
+    - if: ($UBUNTU_TESTS == "1") || ($CLUSTER_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
 .ubuntu_settings:
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
-    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  singularity_image.sif
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
+    - SINGULARITY_BASE_DIR="$HOME/queens"
+    - echo $SINGULARITY_BASE_DIR
+    - mkdir -p $SINGULARITY_BASE_DIR
+    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_BASE_DIR/singularity_image.sif
+  rules:
+    - if: $CLUSTER_NATIVE_TESTS == "1"
+      when: never
+    - if: $CLUSTER_TESTS == "1"
+      when: never
+    - if: ($UBUNTU_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
-.codechecks_conditions:
-  except:
-    variables:
-      - $CLUSTER_TESTS == "1"
-      - $CLUSTER_NATIVE_TESTS == "1"
-      - $BENCHMARKS == "1"
+.default_test_conditions:
+  rules:
+    - if: $CLUSTER_TESTS == "1"
+      when: never
+    - if: $CLUSTER_NATIVE_TESTS == "1"
+      when: never
+    - if: $BENCHMARKS == "1"
+      when: never
+#----------------------------------------------------------------------------------------------
+.default_test_conditions_default_branch:
+  rules:
+    - !reference [.default_test_conditions, rules]
+    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
 #----------------------------------------------------------------------------------------------
 .codechecks_settings:
-  extends:
-    - .codechecks_conditions
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
+  rules:
+    - !reference [.default_test_conditions, rules]
+    - if: $UBUNTU_TESTS == "1"
   stage: codechecks
   tags:
     - codechecks
-
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: build
 #---------------------------------------------------------------------------------------------------
 .build_conda_env:
-  extends:
-    - .ubuntu_build_settings
   stage: build
+  rules:
+    - !reference [.ubuntu_build_conditions, rules]
+  before_script:
+    - conda update -n base conda
   script:
     - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
     - conda activate queens-$CI_PIPELINE_ID
     - pip install -e .[develop]
     - conda env export > pipeline_conda_environment.yml
-  artifacts:
-    name: "conda_env-$CI_PIPELINE_ID.yml"
-    paths:
-      - pipeline_conda_environment.yml
-    when: always
-    expire_in: 4 weeks
-
-.build_conda_env_cluster_native:
-  stage: build
-  script:
-    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
-    - conda activate queens-$CI_PIPELINE_ID
-    - pip install -e .[develop]
-    - conda env export > pipeline_conda_environment.yml
-  only:
-    variables:
-      - $CLUSTER_NATIVE_TESTS == "1"
   artifacts:
     name: "conda_env-$CI_PIPELINE_ID.yml"
     paths:
@@ -106,6 +111,22 @@ imcs-build_conda_env:
     - .build_conda_env
   tags:
     - imcs-build
+#----------------------------------------------------------------------------------------------
+.build_conda_env_cluster_native:
+  stage: build
+  script:
+    - conda env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - conda activate queens-$CI_PIPELINE_ID
+    - pip install -e .[develop]
+    - conda env export > pipeline_conda_environment.yml
+  rules:
+    - if: $CLUSTER_NATIVE_TESTS == "1"
+  artifacts:
+    name: "conda_env-$CI_PIPELINE_ID.yml"
+    paths:
+      - pipeline_conda_environment.yml
+    when: always
+    expire_in: 4 weeks
 
 bruteforce-native-build_conda_env:
   extends:
@@ -124,9 +145,8 @@ deep-native-build_conda_env:
   script:
     - unset SINGULARITY_BIND && singularity build --fakeroot singularity_image.sif pqueens/singularity/singularity_recipe.def
     - mv singularity_image.sif /tmp/singularity_image.sif-$CI_PIPELINE_ID
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
+  rules:
+    - !reference [.ubuntu_build_conditions, rules]
 
 lnm-build_singularity:
   extends:
@@ -180,7 +200,6 @@ update:
     - if: $UPDATE_REQUIREMENTS == "1"
   tags:
     - lnm-build
-
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: codechecks
 #---------------------------------------------------------------------------------------------------
@@ -234,7 +253,6 @@ license_check:
     - liccheck -s lic_strategy.ini  -r requirements.txt
   needs:
     - lnm-build_conda_env
-
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------
@@ -247,13 +265,6 @@ license_check:
   script:
     - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
-  except:
-    variables:
-      - $CLUSTER_TESTS == "1"
-      - $CLUSTER_NATIVE_TESTS == "1"
-      - $BENCHMARKS == "1"
-    refs:
-      - master
 
 lnm-ubuntu_full_test_suite_develop:
   extends:
@@ -273,12 +284,14 @@ imcs-ubuntu_full_test_suite_develop:
   tags:
     - imcs-ubuntu
 #---------------------------------------------------------------------------------------------------
-# Master tests
+# main tests
 #---------------------------------------------------------------------------------------------------
-.ubuntu_full_test_suite_master:
-  stage: tests
+.ubuntu_full_test_suite_main:
   extends:
     - .ubuntu_settings
+  stage: tests
+  rules:
+    - !reference [.default_test_conditions_default_branch, rules]
   script:
     - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
@@ -288,27 +301,19 @@ imcs-ubuntu_full_test_suite_develop:
       - html_coverage_report
     when: on_success
     expire_in: 3 days
-  only:
-    refs:
-      - master
-  except:
-    variables:
-      - $CLUSTER_TESTS == "1"
-      - $CLUSTER_NATIVE_TESTS == "1"
-      - $BENCHMARKS == "1"
 
-lnm-ubuntu_full_test_suite_master:
+lnm-ubuntu_full_test_suite_main:
   extends:
-    - .ubuntu_full_test_suite_master
+    - .ubuntu_full_test_suite_main
   needs:
     - lnm-build_conda_env
     - lnm-build_singularity
   tags:
     - lnm-ubuntu
 
-imcs-ubuntu_full_test_suite_master:
+imcs-ubuntu_full_test_suite_main:
   extends:
-    - .ubuntu_full_test_suite_master
+    - .ubuntu_full_test_suite_main
   needs:
     - imcs-build_conda_env
     - imcs-build_singularity
@@ -320,9 +325,8 @@ imcs-ubuntu_full_test_suite_master:
 # Cluster tests
 #---------------------------------------------------------------------------------------------------
 .cluster_tests_conditions:
-  only:
-    variables:
-      - $CLUSTER_TESTS == "1"
+  rules:
+    - if: $CLUSTER_TESTS == "1"
 #---------------------------------------------------------------------------------------------------
 .cluster_tests:
   extends:
@@ -357,9 +361,8 @@ imcs-cluster_tests:
 # Cluster tests native
 #---------------------------------------------------------------------------------------------------
 .cluster_tests_native_conditions:
-  only:
-    variables:
-      - $CLUSTER_NATIVE_TESTS == "1"
+  rules:
+    - if: $CLUSTER_NATIVE_TESTS == "1"
 #---------------------------------------------------------------------------------------------------
 bruteforce-native-cluster_tests:
   extends:
@@ -369,7 +372,7 @@ bruteforce-native-cluster_tests:
     - module load comp/gcc/9.1.0 mpi/openmpi/gcc/1.10.1 boost/1.71_gcc9
   script:
     - conda activate queens-$CI_PIPELINE_ID
-    - pytest -v -m lnm_cluster_bruteforce_native --no-cov
+    - pytest -v -m lnm_cluster_bruteforce_native --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - bruteforce-native-build_conda_env
   tags:
@@ -383,7 +386,7 @@ deep-native-cluster_tests:
     - module load gcc/9 mpi/openmpi-4.0.1 boost/1.71_gcc9
   script:
     - conda activate queens-$CI_PIPELINE_ID
-    - pytest -v -m lnm_cluster_deep_native --no-cov
+    - pytest -v -m lnm_cluster_deep_native --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
     - deep-native-build_conda_env
   tags:
@@ -391,16 +394,12 @@ deep-native-cluster_tests:
 #---------------------------------------------------------------------------------------------------
 # Benchmarks
 #---------------------------------------------------------------------------------------------------
-.benchmarks_conditions:
-  only:
-    variables:
-      - $BENCHMARKS == "1"
-#---------------------------------------------------------------------------------------------------
 benchmarks:
   stage: tests
   extends:
     - .ubuntu_settings
-    - .benchmarks_conditions
+  rules:
+    - if: $BENCHMARKS == "1"
   script:
     - pytest -v -m benchmark --no-cov $PYTEST_OPTIONAL_PARAMETERS
   needs:
@@ -412,13 +411,10 @@ benchmarks:
 #---------------------------------------------------------------------------------------------------
 # Basic setting to trigger the creation of a documentation badge in a downstream project
 .trigger_documentation_badge:
-  extends:
-    - .codechecks_conditions
   stage: badges
   needs: ["documentation"]
-  only:
-    refs:
-      - master
+  rules:
+    - !reference [.default_test_conditions_default_branch, rules]
   trigger:
     project: queens_community/queens_badges/documentation-badge
 #---------------------------------------------------------------------------------------------------
@@ -440,13 +436,10 @@ trigger_documentation_badge_fail:
 #---------------------------------------------------------------------------------------------------
 # Basic setting to trigger the creation of a benchmarks badge in a downstream project
 .trigger_benchmarks_badge:
-  extends:
-    - .benchmarks_conditions
   stage: badges
   needs: ["benchmarks"]
-  only:
-    refs:
-      - master
+  rules:
+    - if: ($BENCHMARKS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
   trigger:
     project: queens_community/queens_badges/benchmarks-badge
 #---------------------------------------------------------------------------------------------------
@@ -472,9 +465,8 @@ trigger_benchmarks_badge_fail:
     - .cluster_tests_conditions
   stage: badges
   needs: ["lnm-cluster_tests", "imcs-cluster_tests"]
-  only:
-    refs:
-      - master
+  rules:
+    - if: ($CLUSTER_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
   trigger:
     project: queens_community/queens_badges/cluster-badge
 #---------------------------------------------------------------------------------------------------
@@ -493,7 +485,6 @@ trigger_cluster_badge_fail:
   when: on_failure
   variables:
     SUCCESS_CLUSTER_PIPELINE: "0"
-
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: pages
 #---------------------------------------------------------------------------------------------------
@@ -501,10 +492,11 @@ pages:
   # used to deploy the coverage report and the documentation to GitLab pages
   # job name has to be pages and triggers deploy stage
   stage: pages
-  # disable cache on this job since we do not need conda env here
+  rules:
+    - !reference [.default_test_conditions_default_branch, rules]
   dependencies:
     - documentation
-    - lnm-ubuntu_full_test_suite_master
+    - lnm-ubuntu_full_test_suite_main
   script:
     - mkdir public
     - mv html_coverage_report public/coverage_report
@@ -517,18 +509,10 @@ pages:
       - public
   tags:
     - lnm-ubuntu
-  only:
-    refs:
-      - master
-  except:
-    variables:
-      - $CLUSTER_TESTS == "1"
-      - $CLUSTER_NATIVE_TESTS == "1"
-      - $BENCHMARKS == "1"
-
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: cleanup
 #---------------------------------------------------------------------------------------------------
+# Remove conda env and singularity image on ubuntu runners
 .remove_conda_env_and_singularity_image:
   stage: cleanup
   script:
@@ -537,20 +521,8 @@ pages:
   when: always
   variables:
     GIT_STRATEGY: none
-  only:
-    variables:
-      - $UBUNTU_TESTS == "1"
-
-.remove_conda_env_cluster_native:
-  stage: cleanup
-  script:
-    - conda env remove -n queens-$CI_PIPELINE_ID
-  when: always
-  variables:
-    GIT_STRATEGY: none
-  only:
-    variables:
-      - $CLUSTER_NATIVE_TESTS == "1"
+  rules:
+    - !reference [.ubuntu_build_conditions, rules]
 
 lnm-remove_conda_env_and_singularity_image:
   extends:
@@ -567,6 +539,17 @@ imcs-remove_conda_env_and_singularity_image:
     - imcs-build_conda_env
   tags:
     - imcs-build
+#---------------------------------------------------------------------------------------------------
+# Remove conda env and singularity image on cluster native runners
+.remove_conda_env_cluster_native:
+  stage: cleanup
+  script:
+    - conda env remove -n queens-$CI_PIPELINE_ID
+  when: always
+  variables:
+    GIT_STRATEGY: none
+  rules:
+    - if: $CLUSTER_NATIVE_TESTS == "1"
 
 bruteforce-cluster-native-remove_conda_env:
   extends:

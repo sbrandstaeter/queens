@@ -19,12 +19,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
-            cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
-                                       cluster options
             remote connect (str):      (only for remote scheduling) address of remote
                                        computing resource
-            cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
-                                       cluster options
             singularity (bool):        flag for use of Singularity containers
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids
@@ -38,7 +34,6 @@ class Scheduler(metaclass=abc.ABCMeta):
         experiment_dir,
         driver_name,
         config,
-        cluster_options,
         singularity,
         scheduler_type,
     ):
@@ -51,12 +46,8 @@ class Scheduler(metaclass=abc.ABCMeta):
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
-            cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
-                                       cluster options
             remote connect (str):      (only for remote scheduling) address of remote
                                        computing resource
-            cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
-                                       cluster options
             singularity (bool):        flag for use of Singularity containers
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
 
@@ -68,10 +59,28 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.experiment_dir = experiment_dir
         self.driver_name = driver_name
         self.config = config
-        self.cluster_options = cluster_options
         self.scheduler_type = scheduler_type
         self.singularity = singularity
         self.process_ids = {}
+
+    def _create_base_print_dict(self):
+        """String description of the ClusterScheduler object.
+
+        Returns:
+            string (str): ClusterScheduler object description
+        """
+        if self.remote:
+            resource_info = f'remote ({self.remote_connect})'
+        else:
+            resource_info = 'local'
+
+        print_dict = {
+            "Type of scheduler": self.scheduler_type,
+            "Jobs will be run": resource_info,
+            "Use singularity": self.singularity,
+        }
+
+        return print_dict
 
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
     def submit(self, job_id, batch):
@@ -103,7 +112,9 @@ class Scheduler(metaclass=abc.ABCMeta):
         # create driver
         # TODO we should not create a new driver instance here every time
         # instead only update the driver attributes.
-        driver_obj = from_config_create_driver(self.config, job_id, batch, self.driver_name)
+        driver_obj = from_config_create_driver(
+            self.config, job_id, batch, self.driver_name, self.experiment_dir
+        )
 
         # do post-processing (if required), data-processing,
         # finish and clean job

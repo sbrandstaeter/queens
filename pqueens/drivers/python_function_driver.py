@@ -24,10 +24,10 @@ def python_function_driver(job):
     _logger.info("Running job for Python function.\n")
 
     # add directory to system path.
-    sys.path.append(os.path.realpath(job['expt_dir']))
+    sys.path.append(os.path.realpath(job['experiment_dir']))
 
     # change to directory.
-    os.chdir(job['expt_dir'])
+    os.chdir(job['experiment_dir'])
     _logger.info("Changed to directory %s\n", os.getcwd())
 
     # convert dict to vector of parameters.

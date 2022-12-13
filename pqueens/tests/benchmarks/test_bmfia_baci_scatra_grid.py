@@ -33,7 +33,6 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
     plot_dir = tmpdir
     dir_dict = {
         'experimental_data_path': experimental_data_path,
-        'experiment_dir': str(tmpdir),
         'baci_hf_input': third_party_input_file_hf,
         'baci_lf_input': third_party_input_file_lf,
         'baci-release': baci_release,
