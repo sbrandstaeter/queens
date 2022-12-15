@@ -1,0 +1,110 @@
+12-15 17:32 pqueens.utils.ascii_art INFO
+12-15 17:32 pqueens.utils.ascii_art INFO                                    *
+12-15 17:32 pqueens.utils.ascii_art INFO                                  * | *
+12-15 17:32 pqueens.utils.ascii_art INFO                                 * \|/ *
+12-15 17:32 pqueens.utils.ascii_art INFO                            * * * \|O|/ * * *
+12-15 17:32 pqueens.utils.ascii_art INFO                             \o\o\o|O|o/o/o/
+12-15 17:32 pqueens.utils.ascii_art INFO                             (<><><>O<><><>)
+12-15 17:32 pqueens.utils.ascii_art INFO                              '==========='
+12-15 17:32 pqueens.utils.ascii_art INFO
+12-15 17:32 pqueens.utils.ascii_art INFO      :'#######::'##::::'##:'########:'########:'##::: ##::'######::
+12-15 17:32 pqueens.utils.ascii_art INFO      '##.... ##: ##:::: ##: ##.....:: ##.....:: ###:: ##:'##... ##:
+12-15 17:32 pqueens.utils.ascii_art INFO       ##:::: ##: ##:::: ##: ##::::::: ##::::::: ####: ##: ##:::..::
+12-15 17:32 pqueens.utils.ascii_art INFO       ##:::: ##: ##:::: ##: ######::: ######::: ## ## ##:. ######::
+12-15 17:32 pqueens.utils.ascii_art INFO       ##:'## ##: ##:::: ##: ##...:::: ##...:::: ##. ####::..... ##:
+12-15 17:32 pqueens.utils.ascii_art INFO       ##:.. ##:: ##:::: ##: ##::::::: ##::::::: ##:. ###:'##::: ##:
+12-15 17:32 pqueens.utils.ascii_art INFO      : ##### ##:. #######:: ########: ########: ##::. ##:. ######::
+12-15 17:32 pqueens.utils.ascii_art INFO      :.....:..:::.......:::........::........::..::::..:::......:::
+12-15 17:32 pqueens.utils.ascii_art INFO
+12-15 17:32 pqueens.utils.ascii_art INFO
+12-15 17:32 pqueens.utils.ascii_art INFO       A general purpose framework for Uncertainty Quantification,
+12-15 17:32 pqueens.utils.ascii_art INFO        Physics-Informed Machine Learning, Bayesian Optimization,
+12-15 17:32 pqueens.utils.ascii_art INFO                Inverse Problems and Simulation Analytics
+12-15 17:32 pqueens.utils.ascii_art INFO
+12-15 17:32 pqueens.database.mongodb INFO     Connected to localhost:27017
+12-15 17:32 pqueens.database.mongodb INFO     queens_db_still_xxx was dropped
+12-15 17:32 pqueens.database.database INFO     +---------------------------------------------------------------+
+|                 QUEENS MongoDB object wrapper                 |
+|- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -|
+|  Database address: localhost:27017                            |
+|  Database name : queens_db_still_xxx                          |
++---------------------------------------------------------------+
+
+12-15 17:32 pqueens.iterators.nuts_iterator INFO     NUTS Iterator for experiment: xxx
+12-15 17:32 pqueens.data_processor.data_processor_csv_data INFO     Successfully read-in data from /data/home/still/Desktop/queens/pqueens/tests/integration_tests/queens_output_files/experimental_data.csv.
+12-15 17:32 pqueens.main INFO
+12-15 17:32 pqueens.main INFO     Time for INPUT: 1.7248165607452393 s
+12-15 17:32 pqueens.main INFO
+12-15 17:32 pqueens.main INFO
+12-15 17:32 pqueens.main INFO     Starting Analysis...
+12-15 17:32 pqueens.main INFO
+12-15 17:32 pqueens.iterators.nuts_iterator INFO     Initialize NTUS by PyMC run.
+12-15 17:32 pqueens.iterators.pymc_iterator INFO     Use PyMC Priors
+12-15 17:32 filelock     DEBUG    Attempting to acquire lock 140587903780080 on /data/home/still/.aesara/compiledir_Linux-5.13--generic-x86_64-with-glibc2.10-x86_64-3.8.0-64/.lock
+12-15 17:32 filelock     DEBUG    Lock 140587903780080 acquired on /data/home/still/.aesara/compiledir_Linux-5.13--generic-x86_64-with-glibc2.10-x86_64-3.8.0-64/.lock
+12-15 17:32 filelock     DEBUG    Attempting to release lock 140587903780080 on /data/home/still/.aesara/compiledir_Linux-5.13--generic-x86_64-with-glibc2.10-x86_64-3.8.0-64/.lock
+12-15 17:32 filelock     DEBUG    Lock 140587903780080 released on /data/home/still/.aesara/compiledir_Linux-5.13--generic-x86_64-with-glibc2.10-x86_64-3.8.0-64/.lock
+12-15 17:32 pymc         INFO     Sequential sampling (1 chains in 1 job)
+12-15 17:32 pymc         INFO     NUTS: [x1]
+12-15 17:32 pymc         DEBUG    Energy change in leapfrog step is too large: 4552.896907249543.
+12-15 17:42 pymc         INFO     Sampling 1 chain for 50 tune and 1_428 draw iterations (50 + 1_428 draws total) took 623 seconds.
+12-15 17:42 pqueens.database.database ERROR
+Traceback (most recent call last):
+  File "/data/home/still/Desktop/queens/pqueens/main.py", line 69, in run
+    my_iterator.run()
+  File "/data/home/still/Desktop/queens/pqueens/iterators/iterator.py", line 54, in run
+    self.core_run()
+  File "/data/home/still/Desktop/queens/pqueens/iterators/pymc_iterator.py", line 264, in core_run
+    self.results = pm.sample(
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/sampling.py", line 698, in sample
+    idata = pm.to_inference_data(mtrace, **ikwargs)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/backends/arviz.py", line 586, in to_inference_data
+    return InferenceDataConverter(
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/backends/arviz.py", line 197, in __init__
+    self.posterior_trace, self.warmup_trace = self.split_trace()
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/backends/arviz.py", line 252, in split_trace
+    trace_posterior = self.trace[self.ntune :]
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/backends/base.py", line 309, in __getitem__
+    return self._slice(idx)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/backends/base.py", line 519, in _slice
+    new_traces = [trace._slice(slice) for trace in self._straces.values()]
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/backends/base.py", line 519, in <listcomp>
+    new_traces = [trace._slice(slice) for trace in self._straces.values()]
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/backends/ndarray.py", line 167, in _slice
+    sliced = NDArray(model=self.model, vars=self.vars)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/backends/ndarray.py", line 45, in __init__
+    super().__init__(name, model, vars, test_point)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/backends/base.py", line 70, in __init__
+    test_point = model.initial_point()
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/model.py", line 1272, in initial_point
+    fn = make_initial_point_fn(model=self, return_transformed=True)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/initial_point.py", line 159, in make_initial_point_fn
+    initial_values = make_initial_point_expression(
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/pymc/initial_point.py", line 271, in make_initial_point_expression
+    value = transform.forward(value, *variable.owner.inputs)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/aeppl/transforms.py", line 437, in forward
+    return at.log(value - a) - at.log(b - value)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/aesara/graph/op.py", line 297, in __call__
+    node = self.make_node(*inputs, **kwargs)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/aesara/tensor/elemwise.py", line 485, in make_node
+    out_dtypes, out_shapes, inputs = self.get_output_info(DimShuffle, *inputs)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/aesara/tensor/elemwise.py", line 393, in get_output_info
+    shadow = self.scalar_op.make_node(
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/aesara/scalar/basic.py", line 1105, in make_node
+    outputs = [t() for t in self.output_types([input.type for input in inputs])]
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/aesara/scalar/basic.py", line 1116, in output_types
+    variables = self.output_types_preference(*types)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/aesara/scalar/basic.py", line 928, in upgrade_to_float
+    get_scalar_type(ScalarType.upcast(*[conv.get(type, type) for type in types])),
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/aesara/scalar/basic.py", line 415, in upcast
+    return upcast(*[x.dtype for x in [self] + list(others)])
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/aesara/scalar/basic.py", line 84, in upcast
+    rval = str(z.dtype)
+  File "/scratch/still/anaconda/miniconda/envs/queens/lib/python3.8/site-packages/numpy/core/_dtype.py", line 39, in __str__
+    elif issubclass(dtype.type, np.flexible) or not dtype.isnative:
+KeyboardInterrupt
+12-15 17:42 pqueens.database.mongodb INFO     Disconnected the database
+12-15 17:42 filelock     DEBUG    Attempting to acquire lock 140587575904432 on /data/home/still/.aesara/compiledir_Linux-5.13--generic-x86_64-with-glibc2.10-x86_64-3.8.0-64/.lock
+12-15 17:42 filelock     DEBUG    Lock 140587575904432 acquired on /data/home/still/.aesara/compiledir_Linux-5.13--generic-x86_64-with-glibc2.10-x86_64-3.8.0-64/.lock
+12-15 17:42 filelock     DEBUG    Attempting to release lock 140587575904432 on /data/home/still/.aesara/compiledir_Linux-5.13--generic-x86_64-with-glibc2.10-x86_64-3.8.0-64/.lock
+12-15 17:42 filelock     DEBUG    Lock 140587575904432 released on /data/home/still/.aesara/compiledir_Linux-5.13--generic-x86_64-with-glibc2.10-x86_64-3.8.0-64/.lock

@@ -1,0 +1,66 @@
+{
+  "experiment_name": "xxx",
+  "database": {
+    "type": "mongodb",
+    "address": "localhost:27017"
+  },
+  "method": {
+    "method_name": "nuts",
+    "method_options": {
+      "seed": 42,
+      "num_samples": 10,
+      "num_burn_in": 2,
+      "num_chains": 4,
+      "model": "model",
+      "use_queens_prior": false,
+      "progressbar": false,
+      "result_description": {
+        "write_results": true,
+        "plot_results": false,
+        "cov": true,
+        "mean": true
+      }
+    }
+  },
+  "model": {
+    "type": "gaussian",
+    "forward_model": "forward_model",
+    "output_label": "y_obs",
+    "coordinate_labels": [],
+    "noise_type": "fixed_variance",
+    "noise_value": 1.0,
+    "nugget_noise_var": 1E-5,
+    "experimental_file_name_identifier": "*.csv",
+    "experimental_csv_data_base_dir": "{experimental_data_path}"
+  },
+  "forward_model": {
+    "type": "simulation_model",
+    "interface": "interface"
+  },
+  "interface": {
+    "type": "direct_python_interface",
+    "function_name": "patch_for_likelihood"
+  },
+  "parameters": {
+    "random_variables": {
+      "x": {
+        "dimension": 2,
+        "distribution": "normal",
+        "mean": [
+          -2.0,
+          2.0
+        ],
+        "covariance": [
+          [
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0
+          ]
+        ]
+      }
+    }
+  }
+}
