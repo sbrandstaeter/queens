@@ -1,15 +1,13 @@
 """Fixtures needed for testing the Driver classes."""
 import pytest
 
-from pqueens.database.mongodb import MongoDB
-
 
 @pytest.fixture(scope='session')
 def job(tmpdir_factory):
     """Generic job dictionary for testing drivers."""
-    job_dict = dict()
-    job_dict['expt_dir'] = str(tmpdir_factory.mktemp('expt_dir'))
-    job_dict['expt_name'] = 'experiment_name'
+    job_dict = {}
+    job_dict['experiment_dir'] = str(tmpdir_factory.mktemp('experiment_dir'))
+    job_dict['experiment_name'] = 'experiment_name'
     job_dict['id'] = 666
     job_dict['params'] = {'alpha': 3.14, 'beta': 2.3}
     job_dict['status'] = 'unknown'
@@ -37,26 +35,29 @@ def baci_job(job, tmpdir_factory):
 @pytest.fixture(scope='session')
 def baci_input_file(job):
     """BACI input file created by inject based on job description."""
-    baci_input_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id']) + '.dat'
+    baci_input_file = (
+        job['experiment_dir'] + '/' + job['experiment_name'] + '_' + str(job['id']) + '.dat'
+    )
     return baci_input_file
 
 
 @pytest.fixture(scope='session')
 def baci_output_file(job):
     """BACI output file based on job description."""
-    baci_output_file = job['expt_dir'] + '/' + job['expt_name'] + '_' + str(job['id'])
+    baci_output_file = job['experiment_dir'] + '/' + job['experiment_name'] + '_' + str(job['id'])
     return baci_output_file
 
 
 @pytest.fixture(scope='session')
 def baci_cmd(baci_job, baci_input_file, baci_output_file):
+    """Shell command to execute BACI."""
     baci_cmd = baci_job['path_to_executable'] + ' ' + baci_input_file + ' ' + baci_output_file
     return baci_cmd
 
 
 @pytest.fixture(scope='session')
 def baci_post_cmds(baci_job, baci_output_file):
-
+    """Shell command to post process BACI simulation."""
     post_cmds = []
     for id, baci_post_process_option in enumerate(baci_job['post_process_options']):
         post_cmd = (
@@ -66,9 +67,9 @@ def baci_post_cmds(baci_job, baci_output_file):
             + ' --file='
             + baci_output_file
             + ' --output='
-            + baci_job['expt_dir']
+            + baci_job['experiment_dir']
             + '/'
-            + baci_job['expt_name']
+            + baci_job['experiment_name']
             + '_'
             + str(baci_job['id'])
             + '_'
@@ -84,12 +85,12 @@ def baci_post_cmds(baci_job, baci_output_file):
 @pytest.fixture(scope='session')
 def driver_base_settings(job):
     """A base settings dict that can be used to create Driver object."""
-    base_settings = dict()
+    base_settings = {}
 
     base_settings['driver_name'] = 'my_driver'
-    base_settings['experiment_name'] = job['expt_name']
-    base_settings['global_output_dir'] = job['expt_dir']
-    base_settings['experiment_dir'] = job['expt_dir']
+    base_settings['experiment_name'] = job['experiment_name']
+    base_settings['global_output_dir'] = job['experiment_dir']
+    base_settings['experiment_dir'] = job['experiment_dir']
     base_settings['scheduler_type'] = 'standard'
     base_settings['remote'] = False
     base_settings['remote_connect'] = None

@@ -49,7 +49,6 @@ def experiment_directory(output_directory_forward, singularity_bool):
 def test_baci_lm_shape(
     inputdir,
     third_party_inputs,
-    config_dir,
     baci_link_paths,
     singularity_bool,
     experiment_directory,
@@ -62,9 +61,7 @@ def test_baci_lm_shape(
     Args:
         inputdir (str): Path to the JSON input file
         third_party_inputs (str): Path to the BACI input files
-        config_dir (str): Path to the config directory of QUEENS containing BACI executables
-        set_baci_links_for_gitlab_runner (str): Several paths that are needed to build symbolic
-                                                links to executables
+        baci_links_paths (str): symbolic links to executables including BACI
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
         experiment_directory (LocalPath): experiment directory depending on singularity_bool
 
@@ -85,7 +82,6 @@ def test_baci_lm_shape(
 
     dir_dict = {
         'experiment_name': experiment_name,
-        'experiment_dir': str(experiment_directory),
         'baci_input': third_party_input_file,
         'baci_input_monitor': third_party_input_file_monitor,
         'baci-release': baci_release,

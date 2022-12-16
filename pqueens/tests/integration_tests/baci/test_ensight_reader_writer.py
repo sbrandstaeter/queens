@@ -16,7 +16,6 @@ def test_ensight_reader_writer(
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     baci_release, _, post_drt_ensight, _ = baci_link_paths
     dir_dict = {
-        'experiment_dir': str(tmpdir),
         'baci_input': third_party_input_file,
         'post_drt_ensight': post_drt_ensight,
         'baci-release': baci_release,

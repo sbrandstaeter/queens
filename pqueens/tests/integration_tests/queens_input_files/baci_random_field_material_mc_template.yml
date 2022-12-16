@@ -51,7 +51,6 @@ resources:
     max_finished_jobs: 10
 local_scheduler:
   type: standard
-  experiment_dir: {experiment_dir}
   num_procs: 1
   num_procs_post: 1
   singularity: false

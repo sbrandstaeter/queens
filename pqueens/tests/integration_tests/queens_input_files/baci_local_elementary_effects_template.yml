@@ -52,7 +52,6 @@ resources:
     max_concurrent: 1
     max_finished_jobs: 1000
 local_scheduler:
-  experiment_dir: {experiment_dir}
   type: standard
   singularity: {singularity_boolean}
   num_procs: 1

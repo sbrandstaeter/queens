@@ -44,7 +44,6 @@ resources:
     max_concurrent: 1
     max_finished_jobs: 10001
 local_scheduler:
-  experiment_dir: {experiment_dir}
   type: standard
   num_procs: 4
   num_procs_post: 1

@@ -30,8 +30,6 @@ driver:
   path_to_executable: {baci-release}
   path_to_postprocessor: {post_processor}
   post_process_options: --filter=ensight
-  cluster_bind: /opt:/opt,/bin:/bin,/etc:/etc,/lib:/lib,/lib64:/lib64,/lnm:/lnm
-  experiment_dir: {experiment_dir}
   post_file_prefix: xx
   data_processor_name: data_processor_baci
 data_processor_baci:
@@ -61,4 +59,3 @@ scheduler:
   type: standard
   num_procs: 2
   singularity: {singularity_boolean}
-  experiment_dir: {experiment_dir}

@@ -28,7 +28,6 @@ interface:
   driver_name: driver
 driver:
   type: mpi
-  experiment_dir: {experiment_dir}
   input_template: {input_template}
   path_to_executable: {path_to_executable}
   path_to_postprocessor: {path_to_drt_monitor}
@@ -48,13 +47,13 @@ data_processor_baci:
       target_values: [0.5]
       tolerance: 0.01
 resources:
-  deep:
+  {cluster}:
     scheduler_name: scheduler
     max_concurrent: 10
     max_finished_jobs: 1000
 scheduler:
-  type: {scheduler_type}
-  experiment_dir: {experiment_dir}
+  type: cluster
+  cluster_type: {cluster}
   num_procs: 1
   num_procs_post: 1
   cluster:
@@ -65,8 +64,6 @@ scheduler:
   singularity: true
   singularity_settings:
     remote_ip: {singularity_remote_ip}
-    cluster_path: {path_to_singularity}
-    cluster_bind: {cluster_bind}
 parameters:
   random_variables:
     nue:

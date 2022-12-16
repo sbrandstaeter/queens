@@ -1,6 +1,5 @@
 """Job interface class."""
 import logging
-import pathlib
 import time
 
 import numpy as np
@@ -8,7 +7,8 @@ import numpy as np
 import pqueens.database.database as DB_module
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
-from pqueens.schedulers.cluster_scheduler import VALID_CLUSTER_SCHEDULER_TYPES
+from pqueens.schedulers.cluster_scheduler import VALID_CLUSTER_CLUSTER_TYPES
+from pqueens.utils.config_directories import experiment_directory
 
 _logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class JobInterface(Interface):
         experiment_name (string):                name of experiment
         db (mongodb):                            mongodb to store results and job info
         polling_time (int):                      how frequently do we check if jobs are done
-        output_dir (path):                       directory to write output to
+        experiment_dir (path):                       directory to write output to
         parameters (dict):                       dictionary with parameters
         time_for_data_copy (float): Time (s) to wait such that copying process of simulation
                                     input file can finish, and we do not overload the network
@@ -43,7 +43,7 @@ class JobInterface(Interface):
         experiment_name,
         db,
         polling_time,
-        output_dir,
+        experiment_dir,
         remote,
         remote_connect,
         scheduler_type,
@@ -59,7 +59,7 @@ class JobInterface(Interface):
             experiment_name (string):   name of experiment
             db (mongodb):               mongodb to store results and job info
             polling_time (int):         how frequently do we check if jobs are done
-            output_dir (path):          directory to write output to
+            experiment_dir (path):          directory to write output to
             remote (bool):              true of remote computation
             remote_connect (str):       connection to computing resource
             scheduler_type (str):       scheduler type
@@ -74,7 +74,7 @@ class JobInterface(Interface):
         self.experiment_name = experiment_name
         self.db = db
         self.polling_time = polling_time
-        self.output_dir = output_dir
+        self.experiment_dir = experiment_dir
         self.batch_number = 0
         self.num_pending = None
         self.remote = remote
@@ -102,7 +102,7 @@ class JobInterface(Interface):
         polling_time = config.get('polling-time', 1.0)
 
         interface_options = config[interface_name]
-        driver_name = interface_options.get('driver_name', None)
+        driver_name = interface_options.get('driver', None)
         if driver_name is None:
             raise Exception("No driver_name specified for the JobInterface.")
 
@@ -112,10 +112,9 @@ class JobInterface(Interface):
         # get various scheduler options
         # TODO: This is not nice
         first = list(config['resources'])[0]
-        scheduler_name = config['resources'][first]['scheduler_name']
+        scheduler_name = config['resources'][first]['scheduler']
         scheduler_options = config[scheduler_name]
-        output_dir = pathlib.Path(scheduler_options["experiment_dir"])
-        scheduler_type = scheduler_options['type']
+        scheduler_type = scheduler_options['scheduler_type']
 
         # get flag for remote scheduling
         if scheduler_options.get('remote'):
@@ -125,6 +124,10 @@ class JobInterface(Interface):
             remote = False
             remote_connect = None
 
+        experiment_dir = experiment_directory(
+            experiment_name=experiment_name, remote_connect=remote_connect
+        )
+
         # get flag for Singularity
         singularity = scheduler_options.get('singularity', False)
         if not isinstance(singularity, bool):
@@ -133,9 +136,7 @@ class JobInterface(Interface):
         # set flag for direct scheduling
         direct_scheduling = False
         if not singularity:
-            if (scheduler_type in VALID_CLUSTER_SCHEDULER_TYPES) or (
-                scheduler_type == 'standard' and remote
-            ):
+            if (scheduler_type == 'cluster') or (scheduler_type == 'standard' and remote):
                 direct_scheduling = True
 
         db = DB_module.database
@@ -150,7 +151,7 @@ class JobInterface(Interface):
             experiment_name,
             db,
             polling_time,
-            output_dir,
+            experiment_dir,
             remote,
             remote_connect,
             scheduler_type,
@@ -273,7 +274,11 @@ class JobInterface(Interface):
             self.experiment_name,
             'jobs_' + self.driver_name,
             str(self.batch_number),
-            {'id': job['id'], 'expt_dir': str(self.output_dir), 'expt_name': self.experiment_name},
+            {
+                'id': job['id'],
+                'experiment_dir': str(self.experiment_dir),
+                'experiment_name': self.experiment_name,
+            },
         )
 
     def create_new_job(self, variables, resource_name, new_id=None):
@@ -297,8 +302,8 @@ class JobInterface(Interface):
         job = {
             'id': job_id,
             'params': variables,
-            'expt_dir': str(self.output_dir),
-            'expt_name': self.experiment_name,
+            'experiment_dir': str(self.experiment_dir),
+            'experiment_name': self.experiment_name,
             'resource': resource_name,
             'status': "",  # TODO: before: 'new'
             'submit_time': time.time(),
@@ -356,7 +361,10 @@ class JobInterface(Interface):
             print("Not all jobs are finished yet, try again later")
         else:
             jobs = self.load_jobs(
-                field_filters={'expt_dir': str(self.output_dir), 'expt_name': self.experiment_name}
+                field_filters={
+                    'experiment_dir': str(self.experiment_dir),
+                    'experiment_name': self.experiment_name,
+                }
             )
 
             # Sort job IDs in ascending order to match ordering of samples
@@ -403,9 +411,12 @@ class JobInterface(Interface):
         return np.array(job_ids_generator)
 
     def _check_job_completions(self, jobid_range):
-        """Check AWS tasks to determine completed jobs."""
+        """Check job completion for cluster native workflow."""
         jobs = self.load_jobs(
-            field_filters={'expt_dir': str(self.output_dir), 'expt_name': self.experiment_name}
+            field_filters={
+                'experiment_dir': str(self.experiment_dir),
+                'experiment_name': self.experiment_name,
+            }
         )
         for check_jobid in jobid_range:
             for resource in self.resources.values():
@@ -460,8 +471,8 @@ class JobInterface(Interface):
                         current_job = self.load_jobs(
                             field_filters={
                                 'id': jobid,
-                                'expt_dir': str(self.output_dir),
-                                'expt_name': self.experiment_name,
+                                'experiment_dir': str(self.experiment_dir),
+                                'experiment_name': self.experiment_name,
                             }
                         )
                         if len(current_job) == 1:
@@ -508,7 +519,10 @@ class JobInterface(Interface):
             jobid_range (range):     range of job IDs which are submitted
         """
         jobs = self.load_jobs(
-            field_filters={'expt_dir': str(self.output_dir), 'expt_name': self.experiment_name}
+            field_filters={
+                'experiment_dir': str(self.experiment_dir),
+                'experiment_name': self.experiment_name,
+            }
         )
         for jobid in jobid_range:
             for resource in self.resources.values():
@@ -524,8 +538,6 @@ class JobInterface(Interface):
     def print_resources_status(self):
         """Print out whats going on on the resources."""
         _logger.info('\nResources:      ')
-        left_indent = 16
-        indentation = ' ' * left_indent
         _logger.info('NAME            PENDING      COMPLETED    FAILED   ')
         _logger.info('------------    ---------    ---------    ---------')
         total_pending = 0

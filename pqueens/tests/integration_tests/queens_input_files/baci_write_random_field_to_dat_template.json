@@ -1,0 +1,126 @@
+{
+  "experiment_name": "baci_write_random_field_to_dat",
+  "restart": false,
+  "database": {
+    "type": "mongodb",
+    "address": "localhost:27017"
+  },
+  "method": {
+    "method_name": "monte_carlo",
+    "method_options": {
+      "seed": 1,
+      "num_samples": 3,
+      "model": "model",
+      "result_description": {
+        "write_results": true,
+        "plot_results": false
+      }
+    }
+  },
+  "pre_processing": {
+    "type": "baci_dat",
+    "list_geometric_sets": [
+      "DSURFACE 4"
+    ],
+    "random_fields": [
+      { "name": "random_inflow",
+        "type": "dirichlet",
+        "external_instance": "DSURFACE 4",
+        "dof_for_field": 3,
+        "funct_for_field": 0,
+        "dofs_deterministic": [
+          1,
+          2
+        ],
+        "value_dofs_deterministic": [
+          0,
+          0
+        ],
+        "funct_for_deterministic_dofs": [
+          0,
+          0
+        ]
+      }
+    ],
+    "input_template": "{baci_input}",
+    "input_template_preprocessed": "{baci_input_preprocessed}"
+  },
+  "model": {
+    "type": "simulation_model",
+    "interface": "interface"
+  },
+  "interface": {
+    "type": "job_interface",
+    "resources": "resources",
+    "driver": "driver"
+  },
+  "driver": {
+    "driver_type": "mpi",
+    "input_template": "{baci_input_preprocessed}",
+    "path_to_executable": "{baci-release}",
+    "path_to_postprocessor": "{post_drt_monitor}",
+    "post_process_options": "--field=structure --node=26 --start=1",
+    "post_file_prefix": "QoI",
+    "data_processor": "data_processor_baci"
+  },
+  "data_processor_baci": {
+    "type": "csv",
+    "file_name_identifier": "QoI*",
+    "file_options_dict": {
+      "delete_field_data": false,
+      "use_cols_lst": [
+        1,
+        3
+      ],
+      "index_column": 0,
+      "skip_rows": 4,
+      "filter": {
+        "type": "by_target_values",
+        "target_values": [5e-1],
+        "tolerance": 1e-2
+      }
+    }
+  },
+  "resources": {
+    "local_machine": {
+      "scheduler": "local_scheduler",
+      "max-concurrent": 1,
+      "max-finished-jobs": 10001
+    }
+  },
+  "local_scheduler": {
+    "scheduler_type": "standard",
+    "num_procs": 1,
+    "num_procs_post": 1
+  },
+  "parameters": {
+    "random_variables": {
+      "emodul": {
+        "dimension": 1,
+        "distribution": "lognormal",
+        "normal_mean": 6.392,
+        "normal_covariance": 0.0705
+      },
+      "nue": {
+        "dimension": 1,
+        "distribution": "uniform",
+        "lower_bound": 0.45,
+        "upper_bound": 0.49
+      },
+      "pressure": {
+        "dimension": 1,
+        "distribution": "uniform",
+        "lower_bound": 28000,
+        "upper_bound": 38000
+      }
+    },
+    "random_fields": {
+      "random_inflow": {
+        "corr_length": 1.0,
+        "std_hyperparam_rf": 0.001,
+        "mean_type": "constant",
+        "mean_param": 0
+      }
+    }
+  }
+}

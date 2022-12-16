@@ -34,12 +34,12 @@ Tick the box as soon as a task is completed (either by inserting an "x" in edit 
 - [x] Register an account on LRZ GitLab (you wouldn't be here without it :wink:)
 - [ ] Sign the LNM software agreement (only for now while we are in the transition phase and license is not yet determined)
 - [ ] Complete the [brief introduction of the new team member](#brief-introduction-of-the-new-team-member)
-- [ ] Read through our [README](https://gitlab.lrz.de/queens_community/queens/-/blob/master/README.md) and follow the instructions to
+- [ ] Read through our [README](https://gitlab.lrz.de/queens_community/queens/-/blob/main/README.md) and follow the instructions to
    - [ ] Set up your GitLab account
    - [ ] Get the code
    - [ ] Configure git including the git hooks
-   - [ ] Download the project and run the tests for verification (see [README](https://gitlab.lrz.de/queens_community/queens/-/blob/master/README.md))
-- [ ] Read through our [CONTRIBUTING](https://gitlab.lrz.de/queens_community/queens/-/blob/master/CONTRIBUTING.md) guidelines
+   - [ ] Download the project and run the tests for verification (see [README](https://gitlab.lrz.de/queens_community/queens/-/blob/main/README.md))
+- [ ] Read through our [CONTRIBUTING](https://gitlab.lrz.de/queens_community/queens/-/blob/main/CONTRIBUTING.md) guidelines
 - [ ] Set up your Integrated Development Environment (IDE)
 - [ ] Browse through some open issues and merge requests to get a first impression
 - [ ] Browse through the [Wiki pages](https://gitlab.lrz.de/queens_community/queens/-/wikis/home) containing a loose collection of further helpful information

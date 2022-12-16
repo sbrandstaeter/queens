@@ -1,4 +1,5 @@
 """Levenberg Marquardt iterator."""
+import logging
 import os
 
 import numpy as np
@@ -8,6 +9,8 @@ import plotly.express as px
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils.fd_jacobian import fd_jacobian
+
+_logger = logging.getLogger(__name__)
 
 
 class BaciLMIterator(Iterator):
@@ -66,10 +69,9 @@ class BaciLMIterator(Iterator):
         Returns:
             iterator: OptimizationIterator object
         """
-        print(
-            "Baci LM Iterator for experiment: {0}".format(
-                config.get('global_settings').get('experiment_name')
-            )
+        _logger.info(
+            "Baci LM Iterator for experiment: %s",
+            config.get('global_settings').get('experiment_name'),
         )
 
         method_options = config[iterator_name]
@@ -157,7 +159,7 @@ class BaciLMIterator(Iterator):
         Print console output and optionally open .csv file for results
         and write header.
         """
-        print("Initialize BACI Levenberg-Marquardt run.")
+        _logger.info("Initialize BACI Levenberg-Marquardt run.")
 
         # produce .csv file and write header
         if self.result_description:
@@ -188,14 +190,15 @@ class BaciLMIterator(Iterator):
 
             if i > self.max_feval:
                 converged = True
-                print(f'Maximum number of steps max_feval= {self.max_feval} reached.')
+                _logger.info('Maximum number of steps max_feval= %d reached.', self.max_feval)
                 break
 
-            print(
-                f"iteration: {i} reg_param: {self.reg_param} current_parameters: "
-                f"{self.param_current}"
+            _logger.info(
+                "iteration: %d reg_param: %s current_parameters: %s",
+                i,
+                self.reg_param,
+                self.param_current,
             )
-
             jacobian, residual = self.jacobian_and_residual(self.param_current)
 
             # store terms for repeated useage
@@ -230,9 +233,10 @@ class BaciLMIterator(Iterator):
             # evaluate bounds
             if self.havebounds and self.checkbounds(param_delta, i):
                 if self.reg_param > 1.0e6 * self.init_reg:
-                    print(
-                        f'WARNING: STEP #{i} IS OUT OF BOUNDS and reg_param is unreasonably '
-                        f'high. Ending iterations!'
+                    _logger.info(
+                        'WARNING: STEP #%d IS OUT OF BOUNDS and reg_param is unreasonably '
+                        'high. Ending iterations!',
+                        i,
                     )
                     break
                 else:
@@ -268,7 +272,7 @@ class BaciLMIterator(Iterator):
         Write solution to console and optionally create .html plot from
         result file.
         """
-        print(f"The optimum:\t{self.solution} occured in iteration #{self.iter_opt}.")
+        _logger.info(f"The optimum:\t{self.solution} occured in iteration #{self.iter_opt}.")
         if self.result_description:
             if self.result_description["plot_results"] and self.result_description["write_results"]:
                 data = pd.read_csv(
@@ -288,10 +292,11 @@ class BaciLMIterator(Iterator):
                     i = i + 1
 
                 if i > 2:
-                    print(
-                        f'write_results for more than 2 parameters not implemented, '
-                        f'because we are limited to 3 dimensions. '
-                        f'You have: {i}. Plotting is skipped.'
+                    _logger.warning(
+                        'write_results for more than 2 parameters not implemented, '
+                        'because we are limited to 3 dimensions. '
+                        'You have: %d. Plotting is skipped.',
+                        i,
                     )
                     return
                 elif i == 2:
@@ -416,9 +421,11 @@ class BaciLMIterator(Iterator):
         nextstep = self.param_current + param_delta
         if np.any(nextstep < self.bounds[0]) or np.any(nextstep > self.bounds[1]):
             stepisoutside = True
-            print(
-                f'WARNING: STEP #{i} IS OUT OF BOUNDS; double reg_param and compute new iteration.'
-                f'\n declined step was: {nextstep}'
+            _logger.warning(
+                'WARNING: STEP #%d IS OUT OF BOUNDS; double reg_param and compute new iteration.'
+                '\n declined step was: %s',
+                i,
+                nextstep,
             )
 
             self.reg_param *= 2
