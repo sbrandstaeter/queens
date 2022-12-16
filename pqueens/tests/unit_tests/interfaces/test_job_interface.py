@@ -28,7 +28,7 @@ def jobinterface_config():
     config['test_interface'] = {
         'type': 'job_interface',
         'resources': 'dummy_resource',
-        'driver': 'dummy_driver_name',
+        'driver_name': 'dummy_driver_name',
     }
 
     config['parameters'] = uncertain_parameters

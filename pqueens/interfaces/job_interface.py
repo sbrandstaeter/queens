@@ -102,7 +102,7 @@ class JobInterface(Interface):
         polling_time = config.get('polling-time', 1.0)
 
         interface_options = config[interface_name]
-        driver_name = interface_options.get('driver', None)
+        driver_name = interface_options.get('driver_name', None)
         if driver_name is None:
             raise Exception("No driver_name specified for the JobInterface.")
 
