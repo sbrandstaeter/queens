@@ -6,7 +6,7 @@ method:
   type: monte_carlo
   seed: 1
   num_samples: 10000
-  model: model
+  model_name: model
   result_description:
     write_results: true
     plot_results: false
@@ -17,18 +17,17 @@ pre_processing:
   input_template_preprocessed: {baci_input_preprocessed}
 model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: job_interface
-  resources: resources
-  driver: driver
+  driver_name: driver
 driver:
   type: mpi
   input_template: {baci_input}
   path_to_executable: {baci-release}
   path_to_postprocessor: {post_drt_monitor}
   post_process_options: --field=structure --node=220 --start=1
-  data_processor: data_processor_baci
+  data_processor_name: data_processor_baci
 data_processor_baci:
   type: csv
   file_name_identifier: QoI*
@@ -41,7 +40,7 @@ data_processor_baci:
     skip_rows: 4
 resources:
   local_machine:
-    scheduler: local_scheduler
+    scheduler_name: local_scheduler
     max_concurrent: 1
     max_finished_jobs: 10001
 local_scheduler:

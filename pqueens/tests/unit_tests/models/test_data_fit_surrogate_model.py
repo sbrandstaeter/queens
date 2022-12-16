@@ -19,11 +19,11 @@ class TestDataFitSurrogateModel(unittest.TestCase):
         self.dummy_config = {
             "model": {
                 "type": "simulation_model",
-                "interface": "dummy_interface",
-                "subordinate_model": "dummy_model",
+                "interface_name": "dummy_interface",
+                "subordinate_model_name": "dummy_model",
                 "eval_fit": "kfold",
                 "error_measures": ["sum_squared"],
-                "subordinate_iterator": "dummy_iterator",
+                "subordinate_iterator_name": "dummy_iterator",
                 "parameters": "dummy_parameters",
             },
             "dummy_parameters": {

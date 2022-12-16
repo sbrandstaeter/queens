@@ -15,30 +15,30 @@ method:
   num_procs: 6
   seed_posterior_samples: 42
   first_order_estimator: Saltelli2010
-  model: gp_surrogate_model
+  model_name: gp_surrogate_model
   result_description:
     write_results: true
 truth_model_iterator:
   type: lhs
   seed: 42
   num_samples: 100
-  model: truth_model
+  model_name: truth_model
   num_iterations: 10
 interface:
   type: direct_python_interface
   function_name: ishigami90
 gp_surrogate_model:
   type: datafit_surrogate_model
-  interface: approximation_interface
-  subordinate_iterator: truth_model_iterator
-  subordinate_model: truth_model
-  testing_iterator: testing_iterator
+  interface_name: approximation_interface
+  subordinate_iterator_name: truth_model_iterator
+  subordinate_model_name: truth_model
+  testing_iterator_name: testing_iterator
   nash_sutcliffe_efficiency: true
 testing_iterator:
   type: lhs
   seed: 30
   num_samples: 100
-  model: truth_model
+  model_name: truth_model
   num_iterations: 10
 approximation_interface:
   type: approximation_interface
@@ -54,7 +54,7 @@ gpy_regression:
   seed_posterior_samples: 42
 truth_model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 parameters:
   random_variables:
     x1:

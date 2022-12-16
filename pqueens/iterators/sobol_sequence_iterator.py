@@ -71,7 +71,7 @@ class SobolSequenceIterator(Iterator):
         """
         method_options = config[iterator_name]
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = from_config_create_model(model_name, config)
 
         seed = method_options["seed"]

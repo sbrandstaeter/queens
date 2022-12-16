@@ -42,7 +42,7 @@ model:
     X_cols:
     - 0
     num_features: 1
-    mf_subiterator: bmfia_iterator
+    mf_subiterator_name: bmfia_iterator
   forward_model: lf_model_2
   output_label: phi
   coordinate_labels:
@@ -54,7 +54,7 @@ model:
   fixed_likelihood_noise_value: 1.0e-09
   nugget_noise_var: 1.0e-08
   noise_upper_bound: 2.0
-  data_processor: data_processor_experimental_data
+  data_processor_name: data_processor_experimental_data
   experimental_csv_data_base_dir: {experimental_data_path}
   parameters: parameters
   plotting_options:
@@ -93,15 +93,15 @@ bmfia_iterator:
     seed: 1
 lf_model_1:
   type: simulation_model
-  interface: lf_interface_1
+  interface_name: lf_interface_1
   parameters: parameters
 lf_model_2:
   type: simulation_model
-  interface: lf_interface_2
+  interface_name: lf_interface_2
   parameters: parameters
 hf_model:
   type: simulation_model
-  interface: hf_interface
+  interface_name: hf_interface
   parameters: parameters
 proposal_distribution:
   distribution: normal
@@ -115,19 +115,16 @@ proposal_distribution:
     - 0.02
 lf_interface_1:
   type: job_interface
-  resources: resources
-  driver: lf_driver_1
+  driver_name: lf_driver_1
 lf_interface_2:
   type: job_interface
-  resources: resources
-  driver: lf_driver_2
+  driver_name: lf_driver_2
 hf_interface:
   type: job_interface
-  resources: resources
-  driver: hf_driver
+  driver_name: hf_driver
 resources:
   local_machine:
-    scheduler: local_scheduler
+    scheduler_name: local_scheduler
     max_concurrent: 1
     max_finished_jobs: 10000
 local_scheduler:
@@ -143,7 +140,7 @@ hf_driver:
   path_to_executable: {baci-release}
   path_to_postprocessor: {post_drt_ensight}
   post_file_name_prefix: scatra
-  data_processor: data_processor_hf
+  data_processor_name: data_processor_hf
 data_processor_hf:
   type: ensight
   file_name_identifier: scatra
@@ -166,14 +163,14 @@ lf_driver_1:
   path_to_executable: {baci-release}
   path_to_postprocessor: {post_drt_ensight}
   post_file_name_prefix: scatra
-  data_processor: data_processor_lf
+  data_processor_name: data_processor_lf
 lf_driver_2:
   type: mpi
   input_template: {baci_lf_input}
   path_to_executable: {baci-release}
   path_to_postprocessor: {post_drt_ensight}
   post_file_name_prefix: scatra
-  data_processor: data_processor_lf
+  data_processor_name: data_processor_lf
 data_processor_lf:
   type: ensight
   file_name_identifier: scatra

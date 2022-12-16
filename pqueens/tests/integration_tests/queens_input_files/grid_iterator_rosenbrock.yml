@@ -4,7 +4,7 @@ database:
   address: localhost:27017
 method:
   type: grid
-  model: model
+  model_name: model
   grid_design:
     x1:
       num_grid_points: 5
@@ -21,7 +21,7 @@ method:
       save_bool: [false]
 model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: direct_python_interface
   function_name: rosenbrock60

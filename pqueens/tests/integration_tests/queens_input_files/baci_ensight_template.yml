@@ -7,7 +7,7 @@ method:
   type: monte_carlo
   seed: 42
   num_samples: 5
-  model: model
+  model_name: model
   result_description:
     write_results: true
     plot_results: false
@@ -17,18 +17,17 @@ external_geometry:
   input_template: {baci_input}
 model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: job_interface
-  resources: resources
-  driver: driver
+  driver_name: driver
 driver:
   type: mpi
   input_template: {baci_input}
   path_to_executable: {baci-release}
   path_to_postprocessor: {post_drt_ensight}
   post_file_prefix: baci_ensight
-  data_processor: data_processor_baci
+  data_processor_name: data_processor_baci
 data_processor_baci:
   type: ensight
   file_name_identifier: baci_ensight*structure.case
@@ -43,7 +42,7 @@ data_processor_baci:
     target_time_lst: [last]
 resources:
   local_machine:
-    scheduler: local_scheduler
+    scheduler_name: local_scheduler
     max_concurrent: 1
     max_finished_jobs: 10
 local_scheduler:

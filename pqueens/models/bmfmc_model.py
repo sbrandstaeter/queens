@@ -216,7 +216,7 @@ class BMFMCModel(Model):
         interface = BmfmcInterface(config, model_name)
         lf_data_paths = model_options.get("path_to_lf_mc_data")
         hf_data_path = model_options.get("path_to_hf_mc_reference_data")
-        hf_model_name = model_options.get("high_fidelity_model")
+        hf_model_name = model_options.get("high_fidelity_model_name")
 
         # get some method options
         method_options = config["method"]

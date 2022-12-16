@@ -64,7 +64,7 @@ def resource_factory(resource_name, exp_name, config, driver_name):
     max_concurrent = resource_options.get('max_concurrent', 1)
     max_finished_jobs = resource_options.get('max_finished_jobs', np.inf)
 
-    scheduler_name = resource_options['scheduler']
+    scheduler_name = resource_options['scheduler_name']
 
     # create scheduler from config
     scheduler = from_config_create_scheduler(

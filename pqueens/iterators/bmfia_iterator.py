@@ -99,7 +99,7 @@ class BMFIAIterator(Iterator):
         """
         # Get appropriate sections in the config file
         method_options = config["method"]
-        model_name = method_options["model"]
+        model_name = method_options["model_name"]
         global_settings = config.get('global_settings', None)
         result_description = method_options["result_description"]
 
@@ -114,10 +114,10 @@ class BMFIAIterator(Iterator):
             )
 
         # get the mf subiterator settings
-        bmfia_iterator_name = mf_approx_settings["mf_subiterator"]
+        bmfia_iterator_name = mf_approx_settings["mf_subiterator_name"]
         bmfia_iterator_dict = config[bmfia_iterator_name]
-        hf_model_name = bmfia_iterator_dict["high_fidelity_model"]
-        lf_model_name = bmfia_iterator_dict["low_fidelity_model"]
+        hf_model_name = bmfia_iterator_dict["high_fidelity_model_name"]
+        lf_model_name = bmfia_iterator_dict["low_fidelity_model_name"]
         initial_design_dict = bmfia_iterator_dict["initial_design"]
 
         hf_model = from_config_create_model(hf_model_name, config)

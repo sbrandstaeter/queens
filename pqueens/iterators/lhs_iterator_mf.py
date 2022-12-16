@@ -66,7 +66,7 @@ class MFLHSIterator(Iterator):
         method_options = config[iterator_name]
         print("Method options {}".format(method_options))
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = from_config_create_model(model_name, config)
         return cls(
             model,

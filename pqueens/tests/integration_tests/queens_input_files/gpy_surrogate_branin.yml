@@ -6,7 +6,7 @@ method:
   type: monte_carlo
   seed: 44
   num_samples: 200
-  model: gp_surrogate_model
+  model_name: gp_surrogate_model
   result_description:
     write_results: true
     plot_results: false
@@ -15,10 +15,10 @@ method:
     estimate_all: true
 gp_surrogate_model:
   type: datafit_surrogate_model
-  interface: approximation_interface
-  subordinate_model: truth_model
-  subordinate_iterator: truth_model_iterator
-  testing_iterator: testing_iterator
+  interface_name: approximation_interface
+  subordinate_model_name: truth_model
+  subordinate_iterator_name: truth_model_iterator
+  testing_iterator_name: testing_iterator
   eval_fit: kfold
   error_measures: [sum_squared, mean_squared, root_mean_squared, sum_abs, mean_abs, abs_max]
   nash_sutcliffe_efficiency: true
@@ -49,7 +49,7 @@ testing_iterator:
   num_samples: 50
 truth_model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: direct_python_interface
   function_name: branin78_hifi

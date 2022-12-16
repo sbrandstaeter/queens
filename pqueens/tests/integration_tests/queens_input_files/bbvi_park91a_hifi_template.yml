@@ -4,7 +4,7 @@ database:
   address: localhost:27017
 method:
   type: bbvi
-  model: model
+  model_name: model
   max_feval: 100
   n_samples_per_iter: 2
   memory: 20
@@ -39,7 +39,7 @@ method:
       save_bool: false
 model:
   type: gaussian
-  forward_model: forward_model
+  forward_model_name: forward_model
   experimental_file_name_identifier: "*.csv"
   output_label: y_obs
   coordinate_labels: [x3, x4]
@@ -51,7 +51,7 @@ model:
     num_iter_for_avg: 10
 forward_model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: direct_python_interface
   function_name: park91a_hifi_on_grid

@@ -4,7 +4,7 @@ database:
   address: localhost:27017
 method:
   type: rpvi
-  model: model
+  model_name: model
   max_feval: 3000
   likelihood_gradient_method: {gradient_method}
   finite_difference_method: 2-point
@@ -41,7 +41,7 @@ method:
 model:
   type: {likelihood_model_type}
   external_python_module: {external_python_module}
-  forward_model: forward_model
+  forward_model_name: forward_model
   output_label: y_obs
   coordinate_labels: [x3, x4]
   noise_type: MAP_jeffrey_variance
@@ -50,7 +50,7 @@ model:
   experimental_csv_data_base_dir: {experimental_data_path}
 forward_model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: direct_python_interface
   function_name: {my_function}

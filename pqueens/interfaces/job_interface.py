@@ -102,7 +102,7 @@ class JobInterface(Interface):
         polling_time = config.get('polling-time', 1.0)
 
         interface_options = config[interface_name]
-        driver_name = interface_options.get('driver', None)
+        driver_name = interface_options.get('driver_name', None)
         if driver_name is None:
             raise Exception("No driver_name specified for the JobInterface.")
 
@@ -112,7 +112,7 @@ class JobInterface(Interface):
         # get various scheduler options
         # TODO: This is not nice
         first = list(config['resources'])[0]
-        scheduler_name = config['resources'][first]['scheduler']
+        scheduler_name = config['resources'][first]['scheduler_name']
         scheduler_options = config[scheduler_name]
         output_dir = pathlib.Path(scheduler_options["experiment_dir"])
         scheduler_type = scheduler_options['type']

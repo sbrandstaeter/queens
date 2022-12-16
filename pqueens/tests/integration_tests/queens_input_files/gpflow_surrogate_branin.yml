@@ -6,7 +6,7 @@ method:
   type: monte_carlo
   seed: 44
   num_samples: 10
-  model: gp_surrogate_model
+  model_name: gp_surrogate_model
   result_description:
     write_results: true
     plot_results: false
@@ -15,9 +15,9 @@ method:
     estimate_all: false
 gp_surrogate_model:
   type: datafit_surrogate_model
-  interface: approximation_interface
-  subordinate_model: truth_model
-  subordinate_iterator: truth_model_iterator
+  interface_name: approximation_interface
+  subordinate_model_name: truth_model
+  subordinate_iterator_name: truth_model_iterator
   plotting_options:
     plot_booleans: [false, false]
     plotting_dir: dummy
@@ -38,7 +38,7 @@ truth_model_iterator:
   num_samples: 20
 truth_model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: direct_python_interface
   function_name: branin78_hifi

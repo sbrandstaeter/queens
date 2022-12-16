@@ -266,7 +266,7 @@ class DataProcessorEnsight(DataProcessor):
             experimental_data = pd.DataFrame.from_dict(experimental_data)
 
             # get label names of experimental data
-            model_name = config['method']['model']
+            model_name = config['method']['model_name']
             coordinates_label_experimental = config[model_name].get('coordinate_labels')
             output_label_experimental = config[model_name].get('output_label')
             time_label_experimental = config[model_name].get('time_label')

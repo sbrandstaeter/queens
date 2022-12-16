@@ -106,7 +106,7 @@ class SurrogateVisualization(object):
 
         """
         if model_name is None:
-            plotting_options = config["model"].get("plotting_options", None)
+            plotting_options = config["model_name"].get("plotting_options", None)
         else:
             plotting_options = config[model_name].get("plotting_options", None)
 

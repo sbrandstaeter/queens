@@ -51,10 +51,10 @@ class MFDataFitSurrogateModel(Model):
         """
         # get options
         model_options = config[model_name]
-        interface_name = model_options["interface"]
+        interface_name = model_options["interface_name"]
 
-        subordinate_model_name = model_options["subordinate_model"]
-        subordinate_iterator_name = model_options["subordinate_iterator"]
+        subordinate_model_name = model_options["subordinate_model_name"]
+        subordinate_iterator_name = model_options["subordinate_iterator_name"]
 
         # create subordinate model
         subordinate_model = from_config_create_model(subordinate_model_name, config)

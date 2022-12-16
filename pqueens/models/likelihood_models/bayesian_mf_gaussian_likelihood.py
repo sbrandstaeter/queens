@@ -167,7 +167,7 @@ class BMFGaussianModel(LikelihoodModel):
         )
 
         # ----------------------- create subordinate bmfia iterator ------------------------------
-        bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator"]
+        bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator_name"]
         bmfia_subiterator = from_config_create_iterator(config, bmfia_iterator_name)
 
         # ----------------------- create visualization object(s) ---------------------------------

@@ -4,7 +4,7 @@ database:
   address: localhost:27017
 method:
   type: rpvi
-  model: model
+  model_name: model
   max_feval: 10
   likelihood_gradient_method: {gradient_method}
   finite_difference_method: 2-point
@@ -39,7 +39,7 @@ method:
       save_bool: false
 model:
   type: gaussian
-  forward_model: forward_model
+  forward_model_name: forward_model
   output_label: y_obs
   coordinate_labels: [x3, x4]
   noise_type: MAP_jeffrey_variance
@@ -49,18 +49,17 @@ model:
   parameters: parameters
 forward_model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
   parameters: parameters
 interface:
   type: job_interface
-  resources: resources
-  driver: driver
+  driver_name: driver
 driver:
   type: mpi
   input_template: {input_file}
   path_to_executable: {executable}
-  data_processor: data_processor_output
-  gradient_data_processor: gradient_data_processor
+  data_processor_name: data_processor_output
+  gradient_data_processor_name: gradient_data_processor
 data_processor_output:
   type: csv
   file_name_identifier: '*_output.csv'
@@ -77,7 +76,7 @@ gradient_data_processor:
       type: entire_file
 resources:
   local_machine:
-    scheduler: local_scheduler
+    scheduler_name: local_scheduler
     max_concurrent: 1
     max_finished_jobs: 1000
 local_scheduler:

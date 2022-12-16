@@ -4,7 +4,7 @@ database:
   address: localhost:27017
 method:
   type: bmfmc
-  model: joint_density_approx
+  model_name: joint_density_approx
   predictive_var: false
   BMFMC_reference: false
   y_pdf_support_min: -0.5
@@ -25,14 +25,14 @@ method:
     master_LF: 0
 joint_density_approx:
   path_to_lf_mc_data: [{lf_mc_pickle_file}]
-  high_fidelity_model: high_fidelity_model
+  high_fidelity_model_name: high_fidelity_model
   path_to_hf_mc_reference_data: null
   type: gp_approximation_gpy
   features_config: opt_features
   num_features: 1
 high_fidelity_model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: direct_python_interface
   function_name: currin88_hifi

@@ -141,7 +141,7 @@ class BMFMCIterator(Iterator):
 
         # ----------------------------- CREATE BMFMC MODEL ----------------------------
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = BMFMCModel.from_config_create_model(model_name, config)
 
         # ---------------------- CREATE VISUALIZATION BORG ----------------------------

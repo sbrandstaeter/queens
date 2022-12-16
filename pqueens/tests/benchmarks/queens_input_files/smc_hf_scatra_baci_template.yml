@@ -45,7 +45,7 @@ MCMC_Kernel:
   proposal_distribution: proposal_distribution
 forward_model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
   parameters: parameters
 proposal_distribution:
   distribution: normal
@@ -59,11 +59,10 @@ proposal_distribution:
     - 0.001
 interface:
   type: job_interface
-  resources: resources
-  driver: driver
+  driver_name: driver
 resources:
   local_machine:
-    scheduler: local_scheduler
+    scheduler_name: local_scheduler
     max_concurrent: 1
     max_finished_jobs: 10000
 local_scheduler:
@@ -79,7 +78,7 @@ driver:
   path_to_executable: {baci-release}
   path_to_postprocessor: {post_drt_ensight}
   post_file_name_prefix: scatra
-  data_processor: data_processor_baci
+  data_processor_name: data_processor_baci
 data_processor_baci:
   type: ensight
   file_name_identifier: scatra

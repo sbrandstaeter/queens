@@ -4,7 +4,7 @@ database:
   address: localhost:27017
 method:
   type: optimization
-  model: model
+  model_name: model
   initial_guess: [2.0, 0.0]
   algorithm: {algorithm}
   result_description:
@@ -23,7 +23,7 @@ method:
       fun: 'lambda x: -x[0] + 2 * x[1] + 2'
 model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 proposal_distribution:
   distribution: normal
   mean: 0.0

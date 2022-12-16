@@ -6,7 +6,7 @@ database:
 method:
   type: elementary_effects
   seed: 2
-  model: model
+  model_name: model
   num_trajectories: 15
   num_optimal_trajectories: 5
   number_of_levels: 2
@@ -22,11 +22,10 @@ method:
       save_bool: [false, false]
 model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: job_interface
-  resources: resources
-  driver: driver
+  driver_name: driver
 driver:
   type: mpi
   input_template: {baci_input}
@@ -34,7 +33,7 @@ driver:
   path_to_postprocessor: {post_drt_monitor}
   post_file_prefix: QoI
   post_process_options: --field=structure --node=26 --start=1
-  data_processor: data_processor_baci
+  data_processor_name: data_processor_baci
 data_processor_baci:
   type: csv
   file_name_identifier: QoI*
@@ -49,7 +48,7 @@ data_processor_baci:
       tolerance: 0.01
 resources:
   local_machine:
-    scheduler: local_scheduler
+    scheduler_name: local_scheduler
     max_concurrent: 1
     max_finished_jobs: 1000
 local_scheduler:

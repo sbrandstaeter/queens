@@ -120,7 +120,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         result_description = method_options.get("result_description", None)
 
         if model is None:
-            model_name = method_options['model']
+            model_name = method_options['model_name']
             model = from_config_create_model(model_name, config)
 
         parameter_names = parameters_module.parameters.names

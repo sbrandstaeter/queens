@@ -8,14 +8,14 @@ method:
   seed: 42
   num_collocation_points: 50
   sampling_rule: gaussian
-  model: model
+  model_name: model
   sparse: true
   polynomial_order: 2
   result_description:
     write_results: true
 model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: direct_python_interface
   function_name: borehole83_lofi

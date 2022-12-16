@@ -19,14 +19,14 @@
 #            "method": {
 #                "type": "bayesian_optimization",
 #                "seed": 42,
-#                "model": "model",
+#                "model_name": "model",
 #                "num_iter": 10,
 #                "use_ard": "True",
 #                "num_initial_samples": 5,
 #            },
 #            "model": {
 #                "type": "simulation_model",
-#                "interface": "dummy_interface",
+#                "interface_name": "dummy_interface",
 #                "parameters": "dummy_parameters",
 #            },
 #            "dummy_parameters": {

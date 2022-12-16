@@ -37,7 +37,7 @@ def default_baci_lm_iterator():
         'method': OrderedDict(
             [
                 ('type', 'baci_lm'),
-                ('model', 'model'),
+                ('model_name', 'model'),
                 ('jac_method', '2-point'),
                 ('jac_rel_step', 1e-05),
                 ('jac_abs_step', 0.001),
@@ -53,7 +53,11 @@ def default_baci_lm_iterator():
             ]
         ),
         'model': OrderedDict(
-            [('type', 'simulation_model'), ('interface', 'interface'), ('parameters', 'parameters')]
+            [
+                ('type', 'simulation_model'),
+                ('interface_name', 'interface'),
+                ('parameters', 'parameters'),
+            ]
         ),
         'interface': OrderedDict(
             [
@@ -158,7 +162,7 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
         'method': OrderedDict(
             [
                 ('type', 'baci_lm'),
-                ('model', 'model'),
+                ('model_name', 'model'),
                 ('jac_method', '2-point'),
                 ('jac_rel_step', 1e-05),
                 ('jac_abs_step', 0.001),
@@ -174,7 +178,11 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
             ]
         ),
         'model': OrderedDict(
-            [('type', 'simulation_model'), ('interface', 'interface'), ('parameters', 'parameters')]
+            [
+                ('type', 'simulation_model'),
+                ('interface_name', 'interface'),
+                ('parameters', 'parameters'),
+            ]
         ),
         'input_file': 'input_path',
         'global_settings': {

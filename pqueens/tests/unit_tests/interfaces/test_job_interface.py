@@ -33,14 +33,14 @@ class TestJobInterface(unittest.TestCase):
         self.config['test_interface'] = {
             'type': 'job_interface',
             'resources': 'dummy_resource',
-            'driver': 'dummy_driver_name',
+            'driver_name': 'dummy_driver_name',
         }
 
         self.config['parameters'] = uncertain_parameters
 
         dummy_resource = {}
         dummy_resource['my_machine'] = {
-            'scheduler': 'my_local_scheduler',
+            'scheduler_name': 'my_local_scheduler',
             'max_concurrent': 1,
             'max_finished_jobs': 100,
         }

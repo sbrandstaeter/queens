@@ -4,7 +4,7 @@ database:
   address: localhost:27017
 method:
   type: baci_lm
-  model: model
+  model_name: model
   jac_method: 2-point
   jac_rel_step: 1.0e-05
   jac_abs_step: 0.001
@@ -18,7 +18,7 @@ method:
     plot_results: true
 model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
 interface:
   type: direct_python_interface
   function_name: rosenbrock60_residual

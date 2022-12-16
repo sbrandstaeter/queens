@@ -41,7 +41,7 @@ model:
     X_cols:
     - 0
     num_features: 1
-    mf_subiterator: bmfia_iterator
+    mf_subiterator_name: bmfia_iterator
   forward_model: lf_model
   output_label: y_obs
   coordinate_labels:
@@ -51,7 +51,7 @@ model:
   fixed_likelihood_noise_value: 0.001
   nugget_noise_var: 1.0e-12
   noise_upper_bound: 2.0
-  data_processor: data_processor_experimental_data
+  data_processor_name: data_processor_experimental_data
   experimental_csv_data_base_dir: {experimental_data_path}
   parameters: parameters
   plotting_options:
@@ -90,11 +90,11 @@ bmfia_iterator:
     num_HF_eval: 200
 lf_model:
   type: simulation_model
-  interface: lf_interface
+  interface_name: lf_interface
   parameters: parameters
 hf_model:
   type: simulation_model
-  interface: hf_interface
+  interface_name: hf_interface
   parameters: parameters
 proposal_distribution:
   distribution: normal
