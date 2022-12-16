@@ -3,7 +3,7 @@
 
 import pytest
 
-from pqueens.remote_main import main
+from pqueens.singularity.remote_main import main
 
 
 @pytest.fixture(scope="module", params=[True, False])
@@ -36,44 +36,49 @@ def test_exit_conditions_remote_main(mocker, finalize_fail, port):
     }
 
     mocker.patch(
-        'pqueens.remote_main.get_config_dict',
+        'pqueens.singularity.remote_main.get_config_dict',
         return_value=dummy_dict,
     )
 
     # Mock driver class
-    class driver_mock:
+    class DriverMock:
+        """Mock class for the Driver class."""
+
         def __init__(self, raise_error_in_finalize):
             self.raise_error_in_finalize = raise_error_in_finalize
 
         def pre_job_run_and_run_job(self):
+            """Mock of job preparation and execution."""
             raise ValueError("Mock singularity error")
 
         def post_job_run(self):
+            """Mock of job postprocessing."""
             raise ValueError("Mock singularity error")
 
         def finalize_job_in_db(self):
+            """Mock finalization and saving of a job in the DB."""
             if self.raise_error_in_finalize:
-                raise ValueError(f"Mock finalize_job_in_db error")
+                raise ValueError("Mock finalize_job_in_db error")
 
     mocker.patch(
-        'pqueens.remote_main.from_config_create_driver',
-        return_value=driver_mock(finalize_fail),
+        'pqueens.singularity.remote_main.from_config_create_driver',
+        return_value=DriverMock(finalize_fail),
     )
 
     mocker.patch(
-        'pqueens.remote_main.DB_module.from_config_create_database',
+        'pqueens.singularity.remote_main.DB_module.from_config_create_database',
     )
 
-    mocker.patch("pqueens.remote_main.DB_module.database")
+    mocker.patch("pqueens.singularity.remote_main.DB_module.database")
 
     # Dummy arguments
     args = [
         "--job_id=2",
         "--batch=10",
         "--port=" + port,
-        "--path_json=dummypath",
+        "--input=dummypath",
         "--post=true",
-        "--workdir=dummy_workdir",
+        "--experiment_dir=dummy_workdir",
     ]
 
     with pytest.raises(ValueError) as excinfo:

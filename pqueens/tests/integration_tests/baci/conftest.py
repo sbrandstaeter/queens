@@ -22,7 +22,8 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         config_dir (str): Path to the config directory of QUEENS containing BACI executables
-        set_baci_links_for_gitlab_runner (str): Several paths that are needed to build symbolic
+        baci_link_paths (str): destination for symbolic links to executables
+        baci_source_paths_for_gitlab_runner (str): Several paths that are needed to build symbolic
                                                 links to executables
     """
     (

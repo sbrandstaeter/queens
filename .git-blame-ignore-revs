@@ -1,4 +1,4 @@
-# git blame master ignore list.
+# git blame main ignore list.
 #
 # This file contains a list of git hashes of revisions to be ignored by git
 # blame. These revisions are considered "unimportant" in

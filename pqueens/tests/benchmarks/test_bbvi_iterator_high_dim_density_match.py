@@ -15,7 +15,6 @@ np.random.seed(666)
 
 def test_bbvi_density_match_high_dimensional(
     mocker,
-    inputdir,
     tmpdir,
     my_variational_distribution_obj,
     target_distribution_obj,

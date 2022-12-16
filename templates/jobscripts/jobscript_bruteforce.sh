@@ -19,7 +19,7 @@
 ##########################################
 WORKDIR=/scratch/SLURM_$SLURM_JOB_ID
 DESTDIR={DESTDIR}  # output directory for run
-EXE='{EXE}' # either CAE excutable or singularity image
+EXE='{EXE}' # either CAE executable or singularity image
 INPUT='{INPUT}'  # either input file or, for singularity, list of arguments specifying run
 OUTPUTPREFIX={OUTPUTPREFIX}
 ##########################################
@@ -44,6 +44,7 @@ DoDataProcessing={DATAPROCESSINGFLAG} # post- and data-processing flag for singu
 # Talk to admin before touching this section.
 source {CLUSTERSCRIPT}
 trap 'EarlyTermination; StageOut' 2 9 15 18
+LoadBACIModules
 DoChecks
 StageIn
 RunProgram

@@ -185,15 +185,11 @@ def _run_subprocess_remote(command_string, **kwargs):
         stdout (str): standard output content
         stderr (str): standard error content
     """
-    remote_user = kwargs.get("remote_user", None)
-    if not remote_user:
-        raise SubprocessError("Remote commands need remote username.")
+    remote_connect = kwargs.get("remote_connect", None)
+    if not remote_connect:
+        raise SubprocessError("Remote commands needs argument remote_connect='<user>@<hostname>'.")
 
-    remote_address = kwargs.get("remote_address", None)
-    if not remote_user:
-        raise SubprocessError("Remote commands needs remote machine address.")
-
-    command_string = f'ssh {remote_user}@{remote_address} "{command_string}"'
+    command_string = f'ssh {remote_connect} "{command_string}"'
     process = subprocess.Popen(
         command_string,
         stdin=subprocess.PIPE,

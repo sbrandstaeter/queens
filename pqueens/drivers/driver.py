@@ -204,8 +204,8 @@ class Driver(metaclass=abc.ABCMeta):
             str(self.batch),
             {
                 'id': self.job_id,
-                'expt_dir': str(self.experiment_dir),
-                'expt_name': self.experiment_name,
+                'experiment_dir': str(self.experiment_dir),
+                'experiment_name': self.experiment_name,
             },
         )
 

@@ -1,9 +1,8 @@
 {
   "experiment_name": "{experiment_name}",
   "database": {
-    "type": "mongodb",
-    "name": "queens_db_cluster_test_morris_invaaa",
-    "address": "localhost:27017"
+    "address": "localhost:27017",
+    "type": "mongodb"
   },
   "method": {
     "method_name": "elementary_effects",
@@ -38,7 +37,8 @@
   },
   "model": {
     "type": "simulation_model",
-    "interface": "interface"
+    "interface": "interface",
+    "parameters": "parameters"
   },
   "interface": {
     "type": "job_interface",
@@ -70,7 +70,7 @@
     }
   },
   "resources": {
-    "{cluster}": {
+    "cluster": {
       "scheduler": "scheduler",
       "max-concurrent": 10,
       "max-finished-jobs": 1000
@@ -79,19 +79,14 @@
   "scheduler": {
     "scheduler_type": "cluster",
     "cluster_type": "{cluster}",
-    "num_procs": 1,
+    "num_procs" : 1,
     "num_procs_post": 1,
     "cluster": {
       "script": "/lnm/share/donottouch.sh",
       "walltime": "120:00:00"
     },
-    "remote": {
-      "connect": "{connect_to_resource}"
-    },
-    "singularity": true,
-    "singularity_settings": {
-      "remote_ip": "{singularity_remote_ip}"
-    }
+    "remote" : false,
+    "singularity" : false
   },
   "parameters": {
     "random_variables": {

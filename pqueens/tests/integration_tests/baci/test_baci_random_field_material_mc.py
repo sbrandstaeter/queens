@@ -22,7 +22,6 @@ def test_write_random_material_to_dat(
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 
     dir_dict = {
-        'experiment_dir': str(tmpdir),
         'baci_input': third_party_input_file,
         'baci_input_preprocessed': dat_file_preprocessed,
         'post_drt_monitor': post_drt_monitor,
