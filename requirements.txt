@@ -340,7 +340,7 @@ salib==1.4.5
     # via -r requirements.in
 scikit-learn==1.1.1
     # via -r requirements.in
-scipy==1.7.3
+scipy==1.9.3
     # via
     #   -r requirements.in
     #   aeppl
