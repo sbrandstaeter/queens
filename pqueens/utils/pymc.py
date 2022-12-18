@@ -153,7 +153,7 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
             distribution = pm.Uniform(
                 name,
                 lower=distribution.lower_bound[0],
-                upper=distribution.upper_bound[1],
+                upper=distribution.upper_bound[0],
                 shape=shape,
             )
         elif np.all(distribution.lower_bound == distribution.lower_bound[0]) and not np.all(
