@@ -147,12 +147,40 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
             shape=shape,
         )
     elif isinstance(distribution, uniform.UniformDistribution):
-        distribution = pm.Uniform(
-            name,
-            lower=distribution.lower_bound,
-            upper=distribution.upper_bound,
-            shape=shape,
-        )
+        if np.all(distribution.lower_bound == distribution.lower_bound[0]) and np.all(
+            distribution.upper_bound == distribution.upper_bound[0]
+        ):
+            distribution = pm.Uniform(
+                name,
+                lower=distribution.lower_bound[0],
+                upper=distribution.upper_bound[1],
+                shape=shape,
+            )
+        elif np.all(distribution.lower_bound == distribution.lower_bound[0]) and not np.all(
+            distribution.upper_bound == distribution.upper_bound[0]
+        ):
+            distribution = pm.Uniform(
+                name,
+                lower=distribution.lower_bound[0],
+                upper=distribution.upper_bound,
+                shape=shape,
+            )
+        elif np.all(distribution.upper_bound == distribution.upper_bound[0]) and not np.all(
+            distribution.lower_bound == distribution.lower_bound[0]
+        ):
+            distribution = pm.Uniform(
+                name,
+                lower=distribution.lower_bound,
+                upper=distribution.upper_bound[0],
+                shape=shape,
+            )
+        else:
+            distribution = pm.Uniform(
+                name,
+                lower=distribution.lower_bound,
+                upper=distribution.upper_bound,
+                shape=shape,
+            )
     elif isinstance(distribution, lognormal.LogNormalDistribution):
         if distribution.dimension == 1:
             std = distribution.covariance[0, 0] ** (1 / 2)
