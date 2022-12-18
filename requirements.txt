@@ -11,12 +11,20 @@ absl-py==1.2.0
     #   tensorboard
     #   tensorflow
     #   tensorflow-probability
+aeppl==0.0.38
+    # via pymc
+aesara==2.8.7
+    # via
+    #   aeppl
+    #   pymc
 aiohttp==3.8.1
     # via wslink
 aiosignal==1.2.0
     # via aiohttp
-arviz==0.12.1
-    # via -r requirements.in
+arviz==0.14.0
+    # via
+    #   -r requirements.in
+    #   pymc
 astunparse==1.6.3
     # via tensorflow
 async-timeout==4.0.2
@@ -28,7 +36,9 @@ attrs==22.1.0
 autograd==1.4
     # via -r requirements.in
 cachetools==5.2.0
-    # via google-auth
+    # via
+    #   google-auth
+    #   pymc
 certifi==2022.6.15
     # via requests
 cftime==1.6.1
@@ -40,7 +50,14 @@ charset-normalizer==2.1.0
     #   aiohttp
     #   requests
 cloudpickle==2.1.0
-    # via tensorflow-probability
+    # via
+    #   pymc
+    #   tensorflow-probability
+cons==0.4.5
+    # via
+    #   aesara
+    #   etuples
+    #   minikanren
 coverage[toml]==6.4.3
     # via pytest-cov
 cycler==0.11.0
@@ -65,8 +82,16 @@ dm-tree==0.1.7
     # via tensorflow-probability
 etils[epath]==0.7.1
     # via jax
+etuples==0.3.8
+    # via
+    #   aesara
+    #   minikanren
 execnet==1.9.0
     # via pytest-xdist
+fastprogress==1.0.3
+    # via pymc
+filelock==3.8.2
+    # via aesara
 flatbuffers==1.12
     # via tensorflow
 fonttools==4.35.0
@@ -131,6 +156,11 @@ libclang==14.0.6
     # via tensorflow
 llvmlite==0.38.1
     # via numba
+logical-unification==0.4.5
+    # via
+    #   aesara
+    #   cons
+    #   minikanren
 markdown==3.4.1
     # via tensorboard
 markupsafe==2.1.1
@@ -142,6 +172,8 @@ matplotlib==3.5.3
     #   salib
     #   seaborn
     #   vtk
+minikanren==1.0.3
+    # via aesara
 mock==4.0.3
     # via -r requirements.in
 multidict==6.0.2
@@ -149,7 +181,11 @@ multidict==6.0.2
     #   aiohttp
     #   yarl
 multipledispatch==0.6.0
-    # via gpflow
+    # via
+    #   etuples
+    #   gpflow
+    #   logical-unification
+    #   minikanren
 multiprocess==0.70.13
     # via pathos
 netcdf4==1.6.0
@@ -163,6 +199,8 @@ numpoly==1.2.3
 numpy==1.21.5
     # via
     #   -r requirements.in
+    #   aeppl
+    #   aesara
     #   arviz
     #   autograd
     #   cftime
@@ -184,6 +222,7 @@ numpy==1.21.5
     #   paramz
     #   particles
     #   pydoe
+    #   pymc
     #   salib
     #   scikit-learn
     #   scipy
@@ -213,6 +252,7 @@ pandas==1.4.3
     # via
     #   -r requirements.in
     #   arviz
+    #   pymc
     #   salib
     #   seaborn
     #   xarray
@@ -253,6 +293,8 @@ pycodestyle==2.9.1
 pydoe==0.3.8
     # via -r requirements.in
 pyfiglet==0.8.post1
+    # via -r requirements.in
+pymc==4.3.0
     # via -r requirements.in
 pymongo==3.12.0
     # via -r requirements.in
@@ -301,6 +343,8 @@ scikit-learn==1.1.1
 scipy==1.7.3
     # via
     #   -r requirements.in
+    #   aeppl
+    #   aesara
     #   arviz
     #   chaospy
     #   diversipy
@@ -311,6 +355,7 @@ scipy==1.7.3
     #   paramz
     #   particles
     #   pydoe
+    #   pymc
     #   salib
     #   scikit-learn
     #   seaborn
@@ -362,16 +407,22 @@ tomli==2.0.1
     #   -r requirements.in
     #   coverage
     #   pytest
+toolz==0.12.0
+    # via
+    #   logical-unification
+    #   minikanren
 torch==1.12.1
     # via -r requirements.in
 tqdm==4.64.0
     # via -r requirements.in
 typing-extensions==4.3.0
     # via
+    #   aesara
     #   arviz
     #   etils
     #   gpflow
     #   jax
+    #   pymc
     #   tensorflow
     #   torch
 urllib3==1.26.11
