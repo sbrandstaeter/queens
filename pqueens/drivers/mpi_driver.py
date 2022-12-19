@@ -178,7 +178,7 @@ class MpiDriver(Driver):
 
         # If multiple resources are passed an error is raised in the resources module.
         resource_name = list(config['resources'])[0]
-        scheduler_name = config['resources'][resource_name]['scheduler']
+        scheduler_name = config['resources'][resource_name]['scheduler_name']
         scheduler_options = config[scheduler_name]
         num_procs = scheduler_options.get('num_procs', 1)
         num_procs_post = scheduler_options.get('num_procs_post', 1)

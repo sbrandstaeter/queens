@@ -51,7 +51,7 @@ resources:
     max-concurrent: 10
     max-finished-jobs: 1000
 scheduler:
-  scheduler_type: cluster
+  type: cluster
   cluster_type: {cluster}
   num_procs: 1
   num_procs_post: 1

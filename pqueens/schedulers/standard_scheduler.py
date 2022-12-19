@@ -92,7 +92,7 @@ class StandardScheduler(Scheduler):
             if new_singularity_image_needed():
                 _logger.info("Local singularity image is outdated/missing, building a new one!")
                 create_singularity_image()
-        scheduler_type = scheduler_options["scheduler_type"]
+        scheduler_type = scheduler_options["type"]
 
         # find the max_concurrent key in the input file
         max_concurrent_lst = list(find_keys(config, 'max-concurrent'))

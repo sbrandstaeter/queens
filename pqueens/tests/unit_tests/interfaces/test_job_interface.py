@@ -35,7 +35,7 @@ def jobinterface_config():
 
     dummy_resource = {}
     dummy_resource['my_machine'] = {
-        'scheduler': 'my_local_scheduler',
+        'scheduler_name': 'my_local_scheduler',
         'max-concurrent': 1,
         'max-finished-jobs': 100,
     }
@@ -50,7 +50,7 @@ def jobinterface_config():
     config['resources'] = dummy_resource
 
     config['my_local_scheduler'] = {}
-    config['my_local_scheduler']['scheduler_type'] = 'standard'
+    config['my_local_scheduler']['type'] = 'standard'
     config['my_local_scheduler']['remote'] = False
     config['my_local_scheduler']['singularity'] = False
 

@@ -112,9 +112,9 @@ class JobInterface(Interface):
         # get various scheduler options
         # TODO: This is not nice
         first = list(config['resources'])[0]
-        scheduler_name = config['resources'][first]['scheduler']
+        scheduler_name = config['resources'][first]['scheduler_name']
         scheduler_options = config[scheduler_name]
-        scheduler_type = scheduler_options['scheduler_type']
+        scheduler_type = scheduler_options['type']
 
         # get flag for remote scheduling
         if scheduler_options.get('remote'):

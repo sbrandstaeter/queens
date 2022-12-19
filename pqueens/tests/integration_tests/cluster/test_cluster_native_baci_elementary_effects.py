@@ -46,8 +46,8 @@ def test_cluster_native_baci_elementary_effects(
 
     experiment_name = cluster + "_native_elementary_effects"
 
-    template = pathlib.Path(inputdir, "baci_cluster_native_elementary_effects_template.json")
-    input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_invaaa.json")
+    template = pathlib.Path(inputdir, "baci_cluster_native_elementary_effects_template.yml")
+    input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_invaaa.yml")
 
     baci_input_filename = "invaaa_ee.dat"
     third_party_input_file_local = pathlib.Path(

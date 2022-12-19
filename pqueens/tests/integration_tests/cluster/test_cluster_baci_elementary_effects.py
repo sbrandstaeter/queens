@@ -105,9 +105,9 @@ def test_cluster_baci_elementary_effects(
         'singularity_remote_ip': singularity_remote_ip,
     }
     queens_input_file_template = pathlib.Path(
-        inputdir, "baci_cluster_elementary_effects_template.json"
+        inputdir, "baci_cluster_elementary_effects_template.yml"
     )
-    queens_input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_invaaa.json")
+    queens_input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_invaaa.yml")
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     run(queens_input_file, pathlib.Path(tmpdir))
