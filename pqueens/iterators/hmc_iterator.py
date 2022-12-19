@@ -135,7 +135,7 @@ class HMCIterator(PyMCIterator):
         path_length = method_options.get('path_length', 2.0)
         scaling = method_options.get('scaling', None)
         is_cov = method_options.get('is_cov', False)
-        
+
         return cls(
             global_settings=global_settings,
             model=model,

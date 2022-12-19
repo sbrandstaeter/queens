@@ -78,7 +78,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             use_queens_prior,
             progressbar,
         )
-        
+
         self.covariance = covariance
         self.tune_interval = tune_interval
         self.scaling = scaling
