@@ -99,7 +99,6 @@ class PyMCIterator(Iterator):
         self.step = None
         self.use_queens_prior = use_queens_prior
 
-
         self.chains = np.zeros((self.num_chains, self.num_samples, num_parameters))
 
         self.progressbar = progressbar
@@ -168,17 +167,14 @@ class PyMCIterator(Iterator):
     @abc.abstractmethod
     def eval_log_prior_grad(self, samples):
         """Evaluate the gradient of the log-prior."""
-        
 
     @abc.abstractmethod
     def eval_log_likelihood(self, samples):
         """Evaluate the log-likelihood."""
-    
 
     @abc.abstractmethod
     def eval_log_likelihood_grad(self, samples):
         """Evaluate the gradient of the log-likelihood."""
-    
 
     @abc.abstractmethod
     def init_mcmc_method(self):
@@ -205,9 +201,7 @@ class PyMCIterator(Iterator):
             self.initvals = {name: initvals_value}
         else:
             _logger.info("Use PyMC Priors")
-            prior_list = from_config_create_pymc_distribution_dict(
-                self.parameters, self.num_chains
-            )
+            prior_list = from_config_create_pymc_distribution_dict(self.parameters, self.num_chains)
             prior = pm.math.concatenate(prior_list, axis=1)
 
         prior_tensor = at.as_tensor_variable(prior)
@@ -303,5 +297,3 @@ class PyMCIterator(Iterator):
             plt.close("all")
 
         _logger.info("MCMC by PyMC results finished")
-
-       

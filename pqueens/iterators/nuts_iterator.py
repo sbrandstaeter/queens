@@ -6,8 +6,8 @@ arbitrary probability distributions.
 """
 
 import logging
-import numpy as np
 
+import numpy as np
 import pymc as pm
 
 from pqueens.iterators.pymc_iterator import PyMCIterator
@@ -201,7 +201,6 @@ class NUTSIterator(PyMCIterator):
         else:
             _, gradient = self.model.evaluate(samples, gradient_bool=True)
         return gradient
-
 
     def init_mcmc_method(self):
         """Init the PyMC MCMC Model.

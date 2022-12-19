@@ -78,11 +78,11 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             use_queens_prior,
             progressbar,
         )
-
+        
         self.covariance = covariance
         self.tune_interval = tune_interval
         self.scaling = scaling
-        
+
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create Metropolis Hastings iterator from problem description.
@@ -120,7 +120,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         covariance = method_options.get('covariance', None)
         tune_interval = method_options.get('tune_interval', 100)
         scaling = method_options.get('scaling', 1.0)
-        
 
         return cls(
             global_settings=global_settings,
@@ -172,7 +171,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             (np.array): Gradients
         """
         raise NotImplementedError("No gradients are used for Metropolis-Hastings")
-
 
     def init_mcmc_method(self):
         """Init the PyMC MCMC Model.

@@ -5,8 +5,8 @@ It is used to sample from arbitrary probability distributions.
 """
 
 import logging
-import numpy as np
 
+import numpy as np
 import pymc as pm
 
 from pqueens.iterators.pymc_iterator import PyMCIterator
@@ -135,7 +135,7 @@ class HMCIterator(PyMCIterator):
         path_length = method_options.get('path_length', 2.0)
         scaling = method_options.get('scaling', None)
         is_cov = method_options.get('is_cov', False)
-
+        
         return cls(
             global_settings=global_settings,
             model=model,
@@ -199,7 +199,6 @@ class HMCIterator(PyMCIterator):
         else:
             _, gradient = self.model.evaluate(samples, gradient_bool=True)
         return gradient
-
 
     def init_mcmc_method(self):
         """Init the PyMC MCMC Model.

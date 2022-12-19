@@ -194,7 +194,7 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
             std = np.diagonal(distribution.covariance) ** (1 / 2)
         else:
             raise NotImplementedError("There is no multivariate LogNormal-Distribution in PyMC")
-
+        
         distribution = pm.LogNormal(
             name,
             mu=distribution.mean,
