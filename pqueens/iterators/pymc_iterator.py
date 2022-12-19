@@ -35,19 +35,15 @@ class PyMCIterator(Iterator):
         num_parameters (int): Actual number of model input parameters that should be calibrated
         chains (np.array): Array with all samples
         seed (int): Seed for the random number generators
-        current_sample (np.array): Sample which is currently evaluated
-        current_gradient (np.array): Gradient of the currently evaluated sample
         init_strategy (str): Strategy to tune mass damping matrix
         pymc_model (obj): PyMC Model as inference environment
         step (obj): PyMC MCMC method to be used for sampling
         use_queens_prior (boolean): Setting for using the PyMC priors or the QUEENS prior functions
-        explicit_distribution_shape (int): Shape of the output, determines number of chains in
-        QUEENS
-        cores (int): Number of chain to run in parallel
         progressbar (boolean): Setting for printing progress bar while sampling
-        logprior (fun): Function to evaluate the QUEENS joint log-prior
-        loglike (fun): Function to evaluate QUEENS log-likelihood
+        log_prior (fun): Function to evaluate the QUEENS joint log-prior
+        log_like (fun): Function to evaluate QUEENS log-likelihood
         results (obj): PyMC inference object with sampling results
+        initvals (dict): Dict with distribution names and starting point of chains
     """
 
     def __init__(
@@ -97,24 +93,19 @@ class PyMCIterator(Iterator):
 
         self.seed = seed
         np.random.seed(seed)
-        self.current_sample = np.zeros((self.num_chains, num_parameters))
-        self.current_gradient = np.zeros((self.num_chains, num_parameters))
         self.init_strategy = init_strategy
 
         self.pymc_model = pm.Model()
         self.step = None
         self.use_queens_prior = use_queens_prior
 
-        self.explicit_distribution_shape = self.num_chains
-        self.num_chains = 1
-        self.cores = 1
 
-        self.chains = np.zeros((self.explicit_distribution_shape, self.num_samples, num_parameters))
+        self.chains = np.zeros((self.num_chains, self.num_samples, num_parameters))
 
         self.progressbar = progressbar
         if self.use_queens_prior:
-            self.logprior = None
-        self.loglike = None
+            self.log_prior = None
+        self.log_like = None
         self.results = None
         self.initvals = None
 
@@ -166,64 +157,32 @@ class PyMCIterator(Iterator):
     def eval_log_prior(self, samples):
         """Evaluate natural logarithm of prior at samples of chains.
 
-        Note: we assume a multiplicative split of prior pdf
+         Args:
+            samples (np.array): Samples to evaluate the prior at
+
+        Returns:
+            (np.array): Prior log-pdf
         """
         return self.parameters.joint_logpdf(samples).reshape(-1)
 
+    @abc.abstractmethod
     def eval_log_prior_grad(self, samples):
-        """Evaluate the gradient of the log-prior.
+        """Evaluate the gradient of the log-prior."""
+        
 
-        Args:
-            samples (np.array): Samples to evaluate the gradient at
-
-        Returns:
-            (np.array): Gradients
-        """
-        return self.parameters.grad_joint_logpdf(samples)
-
+    @abc.abstractmethod
     def eval_log_likelihood(self, samples):
-        """Evaluate the log-likelihood.
+        """Evaluate the log-likelihood."""
+    
 
-        Args:
-             samples (np.array): Samples to evaluate the likelihood at
-
-        Returns:
-            (np.array): log-likelihoods
-        """
-        self.current_sample = samples
-
-        log_likelihood, gradient = self.model.evaluate(samples, gradient_bool=True)
-
-        self.current_gradient = gradient
-        return log_likelihood
-
+    @abc.abstractmethod
     def eval_log_likelihood_grad(self, samples):
-        """Evaluate the gradient of the log-likelihood.
-
-        Args:
-            samples (np.array): Samples to evaluate the gradient at
-
-        Returns:
-            (np.array): Gradients
-        """
-        # pylint: disable-next=fixme
-        # TODO: find better way to do this evaluation
-
-        if np.all(self.current_sample == samples):
-            gradient = self.current_gradient
-        else:
-            _, gradient = self.model.evaluate(samples, gradient_bool=True)
-        return gradient
+        """Evaluate the gradient of the log-likelihood."""
+    
 
     @abc.abstractmethod
     def init_mcmc_method(self):
-        """Init the PyMC MCMC Model.
-
-        Args:
-
-        Returns:
-            step (obj): The MCMC Method within the PyMC Model
-        """
+        """Init the PyMC MCMC Model."""
 
     @abc.abstractmethod
     def init_distribution_wrapper(self):
@@ -239,20 +198,20 @@ class PyMCIterator(Iterator):
             name = self.parameters.names[0]
             prior = pm.DensityDist(
                 name,
-                logp=self.logprior,
-                shape=(self.explicit_distribution_shape, self.parameters.num_parameters),
+                logp=self.log_prior,
+                shape=(self.num_chains, self.parameters.num_parameters),
             )
-            initvals_value = self.parameters.draw_samples(self.explicit_distribution_shape)
+            initvals_value = self.parameters.draw_samples(self.num_chains)
             self.initvals = {name: initvals_value}
         else:
             _logger.info("Use PyMC Priors")
             prior_list = from_config_create_pymc_distribution_dict(
-                self.parameters, self.explicit_distribution_shape
+                self.parameters, self.num_chains
             )
             prior = pm.math.concatenate(prior_list, axis=1)
 
         prior_tensor = at.as_tensor_variable(prior)
-        pm.Potential("likelihood", self.loglike(prior_tensor))
+        pm.Potential("likelihood", self.log_like(prior_tensor))
         self.step = self.init_mcmc_method()
 
     def core_run(self):
@@ -261,8 +220,8 @@ class PyMCIterator(Iterator):
             draws=self.num_samples,
             step=self.step,
             init=self.init_strategy,
-            cores=self.cores,
-            chains=self.num_chains,
+            cores=1,
+            chains=1,
             initvals=self.initvals,
             tune=self.num_burn_in,
             random_seed=self.seed,
@@ -327,7 +286,7 @@ class PyMCIterator(Iterator):
         _logger.info("Inference summary:")
         _logger.info(az.summary(idata))
 
-        if self.explicit_distribution_shape > 1 and self.result_description["plot_results"]:
+        if self.num_chains > 1 and self.result_description["plot_results"]:
             _logger.info("Generate convergence plots")
 
             axes = az.plot_trace(idata, combined=True)
@@ -345,4 +304,4 @@ class PyMCIterator(Iterator):
 
         _logger.info("MCMC by PyMC results finished")
 
-        return None
+       

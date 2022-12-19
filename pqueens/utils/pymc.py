@@ -8,7 +8,7 @@ import pymc as pm
 from pqueens.distributions import beta, exponential, lognormal, normal, uniform
 
 
-class PymcDistributionRapper(at.Op):
+class PymcDistributionWrapper(at.Op):
     """Op class for Data conversion.
 
     This pymc_distribution_rapper class is a wrapper for PyMC Distributions in QUEENS.
@@ -75,7 +75,7 @@ class PdfGrad(at.Op):
         outputs[0][0] = grads
 
 
-class PymcDistributionRapperWoGrad(at.Op):
+class PymcDistributionWrapperWithoutGrad(at.Op):
     """Op class for Data conversion.
 
     This pymc_distribution_rapper_wo_grad class is a wrapper for PyMC Distributions in QUEENS.
@@ -117,8 +117,7 @@ def from_config_create_pymc_distribution_dict(parameters, explicit_shape):
     pymc_distribution_list = []
 
     # loop over rvs and create list
-    for num, parameter in enumerate(parameters.to_list()):
-        name = parameters.names[num]
+    for name, parameter in parameters.dict.items():
         pymc_distribution_list.append(
             from_config_create_pymc_distribution(parameter.distribution, name, explicit_shape)
         )
@@ -194,7 +193,7 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
         ):
             std = np.diagonal(distribution.covariance) ** (1 / 2)
         else:
-            raise Exception("There is no multivariate LogNormal-Distribution in PyMC")
+            raise NotImplementedError("There is no multivariate LogNormal-Distribution in PyMC")
 
         distribution = pm.LogNormal(
             name,
@@ -216,5 +215,5 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
             shape=shape,
         )
     else:
-        raise Exception("Not supported distriubtion")
+        raise NotImplementedError("Not supported distriubtion by QUEENS and/or PyMC")
     return distribution

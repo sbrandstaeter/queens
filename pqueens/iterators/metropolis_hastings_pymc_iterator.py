@@ -9,7 +9,7 @@ import logging
 import pymc as pm
 
 from pqueens.iterators.pymc_iterator import PyMCIterator
-from pqueens.utils.pymc import PymcDistributionRapperWoGrad
+from pqueens.utils.pymc import PymcDistributionWrapperWithoutGrad
 
 _logger = logging.getLogger(__name__)
 
@@ -23,7 +23,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         covariance (np.array): Covariance for proposal distribution
         tune_interval: frequency of tuning
         scaling (float): Initial scale factor for proposal
-        proposal_dist (fun): Zero mean proposal function
     Returns:
         metropolis_hastings_iterator (obj): Instance of Metropolis-Hastings Iterator
     """
@@ -44,7 +43,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         covariance,
         tune_interval,
         scaling,
-        proposal_dist,
     ):
         """Initialize Metropolis Hastings iterator.
 
@@ -64,7 +62,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             covariance (np.array): Covariance for proposal distribution
             tune_interval: frequency of tuning
             scaling (float): Initial scale factor for proposal
-            proposal_dist (fun): Zero mean proposal function
         Returns:
             Initialise pymc iterator
         """
@@ -85,8 +82,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         self.covariance = covariance
         self.tune_interval = tune_interval
         self.scaling = scaling
-        self.proposal_dist = proposal_dist
-
+        
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create Metropolis Hastings iterator from problem description.
@@ -124,7 +120,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         covariance = method_options.get('covariance', None)
         tune_interval = method_options.get('tune_interval', 100)
         scaling = method_options.get('scaling', 1.0)
-        proposal_dist = method_options.get('proposal_dist', None)
+        
 
         return cls(
             global_settings=global_settings,
@@ -141,8 +137,42 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             covariance=covariance,
             tune_interval=tune_interval,
             scaling=scaling,
-            proposal_dist=proposal_dist,
         )
+
+    def eval_log_prior_grad(self, samples):
+        """Evaluate the gradient of the log-prior.
+
+        Args:
+            samples (np.array): Samples to evaluate the gradient at
+
+        Returns:
+            (np.array): Gradients
+        """
+        raise NotImplementedError("No gradients are needed for Metropolis-Hastings")
+
+    def eval_log_likelihood(self, samples):
+        """Evaluate the log-likelihood.
+
+        Args:
+             samples (np.array): Samples to evaluate the likelihood at
+
+        Returns:
+            (np.array): log-likelihoods
+        """
+        log_likelihood = self.model.evaluate(samples, gradient_bool=False)
+        return log_likelihood
+
+    def eval_log_likelihood_grad(self, samples):
+        """Evaluate the gradient of the log-likelihood.
+
+        Args:
+            samples (np.array): Samples to evaluate the gradient at
+
+        Returns:
+            (np.array): Gradients
+        """
+        raise NotImplementedError("No gradients are used for Metropolis-Hastings")
+
 
     def init_mcmc_method(self):
         """Init the PyMC MCMC Model.
@@ -156,13 +186,12 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             S=self.covariance,
             scaling=self.scaling,
             tune_interval=self.tune_interval,
-            proposal_dist=self.proposal_dist,
         )
         return step
 
     def init_distribution_wrapper(self):
         """Init the PyMC wrapper for the QUEENS distributions."""
-        self.loglike = PymcDistributionRapperWoGrad(self.eval_log_likelihood)
+        self.log_like = PymcDistributionWrapperWithoutGrad(self.eval_log_likelihood)
         if self.use_queens_prior:
-            self.logprior = PymcDistributionRapperWoGrad(self.eval_log_prior)
+            self.log_prior = PymcDistributionWrapperWithoutGrad(self.eval_log_prior)
         _logger.info("Initialize Metropolis Hastings by PyMC run.")

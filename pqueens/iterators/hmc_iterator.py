@@ -5,11 +5,12 @@ It is used to sample from arbitrary probability distributions.
 """
 
 import logging
+import numpy as np
 
 import pymc as pm
 
 from pqueens.iterators.pymc_iterator import PyMCIterator
-from pqueens.utils.pymc import PymcDistributionRapper
+from pqueens.utils.pymc import PymcDistributionWrapper
 
 _logger = logging.getLogger(__name__)
 
@@ -25,6 +26,8 @@ class HMCIterator(PyMCIterator):
         path_length (float): Maximum length of particle trajectory
         scaling (np.array): The inverse mass, or precision matrix
         is_cov (boolean): Setting if the scaling is a mass or covariance matrix
+        current_sample (np.array): Most recent evalutated sample by the likelihood function
+        current_gradient (np.array): Gradient of the most recent evaluated sample
     Returns:
         hmc_iterator (obj): Instance of HMC Iterator
     """
@@ -90,6 +93,8 @@ class HMCIterator(PyMCIterator):
         self.path_length = path_length
         self.scaling = scaling
         self.is_cov = is_cov
+        self.current_sample = np.zeros((self.num_chains, self.parameters.num_parameters))
+        self.current_gradient = np.zeros((self.num_chains, self.parameters.num_parameters))
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -150,6 +155,52 @@ class HMCIterator(PyMCIterator):
             is_cov=is_cov,
         )
 
+    def eval_log_prior_grad(self, samples):
+        """Evaluate the gradient of the log-prior.
+
+        Args:
+            samples (np.array): Samples to evaluate the gradient at
+
+        Returns:
+            (np.array): Gradients
+        """
+        return self.parameters.grad_joint_logpdf(samples)
+
+    def eval_log_likelihood(self, samples):
+        """Evaluate the log-likelihood.
+
+        Args:
+             samples (np.array): Samples to evaluate the likelihood at
+
+        Returns:
+            (np.array): log-likelihoods
+        """
+        self.current_sample = samples
+
+        log_likelihood, gradient = self.model.evaluate(samples, gradient_bool=True)
+
+        self.current_gradient = gradient
+        return log_likelihood
+
+    def eval_log_likelihood_grad(self, samples):
+        """Evaluate the gradient of the log-likelihood.
+
+        Args:
+            samples (np.array): Samples to evaluate the gradient at
+
+        Returns:
+            (np.array): Gradients
+        """
+        # pylint: disable-next=fixme
+        # TODO: find better way to do this evaluation
+
+        if np.all(self.current_sample == samples):
+            gradient = self.current_gradient
+        else:
+            _, gradient = self.model.evaluate(samples, gradient_bool=True)
+        return gradient
+
+
     def init_mcmc_method(self):
         """Init the PyMC MCMC Model.
 
@@ -169,9 +220,9 @@ class HMCIterator(PyMCIterator):
 
     def init_distribution_wrapper(self):
         """Init the PyMC wrapper for the QUEENS distributions."""
-        self.loglike = PymcDistributionRapper(
+        self.log_like = PymcDistributionWrapper(
             self.eval_log_likelihood, self.eval_log_likelihood_grad
         )
         if self.use_queens_prior:
-            self.logprior = PymcDistributionRapper(self.eval_log_prior, self.eval_log_prior_grad)
+            self.log_prior = PymcDistributionWrapper(self.eval_log_prior, self.eval_log_prior_grad)
         _logger.info("Initialize HMC by PyMC run.")
