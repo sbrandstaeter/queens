@@ -199,7 +199,7 @@ class MpiDriver(Driver):
         post_file_prefix = driver_options.get('post_file_prefix', None)
         post_options = driver_options.get('post_process_options', '')
 
-        data_processor_name = driver_options.get('data_processor', None)
+        data_processor_name = driver_options.get('data_processor_name', None)
         if data_processor_name:
             data_processor = from_config_create_data_processor(config, data_processor_name)
             cae_output_streaming = False
@@ -207,7 +207,7 @@ class MpiDriver(Driver):
             data_processor = None
             cae_output_streaming = True
 
-        gradient_data_processor_name = driver_options.get('gradient_data_processor', None)
+        gradient_data_processor_name = driver_options.get('gradient_data_processor_name', None)
         if gradient_data_processor_name:
             gradient_data_processor = from_config_create_data_processor(
                 config, gradient_data_processor_name
