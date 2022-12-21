@@ -33,8 +33,8 @@ class NUTSIterator(PyMCIterator):
         target_accept (float): Target accpetance rate which should be conistent after burn-in
         scaling (np.array): The inverse mass, or precision matrix
         is_cov (boolean): Setting if the scaling is a mass or covariance matrix
-        current_sample (np.array): Most recent evalutated sample by the likelihood function
-        current_gradient (np.array): Gradient of the most recent evaluated sample
+        current_samples (np.array): Most recent evalutated sample by the likelihood function
+        current_gradients (np.array): Gradient of the most recent evaluated sample
     Returns:
         nuts_iterator (obj): Instance of NUTS Iterator
     """
@@ -97,8 +97,8 @@ class NUTSIterator(PyMCIterator):
         self.target_accept = target_accept
         self.scaling = scaling
         self.is_cov = is_cov
-        self.current_sample = np.zeros((self.num_chains, self.parameters.num_parameters))
-        self.current_gradient = np.zeros((self.num_chains, self.parameters.num_parameters))
+        self.current_samples = np.zeros((self.num_chains, self.parameters.num_parameters))
+        self.current_gradients = np.zeros((self.num_chains, self.parameters.num_parameters))
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -132,7 +132,7 @@ class NUTSIterator(PyMCIterator):
             seed,
             use_queens_prior,
             progressbar,
-        ) = super().get_base_attributes_from_config(config, iterator_name)
+        ) = super().get_base_attributes_from_config(config, iterator_name, model)
 
         max_treedepth = method_options.get('max_treedepth', 10)
         target_accept = method_options.get('target_accept', 0.8)
@@ -177,11 +177,11 @@ class NUTSIterator(PyMCIterator):
         Returns:
             (np.array): log-likelihoods
         """
-        self.current_sample = samples
+        self.current_samples = samples
 
         log_likelihood, gradient = self.model.evaluate(samples, gradient_bool=True)
 
-        self.current_gradient = gradient
+        self.current_gradients = gradient
         return log_likelihood
 
     def eval_log_likelihood_grad(self, samples):
@@ -196,8 +196,8 @@ class NUTSIterator(PyMCIterator):
         # pylint: disable-next=fixme
         # TODO: find better way to do this evaluation
 
-        if np.all(self.current_sample == samples):
-            gradient = self.current_gradient
+        if np.all(self.current_samples == samples):
+            gradient = self.current_gradients
         else:
             _, gradient = self.model.evaluate(samples, gradient_bool=True)
         return gradient

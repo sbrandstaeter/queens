@@ -6,6 +6,8 @@ algortihm. It implements a random walk.
 
 import logging
 
+import numpy as np
+
 import pymc as pm
 
 from pqueens.iterators.pymc_iterator import PyMCIterator
@@ -115,9 +117,11 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             seed,
             use_queens_prior,
             progressbar,
-        ) = super().get_base_attributes_from_config(config, iterator_name)
+        ) = super().get_base_attributes_from_config(config, iterator_name, model)
 
         covariance = method_options.get('covariance', None)
+        if covariance is not None:
+            covariance = np.array(covariance)
         tune_interval = method_options.get('tune_interval', 100)
         scaling = method_options.get('scaling', 1.0)
 

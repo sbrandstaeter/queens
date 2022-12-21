@@ -11,27 +11,28 @@ from pqueens.distributions import beta, exponential, lognormal, normal, uniform
 class PymcDistributionWrapper(at.Op):
     """Op class for Data conversion.
 
-    This pymc_distribution_rapper class is a wrapper for PyMC Distributions in QUEENS.
+    This PymcDistributionWrapper class is a wrapper for PyMC Distributions in QUEENS.
 
     Attributes:
-        loglike (fun): The log-pdf function
-        pdf_gradients (fun): The function to evaluate the gradient of the pdf
+        logpdf (fun): The log-pdf function
+        logpdf_gradients (fun): The function to evaluate the gradient of the log-pdf
+        logpdf_grad (obj): Wrapper for the gradient function of the log-pdf
     """
 
     itypes = [at.dmatrix]  # input type
     otypes = [at.dvector]  # output type
 
-    def __init__(self, logpdf, pdf_gradients):
+    def __init__(self, logpdf, logpdf_gradients):
         """Initzialise the wrapper for the functions.
 
         Args:
         logpdf (fun): The log-pdf function
-        pdf_gradients (fun): The function to evaluate the gradient of the pdf
+        logpdf_gradients (fun): The function to evaluate the gradient of the pdf
         """
         self.logpdf = logpdf
-        self.pdf_gradients = pdf_gradients
+        self.logpdf_gradients = logpdf_gradients
         # initialise the gradient Op
-        self.logpdfgrad = PdfGrad(self.pdf_gradients)
+        self.logpdf_grad = PymcGradientWrapper(self.logpdf_gradients)
 
     # pylint: disable-next=unused-argument
     def perform(self, node, inputs, outputs):
@@ -44,10 +45,10 @@ class PymcDistributionWrapper(at.Op):
     def grad(self, inputs, g):
         """Jacobian product of the gradient."""
         (sample,) = inputs
-        return [g[0] * self.logpdfgrad(sample)]
+        return [g[0] * self.logpdf_grad(sample)]
 
 
-class PdfGrad(at.Op):
+class PymcGradientWrapper(at.Op):
     """Op class for Data conversion.
 
     This Class is a wrapper for the gradient of the distributions in QUEENS.
@@ -78,10 +79,10 @@ class PdfGrad(at.Op):
 class PymcDistributionWrapperWithoutGrad(at.Op):
     """Op class for Data conversion.
 
-    This pymc_distribution_rapper_wo_grad class is a wrapper for PyMC Distributions in QUEENS.
+    This PymcDistributionWrapperWithoutGrad class is a wrapper for PyMC Distributions in QUEENS.
 
     Attributes:
-        loglike (fun): The log-pdf function
+        logpdf (fun): The log-pdf function
     """
 
     itypes = [at.dmatrix]  # input type
@@ -183,17 +184,8 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
     elif isinstance(distribution, lognormal.LogNormalDistribution):
         if distribution.dimension == 1:
             std = distribution.covariance[0, 0] ** (1 / 2)
-        elif distribution.dimension != 1 and np.all(np.array(distribution.covariance.shape) == 1):
-            std = distribution.covariance[0, 0] ** (1 / 2)
-        elif (
-            np.count_nonzero(
-                distribution.covariance - np.diag(np.diagonal(distribution.covariance))
-            )
-            == 0
-        ):
-            std = np.diagonal(distribution.covariance) ** (1 / 2)
         else:
-            raise NotImplementedError("There is no multivariate LogNormal-Distribution in PyMC")
+            raise NotImplementedError("Only 1D lognormals supported")
 
         distribution = pm.LogNormal(
             name,

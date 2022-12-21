@@ -191,7 +191,7 @@ class PyMCIterator(Iterator):
         if self.use_queens_prior:
             _logger.info("Use QUEENS Priors")
 
-            name = self.parameters.names[0]
+            name = 'parameters'
             prior = pm.DensityDist(
                 name,
                 logp=self.log_prior,
@@ -233,13 +233,13 @@ class PyMCIterator(Iterator):
         inference_data_dict = {}
         if self.use_queens_prior:
             values = np.swapaxes(
-                np.squeeze(self.results.posterior.get(self.parameters.names[0]).to_numpy(), axis=0),
+                np.squeeze(self.results.posterior.get('parameters').to_numpy(), axis=0),
                 0,
                 1,
             )
             self.chains = values
 
-            inference_data_dict[self.parameters.names[0]] = values
+            inference_data_dict['parameters'] = values
         else:
             current_index = 0
             for num, parameter in enumerate(self.parameters.to_list()):
