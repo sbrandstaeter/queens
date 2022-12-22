@@ -1,14 +1,14 @@
 """Collection of utility functions and classes for PyMC."""
 
 
-import aesara.tensor as at
 import numpy as np
 import pymc as pm
+import pytensor.tensor as pt
 
 from pqueens.distributions import beta, exponential, lognormal, normal, uniform
 
 
-class PymcDistributionWrapper(at.Op):
+class PymcDistributionWrapper(pt.Op):
     """Op class for Data conversion.
 
     This PymcDistributionWrapper class is a wrapper for PyMC Distributions in QUEENS.
@@ -19,8 +19,8 @@ class PymcDistributionWrapper(at.Op):
         logpdf_grad (obj): Wrapper for the gradient function of the log-pdf
     """
 
-    itypes = [at.dmatrix]  # input type
-    otypes = [at.dvector]  # output type
+    itypes = [pt.dmatrix]  # input type
+    otypes = [pt.dvector]  # output type
 
     def __init__(self, logpdf, logpdf_gradients):
         """Initzialise the wrapper for the functions.
@@ -48,7 +48,7 @@ class PymcDistributionWrapper(at.Op):
         return [g[0] * self.logpdf_grad(sample)]
 
 
-class PymcGradientWrapper(at.Op):
+class PymcGradientWrapper(pt.Op):
     """Op class for Data conversion.
 
     This Class is a wrapper for the gradient of the distributions in QUEENS.
@@ -57,8 +57,8 @@ class PymcGradientWrapper(at.Op):
         gradient_func (fun): The function to evaluate the gradient of the pdf
     """
 
-    itypes = [at.dmatrix]
-    otypes = [at.dmatrix]
+    itypes = [pt.dmatrix]
+    otypes = [pt.dmatrix]
 
     def __init__(self, gradient_func):
         """Initzialise the wrapper for the functions.
@@ -76,7 +76,7 @@ class PymcGradientWrapper(at.Op):
         outputs[0][0] = grads
 
 
-class PymcDistributionWrapperWithoutGrad(at.Op):
+class PymcDistributionWrapperWithoutGrad(pt.Op):
     """Op class for Data conversion.
 
     This PymcDistributionWrapperWithoutGrad class is a wrapper for PyMC Distributions in QUEENS.
@@ -85,8 +85,8 @@ class PymcDistributionWrapperWithoutGrad(at.Op):
         logpdf (fun): The log-pdf function
     """
 
-    itypes = [at.dmatrix]  # input type
-    otypes = [at.dvector]  # output type
+    itypes = [pt.dmatrix]  # input type
+    otypes = [pt.dvector]  # output type
 
     def __init__(self, logpdf):
         """Initzialise the wrapper for the functions.

@@ -3,11 +3,11 @@
 import abc
 import logging
 
-import aesara.tensor as at
 import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
 import pymc as pm
+import pytensor.tensor as pt
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
@@ -204,7 +204,7 @@ class PyMCIterator(Iterator):
             prior_list = from_config_create_pymc_distribution_dict(self.parameters, self.num_chains)
             prior = pm.math.concatenate(prior_list, axis=1)
 
-        prior_tensor = at.as_tensor_variable(prior)
+        prior_tensor = pt.as_tensor_variable(prior)
         pm.Potential("likelihood", self.log_like(prior_tensor))
         self.step = self.init_mcmc_method()
 
