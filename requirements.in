@@ -25,9 +25,9 @@ pyyaml # to load yaml files
 scikit-learn==1.1.1
 arviz # Bayesian visualization
 gpy # for Gaussian Processes
-gpflow # LV and variational GPs
-tensorflow
-tensorflow-probability
+gpflow==2.6.4 # LV and variational GPs
+tensorflow==2.9.1
+tensorflow-probability==0.17.0
 torch
 jax[cpu]
 jax
