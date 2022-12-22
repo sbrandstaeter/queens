@@ -35,7 +35,6 @@ class PyMCIterator(Iterator):
         num_parameters (int): Actual number of model input parameters that should be calibrated
         chains (np.array): Array with all samples
         seed (int): Seed for the random number generators
-        init_strategy (str): Strategy to tune mass damping matrix
         pymc_model (obj): PyMC Model as inference environment
         step (obj): PyMC MCMC method to be used for sampling
         use_queens_prior (boolean): Setting for using the PyMC priors or the QUEENS prior functions
@@ -53,7 +52,6 @@ class PyMCIterator(Iterator):
         num_burn_in,
         num_chains,
         num_samples,
-        init_strategy,
         discard_tuned_samples,
         result_description,
         seed,
@@ -68,7 +66,6 @@ class PyMCIterator(Iterator):
             num_burn_in (int): Number of burn-in steps
             num_chains (int): Number of chains to sample
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
-            init_strategy (str): Strategy to tune mass damping matrix
             discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
             result_description (dict): Settings for storing and visualizing the results
             seed (int): Seed for rng
@@ -93,7 +90,6 @@ class PyMCIterator(Iterator):
 
         self.seed = seed
         np.random.seed(seed)
-        self.init_strategy = init_strategy
 
         self.pymc_model = pm.Model()
         self.step = None
@@ -132,7 +128,6 @@ class PyMCIterator(Iterator):
 
         num_burn_in = method_options.get('num_burn_in', 0)
 
-        init_strategy = method_options.get('init_strategy', 'auto')
         discard_tuned_samples = method_options.get('discard_tuned_samples', True)
 
         use_queens_prior = method_options.get('use_queens_prior', False)
@@ -145,7 +140,6 @@ class PyMCIterator(Iterator):
             num_burn_in,
             num_chains,
             method_options['num_samples'],
-            init_strategy,
             discard_tuned_samples,
             result_description,
             method_options['seed'],
@@ -213,7 +207,6 @@ class PyMCIterator(Iterator):
         self.results = pm.sample(
             draws=self.num_samples,
             step=self.step,
-            init=self.init_strategy,
             cores=1,
             chains=1,
             initvals=self.initvals,

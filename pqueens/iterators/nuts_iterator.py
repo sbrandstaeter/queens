@@ -33,6 +33,7 @@ class NUTSIterator(PyMCIterator):
         target_accept (float): Target accpetance rate which should be conistent after burn-in
         scaling (np.array): The inverse mass, or precision matrix
         is_cov (boolean): Setting if the scaling is a mass or covariance matrix
+        init_strategy (str): Strategy to tune mass damping matrix
         current_samples (np.array): Most recent evalutated sample by the likelihood function
         current_gradients (np.array): Gradient of the most recent evaluated sample
     Returns:
@@ -46,7 +47,6 @@ class NUTSIterator(PyMCIterator):
         num_burn_in,
         num_chains,
         num_samples,
-        init_strategy,
         discard_tuned_samples,
         result_description,
         seed,
@@ -56,6 +56,7 @@ class NUTSIterator(PyMCIterator):
         target_accept,
         scaling,
         is_cov,
+        init_strategy,
     ):
         """Initialize NUTS iterator.
 
@@ -65,7 +66,6 @@ class NUTSIterator(PyMCIterator):
             num_burn_in (int): Number of burn-in steps
             num_chains (int): Number of chains to sample
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
-            init_strategy (str): Strategy to tune mass damping matrix
             discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
             result_description (dict): Settings for storing and visualizing the results
             seed (int): Seed for rng
@@ -76,6 +76,7 @@ class NUTSIterator(PyMCIterator):
             target_accept (float): Target accpetance rate which should be conistent after burn-in
             scaling (np.array): The inverse mass, or precision matrix
             is_cov (boolean): Setting if the scaling is a mass or covariance matrix
+            init_strategy (str): Strategy to tune mass damping matrix
         Returns:
             Initialise pymc iterator
         """
@@ -85,7 +86,6 @@ class NUTSIterator(PyMCIterator):
             num_burn_in,
             num_chains,
             num_samples,
-            init_strategy,
             discard_tuned_samples,
             result_description,
             seed,
@@ -97,6 +97,7 @@ class NUTSIterator(PyMCIterator):
         self.target_accept = target_accept
         self.scaling = scaling
         self.is_cov = is_cov
+        self.init_strategy = init_strategy
         self.current_samples = np.zeros((self.num_chains, self.parameters.num_parameters))
         self.current_gradients = np.zeros((self.num_chains, self.parameters.num_parameters))
 
@@ -126,7 +127,6 @@ class NUTSIterator(PyMCIterator):
             num_burn_in,
             num_chains,
             num_samples,
-            init_strategy,
             discard_tuned_samples,
             result_description,
             seed,
@@ -138,6 +138,7 @@ class NUTSIterator(PyMCIterator):
         target_accept = method_options.get('target_accept', 0.8)
         scaling = method_options.get('scaling', None)
         is_cov = method_options.get('is_cov', False)
+        init_strategy = method_options.get('init_strategy', 'auto')
 
         return cls(
             global_settings=global_settings,
@@ -145,7 +146,6 @@ class NUTSIterator(PyMCIterator):
             num_burn_in=num_burn_in,
             num_chains=num_chains,
             num_samples=num_samples,
-            init_strategy=init_strategy,
             discard_tuned_samples=discard_tuned_samples,
             result_description=result_description,
             seed=seed,
@@ -155,6 +155,7 @@ class NUTSIterator(PyMCIterator):
             target_accept=target_accept,
             scaling=scaling,
             is_cov=is_cov,
+            init_strategy=init_strategy,
         )
 
     def eval_log_prior_grad(self, samples):
@@ -210,7 +211,12 @@ class NUTSIterator(PyMCIterator):
         Returns:
             step (obj): The MCMC Method within the PyMC Model
         """
-        step = pm.NUTS(
+        self.initvals, step = pm.init_nuts(
+            init=self.init_strategy,
+            chains=1,
+            random_seed=self.seed,
+            progressbar=self.progressbar,
+            initvals=self.initvals,
             target_accept=self.target_accept,
             max_treedepth=self.max_treedepth,
             scaling=self.scaling,

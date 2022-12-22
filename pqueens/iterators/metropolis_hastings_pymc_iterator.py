@@ -35,7 +35,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         num_burn_in,
         num_chains,
         num_samples,
-        init_strategy,
         discard_tuned_samples,
         result_description,
         seed,
@@ -53,7 +52,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             num_burn_in (int): Number of burn-in steps
             num_chains (int): Number of chains to sample
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
-            init_strategy (str): Strategy to tune mass damping matrix
             discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
             result_description (dict): Settings for storing and visualizing the results
             seed (int): Seed for rng
@@ -72,7 +70,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             num_burn_in,
             num_chains,
             num_samples,
-            init_strategy,
             discard_tuned_samples,
             result_description,
             seed,
@@ -110,7 +107,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             num_burn_in,
             num_chains,
             num_samples,
-            init_strategy,
             discard_tuned_samples,
             result_description,
             seed,
@@ -130,7 +126,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             num_burn_in=num_burn_in,
             num_chains=num_chains,
             num_samples=num_samples,
-            init_strategy=init_strategy,
             discard_tuned_samples=discard_tuned_samples,
             result_description=result_description,
             seed=seed,
