@@ -45,6 +45,7 @@ pytest-cov
 pytest-mock
 pytest-xdist
 mock
+py
 
 # Terminal utils
 pyfiglet # make ascii  -art printsc
