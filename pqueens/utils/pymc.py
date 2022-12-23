@@ -136,11 +136,11 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
         explicit_shape (int): Explicit shape parameter for distribution dimension
 
     Returns:
-        distribution:     Distribution object in pymc format
+        rv:     Random variable, distribution object in pymc format
     """
     shape = (explicit_shape, distribution.dimension)
     if isinstance(distribution, normal.NormalDistribution):
-        distribution = pm.MvNormal(
+        rv = pm.MvNormal(
             name,
             mu=distribution.mean,
             cov=distribution.covariance,
@@ -148,7 +148,7 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
         )
     elif isinstance(distribution, uniform.UniformDistribution):
         if np.all(distribution.lower_bound == 0):
-            distribution = pm.Uniform(
+            rv = pm.Uniform(
                 name,
                 lower=0,
                 upper=distribution.upper_bound,
@@ -156,14 +156,14 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
             )
 
         elif np.all(distribution.upper_bound == 0):
-            distribution = pm.Uniform(
+            rv = pm.Uniform(
                 name,
                 lower=distribution.lower_bound,
                 upper=0,
                 shape=shape,
             )
         else:
-            distribution = pm.Uniform(
+            rv = pm.Uniform(
                 name,
                 lower=distribution.lower_bound,
                 upper=distribution.upper_bound,
@@ -175,20 +175,20 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
         else:
             raise NotImplementedError("Only 1D lognormals supported")
 
-        distribution = pm.LogNormal(
+        rv = pm.LogNormal(
             name,
             mu=distribution.mean,
             sigma=std,
             shape=shape,
         )
     elif isinstance(distribution, exponential.ExponentialDistribution):
-        distribution = pm.Exponential(
+        rv = pm.Exponential(
             name,
             lam=distribution.rate,
             shape=shape,
         )
     elif isinstance(distribution, beta.BetaDistribution):
-        distribution = pm.Beta(
+        rv = pm.Beta(
             name,
             alpha=distribution.a,
             beta=distribution.b,
@@ -196,4 +196,4 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
         )
     else:
         raise NotImplementedError("Not supported distriubtion by QUEENS and/or PyMC")
-    return distribution
+    return rv
