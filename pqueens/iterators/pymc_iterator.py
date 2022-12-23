@@ -185,10 +185,15 @@ class PyMCIterator(Iterator):
         if self.use_queens_prior:
             _logger.info("Use QUEENS Priors")
 
+            # pylint: disable-next=unused-argument
+            def random(*dist_params, rng=None, size=None):
+                return self.parameters.draw_samples(self.num_chains)
+
             name = 'parameters'
             prior = pm.DensityDist(
                 name,
                 logp=self.log_prior,
+                random=random,
                 shape=(self.num_chains, self.parameters.num_parameters),
             )
             initvals_value = self.parameters.draw_samples(self.num_chains)
