@@ -186,7 +186,7 @@ class PyMCIterator(Iterator):
             _logger.info("Use QUEENS Priors")
 
             # pylint: disable-next=unused-argument
-            def random(*dist_params, rng=None, size=None):
+            def random(*_, **__):
                 return self.parameters.draw_samples(self.num_chains)
 
             name = 'parameters'
