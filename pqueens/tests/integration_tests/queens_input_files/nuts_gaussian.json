@@ -43,7 +43,7 @@
   },
   "parameters": {
     "random_variables": {
-      "x": {
+      "x1": {
         "dimension": 2,
         "distribution": "normal",
         "mean": [
