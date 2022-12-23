@@ -9,7 +9,7 @@ import pytest
 from mock import patch
 
 from pqueens import run
-from pqueens.iterators.metropolis_hastings_pymc_iterator import MetropolisHastingsPyMCIterator
+from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
     gaussian_2d_logpdf,
 )
@@ -23,7 +23,7 @@ def test_gaussian_mh(inputdir, tmpdir, dummy_data):
     dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = os.path.join(tmpdir, "gaussian_mh_realiz.json")
     injector.inject(dir_dict, template, input_file)
-    with patch.object(MetropolisHastingsPyMCIterator, "eval_log_likelihood", target_density):
+    with patch.object(GaussianLikelihood, "evaluate", target_density):
         run(Path(input_file), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
@@ -34,7 +34,7 @@ def test_gaussian_mh(inputdir, tmpdir, dummy_data):
     assert results['var'].mean(axis=0) == pytest.approx([0.42437488, 0.39927101])
 
 
-def target_density(self, samples):
+def target_density(self, samples, gradient_bool=False):
     """Patch likelihood."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_2d_logpdf(samples).flatten()

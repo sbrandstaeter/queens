@@ -9,7 +9,7 @@ import pytest
 from mock import patch
 
 from pqueens import run
-from pqueens.iterators.hmc_iterator import HMCIterator
+from pqueens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
     gaussian_2d_logpdf,
 )
@@ -23,9 +23,8 @@ def test_gaussian_hmc(inputdir, tmpdir, dummy_data):
     dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = os.path.join(tmpdir, "gaussian_hmc_realiz.json")
     injector.inject(dir_dict, template, input_file)
-    with patch.object(HMCIterator, "eval_log_likelihood", target_density):
-        with patch.object(HMCIterator, "eval_log_likelihood_grad", target_density_grad):
-            run(Path(input_file), Path(tmpdir))
+    with patch.object(GaussianLikelihood, "evaluate", target_density):
+        run(Path(input_file), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
@@ -35,21 +34,16 @@ def test_gaussian_hmc(inputdir, tmpdir, dummy_data):
     assert results['var'].mean(axis=0) == pytest.approx([1.2662231, 0.90540871])
 
 
-def target_density(self, samples):
-    """Patch Likelihood."""
+def target_density(self, samples, gradient_bool):
+    """Patch likelihood."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_2d_logpdf(samples).flatten()
 
-    return log_likelihood
-
-
-def target_density_grad(self, samples):
-    """Patch gradient."""
     cov = [[1.0, 0.5], [0.5, 1.0]]
     cov_inverse = np.linalg.inv(cov)
     gradient = -np.dot(cov_inverse, samples.T).T
 
-    return gradient
+    return (log_likelihood, gradient)
 
 
 @pytest.fixture()
