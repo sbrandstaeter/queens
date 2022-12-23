@@ -147,31 +147,19 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
             shape=shape,
         )
     elif isinstance(distribution, uniform.UniformDistribution):
-        if np.all(distribution.lower_bound == distribution.lower_bound[0]) and np.all(
-            distribution.upper_bound == distribution.upper_bound[0]
-        ):
+        if np.all(distribution.lower_bound == 0):
             distribution = pm.Uniform(
                 name,
-                lower=distribution.lower_bound[0],
-                upper=distribution.upper_bound[0],
-                shape=shape,
-            )
-        elif np.all(distribution.lower_bound == distribution.lower_bound[0]) and not np.all(
-            distribution.upper_bound == distribution.upper_bound[0]
-        ):
-            distribution = pm.Uniform(
-                name,
-                lower=distribution.lower_bound[0],
+                lower=0,
                 upper=distribution.upper_bound,
                 shape=shape,
             )
-        elif np.all(distribution.upper_bound == distribution.upper_bound[0]) and not np.all(
-            distribution.lower_bound == distribution.lower_bound[0]
-        ):
+
+        elif np.all(distribution.upper_bound == 0):
             distribution = pm.Uniform(
                 name,
                 lower=distribution.lower_bound,
-                upper=distribution.upper_bound[0],
+                upper=0,
                 shape=shape,
             )
         else:
