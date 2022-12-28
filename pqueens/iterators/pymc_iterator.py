@@ -185,9 +185,11 @@ class PyMCIterator(Iterator):
         if self.use_queens_prior:
             _logger.info("Use QUEENS Priors")
 
-            # pylint: disable-next=unused-argument
-            def random(*_, **__):
-                return self.parameters.draw_samples(self.num_chains)
+            def random(*_, **kwargs):
+                if kwargs["size"] == (self.num_chains, self.parameters.num_parameters):
+                    return self.parameters.draw_samples(self.num_chains)
+                else:
+                    raise ValueError("Wrong shape of rng values")
 
             name = 'parameters'
             prior = pm.DensityDist(
