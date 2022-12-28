@@ -8,10 +8,10 @@ import pytensor.tensor as pt
 from pqueens.distributions import beta, exponential, lognormal, normal, uniform
 
 
-class PymcDistributionWrapper(pt.Op):
+class PymcDistributionWrapperWithGradient(pt.Op):
     """Op class for Data conversion.
 
-    This PymcDistributionWrapper class is a wrapper for PyMC Distributions in QUEENS.
+    This PymcDistributionWrapperWithGradient  class is a wrapper for PyMC Distributions in QUEENS.
 
     Attributes:
         logpdf (fun): The log-pdf function
@@ -76,10 +76,10 @@ class PymcGradientWrapper(pt.Op):
         outputs[0][0] = grads
 
 
-class PymcDistributionWrapperWithoutGrad(pt.Op):
+class PymcDistributionWrapper(pt.Op):
     """Op class for Data conversion.
 
-    This PymcDistributionWrapperWithoutGrad class is a wrapper for PyMC Distributions in QUEENS.
+    This PymcDistributionWrapper  class is a wrapper for PyMC Distributions in QUEENS.
 
     Attributes:
         logpdf (fun): The log-pdf function

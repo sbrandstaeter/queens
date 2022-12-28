@@ -10,7 +10,7 @@ import numpy as np
 import pymc as pm
 
 from pqueens.iterators.pymc_iterator import PyMCIterator
-from pqueens.utils.pymc import PymcDistributionWrapperWithoutGrad
+from pqueens.utils.pymc import PymcDistributionWrapper
 
 _logger = logging.getLogger(__name__)
 
@@ -187,7 +187,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
 
     def init_distribution_wrapper(self):
         """Init the PyMC wrapper for the QUEENS distributions."""
-        self.log_like = PymcDistributionWrapperWithoutGrad(self.eval_log_likelihood)
+        self.log_like = PymcDistributionWrapper(self.eval_log_likelihood)
         if self.use_queens_prior:
-            self.log_prior = PymcDistributionWrapperWithoutGrad(self.eval_log_prior)
+            self.log_prior = PymcDistributionWrapper(self.eval_log_prior)
         _logger.info("Initialize Metropolis Hastings by PyMC run.")
