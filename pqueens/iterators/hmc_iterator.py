@@ -10,7 +10,7 @@ import numpy as np
 import pymc as pm
 
 from pqueens.iterators.pymc_iterator import PyMCIterator
-from pqueens.utils.pymc import PymcDistributionWrapperWithGradient
+from pqueens.utils.pymc import PymcDistributionWrapper
 
 _logger = logging.getLogger(__name__)
 
@@ -214,11 +214,9 @@ class HMCIterator(PyMCIterator):
 
     def init_distribution_wrapper(self):
         """Init the PyMC wrapper for the QUEENS distributions."""
-        self.log_like = PymcDistributionWrapperWithGradient(
+        self.log_like = PymcDistributionWrapper(
             self.eval_log_likelihood, self.eval_log_likelihood_grad
         )
         if self.use_queens_prior:
-            self.log_prior = PymcDistributionWrapperWithGradient(
-                self.eval_log_prior, self.eval_log_prior_grad
-            )
+            self.log_prior = PymcDistributionWrapper(self.eval_log_prior, self.eval_log_prior_grad)
         _logger.info("Initialize HMC by PyMC run.")

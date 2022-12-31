@@ -8,10 +8,10 @@ import pytensor.tensor as pt
 from pqueens.distributions import beta, exponential, lognormal, normal, uniform
 
 
-class PymcDistributionWrapperWithGradient(pt.Op):
+class PymcDistributionWrapper(pt.Op):
     """Op class for Data conversion.
 
-    This PymcDistributionWrapperWithGradient  class is a wrapper for PyMC Distributions in QUEENS.
+    This PymcDistributionWrapper  class is a wrapper for PyMC Distributions in QUEENS.
 
     Attributes:
         logpdf (fun): The log-pdf function
@@ -22,7 +22,7 @@ class PymcDistributionWrapperWithGradient(pt.Op):
     itypes = [pt.dmatrix]  # input type
     otypes = [pt.dvector]  # output type
 
-    def __init__(self, logpdf, logpdf_gradients):
+    def __init__(self, logpdf, logpdf_gradients=None):
         """Initzialise the wrapper for the functions.
 
         Args:
@@ -35,7 +35,7 @@ class PymcDistributionWrapperWithGradient(pt.Op):
         self.logpdf_grad = PymcGradientWrapper(self.logpdf_gradients)
 
     # pylint: disable-next=unused-argument
-    def perform(self, node, inputs, outputs):
+    def perform(self, _node, inputs, outputs):
         """Evaluate the pdf with this call."""
         (sample,) = inputs
 
@@ -69,39 +69,14 @@ class PymcGradientWrapper(pt.Op):
         self.gradient_func = gradient_func
 
     # pylint: disable-next=unused-argument
-    def perform(self, node, inputs, outputs):
+    def perform(self, _node, inputs, outputs):
         """Evaluate the gradient at the given sample."""
         (sample,) = inputs
-        grads = self.gradient_func(sample)
-        outputs[0][0] = grads
-
-
-class PymcDistributionWrapper(pt.Op):
-    """Op class for Data conversion.
-
-    This PymcDistributionWrapper  class is a wrapper for PyMC Distributions in QUEENS.
-
-    Attributes:
-        logpdf (fun): The log-pdf function
-    """
-
-    itypes = [pt.dmatrix]  # input type
-    otypes = [pt.dvector]  # output type
-
-    def __init__(self, logpdf):
-        """Initzialise the wrapper for the functions.
-
-        Args:
-        logpdf (fun): The log-pdf function
-        """
-        self.logpdf = logpdf
-
-    # pylint: disable-next=unused-argument
-    def perform(self, node, inputs, outputs):
-        """Evaluate the pdf with this call."""
-        (sample,) = inputs
-        value = self.logpdf(sample)
-        outputs[0][0] = np.array(value)
+        if self.gradient_func is not None:
+            grads = self.gradient_func(sample)
+            outputs[0][0] = grads
+        else:
+            raise TypeError("Gradient function is not callable")
 
 
 def from_config_create_pymc_distribution_dict(parameters, explicit_shape):
