@@ -231,4 +231,4 @@ class NUTSIterator(PyMCIterator):
         )
         if self.use_queens_prior:
             self.log_prior = PymcDistributionWrapper(self.eval_log_prior, self.eval_log_prior_grad)
-        _logger.info("Initialize NTUS by PyMC run.")
+        _logger.info("Initialize NUTS by PyMC run.")
