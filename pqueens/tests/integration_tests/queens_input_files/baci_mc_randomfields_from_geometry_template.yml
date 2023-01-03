@@ -48,15 +48,15 @@ local_scheduler:
   num_procs: 4
   num_procs_post: 1
 parameters:
-  random_variables:
-    emodul:
-      dimension: 1
-      distribution: lognormal
-      normal_mean: 6.392
-      normal_covariance: 0.0705
-  random_fields:
-    random_inflow:
-      corr_length: 0.08
-      std_hyperparam_rf: 0.1
-      mean_fun: inflow_parabola
-      mean_fun_params: [1.5]
+  emodul:
+    type: random_variable
+    dimension: 1
+    distribution: lognormal
+    normal_mean: 6.392
+    normal_covariance: 0.0705
+  random_inflow:
+    type: random_field
+    corr_length: 0.08
+    std_hyperparam_rf: 0.1
+    mean_fun: inflow_parabola
+    mean_fun_params: [1.5]

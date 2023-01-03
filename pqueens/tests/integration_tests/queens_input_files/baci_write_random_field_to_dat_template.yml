@@ -61,25 +61,24 @@ local_scheduler:
   num_procs: 1
   num_procs_post: 1
 parameters:
-  random_variables:
-    emodul:
-      dimension: 1
-      distribution: lognormal
-      normal_mean: 6.392
-      normal_covariance: 0.0705
-    nue:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0.45
-      upper_bound: 0.49
-    pressure:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 28000
-      upper_bound: 38000
-  random_fields:
-    random_inflow:
-      corr_length: 1.0
-      std_hyperparam_rf: 0.001
-      mean_type: constant
-      mean_param: 0
+  emodul:
+    type: random_variable
+    distribution: lognormal
+    normal_mean: 6.392
+    normal_covariance: 0.0705
+  nue:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0.45
+    upper_bound: 0.49
+  pressure:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 28000
+    upper_bound: 38000
+  random_inflow:
+    type: random_field
+    corr_length: 1.0
+    std_hyperparam_rf: 0.001
+    mean_type: constant
+    mean_param: 0

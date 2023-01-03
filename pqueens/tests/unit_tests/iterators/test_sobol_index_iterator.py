@@ -19,7 +19,7 @@ class TestSobolIndices(unittest.TestCase):
     def setUp(self):
         """Set up the iterator."""
         uncertain_parameter = {
-            "dimension": 1,
+            "type": "random_variable",
             "distribution": "uniform",
             "lower_bound": -3.14159265359,
             "upper_bound": 3.14159265359,
@@ -30,9 +30,8 @@ class TestSobolIndices(unittest.TestCase):
             'x2': uncertain_parameter,
             'x3': uncertain_parameter,
         }
-        uncertain_parameters = {"random_variables": random_variables}
 
-        parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
+        parameters_module.from_config_create_parameters({"parameters": random_variables})
 
         some_settings = {"experiment_name": "test"}
 

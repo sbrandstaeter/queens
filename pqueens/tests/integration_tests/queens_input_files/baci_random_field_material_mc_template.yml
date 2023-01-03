@@ -55,9 +55,9 @@ local_scheduler:
   num_procs_post: 1
   singularity: false
 parameters:
-  random_fields:
-    mat_param:
-      corr_length: 5.0
-      std_hyperparam_rf: 0.03
-      mean_type: constant
-      mean_param: 0.25
+  mat_param:
+    type: random_field
+    corr_length: 5.0
+    std_hyperparam_rf: 0.03
+    mean_type: constant
+    mean_param: 0.25

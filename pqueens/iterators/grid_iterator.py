@@ -39,7 +39,6 @@ class GridIterator(Iterator):
             result_description (dict):  Description of desired results
             global_settings (dict, optional): Settings for the QUEENS run.
             grid_dict (dict): Dictionary containing grid information
-            parameters (dict):    dictionary containing parameter information
             num_parameters (int):   number of parameters to be varied
         """
         super().__init__(model, global_settings)
@@ -99,7 +98,7 @@ class GridIterator(Iterator):
         for index, (parameter_name, parameter) in enumerate(self.parameters.dict.items()):
             start_value = parameter.lower_bound
             stop_value = parameter.upper_bound
-            data_type = parameter.data_type
+            data_type = self.grid_dict[parameter_name].get("data_type", None)
             axis_type = self.grid_dict[parameter_name].get("axis_type", None)
             num_grid_points = self.grid_dict[parameter_name].get("num_grid_points", None)
             self.num_grid_points_per_axis.append(num_grid_points)

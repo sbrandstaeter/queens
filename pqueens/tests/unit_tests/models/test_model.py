@@ -14,18 +14,17 @@ from pqueens.models.model import Model
 def uncertain_parameters():
     """Possible uncertain parameters dictionary."""
     uncertain_parameters = dict()
-    uncertain_parameters['random_variables'] = dict()
 
     x1 = dict()
-    x1['type'] = 'FLOAT'
+    x1['type'] = 'random_variable'
     x1['dimension'] = 1
 
     x2 = dict()
-    x2['type'] = 'FLOAT'
+    x2['type'] = 'random_variable'
     x2['dimension'] = 2
 
-    uncertain_parameters['random_variables']['x1'] = x1
-    uncertain_parameters['random_variables']['x2'] = x2
+    uncertain_parameters['x1'] = x1
+    uncertain_parameters['x2'] = x2
 
     parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
     return parameters_module.parameters

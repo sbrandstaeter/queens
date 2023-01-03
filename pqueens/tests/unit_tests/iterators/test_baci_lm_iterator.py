@@ -69,17 +69,12 @@ def default_baci_lm_iterator():
             ]
         ),
         'parameters': OrderedDict(
-            [
-                (
-                    'random_variables',
-                    OrderedDict(
-                        [
-                            ('x1', OrderedDict([('type', 'FLOAT'), ('dimension', 1)])),
-                            ('x2', OrderedDict([('type', 'FLOAT'), ('dimension', 1)])),
-                        ]
-                    ),
-                )
-            ]
+            OrderedDict(
+                [
+                    ('x1', OrderedDict([('type', 'random_variable'), ('dimension', 1)])),
+                    ('x2', OrderedDict([('type', 'random_variable'), ('dimension', 1)])),
+                ]
+            ),
         ),
         'debug': False,
         'input_file': 'dummy_input',

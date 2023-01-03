@@ -20,54 +20,53 @@ interface:
   type: direct_python_interface
   function_name: sobol_g_function
 parameters:
-  random_variables:
-    x1:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0
-      upper_bound: 1
-    x2:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0
-      upper_bound: 1
-    x3:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0
-      upper_bound: 1
-    x4:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0
-      upper_bound: 1
-    x5:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0
-      upper_bound: 1
-    x6:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0
-      upper_bound: 1
-    x7:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0
-      upper_bound: 1
-    x8:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0
-      upper_bound: 1
-    x9:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0
-      upper_bound: 1
-    x10:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0
-      upper_bound: 1
+  x1:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 1
+  x2:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 1
+  x3:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 1
+  x4:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 1
+  x5:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 1
+  x6:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 1
+  x7:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 1
+  x8:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 1
+  x9:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 1
+  x10:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 1

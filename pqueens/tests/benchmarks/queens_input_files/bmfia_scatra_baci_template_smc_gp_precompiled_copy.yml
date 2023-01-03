@@ -189,12 +189,12 @@ data_processor_lf:
 parameters:
   random_variables:
     x_s:
-      dimension: 1
+      type: random_variable
       distribution: uniform
       lower_bound: 1.0e-05
       upper_bound: 0.9998
     y_s:
-      dimension: 1
+      type: random_variable
       distribution: uniform
       lower_bound: 1.0e-05
       upper_bound: 0.9998

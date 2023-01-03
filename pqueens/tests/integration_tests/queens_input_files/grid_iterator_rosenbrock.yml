@@ -9,9 +9,11 @@ method:
     x1:
       num_grid_points: 5
       axis_type: lin
+      data_type: FLOAT
     x2:
       num_grid_points: 5
       axis_type: lin
+      data_type: FLOAT
   result_description:
     write_results: true
     plotting_options:
@@ -26,14 +28,13 @@ interface:
   type: direct_python_interface
   function_name: rosenbrock60
 parameters:
-  random_variables:
-    x1:
-      type: FLOAT
-      dimension: 1
-      lower_bound: -2.0
-      upper_bound: 2.0
-    x2:
-      type: FLOAT
-      dimension: 1
-      lower_bound: -2.0
-      upper_bound: 2.0
+  x1:
+    type: random_variable
+    dimension: 1
+    lower_bound: -2.0
+    upper_bound: 2.0
+  x2:
+    type: random_variable
+    dimension: 1
+    lower_bound: -2.0
+    upper_bound: 2.0

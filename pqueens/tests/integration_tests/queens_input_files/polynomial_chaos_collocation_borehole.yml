@@ -19,44 +19,43 @@ interface:
   type: direct_python_interface
   function_name: borehole83_lofi
 parameters:
-  random_variables:
-    rw:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 0.05
-      upper_bound: 0.15
-    r:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 100
-      upper_bound: 50000
-    Tu:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 63070
-      upper_bound: 115600
-    Hu:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 990
-      upper_bound: 1110
-    Tl:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 63.1
-      upper_bound: 116
-    Hl:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 700
-      upper_bound: 820
-    L:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 1120
-      upper_bound: 1680
-    Kw:
-      dimension: 1
-      distribution: uniform
-      lower_bound: 9855
-      upper_bound: 12045
+  rw:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0.05
+    upper_bound: 0.15
+  r:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 100
+    upper_bound: 50000
+  Tu:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 63070
+    upper_bound: 115600
+  Hu:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 990
+    upper_bound: 1110
+  Tl:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 63.1
+    upper_bound: 116
+  Hl:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 700
+    upper_bound: 820
+  L:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 1120
+    upper_bound: 1680
+  Kw:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 9855
+    upper_bound: 12045

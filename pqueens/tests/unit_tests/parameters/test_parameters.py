@@ -11,21 +11,18 @@ def parameters_set_1():
     """Parameters dict without random field."""
     parameters_dict = {
         "parameters": {
-            "random_variables": {
-                "x1": {
-                    "dimension": 1,
-                    "type": "FLOAT",
-                    "distribution": "uniform",
-                    "lower_bound": -5,
-                    "upper_bound": 10,
-                },
-                "x2": {
-                    "dimension": 2,
-                    "distribution": "normal",
-                    "mean": [0, 1],
-                    "covariance": np.diag([1, 2]),
-                },
-            }
+            "x1": {
+                "type": "random_variable",
+                "distribution": "uniform",
+                "lower_bound": -5,
+                "upper_bound": 10,
+            },
+            "x2": {
+                "type": "random_variable",
+                "distribution": "normal",
+                "mean": [0, 1],
+                "covariance": np.diag([1, 2]),
+            },
         }
     }
     return parameters_dict
@@ -36,21 +33,18 @@ def parameters_set_2():
     """Parameters dict without random field."""
     parameters_dict = {
         "parameters": {
-            "random_variables": {
-                "x1": {
-                    "dimension": 1,
-                    "type": "FLOAT",
-                    "distribution": "uniform",
-                    "lower_bound": -5,
-                    "upper_bound": 10,
-                },
-                "x2": {
-                    "dimension": 1,
-                    "distribution": "normal",
-                    "mean": [0],
-                    "covariance": np.diag([1]),
-                },
-            }
+            "x1": {
+                "type": "random_variable",
+                "distribution": "uniform",
+                "lower_bound": -5,
+                "upper_bound": 10,
+            },
+            "x2": {
+                "type": "random_variable",
+                "distribution": "normal",
+                "mean": [0],
+                "covariance": np.diag([1]),
+            },
         }
     }
     return parameters_dict
@@ -153,28 +147,24 @@ def parameters_set_3():
     """Parameters dict with random field."""
     parameters_dict = {
         "parameters": {
-            "random_variables": {
-                "x1": {
-                    "dimension": 1,
-                    "type": "FLOAT",
-                    "distribution": "uniform",
-                    "lower_bound": -5,
-                    "upper_bound": 10,
-                },
-                "x2": {
-                    "dimension": 2,
-                    "distribution": "normal",
-                    "mean": [0, 1],
-                    "covariance": np.diag([1, 2]),
-                },
+            "x1": {
+                "type": "random_variable",
+                "distribution": "uniform",
+                "lower_bound": -5,
+                "upper_bound": 10,
             },
-            "random_fields": {
-                "random_inflow": {
-                    "corr_length": 1.0,
-                    "std_hyperparam_rf": 0.001,
-                    "mean_type": "constant",
-                    "mean_param": 0,
-                }
+            "x2": {
+                "type": "random_variable",
+                "distribution": "normal",
+                "mean": [0, 1],
+                "covariance": np.diag([1, 2]),
+            },
+            "random_inflow": {
+                "type": "random_field",
+                "corr_length": 1.0,
+                "std_hyperparam_rf": 0.001,
+                "mean_type": "constant",
+                "mean_param": 0,
             },
         }
     }

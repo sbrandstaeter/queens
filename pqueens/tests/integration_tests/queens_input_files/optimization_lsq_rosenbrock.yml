@@ -17,10 +17,9 @@ interface:
   type: direct_python_interface
   function_name: rosenbrock60_residual
 parameters:
-  random_variables:
-    x1:
-      type: FLOAT
-      dimension: 1
-    x2:
-      type: FLOAT
-      dimension: 1
+  x1:
+    type: random_variable
+    dimension: 1
+  x2:
+    type: random_variable
+    dimension: 1

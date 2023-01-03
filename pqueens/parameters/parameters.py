@@ -36,19 +36,19 @@ def from_config_create_parameters(config, pre_processor=None):
         for parameter_name, parameter_dict in parameters_options.items():
             parameter_type = parameter_dict['type']
             if parameter_type == 'random_variable':
-                joint_parameters_dict[parameter_name] = from_config_create_random_variable(
-                    parameter_dict
-                )
+                random_variable = from_config_create_random_variable(parameter_dict)
+                joint_parameters_dict[parameter_name] = random_variable
                 joint_parameters_keys = _add_parameters_keys(
-                    joint_parameters_keys, parameter_name, parameter_dict['dimension']
+                    joint_parameters_keys, parameter_name, random_variable.dimension
                 )
-                joint_parameters_dim += parameter_dict['dimension']
+                joint_parameters_dim += random_variable.dimension
             elif parameter_type == 'random_field':
-                joint_parameters_dict[parameter_name] = from_config_create_random_field(
+                random_field = from_config_create_random_field(
                     parameter_dict, pre_processor.coords_dict[parameter_name]
                 )
-                joint_parameters_keys += joint_parameters_dict[parameter_name].coords['keys']
-                joint_parameters_dim += joint_parameters_dict[parameter_name].dim_truncated
+                joint_parameters_dict[parameter_name] = random_field
+                joint_parameters_keys += random_field.coords['keys']
+                joint_parameters_dim += random_field.dim_truncated
                 random_field_flag = True
             else:
                 raise NotImplementedError(f"Parameter type '{parameter_type}' not supported.")

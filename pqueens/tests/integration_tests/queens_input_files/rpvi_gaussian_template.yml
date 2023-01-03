@@ -54,14 +54,13 @@ interface:
   type: direct_python_interface
   function_name: patch_for_likelihood
 parameters:
-  random_variables:
-    x1:
-      dimension: 1
-      distribution: normal
-      mean: 0.0
-      covariance: 1.0
-    x2:
-      dimension: 1
-      distribution: normal
-      mean: 10.0
-      covariance: 100.0
+  x1:
+    type: random_variable
+    distribution: normal
+    mean: 0.0
+    covariance: 1.0
+  x2:
+    type: random_variable
+    distribution: normal
+    mean: 10.0
+    covariance: 100.0

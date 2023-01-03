@@ -54,14 +54,13 @@ interface:
   type: direct_python_interface
   function_name: branin78_hifi
 parameters:
-  random_variables:
-    x1:
-      dimension: 1
-      lower_bound: -5
-      upper_bound: 10
-      distribution: uniform
-    x2:
-      dimension: 1
-      lower_bound: 0
-      upper_bound: 15
-      distribution: uniform
+  x1:
+    type: random_variable
+    lower_bound: -5
+    upper_bound: 10
+    distribution: uniform
+  x2:
+    type: random_variable
+    lower_bound: 0
+    upper_bound: 15
+    distribution: uniform
