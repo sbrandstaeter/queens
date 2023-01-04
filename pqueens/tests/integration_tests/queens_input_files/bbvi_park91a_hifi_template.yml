@@ -12,18 +12,12 @@ method:
     variational_approximation_type: fullrank
     variational_family: normal
   model_eval_iteration_period: 1000
-  optimization_options:
-    natural_gradient: true
-    FIM_dampening: true
-    decay_start_iteration: 50
-    dampening_coefficient: 0.01
-    FIM_dampening_lower_bound: 1.0e-08
-    stochastic_optimizer: Adam
-    learning_rate: 0.01
-    optimization_type: max
-    rel_L1_change_threshold: -1
-    rel_L2_change_threshold: -1
-    max_iter: 10000000
+  stochastic_optimizer_name: optimizer
+  natural_gradient: true
+  FIM_dampening: true
+  decay_start_iteration: 50
+  dampening_coefficient: 0.01
+  FIM_dampening_lower_bound: 1.0e-08
   variational_transformation:
   variational_parameter_initialization: prior
   random_seed: 1
@@ -37,6 +31,13 @@ method:
       plotting_dir: {plot_dir}
       plot_name: variational_params_convergence.eps
       save_bool: false
+optimizer:
+  type: adam
+  learning_rate: 0.01
+  optimization_type: max
+  rel_L1_change_threshold: -1
+  rel_L2_change_threshold: -1
+  max_iter: 10000000
 model:
   type: gaussian
   forward_model_name: forward_model

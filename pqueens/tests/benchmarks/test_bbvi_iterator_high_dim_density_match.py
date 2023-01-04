@@ -106,7 +106,7 @@ def dummy_bbvi_instance(tmpdir, rv_dimension, my_variational_distribution_obj):
         },
     }
     optimizer_config = {
-        "stochastic_optimizer": "Adam",
+        "stochastic_optimizer": "adam",
         "learning_rate": 0.1,
         "optimization_type": "max",
         "rel_L1_change_threshold": 1e-8,

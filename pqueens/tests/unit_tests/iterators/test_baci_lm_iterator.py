@@ -425,11 +425,9 @@ def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
 
     options = {
         "parameters": {
-            "random_variables": {
-                "x1": {"dimension": 1},
-                "x2": {"dimension": 1},
-                "x3": {"dimension": 1},
-            }
+            "x1": {"type": "random_variable", "dimension": 1},
+            "x2": {"type": "random_variable", "dimension": 1},
+            "x3": {"type": "random_variable", "dimension": 1},
         }
     }
     parameters_module.from_config_create_parameters(options)

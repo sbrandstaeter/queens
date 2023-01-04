@@ -25,7 +25,7 @@
     "mf_approx_settings": {
       "type": "gp_precompiled",
       "num_processors_multi_processing": 4,
-      "stochastic_optimizer": "Adam",
+      "stochastic_optimizer": "adam",
       "learning_rate": 0.01,
       "optimization_type": "max",
       "max_iterations": 1000,

@@ -196,7 +196,8 @@ class GPPrecompiled(RegressionApproximation):
             )
 
         # configure the stochastic optimizer and iterative averaging
-        stochastic_optimizer = from_config_create_optimizer(config, approx_name)
+        stochastic_optimizer_name = config[approx_name].get("stochastic_optimizer_name")
+        stochastic_optimizer = from_config_create_optimizer(config, stochastic_optimizer_name)
 
         # get the plot refresh rate
         plot_refresh_rate = config[approx_name].get("plot_refresh_rate", None)

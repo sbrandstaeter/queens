@@ -14,20 +14,14 @@ method:
   variational_distribution:
     variational_approximation_type: mean_field
     variational_family: normal
-  optimization_options:
-    stochastic_optimizer: Adam
-    optimization_type: max
-    learning_rate: 0.025
-    gradient_clipping: true
-    gradient_clipping_norm_threshold: 1000000.0
-    natural_gradient: true
-    FIM_dampening: true
-    decay_start_iteration: 50
-    dampening_coefficient: 0.01
-    FIM_dampening_lower_bound: 1.0e-08
-    rel_L1_change_threshold: -1
-    rel_L2_change_threshold: -1
-    max_iter: 10000000
+  stochastic_optimizer_name: optimizer
+  gradient_clipping: true
+  gradient_clipping_norm_threshold: 1000000.0
+  natural_gradient: true
+  FIM_dampening: true
+  decay_start_iteration: 50
+  dampening_coefficient: 0.01
+  FIM_dampening_lower_bound: 1.0e-08
   variational_transformation: null
   variational_parameter_initialization: prior
   random_seed: 1
@@ -38,6 +32,13 @@ method:
       plotting_dir: {plot_dir}
       plot_name: variational_params_convergence.eps
       save_bool: false
+optimizer:
+  type: adam
+  optimization_type: max
+  learning_rate: 0.025
+  rel_L1_change_threshold: -1
+  rel_L2_change_threshold: -1
+  max_iter: 10000000
 model:
   type: {likelihood_model_type}
   external_python_module: {external_python_module}

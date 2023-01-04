@@ -18,13 +18,8 @@ model:
   mf_approx_settings:
     type: gp_precompiled
     num_processors_multi_processing: 4
-    stochastic_optimizer: Adam
-    learning_rate: 0.008
-    optimization_type: max
-    max_iterations: 1000
+    stochastic_optimizer_name: optimizer
     plot_refresh_rate: 10
-    rel_L1_change_threshold: 0.003
-    rel_L2_change_threshold: 0.003
     noise_var_lb: 1.0e-06
     data_scaling:
       type: standard_scaler
@@ -54,6 +49,13 @@ model:
     plot_names: [bmfia_plot.png, posterior.png]
     save_bool: [false, false]
     plot_booleans: [false, false]
+optimizer:
+  type: adam
+  learning_rate: 0.008
+  optimization_type: max
+  max_iterations: 1000
+  rel_L1_change_threshold: 0.003
+  rel_L2_change_threshold: 0.003
 MCMC_Kernel:
   type: metropolis-hastings
   as_mcmc_kernel: true

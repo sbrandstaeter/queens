@@ -140,14 +140,16 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         },
     }
     optimizer_config = {
-        "stochastic_optimizer": "Adam",
+        "type": "adam",
         "learning_rate": 0.01,
         "optimization_type": "max",
         "rel_L1_change_threshold": -1,
         "rel_L2_change_threshold": -1,
         "max_iter": 10000000,
     }
-    stochastic_optimizer = from_config_create_optimizer(optimizer_config)
+    stochastic_optimizer = from_config_create_optimizer(
+        {"optimizer": optimizer_config}, "optimizer"
+    )
 
     # ------ other params ----------------------------------------------------------
     model = namedtuple("model", "normal_distribution")(

@@ -28,12 +28,7 @@ approximation_interface:
   approximation: gp_regression
 gp_regression:
   type: gp_precompiled
-  stochastic_optimizer: Adam
-  learning_rate: 0.01
-  optimization_type: max
-  max_iterations: 1000
-  rel_L1_change_threshold: 0.0001
-  rel_L2_change_threshold: 0.0001
+  stochastic_optimizer_name: optimizer
   sigma_0_sq: 1.0
   l_scale_sq: 1.0
   sigma_n_sq: 0.01
@@ -45,6 +40,13 @@ gp_regression:
     hyper_prior_bool: false
     fraction_standard_deviation: 0.15
     fraction_mean_value: 0.25
+optimizer:
+  type: adam
+  learning_rate: 0.01
+  optimization_type: max
+  max_iterations: 1000
+  rel_L1_change_threshold: 0.0001
+  rel_L2_change_threshold: 0.0001
 truth_model_iterator:
   type: monte_carlo
   seed: 42

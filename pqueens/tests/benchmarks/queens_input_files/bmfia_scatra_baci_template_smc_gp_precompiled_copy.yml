@@ -18,13 +18,8 @@ model:
   type: bmf_gaussian
   mf_approx_settings:
     type: gp_precompiled
-    stochastic_optimizer: Adam
-    learning_rate: 0.008
-    optimization_type: max
-    max_iterations: 1000
+    stochastic_optimizer_name: optimizer
     plot_refresh_rate: 10
-    rel_L1_change_threshold: 0.0001
-    rel_L2_change_threshold: 0.0001
     noise_var_lb: 1.0e-07
     data_scaling:
       type: standard_scaler
@@ -67,6 +62,13 @@ model:
     plot_booleans:
     - true
     - true
+optimizer:
+  type: adam
+  learning_rate: 0.008
+  optimization_type: max
+  max_iterations: 1000
+  rel_L1_change_threshold: 0.0001
+  rel_L2_change_threshold: 0.0001
 data_processor_experimental_data:
   type: csv
   file_name_identifier: '*.csv'
