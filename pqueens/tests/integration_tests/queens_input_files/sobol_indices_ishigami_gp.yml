@@ -43,7 +43,7 @@ truth_model:
   interface_name: interface
 interface:
   type: direct_python_interface
-  function_name: ishigami90
+  function: ishigami90
 parameters:
   x1:
     type: random_variable

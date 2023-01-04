@@ -39,7 +39,7 @@ proposal_distribution:
 interface:
   type: direct_python_interface
   num_workers: 1
-  function_name: agawal09a
+  function: agawal09a
 parameters:
   x1:
     type: random_variable

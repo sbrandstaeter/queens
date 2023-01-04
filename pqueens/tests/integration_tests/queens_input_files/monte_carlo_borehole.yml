@@ -15,7 +15,7 @@ model:
   interface_name: interface
 interface:
   type: direct_python_interface
-  function_name: borehole83_lofi
+  function: borehole83_lofi
 parameters:
   rw:
     type: random_variable

@@ -38,7 +38,7 @@ proposal_distribution:
   covariance: [[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
 interface:
   type: direct_python_interface
-  function_name: patch_for_likelihood
+  function: patch_for_likelihood
 parameters:
   x1:
     type: random_variable

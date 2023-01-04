@@ -25,7 +25,7 @@ model:
   interface_name: interface
 interface:
   type: direct_python_interface
-  function_name: sobol_g_function
+  function: sobol_g_function
 parameters:
   x1:
     type: random_variable

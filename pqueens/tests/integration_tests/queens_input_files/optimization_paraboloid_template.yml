@@ -30,7 +30,7 @@ proposal_distribution:
   covariance: 1.0
 interface:
   type: direct_python_interface
-  function_name: paraboloid
+  function: paraboloid
 parameters:
   x1:
     type: random_variable

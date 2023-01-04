@@ -55,7 +55,7 @@ forward_model:
   interface_name: interface
 interface:
   type: direct_python_interface
-  function_name: park91a_hifi_on_grid
+  function: park91a_hifi_on_grid
 parameters:
   x1:
     type: random_variable

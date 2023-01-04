@@ -26,7 +26,7 @@ truth_model_iterator:
   num_iterations: 10
 interface:
   type: direct_python_interface
-  function_name: ishigami90
+  function: ishigami90
 gp_surrogate_model:
   type: datafit_surrogate_model
   interface_name: approximation_interface

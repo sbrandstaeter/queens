@@ -41,7 +41,7 @@ truth_model:
   interface_name: interface
 interface:
   type: direct_python_interface
-  function_name: branin78_hifi
+  function: branin78_hifi
 parameters:
   x1:
     type: random_variable

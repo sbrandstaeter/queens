@@ -19,7 +19,7 @@ proposal_distribution:
   covariance: 1.0
 interface:
   type: direct_python_interface
-  function_name: rosenbrock60
+  function: rosenbrock60
 parameters:
   x1:
     type: random_variable

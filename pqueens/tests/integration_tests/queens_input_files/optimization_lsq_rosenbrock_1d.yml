@@ -15,7 +15,7 @@ model:
   interface_name: interface
 interface:
   type: direct_python_interface
-  function_name: rosenbrock60_residual_1d
+  function: rosenbrock60_residual_1d
 parameters:
   x1:
     type: random_variable
