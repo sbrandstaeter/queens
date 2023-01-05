@@ -29,8 +29,8 @@ def test_classification_iterator(inputdir, tmpdir):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    expected_results = np.ones((12, 1))
-    expected_results[-2:] = 0
+    expected_results_classified = np.ones((12, 1))
+    expected_results_classified[-2:] = 0
     expected_samples = np.array(
         [
             [-1.08480734, -0.7215275],
@@ -50,4 +50,4 @@ def test_classification_iterator(inputdir, tmpdir):
     obtained_results = results["classified_outputs"]
     obtained_samples = results["input_samples"]
     np.testing.assert_array_almost_equal(expected_samples, obtained_samples)
-    np.testing.assert_array_equal(expected_results, obtained_results)
+    np.testing.assert_array_equal(expected_results_classified, obtained_results)
