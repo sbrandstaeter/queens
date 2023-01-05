@@ -14,7 +14,7 @@ from pqueens.models import from_config_create_model
 from pqueens.utils.ascii_art import print_classification
 from pqueens.utils.classifier import from_config_create_classifier
 from pqueens.utils.import_utils import get_module_attribute
-from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.process_outputs import write_results
 from pqueens.visualization.classification import ClassificationVisualization
 
 _logger = logging.getLogger(__name__)
@@ -198,7 +198,7 @@ class ClassificationIterator(Iterator):
     def post_run(self):
         """Analyze the results."""
         if self.result_description:
-            results = process_ouputs(self.classified_outputs, self.result_description, self.samples)
+            results = {"classified_outputs": self.classified_outputs, "input_samples": self.samples}
             if self.result_description["write_results"]:
                 write_results(
                     results,
