@@ -12,14 +12,12 @@ def parameters_set_1():
     parameters_dict = {
         "parameters": {
             "x1": {
-                "type": "random_variable",
-                "distribution": "uniform",
+                "type": "uniform",
                 "lower_bound": -5,
                 "upper_bound": 10,
             },
             "x2": {
-                "type": "random_variable",
-                "distribution": "normal",
+                "type": "normal",
                 "mean": [0, 1],
                 "covariance": np.diag([1, 2]),
             },
@@ -34,14 +32,12 @@ def parameters_set_2():
     parameters_dict = {
         "parameters": {
             "x1": {
-                "type": "random_variable",
-                "distribution": "uniform",
+                "type": "uniform",
                 "lower_bound": -5,
                 "upper_bound": 10,
             },
             "x2": {
-                "type": "random_variable",
-                "distribution": "normal",
+                "type": "normal",
                 "mean": [0],
                 "covariance": np.diag([1]),
             },
@@ -148,14 +144,12 @@ def parameters_set_3():
     parameters_dict = {
         "parameters": {
             "x1": {
-                "type": "random_variable",
-                "distribution": "uniform",
+                "type": "uniform",
                 "lower_bound": -5,
                 "upper_bound": 10,
             },
             "x2": {
-                "type": "random_variable",
-                "distribution": "normal",
+                "type": "normal",
                 "mean": [0, 1],
                 "covariance": np.diag([1, 2]),
             },

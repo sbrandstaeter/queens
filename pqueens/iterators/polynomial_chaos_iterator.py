@@ -260,7 +260,7 @@ def from_config_create_chaospy_joint_distribution(parameters):
         if parameter.dimension != 1:
             raise ValueError("Multidimensional random variables are not supported yet.")
 
-        cp_distribution_list.append(from_config_create_chaospy_distribution(parameter.distribution))
+        cp_distribution_list.append(from_config_create_chaospy_distribution(parameter))
 
     # Pass the distribution list as arguments
     return cp.J(*cp_distribution_list)

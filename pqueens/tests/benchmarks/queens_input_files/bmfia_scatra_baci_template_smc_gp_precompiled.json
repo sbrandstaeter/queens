@@ -131,7 +131,7 @@
     "parameters": "parameters"
   },
   "proposal_distribution": {
-    "distribution": "normal",
+    "type": "normal",
     "mean": [
       0.0,
       0.0
@@ -245,19 +245,15 @@
     }
   },
   "parameters": {
-    "random_variables": {
-      "x_s": {
-        "dimension": 1,
-        "distribution": "uniform",
-        "lower_bound": 0.00001,
-        "upper_bound": 0.9998
-      },
-      "y_s": {
-        "dimension": 1,
-        "distribution": "uniform",
-        "lower_bound": 0.00001,
-        "upper_bound": 0.9998
-      }
+    "x_s": {
+      "type": "uniform",
+      "lower_bound": 0.00001,
+      "upper_bound": 0.9998
+    },
+    "y_s": {
+      "type": "uniform",
+      "lower_bound": 0.00001,
+      "upper_bound": 0.9998
     }
   }
 }

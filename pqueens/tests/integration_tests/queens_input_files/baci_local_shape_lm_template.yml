@@ -49,10 +49,10 @@ resources:
     max_finished_jobs: 10
 parameters:
   E:
-    type: random_variable
+    type: unbounded
     dimension: 1
   nue:
-    type: random_variable
+    type: unbounded
     dimension: 1
 scheduler:
   type: standard

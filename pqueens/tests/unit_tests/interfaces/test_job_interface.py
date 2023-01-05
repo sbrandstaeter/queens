@@ -13,7 +13,7 @@ def jobinterface_config():
     uncertain_parameter = {}
     uncertain_parameter["type"] = "FLOAT"
     uncertain_parameter["dimension"] = 1
-    uncertain_parameter["distribution"] = "uniform"
+    uncertain_parameter["type"] = "uniform"
     uncertain_parameter['lower_bound'] = -3.14159265359
     uncertain_parameter['upper_bound'] = 3.14159265359
 

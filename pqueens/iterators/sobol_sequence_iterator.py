@@ -6,7 +6,6 @@ from torch.quasirandom import SobolEngine
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
-from pqueens.utils.get_random_variables import get_random_variables
 from pqueens.utils.process_outputs import process_ouputs, write_results
 
 _logger = logging.getLogger(__name__)

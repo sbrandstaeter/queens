@@ -57,17 +57,14 @@ truth_model:
   interface_name: interface
 parameters:
   x1:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: -3.14159265359
     upper_bound: 3.14159265359
   x2:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: -3.14159265359
     upper_bound: 3.14159265359
   x3:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: -3.14159265359
     upper_bound: 3.14159265359

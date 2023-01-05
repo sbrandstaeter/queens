@@ -10,7 +10,7 @@ from pqueens.models.bmfmc_model import BMFMCModel
 # ------ general input fixture ---------------------------------------
 @pytest.fixture()
 def default_parameters():
-    rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
+    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
     params = {"x1": rv, "x2": rv}
     parameters_module.from_config_create_parameters({"parameters": params})
     return params

@@ -12,7 +12,7 @@ from pqueens.utils.valid_options_utils import InvalidOptionError
 def test_create_distribution_normal():
     """Test creation routine of distribution objects."""
     normal_options = {
-        'distribution': 'normal',
+        'type': 'normal',
         'mean': 0,
         'covariance': 1,
     }
@@ -22,7 +22,7 @@ def test_create_distribution_normal():
 
 def test_create_distribution_invalid():
     """Test creation routine of distribution objects."""
-    invalid_options = {'distribution': 'UnsupportedType', 'lower_bound': 0.0, 'upper_bound': 1.0}
+    invalid_options = {'type': 'UnsupportedType', 'lower_bound': 0.0, 'upper_bound': 1.0}
     with pytest.raises(InvalidOptionError):
         from_config_create_distribution(invalid_options)
 
@@ -30,7 +30,7 @@ def test_create_distribution_invalid():
 def test_create_export_dict():
     """Test creation routine of distribution dict."""
     normal_options = {
-        'distribution': 'normal',
+        'type': 'normal',
         'mean': 0.0,
         'covariance': 1.0,
     }

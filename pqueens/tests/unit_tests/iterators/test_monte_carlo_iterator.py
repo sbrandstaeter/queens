@@ -20,20 +20,17 @@ class TestMCIterator(unittest.TestCase):
     def setUp(self):
         random_variables = {}
         uncertain_parameter1 = {}
-        uncertain_parameter1["type"] = "random_variable"
-        uncertain_parameter1["distribution"] = "uniform"
+        uncertain_parameter1["type"] = "uniform"
         uncertain_parameter1["lower_bound"] = -3.14159265359
         uncertain_parameter1["upper_bound"] = 3.14159265359
 
         uncertain_parameter2 = {}
-        uncertain_parameter2["type"] = "random_variable"
-        uncertain_parameter2["distribution"] = "normal"
+        uncertain_parameter2["type"] = "normal"
         uncertain_parameter2["mean"] = 0
         uncertain_parameter2["covariance"] = 4
 
         uncertain_parameter3 = {}
-        uncertain_parameter3["type"] = "random_variable"
-        uncertain_parameter3["distribution"] = "lognormal"
+        uncertain_parameter3["type"] = "lognormal"
         uncertain_parameter3["normal_mean"] = 0.3
         uncertain_parameter3["normal_covariance"] = 1
 

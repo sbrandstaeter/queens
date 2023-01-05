@@ -32,7 +32,7 @@ def covariance_1d():
 def lognormal_1d(mean_1d, covariance_1d):
     """A 1d lognormal distribution."""
     distribution_options = {
-        'distribution': 'lognormal',
+        'type': 'lognormal',
         'normal_mean': mean_1d,
         'normal_covariance': covariance_1d,
     }
@@ -71,7 +71,7 @@ def covariance_2d():
 def lognormal_2d(mean_2d, covariance_2d):
     """A multivariate lognormal distribution."""
     distribution_options = {
-        'distribution': 'lognormal',
+        'type': 'lognormal',
         'normal_mean': mean_2d,
         'normal_covariance': covariance_2d,
     }
@@ -113,7 +113,7 @@ def test_init_lognormal_1d_incovariance(mean_1d, covariance_1d):
     """Test init method of LogNormal Distribution class."""
     with pytest.raises(np.linalg.LinAlgError, match=r'Cholesky decomposition failed *'):
         distribution_options = {
-            'distribution': 'lognormal',
+            'type': 'lognormal',
             'normal_mean': mean_1d,
             'normal_covariance': -covariance_1d,
         }
@@ -265,7 +265,7 @@ def test_init_lognormal_wrong_dimension(mean_2d):
     covariance = np.array([[[1.0, 0.1], [1.0, 0.1]], [[0.2, 2.0], [0.2, 2.0]]])
     with pytest.raises(ValueError, match=r'Provided covariance is not a matrix.*'):
         distribution_options = {
-            'distribution': 'lognormal',
+            'type': 'lognormal',
             'normal_mean': np.zeros(3),
             'normal_covariance': covariance,
         }
@@ -277,7 +277,7 @@ def test_init_lognormal_not_quadratic():
     covariance = np.array([[1.0, 0.1], [0.2, 2.0], [3.0, 0.3]])
     with pytest.raises(ValueError, match=r'Provided covariance matrix is not quadratic.*'):
         distribution_options = {
-            'distribution': 'lognormal',
+            'type': 'lognormal',
             'normal_mean': np.zeros(3),
             'normal_covariance': covariance,
         }
@@ -289,7 +289,7 @@ def test_init_lognormal_not_symmetric():
     covariance = np.array([[1.0, 0.1], [0.2, 2.0]])
     with pytest.raises(ValueError, match=r'Provided covariance matrix is not symmetric.*'):
         distribution_options = {
-            'distribution': 'lognormal',
+            'type': 'lognormal',
             'normal_mean': np.zeros(3),
             'normal_covariance': covariance,
         }
@@ -301,7 +301,7 @@ def test_init_lognormal_not_symmetric():
     covariance = np.array([[1.0, 0.0], [0.0, 2.0]])
     with pytest.raises(ValueError, match=r'Dimension of mean vector and covariance matrix do not*'):
         distribution_options = {
-            'distribution': 'lognormal',
+            'type': 'lognormal',
             'normal_mean': np.zeros(3),
             'normal_covariance': covariance,
         }

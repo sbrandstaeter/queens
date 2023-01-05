@@ -33,7 +33,7 @@ forward_model:
   type: simulation_model
   interface_name: interface
 proposal_distribution:
-  distribution: normal
+  type: normal
   mean: [0.0, 0.0, 0.0, 0.0]
   covariance: [[0.001, 0.0, 0.0, 0.0], [0.0, 0.001, 0.0, 0.0], [0.0, 0.0, 0.001, 0.0], [0.0, 0.0, 0.0, 0.001]]
 interface:
@@ -42,22 +42,18 @@ interface:
   function: agawal09a
 parameters:
   x1:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: -2
     upper_bound: 2
   x2:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: -2
     upper_bound: 2
   x3:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: -2
     upper_bound: 2
   x4:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: -2
     upper_bound: 2

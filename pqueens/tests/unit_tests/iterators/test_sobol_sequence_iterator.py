@@ -19,22 +19,19 @@ def global_settings():
 @pytest.fixture()
 def default_model():
     uncertain_parameter1 = {
-        "type": "random_variable",
-        "distribution": "uniform",
+        "type": "uniform",
         "lower_bound": -3.14159265359,
         "upper_bound": 3.14159265359,
     }
 
     uncertain_parameter2 = {
-        "type": "random_variable",
-        "distribution": "normal",
+        "type": "normal",
         "mean": 0,
         "covariance": 4,
     }
 
     uncertain_parameter3 = {
-        "type": "random_variable",
-        "distribution": "lognormal",
+        "type": "lognormal",
         "normal_mean": 0.3,
         "normal_covariance": 1,
     }

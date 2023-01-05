@@ -32,7 +32,7 @@ def covariance_1d():
 def normal_1d(mean_1d, covariance_1d):
     """A 1d normal distribution."""
     distribution_options = {
-        'distribution': 'normal',
+        'type': 'normal',
         'mean': mean_1d,
         'covariance': covariance_1d,
     }
@@ -75,7 +75,7 @@ def covariance_3d(low_chol_3d):
 def normal_3d(mean_3d, covariance_3d):
     """A multivariate normal distribution."""
     distribution_options = {
-        'distribution': 'normal',
+        'type': 'normal',
         'mean': mean_3d,
         'covariance': covariance_3d,
     }
@@ -111,7 +111,7 @@ def test_init_normal_1d_incovariance(mean_1d, covariance_1d):
     """Test init method of Normal Distribution class."""
     with pytest.raises(np.linalg.LinAlgError, match=r'Cholesky decomposition failed *'):
         distribution_options = {
-            'distribution': 'normal',
+            'type': 'normal',
             'mean': mean_1d,
             'covariance': -covariance_1d,
         }
@@ -232,7 +232,7 @@ def test_init_normal_wrong_dimension(mean_3d):
     covariance = np.array([[[1.0, 0.1], [1.0, 0.1]], [[0.2, 2.0], [0.2, 2.0]]])
     with pytest.raises(ValueError, match=r'Provided covariance is not a matrix.*'):
         distribution_options = {
-            'distribution': 'normal',
+            'type': 'normal',
             'mean': mean_3d,
             'covariance': covariance,
         }
@@ -244,7 +244,7 @@ def test_init_normal_not_quadratic(mean_3d):
     covariance = np.array([[1.0, 0.1], [0.2, 2.0], [3.0, 0.3]])
     with pytest.raises(ValueError, match=r'Provided covariance matrix is not quadratic.*'):
         distribution_options = {
-            'distribution': 'normal',
+            'type': 'normal',
             'mean': mean_3d,
             'covariance': covariance,
         }
@@ -256,7 +256,7 @@ def test_init_normal_not_symmetric():
     covariance = np.array([[1.0, 0.1], [0.2, 2.0]])
     with pytest.raises(ValueError, match=r'Provided covariance matrix is not symmetric.*'):
         distribution_options = {
-            'distribution': 'normal',
+            'type': 'normal',
             'mean': mean_3d,
             'covariance': covariance,
         }

@@ -28,10 +28,8 @@ def global_settings():
 def parameters():
     """Fixture for dummy parameters."""
     params = {
-        "random_variables": {
-            "x1": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
-            "x2": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
-        },
+        "x1": {"type": "uniform", "lower_bound": -2, "upper_bound": 2},
+        "x2": {"type": "uniform", "lower_bound": -2, "upper_bound": 2},
     }
     return params
 

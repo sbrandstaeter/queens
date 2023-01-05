@@ -56,12 +56,10 @@ interface:
   function: patch_for_likelihood
 parameters:
   x1:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 0.0
     covariance: 1.0
   x2:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 10.0
     covariance: 100.0

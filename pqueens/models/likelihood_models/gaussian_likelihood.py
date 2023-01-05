@@ -91,12 +91,6 @@ class GaussianLikelihood(LikelihoodModel):
         Args:
             model_name (str): Name of the likelihood model
             config (dict): Dictionary containing problem description
-            forward_model (obj): Forward model on which the likelihood model is based
-            coords_mat (np.array): Row-wise coordinates at which the observations were recorded
-            time_vec (np.array): Vector of observation times
-            y_obs (np.array): Corresponding experimental data vector to coords_mat
-            output_label (str): Name of the experimental outputs (column label in csv-file)
-            coord_labels (lst): List with coordinate labels for (column labels in csv-file)
 
         Returns:
             instance of GaussianLikelihood class
@@ -140,7 +134,7 @@ class GaussianLikelihood(LikelihoodModel):
         else:
             raise NotImplementedError
 
-        distribution_options = {"distribution": "normal", "mean": y_obs, "covariance": covariance}
+        distribution_options = {"type": "normal", "mean": y_obs, "covariance": covariance}
         normal_distribution = from_config_create_distribution(distribution_options)
         return cls(
             model_name=model_name,

@@ -18,11 +18,11 @@ interface:
   function: rosenbrock60_residual
 parameters:
   x1:
-    type: random_variable
+    type: unbounded
     dimension: 1
   x2:
-    type: random_variable
+    type: unbounded
     dimension: 1
   x3:
-    type: random_variable
+    type: unbounded
     dimension: 1

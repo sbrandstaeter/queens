@@ -5,8 +5,8 @@ import sys
 
 import numpy as np
 
+from pqueens.distributions import from_config_create_distribution
 from pqueens.parameters.fields import RandomField, from_config_create_random_field
-from pqueens.parameters.variables import from_config_create_random_variable
 
 _logger = logging.getLogger(__name__)
 
@@ -35,13 +35,20 @@ def from_config_create_parameters(config, pre_processor=None):
 
         for parameter_name, parameter_dict in parameters_options.items():
             parameter_type = parameter_dict['type']
-            if parameter_type == 'random_variable':
-                random_variable = from_config_create_random_variable(parameter_dict)
-                joint_parameters_dict[parameter_name] = random_variable
+            if parameter_type in [
+                'normal',
+                'uniform',
+                'lognormal',
+                'beta',
+                'exponential',
+                'unbounded',
+            ]:
+                distribution = from_config_create_distribution(parameter_dict)
+                joint_parameters_dict[parameter_name] = distribution
                 joint_parameters_keys = _add_parameters_keys(
-                    joint_parameters_keys, parameter_name, random_variable.dimension
+                    joint_parameters_keys, parameter_name, distribution.dimension
                 )
-                joint_parameters_dim += random_variable.dimension
+                joint_parameters_dim += distribution.dimension
             elif parameter_type == 'random_field':
                 random_field = from_config_create_random_field(
                     parameter_dict, pre_processor.coords_dict[parameter_name]
@@ -116,9 +123,9 @@ class Parameters:
         samples = np.zeros((num_samples, self.num_parameters))
         current_index = 0
         for parameter in self.to_list():
-            samples[
-                :, current_index : current_index + parameter.dimension
-            ] = parameter.draw_samples(num_samples)
+            samples[:, current_index : current_index + parameter.dimension] = parameter.draw(
+                num_samples
+            )
             current_index += parameter.dimension
         return samples
 
@@ -132,7 +139,7 @@ class Parameters:
         logpdf = 0
         i = 0
         for parameter in self.to_list():
-            logpdf += parameter.distribution.logpdf(samples[:, i : i + parameter.dimension])
+            logpdf += parameter.logpdf(samples[:, i : i + parameter.dimension])
             i += parameter.dimension
         return logpdf
 
@@ -146,7 +153,7 @@ class Parameters:
         grad_logpdf = np.zeros(samples.shape)
         j = 0
         for parameter in self.to_list():
-            grad_logpdf[:, j : j + parameter.dimension] = parameter.distribution.grad_logpdf(
+            grad_logpdf[:, j : j + parameter.dimension] = parameter.grad_logpdf(
                 samples[:, j : j + parameter.dimension]
             )
             j += parameter.dimension
@@ -166,7 +173,7 @@ class Parameters:
         for i, parameter in enumerate(self.to_list()):
             if parameter.dimension != 1:
                 raise ValueError("Only 1D Random variables can be transformed!")
-            transformed_samples[:, i] = parameter.distribution.ppf(samples[:, i])
+            transformed_samples[:, i] = parameter.ppf(samples[:, i])
         return transformed_samples
 
     def sample_as_dict(self, sample):

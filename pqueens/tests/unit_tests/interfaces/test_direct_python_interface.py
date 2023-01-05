@@ -21,8 +21,7 @@ from pqueens.utils.pool_utils import create_pool
 def parameters():
     """Options dictionary to create variables."""
     uncertain_parameter = {}
-    uncertain_parameter['type'] = 'random_variable'
-    uncertain_parameter['distribution'] = "uniform"
+    uncertain_parameter['type'] = "uniform"
     uncertain_parameter['lower_bound'] = -3.14
     uncertain_parameter['upper_bound'] = 3.14
 

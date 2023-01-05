@@ -20,8 +20,7 @@ def test_gp_precompiled_one_dim(inputdir, tmpdir):
         'test_fun': 'sinus_test_fun',
         'variables': {
             "x1": {
-                "type": "random_variable",
-                "distribution": "uniform",
+                "type": "uniform",
                 "lower_bound": -5,
                 "upper_bound": 10,
             }
@@ -58,14 +57,12 @@ def test_gp_precompiled_two_dim(inputdir, tmpdir):
         'test_fun': 'branin78_hifi',
         'variables': {
             "x1": {
-                "type": "random_variable",
-                "distribution": "uniform",
+                "type": "uniform",
                 "lower_bound": -5,
                 "upper_bound": 10,
             },
             "x2": {
-                "type": "random_variable",
-                "distribution": "uniform",
+                "type": "uniform",
                 "lower_bound": 0,
                 "upper_bound": 15,
             },
