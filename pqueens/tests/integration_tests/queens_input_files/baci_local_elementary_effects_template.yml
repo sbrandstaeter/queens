@@ -1,5 +1,4 @@
 experiment_name: {experiment_name}
-restart: false
 database:
   type: mongodb
   address: localhost:27017

@@ -39,7 +39,6 @@ def jobinterface_config():
         'max-concurrent': 1,
         'max-finished-jobs': 100,
     }
-    config['restart'] = False
 
     config['database'] = {}
     config['database']['address'] = 'localhost:27017'
