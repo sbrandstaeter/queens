@@ -1,0 +1,44 @@
+---
+experiment_name: classification_nn_rosenbrock
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  method_name: classification
+  method_options:
+    model: model
+    num_sample_points: 10000
+    num_model_calls: 12
+    random_sampling_frequency: 2
+    seed : 42
+    classifier: classifier
+    classification_model_function_name: classify
+    external_python_module_function: {external_module_path}
+    result_description:
+      write_results: true
+      plotting_options:
+        plot_bool: false
+        plotting_dir: {plotting_dir}
+        plot_name: neural_classifier_convergence_plot
+        save_bool: true
+classifier:
+  type: nn
+  batch_size: 4
+model:
+  type: simulation_model
+  interface: interface
+interface:
+  type: direct_python_interface
+  function_name: rosenbrock60
+parameters:
+  random_variables:
+    x1:
+      distribution: uniform
+      dimension: 1
+      lower_bound: -2
+      upper_bound: 2
+    x2:
+      distribution: uniform
+      dimension: 1
+      lower_bound: -2
+      upper_bound: 2
