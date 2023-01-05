@@ -94,7 +94,6 @@
   "local_scheduler": {
     "scheduler_type": "standard",
     "singularity": false,
-    "restart": false,
     "num_procs": 1,
     "num_procs_post": 1
   },

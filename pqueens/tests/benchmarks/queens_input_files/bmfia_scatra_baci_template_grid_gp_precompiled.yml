@@ -136,7 +136,6 @@ local_scheduler:
   experiment_dir: {experiment_dir}
   type: standard
   singularity: false
-  restart: false
   num_procs: 1
   num_procs_post: 1
 hf_driver:
