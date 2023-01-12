@@ -128,7 +128,7 @@ class DataProcessorEnsight(DataProcessor):
             files_to_be_deleted_regex_lst,
         ) = super().from_config_set_base_attributes(config, data_processor_name)
 
-        cls._check_field_specification_dict(file_options_dict, data_processor_name)
+        cls._check_field_specification_dict(file_options_dict)
         # load the necessary options from the file options dictionary
         target_time_lst = file_options_dict.get('target_time_lst')
         if not isinstance(target_time_lst, list):
@@ -212,13 +212,12 @@ class DataProcessorEnsight(DataProcessor):
         )
 
     @staticmethod
-    def _check_field_specification_dict(file_options_dict, data_processor_name):
+    def _check_field_specification_dict(file_options_dict):
         """Check the file_options_dict for valid inputs.
 
         Args:
             file_options_dict (dict): Dictionary containing the field descritpion for the
                                       physical fields of interest that should be read-in.
-            data_processor_name (str): Name of the data processor
         """
         required_keys_lst = ['target_time_lst', 'physical_field_dict', 'geometric_target']
         if not set(required_keys_lst).issubset(set(file_options_dict.keys())):
@@ -273,7 +272,7 @@ class DataProcessorEnsight(DataProcessor):
 
         except KeyError:
             _logger.warning(
-                "No experimental data was found in database, for experiment " "name %s.",
+                "No experimental data was found in database, for experiment name %s.",
                 experiment_name,
             )
             experimental_data = None
@@ -393,7 +392,7 @@ class DataProcessorEnsight(DataProcessor):
                     np.array(self.experimental_data[coord]).reshape(-1, 1)
                 )
             if len(experimental_coordinates_for_snapshot) != 3:
-                raise ValueError(f"Please provide 3d coordinates in the observation data")
+                raise ValueError("Please provide 3d coordinates in the observation data")
             experimental_coordinates_for_snapshot = np.concatenate(
                 experimental_coordinates_for_snapshot, axis=1
             )

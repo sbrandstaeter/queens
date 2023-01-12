@@ -421,9 +421,7 @@ class RPVIIterator(VariationalInferenceIterator):
         super()._verbose_output()
 
         if self.stochastic_optimizer.iteration > 1:
-            _logger.info(
-                "Likelihood noise variance: %s %%", self.model.normal_distribution.covariance
-            )
+            _logger.info("Likelihood noise variance: %s", self.model.normal_distribution.covariance)
         _logger.info("-" * 80)
 
     def _prepare_result_description(self):
