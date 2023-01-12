@@ -7,7 +7,6 @@ import numpy as np
 import pqueens.database.database as DB_module
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
-from pqueens.schedulers.cluster_scheduler import VALID_CLUSTER_CLUSTER_TYPES
 from pqueens.utils.config_directories import experiment_directory
 
 _logger = logging.getLogger(__name__)
@@ -541,7 +540,8 @@ class JobInterface(Interface):
 
     def print_resources_status(self):
         """Print out whats going on on the resources."""
-        _logger.info('\nResources:      ')
+        _logger.info('\n')
+        _logger.info('Resources:      ')
         _logger.info('NAME            PENDING      COMPLETED    FAILED   ')
         _logger.info('------------    ---------    ---------    ---------')
         total_pending = 0
@@ -557,7 +557,7 @@ class JobInterface(Interface):
             total_complete += complete
             total_failed += failed
             _logger.info(
-                '%s   %s    %s    %s',
+                '%s    %s    %s    %s',
                 resource.name.ljust(12),
                 str(pending).ljust(9),
                 str(complete).ljust(9),
