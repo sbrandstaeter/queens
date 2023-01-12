@@ -95,7 +95,7 @@ class StandardScheduler(Scheduler):
         scheduler_type = scheduler_options["type"]
 
         # find the max_concurrent key in the input file
-        max_concurrent_lst = list(find_keys(config, 'max-concurrent'))
+        max_concurrent_lst = list(find_keys(config, 'max_concurrent'))
         if max_concurrent_lst:
             max_concurrent = max_concurrent_lst[0]
         else:
