@@ -1,6 +1,7 @@
 """Wrapped functions of subprocess stdlib module."""
 import logging
 import subprocess
+
 from pqueens.utils.exceptions import SubprocessError
 from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
 from pqueens.utils.valid_options_utils import get_option
