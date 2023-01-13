@@ -119,7 +119,8 @@ class StandardScheduler(Scheduler):
             string (str): ClusterScheduler object description
         """
         name = "Standard Scheduler"
-        print_dict = self._create_base_print_dict()
+        resource_info = 'local'
+        print_dict = self._create_base_print_dict(resource_info)
         return get_str_table(name, print_dict)
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------

@@ -63,17 +63,14 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.singularity = singularity
         self.process_ids = {}
 
-    def _create_base_print_dict(self):
+    def _create_base_print_dict(self, resource_info):
         """String description of the ClusterScheduler object.
 
+        Args:
+            resource_info (str): information on location of computing resource
         Returns:
             string (str): ClusterScheduler object description
         """
-        if self.remote:
-            resource_info = f'remote ({self.remote_connect})'
-        else:
-            resource_info = 'local'
-
         print_dict = {
             "Type of scheduler": self.scheduler_type,
             "Jobs will be run": resource_info,
