@@ -393,10 +393,9 @@ def _get_python_files_in_folder(relative_path):
     Returns:
         file_paths: List of the absolute paths of the python files within the folder.
     """
-    abs_path = relative_path_from_pqueens(relative_path)
-    elements = os.listdir(abs_path)
-    elements.sort()
-    file_paths = [Path(abs_path, ele) for _, ele in enumerate(elements) if ele.endswith('.py')]
+    abs_path = Path(relative_path_from_pqueens(relative_path))
+    file_paths = list(abs_path.glob("*.py"))
+    file_paths.sort()
     return file_paths
 
 
