@@ -1,19 +1,18 @@
 """Wrapped functions of subprocess stdlib module."""
 import logging
 import subprocess
-
-_logger = logging.getLogger(__name__)
-
 from pqueens.utils.exceptions import SubprocessError
 from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
 from pqueens.utils.valid_options_utils import get_option
+
+_logger = logging.getLogger(__name__)
 
 # Currently allowed errors that might appear but have no effect on subprocesses
 _allowed_errors = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
 
 
 def run_subprocess(command_string, **kwargs):
-    """Run a system command outside of the Python script.
+    """Run a system command outside the Python script.
 
     Different implementations dependent on subprocess_type.
 
