@@ -6,6 +6,8 @@ INVAAA minimal model.
 
 import json
 from pathlib import Path
+import pickle
+import numpy as np
 
 import pytest
 
