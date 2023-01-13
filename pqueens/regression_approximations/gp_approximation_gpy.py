@@ -239,6 +239,6 @@ class GPGPyRegression(RegressionApproximation):
 
         setup_specific_kernel = get_gpy_kernel_type(kernel_type)
         kernel = setup_specific_kernel(input_dim, variance_0, lengthscale_0, ard)
-        _logger(str(kernel))
+        _logger.info(str(kernel))
 
         return kernel
