@@ -17,7 +17,7 @@ def test_bbvi_GMM_density_match(
 ):
     """Matching Rezende potential with GMM."""
     # The test is done with a fixed number of iterations, since the convergence criteria are not
-    # optimatl yet
+    # optimal yet
 
     # fix the random seed
     np.random.seed(1)
@@ -138,14 +138,14 @@ def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
 
 
 def negative_potential(self, x=None):
-    """Rezende potential.
+    r"""Rezende potential.
 
     The unnormalized probabilistic model used in this test is proportional
-    to exp(-U) where U is a potential. Hence the log_posterior_unnormalized is
-    given by -U.
+    to  :math:`exp(-U)` where :math:`U` is a potential. Hence the *log_posterior_unnormalized*
+    is given by :math:`-U`.
 
     It is the first potential in https://arxiv.org/pdf/1505.05770.pdf
-    (rotated by 70 degrees)
+    (rotated by 70 degrees).
     """
     theta = np.radians(70)
     c, s = np.cos(theta), np.sin(theta)

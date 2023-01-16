@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -26,6 +28,7 @@ def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
 
 @pytest.fixture()
 def expected_grid():
+    """TODO_doc."""
     input_data = np.array(
         [
             [-2.000, -2.000],
@@ -60,6 +63,7 @@ def expected_grid():
 
 @pytest.fixture()
 def expected_response():
+    """TODO_doc."""
     expected_response = np.atleast_2d(
         np.array(
             [

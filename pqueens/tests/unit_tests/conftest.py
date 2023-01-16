@@ -9,6 +9,8 @@ _logger = logging.getLogger(__name__)
 
 @pytest.fixture(scope="session")
 def fake_database():
+    """TODO_doc."""
+
     class FakeDB(object):
         def print_database_information(self, *args, **kwargs):
             _logger.info('test')
@@ -20,5 +22,5 @@ def fake_database():
 
 @pytest.fixture(name="test_path")
 def fixture_test_path(tmpdir):
-    """Convert tmpdir to pathlib object."""
+    """Convert *tmpdir* to *pathlib* object."""
     return Path(tmpdir)

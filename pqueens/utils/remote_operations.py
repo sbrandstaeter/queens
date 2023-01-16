@@ -4,7 +4,12 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 
 def make_directory_on_remote(remote_connect, directory):
-    """Make (empty) directory on remote resource."""
+    """Make (empty) directory on remote resource.
+
+    Args:
+        remote_connect: TODO_doc
+        directory: TODO_doc
+    """
     command_list = [
         'ssh',
         remote_connect,
@@ -19,7 +24,13 @@ def make_directory_on_remote(remote_connect, directory):
 
 
 def copy_directory_to_remote(remote_connect, local_dir, remote_dir):
-    """Copy (local) directory to remote resource."""
+    """Copy (local) directory to remote resource.
+
+    Args:
+        remote_connect: TODO_doc
+        local_dir: TODO_doc
+        remote_dir: TODO_doc
+    """
     command_list = [
         "scp -r ",
         local_dir,

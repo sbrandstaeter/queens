@@ -11,12 +11,12 @@ class Scaler(metaclass=abc.ABCMeta):
     The purpose of these classes is the scaling of training data.
 
     Attributes:
-        mean (np.array): Mean-values of the data-matrix (column-wise)
-        standard_deviation (np.array): Standard deviation of the data-matrix (per column)
+        mean (np.array): Mean-values of the data-matrix (column-wise).
+        standard_deviation (np.array): Standard deviation of the data-matrix (per column).
     """
 
     def __init__(self, mean, standard_deviation):
-        """Intialise scaler.
+        """Initialise scaler.
 
         Args:
             mean (np.array): Mean-values of the data-matrix (column-wise)
@@ -33,8 +33,7 @@ class Scaler(metaclass=abc.ABCMeta):
         """Create scaler from problem description.
 
         Args:
-            scaler_name (str):
-            scaler_settings (str):
+            scaler_settings (str): TODO_doc
 
         Returns:
             Instance of Scaler class (obj)
@@ -69,19 +68,27 @@ class Scaler(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def inverse_transform_mean(self, x_mat):
-        """Conduct the inverse transformation for the mean."""
+        """Conduct the inverse transformation for the mean.
+
+        Args:
+            x_mat: TODO_doc
+        """
         pass
 
     @abc.abstractmethod
     def inverse_transform_std(self, x_mat):
-        """Conduct the inverse transformation."""
+        """Conduct the inverse transformation.
+
+        Args:
+            x_mat: TODO_doc
+        """
         pass
 
 
 class StandardScaler(Scaler):
     """Scaler for standardization of data.
 
-    In case a stochastic process in trained on the scaled data, inverse
+    In case a stochastic process is trained on the scaled data, inverse
     rescaling is implemented to recover the correct mean and standard
     deviation prediction for the posterior process.
     """
@@ -100,7 +107,7 @@ class StandardScaler(Scaler):
         """Create a Standard scaler object based on the problem description.
 
         Args:
-            settings (dict):  Settings of the scaler
+            scaler_settings (dict):  Settings of the scaler
             mean (np.array): Array containing mean values for data matrix columns
             standard_deviation (np.array): Array containing standard deviations for
                                            data matrix columns
@@ -115,9 +122,6 @@ class StandardScaler(Scaler):
 
         Args:
             x_mat (np.array): Data matrix that should be standardized
-
-        Returns:
-            None
         """
         self.mean = np.mean(x_mat)
         self.standard_deviation = np.std(x_mat)
@@ -167,7 +171,7 @@ class IdentityScaler(Scaler):
     """The identity scaler."""
 
     def __init__(self, mean, standard_deviation):
-        """Initialise indentity scaler.
+        """Initialise identity scaler.
 
         Args:
             mean (np.array): Mean value, not needed in this case.

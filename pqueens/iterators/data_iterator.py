@@ -4,7 +4,7 @@ import logging
 import pickle
 
 from pqueens.iterators.iterator import Iterator
-from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
 
@@ -13,10 +13,11 @@ class DataIterator(Iterator):
     """Basic Data Iterator to enable restarts from data.
 
     Attributes:
-        samples (np.array):         Array with all samples
-        output (np.array):          Array with all model outputs
-        path_to_data (string):      Path to pickle file containing data
-        result_description (dict):  Description of desired results
+        samples (np.array):         Array with all samples.
+        output (np.array):          Array with all model outputs.
+        eigenfunc: TODO_doc
+        path_to_data (string):      Path to pickle file containing data.
+        result_description (dict):  Description of desired results.
     """
 
     def __init__(self, path_to_data, result_description, global_settings):
@@ -69,7 +70,7 @@ class DataIterator(Iterator):
     def post_run(self):
         """Analyze the results."""
         if self.result_description is not None:
-            results = process_ouputs(self.output, self.result_description)
+            results = process_outputs(self.output, self.result_description)
             if self.result_description["write_results"] is True:
                 write_results(
                     results,
@@ -86,11 +87,11 @@ class DataIterator(Iterator):
         """Read in data from a pickle file.
 
         Main reason for putting this functionality in a method is to make
-        making mocking reading input easy for testing
+        mocking reading input easy for testing.
 
         Returns:
             np.array, np.array: Two arrays, the first contains input samples,
-                                the second the corresponding output samples
+            the second the corresponding output samples
         """
         data = pickle.load(open(self.path_to_data, "rb"))
 

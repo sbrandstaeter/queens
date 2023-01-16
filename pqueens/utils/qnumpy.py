@@ -10,7 +10,7 @@ class QArray:
 
     Attributes:
         _array (np.ndarray): Array containing data.
-        _array_struct (dict): Dictionary containing labels for axes of _array
+        _array_struct (dict): Dictionary containing labels for axes of *_array*.
     """
 
     def __init__(self, np_arr, array_struct):
@@ -50,7 +50,7 @@ class QArray:
         """Return array structure.
 
         Returns:
-            self._array_struct (dict): Dictionary containing labels for axes of self._array
+            self._array_struct (dict): Dictionary containing labels for axes of *self._array*
         """
         return self._array_struct
 
@@ -58,7 +58,7 @@ class QArray:
         """Return axes keys.
 
         Returns:
-            ax_keys (list): List containing keys of self._array_struct dictionary
+            ax_keys (list): List containing keys of *self._array_struct* dictionary
         """
         ax_keys = self._array_struct.keys()
         return ax_keys
@@ -67,7 +67,7 @@ class QArray:
         """Return shape of array.
 
         Returns:
-            shape (tuple): Returns the shape of the array
+            shape (tuple): The shape of the array
         """
         shape = self._array.shape
         return shape
@@ -108,10 +108,11 @@ def array(arr, ax_keys):
     """Create a QArray object.
 
     Args:
-        arr (np.ndarray): Array containing data.
+        arr (np.ndarray): Array containing data
         ax_keys (list): List of strings containing labels for axes of arr
 
-    Returns: q_arr (QArray): QArray object with the specified axes
+    Returns:
+        q_arr (QArray): QArray object with the specified axes
     """
     ax_keys = list(ax_keys)
     if len(ax_keys) > len(set(ax_keys)):
@@ -133,10 +134,11 @@ def tensordot(arr1, arr2, product_keys, result_keys):
     Args:
         arr1 (QArray): Array containing data
         arr2 (QArray): Array containing data
-        product_keys (str, array_like): axes over which the inner product is evaluated
+        product_keys (str, array_like): Axes over which the inner product is evaluated
         result_keys (str, array_like): Axes keys of the resulting array
 
-    Returns: q_arr (QArray): Computed tensor dot product along specified axes of the input arrays
+    Returns:
+        q_arr (QArray): Computed tensor dot product along specified axes of the input arrays
     """
     np_arr1 = arr1.to_numpy()
     np_arr2 = arr2.to_numpy()

@@ -15,28 +15,28 @@ _logger = logging.getLogger(__name__)
 
 
 class DataProcessorEnsight(DataProcessor):
-    """Class for data-processing Ensight output.
+    """Class for data-processing ensight output.
 
     Attributes:
-        db (obj): Database object
-        experiment_name (str): Name of the current QUEENS experiment
-        external_geometry_obj (obj): QUEENS external geometry object
-        experimental_data (pd.DataFrame): Pandas dataframe with experimental data
+        db (obj): Database object.
+        experiment_name (str): Name of the current QUEENS experiment.
+        experimental_data (pd.DataFrame): Pandas dataframe with experimental data.
         coordinates_label_experimental (lst): List of (spatial) coordinate labels
-                                                of the experimental data set
-        output_label_experimental (str): Output label of the experimental data set
-        time_label_experimental (str): Time label of the experimental data set
+                                                of the experimental data set.
+        output_label_experimental (str): Output label of the experimental data set.
+        time_label_experimental (str): Time label of the experimental data set.
+        external_geometry_obj (obj): QUEENS external geometry object.
         target_time_lst (lst): Target time list for the ensight data, meaning time for which the
-                                simulation state should be extracted
-        time_tol (float): Tolerance for the target time extraction
+                                simulation state should be extracted.
+        time_tol (float): Tolerance for the target time extraction.
         vtk_field_label (str): Label defining which physical field should be extraced from
-                               the vtk data
+                               the vtk data.
         vtk_field_components (lst): List with vector components that should be extracted
-                                     from the field
-        vtk_array_type (str): Type of vtk array (e.g., point_array)
+                                    from the field.
+        vtk_array_type (str): Type of vtk array (e.g. *point_array*).
         geometric_target (lst): List with information about specific geometric target in vtk data
                                 (This might be dependent on the simulation software that generated
-                                the vtk file.)
+                                the vtk file).
     """
 
     def __init__(
@@ -116,11 +116,14 @@ class DataProcessorEnsight(DataProcessor):
 
     @classmethod
     def from_config_create_data_processor(cls, config, data_processor_name):
-        """Create data_processor routine from problem description.
+        """Create *data_processor* routine from problem description.
 
         Args:
-            config (dict): Dictionary with problem description.
+            config (dict): Dictionary with problem description
             data_processor_name (str): Name of data processor that is used in this job-submission
+
+        Returns:
+            TODO_doc
         """
         (
             file_name_identifier,
@@ -216,7 +219,7 @@ class DataProcessorEnsight(DataProcessor):
         """Check the file_options_dict for valid inputs.
 
         Args:
-            file_options_dict (dict): Dictionary containing the field descritpion for the
+            file_options_dict (dict): Dictionary containing the field description for the
                                       physical fields of interest that should be read-in.
         """
         required_keys_lst = ['target_time_lst', 'physical_field_dict', 'geometric_target']
@@ -292,11 +295,7 @@ class DataProcessorEnsight(DataProcessor):
         )
 
     def _get_raw_data_from_file(self):
-        """Read-in EnSight files using the vtkEnsightGoldBinaryReader.
-
-        Returns:
-            None
-        """
+        """Read-in EnSight files using the vtkEnsightGoldBinaryReader."""
         # Set vtk reader object as raw file data
         self.raw_file_data = vtk.vtkEnSightGoldBinaryReader()
         self.raw_file_data.SetCaseFileName(self.file_path)
@@ -533,7 +532,7 @@ class DataProcessorEnsight(DataProcessor):
         Args:
             target_time (float): Time the field should be evaluated on
 
-        Retruns:
+        Returns:
             vtk_solution_field (obj)
         """
         # Ensight contains different "timesets" which are containers for the actual data
@@ -570,9 +569,6 @@ class DataProcessorEnsight(DataProcessor):
         """Write geometry of interest to the database.
 
         This method uses the QUEENS external geometry module.
-
-        Returns:
-            None
         """
         # read in the external geometry
         self.external_geometry_obj.main_run()

@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -26,6 +28,7 @@ def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
 
 @pytest.fixture()
 def expected_mean():
+    """TODO_doc."""
     mean = np.array(
         [
             [181.62057979],
@@ -45,6 +48,7 @@ def expected_mean():
 
 @pytest.fixture()
 def expected_var():
+    """TODO_doc."""
     var = np.array(
         [
             [4.62061],

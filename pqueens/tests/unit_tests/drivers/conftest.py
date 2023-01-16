@@ -17,7 +17,7 @@ def job(tmpdir_factory):
 
 @pytest.fixture(scope='session')
 def baci_job(job, tmpdir_factory):
-    """Generic job dictionary for testing Baci."""
+    """Generic job dictionary for testing BACI."""
     baci_dir = tmpdir_factory.mktemp('baci_dir')
 
     job['simulation_input_template'] = str(

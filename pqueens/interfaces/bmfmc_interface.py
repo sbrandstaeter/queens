@@ -7,18 +7,19 @@ from .interface import Interface
 class BmfmcInterface(Interface):
     """Interface for grouping outputs with inputs.
 
-    Interface for grouping the outputs of several simulation with identical
-    input to one data point. The BmfmcInterface is basically a version of the
-    approximation_interface class that allows for vectorized mapping and
+    Interface for grouping the outputs of several simulations with identical
+    input to one data point. The *BmfmcInterface* is basically a version of the
+    *approximation_interface* class, that allows vectorized mapping and
     implicit function relationships.
 
     Attributes:
-        variables (dict): dictionary with variables (not used at the moment!)
-        config (dict): Dictionary with problem description (input file)
-        approx_name (str): Name of the used approximation model
-        probabilistic_mapping_obj (obj): Instance of the probabilistic mapping which models the
-                                         probabilistic dependency between high-fidelity model,
-                                         low-fidelity models and informative input features.
+        config (dict): Dictionary with problem description (input file).
+        approx_name (str): Name of the used approximation model.
+        probabilistic_mapping_obj (obj): Instance of the probabilistic mapping,
+                                         which models the probabilistic
+                                         dependency between high-fidelity
+                                         model, low-fidelity models and
+                                         informative input features.
 
     Returns:
         BMFMCInterface (obj): Instance of the BMFMCInterface
@@ -39,22 +40,21 @@ class BmfmcInterface(Interface):
         r"""Predict on probabilistic mapping.
 
         Call the probabilistic mapping and predict the mean and variance
-        for the high-fidelity model, given the inputs Z_LF.
+        for the high-fidelity model, given the inputs *Z_LF*.
 
         Args:
-            Z_LF (np.array): low-fidelity feature vector that contains the corresponding Monte-Carlo
+            Z_LF (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
                               points on which the probabilistic mapping should be evaluated
-            gradient_bool (bool): Flag to determine, whether the gradient of the function at
-                                  the evaluation point is expected (True) or not (False)
+            gradient_bool (bool): Flag to determine whether the gradient of the function at
+                                  the evaluation point is expected (*True*) or not (*False*)
 
         Returns:
             mean_Y_HF_given_Z_LF (np.array): Vector of mean predictions
-                                             :math:`\\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,
-                                             \\mathcal{D}_{f})]` for the HF model given the
-                                             low-fidelity feature input
-            var_Y_HF_given_Z_LF (np.array): Vector of variance predictions :math:`\\mathbb{V}_{
-                                            f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\\mathcal{D}_{f})]` for the
-                                            HF model given the low-fidelity feature input
+              :math:`\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*, \mathcal{D}_{f})]`
+              for the HF model given the low-fidelity feature input
+            var_Y_HF_given_Z_LF (np.array): Vector of variance predictions
+              :math:`\mathbb{V}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\mathcal{D}_{f})]`
+              for the HF model given the low-fidelity feature input
         """
         if self.probabilistic_mapping_obj is None:
             raise RuntimeError(
@@ -75,14 +75,11 @@ class BmfmcInterface(Interface):
         r"""Build and train the probabilistic mapping.
 
         Based on the training inputs
-        :math:`\\mathcal{ D}_f={Y_{HF},Z_{LF}}`
+        :math:`\mathcal{D}_f={Y_{HF},Z_{LF}}`.
 
         Args:
             Z_LF_train (np.array): Training inputs for probabilistic mapping
             Y_HF_train (np.array): Training outputs for probabilistic mapping
-
-        Returns:
-            None
         """
         self.probabilistic_mapping_obj = from_config_create_regression_approximation(
             self.config, self.approx_name, Z_LF_train, Y_HF_train

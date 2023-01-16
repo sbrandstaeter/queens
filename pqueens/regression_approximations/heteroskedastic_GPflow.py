@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import logging
 import os
 
@@ -16,34 +18,38 @@ tf.get_logger().setLevel(logging.ERROR)
 
 
 class HeteroskedasticGP(RegressionApproximation):
-    """Class for creating heteroskedastic GP based regression model based on
+    """Class for creating heteroskedastic GP based regression model.
+
+    Class for creating heteroskedastic GP based regression model based on
     GPFlow.
 
     This class constructs a GP regression, currently using a GPFlow model.
     Currently, a lot of parameters are still hard coded, which will be
     improved in the future.
 
-    The basic idea of this latent variable GP model can be found in [1-3]
+    The basic idea of this latent variable GP model can be found in [1-3].
 
     Attributes:
-        x_train (np.array): Training inputs
-        y_train (np.array): Training outputs
-        model (gpf.model):  gpflow based heteroskedastic Gaussian process model
-        num_posterior_samples (int): Number of posterior GP samples (realizations of posterior GP)
-        num_inducing_points (int): Number of inducing points for variational GPs
-        optimizer (obj): Tensorflow optimization object
-        num_epochs (int): Number of training epochs for variational optimization
-        random_seed_seed (int): Random seed used for initialization of stochastic gradient decent
-                              optimizer
-        posterior_cov_mat_y (np.array): Posterior covariance matrix of heteroskedastic GP wrt
-                                        y-coordinate
+        x_train (np.array): Training inputs.
+        y_train (np.array): Training outputs.
+        num_posterior_samples (int): Number of posterior GP samples (realizations of posterior GP).
+        num_inducing_points (int): Number of inducing points for variational GPs.
+        model (gpf.model):  Gpflow based heteroskedastic Gaussian process model.
+        optimizer (obj): Tensorflow optimization object.
+        num_epochs (int): Number of training epochs for variational optimization.
+        random_seed (int): Random seed used for initialization of stochastic gradient decent
+                              optimizer.
+        posterior_cov_mat_y (np.array): Posterior covariance matrix of heteroskedastic GP w.r.t.
+                                        the y-coordinate.
         num_samples_stats (int): Number of samples used to calculate empirical
-                                    variance/covariance
+                                    variance/covariance.
 
     References:
-        [1]: https://gpflow.readthedocs.io/en/develop/notebooks/advanced/heteroskedastic.html
+        [1]: https://gpflow.github.io/GPflow/2.6.3/notebooks/advanced/heteroskedastic.html
+
         [2]: Saul, A. D., Hensman, J., Vehtari, A., & Lawrence, N. D. (2016, May).
              Chained gaussian processes. In Artificial Intelligence and Statistics (pp. 1431-1440).
+
         [3]: Hensman, J., Fusi, N., & Lawrence, N. D. (2013). Gaussian processes for big data.
              arXiv preprint arXiv:1309.6835.
     """
@@ -76,11 +82,7 @@ class HeteroskedasticGP(RegressionApproximation):
                                      variance/covariance
             posterior_cov_mat_y (np.array): Posterior covariance prediction matrix of GP calculated
                                             w.r.t. the model output `y`.
-
-        Returns:
-            None
         """
-
         self.x_train = x_train
         self.y_train = y_train
         self.num_posterior_samples = num_posterior_samples
@@ -98,9 +100,10 @@ class HeteroskedasticGP(RegressionApproximation):
 
         Args:
             config (dict): Dictionary with problem description (input file)
+            approx_name (str):     Name of the approximation options in input file
             x_train (np.array):    Training inputs
             y_train (np.array):    Training outputs
-            approx_name (str):     Name of the approximation options in input file
+
 
         Returns:
             gpflow heteroskedastic GP object
@@ -142,8 +145,11 @@ class HeteroskedasticGP(RegressionApproximation):
         )
 
     def train(self):
-        """Train the variational by minimizing the variational loss in
-        variational EM step."""
+        """TODO_doc: add a one-line explanation.
+
+        Train the variational by minimizing the variational loss in
+        variational EM step.
+        """
         np.random.seed(self.random_seed)
         _logger.info("# ---- Train the GPFlow model ----- #\n")
         for epoch in range(1, self.num_epochs + 1):
@@ -159,40 +165,44 @@ class HeteroskedasticGP(RegressionApproximation):
                 )
 
     def predict(self, x_test, support=None, full_cov=False):
-        """Predict the posterior distribution at Xnew with respect to the data
-        'y'.
+        """TODO_doc: add a one-line explanation.
+
+        Predict the posterior distribution at *Xnew* with respect to the
+        data *y*.
 
         Args:
-            support (str): Predict wrt to latent variable f or y; not needed here as only y makes
-                           sense
-            x_test (np.array): Inputs at which to evaluate or test the latent function f
+            x_test (np.array): Inputs at which to evaluate or test the latent function 'f'
+            support (str): Predict w.r.t. the latent variable 'f' or 'y'; not needed here as only
+                           'y' makes sense
             full_cov (bool): Boolean that specifies whether the entire posterior covariance matrix
                              should be returned or only the posterior variance
 
         Returns:
             output (dict): Dictionary with mean, variance, and possibly
-                           posterior samples at Xnew
+            posterior samples at *Xnew*
         """
         output = self.predict_y(x_test, full_cov=full_cov)
 
         return output
 
     def predict_y(self, x_test, full_cov=False):
-        """Compute the posterior distribution at x_test with respect to the
+        """TODO_doc: add a one-line explanation.
+
+        Compute the posterior distribution at *x_test* with respect to the
         data 'y'.
 
         Args:
-            x_test (np.array): Inputs at which to evaluate latent function f
-            full_cov (bool): Boolean to decide if we want posterior variance (full_cov=False) or
-                             the full posterior covariance matrix (full_cov=True)
+            x_test (np.array): Inputs at which to evaluate latent function 'f'
+            full_cov (bool): Boolean to decide if we want posterior variance (*full_cov=False*) or
+                             the full posterior covariance matrix (*full_cov=True*)
 
         Returns:
             output (dict): Dictionary with mean, variance, and possibly
-                           posterior samples of latent function at x_test
+            posterior samples of latent function at *x_test*
         """
         x_test = np.atleast_2d(x_test).reshape((-1, self.x_train.shape[1]))
         output = {}
-        # TODO this method call is super slow as cholesky decomp gets computed in every call
+        # TODO this method call is super slow as Cholesky decomp gets computed in every call
         mean, variance = self.model.predict_y(x_test)
         mean = mean.numpy()
         variance = variance.numpy()
@@ -217,15 +227,15 @@ class HeteroskedasticGP(RegressionApproximation):
         return output
 
     def predict_f_samples(self, x_test, num_samples):
-        """Produce samples from the posterior latent function Xnew.
+        """Produce samples from the posterior latent function *Xnew*.
 
         Args:
-            x_test (np.array):  Inputs at which to evaluate latent function f
+            x_test (np.array):  Inputs at which to evaluate latent function 'f'
             num_samples (int):  Number of posterior realizations of GP
 
         Returns:
-            post_samples (np.array): Posterior samples of latent functions at x_test,
-                                     (the latter might be a vector/matrix of points)
+            post_samples (np.array): Posterior samples of latent functions at *x_test*
+            (the latter might be a vector/matrix of points)
         """
         np.random.seed(self.random_seed)
         post_samples = self.model.predict_f_samples(x_test, num_samples).numpy()
@@ -287,8 +297,8 @@ class HeteroskedasticGP(RegressionApproximation):
 
     @classmethod
     def _build_optimizer(cls, x_train, y_train, gpflow_model, adams_training_rate, random_seed):
-        """
-        Build the optimization step for the variational EM step
+        """Build the optimization step for the variational EM step.
+
         Args:
             x_train (np.array): Training input points
             y_train (np.array): Training output points
@@ -298,7 +308,6 @@ class HeteroskedasticGP(RegressionApproximation):
         Returns:
             optimization_step_fun (obj): Tensorflow optimization EM-step function for variational
                                          optimization of the GP
-
         """
         # TODO pull below out to json
         np.random.seed(random_seed)
@@ -318,11 +327,13 @@ class HeteroskedasticGP(RegressionApproximation):
         # here we conduct a two step optimization
         @tf.function
         def optimization_step_fun():
-            """Two step variational Expectation-Maximization routine for latent
+            """TODO_doc: add a one-line explanation.
+
+            Two step variational Expectation-Maximization routine for latent
             variable GPs.
 
             Returns:
-                None
+                optimization_step_fun: TODO_doc
             """
             natgrad_opt.minimize(loss_fn, variational_vars)
             adam_opt.minimize(loss_fn, adam_vars)

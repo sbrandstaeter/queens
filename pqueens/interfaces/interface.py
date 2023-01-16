@@ -14,8 +14,8 @@ class Interface(metaclass=abc.ABCMeta):
     the derived class.
 
     Attributes:
-        name (str): Name of the interface
-        parameters (obj): Parameters object
+        name (str): Name of the interface.
+        parameters (obj): Parameters object.
     """
 
     def __init__(self, name):
@@ -35,7 +35,7 @@ class Interface(metaclass=abc.ABCMeta):
         software or approximation.
 
         Args:
-            samples (list):  list of variables objects
-            gradient_bool (bool): Flag to determine, whether the gradient of the function at
+            samples (list):  List of variables objects
+            gradient_bool (bool): Flag to determine whether the gradient of the function at
                                   the evaluation point is expected (True) or not (False)
         """

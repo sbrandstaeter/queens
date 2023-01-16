@@ -14,7 +14,7 @@ def from_config_create_iterative_averaging(config):
         config (dict): Configuration dict for the iterative averaging
 
     Returns:
-        iterative averaging object
+        Iterative averaging object
     """
     valid_options = {
         "moving_average": MovingAveraging,
@@ -33,10 +33,10 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
     """Base class for iterative averaging schemes.
 
     Attributes:
-        current_average (np.array): Current average value
-        new_value (np.array): New value for the averaging process
-        rel_L1_change (float): Relative change in L1 norm of the average value
-        rel_L2_change (float): Relative change in L2 norm of the average value
+        current_average (np.array): Current average value.
+        new_value (np.array): New value for the averaging process.
+        rel_L1_change (float): Relative change in L1 norm of the average value.
+        rel_L2_change (float): Relative change in L2 norm of the average value.
     """
 
     def __init__(self):
@@ -53,7 +53,7 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
             new_value (np.array): New observation for the averaging
 
         Returns:
-            current average value
+            Current average value
         """
         if isinstance(new_value, (float, int)):
             new_value = np.array(new_value)
@@ -96,10 +96,11 @@ class MovingAveraging(IterativeAveraging):
 
     :math:`x^{(j)}_{avg}=\frac{1}{k}\sum_{i=0}^{k-1}x^{(j-i)}`
 
-    where :math: `k-1` is the number of values from previous iterations that are used
+    where :math:`k-1` is the number of values from previous iterations that are used
 
     Attributes:
-        num_iter_for_avg (int): Number of samples in the averaging window
+        num_iter_for_avg (int): Number of samples in the averaging window.
+        data: TODO_doc
     """
 
     def __init__(self, num_iter_for_avg):
@@ -133,7 +134,7 @@ class MovingAveraging(IterativeAveraging):
         """Compute the moving average.
 
         Args:
-            new_value (float or np.array): New value to update the average.
+            new_value (float or np.array): New value to update the average
 
         Returns:
             average (np.array): The current average
@@ -165,8 +166,8 @@ class PolyakAveraging(IterativeAveraging):
     :math:`x^{(j)}_{avg}=\frac{1}{j}\sum_{i=0}^{j}x^{(j)}`
 
     Attributes:
-        iteration_counter (float): Number of samples
-        sum_over_iter (np.array): Sum over all samples
+        iteration_counter (float): Number of samples.
+        sum_over_iter (np.array): Sum over all samples.
 
     """
 
@@ -193,10 +194,10 @@ class PolyakAveraging(IterativeAveraging):
         """Compute the Polyak average.
 
         Args:
-            new_value (float or np.array): New value to update the average.
+            new_value (float or np.array): New value to update the average
 
         Returns:
-            current_average (np.array): returns the current average
+            current_average (np.array): Returns the current average
         """
         self.sum_over_iter += new_value
         self.iteration_counter += 1
@@ -221,12 +222,13 @@ class ExponentialAveraging(IterativeAveraging):
     r"""Exponential averaging.
 
     :math:`x^{(0)}_{avg}=x^{(0)}`
+
     :math:`x^{(j)}_{avg}= \alpha x^{(j-1)}_{avg}+(1-\alpha)x^{(j)}`
 
     Is also sometimes referred to as exponential smoothing.
 
     Attributes:
-        coefficient (float): Coefficient in (0,1) for the average
+        coefficient (float): Coefficient in (0,1) for the average.
 
     """
 
@@ -266,7 +268,7 @@ class ExponentialAveraging(IterativeAveraging):
             new_value (float or np.array): New value to update the average.
 
         Returns:
-            current_average (np.array): returns the current average
+            current_average (np.array): Returns the current average
         """
         current_average = (
             self.coefficient * self.current_average + (1 - self.coefficient) * new_value
@@ -286,14 +288,14 @@ class ExponentialAveraging(IterativeAveraging):
 
 
 def L1_norm(x, averaged=False):
-    """Compute the L1 norm of the vector `x`.
+    """Compute the L1 norm of the vector *x*.
 
     Args:
         x (np.array): Vector
-        averaged (bool): If enabled the norm is divided by the number of components
+        averaged (bool): If enabled, the norm is divided by the number of components
 
     Returns:
-        norm (float): L1 norm of `x`
+        norm (float): L1 norm of *x*
     """
     x = np.array(x).flatten()
     x = np.nan_to_num(x)
@@ -304,7 +306,7 @@ def L1_norm(x, averaged=False):
 
 
 def L2_norm(x, averaged=False):
-    """Compute the L2 norm of the vector `x`.
+    """Compute the L2 norm of the vector *x*.
 
     Args:
         x (np.array): Vector
@@ -312,7 +314,7 @@ def L2_norm(x, averaged=False):
                          components
 
     Returns:
-        norm (float): L2 norm of `x`
+        norm (float): L2 norm of *x*
     """
     x = np.array(x).flatten()
     x = np.nan_to_num(x)

@@ -1,7 +1,7 @@
 """Probabilistic models in [1].
 
 [1]: Rezende, D. J., & Mohamed, S. (2016). Variational Inference with Normalizing Flows. ArXiv:1505.
-05770 [Cs, Stat]. http://arxiv.org/abs/1505.05770
+     05770 [Cs, Stat]. http://arxiv.org/abs/1505.05770
 """
 # pylint: disable=invalid-name
 
@@ -12,14 +12,14 @@ def rezende15_potential1(x, theta=None, as_logpdf=False):
     r"""First potential in [1].
 
     The unnormalized probabilistic model used is proportional to
-    .. math:: `p(\theta)\propto \exp(-U(\theta))`
-    where :math:`U(\theta)` is a potential. Hence the log_posterior_unnormalized is given by
+    :math:`p(\theta)\propto \exp(-U(\theta))`
+    where :math:`U(\theta)` is a potential. Hence the `log_posterior_unnormalized` is given by
     :math:`-U(\theta)`.
 
     Args:
-        x (np.ndarray): Samples at which to evaluate the potential (2 x n_samples)
+        x (np.ndarray): Samples at which to evaluate the potential (2 :math:`\times` n_samples)
         theta (float): Angle in radiants in which to rotate the potential
-        as_logpdf (bool,optional): True if :math:`-U` is to be returned
+        as_logpdf (bool,optional): *True* if :math:`-U` is to be returned
 
     Returns:
         np.ndarray: Potential or unnormalized logpdf

@@ -7,7 +7,7 @@ import numpy as np
 
 import pqueens.database.database as DB_module
 from pqueens.models import from_config_create_model
-from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.process_outputs import process_outputs, write_results
 
 from .iterator import Iterator
 
@@ -18,13 +18,12 @@ class MonteCarloIterator(Iterator):
     """Basic Monte Carlo Iterator to enable MC sampling.
 
     Attributes:
-        model (model):              Model to be evaluated by iterator
-        seed  (int):                Seed for random number generation
-        num_samples (int):          Number of samples to compute
-        result_description (dict):  Description of desired results
-        samples (np.array):         Array with all samples
-        output (np.array):          Array with all model outputs
-        db (obj):                   Data base object
+        seed  (int): Seed for random number generation.
+        num_samples (int): Number of samples to compute.
+        result_description (dict):  Description of desired results.
+        samples (np.array):         Array with all samples.
+        output (np.array):          Array with all model outputs.
+        db (obj):                   Data base object.
     """
 
     def __init__(
@@ -43,8 +42,8 @@ class MonteCarloIterator(Iterator):
             seed  (int):                Seed for random number generation
             num_samples (int):          Number of samples to compute
             result_description (dict):  Description of desired results
-            db (obj):                   Data base object
             global_settings (dict, optional): Settings for the QUEENS run.
+            db (obj):                   Data base object
         """
         super().__init__(model, global_settings)
         self.seed = seed
@@ -99,7 +98,7 @@ class MonteCarloIterator(Iterator):
     def post_run(self):
         """Analyze the results."""
         if self.result_description is not None:
-            results = process_ouputs(self.output, self.result_description, self.samples)
+            results = process_outputs(self.output, self.result_description, self.samples)
             if self.result_description["write_results"] is True:
                 write_results(
                     results,
@@ -107,7 +106,7 @@ class MonteCarloIterator(Iterator):
                     self.global_settings["experiment_name"],
                 )
 
-                # ------------------------------ WIP PLOT OPTIONS -----------------------------
+                # ----------------------------- WIP PLOT OPTIONS ----------------------------
                 if self.result_description['plot_results'] is True:
                     # Check for dimensionality of the results
                     plt.rcParams["mathtext.fontset"] = "cm"

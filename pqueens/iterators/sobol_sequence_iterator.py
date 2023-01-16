@@ -7,7 +7,7 @@ from torch.quasirandom import SobolEngine
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils.get_random_variables import get_random_variables
-from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
 
@@ -16,15 +16,14 @@ class SobolSequenceIterator(Iterator):
     """Sobol sequence in multiple dimensions.
 
     Attributes:
-        model (model):        Model to be evaluated by iterator
-        number_of_samples (int):    Number of samples to compute
-        randomize (bool): Setting this to True will produce scrambled Sobol sequences. Scrambling is
-                          capable of producing better Sobol sequences.
         seed  (int): This is the seed for the scrambling. The seed of the random number generator is
                      set to this, if specified. Otherwise, it uses a random seed.
-        result_description (dict):  Description of desired results
-        samples (np.array):   Array with all samples
-        output (np.array):   Array with all model outputs
+        number_of_samples (int): Number of samples to compute.
+        randomize (bool): Setting this to *True* will produce scrambled Sobol sequences. Scrambling
+                          is capable of producing better Sobol sequences.
+        result_description (dict):  Description of desired results.
+        samples (np.array):   Array with all samples.
+        output (np.array):   Array with all model outputs.
     """
 
     def __init__(
@@ -36,15 +35,15 @@ class SobolSequenceIterator(Iterator):
         result_description,
         global_settings,
     ):
-        """Initialise Sobol sequence iterator.
+        """Initialize Sobol sequence iterator.
 
         Args:
              model (model): Model to be evaluated by iterator
+             seed  (int): This is the seed for the scrambling. The seed of the random number
+                          generator is set to this, if specified. Otherwise, it uses a random seed.
              number_of_samples (int): Number of samples to compute
              randomize (bool): Setting this to True will produce scrambled Sobol sequences.
                                Scrambling is capable of producing better Sobol sequences.
-             seed  (int): This is the seed for the scrambling. The seed of the random number
-                          generator is set to this, if specified. Otherwise, it uses a random seed.
              result_description (dict):  Description of desired results
              global_settings (dict, optional): Settings for the QUEENS run.
         """
@@ -58,7 +57,7 @@ class SobolSequenceIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create sobol sequence iterator from problem description.
+        """Create Sobol sequence iterator from problem description.
 
         Args:
             config (dict):       Dictionary with QUEENS problem description
@@ -91,8 +90,7 @@ class SobolSequenceIterator(Iterator):
         )
 
     def pre_run(self):
-        """Generate samples for subsequent sobol sequence analysis."""
-
+        """Generate samples for subsequent Sobol sequence analysis."""
         _logger.info('Number of inputs: %s', self.parameters.num_parameters)
         _logger.info('Number of samples: %s', self.number_of_samples)
         _logger.info('Randomize: %s', self.randomize)
@@ -108,13 +106,13 @@ class SobolSequenceIterator(Iterator):
         self.samples = self.parameters.inverse_cdf_transform(qmc_samples.numpy().astype('float64'))
 
     def core_run(self):
-        """Run sobol sequence analysis on model."""
+        """Run Sobol sequence analysis on model."""
         self.output = self.model.evaluate(self.samples)
 
     def post_run(self):
         """Analyze the results."""
         if self.result_description is not None:
-            results = process_ouputs(self.output, self.result_description, input_data=self.samples)
+            results = process_outputs(self.output, self.result_description, input_data=self.samples)
             if self.result_description["write_results"] is True:
                 write_results(
                     results,

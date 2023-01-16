@@ -50,7 +50,7 @@ def safe_cholesky(matrix):
         matrix (np.ndarray): Matrix to be decomposed
 
     Returns:
-        low_cholesky (np.ndarray): lower-triangular Cholesky factor of matrix
+        low_cholesky (np.ndarray): Lower-triangular Cholesky factor of matrix
     """
     try:
         low_cholesky = np.linalg.cholesky(matrix)

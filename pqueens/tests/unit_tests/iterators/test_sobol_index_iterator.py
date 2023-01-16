@@ -1,4 +1,4 @@
-"""Unittest for Sobol index iterator."""
+"""Unit test for Sobol index iterator."""
 import unittest
 
 import numpy as np
@@ -14,7 +14,7 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
 
 
 class TestSobolIndices(unittest.TestCase):
-    """Unittest for Sobol index iterator."""
+    """Unit test for Sobol index iterator."""
 
     def setUp(self):
         """Set up the iterator."""
@@ -81,7 +81,7 @@ class TestSobolIndices(unittest.TestCase):
         np.testing.assert_allclose(self.my_iterator.samples, ref_vals, 1e-07, 1e-07)
 
     def test_correct_sensitivity_indices(self):
-        """Test sobol indices results."""
+        """Test Sobol indices results."""
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
         si = self.my_iterator.sensitivity_indices

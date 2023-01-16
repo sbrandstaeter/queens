@@ -4,6 +4,7 @@
 """
 
 import unittest
+
 import numpy as np
 import pytest
 from scipy import stats
@@ -16,7 +17,10 @@ from pqueens.randomfields.univariate_field_generator_factory import (
 
 
 class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         # setup some necessary variables to setup random field generators
         self.dimension = 3
         self.corrstruct = 'exp'
@@ -60,6 +64,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
 
     # should trigger error because desired energy fraction not reached
     def test_not_enough_fourier_terms(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -75,6 +80,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
     # # should trigger error because number of phase angles do not match stochastic
     # # dimension
     def test_wrong_number_phase_angles(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -90,6 +96,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
 
     # # should trigger error because dimension of location is wrong
     def test_wrong_number_loc_dimensions(self):
+        """TODO_doc."""
         mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
             marg_pdf=self.marginal_pdf,
             spatial_dimension=self.dimension,
@@ -109,6 +116,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
             mystuff.gen_sample_gauss_field(np.array(([4, 4], [4, 5], [4, 5])), xi)
 
     def test_values_at_location(self):
+        """TODO_doc."""
         np.random.seed(self.seed)
         xi = np.random.randn(self.my_stoch_dim, 1)
 
@@ -135,6 +143,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         )
 
     def test_correlation(self):
+        """TODO_doc."""
         my_vals = np.zeros((self.loc.shape[0], 100))
         np.random.seed(self.seed)
         for i in range(100):
@@ -242,6 +251,7 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         )
 
     def test_marginal_distribution(self):
+        """TODO_doc."""
         my_vals = np.zeros((1, 200))
         np.random.seed(self.seed)
         for i in range(200):

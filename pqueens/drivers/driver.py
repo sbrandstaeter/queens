@@ -9,28 +9,28 @@ _logger = logging.getLogger(__name__)
 class Driver(metaclass=abc.ABCMeta):
     """Abstract base class for drivers in QUEENS.
 
-    The driver manages simulation runs in QUEENS on local or remote computing resources
-    with or without Singularity containers depending on the chosen CAE software (see also
+    The driver manages simulation runs in QUEENS on local or remote computing resources,
+    with or without Singularity containers, depending on the chosen CAE software (see also
     respective Wiki article on available CAE software).
 
     Attributes:
         batch (int):               Current batch of driver calls.
         driver_name (str):         Name of the driver used for the analysis. The name is
                                    specified in the json-input file.
-        experiment_dir (path):     path to QUEENS experiment directory
-        experiment_name (str):     name of QUEENS experiment
-        job (dict,None):           dictionary containing description of current job
-        job_id (int):              job ID as provided in database within range [1, n_jobs]
-        num_procs (int):           number of processors for processing
-        output_directory (path):   path to output directory (on remote computing resource for
-                                   remote scheduling)
-        result (np.array):         simulation result to be stored in database
-        gradient (np.array): gradient of the simulation output w.r.t. to the input
-        database (obj):            database object
-        post_processor (path):     (only for post-processing) path to post_processor of
-                                   respective CAE software
-        data_processor (obj):   instance of data processor class
-        gradient_data_processor (obj):   instance of data processor class for gradient data
+        experiment_dir (path):     Path to QUEENS experiment directory.
+        experiment_name (str):     Name of QUEENS experiment.
+        job (dict, None):          Dictionary containing description of current job.
+        job_id (int):              Job ID as provided in database within range [1, n_jobs].
+        num_procs (int):           Number of processors for processing.
+        output_directory (path):   Path to output directory (on remote computing resource for
+                                   remote scheduling).
+        result (np.array):         Simulation result to be stored in database.
+        gradient (np.array):       Gradient of the simulation output w.r.t. the input.
+        database (obj):            Database object.
+        post_processor (path):     (only for post-processing) Path to *post_processor* of
+                                   respective CAE software.
+        gradient_data_processor (obj): Instance of data processor class for gradient data.
+        data_processor (obj):   Instance of data processor class.
     """
 
     def __init__(
@@ -56,20 +56,20 @@ class Driver(metaclass=abc.ABCMeta):
             batch (int):               Current batch of driver calls.
             driver_name (str):         Name of the driver used for the analysis. The name is
                                        specified in the json-input file.
-            experiment_dir (path):     path to QUEENS experiment directory
-            experiment_name (str):     name of QUEENS experiment
-            job (dict,None):           dictionary containing description of current job
-            job_id (int):              job ID as provided in database within range [1, n_jobs]
-            num_procs (int):           number of processors for processing
-            output_directory (path):   path to output directory (on remote computing resource for
+            experiment_dir (path):     Path to QUEENS experiment directory
+            experiment_name (str):     Name of QUEENS experiment
+            job (dict,None):           Dictionary containing description of current job
+            job_id (int):              Job ID as provided in database within range [1, n_jobs]
+            num_procs (int):           Number of processors for processing
+            output_directory (path):   Path to output directory (on remote computing resource for
                                        remote scheduling)
-            result (np.array):         simulation result to be stored in database
-            gradient (np.array): gradient of the simulation output w.r.t. to the input
-            database (obj):            database object
-            post_processor (path):     (only for post-processing) path to post_processor of
+            result (np.array):         Simulation result to be stored in database
+            gradient (np.array): Gradient of the simulation output w.r.t. to the input
+            database (obj):            Database object
+            post_processor (path):     (Only for post-processing) path to post_processor of
                                        respective CAE software
-            data_processor (obj):      instance of data processor class
-            gradient_data_processor (obj):   instance of data processor class for gradient data
+            data_processor (obj):      Instance of data processor class
+            gradient_data_processor (obj):   Instance of data processor class for gradient data
         """
         self.batch = batch
         self.driver_name = driver_name
@@ -88,20 +88,12 @@ class Driver(metaclass=abc.ABCMeta):
 
     # ------ Core methods ----------------------------------------------------- #
     def pre_job_run_and_run_job(self):
-        """Prepare and execute job run.
-
-        Returns:
-            None
-        """
+        """Prepare and execute job run."""
         self.pre_job_run()
         self.run_job()
 
     def pre_job_run(self):
-        """Prepare job run.
-
-        Returns:
-            None
-        """
+        """Prepare job run."""
         if self.job is None:
             self.initialize_job_in_db()
         self.prepare_input_files()
@@ -215,16 +207,8 @@ class Driver(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def run_job(self):
-        """Abstract method for running job.
-
-        Returns:
-            None
-        """
+        """Abstract method for running job."""
 
     @abc.abstractmethod
     def post_processor_job(self):
-        """Abstract method for post-processing of job.
-
-        Returns:
-            None
-        """
+        """Abstract method for post-processing of job."""

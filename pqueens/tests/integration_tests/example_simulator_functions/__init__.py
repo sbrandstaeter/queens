@@ -94,6 +94,6 @@ def example_simulator_function_by_name(function_name):
         function_name (str): Name of the example simulator function
 
     Returns:
-        (func): Function
+        func: Function
     """
     return get_option(VALID_EXAMPLE_SIMULATOR_FUNCTIONS, function_name)

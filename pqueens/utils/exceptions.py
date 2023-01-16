@@ -19,7 +19,7 @@ class InvalidOptionError(Exception):
         Args:
             valid_options (lst): List of valid option keys
             desired_option (str): Key of desired option
-            additional_message (str, optional): Additional message to pass. Defaults to None.
+            additional_message (str, optional): Additional message to pass (default is None)
 
         Returns:
             InvalidOptionError

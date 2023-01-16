@@ -1,6 +1,6 @@
 """Polynomial chaos iterator.
 
-Is a wrapper on the chaospy library.
+Is a wrapper on the *chaospy* library.
 """
 import logging
 
@@ -25,14 +25,17 @@ class PolynomialChaosIterator(Iterator):
     """Collocation-based polynomial chaos iterator.
 
     Attributes:
-        seed  (int): Seed for random number generation
-        num_collocation_points (int): Number of samples to compute
-        sampling_rule (dict): Rule according to which samples are drawn
-        polynomial_order (int): Order of polynomial expansion
-        sparse (bool): For pseudo project, if true uses sparse collocation points
-        polynomial_chaos_approach (str): Approach for the polynomial chaos approach
-        distribution (cp.distribution): Joint input distribution
-        result_description (dict): Description of desired results
+        seed (int): Seed for random number generation.
+        num_collocation_points (int): Number of samples to compute.
+        sampling_rule (dict): Rule according to which samples are drawn.
+        polynomial_order (int): Order of polynomial expansion.
+        result_description (dict): Description of desired results.
+        sparse (bool): For pseudo project, if *True* uses sparse collocation points.
+        polynomial_chaos_approach (str): Approach for the polynomial chaos approach.
+        distribution (cp.distribution): Joint input distribution.
+        samples: TODO_doc
+        expansions: TODO_doc
+        result_dict: TODO_doc
     """
 
     def __init__(
@@ -51,16 +54,16 @@ class PolynomialChaosIterator(Iterator):
         """Initialise polynomial chaos iterator.
 
         Args:
-        model (model): Model to be evaluated by iterator
-        seed  (int): Seed for random number generation
-        num_collocation_points (int): Number of samples to compute
-        sampling_rule (dict): Rule according to which samples are drawn
-        polynomial_order (int): Order of polynomial expansion
-        sparse (bool): For pseudo project, if true uses sparse collocation points
-        polynomial_chaos_approach (str): Approach for the polynomial chaos approach
-        distribution (cp.distribution): Joint input distribution
-        result_description (dict): Description of desired results
-        global_settings (dict, optional): Settings for the QUEENS run.
+            model (model): Model to be evaluated by iterator
+            seed  (int): Seed for random number generation
+            num_collocation_points (int): Number of samples to compute
+            sampling_rule (dict): Rule according to which samples are drawn
+            polynomial_order (int): Order of polynomial expansion
+            sparse (bool): For pseudo project, if *True* uses sparse collocation points
+            polynomial_chaos_approach (str): Approach for the polynomial chaos approach
+            distribution (cp.distribution): Joint input distribution
+            result_description (dict): Description of desired results
+            global_settings (dict, optional): Settings for the QUEENS run.
         """
         super().__init__(model, global_settings)
         self.seed = seed
@@ -159,7 +162,7 @@ class PolynomialChaosIterator(Iterator):
         )
 
     def pre_run(self):
-        """Initiliaze run."""
+        """Initialize run."""
         np.random.seed(self.seed)
 
     def core_run(self):
@@ -273,7 +276,7 @@ def from_config_create_chaospy_distribution(distribution):
         distribution (obj): Queens distribution object
 
     Returns:
-        distribution:     Distribution object in chaospy format
+        distribution: Distribution object in chaospy format
     """
     if isinstance(distribution, distributions.normal.NormalDistribution):
         distribution = cp.Normal(mu=distribution.mean, sigma=distribution.covariance ** (1 / 2))

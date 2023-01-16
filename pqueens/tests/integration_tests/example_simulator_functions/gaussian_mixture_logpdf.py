@@ -3,8 +3,10 @@
 Example adapted from from [1], section 3.4.
 
 [1]: Minson, S. E., Simons, M. and Beck, J. L. (2013)
-‘Bayesian inversion for finite fault earthquake source models I-theory and algorithm’,
-Geophysical Journal International, 194(3), pp. 1701–1726. doi: 10.1093/gji/ggt180.
+     ‘Bayesian inversion for finite fault earthquake source models I-theory and algorithm’,
+     Geophysical Journal International, 194(3), pp. 1701–1726. doi: 10.1093/gji/ggt180.
+
+**TODO_doc**: In this module, reference [1] is defined twice, maybe one of them can be changed to [2]?
 """
 # pylint: disable=invalid-name
 
@@ -37,16 +39,13 @@ def gaussian_mixture_4d_logpdf(samples):
 
     The log likelihood is defined as (see [1]):
 
-    :math:`f({x}) =\log( w_1 \frac{1}{(\sqrt((2 \pi)^k |\Sigma_1|)}
-    \exp[-\frac{1}{2}(x-\mu_1)^T\Sigma_1^{-1}(x-\mu_1)]+ w_2
-    \frac{1}{(\sqrt((2 \pi)^k |\Sigma_2|)}
-    \exp[-\frac{1}{2}(x-\mu_2)^T\Sigma_2^{-1}(x-\mu_2)])`
-
-    Args:
-        samples (np.ndarray)
+    :math:`f({x}) =\log \left( w_1 \frac{1}{\sqrt{(2 \pi)^k |\Sigma_1|}}
+    \exp \left[-\frac{1}{2}(x-\mu_1)^T\Sigma_1^{-1}(x-\mu_1) \right]+ w_2
+    \frac{1}{\sqrt{(2 \pi)^k |\Sigma_2|}}
+    \exp \left[-\frac{1}{2}(x-\mu_2)^T\Sigma_2^{-1}(x-\mu_2) \right] \right)`
 
     Returns:
-        numpy.array : The logpdf evaluated at x
+        numpy.array: The logpdf evaluated at *x*
 
     References:
         [1] https://en.wikipedia.org/wiki/Multivariate_normal_distribution

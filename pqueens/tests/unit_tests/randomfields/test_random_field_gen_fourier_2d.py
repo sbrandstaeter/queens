@@ -17,7 +17,10 @@ from pqueens.randomfields.univariate_field_generator_factory import (
 
 
 class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         # setup some necessary variables to setup random field generators
         self.dimension = 2
         self.corrstruct = 'squared_exp'
@@ -49,6 +52,7 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
 
     # should trigger error because desired energy fraction not reached
     def test_not_enough_fourier_terms(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -64,6 +68,7 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
     # should trigger error because number of phase angles do not match stochastic
     # dimension
     def test_wrong_number_phase_angles(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -79,6 +84,7 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
 
     # should trigger error because dimension of location is of
     def test_wrong_locatio_dimension(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -94,6 +100,7 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
             mystuff.gen_sample_gauss_field(np.array([[10, 10, 10]]), xi)
 
     def test_values_at_location(self):
+        """TODO_doc."""
         np.random.seed(self.seed)
         xi = np.random.randn(self.my_stoch_dim, 1)
         my_vals = self.my_field_generator.evaluate_field_at_location(self.loc, xi)
@@ -116,6 +123,7 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
         )
 
     def test_correlation(self):
+        """TODO_doc."""
         my_vals = np.zeros((self.loc.shape[0], 200))
         np.random.seed(self.seed)
         for i in range(200):
@@ -180,6 +188,7 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
         )
 
     def test_marginal_distribution(self):
+        """TODO_doc."""
         my_vals = np.zeros((1, 200))
         np.random.seed(self.seed)
         for i in range(200):

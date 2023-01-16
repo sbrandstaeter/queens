@@ -19,7 +19,7 @@ class StandardScheduler(Scheduler):
     """Standard scheduler class for QUEENS.
 
     Attributes:
-        max_concurrent (int): Number of maximum jobs that run in parallel
+        max_concurrent (int): Number of maximum jobs that run in parallel.
     """
 
     def __init__(
@@ -42,8 +42,6 @@ class StandardScheduler(Scheduler):
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
-            remote connect (str):      (only for remote scheduling) address of remote
-                                       computing resource
             singularity (bool):        flag for use of Singularity containers
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             max_concurrent (int): Number of maximum jobs that run in parallel
@@ -69,7 +67,7 @@ class StandardScheduler(Scheduler):
             driver_name (str): Name of the driver
 
         Returns:
-            instance of standard scheduler class
+            Instance of standard scheduler class
         """
         if not scheduler_name:
             scheduler_name = "scheduler"
@@ -162,8 +160,8 @@ class StandardScheduler(Scheduler):
             job (dict): Job dict.
 
         Returns:
-            completed (bool): If job is completed
-            failed (bool): If job failed.
+            completed (bool):  If job is completed
+            failed (bool): If job failed
         """
         # initialize completion and failure flags to false
         # (Note that failure is not checked for standard scheduler
@@ -187,7 +185,7 @@ class StandardScheduler(Scheduler):
             batch (str):     Batch number of job
 
         Returns:
-            driver_obj.pid (int): process ID
+            driver_obj.pid (int): Process ID
         """
         # create driver
         # TODO we should not create the object here everytime!
@@ -214,7 +212,7 @@ class StandardScheduler(Scheduler):
 
         Args:
             config (dict): Input file problem description
-            job_id (int): Id number of the current job
+            job_id (int): ID number of the current job
             batch (int): Number of the current batch
             driver_name (str): Name of the driver module in input file
             experiment_dir (Path): directory of experiment

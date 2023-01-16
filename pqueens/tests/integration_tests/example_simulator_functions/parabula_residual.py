@@ -8,7 +8,7 @@ def parabula_residual(x1, **kwargs):
     """Residual formulation of a parabula.
 
     Args:
-        x1 (float):  Input one
+        x1 (float):  Input parameter 1
 
     Returns:
         ndarray: Vector of residuals of the parabula

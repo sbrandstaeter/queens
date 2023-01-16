@@ -22,8 +22,8 @@ def test_smc_park_hf(
 ):
     """Integration test for BMFIA.
 
-    Integration test for bayesian multi-fidelity inverse analysis
-    (bmfia) using the park91 function.
+    Integration test for the bayesian multi-fidelity inverse analysis
+    (bmfia) using the *park91* function.
     """
     # generate json input file from template
     template = os.path.join(inputdir, 'bmfia_smc_park.json')
@@ -118,7 +118,7 @@ def expected_samples():
 
 @pytest.fixture()
 def expected_weights():
-    """Fixture for expecte SMC weights."""
+    """Fixture for expected SMC weights."""
     weights = np.array(
         [
             0.01794,
