@@ -270,10 +270,10 @@ class DataProcessorCsv(DataProcessor):
                 engine='python',
                 index_col=self.index_column,
             )
-            _logger.info(f"Successfully read-in data from {self.file_path}.")
+            _logger.info("Successfully read-in data from %s.", self.file_path)
         except IOError as error:
             _logger.warning(
-                f"Could not read file {self.file_path}. " f"The IOError was: {error}. Skip..."
+                "Could not read file %s. The IOError was: %s. Skip...", self.file_path, error
             )
             self.raw_file_data = None
 

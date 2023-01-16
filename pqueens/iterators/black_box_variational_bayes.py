@@ -337,14 +337,14 @@ class BBVIIterator(VariationalInferenceIterator):
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations."""
         _logger.info("-" * 80)
-        _logger.info(f"Iteration {self.stochastic_optimizer.iteration + 1} of BBVI algorithm")
+        _logger.info("Iteration %s of BBVI algorithm", self.stochastic_optimizer.iteration + 1)
 
         super()._verbose_output()
 
         if self.memory > 0 and self.stochastic_optimizer.iteration > 0:
-            _logger.info(f"ESS: {self.ess:.2f} of {(self.memory + 1) * self.n_samples_per_iter}")
+            _logger.info("ESS: %.2f of %s", self.ess, (self.memory + 1) * self.n_samples_per_iter)
         if self.stochastic_optimizer.iteration > 1:
-            _logger.info(f"Likelihood noise variance: {self.model.normal_distribution.covariance}")
+            _logger.info("Likelihood noise variance: %s", self.model.normal_distribution.covariance)
         _logger.info("-" * 80)
 
     def _prepare_result_description(self):

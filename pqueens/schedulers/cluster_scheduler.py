@@ -343,7 +343,12 @@ class ClusterScheduler(Scheduler):
             string (str): ClusterScheduler object description
         """
         name = "Cluster Scheduler"
-        print_dict = self._create_base_print_dict()
+
+        if self.remote:
+            resource_info = f'remote ({self.remote_connect})'
+        else:
+            resource_info = 'local'
+        print_dict = self._create_base_print_dict(resource_info)
         print_dict.update({"Type of cluster": self.cluster_type})
 
         return get_str_table(name, print_dict)
@@ -526,7 +531,7 @@ class ClusterScheduler(Scheduler):
         if self.remote and self.singularity:
             self.singularity_manager.close_local_port_forwarding()
             self.singularity_manager.close_remote_port(self.port)
-            print('All port-forwardings were closed again.')
+            _logger.info('All port-forwardings were closed again.')
 
     def _submit_driver(self, job_id, batch):
         """Submit job to driver.

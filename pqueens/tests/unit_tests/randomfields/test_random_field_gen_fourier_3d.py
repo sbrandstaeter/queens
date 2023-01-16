@@ -112,7 +112,6 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         my_vals = self.my_field_generator.evaluate_field_at_location(self.loc, xi)
 
         # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        # print(my_vals)
 
         ref_vals = np.array(
             [
@@ -157,17 +156,6 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         # exp_corr_at_dist_100    = exp(-(loc(4)-loc(1))^2/corr_length^2);
 
         # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        # print(act_corr_at_dist_10_1[0,1])
-        # print(act_corr_at_dist_10_2[0,1])
-        # print(act_corr_at_dist_10_3[0,1])
-        #
-        # print(act_corr_at_dist_25_1[0,1])
-        # print(act_corr_at_dist_25_2[0,1])
-        # print(act_corr_at_dist_25_3[0,1])
-        #
-        # print(act_corr_at_dist_100_1[0,1])
-        # print(act_corr_at_dist_100_2[0,1])
-        # print(act_corr_at_dist_100_3[0,1])
 
         ref_corr_at_dist_10_1 = 0.781794339099
         ref_corr_at_dist_10_2 = 0.82360677963
@@ -249,7 +237,6 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         # try to check whether marginal distribution is normally distributed
         # using kstest
         test_statistic = (stats.kstest(my_vals[0, :], 'norm'))[0]
-        # print((stats.kstest(my_vals[0, :], 'norm')))
         self.assertAlmostEqual(test_statistic, 0.041586864909728682)
 
 

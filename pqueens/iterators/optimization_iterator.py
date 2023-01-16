@@ -9,6 +9,7 @@ References:
 """
 
 import glob
+import logging
 import os
 import pprint
 import time
@@ -23,6 +24,8 @@ from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
 from pqueens.utils.process_outputs import write_results
+
+_logger = logging.getLogger(__name__)
 
 
 class OptimizationIterator(Iterator):
@@ -146,10 +149,9 @@ class OptimizationIterator(Iterator):
         Returns:
             iterator: OptimizationIterator object
         """
-        print(
-            "Optimization Iterator for experiment: {0}".format(
-                config.get('global_settings').get('experiment_name')
-            )
+        _logger.info(
+            "Optimization Iterator for experiment: %s",
+            config.get('global_settings').get('experiment_name'),
         )
         method_options = config[iterator_name]['method_options']
         if model is None:
@@ -243,7 +245,7 @@ class OptimizationIterator(Iterator):
         f_value = self.eval_model(x_vec)
 
         parameter_list = self.parameters.parameters_keys
-        print(f"The intermediate, iterated parameters " f"{*parameter_list, } are:\n\t{x_vec}")
+        _logger.info("The intermediate, iterated parameters %s are:\n\t%s", parameter_list, x_vec)
 
         return f_value
 
@@ -278,12 +280,12 @@ class OptimizationIterator(Iterator):
 
     def pre_run(self):
         """Get initial guess."""
-        print("Initialize Optimization run.")
+        _logger.info("Initialize Optimization run.")
         self._get_experimental_data_and_write_to_db()
 
     def core_run(self):
         """Core run of Optimization iterator."""
-        print('Welcome to Optimization core run.')
+        _logger.info('Welcome to Optimization core run.')
         start = time.time()
         # nonlinear least squares optimization with Levenberg-Marquardt (without Jacobian here!)
         # Jacobian of the model could be integrated for better performance
@@ -368,20 +370,20 @@ class OptimizationIterator(Iterator):
                 options={'disp': self.verbose_output},
             )
         end = time.time()
-        print(f"Optimization took {end-start} seconds.")
+        _logger.info("Optimization took %E seconds.", end - start)
 
     def post_run(self):
         """Analyze the resulting optimum."""
         if self.algorithm == 'LM':
             parameter_list = self.parameters.parameters_keys()
-            print(
-                f"The optimum of the parameters " f"{*parameter_list, } is:\n\t{self.solution[0]}"
+            _logger.info(
+                "The optimum of the parameters " "%s is:\n\t%s", *parameter_list, self.solution[0]
             )
         else:
-            print(f"The optimum:\n\t{self.solution.x}")
+            _logger.info("The optimum:\n\t%s", self.solution.x)
             if self.algorithm == 'LSQ':
-                print(f"Optimality:\n\t{self.solution.optimality}")
-                print(f"Cost:\n\t{self.solution.cost}")
+                _logger.info("Optimality:\n\t%s", self.solution.optimality)
+                _logger.info("Cost:\n\t%s", self.solution.cost)
 
         if self.result_description:
             if self.result_description["write_results"]:
@@ -409,12 +411,17 @@ class OptimizationIterator(Iterator):
             non_csv_files = [x for x in all_files_list if x not in files_of_interest_list]
 
             if non_csv_files:
-                print('#####################################################################')
-                pprint.pprint(
-                    f'The following experimental data files could not be read-in as they do '
-                    f'not have a .csv file-ending: {non_csv_files}'
+                _logger.info(
+                    '#####################################################################'
                 )
-                print('#####################################################################')
+                _logger.info(
+                    'The following experimental data files could not be read-in as they do '
+                    'not have a .csv file-ending: %s',
+                    non_csv_files,
+                )
+                _logger.info(
+                    '#####################################################################'
+                )
 
             # read all experimental data into one numpy array
             # TODO filter out / handle corrupted data and NaNs

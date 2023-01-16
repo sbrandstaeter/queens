@@ -87,7 +87,7 @@ class MongoDB(Database):
             # in case global settings do not exist
             except KeyError:
                 db_name_suffix = 'dummy'
-                _logger.warning(f"Global settings missing, db_suffix was set to 'dummy'")
+                _logger.warning("Global settings missing, db_suffix was set to 'dummy'")
 
             user_name = getpass.getuser()
             db_name_prefix = 'queens_db_' + user_name
@@ -128,11 +128,11 @@ class MongoDB(Database):
 
         self.db_obj = self.mongo_client[self.db_name]
 
-        _logger.info(f"Connected to {self.db_address}")
+        _logger.info("Connected to %s", self.db_address)
 
     def _disconnect(self):
         """Mongodb automatically closes the connection."""
-        _logger.info(f"Disconnected the database")
+        _logger.info("Disconnected the database")
 
     def _clean_database(self):
         """If desired reset the current database."""
@@ -156,7 +156,7 @@ class MongoDB(Database):
             db_name (str): database name to be deleted
         """
         self.mongo_client.drop_database(db_name)
-        _logger.info(f"{db_name} was dropped")
+        _logger.info("%s was dropped", db_name)
 
     def _delete_databases_by_prefix(self, prefix):
         """Remove databases from the database server by prefix.
@@ -173,7 +173,7 @@ class MongoDB(Database):
         for db in db_to_deleted_list:
             self.mongo_client.drop_database(db)
 
-        _logger.info(f"Databases with prefix {prefix} were deleted!")
+        _logger.info("Databases with prefix %s were deleted!", prefix)
 
     @safe_operation
     def save(self, save_doc, experiment_name, experiment_field, batch, field_filters=None):

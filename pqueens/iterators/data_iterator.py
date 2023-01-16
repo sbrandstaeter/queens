@@ -1,9 +1,12 @@
 """Data iterator."""
 
+import logging
 import pickle
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.utils.process_outputs import process_ouputs, write_results
+
+_logger = logging.getLogger(__name__)
 
 
 class DataIterator(Iterator):
@@ -44,7 +47,7 @@ class DataIterator(Iterator):
         Returns:
             iterator: DataIterator object
         """
-        print(config.get("experiment_name"))
+        _logger.info(config.get("experiment_name"))
         method_options = config[iterator_name]["method_options"]
 
         path_to_data = method_options.get("path_to_data", None)
@@ -74,10 +77,10 @@ class DataIterator(Iterator):
                     self.global_settings["experiment_name"],
                 )
         # else:
-        print("Size of inputs {}".format(self.samples.shape))
-        print("Inputs {}".format(self.samples))
-        print("Size of outputs {}".format(self.output['mean'].shape))
-        print("Outputs {}".format(self.output['mean']))
+        _logger.info("Size of inputs %s", self.samples.shape)
+        _logger.info("Inputs %s", self.samples)
+        _logger.info("Size of outputs %s", self.output['mean'].shape)
+        _logger.info("Outputs %s", self.output['mean'])
 
     def read_pickle_file(self):
         """Read in data from a pickle file.

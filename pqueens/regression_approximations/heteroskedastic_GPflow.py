@@ -145,15 +145,17 @@ class HeteroskedasticGP(RegressionApproximation):
         """Train the variational by minimizing the variational loss in
         variational EM step."""
         np.random.seed(self.random_seed)
-        print("# ---- Train the GPFlow model ----- #\n")
+        _logger.info("# ---- Train the GPFlow model ----- #\n")
         for epoch in range(1, self.num_epochs + 1):
             self.optimizer()
             if epoch % 20 == 0 and epoch > 0:
                 data = (self.x_train, self.y_train)
                 loss_fun = self.model.training_loss_closure(data)
-                print(
-                    f'Progress: {epoch / self.num_epochs * 100 : .2f} %, Epoch {epoch}, '
-                    f'Loss: {loss_fun().numpy() : .2f}'
+                _logger.info(
+                    'Progress: %.2f %%, Epoch %s, Loss: %.2f',
+                    epoch / self.num_epochs * 100,
+                    epoch,
+                    loss_fun().numpy(),
                 )
 
     def predict(self, x_test, support=None, full_cov=False):
@@ -278,9 +280,9 @@ class HeteroskedasticGP(RegressionApproximation):
             num_latent_gps=likelihood.latent_dim,
         )
 
-        print('The GPFlow model used in this analysis is constructed as follows:')
+        _logger.info('The GPFlow model used in this analysis is constructed as follows:')
         print_summary(model)
-        print("\n")
+        _logger.info("\n")
         return model
 
     @classmethod

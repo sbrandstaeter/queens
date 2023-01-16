@@ -251,9 +251,9 @@ class SequentialMonteCarloChopinIterator(Iterator):
         _logger.info('Welcome to SMC (particles) core run.')
 
         for _ in self.smc_obj:
-            _logger.info(f"SMC step {self.smc_obj.t-1}")
+            _logger.info("SMC step %s", self.smc_obj.t - 1)
             self.n_sims = self.smc_obj.fk.model.n_sims
-            _logger.info(f"Number of forward runs {self.n_sims}")
+            _logger.info("Number of forward runs %s", self.n_sims)
             _logger.info("-" * 70)
             if self.n_sims >= self.max_feval:
                 _logger.warning("Maximum number of model evaluations reached!")

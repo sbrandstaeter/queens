@@ -416,12 +416,12 @@ class RPVIIterator(VariationalInferenceIterator):
     def _verbose_output(self):
         """Give some informative outputs during the VI iterations."""
         _logger.info("-" * 80)
-        _logger.info(f"Iteration {self.stochastic_optimizer.iteration + 1} of RPVI algorithm")
+        _logger.info("Iteration %s of RPVI algorithm", self.stochastic_optimizer.iteration + 1)
 
         super()._verbose_output()
 
         if self.stochastic_optimizer.iteration > 1:
-            _logger.info(f"Likelihood noise variance: {self.model.normal_distribution.covariance}%")
+            _logger.info("Likelihood noise variance: %s", self.model.normal_distribution.covariance)
         _logger.info("-" * 80)
 
     def _prepare_result_description(self):

@@ -93,9 +93,9 @@ class SobolSequenceIterator(Iterator):
     def pre_run(self):
         """Generate samples for subsequent sobol sequence analysis."""
 
-        _logger.info(f'Number of inputs: {self.parameters.num_parameters}')
-        _logger.info(f'Number of samples: {self.number_of_samples}')
-        _logger.info(f'Randomize: {self.randomize}')
+        _logger.info('Number of inputs: %s', self.parameters.num_parameters)
+        _logger.info('Number of samples: %s', self.number_of_samples)
+        _logger.info('Randomize: %s', self.randomize)
 
         # create samples
         sobol_engine = SobolEngine(

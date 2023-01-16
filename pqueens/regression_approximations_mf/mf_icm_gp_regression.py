@@ -1,5 +1,9 @@
+import logging
+
 import GPy
 import numpy as np
+
+_logger = logging.getLogger(__name__)
 
 
 class MF_ICM_GP_Regression(object):
@@ -97,7 +101,7 @@ class MF_ICM_GP_Regression(object):
         output['variance'] = variance
         if self.num_posterior_samples is not None:
             output['post_samples'] = self.predict_f_samples(Xnew, self.num_posterior_samples)
-        print("output type {}".format(type(output)))
+        _logger.info("output type %s", type(output))
         return output
 
     def predict_f(self, Xnew, level=None):

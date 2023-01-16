@@ -1,6 +1,9 @@
 """Utils to handle pickle files."""
+import logging
 import pickle
 from pathlib import Path
+
+_logger = logging.getLogger(__name__)
 
 
 def load_pickle(file_path):
@@ -31,7 +34,7 @@ def print_pickled_data(file_path):
         file_path (str): Path to pickle-file
     """
     data = load_pickle(Path(file_path))
-    print(f"\n\npickle file: {file_path}")
+    _logger.info("\n\npickle file: %s", file_path)
     for key, item in data.items():
         item_type = type(item)
         if isinstance(item, dict):
@@ -41,8 +44,8 @@ def print_pickled_data(file_path):
                     _create_single_item_string(subkey, subitem, type(subitem), seperator="-") + "\n"
                 )
             item = string.replace("\n", "\n    ")
-        print(_create_single_item_string(key, item, item_type))
-        print()
+        _logger.info(_create_single_item_string(key, item, item_type))
+        _logger.info()
 
 
 def _create_single_item_string(key, item, item_type, seperator="="):

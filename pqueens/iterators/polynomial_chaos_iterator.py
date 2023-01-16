@@ -119,7 +119,7 @@ class PolynomialChaosIterator(Iterator):
             valid_sampling_rules = collocation_valid_sampling_rules
         elif polynomial_chaos_approach == "pseudo_spectral":
             _logger.info(
-                f"Maximum number of collocation points was set to {num_collocation_points}."
+                "Maximum number of collocation points was set to %s.", num_collocation_points
             )
             valid_sampling_rules = projection_node_location_rules
             if sampling_rule is None:
@@ -164,7 +164,7 @@ class PolynomialChaosIterator(Iterator):
 
     def core_run(self):
         """Core run for the polynomial chaos iterator."""
-        _logger.info(f"Polynomial chaos using a {self.polynomial_chaos_approach} approach")
+        _logger.info("Polynomial chaos using a %s approach", self.polynomial_chaos_approach)
         if self.polynomial_chaos_approach == "collocation":
             polynomial_expansion, collocation_points = self._regression_based_pc()
         elif self.polynomial_chaos_approach == "pseudo_spectral":
@@ -200,7 +200,7 @@ class PolynomialChaosIterator(Iterator):
                 f"However the current setup with polynomial degree {self.polynomial_order} would"
                 f" lead to {num_collocation_points} collocation points"
             )
-        _logger.info(f"Number of collocation points: {num_collocation_points}")
+        _logger.info("Number of collocation points: %s", num_collocation_points)
         evaluations = self.model.evaluate(nodes.T)['mean']
 
         # Generate the polynomial chaos expansion based on the distribution

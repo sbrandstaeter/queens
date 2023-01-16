@@ -71,7 +71,7 @@ class SQLite(Database):
         if db_path is None:
             db_path = Path(config["global_settings"]["output_dir"]).joinpath(db_name + ".sqlite.db")
             _logger.info(
-                f"No path for the sqlite database was provided, defaulting to {db_path.resolve()}"
+                "No path for the sqlite database was provided, defaulting to %s", db_path.resolve()
             )
         else:
             db_path = Path(db_path)
@@ -109,7 +109,7 @@ class SQLite(Database):
                 self.database_path, detect_types=sqlite3.PARSE_DECLTYPES, check_same_thread=False
             )
             connection.cursor()
-            _logger.info(f"Connected to {self.database_path}")
+            _logger.info("Connected to %s", self.database_path)
         except Exception as exception:
             raise QUEENSDatabaseError(
                 "Could not connect to sqlite database from path {self.database_path}"

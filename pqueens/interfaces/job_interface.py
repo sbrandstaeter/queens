@@ -7,7 +7,6 @@ import numpy as np
 import pqueens.database.database as DB_module
 from pqueens.interfaces.interface import Interface
 from pqueens.resources.resource import parse_resources_from_configuration
-from pqueens.schedulers.cluster_scheduler import VALID_CLUSTER_CLUSTER_TYPES
 from pqueens.utils.config_directories import experiment_directory
 
 _logger = logging.getLogger(__name__)
@@ -293,7 +292,7 @@ class JobInterface(Interface):
             job: new job
         """
         if new_id is None:
-            print("Created new job")
+            _logger.info('Created new job')
             num_jobs = self.count_jobs()
             job_id = num_jobs + 1
         else:
@@ -358,7 +357,7 @@ class JobInterface(Interface):
         mean_values = []
         gradient_values = []
         if not self.all_jobs_finished():
-            print("Not all jobs are finished yet, try again later")
+            _logger.info('Not all jobs are finished yet, try again later')
         else:
             jobs = self.load_jobs(
                 field_filters={
@@ -438,10 +437,14 @@ class JobInterface(Interface):
                                 current_check_job['end_time'] - current_check_job['start_time']
                             )
                             _logger.info(
-                                f'Successfully completed job {current_check_job["id"]} '
-                                f'(No. of proc.: {current_check_job["num_procs"]}, '
-                                f'computing time: {computing_time} s).\n'
+                                'Successfully completed job %d'
+                                'No. of proc.: %d'
+                                'computing time: %E s.\n',
+                                current_check_job["id"],
+                                current_check_job["num_procs"],
+                                computing_time,
                             )
+
                             self.save_job(current_check_job)
                             return
 
@@ -537,7 +540,8 @@ class JobInterface(Interface):
 
     def print_resources_status(self):
         """Print out whats going on on the resources."""
-        _logger.info('\nResources:      ')
+        _logger.info('\n')
+        _logger.info('Resources:      ')
         _logger.info('NAME            PENDING      COMPLETED    FAILED   ')
         _logger.info('------------    ---------    ---------    ---------')
         total_pending = 0
@@ -553,10 +557,17 @@ class JobInterface(Interface):
             total_complete += complete
             total_failed += failed
             _logger.info(
-                f'{resource.name:12.12}    {pending:<9d}    {complete:<9d}    {failed:<9d}'
+                '%s    %s    %s    %s',
+                resource.name.ljust(12),
+                str(pending).ljust(9),
+                str(complete).ljust(9),
+                str(failed).ljust(9),
             )
         _logger.info(
-            f'{"*TOTAL*":12.12}    {total_pending:<9d}    {total_complete:<9d}    '
-            f'{total_failed:<9d}'
+            '%s    %s    %s    %s',
+            "*TOTAL*".ljust(12),
+            str(total_pending).ljust(9),
+            str(total_complete).ljust(9),
+            str(total_failed).ljust(9),
         )
         _logger.info('\n')

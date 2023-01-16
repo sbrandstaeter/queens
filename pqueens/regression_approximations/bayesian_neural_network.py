@@ -1,3 +1,4 @@
+import logging
 import os
 
 import numpy as np
@@ -6,6 +7,8 @@ import tensorflow_probability as tfp
 
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 
+_logger = logging.getLogger(__name__)
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 tfd = tfp.distributions
 DenseVar = tfp.layers.DenseVariational
@@ -13,9 +16,9 @@ tf.keras.backend.set_floatx('float64')
 
 # Use GPU acceleration if possible
 if tf.test.gpu_device_name() != '/device:GPU:0':
-    print('WARNING: GPU device not found.')
+    _logger.info('WARNING: GPU device not found.')
 else:
-    print('SUCCESS: Found GPU: {}'.format(tf.test.gpu_device_name()))
+    _logger.info('SUCCESS: Found GPU: %s', tf.test.gpu_device_name())
 
 
 class GaussianBayesianNeuralNetwork(RegressionApproximation):

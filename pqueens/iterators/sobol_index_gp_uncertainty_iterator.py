@@ -16,7 +16,6 @@ from pqueens.iterators.sobol_index_gp_uncertainty.statistics import (
     StatisticsThirdOrderSobolIndexEstimates,
 )
 from pqueens.models import from_config_create_model
-from pqueens.utils.logger_settings import log_through_print
 from pqueens.utils.process_outputs import write_results
 
 from .iterator import Iterator
@@ -155,7 +154,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
 
         num_procs = method_options.get("num_procs", mp.cpu_count() - 2)
 
-        _logger.info('Calculate second-order indices is {}'.format(calculate_second_order))
+        _logger.info('Calculate second-order indices is %s', calculate_second_order)
 
         return cls(
             model,
@@ -213,7 +212,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         # 4. Evaluate statistics
         self.evaluate_statistics(estimates)
 
-        _logger.info(f'Time for full calculation: {time.time() - start_run}')
+        _logger.info('Time for full calculation: %s', time.time() - start_run)
 
     def evaluate_statistics(self, estimates):
         """Evaluate statistics of Sobol index estimates.
@@ -223,7 +222,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         """
         if self.calculate_third_order:
             self.results['third_order'] = self.statistics[0].evaluate(estimates['third_order'])
-            log_through_print(_logger, self.results['third_order'])
+            _logger.info(str(self.results['third_order']))
         else:
             _logger.info('First-order Sobol indices:')
             self.results['first_order'] = self.statistics[0].evaluate(estimates['first_order'])

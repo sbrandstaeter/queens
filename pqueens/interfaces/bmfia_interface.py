@@ -213,8 +213,8 @@ class BmfiaInterface(Interface):
         num_processors_for_job = min(self.num_processors_multi_processing, num_coords)
 
         _logger.info(
-            "Run generation and training of probabilistic surrogates in parallel "
-            f"on {num_processors_for_job} processors..."
+            "Run generation and training of probabilistic surrogates in parallel on %d processors.",
+            num_processors_for_job,
         )
 
         # Init multi-processing pool

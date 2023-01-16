@@ -119,7 +119,8 @@ class StandardScheduler(Scheduler):
             string (str): ClusterScheduler object description
         """
         name = "Standard Scheduler"
-        print_dict = self._create_base_print_dict()
+        resource_info = 'local'
+        print_dict = self._create_base_print_dict(resource_info)
         return get_str_table(name, print_dict)
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
@@ -150,7 +151,7 @@ class StandardScheduler(Scheduler):
 
         cmdlist_remote_main = [f'singularity run {ABS_SINGULARITY_IMAGE_PATH}'] + remote_args
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        _logger.info(cmd_remote_main)
+        _logger.debug(cmd_remote_main)
         _, pid, _, _ = run_subprocess(cmd_remote_main, subprocess_type='submit')
         return pid
 

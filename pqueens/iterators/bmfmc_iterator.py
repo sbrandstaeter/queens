@@ -319,9 +319,11 @@ class BMFMCIterator(Iterator):
         self.Y_LFs_train = self.model.Y_LFs_mc[self.model.training_indices]
         if self.model.training_indices.shape[0] < n_points:
             _logger.warning(
-                f"The chosen number of training points ({self.model.training_indices.shape[0]}) "
-                f"for the HF-LF mapping is smaller than specified ({n_points}). "
-                f"Reduce the number of bins to increase the number of training points!"
+                "The chosen number of training points (%s) "
+                "for the HF-LF mapping is smaller than specified (%s). "
+                "Reduce the number of bins to increase the number of training points!",
+                self.model.training_indices.shape[0],
+                n_points,
             )
 
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------

@@ -181,7 +181,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
             self.file_path = file_list[0]
             file_exists = True
         else:
-            _logger.warning(f"The file '{file_path_regex}' does not exist!")
+            _logger.warning("The file '%s' does not exist!", file_path_regex)
             file_exists = False
 
         return file_exists
@@ -218,6 +218,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                     file.unlink()
         except Exception as exception:
             _logger.debug(
-                f"Could not remove file with path: '{str(current_file.resolve())}'. "
-                f"The following error was raised: {exception}"
+                "Could not remove file with path: '%s'. " "The following error was raised: %s",
+                str(current_file.resolve()),
+                exception,
             )

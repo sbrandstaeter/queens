@@ -1,6 +1,7 @@
 """Test the main module."""
 import json
 import sys
+import logging
 from pathlib import Path
 
 import pytest
@@ -54,13 +55,14 @@ def test_get_config_dict_input(input_file, test_path, debug_flag):
     assert config == true_config
 
 
-def test_main_greeting_message(capfd):
-    """Test if greeting mesaage is provided for in case of no inputs."""
+def test_main_greeting_message(caplog):
+    """Test if greeting message is provided for in case of no inputs."""
     argv = ["python_file.py"]
     with patch.object(sys, 'argv', argv):
-        main()
-        out, _ = capfd.readouterr()
-        assert out.find("To use QUEENS run") > -1
+
+        with caplog.at_level(logging.INFO):
+            main()
+        assert "To use QUEENS run" in caplog.text
 
 
 def test_main_call(mocker):

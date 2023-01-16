@@ -101,7 +101,6 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
         my_vals = self.my_field_generator.evaluate_field_at_location(self.loc, xi)
         # last two arguments are relative and absolute tolerance, respectively
         # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        # print(my_vals)
         np.testing.assert_allclose(
             my_vals,
             np.array(
@@ -133,13 +132,6 @@ class TestRandomFieldGeneratorKLE2D(unittest.TestCase):
         act_corr_at_dist_25_2 = np.corrcoef(my_vals[0, :], my_vals[3, :])
         act_corr_at_dist_100_1 = np.corrcoef(my_vals[0, :], my_vals[6, :])
         act_corr_at_dist_100_2 = np.corrcoef(my_vals[0, :], my_vals[5, :])
-
-        # print(act_corr_at_dist_10_1[0,1])
-        # print(act_corr_at_dist_10_2[0,1])
-        # print(act_corr_at_dist_25_1[0,1])
-        # print(act_corr_at_dist_25_2[0,1])
-        # print(act_corr_at_dist_100_1[0,1])
-        # print(act_corr_at_dist_100_2[0,1])
 
         ref_corr_at_dist_10_1 = 0.775464749465
         ref_corr_at_dist_10_2 = 0.721072478791

@@ -1,5 +1,7 @@
 """Multi-fideliy latin hypercube sampling."""
 
+import logging
+
 import numpy as np
 from pyDOE import lhs
 
@@ -7,6 +9,8 @@ from pqueens.models import from_config_create_model
 from pqueens.models.multifidelity_model import MultifidelityModel
 
 from .iterator import Iterator
+
+_logger = logging.getLogger(__name__)
 
 
 # TODO add test cases for mf LHS iterator
@@ -64,7 +68,7 @@ class MFLHSIterator(Iterator):
             iterator: MFLHSIterator object
         """
         method_options = config[iterator_name]["method_options"]
-        print("Method options {}".format(method_options))
+        _logger.info('Method options %s', method_options)
         if model is None:
             model_name = method_options["model"]
             model = from_config_create_model(model_name, config)
@@ -120,10 +124,10 @@ class MFLHSIterator(Iterator):
     def post_run(self):
         """Analyze the results."""
         for i in range(self.model.num_levels):
-            print("Size of inputs in LHS{}".format(self.samples[i].shape))
-            print("Inputs {}".format(self.samples[i]))
-            print("Size of outputs {}".format(self.outputs[i]['mean'].shape))
-            print("Outputs {}".format(self.outputs[i]['mean']))
+            _logger.info('Size of inputs in LHS %s', self.samples[i].shape)
+            _logger.info('Inputs %s', self.samples[i])
+            _logger.info('Size of outputs %s', self.outputs[i]['mean'].shape)
+            _logger.info('Outputs %s', self.outputs[i]['mean'])
 
     def select_random_subset(self, samples, subset_size):
         """Select a subset of provided samples and return it.

@@ -135,13 +135,6 @@ class TestRandomFieldGeneratorFourier2D(unittest.TestCase):
         # exp_corr_at_dist_25     = exp(-(loc(3)-loc(1))^2/corr_length^2);
         # exp_corr_at_dist_100    = exp(-(loc(4)-loc(1))^2/corr_length^2);
 
-        # print(act_corr_at_dist_10_1[0,1])
-        # print(act_corr_at_dist_10_2[0,1])
-        # print(act_corr_at_dist_25_1[0,1])
-        # print(act_corr_at_dist_25_2[0,1])
-        # print(act_corr_at_dist_100_1[0,1])
-        # print(act_corr_at_dist_100_2[0,1])
-
         ref_corr_at_dist_10_1 = 0.860367233062
         ref_corr_at_dist_10_2 = 0.866693990382
         ref_corr_at_dist_25_1 = 0.354716997757

@@ -61,8 +61,9 @@ def safe_cholesky(matrix):
             jitter = matrix_max * 1e-10 * 10**i
             matrix_ = matrix + np.eye(matrix.shape[0]) * jitter
             _logger.warning(
-                f'Added {jitter:.2e} to diagonal of matrix for numerical stability '
-                'of cholesky decompostition'
+                'Added %.2e to diagonal of matrix for numerical stability '
+                'of cholesky decompostition',
+                jitter,
             )
             try:
                 low_cholesky = np.linalg.cholesky(matrix_)

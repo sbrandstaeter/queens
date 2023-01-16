@@ -22,6 +22,7 @@ References:
      Blackwell Publishing Ltd, 68(3), pp. 411–436.
      doi: 10.1111/j.1467-9868.2006.00553.x.
 """
+import logging
 import warnings
 
 import arviz as az
@@ -34,6 +35,8 @@ from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIte
 from pqueens.models import from_config_create_model
 from pqueens.utils import smc_utils
 from pqueens.utils.process_outputs import process_ouputs, write_results
+
+_logger = logging.getLogger(__name__)
 
 
 class SequentialMonteCarloIterator(Iterator):
@@ -136,10 +139,9 @@ class SequentialMonteCarloIterator(Iterator):
         Returns:
             iterator: SequentialMonteCarloIterator object
         """
-        print(
-            "Sequential Monte Carlo Iterator for experiment: {0}".format(
-                config.get('global_settings').get('experiment_name')
-            )
+        _logger.info(
+            "Sequential Monte Carlo Iterator for experiment: %s",
+            config.get('global_settings').get('experiment_name'),
         )
         method_options = config[iterator_name]['method_options']
         if model is None:
@@ -217,7 +219,7 @@ class SequentialMonteCarloIterator(Iterator):
 
     def pre_run(self):
         """Draw initial sample."""
-        print("Initialize run.")
+        _logger.info("Initialize run.")
         np.random.seed(self.seed)
 
         # draw initial particles from prior distribution
@@ -295,7 +297,9 @@ class SequentialMonteCarloIterator(Iterator):
             root_result = scipy.optimize.root_scalar(f, bracket=search_interval, method='toms748')
             gamma_new = root_result.root
         except:
-            print(f"Could not find suitable gamma within {search_interval}: setting gamma=1.0")
+            _logger.info(
+                "Could not find suitable gamma within %s: setting gamma=1.0", search_interval
+            )
             gamma_new = 1.0
 
         return gamma_new
@@ -355,7 +359,7 @@ class SequentialMonteCarloIterator(Iterator):
 
     def core_run(self):
         """Core run of Sequential Monte Carlo iterator."""
-        print('Welcome to SMC core run.')
+        _logger.info('Welcome to SMC core run.')
         # counter
         step = 0
         # average accept rate of MCMC kernel
@@ -372,7 +376,7 @@ class SequentialMonteCarloIterator(Iterator):
 
             # Resample
             if self.ess_cur <= 0.5 * self.num_particles:
-                print("Resampling...")
+                _logger.info("Resampling...")
                 (
                     particles_resampled,
                     weights_resampled,
@@ -389,7 +393,7 @@ class SequentialMonteCarloIterator(Iterator):
 
                 self.update_ess(resampled=True)
 
-            print(f"step {step} gamma: {self.gamma_cur:.5} ESS: {self.ess_cur:.5}")
+            _logger.info("step %s gamma: %.5f ESS: %.5f", step, self.gamma_cur, self.ess_cur)
 
             # estimate current covariance matrix
             cov_mat = np.atleast_2d(
@@ -455,16 +459,16 @@ class SequentialMonteCarloIterator(Iterator):
             )
             std = np.sqrt(var)
 
-            print("\tESS: {}".format(self.ess_cur))
-            print(f"\tIS mean±std: {mean}±{std}")
+            _logger.info("\tESS: %s", self.ess_cur)
+            _logger.info("\tIS mean±std: %s±%s", mean, std)
 
-            print(
-                "\tmean±std: {}±{}".format(
-                    results.get('mean', np.nan), np.sqrt(results.get('var', np.nan))
-                )
+            _logger.info(
+                "\tmean±std: %s±%s",
+                results.get('mean', np.nan),
+                np.sqrt(results.get('var', np.nan)),
             )
-            print("\tvar: {}".format(results.get('var', np.nan)))
-            print("\tcov: {}".format(results.get('cov', np.nan)))
+            _logger.info("\tvar: %s", (results.get('var', np.nan)))
+            _logger.info("\tcov: %s", results.get('cov', np.nan))
 
     def draw_trace(self, step):
         """Plot the trace of the current particle approximation.

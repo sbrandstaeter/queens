@@ -4,7 +4,6 @@
 """
 
 import unittest
-
 import numpy as np
 import pytest
 from scipy import stats
@@ -58,7 +57,6 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         # pylint: enable=line-too-long
 
         self.my_stoch_dim = self.my_field_generator.get_stoch_dim()
-        # print(self.my_stoch_dim)
 
     # should trigger error because desired energy fraction not reached
     def test_not_enough_fourier_terms(self):
@@ -115,9 +113,6 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         xi = np.random.randn(self.my_stoch_dim, 1)
 
         my_vals = self.my_field_generator.evaluate_field_at_location(self.loc, xi)
-        #
-        # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        # print(my_vals)
 
         np.testing.assert_allclose(
             my_vals,
@@ -158,19 +153,6 @@ class TestRandomFieldGeneratorKLE3D(unittest.TestCase):
         act_corr_at_dist_100_1 = np.corrcoef(my_vals[0, :], my_vals[7, :])
         act_corr_at_dist_100_2 = np.corrcoef(my_vals[0, :], my_vals[8, :])
         act_corr_at_dist_100_3 = np.corrcoef(my_vals[0, :], my_vals[9, :])
-
-        # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        # print(act_corr_at_dist_10_1[0,1])
-        # print(act_corr_at_dist_10_2[0,1])
-        # print(act_corr_at_dist_10_3[0,1])
-        #
-        # print(act_corr_at_dist_25_1[0,1])
-        # print(act_corr_at_dist_25_2[0,1])
-        # print(act_corr_at_dist_25_3[0,1])
-        #
-        # print(act_corr_at_dist_100_1[0,1])
-        # print(act_corr_at_dist_100_2[0,1])
-        # print(act_corr_at_dist_100_3[0,1])
 
         ref_corr_at_dist_10_1 = 0.718169328847
         ref_corr_at_dist_10_2 = 0.764240432309
