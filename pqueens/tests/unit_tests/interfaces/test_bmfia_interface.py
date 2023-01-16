@@ -1,4 +1,4 @@
-"""Unittests for the Bayesian multi-fidelity inverse analysis interface."""
+"""Unit tests for the Bayesian multi-fidelity inverse analysis interface."""
 
 import time
 
@@ -31,15 +31,15 @@ class DummyRegression:
         return {"mean": np.array([1, 2]), "variance": np.array([4, 5])}
 
     def train(*_, **__):
-        """A dummpy training method."""
+        """A dummy training method."""
         time.sleep(0.01)
 
     def set_state(self, *_, **__):
-        """A dummpy set_state method."""
+        """A dummy *set_state* method."""
         self.state = 1
 
     def get_state(self, *_, **__):
-        """A dummpy get_state method."""
+        """A dummy *get_state* method."""
         return {'test': 'test'}
 
 
@@ -64,7 +64,7 @@ def my_state_lst():
 
 
 class MyContextManagerPool:
-    """A dummy contect manager pool class."""
+    """A dummy context manager pool class."""
 
     def __init__(self, *_, **__):
         """Init context manager pool."""
@@ -135,7 +135,7 @@ def test_map(default_bmfia_interface, default_probabilistic_obj_lst):
 
 
 def test_build_approximation(default_bmfia_interface, mocker):
-    """Test the set-up / build of the probabilsitic regression models."""
+    """Test the set-up/build of the probabilistic regression models."""
     Z_LF_train = np.zeros((2, 30))
     Y_HF_train = np.zeros((2, 25))
     dummy_lst = [1, 2, 3]

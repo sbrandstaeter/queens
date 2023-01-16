@@ -22,7 +22,7 @@ def test_rpvi_iterator_park91a_hifi(
 ):
     """Integration test for the rpvi iterator.
 
-    Based on the park91a_hifi function.
+    Based on the *park91a_hifi* function.
     """
     template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
     experimental_data_path = tmpdir
@@ -68,7 +68,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 ):
     """Integration test for the rpvi iterator.
 
-    Based on the park91a_hifi function.
+    Based on the *park91a_hifi* function.
     """
     template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
     experimental_data_path = tmpdir
@@ -108,7 +108,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 def test_rpvi_iterator_park91a_hifi_provided_gradient(
     inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
 ):
-    """Test for the rpvi iterator based on the park91a_hifi function."""
+    """Test for the rpvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
     template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
     experimental_data_path = tmpdir

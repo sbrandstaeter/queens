@@ -20,7 +20,7 @@ def run(input_file, output_dir, debug=False):
     """Do a QUEENS run.
 
     Args:
-        input_file (pathlib.Path): Path object to input file
+        input_file (pathlib.Path): Path object to the input file
         output_dir (pathlib.Path): Path object to the output directory
         debug (bool): True if debug mode is to be used
     """
@@ -78,7 +78,7 @@ def get_config_dict(input_file, output_dir, debug=False):
     """Create QUEENS run config from input file and output dir.
 
     Args:
-        input_file (pathlib.Path): Path object to input file
+        input_file (pathlib.Path): Path object to the input file
         output_dir (pathlib.Path): Path object to the output directory
         debug (bool): True if debug mode is to be used
 

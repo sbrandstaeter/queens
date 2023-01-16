@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import numpy as np
 
 from pqueens.randomfields.generic_external_random_field import GenericExternalRandomField
@@ -10,8 +12,10 @@ from pqueens.randomfields.random_field_gen_KLE_3d import RandomFieldGenKLE3D
 
 
 class UniVarRandomFieldGeneratorFactory(object):
-    """Class that is currently used for the generation of random fields and
-    which gets called in other modules such as the monte_carlo_iterator. This
+    """TODO_doc: add one-line explanation.
+
+    Class that is currently used for the generation of random fields and
+    which gets called in other modules such as the *monte_carlo_iterator*. This
     class is basically a wrapper for different existing random field
     definitions.
 
@@ -52,14 +56,15 @@ class UniVarRandomFieldGeneratorFactory(object):
             field_bbox (np.array): Box in which the random field should be realized (for spectral
                               representation only and without external definition)
             num_terms_per_dim (int): Number of terms per dimension (for spectral decomposition only)
-            total_terms (int): Total number of terms (spectral decomposition only)
+            total_terms (int): Total Number of terms (spectral decomposition only)
             std_hyperparam_rf (float): Hyperparameter for standard-deviation of random field
             mean_fun_params (lst): List of parameters for mean function parameterization
                                    of random field
             mean_fun_type (str): Type of mean function that should be used
-            num_samples (int): Number of samples/field_realizations of the random field
+            num_samples (int): Number of *samples*/*field_realizations* of the random field
             external_geometry_obj (obj): Instance of the external geometry class
             external_definition (dict): External definition of the random fields
+            dimension: TODO_doc
 
         Returns:
             rf (obj): Instance of a random field generator class
@@ -159,10 +164,12 @@ class UniVarRandomFieldGeneratorFactory(object):
     def calculate_one_truncated_realization_of_all_fields(
         database, job_id, experiment_name, batch, experiment_dir, random_fields_lst, driver_name
     ):
-        """This method gets called in the driver and calculated one realization
+        """TODO_doc: add one-line explanation.
+
+        This method gets called in the driver and calculates one realization
         of all involved random fields from the in the db stored truncated
         basis, the random coefficients matrix and the current job number.
-        (Driver realizes one input sample, such that the job_id is used to
+        (Driver realizes one input sample, such that the *job_id* is used to
         identify the current sample from the sample matrix.)
 
         Args:
@@ -170,13 +177,13 @@ class UniVarRandomFieldGeneratorFactory(object):
             job_id (int): Job ID number
             experiment_name (str): Name of the current QUEENS experiment
             batch (int): Batch number
-            random_fields_lst (lst): List of random field definitions
             experiment_dir (str): Path to QUEENS experiment directory
+            random_fields_lst (lst): List of random field definitions
             driver_name (str): Name of the driver for current analysis
 
         Returns:
-            realized_random_fields_lst (lst): List containing field_realizations of involved random
-                                              fields
+            realized_random_fields_lst (lst): List containing
+            *field_realizations* of involved random fields
         """
         # load random field representation
         truncated_random_field_representation_dict = database.load(

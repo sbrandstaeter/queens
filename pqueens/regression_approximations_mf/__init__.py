@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Multi-Fidelity Regression Approximations.
 
-This package contains a set of multi-fidelits regression approximations,
-i.e., multi-task regression models which are the essential building block for
+This package contains a set of multi-fidelity regression approximations,
+i.e. multi-task regression models which are the essential building block for
 multi-fidelity surrogate models. For the actual implementation of the regression
 models external third party libraries are used, such as `GPy`_, `GPFlow`_.
 
@@ -30,7 +30,7 @@ VALID_TYPES = {
 
 
 def from_comfig_create_regression_approximators_mf(approx_options, x_train, y_train):
-    """Create multi-fideltiy approximation from options dict.
+    """Create multi-fidelity approximation from options dict.
 
     Args:
         approx_options (dict): Dictionary with approximation options
@@ -38,7 +38,7 @@ def from_comfig_create_regression_approximators_mf(approx_options, x_train, y_tr
         y_train (list):         List with training output arrays
 
     Returns:
-        RegressionApproximationMF: Multi-Fidelity regression approximation object
+        RegressionApproximationMF: Multi-fidelity regression approximation object
     """
     approx_class = get_module_class(approx_options, VALID_TYPES)
     approx_obj = approx_class.from_options(approx_options, x_train, y_train)

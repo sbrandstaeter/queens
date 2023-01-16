@@ -11,9 +11,9 @@ class NormalDistribution(Distribution):
     """Normal distribution.
 
     Attributes:
-        low_chol (np.ndarray): lower-triangular Cholesky factor of covariance matrix
-        precision (np.ndarray): Precision matrix corresponding to covariance matrix
-        logpdf_const (float): Constant for evaluation of log pdf
+        low_chol (np.ndarray): Lower-triangular Cholesky factor of covariance matrix.
+        precision (np.ndarray): Precision matrix corresponding to covariance matrix.
+        logpdf_const (float): Constant for evaluation of log pdf.
     """
 
     def __init__(self, mean, covariance, dimension, low_chol, precision, logpdf_const):
@@ -86,7 +86,7 @@ class NormalDistribution(Distribution):
             x (np.ndarray): Positions at which the cdf is evaluated
 
         Returns:
-            cdf (np.ndarray): CDF at evaluated positions
+            cdf (np.ndarray): cdf at evaluated positions
         """
         cdf = scipy.stats.multivariate_normal.cdf(
             x.reshape(-1, self.dimension), mean=self.mean, cov=self.covariance
@@ -120,7 +120,7 @@ class NormalDistribution(Distribution):
         return logpdf
 
     def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to x.
+        """Gradient of the log pdf with respect to *x*.
 
         Args:
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated

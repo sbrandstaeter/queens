@@ -14,7 +14,12 @@ class Iterator(metaclass=abc.ABCMeta):
     of this base class is twofold. First, it defines the unified
     interface of the iterator hierarchy. Second, it works as factory
     which allows unified instantiation of iterator object by calling its
-    classmethods.
+    class methods.
+
+    Attributes:
+        model (obj, optional): Model to be evaluated by iterator.
+        global_settings (dict, optional): Settings for the QUEENS run.
+        parameters: TODO_doc
     """
 
     def __init__(self, model=None, global_settings=None):
@@ -31,8 +36,8 @@ class Iterator(metaclass=abc.ABCMeta):
     def pre_run(self):
         """Optional pre-run portion of run.
 
-        Implemented by Iterators which can generate all Variables a
-        priori
+        Implemented by Iterators which can generate all variables a
+        priori.
         """
         pass
 
@@ -44,7 +49,7 @@ class Iterator(metaclass=abc.ABCMeta):
     def post_run(self):
         """Optional post-run portion of run.
 
-        E.g., for doing some post processing.
+        E.g. for doing some post processing.
         """
         pass
 

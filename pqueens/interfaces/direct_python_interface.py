@@ -14,19 +14,17 @@ from pqueens.utils.pool_utils import create_pool
 class DirectPythonInterface(Interface):
     """Class for mapping input variables to responses using a python function.
 
-        The DirectPythonInterface class maps input variables to outputs,
-        i.e. responses by making direct calls to a python function. The function
-        has to be defined in a file, which is passed as an argument at runtime.
-        The structure of the file must adhere to the structure of the files
-        in the folder pqueens/example_input_files. In fact the purpose of
-        this class is to be able to call the test examples in said folder.
+    The *DirectPythonInterface* class maps input variables to outputs,
+    i.e. responses, by making direct calls to a python function. The function
+    has to be defined in a file, which is passed as an argument at runtime.
+    The structure of the file must adhere to the structure of the files
+    in the folder *pqueens/example_input_files*. In fact the purpose of
+    this class is to be able to call the test examples in the said folder.
 
     Attributes:
-        name (string):          name of interface
-        variables (dict):       dictionary with variables
-        function (function):    function to evaluate
-        pool (pathos pool):     multiprocessing pool
-        latest_job_id (int):    Latest job id
+        function (function):    Function to evaluate.
+        pool (pathos pool):     Multiprocessing pool.
+        latest_job_id (int):    Latest job ID.
     """
 
     def __init__(self, interface_name, function, pool):
@@ -48,11 +46,11 @@ class DirectPythonInterface(Interface):
         """Create interface from config dictionary.
 
         Args:
-            interface_name (str):   name of interface
-            config(dict):           dictionary containing problem description
+            interface_name (str):   Name of interface
+            config(dict):           Dictionary containing problem description
 
         Returns:
-            interface:              instance of DirectPythonInterface
+            interface: Instance of DirectPythonInterface
         """
         interface_options = config[interface_name]
 
@@ -79,13 +77,16 @@ class DirectPythonInterface(Interface):
 
         Args:
             samples (list): List of variables objects
-            gradient_bool (bool): Flag to determine, whether the gradient of the function at
-                                  the evaluation point is expected (True) or not (False)
+            gradient_bool (bool): Flag to determine whether the gradient of the function at
+                                  the evaluation point is expected (*True*) or not (*False*)
 
         Returns:
             dict: dictionary with
-                  key:     value:
-                  'mean' | ndarray shape:(samples size, shape_of_response)
+                +----------+------------------------------------------------+
+                |**key:**  |  **value:**                                    |
+                +----------+------------------------------------------------+
+                |'mean'    | ndarray shape (samples size, shape_of_response)|
+                +----------+------------------------------------------------+
         """
         number_of_samples = len(samples)
 
@@ -125,24 +126,24 @@ class DirectPythonInterface(Interface):
     def function_wrapper(function):
         """Wrap the function to be used.
 
-        This wrapper calls the function by a kwargs dict only and reshapes output as needed. This
-        way if called in a pool the reshaping is also done by the workers.
+        This wrapper calls the function by a kwargs dict only and reshapes the output as needed.
+        This way if called in a pool, the reshaping is also done by the workers.
 
         Args:
-            function (function): function to be wrapped
+            function (function): Function to be wrapped
 
         Returns:
-            reshaped_output_function (function): wrapped function
+            reshaped_output_function (function): Wrapped function
         """
 
         def reshaped_output_function(sample_dict):
             """Call function and reshape output.
 
             Args:
-                sample_dict (dict): dictionary containing parameters and `job_id`
+                sample_dict (dict): Dictionary containing parameters and `job_id`
 
             Returns:
-                (np.ndarray): result of the function call
+                (np.ndarray): Result of the function call
             """
             result_array = function(**sample_dict)
             if isinstance(result_array, tuple):

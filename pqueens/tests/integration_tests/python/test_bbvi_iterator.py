@@ -51,8 +51,8 @@ def test_bbvi_density_match(
             dummy_bbvi_instance._get_gradient_function()
         )
         dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
-            var_params.reshape(-1, 1)  # actual run of the algorithm
-        )
+            var_params.reshape(-1, 1)
+        )  # actual run of the algorithm
         dummy_bbvi_instance.noise_list = [6, 6, 6]
         dummy_bbvi_instance.run()
 
@@ -76,7 +76,7 @@ def test_bbvi_density_match(
 def test_bbvi_iterator_park91a_hifi(
     inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
 ):
-    """Test for the bbvi iterator based on the park91a_hifi function."""
+    """Test for the bbvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
     template = os.path.join(inputdir, "bbvi_park91a_hifi_template.yml")
     experimental_data_path = tmpdir

@@ -5,7 +5,7 @@ import abc
 class RegressionApproximation(metaclass=abc.ABCMeta):
     """Base class for regression approximations.
 
-    Regression approximation are regression models/approaches that are
+    Regression approximation are regression models/approaches, that are
     called regression approximations within QUEENS to avoid the term
     model.
     """

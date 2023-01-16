@@ -48,7 +48,7 @@ def model(model_name, uncertain_parameters, mocker):
 
 @pytest.fixture(scope='module')
 def data_vector():
-    """Possible data vector compatible with uncertain_parameters."""
+    """Possible data vector compatible with *uncertain_parameters*."""
     # total size is sum of size values of uncertain_parameters
     data_vector = np.zeros(3)
 
@@ -61,7 +61,7 @@ def data_vector():
 
 @pytest.fixture(scope='module')
 def data_batch(data_vector):
-    """Possible data batch compatible with uncertain_parameters.
+    """Possible data batch compatible with *uncertain_parameters*.
 
     A data batch is a collection of data vectors.
     """
@@ -80,7 +80,7 @@ def responses():
 
 
 def test_init(model, model_name, uncertain_parameters):
-    """Test get_parameters."""
+    """Test *get_parameters*."""
     assert model.parameters is uncertain_parameters
     assert model.name == model_name
     assert model.response is None

@@ -1,4 +1,4 @@
-"""Integration test for reparameerization trick VI as executable."""
+"""Integration test for reparametrization trick VI as executable."""
 
 import os
 import pickle
@@ -20,7 +20,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     gradient_method,
     create_input_file_executable_park91a_hifi_on_grid,
 ):
-    """Test for the rpvi iterator based on the park91a_hifi function."""
+    """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
     template = os.path.join(inputdir, "rpvi_exe_park91a_hifi_template.json")
     third_party_input_file = tmpdir.join("input_file_executable_park91a_hifi_on_grid.csv")

@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import sys
 
 import numpy as np
@@ -12,23 +14,21 @@ class MultiVariateRandomFieldGenerator(object):
     """Generator of samples of multivariate cross-correlated random fields.
 
     Class for the generation of samples from Gaussian and
-    and non-Gaussian multi variate random fields using translation process
+    non-Gaussian multi variate random fields using translation process
     theory. The generation of the cross-correlated random fields is based on
-    the approach described in
+    the approach described in:
 
     Vorechovsky, Miroslav. "Simulation of simply cross correlated random fields
     by series expansion methods." Structural safety 30.4 (2008): 337-363.
 
     Attributes:
-        var_dim (int):      how many variates do we have
-        prob_dists (list):  vector of marginal probability distribution of
-                            the fields
-        stoch_dim (int):    stochastic dimension, i.e., number of random variable
-                            needed to generate samples
-        my_univ_rfs (list): univaraite random field generators
-        pre_factor (linalg.block_diag):  factor to multiply independent random
+        var_dim (int):      How many variates do we have?
+        my_univ_rfs (list): Univariate random field generators.
+        stoch_dim (int):    Stochastic dimension, i.e. number of random variable
+                            needed to generate samples.
+        pre_factor (linalg.block_diag):  Factor to multiply independent random
                                          phase angles with (product of eigenvector
-                                         and values of cross-correlation matrix)
+                                         and values of cross-correlation matrix).
     """
 
     def __init__(
@@ -44,7 +44,8 @@ class MultiVariateRandomFieldGenerator(object):
         num_terms_per_dim=None,
         total_terms=None,
     ):
-        """
+        """TODO_doc.
+
         Args:
             marginal_distributions (list): probability distributions of
                                            individual fields
@@ -61,7 +62,6 @@ class MultiVariateRandomFieldGenerator(object):
                                            dimension
             total_terms (int):             number of total expansion terms
                                            (per field)
-
         """
         # do some sanity checks
         if num_fields == len(crosscorr[:, 0]) and num_fields == len(crosscorr[0, :]):
@@ -122,21 +122,21 @@ class MultiVariateRandomFieldGenerator(object):
         """Return stochastic dimension of multi-variate field.
 
         Returns:
-            (int): stochastic dimension
+            int: Stochastic dimension
         """
         return self.stoch_dim
 
     def evaluate_field_at_location(self, x, xi):
-        """Generate realization of random field at evaluate it at location
+        """Generate realization of random field and evaluate it at *x*.
+
         Args:
-            x (np.array):  locations at which to evaluate random field
-            xi (np.array): random phase angles to compute realization of
+            x (np.array):  Locations at which to evaluate random field
+            xi (np.array): Random phase angles to compute realization of
                            random field
 
         Returns:
-            (np.array): value of realization of random field at specified
-                        locations
-
+            np.array: Value of realization of random field at specified
+            locations
         """
         new_vals = np.zeros((x.shape[0], self.var_dim))
         helper = np.dot(self.pre_factor, xi)

@@ -68,10 +68,10 @@ def str_to_bool(value):
     """Convert string to boolean for cli commands.
 
     Args:
-        value (str): String to convert to a bool.
+        value (str): String to convert to a bool
 
     Returns:
-        bool: bool of the string
+        bool: Bool of the string
     """
     if isinstance(value, bool):
         return value
@@ -97,7 +97,7 @@ def get_cli_options(args):
     Returns:
         input_file (pathlib.Path): Path object to input file
         output_dir (pathlib.Path): Path object to the output directory
-        debug (bool): True if debug mode is to be used
+        debug (bool): *True* if debug mode is to be used
     """
     parser = argparse.ArgumentParser(description="QUEENS")
     parser.add_argument(

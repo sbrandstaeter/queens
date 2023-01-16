@@ -12,18 +12,16 @@ class ApproximationInterfaceMF(Interface):
     """Class for mapping input variables to responses using a MF approximation.
 
         The ApproximationInterface uses a so-called regression approximation,
-        which just another name for a regression model that is used in this context
+        which is just another name for a regression model that is used in this context,
         to avoid confusion and not having to call everything a model.
 
         For now this interface holds only one approximation object. In the future,
-        this could be extended to multiple objects
+        this could be extended to multiple objects.
 
     Attributes:
-        name (string):                 Name of interface
-        variables (dict):              Dictionary with variables
-        approximation_config (dict):   Config options for approximation
-        approximation (regression_approximation_mf):   Approximation object
-        approx_init (bool):            Flag whether approximation has been initialized
+        approximation_config (dict): Config options for approximation.
+        approximation (regression_approximation_mf): Approximation object.
+        approx_init (bool): Flag whether approximation has been initialized.
     """
 
     def __init__(self, interface_name, approximation_config):
@@ -47,7 +45,7 @@ class ApproximationInterfaceMF(Interface):
             config (dict):          Dictionary containing problem description
 
         Returns:
-            interface:              Instance of ApproximationInterface
+            interface: Instance of ApproximationInterface
         """
         interface_options = config[interface_name]
         approximation_name = interface_options["approximation"]
@@ -62,13 +60,13 @@ class ApproximationInterfaceMF(Interface):
         """Mapping function which calls the regression approximation.
 
         Args:
-            samples (list):         list of variables objects
-            gradient_bool (bool): Flag to determine, whether the gradient of the function at
-                                  the evaluation point is expected (True) or not (False)
+            samples (list):         List of variables objects
+            gradient_bool (bool): Flag to determine whether the gradient of the function at
+                                  the evaluation point is expected (*True*) or not (*False*)
 
         Returns:
-            dict: Dictionary with mean, variance, and possibly
-                  posterior samples ('post_samples') at samples
+            dict: Dictionary with mean, variance, and possibly posterior samples (*post_samples*)
+            at samples
         """
         if not self.approx_init:
             raise RuntimeError("Approximation has not been properly initialized, cannot continue!")
@@ -104,5 +102,5 @@ class ApproximationInterfaceMF(Interface):
         self.approx_init = True
 
     def is_initialized(self):
-        """Is the approximation properly initialzed."""
+        """Check if the approximation interface is initialized."""
         return self.approx_init

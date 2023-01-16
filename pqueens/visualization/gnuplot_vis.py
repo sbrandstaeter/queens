@@ -1,17 +1,18 @@
+"""TODO_doc."""
+
 import gnuplotlib as gnp
 import numpy as np
 
 
 def gnuplot_gp_convergence(iter_lst, fun_value_lst):
-    """Make some convergence plots for Gaussian Process optimization and
+    """TODO_doc: this is not in the documentation.
+
+    Make some convergence plots for Gaussian Process optimization and
     convergence.
 
     Args:
         iter_lst (lst): List with iteration numbers up to now
         fun_value_lst (lst): List with values of a function
-
-    Returns:
-        None
     """
     gnp.plot(
         np.array(iter_lst).reshape(1, -1),

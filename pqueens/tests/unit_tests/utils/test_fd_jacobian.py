@@ -48,8 +48,8 @@ def bounds(request):
 def test_fd_jacobian(x0, method, rel_step, bounds):
     """Test reimplementation of Jacobian against the original.
 
-    cover all possible parameter combinations. Based on the Rosenbrock
-    test function supplied by scipy.optimize.
+    Cover all possible parameter combinations. Based on the Rosenbrock
+    test function supplied by *scipy.optimize*.
     """
     # calculated all necessary inputs
 

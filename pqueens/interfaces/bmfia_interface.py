@@ -14,34 +14,42 @@ _logger = logging.getLogger(__name__)
 
 
 class BmfiaInterface(Interface):
-    """Interface class for Bayesian multi-fidelity inverse analysis.
+    r"""Interface class for Bayesian multi-fidelity inverse analysis.
 
     Interface for grouping the outputs of several simulation models with
-    identical model inputs to one multi-fidelity data point in the multi-
-    fidelity space.
+    identical model inputs to one multi-fidelity data point in the
+    multi-fidelity space.
 
     The BmfiaInterface is basically a version of the
-    approximation_interface class that allows for vectorized mapping and
+    *approximation_interface* class, which allows vectorized mapping and
     implicit function relationships by treating every coordinate point (not input point)
     as an individual regression model.
 
     Attributes:
-        config (dict): Dictionary with problem description (input file)
-        approx_name (str): Name of the used approximation model
-        probabilistic_mapping_obj_lst (lst): List of probabilistic mapping objects which models the
-                                             probabilistic dependency between high-fidelity model,
-                                             low-fidelity models and informative input features for
-                                             each coordinate tuple of
-                                             :math: `y_{lf} x y_{hf} x gamma_i` individually.
+        config (dict): Dictionary with problem description (input file).
+        approx_name (str): Name of the used approximation model.
         num_processors_multi_processing (int): Number of processors that should be used in the
                                                multi-processing pool.
+        probabilistic_mapping_obj_lst (lst): List of probabilistic mapping objects, which
+                                             models the probabilistic dependency between
+                                             high-fidelity model, low-fidelity models and
+                                             informative input features for
+                                             each coordinate tuple of
+                                             :math:`y_{lf} \times y_{hf} \times \gamma_i`
+                                             individually.
 
     Returns:
         BMFMCInterface (obj): Instance of the BMFMCInterface
     """
 
     def __init__(self, config, approx_name, num_processors_multi_processing):
-        """Instantiate a BMFIA interface."""
+        """Instantiate a BMFIA interface.
+
+        Args:
+            config: TODO_doc
+            approx_name: TODO_doc
+            num_processors_multi_processing: TODO_doc
+        """
         self.config = config
         self.approx_name = approx_name
         self.num_processors_multi_processing = num_processors_multi_processing
@@ -52,39 +60,40 @@ class BmfiaInterface(Interface):
 
         Calls the probabilistic mapping and predicts the mean and variance,
         respectively covariance, for the high-fidelity model, given the inputs
-        Z_LF.
+        *Z_LF*.
 
         Args:
             Z_LF (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
-                             points on which the probabilistic mapping should be evaluated.
-                             Dimensions: Rows: different multi-fidelity vector/points
-                             (each row is one multi-fidelity point).
-                             Columns: different model outputs/informative features.
+                             points, on which the probabilistic mapping should be evaluated.
+                             Dimensions:
+
+                             * Rows: different multi-fidelity vector/points (each row is one
+                               multi-fidelity point)
+                             * Columns: different model outputs/informative features
             support (str): Support/variable for which we predict the mean and (co)variance. For
-                            `support=f` the Gaussian process predicts w.r.t. the latent function
-                            `f`. For the choice of `support=y` we predict w.r.t. to the
-                            simulation/experimental output `y`,
-            gradient_bool (bool): Flag to determine, whether the gradient of the function at
-                                  the evaluation point is expected (True) or not (False)
-                                   which introduces the additional variance of the observation
-                                   noise.
+                            *support=f*  the Gaussian process predicts w.r.t. the latent function
+                            *f*. For the choice of *support=y* we predict w.r.t. the
+                            simulation/experimental output *y*
+            gradient_bool (bool): Flag to determine whether the gradient of the function at
+                                  the evaluation point is expected (*True*) or not (*False*), which
+                                  introduces the additional variance of the observation noise
 
         Returns:
             mean_Y_HF_given_Z_LF (np.array): Vector of mean predictions
-                                             :math:`\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,
-                                             \mathcal{D}_{f})]` for the HF model given the
-                                             low-fidelity feature input. Different HF predictions
-                                             per row. Each row corresponds to one multi-fidelity
-                                             input vector in
-                                             :math:`\Omega_{y_{lf}\times\gamma_i}`.
-
-            var_Y_HF_given_Z_LF (np.array): Vector of variance predictions :math:`\mathbb{V}_{
-                                            f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\mathcal{D}_{f})]` for the
-                                            HF model given the low-fidelity feature input.
-                                            Different HF predictions
-                                            per row. Each row corresponds to one multi-fidelity
-                                            input vector in
-                                            :math:`\Omega_{y_{lf}\times\gamma_i}`.
+              :math:`\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,
+              \mathcal{D}_{f})]` for the HF model, given the
+              low-fidelity feature input. Different HF predictions
+              per row. Each row corresponds to one multi-fidelity
+              input vector in
+              :math:`\Omega_{y_{lf}\times\gamma_i}`.
+            var_Y_HF_given_Z_LF (np.array): Vector of variance predictions
+              :math:`\mathbb{V}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,
+              \mathcal{D}_{f})]` for the
+              HF model, given the low-fidelity feature input.
+              Different HF predictions
+              per row. Each row corresponds to one multi-fidelity
+              input vector in
+              :math:`\Omega_{y_{lf}\times\gamma_i}`.
         """
         if not self.probabilistic_mapping_obj_lst:
             raise RuntimeError(
@@ -129,16 +138,18 @@ class BmfiaInterface(Interface):
 
         Build and train the probabilistic mapping objects based on the
         training inputs :math:`\mathcal{D}_f={Y_{HF},Z_{LF}}` per coordinate
-        point / measurement point in the inverse problem.
+        point/measurement point in the inverse problem.
 
         Args:
             Z_LF_train (np.array): Training inputs for probabilistic mapping.
-                                   Rows: Samples, Columns: Coordinates
-            Y_HF_train (np.array): Training outputs for probabilistic mapping.
-                                   Rows: Samples, Columns: Coordinates
 
-        Returns:
-            None
+                *  Rows: Samples
+                *  Columns: Coordinates
+
+            Y_HF_train (np.array): Training outputs for probabilistic mapping.
+
+                *  Rows: Samples
+                *  Columns: Coordinates
         """
         assert (
             Z_LF_train.T.shape[0] == Y_HF_train.T.shape[0]
@@ -154,16 +165,13 @@ class BmfiaInterface(Interface):
         self._set_optimized_state_of_probabilistic_mappings(optimized_mapping_states_lst)
 
     def _instantiate_probabilistic_mappings(self, Z_LF_train, Y_HF_train):
-        """Instantitate all probabilistic mappings.
+        """Instantiate all probabilistic mappings.
 
         Args:
             Z_LF_train (np.array): Training inputs for probabilistic mapping.
                                    Rows: Samples, Columns: Coordinates
             Y_HF_train (np.array): Training outputs for probabilistic mapping.
                                    Rows: Samples, Columns: Coordinates
-
-        Returns:
-            None
         """
         self.probabilistic_mapping_obj_lst = [
             from_config_create_regression_approximation(
@@ -231,9 +239,6 @@ class BmfiaInterface(Interface):
         Args:
             optimized_mapping_states_lst (lst): List of updated / trained states for
                                                 the probabilistic regression models.
-
-        Returns:
-            None
         """
         for optimized_state_dict, mapping in zip(
             optimized_mapping_states_lst, self.probabilistic_mapping_obj_lst

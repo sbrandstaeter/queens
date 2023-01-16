@@ -325,9 +325,6 @@ class BMFGaussianModel(LikelihoodModel):
         Args:
             diff_mat (np.array): Matrix containing row-wise difference vectors between the output
                                  observations and the batch of row-wise simulation outputs.
-
-        Returns:
-            None
         """
         # choose likelihood noise type
         if self.likelihood_noise_type == "fixed":
@@ -436,11 +433,7 @@ class BMFGaussianModel(LikelihoodModel):
         return np.array(log_lik_mf)
 
     def _initialize(self):
-        """Initialize the multi-fidelity likelihood model.
-
-        Returns:
-            None
-        """
+        """Initialize the multi-fidelity likelihood model."""
         _logger.info("---------------------------------------------------------------------")
         _logger.info("Speed-up through Bayesian multi-fidelity inverse analysis (BMFIA)!")
         _logger.info("---------------------------------------------------------------------")
@@ -454,12 +447,9 @@ class BMFGaussianModel(LikelihoodModel):
     def _build_approximation(self):
         """Construct the probabilistic surrogate / mapping.
 
-        Surrogate is calculated based on the provided training-data
-        and optimize the hyper-parameters by maximizing
-        the data's evidence or its lower bound (ELBO).
-
-        Returns:
-            None
+        Surrogate is calculated based on the provided training-data and
+        optimize the hyper-parameters by maximizing the data's evidence
+        or its lower bound (ELBO).
         """
         # Start the bmfia (sub)iterator to create the training data for the probabilistic mapping
         self.z_train, self.y_hf_train = self.bmfia_subiterator.core_run()
@@ -476,11 +466,7 @@ class BMFGaussianModel(LikelihoodModel):
 
     # ------- TODO: below not needed atm but something similar might be of interest lateron -----
     def input_dim_red(self):
-        """Compression of the input array of the simulation.
-
-        Returns:
-            None
-        """
+        """Compression of the input array of the simulation."""
         self.get_random_fields()
         # TODO: more to come...
 

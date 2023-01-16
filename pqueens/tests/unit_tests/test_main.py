@@ -1,7 +1,7 @@
 """Test the main module."""
 import json
-import sys
 import logging
+import sys
 from pathlib import Path
 
 import pytest
@@ -30,7 +30,7 @@ def fixture_debug_flag(request):
 
 
 def test_get_config_dict_output_dir_fail():
-    """Test if config fails for non-existing ouput directory."""
+    """Test if config fails for non-existing output directory."""
     with pytest.raises(FileNotFoundError, match="Output directory"):
         get_config_dict(None, Path("path/that/doesnt/esxits"))
 

@@ -27,7 +27,7 @@ def export_vtu_file(vtu_object, export_file_path):
     """Export vtu object.
 
     Args:
-        vtu_object (vtk object): VTU data to be exported
+        vtu_object (vtk object): vtu data to be exported
         export_file_path (str): Path where to store this file
     """
     writer = vtk.vtkUnstructuredGridWriter()
@@ -41,10 +41,11 @@ def get_node_coordinates_from_vtu_file(template_file_path, as_numpy=True):
 
     Args:
         template_file_path (str): Path to file
-        as_numpy (bool, optional): Return the array in numpy array or vtkPoints. Defaults to True.
+        as_numpy (bool, optional): Return the array in *numpy array* or
+                                   *vtkPoints*. Defaults to *True*.
 
     Returns:
-        node_coordinates: in numpy or vtk array object
+        node_coordinates: in *numpy* or *vtk* array object
     """
     vtu_object = load_vtu_file(template_file_path)
     node_coordinates = vtu_object.GetPoints()
@@ -60,7 +61,7 @@ def add_cell_array_to_vtu_object(vtu_object, array_name, array_data):
     Args:
         vtu_object (obj): vtk object to which the data should be added
         array_name (str): Array name
-        array_data (np.array or vtkArray): data to add to the vtu_object
+        array_data (np.array or vtkArray): Data to add to the `vtu_object`
     """
     vtk_array = array_data
     number_of_cells = vtu_object.GetNumberOfCells()
@@ -86,7 +87,7 @@ def add_point_array_to_vtu_object(vtu_object, array_name, array_data):
     Args:
         vtu_object (obj): vtk object to which the data should be added
         array_name (str): Array name
-        array_data (np.array or vtkArray): data to add to the vtu_object
+        array_data (np.array or vtkArray): Data to add to the `vtu_object`
     """
     vtk_array = array_data
     number_of_points = vtu_object.GetNumberOfPoints()

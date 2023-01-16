@@ -26,14 +26,14 @@ def from_config_create_database(config):
 class Database(metaclass=abc.ABCMeta):
     """QUEENS database base-class.
 
-        This class is implemented such that it can be used in a context framework
+        This class is implemented such that it can be used in a context framework:
 
-        with database_obj:
-            do_stuff()
+        ``with database_obj:``
+            ``do_stuff()``
 
     Attributes:
-        database_name (str): Database name
-        reset_existing_db (boolean): Flag to reset database
+        db_name (str): Database name.
+        reset_existing_db (boolean): Flag to reset database.
     """
 
     def __init__(self, db_name, reset_existing_db):

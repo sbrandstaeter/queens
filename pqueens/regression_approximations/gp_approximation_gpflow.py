@@ -1,3 +1,5 @@
+"""Gaussian process implementation in GPFlow."""
+
 import logging
 import os
 
@@ -27,18 +29,18 @@ class GPFlowRegression(RegressionApproximation):
     This class constructs a GP regression, using a GPFlow model.
 
     Attributes:
-        x_train (np.ndarray): Training inputs
-        y_train (np.ndarray): Training outputs
-        number_posterior_samples (int): Number of posterior samples
-        number_input_dimensions (int): Dimensionality of random features
-        restart_min_value (int): Minimum value for restart
-        restart_max_value (int): Maximum value for restart
-        model (GPFlow.models.GPR): GPFlow based Gaussian process model
-        number_restarts (int): Number of restarts
-        number_training_iterations (int): Number of iterations in optimizer for training
-        dimension_lengthscales (int): Dimension of lengthscales
-        scaler_x (sklearn scaler object): Scaler for inputs
-        scaler_y (sklearn scaler object): Scaler for outputs
+        x_train (np.ndarray): Training inputs.
+        y_train (np.ndarray): Training outputs.
+        number_posterior_samples (int): Number of posterior samples.
+        number_restarts (int): Number of restarts.
+        number_training_iterations (int): Number of iterations in optimizer for training.
+        number_input_dimensions (int): Dimensionality of random features.
+        restart_min_value (int): Minimum value for restart.
+        restart_max_value (int): Maximum value for restart.
+        model (GPFlow.models.GPR): GPFlow based Gaussian process model.
+        dimension_lengthscales (int): Dimension of *lengthscales*.
+        scaler_x (sklearn scaler object): Scaler for inputs.
+        scaler_y (sklearn scaler object): Scaler for outputs.
     """
 
     def __init__(
@@ -56,7 +58,8 @@ class GPFlowRegression(RegressionApproximation):
         scaler_x,
         scaler_y,
     ):
-        """
+        """TODO_doc.
+
         Args:
             x_train (np.ndarray): Training inputs
             y_train (np.ndarray): Training outputs
@@ -71,7 +74,6 @@ class GPFlowRegression(RegressionApproximation):
             scaler_x (sklearn scaler object): Scaler for inputs
             scaler_y (sklearn scaler object): Scaler for outputs
         """
-
         self.x_train = x_train
         self.y_train = y_train
         self.number_posterior_samples = number_posterior_samples
@@ -96,9 +98,8 @@ class GPFlowRegression(RegressionApproximation):
             y_train (np.array):    Training outputs
 
         Returns:
-            GPFlowRegression: approximation object
+            GPFlowRegression: Approximation object
         """
-
         number_posterior_samples = config[approx_name].get('number_posterior_samples', None)
 
         if len(x_train.shape) == 1:
@@ -155,7 +156,6 @@ class GPFlowRegression(RegressionApproximation):
 
     def train(self):
         """Train the GP by maximizing the likelihood."""
-
         opt = gpf.optimizers.Scipy()
 
         dimension_hyperparameters = self.get_dimension_hyperparameters()
@@ -190,23 +190,23 @@ class GPFlowRegression(RegressionApproximation):
         print_summary(self.model)
 
     def predict(self, x_test, support='y', full_cov=False):
-        """Predict the posterior distribution at x_new.
+        """Predict the posterior distribution at *x_new*.
 
         Options:
-            'f(x_test)': predict the latent function values
-            'y(x_test)': predict values of the new observations (including noise)
+
+            - *f(x_test)*: predict the latent function values
+            - *y(x_test)*: predict values of the new observations (including noise)
 
         Args:
-            x_test (np.ndarray): new inputs where to make predictions.
-            support (str): probabilistic support of random process (default: 'y').
+            x_test (np.ndarray): New inputs where to make predictions
+            support (str): Probabilistic support of random process (default: 'y')
             full_cov (bool): Boolean that specifies whether the entire posterior covariance
-                             matrix should be returned or only the posterior variance.
+                             matrix should be returned or only the posterior variance
 
         Returns:
             output (dict): Dictionary with mean, variance, and possibly
-                           posterior samples at x_test
+            posterior samples at *x_test*
         """
-
         x_test = np.atleast_2d(x_test).reshape((-1, self.number_input_dimensions))
         number_test_samples = x_test.shape[0]
         x_test = self.scaler_x.transform(x_test)
@@ -244,11 +244,10 @@ class GPFlowRegression(RegressionApproximation):
         """Assign untransformed (constrained) hyperparameters to model.
 
         Args:
-            hyperparameters (np.ndarray):   hyperparameters of GP
-            transform (bool):               if true, hyperparameters are transformed from
+            hyperparameters (np.ndarray):   Hyperparameters of GP
+            transform (bool):               If *True*, hyperparameters are transformed from
                                             unconstrained to constrained representation
         """
-
         hyperparameters = tf.convert_to_tensor(hyperparameters)
         if transform:
             hyperparameters = self.transform_hyperparameters(hyperparameters)
@@ -257,13 +256,15 @@ class GPFlowRegression(RegressionApproximation):
         self.model.kernel.variance.assign(hyperparameters[self.dimension_lengthscales])
 
     def transform_hyperparameters(self, hyperparameters):
-        """Transform hyperparameters from unconstrained to constrained
+        """TODO_doc: add a one-line explanation.
+
+        Transform hyperparameters from unconstrained to constrained
         representation.
 
         Args:
-            hyperparameters (np.ndarray):   unconstrained representation of hyperparameters
+            hyperparameters (np.ndarray):   Unconstrained representation of hyperparameters
         Returns:
-            hyperparameters (np.ndarray):   constrained representation of hyperparameters
+            hyperparameters (np.ndarray): Constrained representation of hyperparameters
         """
         hyperparameters = tf.convert_to_tensor(hyperparameters)
 
@@ -285,7 +286,7 @@ class GPFlowRegression(RegressionApproximation):
         """Return the dimension of the hyperparameters.
 
         Returns:
-            dimension_hyperparameters (int):   dimension of hyperparameters
+            dimension_hyperparameters (int): Dimension of hyperparameters
         """
         lengthscales = self.model.kernel.lengthscales.unconstrained_variable
         variances = tf.reshape(self.model.kernel.variance.unconstrained_variable, [-1])

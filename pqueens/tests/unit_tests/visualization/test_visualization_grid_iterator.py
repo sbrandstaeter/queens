@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import re
 
@@ -11,6 +13,7 @@ from pqueens.visualization.grid_iterator_visualization import GridIteratorVisual
 # general input fixtures
 @pytest.fixture()
 def dummy_vis(tmpdir):
+    """TODO_doc."""
     paths = [os.path.join(tmpdir, 'myplot.png')]
     save_bools = [True]
     plot_booleans = [False]
@@ -24,6 +27,7 @@ def dummy_vis(tmpdir):
 
 # -------------------------------- actual unit_tests ---------------------------------------------
 def test_init(tmpdir):
+    """TODO_doc."""
     # expected attributes
     paths = [os.path.join(tmpdir, 'myplot.png')]
     save_bools = [True]
@@ -45,6 +49,7 @@ def test_init(tmpdir):
 
 
 def test_plot_QoI_grid(tmpdir, dummy_vis):
+    """TODO_doc."""
     # set arguments
     output = {"mean": np.array([1.0, 2.0, 3.0, 4.0])}
     samples = np.array([[1.0, 1.0], [2.0, 2.0], [1.0, 2.0], [2.0, 1.0]])
@@ -56,6 +61,7 @@ def test_plot_QoI_grid(tmpdir, dummy_vis):
 
 
 def test_get_plotter_one(dummy_vis):
+    """TODO_doc."""
     num_params = 1
     plotter = qvis.grid_iterator_visualization_instance._get_plotter(num_params)
     expected_str = re.split("[\s\.]", plotter.__str__())[3]
@@ -63,6 +69,7 @@ def test_get_plotter_one(dummy_vis):
 
 
 def test_get_plotter_one(dummy_vis):
+    """TODO_doc."""
     num_params = 2
     plotter = qvis.grid_iterator_visualization_instance._get_plotter(num_params)
     expected_str = re.split("[\s\.]", plotter.__str__())[3]
@@ -70,6 +77,7 @@ def test_get_plotter_one(dummy_vis):
 
 
 def test_higher_d(dummy_vis):
+    """TODO_doc."""
     num_params = 3
     with pytest.raises(NotImplementedError) as e:
         plotter = qvis.grid_iterator_visualization_instance._get_plotter(num_params)
@@ -77,6 +85,7 @@ def test_higher_d(dummy_vis):
 
 
 def test_plot_one_d(dummy_vis):
+    """TODO_doc."""
     output = {'mean': np.array([0.0, 1.0])}
     samples = np.array([0.0, 1.0])
     dummy = 1.0
@@ -85,6 +94,7 @@ def test_plot_one_d(dummy_vis):
 
 
 def test_plot_two_d(dummy_vis):
+    """TODO_doc."""
     samples = np.array([[0.0, 0.0], [0.0, 1.0], [1.0, 0.0], [1.0, 1.0]])
     output = {'mean': np.array([0.0, 1.0, 0.0, 1.0])}
     n_gird_p = [2, 2]

@@ -13,7 +13,7 @@ def load_pickle(file_path):
         file_path (pathlib.path): Path to pickle-file
 
     Returns:
-        data (dict) in the pickle file.
+        Data (dict) in the pickle file
     """
     if not file_path.is_file():
         raise FileNotFoundError(f"File {file_path} does not exist.")
@@ -27,8 +27,8 @@ def load_pickle(file_path):
 def print_pickled_data(file_path):
     """Print a table of the data within a pickle file.
 
-    Only goes one layer deep for dicts. This is similar to `python -m pickle file_path` but makes
-     it a single command and fancy prints.
+    Only goes one layer deep for dicts. This is similar to *python -m pickle file_path* but makes
+    it a single command and fancy prints.
 
     Args:
         file_path (str): Path to pickle-file
@@ -55,7 +55,7 @@ def _create_single_item_string(key, item, item_type, seperator="="):
         key (str): Key of the item
         item (obj): Item value for the key
         item_type (str): Type of the item value
-        seperator (str, optional): Create seperator line. Defaults to "=".
+        seperator (str, optional): Create seperator line (default is "=")
 
     Returns:
         string: table for this item.

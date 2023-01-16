@@ -33,36 +33,32 @@ class VariationalInferenceIterator(Iterator):
 
 
     Attributes:
-        global_settings (dict): Global settings of the QUEENS simulations
-        model (obj): Underlying simulation model on which the inverse analysis is conducted
-        result_description (dict): Settings for storing and visualizing the results
-        db (obj): QUEENS database object
-        experiment_name (str): Name of the QUEENS simulation
-        variational_family (str): Density type for variatonal approximation
+        result_description (dict): Settings for storing and visualizing the results.
+        db (obj): QUEENS database object.
+        experiment_name (str): Name of the QUEENS simulation.
         variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                          variational paramaters
+                                                          variational parameters.
         n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration to
-                                  estimate the involved expectations)
+                                  estimate the involved expectations).
         variational_transformation (str): String encoding the transformation that will be applied to
-                                          the variational density
-        random_seed (int): Seed for the random number generators
-        max_feval (int): Maximum number of simulation runs for this analysis
-        num_parameters (int): Actual number of model input parameters that should be calibrated
-        natural_gradient_bool (boolean): True if natural gradient should be used
-        fim_dampening_bool (boolean): True if FIM dampening should be used
-        fim_decay_start_iter (float): Iteration at which the FIM dampening is started
-        fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
-        fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-        n_sims (int): Number of probabilistic model calls
-        variational_distribution_obj (VariationalDistribution): Variational distribution object
-        variational_params (np.array): Rowvector containing the variatonal parameters
-        model_eval_iteration_period (int): If the iteration number is a multiple of this number
-                                           the probabilistic model is sampled independent of the
-                                           other conditions
-        stochastic_optimizer (obj): QUEENS stochastic optimizer object
-        nan_in_gradient_counter (int): Count how many times NaNs appeared in the gradient estimate
-                                       in a row
-        iteration_data (CollectionObject): Object to store iteration data if desired
+                                          the variational density.
+        natural_gradient_bool (boolean): *True* if natural gradient should be used.
+        fim_decay_start_iter (float): Iteration at which the FIM dampening is started.
+        fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening.
+        fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient.
+        fim_dampening_bool (boolean): *True* if FIM dampening should be used.
+        random_seed (int): Seed for the random number generators.
+        max_feval (int): Maximum number of simulation runs for this analysis.
+        num_parameters (int): Actual number of model input parameters that should be calibrated.
+        variational_family (str): Density type for variational approximation.
+        stochastic_optimizer (obj): QUEENS stochastic optimizer object.
+        variational_distribution_obj (VariationalDistribution): Variational distribution object.
+        n_sims (int): Number of probabilistic model calls.
+        variational_params (np.array): Row vector containing the variational parameters.
+        elbo: TODO_doc
+        nan_in_gradient_counter (int): Count how many times *NaNs* appeared in the gradient estimate
+                                       in a row.
+        iteration_data (CollectionObject): Object to store iteration data if desired.
     """
 
     def __init__(
@@ -96,9 +92,9 @@ class VariationalInferenceIterator(Iterator):
             result_description (dict): Settings for storing and visualizing the results
             db (obj): QUEENS database object
             experiment_name (str): Name of the QUEENS simulation
-            variational_family (str): Density type for variatonal approximation
+            variational_family (str): Density type for variational approximation
             variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                              variational paramaters
+                                                              variational parameters
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
                                                 to estimate the involved expectations)
             variational_transformation (str): String encoding the transformation that will be
@@ -154,27 +150,31 @@ class VariationalInferenceIterator(Iterator):
 
         Returns:
             global_settings (dict): Global settings of the QUEENS simulations
-            model (obj): Underlying simulation model on which the inverse analysis is conducted
-            result_description (dict): Settings for storing and visualizing the results
+            model (obj): Underlying simulation model on which the inverse analysis
+            is conducted
+            result_description (dict): Settings for storing and visualizing the
+            results
             db (obj): QUEENS database object
             experiment_name (str): Name of the QUEENS simulation
-            variational_family (str): Density type for variatonal approximation
-            variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                              variational paramaters
-            n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
-                                                to estimate the involved expectations)
-            variational_transformation (str): String encoding the transformation that will be
-                                              applied to
-                                              the variational density
+            variational_family (str): Density type for variational approximation
+            variational_params_initialization_approach (str): Flag to decide how
+            to initialize the variational parameters
+            n_samples_per_iter (int): Batch size per iteration (number of simulations
+            per iteration to estimate the involved expectations)
+            variational_transformation (str): String encoding the transformation that
+            will be applied to the variational density
             random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
-            num_parameters (int): Actual number of model input parameters that should be calibrated
-            natural_gradient_bool (boolean): True if natural gradient should be used
-            fim_dampening_bool (boolean): True if FIM dampening should be used
+            num_parameters (int): Actual number of model input parameters that should be
+            calibrated
+            natural_gradient_bool (boolean): *True* if natural gradient should be used
+            fim_dampening_bool (boolean): *True* if FIM dampening should be used
             fim_decay_start_iter (float): Iteration at which the FIM dampening is started
-            fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
+            fim_dampening_coefficient (float): Initial nugget term value for the FIM
+            dampening
             fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-            variational_distribution_obj (VariationalDistribution): Variational distribution object
+            variational_distribution_obj (VariationalDistribution): Variational distribution
+            object
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
         """
         method_options = config[iterator_name]['method_options']
@@ -332,7 +332,7 @@ class VariationalInferenceIterator(Iterator):
 
         There are two possibilities:
             1. Random initialization:
-                Is handeled by the variational distribution object
+                Is handled by the variational distribution object
             2. Initialization based on the prior modeling (only for normal distributions!)
                 Extract the prior moments and initialize the parameters based on them
         """
@@ -506,7 +506,7 @@ class VariationalInferenceIterator(Iterator):
         return gradient
 
     def handle_gradient_nan(self, gradient_function):
-        """Metod that handles NaN in gradient estimations.
+        """Method that handles *NaN* in gradient estimations.
 
         Args:
             gradient_function (function): Function that estimates the gradient

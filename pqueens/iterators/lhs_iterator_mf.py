@@ -1,4 +1,4 @@
-"""Multi-fideliy latin hypercube sampling."""
+"""Multi-fidelity latin hypercube sampling."""
 
 import logging
 
@@ -19,17 +19,16 @@ class MFLHSIterator(Iterator):
 
     Multi-Fidelity LHS Iterator with the purpose to generate multi-fidelity
     experimental design for multi-fidelity models. Currently there are two modes,
-    independent desings for each level or nested designs where each design is
+    independent designs for each level or nested designs where each design is
     a subset of the next higher level.
 
     Attributes:
-        model (model):        multi-fidelity model comprising sub-models
-        seed  (int):          Seed for random number generation
-        num_samples (list):   List of number of samples to compute on each level
-        num_iterations (int): Number of optimization iterations of design
-        mode (str):           Mode of sampling (nested/independent)
-        samples (list):       List of arrays with all samples
-        outputs (list):       List of dicts with all model outputs
+        seed  (int):          Seed for random number generation.
+        num_samples (list):   List of number of samples to compute on each level.
+        num_iterations (int): Number of optimization iterations of design.
+        samples (list):       List of arrays with all samples.
+        outputs (list):       List of dicts with all model outputs.
+        mode (str):           Mode of sampling (nested/independent).
     """
 
     def __init__(self, model, seed, num_samples, num_iterations, mode, global_settings):

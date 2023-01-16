@@ -32,7 +32,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(inputdir, tmpdir, dummy_data):
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloChopinIterator, "eval_log_likelihood", target_density):
         run(Path(input_file), Path(tmpdir))
-        
+
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

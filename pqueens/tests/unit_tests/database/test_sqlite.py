@@ -1,4 +1,4 @@
-"""Test sqlite."""
+"""Test SQLite."""
 
 import numpy as np
 import pandas as pd
@@ -18,7 +18,7 @@ def compare_documents(reference_document, obtained_document):
         obtained_document (dict): Document to compare
 
     Returns:
-        bool: True if the documents are equal
+        bool: *True* if the documents are equal
     """
     document_equal = []
     for key, value in reference_document.items():

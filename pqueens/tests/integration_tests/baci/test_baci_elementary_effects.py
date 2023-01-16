@@ -19,14 +19,15 @@ from pqueens.utils.run_subprocess import run_subprocess
 def output_directory_forward(tmpdir_factory):
     """Create two temporary output directories for test runs with singularity.
 
-    with singularity (<...>_true) and without singularity (<...>_false)
+        * with singularity (<...>_true)
+        * without singularity (<...>_false)
 
     Args:
-        tmpdir_factory: fixture used to create arbitrary temporary directories
+        tmpdir_factory: Fixture used to create arbitrary temporary directories
 
     Returns:
-        output_directory_forward (dict): temporary output directories for simulation without and
-                                         with singularity
+        output_directory_forward (dict): Temporary output directories for simulation without and
+        with singularity
     """
     path_singularity_true = tmpdir_factory.mktemp("test_baci_elementary_effects_true")
     path_singularity_false = tmpdir_factory.mktemp("test_baci_elementary_effects_false")
@@ -36,10 +37,10 @@ def output_directory_forward(tmpdir_factory):
 
 @pytest.fixture()
 def experiment_directory(output_directory_forward, singularity_bool):
-    """Return experiment directory depending on singularity_bool.
+    """Return experiment directory depending on *singularity_bool*.
 
     Returns:
-        experiment_directory (LocalPath): experiment directory depending on singularity_bool
+        experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
     """
     return output_directory_forward[singularity_bool]
 
@@ -59,10 +60,10 @@ def check_experiment_directory(experiment_directory):
 
 
 def count_subdirectories(current_directory):
-    """Count subdirectories in current_directory.
+    """Count subdirectories in *current_directory*.
 
     Returns:
-        number_subdirectories (int): number of subdirectories
+        number_subdirectories (int): Number of subdirectories
     """
     number_subdirectories = 0
     for current_subdirectory in os.listdir(current_directory):
@@ -73,7 +74,7 @@ def count_subdirectories(current_directory):
 
 
 def remove_job_output_directory(experiment_directory, jobid):
-    """Remove output directory of job #jobid from experiment_directory."""
+    """Remove output directory of job #jobid from *experiment_directory*."""
     rm_cmd = "rm -r " + str(experiment_directory) + "/" + str(jobid)
     run_subprocess(rm_cmd)
 
@@ -94,13 +95,10 @@ def test_baci_elementary_effects(
     Args:
         inputdir (str): Path to the JSON input file
         third_party_inputs (str): Path to the BACI input files
-        baci_link_paths(str): Path to the links pointing to baci-release and post_drt_monitor
+        baci_link_paths(str): Path to the links pointing to *baci-release* and *post_drt_monitor*
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
-        experiment_directory (LocalPath): experiment directory depending on singularity_bool
+        experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
         baci_elementary_effects_check_results (function): function to check the results
-
-    Returns:
-        None
     """
     template = os.path.join(inputdir, "baci_local_elementary_effects_template.json")
     input_file = os.path.join(experiment_directory, "elementary_effects_baci_local_invaaa.json")

@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import numpy as np
 import pytest
 
@@ -9,12 +11,14 @@ from pqueens.models.simulation_model import SimulationModel
 # general input fixtures
 @pytest.fixture()
 def global_settings():
+    """TODO_doc."""
     global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
     return global_set
 
 
 @pytest.fixture()
 def grid_dict_one():
+    """TODO_doc."""
     grid_dict_dummy = {
         "x1": {"num_grid_points": 5, "axis_type": "lin"},
     }
@@ -23,6 +27,7 @@ def grid_dict_one():
 
 @pytest.fixture()
 def grid_dict_two():
+    """TODO_doc."""
     grid_dict_dummy = {
         "x1": {"num_grid_points": 5, "axis_type": "lin"},
         "x2": {"num_grid_points": 5, "axis_type": "lin"},
@@ -32,6 +37,7 @@ def grid_dict_two():
 
 @pytest.fixture()
 def grid_dict_three():
+    """TODO_doc."""
     grid_dict_dummy = {
         "x1": {"num_grid_points": 5, "axis_type": "lin"},
         "x2": {"num_grid_points": 5, "axis_type": "lin"},
@@ -42,6 +48,7 @@ def grid_dict_three():
 
 @pytest.fixture()
 def grid_dict_four():
+    """TODO_doc."""
     grid_dict_dummy = {
         "x1": {"num_grid_points": 5, "axis_type": "lin"},
         "x2": {"num_grid_points": 5, "axis_type": "lin"},
@@ -52,6 +59,7 @@ def grid_dict_four():
 
 
 def parameters_one():
+    """TODO_doc."""
     params = {
         "random_variables": {
             "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0}
@@ -63,6 +71,7 @@ def parameters_one():
 
 @pytest.fixture()
 def parameters_two():
+    """TODO_doc."""
     params = {
         "random_variables": {
             "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
@@ -74,6 +83,7 @@ def parameters_two():
 
 
 def parameters_three():
+    """TODO_doc."""
     params = {
         "random_variables": {
             "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
@@ -87,6 +97,7 @@ def parameters_three():
 
 @pytest.fixture()
 def parameters_four():
+    """TODO_doc."""
     params = {
         "random_variables": {
             "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
@@ -101,18 +112,21 @@ def parameters_four():
 
 @pytest.fixture()
 def result_description():
+    """TODO_doc."""
     description = {"write_results": True}
     return description
 
 
 @pytest.fixture()
 def expected_samples_one():
+    """TODO_doc."""
     x1 = np.linspace(-2, 2, 5)
     return np.atleast_2d(x1).T
 
 
 @pytest.fixture()
 def expected_samples_two():
+    """TODO_doc."""
     x1 = np.linspace(-2, 2, 5)
     x2 = np.linspace(-2, 2, 5)
     X1, X2 = np.meshgrid(x1, x2)
@@ -122,6 +136,7 @@ def expected_samples_two():
 
 @pytest.fixture()
 def expected_samples_three():
+    """TODO_doc."""
     x1 = np.linspace(-2, 2, 5)
     x2 = np.linspace(-2, 2, 5)
     x3 = np.linspace(-2, 2, 5)
@@ -133,6 +148,7 @@ def expected_samples_three():
 # fixtures for some objects
 @pytest.fixture()
 def default_model(parameters_two):
+    """TODO_doc."""
     model_name = 'dummy_model'
     interface = 'dummy_interface'
     model = SimulationModel(model_name, interface)
@@ -143,7 +159,7 @@ def default_model(parameters_two):
 def default_grid_iterator(
     global_settings, grid_dict_two, parameters_two, default_model, result_description
 ):
-
+    """TODO_doc."""
     # create iterator object
     num_parameters = 2
     my_grid_iterator = GridIterator(
@@ -160,7 +176,7 @@ def default_grid_iterator(
 def test_init(
     mocker, global_settings, grid_dict_two, parameters_two, default_model, result_description
 ):
-
+    """TODO_doc."""
     # some default input for testing
     num_parameters = 2
     mp = mocker.patch('pqueens.iterators.iterator.Iterator.__init__')
@@ -185,6 +201,7 @@ def test_init(
 
 
 def test_model_evaluate(default_grid_iterator, mocker):
+    """TODO_doc."""
     mp = mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate', return_value=None)
     default_grid_iterator.model.evaluate(None)
     mp.assert_called_once()
@@ -197,6 +214,7 @@ def test_pre_run_one(
     default_model,
     global_settings,
 ):
+    """TODO_doc."""
     num_params = 1
     parameters_one()
     grid_iterator = GridIterator(
@@ -213,6 +231,7 @@ def test_pre_run_one(
 def test_pre_run_two(
     grid_dict_two, parameters_two, expected_samples_two, default_model, global_settings
 ):
+    """TODO_doc."""
     num_params = 2
     grid_iterator = GridIterator(
         default_model,
@@ -232,6 +251,7 @@ def test_pre_run_three(
     default_model,
     global_settings,
 ):
+    """TODO_doc."""
     num_params = 3
     parameters_three()
     grid_iterator = GridIterator(
@@ -246,6 +266,7 @@ def test_pre_run_three(
 
 
 def test_core_run(mocker, default_grid_iterator, expected_samples_two):
+    """TODO_doc."""
     mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate', return_value=2)
     default_grid_iterator.samples = expected_samples_two
     default_grid_iterator.core_run()
@@ -255,18 +276,23 @@ def test_core_run(mocker, default_grid_iterator, expected_samples_two):
 
 # custom class to mock the visualization module
 class InstanceMock:
+    """TODO_doc."""
+
     @staticmethod
     def plot_QoI_grid(self, *args, **kwargs):
+        """TODO_doc."""
         return 1
 
 
 @pytest.fixture
 def mock_visualization():
+    """TODO_doc."""
     my_mock = InstanceMock()
     return my_mock
 
 
 def test_post_run(mocker, default_grid_iterator, mock_visualization):
+    """TODO_doc."""
     # test if save results is called
     mp1 = mocker.patch('pqueens.iterators.grid_iterator.write_results', return_value=None)
     mocker.patch(

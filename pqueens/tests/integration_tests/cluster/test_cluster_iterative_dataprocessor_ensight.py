@@ -37,7 +37,7 @@ def test_cluster_baci_data_processor_ensight(
     This integration test is constructed such that:
         - The interface-map function is called twice (mimics feedback-loops)
         - The maximum concurrent job is activated
-        - data_processor_ensight to remotely communicate with the database (besides the driver)
+        - *data_processor_ensight* to remotely communicate with the database (besides the driver)
         - No iterator is used to reduce complexity
 
     Args:
@@ -45,9 +45,8 @@ def test_cluster_baci_data_processor_ensight(
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         cluster_testsuite_settings (dict): Collection of cluster specific settings
-
-    Returns:
-        None
+        baci_cluster_paths: TODO_doc
+        user (): TODO_doc
     """
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]

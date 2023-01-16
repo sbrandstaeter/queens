@@ -7,7 +7,7 @@ from pyDOE import lhs
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
-from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
 
@@ -16,16 +16,18 @@ class LHSIterator(Iterator):
     """Basic LHS Iterator to enable Latin Hypercube sampling.
 
     Attributes:
-        model (model):        Model to be evaluated by iterator
-        seed  (int):          Seed for random number generation
-        num_samples (int):    Number of samples to compute
-        num_iterations (int): Number of optimization iterations of design
-        result_description (dict):  Description of desired results
-        seed (int): Seed for numpy random number generator
-        samples (np.array):   Array with all samples
-        output (np.array):   Array with all model outputs
-        criterion (str): Allowable values are "center" or "c", "maximin" or "m",
-                         "centermaximin" or "cm", and "correlation" or "corr"
+        seed (int): Seed for numpy random number generator.
+        num_samples (int):    Number of samples to compute.
+        num_iterations (int): Number of optimization iterations of design.
+        result_description (dict):  Description of desired results.
+        criterion (str): Allowable values are:
+
+            *   *center* or *c*
+            *   *maximin* or *m*
+            *   *centermaximin* or *cm*
+            *   *correlation* or *corr*
+        samples (np.array):   Array with all samples.
+        output (np.array):   Array with all model outputs.
     """
 
     def __init__(
@@ -115,7 +117,7 @@ class LHSIterator(Iterator):
     def post_run(self):
         """Analyze the results."""
         if self.result_description is not None:
-            results = process_ouputs(self.output, self.result_description, input_data=self.samples)
+            results = process_outputs(self.output, self.result_description, input_data=self.samples)
             if self.result_description["write_results"] is True:
                 write_results(
                     results,

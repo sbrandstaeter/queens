@@ -16,47 +16,51 @@ class BaciDatExternalGeometry(ExternalGeometry):
     """Class to read in external geometries based on BACI-dat files.
 
     Attributes:
-        path_to_dat_file (str): Path to dat file from which the external_geometry_obj should be
-                                    extracted
+        path_to_dat_file (str): Path to dat file from which the *external_geometry_obj* should be
+                                    extracted.
         path_to_preprocessed_dat_file (str): Path to preprocessed dat file with added
-                                             placeholders
+                                             placeholders.
         coords_dict (str): Dictionary containing coordinates of the discretized random
-                                       fields and corresponding placeholder names.
-        list_geometric_sets (lst): List of geometric sets that should be extracted
+                                      fields and corresponding placeholder names.
+        list_geometric_sets (lst): List of geometric sets that should be extracted.
         current_dat_section (str): String that encodes the current section in the dat file as
-                                   file is read line-wise
-        design_description (dict): First section of the dat-file as dictionary to summarize the
-                                   external_geometry_obj components
-        node_topology (lst): List with topology dicts of edges/nodes (here: mesh nodes not FEM
-                             nodes) for each geometric set of this category
-        line_topology (lst): List with topology dicts of line components for each geometric set
-                             of this category
-        surface_topology (lst): List of topology dicts of surfaces for each geometric set of this
-                                category
-        volume_topology (lst): List of topology of volumes for each geometric set of this category
-        element_topology (lst): List of topology of finite element types for each geometric set
+                                   file is read line-wise.
         desired_dat_sections (dict): Dictionary that holds only desired dat-sections and
-                                     geometric sets within these sections so that we can skip
-                                     undesired parts of the dat-file
+                                     geometric sets within these sections, so that we can skip
+                                     undesired parts of the dat-file.
         nodes_of_interest (lst): List that contains all (mesh) nodes that are part of a desired
-                                  geometric component
+                                 geometric component.
+        new_nodes_lst (lst): List of new nodes that should be written in dnode topology.
+        design_description (dict): First section of the dat-file as dictionary to summarize the
+                                   *external_geometry_obj* components.
+        node_topology (lst): List with topology dicts of edges/nodes (here: mesh nodes not FEM
+                             nodes) for each geometric set of this category.
+        line_topology (lst): List with topology dicts of line components for each geometric set
+                             of this category.
+        surface_topology (lst): List of topology dicts of surfaces for each geometric set of this
+                                category.
+        volume_topology (lst): List of topology of volumes for each geometric set of this category.
         node_coordinates (dict): Dictionary that holds the desired nodes as well as their
-                                 corresponding geometric coordinates
-        new_nodes_lst (lst): List of new nodes that should be written in dnode topology
-        random_dirich_flag (bool): Flag to check if a random Dirichlet BC exists
-        random_transport_dirich_flag (bool): Flag to check if a random transport Dirichlet BC exists
-        random_neumann_flag (bool): Flag to check if a random Neumann BC exists
-        nodes_written (bool): Flag to check whether nodes have already been written
-        list_associated_material_numbers (lst): List of associated material numbers wrt to the
-                                                geometric sets of interest
-        element_centers (np.array): Array with center coordinates of elements
+                                 corresponding geometric coordinates.
+        element_centers (np.array): Array with center coordinates of elements.
         element_topology (np.array): List of dictionaries per random field, which contain the
                                      element topology associated with the random field,
                                      respectively the geometric set where the field is defined
                                      on. Element topology means here the mapping of nodes,
-                                     material and element number.
-        original_materials_in_dat (lst): List of original material numbers in dat template file
-        random_fields (lst): List of random field descriptions
+                                     material and element number. (**TODO_doc:** element_topology
+                                     is defined twice)
+        element_topology (lst): List of topology of finite element types for each geometric set.
+                                (**TODO_doc:** element_topology is defined twice)
+        original_materials_in_dat (lst): List of original material numbers in dat template file.
+        list_associated_material_numbers (lst): List of associated material numbers w.r.t. the
+                                                geometric sets of interest.
+        new_material_numbers: TODO_doc
+        random_dirich_flag (bool): Flag to check if a random Dirichlet BC exists.
+        random_transport_dirich_flag (bool): Flag to check if a random transport Dirichlet
+                                             BC exists.
+        random_neumann_flag (bool): Flag to check if a random Neumann BC exists.
+        nodes_written (bool): Flag to check whether nodes have already been written.
+        random_fields (lst): List of random field descriptions.
 
     Returns:
         geometry_obj (obj): Instance of BaciDatExternalGeometry class
@@ -124,7 +128,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                                     this category
             volume_topology (lst): List of topology of volumes for each geometric set of this
                                    category
-            node_coordinates (lst): List of dictionares per random field of coordinates of mesh
+            node_coordinates (lst): List of dictionaries per random field of coordinates of mesh
                                     nodes
             random_fields (lst): List of random field descriptions
         """
@@ -167,6 +171,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         Args:
             config (dict): Problem description
+            name: TODO_doc
 
         Returns:
             geometric_obj (obj): Instance of BaciDatExternalGeometry
@@ -210,11 +215,11 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self._read_geometry_from_dat_file()
 
     def organize_sections(self):
-        """Organize the sections of the external external_geometry_obj."""
+        """Organize the sections of the external *external_geometry_obj*."""
         self._get_desired_dat_sections()
 
     def finish_and_clean(self):
-        """Finish the analysis for the external_geometry_obj extraction."""
+        """Finish the analysis for the *external_geometry_obj* extraction."""
         self._sort_node_coordinates()
         self._get_element_centers()
 
@@ -244,11 +249,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
                     self._get_elements_belonging_to_desired_material(line)
 
     def _get_element_centers(self):
-        """Calculate the geometric center of each finite element.
-
-        Returns:
-            None
-        """
+        """Calculate the geometric center of each finite element."""
         element_centers = []
         # TODO atm we only take first element of the list and dont loop over several random fields
         for element_node_lst in self.element_topology[0]["nodes"]:
@@ -361,9 +362,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         Args:
             line (str): Current line of the dat file
-
-        Returns:
-            None
         """
         if self.current_dat_section == "MATERIALS":
             self.original_materials_in_dat.append(int(line.split()[1]))
@@ -456,9 +454,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         Args:
             line (str): Current line of the dat-file
-
-        Returns:
-            None
         """
         # get the overall design description of the problem at hand
         if self.current_dat_section == 'DESIGN DESCRIPTION':
@@ -497,9 +492,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
 
         Args:
             line (str): Current line of the dat-file
-
-        Returns:
-            None
         """
         if self.current_dat_section == 'NODE COORDS':
             node_list = line.split()
@@ -1070,9 +1062,6 @@ class BaciDatExternalGeometry(ExternalGeometry):
             random_field_lst (lst): List containing vectors with the values of the
                                               realized random fields
             old_num (int): Former number of design point Dirichlet conditions
-
-        Returns:
-            None
         """
         # loop over all dirichlet nodes
         field_values = []
@@ -1358,11 +1347,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         self.new_nodes_lst = nodes_mesh_lst
 
     def _write_new_node_sets(self):
-        """Write the new node sets to the dat-file as individual dnodes.
-
-        Returns:
-            None
-        """
+        """Write the new node sets to the dat-file as individual dnodes."""
         for node_set in self.new_nodes_lst:
             for mesh_node, topo_node in zip(node_set['node_mesh'], node_set['topo_dnodes']):
                 print(f"NODE {mesh_node} DNODE {topo_node}")

@@ -19,7 +19,7 @@ def get_module_attribute(path_to_module, function_or_class_name):
         function_or_class_name (str): Name of the function
 
     Returns:
-        (function or class): function or class from the module
+        function or class: Function or class from the module
     """
     # Set the module name
     module_path_obj = Path(path_to_module)
@@ -66,7 +66,7 @@ def get_module_class(module_options, valid_types, module_type_specifier='type'):
         module_type_specifier (str): Specifier for the module type
 
     Returns:
-        module_class (class): class from the module
+        module_class (class): Class from the module
     """
     # determine which object to create
     module_type = module_options.get(module_type_specifier)
