@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -21,6 +23,7 @@ def test_branin_gpy_surrogate(inputdir, tmpdir, expected_pdf):
 
 @pytest.fixture()
 def expected_pdf():
+    """TODO_doc."""
     pdf = [
         3.1776e-04,
         2.1679e-03,

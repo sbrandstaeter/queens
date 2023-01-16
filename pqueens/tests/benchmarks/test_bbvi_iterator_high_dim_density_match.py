@@ -151,7 +151,7 @@ def dummy_bbvi_instance(tmpdir, rv_dimension, my_variational_distribution_obj):
 
 
 def target_density(self, target_distribution_obj, x=None, pdf=False):
-    """Function to mock get_log_posterior_unnormalized."""
+    """Function to mock *get_log_posterior_unnormalized*."""
     output_array = []
     if pdf is False:
         for value in x:

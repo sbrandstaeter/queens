@@ -1,23 +1,20 @@
+"""TODO_doc."""
+
 import numpy as np
 
 from pqueens.randomfields.random_field_gen_fourier import RandomFieldGenFourier
 
 
 class RandomFieldGenFourier2D(RandomFieldGenFourier):
-    """Fourier series based 2-d random field generator.
+    """Fourier series based 2D random field generator.
 
     Generator for 2-dimensional random fields based on a Fourier series
     expansion.
 
     Attributes:
-
-        marginal_distribution (scipy.stats.rv_continuous): marginal distribution
-            of random field
-        corr_length (float): correlation length of random field
-        energy_frac (float): energy fraction retianed by Fourier series expansion
-        field_bbox (np.array): bouding box for field
-        num_ex_term_per_dim (int): number of expansion terms per dimension
-        num_terms (int): number of terms in expansion
+        kb: TODO_doc
+        act_energy_frac: TODO_doc
+        stoch_dim: TODO_doc
     """
 
     def __init__(
@@ -29,9 +26,9 @@ class RandomFieldGenFourier2D(RandomFieldGenFourier):
         num_ex_term_per_dim,
         num_terms,
     ):
-        """
-        Args:
+        """TODO_doc.
 
+        Args:
             marginal_distribution (scipy.stats.rv_continuous): marginal
                 distribution of random field
             corr_length (float): correlation length of random field
@@ -41,7 +38,6 @@ class RandomFieldGenFourier2D(RandomFieldGenFourier):
             num_ex_term_per_dim (int): number of expansion term per dimension
             num_terms (int): number of terms in expansion
         """
-
         # call superclass constructor first
         super().__init__(
             marginal_distribution,
@@ -87,15 +83,15 @@ class RandomFieldGenFourier2D(RandomFieldGenFourier):
         """Generate sample of Gaussian field.
 
         Compute realization of standard Gaussian field based on passed phase
-        angles phase_angles and return values of the realization at loc.
+        angles *phase_angles* and return values of the realization at *loc*.
 
         Args:
-            loc (np.array): location at which field is evaluated
-            phase_angles (np.array): pseudo random phase angles for field
+            loc (np.array): Location at which field is evaluated
+            phase_angles (np.array): Pseudo random phase angles for field
                 generation
         Returns:
-            np.array: vector containing values of realization at specified
-                locations
+            np.array: Vector containing values of realization at specified
+            locations
         """
         if len(phase_angles) != self.stoch_dim:
             raise RuntimeError(

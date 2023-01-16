@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import numpy as np
 import pytest
 
@@ -10,6 +12,7 @@ from pqueens.models.bmfmc_model import BMFMCModel
 # ------ general input fixture ---------------------------------------
 @pytest.fixture()
 def default_parameters():
+    """TODO_doc."""
     rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
     params = {"x1": rv, "x2": rv}
     parameters_module.from_config_create_parameters({"parameters": params})
@@ -18,18 +21,21 @@ def default_parameters():
 
 @pytest.fixture()
 def approx_name():
+    """TODO_doc."""
     name = 'gp_approximation_gpy'
     return name
 
 
 @pytest.fixture()
 def default_interface(config):
+    """TODO_doc."""
     interface = BmfmcInterface(config, approx_name)
     return interface
 
 
 @pytest.fixture()
 def config():
+    """TODO_doc."""
     config = {
         "type": "gp_approximation_gpy",
         "features_config": "opt_features",
@@ -41,6 +47,7 @@ def config():
 
 @pytest.fixture()
 def default_bmfmc_model(default_interface, default_parameters):
+    """TODO_doc."""
     settings_probab_mapping = {
         "type": "gp_approximation_gpy",
         "features_config": "opt_features",
@@ -68,33 +75,39 @@ def default_bmfmc_model(default_interface, default_parameters):
 
 @pytest.fixture()
 def global_settings():
+    """TODO_doc."""
     global_set = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
     return global_set
 
 
 @pytest.fixture()
 def result_description():
+    """TODO_doc."""
     description = {"write_results": True}
     return description
 
 
 @pytest.fixture()
 def experiment_dir():
+    """TODO_doc."""
     return 'my_dummy_dir'
 
 
 @pytest.fixture()
 def initial_design():
+    """TODO_doc."""
     return {"num_HF_eval": 5, "num_bins": 5, "method": "diverse_subset"}
 
 
 @pytest.fixture()
 def predictive_var():
+    """TODO_doc."""
     return False
 
 
 @pytest.fixture()
 def BMFMC_reference():
+    """TODO_doc."""
     return "dummy_reference"
 
 
@@ -107,6 +120,7 @@ def default_bmfmc_iterator(
     predictive_var,
     BMFMC_reference,
 ):
+    """TODO_doc."""
     my_bmfmc_iterator = BMFMCIterator(
         default_bmfmc_model,
         result_description,
@@ -120,21 +134,27 @@ def default_bmfmc_iterator(
 
 # custom class to mock the visualization module
 class InstanceMock:
+    """TODO_doc."""
+
     @staticmethod
     def plot_pdfs(self, *args, **kwargs):
+        """TODO_doc."""
         return 1
 
     @staticmethod
     def plot_manifold(self, *args, **kwargs):
+        """TODO_doc."""
         return 1
 
     @staticmethod
     def plot_feature_ranking(self, *args, **kwargs):
+        """TODO_doc."""
         return 1
 
 
 @pytest.fixture
 def mock_visualization():
+    """TODO_doc."""
     my_mock = InstanceMock()
     return my_mock
 
@@ -149,6 +169,7 @@ def test_init(
     predictive_var,
     BMFMC_reference,
 ):
+    """TODO_doc."""
     mp = mocker.patch('pqueens.iterators.iterator.Iterator.__init__')
     my_bmfmc_iterator = BMFMCIterator(
         default_bmfmc_model,
@@ -171,6 +192,7 @@ def test_init(
 
 
 def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
+    """TODO_doc."""
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.load_sampling_data')
     mp2 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator.calculate_optimal_X_train')
     mp3 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.evaluate')
@@ -188,6 +210,7 @@ def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
 
 
 def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
+    """TODO_doc."""
     mp1 = mocker.patch('pqueens.iterators.bmfmc_iterator.BMFMCIterator._diverse_subset_design')
     mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
@@ -210,6 +233,7 @@ def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
 
 
 def test_get_design_method(mocker, default_bmfmc_iterator):
+    """TODO_doc."""
     mocker.patch(
         'pqueens.iterators.bmfmc_iterator.BMFMCIterator._random_design', return_value='random'
     )
@@ -230,6 +254,7 @@ def test_get_design_method(mocker, default_bmfmc_iterator):
 
 
 def test_diverse_subset_design(mocker, default_bmfmc_iterator):
+    """TODO_doc."""
     mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas')
     n_points = 3
     np.random.seed(1)
@@ -249,6 +274,7 @@ def test_diverse_subset_design(mocker, default_bmfmc_iterator):
 
 
 def test_random_design(mocker, default_bmfmc_iterator):
+    """TODO_doc."""
     mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas')
     n_points = 3
     np.random.seed(1)
@@ -275,12 +301,14 @@ def test_random_design(mocker, default_bmfmc_iterator):
 
 
 def test_model_evaluate(mocker, default_bmfmc_iterator):
+    """TODO_doc."""
     mp1 = mocker.patch('pqueens.models.bmfmc_model.BMFMCModel.evaluate')
     default_bmfmc_iterator.model.evaluate(None)
     mp1.assert_called_once()
 
 
 def test_post_run(mocker, default_bmfmc_iterator):
+    """TODO_doc."""
     mocker.patch(
         'pqueens.visualization.bmfmc_visualization.bmfmc_visualization_instance',
         return_value=mock_visualization,

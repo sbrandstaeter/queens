@@ -1,40 +1,46 @@
+"""TODO_doc."""
+
 import GPy
 import numpy as np
 
 
 class MF_NAR_GP_Regression_2_Levels(object):
-    """Class for creating multi-fidelity nonlinear auto-regressive GP based
+    """Class for creating an emulator.
+
+    Class for creating multi-fidelity nonlinear auto-regressive GP based
     emulator.
 
-        This class constructs a multi fidelity GP emulator, using nonlinear
-        information fusion algorihtm described in [1].
-        Based on this emulator various statistical summarys can be
-        computed and returned.
+    This class constructs a multi fidelity GP emulator, using nonlinear
+    information fusion algorithm described in [1].
+    Based on this emulator, various statistical summaries can be
+    computed and returned.
 
 
     Attributes:
-        num_fidelity_levels (int):      Levels of fidelity (currently hard coded to two)
-        X_lofi (np.array):              Training inputs low-fidelity
-        X_hifi (np.array):              Training inputs high-fidelity
-        input_dimension (int):          Dimension of training inputs
-        active_dimensions (int):
+        num_fidelity_levels (int):      Levels of fidelity (currently hard coded to two).
+        X_lofi (np.array):              Training inputs low-fidelity.
+        y_lofi: TODO_doc
+        X_hifi (np.array):              Training inputs high-fidelity.
+        y_hifi: TODO_doc
+        input_dimension (int):          Dimension of training inputs.
+        active_dimensions (int): TODO_doc
         num_posterior_samples (int):    Number of posterior samples for inference
-                                        and prediction
-        m1 (GPy.model):                 GPy based Gaussian process model
-        m2 (GPy.model):                 GPy based Gaussian process model
+                                        and prediction.
+        m1 (GPy.model):                 GPy based Gaussian process model.
+        m2 (GPy.model):                 GPy based Gaussian process model.
     """
 
     @classmethod
     def from_options(cls, approx_options, Xtrain, ytrain):
-        """Create approxiamtion from options dictionary.
+        """Create approximation from options dictionary.
 
         Args:
             approx_options (dict): Dictionary with approximation options
-            x_train (np.array):    Training inputs
-            y_train (np.array):    Training outputs
+            Xtrain (np.array):    Training inputs
+            ytrain (np.array):    Training outputs
 
         Returns:
-            MF_NAR_GP_Regression: approximation object
+            MF_NAR_GP_Regression: Approximation object
         """
         if len(Xtrain) != 2:
             raise ValueError("MF_NAR_GP_Regression is only implemented for two levels")
@@ -43,14 +49,14 @@ class MF_NAR_GP_Regression_2_Levels(object):
         return cls(Xtrain, ytrain, num_posterior_samples)
 
     def __init__(self, Xtrain, ytrain, num_posterior_samples):
-        """
+        """TODO_doc.
+
         Args:
             Xtrain (list):                  List of arrays of location of design points
-            ytrain (np.array):              List of arrays of values at desing points
+            ytrain (np.array):              List of arrays of values at design points
             num_posterior_samples (int):    Number of posterior samples for inference
                                             and prediction
         """
-
         # check that X_lofi and X_hifi have the same dimension
         dim_x = Xtrain[0].shape[1]
         if dim_x is not Xtrain[1].shape[1]:
@@ -79,6 +85,7 @@ class MF_NAR_GP_Regression_2_Levels(object):
         self.m2 = None
 
     def train(self):
+        """TODO_doc."""
         # train gp on low fidelity data
         k1 = GPy.kern.RBF(self.input_dimension, ARD=True)
         self.m1 = GPy.models.GPRegression(X=self.X_lofi, Y=self.y_lofi, kernel=k1, normalizer=True)
@@ -109,14 +116,14 @@ class MF_NAR_GP_Regression_2_Levels(object):
         self.m2.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
 
     def predict(self, x_test):
-        """Compute latent function at x_test.
+        """Compute latent function at *x_test*.
 
         Args:
-            x_test (np.array): Inputs at which to evaluate latent function f
+            x_test (np.array): Inputs at which to evaluate latent function 'f'
 
         Returns:
             dict: Dictionary with mean, variance, and possibly
-                  posterior samples of latent function at x_test
+            posterior samples of latent function at *x_test*
         """
         output = {}
         mean, variance = self.predict_f(x_test)
@@ -128,13 +135,13 @@ class MF_NAR_GP_Regression_2_Levels(object):
         return output
 
     def predict_f(self, x_test):
-        """Compute the mean and variance of the latent function at x_test.
+        """Compute the mean and variance of the latent function at *x_test*.
 
         Args:
-            x_test (np.array): Inputs at which to evaluate latent function f
+            x_test (np.array): Inputs at which to evaluate latent function 'f'
 
         Returns:
-            np.array, np.array: mean and varaince of latent function at Xnew
+            np.array, np.array: Mean and variance of latent function at *Xnew*
         """
         dim_x = x_test.shape[1]
         num_test_points = x_test.shape[0]
@@ -164,14 +171,14 @@ class MF_NAR_GP_Regression_2_Levels(object):
         return mean_x_test.reshape((-1, 1)), var_x_test.reshape((-1, 1))
 
     def predict_f_samples(self, x_test, num_samples):
-        """Produce samples from the posterior latent funtion x_test.
+        """Produce samples from the posterior latent function *x_test*.
 
         Args:
-            x_test (np.array):  Inputs at which to evaluate latent function f
+            x_test (np.array):  Inputs at which to evaluate latent function 'f'
             num_samples (int):  Number of posterior field_realizations of GP
 
         Returns:
-            np.array: samples of latent function at x_test
+            np.array: Samples of latent function at *x_test*
         """
         num_realizations_l1 = num_samples
         num_realizations_l2 = num_samples

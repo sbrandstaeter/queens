@@ -44,10 +44,8 @@ def test_cluster_baci_elementary_effects(
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         cluster_testsuite_settings (dict): Collection of cluster specific settings
+        baci_cluster_paths (path): Path to BACI dependencies on the cluster.
         baci_elementary_effects_check_results (function): function to check the results
-
-    Returns:
-        None
     """
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]

@@ -10,11 +10,11 @@ def ma09(x1, x2, **kwargs):
     :math:`f({\bf x}) = \frac{1}{|0.3-x_1^2 - x_2^2|+0.1}`
 
     Args:
-        x1 (float): input parameter 1 in [0, 1]
-        x2 (float): input parameter 2 in [0, 1]
+        x1 (float): Input parameter 1 in [0, 1]
+        x2 (float): Input parameter 2 in [0, 1]
 
     Returns:
-        float: value of ma09 function
+        float: Value of the `ma09` function
 
 
     References:

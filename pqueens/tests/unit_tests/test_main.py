@@ -1,5 +1,6 @@
 """Test the main module."""
 import json
+import logging
 import sys
 from pathlib import Path
 
@@ -29,7 +30,7 @@ def fixture_debug_flag(request):
 
 
 def test_get_config_dict_output_dir_fail():
-    """Test if config fails for non-existing ouput directory."""
+    """Test if config fails for non-existing output directory."""
     with pytest.raises(FileNotFoundError, match="Output directory"):
         get_config_dict(None, Path("path/that/doesnt/esxits"))
 
@@ -54,13 +55,14 @@ def test_get_config_dict_input(input_file, test_path, debug_flag):
     assert config == true_config
 
 
-def test_main_greeting_message(capfd):
-    """Test if greeting mesaage is provided for in case of no inputs."""
+def test_main_greeting_message(caplog):
+    """Test if greeting message is provided for in case of no inputs."""
     argv = ["python_file.py"]
     with patch.object(sys, 'argv', argv):
-        main()
-        out, _ = capfd.readouterr()
-        assert out.find("To use QUEENS run") > -1
+
+        with caplog.at_level(logging.INFO):
+            main()
+        assert "To use QUEENS run" in caplog.text
 
 
 def test_main_call(mocker):

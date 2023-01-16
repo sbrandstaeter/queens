@@ -3,17 +3,18 @@ from pqueens.utils.exceptions import InvalidOptionError
 
 
 def get_option(options_dict, desired_option, error_message=""):
-    """Get option desired_option from the options_dict.
+    """Get option *desired_option* from *options_dict*.
 
-    The options_dict consists of the keys and their values. Note that the value can also be
+    The *options_dict* consists of the keys and their values. Note that the value can also be
     functions. In case the option is not found an error is raised.
 
     Args:
         options_dict (dict): Dictionary with valid options and their value
         desired_option (str): Desired method key
+        error_message: TODO_doc
 
     Returns:
-        Value of the desired_option
+        Value of the *desired_option*
     """
     check_if_valid_options(list(options_dict.keys()), desired_option, error_message)
     return options_dict[desired_option]
@@ -26,8 +27,8 @@ def check_if_valid_options(valid_options, desired_options, error_message=""):
 
     Args:
         valid_options (lst,dict): List of valid option keys or dict with valid options as keys
-        desired_options (str,lst(str),dict): Key(s) of desired options
-        error_message (str, optional): Error message in case the desired option can not be found.
+        desired_options (str, lst(str), dict): Key(s) of desired options
+        error_message (str, optional): Error message in case the desired option can not be found
     """
     desired_options_set = set(desired_options)
     if isinstance(desired_options, str):

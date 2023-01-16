@@ -1,10 +1,18 @@
+"""TODO_doc."""
+
 import numpy as np
 
 from pqueens.randomfields.random_field_gen_KLE import RandomFieldGenKLE
 
 
 class RandomFieldGenKLE2D(RandomFieldGenKLE):
-    """Generator for 2d random fields based on KLE expansion."""
+    """Generator for 2D random fields based on KLE expansion.
+
+    Attributes:
+        w_n: TODO_doc
+        lambda_n: TODO_doc
+        act_energy_frac: TODO_doc
+    """
 
     def __init__(
         self,
@@ -16,7 +24,17 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
         num_ex_term_per_dim,
         num_terms,
     ):
+        """TODO_doc.
 
+        Args:
+            marginal_distribution: TODO_doc
+            corr_length: TODO_doc
+            energy_frac: TODO_doc
+            field_bbox: TODO_doc
+            dimension: TODO_doc
+            num_ex_term_per_dim: TODO_doc
+            num_terms: TODO_doc
+        """
         # call superclass constructor first
         super().__init__(
             marginal_distribution,
@@ -54,16 +72,16 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
         lambdas_vec = np.hstack((lambdas_vec, my_w_index))
 
         # sort in ascending order
-        lamda_sorted = lambdas_vec[
+        lambda_sorted = lambdas_vec[
             lambdas_vec[:, 0].argsort(),
         ]
         # create view with reverse order
-        lamda_sorted = lamda_sorted[::-1]
+        lambda_sorted = lambda_sorted[::-1]
 
         # truncate and store in class variables
-        self.lambda_n = lamda_sorted[0 : self.trunc_thres, :]
-        my_index_1 = np.array(lamda_sorted[0 : self.trunc_thres, 2]).astype(int)
-        my_index_0 = np.array(lamda_sorted[0 : self.trunc_thres, 1]).astype(int)
+        self.lambda_n = lambda_sorted[0 : self.trunc_thres, :]
+        my_index_1 = np.array(lambda_sorted[0 : self.trunc_thres, 2]).astype(int)
+        my_index_0 = np.array(lambda_sorted[0 : self.trunc_thres, 1]).astype(int)
 
         self.w_n = np.zeros((self.trunc_thres, 2))
         self.w_n[:, 1] = w_n[my_index_1, 1]
@@ -82,7 +100,7 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
         """Generate sample of standard Gaussian field.
 
         Compute realization of standard Gaussian field based on passed phase
-        angles phase_angles and location
+        angles *phase_angles* and location.
 
         Arguments:
             loc (np.array):             Locations at which to evaluate generated
@@ -90,7 +108,7 @@ class RandomFieldGenKLE2D(RandomFieldGenKLE):
             phase_angles (np.array):    Realization of standard normal random
                                         phase angles
         Returns:
-            np.array: values of the random field realization at loc
+            np.array: Values of the random field realization at *loc*
         """
         if len(phase_angles) != self.stoch_dim:
             raise RuntimeError(

@@ -17,31 +17,31 @@ class BMFIAIterator(Iterator):
 
     Iterator for Bayesian multi-fidelity inverse analysis. Here, we build
     the multi-fidelity probabilistic surrogate, determine optimal training
-    points X_train and evaluate the low- and high-fidelity model for these
-    training inputs to yield Y_LF_train and Y_HF_train. training data. The
+    points *X_train* and evaluate the low- and high-fidelity model for these
+    training inputs, to yield *Y_LF_train* and *Y_HF_train* training data. The
     actual inverse problem is not solved or iterated in this module but instead
     we iterate over the training data to approximate the probabilistic mapping
-    p(yhf|ylf).
+    *p(yhf|ylf)*.
 
     Attributes:
-        result_description (dict): Dictionary containing settings for result handling and writing
-        X_train (np.array): Input training matrix for HF and LF model
-        Y_LF_train (np.array): Corresponding LF model response to X_train input
-        Y_HF_train (np.array): Corresponding HF model response to X_train input
-        Z_train (np.array): Corresponding LF informative features to X_train input
-        features_config (str): Type of feature selection method
-        hf_model (obj): High-fidelity model object
-        lf_model (obj): Low fidelity model object
-        coords_experimental_data (np.array): Coordinates of the experimental data
-        time_vec (np.array): Time vector of experimental observations
+        result_description (dict): Dictionary containing settings for result handling and writing.
+        X_train (np.array): Input training matrix for HF and LF model.
+        Y_LF_train (np.array): Corresponding LF model response to *X_train* input.
+        Y_HF_train (np.array): Corresponding HF model response to *X_train* input.
+        Z_train (np.array): Corresponding LF informative features to *X_train* input.
+        features_config (str): Type of feature selection method.
+        hf_model (obj): High-fidelity model object.
+        lf_model (obj): Low-fidelity model object.
+        coords_experimental_data (np.array): Coordinates of the experimental data.
+        time_vec (np.array): Time vector of experimental observations.
         output_label (str): Name or label of the output quantity of interest (used to find the
-                            data in the csv file)
+                            data in the csv file).
         coord_labels (lst): Label or names of the underlying coordinates for the experimental
-                            data. This should be in the same order as the experimental_data array
-        y_obs_vec (np.array): Output data of experimental observations
+                            data. This should be in the same order as the *experimental_data* array.
+        y_obs_vec (np.array): Output data of experimental observations.
         settings_probab_mapping (dict): Dictionary with settings for the probabilistic
-                                        multi-fidelity mapping
-        db (obj): Database object
+                                        multi-fidelity mapping.
+        db (obj): Database object.
 
     Returns:
        BMFIAIterator (obj): Instance of the BMFIAIterator
@@ -66,7 +66,26 @@ class BMFIAIterator(Iterator):
         time_vec,
         y_obs_vec,
     ):
-        """Instantiate the BMFIAIterator object."""
+        """Instantiate the BMFIAIterator object.
+
+        Args:
+            result_description: TODO_doc
+            global_settings: TODO_doc
+            features_config: TODO_doc
+            hf_model: TODO_doc
+            lf_model: TODO_doc
+            output_label: TODO_doc
+            coord_labels: TODO_doc
+            settings_probab_mapping: TODO_doc
+            db: TODO_doc
+            x_train: TODO_doc
+            Y_LF_train: TODO_doc
+            Y_HF_train: TODO_doc
+            Z_train: TODO_doc
+            coords_experimental_data: TODO_doc
+            time_vec: TODO_doc
+            y_obs_vec: TODO_doc
+        """
         super().__init__(None, global_settings)  # Input prescribed by iterator.py
 
         self.result_description = result_description
@@ -90,7 +109,7 @@ class BMFIAIterator(Iterator):
         """Build a BMFIAIterator object from the problem description.
 
         Args:
-            config (dict): Configuration / input file for QUEENS as dictionary
+            config (dict): Configuration/input file for QUEENS as dictionary
             _iterator_name (str): Name of the Iterator (here not used)
             _model_name(str): Name of the underlying model (here not used)
 
@@ -179,10 +198,10 @@ class BMFIAIterator(Iterator):
 
     @classmethod
     def _get_design_method(cls, initial_design_dict):
-        """Get the design method for inital trainig data.
+        """Get the design method for initial training data.
 
-        Select the method for the generation of the inital training data
-        for the probabilsitic regression model.
+        Select the method for the generation of the initial training data
+        for the probabilistic regression model.
 
         Args:
             initial_design_dict (dict): Dictionary with description of initial design.
@@ -266,21 +285,13 @@ class BMFIAIterator(Iterator):
         return self.Z_train, self.Y_HF_train
 
     def _evaluate_LF_model_for_X_train(self):
-        """Evaluate the low-fidelity model for the X_train input data-set.
-
-        Returns:
-            None
-        """
+        """Evaluate the low-fidelity model for the X_train input data-set."""
         # reshape the scalar output by the coordinate dimension
         num_coords = self.coords_experimental_data.shape[0]
         self.Y_LF_train = self.lf_model.evaluate(self.X_train)['mean'].reshape(-1, num_coords)
 
     def _evaluate_HF_model_for_X_train(self):
-        """Evaluate the high-fidelity model for the X_train input data-set.
-
-        Returns:
-            None
-        """
+        """Evaluate the high-fidelity model for the X_train input data-set."""
         # reshape the scalar output by the coordinate dimension
         num_coords = self.coords_experimental_data.shape[0]
         self.Y_HF_train = self.hf_model.evaluate(self.X_train)['mean'].reshape(-1, num_coords)
@@ -298,7 +309,7 @@ class BMFIAIterator(Iterator):
             coords_mat (np.array): Coordinate matrix for the observations with row-wise coordinate
                                    points and different dimensions per column.
 
-        Retruns:
+        Returns:
             z_mat (np.array): Extended low-fidelity matrix containing
                               informative feature dimensions. Every row is one data point with
                               dimensions per column.
@@ -491,10 +502,9 @@ class BMFIAIterator(Iterator):
         )
 
     def eval_model(self):
-        """Evaluate the LF and HF model to for the training inputs X_train.
+        """Evaluate the LF and HF model to for the training inputs.
 
-        Returns:
-            None
+        *X_train*.
         """
         # ---- run LF model on X_train (potentially we need to iterate over this and the previous
         # step to determine optimal X_train; for now just one sequence)

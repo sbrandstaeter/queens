@@ -19,6 +19,9 @@ class NumpyArrayEncoder(JSONEncoder):
 
         Args:
             obj (obj): Object to encode.
+
+        Returns:
+            TODO_doc
         """
         if isinstance(obj, np.integer):
             return int(obj)

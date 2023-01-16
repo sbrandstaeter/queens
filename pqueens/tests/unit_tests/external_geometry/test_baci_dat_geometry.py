@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 
 import numpy as np
@@ -9,6 +11,7 @@ from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 # general input fixtures
 @pytest.fixture()
 def default_geo_obj(tmpdir):
+    """TODO_doc."""
     path_to_dat_file = tmpdir.join('myfile.dat')
     list_geometric_sets = ["DSURFACE 9"]
     list_associated_material_numbers = [[10, 11]]
@@ -41,12 +44,14 @@ def default_geo_obj(tmpdir):
 
 
 def write_to_file(data, filepath):
+    """TODO_doc."""
     with open(filepath, 'w') as fp:
         fp.write(data)
 
 
 @pytest.fixture()
 def dat_dummy_comment():
+    """TODO_doc."""
     data = [
         '// this is a comment\n',
         ' // this is another comment --------------------------------------'
@@ -58,6 +63,7 @@ def dat_dummy_comment():
 
 @pytest.fixture()
 def dat_dummy_get_fun():
+    """TODO_doc."""
     data = [
         'NODE    3419 DSURFACE 10\n',
         'NODE    3421 DSURFACE 10\n',
@@ -79,6 +85,7 @@ def dat_dummy_get_fun():
     ]
 )
 def dat_section_true(request):
+    """TODO_doc."""
     return request.param
 
 
@@ -93,6 +100,7 @@ def dat_section_true(request):
     ]
 )
 def dat_section_false(request):
+    """TODO_doc."""
     return request.param
 
 
@@ -105,11 +113,13 @@ def dat_section_false(request):
     ]
 )
 def current_dat_sections(request):
+    """TODO_doc."""
     return request.param
 
 
 @pytest.fixture()
 def desired_sections():
+    """TODO_doc."""
     sections = {
         'DLINE-NODE TOPOLOGY': ['DLINE 1'],
         'DSURF-NODE TOPOLOGY': ['DSURFACE 2', 'DSURFACE 1'],
@@ -121,6 +131,7 @@ def desired_sections():
 
 @pytest.fixture()
 def default_coords():
+    """TODO_doc."""
     coords = [
         'NODE 1 COORD -1.0000000000000000e+00 -2.5000000000000000e-01 0.0000000000000000e+00',
         'NODE 2 COORD -1.0000000000000000e+00 -2.5000000000000000e-01 -3.7500000000000006e-02',
@@ -132,6 +143,7 @@ def default_coords():
 
 @pytest.fixture()
 def default_topology_node():
+    """TODO_doc."""
     data = [
         'NODE    1 DNODE 1',
         'NODE    2 DNODE 1',
@@ -144,6 +156,7 @@ def default_topology_node():
 
 @pytest.fixture()
 def default_topology_line():
+    """TODO_doc."""
     data = [
         'NODE    1 DLINE 1',
         'NODE    2 DLINE 1',
@@ -156,6 +169,7 @@ def default_topology_line():
 
 @pytest.fixture()
 def default_topology_surf():
+    """TODO_doc."""
     data = [
         'NODE    1 DSURFACE 1',
         'NODE    2 DSURFACE 1',
@@ -168,6 +182,7 @@ def default_topology_surf():
 
 @pytest.fixture()
 def default_topology_vol():
+    """TODO_doc."""
     data = [
         'NODE    1 DVOL 1',
         'NODE    2 DVOL 1',
@@ -180,6 +195,7 @@ def default_topology_vol():
 
 # ----------------- actual unit_tests -------------------------------------------------------------
 def test_init(mocker, tmpdir):
+    """TODO_doc."""
     path_to_dat_file = 'dummy_path'
     list_geometric_sets = ["DSURFACE 9"]
     list_associated_material_numbers = [[10, 11]]
@@ -226,6 +242,7 @@ def test_init(mocker, tmpdir):
 
 
 def test_read_external_data_comment(mocker, tmpdir, dat_dummy_comment, default_geo_obj):
+    """TODO_doc."""
     filepath = tmpdir.join("myfile.dat")
     write_to_file(dat_dummy_comment, filepath)
 
@@ -275,6 +292,7 @@ def test_read_external_data_comment(mocker, tmpdir, dat_dummy_comment, default_g
 
 
 def test_read_external_data_get_functions(mocker, tmpdir, dat_dummy_get_fun, default_geo_obj):
+    """TODO_doc."""
     filepath = tmpdir.join("myfile.dat")
     write_to_file(dat_dummy_get_fun, filepath)
 
@@ -326,7 +344,7 @@ def test_read_external_data_get_functions(mocker, tmpdir, dat_dummy_get_fun, def
 
 
 def test_organize_sections(default_geo_obj):
-    """Wrapper for _get_desired_dat_sections."""
+    """Wrapper for *_get_desired_dat_sections*."""
     desired_geo_sets = ['DSURFACE 9', 'DVOL 2', 'DLINE 1', 'DSURFACE 8']
     expected_dat_section = {
         'DLINE-NODE TOPOLOGY': ['DLINE 1'],
@@ -340,6 +358,7 @@ def test_organize_sections(default_geo_obj):
 
 
 def test_get_current_dat_section_true(default_geo_obj, dat_section_true):
+    """TODO_doc."""
     default_geo_obj._get_current_dat_section(dat_section_true)
     clean_section_name = dat_section_true.strip()
     clean_section_name = clean_section_name.strip('-')
@@ -347,11 +366,13 @@ def test_get_current_dat_section_true(default_geo_obj, dat_section_true):
 
 
 def test_get_current_dat_section_false(default_geo_obj, dat_section_false):
+    """TODO_doc."""
     default_geo_obj._get_current_dat_section(dat_section_false)
     assert default_geo_obj.current_dat_section is None
 
 
 def test_check_if_in_desired_dat_section(default_geo_obj):
+    """TODO_doc."""
     default_geo_obj.desired_dat_sections = {
         'DLINE-NODE TOPOLOGY': ['DLINE 1'],
         'DSURF-NODE TOPOLOGY': ['DSURFACE 9', 'DSURFACE 8'],
@@ -378,6 +399,7 @@ def test_get_topology(
     default_topology_surf,
     default_topology_vol,
 ):
+    """TODO_doc."""
     default_geo_obj.current_dat_section = current_dat_sections
     default_geo_obj.desired_dat_sections = desired_sections
 
@@ -407,6 +429,7 @@ def test_get_topology(
 
 
 def test_get_only_desired_topology(default_geo_obj, mocker):
+    """TODO_doc."""
     line = 'dummy'
     mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
@@ -431,6 +454,7 @@ def test_get_only_desired_topology(default_geo_obj, mocker):
 
 
 def test_get_only_desired_coordinates(default_geo_obj, mocker):
+    """TODO_doc."""
     line = 'dummy 2'
     mp1 = mocker.patch(
         'pqueens.external_geometry.baci_dat_geometry.BaciDatExternalGeometry'
@@ -454,6 +478,7 @@ def test_get_only_desired_coordinates(default_geo_obj, mocker):
 
 
 def test_get_coordinates_of_desired_geometric_sets(default_geo_obj, default_coords):
+    """TODO_doc."""
     for line in default_coords:
         node_list = line.split()
         default_geo_obj._get_coordinates_of_desired_geometric_sets(node_list)
@@ -472,6 +497,7 @@ def test_get_coordinates_of_desired_geometric_sets(default_geo_obj, default_coor
 
 
 def test_get_nodes_of_interest(default_geo_obj):
+    """TODO_doc."""
     default_geo_obj.node_topology[-1]['node_mesh'] = [1, 2, 4, 9, 13]
     default_geo_obj.node_topology[-1]['node_topology'] = [1, 1, 1, 1, 1]
     default_geo_obj.line_topology[-1]['node_mesh'] = [1, 2, 4, 9, 13]

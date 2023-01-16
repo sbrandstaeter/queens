@@ -5,15 +5,15 @@ import numpy as np
 
 
 def oakley_ohagan04(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14, x15, **kwargs):
-    r"""Oakley O'Hagan 2004 function 15 dimensional benchmark function in [1].
+    r"""Oakley O'Hagan 2004 function, 15 dimensional benchmark function in [1].
 
     :math:`f({\bf x})=
     {\bf a_1}^T{\bf x}+{\bf a_2}^T\sin({\bf x})+{\bf a_3}^T\cos({\bf x})+{\bf x^T M x}`
 
-    The a-coefficients are chosen so that 5 of the input variables contribute
+    The *a*-coefficients are chosen so that 5 of the input variables contribute
     significantly to the output variance, 5 have a much smaller effect, and the
     remaining 5 have almost no effect on the output variance. Values of the
-    coefficient vectors a1, a2 and a3, and the matrix M, can be found at:
+    coefficient vectors *a1*, *a2* and *a3*, and the matrix *M*, can be found at:
     http://www.jeremy-oakley.staff.shef.ac.uk/psa_example.txt.
 
     In [1] :math:`x_i \sim N(\mu=0, \sigma=1), \textrm{for all i = 1, ..., 15}.`
@@ -36,7 +36,7 @@ def oakley_ohagan04(x1, x2, x3, x4, x5, x6, x7, x8, x9, x10, x11, x12, x13, x14,
         x15 (float): Input parameter 15
 
     Returns:
-        float: Value of function at parameters
+        float: Value of the function at the parameters
 
     References:
         [1] Oakley, J. E., & O'Hagan, A. (2004). Probabilistic sensitivity analysis

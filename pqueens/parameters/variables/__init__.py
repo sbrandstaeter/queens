@@ -13,7 +13,6 @@ def from_config_create_random_variable(rv_dict):
     Returns:
         rv: Random variables object
     """
-
     if rv_dict.get("distribution"):
         distribution = from_config_create_distribution(rv_dict)
         dimension = distribution.dimension

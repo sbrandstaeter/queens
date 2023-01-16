@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import numpy as np
 import pytest
 
@@ -12,12 +14,14 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
 
 @pytest.fixture()
 def global_settings():
+    """TODO_doc."""
     global_settings = {"experiment_name": "test"}
     return global_settings
 
 
 @pytest.fixture()
 def default_model():
+    """TODO_doc."""
     uncertain_parameter1 = {
         "type": "random_variable",
         "distribution": "uniform",
@@ -59,6 +63,7 @@ def default_model():
 
 @pytest.fixture()
 def default_qmc_iterator(default_model, global_settings):
+    """TODO_doc."""
     my_iterator = SobolSequenceIterator(
         default_model,
         seed=42,

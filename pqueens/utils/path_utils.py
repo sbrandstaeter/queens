@@ -6,18 +6,17 @@ PATH_TO_QUEENS = Path(__file__).parents[2]
 
 
 def relative_path_from_pqueens(relative_path, as_str=True):
-    """Create relative path from `pqueens/`.
+    """Create relative path from *pqueens/*.
 
-    As an example to create:
-        queens/pqueens/folder/file.A
+    As an example to create: *queens/pqueens/folder/file.A*.
 
-    call relative_path_from_pqueens("folder/file.A")
+    Call *relative_path_from_pqueens("folder/file.A")* .
 
     Args:
-        relative_path (str): Path starting from queens/pqueens/
-        as_str (bool,optional): True if the path is to be returned as string
+        relative_path (str): Path starting from *queens/pqueens/*
+        as_str (bool,optional): *True* if the path is to be returned as string
     Returns:
-        (PosixPath or str): Absolute path to the file
+        PosixPath or str: Absolute path to the file
     """
     full_path = PATH_TO_PQUEENS.joinpath(relative_path)
     if as_str:
@@ -26,19 +25,18 @@ def relative_path_from_pqueens(relative_path, as_str=True):
 
 
 def relative_path_from_queens(relative_path, as_str=True):
-    """Create relative path from `queens/`.
+    """Create relative path from *queens/*.
 
-    As an example to create:
-        queens/pqueens/folder/file.A
+    As an example to create: *queens/pqueens/folder/file.A* .
 
-    call relative_path_from_pqueens("pqueens/folder/file.A")
+    Call *relative_path_from_pqueens("pqueens/folder/file.A")* .
 
     Args:
-        relative_path (str): Path starting from queens/
-        as_str (bool,optional): True if the path is to be returned as string
+        relative_path (str): Path starting from *queens/*
+        as_str (bool,optional): *True* if the path is to be returned as string
 
     Returns:
-        (PosixPath or str): Absolute path to the file
+        PosixPath or str: Absolute path to the file
     """
     full_path = PATH_TO_QUEENS.joinpath(relative_path)
     if as_str:
@@ -53,7 +51,7 @@ def create_folder_if_not_existent(path):
         path (PosixPath): Path to be created
 
     Returns:
-        path_obj (PosixPath) path object
+        path_obj (PosixPath): Path object
     """
     path_obj = Path(path)
     path_obj.mkdir(parents=True, exist_ok=True)
@@ -66,6 +64,8 @@ def check_if_path_exists(path, error_message=""):
     Args:
         path (str): Path to be checked
         error_message (str,optional): If an additional message is desired
+    Returns:
+        path_exists: TODO_doc
     """
     path_exists = Path(path).exists()
 

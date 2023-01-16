@@ -108,7 +108,9 @@ def cluster_path_to_singularity(cluster_queens_base_dir):
 def prepare_cluster_testing_environment(connect_to_resource, cluster_queens_testing_folder):
     """Create a clean testing environment on the cluster."""
     # remove old folder
-    print(f"Delete testing folder {cluster_queens_testing_folder} on {connect_to_resource}")
+    _logger.info(
+        "Delete testing folder %s on %s", cluster_queens_testing_folder, connect_to_resource
+    )
     command_string = f'rm -rfv {cluster_queens_testing_folder}'
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
@@ -118,7 +120,9 @@ def prepare_cluster_testing_environment(connect_to_resource, cluster_queens_test
     _logger.info(stdout)
 
     # create generic testing folder
-    _logger.info(f"Create testing folder {cluster_queens_testing_folder} on {connect_to_resource}")
+    _logger.info(
+        "Create testing folder %s on %s", cluster_queens_testing_folder, connect_to_resource
+    )
     command_string = f'mkdir -v -p {cluster_queens_testing_folder}'
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
@@ -138,8 +142,8 @@ def prepare_singularity(
 ):
     """Build singularity based on the code during test invocation.
 
-    WARNING: needs to be done AFTER prepare_cluster_testing_environment to make sure cluster testing
-     folder is clean and existing
+    **WARNING:** Needs to be done AFTER *prepare_cluster_testing_environment* to make sure cluster testing
+    folder is clean and existing.
     """
     if not prepare_cluster_testing_environment:
         raise RuntimeError("Testing environment on cluster not successful.")

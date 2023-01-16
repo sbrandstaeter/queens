@@ -11,14 +11,14 @@ class Model(metaclass=abc.ABCMeta):
         and a set of responses. An iterator operates on the model to map
         the variables into responses using the interface.
 
-        As with the Iterator hierarchy, the purpose of the this base class is
+        As with the Iterator hierarchy, the purpose of this base class is
         twofold. One, it defines a unified interface for all derived classes.
         Two, it acts as a factory for the instantiation of model objects.
 
     Attributes:
-        name (str): Name of the model
-        parameters (obj): Parameters object
-        response (dict): Response corresponding to parameters
+        name (str): Name of the model.
+        parameters (obj): Parameters object.
+        response (dict): Response corresponding to parameters.
     """
 
     def __init__(self, name=None):
@@ -33,5 +33,9 @@ class Model(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def evaluate(self, samples):
-        """Evaluate model with current set of samples."""
+        """Evaluate model with current set of samples.
+
+        Args:
+            samples: TODO_doc
+        """
         pass

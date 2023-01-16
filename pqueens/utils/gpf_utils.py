@@ -1,21 +1,23 @@
+"""Utilis for gpflow."""
+
 import gpflow as gpf
 import numpy as np
 from sklearn.preprocessing import StandardScaler
 
 
 def init_scaler(unscaled_data):
-    """Initialize StandardScaler and scale data.
+    r"""Initialize StandardScaler and scale data.
 
     Standardize features by removing the mean and scaling to unit variance
 
-        scaled_data = (unscaled_data - mean) / std
+        :math:`scaled\_data = \frac{unscaled\_data - mean}{std}`
 
     Args:
-        unscaled_data (np.ndarray): unscaled data
+        unscaled_data (np.ndarray): Unscaled data
 
     Returns:
-        scaler (StandardScaler): standard scaler
-        scaled_data (np.ndarray): scaled data
+        scaler (StandardScaler): Standard scaler
+        scaled_data (np.ndarray): Scaled data
     """
     scaler = StandardScaler()
     scaler.fit(unscaled_data)
@@ -27,8 +29,8 @@ def set_transform_function(data, transform):
     """Set transform function.
 
     Args:
-        data (gpf.Parameter): data to be transformed
-        transform (tfp.bijectors.Bijector): transform function
+        data (gpf.Parameter): Data to be transformed
+        transform (tfp.bijectors.Bijector): Transform function
 
     Returns:
         gpf.Parameter with transform
@@ -44,8 +46,8 @@ def extract_block_diag(array, block_size):
     """Extract block diagonals of square 2D Array.
 
     Args:
-        array (np.ndarray): square 2D array
-        block_size (int): block size
+        array (np.ndarray): Square 2D array
+        block_size (int): Block size
 
     Returns:
         3D Array containing block diagonals

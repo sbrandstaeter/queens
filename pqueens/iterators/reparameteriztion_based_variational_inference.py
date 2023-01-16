@@ -19,17 +19,17 @@ class RPVIIterator(VariationalInferenceIterator):
     """Reparameterization based variational inference (RPVI).
 
     Iterator for Bayesian inverse problems. This variational inference approach requires
-    model gradients/jacobians w.r.t. the parameters/the parameterization of the
+    model gradients/Jacobians w.r.t. the parameters/the parameterization of the
     inverse problem. The latter can be provided by:
 
-        - A finite differences approximation of the gradient/jacobian, which requires in the
+        - A finite differences approximation of the gradient/Jacobian, which requires in the
           simplest case d+1 additional solver calls
-        - An externally provided gradient/jacobian that was, e.g., calculated via adjoint methods or
+        - An externally provided gradient/Jacobian that was, e.g. calculated via adjoint methods or
           automated differentiation
 
-    The current implementation does not support importance sampling of the MC gradient.
+    The current implementation does not support the importance sampling of the MC gradient.
 
-    The mathematical details of the algorithm can be found in [1], [2], [3]
+    The mathematical details of the algorithm can be found in [1], [2], [3].
 
     References:
         [1]: Kingma, D. P., Salimans, T., & Welling, M. (2015). Variational dropout and the local
@@ -43,17 +43,17 @@ class RPVIIterator(VariationalInferenceIterator):
              859-877.
 
     Attributes:
-        score_function_bool (bool): Boolean flag to decide wheater the score function term
-                                    should be considered in the elbo gradient. If true the
+        score_function_bool (bool): Boolean flag to decide whether the score function term
+                                    should be considered in the elbo gradient. If *True* the
                                     score function is considered.
-        finite_difference_step (float): Finite difference step size
+        finite_difference_step (float): Finite difference step size.
+        likelihood_gradient_method (str): Method for how to calculate the gradient
+                                                        of the log-likelihood.
         finite_difference_method (str): Method to calculate a finite difference based
-                                        approximation of the Jacobian matrix:
+                        approximation of the Jacobian matrix:
 
                         - '2-point': a one sided scheme by definition
                         - '3-point': more exact but needs twice as many function evaluations
-        likelihood_gradient_method (str): Method for how to calculate the gradient
-                                                        of the log-likelihood
 
     Returns:
         rpvi_obj (obj): Instance of the RPVIIterator
@@ -121,8 +121,9 @@ class RPVIIterator(VariationalInferenceIterator):
             finite_difference_method (str): Method to calculate a finite difference based
                                             approximation of the Jacobian matrix:
 
-                            - '2-point': a one sided scheme by definition
-                            - '3-point': more exact but needs twice as many function evaluations
+                                            - '2-point': a one sided scheme by definition
+                                            - '3-point': more exact but needs twice as many
+                                              function evaluations
             iteration_data (CollectionObject): Object to store iteration data if desired
         """
         super().__init__(
@@ -229,7 +230,7 @@ class RPVIIterator(VariationalInferenceIterator):
 
     def core_run(self):
         """Core run for variational inference with reparameterization trick."""
-        _logger.info('Starting reprarameterization based variational inference...')
+        _logger.info('Starting reparameterization based variational inference...')
         super().core_run()
 
     def _calculate_elbo_gradient(self, variational_parameters):
@@ -298,12 +299,12 @@ class RPVIIterator(VariationalInferenceIterator):
         return grad_elbo.reshape(-1, 1)
 
     def calculate_grad_log_likelihood_params(self, sample_batch):
-        """Calculate the gradient/jacobian of the log-likelihood function.
+        """Calculate the gradient/Jacobian of the log-likelihood function.
 
-        Gradient is calculated w.r.t. the argument params not the variational parameters.
+        Gradient is calculated w.r.t. the argument params, not the variational parameters.
 
         Args:
-            sample_batch (np.array): Current sample_batch of the random parameters
+            sample_batch (np.array): Current *sample_batch* of the random parameters
 
         Returns:
             jacobi_log_likelihood (np.array): Jacobian of the log-likelihood function
@@ -399,9 +400,6 @@ class RPVIIterator(VariationalInferenceIterator):
         Args:
             log_unnormalized_posterior_mean (float): Monte-Carlo expectation of the
                                                      log-unnormalized posterior
-
-        Returns:
-            None
         """
         mean = np.array(self.variational_params[: self.num_parameters])
         covariance = np.diag(
@@ -416,12 +414,12 @@ class RPVIIterator(VariationalInferenceIterator):
     def _verbose_output(self):
         """Give some informative outputs during the VI iterations."""
         _logger.info("-" * 80)
-        _logger.info(f"Iteration {self.stochastic_optimizer.iteration + 1} of RPVI algorithm")
+        _logger.info("Iteration %s of RPVI algorithm", self.stochastic_optimizer.iteration + 1)
 
         super()._verbose_output()
 
         if self.stochastic_optimizer.iteration > 1:
-            _logger.info(f"Likelihood noise variance: {self.model.normal_distribution.covariance}%")
+            _logger.info("Likelihood noise variance: %s", self.model.normal_distribution.covariance)
         _logger.info("-" * 80)
 
     def _prepare_result_description(self):
@@ -439,17 +437,17 @@ class RPVIIterator(VariationalInferenceIterator):
         """Calculate the log-likelihood of the observation data.
 
         Evaluation of the likelihood model for all inputs of the sample batch will trigger
-        the actual forward simulation (can be executed in parallel as batch-
-        sequential procedure)
+        the actual forward simulation (can be executed in parallel as batch-sequential
+        procedure).
 
         Args:
             sample_batch (np.array): Sample-batch with samples row-wise
-            gradient_bool (bool): Flag to determine, whether gradient should be provided as well.
+            gradient_bool (bool): Flag to determine whether gradient should be provided as well
 
         Returns:
-            likelihood_return_tuple (tuple): Tuple containing Vector of the log-likelihood
-                                             function for all inputs samples of the current batch,
-                                             and potentially the corresponding gradient
+            likelihood_return_tuple (tuple): Tuple containing vector of the log-likelihood
+            function for all inputs samples of the current batch, and potentially the
+            corresponding gradient
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)--> data is saved to DB

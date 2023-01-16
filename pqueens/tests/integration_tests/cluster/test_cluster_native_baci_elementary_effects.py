@@ -36,10 +36,8 @@ def test_cluster_native_baci_elementary_effects(
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         baci_cluster_paths_native (dict): Paths to baci native on cluster
+        cluster (str): Cluster name
         baci_elementary_effects_check_results (function): function to check the results
-
-    Returns:
-        None
     """
     path_to_executable = baci_cluster_paths_native["path_to_executable"]
     path_to_drt_monitor = baci_cluster_paths_native["path_to_drt_monitor"]

@@ -1,3 +1,5 @@
+"""Test for baci LM iterator."""
+
 import logging
 import os
 from collections import OrderedDict
@@ -15,26 +17,31 @@ _logger = logging.getLogger(__name__)
 
 @pytest.fixture(scope='module', params=['method'])
 def iterator_name_cases(request):
+    """TODO_doc."""
     return request.param
 
 
 @pytest.fixture(scope='module', params=[None, 'dummy_model'])
 def model_cases(request):
+    """TODO_doc."""
     return request.param
 
 
 @pytest.fixture(scope='module', params=['grad', 'res', 'not_valid'])
 def fix_update_reg(request):
+    """TODO_doc."""
     return request.param
 
 
 @pytest.fixture(scope='module', params=[1e-6, 1e0])
 def fix_tolerance(request):
+    """TODO_doc."""
     return request.param
 
 
 @pytest.fixture()
 def default_baci_lm_iterator():
+    """TODO_doc."""
     config = {
         'database': OrderedDict([('address', 'localhost:27017'), ('drop_all_existing_dbs', True)]),
         'method': OrderedDict(
@@ -92,11 +99,13 @@ def default_baci_lm_iterator():
 
 @pytest.fixture(scope='module', params=[True, False])
 def fix_true_false_param(request):
+    """TODO_doc."""
     return request.param
 
 
 @pytest.fixture(scope='module')
 def fix_plotly_fig():
+    """TODO_doc."""
     data = pd.DataFrame({'x': [1.0, 2.0], 'y': [1.1, 2.1], 'z': [1.2, 2.2]})
     fig = px.line_3d(
         data,
@@ -108,7 +117,7 @@ def fix_plotly_fig():
 
 
 def test_init(mocker):
-
+    """TODO_doc."""
     global_settings = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
     initial_guess = np.array([1, 2.2])
     bounds = np.array([[0.0, 1.0], [1.0, 2.0]])
@@ -155,7 +164,7 @@ def test_init(mocker):
 
 
 def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
-
+    """TODO_doc."""
     config = {
         'method': OrderedDict(
             [
@@ -228,14 +237,14 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
 
 
 def test_model_evaluate(default_baci_lm_iterator, mocker):
-
+    """TODO_doc."""
     mp = mocker.patch('pqueens.models.simulation_model.SimulationModel.evaluate', return_value=None)
     default_baci_lm_iterator.model.evaluate(None)
     mp.assert_called_once()
 
 
 def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
-
+    """TODO_doc."""
     m1 = mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator' '.get_positions_raw_2pointperturb',
         return_value=[np.array([[1.0, 2.2], [1.00101, 2.2], [1.0, 2.201022]]), 1],
@@ -255,6 +264,7 @@ def test_residual(default_baci_lm_iterator, fix_true_false_param, mocker):
 
 
 def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
+    """TODO_doc."""
     m1 = mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.get_positions_raw_2pointperturb',
         return_value=[
@@ -290,6 +300,7 @@ def test_jacobian(default_baci_lm_iterator, fix_true_false_param, mocker):
 
 
 def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator):
+    """TODO_doc."""
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
     m1 = mocker.patch(
@@ -311,6 +322,7 @@ def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator):
 
 
 def test_core_run(default_baci_lm_iterator, mocker, fix_update_reg, fix_tolerance):
+    """TODO_doc."""
     m1 = mocker.patch(
         'pqueens.iterators.baci_lm_iterator.BaciLMIterator.jacobian_and_residual',
         return_value=(np.array([[1.0, 2.0], [0.0, 1.0]]), np.array([0.1, 0.01])),
@@ -341,7 +353,7 @@ def test_core_run(default_baci_lm_iterator, mocker, fix_update_reg, fix_toleranc
 
 
 def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator, fix_plotly_fig):
-
+    """TODO_doc."""
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
 
@@ -385,7 +397,7 @@ def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator,
 
 
 def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig):
-
+    """TODO_doc."""
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
 
@@ -415,6 +427,7 @@ def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig):
 
 
 def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
+    """Test post run functionality."""
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
 
@@ -443,6 +456,7 @@ def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
 
 
 def test_post_run_0param(mocker, default_baci_lm_iterator, fix_plotly_fig):
+    """TODO_doc."""
     default_baci_lm_iterator.solution = np.array([1.1, 2.2])
     default_baci_lm_iterator.iter_opt = 3
 
@@ -453,6 +467,7 @@ def test_post_run_0param(mocker, default_baci_lm_iterator, fix_plotly_fig):
 
 
 def test_get_positions_raw_2pointperturb(default_baci_lm_iterator):
+    """TODO_doc."""
     x = np.array([1.1, 2.5])
     pos, delta_pos = default_baci_lm_iterator.get_positions_raw_2pointperturb(x)
     np.testing.assert_almost_equal(pos, np.array([[1.1, 2.5], [1.101011, 2.5], [1.1, 2.501025]]), 8)
@@ -468,6 +483,7 @@ def test_get_positions_raw_2pointperturb(default_baci_lm_iterator):
 
 
 def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
+    """TODO_doc."""
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
     m1 = mocker.patch(
@@ -496,7 +512,7 @@ def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
 
 
 def test_checkbounds(mocker, default_baci_lm_iterator, caplog):
-
+    """Test bound checking."""
     default_baci_lm_iterator.bounds = np.array([[0.0, 0.0], [5.0, 2.0]])
     with caplog.at_level(logging.WARNING):
         stepoutside = default_baci_lm_iterator.checkbounds(np.array([1.0, 2.1]), 3)

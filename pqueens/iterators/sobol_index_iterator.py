@@ -21,21 +21,22 @@ _logger = logging.getLogger(__name__)
 class SobolIndexIterator(Iterator):
     """Sobol Index Iterator.
 
-    This class essentially provides a wrapper around the SALib library
+    This class essentially provides a wrapper around the SALib library.
 
     Attributes:
-        seed (int):                         Seed for random number generator
-        num_samples (int):                  Number of samples
-        calc_second_order (bool):           Calculate second-order sensitivities
-        num_bootstrap_samples (int):        Number of bootstrap samples
-        confidence_level (float):           The confidence interval level
-        samples (np.array):                 Array with all samples
-        output (dict)                       Dict with all outputs corresponding to
-                                            samples
-        salib_problem (dict):               Problem definition for SALib
-        num_params (int):                   Number of parameters
-        parameter_names (list):             List with parameter names
-        sensitivity_indices (dict):         Dictionary with sensitivity indices
+        seed (int): Seed for random number generator.
+        num_samples (int): Number of samples.
+        calc_second_order (bool): Calculate second-order sensitivities.
+        num_bootstrap_samples (int): Number of bootstrap samples.
+        confidence_level (float): The confidence interval level.
+        result_description (dict): TODO_doc
+        samples (np.array): Array with all samples.
+        output (dict): Dict with all outputs corresponding to
+                       samples.
+        salib_problem (dict): Problem definition for SALib.
+        num_params (int): Number of parameters.
+        parameter_names (list): List with parameter names.
+        sensitivity_indices (dict): Dictionary with sensitivity indices.
     """
 
     def __init__(
@@ -147,7 +148,7 @@ class SobolIndexIterator(Iterator):
             'dists': dists,
         }
 
-        _logger.info(f"Draw {self.num_samples} samples...")
+        _logger.info("Draw %s samples...", self.num_samples)
         self.samples = saltelli.sample(
             self.salib_problem,
             self.num_samples,
@@ -194,7 +195,7 @@ class SobolIndexIterator(Iterator):
         """Print results.
 
         Args:
-            results (dict): dictionary with sobol indices and confidence intervals
+            results (dict): Dictionary with Sobol indices and confidence intervals
         """
         S = results["sensitivity_indices"]
         parameter_names = results["parameter_names"]
@@ -208,7 +209,7 @@ class SobolIndexIterator(Iterator):
         _logger.info("Main and Total Effects:")
         _logger.info(S_df)
         _logger.info("Additivity, sum of main effects (for independent variables):")
-        _logger.info(f'S_i = {additivity}')
+        _logger.info('S_i = %s', additivity)
 
         if self.calc_second_order:
             S2 = S["S2"]
@@ -248,7 +249,7 @@ class SobolIndexIterator(Iterator):
         """Write all results to self contained dictionary.
 
         Returns:
-            results (dict): dictionary with sobol indices and confidence intervals
+            results (dict): Dictionary with Sobol indices and confidence intervals
         """
         results = {
             "parameter_names": self.parameters.names,
@@ -264,7 +265,7 @@ class SobolIndexIterator(Iterator):
         """Create bar graph of first order sensitivity indices.
 
         Args:
-            results (dict): dictionary with sobol indices and confidence intervals
+            results (dict): Dictionary with Sobol indices and confidence intervals
         """
         experiment_name = self.global_settings["experiment_name"]
 

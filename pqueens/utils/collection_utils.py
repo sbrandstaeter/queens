@@ -5,15 +5,15 @@ from pqueens.utils.print_utils import get_str_table
 class CollectionObject:
     """Collection object which stores data.
 
-    This object can be index by iteration i: `collection_object[i]` but also using the collected
-    fields `collection_object.field1`.
+    This object can be index by iteration i: *collection_object[i]* but also using the collected
+    fields *collection_object.field1*.
 
     Attributes:
-        lists of the data that is stored in the object
+        TODO_doc: Lists of the data that is stored in the object
     """
 
     def __init__(self, *field_names):
-        """Initialze the collection item.
+        """Initialize the collection item.
 
         Args:
             field_names (tuple): Name of fields to be stored
@@ -29,7 +29,7 @@ class CollectionObject:
             data_dict (dict): Dictionary with values to be stored in this object
 
         Returns:
-            CollectionObject: collection object created from dict
+            collection_object: Collection object created from dict
         """
         collection_object = cls()
         collection_object.__dict__.update(data_dict)
@@ -39,10 +39,11 @@ class CollectionObject:
         """Add data to the object.
 
         This function can be called with one or multiple fields, i.e.:
-        `collection_object.add(field1=value1)` or
-        `collection_object.add(field1=value1, field2=value2)`. An error
+        *collection_object.add(field1=value1)* or
+        *collection_object.add(field1=value1, field2=value2)*. An error
         is raised if one tries to add data to a field for a new
-        iteration before all fields are filled for the current iteraton.
+        iteration before all fields are filled for the current
+        iteration.
         """
         # Select only the fields to be stored the others are ignored
         field_names_to_be_stored = {
@@ -83,7 +84,7 @@ class CollectionObject:
         This allows to use the object like a dict.
 
         Returns:
-            dict_values: values of the collection object
+            dict_values: Values of the collection object
         """
         return self.__dict__.values()
 
@@ -93,17 +94,17 @@ class CollectionObject:
         This allows to use the object like a dict.
 
         Returns:
-            dict_items: items of the collection object
+            dict_items: Items of the collection object
         """
         return self.__dict__.items()
 
     def keys(self):
-        """Keys, i.e. field names, of the current object.
+        """Keys, i.e. field names of the current object.
 
         This allows to use the object like a dict.
 
         Returns:
-            dict_keys: keys of the collection object
+            dict_keys: Keys of the collection object
         """
         return self.__dict__.keys()
 
@@ -143,7 +144,7 @@ class CollectionObject:
         """Create a dictionary from the collection object.
 
         Returns:
-            dict: dictionary with all data
+            dict: Dictionary with all data
         """
         return self.__dict__
 
@@ -151,7 +152,7 @@ class CollectionObject:
         """Bool value of the object.
 
         Returns:
-            bool: returns True if data is stored in the object
+            bool: Returns True if data is stored in the object
         """
         lens = self._get_lens()
         return any(lens)

@@ -2,34 +2,29 @@
 import logging
 import subprocess
 
-_logger = logging.getLogger(__name__)
-
 from pqueens.utils.exceptions import SubprocessError
 from pqueens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
 from pqueens.utils.valid_options_utils import get_option
+
+_logger = logging.getLogger(__name__)
 
 # Currently allowed errors that might appear but have no effect on subprocesses
 _allowed_errors = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
 
 
 def run_subprocess(command_string, **kwargs):
-    """Run a system command outside of the Python script.
+    """Run a system command outside the Python script.
 
-    Different implementations dependent on subprocess_type.
+    Different implementations dependent on *subprocess_type*.
 
     Args:
         command_string (str): Command string that should be run outside of Python
-        subprocess_type (str): subprocess_type of run_subprocess from utils
-        loggername (str): loggername for logging module
-        terminate_expr (str): regex to search in stdout on which subprocess will terminate
-        output_file (str): output directory + filename-stem to write logfiles
-        error_file (str): output directory + filename-stem to write error files
-        stream (str): streaming output to given stream
+
     Returns:
-        process_returncode (int): code for execution success of subprocess
-        process_id (int): process id that was assigned to process
-        stdout (str): standard output content
-        stderr (str): standard error content
+        process_returncode (int): Code for execution success of subprocess
+        process_id (int): Process ID that was assigned to process
+        stdout (str): Standard output content
+        stderr (str): Standard error content
     """
     # default subprocess type is "simple"
     subprocess_type = kwargs.get('subprocess_type', 'simple')

@@ -44,7 +44,7 @@ def test_Adam(adam_optimizer):
 
 @pytest.fixture()
 def adam_optimizer():
-    """Adam optimzer."""
+    """Adam optimizer."""
     opt_config = {
         "optimizer": {
             "type": "adam",
@@ -61,7 +61,7 @@ def adam_optimizer():
 
 @pytest.fixture()
 def adamax_optimizer():
-    """Adamax optimzer."""
+    """Adamax optimizer."""
     opt_config = {
         "optimizer": {
             "type": "adamax",

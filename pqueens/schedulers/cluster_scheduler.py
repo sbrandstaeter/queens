@@ -135,16 +135,17 @@ class ClusterScheduler(Scheduler):
     """Cluster scheduler (either based on Slurm or Torque/PBS) for QUEENS.
 
     Attributes:
-        cluster_type (str):        type of cluster chosen in QUEENS input file
-        port (int):                (only for remote scheduling with Singularity) port of
+        cluster_type (str):        Type of cluster chosen in QUEENS input file
+        port (optional, int):      (Only for remote scheduling with Singularity) Port of
                                    remote resource for ssh port-forwarding to database
-        cluster_config (dict):     configuration data of the cluster
-        cluster_options (dict):    (only for cluster schedulers Slurm and PBS) further
+        cluster_config (dict):     Configuration data of the cluster
+        cluster_options (optional, dict): (Only for cluster schedulers Slurm and PBS) further
                                    cluster options
-        remote (bool):             flag for remote scheduling
-        remote_connect (str):      (only for remote scheduling) address of remote
-                                   computing resource
-        singularity_manager (obj): instance of Singularity-manager class
+        remote (bool):             Flag for remote scheduling
+        remote_input_file (path):  Path to the input file on the remote.
+        remote_connect (optional, str): (Only for remote scheduling) Address of remote
+                                   computing resource.
+        singularity_manager (obj): Instance of Singularity-manager class
     """
 
     def __init__(
@@ -216,7 +217,7 @@ class ClusterScheduler(Scheduler):
             driver_name (str): Name of the driver
 
         Returns:
-            instance of cluster scheduler class
+            Instance of cluster scheduler class
         """
         if not scheduler_name:
             scheduler_name = "scheduler"
@@ -343,7 +344,12 @@ class ClusterScheduler(Scheduler):
             string (str): ClusterScheduler object description
         """
         name = "Cluster Scheduler"
-        print_dict = self._create_base_print_dict()
+
+        if self.remote:
+            resource_info = f'remote ({self.remote_connect})'
+        else:
+            resource_info = 'local'
+        print_dict = self._create_base_print_dict(resource_info)
         print_dict.update({"Type of cluster": self.cluster_type})
 
         return get_str_table(name, print_dict)
@@ -377,11 +383,8 @@ class ClusterScheduler(Scheduler):
     def _copy_input_file_to_remote(self):
         """Copies a (temporary) JSON input-file to the remote machine.
 
-        Is needed to execute some parts of QUEENS within the singularity image on the remote,
-        given the input configurations.
-
-        Returns:
-            None
+        Is needed to execute some parts of QUEENS within the singularity
+        image on the remote, given the input configurations.
         """
         command_list = [
             "rsync -av",
@@ -475,8 +478,8 @@ class ClusterScheduler(Scheduler):
             job (dict): Job dict.
 
         Returns:
-            completed (bool): If job is completed
-            failed (bool): If job failed.
+            completed (bool):  job is completed
+            failed (bool): If job failed
         """
         # initialize completion and failure flags to false
         # (Note that failure is not checked for cluster scheduler
@@ -526,7 +529,7 @@ class ClusterScheduler(Scheduler):
         if self.remote and self.singularity:
             self.singularity_manager.close_local_port_forwarding()
             self.singularity_manager.close_remote_port(self.port)
-            print('All port-forwardings were closed again.')
+            _logger.info('All port-forwardings were closed again.')
 
     def _submit_driver(self, job_id, batch):
         """Submit job to driver.

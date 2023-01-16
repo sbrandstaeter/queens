@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import numpy as np
 
 from pqueens.randomfields.univariate_random_field_generator import UnivariateRandomFieldSimulator
@@ -6,21 +8,23 @@ from pqueens.randomfields.univariate_random_field_generator import UnivariateRan
 class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
     """Fourier series based random field generator.
 
-    Random field generator for univariate random fields based on a  Fourier
-    series expansion as described in [#f2]_
+    Random field generator for univariate random fields based on a Fourier
+    series expansion as described in [#f2]_.
 
     .. rubric:: Footnotes
     .. [#f2] Tamellini, L. (2012). Polynomial approximation of PDEs with
         stochastic coefficients.
 
     Attributes:
-
-        m (int):                number of terms in expansion in each direction
-        trunc_thres (int):      truncation threshold for Fourier series
-        kb (np.array):          array to store indices for Fourier expansion
-        largest_length (float): length of random field (for now equal in all
-                                dimensions based on largest dimension of bounding box)
-        corr_length  (float):   correlation length of field (so far only isotropic fields)
+        m (int):                Number of terms in expansion in each direction.
+        trunc_thres (int):      Truncation threshold for Fourier series.
+        kb (np.array):          Array to store indices for Fourier expansion.
+        largest_length (float): Length of random field (for now equal in all
+                                dimensions based on the largest dimension of bounding box).
+        corr_length  (float):   Correlation length of field (so far only isotropic fields).
+        spatial_dim: TODO_doc
+        bounding_box: TODO_doc
+        des_energy_frac: TODO_doc
     """
 
     def __init__(
@@ -33,19 +37,17 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
         num_ex_term_per_dim,
         num_terms,
     ):
-        """
+        """TODO_doc.
 
         Args:
-            m (int):                number of terms in expansion in each
-                                    direction
-            trunc_thres (int):      truncation threshold for Fourier series
-            kb (np.array):          array to store indices for Fourier expansion
-            largest_length (float): length of random field (for now equal in all
-                                    dimensions based on largest dimension of
-                                    bounding box)
-            corr_length  (float):   correlation length of field
-                                    (so far only isotropic fields)
-
+            marginal_distribution: TODO_doc
+            corr_length: correlation length of field
+                         (so far only isotropic fields)
+            energy_frac: TODO_doc
+            field_bbox: TODO_doc
+            dimension: TODO_doc
+            num_ex_term_per_dim: TODO_doc
+            num_terms: TODO_doc
         """
         self.m = None
         self.trunc_thres = None
@@ -96,15 +98,15 @@ class RandomFieldGenFourier(UnivariateRandomFieldSimulator):
         self.corr_length = corr_length
 
     def compute_expansion_coefficient(self, k, length_of_field, corr_length):
-        """Compute expansion coeffiecients of Fourier series.
+        """Compute expansion coefficients of Fourier series.
 
         Args:
-            k (int):
-            length_of_field (float): periodicity of simulated field
-            corr_length (float): correlation length of simulated field
+            k (int): TODO_doc
+            length_of_field (float): Periodicity of simulated field
+            corr_length (float): Correlation length of simulated field
 
         Returns:
-            float: expansion coeffiecient
+            float: Expansion coefficient
         """
         if k == 0:
             coeff = corr_length * np.sqrt(np.pi) / (2 * length_of_field)

@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -11,8 +13,11 @@ from pqueens.utils import injector
 
 
 def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir):
-    """Integration test for smc with a simple diffusion problem (scatra) in
-    baci."""
+    """TODO_doc: add a one-line description.
+
+    Integration test for smc with a simple diffusion problem (scatra) in
+    BACI.
+    """
     # generate json input file from template
     third_party_input_file_hf = os.path.join(
         third_party_inputs, "baci_input_files", "diffusion_coarse.dat"
@@ -61,11 +66,13 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
 
 @pytest.fixture()
 def expected_weights():
+    """TODO_doc."""
     weights = 1
     return weights
 
 
 @pytest.fixture()
 def expected_samples():
+    """TODO_doc."""
     samples = 1
     return samples

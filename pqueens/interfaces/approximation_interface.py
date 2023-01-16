@@ -10,19 +10,18 @@ class ApproximationInterface(Interface):
     """Class for mapping input variables to responses using an approximation.
 
         The ApproximationInterface uses a so-called regression approximation,
-        which just another name for a regression model that is used in this context
+        which is just another name for a regression model that is used in this context
         to avoid confusion and not having to call everything a model.
 
         For now this interface holds only one approximation object. In the future,
-        this could be extended to multiple objects
+        this could be extended to multiple objects.
 
     Attributes:
-        name (string):                 Name of interface
-        variables (dict):              Dictionary with variables
-        config (dict):   Problem description (input file)
-        approximation (regression_approximation):   Approximation object
-        approximation_init (bool):            Flag whether or not approximation has been
-                                       initialized
+        config (dict):   Problem description (input file).
+        approximation_name: TODO_doc
+        approximation (regression_approximation):   Approximation object.
+        approximation_init (bool): Flag whether or not approximation has been
+                                   initialized.
     """
 
     def __init__(self, interface_name, config, approximation_name):
@@ -48,7 +47,7 @@ class ApproximationInterface(Interface):
             config (dict):          Dictionary containing problem description
 
         Returns:
-            interface:              Instance of ApproximationInterface
+            interface: Instance of ApproximationInterface
         """
         interface_options = config[interface_name]
         approximation_name = interface_options["approximation"]
@@ -60,12 +59,12 @@ class ApproximationInterface(Interface):
         """Call the regression approximation prediction.
 
         Args:
-            samples (list):         list of variables objects
-            gradient_bool (bool): Flag to determine, whether the gradient of the function at
-                                  the evaluation point is expected (True) or not (False)
+            samples (list):         List of variables objects
+            gradient_bool (bool): Flag to determine whether the gradient of the function at
+                                  the evaluation point is expected (*True*) or not (*False*)
 
         Returns:
-            dict:               Dict with results corresponding to samples
+            dict: Dict with results corresponding to samples
         """
         if not self.approximation_init:
             raise RuntimeError("Approximation has not been properly initialized, cannot continue!")
@@ -92,7 +91,7 @@ class ApproximationInterface(Interface):
         self.approximation_init = True
 
     def is_initialized(self):
-        """Is the approximation properly initialized."""
+        """Check if the approximation interface is initialized."""
         return self.approximation_init
 
     def cross_validate(self, x_train, y_train, folds):
@@ -104,7 +103,7 @@ class ApproximationInterface(Interface):
             folds (int):    In how many subsets do we split for cv
 
         Returns:
-            np.array:        Array with predictions
+            np.array: Array with predictions
         """
         # init output array
         outputs = np.zeros_like(y_train, dtype=float)

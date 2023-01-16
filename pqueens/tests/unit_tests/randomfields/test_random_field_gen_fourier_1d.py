@@ -17,7 +17,10 @@ from pqueens.randomfields.univariate_field_generator_factory import (
 
 
 class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         # setup some necessary variables to setup random field generators
         self.dimension = 1
         self.corrstruct = 'squared_exp'
@@ -48,6 +51,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
 
     # should trigger error because desired energy fraction not reached
     def test_not_enough_fourier_terms(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -63,6 +67,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
     # should trigger error because number of phase angles do not match stochastic
     # dimension
     def test_wrong_number_phase_angles(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -77,6 +82,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
             mystuff.gen_sample_gauss_field(10, np.array((4, 4)))
 
     def test_values_at_location(self):
+        """TODO_doc."""
         loc = np.array([0, 25, 50, 100])
         np.random.seed(self.seed)
         xi = np.random.randn(self.my_stoch_dim, 1)
@@ -88,6 +94,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
         )
 
     def test_correlation(self):
+        """TODO_doc."""
         loc = np.array([0, 10, 25, 100])
         my_vals = np.zeros((loc.shape[0], 1000))
         np.random.seed(self.seed)
@@ -130,6 +137,7 @@ class TestRandomFieldGeneratorFourier1D(unittest.TestCase):
         )
 
     def test_marginal_distribution(self):
+        """TODO_doc."""
         my_vals = np.zeros((1, 200))
         np.random.seed(self.seed)
         for i in range(200):

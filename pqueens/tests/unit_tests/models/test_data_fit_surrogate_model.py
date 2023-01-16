@@ -12,7 +12,7 @@ from pqueens.models.data_fit_surrogate_model import DataFitSurrogateModel
 
 
 class TestDataFitSurrogateModel(unittest.TestCase):
-    """Unit tests realted to datafit surrogates."""
+    """Unit tests related to datafit surrogates."""
 
     def setUp(self):
         """Set up test."""

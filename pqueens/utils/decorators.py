@@ -11,14 +11,16 @@ def safe_operation(function, max_number_of_attempts=10, waiting_time=0):
 
     The safe procedure consists of:
         - Catching and logging exceptions
-        - Waiting `waiting_time`
-        - Retrying the method call up to `max_number_of_attempts` times
+        - Waiting *waiting_time*
+        - Retrying the method call up to *max_number_of_attempts* times
 
     Args:
         function (function): Function trying to access the database
+        max_number_of_attempts: TODO_doc
+        waiting_time: TODO_doc
 
     Returns:
-        wrapper (obj): function that is called instead of `function`
+        wrapper (obj): Function that is called instead of *function*
     """
 
     @wraps(function)
@@ -39,8 +41,10 @@ def safe_operation(function, max_number_of_attempts=10, waiting_time=0):
                 function_name = function.__module__ + ":" + function.__name__
                 if attempt < max_number_of_attempts:
                     _logger.warning(
-                        f"Function {function_name}: Attempt number {attempt}/"
-                        f"{max_number_of_attempts}"
+                        "Function %s: Attempt number %s/" "%s",
+                        function_name,
+                        attempt,
+                        max_number_of_attempts,
                     )
                     sleep(waiting_time)
                 else:

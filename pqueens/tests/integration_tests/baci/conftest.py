@@ -15,12 +15,9 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a import 
 
 @pytest.fixture(autouse=True)
 def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for_gitlab_runner):
-    """Set-up of BACI symoblic links.
+    """Set-up of BACI symbolic links.
 
     Args:
-        inputdir (str): Path to the JSON input file
-        tmpdir (str): Temporary directory in which the pytests are run
-        third_party_inputs (str): Path to the BACI input files
         config_dir (str): Path to the config directory of QUEENS containing BACI executables
         baci_link_paths (str): destination for symbolic links to executables
         baci_source_paths_for_gitlab_runner (str): Several paths that are needed to build symbolic
@@ -128,10 +125,10 @@ def singularity_bool(request):
     """Return boolean to run with or without singularity.
 
     Args:
-        request (SubRequest): true = with singularity; false = without singularity
+        request (SubRequest): *True* = with singularity; *False* = without singularity
 
     Returns:
-        request.param (bool): true = with singularity; false = without singularity
+        request.param (bool): *True* = with singularity; *False* = without singularity
     """
     return request.param
 

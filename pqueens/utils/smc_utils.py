@@ -10,23 +10,24 @@ def temper_logpdf_bayes(log_prior, log_like, tempering_parameter=1.0):
 
     It phases from the prior to the posterior = like * prior.
     Special cases are:
-    tempering parameter = 0.0:
-        We interpret this as "disregard contribution of the likelihood".
-        Therefore, return just log_prior.
 
-    log_pior or log_like = +inf:
-        Prohibit this case.
-        The reasoning is that (+inf + -inf) is ambiguous.
-        We know that -inf is likely to occur, e.g., in uniform priors.
-        On the other hand, +inf is rather unlikely to be a reasonable
-        value. Therefore, we chose to exclude it here.
+    * tempering parameter = 0.0:
+          We interpret this as "disregard contribution of the likelihood".
+          Therefore, return just *log_prior*.
+
+    * log_pior or log_like = `+inf`:
+          Prohibit this case.
+          The reasoning is that (`+inf` + `-inf`) is ambiguous.
+          We know that `-inf` is likely to occur, e.g. in uniform priors.
+          On the other hand, `+inf` is rather unlikely to be a reasonable
+          value. Therefore, we chose to exclude it here.
 
     Args:
         log_prior (np.array): Array containing the values of the log-prior distribution
-                              at sample points.
+                              at sample points
         log_like (np.array): Array containing the values of the log-likelihood at
                              sample points
-        tempering_parameter (float): Tempering parameter for resampling.
+        tempering_parameter (float): Tempering parameter for resampling
     """
     # if either logpdf is positive infinite throw an error
     if np.isposinf(log_prior).any() or np.isposinf(log_like).any():
@@ -42,25 +43,34 @@ def temper_logpdf_bayes(log_prior, log_like, tempering_parameter=1.0):
 def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
     """Generic tempering function.
 
-    It phases from one distribution (pdf0) to another (pdf1).
-    initial distribution: pdf0
-    goal distribution: pdf1
+    It phases from one distribution (*pdf0*) to another (*pdf1*).
 
-    tempering parameter = 0.0:
+    Initial distribution: *pdf0*.
+
+    Goal distribution: *pdf1*.
+
+    * tempering parameter = 0.0:
         We interpret this as "disregard contribution of the goal pdf".
-        Therefore, return logpdf0.
+        Therefore, return *logpdf0*.
 
-    tempering parameter = 1.0:
+    * tempering parameter = 1.0:
         We interpret this as "we are fully transitioned." Therefore,
         ignore the contribution of the initial distribution.
-        Therefore, return logpdf1.
+        Therefore, return *logpdf1*.
 
-    logpdf0 or logpdf1 = +inf:
+    * logpdf0 or logpdf1 = `+inf`:
         Prohibit this case.
-        The reasoning is that (+inf + -inf) is ambiguous.
-        We know that -inf is likely to occur, e.g., in uniform
-        distributions. On the other hand, +inf is rather unlikely to be
+        The reasoning is that (`+inf` + `-inf`) is ambiguous.
+        We know that `-inf` is likely to occur, e.g., in uniform
+        distributions. On the other hand, `+inf` is rather unlikely to be
         a reasonable value. Therefore, we chose to exclude it here.
+
+    Args:
+        logpdf0: TODO_doc
+        logpdf1: TODO_doc
+        tempering_parameter: TODO_doc
+    Returns:
+        TODO_doc
     """
     # if either logpdf is positive infinite throw an error
     if np.isposinf(logpdf0).any() or np.isposinf(logpdf1).any():
@@ -80,7 +90,12 @@ def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
 def temper_factory(temper_type):
     """Switch type of tempering function.
 
-    return the respective tempering function
+    Return the respective tempering function.
+
+    Args:
+        temper_type: TODO_doc
+    Returns:
+        TODO_doc
     """
     if temper_type == 'bayes':
         return temper_logpdf_bayes
@@ -97,6 +112,11 @@ def calc_ess(weights):
     """Calculate Effective Sample Size from current weights.
 
     We use the exp-log trick here to avoid numerical problems.
+
+    Args:
+        weights: TODO_doc
+    Returns:
+        ess: TODO_doc
     """
     ess = np.exp(np.log(np.sum(weights) ** 2) - np.log(np.sum(weights**2)))
     return ess
@@ -109,9 +129,9 @@ class StaticStateSpaceModel(ssp.StaticModel):
     """Model needed for the particles library implementation of SMC.
 
     Attributes:
-        likelihood_model (object): Log-likelihood function
-        random_variable_keys (list): List containing the names of the RV
-        n_sims (int): Number of model calls
+        likelihood_model (object): Log-likelihood function.
+        random_variable_keys (list): List containing the names of the RV.
+        n_sims (int): Number of model calls.
     """
 
     def __init__(self, likelihood_model, random_variable_keys, data=None, prior=None):
@@ -131,7 +151,7 @@ class StaticStateSpaceModel(ssp.StaticModel):
         self.n_sims = 0
 
     def loglik(self, theta):
-        """Log. Likelihood function for `particles` SMC implementation.
+        """Log. Likelihood function for *particles* SMC implementation.
 
         Args:
             theta (obj): Samples at which to evaluate the likehood
@@ -147,11 +167,11 @@ class StaticStateSpaceModel(ssp.StaticModel):
     def particles_array_to_numpy(self, theta):
         """Convert particles objects to numpy arrays.
 
-        The `particles` library uses an homemade variable type. We need to
+        The *particles* library uses an homemade variable type. We need to
         convert this into numpy array to work with queens.
 
         Args:
-            theta (`particles` object): `Particle` variables object
+            theta (*particles* object): *Particle* variables object
 
         Returns:
             x (np.array): Numpy array from of the given data
