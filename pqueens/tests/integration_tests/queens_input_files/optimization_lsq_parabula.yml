@@ -18,5 +18,5 @@ interface:
   function: parabula_residual
 parameters:
   x1:
-    type: unbounded
+    type: variable
     dimension: 1

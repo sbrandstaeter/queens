@@ -78,8 +78,8 @@ def default_baci_lm_iterator():
         'parameters': OrderedDict(
             OrderedDict(
                 [
-                    ('x1', OrderedDict([('type', 'unbounded'), ('dimension', 1)])),
-                    ('x2', OrderedDict([('type', 'unbounded'), ('dimension', 1)])),
+                    ('x1', OrderedDict([('type', 'variable'), ('dimension', 1)])),
+                    ('x2', OrderedDict([('type', 'variable'), ('dimension', 1)])),
                 ]
             ),
         ),
@@ -438,9 +438,9 @@ def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
 
     options = {
         "parameters": {
-            "x1": {"type": "unbounded", "dimension": 1},
-            "x2": {"type": "unbounded", "dimension": 1},
-            "x3": {"type": "unbounded", "dimension": 1},
+            "x1": {"type": "variable", "dimension": 1},
+            "x2": {"type": "variable", "dimension": 1},
+            "x3": {"type": "variable", "dimension": 1},
         }
     }
     parameters_module.from_config_create_parameters(options)

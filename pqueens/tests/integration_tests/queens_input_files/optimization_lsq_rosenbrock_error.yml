@@ -18,11 +18,11 @@ interface:
   function: rosenbrock60_residual
 parameters:
   x1:
-    type: unbounded
+    type: variable
     dimension: 1
   x2:
-    type: unbounded
+    type: variable
     dimension: 1
   x3:
-    type: unbounded
+    type: variable
     dimension: 1

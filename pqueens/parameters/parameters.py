@@ -7,6 +7,7 @@ import numpy as np
 
 from pqueens.distributions import from_config_create_distribution
 from pqueens.parameters.fields import RandomField, from_config_create_random_field
+from pqueens.parameters.variables.variable import Variable
 
 _logger = logging.getLogger(__name__)
 
@@ -35,14 +36,14 @@ def from_config_create_parameters(config, pre_processor=None):
 
         for parameter_name, parameter_dict in parameters_options.items():
             parameter_type = parameter_dict['type']
-            if parameter_type in [
-                'normal',
-                'uniform',
-                'lognormal',
-                'beta',
-                'exponential',
-                'unbounded',
-            ]:
+            if parameter_type == 'variable':
+                variable = Variable.from_config_create_variable(parameter_dict)
+                joint_parameters_dict[parameter_name] = variable
+                joint_parameters_keys = _add_parameters_keys(
+                    joint_parameters_keys, parameter_name, variable.dimension
+                )
+                joint_parameters_dim += variable.dimension
+            elif parameter_type in ['normal', 'uniform', 'lognormal', 'beta', 'exponential']:
                 distribution = from_config_create_distribution(parameter_dict)
                 joint_parameters_dict[parameter_name] = distribution
                 joint_parameters_keys = _add_parameters_keys(

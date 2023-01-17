@@ -16,11 +16,11 @@ def uncertain_parameters():
     uncertain_parameters = dict()
 
     x1 = dict()
-    x1['type'] = 'unbounded'
+    x1['type'] = 'variable'
     x1['dimension'] = 1
 
     x2 = dict()
-    x2['type'] = 'unbounded'
+    x2['type'] = 'variable'
     x2['dimension'] = 2
 
     uncertain_parameters['x1'] = x1

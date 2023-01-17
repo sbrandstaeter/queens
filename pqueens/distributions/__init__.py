@@ -7,7 +7,6 @@ VALID_TYPES = {
     'lognormal': ["pqueens.distributions.lognormal", "LogNormalDistribution"],
     'beta': ["pqueens.distributions.beta", "BetaDistribution"],
     'exponential': ['pqueens.distributions.exponential', 'ExponentialDistribution'],
-    'unbounded': ['pqueens.distributions.unbounded', 'UnboundedDistribution'],
 }
 
 

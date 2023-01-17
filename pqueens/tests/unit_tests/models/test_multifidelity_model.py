@@ -23,7 +23,7 @@ class TestMultiFidelityModel(unittest.TestCase):
                 "eval_cost_per_level": [1, 1],
                 "parameters": "parameters",
             },
-            "parameters": {"youngs": {"type": "unbounded", "dimension": 1}},
+            "parameters": {"youngs": {"type": "variable", "dimension": 1}},
             "hifi_borehole": {"type": "simulation_model", "interface_name": "interface_hifi"},
             "lofi_borehole": {"type": "simulation_model", "interface_name": "interface_lofi"},
             "interface_lofi": {
