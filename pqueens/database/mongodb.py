@@ -23,14 +23,12 @@ class MongoDB(Database):
     """MongoDB based database to store data of computer experiments.
 
     Attributes:
-        db_name (str): Name of the current database
-        reset_existing_db (boolean): Flag to reset the database if necessary
-        db_obj (obj): Mongo DB database object
-        db_address (str): Database address
-        db_list (list): List with names of existing QUEENS databases
-        db_already_existent (bool): Boolean which is True if database name already exists
-        drop_all_existing_dbs (bool): Flag to drop all user databases if desired
-        mongo_client (MongoClient): Mongodb client object
+        db_address (str): Database address.
+        db_obj (obj): MongoDB database object.
+        db_list (list): List with names of existing QUEENS databases.
+        db_already_existent (bool): Boolean which is *True* if database name already exists.
+        drop_all_existing_dbs (bool): Flag to drop all user databases if desired.
+        mongo_client (MongoClient): MongoDB client object.
     """
 
     def __init__(
@@ -87,7 +85,7 @@ class MongoDB(Database):
             # in case global settings do not exist
             except KeyError:
                 db_name_suffix = 'dummy'
-                _logger.warning(f"Global settings missing, db_suffix was set to 'dummy'")
+                _logger.warning("Global settings missing, db_suffix was set to 'dummy'")
 
             user_name = getpass.getuser()
             db_name_prefix = 'queens_db_' + user_name
@@ -128,11 +126,11 @@ class MongoDB(Database):
 
         self.db_obj = self.mongo_client[self.db_name]
 
-        _logger.info(f"Connected to {self.db_address}")
+        _logger.info("Connected to %s", self.db_address)
 
     def _disconnect(self):
         """Mongodb automatically closes the connection."""
-        _logger.info(f"Disconnected the database")
+        _logger.info("Disconnected the database")
 
     def _clean_database(self):
         """If desired reset the current database."""
@@ -156,7 +154,7 @@ class MongoDB(Database):
             db_name (str): database name to be deleted
         """
         self.mongo_client.drop_database(db_name)
-        _logger.info(f"{db_name} was dropped")
+        _logger.info("%s was dropped", db_name)
 
     def _delete_databases_by_prefix(self, prefix):
         """Remove databases from the database server by prefix.
@@ -173,26 +171,26 @@ class MongoDB(Database):
         for db in db_to_deleted_list:
             self.mongo_client.drop_database(db)
 
-        _logger.info(f"Databases with prefix {prefix} were deleted!")
+        _logger.info("Databases with prefix %s were deleted!", prefix)
 
     @safe_operation
     def save(self, save_doc, experiment_name, experiment_field, batch, field_filters=None):
         """Save a document to the database.
 
-        Any numpy arrays in the document are compressed so that they can be
-        saved to MongoDB. field_filters must return at most one document,
+        Any numpy arrays in the document are compressed, so that they can be
+        saved to MongoDB. *field_filters* must return at most one document,
         otherwise it is not clear which one to update and an exception will
         be raised.
 
         Args:
-            save_doc (dict,list):       document to be saved to the db
-            experiment_name (string):   experiment the data belongs to
-            experiment_field (string):  experiment field data belongs to
-            batch (int):                batch the data belongs to
-            field_filters (dict):       filter to find appropriate document
+            save_doc (dict,list):       Document to be saved to the db
+            experiment_name (string):   Experiment the data belongs to
+            experiment_field (string):  Experiment field data belongs to
+            batch (int):                Batch the data belongs to
+            field_filters (dict):       Filter to find appropriate document
                                         to create or update
         Returns:
-            bool: is this the result of an acknowledged write operation ?
+            bool: Is this the result of an acknowledged write operation?
         """
         if field_filters is None:
             field_filters = {}
@@ -216,14 +214,14 @@ class MongoDB(Database):
         """Return number of document(s) in collection.
 
         Args:
-            experiment_name (string):  experiment the data belongs to
-            experiment_field (string): experiment field data belongs to
-            batch (int):               batch the data belongs to
-            field_filters (dict):      filter to find appropriate document(s)
+            experiment_name (string):  Experiment the data belongs to
+            batch (int):               Batch the data belongs to
+            experiment_field (string): Experiment field data belongs to
+            field_filters (dict):      Filter to find appropriate document(s)
                                        to load
 
         Returns:
-            int: number of documents in collection
+            int: Number of documents in collection
         """
         if field_filters is None:
             field_filters = {}
@@ -238,15 +236,14 @@ class MongoDB(Database):
         """Return estimated count of document(s) in collection.
 
         This is very fast but not 100% safe.
+
         Args:
-            experiment_name (string):  experiment the data belongs to
-            experiment_field (string): experiment field data belongs to
-            batch (int):               batch the data belongs to
-            field_filters (dict):      filter to find appropriate document(s)
-                                       to load
+            experiment_name (string):  Experiment the data belongs to
+            batch (int):               Batch the data belongs to
+            experiment_field (string): Experiment field data belongs to
 
         Returns:
-            int: number of documents in collection
+            int: Number of documents in collection
         """
         dbcollection = self.db_obj[experiment_name][batch][experiment_field]
         doc_count = dbcollection.estimated_document_count()
@@ -257,17 +254,17 @@ class MongoDB(Database):
     def load(self, experiment_name, batch, experiment_field, field_filters=None):
         """Load document(s) from the database.
 
-        Decompresses any numpy arrays
+        Decompresses any numpy arrays.
 
         Args:
-            experiment_name (string):  experiment the data belongs to
-            experiment_field (string): experiment field data belongs to
-            batch (int):               batch the data belongs to
-            field_filters (dict):      filter to find appropriate document(s)
+            experiment_name (string):  Experiment the data belongs to
+            batch (int):               Batch the data belongs to
+            experiment_field (string): Experiment field data belongs to
+            field_filters (dict):      Filter to find appropriate document(s)
                                        to load
 
         Returns:
-            list: list of documents matching query
+            list: List of documents matching query
         """
         if field_filters is None:
             field_filters = {}
@@ -289,10 +286,10 @@ class MongoDB(Database):
         """Remove a list of documents from the database.
 
         Args:
-            experiment_name (string):  experiment the data belongs to
-            experiment_field (string): experiment field data belongs to
-            batch (int):               batch the data belongs to
-            field_filters (dict):      filter to find appropriate document(s)
+            experiment_name (string):  Experiment the data belongs to
+            experiment_field (string): Experiment field data belongs to
+            batch (int):               Batch the data belongs to
+            field_filters (dict):      Filter to find appropriate document(s)
                                        to delete
         """
         if field_filters is None:

@@ -9,7 +9,7 @@ class SimulationModel(Model):
     """Simulation model class.
 
     Attributes:
-        interface (interface):          Interface to simulations/functions
+        interface (interface): Interface to simulations/functions.
     """
 
     def __init__(self, model_name, interface):
@@ -31,7 +31,7 @@ class SimulationModel(Model):
             config (dict):       Dictionary containing problem description
 
         Returns:
-            simulation_model:   Instance of SimulationModel
+            simulation_model: Instance of SimulationModel
         """
         # get options
         model_options = config[model_name]
@@ -48,7 +48,7 @@ class SimulationModel(Model):
         Args:
             samples (np.ndarray): Evaluated samples
             gradient_bool (bool): Boolean to determine whether gradient at current variable
-                                  should be evaluated as well (if True).
+                                  should be evaluated as well (if *True*)
 
         Returns:
             self.response (np.array, tuple): Response of the underlying model at current variables

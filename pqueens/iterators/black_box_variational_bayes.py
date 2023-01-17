@@ -17,16 +17,15 @@ class BBVIIterator(VariationalInferenceIterator):
     """Black box variational inference (BBVI) iterator.
 
     For Bayesian inverse problems. BBVI does not require model gradients and can hence be used with
-    any simulation model and without the need for adjoints implementations. The algorithm is based
+    any simulation model and without the need for adjoint implementations. The algorithm is based
     on [1]. The expectations for the gradient computations are computed using an importance
     sampling approach where the IS-distribution is constructed as a mixture of the variational
     distribution from previous iterations (similar as in [2]).
 
-    Keep in mind:
-        This algorithm requires the logpdf of the variational distribution to be differentiable w.r.
-        t. the variational parameters. This is not the case for certain distributions, e.g. uniform
-        distribution, and can therefore not be used in combination with this algorithm (see [3]
-        page 13)!
+    **Keep in mind:** This algorithm requires the logpdf of the variational distribution to be
+    differentiable w.r.t. the variational parameters. This is not the case for certain
+    distributions, e.g. uniform distribution, and can therefore not be used in combination with
+    this algorithm (see [3] page 13)!
 
     References:
         [1]: Ranganath, Rajesh, Sean Gerrish, and David M. Blei. "Black Box Variational Inference."
@@ -39,55 +38,34 @@ class BBVIIterator(VariationalInferenceIterator):
              Machine Learning Research. 21(132):1−62, 2020.
 
     Attributes:
-        global_settings (dict): Global settings of the QUEENS simulations
-        model (obj): Underlying simulation model on which the inverse analysis is conducted
-        result_description (dict): Settings for storing and visualizing the results
-        db (obj): QUEENS database object
-        experiment_name (str): Name of the QUEENS simulation
-        variational_family (str): Density type for variational approximation
-        variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                          variational parameters
-        n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration to
-                                  estimate the involved expectations)
-        variational_transformation (str): String encoding the transformation that will be applied to
-                                          the variational density
-        random_seed (int): Seed for the random number generators
-        max_feval (int): Maximum number of simulation runs for this analysis
-        num_variables (int): Actual number of model input variables that should be calibrated
-        memory (int): Number of previous iterations that should be included in the MC ELBO
-                      gradient estimations. For memory=0 the algorithm reduces to standard the
-                      standard BBVI algorithm. (Better variable name is welcome)
-        natural_gradient_bool (boolean): True if natural gradient should be used
-        fim_dampening_bool (boolean): True if FIM dampening should be used
-        fim_decay_start_iter (float): Iteration at which the FIM dampening is started
-        fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
-        fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-        control_variates_scaling_type (str): Flag to decide how to compute control variate scaling
-        loo_cv_bool (boolean): True if leave-one-out procedure is used for the control variate
+        control_variates_scaling_type (str): Flag to decide how to compute control variate scaling.
+        loo_cv_bool (boolean): *True* if leave-one-out procedure is used for the control variate
                                scaling estimations. Is quite slow!
-        n_sims (int): Number of probabilistic model calls
-        variational_distribution_obj (VariationalDistribution): Variational distribution object
-        variational_params (np.array): Row-vector containing the variational parameters
-        log_variational_mat (np.array): Logpdf evaluations of the variational distribution
-        grad_params_log_variational_mat (np.array): Column-wise grad params logpdf (score function)
-                                                    of the variational distribution
-        log_posterior_unnormalized (np.array): Row-vector logarithmic probabilistic model evaluation
-                                               (generally unnormalized)
-        samples_list (list): List of samples from previous iterations for the ISMC gradient
-        parameter_list (list): List of parameters from previous iterations for the ISMC gradient
-        log_posterior_unnormalized_list (list): List of probabilistic model evaluations from
-                                                previous iterations for the ISMC gradient
-        ess (float): Effective sample size of the current iteration (in case IS is used)
-        model_eval_iteration_period (int): If the iteration number is a multiple of this number
+        random_seed (int): Seed for the random number generators.
+        max_feval (int): Maximum number of simulation runs for this analysis.
+        memory (int): Number of previous iterations that should be included in the MC ELBO
+                      gradient estimations. For *memory=0* the algorithm reduces to standard the
+                      standard BBVI algorithm. (Better variable name is welcome.)
+        model_eval_iteration_period (int): If the iteration number is a multiple of this number,
                                            the probabilistic model is sampled independent of the
-                                           other conditions
-        stochastic_optimizer (obj): QUEENS stochastic optimizer object
-        sampling_bool (bool): True if probabilistic model has to be sampled. If importance
+                                           other conditions.
+        resample (bool): *True* is resampling should be used.
+        log_variational_mat (np.array): Logpdf evaluations of the variational distribution.
+        grad_params_log_variational_mat (np.array): Column-wise grad params logpdf (score function)
+                                                    of the variational distribution.
+        log_posterior_unnormalized (np.array): Row-vector logarithmic probabilistic model evaluation
+                                               (generally unnormalized).
+        samples_list (list): List of samples from previous iterations for the ISMC gradient.
+        parameter_list (list): List of parameters from previous iterations for the ISMC gradient.
+        log_posterior_unnormalized_list (list): List of probabilistic model evaluations from
+                                                previous iterations for the ISMC gradient.
+        ess (float): Effective sample size of the current iteration (in case IS is used).
+        sampling_bool (bool): *True* if probabilistic model has to be sampled. If importance
                               sampling is used the forward model might not evaluated in
-                              every iteration
+                              every iteration.
         sample_set (np.ndarray): Set of samples used to evaluate the probabilistic model is
-                                 not needed in other VI methods
-        iteration_data (CollectionObject): Object to store iteration data if desired
+                                 not needed in other VI methods.
+        iteration_data (CollectionObject): Object to store iteration data if desired.
     """
 
     def __init__(
@@ -150,11 +128,11 @@ class BBVIIterator(VariationalInferenceIterator):
             loo_cv_bool (boolean): True if leave-one-out procedure is used for the control variate
                                    scaling estimations. Is quite slow!
             variational_distribution_obj (VariationalDistribution): Variational distribution object
+            stochastic_optimizer (obj): QUEENS stochastic optimizer object
             model_eval_iteration_period (int): If the iteration number is a multiple of this number
                                                the probabilistic model is sampled independent of the
                                                other conditions
             resample (bool): True is resampling should be used
-            stochastic_optimizer (obj): QUEENS stochastic optimizer object
             iteration_data (CollectionObject): Object to store iteration data if desired
         Returns:
             bbvi_obj (obj): Instance of the BBVIIterator
@@ -294,7 +272,7 @@ class BBVIIterator(VariationalInferenceIterator):
 
         Returns:
             log_likelihood (np.array): Vector of the log-likelihood function for all input
-                                       samples of the current batch
+            samples of the current batch
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)--> data is saved to DB
@@ -325,7 +303,7 @@ class BBVIIterator(VariationalInferenceIterator):
 
         Returns:
             unnormalized_log_posterior (np.array): Values of unnormalized log posterior
-                                                   distribution at positions of sample batch
+            distribution at positions of sample batch
         """
         # Transform the samples
         sample_batch = self._transform_samples(sample_batch)
@@ -337,14 +315,14 @@ class BBVIIterator(VariationalInferenceIterator):
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations."""
         _logger.info("-" * 80)
-        _logger.info(f"Iteration {self.stochastic_optimizer.iteration + 1} of BBVI algorithm")
+        _logger.info("Iteration %s of BBVI algorithm", self.stochastic_optimizer.iteration + 1)
 
         super()._verbose_output()
 
         if self.memory > 0 and self.stochastic_optimizer.iteration > 0:
-            _logger.info(f"ESS: {self.ess:.2f} of {(self.memory + 1) * self.n_samples_per_iter}")
+            _logger.info("ESS: %.2f of %s", self.ess, (self.memory + 1) * self.n_samples_per_iter)
         if self.stochastic_optimizer.iteration > 1:
-            _logger.info(f"Likelihood noise variance: {self.model.normal_distribution.covariance}")
+            _logger.info("Likelihood noise variance: %s", self.model.normal_distribution.covariance)
         _logger.info("-" * 80)
 
     def _prepare_result_description(self):
@@ -378,7 +356,7 @@ class BBVIIterator(VariationalInferenceIterator):
         Args:
             f_mat (np.array): Column-wise MC gradient samples
             h_mat (np.array): Column-wise control variate samples
-            weigths_is (np.array): importance sampling weights
+            weights_is (np.array): importance sampling weights
 
         Returns:
             cv_scaling (np.array): Columnvector with control variate scalings
@@ -593,7 +571,7 @@ class BBVIIterator(VariationalInferenceIterator):
 
         Resampling is necessary if on of the following condition is True:
             1. No memory is used
-            2. Not enought samples in memory
+            2. Not enough samples in memory
             3. ESS number is too low
             4. Every model_eval_iteration_period
         """
@@ -689,18 +667,19 @@ class BBVIIterator(VariationalInferenceIterator):
         Uses a special computation of the weights using the logpdfs to reduce
         numerical issues:
 
-        :math: `w=\frac{q_i}{\sum_{j=0}^{memory+1} \frac{1}{memory+1}q_j}=\frac{(memory +1)}
-        {\sum_{j=0}^{memory+1}exp(lnq_j-lnq_i)}`
+        :math:`w=\frac{q_i}{\sum_{j=0}^{memory+1} \frac{1}{memory+1}q_j}=\frac{memory+1}
+        {\sum_{j=0}^{memory+1}exp(ln(q_j)-ln(q_i))}`
 
         and is therefore slightly slower. Assumes the mixture coefficients are all equal.
 
         Args:
-            variational_params_list (list): variational parameters list of the current and the
+            variational_params_list (list): Variational parameters list of the current and the
                                             desired previous iterations
             samples (np.array): Row-wise samples for the MC gradient estimation
 
         Returns:
-            weights (np.array): (Unnormalized) weights for the ISMC evaluated for the given samples
+            weights (np.array): (Unnormalized) weights for the ISMC evaluated for the
+            given samples
         """
         inv_weights = 0
         n_mixture = len(variational_params_list)

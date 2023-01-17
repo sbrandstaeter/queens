@@ -10,14 +10,14 @@ VALID_TYPES = {
 
 
 def from_config_create_external_geometry(config, geometry_name):
-    """Construct the external_geometry_obj object from the problem description.
+    """Construct the *external_geometry_obj* from the problem description.
 
     Args:
         config (dict): Dictionary containing the problem description of the QUEENS simulation
         geometry_name (str): Name of the geometry section in input file
 
     Returns:
-        geometry_obj (obj): Instance of the ExternalGeometry class.
+        geometry_obj (obj): Instance of the ExternalGeometry class
     """
     geometry_options = config.get(geometry_name)
     if geometry_options:

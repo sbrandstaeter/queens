@@ -15,10 +15,10 @@ def python_function_driver(job):
     """Driver for python function specified in job dictionary.
 
     Args:
-        job (dict): dictionary containing function
+        job (dict): Dictionary containing function
 
     Returns:
-        result (float): result of run
+        result (float): Result of run
     """
     # run Python function
     _logger.info("Running job for Python function.\n")

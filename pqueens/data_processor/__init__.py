@@ -18,11 +18,11 @@ def from_config_create_data_processor(config, data_processor_name):
     """Create DataProcessor object from problem description.
 
     Args:
-        config (dict): input json file with problem description
+        config (dict): Input json file with problem description
         data_processor_name (str): Name of the data processor
 
     Returns:
-        data_processor (obj): data_processor object
+        data_processor (obj): *data_processor* object
     """
     data_processor_options = config.get(data_processor_name)
     if not data_processor_options:

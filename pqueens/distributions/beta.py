@@ -9,29 +9,29 @@ from pqueens.distributions.distributions import Distribution
 class BetaDistribution(Distribution):
     """Beta distribution.
 
-    A generalized one dimensional beta distribution based on scipy stats. The generalized beta
+    A generalized one-dimensional beta distribution based on scipy stats. The generalized beta
     distribution has a lower bound and an upper bound.
-    The parameters a and b determine the shape of the distribution within these bounds.
+    The parameters *a* and *b* determine the shape of the distribution within these bounds.
 
     Attributes:
-        lower_bound (np.ndarray): Lower bound of the beta distribution
-        upper_bound (np.ndarray): Upper bound of the beta distribution
-        a (float): Shape parameter of the beta distribution, must be > 0
-        b (float): Shape parameter of the beta distribution, must be > 0
-        scipy_beta (scipy.stats.beta): Scipy beta distribution object
+        lower_bound (np.ndarray): Lower bound of the beta distribution.
+        upper_bound (np.ndarray): Upper bound of the beta distribution.
+        a (float): Shape parameter of the beta distribution, must be greater than 0.
+        b (float): Shape parameter of the beta distribution, must be greater than 0.
+        scipy_beta (scipy.stats.beta): Scipy beta distribution object.
     """
 
     def __init__(self, lower_bound, upper_bound, a, b, scipy_beta, mean, covariance):
         """Initialize Beta distribution.
 
         Args:
-            lower_bound (np.ndarray): Lower bound of the beta distribution
-            upper_bound (np.ndarray): Upper bound of the beta distribution
-            a (float): Shape parameter of the beta distribution, must be > 0
-            b (float): Shape parameter of the beta distribution, must be > 0
-            scipy_beta (scipy.stats.beta): Scipy beta distribution object
-            mean (np.ndarray): Mean of the distribution
-            covariance (np.ndarray): Covariance of the distribution
+            lower_bound (np.ndarray): Lower bound of the beta distribution.
+            upper_bound (np.ndarray): Upper bound of the beta distribution.
+            a (float): Shape parameter of the beta distribution, must be > 0.
+            b (float): Shape parameter of the beta distribution, must be > 0.
+            scipy_beta (scipy.stats.beta): Scipy beta distribution object.
+            mean (np.ndarray): Mean of the distribution.
+            covariance (np.ndarray): Covariance of the distribution.
         """
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
@@ -76,7 +76,7 @@ class BetaDistribution(Distribution):
         """Cumulative distribution function.
 
         Args:
-            x (np.ndarray): Positions at which the cdf is evaluated
+            x (np.ndarray): Positions at which the *cdf* is evaluated
 
         Returns:
             cdf (np.ndarray): CDF at evaluated positions
@@ -91,7 +91,7 @@ class BetaDistribution(Distribution):
             num_draws (int, optional): Number of draws
 
         Returns:
-            samples (np.ndarray): Drawn samples from the distribution
+            samples (np.ndarray): drawn samples from the distribution
         """
         samples = self.scipy_beta.rvs(size=num_draws).reshape(-1, 1)
         return samples
@@ -109,7 +109,7 @@ class BetaDistribution(Distribution):
         return logpdf
 
     def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to x.
+        """Gradient of the log pdf with respect to *x*.
 
         Args:
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated
@@ -125,7 +125,7 @@ class BetaDistribution(Distribution):
             x (np.ndarray): Positions at which the pdf is evaluated
 
         Returns:
-            pdf (np.ndarray): pdf at evaluated positions
+            pdf (np.ndarray): Pdf at evaluated positions
         """
         pdf = self.scipy_beta.pdf(x).reshape(-1)
         return pdf

@@ -1,4 +1,4 @@
-"""Created on Dezember 11th  2017.
+"""Created on December 11th  2017.
 
 @author: jbi
 """
@@ -12,8 +12,10 @@ from pqueens.interfaces.approximation_interface import ApproximationInterface
 
 
 class TestApproximationInterface(unittest.TestCase):
-    def setUp(self):
+    """TODO_doc."""
 
+    def setUp(self):
+        """TODO_doc."""
         uncertain_parameters = {}
         uncertain_parameter = {}
         uncertain_parameter["type"] = "uniform"
@@ -36,6 +38,7 @@ class TestApproximationInterface(unittest.TestCase):
         self.config['dummy_approximation'] = 'some_stuff'
 
     def test_construction(self):
+        """TODO_doc."""
         interface = from_config_create_interface('test_interface', self.config)
         # ensure correct type
         self.assertIsInstance(interface, ApproximationInterface)

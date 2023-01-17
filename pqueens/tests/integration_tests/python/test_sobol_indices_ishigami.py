@@ -10,7 +10,7 @@ from pqueens import run
 
 
 def test_sobol_indices_ishigami(inputdir, tmpdir):
-    """Test case for salib based saltelli iterator."""
+    """Test case for Salib based Saltelli iterator."""
     run(Path(os.path.join(inputdir, 'sobol_indices_ishigami.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'

@@ -5,14 +5,14 @@ import numpy as np
 
 
 def park91b_lofi(x1, x2, x3, x4, **kwargs):
-    r"""Low-fidelity version of Park91b benchmark function.
+    r"""Low-fidelity version of the Park91b benchmark function.
 
-    Simple four dimensional benchmark function as proposed in [1] to mimic
+    Simple four-dimensional benchmark function as proposed in [1], to mimic
     a computer model. The low-fidelity version is defined as:
 
     :math:`f_{lofi}({\bf x})=1.2 f_{hifi}({\bf x})-1`
 
-    The corresponding high-fidelity function is impelemented in park91b_hifi.
+    The corresponding high-fidelity function is implemented in *park91b_hifi*.
 
     Args:
         x1 (float):  Input parameter 1 [0,1)
@@ -21,7 +21,7 @@ def park91b_lofi(x1, x2, x3, x4, **kwargs):
         x4 (float):  Input parameter 4 [0,1)
 
     Returns:
-        float: Value of function at parameters
+        float: Value of the function at the parameters
 
     References:
         [1] Park, J.-S.(1991). Tuning complex computer codes to data and optimal
@@ -45,7 +45,7 @@ def park91b_hifi(x1, x2, x3, x4, **kwargs):
     :math:`f_{hifi}({\bf x})= \frac{2}{3} \exp(x_1 + x_2) - x_4 \sin(x_3) + x_3`
 
     For the purpose of multi-fidelity simulation, [2] defined a corresponding
-    lower fidelity function, which is  impelemented in park91b_lofi.
+    lower fidelity function, which is  implemented in *park91b_lofi*.
 
     Args:
         x1 (float):  Input parameter 1 [0,1)

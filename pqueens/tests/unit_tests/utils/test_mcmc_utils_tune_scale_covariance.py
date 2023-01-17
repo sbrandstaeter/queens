@@ -1,4 +1,4 @@
-"""Test-module for tune_scale_covariance of mcmc_utils module.
+"""Test-module for *tune_scale_covariance* of *mcmc_utils* module.
 
 @author: Sebastian Brandstaeter
 """
@@ -24,7 +24,7 @@ from pqueens.utils.mcmc_utils import tune_scale_covariance
 def accept_rate_and_scale_covariance(request):
     """Return a set of valid acceptance rate and adjusted scale.
 
-    given that the current scale is 1.0
+    Given that the current scale is 1.0.
     """
     return request.param
 
@@ -38,7 +38,9 @@ def test_tune_scale_covariance(accept_rate_and_scale_covariance):
 
 
 def test_tune_scale_covariance_multiple_chains():
-    """Test the tuning of proposal covariance in MCMC methods with multiple
+    """TODO_doc: add a one-line explanation.
+
+    Test the tuning of proposal covariance in MCMC methods with multiple
     chains.
 
     We assume here to have 7 parallel chains, that correspond to all

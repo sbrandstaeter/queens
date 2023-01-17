@@ -16,7 +16,10 @@ from pqueens.randomfields.multivariate_random_field_generator import (
 
 
 class TestMultivariateRandomFieldGenerator(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         # setup some necessary variables to setup random field generators
         self.dimension = 1
         self.corrstruct = 'exp'
@@ -50,6 +53,7 @@ class TestMultivariateRandomFieldGenerator(unittest.TestCase):
             self.marginal_pdfs_to_many.append(norm(0, 1))
 
     def test_constructor(self):
+        """TODO_doc."""
         my_field_generator = MultiVariateRandomFieldGenerator(
             marginal_distributions=self.marginal_pdfs,
             num_fields=self.num_fields,
@@ -92,6 +96,7 @@ class TestMultivariateRandomFieldGenerator(unittest.TestCase):
             )
 
     def test_generator(self):
+        """TODO_doc."""
         my_field_generator = MultiVariateRandomFieldGenerator(
             marginal_distributions=self.marginal_pdfs,
             num_fields=self.num_fields,
@@ -113,7 +118,7 @@ class TestMultivariateRandomFieldGenerator(unittest.TestCase):
         np.testing.assert_allclose(my_vals, ref_vals, 1e-3, 0)
 
     def test_cross_correlation(self):
-
+        """TODO_doc."""
         my_field_generator = MultiVariateRandomFieldGenerator(
             marginal_distributions=self.marginal_pdfs,
             num_fields=self.num_fields,

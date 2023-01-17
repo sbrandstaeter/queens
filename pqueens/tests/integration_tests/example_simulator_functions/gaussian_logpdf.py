@@ -41,11 +41,8 @@ def gaussian_1d_logpdf(x):
 
     Used as a basic test function for MCMC methods.
 
-    Args:
-        x (float):
-
     Returns:
-        float : The logpdf evaluated at x
+        float: The logpdf evaluated at *x*
     """
     y = np.atleast_2d(standard_normal.logpdf(x))
     return y
@@ -55,7 +52,7 @@ def gaussian_2d_logpdf(samples):
     """2D Gaussian logpdf.
 
     Args:
-        samples (np.ndarray): samples to be evaluated
+        samples (np.ndarray): Samples to be evaluated
 
     Returns:
         np.ndarray: logpdf
@@ -69,7 +66,7 @@ def gaussian_4d_logpdf(samples):
     """4D Gaussian logpdf.
 
     Args:
-        samples (np.ndarray): samples to be evaluated
+        samples (np.ndarray): Samples to be evaluated
 
     Returns:
         np.ndarray: logpdf

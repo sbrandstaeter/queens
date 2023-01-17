@@ -11,7 +11,7 @@ def get_cluster_job_id(cluster_type, output_str_cluster, pbs_cluster_types):
         pbs_cluster_types (list): List of valid clusters with pbs scheduler
 
     Returns:
-         job_id_return (str/None): job ID return value
+         job_cluster_id_return (str/None): Job ID return value
     """
     if output_str_cluster:
         if cluster_type in pbs_cluster_types:

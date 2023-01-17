@@ -20,8 +20,8 @@ def from_config_create_scheduler(config, scheduler_name=None, driver_name=None):
     """Create scheduler from problem configuration.
 
     Args:
-        config (dict):        dictionary containing configuration
-                              as provided in QUEENS input file
+        config (dict):        Dictionary containing configuration
+                              as provided in the QUEENS input file
         scheduler_name (str): Name of scheduler
         driver_name (str): Name of driver that should be used in this job-submission
 

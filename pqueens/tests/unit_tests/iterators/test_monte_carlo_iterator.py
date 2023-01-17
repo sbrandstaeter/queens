@@ -17,7 +17,10 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
 
 
 class TestMCIterator(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         random_variables = {}
         uncertain_parameter1 = {}
         uncertain_parameter1["type"] = "uniform"
@@ -86,10 +89,6 @@ class TestMCIterator(unittest.TestCase):
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
 
-        # np.set_printoptions(precision=10)
-        # print("Results first 10 {}".format(self.my_iterator.outputs[0:10]))
-
-        # check if samples are identical too
         ref_results = np.array(
             [
                 [-7.4713449052e-01],

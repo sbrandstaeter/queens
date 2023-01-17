@@ -1,22 +1,23 @@
 """Calculate finite difference based approximation of Jacobian.
 
 Note:
-    Implementation is heavily based on the scipy.optimize._numdiff module.
+    Implementation is heavily based on the *scipy.optimize._numdiff* module.
     We do NOT support complex scheme 'cs' and sparsity.
 
 The motivation behind this reimplementation is to enable the parallel
 computation of all function values required for the finite difference
 scheme.
+
 In theory, when computing the Jacobian of function at a specific
-positions via a specific finite difference scheme all positions where
+positions via a specific finite difference scheme, all positions where
 the function needs to be evaluated (the perturbed positions) are known
-immediately/ at once, because they do not depend on each other.
+immediately/at once, because they do not depend on each other.
 The evaluation of the function at these perturbed positions may
-consequently be done "perfectly" (embarassingly) parallel.
+consequently be done "perfectly" (embarrassingly) parallel.
 
 Most implementation of finite difference based approximations do not
 exploit this inherent potential for parallel evaluations because for
-cheap functions the communication overhead is to high.
+cheap functions the communication overhead is too high.
 For expensive function the exploitation ensures significant speed up.
 """
 
@@ -36,41 +37,38 @@ def compute_step_with_bounds(x0, method, rel_step, bounds):
             Point at which the derivative shall be evaluated
 
         method (string): {'3-point', '2-point'}, optional
+
             Finite difference method to use:
-                - '2-point' - use the first order accuracy forward or
-                              backward difference.
-                - '3-point' - use central difference in interior points
-                              and the second order accuracy forward or
-                              backward difference near the boundary.
-                - 'cs' - use a complex-step finite difference scheme.
-                         This is an additional option in the
-                         scipy.optimize library. But:
-                         NOT IMPLEMENTED in QUEENS
+                * '2-point' - use the first order accuracy forward or
+                  backward difference
+                * '3-point' - use central difference in interior points
+                  and the second order accuracy forward or
+                  backward difference near the boundary
+                * 'cs' - use a complex-step finite difference scheme.
+                  This is an additional option in the
+                  scipy.optimize library. **But:**
+                  NOT IMPLEMENTED in QUEENS
 
         rel_step (None or array_like, optional):
             Relative step size to use.
             The absolute step size is computed as
-            ``h = rel_step * sign(x0) * max(1, abs(x0))``
-            , possibly adjusted to fit into the bounds.
-            For ``method='3-point'`` the sign of `h` is ignored.
+            `h = rel_step * sign(x0) * max(1, abs(x0))`,
+            possibly adjusted to fit into the bounds.
+            For *method='3-point'* the sign of *h* is ignored.
             If None (default) then step is selected automatically,
             see Notes.
 
         bounds (tuple of array_like, optional):
             Lower and upper bounds on independent variables.
             Defaults to no bounds.
-            Each bound must match the size of `x0` or be a scalar,
+            Each bound must match the size of *x0* or be a scalar,
             in the latter case the bound will be the same for all
             variables. Use it to limit the range of function evaluation.
 
     Returns:
-        h (numpy.ndarray): Adjusted step sizes.
-
-        use_one_sided (numpy.ndarray of bool): Whether to switch to
-                                               one-sided scheme due to
-                                               closeness to bounds.
-                                               Informative only for
-                                               3-point method.
+        h (numpy.ndarray): Adjusted step sizes
+        use_one_sided (numpy.ndarray of bool): Whether to switch to one-sided scheme due to
+          closeness to bounds. Informative only for 3-point method
     """
     lb, ub = _prepare_bounds(bounds, x0)
 
@@ -95,17 +93,19 @@ def get_positions(x0, method, rel_step, bounds):
 
     The Jacobian is defined for a vector-valued function at a given position.
 
-    Note: the implementation is supposed to remain very closed to
-    scipy._numdiff.approx_derivative
+    **Note:** The implementation is supposed to remain very closed to
+    *scipy._numdiff.approx_derivative*.
 
+    Args:
+       x0: TODO_doc
+       method: TODO_doc
+       rel_step: TODO_doc
+       bounds: TODO_doc
     Returns:
-        positions (list of numpy.ndarray): list containing all
-                                           positions that shall be
-                                           evaluated
-
-        delta_positions (list of numpy.ndarray): delta between positions
-                                                 used to approximate
-                                                 Jacobian
+        positions (list of numpy.ndarray): List containing all positions that
+            shall be evaluated
+        delta_positions (list of numpy.ndarray): Delta between positions used
+          to approximate Jacobian
     """
     h, use_one_sided = compute_step_with_bounds(x0, method, rel_step, bounds)
 
@@ -153,31 +153,34 @@ def get_positions(x0, method, rel_step, bounds):
 
 
 def fd_jacobian(f0, f_perturbed, dx, use_one_sided, method):
-    """Calculate finite difference approximation of Jacobian of f at x0.
+    """Calculate finite difference approximation of Jacobian of *f* at *x0*.
 
-    the necessary function evaluation have been pre-calculated and are
-    supplied via f0 and the f_perturbed vector.
-    Each row in f_perturbed corresponds to a function evaluation.
-    The shape of f_perturbed depends heavily on the chosen finite
+    The necessary function evaluation have been pre-calculated and are
+    supplied via *f0* and the *f_perturbed* vector.
+    Each row in *f_perturbed* corresponds to a function evaluation.
+    The shape of *f_perturbed* depends heavily on the chosen finite
     difference scheme (method) and therefore the pre-calculation of
-    f_perturbed and dx has to be consistent with the requested method.
+    *f_perturbed* and *dx* has to be consistent with the requested method.
 
-    supported methods:
-    '2-point': a one sided scheme by definition
-    '3-point': more exact but needs twice as many function evaluations
+    Supported methods:
 
-    Note: the implementation is supposed to remain very closed to
-    scipy._numdiff.approx_derivative
+        * '2-point': a one sided scheme by definition
+        * '3-point': more exact but needs twice as many function evaluations
+
+    **Note:** The implementation is supposed to remain very closed to
+    *scipy._numdiff.approx_derivative*.
 
     Args:
-    f0 (ndarray): function value at x0, f0=f(x0).
-    f_perturbed (ndarray): perturbed function values.
-    dx (ndarray): deltas of the input variables
-    use_one_sided (ndarray of bool): Whether to switch to one-sided
-                                     scheme due to closeness to bounds.
-                                     Informative only for 3-point method.
-    method (str): which scheme was used to calculate the perturbed
-                  function values and deltas
+        f0 (ndarray): Function value at *x0*, *f0=f(x0)*
+        f_perturbed (ndarray): Perturbed function values
+        dx (ndarray): Deltas of the input variables
+        use_one_sided (ndarray of bool): Whether to switch to one-sided
+                                         scheme due to closeness to bounds;
+                                         informative only for 3-point method
+        method (str): Which scheme was used to calculate the perturbed
+                      function values and deltas
+    Returns:
+        TODO_doc
     """
     num_feval_perturbed = f_perturbed.shape[0]
 

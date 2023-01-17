@@ -36,8 +36,8 @@ def jobinterface_config():
     dummy_resource = {}
     dummy_resource['my_machine'] = {
         'scheduler_name': 'my_local_scheduler',
-        'max-concurrent': 1,
-        'max-finished-jobs': 100,
+        'max_concurrent': 1,
+        'max_finished_jobs': 100,
     }
 
     config['database'] = {}

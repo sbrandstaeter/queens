@@ -7,16 +7,17 @@ class RandomField:
     """RandomField class.
 
     Attributes:
-            dimension (int): Dimension of the random field (number of coordinates)
-            mean_param (float): Parameter for mean function parameterization of random field
-            mean_type (str): Type of mean function of the random field
-            mean (np.ndarray): Discretized mean function
-            coords (np.ndarray): Coordinates at which the random field is evaluated
-            std_hyperparam_rf (float): Hyperparameter for standard-deviation of random field
-            corr_length (float): Hyperparameter for the correlation length
+            dimension (int): Dimension of the random field (number of coordinates).
+            mean_param (float): Parameter for mean function parameterization of random field.
+            mean_type (str): Type of mean function of the random field.
+            mean (np.ndarray): Discretized mean function.
+            coords (np.ndarray): Coordinates at which the random field is evaluated.
+            std_hyperparam_rf (float): Hyperparameter for standard-deviation of random field.
+            corr_length (float): Hyperparameter for the correlation length.
             nugget_variance_rf (float): Nugget variance for the random field (lower bound for
-                                        diagonal values of the covariance matrix)
-            explained_variance (float): Explained variance of by the eigen decomposition
+                                        diagonal values of the covariance matrix).
+            explained_variance (float): Explained variance by the eigen decomposition.
+            dim_truncated: TODO_doc
     """
 
     def __init__(
@@ -56,6 +57,8 @@ class RandomField:
     def draw(self, num_samples):
         """Draw samples from the truncated representation of the random field.
 
+        Args:
+            num_samples: TODO_doc
         Returns:
             samples (np.ndarray): Drawn samples
         """
@@ -69,7 +72,7 @@ class RandomField:
             sample (np.ndarray): Truncated representation of sample
 
         Returns:
-            sample_expanded (np.ndarray) Expanded representation of sample
+            sample_expanded (np.ndarray): Expanded representation of sample
         """
         if self.mean_type == 'inflow_parabola':
             sample = self.mean * (

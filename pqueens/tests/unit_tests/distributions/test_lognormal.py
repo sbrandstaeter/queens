@@ -144,7 +144,7 @@ def test_logpdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d
 
 
 def test_grad_logpdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_pos_1d):
-    """Test grad_logpdf method of LogNormal distribution class."""
+    """Test *grad_logpdf* method of LogNormal distribution class."""
     sample_pos_1d = sample_pos_1d.reshape(-1, 1)
     grad_logpdf_jax = grad(logpdf, argnums=0)
     ref_sol_list = []
@@ -230,7 +230,7 @@ def test_logpdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d
 
 
 def test_grad_logpdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
-    """Test grad_logpdf method of LogNormal distribution class."""
+    """Test *grad_logpdf* method of LogNormal distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
     grad_logpdf_jax = grad(logpdf, argnums=0)
     ref_sol_list = []

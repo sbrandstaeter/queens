@@ -3,7 +3,7 @@
 Originates back to [1].
 
 [1]: Dixon, L. C. W., & Szego, G. P. (1978). The global optimization problem: an introduction.
-Towards global optimization, 2, 1-15.
+     Towards global optimization, 2, 1-15.
 """
 # pylint: disable=invalid-name
 
@@ -13,13 +13,16 @@ import numpy as np
 def branin78_lofi(x1, x2, **kwargs):
     """Low-fidelity fidelity Branin function.
 
-    Compute value of medium-fidelity version of Branin function as described
+    Compute the value of a medium-fidelity version of the Branin function as described
     in [1]. The corresponding high- and low-fidelity versions are implemented
-    in branin_hifi and branin_lofi, respectively.
+    in *branin_hifi* and *branin_lofi*, respectively.
+
+    **TODO_doc:** Shouldn't the previous sentence be: 'The corresponding high- and medium-fidelity versions are implemented
+    in *branin_hifi* and *branin_medfi*, respectively.'
 
     Args:
-        x1 (float): first input parameter
-        x2 (float): second input parameter
+        x1 (float): First input parameter
+        x2 (float): Second input parameter
 
     Returns:
         float: Value of low-fidelity Branin function
@@ -39,13 +42,13 @@ def branin78_lofi(x1, x2, **kwargs):
 def branin78_medfi(x1, x2, **kwargs):
     """Medium fidelity Branin function.
 
-    Compute value of medium-fidelity version of Branin function as described
+    Compute the value of a medium-fidelity version of Branin function as described
     in [1]. The corresponding high- and low-fidelity versions are implemented
-    in branin_hifi and branin_lofi, respectively.
+    in *branin_hifi* and *branin_lofi*, respectively.
 
     Args:
-        x1 (float): first input parameter
-        x2 (float): second input parameter
+        x1 (float): First input parameter
+        x2 (float): Second input parameter
 
     Returns:
         float: Value of medium fidelity Branin function
@@ -71,14 +74,14 @@ def branin78_hifi(x1, x2, **kwargs):
 
     Compute value of high fidelity version of Branin function as described
     in [1]. The corresponding medium- and low-fidelity versions are implemented
-    in branin_medfi and branin_lofi, respectively.
+    in *branin_medfi* and *branin_lofi*, respectively.
 
     Args:
-        x1 (float): first input parameter [−5, 10]
-        x2 (float): second input parameter [0, 15]
+        x1 (float): First input parameter [−5, 10]
+        x2 (float): Second input parameter [0, 15]
 
     Returns:
-        float: value of high-fidelity Branin function
+        float: Value of high-fidelity Branin function
 
     References:
         [1] Perdikaris, P. et al., 2017. Nonlinear information fusion algorithms

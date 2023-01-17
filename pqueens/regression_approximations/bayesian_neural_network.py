@@ -1,3 +1,6 @@
+"""Implementation of a Bayesian Neural Network."""
+
+import logging
 import os
 
 import numpy as np
@@ -6,6 +9,8 @@ import tensorflow_probability as tfp
 
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 
+_logger = logging.getLogger(__name__)
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 tfd = tfp.distributions
 DenseVar = tfp.layers.DenseVariational
@@ -13,13 +18,15 @@ tf.keras.backend.set_floatx('float64')
 
 # Use GPU acceleration if possible
 if tf.test.gpu_device_name() != '/device:GPU:0':
-    print('WARNING: GPU device not found.')
+    _logger.info('WARNING: GPU device not found.')
 else:
-    print('SUCCESS: Found GPU: {}'.format(tf.test.gpu_device_name()))
+    _logger.info('SUCCESS: Found GPU: %s', tf.test.gpu_device_name())
 
 
 class GaussianBayesianNeuralNetwork(RegressionApproximation):
-    """Class for creating a Bayesian neural network with Gaussian conditional
+    """A Bayesian Neural network.
+
+    Class for creating a Bayesian neural network with Gaussian conditional
     distribution based on Tensorflow Probability.
 
     The network can handle heteroskedastic noise and an arbitrary nonlinear functional. As we use
@@ -27,18 +34,18 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
     distribution, the network is able to handle epistemic and aleatory uncertainty.
 
     Attributes:
-        x_train (np.array): Training inputs
-        y_train (np.array): Training outputs
-        bnn_model (tf.model):  Tensorflow based Bayesian neural network model
+        x_train (np.array): Training inputs.
+        y_train (np.array): Training outputs.
         num_posterior_samples (int): Number of posterior sample functions (realizations of
-                                     Bayesian neural network)
-        num_samples_statistics (int): Number of samples to approximate posterior statistics
-        num_epochs (int): Number of training epochs for variational optimization
+                                     Bayesian neural network).
+        num_samples_statistics (int): Number of samples to approximate posterior statistics.
+        bnn_model (tf.model):  Tensorflow based Bayesian neural network model.
+        num_epochs (int): Number of training epochs for variational optimization.
         optimizer_seed (int): Random seed used for initialization of stochastic gradient decent
-                              optimizer
-        verbosity_on (bool): Boolean for model verbosity during training. True=verbose
+                              optimizer.
+        verbosity_on (bool): Boolean for model verbosity during training (*True=verbose*).
         model_realizations_lst (lst): List with different neural network realizations
-                                      (epistemic uncertainty)
+                                      (epistemic uncertainty).
     """
 
     def __init__(
@@ -85,9 +92,9 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
 
         Args:
             config (dict): Dictionary with problem description (input file)
+            approx_name (str):     Name of the approximation options in input file
             x_train (np.array):    Training inputs
             y_train (np.array):    Training outputs
-            approx_name (str):     Name of the approximation options in input file
 
         Returns:
             Tensorflow Bayesian neural network object
@@ -129,7 +136,9 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
         nodes_per_hidden_layer_lst,
         activation_per_hidden_layer_lst,
     ):
-        """Build/compile the Bayesian neural network. We use a regular densely
+        """Build and compile the neural network.
+
+        Build/compile the Bayesian neural network. We use a regular densely
         connected NN, which is parameterizing mean and variance of a Gaussian
         distribution. The network can be arbitrary deep and wide and can use
         different ( nonlinear) activation functions.
@@ -186,24 +195,27 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
 
     @staticmethod
     def negative_log_likelihood(y, rv_y):
-        """Negative logarithmic likelihood of (tensorflow) random variable rv_y
-        evaluated at location y.
+        """Evaluate the negative log.-likelihood of the random variable.
+
+        Negative logarithmic likelihood of (tensorflow) random variable
+        *rv_y* evaluated at location *y*.
 
         Args:
             y (float): Value/Realization of the random variable
             rv_y (obj): Tensorflow probability random variable object
 
         Returns:
-            negloglik (float): Negative logarithmic likelihood of rv_y at y
+            negloglik (float): Negative logarithmic likelihood of *rv_y* at *y*
         """
         negloglik = -rv_y.log_prob(y)
         return negloglik
 
     @staticmethod
     def prior_trainable(kernel_size, bias_size=0, dtype=None):
-        """Specify the prior over `keras.layers.Dense` `kernel` and `bias`.
-        Note this is a special hybrid case of prior which is actually trainable
-        see "Empirical Bayes" for more background on this topic.
+        """Specify the prior over *keras.layers.Dense*, *kernel* and *bias*.
+
+        **Note:** This is a special hybrid case of prior which is actually trainable.
+        See "Empirical Bayes" for more background on this topic.
 
         Args:
             kernel_size (int): Number of weight parameters in the NN
@@ -212,8 +224,8 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
 
         Returns:
             prior (obj): Tensorflow probability Gaussian prior distribution over biases and
-                         weights of the Bayesian NN, taking the mean of the Gaussian as an input
-                         variable for the prior distribution and fixing the variance
+            weights of the Bayesian NN, taking the mean of the Gaussian as an input
+            variable for the prior distribution and fixing the variance
         """
         # TODO check this prior and make it full Bayesian?
         n = kernel_size + bias_size
@@ -234,8 +246,9 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
 
     @staticmethod
     def mean_field_variational_distribution(kernel_size, bias_size=0, dtype=None):
-        """Variational distribution that approximates the true posterior. Here
-        we use a Gaussian mean field approach, such that every parameter in the
+        """Variational distribution that approximates the true posterior.
+
+        Here, we use a Gaussian mean field approach, such that every parameter in the
         NN is approximated with a Gaussian distribution, parameterized by a
         mean and variance.
 
@@ -246,7 +259,7 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
 
         Returns:
             mean_field_variational_distr (obj): Tensorflow Probability mean field variational
-            distribution for weights and biases; Each node (with weight and bias) has two Gaussians
+            distribution for weights and biases. Each node (with weight and bias) has two Gaussians
             that are individually optimized via their mean and variance.
             Hence the parameterization of the variational distribution has n * 2 parameters with
             n being the number of nodes in the NN.
@@ -267,13 +280,13 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
         return mean_field_variational_distr
 
     def train(self):
-        """Train the Bayesian neural network using the previous defined
-        optimizers in the model build and configuration. We allow tensorflow's
-        early stopping here to stop the optimization routine when the loss-
-        function starts to increase again over several iterations.
+        """Train the Bayesian neural network.
 
-        Returns:
-            None
+        Train the Bayesian neural network using the previous defined
+        optimizers in the model build and configuration. We allow
+        Tensorflow's early stopping here to stop the optimization
+        routine when the loss- function starts to increase again over
+        several iterations.
         """
         # set the random seeds for optimization/training
         np.random.seed(self.optimizer_seed)
@@ -290,18 +303,17 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
         self.bnn_model.summary()
 
     def predict(self, x_test, support='y', full_cov=False):
-        """
+        """Make a prediction with the Bayesian neural network.
 
         Args:
             x_test (np.array): Testing input vector for which the posterior distribution,
                                respectively point estimates should be predicted
             support (str): String to determine which output
-            full_cov (bool): Boolean flag for prediction posterior covariance matrix (True) or
-                             posterior variance (False) at x_test
+            full_cov (bool): Boolean flag for prediction posterior covariance matrix (*True*) or
+                             posterior variance (*False*) at *x_test*
 
         Returns:
             output (dict): Dictionary with posterior output statistics
-
         """
         if self.model_realizations_lst is None:
             self.model_realizations_lst = [
@@ -320,15 +332,16 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
         return output
 
     def predict_y(self, x_test, full_cov=False):
-        """Predict the posterior mean, variance or covariance of the posterior
-        distribution at x_test (wrt to y) that combines epistemic and aleatory
-        uncertainty.
+        """Predict the posterior mean, variance/covariance.
+
+        Predictions are conducted for the posterior distribution of the random output variable at
+        *x_test* (w.r.t. *y*), that combines epistemic and aleatory uncertainty.
 
         Args:
             x_test (np.array): Testing input vector for which the posterior distribution,
                                respectively point estimates should be predicted
-            full_cov (bool): Boolean flag for prediction posterior covariance matrix (True) or
-                             posterior variance (False) at x_test
+            full_cov (bool): Boolean flag for prediction posterior covariance matrix (*True*) or
+                             posterior variance (*False*) at *x_test*
 
         Returns:
             output (dict): Dictionary with posterior output statistics
@@ -358,16 +371,18 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
         return output
 
     def predict_f(self, x_test, full_cov=False):
-        """Predict the posterior mean, variance or covariance of the posterior
-        distribution wrt to the latent function f at test points x_test. This
-        prediction only accounts for the epistemic uncertainty and neglects the
-        aleatory uncertainty.
+        """TODO_doc: add a one-line explanation.
+
+        Predict the posterior mean, variance or covariance of the posterior
+        distribution w.r.t. the latent function 'f' at test points *x_test*.
+        This prediction only accounts for the epistemic uncertainty and
+        neglects the aleatory uncertainty.
 
         Args:
             x_test (np.array): Testing input vector for which the posterior distribution,
                                respectively point estimates should be predicted
-            full_cov (bool): Boolean flag for prediction posterior covariance matrix (True) or
-                             posterior variance (False) at x_test
+            full_cov (bool): Boolean flag for prediction posterior covariance matrix (*True*) or
+                             posterior variance (*False*) at *x_test*
 
         Returns:
             output (dict): Dictionary with posterior output statistics
@@ -391,16 +406,18 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
         return output
 
     def predict_f_samples(self, x_test, num_samples):
-        """Sample the latent function (without noise) that is in this this case
-        realizations of the mean predictions of the Bayesian neural network
-        which are themselves uncertain.
+        """TODO_doc: add a one-line explanation.
+
+        Sample the latent function (without noise), that is in this this
+        case realizations of the mean predictions of the Bayesian neural
+        network which are themselves uncertain.
 
         Args:
             x_test (np.array): Input testing point at which the samples should be realized
-            num_samples (int): Number of posterior samples of the latent function f
+            num_samples (int): Number of posterior samples of the latent function 'f'
 
         Returns:
-            samples (np.array): Samples of the latent function at locations x_test
+            samples (np.array): Samples of the latent function at locations *x_test*
         """
         y_rv_models = [
             model_realization(x_test) for model_realization in self.model_realizations_lst
@@ -411,17 +428,19 @@ class GaussianBayesianNeuralNetwork(RegressionApproximation):
         return samples
 
     def predict_y_samples(self, x_test, num_samples):
-        """Sampling from the posterior (wrt to y) that combines epistemic and
+        """TODO_doc: add a one-line explanation.
+
+        Sampling from the posterior (w.r.t. *y*) that combines epistemic and
         aleatory uncertainty. This will generally lead to noisy samples in
         contrast to smooth samples from the latent function as noise assumption
-        is conditionally independent for each point x_test.
+        is conditionally independent for each point *x_test*.
 
         Args:
             x_test (np.array): Testing input locations for the posterior distribution
-            num_samples (int): Number of posterior samples at x_test
+            num_samples (int): Number of posterior samples at *x_test*
 
         Returns:
-            samples (np.array): Posterior samples wrt y
+            samples (np.array): Posterior samples w.r.t. *y*
         """
         # sample the different model realizations (epistemic uncertainty)
         y_rv_models = [

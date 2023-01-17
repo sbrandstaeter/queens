@@ -17,7 +17,10 @@ from pqueens.randomfields.univariate_field_generator_factory import (
 
 
 class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         # setup some necessary variables to setup random field generators
         self.dimension = 3
         self.corrstruct = 'squared_exp'
@@ -62,6 +65,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
 
     # should trigger error because desired energy fraction not reached
     def test_not_enough_fourier_terms(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -77,6 +81,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
     # should trigger error because number of phase angles do not match stochastic
     # dimension
     def test_wrong_number_phase_angles(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -92,6 +97,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
 
     # should trigger error because dimension of location is of
     def test_wrong_locatio_dimension(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 marg_pdf=self.marginal_pdf,
@@ -107,12 +113,12 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
             mystuff.gen_sample_gauss_field(np.array([[10, 10]]), xi)
 
     def test_values_at_location(self):
+        """TODO_doc."""
         np.random.seed(self.seed)
         xi = np.random.randn(self.my_stoch_dim, 1)
         my_vals = self.my_field_generator.evaluate_field_at_location(self.loc, xi)
 
         # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        # print(my_vals)
 
         ref_vals = np.array(
             [
@@ -132,6 +138,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         np.testing.assert_allclose(my_vals, ref_vals, 1e-10, 1e-10)
 
     def test_correlation(self):
+        """TODO_doc."""
         my_vals = np.zeros((self.loc.shape[0], 200))
         np.random.seed(self.seed)
         for i in range(200):
@@ -157,17 +164,6 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         # exp_corr_at_dist_100    = exp(-(loc(4)-loc(1))^2/corr_length^2);
 
         # np.set_printoptions(formatter={'float': '{: 0.15f}'.format})
-        # print(act_corr_at_dist_10_1[0,1])
-        # print(act_corr_at_dist_10_2[0,1])
-        # print(act_corr_at_dist_10_3[0,1])
-        #
-        # print(act_corr_at_dist_25_1[0,1])
-        # print(act_corr_at_dist_25_2[0,1])
-        # print(act_corr_at_dist_25_3[0,1])
-        #
-        # print(act_corr_at_dist_100_1[0,1])
-        # print(act_corr_at_dist_100_2[0,1])
-        # print(act_corr_at_dist_100_3[0,1])
 
         ref_corr_at_dist_10_1 = 0.781794339099
         ref_corr_at_dist_10_2 = 0.82360677963
@@ -238,6 +234,7 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         )
 
     def test_marginal_distribution(self):
+        """TODO_doc."""
         my_vals = np.zeros((1, 200))
         np.random.seed(self.seed)
         for i in range(200):
@@ -249,7 +246,6 @@ class TestRandomFieldGeneratorFourier3D(unittest.TestCase):
         # try to check whether marginal distribution is normally distributed
         # using kstest
         test_statistic = (stats.kstest(my_vals[0, :], 'norm'))[0]
-        # print((stats.kstest(my_vals[0, :], 'norm')))
         self.assertAlmostEqual(test_statistic, 0.041586864909728682)
 
 

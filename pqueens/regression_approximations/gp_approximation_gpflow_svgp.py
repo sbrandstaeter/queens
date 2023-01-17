@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import logging
 import os
 
@@ -17,26 +19,25 @@ tf.get_logger().setLevel(logging.ERROR)
 
 
 class GPflowSVGP(RegressionApproximation):
-    """Class for creating Sparse Variational GP regression model based on
-    GPFlow.
+    """Class for creating SVGP regression model based on GPFlow.
 
-    Key reference:
+    **Key reference:**
         J. Hensman, A. Matthews, and Z. Ghahramani, “Scalable Variational Gaussian Process
         Classification” in Artificial Intelligence and Statistics, Feb. 2015, pp. 351–360.
         https://proceedings.mlr.press/v38/hensman15.html
 
     Attributes:
-        x_train (np.ndarray): training inputs
-        y_train (np.ndarray): training outputs
-        number_posterior_samples (int): number of posterior samples
-        number_input_dimensions (int): dimensionality of random features/input dimension
-        model (list): list of GPFlow based stochastic variational GP (SVGP)
-        mini_batch_size (int): minibatch size to speed up computation of ELBO
-        number_training_iterations (int): number of iterations in optimizer for training
-        training_data (list): list of training datasets
-        scaler_x (sklearn scaler object): scaler for inputs
-        scaler_y (sklearn scaler object): scaler for outputs
-        dimension_output (int): dimensionality of the output (quantities of interest)
+        x_train (np.ndarray): Training inputs.
+        y_train (np.ndarray): Training outputs.
+        number_posterior_samples (int): Number of posterior samples.
+        mini_batch_size (int): Minibatch size to speed up computation of ELBO.
+        number_training_iterations (int): Number of iterations in optimizer for training.
+        training_data (list): List of training datasets.
+        number_input_dimensions (int): Dimensionality of random features/input dimension.
+        model (list): List of GPFlow based stochastic variational GP (SVGP).
+        scaler_x (sklearn scaler object): Scaler for inputs.
+        scaler_y (sklearn scaler object): Scaler for outputs.
+        dimension_output (int): Dimensionality of the output (quantities of interest).
     """
 
     def __init__(
@@ -53,7 +54,8 @@ class GPflowSVGP(RegressionApproximation):
         scaler_y,
         dimension_output,
     ):
-        """
+        """TODO_doc.
+
         Args:
             x_train (np.ndarray): training inputs
             y_train (np.ndarray): training outputs
@@ -67,7 +69,6 @@ class GPflowSVGP(RegressionApproximation):
             scaler_y (sklearn scaler object): scaler for outputs
             dimension_output (int): dimensionality of the output (quantities of interest)
         """
-
         self.x_train = x_train
         self.y_train = y_train
         self.number_posterior_samples = number_posterior_samples
@@ -85,13 +86,13 @@ class GPflowSVGP(RegressionApproximation):
         """Create approximation from options dictionary.
 
         Args:
-            config (dict): dictionary with options
-            approx_name (str): name of approximation method
-            x_train (np.array): training inputs
-            y_train (np.array): training outputs
+            config (dict): Dictionary with options
+            approx_name (str): Name of approximation method
+            x_train (np.array): Training inputs
+            y_train (np.array): Training outputs
 
         Returns:
-            GPFlowRegression: approximation object
+            GPFlowRegression: Approximation object
         """
         approx_options = config[approx_name]
         number_posterior_samples = approx_options.get('number_posterior_samples', None)
@@ -141,29 +142,31 @@ class GPflowSVGP(RegressionApproximation):
             for step in range(self.number_training_iterations):
                 optimization_step()
                 if (step + 1) % 100 == 0:
-                    print(
-                        f'Iter: {step + 1}/{self.number_training_iterations}, '
-                        f'Loss: {training_loss().numpy():.2e}'
+                    _logger.info(
+                        'Iter: %d/%d, ' 'Loss: %.2e',
+                        step + 1,
+                        self.number_training_iterations,
+                        training_loss().numpy(),
                     )
 
             print_summary(self.model[i])
 
     def predict(self, x_test, support='f', full_cov=False):
-        """Predict the posterior distribution at x_test.
+        """Predict the posterior distribution at *x_test*.
 
         Options:
-            'f': predict the latent function values
-            'y': predict values of the new observations (including noise)
+            #. 'f': predict the latent function values
+            #. 'y': predict values of the new observations (including noise)
 
         Args:
-            x_test (np.ndarray): new inputs where to make predictions.
-            support (str): probabilistic support of random process (default: 'y').
+            x_test (np.ndarray): New inputs where to make predictions
+            support (str): Probabilistic support of random process (default: 'y')
             full_cov (bool): Boolean that specifies whether the entire posterior covariance
-                             matrix should be returned or only the posterior variance.
+                             matrix should be returned or only the posterior variance
 
         Returns:
             output (dict): Dictionary with mean, variance, and possibly
-                           posterior samples at x_test
+            posterior samples at *x_test*
         """
         assert support == 'f' or support == 'y', "Unknown input for support."
         x_test = np.atleast_2d(x_test).reshape((-1, self.number_input_dimensions))

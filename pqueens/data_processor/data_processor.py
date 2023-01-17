@@ -14,20 +14,21 @@ class DataProcessor(metaclass=abc.ABCMeta):
     """Base class for data processing.
 
     Attributes:
-        file_name_identifier (str): Identifier for files.
-                                         The file prefix can contain BASIC regex expression and
-                                         subdirectories. Examples are wildcards `*` or
-                                         expressions like `[ab]`.
-        file_path (str): Actual path to the file of interest
-        file_options_dict (dict): Dictionary with read-in options for
-                                the file
         files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
-                                             The paths can contain regex expressions. The paths are
-                                             relative to the particular simulation output folder:
-                                             experiment_dir/<job_id>/output/<here comes your regex>
+                                             The paths can contain regex expressions. The
+                                             paths are relative to the particular simulation output
+                                             folder: *experiment_dir/<job_id>/output/<here
+                                             comes your regex>* .
+        file_options_dict (dict): Dictionary with read-in options for
+                                  the file.
         data_processor_name (str): Name of the data processor.
+        file_name_identifier (str): Identifier for files.
+                                    The file prefix can contain BASIC regex expression
+                                    and subdirectories. Examples are wildcards `*` or
+                                    expressions like `[ab]`.
+        file_path (str): Actual path to the file of interest.
+        processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
         raw_file_data (np.array): Raw data from file.
-        processed_data (np.array): Cleaned, filtered or manipulated data_processor data
     """
 
     def __init__(
@@ -63,19 +64,16 @@ class DataProcessor(metaclass=abc.ABCMeta):
         """Extract attributes of this base class from the config.
 
         Args:
-            config (dict): Dictionary with problem description.
+            config (dict): Dictionary with problem description
             data_processor_name (str): Name of the data processor
 
         Returns:
-            file_name_identifier (str): Identifier for files.
-                                             The file prefix can contain regex expression and
-                                             subdirectories.
-            file_options_dict (dict): Dictionary with read-in options for
-                                      the file. The respective child class will
-                                       implement valid options for this dictionary.
-            files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
-                                                 The paths can contain regex expressions.
-            data_processor_name (str): Name of the data processor.
+            file_name_identifier (str): Identifier for files. The file prefix can contain regex
+              expression and subdirectories
+            file_options_dict (dict): Dictionary with read-in options for the file. The
+              respective child class will implement valid options for this dictionary
+            files_to_be_deleted_regex_lst (lst): List with paths to files that should be
+              deleted. The paths can contain regex expressions
         """
         data_processor_options = config.get(data_processor_name)
         file_name_identifier = data_processor_options.get('file_name_identifier')
@@ -118,7 +116,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
 
         Args:
             base_dir_file (str): Path of the base directory that
-                                           contains the file of interest.
+                                           contains the file of interest
 
         Returns:
             processed_data (np.array): Final data from data processor module
@@ -181,7 +179,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
             self.file_path = file_list[0]
             file_exists = True
         else:
-            _logger.warning(f"The file '{file_path_regex}' does not exist!")
+            _logger.warning("The file '%s' does not exist!", file_path_regex)
             file_exists = False
 
         return file_exists
@@ -218,6 +216,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                     file.unlink()
         except Exception as exception:
             _logger.debug(
-                f"Could not remove file with path: '{str(current_file.resolve())}'. "
-                f"The following error was raised: {exception}"
+                "Could not remove file with path: '%s'. " "The following error was raised: %s",
+                str(current_file.resolve()),
+                exception,
             )

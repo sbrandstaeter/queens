@@ -15,24 +15,26 @@ class DataProcessorCsv(DataProcessor):
     """Class for extracting data from csv files.
 
     Attributes:
-        filter_range (lst): After data is selected by `use_cols_lst` and a filter column is
-                            specified by `index_column`, this option selects which data range
-                            shall be filtered by providing a minimum and maximum value pair
-                            in list format
-        filter_target_values (list): target values to filter
-        filter_tol (float): Tolerance for the filter range
-        filter_type (str): filter type to use
-        header_row (int):   Integer that determines which csv-row contains labels/headers of the
-                            columns. Default is 'None', meaning no header used.
-        index_column (int, str): Column to use as the row labels of the DataFrame, either given as
-            string name or column index. Note: index_column=False can be used to force pandas to not
-            use the first column as the index. Index_column is used for filtering the remaining
-            columns.
+        use_cols_lst (lst): List with column numbers that should be read-in.
+        filter_type (str): Filter type to use.
+        header_row (int): Integer that determines which csv-row contains labels/headers of
+                          the columns. Default is 'None', meaning no header used.
         skip_rows (int): Number of rows that should be skipped to be read-in in csv file.
-        use_cols_lst (lst): list with column numbers that should be read-in.
+        index_column (int, str): Column to use as the row labels of the DataFrame, either
+                                 given as string name or column index.
+
+                                 **Note:** *index_column=False* can be used to force pandas
+                                 to not use the first column as the index. *index_column* is
+                                 used for filtering the remaining columns.
         use_rows_lst (lst): In case this options is used, the list contains the indices of rows
-                            in the csv file that should be used as data
-        returned_filter_format (str): Returned data format after filtering
+                            in the csv file that should be used as data.
+        filter_range (lst): After data is selected by *use_cols_lst* and a filter column is
+                            specified by *index_column*, this option selects which data range
+                            shall be filtered by providing a minimum and maximum value pair
+                            in list format.
+        filter_target_values (list): Target values to filter.
+        filter_tol (float): Tolerance for the filter range.
+        returned_filter_format (str): Returned data format after filtering.
     """
 
     expected_filter_entire_file = {'type': 'entire_file'}
@@ -72,7 +74,7 @@ class DataProcessorCsv(DataProcessor):
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
             data_processor_name (str): Name of the data processor.
-            filter_type (str): filter type to use
+            filter_type (str): Filter type to use
             header_row (int):   Integer that determines which csv-row contains labels/headers of
                                 the columns. Default is 'None', meaning no header used.
             use_cols_lst (lst): (optional) list with column numbers that should be read-in.
@@ -87,8 +89,8 @@ class DataProcessorCsv(DataProcessor):
                                 specified by `index_column`, this option selects which data range
                                 shall be filtered by providing a minimum and maximum value pair
                                 in list format
-            filter_tol (float): Tolerance for the filter range
             filter_target_values (list): target values to filter
+            filter_tol (float): Tolerance for the filter range
             returned_filter_format (str): Returned data format after filtering
 
         Returns:
@@ -116,8 +118,10 @@ class DataProcessorCsv(DataProcessor):
         """Create the class from the problem description.
 
         Args:
-            config (dict): Dictionary with problem description.
+            config (dict): Dictionary with problem description
             data_processor_name (str): Name of the data processor
+        Return:
+            TODO_doc
         """
         (
             file_name_identifier,
@@ -270,10 +274,10 @@ class DataProcessorCsv(DataProcessor):
                 engine='python',
                 index_col=self.index_column,
             )
-            _logger.info(f"Successfully read-in data from {self.file_path}.")
+            _logger.info("Successfully read-in data from %s.", self.file_path)
         except IOError as error:
             _logger.warning(
-                f"Could not read file {self.file_path}. " f"The IOError was: {error}. Skip..."
+                "Could not read file %s. The IOError was: %s. Skip...", self.file_path, error
             )
             self.raw_file_data = None
 

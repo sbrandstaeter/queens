@@ -19,7 +19,7 @@ class StandardScheduler(Scheduler):
     """Standard scheduler class for QUEENS.
 
     Attributes:
-        max_concurrent (int): Number of maximum jobs that run in parallel
+        max_concurrent (int): Number of maximum jobs that run in parallel.
     """
 
     def __init__(
@@ -42,8 +42,6 @@ class StandardScheduler(Scheduler):
             driver_name (str):         Name of the driver that shall be used for job submission
             config (dict):             dictionary containing configuration as provided in
                                        QUEENS input file
-            remote connect (str):      (only for remote scheduling) address of remote
-                                       computing resource
             singularity (bool):        flag for use of Singularity containers
             scheduler_type (str):      type of scheduler chosen in QUEENS input file
             max_concurrent (int): Number of maximum jobs that run in parallel
@@ -69,7 +67,7 @@ class StandardScheduler(Scheduler):
             driver_name (str): Name of the driver
 
         Returns:
-            instance of standard scheduler class
+            Instance of standard scheduler class
         """
         if not scheduler_name:
             scheduler_name = "scheduler"
@@ -95,7 +93,7 @@ class StandardScheduler(Scheduler):
         scheduler_type = scheduler_options["type"]
 
         # find the max_concurrent key in the input file
-        max_concurrent_lst = list(find_keys(config, 'max-concurrent'))
+        max_concurrent_lst = list(find_keys(config, 'max_concurrent'))
         if max_concurrent_lst:
             max_concurrent = max_concurrent_lst[0]
         else:
@@ -119,7 +117,8 @@ class StandardScheduler(Scheduler):
             string (str): ClusterScheduler object description
         """
         name = "Standard Scheduler"
-        print_dict = self._create_base_print_dict()
+        resource_info = 'local'
+        print_dict = self._create_base_print_dict(resource_info)
         return get_str_table(name, print_dict)
 
     # ------------------- CHILD METHODS THAT MUST BE IMPLEMENTED ------------------
@@ -150,7 +149,7 @@ class StandardScheduler(Scheduler):
 
         cmdlist_remote_main = [f'singularity run {ABS_SINGULARITY_IMAGE_PATH}'] + remote_args
         cmd_remote_main = ' '.join(cmdlist_remote_main)
-        _logger.info(cmd_remote_main)
+        _logger.debug(cmd_remote_main)
         _, pid, _, _ = run_subprocess(cmd_remote_main, subprocess_type='submit')
         return pid
 
@@ -161,8 +160,8 @@ class StandardScheduler(Scheduler):
             job (dict): Job dict.
 
         Returns:
-            completed (bool): If job is completed
-            failed (bool): If job failed.
+            completed (bool):  If job is completed
+            failed (bool): If job failed
         """
         # initialize completion and failure flags to false
         # (Note that failure is not checked for standard scheduler
@@ -186,7 +185,7 @@ class StandardScheduler(Scheduler):
             batch (str):     Batch number of job
 
         Returns:
-            driver_obj.pid (int): process ID
+            driver_obj.pid (int): Process ID
         """
         # create driver
         # TODO we should not create the object here everytime!
@@ -213,7 +212,7 @@ class StandardScheduler(Scheduler):
 
         Args:
             config (dict): Input file problem description
-            job_id (int): Id number of the current job
+            job_id (int): ID number of the current job
             batch (int): Number of the current batch
             driver_name (str): Name of the driver module in input file
             experiment_dir (Path): directory of experiment

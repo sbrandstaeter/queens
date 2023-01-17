@@ -12,7 +12,10 @@ from pqueens.models.multifidelity_model import MultifidelityModel
 
 
 class TestMultiFidelityModel(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         self.dummy_config = {
             "model": {
                 "type": "multi_fidelity_model",
@@ -39,6 +42,7 @@ class TestMultiFidelityModel(unittest.TestCase):
     @mock.patch('pqueens.models.multifidelity_model.from_config_create_interface')
     @mock.patch('pqueens.models.multifidelity_model.SimulationModel')
     def test_from_config_function(self, mock_submodel, mock_interface):
+        """TODO_doc."""
         MultifidelityModel.from_config_create_model("model", self.dummy_config)
 
         model_calls = [

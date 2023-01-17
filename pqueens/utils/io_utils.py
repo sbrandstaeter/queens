@@ -49,7 +49,7 @@ def load_result(path_to_result_file):
     Args:
         path_to_result_file (Pathlib.Path): Path to results
     Returns:
-        dict: results
+        dict: Results
     """
     path_to_result_file = Path(path_to_result_file)
     results = load_pickle(path_to_result_file)

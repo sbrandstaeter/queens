@@ -1,52 +1,56 @@
+"""A multi-fidelity Gaussian Process implementation."""
+
+import logging
+
 import GPy
 import numpy as np
+
+_logger = logging.getLogger(__name__)
 
 
 class MF_ICM_GP_Regression(object):
     """Class for creating multi-fidelity GP based emulator.
 
     This class constructs a multi-fidelity GP emulator, currently using a GPy
-    model. Based on this emulator various statistical summarys can be
+    model. Based on this emulator various statistical summaries can be
     computed and returned.
 
     Attributes:
         Xtrain (list):
-            list of arrays of location of design points
+            List of arrays of location of design points.
         ytrain (np.array):
-            list of arrays of values at desing points
+            List of arrays of values at design points.
+        num_fidelity_levels: TODO_doc
+        num_posterior_samples: TODO_doc
         m (Gpy.model):
-            GPy based Gaussian process model
+            GPy based Gaussian process model.
     """
 
     @classmethod
     def from_options(cls, approx_options, Xtrain, ytrain):
-        """Create approxiamtion from options dictionary.
+        """Create approximation from options dictionary.
 
         Args:
             approx_options (dict): Dictionary with approximation options
-            x_train (np.array):    Training inputs
-            y_train (np.array):    Training outputs
+            Xtrain (np.array):    Training inputs
+            ytrain (np.array):    Training outputs
 
         Returns:
-            gp_approximation_gpy: approximation object
+            gp_approximation_gpy: Approximation object
         """
         num_fidelity_levels = len(Xtrain)
         num_posterior_samples = approx_options.get('num_posterior_samples', None)
         return cls(Xtrain, ytrain, num_fidelity_levels, num_posterior_samples)
 
     def __init__(self, Xtrain, ytrain, num_fidelity_levels, num_posterior_samples):
-        """
-        Args:
-            Xtrain (list):
-                list of arrays of location of design points
-            ytrain (np.array):
-                list of arrays of values at desing points
-            num_fidelity_levels (int):
-                number of fidelity levels
-            num_posterior_samples (int):
-                number of posterior samples for prediction
-        """
+        """TODO_doc.
 
+        Args:
+            Xtrain (list): list of arrays of location of design points
+            ytrain (np.array): list of arrays of values at design points
+            num_fidelity_levels (int): number of fidelity levels
+            num_posterior_samples (int): number of posterior samples for prediction
+        """
         # check that X_lofi and X_hifi have the same dimension
         dim_x = Xtrain[0].shape[1]
         if dim_x is not Xtrain[1].shape[1]:
@@ -68,7 +72,6 @@ class MF_ICM_GP_Regression(object):
 
     def train(self):
         """Train the GP by maximizing the likelihood."""
-
         # #For this kernel, B.kappa encodes the variance now.
         self.m['.*rbf.var'].constrain_fixed(1.0)
 
@@ -82,14 +85,14 @@ class MF_ICM_GP_Regression(object):
         self.m.optimize_restarts(30, optimizer="bfgs", max_iters=1000)
 
     def predict(self, Xnew):
-        """Compute latent function at Xnew.
+        """Compute latent function at *Xnew*.
 
         Args:
-            Xnew (np.array): Inputs at which to evaluate latent function f
+            Xnew (np.array): Inputs at which to evaluate latent function 'f'
 
         Returns:
             dict: Dictionary with mean, variance and possibly
-                  posterior samples of latent function at Xnew
+            posterior samples of latent function at *Xnew*
         """
         output = {}
         mean, variance = self.predict_f(Xnew)
@@ -97,18 +100,18 @@ class MF_ICM_GP_Regression(object):
         output['variance'] = variance
         if self.num_posterior_samples is not None:
             output['post_samples'] = self.predict_f_samples(Xnew, self.num_posterior_samples)
-        print("output type {}".format(type(output)))
+        _logger.info("output type %s", type(output))
         return output
 
     def predict_f(self, Xnew, level=None):
-        """Compute the mean and variance of the latent function at Xnew.
+        """Compute the mean and variance of the latent function at *Xnew*.
 
         Args:
-            Xnew (np.array): Inputs at which to evaluate latent function f
-            level (int): level for which to make prediction
+            Xnew (np.array): Inputs at which to evaluate latent function 'f'
+            level (int): Level for which to make prediction
 
         Returns:
-            np.array, np.array: mean and varaince of latent function at Xnew
+            np.array, np.array: Mean and variance of latent function at *Xnew*
         """
         dim_x = Xnew.shape[1]
         if dim_x is not self.Xtrain[0].shape[1]:
@@ -133,16 +136,16 @@ class MF_ICM_GP_Regression(object):
         return my_mean.reshape((-1, 1)), my_var.reshape((-1, 1))
 
     def predict_f_samples(self, Xnew, num_samples, level=None):
-        """Produce samples from the posterior latent funtion Xnew.
+        """Produce samples from the posterior latent function *Xnew*.
 
         Args:
-            Xnew (np.array):    Inputs at which to evaluate latent function f
-            num_samples (int):  Number of posterior field_realizations of GP
-            level (int): level for which to make prediction
+            Xnew (np.array):    Inputs at which to evaluate latent function 'f'
+            num_samples (int):  Number of posterior *field_realizations* of GP
+            level (int): Level for which to make prediction
 
 
         Returns:
-            np.array: samples of latent function at Xnew
+            np.array: Samples of latent function at *Xnew*
         """
         if level is None:
             level = self.num_fidelity_levels

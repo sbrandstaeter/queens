@@ -17,12 +17,12 @@ this.parameters = None
 def from_config_create_parameters(config, pre_processor=None):
     """Create a QUEENS parameter object from config.
 
-    This construct follows the spirit of singleton design patterns
-    Informally: there only exists one parameters instance
+    This construct follows the spirit of singleton design patterns.
+    Informally: there only exists one parameter instance.
 
     Args:
         config (dict): Problem configuration
-        pre_processor (obj, optional): pre-processor object to read coordinates of random field
+        pre_processor (obj, optional): Pre-processor object to read coordinates of random field
                                        discretization
     """
     parameters_options = config.get('parameters', None)
@@ -92,11 +92,11 @@ class Parameters:
     """Parameters class.
 
     Attributes:
-        dict (dict): Random variables and random fields stored in a dict
-        parameters_keys (list): List of keys for all parameter members
-        num_parameters (int): Number of (truncated) parameters
-        random_field_flag (bool): Specifies if random fields are used
-        names (list): Parameter names
+        dict (dict): Random variables and random fields stored in a dict.
+        parameters_keys (list): List of keys for all parameter members.
+        num_parameters (int): Number of (truncated) parameters.
+        random_field_flag (bool): Specifies if random fields are used.
+        names (list): Parameter names.
     """
 
     def __init__(self, parameters_dict, parameters_keys, num_parameters, random_field_flag):
@@ -117,6 +117,8 @@ class Parameters:
     def draw_samples(self, num_samples):
         """Draw samples from all parameters.
 
+        Args:
+            num_samples: TODO_doc
         Returns:
             samples (np.ndarray): Drawn samples
         """
@@ -132,6 +134,8 @@ class Parameters:
     def joint_logpdf(self, samples):
         """Evaluate the logpdf summed over all parameters.
 
+        Args:
+            samples: TODO_doc
         Returns:
             logpdf (np.ndarray): logpdf summed over all parameters
         """
@@ -146,6 +150,8 @@ class Parameters:
     def grad_joint_logpdf(self, samples):
         """Evaluate the gradient of the joint logpdf w.r.t. the samples.
 
+        Args:
+            samples: TODO_doc
         Returns:
             grad_logpdf (np.ndarray): Gradient of the joint logpdf w.r.t. the samples
         """
@@ -184,7 +190,7 @@ class Parameters:
 
         Returns:
             sample_dict (dict): Dictionary containing sample members and the corresponding parameter
-                                keys
+            keys
         """
         sample_dict = {}
         sample = sample.reshape(-1)
@@ -201,7 +207,7 @@ class Parameters:
             truncated_sample (np.ndarray): Truncated representation of sample
 
         Returns:
-            sample_expanded (np.ndarray) Expanded representation of sample
+            sample_expanded (np.ndarray): Expanded representation of sample
         """
         sample_expanded = np.zeros(len(self.parameters_keys))
         index_truncated = 0

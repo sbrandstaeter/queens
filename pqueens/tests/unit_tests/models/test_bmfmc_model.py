@@ -37,7 +37,10 @@ def global_settings():
 
 
 class PreProcessor:
+    """TODO_doc."""
+
     def __init__(self):
+        """TODO_doc."""
         self.coords_dict = {
             'random_inflow': {'keys': [i for i in range(10)], 'coords': np.random.rand(10)}
         }

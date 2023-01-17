@@ -27,13 +27,13 @@ def upper_bound():
 
 @pytest.fixture(scope='module')
 def shape_a():
-    """A possible shape parameter a."""
+    """A possible shape parameter *a*."""
     return 3.0
 
 
 @pytest.fixture(scope='module')
 def shape_b():
-    """A possible shape parameter b."""
+    """A possible shape parameter *b*."""
     return 0.5
 
 
@@ -125,7 +125,7 @@ def test_logpdf_beta(beta, lower_bound, upper_bound, sample_pos, shape_a, shape_
 
 
 def test_grad_logpdf_beta(beta, sample_pos):
-    """Test grad_logpdf method of beta distribution class."""
+    """Test *grad_logpdf* method of beta distribution class."""
     with pytest.raises(
         NotImplementedError,
         match=r'This method is currently not implemented for ' r'the beta distribution.',

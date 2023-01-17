@@ -105,7 +105,7 @@ def test_logpdf_exponential_1d(exponential_1d, rate_1d, sample_pos_1d):
 
 
 def test_grad_logpdf_exponential_1d(exponential_1d, sample_pos_1d):
-    """Test grad_logpdf method of exponential distribution class."""
+    """Test *grad_logpdf* method of exponential distribution class."""
     sample_pos_1d = sample_pos_1d.reshape(-1, 1)
     condition = (sample_pos_1d >= 0).all(axis=1).reshape(-1, 1)
     ref_sol = np.where(condition, -exponential_1d.rate, np.nan)
@@ -188,7 +188,7 @@ def test_logpdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):
 
 
 def test_grad_logpdf_exponential_2d(exponential_2d, sample_pos_2d):
-    """Test grad_logpdf method of exponential distribution class."""
+    """Test *grad_logpdf* method of exponential distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
     condition = (sample_pos_2d >= 0).all(axis=1).reshape(-1, 1)
     ref_sol = np.where(condition, -exponential_2d.rate, np.nan)

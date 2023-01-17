@@ -8,10 +8,14 @@ import time
 
 
 class LogFilter(logging.Filter):
-    """Filters (lets through) all messages with level <= LEVEL."""
+    """Filters (lets through) all messages with level <= LEVEL.
+
+    Attributes:
+        level: TODO_doc
+    """
 
     def __init__(self, level):
-        """Initiate the logging filter.
+        """Initiatlize the logging filter.
 
         Args:
             level (int): Logging level
@@ -26,51 +30,87 @@ class LogFilter(logging.Filter):
             record (LogRecord obj): Logging record object
 
         Returns:
-            (LogRecord obj): Filter logging record
+            LogRecord obj: Filter logging record
         """
         return record.levelno <= self.level
+
+
+class NewLineFormatter(logging.Formatter):
+    """Formatter splitting multiline messages into single line messages.
+
+    A logged message that consists of more than one line - contains a new line char - is split
+    into multiple single line messages that all have the same format.
+    Without this the overall format of the logging is broken for by multiline messages.
+    """
+
+    def __init__(self, fmt, datefmt=None):
+        """Initialize the NewLineFormatter.
+
+        Args:
+            fmt (str): Use the specified format string for the handler.
+            datefmt (str): Use the specified date/time format, as accepted by time.strftime().
+        """
+        logging.Formatter.__init__(self, fmt, datefmt)
+
+    def format(self, record):
+        """Override format function.
+
+        Args:
+            record (LogRecord obj): Logging record object
+        Returns:
+            formatted_message (str): logged message in supplied format split into single lines
+        """
+        formatted_message = logging.Formatter.format(self, record)
+
+        if record.message != "":
+            parts = formatted_message.split(record.message)
+            formatted_message = formatted_message.replace('\n', '\n' + parts[0])
+
+        return formatted_message
 
 
 def setup_basic_logging(output_dir, experiment_name):
     """Setup basic logging.
 
     Args:
-        output_dir (Path): output directory where to save the log-file
-        experiment_name (str): experiment name used as file name for the log-file
+        output_dir (Path): Output directory where to save the log-file
+        experiment_name (str): Experiment name used as file name for the log-file
     """
     file_level_min = logging.DEBUG
     console_level_min = logging.INFO
 
-    # setup format for logging to file
+    library_logger = logging.getLogger("pqueens")
+    # call setLevel() for basic initialisation (this is needed not sure why)
+    library_logger.setLevel(logging.DEBUG)
+
+    # set up logging to file
     logging_file_path = output_dir.joinpath(experiment_name + ".log")
-    logging.basicConfig(
-        level=file_level_min,
-        format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-        datefmt='%m-%d %H:%M',
-        filename=logging_file_path,
-        filemode='w',
+    file_handler = logging.FileHandler(logging_file_path, mode="w")
+    file_formatter = NewLineFormatter(
+        '%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M'
     )
+    file_handler.setFormatter(file_formatter)
+    file_handler.setLevel(file_level_min)
+    library_logger.addHandler(file_handler)
 
+    # a plain, minimal formatter for streamhandlers
+    stream_formatter = NewLineFormatter('%(message)s')
+
+    # set up logging to stdout
     console_stdout = logging.StreamHandler(stream=sys.stdout)
-    console_stderr = logging.StreamHandler(stream=sys.stderr)
-
     # messages lower than and including WARNING go to stdout
     log_filter = LogFilter(logging.WARNING)
     console_stdout.addFilter(log_filter)
     console_stdout.setLevel(console_level_min)
+    console_stdout.setFormatter(stream_formatter)
+    library_logger.addHandler(console_stdout)
 
+    # set up logging to stderr
+    console_stderr = logging.StreamHandler(stream=sys.stderr)
     # messages >= ERROR or messages >= CONSOLE_LEVEL_MIN if CONSOLE_LEVEL_MIN > ERROR go to stderr
     console_stderr.setLevel(max(console_level_min, logging.ERROR))
-
-    # set a format which is simpler for console use
-    formatter = logging.Formatter('%(message)s')
-    console_stdout.setFormatter(formatter)
-    console_stderr.setFormatter(formatter)
-
-    # add the handlers to the root logger
-    root_logger = logging.getLogger()
-    root_logger.addHandler(console_stdout)
-    root_logger.addHandler(console_stderr)
+    console_stderr.setFormatter(stream_formatter)
+    library_logger.addHandler(console_stderr)
 
     # deactivate logging for specific modules
     logging.getLogger('arviz').setLevel(logging.CRITICAL)
@@ -101,7 +141,7 @@ def setup_cluster_logging():
     console_stderr.setLevel(max(level_min, logging.ERROR))
 
     # set a format which is simpler for console use
-    formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+    formatter = NewLineFormatter('%(name)-12s: %(levelname)-8s %(message)s')
     console_stdout.setFormatter(formatter)
     console_stderr.setFormatter(formatter)
 
@@ -115,17 +155,20 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
     """Setup job logging and get job logger.
 
     Args:
-        logger_name (str): logger name
-        log_file (path): path to log file
-        error_file (path): path to error file
-        streaming (bool): flag for additional streaming to given stream
-        propagate (bool): flag for propagation of stream (default: false)
+        logger_name (str): Logger name
+        log_file (path): Path to log file
+        error_file (path): Path to error file
+        streaming (bool): Flag for additional streaming to given stream
+        propagate (bool): Flag for propagation of stream (default: *False*)
+
+    Returns:
+        TODO_doc
     """
     # get job logger
     joblogger = logging.getLogger(logger_name)
 
     # define formatter
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    formatter = NewLineFormatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     # set level
     joblogger.setLevel(logging.INFO)
@@ -165,9 +208,12 @@ def job_logging(command_string, process, joblogger, terminate_expr):
 
     Args:
         command_string (str): Command string for the subprocess
-        process (obj): subprocess object
-        joblogger (obj): job logger object
-        terminate_expr (str): expression on which to terminate
+        process (obj): Subprocess object
+        joblogger (obj): Job logger object
+        terminate_expr (str): Expression on which to terminate
+
+    Returns:
+        TODO_doc
     """
     # initialize stderr to None
     stderr = None
@@ -215,6 +261,12 @@ def finish_job_logger(joblogger, lfh, efh, stream_handler):
     """Close and remove file handlers.
 
     (to prevent OSError: [Errno 24] Too many open files)
+
+    Args:
+        joblogger: TODO_doc
+        lfh: TODO_doc
+        efh: TODO_doc
+        stream_handler: TODO_doc
     """
     # we need to close the FileHandlers to
     lfh.close()
@@ -224,28 +276,3 @@ def finish_job_logger(joblogger, lfh, efh, stream_handler):
     if stream_handler is not None:
         stream_handler.close()
         joblogger.removeHandler(stream_handler)
-
-
-def log_through_print(logger, command):
-    """Parse print output to logger.
-
-    This can be used e.g. for printing a GP kernel or a pandas DataFrame.
-    It works for all objects that implement a print method.
-
-    Args:
-        logger (Logger): logger to parse to print output to
-        command (object): command/object which should be printed
-    """
-    old_stdout = sys.stdout
-    new_stdout = io.StringIO()
-    sys.stdout = new_stdout
-
-    print(command)
-
-    output = new_stdout.getvalue()
-    split_data = output.splitlines()
-    for current_line in split_data:
-        logger.info(current_line)
-    logger.info('')
-
-    sys.stdout = old_stdout

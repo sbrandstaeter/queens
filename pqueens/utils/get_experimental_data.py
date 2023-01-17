@@ -17,20 +17,20 @@ def get_experimental_data(
     """Load all experimental data into QUEENS.
 
     Args:
-        config (dict): input json file with problem description
+        config (dict): Input json file with problem description
         data_processor_name (str): DataProcessor name
         base_dir (str): Path to base directory containing experimental data
-        file_name (str): file name of experimental data
+        file_name (str): File name of experimental data
         coordinate_labels (lst): List of column-wise coordinate labels in csv files
         time_label (str): Name of the time variable in csv file
         output_label (str): Label that marks the output quantity in the csv file
 
     Returns:
-        y_obs_vec (np.array): Column-vector of model outputs which correspond row-wise to
-                                observation coordinates
+        y_obs_vec (np.array): Column-vector of model outputs which correspond
+            row-wise to observation coordinates
         experimental_coordinates (np.array): Matrix with observation coordinates. One row
-                                                corresponds to one coordinate point.
-        time_vec (np.array): unique vector of observation times
+            corresponds to one coordinate point
+        time_vec (np.array): Unique vector of observation times
         experimental_data_dict (dict): Dictionary containing the experimental data
     """
     try:
@@ -82,6 +82,6 @@ def write_experimental_data_to_db(experimental_data_dict, experiment_name, db, b
         experimental_data_dict (dict): Dictionary containing the experimental data
         experiment_name (str): Name of the current experiment in QUEENS
         db (obj): Database object
-        batch (int): batch the data belongs to
+        batch (int): Batch the data belongs to
     """
     db.save(experimental_data_dict, experiment_name, 'experimental_data', batch)

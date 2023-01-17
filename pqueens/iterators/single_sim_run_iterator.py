@@ -11,12 +11,9 @@ class SingleSimRunIterator(Iterator):
     """Iterator for single simulation run.
 
     Attributes:
-        model (model):              Model to be evaluated by iterator
-        seed  (int):                Seed for random number generation
-        num_samples (int):          Number of samples to compute
-        result_description (dict):  Description of desired results
-        samples (np.array):         Array with all samples
-        outputs (np.array):         Array with all model outputs
+        num_samples (int): Number of samples to compute.
+        samples (np.array): Array with all samples.
+        output (np.array): Array with all model outputs.
     """
 
     def __init__(self, model, global_settings):
