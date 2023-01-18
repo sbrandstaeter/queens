@@ -11,7 +11,7 @@ from pqueens import run
 
 def test_monte_carlo_borehole(inputdir, tmpdir):
     """Test case for Monte Carlo iterator."""
-    run(Path(os.path.join(inputdir, 'monte_carlo_borehole.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'monte_carlo_borehole.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

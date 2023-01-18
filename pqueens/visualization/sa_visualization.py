@@ -135,7 +135,7 @@ class SAVisualization(object):
         Returns:
             Instance of SAVisualization (obj)
         """
-        method_options = config["method"].get("method_options")
+        method_options = config["method"]
         plotting_options = method_options["result_description"].get("plotting_options")
 
         paths = [

@@ -12,7 +12,7 @@ from pqueens import run
 
 def test_baci_lm_rosenbrock_res(inputdir, tmpdir):
     """Test case for Levenberg Marquardt iterator."""
-    run(Path(os.path.join(inputdir, 'baci_lm_rosenbrock_res.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'baci_lm_rosenbrock_res.yml')), Path(tmpdir))
 
     result_file = os.path.join(tmpdir, 'OptimizeLM.csv')
 

@@ -63,9 +63,9 @@ class GridIterator(Iterator):
         Returns:
             iterator (obj): GridIterator object
         """
-        method_options = config[iterator_name]["method_options"]
+        method_options = config[iterator_name]
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = from_config_create_model(model_name, config)
 
         result_description = method_options.get("result_description", None)
@@ -97,7 +97,7 @@ class GridIterator(Iterator):
         for index, (parameter_name, parameter) in enumerate(self.parameters.dict.items()):
             start_value = parameter.lower_bound
             stop_value = parameter.upper_bound
-            data_type = parameter.data_type
+            data_type = self.grid_dict[parameter_name].get("data_type", None)
             axis_type = self.grid_dict[parameter_name].get("axis_type", None)
             num_grid_points = self.grid_dict[parameter_name].get("num_grid_points", None)
             self.num_grid_points_per_axis.append(num_grid_points)

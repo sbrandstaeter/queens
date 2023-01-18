@@ -65,7 +65,7 @@ class MultifidelityModel(Model):
         sub_models = []
         for sub_model_name in model_hierarchy:
             sub_model_options = config[sub_model_name]
-            sub_interface_name = sub_model_options["interface"]
+            sub_interface_name = sub_model_options["interface_name"]
             if sub_model_options["type"] != 'simulation_model':
                 raise ValueError(
                     'Multifidelity models can only have simulation models as sub models'

@@ -20,10 +20,10 @@ from pqueens.utils import injector
 
 def test_gaussian_metropolis_hastings(inputdir, tmpdir, dummy_data):
     """Test case for Metropolis hastings iterator."""
-    template = os.path.join(inputdir, "metropolis_hastings_gaussian.json")
+    template = os.path.join(inputdir, "metropolis_hastings_gaussian.yml")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = os.path.join(tmpdir, "gaussian_metropolis_hastings_realiz.json")
+    input_file = os.path.join(tmpdir, "gaussian_metropolis_hastings_realiz.yml")
     injector.inject(dir_dict, template, input_file)
     with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
         run(Path(input_file), Path(tmpdir))

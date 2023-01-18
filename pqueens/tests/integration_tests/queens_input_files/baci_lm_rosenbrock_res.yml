@@ -1,0 +1,31 @@
+experiment_name: OptimizeLM
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  type: baci_lm
+  model_name: model
+  jac_method: 2-point
+  jac_rel_step: 1.0e-05
+  jac_abs_step: 0.001
+  max_feval: 99
+  init_reg: 0.01
+  update_reg: grad
+  convergence_tolerance: 1.0e-06
+  initial_guess: [0.9, 0.9]
+  result_description:
+    write_results: true
+    plot_results: true
+model:
+  type: simulation_model
+  interface_name: interface
+interface:
+  type: direct_python_interface
+  function: rosenbrock60_residual
+parameters:
+  x1:
+    type: random_variable
+    dimension: 1
+  x2:
+    type: random_variable
+    dimension: 1

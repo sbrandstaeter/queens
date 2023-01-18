@@ -19,52 +19,44 @@ def global_settings():
 @pytest.fixture()
 def grid_dict_one():
     """TODO_doc."""
-    grid_dict_dummy = {
-        "x1": {"num_grid_points": 5, "axis_type": "lin"},
-    }
+    axis_description = {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"}
+    grid_dict_dummy = {"x1": axis_description}
     return grid_dict_dummy
 
 
 @pytest.fixture()
 def grid_dict_two():
     """TODO_doc."""
-    grid_dict_dummy = {
-        "x1": {"num_grid_points": 5, "axis_type": "lin"},
-        "x2": {"num_grid_points": 5, "axis_type": "lin"},
-    }
+    axis_description = {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"}
+    grid_dict_dummy = {"x1": axis_description, "x2": axis_description}
     return grid_dict_dummy
 
 
 @pytest.fixture()
 def grid_dict_three():
     """TODO_doc."""
-    grid_dict_dummy = {
-        "x1": {"num_grid_points": 5, "axis_type": "lin"},
-        "x2": {"num_grid_points": 5, "axis_type": "lin"},
-        "x3": {"num_grid_points": 5, "axis_type": "lin"},
-    }
+    axis_description = {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"}
+    grid_dict_dummy = {"x1": axis_description, "x2": axis_description, "x3": axis_description}
     return grid_dict_dummy
 
 
 @pytest.fixture()
 def grid_dict_four():
     """TODO_doc."""
+    axis_description = {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"}
     grid_dict_dummy = {
-        "x1": {"num_grid_points": 5, "axis_type": "lin"},
-        "x2": {"num_grid_points": 5, "axis_type": "lin"},
-        "x3": {"num_grid_points": 5, "axis_type": "lin"},
-        "x4": {"num_grid_points": 5, "axis_type": "lin"},
+        "x1": axis_description,
+        "x2": axis_description,
+        "x3": axis_description,
+        "x4": axis_description,
     }
     return grid_dict_dummy
 
 
 def parameters_one():
     """TODO_doc."""
-    params = {
-        "random_variables": {
-            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0}
-        }
-    }
+    rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
+    params = {"x1": rv}
     parameters_module.from_config_create_parameters({"parameters": params})
     return params
 
@@ -72,25 +64,16 @@ def parameters_one():
 @pytest.fixture()
 def parameters_two():
     """TODO_doc."""
-    params = {
-        "random_variables": {
-            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x2": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-        }
-    }
+    rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
+    params = {"x1": rv, "x2": rv}
     parameters_module.from_config_create_parameters({"parameters": params})
     return params
 
 
 def parameters_three():
     """TODO_doc."""
-    params = {
-        "random_variables": {
-            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x2": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x3": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-        }
-    }
+    rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
+    params = {"x1": rv, "x2": rv, "x3": rv}
     parameters_module.from_config_create_parameters({"parameters": params})
     return params
 
@@ -98,14 +81,8 @@ def parameters_three():
 @pytest.fixture()
 def parameters_four():
     """TODO_doc."""
-    params = {
-        "random_variables": {
-            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x2": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x3": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x4": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-        }
-    }
+    rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
+    params = {"x1": rv, "x2": rv, "x3": rv, "x4": rv}
     parameters_module.from_config_create_parameters({"parameters": params})
     return params
 

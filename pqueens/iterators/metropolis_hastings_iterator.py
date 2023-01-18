@@ -175,9 +175,9 @@ class MetropolisHastingsIterator(Iterator):
             "Metropolis-Hastings Iterator for experiment: %s",
             config.get('global_settings').get('experiment_name'),
         )
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
         if model is None:
-            model_name = method_options['model']
+            model_name = method_options['model_name']
             model = from_config_create_model(model_name, config)
 
         result_description = method_options.get('result_description', None)

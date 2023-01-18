@@ -25,7 +25,7 @@
     "mf_approx_settings": {
       "type": "gp_precompiled",
       "num_processors_multi_processing": 4,
-      "stochastic_optimizer": "Adam",
+      "stochastic_optimizer": "adam",
       "learning_rate": 0.01,
       "optimization_type": "max",
       "max_iterations": 1000,
@@ -165,14 +165,13 @@
   "resources": {
     "local_machine": {
       "scheduler": "local_scheduler",
-      "max-concurrent": 1,
-      "max-finished-jobs": 10000
+      "max_concurrent": 1,
+      "max_finished_jobs": 10000
     }
   },
   "local_scheduler": {
     "scheduler_type": "standard",
     "singularity": false,
-    "restart": false,
     "num_procs": 1,
     "num_procs_post": 1
   },

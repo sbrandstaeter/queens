@@ -224,10 +224,10 @@ class BMFMCModel(Model):
         interface = BmfmcInterface(config, model_name)
         lf_data_paths = model_options.get("path_to_lf_mc_data")
         hf_data_path = model_options.get("path_to_hf_mc_reference_data")
-        hf_model_name = model_options.get("high_fidelity_model")
+        hf_model_name = model_options.get("high_fidelity_model_name")
 
         # get some method options
-        method_options = config["method"]["method_options"]
+        method_options = config["method"]
         no_features_comparison_bool = method_options["BMFMC_reference"]
         predictive_var_bool = method_options["predictive_var"]
         y_pdf_support_max = method_options["y_pdf_support_max"]

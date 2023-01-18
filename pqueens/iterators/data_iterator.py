@@ -49,7 +49,7 @@ class DataIterator(Iterator):
             iterator: DataIterator object
         """
         _logger.info(config.get("experiment_name"))
-        method_options = config[iterator_name]["method_options"]
+        method_options = config[iterator_name]
 
         path_to_data = method_options.get("path_to_data", None)
         result_description = method_options.get("result_description", None)

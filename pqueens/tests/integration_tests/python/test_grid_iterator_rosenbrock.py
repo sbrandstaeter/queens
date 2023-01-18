@@ -12,7 +12,7 @@ from pqueens import run
 
 def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
     """Integration test for the grid iterator."""
-    run(Path(os.path.join(inputdir, 'grid_iterator_rosenbrock.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'grid_iterator_rosenbrock.yml')), Path(tmpdir))
 
     result_file = os.path.join(tmpdir, 'grid_iterator_rosenbrock.pickle')
     with open(result_file, 'rb') as handle:

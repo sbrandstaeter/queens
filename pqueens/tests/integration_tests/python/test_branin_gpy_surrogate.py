@@ -12,7 +12,7 @@ from pqueens import run
 
 def test_branin_gpy_surrogate(inputdir, tmpdir, expected_pdf):
     """Test case for GP based surrogate model."""
-    run(Path(os.path.join(inputdir, 'gpy_surrogate_branin.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'gpy_surrogate_branin.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

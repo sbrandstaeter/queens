@@ -93,7 +93,7 @@ def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
         },
     }
     optimizer_config = {
-        "stochastic_optimizer": "Adam",
+        "stochastic_optimizer": "adam",
         "learning_rate": 0.01,
         "optimization_type": "max",
         "rel_L1_change_threshold": -1,
@@ -186,14 +186,12 @@ def visualization_obj(tmpdir):
     """Create visualization module."""
     visualization_dict = {
         "method": {
-            "method_options": {
-                "result_description": {
-                    "plotting_options": {
-                        "plotting_dir": tmpdir,
-                        "save_bool": False,
-                        "plot_boolean": False,
-                        "plot_name": "variat_params_convergence.eps",
-                    }
+            "result_description": {
+                "plotting_options": {
+                    "plotting_dir": tmpdir,
+                    "save_bool": False,
+                    "plot_boolean": False,
+                    "plot_name": "variat_params_convergence.eps",
                 }
             }
         }

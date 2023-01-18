@@ -66,8 +66,8 @@ def test_baci_lm_shape(
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
         experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
     """
-    template = os.path.join(inputdir, "baci_local_shape_lm_template.json")
-    input_file = os.path.join(experiment_directory, "baci_local_shape_lm.json")
+    template = os.path.join(inputdir, "baci_local_shape_lm_template.yml")
+    input_file = os.path.join(experiment_directory, "baci_local_shape_lm.yml")
     third_party_input_file = os.path.join(
         third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_template.dat"
     )

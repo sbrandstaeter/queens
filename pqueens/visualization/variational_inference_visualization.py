@@ -66,7 +66,7 @@ class VIVisualization(object):
         Returns:
             Instance of VIVisualization (obj)
         """
-        method_options = config["method"].get("method_options")
+        method_options = config["method"]
         plotting_options = method_options["result_description"].get("plotting_options")
         path = os.path.join(plotting_options.get("plotting_dir"), plotting_options["plot_name"])
         save_bool = plotting_options.get("save_bool")

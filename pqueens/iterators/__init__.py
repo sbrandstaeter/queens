@@ -58,6 +58,6 @@ def from_config_create_iterator(config, iterator_name='method', model=None):
         iterator: Iterator object
     """
     iterator_options = config.get(iterator_name)
-    iterator_class = get_module_class(iterator_options, VALID_TYPES, "method_name")
+    iterator_class = get_module_class(iterator_options, VALID_TYPES, "type")
     iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
     return iterator

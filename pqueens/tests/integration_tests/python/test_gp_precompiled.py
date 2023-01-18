@@ -15,12 +15,19 @@ from pqueens.utils import injector
 
 def test_gp_precompiled_one_dim(inputdir, tmpdir):
     """Test case for GPPrecompiled based GP model."""
-    template = os.path.join(inputdir, 'gp_precompiled_template.json')
-    input_file = os.path.join(tmpdir, 'gp_precompiled.json')
+    template = os.path.join(inputdir, 'gp_precompiled_template.yml')
+    input_file = os.path.join(tmpdir, 'gp_precompiled.yml')
 
     dir_dict = {
         'test_fun': 'sinus_test_fun',
-        'variables': '"x1": {"dimension": 1,"distribution": "uniform","lower_bound": -5, "upper_bound": 5}',
+        'variables': {
+            "x1": {
+                "type": "random_variable",
+                "distribution": "uniform",
+                "lower_bound": -5,
+                "upper_bound": 10,
+            }
+        },
     }
 
     injector.inject(dir_dict, template, input_file)
@@ -46,12 +53,25 @@ def test_gp_precompiled_one_dim(inputdir, tmpdir):
 
 def test_gp_precompiled_two_dim(inputdir, tmpdir):
     """Test case for GPPrecompiled based GP model."""
-    template = os.path.join(inputdir, 'gp_precompiled_template.json')
-    input_file = os.path.join(tmpdir, 'gp_precompiled.json')
+    template = os.path.join(inputdir, 'gp_precompiled_template.yml')
+    input_file = os.path.join(tmpdir, 'gp_precompiled.yml')
 
     dir_dict = {
         'test_fun': 'branin78_hifi',
-        'variables': '"x1": {"dimension": 1,"distribution": "uniform","lower_bound": -5, "upper_bound": 10}, "x2": {"dimension": 1,"distribution": "uniform","lower_bound": 0, "upper_bound": 15}',
+        'variables': {
+            "x1": {
+                "type": "random_variable",
+                "distribution": "uniform",
+                "lower_bound": -5,
+                "upper_bound": 10,
+            },
+            "x2": {
+                "type": "random_variable",
+                "distribution": "uniform",
+                "lower_bound": 0,
+                "upper_bound": 15,
+            },
+        },
     }
 
     injector.inject(dir_dict, template, input_file)

@@ -26,7 +26,7 @@ _logger = logging.getLogger(__name__)
 def parameters():
     """Options dictionary to create variables."""
     uncertain_parameter = {}
-    uncertain_parameter['dimension'] = 1
+    uncertain_parameter['type'] = 'random_variable'
     uncertain_parameter['distribution'] = "uniform"
     uncertain_parameter['lower_bound'] = -3.14
     uncertain_parameter['upper_bound'] = 3.14
@@ -36,8 +36,7 @@ def parameters():
     random_variables['x2'] = uncertain_parameter
     random_variables['x3'] = uncertain_parameter
 
-    parameters = {'parameters': {}}
-    parameters['parameters']['random_variables'] = random_variables
+    parameters = {'parameters': random_variables}
 
     parameters_module.from_config_create_parameters(parameters)
 
@@ -68,7 +67,7 @@ def config(parameters):
     config = {}
     config['test_interface'] = {
         'type': 'direct_python_interface',
-        'function_name': 'ishigami90',
+        'function': 'ishigami90',
     }
 
     return config
@@ -84,7 +83,7 @@ def config_by_path(parameters):
     config = {}
     config['test_interface'] = {
         'type': 'direct_python_interface',
-        'function_name': "ishigami90",
+        'function': "ishigami90",
         'external_python_module_function': path_to_file,
     }
 

@@ -16,26 +16,23 @@ from pqueens.utils.valid_options_utils import get_option
 _logger = logging.getLogger(__name__)
 
 
-def from_config_create_optimizer(config, section_name=None):
+def from_config_create_optimizer(config, optimizer_name=None):
     """Create an optimizer object from dict.
 
     Args:
         config (dict): Configuration dict
-        section_name (str): String of section name in which an optimizer is defined
+        optimizer_name (str): Name of the stochastic optimizer
 
     Returns:
         StochasticOptimizer object
     """
-    valid_options = {"Adam": Adam, "RMSprop": RMSprop, "Adamax": Adamax}
-
-    if section_name:
-        algorithm = config[section_name].get("stochastic_optimizer")
-    else:
-        algorithm = config.get("stochastic_optimizer")
-
-    optimizer = get_option(valid_options, algorithm, error_message="Unknown stochastic optimizer.")
-
-    return optimizer.from_config_create_optimizer(config, section_name)
+    valid_types = {"adam": Adam, "rms_prop": RMSprop, "adamax": Adamax}
+    optimizer_type = config.get(optimizer_name)["type"]
+    optimizer_class = get_option(
+        valid_types, optimizer_type, error_message="Unknown stochastic optimizer."
+    )
+    optimizer = optimizer_class.from_config_create_optimizer(config, optimizer_name)
+    return optimizer
 
 
 class StochasticOptimizer(metaclass=abc.ABCMeta):

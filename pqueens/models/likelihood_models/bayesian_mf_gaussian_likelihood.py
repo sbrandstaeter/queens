@@ -157,7 +157,12 @@ class BMFGaussianModel(LikelihoodModel):
         noise_upper_bound = model_options.get("noise_upper_bound")
 
         # ---------- multi-fidelity settings ---------------------------------------------------
-        settings_probab_mapping = {"mf_approx_settings": model_options.get("mf_approx_settings")}
+        mf_approx_settings = model_options.get("mf_approx_settings")
+        stochastic_optimizer_name = mf_approx_settings.get('stochastic_optimizer_name')
+        settings_probab_mapping = {
+            "mf_approx_settings": mf_approx_settings,
+            stochastic_optimizer_name: config[stochastic_optimizer_name],
+        }
         approximation_settings_name = "mf_approx_settings"
         num_processors_multi_processing = settings_probab_mapping['mf_approx_settings'].get(
             "num_processors_multi_processing"
@@ -167,7 +172,7 @@ class BMFGaussianModel(LikelihoodModel):
         )
 
         # ----------------------- create subordinate bmfia iterator ------------------------------
-        bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator"]
+        bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator_name"]
         bmfia_subiterator = from_config_create_iterator(config, bmfia_iterator_name)
 
         # ----------------------- create visualization object(s) ---------------------------------

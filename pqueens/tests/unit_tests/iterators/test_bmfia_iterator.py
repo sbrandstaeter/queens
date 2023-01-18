@@ -28,12 +28,8 @@ def global_settings():
 @pytest.fixture()
 def parameters():
     """Fixture for dummy parameters."""
-    params = {
-        "random_variables": {
-            "x1": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
-            "x2": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
-        },
-    }
+    rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
+    params = {"x1": rv, "x2": rv}
     parameters_module.from_config_create_parameters({'parameters': params})
     return params
 

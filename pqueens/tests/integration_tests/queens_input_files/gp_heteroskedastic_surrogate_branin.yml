@@ -1,0 +1,55 @@
+experiment_name: xxx
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  type: monte_carlo
+  seed: 44
+  num_samples: 10
+  model_name: gp_surrogate_model
+  result_description:
+    write_results: true
+    plot_results: false
+    bayesian: false
+    num_support_points: 10
+    estimate_all: false
+gp_surrogate_model:
+  type: datafit_surrogate_model
+  interface_name: approximation_interface
+  subordinate_model_name: truth_model
+  subordinate_iterator_name: truth_model_iterator
+  eval_fit: null
+  error_measures: [sum_squared, mean_squared, root_mean_squared, sum_abs, mean_abs, abs_max]
+approximation_interface:
+  type: approximation_interface
+  approximation: gpflow_regression
+gpflow_regression:
+  type: heteroskedastic_gp
+  ard: true
+  num_posterior_samples: null
+  num_inducing_points: 30
+  num_epochs: 100
+  adams_training_rate: 0.1
+  random_seed: 1
+  num_samples_stats: 1000
+truth_model_iterator:
+  type: monte_carlo
+  seed: 42
+  num_samples: 100
+truth_model:
+  type: simulation_model
+  interface_name: interface
+interface:
+  type: direct_python_interface
+  function: branin78_hifi
+parameters:
+  x1:
+    type: random_variable
+    distribution: uniform
+    lower_bound: -5
+    upper_bound: 10
+  x2:
+    type: random_variable
+    distribution: uniform
+    lower_bound: 0
+    upper_bound: 15

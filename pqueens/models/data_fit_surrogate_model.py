@@ -76,11 +76,11 @@ class DataFitSurrogateModel(Model):
         """
         # get options
         model_options = config[model_name]
-        interface_name = model_options["interface"]
+        interface_name = model_options["interface_name"]
 
-        subordinate_model_name = model_options.get("subordinate_model", None)
-        subordinate_iterator_name = model_options["subordinate_iterator"]
-        testing_iterator_name = model_options.get("testing_iterator", None)
+        subordinate_model_name = model_options.get("subordinate_model_name", None)
+        subordinate_iterator_name = model_options["subordinate_iterator_name"]
+        testing_iterator_name = model_options.get("testing_iterator_name", None)
 
         eval_fit = model_options.get("eval_fit", None)
         error_measures = model_options.get("error_measures", None)

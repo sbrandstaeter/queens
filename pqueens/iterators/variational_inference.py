@@ -177,9 +177,9 @@ class VariationalInferenceIterator(Iterator):
             object
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
         """
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
         if model is None:
-            model_name = method_options['model']
+            model_name = method_options['model_name']
             model = from_config_create_model(model_name, config)
 
         result_description = method_options.get('result_description')
@@ -203,17 +203,17 @@ class VariationalInferenceIterator(Iterator):
 
         vis.from_config_create(config)
 
-        optimization_options = method_options.get("optimization_options")
-        natural_gradient_bool = optimization_options.get("natural_gradient", True)
-        fim_dampening_bool = optimization_options.get("FIM_dampening", True)
-        fim_decay_start_iter = optimization_options.get("decay_start_iteration", 50)
-        fim_dampening_coefficient = optimization_options.get("dampening_coefficient", 1e-2)
-        fim_dampening_lower_bound = optimization_options.get("FIM_dampening_lower_bound", 1e-8)
+        stochastic_optimizer_name = method_options.get("stochastic_optimizer_name")
+        natural_gradient_bool = method_options.get("natural_gradient", True)
+        fim_dampening_bool = method_options.get("FIM_dampening", True)
+        fim_decay_start_iter = method_options.get("decay_start_iteration", 50)
+        fim_dampening_coefficient = method_options.get("dampening_coefficient", 1e-2)
+        fim_dampening_lower_bound = method_options.get("FIM_dampening_lower_bound", 1e-8)
         variational_params_initialization_approach = method_options.get(
             "variational_parameter_initialization", None
         )
 
-        stochastic_optimizer = from_config_create_optimizer(method_options, "optimization_options")
+        stochastic_optimizer = from_config_create_optimizer(config, stochastic_optimizer_name)
         return (
             global_settings,
             model,

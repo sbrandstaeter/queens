@@ -50,23 +50,19 @@ class PreProcessor:
 def parameters():
     """Create parameters."""
     params = {
-        "random_variables": {
-            "x1": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-            "x2": {"type": "FLOAT", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-        },
-        "random_fields": {
-            'random_inflow': {
-                'type': 'FLOAT',
-                'dimension': 1,
-                'min': 0,
-                'max': 1,
-                'corrstruct': 'non_stationary_squared_exp',
-                'corr_length': 0.08,
-                'std_hyperparam_rf': 0.1,
-                'mean_fun': 'inflow_parabola',
-                'mean_fun_params': [1.5],
-                'num_points': 10,
-            }
+        "x1": {"type": "random_variable", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+        "x2": {"type": "random_variable", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+        'random_inflow': {
+            'type': 'random_field',
+            'dimension': 1,
+            'min': 0,
+            'max': 1,
+            'corrstruct': 'non_stationary_squared_exp',
+            'corr_length': 0.08,
+            'std_hyperparam_rf': 0.1,
+            'mean_fun': 'inflow_parabola',
+            'mean_fun_params': [1.5],
+            'num_points': 10,
         },
     }
     pre_processor = PreProcessor()

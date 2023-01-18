@@ -100,8 +100,8 @@ def test_baci_elementary_effects(
         experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
         baci_elementary_effects_check_results (function): function to check the results
     """
-    template = os.path.join(inputdir, "baci_local_elementary_effects_template.json")
-    input_file = os.path.join(experiment_directory, "elementary_effects_baci_local_invaaa.json")
+    template = os.path.join(inputdir, "baci_local_elementary_effects_template.yml")
+    input_file = os.path.join(experiment_directory, "elementary_effects_baci_local_invaaa.yml")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 

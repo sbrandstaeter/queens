@@ -25,10 +25,10 @@ from pqueens.utils import injector
 
 def test_metropolis_hastings_multivariate_gaussian(inputdir, tmpdir, dummy_data):
     """Test case for Metropolis hastings iterator."""
-    template = os.path.join(inputdir, "metropolis_hastings_multivariate_gaussian.json")
+    template = os.path.join(inputdir, "metropolis_hastings_multivariate_gaussian.yml")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = os.path.join(tmpdir, "multivariate_gaussian_metropolis_hastings_realiz.json")
+    input_file = os.path.join(tmpdir, "multivariate_gaussian_metropolis_hastings_realiz.yml")
     injector.inject(dir_dict, template, input_file)
 
     # mock methods related to likelihood

@@ -11,7 +11,7 @@ from pqueens import run
 
 def test_latin_hyper_cube_borehole(inputdir, tmpdir):
     """Test case for latin hyper cube iterator."""
-    run(Path(os.path.join(inputdir, 'latin_hyper_cube_borehole.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'latin_hyper_cube_borehole.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

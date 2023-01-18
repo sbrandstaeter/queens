@@ -128,7 +128,7 @@ class BMFMCIterator(Iterator):
             iterator (obj): BMFMCIterator object
         """
         # Initialize Iterator and model
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
 
         BMFMC_reference = method_options["BMFMC_reference"]
         result_description = method_options["result_description"]
@@ -139,7 +139,7 @@ class BMFMCIterator(Iterator):
 
         # ----------------------------- CREATE BMFMC MODEL ----------------------------
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = BMFMCModel.from_config_create_model(model_name, config)
 
         # ---------------------- CREATE VISUALIZATION BORG ----------------------------

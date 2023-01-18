@@ -226,7 +226,7 @@ class ClusterScheduler(Scheduler):
         experiment_name = config['global_settings']['experiment_name']
         input_file = pathlib.Path(config["input_file"])
 
-        scheduler_type = scheduler_options["scheduler_type"]
+        scheduler_type = scheduler_options["type"]
 
         singularity = scheduler_options.get('singularity', False)
         if not isinstance(singularity, bool):

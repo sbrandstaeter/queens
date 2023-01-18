@@ -24,8 +24,8 @@ class TestMultiFidelityModel(unittest.TestCase):
                 "parameters": "parameters",
             },
             "parameters": {"random_variables": {"youngs": {"type": "FLOAT", "dimension": 1}}},
-            "hifi_borehole": {"type": "simulation_model", "interface": "interface_hifi"},
-            "lofi_borehole": {"type": "simulation_model", "interface": "interface_lofi"},
+            "hifi_borehole": {"type": "simulation_model", "interface_name": "interface_hifi"},
+            "lofi_borehole": {"type": "simulation_model", "interface_name": "interface_lofi"},
             "interface_lofi": {
                 "type": "direct_python_interface",
                 "main_file": "/Users/jonas/work/adco/queens_code/pqueens/pqueens/"

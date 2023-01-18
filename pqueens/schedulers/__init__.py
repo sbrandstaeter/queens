@@ -33,7 +33,7 @@ def from_config_create_scheduler(config, scheduler_name=None, driver_name=None):
     if not scheduler_name:
         scheduler_name = "scheduler"
     scheduler_options = config[scheduler_name]
-    scheduler_class = get_module_class(scheduler_options, VALID_TYPES, "scheduler_type")
+    scheduler_class = get_module_class(scheduler_options, VALID_TYPES, "type")
     scheduler = scheduler_class.from_config_create_scheduler(config, scheduler_name, driver_name)
     _logger.info(scheduler)
     return scheduler

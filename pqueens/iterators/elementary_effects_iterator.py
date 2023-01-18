@@ -106,10 +106,10 @@ class ElementaryEffectsIterator(Iterator):
         """
         qvis.from_config_create(config)
 
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
 
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = from_config_create_model(model_name, config)
 
         if "num_traj_chosen" not in method_options:

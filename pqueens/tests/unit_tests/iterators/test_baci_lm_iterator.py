@@ -46,50 +46,42 @@ def default_baci_lm_iterator():
         'database': OrderedDict([('address', 'localhost:27017'), ('drop_all_existing_dbs', True)]),
         'method': OrderedDict(
             [
-                ('method_name', 'baci_lm'),
+                ('type', 'baci_lm'),
+                ('model_name', 'model'),
+                ('jac_method', '2-point'),
+                ('jac_rel_step', 1e-05),
+                ('jac_abs_step', 0.001),
+                ('max_feval', 99),
+                ('init_reg', 1.0),
+                ('update_reg', 'grad'),
+                ('convergence_tolerance', 1e-06),
+                ('initial_guess', [0.1, 0.2]),
                 (
-                    'method_options',
-                    OrderedDict(
-                        [
-                            ('model', 'model'),
-                            ('jac_method', '2-point'),
-                            ('jac_rel_step', 1e-05),
-                            ('jac_abs_step', 0.001),
-                            ('max_feval', 99),
-                            ('init_reg', 1.0),
-                            ('update_reg', 'grad'),
-                            ('convergence_tolerance', 1e-06),
-                            ('initial_guess', [0.1, 0.2]),
-                            (
-                                'result_description',
-                                OrderedDict([('write_results', True), ('plot_results', True)]),
-                            ),
-                        ]
-                    ),
+                    'result_description',
+                    OrderedDict([('write_results', True), ('plot_results', True)]),
                 ),
             ]
         ),
         'model': OrderedDict(
-            [('type', 'simulation_model'), ('interface', 'interface'), ('parameters', 'parameters')]
+            [
+                ('type', 'simulation_model'),
+                ('interface_name', 'interface'),
+                ('parameters', 'parameters'),
+            ]
         ),
         'interface': OrderedDict(
             [
                 ('type', 'direct_python_interface'),
-                ('function_name', 'rosenbrock60_residual'),
+                ('function', 'rosenbrock60_residual'),
             ]
         ),
         'parameters': OrderedDict(
-            [
-                (
-                    'random_variables',
-                    OrderedDict(
-                        [
-                            ('x1', OrderedDict([('type', 'FLOAT'), ('dimension', 1)])),
-                            ('x2', OrderedDict([('type', 'FLOAT'), ('dimension', 1)])),
-                        ]
-                    ),
-                )
-            ]
+            OrderedDict(
+                [
+                    ('x1', OrderedDict([('type', 'random_variable'), ('dimension', 1)])),
+                    ('x2', OrderedDict([('type', 'random_variable'), ('dimension', 1)])),
+                ]
+            ),
         ),
         'debug': False,
         'input_file': 'dummy_input',
@@ -176,31 +168,28 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
     config = {
         'method': OrderedDict(
             [
-                ('method_name', 'baci_lm'),
+                ('type', 'baci_lm'),
+                ('model_name', 'model'),
+                ('jac_method', '2-point'),
+                ('jac_rel_step', 1e-05),
+                ('jac_abs_step', 0.001),
+                ('max_feval', 99),
+                ('init_reg', 1.0),
+                ('update_reg', 'grad'),
+                ('convergence_tolerance', 1e-06),
+                ('initial_guess', [0.1, 0.2]),
                 (
-                    'method_options',
-                    OrderedDict(
-                        [
-                            ('model', 'model'),
-                            ('jac_method', '2-point'),
-                            ('jac_rel_step', 1e-05),
-                            ('jac_abs_step', 0.001),
-                            ('max_feval', 99),
-                            ('init_reg', 1.0),
-                            ('update_reg', 'grad'),
-                            ('convergence_tolerance', 1e-06),
-                            ('initial_guess', [0.1, 0.2]),
-                            (
-                                'result_description',
-                                OrderedDict([('write_results', True), ('plot_results', True)]),
-                            ),
-                        ]
-                    ),
+                    'result_description',
+                    OrderedDict([('write_results', True), ('plot_results', True)]),
                 ),
             ]
         ),
         'model': OrderedDict(
-            [('type', 'simulation_model'), ('interface', 'interface'), ('parameters', 'parameters')]
+            [
+                ('type', 'simulation_model'),
+                ('interface_name', 'interface'),
+                ('parameters', 'parameters'),
+            ]
         ),
         'input_file': 'input_path',
         'global_settings': {
@@ -449,11 +438,9 @@ def test_post_run_3param(mocker, default_baci_lm_iterator, caplog):
 
     options = {
         "parameters": {
-            "random_variables": {
-                "x1": {"dimension": 1},
-                "x2": {"dimension": 1},
-                "x3": {"dimension": 1},
-            }
+            "x1": {"type": "random_variable", "dimension": 1},
+            "x2": {"type": "random_variable", "dimension": 1},
+            "x3": {"type": "random_variable", "dimension": 1},
         }
     }
     parameters_module.from_config_create_parameters(options)
