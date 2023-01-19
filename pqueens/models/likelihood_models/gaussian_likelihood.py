@@ -8,6 +8,7 @@ from pqueens.distributions import from_config_create_distribution
 from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
 from pqueens.utils.iterative_averaging_utils import from_config_create_iterative_averaging
 from pqueens.utils.numpy_utils import add_nugget_to_diagonal
+from pqueens.utils.grad_utils import Tracer
 
 _logger = logging.getLogger(__name__)
 
@@ -156,35 +157,26 @@ class GaussianLikelihood(LikelihoodModel):
             coord_labels=coord_labels,
         )
 
-    def evaluate(self, samples, gradient_bool=False):
+    def evaluate(self, samples):
         """Evaluate likelihood with current set of samples.
 
         Args:
             samples (np.ndarray): Evaluated samples
-            gradient_bool (bool, optional): Boolean to determine whether the gradient of the
-                                            likelihood should be evaluated (if set to True)
 
         Returns:
-            log_likelihood_output (tuple): Tuple with vector of log-likelihood values
-                                           per model input and potentially the gradient
-                                           of the model w.r.t. its inputs
+            log_likelihood_output (np.ndarray): log-likelihood values per model input
         """
-        model_output_dict = self.forward_model.evaluate(samples, gradient_bool=gradient_bool)
+        model_output_dict = self.forward_model.evaluate(samples)
         model_output = model_output_dict['mean']
         if self.noise_type.startswith('MAP'):
             self.update_covariance(model_output)
         log_likelihood_output = self.normal_distribution.logpdf(model_output)
 
-        if gradient_bool:
-            model_gradient = model_output_dict['gradient']
-            grad_log_likelihood = np.sum(
-                self.normal_distribution.grad_logpdf(model_output)[:, :, np.newaxis]
-                * model_gradient,
-                axis=1,
-            )
-            log_likelihood_output = (log_likelihood_output, grad_log_likelihood)
-
         return log_likelihood_output
+
+    def evaluate_and_grad(self, samples, tracer=Tracer()):
+        tracer.add(self.evaluate, self.normal_distribution.logpdf)
+        return self.forward_model.evaluate_and_grad(samples, tracer)
 
     def update_covariance(self, y_model):
         """Update covariance matrix of the gaussian likelihood.

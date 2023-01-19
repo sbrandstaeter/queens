@@ -55,3 +55,6 @@ class SimulationModel(Model):
         """
         self.response = self.interface.evaluate(samples, gradient_bool=gradient_bool)
         return self.response
+
+    def evaluate_and_grad(self, samples, tracer=None):
+        raise NotImplementedError('You have to define a Gradient model for Simulation model!')
