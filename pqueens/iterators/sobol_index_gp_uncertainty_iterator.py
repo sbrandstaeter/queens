@@ -29,36 +29,38 @@ class SobolIndexGPUncertaintyIterator(Iterator):
 
     This iterator estimates first- and total-order Sobol indices based on Monte-Carlo integration
     and the use of Gaussian process as surrogate model. Additionally, uncertainty estimates for the
-    Sobol index estimates are calculates: total uncertainty and separate uncertainty due to Monte-
-    Carlo integration and due to the use of the Gaussian process as a surrogate model. Second-order
-    indices can optionally be estimated.
+    Sobol index estimates are calculated: total uncertainty and separate uncertainty due to
+    Monte-Carlo integration and due to the use of the Gaussian process as a surrogate model.
+    Second-order indices can optionally be estimated.
 
     Alternatively, one specific third-order Sobol index can be estimated for one specific
-    combination of three parameter (specified as `third_order_parameters` in the input file).
+    combination of three parameters (specified as *third_order_parameters* in the input file).
 
-    The approach is based on
+    The approach is based on:
+
     Le Gratiet, Loic, Claire Cannamela, and Bertrand Iooss. ‘A Bayesian Approach
     for Global Sensitivity Analysis of (Multifidelity) Computer Codes’. SIAM/ASA Journal on
     Uncertainty Quantification 2, no. 1 (1 January 2014): 336–63.
     https://doi.org/10.1137/130926869.
 
-    Further details can be found in
+    Further details can be found in:
+
     Wirthl, Barbara, Sebastian Brandstaeter, Jonas Nitzler, Bernhard A. Schrefler, and Wolfgang A.
     Wall. ‘Global Sensitivity Analysis Based on Gaussian-Process Metamodelling for Complex
     Biomechanical Problems’. ArXiv:2202.01503 [Cs], 3 February 2022.
     https://arxiv.org/abs/2202.01503.
 
     Attributes:
-        calculate_second_order (bool): true if second-order indices are calculated
-        calculate_third_order (bool): true if third-order indices only are calculated
-        index_estimator (SobolIndexEstimator object): estimator object
-        num_procs (int): number of processors
-        parameter_names (list): list of names of input parameters
-        predictor (Predictor object): metamodel predictor object
-        result_description (dict): dictionary with desired result description
-        results (dict): dictionary for results
-        sampler (Sampler object): sampler object
-        statistics (list): list of statistics objects
+        result_description (dict): Dictionary with desired result description.
+        num_procs (int): Number of processors.
+        sampler (Sampler object): Sampler object.
+        predictor (Predictor object): Metamodel predictor object.
+        index_estimator (SobolIndexEstimator object): Estimator object.
+        parameter_names (list): List of names of input parameters.
+        statistics (list): List of statistics objects.
+        calculate_second_order (bool): *True* if second-order indices are calculated.
+        calculate_third_order (bool): *True* if third-order indices only are calculated.
+        results (dict): Dictionary for results.
     """
 
     def __init__(
@@ -115,11 +117,11 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         Returns:
             iterator: SobolIndexGPUncertaintyIterator object
         """
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
         result_description = method_options.get("result_description", None)
 
         if model is None:
-            model_name = method_options['model']
+            model_name = method_options['model_name']
             model = from_config_create_model(model_name, config)
 
         parameter_names = parameters_module.parameters.names
@@ -193,7 +195,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
     def calculate_index(self):
         """Calculate Sobol indices.
 
-        Run sensitivity analysis based on
+        Run sensitivity analysis based on:
 
         Le Gratiet, Loic, Claire Cannamela, and Bertrand Iooss. ‘A Bayesian Approach
         for Global Sensitivity Analysis of (Multifidelity) Computer Codes’. SIAM/ASA Journal on
@@ -218,7 +220,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         """Evaluate statistics of Sobol index estimates.
 
         Args:
-            estimates (dict): dictionary of Sobol index estimates of different order
+            estimates (dict): Dictionary of Sobol index estimates of different order
         """
         if self.calculate_third_order:
             self.results['third_order'] = self.statistics[0].evaluate(estimates['third_order'])

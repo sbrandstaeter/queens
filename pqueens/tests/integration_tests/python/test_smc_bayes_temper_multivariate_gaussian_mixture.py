@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -19,10 +21,10 @@ from pqueens.utils import injector
 
 def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmpdir, dummy_data):
     """Test SMC with a multivariate Gaussian mixture (multimodal)."""
-    template = Path(inputdir, "smc_bayes_temper_multivariate_gaussian_mixture.json")
+    template = Path(inputdir, "smc_bayes_temper_multivariate_gaussian_mixture.yml")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = Path(tmpdir, "multivariate_gaussian_mixture_smc_bayes_temper_realiz.json")
+    input_file = Path(tmpdir, "multivariate_gaussian_mixture_smc_bayes_temper_realiz.yml")
     injector.inject(dir_dict, template, input_file)
 
     # mock methods related to likelihood
@@ -63,6 +65,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmpdir, dummy_
 
 
 def target_density(self, samples):
+    """TODO_doc."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_mixture_4d_logpdf(samples).reshape(-1, 1)
 
@@ -71,6 +74,7 @@ def target_density(self, samples):
 
 @pytest.fixture()
 def dummy_data(tmpdir):
+    """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = gaussian_component_1.draw(10)
     pdf = gaussian_mixture_4d_logpdf(samples)

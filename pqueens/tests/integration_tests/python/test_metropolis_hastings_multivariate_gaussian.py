@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -22,11 +24,11 @@ from pqueens.utils import injector
 
 
 def test_metropolis_hastings_multivariate_gaussian(inputdir, tmpdir, dummy_data):
-    """Test case for metropolis hastings iterator."""
-    template = Path(inputdir, "metropolis_hastings_multivariate_gaussian.json")
+    """Test case for Metropolis Hastings iterator."""
+    template = Path(inputdir, "metropolis_hastings_multivariate_gaussian.yml")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = Path(tmpdir, "multivariate_gaussian_metropolis_hastings_realiz.json")
+    input_file = Path(tmpdir, "multivariate_gaussian_metropolis_hastings_realiz.yml")
     injector.inject(dir_dict, template, input_file)
 
     # mock methods related to likelihood
@@ -61,6 +63,7 @@ def test_metropolis_hastings_multivariate_gaussian(inputdir, tmpdir, dummy_data)
 
 
 def target_density(self, samples):
+    """TODO_doc."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_2d_logpdf(samples).reshape(-1, 1)
 
@@ -69,6 +72,7 @@ def target_density(self, samples):
 
 @pytest.fixture()
 def dummy_data(tmpdir):
+    """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = gaussian_2d.draw(10)
     pdf = (gaussian_2d_logpdf(samples))

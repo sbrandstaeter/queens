@@ -28,18 +28,17 @@ def jobinterface_config():
     config['test_interface'] = {
         'type': 'job_interface',
         'resources': 'dummy_resource',
-        'driver': 'dummy_driver_name',
+        'driver_name': 'dummy_driver_name',
     }
 
     config['parameters'] = uncertain_parameters
 
     dummy_resource = {}
     dummy_resource['my_machine'] = {
-        'scheduler': 'my_local_scheduler',
-        'max-concurrent': 1,
-        'max-finished-jobs': 100,
+        'scheduler_name': 'my_local_scheduler',
+        'max_concurrent': 1,
+        'max_finished_jobs': 100,
     }
-    config['restart'] = False
 
     config['database'] = {}
     config['database']['address'] = 'localhost:27017'
@@ -50,7 +49,7 @@ def jobinterface_config():
     config['resources'] = dummy_resource
 
     config['my_local_scheduler'] = {}
-    config['my_local_scheduler']['scheduler_type'] = 'standard'
+    config['my_local_scheduler']['type'] = 'standard'
     config['my_local_scheduler']['remote'] = False
     config['my_local_scheduler']['singularity'] = False
 

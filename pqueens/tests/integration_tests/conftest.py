@@ -142,8 +142,8 @@ def prepare_singularity(
 ):
     """Build singularity based on the code during test invocation.
 
-    WARNING: needs to be done AFTER prepare_cluster_testing_environment to make sure cluster testing
-     folder is clean and existing
+    **WARNING:** Needs to be done AFTER *prepare_cluster_testing_environment* to make sure cluster testing
+    folder is clean and existing.
     """
     if not prepare_cluster_testing_environment:
         raise RuntimeError("Testing environment on cluster not successful.")

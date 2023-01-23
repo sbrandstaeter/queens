@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import logging
 
 import GPy
@@ -16,13 +18,16 @@ class GPGPyRegression(RegressionApproximation):
     This class constructs a GP regression using a GPy model.
 
     Attributes:
-        x_train (np.array): Training inputs
-        y_train (np.array): Training outputs
-        scaler_x (sklearn scaler object): Scaler for inputs
-        number_posterior_samples (int): Number of posterior samples
-        model (Gpy.model): GPy based Gaussian process model
-        seed_optimizer (int): seed for optimizer for training the GP
-        seed_posterior_samples (int): seed for posterior samples
+        x_train (np.array): Training inputs.
+        y_train (np.array): Training outputs.
+        scaler_x (sklearn scaler object): Scaler for inputs.
+        number_posterior_samples (int): Number of posterior samples.
+        number_input_dimensions: TODO_doc
+        model (Gpy.model): GPy based Gaussian process model.
+        seed_optimizer (int): Seed for optimizer for training the GP.
+        seed_posterior_samples (int): Seed for posterior samples.
+        number_restarts: TODO_doc
+        number_optimizer_iterations: TODO_doc
     """
 
     def __init__(
@@ -38,7 +43,20 @@ class GPGPyRegression(RegressionApproximation):
         number_restarts,
         number_optimizer_iterations,
     ):
+        """TODO_doc.
 
+        Args:
+            x_train: TODO_doc
+            y_train: TODO_doc
+            scaler_x: TODO_doc
+            number_posterior_samples: TODO_doc
+            number_input_dimensions: TODO_doc
+            model: TODO_doc
+            seed_optimizer: TODO_doc
+            seed_posterior_samples: TODO_doc
+            number_restarts: TODO_doc
+            number_optimizer_iterations: TODO_doc
+        """
         self.x_train = x_train
         self.y_train = y_train
         self.scaler_x = scaler_x
@@ -61,7 +79,7 @@ class GPGPyRegression(RegressionApproximation):
             y_train (np.array):    Training outputs
 
         Returns:
-            gp_approximation_gpy: approximation object
+            gp_approximation_gpy: Approximation object
         """
         approx_options = config[approx_name]
         number_posterior_samples = approx_options.get('num_posterior_samples', None)
@@ -131,23 +149,25 @@ class GPGPyRegression(RegressionApproximation):
         _logger.info(str(self.model))
 
     def predict(self, x_test, support='y', full_cov=False):
-        """Predict the posterior distribution at x_test with respect to the
-        data 'y' or the latent function 'f'.
+        """TODO_doc: add a one-line explanation.
+
+        Predict the posterior distribution at *x_test* w.r.t. the data 'y'
+        or the latent function 'f'.
 
         Args:
-            x_test (np.array): Inputs at which to evaluate latent function f
+            x_test (np.array): Inputs at which to evaluate latent function 'f'
             support (str): Probabilistic support of random process (default: 'y'). Possible options
-                           are 'y' or 'f'. Here, 'f' means the latent function so that the posterior
-                           variance of the GP is calculated with respect to f. In contrast 'y'
-                           refers to the data itself so that the posterior variance is computed
-                           with respect to 'y' (f is integrated out) leading to an extra addition
-                           of noise in the posterior variance.
+                           are 'y' or 'f'. Here, 'f' means the latent function, so that the
+                           posterior variance of the GP is calculated with respect to 'f'. In
+                           contrast, 'y' refers to the data itself so that the posterior variance
+                           is computed with respect to 'y' ('f' is integrated out), leading to
+                           an extra addition of noise in the posterior variance
             full_cov (bool): Boolean that specifies whether the entire posterior covariance matrix
                              should be returned or only the posterior variance
 
         Returns:
             output (dict): Dictionary with mean, variance, and possibly
-                           posterior samples at x_test
+            posterior samples at *x_test*
         """
         x_test = np.atleast_2d(x_test).reshape((-1, self.model.input_dim))
         x_test = self.scaler_x.transform(x_test)
@@ -165,17 +185,19 @@ class GPGPyRegression(RegressionApproximation):
         return output
 
     def predict_y(self, x_test, full_cov=False):
-        """Compute the posterior distribution at x_test with respect to the
+        """TODO_doc: add a one-line explanation.
+
+        Compute the posterior distribution at *x_test* with respect to the
         data 'y'.
 
         Args:
-            x_test (np.array): Inputs at which to evaluate latent function f
+            x_test (np.array): Inputs at which to evaluate latent function 'f'
             full_cov (bool): Boolean that specifies whether the entire posterior covariance
-                             matrix should be returned or only the posterior variance.
+                             matrix should be returned or only the posterior variance
 
         Returns:
             output (dict): Dictionary with mean, variance, and possibly
-                           posterior samples at x_test
+            posterior samples at *x_test*
         """
         output = {"x_test": x_test}
         output["mean"], output["variance"] = self.model.predict(x_test, full_cov=full_cov)
@@ -185,16 +207,16 @@ class GPGPyRegression(RegressionApproximation):
         return output
 
     def predict_f(self, x_test, full_cov=False):
-        """Compute the mean and variance of the latent function at x_test.
+        """Compute the mean and variance of the latent function at *x_test*.
 
         Args:
-            x_test (np.array): Inputs at which to evaluate latent function f
+            x_test (np.array): Inputs at which to evaluate latent function 'f'
             full_cov (bool): Boolean that specifies whether the entire posterior covariance
-                             matrix should be returned or only the posterior variance.
+                             matrix should be returned or only the posterior variance
 
         Returns:
             output (dict): Dictionary with mean, variance, and possibly
-                           posterior samples at x_test
+            posterior samples at *x_test*
         """
         output = {"x_test": x_test}
         output["mean"], output["variance"] = self.model.predict_noiseless(x_test, full_cov=full_cov)
@@ -202,14 +224,14 @@ class GPGPyRegression(RegressionApproximation):
         return output
 
     def predict_f_samples(self, x_test, num_samples):
-        """Produce samples from the posterior latent function x_test.
+        """Produce samples from the posterior latent function *x_test*.
 
         Args:
-            x_test (np.array):    Inputs at which to evaluate latent function f
-            num_samples (int):  Number of posterior field_realizations of GP
+            x_test (np.array):    Inputs at which to evaluate latent function 'f'
+            num_samples (int):  Number of posterior *field_realizations* of GP
 
         Returns:
-            np.array, np.array: mean and variance of latent functions at x_test
+            np.array, np.array: Mean and variance of latent functions at *x_test*
         """
         if self.seed_posterior_samples:
             # fix seed for random samples
@@ -236,7 +258,6 @@ class GPGPyRegression(RegressionApproximation):
         Returns:
             kernel (GPy.kern object): kernel for Gaussian Process
         """
-
         setup_specific_kernel = get_gpy_kernel_type(kernel_type)
         kernel = setup_specific_kernel(input_dim, variance_0, lengthscale_0, ard)
         _logger.info(str(kernel))

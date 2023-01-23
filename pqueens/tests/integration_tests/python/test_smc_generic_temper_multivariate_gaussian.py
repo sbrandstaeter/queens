@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -20,10 +22,10 @@ from pqueens.utils import injector
 
 def test_smc_generic_temper_multivariate_gaussian(inputdir, tmpdir, dummy_data):
     """Test SMC with a multivariate Gaussian and generic tempering."""
-    template = Path(inputdir, "smc_generic_temper_multivariate_gaussian.json")
+    template = Path(inputdir, "smc_generic_temper_multivariate_gaussian.yml")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = Path(tmpdir, "multivariate_gaussian_smc_generic_temper_realiz.json")
+    input_file = Path(tmpdir, "multivariate_gaussian_smc_generic_temper_realiz.yml")
     injector.inject(dir_dict, template, input_file)
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
@@ -61,6 +63,7 @@ def test_smc_generic_temper_multivariate_gaussian(inputdir, tmpdir, dummy_data):
 
 
 def target_density(self, samples):
+    """TODO_doc."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_4d_logpdf(samples).reshape(-1, 1)
 
@@ -69,6 +72,7 @@ def target_density(self, samples):
 
 @pytest.fixture()
 def dummy_data(tmpdir):
+    """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = gaussian_4d.draw(10)
     pdf = gaussian_4d_logpdf(samples)

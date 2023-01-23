@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -8,8 +10,8 @@ from pqueens import run
 
 
 def test_monte_carlo_borehole(inputdir, tmpdir):
-    """Test case for monte carlo iterator."""
-    run(Path(Path(inputdir, 'monte_carlo_borehole.json')), Path(tmpdir))
+    """Test case for Monte Carlo iterator."""
+    run(Path(Path(inputdir, 'monte_carlo_borehole.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

@@ -14,18 +14,17 @@ from pqueens.models.model import Model
 def uncertain_parameters():
     """Possible uncertain parameters dictionary."""
     uncertain_parameters = dict()
-    uncertain_parameters['random_variables'] = dict()
 
     x1 = dict()
-    x1['type'] = 'FLOAT'
+    x1['type'] = 'random_variable'
     x1['dimension'] = 1
 
     x2 = dict()
-    x2['type'] = 'FLOAT'
+    x2['type'] = 'random_variable'
     x2['dimension'] = 2
 
-    uncertain_parameters['random_variables']['x1'] = x1
-    uncertain_parameters['random_variables']['x2'] = x2
+    uncertain_parameters['x1'] = x1
+    uncertain_parameters['x2'] = x2
 
     parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
     return parameters_module.parameters
@@ -48,7 +47,7 @@ def model(model_name, uncertain_parameters, mocker):
 
 @pytest.fixture(scope='module')
 def data_vector():
-    """Possible data vector compatible with uncertain_parameters."""
+    """Possible data vector compatible with *uncertain_parameters*."""
     # total size is sum of size values of uncertain_parameters
     data_vector = np.zeros(3)
 
@@ -61,7 +60,7 @@ def data_vector():
 
 @pytest.fixture(scope='module')
 def data_batch(data_vector):
-    """Possible data batch compatible with uncertain_parameters.
+    """Possible data batch compatible with *uncertain_parameters*.
 
     A data batch is a collection of data vectors.
     """
@@ -80,7 +79,7 @@ def responses():
 
 
 def test_init(model, model_name, uncertain_parameters):
-    """Test get_parameters."""
+    """Test *get_parameters*."""
     assert model.parameters is uncertain_parameters
     assert model.name == model_name
     assert model.response is None

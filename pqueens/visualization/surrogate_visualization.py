@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import sys
 from pathlib import Path
@@ -15,8 +17,11 @@ matplotlib.use('agg')
 cycle_colors = sns.color_palette()
 style.use('seaborn')
 
-"""
-A module that provides utilities and a class for visualization of surrogate models.
+"""TODO_doc: This is currently not in the documentation.
+
+A module that provides utilities and a class for visualization of surrogate
+models.
+
 It is designed such that the SurrogateVisualization class needs only to be initialized once
 and can then be accessed and modified in the entire project.
 
@@ -25,9 +30,6 @@ In this context "this" is a pointer to the module object instance itself and can
 
 Attributes:
     surrogate_visualization_instance (obj): Instance of the SAVisualization class
-
-Returns:
-    None
 """
 
 this = sys.modules[__name__]
@@ -35,7 +37,9 @@ this.surrogate_visualization_instance = None
 
 
 def from_config_create(config, model_name=None):
-    """Module function that calls the class function `from_config_create` and
+    """TODO_doc: add a one-line explanation.
+
+    Module function that calls the class function *from_config_create* and
     creates instance of the SurrogateVisualization class from the problem
     description.
 
@@ -52,10 +56,10 @@ def convert_to_dict(values):
     """Convert values to dictionary with plot keys.
 
     Args:
-        values (list): values for 1d and 2d plot
+        values (list): Values for 1D and 2D plot
 
     Returns:
-        plot_dict (dict): data as dictionary with plot keys
+        plot_dict (dict): Data as dictionary with plot keys
     """
     plot_keys = ["1d", "2d"]
     plot_dict = dict(zip(plot_keys, values))
@@ -64,7 +68,9 @@ def convert_to_dict(values):
 
 
 class SurrogateVisualization(object):
-    """Visualization class for surrogate models that contains several plotting,
+    """TODO_doc: add a one-line explanation.
+
+    Visualization class for surrogate models that contains several plotting,
     storing and visualization methods that can be used anywhere in QUEENS.
 
     Attributes:
@@ -72,8 +78,9 @@ class SurrogateVisualization(object):
        should_be_saved (dict): Dict of booleans to save plots or not.
        should_be_displayed (dict): Dict of booleans for determining whether individual plots
                                    should be displayed or not.
-       random_variables (dict): random variables of the problem
-       parameter_names (list): list of parameter names as strings
+       random_variables (dict): Random variables of the problem.
+       parameter_names (list): List of parameter names as strings.
+       figures: TODO_doc
 
     Returns:
         SAVisualization (obj): Instance of the SurrogateVisualization Class
@@ -86,6 +93,13 @@ class SurrogateVisualization(object):
     plt.rcParams.update({'font.size': 28})
 
     def __init__(self, saving_paths, save_plot, display_plot):
+        """TODO_doc.
+
+        Args:
+            saving_paths: TODO_doc
+            save_plot: TODO_doc
+            display_plot: TODO_doc
+        """
         self.saving_paths = saving_paths
         self.should_be_saved = save_plot
         self.should_be_displayed = display_plot
@@ -95,8 +109,11 @@ class SurrogateVisualization(object):
 
     @classmethod
     def from_config_create(cls, config, model_name=None):
-        """
-        Create the SurrogateVisualization object from the problem description
+        """TODO_doc: add a one-line explanation.
+
+        Create the SurrogateVisualization object from the problem
+        description.
+
         Args:
             config (dict): Dictionary containing the problem description
             model_name (str): Name of model to identify right section in options dict
@@ -104,10 +121,9 @@ class SurrogateVisualization(object):
 
         Returns:
             Instance of SurrogateVisualization (obj)
-
         """
         if model_name is None:
-            plotting_options = config["model"].get("plotting_options", None)
+            plotting_options = config["model_name"].get("plotting_options", None)
         else:
             plotting_options = config[model_name].get("plotting_options", None)
 
@@ -134,7 +150,7 @@ class SurrogateVisualization(object):
         """Call plotting methods for surrogate model.
 
         Args:
-            interface (ApproximationInterface object): approximation interface
+            interface (ApproximationInterface object): Approximation interface
 
         Returns:
             Plots of sensitivity indices
@@ -167,7 +183,7 @@ class SurrogateVisualization(object):
         """Plot 1D projection of Gaussian process.
 
         Args:
-            gp_approximation (RegressionApproximation object): surrogate that holds GP model and
+            gp_approximation (RegressionApproximation object): Surrogate that holds GP model and
                                                                training data
         """
         for free_idx, parameter_name in enumerate(self.parameter_names):
@@ -183,12 +199,15 @@ class SurrogateVisualization(object):
                     fig.savefig(self.saving_paths["1d"] + "_" + parameter_name + ".png", dpi=200)
 
     def plot_gp_from_gpy(self, gp_approximation, free_idx):
-        """Plot 1D Gaussian process with GPy library (based on plotly)
+        """Plot 1D Gaussian process with GPy library (based on plotly).
 
         Args:
-            gp_approximation (RegressionApproximation object): surrogate that holds GP model and
+            gp_approximation (RegressionApproximation object): Surrogate that holds GP model and
                                                                training data
-            free_idx (int): free index for plot
+            free_idx (int): Free index for plot
+
+        Returns:
+            TODO_doc
         """
         fixed_inputs = self._generate_fixed_inputs(free_idx, len(self.parameter_names))
 
@@ -209,9 +228,12 @@ class SurrogateVisualization(object):
         """Plot 1D Gaussian process from GPFlow.
 
         Args:
-            gp_approximation (RegressionApproximation object): surrogate that holds GP model and
+            gp_approximation (RegressionApproximation object): Surrogate that holds GP model and
                                                                training data
-            free_idx (int): free index for plot
+            free_idx (int): Free index for plot
+
+        Returns:
+            fig: TODO_doc
         """
         # training data
         x_train = gp_approximation.x_train
@@ -245,7 +267,7 @@ class SurrogateVisualization(object):
         """Plot Gaussian process in 2D with training data points.
 
         Args:
-            gp_approximation (RegressionApproximation object): surrogate that holds GP model and
+            gp_approximation (RegressionApproximation object): Surrogate that holds GP model and
                                                                training data
         """
         if gp_approximation.x_train.shape[1] == 2:

@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import sys
 from pathlib import Path
@@ -12,19 +14,19 @@ import pqueens.visualization.bmfmc_visualization as qvis
 cycle_colors = sns.color_palette()
 style.use('seaborn')
 
-"""
-A module that provides utilities and a class for visualization in sensitivity analysis (SA)
+"""TODO_doc: This is currently not in the documentation.
+
+A module that provides utilities and a class for visualization in
+sensitivity analysis (SA).
+
 It is designed such that the SAVisualization class needs only to be initialized one
 and can then be accessed and modified in the entire project.
 
-In this context "this" is a pointer to the module object instance itself and can be compared to the 
+In this context "this" is a pointer to the module object instance itself and can be compared to the
 "self" keyword in classes.
 
 Attributes:
     sa_visualization_instance (obj): Instance of the SAVisualization class
-    
-Returns:
-    None
 """
 
 this = sys.modules[__name__]
@@ -32,7 +34,9 @@ this.sa_visualization_instance = None
 
 
 def from_config_create(config):
-    """Module function that calls the class function `from_config_create` and
+    """TODO_doc: add a one-line explanation.
+
+    Module function that calls the class function *from_config_create* and
     creates instance of the SAVisualization class from the problem description.
 
     Args:
@@ -44,8 +48,11 @@ def from_config_create(config):
 def convert_to_dict(values):
     """Convert values to dictionary with plot keys.
 
+    Args:
+        values: TODO_doc
+
     Returns:
-        plot_dict (dict): data as dictionary with plot keys
+        plot_dict (dict): Data as dictionary with plot keys
     """
     plot_keys = ["bar", "scatter"]
     plot_dict = dict(zip(plot_keys, values))
@@ -57,10 +64,10 @@ def convert_to_pandas(results):
     """Convert results to pandas DataFrame.
 
     Args:
-        results (dict): data as dictionary
+        results (dict): Data as dictionary
 
     Returns:
-        output (DataFrame): data as pandas DataFrame with parameter names as index
+        output (DataFrame): Data as pandas DataFrame with parameter names as index
     """
     output = pd.DataFrame.from_dict(results["sensitivity_indices"])
     output = output.set_index('names')
@@ -71,7 +78,7 @@ def annotate_points(data):
     """Annotate points in scatter plot with parameter names.
 
     Args:
-         data (DataFrame): data to be annotated
+         data (DataFrame): Data to be annotated
     """
     for parameter in data.index.values:
         plt.annotate(
@@ -85,7 +92,9 @@ def annotate_points(data):
 
 
 class SAVisualization(object):
-    """Visualization class for sensitivity analysis that contains several
+    """TODO_doc: add a one-line explanation.
+
+    Visualization class for sensitivity analysis that contains several
     plotting, storing and visualization methods that can be used anywhere in
     QUEENS.
 
@@ -94,6 +103,7 @@ class SAVisualization(object):
        should_be_saved (dict): Dict of booleans to save plots or not.
        should_be_displayed (dict): Dict of booleans for determining whether individual plots
                                    should be displayed or not.
+       figures: TODO_doc
 
     Returns:
         SAVisualization (obj): Instance of the SAVisualization Class
@@ -104,6 +114,13 @@ class SAVisualization(object):
     plt.rcParams.update({'font.size': 28})
 
     def __init__(self, saving_paths, save_plot, display_plot):
+        """TODO_doc.
+
+        Args:
+            saving_paths: TODO_doc
+            save_plot: TODO_doc
+            display_plot: TODO_doc
+        """
         self.saving_paths = saving_paths
         self.should_be_saved = save_plot
         self.should_be_displayed = display_plot
@@ -111,17 +128,15 @@ class SAVisualization(object):
 
     @classmethod
     def from_config_create(cls, config):
-        """
-        Create the SAVisualization object from the problem description
+        """Create the SAVisualization object from the problem description.
+
         Args:
             config (dict): Dictionary containing the problem description
 
         Returns:
             Instance of SAVisualization (obj)
-
         """
-
-        method_options = config["method"].get("method_options")
+        method_options = config["method"]
         plotting_options = method_options["result_description"].get("plotting_options")
 
         paths = [
@@ -142,7 +157,7 @@ class SAVisualization(object):
         """Call plotting methods for sensitivity analysis.
 
         Args:
-            results (dict): dictionary containing results to plot
+            results (dict): Dictionary containing results to plot
 
         Returns:
             Plots of sensitivity indices
@@ -158,7 +173,7 @@ class SAVisualization(object):
         """Plot the sensitivity indices as bar plot with error bars.
 
         Args:
-            results (dict): dictionary containing results to plot
+            results (dict): Dictionary containing results to plot
 
         Returns:
             Plot of sensitivity indices as bar plot
@@ -180,10 +195,13 @@ class SAVisualization(object):
             self.figures['bar'] = plt.gcf()
 
     def plot_si_scatter(self, results):
-        """Plot the sensitivity indices as scatter plot of sigma over mu_star.
+        """TODO_doc: add a one-line explanation.
+
+        Plot the sensitivity indices as scatter plot of *sigma* over
+        *mu_star*.
 
         Args:
-            results (dict): dictionary containing results to plot
+            results (dict): Dictionary containing results to plot
 
         Returns:
             Plot of sensitivity indices as scatter plot

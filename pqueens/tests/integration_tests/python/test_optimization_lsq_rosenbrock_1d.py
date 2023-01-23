@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -11,9 +13,9 @@ from pqueens import run
 def test_optimization_lsq_rosenbrock_1d(inputdir, tmpdir):
     """Test special case for optimization iterator with least squares.
 
-    Special case: 1 unknown but 2 residuals
+    Special case: 1 unknown but 2 residuals.
     """
-    run(Path(Path(inputdir, 'optimization_lsq_rosenbrock_1d.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'optimization_lsq_rosenbrock_1d.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'ResRosenbrock1DLSQ.pickle'
     with open(result_file, 'rb') as handle:

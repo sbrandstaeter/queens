@@ -1,6 +1,8 @@
+"""TODO_doc."""
+
+import logging
 import os
 import pickle
-import logging
 from pathlib import Path
 
 import pytest
@@ -12,7 +14,7 @@ _logger = logging.getLogger(__name__)
 
 def test_elementary_effects_ishigami(inputdir, tmpdir):
     """Test case for elementary effects iterator."""
-    run(Path(Path(inputdir, 'elementary_effects_ishigami.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'elementary_effects_ishigami.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

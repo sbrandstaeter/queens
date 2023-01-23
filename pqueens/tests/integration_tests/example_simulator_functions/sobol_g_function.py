@@ -23,17 +23,17 @@ DELTA = np.array([0] * dim)
 def sobol_g_function(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
     """Compute generalized Sobol's G function.
 
-    with variable dimension. See (33) in [1].
-    Default is a 10 dimensional version as defined in [1].
+    With variable dimension. See (33) in [1].
+    Default is a 10-dimensional version as defined in [1].
 
     Args:
-        a (ndarray): vector of a parameter values
-        alpha (ndarray): vector of alpha parameter values
-        delta (ndarray): vector of delta parameter values
-        kwargs (dict): contains the input x_i ~ U(0,1) (uniformly from [0,1])
+        a (ndarray): Vector of a parameter values
+        alpha (ndarray): Vector of alpha parameter values
+        delta (ndarray): Vector of delta parameter values
+        kwargs (dict): Contains the input x_i ~ U(0,1) (uniformly from [0,1])
 
     Returns:
-        double: value of Sobol function
+        double: Value of the Sobol function
     """
     # some safety checks:
     if not np.all(a >= 0):
@@ -59,27 +59,27 @@ def sobol_g_function(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
 
 
 def first_effect_variance(a=A, alpha=ALPHA):
-    """Calculate first effect variance V_xi[E_x~i[Y|xi]].
+    r"""Calculate first effect variance :math:`V_{x_{i}}[E_{x \sim i}[Y|x_i]]`.
 
     Args:
-        a (ndarray): vector of a parameter values
-        alpha (ndarray): vector of alpha parameter values
+        a (ndarray): Vector of *a* parameter values
+        alpha (ndarray): Vector of *alpha* parameter values
 
     Returns:
-        ndarray: vector of first order variances
+        ndarray: Vector of first order variances
     """
     Vi = alpha**2 / (1 + 2 * alpha) / (1 + a) ** 2
     return Vi
 
 
 def variance(Vi=first_effect_variance(a=A, alpha=ALPHA)):
-    """Calculate variance of Sobol function V_x[Y].
+    """Calculate variance of Sobol function :math:`V_x[Y]`.
 
     Args:
-        Vi (ndarray): vector of first effect variances
+        Vi (ndarray): Vector of first effect variances
 
     Returns:
-        double: variance of Sobol's G function
+        double: Variance of Sobol's G function
     """
     V = np.prod(1 + Vi) - 1
     return V
@@ -88,14 +88,14 @@ def variance(Vi=first_effect_variance(a=A, alpha=ALPHA)):
 def first_order_indices(a=A, alpha=ALPHA):
     """Compute first order indices of the Sobol test function.
 
-    see (32) in [1].
+    See (32) in [1].
 
     Args:
-        a (ndarray): vector of a parameter values
-        alpha (ndarray): vector of alpha parameter values
+        a (ndarray): Vector of *a* parameter values
+        alpha (ndarray): Vector of *alpha* parameter values
 
     Returns:
-        ndarray: vector of first order indices
+        ndarray: Vector of first order indices
     """
     Vi = first_effect_variance(a, alpha)
     V = variance(Vi=Vi)
@@ -106,14 +106,14 @@ def first_order_indices(a=A, alpha=ALPHA):
 def total_order_indices(a=A, alpha=ALPHA):
     """Compute total indices of Sobol test function.
 
-    see (31)-(32) in [1]
+    See (31)-(32) in [1].
 
     Args:
-        a (ndarray): vector of a parameter values
-        alpha (ndarray): vector of alpha parameter values
+        a (ndarray): Vector of *a* parameter values
+        alpha (ndarray): Vector of *alpha* parameter values
 
     Returns:
-        ndarray: vector of total order indices
+        ndarray: Vector of total order indices
     """
     Vi = first_effect_variance(a=a, alpha=alpha)
     V = variance(Vi=Vi)

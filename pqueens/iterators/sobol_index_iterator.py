@@ -22,21 +22,22 @@ _logger = logging.getLogger(__name__)
 class SobolIndexIterator(Iterator):
     """Sobol Index Iterator.
 
-    This class essentially provides a wrapper around the SALib library
+    This class essentially provides a wrapper around the SALib library.
 
     Attributes:
-        seed (int):                         Seed for random number generator
-        num_samples (int):                  Number of samples
-        calc_second_order (bool):           Calculate second-order sensitivities
-        num_bootstrap_samples (int):        Number of bootstrap samples
-        confidence_level (float):           The confidence interval level
-        samples (np.array):                 Array with all samples
-        output (dict)                       Dict with all outputs corresponding to
-                                            samples
-        salib_problem (dict):               Problem definition for SALib
-        num_params (int):                   Number of parameters
-        parameter_names (list):             List with parameter names
-        sensitivity_indices (dict):         Dictionary with sensitivity indices
+        seed (int): Seed for random number generator.
+        num_samples (int): Number of samples.
+        calc_second_order (bool): Calculate second-order sensitivities.
+        num_bootstrap_samples (int): Number of bootstrap samples.
+        confidence_level (float): The confidence interval level.
+        result_description (dict): TODO_doc
+        samples (np.array): Array with all samples.
+        output (dict): Dict with all outputs corresponding to
+                       samples.
+        salib_problem (dict): Problem definition for SALib.
+        num_params (int): Number of parameters.
+        parameter_names (list): List with parameter names.
+        sensitivity_indices (dict): Dictionary with sensitivity indices.
     """
 
     def __init__(
@@ -91,10 +92,10 @@ class SobolIndexIterator(Iterator):
         Returns:
             iterator: Saltelli SALib iterator object
         """
-        method_options = config[iterator_name]["method_options"]
+        method_options = config[iterator_name]
 
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = from_config_create_model(model_name, config)
 
         return cls(
@@ -195,7 +196,7 @@ class SobolIndexIterator(Iterator):
         """Print results.
 
         Args:
-            results (dict): dictionary with sobol indices and confidence intervals
+            results (dict): Dictionary with Sobol indices and confidence intervals
         """
         S = results["sensitivity_indices"]
         parameter_names = results["parameter_names"]
@@ -249,7 +250,7 @@ class SobolIndexIterator(Iterator):
         """Write all results to self contained dictionary.
 
         Returns:
-            results (dict): dictionary with sobol indices and confidence intervals
+            results (dict): Dictionary with Sobol indices and confidence intervals
         """
         results = {
             "parameter_names": self.parameters.names,
@@ -265,7 +266,7 @@ class SobolIndexIterator(Iterator):
         """Create bar graph of first order sensitivity indices.
 
         Args:
-            results (dict): dictionary with sobol indices and confidence intervals
+            results (dict): Dictionary with Sobol indices and confidence intervals
         """
         experiment_name = self.global_settings["experiment_name"]
 

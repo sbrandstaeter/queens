@@ -1,0 +1,28 @@
+experiment_name: ResRosenbrockLSQ
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  type: optimization
+  model_name: model
+  algorithm: LSQ
+  initial_guess: [-3.0, -4.0, -5.0]
+  result_description:
+    write_results: true
+  bounds: [[-.inf, -.inf, -.inf], [.inf, .inf, .inf]]
+model:
+  type: simulation_model
+  interface_name: interface
+interface:
+  type: direct_python_interface
+  function: rosenbrock60_residual
+parameters:
+  x1:
+    type: random_variable
+    dimension: 1
+  x2:
+    type: random_variable
+    dimension: 1
+  x3:
+    type: random_variable
+    dimension: 1

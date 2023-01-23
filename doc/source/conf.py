@@ -44,6 +44,10 @@ extensions = [
     'nbsphinx',
 ]
 
+# Custom command to make the returns in the docstring behave like the parameter/argument section.
+# This will basically make the documentation a bit prettier as different returns are directly rendered as bullet points.
+napoleon_custom_sections = [('Returns', 'params_style')]
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 

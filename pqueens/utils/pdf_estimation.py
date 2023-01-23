@@ -17,13 +17,13 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples, kernel='gaussi
     """Estimate optimal bandwidth for kde of pdf.
 
     Args:
-        samples (np.ndarray):  samples for which to estimate pdf
-        min_samples (float): smallest value
-        max_samples (float): largest value
+        samples (np.ndarray):  Samples for which to estimate pdf
+        min_samples (float): Smallest value
+        max_samples (float): Largest value
         kernel (str,optional):        Kernel type
 
     Returns:
-        float: estimate for optimal kernel_bandwidth
+        float: Estimate for optimal *kernel_bandwidth*
     """
     kernel_bandwidth_upper_bound = np.log10((max_samples - min_samples) / 2.0)
     kernel_bandwidth_lower_bound = np.log10((max_samples - min_samples) / 30.0)
@@ -48,13 +48,13 @@ def estimate_pdf(samples, kernel_bandwidth, support_points=None, kernel='gaussia
     """Estimate pdf using kernel density estimation.
 
     Args:
-        samples (np.array):         samples for which to estimate pdf
-        kernel_bandwidth (float):   kernel width to use in kde
-        support_points (np.array):  points where to evaluate pdf
+        samples (np.array):         Samples for which to estimate pdf
+        kernel_bandwidth (float):   Kernel width to use in kde
+        support_points (np.array):  Points where to evaluate pdf
         kernel (str, optional):               Kernel type
 
     Returns:
-        np.ndarray, np.ndarray:          pdf_estimate at support points
+        np.ndarray, np.ndarray: *pdf_estimate* at support points
     """
     # make sure that we have at least 2 D column vectors but do not change correct 2D format
     samples = np.atleast_2d(samples).T

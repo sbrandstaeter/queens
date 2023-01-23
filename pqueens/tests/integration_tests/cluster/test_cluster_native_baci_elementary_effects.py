@@ -36,18 +36,16 @@ def test_cluster_native_baci_elementary_effects(
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         baci_cluster_paths_native (dict): Paths to baci native on cluster
+        cluster (str): Cluster name
         baci_elementary_effects_check_results (function): function to check the results
-
-    Returns:
-        None
     """
     path_to_executable = baci_cluster_paths_native["path_to_executable"]
     path_to_drt_monitor = baci_cluster_paths_native["path_to_drt_monitor"]
 
     experiment_name = cluster + "_native_elementary_effects"
 
-    template = pathlib.Path(inputdir, "baci_cluster_native_elementary_effects_template.json")
-    input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_invaaa.json")
+    template = pathlib.Path(inputdir, "baci_cluster_native_elementary_effects_template.yml")
+    input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_invaaa.yml")
 
     baci_input_filename = "invaaa_ee.dat"
     third_party_input_file_local = pathlib.Path(

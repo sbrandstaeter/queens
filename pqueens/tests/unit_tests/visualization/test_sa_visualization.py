@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 from pathlib import Path
 
@@ -8,14 +10,7 @@ from pqueens.visualization.sa_visualization import SAVisualization
 
 @pytest.fixture()
 def dummy_vis(tmpdir):
-    """Generate dummy instance of class SAVisualization.
-
-    Args:
-        tmpdir (str): Temporary directory in which the tests are run
-
-    Returns:
-        sa_vis (SAVisualization object): Instance of class SAVisualization
-    """
+    """Generate dummy instance of class SAVisualization."""
     paths = [
         Path(tmpdir, name)
         for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
@@ -32,7 +27,7 @@ def test_init(tmpdir, dummy_vis):
     """Test initialization of SAVisualization.
 
     Raises:
-        AssertionError: If not correctly initialized.
+        AssertionError: If not correctly initialized
     """
     # expected attributes
     paths = [
@@ -53,7 +48,8 @@ def dummy_sensitivity_indices():
     """Generate dummy output data.
 
     Returns:
-        results (dict): Contains dummy sensitivity indices (names, mu, mu_star, sigma, mu_star_conf)
+        results (dict): Contains dummy sensitivity indices (*names*, *mu*, *mu_star*,
+        *sigma*, *mu_star_conf*)
     """
     results = {"sensitivity_indices": {}}
     results["sensitivity_indices"]["names"] = ['youngs1', 'youngs2', 'nue', 'beta', 'pressure']
@@ -65,10 +61,13 @@ def dummy_sensitivity_indices():
 
 
 def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
-    """Test whether bar plot of sensitivity indices is plotting and saving the plot as a file.
+    """TODO_doc: add a one-line explanation.
+
+    Test whether bar plot of sensitivity indices is plotting and saving the
+    plot as a file.
 
     Raises:
-        AssertionError: If no file was saved.
+        AssertionError: If no file was saved
     """
     dummy_vis.plot_si_bar(dummy_sensitivity_indices)
 
@@ -77,10 +76,13 @@ def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
 
 
 def test_sa_visualization_scatter(tmpdir, dummy_vis, dummy_sensitivity_indices):
-    """Test whether scatter plot of sensitivity indices is plotting and saving the plot as a file.
+    """TODO_doc: add a one-line explanation.
+
+    Test whether scatter plot of sensitivity indices is plotting and saving
+    the plot as a file.
 
     Raises:
-        AssertionError: If no file was saved.
+        AssertionError: If no file was saved
     """
     dummy_vis.plot_si_scatter(dummy_sensitivity_indices)
 

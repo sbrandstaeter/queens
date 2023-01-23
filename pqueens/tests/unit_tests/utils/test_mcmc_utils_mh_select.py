@@ -1,4 +1,4 @@
-"""Test-module for mh_select function of mcmc_utils module.
+"""Test-module for *mh_select* function of *mcmc_utils module*.
 
 @author: Sebastian Brandstaeter
 """
@@ -44,7 +44,12 @@ def proposed_sample(current_sample):
 def test_mh_select(
     acceptance_probability, log_acceptance_probability, current_sample, proposed_sample, mocker
 ):
-    """Test rejection and acceptance of proposal based on given acceptance probability."""
+    """TODO_doc: add a one-line explanation.
+
+    Test rejection and acceptance of proposal based on given acceptance
+    probability.
+
+    """
     mocker.patch(
         'numpy.random.uniform',
         return_value=np.array([[acceptance_probability * 2], [acceptance_probability * 0.5]]),
@@ -61,7 +66,12 @@ def test_mh_select(
 
 
 def test_mh_select_accept_prob_1(current_sample, proposed_sample, num_chains):
-    """Test acceptance of proposal based on acceptance probability >= 1.0."""
+    r"""TODO_doc: add a one-line explanation.
+
+    Test acceptance of proposal based on acceptance probability :math:`\geq`
+    1.0.
+
+    """
     acceptance_probability = np.ones((num_chains, 1))
     log_acceptance_probability = np.log(acceptance_probability)
     selected_sample, accepted = mh_select(

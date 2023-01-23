@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -11,9 +13,9 @@ from pqueens import run
 def test_optimization_lsq_parabula(inputdir, tmpdir):
     """Test special case for optimization iterator with least squares.
 
-    Special case: 1 unknown and 1 residual
+    Special case: 1 unknown and 1 residual.
     """
-    run(Path(Path(inputdir, 'optimization_lsq_parabula.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'optimization_lsq_parabula.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'ParabulaResLSQ.pickle'
     with open(result_file, 'rb') as handle:

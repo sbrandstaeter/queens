@@ -11,8 +11,10 @@ def extract_string_from_output(search_string, output):
     """Extractor function to to extract string from output.
 
     Args:
-        search_string (str):    string to be searched for
-        output (str):           output string
+        search_string (str):    String to be searched for
+        output (str):           Output string
+    Returns:
+        extract_string: TODO_doc
     """
     newstr1 = ""
     for item in output.split("\n"):
@@ -28,7 +30,14 @@ def extract_string_from_output(search_string, output):
 
 
 def check_if_string_in_file(file_name, string_to_search):
-    """Check if any line in the file contains given string."""
+    """Check if any line in the file contains given string.
+
+    Args:
+        file_name: TODO_doc
+        string_to_search: TODO_doc
+    Returns:
+        TODO_doc
+    """
     # Open the file in read only mode
     with open(file_name, 'r') as read_obj:
         # Read all lines in the file one by one

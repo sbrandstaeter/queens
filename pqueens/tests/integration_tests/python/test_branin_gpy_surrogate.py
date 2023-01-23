@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -10,7 +12,7 @@ from pqueens import run
 
 def test_branin_gpy_surrogate(inputdir, tmpdir, expected_pdf):
     """Test case for GP based surrogate model."""
-    run(Path(Path(inputdir, 'gpy_surrogate_branin.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'gpy_surrogate_branin.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
@@ -21,6 +23,7 @@ def test_branin_gpy_surrogate(inputdir, tmpdir, expected_pdf):
 
 @pytest.fixture()
 def expected_pdf():
+    """TODO_doc."""
     pdf = [
         3.1776e-04,
         2.1679e-03,

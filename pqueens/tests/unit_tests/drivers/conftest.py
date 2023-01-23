@@ -17,7 +17,7 @@ def job(tmpdir_factory):
 
 @pytest.fixture(scope='session')
 def baci_job(job, tmpdir_factory):
-    """Generic job dictionary for testing Baci."""
+    """Generic job dictionary for testing BACI."""
     baci_dir = tmpdir_factory.mktemp('baci_dir')
 
     job['simulation_input_template'] = str(
@@ -113,7 +113,7 @@ def driver_base_settings(job):
     base_settings['do_data_processing'] = True
     base_settings['data_processor'] = 'data_processor.py'
     base_settings['cae_output_streaming'] = False
-    base_settings['input_file'] = 'input.json'
+    base_settings['input_file'] = 'input.yml'
     base_settings['input_file_2'] = None
     base_settings['case_run_script'] = None
     base_settings['output_prefix'] = None

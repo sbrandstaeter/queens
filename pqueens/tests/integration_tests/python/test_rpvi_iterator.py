@@ -22,9 +22,9 @@ def test_rpvi_iterator_park91a_hifi(
 ):
     """Integration test for the rpvi iterator.
 
-    Based on the park91a_hifi function.
+    Based on the *park91a_hifi* function.
     """
-    template = Path(inputdir, "rpvi_park91a_hifi_template.json")
+    template = Path(inputdir, "rpvi_park91a_hifi_template.yml")
     experimental_data_path = tmpdir
     plot_dir = tmpdir
     dir_dict = {
@@ -35,7 +35,7 @@ def test_rpvi_iterator_park91a_hifi(
         "likelihood_model_type": "gaussian",
         "external_python_module": "",
     }
-    input_file = Path(tmpdir, "rpvi_park91a_hifi.json")
+    input_file = Path(tmpdir, "rpvi_park91a_hifi.yml")
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -68,9 +68,9 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 ):
     """Integration test for the rpvi iterator.
 
-    Based on the park91a_hifi function.
+    Based on the *park91a_hifi* function.
     """
-    template = Path(inputdir, "rpvi_park91a_hifi_template.json")
+    template = Path(inputdir, "rpvi_park91a_hifi_template.yml")
     experimental_data_path = tmpdir
     plot_dir = tmpdir
     dir_dict = {
@@ -81,7 +81,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
         "likelihood_model_type": "MyLikelihood",
         "external_python_module": module_path,
     }
-    input_file = Path(tmpdir, "rpvi_park91a_hifi.json")
+    input_file = Path(tmpdir, "rpvi_park91a_hifi.yml")
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -108,9 +108,9 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 def test_rpvi_iterator_park91a_hifi_provided_gradient(
     inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
 ):
-    """Test for the rpvi iterator based on the park91a_hifi function."""
+    """Test for the rpvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
-    template = Path(inputdir, "rpvi_park91a_hifi_template.json")
+    template = Path(inputdir, "rpvi_park91a_hifi_template.yml")
     experimental_data_path = tmpdir
     plot_dir = tmpdir
     dir_dict = {
@@ -121,7 +121,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         "likelihood_model_type": "gaussian",
         "external_python_module": "",
     }
-    input_file = Path(tmpdir, "rpvi_park91a_hifi.json")
+    input_file = Path(tmpdir, "rpvi_park91a_hifi.yml")
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS

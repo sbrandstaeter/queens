@@ -1,7 +1,7 @@
 """Rosenbrock function.
 
 [1]: Rosenbrock, H. H. (1960). An Automatic Method for Finding the Greatest or Least Value of a
-Function. The Computer Journal, 3(3), 175–184. doi:10.1093/comjnl/3.3.175
+     Function. The Computer Journal, 3(3), 175–184. doi:10.1093/comjnl/3.3.175
 """
 # pylint: disable=invalid-name
 
@@ -12,11 +12,11 @@ def rosenbrock60(x1, x2, **kwargs):
     """Rosenbrocks banana function.
 
     Args:
-        x1 (float):  Input one
-        x2 (float):  Input two
+        x1 (float):  Input parameter 1
+        x2 (float):  Input parameter 2
 
     Returns:
-        float: Value of Rosenbrock function
+        float: Value of the Rosenbrock function
     """
     a = 1.0 - x1
     b = x2 - x1 * x1
@@ -24,11 +24,11 @@ def rosenbrock60(x1, x2, **kwargs):
 
 
 def rosenbrock60_residual(x1, x2, **kwargs):
-    """Residuals of Rosenbrock banana function.
+    """Residuals of the Rosenbrock banana function.
 
     Args:
-        x1 (float):  Input one
-        x2 (float):  Input two
+        x1 (float):  Input parameter 1
+        x2 (float):  Input parameter 2
 
     Returns:
         ndarray: Vector of residuals of the Rosenbrock function
@@ -40,10 +40,10 @@ def rosenbrock60_residual(x1, x2, **kwargs):
 
 
 def rosenbrock60_residual_1d(x1, **kwargs):
-    """Residuals of Rosenbrock banana function.
+    """Residuals of the Rosenbrock banana function.
 
     Args:
-        x1 (float):  Input one
+        x1 (float):  Input parameter 1
 
     Returns:
         ndarray: Vector of residuals of the Rosenbrock function

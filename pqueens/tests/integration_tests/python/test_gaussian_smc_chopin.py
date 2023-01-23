@@ -24,15 +24,15 @@ from pqueens.utils import injector
 
 def test_gaussian_smc_chopin_adaptive_tempering(inputdir, tmpdir, dummy_data):
     """Test Sequential Monte Carlo with univariate Gaussian."""
-    template = Path(inputdir, "smc_chopin_gaussian.json")
+    template = Path(inputdir, "smc_chopin_gaussian.yml")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path, "fk_method": "adaptive_tempering"}
-    input_file = Path(tmpdir, "gaussian_smc_realiz.json")
+    input_file = Path(tmpdir, "gaussian_smc_realiz.yml")
     injector.inject(dir_dict, template, input_file)
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloChopinIterator, "eval_log_likelihood", target_density):
         run(Path(input_file), Path(tmpdir))
-        
+
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

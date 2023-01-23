@@ -1,3 +1,5 @@
+"""Utils for random variables.xxx."""
+
 from pqueens.distributions import from_config_create_distribution
 
 
@@ -5,13 +7,15 @@ def get_random_variables(model):
     """Get random variables and fields from model.
 
     Args:
-        model (model): instance of model class
+        model (model): Instance of model class
 
     Returns:
-        random_variables (dict): random variables
-        random_fields (dict): random fields
-        number_input_dimensions (int): number of input parameters/random variables
-        distribution_info (list): information about distribution of random variables
+        random_variables (dict): Random variables
+        random_fields (dict): Random fields
+        number_input_dimensions (int): Number of input
+            parameters/random variables
+        distribution_info (list): Information about distribution of
+            random variables
     """
     # get random variables (RV) from model
     parameters = model.get_parameter()
@@ -33,10 +37,10 @@ def get_distribution_info(random_variables):
     """Get distribution info.
 
     Args:
-        random_variables (dict): random variables
+        random_variables (dict): Random variables
 
     Return:
-        distribution_info (list): information about distribution of random variables
+        distribution_info (list): Information about distribution of random variables
     """
     distribution_info = []
     for _, rv in random_variables.items():
@@ -53,9 +57,8 @@ def get_random_samples(description, num_samples):
         num_samples (int):          Number of samples to generate
 
     Returns:
-        np.array:                   Array with samples
+        np.array: Array with samples
     """
-
     distribution = from_config_create_distribution(description)
     samples = distribution.draw(num_draws=num_samples)
 

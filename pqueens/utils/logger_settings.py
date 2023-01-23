@@ -8,7 +8,11 @@ import time
 
 
 class LogFilter(logging.Filter):
-    """Filters (lets through) all messages with level <= LEVEL."""
+    """Filters (lets through) all messages with level <= LEVEL.
+
+    Attributes:
+        level: TODO_doc
+    """
 
     def __init__(self, level):
         """Initiatlize the logging filter.
@@ -26,7 +30,7 @@ class LogFilter(logging.Filter):
             record (LogRecord obj): Logging record object
 
         Returns:
-            (LogRecord obj): Filter logging record
+            LogRecord obj: Filter logging record
         """
         return record.levelno <= self.level
 
@@ -69,8 +73,8 @@ def setup_basic_logging(output_dir, experiment_name):
     """Setup basic logging.
 
     Args:
-        output_dir (Path): output directory where to save the log-file
-        experiment_name (str): experiment name used as file name for the log-file
+        output_dir (Path): Output directory where to save the log-file
+        experiment_name (str): Experiment name used as file name for the log-file
     """
     file_level_min = logging.DEBUG
     console_level_min = logging.INFO
@@ -151,11 +155,14 @@ def get_job_logger(logger_name, log_file, error_file, streaming, propagate=False
     """Setup job logging and get job logger.
 
     Args:
-        logger_name (str): logger name
-        log_file (path): path to log file
-        error_file (path): path to error file
-        streaming (bool): flag for additional streaming to given stream
-        propagate (bool): flag for propagation of stream (default: false)
+        logger_name (str): Logger name
+        log_file (path): Path to log file
+        error_file (path): Path to error file
+        streaming (bool): Flag for additional streaming to given stream
+        propagate (bool): Flag for propagation of stream (default: *False*)
+
+    Returns:
+        TODO_doc
     """
     # get job logger
     joblogger = logging.getLogger(logger_name)
@@ -201,9 +208,12 @@ def job_logging(command_string, process, joblogger, terminate_expr):
 
     Args:
         command_string (str): Command string for the subprocess
-        process (obj): subprocess object
-        joblogger (obj): job logger object
-        terminate_expr (str): expression on which to terminate
+        process (obj): Subprocess object
+        joblogger (obj): Job logger object
+        terminate_expr (str): Expression on which to terminate
+
+    Returns:
+        TODO_doc
     """
     # initialize stderr to None
     stderr = None
@@ -251,6 +261,12 @@ def finish_job_logger(joblogger, lfh, efh, stream_handler):
     """Close and remove file handlers.
 
     (to prevent OSError: [Errno 24] Too many open files)
+
+    Args:
+        joblogger: TODO_doc
+        lfh: TODO_doc
+        efh: TODO_doc
+        stream_handler: TODO_doc
     """
     # we need to close the FileHandlers to
     lfh.close()

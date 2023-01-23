@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import sys
 from pathlib import Path
@@ -10,8 +12,12 @@ from matplotlib.ticker import FormatStrFormatter, LinearLocator
 from mpl_toolkits.mplot3d import Axes3D
 
 """
-A module that provides utilities and a class for visualization in the grid iterator.
-It is designed such that the GridIteratorVisualization class needs only to be initialized one
+TODO_doc: This is not in the documentation.
+
+A module that provides utilities and a class for visualization in the grid
+iterator.
+
+It is designed such that the GridIteratorVisualization class needs only to be initialized once
 and can then be accessed and modified in the entire project.
 
 In this context "this" is a pointer to the module object instance itself and can be compared to the
@@ -19,10 +25,6 @@ In this context "this" is a pointer to the module object instance itself and can
 
 Attributes:
     grid_iterator_visualization_instance (obj): Instance of the GridIteratorVisualization class
-
-Returns:
-    None
-
 """
 
 this = sys.modules[__name__]
@@ -30,7 +32,9 @@ this.grid_iterator_visualization_instance = None
 
 
 def from_config_create(config, iterator_name='method'):
-    """Module function that calls the class function `from_config_create` and
+    """TODO_doc: add a one-line explanation.
+
+    Module function that calls the class function *from_config_create* and
     creates instance of the GridIteratorVisualization class from the problem
     description.
 
@@ -64,7 +68,6 @@ def _ln_tick_formatter(val):
     Returns:
         Formatted tick values
     """
-
     return "{:.2e}".format(np.e**val)
 
 
@@ -77,21 +80,22 @@ def _linear_tick_formatter(val):
     Returns:
         Formatted tick values
     """
-
     return "{:.2e}".format(val)
 
 
 class GridIteratorVisualization(object):
-    """Visualization class for GridIterator that contains several plotting,
+    """Visualization class for GridIterator.
+
+    Visualization class for GridIterator that contains several plotting,
     storing and visualization methods that can be used anywhere in QUEENS.
 
     Attributes:
-        saving_paths_list (list): List with saving_paths_list to save the plots.
+        saving_paths_list (list): List with *saving_paths_list* to save the plots.
         save_bools (list): List with booleans to save plots.
         plot_booleans (list): List of booleans for determining whether individual plots should be
                              plotted or not.
-        scale_types_list (list): List scaling types for each grid variable
-        var_names_list (list): List with variable names per grid dimension
+        scale_types_list (list): List scaling types for each grid variable.
+        var_names_list (list): List with variable names per grid dimension.
 
     Returns:
         GridIteratorVisualization (obj): Instance of the GridIteratorVisualization Class
@@ -102,6 +106,15 @@ class GridIteratorVisualization(object):
     plt.rcParams.update({'font.size': 22})
 
     def __init__(self, paths, save_bools, plot_booleans, scale_types_list, var_names_list):
+        """TODO_doc.
+
+        Args:
+            paths: TODO_doc
+            save_bools: TODO_doc
+            plot_booleans: TODO_doc
+            scale_types_list: TODO_doc
+            var_names_list: TODO_doc
+        """
         self.saving_paths_list = paths
         self.save_bools = save_bools
         self.plot_booleans = plot_booleans
@@ -110,8 +123,8 @@ class GridIteratorVisualization(object):
 
     @classmethod
     def from_config_create(cls, config, iterator_name):
-        """
-        Create the grid visualization object from the problem description
+        """Create the grid visualization object from the problem description.
+
         Args:
             config (dict): Dictionary containing the problem description
             iterator_name (str): Name of iterator to identify right section in options dict
@@ -119,9 +132,8 @@ class GridIteratorVisualization(object):
 
         Returns:
             Instance of GridIteratorVisualization (obj)
-
         """
-        method_options = config[iterator_name].get("method_options")
+        method_options = config[iterator_name]
 
         plotting_options = method_options["result_description"].get("plotting_options")
         paths = [
@@ -143,12 +155,13 @@ class GridIteratorVisualization(object):
         return cls(paths, save_bools, plot_booleans, scale_types_list, var_names_list)
 
     def plot_QoI_grid(self, output, samples, num_params, n_grid_p):
-        """Plot Quantity of Interest over grid (so far support up to 2D grid)
+        """Plot Quantity of Interest over grid (so far support up to 2D grid).
 
-        args:
-            output (dict):       QoI obtained from simulation
-            samples (np.array):  Grid coordinates flattened 1D arrays as columns of 2D samples array
-            num_params (int):                 Number of parameters varied
+        Args:
+            output (dict): QoI obtained from simulation
+            samples (np.array): Grid coordinates, flattened 1D arrays as columns of
+                                2D samples array
+            num_params (int): Number of parameters varied
             n_grid_p (np.array): Array containing number of grid points for each parameter
         """
         if self.plot_booleans[0] is True or self.save_bools[0] is True:
@@ -160,7 +173,9 @@ class GridIteratorVisualization(object):
             plt.show()
 
     def _get_plotter(self, num_params):
-        """Get the correct plotting function depending on the dimension of the
+        """TODO_doc: add a one-line explanation.
+
+        Get the correct plotting function depending on the dimension of the
         grid.
 
         Args:
@@ -183,9 +198,6 @@ class GridIteratorVisualization(object):
             output (np.array): Simulation output
             samples (np.array): Simulation input/samples/grid-points
             n_grid_p (np.array): Array containing number of grid points for each parameter
-
-        Returns:
-            None
         """
         fig, ax = plt.subplots()
 
@@ -218,9 +230,6 @@ class GridIteratorVisualization(object):
             output (np.array): Simulation output
             samples (np.array): Simulation input/samples/grid-points
             n_grid_p (np.array): Array containing number of grid points for each parameter
-
-        Returns:
-            None
         """
         fig = plt.figure()
         ax = plt.axes(projection='3d')
@@ -258,7 +267,9 @@ class GridIteratorVisualization(object):
         fig.colorbar(surf, shrink=0.5, aspect=5)
 
     def _get_tick_formatter(self, axis_str):
-        """Depending on the scaling of the grid axis, return an appropriate
+        """TODO_doc: add a one-line explanation.
+
+        Depending on the scaling of the grid axis, return an appropriate
         formatter for the axes ticks.
 
         Args:

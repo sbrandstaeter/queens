@@ -9,18 +9,18 @@ from numpy import genfromtxt
 def park91a_hifi_coords(x1, x2, x3, x4):
     r"""High-fidelity Park91a function.
 
-    High-fidelity Park91a function with x3 and x4 as fixed coordinates.
+    High-fidelity Park91a function with *x3* and *x4* as fixed coordinates.
     Coordinates are prescribed in the main function of this module.
 
-    Simple four dimensional benchmark function as proposed in [1] to mimic
+    Simple four-dimensional benchmark function as proposed in [1] to mimic
     a computer model. For the purpose of multi-fidelity simulation, [3]
-    defined a corresponding lower fidelity function, which is  implemented
-    in park91a_lofi.
+    defined a corresponding lower fidelity function, which is implemented
+    in *park91a_lofi*.
 
     The high-fidelity version is defined as:
 
-    :math:`f({\\bf x}) =
-    \\frac{x_1}{2}[\\sqrt{1+(x_2+x_3^2)\\frac{x_4}{x_1^2}}-1]+(x_1+3x_4)\\exp[1-\\sin(x_3)]`
+    :math:`f({\bf x}) =
+    \frac{x_1}{2} \left[\sqrt{1+(x_2+x_3^2)\frac{x_4}{x_1^2}}-1 \right]+(x_1+3x_4)\exp[1-\sin(x_3)]`
 
     Args:
         x1 (float): Input parameter 1 [0,1)

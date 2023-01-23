@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import numpy as np
 import pytest
 
@@ -12,31 +14,30 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
 
 @pytest.fixture()
 def global_settings():
+    """TODO_doc."""
     global_settings = {"experiment_name": "test"}
     return global_settings
 
 
 @pytest.fixture()
 def default_model():
-    uncertain_parameters = {}
+    """TODO_doc."""
     uncertain_parameter1 = {
-        "dimension": 1,
+        "type": "random_variable",
         "distribution": "uniform",
         "lower_bound": -3.14159265359,
         "upper_bound": 3.14159265359,
     }
 
     uncertain_parameter2 = {
-        "type": "FLOAT",
-        "dimension": 1,
+        "type": "random_variable",
         "distribution": "normal",
         "mean": 0,
         "covariance": 4,
     }
 
     uncertain_parameter3 = {
-        "type": "FLOAT",
-        "dimension": 1,
+        "type": "random_variable",
         "distribution": "lognormal",
         "normal_mean": 0.3,
         "normal_covariance": 1,
@@ -47,9 +48,8 @@ def default_model():
         'x2': uncertain_parameter2,
         'x3': uncertain_parameter3,
     }
-    uncertain_parameters["random_variables"] = random_variables
 
-    parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
+    parameters_module.from_config_create_parameters({"parameters": random_variables})
 
     function = example_simulator_function_by_name("ishigami90")
     # create interface
@@ -63,6 +63,7 @@ def default_model():
 
 @pytest.fixture()
 def default_qmc_iterator(default_model, global_settings):
+    """TODO_doc."""
     my_iterator = SobolSequenceIterator(
         default_model,
         seed=42,

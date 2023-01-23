@@ -5,10 +5,8 @@ import sys
 
 import numpy as np
 
-from pqueens.parameters.fields import RandomField
-
-from .fields import from_config_create_random_field
-from .variables import from_config_create_random_variable
+from pqueens.parameters.fields import RandomField, from_config_create_random_field
+from pqueens.parameters.variables import from_config_create_random_variable
 
 _logger = logging.getLogger(__name__)
 
@@ -19,39 +17,44 @@ this.parameters = None
 def from_config_create_parameters(config, pre_processor=None):
     """Create a QUEENS parameter object from config.
 
-    This construct follows the spirit of singleton design patterns
-    Informally: there only exists one parameters instance
+    This construct follows the spirit of singleton design patterns.
+    Informally: there only exists one parameter instance.
 
     Args:
         config (dict): Problem configuration
-        pre_processor (obj, optional): pre-processor object to read coordinates of random field
+        pre_processor (obj, optional): Pre-processor object to read coordinates of random field
                                        discretization
     """
     parameters_options = config.get('parameters', None)
 
     if parameters_options is not None:
-        rv_dict = parameters_options.get('random_variables', {})
-        rf_dict = parameters_options.get('random_fields', {})
-        parameters_dict = {}
-        parameters_keys = []
-        num_parameters = 0
-
-        for rv_name, rv_dict in rv_dict.items():
-            parameters_dict[rv_name] = from_config_create_random_variable(rv_dict)
-            parameters_keys = _add_parameters_keys(parameters_keys, rv_name, rv_dict['dimension'])
-            num_parameters += rv_dict['dimension']
-
+        joint_parameters_dict = {}
+        joint_parameters_keys = []
+        joint_parameters_dim = 0
         random_field_flag = False
-        for rf_name, rf_dict in rf_dict.items():
-            parameters_dict[rf_name] = from_config_create_random_field(
-                rf_dict, pre_processor.coords_dict[rf_name]
-            )
-            parameters_keys += parameters_dict[rf_name].coords['keys']
-            random_field_flag = True
-            num_parameters += parameters_dict[rf_name].dim_truncated
+
+        for parameter_name, parameter_dict in parameters_options.items():
+            parameter_type = parameter_dict['type']
+            if parameter_type == 'random_variable':
+                random_variable = from_config_create_random_variable(parameter_dict)
+                joint_parameters_dict[parameter_name] = random_variable
+                joint_parameters_keys = _add_parameters_keys(
+                    joint_parameters_keys, parameter_name, random_variable.dimension
+                )
+                joint_parameters_dim += random_variable.dimension
+            elif parameter_type == 'random_field':
+                random_field = from_config_create_random_field(
+                    parameter_dict, pre_processor.coords_dict[parameter_name]
+                )
+                joint_parameters_dict[parameter_name] = random_field
+                joint_parameters_keys += random_field.coords['keys']
+                joint_parameters_dim += random_field.dim_truncated
+                random_field_flag = True
+            else:
+                raise NotImplementedError(f"Parameter type '{parameter_type}' not supported.")
 
         this.parameters = Parameters(
-            parameters_dict, parameters_keys, num_parameters, random_field_flag
+            joint_parameters_dict, joint_parameters_keys, joint_parameters_dim, random_field_flag
         )
 
 
@@ -82,11 +85,11 @@ class Parameters:
     """Parameters class.
 
     Attributes:
-        dict (dict): Random variables and random fields stored in a dict
-        parameters_keys (list): List of keys for all parameter members
-        num_parameters (int): Number of (truncated) parameters
-        random_field_flag (bool): Specifies if random fields are used
-        names (list): Parameter names
+        dict (dict): Random variables and random fields stored in a dict.
+        parameters_keys (list): List of keys for all parameter members.
+        num_parameters (int): Number of (truncated) parameters.
+        random_field_flag (bool): Specifies if random fields are used.
+        names (list): Parameter names.
     """
 
     def __init__(self, parameters_dict, parameters_keys, num_parameters, random_field_flag):
@@ -107,6 +110,8 @@ class Parameters:
     def draw_samples(self, num_samples):
         """Draw samples from all parameters.
 
+        Args:
+            num_samples: TODO_doc
         Returns:
             samples (np.ndarray): Drawn samples
         """
@@ -122,6 +127,8 @@ class Parameters:
     def joint_logpdf(self, samples):
         """Evaluate the logpdf summed over all parameters.
 
+        Args:
+            samples: TODO_doc
         Returns:
             logpdf (np.ndarray): logpdf summed over all parameters
         """
@@ -136,6 +143,8 @@ class Parameters:
     def grad_joint_logpdf(self, samples):
         """Evaluate the gradient of the joint logpdf w.r.t. the samples.
 
+        Args:
+            samples: TODO_doc
         Returns:
             grad_logpdf (np.ndarray): Gradient of the joint logpdf w.r.t. the samples
         """
@@ -174,7 +183,7 @@ class Parameters:
 
         Returns:
             sample_dict (dict): Dictionary containing sample members and the corresponding parameter
-                                keys
+            keys
         """
         sample_dict = {}
         sample = sample.reshape(-1)
@@ -191,7 +200,7 @@ class Parameters:
             truncated_sample (np.ndarray): Truncated representation of sample
 
         Returns:
-            sample_expanded (np.ndarray) Expanded representation of sample
+            sample_expanded (np.ndarray): Expanded representation of sample
         """
         sample_expanded = np.zeros(len(self.parameters_keys))
         index_truncated = 0

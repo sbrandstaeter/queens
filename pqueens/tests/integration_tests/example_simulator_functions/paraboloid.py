@@ -5,14 +5,14 @@
 def paraboloid(x1, x2, **kwargs):
     """A paraboloid.
 
-    see  https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
+    See  https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.minimize.html
 
     Args:
-        x1 (float):  Input one
-        x2 (float):  Input two
+        x1 (float):  Input parameter 1
+        x2 (float):  Input parameter 2
 
     Returns:
-        float: Value of function
+        float: Value of the function
     """
     a = 1.0
     b = 2.5

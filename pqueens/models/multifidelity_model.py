@@ -13,15 +13,15 @@ class MultifidelityModel(Model):
     multi-fidelity sampling schemes.
 
     Attributes:
-        model_sequence (list):             List of models comprising multi-fidelity
-                                           model
-        eval_cost_per_level (list):        Cost for one model evaluation
-        num_levels (int):                  Number of levels, i.e., number models in
-                                           multi-fidelity model
-        admissible_response_modes (list):  List with admissible response modes
-        response_mode (string):            Current response mode
-        active_lf_model_ind (int):         Index of current low-fidelity model
-        active_hf_model_ind (int):         Index of current low-fidelity model
+        eval_cost_per_level (list):        Cost for one model evaluation.
+        num_levels (int):                  Number of levels, i.e. number of models in
+                                           multi-fidelity model.
+        __model_sequence (list):             List of models comprising multi-fidelity
+                                           model.
+        __admissible_response_modes (list):  List with admissible response modes.
+        __active_lf_model_ind (int):         Index of current low-fidelity model.
+        __active_hf_model_ind (int):         Index of current high-fidelity model.
+        response_mode (string):            Current response mode.
     """
 
     def __init__(self, model_name, model_sequence, eval_cost_per_level):
@@ -52,7 +52,7 @@ class MultifidelityModel(Model):
             config (dict):       Dictionary containing problem description
 
         Returns:
-            multifidelity_model:   Instance of MultifidelityModel
+            multifidelity_model: Instance of MultifidelityModel
         """
         # get options
         model_options = config[model_name]
@@ -65,7 +65,7 @@ class MultifidelityModel(Model):
         sub_models = []
         for sub_model_name in model_hierarchy:
             sub_model_options = config[sub_model_name]
-            sub_interface_name = sub_model_options["interface"]
+            sub_interface_name = sub_model_options["interface_name"]
             if sub_model_options["type"] != 'simulation_model':
                 raise ValueError(
                     'Multifidelity models can only have simulation models as sub models'
@@ -77,7 +77,11 @@ class MultifidelityModel(Model):
         return cls(model_name, sub_models, model_evaluation_cost)
 
     def evaluate(self):
-        """Evaluate model with current set of variables."""
+        """Evaluate model with current set of variables.
+
+        Returns:
+            TODO_doc
+        """
         # switch according to response mode
         if self.response_mode == 'uncorrected_lofi':
             self.response = self._lofi_model().interface.evaluate(self.variables)
@@ -94,25 +98,41 @@ class MultifidelityModel(Model):
         return self.response
 
     def set_response_mode(self, new_response_mode):
-        """Set response mode of multi-fidelity model."""
+        """Set response mode of multi-fidelity model.
+
+        Args:
+            new_response_mode: TODO_doc
+        """
         if new_response_mode in self.__admissible_response_modes:
             self.response_mode = new_response_mode
         else:
             raise ValueError("Unsupported response mode")
 
     def solution_level_cost(self):
-        """Return solution cost for each model level."""
+        """Return solution cost for each model level.
+
+        Returns:
+            TODO_doc
+        """
         return self.eval_cost_per_level
 
     def set_hifi_model_index(self, hifi_index):
-        """Choose which model is used as hi-fi model."""
+        """Choose which model is used as hi-fi model.
+
+        Args:
+            hifi_index: TODO_doc
+        """
         if hifi_index > len(self.__model_sequence):
             raise ValueError("Index for hi-fi model is out of range")
         else:
             self.__active_hf_model_ind = hifi_index
 
     def set_lofi_model_index(self, lofi_index):
-        """Choose which model is used as lo-fi model."""
+        """Choose which model is used as lo-fi model.
+
+        Args:
+            lofi_index: TODO_doc
+        """
         if lofi_index > len(self.__model_sequence):
             raise ValueError("Index for lo-fi model is out of range")
         else:

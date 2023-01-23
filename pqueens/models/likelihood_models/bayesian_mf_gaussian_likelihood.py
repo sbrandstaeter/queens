@@ -157,7 +157,12 @@ class BMFGaussianModel(LikelihoodModel):
         noise_upper_bound = model_options.get("noise_upper_bound")
 
         # ---------- multi-fidelity settings ---------------------------------------------------
-        settings_probab_mapping = {"mf_approx_settings": model_options.get("mf_approx_settings")}
+        mf_approx_settings = model_options.get("mf_approx_settings")
+        stochastic_optimizer_name = mf_approx_settings.get('stochastic_optimizer_name')
+        settings_probab_mapping = {
+            "mf_approx_settings": mf_approx_settings,
+            stochastic_optimizer_name: config[stochastic_optimizer_name],
+        }
         approximation_settings_name = "mf_approx_settings"
         num_processors_multi_processing = settings_probab_mapping['mf_approx_settings'].get(
             "num_processors_multi_processing"
@@ -167,7 +172,7 @@ class BMFGaussianModel(LikelihoodModel):
         )
 
         # ----------------------- create subordinate bmfia iterator ------------------------------
-        bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator"]
+        bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator_name"]
         bmfia_subiterator = from_config_create_iterator(config, bmfia_iterator_name)
 
         # ----------------------- create visualization object(s) ---------------------------------
@@ -325,9 +330,6 @@ class BMFGaussianModel(LikelihoodModel):
         Args:
             diff_mat (np.array): Matrix containing row-wise difference vectors between the output
                                  observations and the batch of row-wise simulation outputs.
-
-        Returns:
-            None
         """
         # choose likelihood noise type
         if self.likelihood_noise_type == "fixed":
@@ -436,11 +438,7 @@ class BMFGaussianModel(LikelihoodModel):
         return np.array(log_lik_mf)
 
     def _initialize(self):
-        """Initialize the multi-fidelity likelihood model.
-
-        Returns:
-            None
-        """
+        """Initialize the multi-fidelity likelihood model."""
         _logger.info("---------------------------------------------------------------------")
         _logger.info("Speed-up through Bayesian multi-fidelity inverse analysis (BMFIA)!")
         _logger.info("---------------------------------------------------------------------")
@@ -454,12 +452,9 @@ class BMFGaussianModel(LikelihoodModel):
     def _build_approximation(self):
         """Construct the probabilistic surrogate / mapping.
 
-        Surrogate is calculated based on the provided training-data
-        and optimize the hyper-parameters by maximizing
-        the data's evidence or its lower bound (ELBO).
-
-        Returns:
-            None
+        Surrogate is calculated based on the provided training-data and
+        optimize the hyper-parameters by maximizing the data's evidence
+        or its lower bound (ELBO).
         """
         # Start the bmfia (sub)iterator to create the training data for the probabilistic mapping
         self.z_train, self.y_hf_train = self.bmfia_subiterator.core_run()
@@ -476,11 +471,7 @@ class BMFGaussianModel(LikelihoodModel):
 
     # ------- TODO: below not needed atm but something similar might be of interest lateron -----
     def input_dim_red(self):
-        """Compression of the input array of the simulation.
-
-        Returns:
-            None
-        """
+        """Compression of the input array of the simulation."""
         self.get_random_fields()
         # TODO: more to come...
 

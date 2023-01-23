@@ -1,3 +1,6 @@
+"""TODO_doc."""
+
+
 import os
 import pickle
 from pathlib import Path
@@ -8,8 +11,8 @@ from pqueens import run
 
 
 def test_branin_monte_carlo(inputdir, tmpdir):
-    """Test case for monte carlo iterator."""
-    run(Path(Path(inputdir, 'monte_carlo_branin.json')), Path(tmpdir))
+    """Test case for Monte Carlo iterator."""
+    run(Path(inputdir, 'monte_carlo_branin.yml'), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

@@ -8,20 +8,20 @@ def currin88_lofi(x1, x2, **kwargs):
     r"""Low-fidelity version of the Currin88 benchmark function.
 
     Simple two-dimensional example which appears several
-    times in the literature, see, e.g., [1]-[3].
+    times in the literature, see e.g. [1]-[3].
 
     The low-fidelity version is defined as follows [3]:
 
-    :math:`f_{lofi}({\bf x}) = \frac{1}{4}[f_{hifi}(x_1+0.05,x_2+0.05) +
-    f_{hifi}(x_1+0.05,max(0,x_2-0.05))] + \frac{1}{4}[f_{hifi}(x_1-0.05,x_2+0.05)
-    + f_{hifi}(x_1-0.05,max(0,x_2-0.05))]`
+    :math:`f_{lofi}({\bf x}) = \frac{1}{4} \left[f_{hifi}(x_1+0.05,x_2+0.05) +
+    f_{hifi}(x_1+0.05,max(0,x_2-0.05)) \right] + \frac{1}{4} \left[f_{hifi}(x_1-0.05,x_2+0.05)
+    + f_{hifi}(x_1-0.05,max(0,x_2-0.05)) \right]`
 
     Args:
-        x1 (float): input parameter 1 in [0,1]
-        x2 (float): input parameter 2 in [0,1]
+        x1 (float): Input parameter 1 in [0,1]
+        x2 (float): Input parameter 2 in [0,1]
 
     Returns:
-        float: Value of currin88 function
+        float: Value of the *currin88* function
 
     References:
         [1] Currin, C., Mitchell, T., Morris, M., & Ylvisaker, D. (1988).
@@ -57,7 +57,7 @@ def currin88_hifi(x1, x2, **kwargs):
 
     The high-fidelity version is defined as follows:
 
-    :math:`f_{hifi}({\bf x}) = [1 - \exp(\frac{1}{2 x_2})] \frac{2300x_1^3 +
+    :math:`f_{hifi}({\bf x}) = \left[1 - \exp(\frac{1}{2 x_2}) \right] \frac{2300x_1^3 +
     1900 x_1^2 + 2092x_1 +60}{100x_1^3 + 500x_1^2 +4 x_1+20}`
 
     [3] proposed the following low-fidelity version of the function:
@@ -67,11 +67,11 @@ def currin88_hifi(x1, x2, **kwargs):
     + f_{hifi}(x_1-0.05,max(0,x_2-0.05))]`
 
     Args:
-        x1 (float): input parameter 1 in [0,1]
-        x2 (float): input parameter 2 in [0,1]
+        x1 (float): Input parameter 1 in [0,1]
+        x2 (float): Input parameter 2 in [0,1]
 
     Returns:
-        float: value of currin88 function
+        float: Value of the *currin88* function
 
     References:
         [1] Currin, C., Mitchell, T., Morris, M., & Ylvisaker, D. (1988).
@@ -86,7 +86,6 @@ def currin88_hifi(x1, x2, **kwargs):
         [3] Xiong, S., Qian, P. Z., & Wu, C. J. (2013). Sequential design and
             analysis of high-accuracy and low-accuracy computer codes.
             Technometrics, 55
-        float: Value of currin88 function
     """
     fact1 = 1 - np.exp(-1 / (2 * x2))
     fact2 = 2300 * x1**3 + 1900 * x1**2 + 2092 * x1 + 60

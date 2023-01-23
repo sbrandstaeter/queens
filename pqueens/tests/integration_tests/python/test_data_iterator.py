@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -46,7 +48,7 @@ def test_branin_data_iterator(inputdir, tmpdir, mocker):
         return_value=[samples, output],
     )
 
-    run(Path(Path(inputdir, 'data_iterator_branin.json')), Path(tmpdir))
+    run(Path(Path(inputdir, 'data_iterator_branin.yml')), Path(tmpdir))
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)

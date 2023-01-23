@@ -48,6 +48,6 @@ def test_load_input_file_wrong_file_type(test_path):
 
 
 def test_load_input_file(input_file, input_dict):
-    """Test load_input_file."""
+    """Test *load_input_file*."""
     loaded_dict = load_input_file(input_file)
     assert loaded_dict == input_dict

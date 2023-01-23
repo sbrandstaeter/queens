@@ -1,4 +1,4 @@
-"""Sequential Monte Carlo implementation using 'particles' package."""
+"""Sequential Monte Carlo implementation using *particles* package."""
 
 import logging
 
@@ -13,7 +13,7 @@ from pqueens.distributions.uniform import UniformDistribution
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils import smc_utils
-from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
 
@@ -30,23 +30,23 @@ class SequentialMonteCarloChopinIterator(Iterator):
              10.1007/978-3-030-47845-2 , Springer.
 
     Attributes:
-        global_settings (dict): Global settings of the QUEENS simulations
-        model (obj): Underlying simulation model on which the inverse analysis is conducted
-        result_description (dict): Settings for storing and visualizing the results
-        num_particles (int): Number of particles
-        num_variables (int): Number of primary variables
-        result_description (dict):  Description of desired results
-        seed (int): Seed for random number generator
-        max_feval (int): Maximum number of model calls
-        n_sims (int): Number of model calls
-        prior (object): Particles Prior object
-        smc_obj (object): Particles SMC object
-        random_variable_keys (list): Random variables names
-        resampling_threshold (float): Ratio of ESS to partice number at which to resample
-        resampling_method (str): Resampling method implemented in particles
-        feynman_kac_model (str): Feynman Kac model for the smc object
-        num_rejuvenation_steps (int): Number of rejuvenation steps (e.g. MCMC steps)
-        waste_free (bool): if True, all intermediate Markov steps are kept
+        result_description (dict): Settings for storing and visualizing the results.
+                                   (**TODO_doc:** result_description is defined twice)
+        result_description (dict): Description of desired results.
+                                   (**TODO_doc:** result_description is defined twice)
+        seed (int): Seed for random number generator.
+        num_particles (int): Number of particles.
+        num_variables (int): Number of primary variables.
+        n_sims (int): Number of model calls.
+        max_feval (int): Maximum number of model calls.
+        prior (object): Particles Prior object.
+        smc_obj (object): Particles SMC object.
+        random_variable_keys (list): Random variables names.
+        resampling_threshold (float): Ratio of ESS to particle number at which to resample.
+        resampling_method (str): Resampling method implemented in particles.
+        feynman_kac_model (str): Feynman Kac model for the smc object.
+        num_rejuvenation_steps (int): Number of rejuvenation steps (e.g. MCMC steps).
+        waste_free (bool): If *True*, all intermediate Markov steps are kept.
     """
 
     def __init__(
@@ -114,9 +114,9 @@ class SequentialMonteCarloChopinIterator(Iterator):
         Returns:
             iterator: SequentialMonteCarloChopinIterator object
         """
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
         if model is None:
-            model_name = method_options['model']
+            model_name = method_options['model_name']
             model = from_config_create_model(model_name, config)
 
         result_description = method_options.get('result_description', None)
@@ -153,16 +153,15 @@ class SequentialMonteCarloChopinIterator(Iterator):
 
         Args:
             samples (np.array): Samples/particles of the SMC.
+
+        Returns:
+            log_likelihood (np.array): Value of log-likelihood for samples.
         """
         log_likelihood = self.model.evaluate(samples)
         return log_likelihood
 
     def _initialize_prior_model(self):
-        """Initialize the prior model form the problem description.
-
-        Returns:
-            None
-        """
+        """Initialize the prior model form the problem description."""
         if self.parameters.random_field_flag:
             raise NotImplementedError(
                 'Particles SMC for random fields is not yet implemented! Abort...'
@@ -244,7 +243,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
         """Core run of Sequential Monte Carlo iterator.
 
         The particles library is generator based. Hence one step of the
-        SMC algorithm is done using next(self.smc). As the next()
+        SMC algorithm is done using *next(self.smc)*. As the *next()*
         function is called during the for loop, we only need to add some
         logging and check if the number of model runs is exceeded.
         """
@@ -274,7 +273,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             self.smc_obj.summaries.moments[-1]["var"]
         )[0]
         if self.result_description:
-            results = process_ouputs(
+            results = process_outputs(
                 {
                     'particles': particles_smc,
                     'weights': weights,

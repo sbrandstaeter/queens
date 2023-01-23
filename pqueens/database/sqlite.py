@@ -1,4 +1,4 @@
-"""Sqlite module."""
+"""SQLite module."""
 import logging
 import sqlite3
 from pathlib import Path
@@ -47,10 +47,9 @@ class SQLite(Database):
     """SQLite wrapper for QUEENS.
 
     Attributes:
-        db_name (str): Database name
-        reset_existing_db (bool): Bool to reset database if desired
-        database_path (Pathlib.Path): Path to database object
-        tables (dict): dict of tables containing a dict with their column names and types
+        database_path (Pathlib.Path): Path to database object.
+        tables (dict): Dict of tables containing a dict with
+                       their column names and types.
     """
 
     @classmethod
@@ -169,7 +168,7 @@ class SQLite(Database):
         """Get column names and types through query.
 
         Args:
-            table_name (str): Table names
+            table_name (str): Table name
 
         Returns:
             column_names (list): List of column names
@@ -233,7 +232,7 @@ class SQLite(Database):
         """Create an empty table.
 
         Args:
-            table_name (str): table_name
+            table_name (str): Table name
         """
         query = f"CREATE TABLE IF NOT EXISTS {table_name} (id integer PRIMARY KEY)"
         self._execute(query, commit=True)
@@ -270,14 +269,14 @@ class SQLite(Database):
         """Save a document to the database.
 
         Args:
-            dictionary (dict):          document to be saved to the db
-            experiment_name (string):   experiment the data belongs to
-            experiment_field (string):  experiment field data belongs to
-            batch (int):                batch the data belongs to
-            field_filters (dict):       filter to find appropriate document
+            dictionary (dict):          Document to be saved to the db
+            experiment_name (string):   Experiment the data belongs to
+            experiment_field (string):  Experiment field data belongs to
+            batch (int):                Batch the data belongs to
+            field_filters (dict):       Filter to find appropriate document
                                         to create or update
         Returns:
-            bool: is this the result of an acknowledged write operation ?
+            bool: Is this the result of an acknowledged write operation?
         """
         table_name = experiment_field
         self._add_table(table_name)
@@ -313,17 +312,17 @@ class SQLite(Database):
     def load(self, experiment_name, batch, experiment_field, field_filters=None):
         """Load document(s) from the database.
 
-        Decompresses any numpy arrays
+        Decompresses any numpy arrays.
 
         Args:
-            experiment_name (string):  experiment the data belongs to
-            experiment_field (string): experiment field data belongs to
-            batch (int):               batch the data belongs to
-            field_filters (dict):      filter to find appropriate document(s)
+            experiment_name (string):  Experiment the data belongs to
+            batch (int):               Batch the data belongs to
+            experiment_field (string): Experiment field data belongs to
+            field_filters (dict):      Filter to find appropriate document(s)
                                        to load
 
         Returns:
-            list: list of documents matching query
+            list: List of documents matching query
         """
         table_name = experiment_field
         if self._add_table(table_name):
@@ -366,10 +365,10 @@ class SQLite(Database):
         """Remove a list of documents from the database.
 
         Args:
-            experiment_name (string):  experiment the data belongs to
-            experiment_field (string): experiment field data belongs to
-            batch (int):               batch the data belongs to
-            field_filters (dict):      filter to find appropriate document(s)
+            experiment_name (string):  Experiment the data belongs to
+            experiment_field (string): Experiment field data belongs to
+            batch (int):               Batch the data belongs to
+            field_filters (dict):      Filter to find appropriate document(s)
                                        to delete
         """
         if field_filters:
@@ -402,14 +401,14 @@ class SQLite(Database):
         """Return number of document(s) in collection.
 
         Args:
-            experiment_name (string):  experiment the data belongs to
-            experiment_field (string): experiment field data belongs to
-            batch (int):               batch the data belongs to
-            field_filters (dict):      filter to find appropriate document(s)
+            experiment_name (string):  Experiment the data belongs to
+            batch (int):               Batch the data belongs to
+            experiment_field (string): Experiment field data belongs to
+            field_filters (dict):      Filter to find appropriate document(s)
                                        to load
 
         Returns:
-            int: number of documents in collection
+            int: Number of documents in collection
         """
         table_name = experiment_field
 

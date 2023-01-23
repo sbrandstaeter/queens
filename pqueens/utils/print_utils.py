@@ -2,14 +2,14 @@
 
 
 def get_str_table(name, print_dict):
-    """Function to get table to be used in `__str__` methods.
+    """Function to get table to be used in *__str__* methods.
 
     Args:
-        name (str): object name
-        print_dict (dict): dict containing labels and values to print
+        name (str): Object name
+        print_dict (dict): Dict containing labels and values to print
 
     Returns:
-        str: table to print
+        str: Table to print
     """
     # lines for the table
     lines = [name]

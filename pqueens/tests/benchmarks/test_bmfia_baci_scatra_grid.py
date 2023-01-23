@@ -24,7 +24,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
 
     # ----- generate json input file from template -----
     # template for actual smc evaluation
-    template = Path(inputdir, 'bmfia_scatra_baci_template_grid_gp_precompiled.json')
+    template = Path(inputdir, 'bmfia_scatra_baci_template_grid_gp_precompiled.yml')
 
     experimental_data_path = Path(third_party_inputs, "csv_files", "scatra_baci")
     plot_dir = tmpdir
@@ -36,7 +36,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
         'post_drt_ensight': post_drt_ensight,
         'plot_dir': plot_dir,
     }
-    input_file = Path(tmpdir, 'hf_scatra_baci.json')
+    input_file = Path(tmpdir, 'hf_scatra_baci.yml')
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS

@@ -22,24 +22,28 @@ class MpiDriver(Driver):
     """Driver to run an executable with mpi.
 
     Attributes:
-        cae_output_streaming (bool): flag for additional streaming to given stream
-        cluster_job (bool): true if job is executed on a cluster
-        cluster_options (dict): cluster options for pbs or slurm
-        error_file (path): path to error file
-        executable (path): path to main executable of respective software (e.g. baci)
-        input_file (path): path to input file
-        log_file (path): path to log file
-        mpi_cmd (str): mpi command
-        num_procs_post (int): number of processors for post-processing
-        output_file (path): path to output file
-        output_prefix (str): output prefix
-        pid (int): unique process ID
-        post_file_prefix (str): unique prefix to name the post-processed file
-        post_options (str): options for post-processing
+        cae_output_streaming (bool): Flag for additional streaming to given
+                                     stream.
+        cluster_job (bool): *True* if job is executed on a cluster.
+        cluster_options (dict): Cluster options for pbs or slurm.
+        error_file (path): Path to error file.
+        executable (path): Path to main executable of respective software
+                           (e.g. BACI).
+        input_file (path): Path to input file.
+        log_file (path): Path to log file.
+        mpi_cmd (str): mpi command.
+        num_procs_post (int): Number of processors for post-processing.
+        output_file (path): Path to output file.
+        output_prefix (str): Output prefix.
+        pid (int): Unique process ID.
+        post_file_prefix (str): Unique prefix to name the post-processed
+                                file.
+        post_options (str): Options for post-processing.
         result (np.array): simulation result to be stored in database
         cluster_type (str): type of cluster that the jobs are executed on
-        simulation_input_template (str): path to simulation input template (e.g. dat-file)
-        singularity (bool): flag for use of a singularity container
+        simulation_input_template (str): Path to simulation input template
+                                         (e.g. dat-file)
+        singularity (bool): Flag for use of a singularity container.
         experiment_dir (path): path to working directory
     """
 
@@ -161,16 +165,17 @@ class MpiDriver(Driver):
         Set up required directories and files.
 
         Args:
-            config (dict): dictionary containing configuration from QUEENS input file
-            job_id (int): job ID as provided in database within range [1, n_jobs]
-            batch (int): job batch number (multiple batches possible)
-            driver_name (str): name of driver instance that should be realized
+            config (dict): Dictionary containing configuration from QUEENS input file
+            job_id (int): Job ID as provided in database within range [1, n_jobs]
+            batch (int): Job batch number (multiple batches possible)
+            driver_name (str): Name of driver instance that should be realized
+            working_dir (str): Path to working directory on remote resource
+            cluster_options (dict): Cluster options for pbs or slurm
             experiment_dir (path): path to QUEENS experiment directory
             cluster_config (ClusterConfig): configuration data of cluster
-            cluster_options (dict): cluster options for pbs or slurm
 
         Returns:
-            MpiDriver (obj): instance of MpiDriver class
+            MpiDriver (obj): Instance of MpiDriver class
         """
         experiment_name = config['global_settings'].get('experiment_name')
 
@@ -178,7 +183,7 @@ class MpiDriver(Driver):
 
         # If multiple resources are passed an error is raised in the resources module.
         resource_name = list(config['resources'])[0]
-        scheduler_name = config['resources'][resource_name]['scheduler']
+        scheduler_name = config['resources'][resource_name]['scheduler_name']
         scheduler_options = config[scheduler_name]
         num_procs = scheduler_options.get('num_procs', 1)
         num_procs_post = scheduler_options.get('num_procs_post', 1)
@@ -199,7 +204,7 @@ class MpiDriver(Driver):
         post_file_prefix = driver_options.get('post_file_prefix', None)
         post_options = driver_options.get('post_process_options', '')
 
-        data_processor_name = driver_options.get('data_processor', None)
+        data_processor_name = driver_options.get('data_processor_name', None)
         if data_processor_name:
             data_processor = from_config_create_data_processor(config, data_processor_name)
             cae_output_streaming = False
@@ -207,7 +212,7 @@ class MpiDriver(Driver):
             data_processor = None
             cae_output_streaming = True
 
-        gradient_data_processor_name = driver_options.get('gradient_data_processor', None)
+        gradient_data_processor_name = driver_options.get('gradient_data_processor_name', None)
         if gradient_data_processor_name:
             gradient_data_processor = from_config_create_data_processor(
                 config, gradient_data_processor_name

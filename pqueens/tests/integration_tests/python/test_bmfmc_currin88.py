@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -19,6 +21,7 @@ from pqueens.utils.process_outputs import write_results
 # ---- fixtures ----------------------------------------------------------------
 @pytest.fixture()
 def generate_X_mc():
+    """TODO_doc."""
     # generate 5000 uniform samples for x1 and x2 in [0,1]
     np.random.seed(1)
     n_samples = 1000
@@ -28,6 +31,7 @@ def generate_X_mc():
 
 @pytest.fixture()
 def generate_LF_MC_data(generate_X_mc):
+    """TODO_doc."""
     y = []
     for x_vec in generate_X_mc:
         params = {'x1': x_vec[0], 'x2': x_vec[1]}
@@ -40,6 +44,7 @@ def generate_LF_MC_data(generate_X_mc):
 
 @pytest.fixture()
 def generate_HF_MC_data(generate_X_mc):
+    """TODO_doc."""
     y = []
     for x_vec in generate_X_mc:
         params = {'x1': x_vec[0], 'x2': x_vec[1]}
@@ -52,6 +57,7 @@ def generate_HF_MC_data(generate_X_mc):
 
 @pytest.fixture()
 def write_LF_MC_data_to_pickle(tmpdir, generate_X_mc, generate_LF_MC_data):
+    """TODO_doc."""
     file_name = 'LF_MC_data'
     input_description = {
         "random_variables": {
@@ -82,11 +88,12 @@ def write_LF_MC_data_to_pickle(tmpdir, generate_X_mc, generate_LF_MC_data):
 
 @pytest.fixture(params=['random', 'diverse_subset'])
 def design_method(request):
+    """TODO_doc."""
     design = request.param
     return design
 
 
-# ---- actual integration tests ------------------------------------------------
+# ---- actual integration tests -------------------------------------------------
 def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     tmpdir,
     inputdir,
@@ -95,10 +102,13 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     generate_LF_MC_data,
     design_method,
 ):
-    """Integration tests for the BMFMC routine based on the HF and LF currin88
-    function."""
+    """TODO_doc: add a one-line explanation.
+
+    Integration tests for the BMFMC routine based on the HF and LF
+    *currin88* function.
+    """
     # generate json input file from template
-    template = Path(inputdir, 'bmfmc_currin88_template.json')
+    template = Path(inputdir, 'bmfmc_currin88_template.yml')
     plot_dir = tmpdir
     lf_mc_data_name = 'LF_MC_data.pickle'
     path_lf_mc_pickle_file = Path(tmpdir, lf_mc_data_name)
@@ -107,7 +117,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         'plot_dir': plot_dir,
         'design_method': design_method,
     }
-    input_file = Path(tmpdir, 'bmfmc_currin88.json')
+    input_file = Path(tmpdir, 'bmfmc_currin88.yml')
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS

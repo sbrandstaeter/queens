@@ -1,7 +1,7 @@
 """Test the main module."""
 import json
-import sys
 import logging
+import sys
 from pathlib import Path
 
 import pytest
@@ -17,7 +17,7 @@ pytestmark = pytest.mark.unit_tests
 def fixture_input_file(test_path):
     """Fixture to create input file."""
     input_file_dict = {"experiment_name": "test_experiment_name", "Iterator": "A"}
-    input_file_path = test_path.joinpath("input_file.json")
+    input_file_path = test_path.joinpath("input_file.yml")
     with open(input_file_path, "w") as stream:
         json.dump(input_file_dict, stream)
     return input_file_path
@@ -30,7 +30,7 @@ def fixture_debug_flag(request):
 
 
 def test_get_config_dict_output_dir_fail():
-    """Test if config fails for non-existing ouput directory."""
+    """Test if config fails for non-existing output directory."""
     with pytest.raises(FileNotFoundError, match="Output directory"):
         get_config_dict(None, Path("path/that/doesnt/esxits"))
 

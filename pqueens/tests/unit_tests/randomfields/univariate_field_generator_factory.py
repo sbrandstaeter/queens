@@ -15,7 +15,10 @@ from pqueens.randomfields.univariate_field_generator_factory import (
 
 
 class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         # setup some necessary variables to setup random field generators
         self.dimension = 1
         self.corrstruct = 'squared_exp'
@@ -29,6 +32,7 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
         self.seed = 42
 
     def test_construction_wrong_distribution(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 beta(2, 4),
@@ -43,6 +47,7 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
             mystuff.gen_sample_gauss_field(10, np.array((4, 4)))
 
     def test_construction_wrong_covariance(self):
+        """TODO_doc."""
         with self.assertRaises(RuntimeError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 self.marginal_pdf,
@@ -57,6 +62,7 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
             mystuff.gen_sample_gauss_field(10, np.array((4, 4)))
 
     def test_construction_wrong_dimension(self):
+        """TODO_doc."""
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 self.marginal_pdf,
@@ -82,7 +88,10 @@ class TestRandomFieldGeneratorConstructionFactory(unittest.TestCase):
 
 
 class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         # setup some necessary variables to setup random field generators
         self.dimension = 1
         self.corrstruct = 'squared_exp'
@@ -98,6 +107,7 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
     # raise RuntimeError('field bounding box must be size {} and not {}'.format(
     # self.spatial_dim*2,san_check_bbox[0]))
     def test_construction_boundingbox_dimension(self):
+        """TODO_doc."""
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 self.marginal_pdf,
@@ -112,6 +122,7 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
 
     # raise ValueError('energy fraction must be between 0 and 1.')
     def test_construction_wrong_engergy_frac(self):
+        """TODO_doc."""
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 self.marginal_pdf,
@@ -138,6 +149,7 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
 
     # raise ValueError('correlation length must smaller than
     def test_construction_correlation_length_to_long(self):
+        """TODO_doc."""
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 self.marginal_pdf,
@@ -152,6 +164,7 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
 
     # raise RuntimeError('Error: correlation length must be positive')
     def test_construction_correlation_length_negative(self):
+        """TODO_doc."""
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 self.marginal_pdf,
@@ -166,7 +179,10 @@ class TestRandomFieldGeneratorFourierConstruction(unittest.TestCase):
 
 
 class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         # setup some necessary variables to setup random field generators
         self.dimension = 1
         self.corrstruct = 'exp'
@@ -182,6 +198,7 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
     # raise RuntimeError('field bounding box must be size {} and not {}'.format(
     # self.spatial_dim*2,san_check_bbox[0]))
     def test_construction_boundingbox_dimension(self):
+        """TODO_doc."""
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 self.marginal_pdf,
@@ -196,6 +213,7 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
 
     # raise RuntimeError Number of terms in KLE expansion is too large. '
     def test_num_expansion_terms(self):
+        """TODO_doc."""
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 self.marginal_pdf,
@@ -210,6 +228,7 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
 
     # raise ValueError('energy fraction must be between 0 and 1.')
     def test_construction_wrong_engergy_frac(self):
+        """TODO_doc."""
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 self.marginal_pdf,
@@ -236,6 +255,7 @@ class TestRandomFieldGeneratorKLEConstruction(unittest.TestCase):
 
     # raise RuntimeError('Error: correlation length must be positive')
     def test_construction_correlation_length_negative(self):
+        """TODO_doc."""
         with self.assertRaises(ValueError):
             mystuff = UniVarRandomFieldGeneratorFactory.create_new_random_field_generator(
                 self.marginal_pdf,

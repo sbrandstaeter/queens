@@ -1,7 +1,7 @@
 """Iterators.
 
 The iterator package contains the implementation of several UQ and
-optimization methods. Each of which is implemented in their own iterator
+optimization methods, each of which is implemented in their own iterator
 class. The iterator is therefor one of the central building blocks, as
 the iterators orchestrate the evaluations on one or multiple models.
 QUEENS also permits nesting of iterators to enable hierarchical methods
@@ -58,6 +58,6 @@ def from_config_create_iterator(config, iterator_name='method', model=None):
         iterator: Iterator object
     """
     iterator_options = config.get(iterator_name)
-    iterator_class = get_module_class(iterator_options, VALID_TYPES, "method_name")
+    iterator_class = get_module_class(iterator_options, VALID_TYPES, "type")
     iterator = iterator_class.from_config_create_iterator(config, iterator_name, model)
     return iterator

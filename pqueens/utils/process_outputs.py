@@ -15,16 +15,16 @@ from pqueens.utils.plot_outputs import plot_cdf, plot_failprob, plot_icdf, plot_
 _logger = logging.getLogger(__name__)
 
 
-def process_ouputs(output_data, output_description, input_data=None):
+def process_outputs(output_data, output_description, input_data=None):
     """Process output from QUEENS models.
 
     Args:
         output_data (dict):         Dictionary containing model output
-        output_descripion (dict):   Dictionary describing desired output quantities
+        output_description (dict):   Dictionary describing desired output quantities
         input_data (np.array):      Array containing model input
 
     Returns:
-        dict:                       Dictionary with processed results
+        dict: Dictionary with processed results
     """
     processed_results = {}
     try:
@@ -48,7 +48,7 @@ def do_processing(output_data, output_description):
         output_description (dict):   Dictionary describing desired output quantities
 
     Returns:
-        dict:                       Dictionary with processed results
+        dict: Dictionary with processed results
     """
     # do we want confidence intervals
     bayesian = output_description.get('bayesian', False)
@@ -137,13 +137,13 @@ def write_results(processed_results, path_to_file, file_name):
 def estimate_result_interval(output_data):
     """Estimate interval of output data.
 
-    Estimate interval of output data and add small margins
+    Estimate interval of output data and add small margins.
 
     Args:
         output_data (dict):       Dictionary with output data
 
     Returns:
-        list:                     Output interval
+        list: Output interval
     """
     samples = output_data["mean"]
     _logger.debug(samples)
@@ -165,7 +165,7 @@ def estimate_mean(output_data):
         output_data (dict):       Dictionary with output data
 
     Returns:
-        float                     Unbiased mean estimate
+        float: Unbiased mean estimate
     """
     samples = output_data["mean"]
     return np.mean(samples, axis=0)
@@ -178,7 +178,7 @@ def estimate_var(output_data):
         output_data (dict):       Dictionary with output data
 
     Returns:
-        float                     Unbiased variance estimate
+        float: Unbiased variance estimate
     """
     samples = output_data["mean"]
     return np.var(samples, ddof=1, axis=0)
@@ -191,7 +191,7 @@ def estimate_cov(output_data):
         output_data (dict):       Dictionary with output data
 
     Returns:
-        numpy.array                    Unbiased covariance estimate
+        numpy.array: Unbiased covariance estimate
     """
     samples = output_data["mean"]
 
@@ -210,10 +210,10 @@ def estimate_cdf(output_data, support_points, bayesian):
     Args:
         output_data (dict):         Dictionary with output data
         support_points (np.array):  Points where to evaluate cdf
-        bayesian (bool):            Compute confindence intervals etc.
+        bayesian (bool):            Compute confidence intervals etc.
 
     Returns:
-        cdf:                        Dictionary with cdf estimates
+        cdf: Dictionary with cdf estimates
     """
     cdf = {}
     cdf["x"] = support_points
@@ -257,10 +257,10 @@ def estimate_icdf(output_data, bayesian):
 
     Args:
         output_data (dict):         Dictionary with output data
-        bayesian (bool):            Compute confindence intervals etc.
+        bayesian (bool):            Compute confidence intervals etc.
 
     Returns:
-        icdf:                        Dictionary with icdf estimates
+        icdf: Dictionary with icdf estimates
     """
     my_percentiles = 100 * np.linspace(0 + 1 / 1000, 1 - 1 / 1000, 999)
     icdf = {}
@@ -293,10 +293,10 @@ def estimate_failprob(output_data, bayesian):
 
     Args:
         output_data (dict):            Dictionary with output data
-        bayesian (bool):               Compute confindence intervals etc.
+        bayesian (bool):               Compute confidence intervals etc.
 
     Returns:
-        icdf:                        Dictionary with icdf estimates
+        icdf: Dictionary with icdf estimates
     """
     raise NotImplementedError
 
@@ -307,10 +307,10 @@ def estimate_pdf(output_data, support_points, bayesian):
     Args:
         output_data (dict):         Dictionary with output data
         support_points (np.array):  Points where to evaluate pdf
-        bayesian (bool):            Compute confindence intervals etc.
+        bayesian (bool):            Compute confidence intervals etc.
 
     Returns:
-        pdf:                        Dictionary with pdf estimates
+        pdf: Dictionary with pdf estimates
     """
     pdf = {}
     pdf["x"] = support_points
@@ -347,11 +347,11 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
     """Estimate optimal bandwidth for kde of pdf.
 
     Args:
-        samples (np.array):  samples for which to estimate pdf
-        min_samples (float): smallest value
-        max_samples (float): largest value
+        samples (np.array):  Samples for which to estimate pdf
+        min_samples (float): Smallest value
+        max_samples (float): Largest value
     Returns:
-        float: estimate for optimal kernel_bandwidth
+        float: Estimate for optimal *kernel_bandwidth*
     """
     kernel_bandwidth = 0
     kernel_bandwidth_upper_bound = (max_samples - min_samples) / 2.0
@@ -376,11 +376,11 @@ def perform_kde(samples, kernel_bandwidth, support_points):
     """Estimate pdf using kernel density estimation.
 
     Args:
-        samples (np.array):         samples for which to estimate pdf
-        kernel_bandwidth (float):   kernel width to use in kde
-        support_points (np.array):  points where to evaluate pdf
+        samples (np.array):         Samples for which to estimate pdf
+        kernel_bandwidth (float):   Kernel width to use in kde
+        support_points (np.array):  Points where to evaluate pdf
     Returns:
-        np.array:                   pdf_estimate at support points
+        np.array: *pdf_estimate* at support points
     """
     kde = KernelDensity(kernel='gaussian', bandwidth=kernel_bandwidth).fit(samples.reshape(-1, 1))
 

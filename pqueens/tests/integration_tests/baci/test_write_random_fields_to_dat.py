@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -12,6 +14,7 @@ from pqueens.utils import injector
 def test_write_random_dirichlet_to_dat(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, expected_result
 ):
+    """TODO_doc."""
     # generate json input file from template
     third_party_input_file = Path(
         third_party_inputs, "baci_input_files", "invaaa_ee_fields_template.dat"
@@ -26,8 +29,8 @@ def test_write_random_dirichlet_to_dat(
         'post_drt_monitor': post_drt_monitor,
         'baci-release': baci_release,
     }
-    template = Path(inputdir, "baci_write_random_field_to_dat_template.json")
-    input_file = Path(tmpdir, "baci_write_random_field_to_dat.json")
+    template = Path(inputdir, "baci_write_random_field_to_dat_template.yml")
+    input_file = Path(tmpdir, "baci_write_random_field_to_dat.yml")
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
@@ -51,5 +54,6 @@ def test_write_random_dirichlet_to_dat(
 
 @pytest.fixture()
 def expected_result():
+    """TODO_doc."""
     result = np.array([[-0.04793531], [-0.04565255], [-0.04865387]]).reshape(3, 1)
     return result

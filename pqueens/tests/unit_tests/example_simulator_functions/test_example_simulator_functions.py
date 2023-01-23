@@ -285,9 +285,9 @@ def test_example_simulator_functions(function_name, test_dict):
 
 @pytest.mark.unit_tests
 @pytest.mark.parametrize(
-    "function_name",
+    "function",
     list(VALID_EXAMPLE_SIMULATOR_FUNCTIONS.keys()),
 )
-def test_if_all_example_simulator_functions_are_tested(function_name):
+def test_if_all_example_simulator_functions_are_tested(function):
     """Test if all the example simulator functions are being tested."""
-    assert function_name in TEST_DICT.keys()
+    assert function in TEST_DICT.keys()

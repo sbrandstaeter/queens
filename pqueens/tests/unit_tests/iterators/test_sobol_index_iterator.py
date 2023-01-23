@@ -1,4 +1,4 @@
-"""Unittest for Sobol index iterator."""
+"""Unit test for Sobol index iterator."""
 import unittest
 
 import numpy as np
@@ -14,12 +14,12 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
 
 
 class TestSobolIndices(unittest.TestCase):
-    """Unittest for Sobol index iterator."""
+    """Unit test for Sobol index iterator."""
 
     def setUp(self):
         """Set up the iterator."""
         uncertain_parameter = {
-            "dimension": 1,
+            "type": "random_variable",
             "distribution": "uniform",
             "lower_bound": -3.14159265359,
             "upper_bound": 3.14159265359,
@@ -30,9 +30,8 @@ class TestSobolIndices(unittest.TestCase):
             'x2': uncertain_parameter,
             'x3': uncertain_parameter,
         }
-        uncertain_parameters = {"random_variables": random_variables}
 
-        parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
+        parameters_module.from_config_create_parameters({"parameters": random_variables})
 
         some_settings = {"experiment_name": "test"}
 
@@ -81,7 +80,7 @@ class TestSobolIndices(unittest.TestCase):
         np.testing.assert_allclose(self.my_iterator.samples, ref_vals, 1e-07, 1e-07)
 
     def test_correct_sensitivity_indices(self):
-        """Test sobol indices results."""
+        """Test Sobol indices results."""
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
         si = self.my_iterator.sensitivity_indices
