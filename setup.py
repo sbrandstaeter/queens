@@ -1,5 +1,4 @@
 """QUEENS setup file."""
-import os
 import sys
 from pathlib import Path
 
@@ -15,7 +14,7 @@ def read(fname):
     Returns:
         The content of the file fname
     """
-    return open(str(Path(__file__).parent, fname), encoding="utf-8").read()
+    return Path(__file__).parent.joinpath(fname).read_text(encoding="utf-8")
 
 
 def read_requirements(fname):
@@ -28,11 +27,11 @@ def read_requirements(fname):
         packages (list): List of the required packages
     """
     packages = []
-    with open(str(Path(__file__).parent, fname), encoding="utf-8") as f:
-        for line in f:
-            line = line.partition('#')[0].rstrip()
-            if line:
-                packages.append(line)
+    requirements_file = read(fname)
+    for line in iter(requirements_file.splitlines()):
+        requirement = line.partition('#')[0].rstrip()
+        if requirement:
+            packages.append(requirement)
     return packages
 
 
