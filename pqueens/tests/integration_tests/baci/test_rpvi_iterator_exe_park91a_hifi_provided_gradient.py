@@ -71,5 +71,5 @@ def create_input_file_executable_park91a_hifi_on_grid(tmpdir):
     """Write temporary input file for executable."""
     input_path = tmpdir.join("input_file_executable_park91a_hifi_on_grid.csv")
     with open(input_path, "w", encoding='utf-8') as input_file:
-        input_file.write("{x1}\n")
-        input_file.write("{x2}")
+        input_file.write("{{x1}}\n")
+        input_file.write("{{x2}}")

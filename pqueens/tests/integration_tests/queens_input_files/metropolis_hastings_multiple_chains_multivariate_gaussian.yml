@@ -24,7 +24,7 @@ model:
   noise_value: 1.0
   nugget_noise_var: 1.0e-05
   experimental_file_name_identifier: '*.csv'
-  experimental_csv_data_base_dir: {experimental_data_path}
+  experimental_csv_data_base_dir: {{experimental_data_path}}
 forward_model:
   type: simulation_model
   interface_name: interface

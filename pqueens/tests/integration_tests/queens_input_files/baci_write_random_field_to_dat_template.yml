@@ -22,8 +22,8 @@ pre_processing:
     dofs_deterministic: [1, 2]
     value_dofs_deterministic: [0, 0]
     funct_for_deterministic_dofs: [0, 0]
-  input_template: {baci_input}
-  input_template_preprocessed: {baci_input_preprocessed}
+  input_template: {{baci_input}}
+  input_template_preprocessed: {{baci_input_preprocessed}}
 model:
   type: simulation_model
   interface_name: interface
@@ -32,9 +32,9 @@ interface:
   driver_name: driver
 driver:
   type: mpi
-  input_template: {baci_input_preprocessed}
-  path_to_executable: {baci-release}
-  path_to_postprocessor: {post_drt_monitor}
+  input_template: {{baci_input_preprocessed}}
+  path_to_executable: {{baci_release}}
+  path_to_postprocessor: {{post_drt_monitor}}
   post_process_options: --field=structure --node=26 --start=1
   post_file_prefix: QoI
   data_processor_name: data_processor_baci

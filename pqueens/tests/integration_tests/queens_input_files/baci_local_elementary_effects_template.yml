@@ -1,4 +1,4 @@
-experiment_name: {experiment_name}
+experiment_name: {{experiment_name}}
 database:
   type: mongodb
   address: localhost:27017
@@ -27,9 +27,9 @@ interface:
   driver_name: driver
 driver:
   type: mpi
-  input_template: {baci_input}
-  path_to_executable: {baci-release}
-  path_to_postprocessor: {post_drt_monitor}
+  input_template: {{baci_input}}
+  path_to_executable: {{baci_release}}
+  path_to_postprocessor: {{post_drt_monitor}}
   post_file_prefix: QoI
   post_process_options: --field=structure --node=26 --start=1
   data_processor_name: data_processor_baci
@@ -52,7 +52,7 @@ resources:
     max_finished_jobs: 1000
 local_scheduler:
   type: standard
-  singularity: {singularity_boolean}
+  singularity: {{singularity_boolean}}
   num_procs: 1
   num_procs_post: 1
 parameters:

@@ -95,7 +95,7 @@ def test_baci_elementary_effects(
     Args:
         inputdir (str): Path to the JSON input file
         third_party_inputs (str): Path to the BACI input files
-        baci_link_paths(str): Path to the links pointing to *baci-release* and *post_drt_monitor*
+        baci_link_paths(str): Path to the links pointing to *baci_release* and *post_drt_monitor*
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
         experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
         baci_elementary_effects_check_results (function): function to check the results
@@ -110,7 +110,7 @@ def test_baci_elementary_effects(
     dir_dict = {
         'experiment_name': experiment_name,
         'baci_input': third_party_input_file,
-        'baci-release': baci_release,
+        'baci_release': baci_release,
         'post_drt_monitor': post_drt_monitor,
         'singularity_boolean': json.dumps(singularity_bool),
     }

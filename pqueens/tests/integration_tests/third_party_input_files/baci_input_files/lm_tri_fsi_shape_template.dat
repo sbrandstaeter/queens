@@ -88,7 +88,7 @@ SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 3 DENS 0.001
-MAT 3 ELAST_CoupNeoHooke YOUNG {E} NUE {nue}
+MAT 3 ELAST_CoupNeoHooke YOUNG {{E}} NUE {{nue}}
 MAT 4 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
