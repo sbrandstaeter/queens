@@ -1121,15 +1121,21 @@ class BaciDatExternalGeometry(ExternalGeometry):
             set_shape = len(self.node_coordinates['node_mesh'])
             placeholders = [dirich_field['name'] + '_' + str(i) for i in range(set_shape)]
             if dirich_field["dof_for_field"] == 1:
-                realized_random_field_1 = ['{' + placeholder + '}' for placeholder in placeholders]
+                realized_random_field_1 = [
+                    '{{' + placeholder + '}}' for placeholder in placeholders
+                ]
                 fun_1 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
             elif dirich_field["dof_for_field"] == 2:
-                realized_random_field_2 = ['{' + placeholder + '}' for placeholder in placeholders]
+                realized_random_field_2 = [
+                    '{{' + placeholder + '}}' for placeholder in placeholders
+                ]
                 fun_2 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
             elif dirich_field["dof_for_field"] == 3:
-                realized_random_field_3 = ['{' + placeholder + '}' for placeholder in placeholders]
+                realized_random_field_3 = [
+                    '{{' + placeholder + '}}' for placeholder in placeholders
+                ]
                 fun_3 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
             self._write_coords_to_dict(
