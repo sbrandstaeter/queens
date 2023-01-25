@@ -33,24 +33,24 @@ class FreeVariable(Distribution):
 
     def cdf(self, _):
         """Cumulative distribution function."""
-        raise NotImplementedError('cdf method is not implemented for FreeVariable.')
+        raise ValueError('cdf method is not supported for FreeVariable.')
 
     def draw(self, _):
         """Draw samples."""
-        raise NotImplementedError('draw method is not implemented for FreeVariable.')
+        raise ValueError('draw method is not supported for FreeVariable.')
 
     def logpdf(self, _):
         """Log of the probability density function."""
-        raise NotImplementedError('logpdf method is not implemented for FreeVariable.')
+        raise ValueError('logpdf method is not supported for FreeVariable.')
 
     def grad_logpdf(self, _):
         """Gradient of the log pdf with respect to *x*."""
-        raise NotImplementedError('grad_logpdf method is not implemented for FreeVariable.')
+        raise ValueError('grad_logpdf method is not supported for FreeVariable.')
 
     def pdf(self, _):
         """Probability density function."""
-        raise NotImplementedError('pdf method is not implemented for FreeVariable.')
+        raise ValueError('pdf method is not supported for FreeVariable.')
 
     def ppf(self, _):
         """Percent point function (inverse of cdf — quantiles)."""
-        raise NotImplementedError('ppf method is not implemented for FreeVariable.')
+        raise ValueError('ppf method is not supported for FreeVariable.')
