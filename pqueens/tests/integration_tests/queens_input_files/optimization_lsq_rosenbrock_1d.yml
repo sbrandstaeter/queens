@@ -18,5 +18,5 @@ interface:
   function: rosenbrock60_residual_1d
 parameters:
   x1:
-    type: variable
+    type: free
     dimension: 1

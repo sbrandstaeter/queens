@@ -22,8 +22,8 @@ interface:
   function: rosenbrock60
 parameters:
   x1:
-    type: variable
+    type: free
     dimension: 1
   x2:
-    type: variable
+    type: free
     dimension: 1
