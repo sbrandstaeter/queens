@@ -7,7 +7,7 @@ VALID_TYPES = {
     'lognormal': ["pqueens.distributions.lognormal", "LogNormalDistribution"],
     'beta': ["pqueens.distributions.beta", "BetaDistribution"],
     'exponential': ['pqueens.distributions.exponential', 'ExponentialDistribution'],
-    'free': ['pqueens.distributions.free', 'FreeDistribution'],
+    'free': ['pqueens.distributions.free', 'FreeVariable'],
 }
 
 
