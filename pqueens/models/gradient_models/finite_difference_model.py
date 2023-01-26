@@ -2,8 +2,6 @@
 
 import logging
 
-import numpy as np
-
 from pqueens.models.gradient_models.gradient_model import GradientModel
 from pqueens.utils.grad_utils import Tracer
 
@@ -25,6 +23,7 @@ class FiniteDifferenceModel(GradientModel):
             forward_model (obj): Forward model on which the likelihood model is based
         """
         super().__init__(model_name, forward_model)
+        self.response_grad = None
 
     @classmethod
     def from_config_create_model(
@@ -44,17 +43,20 @@ class FiniteDifferenceModel(GradientModel):
         forward_model = super().get_base_attributes_from_config(model_name, config)
         return cls(model_name=model_name, forward_model=forward_model)
 
-    def evaluate_and_grad(self, samples, tracer=Tracer()):
-        samples_fd = self.create_finite_difference_star(samples)
-        model_output_fd = self.forward_model.evaluate(samples_fd)
-        if self.fd_on_model == True:
-            model_output, model_grad_x = self.get_output_and_gradient_from_fd(
-                model_output_fd, samples_fd)
-            objective_output, objective_grad_model = tracer.evaluate_and_grad(model_output)
-            objective_grad_x = np.dot(objective_grad_model, model_grad_x)
-        else:   # fd on objective
-            objective_output_fd = tracer.evaluate(model_output_fd)
-            objective_output, objective_grad_x = self.get_output_and_gradient_from_fd(
-                objective_output_fd, samples_fd)
-        return objective_output, objective_grad_x
+    def evaluate(self, samples):
+        """Evaluate forward model with current set of variables."""
+        finite_difference_star_inputs = self.create_finite_difference_star(samples)
+        finite_difference_star_outputs = self.forward_model.evaluate(finite_difference_star_inputs)
+        self.response, self.response_grad = self.evaluate_finite_difference_star(
+            finite_difference_star_inputs, finite_difference_star_outputs)
+        return self.response
+
+    def grad(self, samples, tracer=Tracer()):
+        return self.response_grad
+
+    def create_finite_difference_star(self, samples):
+        raise NotImplementedError('this has to be implemented')
+
+    def evaluate_finite_difference_star(self, inputs, outputs):
+        raise NotImplementedError('this has to be implemented')
 

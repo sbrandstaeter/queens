@@ -45,5 +45,4 @@ class GradientModel(Model):
 
     @abc.abstractmethod
     def evaluate(self, samples):
-        """Evaluate forward model with current set of variables."""
-        return self.forward_model.evaluate(samples)
+        pass

@@ -2,10 +2,7 @@
 
 import logging
 
-import numpy as np
-
 from pqueens.models.gradient_models.gradient_model import GradientModel
-from pqueens.utils.grad_utils import Tracer
 
 _logger = logging.getLogger(__name__)
 
@@ -44,9 +41,15 @@ class AdjointModel(GradientModel):
         forward_model = super().get_base_attributes_from_config(model_name, config)
         return cls(model_name=model_name, forward_model=forward_model)
 
-    def evaluate_and_grad(self, samples, tracer=Tracer()):
-        model_output = self.forward_model.evaluate(samples)
-        objective_output, objective_grad_model = tracer.evaluate_and_grad(model_output)
-        objective_grad_x = self.solve_adjoint(objective_grad_model)
-        return objective_output, objective_grad_x
+    def evaluate(self, samples):
+        """Evaluate forward model with current set of variables."""
+        return self.forward_model.evaluate(samples)
+
+    def grad(self, samples, upstream):
+        objective_grad = self.solve_adjoint(upstream)
+        return objective_grad
+
+    def solve_adjoint(self, grad_objective):
+        forward_model_output = self.forward_model.response
+        raise NotImplementedError('this has to be implemented')
 

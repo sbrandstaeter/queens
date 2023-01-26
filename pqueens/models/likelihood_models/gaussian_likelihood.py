@@ -8,7 +8,6 @@ from pqueens.distributions import from_config_create_distribution
 from pqueens.models.likelihood_models.likelihood_model import LikelihoodModel
 from pqueens.utils.iterative_averaging_utils import from_config_create_iterative_averaging
 from pqueens.utils.numpy_utils import add_nugget_to_diagonal
-from pqueens.utils.grad_utils import Tracer
 
 _logger = logging.getLogger(__name__)
 
@@ -166,17 +165,17 @@ class GaussianLikelihood(LikelihoodModel):
         Returns:
             log_likelihood_output (np.ndarray): log-likelihood values per model input
         """
-        model_output_dict = self.forward_model.evaluate(samples)
-        model_output = model_output_dict['mean']
+        self.response = self.forward_model.evaluate(samples)['mean']
         if self.noise_type.startswith('MAP'):
-            self.update_covariance(model_output)
-        log_likelihood_output = self.normal_distribution.logpdf(model_output)
+            self.update_covariance(self.response)
+        log_likelihood = self.normal_distribution.logpdf(self.response)
 
-        return log_likelihood_output
+        return log_likelihood
 
-    def evaluate_and_grad(self, samples, tracer=Tracer()):
-        tracer.add(self.evaluate, self.normal_distribution.logpdf)
-        return self.forward_model.evaluate_and_grad(samples, tracer)
+    def grad(self, samples, upstream):
+        # shape convention: num_samples x jacobian_shape
+        log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response)[:, np.newaxis, :]
+        return self.forward_model.grad(samples, np.sum(upstream * log_likelihood_grad, axis=1))
 
     def update_covariance(self, y_model):
         """Update covariance matrix of the gaussian likelihood.

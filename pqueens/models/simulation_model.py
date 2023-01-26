@@ -42,19 +42,17 @@ class SimulationModel(Model):
 
         return cls(model_name, interface)
 
-    def evaluate(self, samples, gradient_bool=False):
+    def evaluate(self, samples):
         """Evaluate model with current set of samples.
 
         Args:
             samples (np.ndarray): Evaluated samples
-            gradient_bool (bool): Boolean to determine whether gradient at current variable
-                                  should be evaluated as well (if *True*)
 
         Returns:
-            self.response (np.array, tuple): Response of the underlying model at current variables
+            self.response (np.array): Response of the underlying model at current variables
         """
-        self.response = self.interface.evaluate(samples, gradient_bool=gradient_bool)
+        self.response = self.interface.evaluate(samples)
         return self.response
 
-    def evaluate_and_grad(self, samples, tracer=None):
-        raise NotImplementedError('You have to define a Gradient model for Simulation model!')
+    def grad(self, samples, upstream):
+        raise ValueError('You have to define a Gradient model for Simulation model!')

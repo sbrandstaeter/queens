@@ -1,6 +1,7 @@
 """Model class."""
 import abc
 
+import numpy as np
 import pqueens.parameters.parameters as parameters_module
 
 
@@ -18,7 +19,7 @@ class Model(metaclass=abc.ABCMeta):
     Attributes:
         name (str): Name of the model.
         parameters (obj): Parameters object.
-        response (dict): Response corresponding to parameters.
+        response (np.array): Response corresponding to parameters.
     """
 
     def __init__(self, name=None):
@@ -39,3 +40,18 @@ class Model(metaclass=abc.ABCMeta):
             samples: TODO_doc
         """
         pass
+
+    @abc.abstractmethod
+    def grad(self, samples, upstream):
+        """Evaluate gradient of model with current set of samples.
+
+        Args:
+            samples: TODO_doc
+            upstream: TODO_doc
+        """
+        pass
+
+    def evaluate_and_grad(self, samples):
+        model_output = self.evaluate(samples)
+        model_gradient = self.grad(samples, np.ones((samples.shape[0], 1)))
+        return model_output, model_gradient
