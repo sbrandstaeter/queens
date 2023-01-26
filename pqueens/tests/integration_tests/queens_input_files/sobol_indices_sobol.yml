@@ -21,52 +21,42 @@ interface:
   function: sobol_g_function
 parameters:
   x1:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 1
   x2:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 1
   x3:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 1
   x4:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 1
   x5:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 1
   x6:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 1
   x7:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 1
   x8:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 1
   x9:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 1
   x10:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 1

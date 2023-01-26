@@ -55,12 +55,10 @@ interface:
   function: branin78_hifi
 parameters:
   x1:
-    type: random_variable
+    type: uniform
     lower_bound: -5
     upper_bound: 10
-    distribution: uniform
   x2:
-    type: random_variable
+    type: uniform
     lower_bound: 0
     upper_bound: 15
-    distribution: uniform

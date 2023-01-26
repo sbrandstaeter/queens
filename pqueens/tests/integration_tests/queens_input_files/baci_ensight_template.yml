@@ -50,12 +50,10 @@ local_scheduler:
   num_procs_post: 1
 parameters:
   nue:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0.45
     upper_bound: 0.49
   pressure:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 28000
     upper_bound: 38000

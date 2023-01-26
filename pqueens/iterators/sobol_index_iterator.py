@@ -115,20 +115,20 @@ class SobolIndexIterator(Iterator):
         dists = []
         for key, parameter in self.parameters.dict.items():
             self.parameter_names.append(key)
-            if isinstance(parameter.distribution, distributions.uniform.UniformDistribution):
-                upper_bound = parameter.distribution.upper_bound
-                lower_bound = parameter.distribution.lower_bound
+            if isinstance(parameter, distributions.uniform.UniformDistribution):
+                upper_bound = parameter.upper_bound
+                lower_bound = parameter.lower_bound
                 distribution_name = 'unif'
             # in queens normal distributions are parameterized with mean and var
             # in salib normal distributions are parameterized via mean and std
             # -> we need to reparameterize normal distributions
-            elif isinstance(parameter.distribution, distributions.normal.NormalDistribution):
-                lower_bound = parameter.distribution.mean.squeeze()
-                upper_bound = np.sqrt(parameter.distribution.covariance.squeeze())
+            elif isinstance(parameter, distributions.normal.NormalDistribution):
+                lower_bound = parameter.mean.squeeze()
+                upper_bound = np.sqrt(parameter.covariance.squeeze())
                 distribution_name = 'norm'
-            elif isinstance(parameter.distribution, distributions.lognormal.LogNormalDistribution):
-                lower_bound = parameter.distribution.mu.squeeze()
-                upper_bound = parameter.distribution.sigma.squeeze()
+            elif isinstance(parameter, distributions.lognormal.LogNormalDistribution):
+                lower_bound = parameter.mu.squeeze()
+                upper_bound = parameter.sigma.squeeze()
                 distribution_name = 'lognorm'
             else:
                 raise ValueError("Valid distributions are normal, lognormal and uniform!")

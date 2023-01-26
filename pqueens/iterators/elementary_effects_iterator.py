@@ -12,6 +12,7 @@ from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
 
 import pqueens.visualization.sa_visualization as qvis
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import write_results
@@ -132,9 +133,9 @@ class ElementaryEffectsIterator(Iterator):
         """Generate samples for subsequent analysis and update model."""
         bounds = []
         for parameter in self.parameters.dict.values():
-            bounds.append([parameter.lower_bound, parameter.upper_bound])
-            if parameter.distribution is not None:
-                raise ValueError("Parameters must not have probability distributions")
+            if not isinstance(parameter, UniformDistribution) or parameter.dimension != 1:
+                raise ValueError("Parameters must be 1D uniformly distributed.")
+            bounds.append([parameter.lower_bound.squeeze(), parameter.upper_bound.squeeze()])
 
         self.salib_problem = {
             'num_vars': self.parameters.num_parameters,

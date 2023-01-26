@@ -29,12 +29,10 @@ interface:
   function: rosenbrock60
 parameters:
   x1:
-    type: random_variable
-    dimension: 1
+    type: uniform
     lower_bound: -2.0
     upper_bound: 2.0
   x2:
-    type: random_variable
-    dimension: 1
+    type: uniform
     lower_bound: -2.0
     upper_bound: 2.0

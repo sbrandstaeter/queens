@@ -33,7 +33,7 @@ forward_model:
   type: simulation_model
   interface_name: interface
 proposal_distribution:
-  distribution: normal
+  type: normal
   mean: [0.0, 0.0, 0.0, 0.0]
   covariance: [[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
 interface:
@@ -41,22 +41,18 @@ interface:
   function: patch_for_likelihood
 parameters:
   x1:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 1.0
     covariance: 5.0
   x2:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 3.0
     covariance: 5.0
   x3:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: -3.0
     covariance: 5.0
   x4:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 1.0
     covariance: 5.0

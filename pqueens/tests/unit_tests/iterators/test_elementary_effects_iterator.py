@@ -16,8 +16,7 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
     def setUp(self):
 
         uncertain_parameter = {
-            "type": "random_variable",
-            "dimension": 1,
+            "type": "uniform",
             "upper_bound": 3.14159265359,
             "lower_bound": -3.14159265359,
         }

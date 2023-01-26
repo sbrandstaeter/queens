@@ -41,7 +41,7 @@ def shape_b():
 def beta(lower_bound, upper_bound, shape_a, shape_b):
     """A beta distribution."""
     distribution_options = {
-        'distribution': 'beta',
+        'type': 'beta',
         'lower_bound': lower_bound,
         'upper_bound': upper_bound,
         'a': shape_a,
@@ -76,7 +76,7 @@ def test_init_beta_wrong_interval(lower_bound, shape_a, shape_b):
     """Test init method of Beta Distribution class."""
     with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
         distribution_options = {
-            'distribution': 'beta',
+            'type': 'beta',
             'lower_bound': lower_bound,
             'upper_bound': lower_bound - np.abs(lower_bound),
             'a': shape_a,
@@ -89,7 +89,7 @@ def test_init_beta_negative_shape(lower_bound, shape_a, shape_b):
     """Test init method of Beta Distribution class."""
     with pytest.raises(ValueError, match=r'The parameter \'b\' has to be positive.*'):
         distribution_options = {
-            'distribution': 'beta',
+            'type': 'beta',
             'lower_bound': lower_bound,
             'upper_bound': lower_bound - np.abs(lower_bound),
             'a': shape_a,

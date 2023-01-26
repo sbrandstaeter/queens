@@ -169,13 +169,13 @@ class SequentialMonteCarloChopinIterator(Iterator):
         # Generate prior using the particles library
         prior_dict = {}
         for key, parameter in self.parameters.dict.items():
-            if isinstance(parameter.distribution, NormalDistribution):
-                loc = parameter.distribution.mean.squeeze()
-                scale = parameter.distribution.covariance.squeeze() ** 0.5
+            if isinstance(parameter, NormalDistribution):
+                loc = parameter.mean.squeeze()
+                scale = parameter.covariance.squeeze() ** 0.5
                 prior_dict.update({key: dists.Normal(loc=loc, scale=scale)})
-            elif isinstance(parameter.distribution, UniformDistribution):
-                lower_bound = parameter.distribution.lower_bound
-                upper_bound = parameter.distribution.upper_bound
+            elif isinstance(parameter, UniformDistribution):
+                lower_bound = parameter.lower_bound
+                upper_bound = parameter.upper_bound
                 prior_dict.update({key: dists.Uniform(a=lower_bound, b=upper_bound)})
             else:
                 raise NotImplementedError(

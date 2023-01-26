@@ -117,14 +117,11 @@ hf_interface:
   num_workers: 1
   function: park91a_hifi_on_grid
 parameters:
-  random_variables:
-    x1:
-      type: random_variable
-      distribution: normal
-      mean: 0.6
-      covariance: 0.2
-    x2:
-      type: random_variable
-      distribution: normal
-      mean: 0.3
-      covariance: 0.1
+  x1:
+    type: normal
+    mean: 0.6
+    covariance: 0.2
+  x2:
+    type: normal
+    mean: 0.3
+    covariance: 0.1

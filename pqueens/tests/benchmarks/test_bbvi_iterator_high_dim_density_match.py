@@ -178,7 +178,7 @@ def target_distribution_obj(rv_dimension):
     mean = np.random.rand(rv_dimension)
     std = np.random.rand(rv_dimension) + 0.01
 
-    distribution_options = {"distribution": "normal", "mean": mean, "covariance": np.diag(std**2)}
+    distribution_options = {"type": "normal", "mean": mean, "covariance": np.diag(std**2)}
     target_distribution_object = mcmc_utils.create_proposal_distribution(distribution_options)
     return target_distribution_object
 
