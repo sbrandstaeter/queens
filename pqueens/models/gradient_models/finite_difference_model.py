@@ -2,8 +2,8 @@
 
 import logging
 
+import numpy as np
 from pqueens.models.gradient_models.gradient_model import GradientModel
-from pqueens.utils.grad_utils import Tracer
 
 _logger = logging.getLogger(__name__)
 
@@ -51,8 +51,8 @@ class FiniteDifferenceModel(GradientModel):
             finite_difference_star_inputs, finite_difference_star_outputs)
         return self.response
 
-    def grad(self, samples, tracer=Tracer()):
-        return self.response_grad
+    def _grad(self, samples, upstream):
+        return np.sum(upstream * self.response_grad, axis=1)
 
     def create_finite_difference_star(self, samples):
         raise NotImplementedError('this has to be implemented')

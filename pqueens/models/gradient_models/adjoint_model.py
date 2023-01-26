@@ -45,7 +45,13 @@ class AdjointModel(GradientModel):
         """Evaluate forward model with current set of variables."""
         return self.forward_model.evaluate(samples)
 
-    def grad(self, samples, upstream):
+    def _grad(self, samples, upstream):
+        """Evaluate gradient of model with current set of samples.
+
+        Args:
+            samples (np.array): Evaluated samples
+            upstream (np.array): Upstream gradient
+        """
         objective_grad = self.solve_adjoint(upstream)
         return objective_grad
 

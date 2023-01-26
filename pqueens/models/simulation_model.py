@@ -51,8 +51,14 @@ class SimulationModel(Model):
         Returns:
             self.response (np.array): Response of the underlying model at current variables
         """
-        self.response = self.interface.evaluate(samples)
+        self.response = self.interface.evaluate(samples)['mean']
         return self.response
 
-    def grad(self, samples, upstream):
+    def _grad(self, samples, upstream):
+        """Evaluate gradient of model with current set of samples.
+
+        Args:
+            samples (np.array): Evaluated samples
+            upstream (np.array): Upstream gradient
+        """
         raise ValueError('You have to define a Gradient model for Simulation model!')

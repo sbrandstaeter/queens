@@ -91,12 +91,6 @@ class GaussianLikelihood(LikelihoodModel):
         Args:
             model_name (str): Name of the likelihood model
             config (dict): Dictionary containing problem description
-            forward_model (obj): Forward model on which the likelihood model is based
-            coords_mat (np.array): Row-wise coordinates at which the observations were recorded
-            time_vec (np.array): Vector of observation times
-            y_obs (np.array): Corresponding experimental data vector to coords_mat
-            output_label (str): Name of the experimental outputs (column label in csv-file)
-            coord_labels (lst): List with coordinate labels for (column labels in csv-file)
 
         Returns:
             instance of GaussianLikelihood class
@@ -163,7 +157,7 @@ class GaussianLikelihood(LikelihoodModel):
             samples (np.ndarray): Evaluated samples
 
         Returns:
-            log_likelihood_output (np.ndarray): log-likelihood values per model input
+            log_likelihood (np.ndarray): log-likelihood values per model input
         """
         self.response = self.forward_model.evaluate(samples)['mean']
         if self.noise_type.startswith('MAP'):
@@ -172,10 +166,16 @@ class GaussianLikelihood(LikelihoodModel):
 
         return log_likelihood
 
-    def grad(self, samples, upstream):
+    def _grad(self, samples, upstream):
+        """Evaluate gradient of model with current set of samples.
+
+        Args:
+            samples (np.array): Evaluated samples
+            upstream (np.array): Upstream gradient
+        """
         # shape convention: num_samples x jacobian_shape
         log_likelihood_grad = self.normal_distribution.grad_logpdf(self.response)[:, np.newaxis, :]
-        return self.forward_model.grad(samples, np.sum(upstream * log_likelihood_grad, axis=1))
+        return self.forward_model._grad(samples, np.sum(upstream * log_likelihood_grad, axis=1))
 
     def update_covariance(self, y_model):
         """Update covariance matrix of the gaussian likelihood.
