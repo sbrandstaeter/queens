@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -12,7 +11,7 @@ from pqueens.utils import injector
 
 
 def test_ensight_reader_writer(
-    inputdir, tmpdir, third_party_inputs, baci_link_paths, config_dir, expected_mean, expected_var
+    inputdir, tmp_path, third_party_inputs, baci_link_paths, config_dir, expected_mean, expected_var
 ):
     """TODO_doc."""
     # generate json input file from template
@@ -23,12 +22,12 @@ def test_ensight_reader_writer(
         'post_drt_ensight': post_drt_ensight,
         'baci-release': baci_release,
     }
-    template = Path(inputdir, "baci_ensight_template.yml")
-    input_file = Path(tmpdir, "baci_ensight.yml")
+    template = inputdir.joinpath("baci_ensight_template.yml")
+    input_file = tmp_path.joinpath("baci_ensight.yml")
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
     # run a MC simulation with random input for now
 
@@ -36,7 +35,7 @@ def test_ensight_reader_writer(
     experiment_name = "baci_ensight"
     result_file_name = experiment_name + ".pickle"
 
-    result_file = Path(str(tmpdir), result_file_name)
+    result_file = tmp_path.joinpath(result_file_name)
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

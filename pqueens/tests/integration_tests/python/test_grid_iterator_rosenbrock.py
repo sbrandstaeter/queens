@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -10,11 +9,11 @@ import pytest
 from pqueens import run
 
 
-def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
+def test_grid_iterator(inputdir, tmp_path, expected_response, expected_grid):
     """Integration test for the grid iterator."""
-    run(Path(Path(inputdir, 'grid_iterator_rosenbrock.yml')), Path(tmpdir))
+    run(inputdir.joinpath('grid_iterator_rosenbrock.yml'), tmp_path)
 
-    result_file = Path(tmpdir, 'grid_iterator_rosenbrock.pickle')
+    result_file = tmp_path.joinpath('grid_iterator_rosenbrock.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

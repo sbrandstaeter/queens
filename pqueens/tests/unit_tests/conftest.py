@@ -21,6 +21,6 @@ def fake_database():
 
 
 @pytest.fixture(name="test_path")
-def fixture_test_path(tmpdir):
+def fixture_test_path(tmp_path):
     """Convert *tmpdir* to *pathlib* object."""
-    return Path(tmpdir)
+    return tmp_path

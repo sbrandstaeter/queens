@@ -5,7 +5,6 @@ import fileinput
 import os
 import re
 import shutil
-from pathlib import Path
 
 import numpy as np
 

@@ -1,6 +1,5 @@
 """Integration tests for the BMFIA."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -15,7 +14,7 @@ from pqueens.utils import injector
 
 def test_smc_park_hf(
     inputdir,
-    tmpdir,
+    tmp_path,
     create_experimental_data_park91a_hifi_on_grid,
     expected_samples,
     expected_weights,
@@ -26,18 +25,18 @@ def test_smc_park_hf(
     (bmfia) using the *park91* function.
     """
     # generate json input file from template
-    template = Path(inputdir, 'bmfia_smc_park.yml')
-    dir_dict = {"experimental_data_path": tmpdir, "plot_dir": tmpdir}
-    input_file = Path(tmpdir, 'smc_mf_park_realization.yml')
+    template = inputdir.joinpath('bmfia_smc_park.yml')
+    dir_dict = {"experimental_data_path": tmp_path, "plot_dir": tmp_path}
+    input_file = tmp_path.joinpath('smc_mf_park_realization.yml')
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
     # actual main call of smc
 
     # get the results of the QUEENS run
-    result_file = Path(tmpdir, 'smc_park_mf.pickle')
+    result_file = tmp_path.joinpath('smc_park_mf.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

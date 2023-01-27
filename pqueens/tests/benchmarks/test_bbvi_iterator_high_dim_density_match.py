@@ -15,7 +15,7 @@ np.random.seed(666)
 
 def test_bbvi_density_match_high_dimensional(
     mocker,
-    tmpdir,
+    tmp_path,
     my_variational_distribution_obj,
     target_distribution_obj,
     dummy_bbvi_instance,
@@ -35,7 +35,7 @@ def test_bbvi_density_match_high_dimensional(
     td = lambda self, x: target_density(self, target_distribution_obj, x=x, pdf=False)
 
     # Create the visualization_obj with the MLE estimates for plotting
-    visualization_obj(tmpdir)
+    visualization_obj(tmp_path)
 
     # actual main call of bbvi with patched density for posterior
     with patch.object(BBVIIterator, 'get_log_posterior_unnormalized', td):
@@ -74,7 +74,7 @@ def test_bbvi_density_match_high_dimensional(
 
 
 @pytest.fixture()
-def dummy_bbvi_instance(tmpdir, rv_dimension, my_variational_distribution_obj):
+def dummy_bbvi_instance(tmp_path, rv_dimension, my_variational_distribution_obj):
     """Initialize BBVI instance."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 30
@@ -100,7 +100,7 @@ def dummy_bbvi_instance(tmpdir, rv_dimension, my_variational_distribution_obj):
         "write_results": False,
         "plotting_options": {
             "plot_boolean": False,
-            "plotting_dir": tmpdir,
+            "plotting_dir": tmp_path,
             "plot_name": "variat_params_convergence.eps",
             "save_bool": False,
         },
@@ -116,7 +116,7 @@ def dummy_bbvi_instance(tmpdir, rv_dimension, my_variational_distribution_obj):
     stochastic_optimizer = from_config_create_optimizer(optimizer_config)
     # ------ other params ----------------------------------------------------------
     model = 'fake_model'
-    global_settings = {'output_dir': tmpdir, 'experiment_name': experiment_name}
+    global_settings = {'output_dir': tmp_path, 'experiment_name': experiment_name}
     db = 'dummy'
     random_seed = 1
 
@@ -198,13 +198,13 @@ def my_variational_distribution_obj(rv_dimension):
     return my_variational_object
 
 
-def visualization_obj(tmpdir):
+def visualization_obj(tmp_path):
     """Create visualization module."""
     visualization_dict = {
         "method": {
             "result_description": {
                 "plotting_options": {
-                    "plotting_dir": tmpdir,
+                    "plotting_dir": tmp_path,
                     "save_bool": False,
                     "plot_boolean": False,
                     "plot_name": "variat_params_convergence.eps",

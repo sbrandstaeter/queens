@@ -77,7 +77,7 @@ def config(parameters):
 def config_by_path(parameters):
     """Minimal config dict to create a Direct-Python-Interface."""
     path_to_file = relative_path_from_pqueens(
-        "tests/integration_tests/example_simulator_functions/ishigami90.py", as_str=True
+        "tests/integration_tests/example_simulator_functions/ishigami90.py"
     )
     _logger.info(path_to_file)
     config = {}

@@ -6,7 +6,6 @@ Test local simulations with BACI using a minimal FSI model and the
 """
 
 import json
-import os
 from pathlib import Path
 
 import numpy as np
@@ -18,21 +17,21 @@ from pqueens.utils import injector
 
 
 @pytest.fixture(scope="session")
-def output_directory_forward(tmpdir_factory):
+def output_directory_forward(tmp_path_factory):
     """Create two temporary output directories for test runs with singularity.
 
         * with singularity (<...>_true)
         * without singularity (<...>_false)
 
     Args:
-        tmpdir_factory: Fixture used to create arbitrary temporary directories
+        tmp_path_factory: Fixture used to create arbitrary temporary directories
 
     Returns:
         output_directory_forward (dict): Temporary output directories for simulation without and
                                          with singularity
     """
-    path_singularity_true = tmpdir_factory.mktemp("test_baci_lm_shape_singularity")
-    path_singularity_false = tmpdir_factory.mktemp("test_baci_lm_shape_nosingularity")
+    path_singularity_true = tmp_path_factory.mktemp("test_baci_lm_shape_singularity")
+    path_singularity_false = tmp_path_factory.mktemp("test_baci_lm_shape_nosingularity")
 
     return {True: path_singularity_true, False: path_singularity_false}
 
@@ -88,7 +87,7 @@ def test_baci_lm_shape(
     }
 
     injector.inject(dir_dict, template, input_file)
-    run(Path(input_file), Path(experiment_directory))
+    run(input_file, experiment_directory)
 
     result_file_name = experiment_name + ".csv"
     result_file = Path(experiment_directory, result_file_name)

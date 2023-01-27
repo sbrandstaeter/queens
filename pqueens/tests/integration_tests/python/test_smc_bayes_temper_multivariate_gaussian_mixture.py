@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -19,20 +18,20 @@ from pqueens.tests.integration_tests.example_simulator_functions.gaussian_mixtur
 from pqueens.utils import injector
 
 
-def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmpdir, dummy_data):
+def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmp_path, dummy_data):
     """Test SMC with a multivariate Gaussian mixture (multimodal)."""
     template = Path(inputdir, "smc_bayes_temper_multivariate_gaussian_mixture.yml")
-    experimental_data_path = tmpdir
+    experimental_data_path = tmp_path
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = Path(tmpdir, "multivariate_gaussian_mixture_smc_bayes_temper_realiz.yml")
+    input_file = tmp_path.joinpath("multivariate_gaussian_mixture_smc_bayes_temper_realiz.yml")
     injector.inject(dir_dict, template, input_file)
 
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
         with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
-            run(Path(input_file), Path(tmpdir))
+            run(input_file, tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path.joinpath('xxx.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -73,7 +72,7 @@ def target_density(self, samples):
 
 
 @pytest.fixture()
-def dummy_data(tmpdir):
+def dummy_data(tmp_path):
     """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = gaussian_component_1.draw(10)
@@ -81,8 +80,8 @@ def dummy_data(tmpdir):
 
     pdf = np.array(pdf)
 
-    # write the data to a csv file in tmpdir
+    # write the data to a csv file in tmp_path
     data_dict = {'y_obs': pdf}
-    experimental_data_path = Path(tmpdir, 'experimental_data.csv')
+    experimental_data_path = tmp_path.joinpath('experimental_data.csv')
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)

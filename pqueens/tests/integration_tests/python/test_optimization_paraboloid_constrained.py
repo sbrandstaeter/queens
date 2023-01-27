@@ -1,8 +1,6 @@
 """TODO_doc."""
 
-import os
 import pickle
-from pathlib import Path
 
 import numpy as np
 import pytest
@@ -17,23 +15,23 @@ def algorithm(request):
     return request.param
 
 
-def test_optimization_paraboloid_constrained(inputdir, tmpdir, algorithm):
+def test_optimization_paraboloid_constrained(inputdir, tmp_path, algorithm):
     """Test different solution algorithms in optimization iterator.
 
-    COBYLA: constained but unbounded
+    COBYLA: constrained but unbounded
 
     SLSQP:  constrained and bounded
     """
-    template = Path(inputdir, 'optimization_paraboloid_template.yml')
-    input_file = str(tmpdir) + 'paraboloid_opt.yml'
+    template = inputdir.joinpath('optimization_paraboloid_template.yml')
+    input_file = tmp_path.joinpath('paraboloid_opt.yml')
 
     algorithm_dict = {'algorithm': algorithm}
 
     injector.inject(algorithm_dict, template, input_file)
 
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'Paraboloid.pickle'
+    result_file = tmp_path.joinpath('Paraboloid.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+1.4, +1.7]), rtol=1.0e-4)

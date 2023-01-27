@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -9,11 +8,11 @@ import pytest
 from pqueens import run
 
 
-def test_monte_carlo_borehole(inputdir, tmpdir):
+def test_monte_carlo_borehole(inputdir, tmp_path):
     """Test case for Monte Carlo iterator."""
-    run(Path(Path(inputdir, 'monte_carlo_borehole.yml')), Path(tmpdir))
+    run(inputdir.joinpath('monte_carlo_borehole.yml'), tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path.joinpath('xxx.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(60.4546131041304)

@@ -1,7 +1,7 @@
 """Configuration module for the entire test suite (highest level)."""
 import logging
-import pathlib
 import socket
+from pathlib import Path
 
 import pytest
 
@@ -127,21 +127,21 @@ def config_dir():
 @pytest.fixture(scope="session")
 def baci_link_paths(config_dir):
     """Set symbolic links for baci on testing machine."""
-    baci = str(pathlib.Path(config_dir).joinpath('baci-release'))
-    post_drt_monitor = str(pathlib.Path(config_dir).joinpath('post_drt_monitor'))
-    post_drt_ensight = str(pathlib.Path(config_dir).joinpath('post_drt_ensight'))
-    post_processor = str(pathlib.Path(config_dir).joinpath('post_processor'))
+    baci = str(Path(config_dir).joinpath('baci-release'))
+    post_drt_monitor = str(Path(config_dir).joinpath('post_drt_monitor'))
+    post_drt_ensight = str(Path(config_dir).joinpath('post_drt_ensight'))
+    post_processor = str(Path(config_dir).joinpath('post_processor'))
     return baci, post_drt_monitor, post_drt_ensight, post_processor
 
 
 @pytest.fixture(scope="session")
 def baci_source_paths_for_gitlab_runner():
     """Set symbolic links for baci on testing machine."""
-    home = pathlib.Path.home()
-    src_baci = pathlib.Path.joinpath(home, 'workspace/build/baci-release')
-    src_drt_monitor = pathlib.Path.joinpath(home, 'workspace/build/post_drt_monitor')
-    src_post_drt_ensight = pathlib.Path.joinpath(home, 'workspace/build/post_drt_ensight')
-    src_post_processor = pathlib.Path.joinpath(home, 'workspace/build/post_processor')
+    home = Path.home()
+    src_baci = Path.joinpath(home, 'workspace/build/baci-release')
+    src_drt_monitor = Path.joinpath(home, 'workspace/build/post_drt_monitor')
+    src_post_drt_ensight = Path.joinpath(home, 'workspace/build/post_drt_ensight')
+    src_post_processor = Path.joinpath(home, 'workspace/build/post_processor')
     return src_baci, src_drt_monitor, src_post_drt_ensight, src_post_processor
 
 

@@ -1,5 +1,4 @@
 """QUEENS setup file for remote runs."""
-import os
 from pathlib import Path
 
 from setuptools import setup

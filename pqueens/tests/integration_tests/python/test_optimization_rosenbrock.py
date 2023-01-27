@@ -2,7 +2,6 @@
 
 Based on the Rosenbrock test function.
 """
-import os
 import pickle
 from pathlib import Path
 
@@ -19,18 +18,18 @@ def algorithm(request):
     return request.param
 
 
-def test_optimization_rosenbrock(inputdir, tmpdir, algorithm):
+def test_optimization_rosenbrock(inputdir, tmp_path, algorithm):
     """Test different solution algorithms in optimization iterator."""
-    template = Path(inputdir, 'optimization_rosenbrock_template.yml')
-    input_file = str(tmpdir) + 'rosenbrock_opt.yml'
+    template = inputdir.joinpath('optimization_rosenbrock_template.yml')
+    input_file = tmp_path.joinpath('rosenbrock_opt.yml')
 
     algorithm_dict = {'algorithm': algorithm}
 
     injector.inject(algorithm_dict, template, input_file)
 
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'Rosenbrock.pickle'
+    result_file = tmp_path.joinpath('Rosenbrock.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]), rtol=1.0e-3)

@@ -6,7 +6,6 @@ initialized once and can then be accessed and modified in the entire project.
 In this context "this" is a pointer to the module object instance itself and can be compared to the
 "self" keyword in classes.
 """
-import os
 import sys
 from pathlib import Path
 

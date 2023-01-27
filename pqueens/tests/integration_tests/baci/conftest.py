@@ -1,6 +1,5 @@
 """Pytest configuration for BACI integration tests."""
-import os
-import pathlib
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -39,73 +38,74 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
     # check if symbolic links are existent
     try:
         # create link to default baci-release location if no link is available
-        if not pathlib.Path(dst_baci_release).is_symlink():
-            if not pathlib.Path(src_baci_release).is_file:
+        if not Path(dst_baci_release).is_symlink():
+            if not Path(src_baci_release).is_file():
                 raise FileNotFoundError(
                     f'Failed to create link to default baci-release location.\n'
                     f'No baci-release found under default location:\n'
                     f'\t{src_baci_release}\n'
                 )
             else:
-                pathlib.Path(dst_baci_release).symlink_to(src_baci_release)
+                Path(dst_baci_release).symlink_to(src_baci_release)
         # create link to default post_drt_monitor location if no link is available
-        if not pathlib.Path(dst_post_drt_monitor).is_symlink:
-            if not pathlib.Path(src_post_drt_monitor).is_file:
+        if not Path(dst_post_drt_monitor).is_symlink():
+            if not Path(src_post_drt_monitor).is_file():
                 raise FileNotFoundError(
                     f'Failed to create link to default post_drt_monitor location.\n'
                     f'No post_drt_monitor found under default location:\n'
                     f'\t{src_post_drt_monitor}\n'
                 )
             else:
-                pathlib.Path(dst_post_drt_monitor).symlink_to(src_post_drt_monitor)
+                Path(dst_post_drt_monitor).symlink_to(src_post_drt_monitor)
         # create link to default post_drt_ensight location if no link is available
-        if not pathlib.Path(dst_post_drt_ensight).is_symlink:
-            if not pathlib.Path(src_post_drt_ensight).is_file:
+        if not Path(dst_post_drt_ensight).is_symlink():
+            if not Path(src_post_drt_ensight).is_file():
                 raise FileNotFoundError(
                     f'Failed to create link to default post_drt_ensight location.\n'
                     f'No post_drt_ensight found under default location:\n'
                     f'\t{src_post_drt_ensight}\n'
                 )
             else:
-                pathlib.Path(dst_post_drt_ensight).symlink_to(src_post_drt_ensight)
+                Path(dst_post_drt_ensight).symlink_to(src_post_drt_ensight)
         # create link to default post_processor location if no link is available
-        if not pathlib.Path(dst_post_processor).is_symlink:
-            if not pathlib.Path(src_post_processor).is_file:
+        if not Path(dst_post_processor).is_symlink():
+            if not Path(src_post_processor).is_file():
                 raise FileNotFoundError(
                     f'Failed to create link to default post_processor location.\n'
                     f'No post_processor found under default location:\n'
                     f'\t{src_post_processor}\n'
                 )
             else:
-                pathlib.Path(dst_post_processor).symlink_to(src_post_processor)
+                Path(dst_post_processor).symlink_to(src_post_processor)
 
         # check if existing link to baci-release works and points to a valid file
-        if not pathlib.Path(dst_baci_release).resolve().exists():
+        if not Path(dst_baci_release).resolve().exists():
             raise FileNotFoundError(
                 f'The following link seems to be dead: {dst_baci_release}\n'
-                f'It points to (non-existing): {pathlib.Path(dst_baci_release).resolve()}\n'
+                f'It points to (non-existing): {Path(dst_baci_release).resolve()}\n'
             )
         # check if exitisting link to post_drt_monitor works and points to a valid file
-        if not pathlib.Path(dst_post_drt_monitor).resolve().exists():
+        if not Path(dst_post_drt_monitor).resolve().exists():
             raise FileNotFoundError(
                 f'The following link seems to be dead: {dst_post_drt_monitor}\n'
-                f'It points to: {pathlib.Path(dst_post_drt_monitor).resolve()}\n'
+                f'It points to: {Path(dst_post_drt_monitor).resolve()}\n'
             )
         # check if exitisting link to post_drt_ensight works and points to a valid file
-        if not pathlib.Path(dst_post_drt_ensight).resolve().exists():
+        if not Path(dst_post_drt_ensight).resolve().exists():
             raise FileNotFoundError(
                 f'The following link seems to be dead: {dst_post_drt_ensight}\n'
-                f'It points to: {pathlib.Path(dst_post_drt_ensight).resolve()}\n'
+                f'It points to: {Path(dst_post_drt_ensight).resolve()}\n'
             )
         # check if exitisting link to post_processor works and points to a valid file
-        if not pathlib.Path(dst_post_processor).resolve().exists():
+        if not Path(dst_post_processor).resolve().exists():
             raise FileNotFoundError(
                 f'The following link seems to be dead: {dst_post_processor}\n'
-                f'It points to: {pathlib.Path(dst_post_processor).resolve()}\n'
+                f'It points to: {Path(dst_post_processor).resolve()}\n'
             )
     except FileNotFoundError as error:
         raise FileNotFoundError(
-            f'{error}' + 'Please make sure to make the missing executable availabe under the given '
+            f'{error}'
+            + 'Please make sure to make the missing executable available under the given '
             'path OR\n'
             'make sure the symbolic link under the config directory points to an '
             'existing file! \n'
@@ -134,7 +134,7 @@ def singularity_bool(request):
 
 
 @pytest.fixture()
-def create_experimental_data_park91a_hifi_on_grid(tmpdir):
+def create_experimental_data_park91a_hifi_on_grid(tmp_path):
     """Create experimental data."""
     # Fix random seed
     np.random.seed(seed=1)
@@ -158,6 +158,6 @@ def create_experimental_data_park91a_hifi_on_grid(tmpdir):
         'x4': x4_vec,
         'y_obs': y_fake,
     }
-    experimental_data_path = pathlib.Path(tmpdir, 'experimental_data.csv')
+    experimental_data_path = tmp_path.joinpath('experimental_data.csv')
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)

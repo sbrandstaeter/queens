@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -56,7 +55,7 @@ def generate_HF_MC_data(generate_X_mc):
 
 
 @pytest.fixture()
-def write_LF_MC_data_to_pickle(tmpdir, generate_X_mc, generate_LF_MC_data):
+def write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_data):
     """TODO_doc."""
     file_name = 'LF_MC_data'
     input_description = {
@@ -83,7 +82,7 @@ def write_LF_MC_data_to_pickle(tmpdir, generate_X_mc, generate_LF_MC_data):
         'eigenfunc': None,
         'eigenvalue': None,
     }
-    write_results(data, tmpdir, file_name)
+    write_results(data, tmp_path, file_name)
 
 
 @pytest.fixture(params=['random', 'diverse_subset'])
@@ -95,7 +94,7 @@ def design_method(request):
 
 # ---- actual integration tests -------------------------------------------------
 def test_bmfmc_iterator_currin88_random_vars_diverse_design(
-    tmpdir,
+    tmp_path,
     inputdir,
     write_LF_MC_data_to_pickle,
     generate_HF_MC_data,
@@ -108,25 +107,25 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     *currin88* function.
     """
     # generate json input file from template
-    template = Path(inputdir, 'bmfmc_currin88_template.yml')
-    plot_dir = tmpdir
+    template = inputdir.joinpath('bmfmc_currin88_template.yml')
+    plot_dir = tmp_path
     lf_mc_data_name = 'LF_MC_data.pickle'
-    path_lf_mc_pickle_file = Path(tmpdir, lf_mc_data_name)
+    path_lf_mc_pickle_file = tmp_path.joinpath(lf_mc_data_name)
     dir_dict = {
         'lf_mc_pickle_file': path_lf_mc_pickle_file,
         'plot_dir': plot_dir,
         'design_method': design_method,
     }
-    input_file = Path(tmpdir, 'bmfmc_currin88.yml')
+    input_file = tmp_path.joinpath('bmfmc_currin88.yml')
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
     # actual main call of BMFMC
 
     # get the results of the QUEENS run
-    result_file = Path(tmpdir, 'bmfmc_currin88.pickle')
+    result_file = tmp_path.joinpath('bmfmc_currin88.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

@@ -2,9 +2,9 @@
 import atexit
 import getpass
 import logging
-import pathlib
 import socket
 from dataclasses import dataclass
+from pathlib import Path
 
 from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
@@ -46,7 +46,7 @@ class ClusterConfig:
     name: str
     work_load_scheduler: str
     start_cmd: str
-    jobscript_template: pathlib.Path
+    jobscript_template: Path
     job_status_command: str
     job_status_location: int
     job_status_incomplete: list
@@ -224,7 +224,7 @@ class ClusterScheduler(Scheduler):
         scheduler_options = config[scheduler_name]
 
         experiment_name = config['global_settings']['experiment_name']
-        input_file = pathlib.Path(config["input_file"])
+        input_file = Path(config["input_file"])
 
         scheduler_type = scheduler_options["type"]
 

@@ -85,7 +85,7 @@ def get_config_dict(input_file, output_dir, debug=False):
     Returns:
         dict: config dict
     """
-    if not output_dir.is_dir():
+    if not Path(output_dir).is_dir():
         raise FileNotFoundError(f"Output directory {output_dir} does not exist.")
 
     options = load_input_file(input_file)

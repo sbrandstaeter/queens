@@ -1,8 +1,7 @@
 """TODO_doc."""
 
-import os
-import pathlib
 import re
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -13,9 +12,9 @@ from pqueens.visualization.grid_iterator_visualization import GridIteratorVisual
 
 # general input fixtures
 @pytest.fixture()
-def dummy_vis(tmpdir):
+def dummy_vis(tmp_path):
     """TODO_doc."""
-    paths = [pathlib.Path(tmpdir, 'myplot.png')]
+    paths = [tmp_path.joinpath('myplot.png')]
     save_bools = [True]
     plot_booleans = [False]
     scale_types_list = ["lin", "lin"]
@@ -27,10 +26,10 @@ def dummy_vis(tmpdir):
 
 
 # -------------------------------- actual unit_tests ---------------------------------------------
-def test_init(tmpdir):
+def test_init(tmp_path):
     """TODO_doc."""
     # expected attributes
-    paths = [pathlib.Path(tmpdir, 'myplot.png')]
+    paths = [tmp_path.joinpath('myplot.png')]
     save_bools = [True]
     plot_booleans = [False]
     scale_types_list = ["lin", "lin"]
@@ -49,7 +48,7 @@ def test_init(tmpdir):
     assert grid_vis.var_names_list == var_names_list
 
 
-def test_plot_QoI_grid(tmpdir, dummy_vis):
+def test_plot_QoI_grid(tmp_path, dummy_vis):
     """TODO_doc."""
     # set arguments
     output = {"mean": np.array([1.0, 2.0, 3.0, 4.0])}
@@ -57,7 +56,7 @@ def test_plot_QoI_grid(tmpdir, dummy_vis):
     num_params = 2
     n_grid_p = [2, 2]
     qvis.grid_iterator_visualization_instance.plot_QoI_grid(output, samples, num_params, n_grid_p)
-    filepath = pathlib.Path(tmpdir, 'myplot.png')
+    filepath = tmp_path.joinpath('myplot.png')
     assert filepath.is_file()
 
 

@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -12,7 +11,7 @@ from pqueens.utils import injector
 
 
 def test_write_random_dirichlet_to_dat(
-    inputdir, tmpdir, third_party_inputs, baci_link_paths, expected_result
+    inputdir, tmp_path, third_party_inputs, baci_link_paths, expected_result
 ):
     """TODO_doc."""
     # generate json input file from template
@@ -20,7 +19,7 @@ def test_write_random_dirichlet_to_dat(
         third_party_inputs, "baci_input_files", "invaaa_ee_fields_template.dat"
     )
 
-    dat_file_preprocessed = tmpdir.join("invaaa_ee_fields_template_preprocessed.dat")
+    dat_file_preprocessed = tmp_path.joinpath("invaaa_ee_fields_template_preprocessed.dat")
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 
     dir_dict = {
@@ -29,12 +28,12 @@ def test_write_random_dirichlet_to_dat(
         'post_drt_monitor': post_drt_monitor,
         'baci-release': baci_release,
     }
-    template = Path(inputdir, "baci_write_random_field_to_dat_template.yml")
-    input_file = Path(tmpdir, "baci_write_random_field_to_dat.yml")
+    template = inputdir.joinpath("baci_write_random_field_to_dat_template.yml")
+    input_file = tmp_path.joinpath("baci_write_random_field_to_dat.yml")
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
     # run a MC simulation with random input for now
 
@@ -42,7 +41,7 @@ def test_write_random_dirichlet_to_dat(
     experiment_name = "baci_write_random_field_to_dat"
     result_file_name = experiment_name + ".pickle"
 
-    result_file = Path(str(tmpdir), result_file_name)
+    result_file = tmp_path.joinpath(result_file_name)
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

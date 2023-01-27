@@ -26,7 +26,7 @@ def create_singularity_image():
         f"cd {PATH_TO_QUEENS}",
         "&& unset SINGULARITY_BIND &&",
         f"singularity build --force --fakeroot {ABS_SINGULARITY_IMAGE_PATH}",
-        abs_definition_path,
+        str(abs_definition_path),
     ]
     command_string = ' '.join(command_list)
 

@@ -1,7 +1,7 @@
 """Driver to run an executable with mpi."""
 
 import logging
-import pathlib
+from pathlib import Path
 
 import pqueens.database.database as DB_module
 from pqueens.data_processor import from_config_create_data_processor
@@ -193,12 +193,12 @@ class MpiDriver(Driver):
         cluster_job = cluster_type in VALID_CLUSTER_CLUSTER_TYPES
 
         driver_options = config[driver_name]
-        simulation_input_template = pathlib.Path(driver_options['input_template'])
-        executable = pathlib.Path(driver_options['path_to_executable'])
+        simulation_input_template = Path(driver_options['input_template'])
+        executable = Path(driver_options['path_to_executable'])
         mpi_cmd = driver_options.get('mpi_cmd', 'mpirun --bind-to none -np')
         post_processor_str = driver_options.get('path_to_postprocessor', None)
         if post_processor_str:
-            post_processor = pathlib.Path(post_processor_str)
+            post_processor = Path(post_processor_str)
         else:
             post_processor = None
         post_file_prefix = driver_options.get('post_file_prefix', None)
@@ -230,7 +230,7 @@ class MpiDriver(Driver):
         output_prefix = experiment_name + '_' + str(job_id)
         output_file = output_directory.joinpath(output_prefix)
 
-        file_extension_obj = pathlib.PurePosixPath(simulation_input_template)
+        file_extension_obj = Path(simulation_input_template)
         input_file_str = output_prefix + file_extension_obj.suffix
         input_file = job_dir.joinpath(input_file_str)
 

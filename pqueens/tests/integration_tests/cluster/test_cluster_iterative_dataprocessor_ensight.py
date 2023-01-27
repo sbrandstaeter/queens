@@ -1,7 +1,7 @@
 """Test remote BACI simulations with ensight data-processor."""
 import json
 import logging
-import pathlib
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -26,7 +26,7 @@ _logger = logging.getLogger(__name__)
     indirect=True,
 )
 def test_cluster_baci_data_processor_ensight(
-    inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths, user
+    inputdir, tmp_path, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths, user
 ):
     """Test remote BACI simulations with ensight data-processor.
 
@@ -41,8 +41,8 @@ def test_cluster_baci_data_processor_ensight(
         - No iterator is used to reduce complexity
 
     Args:
-        inputdir (str): Path to the JSON input file
-        tmpdir (str): Temporary directory in which the pytests are run
+        inputdir (path): Path to the JSON input file
+        tmp_path (path): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         cluster_testsuite_settings (dict): Collection of cluster specific settings
         baci_cluster_paths: TODO_doc
@@ -61,12 +61,12 @@ def test_cluster_baci_data_processor_ensight(
     # unique experiment name
     experiment_name = f"test_{cluster}_data_processor_ensight"
 
-    template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.yml")
-    input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.yml")
+    template = inputdir.joinpath("baci_cluster_data_processor_ensight.yml")
+    input_file = tmp_path.joinpath("baci_cluster_data_processor_ensight.yml")
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
-    local_baci_input_file_template = pathlib.Path(
+    local_baci_input_file_template = Path(
         third_party_inputs, "baci_input_files", baci_input_template_name
     )
     cluster_experiment_dir = experiment_directory(
@@ -108,15 +108,15 @@ def test_cluster_baci_data_processor_ensight(
         'singularity_remote_ip': singularity_remote_ip,
         'user': user,
     }
-    queens_input_file_template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.yml")
-    queens_input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.yml")
+    queens_input_file_template = inputdir.joinpath("baci_cluster_data_processor_ensight.yml")
+    queens_input_file = tmp_path.joinpath("baci_cluster_data_processor_ensight.yml")
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     # Patch the missing config arguments
     with open(queens_input_file, encoding="utf8") as f:
         config = json.load(f)
         global_settings = {
-            "output_dir": str(tmpdir),
+            "output_dir": tmp_path,
             "experiment_name": config["experiment_name"],
         }
         config["global_settings"] = global_settings

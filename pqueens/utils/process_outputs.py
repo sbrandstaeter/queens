@@ -1,9 +1,9 @@
 """Collection of utility functions for post-processing."""
 
 import logging
-import pathlib
 import pickle
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -128,7 +128,7 @@ def write_results(processed_results, path_to_file, file_name):
         path_to_file (str):        Path to write results to
         file_name (str):           Name of result file
     """
-    pickle_file = pathlib.Path(path_to_file, file_name + ".pickle")
+    pickle_file = Path(path_to_file, file_name + ".pickle")
 
     with open(pickle_file, 'wb') as handle:
         pickle.dump(processed_results, handle, protocol=pickle.HIGHEST_PROTOCOL)

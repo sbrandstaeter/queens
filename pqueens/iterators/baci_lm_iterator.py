@@ -1,6 +1,5 @@
 """Levenberg Marquardt iterator."""
 import logging
-import os
 from pathlib import Path
 
 import numpy as np
@@ -202,14 +201,11 @@ class BaciLMIterator(Iterator):
                 df = pd.DataFrame(
                     columns=['iter', 'resnorm', 'gradnorm', 'params', 'delta_params', 'mu'],
                 )
-                with open(
-                    Path(
-                        self.global_settings["output_dir"],
-                        self.global_settings["experiment_name"] + '.csv',
-                    ),
-                    'w',
-                ) as f:
-                    df.to_csv(f, sep='\t', index=None)
+                csv_file = Path(
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"] + '.csv',
+                )
+                df.to_csv(csv_file, mode="w", sep='\t', index=None)
 
     def core_run(self):
         """Core run of Levenberg Marquardt iterator."""
@@ -420,24 +416,23 @@ class BaciLMIterator(Iterator):
         # write iteration to file
         if self.result_description:
             if self.result_description["write_results"]:
-                with open(
-                    Path(
-                        self.global_settings["output_dir"],
-                        self.global_settings["experiment_name"] + '.csv',
-                    ),
-                    'a',
-                ) as f:
-                    df = pd.DataFrame(
-                        {
-                            'iter': i,
-                            'resnorm': np.format_float_scientific(resnorm, precision=8),
-                            'gradnorm': np.format_float_scientific(gradnorm, precision=8),
-                            'params': [np.array2string(self.param_current, precision=8)],
-                            'delta_params': [np.array2string(param_delta, precision=8)],
-                            'mu': np.format_float_scientific(self.reg_param, precision=8),
-                        }
-                    )
-                    df.to_csv(f, sep='\t', header=None, mode='a', index=None, float_format='%.8f')
+                csv_file = Path(
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"] + '.csv',
+                )
+                df = pd.DataFrame(
+                    {
+                        'iter': i,
+                        'resnorm': np.format_float_scientific(resnorm, precision=8),
+                        'gradnorm': np.format_float_scientific(gradnorm, precision=8),
+                        'params': [np.array2string(self.param_current, precision=8)],
+                        'delta_params': [np.array2string(param_delta, precision=8)],
+                        'mu': np.format_float_scientific(self.reg_param, precision=8),
+                    }
+                )
+                df.to_csv(
+                    csv_file, mode="a", sep='\t', header=None, index=None, float_format='%.8f'
+                )
 
     def checkbounds(self, param_delta, i):
         """Check if proposed step is in bounds.

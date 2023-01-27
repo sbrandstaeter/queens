@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -12,7 +11,7 @@ from pqueens import run
 from pqueens.utils import injector
 
 
-def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir):
+def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_dir):
     """TODO_doc: add a one-line description.
 
     Integration test for smc with a simple diffusion problem (scatra) in
@@ -32,7 +31,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
     template = Path(inputdir, 'bmfia_scatra_baci_template_smc_gp_precompiled_copy.yml')
 
     experimental_data_path = Path(third_party_inputs, "csv_files", "scatra_baci")
-    plot_dir = tmpdir
+    plot_dir = tmp_path
     dir_dict = {
         'experimental_data_path': experimental_data_path,
         'baci_hf_input': third_party_input_file_hf,
@@ -41,14 +40,14 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
         'post_drt_ensight': post_drt_ensight,
         'plot_dir': plot_dir,
     }
-    input_file = Path(tmpdir, 'hf_scatra_baci.yml')
+    input_file = tmp_path.joinpath('hf_scatra_baci.yml')
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
     # get the results of the QUEENS run
-    result_file = Path(tmpdir, 'bmfia_baci_scatra_smc.pickle')
+    result_file = tmp_path.joinpath('bmfia_baci_scatra_smc.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

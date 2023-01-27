@@ -1,7 +1,6 @@
 """TODO_doc."""
 
 import logging
-import os
 import pickle
 from pathlib import Path
 
@@ -12,11 +11,11 @@ from pqueens import run
 _logger = logging.getLogger(__name__)
 
 
-def test_elementary_effects_ishigami(inputdir, tmpdir):
+def test_elementary_effects_ishigami(inputdir, tmp_path):
     """Test case for elementary effects iterator."""
-    run(Path(Path(inputdir, 'elementary_effects_ishigami.yml')), Path(tmpdir))
+    run(inputdir.joinpath('elementary_effects_ishigami.yml'), tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path.joinpath('xxx.pickle')
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
