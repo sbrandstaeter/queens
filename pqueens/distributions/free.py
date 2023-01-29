@@ -35,7 +35,7 @@ class FreeVariable(Distribution):
         """Cumulative distribution function."""
         raise ValueError('cdf method is not supported for FreeVariable.')
 
-    def draw(self, _):
+    def draw(self, _=1):
         """Draw samples."""
         raise ValueError('draw method is not supported for FreeVariable.')
 
