@@ -28,7 +28,7 @@ class FreeVariable(Distribution):
         Returns:
             distribution: FreeVariable object
         """
-        dimension = distribution_options.get('lower_bound', 1)
+        dimension = distribution_options.get('dimension', 1)
         return cls(dimension=dimension)
 
     def cdf(self, _):
