@@ -66,9 +66,6 @@ def test_cluster_baci_data_processor_ensight(
     # unique experiment name
     experiment_name = f"test_{cluster}_data_processor_ensight"
 
-    template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.yml")
-    input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.yml")
-
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
     local_baci_input_file_template = pathlib.Path(
