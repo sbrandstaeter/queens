@@ -74,7 +74,7 @@ def cluster_singularity_ip(cluster):
     elif cluster == BRUTEFORCE_CLUSTER_TYPE:
         cluster_singularity_ip = '10.10.0.1'
     elif cluster == CHARON_CLUSTER_TYPE:
-        cluster_singularity_ip = '192.168.1.253'
+        cluster_singularity_ip = '192.168.1.254'
     else:
         cluster_singularity_ip = None
     return cluster_singularity_ip
