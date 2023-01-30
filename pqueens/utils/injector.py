@@ -17,8 +17,5 @@ def inject(params, file_template, output_file):
         file_template (str):    File name including path to template
         output_file (str):      Name of output file with injected parameters
     """
-    with Path(file_template).open(encoding='utf-8') as f:
-        template = Template(f.read())
-
-    with Path(output_file).open(mode='w', encoding='utf-8') as f:
-        f.write(template.render(**params))
+    template = Template(Path(file_template).read_text(encoding='utf-8'))
+    Path(output_file).write_text(template.render(**params), encoding='utf-8')
