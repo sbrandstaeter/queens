@@ -9,20 +9,19 @@ method:
   model_name: model
 model:
   type: simulation_model
-  interface: interface
+  interface_name: interface
   coordinate_labels: [x1, x2, x3]
 interface:
   type: job_interface
-  resources: resources
-  driver: driver
+  driver_name: driver
 driver:
-  driver_type: mpi
+  type: mpi
   input_template: {input_template}
   path_to_executable: {path_to_executable}
   path_to_postprocessor: {path_to_drt_ensight}
   post_file_prefix: {experiment_name}
   post_process_options: ''
-  data_processor: data_processor_baci
+  data_processor_name: data_processor_baci
 data_processor_baci:
   type: ensight
   file_name_identifier: "{experiment_name}*.case"
@@ -38,7 +37,7 @@ data_processor_baci:
     time_tol: 0.001
 resources:
   "{cluster}":
-    scheduler: scheduler
+    scheduler_name: scheduler
     max_concurrent: 2
     max_finished_jobs: 10
 scheduler:

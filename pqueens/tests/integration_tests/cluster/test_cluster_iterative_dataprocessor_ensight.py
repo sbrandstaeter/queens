@@ -1,5 +1,4 @@
 """Test remote BACI simulations with ensight data-processor."""
-import json
 import logging
 import pathlib
 
@@ -8,6 +7,7 @@ import pytest
 
 import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
+from pqueens.main import get_config_dict
 from pqueens.models import from_config_create_model
 from pqueens.schedulers.cluster_scheduler import (
     BRUTEFORCE_CLUSTER_TYPE,
@@ -115,14 +115,7 @@ def test_cluster_baci_data_processor_ensight(
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     # Patch the missing config arguments
-    with open(queens_input_file, encoding="utf8") as f:
-        config = json.load(f)
-        global_settings = {
-            "output_dir": str(tmpdir),
-            "experiment_name": config["experiment_name"],
-        }
-        config["global_settings"] = global_settings
-        config["input_file"] = str(queens_input_file)
+    config = get_config_dict(queens_input_file, pathlib.Path(tmpdir))
 
     # Initialise db module
     DB_module.from_config_create_database(config)
