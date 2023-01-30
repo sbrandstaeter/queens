@@ -317,7 +317,7 @@ class MetropolisHastingsIterator(Iterator):
         else:
             # create random walk normal proposal
             mean = np.zeros(cov_mat.shape[0])
-            dist_opts = {'distribution': 'normal', 'mean': mean, 'covariance': cov_mat}
+            dist_opts = {'type': 'normal', 'mean': mean, 'covariance': cov_mat}
             self.proposal_distribution = from_config_create_distribution(dist_opts)
 
         self.gamma = gamma

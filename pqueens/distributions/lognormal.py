@@ -53,7 +53,7 @@ class LogNormalDistribution(Distribution):
         normal_covariance = distribution_options['normal_covariance']
 
         normal_distribution_dict = {
-            'distribution': 'normal',
+            'type': 'normal',
             'mean': normal_mean,
             'covariance': normal_covariance,
         }

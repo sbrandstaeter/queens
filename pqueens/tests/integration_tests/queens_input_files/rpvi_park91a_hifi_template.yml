@@ -57,12 +57,10 @@ interface:
   function: {my_function}
 parameters:
   x1:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 0.6
     covariance: 0.2
   x2:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 0.3
     covariance: 0.1

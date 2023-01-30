@@ -55,7 +55,7 @@ def grid_dict_four():
 
 def parameters_one():
     """TODO_doc."""
-    rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
+    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
     params = {"x1": rv}
     parameters_module.from_config_create_parameters({"parameters": params})
     return params
@@ -64,7 +64,7 @@ def parameters_one():
 @pytest.fixture()
 def parameters_two():
     """TODO_doc."""
-    rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
+    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
     params = {"x1": rv, "x2": rv}
     parameters_module.from_config_create_parameters({"parameters": params})
     return params
@@ -72,7 +72,7 @@ def parameters_two():
 
 def parameters_three():
     """TODO_doc."""
-    rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
+    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
     params = {"x1": rv, "x2": rv, "x3": rv}
     parameters_module.from_config_create_parameters({"parameters": params})
     return params
@@ -81,7 +81,7 @@ def parameters_three():
 @pytest.fixture()
 def parameters_four():
     """TODO_doc."""
-    rv = {"type": "random_variable", "distribution": "uniform", "lower_bound": -2, "upper_bound": 2}
+    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
     params = {"x1": rv, "x2": rv, "x3": rv, "x4": rv}
     parameters_module.from_config_create_parameters({"parameters": params})
     return params

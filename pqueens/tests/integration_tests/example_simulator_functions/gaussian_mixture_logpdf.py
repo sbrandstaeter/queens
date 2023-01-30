@@ -26,8 +26,8 @@ cov = (std**2) * np.eye(dim)
 weight1 = 0.1
 weight2 = 1 - weight1
 
-dist_options_1 = {'distribution': 'normal', 'mean': mean1, 'covariance': cov}
-dist_options_2 = {'distribution': 'normal', 'mean': mean2, 'covariance': cov}
+dist_options_1 = {'type': 'normal', 'mean': mean1, 'covariance': cov}
+dist_options_2 = {'type': 'normal', 'mean': mean2, 'covariance': cov}
 gaussian_component_1 = from_config_create_distribution(dist_options_1)
 gaussian_component_2 = from_config_create_distribution(dist_options_2)
 

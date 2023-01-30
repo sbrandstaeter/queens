@@ -147,7 +147,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
 likelihood_mean = np.array([-2.0, 1.0])
 likelihood_covariance = np.diag(np.array([0.1, 10.0]))
 likelihood_dist = {
-    'distribution': 'normal',
+    'type': 'normal',
     'mean': likelihood_mean,
     'covariance': likelihood_covariance,
 }

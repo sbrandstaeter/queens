@@ -369,8 +369,8 @@ class VariationalInferenceIterator(Iterator):
         std_list_prior = []
         if self.parameters.num_parameters > 0:
             for params in self.parameters.to_list():
-                mean_list_prior.append(params.distribution.mean)
-                std_list_prior.append(params.distribution.covariance.squeeze())
+                mean_list_prior.append(params.mean)
+                std_list_prior.append(params.covariance.squeeze())
 
         # Set the mean and std-deviation params of the variational distr such that the
         # transformed distribution would match the moments of the prior

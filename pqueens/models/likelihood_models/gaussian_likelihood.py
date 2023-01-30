@@ -134,7 +134,7 @@ class GaussianLikelihood(LikelihoodModel):
         else:
             raise NotImplementedError
 
-        distribution_options = {"distribution": "normal", "mean": y_obs, "covariance": covariance}
+        distribution_options = {"type": "normal", "mean": y_obs, "covariance": covariance}
         normal_distribution = from_config_create_distribution(distribution_options)
         return cls(
             model_name=model_name,

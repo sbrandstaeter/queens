@@ -50,8 +50,8 @@ class PreProcessor:
 def parameters():
     """Create parameters."""
     params = {
-        "x1": {"type": "random_variable", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
-        "x2": {"type": "random_variable", "dimension": 1, "lower_bound": -2.0, "upper_bound": 2.0},
+        "x1": {"type": "uniform", "lower_bound": -2.0, "upper_bound": 2.0},
+        "x2": {"type": "uniform", "lower_bound": -2.0, "upper_bound": 2.0},
         'random_inflow': {
             'type': 'random_field',
             'dimension': 1,

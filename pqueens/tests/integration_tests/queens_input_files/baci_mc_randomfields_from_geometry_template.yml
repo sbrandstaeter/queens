@@ -49,9 +49,7 @@ local_scheduler:
   num_procs_post: 1
 parameters:
   emodul:
-    type: random_variable
-    dimension: 1
-    distribution: lognormal
+    type: lognormal
     normal_mean: 6.392
     normal_covariance: 0.0705
   random_inflow:

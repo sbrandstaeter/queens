@@ -35,7 +35,6 @@ interface:
   function: patch_for_likelihood
 parameters:
   x:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 2.0
     covariance: 1.0
