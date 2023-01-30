@@ -902,7 +902,7 @@ class BaciDatExternalGeometry(ExternalGeometry):
         # potentially replace material parameter
         line_new = line
         if mat_param_name in line:
-            string_to_replace = "{" + mat_param_name + "}"
+            string_to_replace = "{ " + mat_param_name + " }"
             line_new = line.replace(
                 string_to_replace, f'{{ {mat_param_name}_{realization_index} }}'
             )

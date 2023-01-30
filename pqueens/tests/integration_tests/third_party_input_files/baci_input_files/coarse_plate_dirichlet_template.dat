@@ -47,7 +47,7 @@ NAME                            No_Name
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 10 MAT_Membrane_ElastHyper NUMMAT 1 MATIDS 11 DENS 1.0e-9
-MAT 11 ELAST_IsoNeoHooke MUE {{ mat_param }}  //0.25
+MAT 11 ELAST_IsoNeoHooke MUE {{ mat_param }} //0.25
 
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION l

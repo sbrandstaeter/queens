@@ -3,7 +3,7 @@ database:
   type: mongodb
   address: localhost:27017
   reset_existing_db: true
-  name: queens_db_{{ cluster }} _remote_test
+  name: queens_db_{{ cluster }}_remote_test
 method:
   type: dummy
   model_name: model
@@ -25,7 +25,7 @@ driver:
   data_processor_name: data_processor_baci
 data_processor_baci:
   type: ensight
-  file_name_identifier: '{{ cluster }} *.case'
+  file_name_identifier: '{{ cluster }}*.case'
   file_options_dict:
     delete_field_data: false
     geometric_target: [experimental_data]

@@ -24,7 +24,7 @@ method:
     seed: 1
     master_LF: 0
 joint_density_approx:
-  path_to_lf_mc_data: [{{ lf_mc_pickle_file }} ]
+  path_to_lf_mc_data: [{{ lf_mc_pickle_file }}]
   high_fidelity_model_name: high_fidelity_model
   path_to_hf_mc_reference_data: null
   type: gp_approximation_gpy

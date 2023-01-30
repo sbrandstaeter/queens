@@ -3,7 +3,7 @@ database:
   type: mongodb
   address: localhost:27017
   reset_existing_db: true
-  name: queens_db_{{ user }} _{{ cluster }} _data_processor_ensight
+  name: queens_db_{{ user }}_{{ cluster }}_data_processor_ensight
 method:
   type: dummy
   model_name: model
@@ -25,7 +25,7 @@ driver:
   data_processor: data_processor_baci
 data_processor_baci:
   type: ensight
-  file_name_identifier: "{{ experiment_name }} *.case"
+  file_name_identifier: "{{ experiment_name }}*.case"
   file_options_dict:
     delete_field_data: false
     geometric_target: [experimental_data]
@@ -37,7 +37,7 @@ data_processor_baci:
     target_time_lst: [0.5]
     time_tol: 0.001
 resources:
-  "{{ cluster }} ":
+  "{{ cluster }}":
     scheduler: scheduler
     max_concurrent: 2
     max_finished_jobs: 10

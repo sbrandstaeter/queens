@@ -47,7 +47,7 @@ data_processor_baci:
       target_values: [0.5]
       tolerance: 0.01
 resources:
-  {{ cluster }} :
+  {{ cluster }}:
     scheduler_name: scheduler
     max_concurrent: 10
     max_finished_jobs: 1000
