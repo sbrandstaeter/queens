@@ -9,6 +9,11 @@ import pytest
 import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
 from pqueens.models import from_config_create_model
+from pqueens.schedulers.cluster_scheduler import (
+    BRUTEFORCE_CLUSTER_TYPE,
+    CHARON_CLUSTER_TYPE,
+    DEEP_CLUSTER_TYPE,
+)
 from pqueens.utils import injector
 from pqueens.utils.config_directories import experiment_directory
 from pqueens.utils.run_subprocess import run_subprocess
@@ -19,9 +24,9 @@ _logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     "cluster",
     [
-        pytest.param("deep", marks=pytest.mark.lnm_cluster),
-        pytest.param("bruteforce", marks=pytest.mark.lnm_cluster),
-        pytest.param("charon", marks=pytest.mark.imcs_cluster),
+        pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(CHARON_CLUSTER_TYPE, marks=pytest.mark.imcs_cluster),
     ],
     indirect=True,
 )
