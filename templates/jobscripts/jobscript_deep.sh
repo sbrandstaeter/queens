@@ -5,13 +5,13 @@
 #                                        #
 ##########################################
 # Job name:
-#PBS -N {job_name}
+#PBS -N {{ job_name }}
 # Number of nodes and processors per node (ppn)
-#PBS -l nodes={pbs_nodes}:ppn={pbs_ppn}
+#PBS -l nodes={{ pbs_nodes }}:ppn={{ pbs_ppn }}
 # Walltime: (hours:minutes:seconds)
-#PBS -l walltime={walltime}
+#PBS -l walltime={{ walltime }}
 # Executing queue
-#PBS -q {pbs_queue}
+#PBS -q {{ pbs_queue }}
 ###########################################
 
 ##########################################
@@ -20,10 +20,10 @@
 #                                        #
 ##########################################
 WORKDIR=/scratch/PBS_$PBS_JOBID
-DESTDIR={DESTDIR}  # output directory for run
-EXE='{EXE}' # either CAE executable or singularity image
-INPUT='{INPUT}'  # either input file or, for singularity, list of arguments specifying run
-OUTPUTPREFIX={OUTPUTPREFIX}
+DESTDIR={{ DESTDIR }}  # output directory for run
+EXE='{{ EXE }}' # either CAE executable or singularity image
+INPUT='{{ INPUT }}'  # either input file or, for singularity, list of arguments specifying run
+OUTPUTPREFIX={{ OUTPUTPREFIX }}
 ##########################################
 #                                        #
 #       RESTART SPECIFICATION            #
@@ -37,14 +37,14 @@ RESTART_FROM_PREFIX=xxx                  #
 #     SPECIFICATION                      #
 #                                        #
 ##########################################
-DoDataProcessing={DATAPROCESSINGFLAG} # post- and data-processing flag for singularity run
+DoDataProcessing={{ DATAPROCESSINGFLAG }} # post- and data-processing flag for singularity run
 
 #################################################################
 # BEGIN ############### DO NOT TOUCH ME #########################
 #################################################################
 # This is not a suggestion, this is a rule.
 # Talk to admin before touching this section.
-source {CLUSTERSCRIPT}
+source {{ CLUSTERSCRIPT }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
 LoadBACIModules
 DoChecks
@@ -61,6 +61,6 @@ wait
 # (cd back into home since pwd does not exist anymore)
 if [ $DoDataProcessing = true ]
 then
-  $MPI_RUN $MPIFLAGS -np {nposttasks} $EXE $INPUT $WORKDIR '--post=true'
+  $MPI_RUN $MPIFLAGS -np {{ nposttasks }} $EXE $INPUT $WORKDIR '--post=true'
 fi
 # END ################## DO NOT TOUCH ME #########################
