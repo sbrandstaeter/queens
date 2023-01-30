@@ -43,9 +43,9 @@ model:
   noise_value: 0.01
   nugget_noise_var: 1.0e-08
   experimental_file_name_identifier: '*.csv'
-  experimental_csv_data_base_dir: {{experimental_data_path}}
+  experimental_csv_data_base_dir: {{ experimental_data_path }}
   plotting_options:
-    plotting_dir: {{plot_dir}}
+    plotting_dir: {{ plot_dir }}
     plot_names: [bmfia_plot.png, posterior.png]
     save_bool: [false, false]
     plot_booleans: [false, false]

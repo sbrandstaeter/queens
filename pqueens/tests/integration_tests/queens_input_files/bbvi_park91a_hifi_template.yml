@@ -28,7 +28,7 @@ method:
     iterative_field_names: [elbo] # is used in the assert statement
     plotting_options:
       plot_boolean: false
-      plotting_dir: {{plot_dir}}
+      plotting_dir: {{ plot_dir }}
       plot_name: variational_params_convergence.eps
       save_bool: false
 optimizer:
@@ -46,7 +46,7 @@ model:
   coordinate_labels: [x3, x4]
   noise_type: MAP_jeffrey_variance
   nugget_noise_variance: 1.0e-08
-  experimental_csv_data_base_dir: {{experimental_data_path}}
+  experimental_csv_data_base_dir: {{ experimental_data_path }}
   noise_var_iterative_averaging:
     averaging_type: moving_average
     num_iter_for_avg: 10

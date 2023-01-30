@@ -6,7 +6,7 @@ method:
   type: optimization
   model_name: model
   initial_guess: [2.0, 0.0]
-  algorithm: {{algorithm}}
+  algorithm: {{ algorithm }}
   result_description:
     write_results: true
     plot_results: true

@@ -577,8 +577,8 @@ NODE 52 COORD 1.850000000000000e+01 0.000000000000000e+00 0.000000000000000e+00
 //MAT 1 MAT_Struct_AAANeoHooke YOUNG 5.22E5 BETA 9.405E5 NUE 0.49 DENS 0.001
 //MAT 2 MAT_Struct_AAANeoHooke YOUNG 1.566E6 BETA 2.8215E6 NUE 0.49 DENS 0.001
 // standard AAA material parameters
-MAT 1 MAT_Struct_AAANeoHooke YOUNG 1E6 BETA 1.9E6 NUE {{nue}} DENS 0.001
-MAT 2 MAT_Struct_AAANeoHooke YOUNG 0.8E6 BETA 1.9E6 NUE {{nue}} DENS 0.001
+MAT 1 MAT_Struct_AAANeoHooke YOUNG 1E6 BETA 1.9E6 NUE {{ nue }}  DENS 0.001
+MAT 2 MAT_Struct_AAANeoHooke YOUNG 0.8E6 BETA 1.9E6 NUE {{ nue }}  DENS 0.001
 
 // fitted with neohooke, works quite well
 //MAT 1 MAT_Struct_NeoHooke YOUNG 2.73974e+06 NUE 6.18385e-02 DENS 0.001
@@ -593,7 +593,7 @@ MAT 2 MAT_Struct_AAANeoHooke YOUNG 0.8E6 BETA 1.9E6 NUE {{nue}} DENS 0.001
 //MAT 31 ELAST_VolOgden KAPPA 17.4E6 BETA -2.0
 ----------------------------------------------------------------------FUNCT1
 COMPONENT 0 FUNCTION a
-VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 23000 VALUES 0.0 {{pressure}} {{pressure}}
+VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 23000 VALUES 0.0 {{ pressure }}  {{ pressure }}
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4

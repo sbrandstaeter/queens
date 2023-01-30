@@ -903,7 +903,9 @@ class BaciDatExternalGeometry(ExternalGeometry):
         line_new = line
         if mat_param_name in line:
             string_to_replace = "{" + mat_param_name + "}"
-            line_new = line.replace(string_to_replace, f'{{{mat_param_name}_{realization_index}}}')
+            line_new = line.replace(
+                string_to_replace, f'{{ {mat_param_name}_{realization_index} }}'
+            )
             # TODO key field realization prob wrong
 
         return line_new
@@ -1122,19 +1124,19 @@ class BaciDatExternalGeometry(ExternalGeometry):
             placeholders = [dirich_field['name'] + '_' + str(i) for i in range(set_shape)]
             if dirich_field["dof_for_field"] == 1:
                 realized_random_field_1 = [
-                    '{{' + placeholder + '}}' for placeholder in placeholders
+                    '{{ ' + placeholder + ' }}' for placeholder in placeholders
                 ]
                 fun_1 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
             elif dirich_field["dof_for_field"] == 2:
                 realized_random_field_2 = [
-                    '{{' + placeholder + '}}' for placeholder in placeholders
+                    '{{ ' + placeholder + ' }}' for placeholder in placeholders
                 ]
                 fun_2 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
             elif dirich_field["dof_for_field"] == 3:
                 realized_random_field_3 = [
-                    '{{' + placeholder + '}}' for placeholder in placeholders
+                    '{{ ' + placeholder + ' }}' for placeholder in placeholders
                 ]
                 fun_3 = dirich_field["funct_for_field"] * np.ones(set_shape)
 
