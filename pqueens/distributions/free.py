@@ -28,14 +28,14 @@ class FreeVariable(Distribution):
         Returns:
             distribution: FreeVariable object
         """
-        dimension = distribution_options.get('lower_bound', 1)
+        dimension = distribution_options.get('dimension', 1)
         return cls(dimension=dimension)
 
     def cdf(self, _):
         """Cumulative distribution function."""
         raise ValueError('cdf method is not supported for FreeVariable.')
 
-    def draw(self, _):
+    def draw(self, _=1):
         """Draw samples."""
         raise ValueError('draw method is not supported for FreeVariable.')
 
