@@ -1,4 +1,4 @@
-experiment_name: {experiment_name}
+experiment_name: {{ experiment_name }}
 database:
   type: mongodb
   name: queens_db_cluster_test_morris_invaaa
@@ -28,9 +28,9 @@ interface:
   driver_name: driver
 driver:
   type: mpi
-  input_template: {input_template}
-  path_to_executable: {path_to_executable}
-  path_to_postprocessor: {path_to_drt_monitor}
+  input_template: {{ input_template }}
+  path_to_executable: {{ path_to_executable }}
+  path_to_postprocessor: {{ path_to_drt_monitor }}
   post_file_prefix: QoI
   post_process_options: --field=structure --node=26 --start=1
   data_processor_name: data_processor_baci
@@ -47,23 +47,23 @@ data_processor_baci:
       target_values: [0.5]
       tolerance: 0.01
 resources:
-  {cluster}:
+  {{ cluster }}:
     scheduler_name: scheduler
     max_concurrent: 10
     max_finished_jobs: 1000
 scheduler:
   type: cluster
-  cluster_type: {cluster}
+  cluster_type: {{ cluster }}
   num_procs: 1
   num_procs_post: 1
   cluster:
     script: /lnm/share/donottouch.sh
     walltime: 00:01:00
   remote:
-    connect: {connect_to_resource}
+    connect: {{ connect_to_resource }}
   singularity: true
   singularity_settings:
-    remote_ip: {singularity_remote_ip}
+    remote_ip: {{ singularity_remote_ip }}
 parameters:
   nue:
     type: uniform

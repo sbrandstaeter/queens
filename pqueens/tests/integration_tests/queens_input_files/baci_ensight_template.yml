@@ -13,7 +13,7 @@ method:
 external_geometry:
   type: baci_dat
   list_geometric_sets: [DSURFACE 4]
-  input_template: {baci_input}
+  input_template: {{ baci_input }}
 model:
   type: simulation_model
   interface_name: interface
@@ -22,9 +22,9 @@ interface:
   driver_name: driver
 driver:
   type: mpi
-  input_template: {baci_input}
-  path_to_executable: {baci-release}
-  path_to_postprocessor: {post_drt_ensight}
+  input_template: {{ baci_input }}
+  path_to_executable: {{ baci_release }}
+  path_to_postprocessor: {{ post_drt_ensight }}
   post_file_prefix: baci_ensight
   data_processor_name: data_processor_baci
 data_processor_baci:

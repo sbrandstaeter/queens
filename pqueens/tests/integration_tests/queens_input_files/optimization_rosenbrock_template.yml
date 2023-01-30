@@ -5,7 +5,7 @@ database:
 method:
   type: optimization
   model_name: model
-  algorithm: {algorithm}
+  algorithm: {{ algorithm }}
   initial_guess: [-3.0, -4.0]
   result_description:
     write_results: true
