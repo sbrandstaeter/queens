@@ -6,7 +6,7 @@ method:
   type: rpvi
   model_name: model
   max_feval: 10
-  likelihood_gradient_method: {gradient_method}
+  likelihood_gradient_method: {{ gradient_method }}
   finite_difference_method: 2-point
   n_samples_per_iter: 3
   score_function_bool: true
@@ -28,7 +28,7 @@ method:
     write_results: true
     plotting_options:
       plot_boolean: false
-      plotting_dir: {plot_dir}
+      plotting_dir: {{ plot_dir }}
       plot_name: variational_params_convergence.eps
       save_bool: false
 optimizer:
@@ -46,7 +46,7 @@ model:
   noise_type: MAP_jeffrey_variance
   nugget_noise_variance: 1.0e-08
   experimental_file_name_identifier: experimental_data.csv
-  experimental_csv_data_base_dir: {experimental_data_path}
+  experimental_csv_data_base_dir: {{ experimental_data_path }}
   parameters: parameters
 forward_model:
   type: simulation_model
@@ -57,8 +57,8 @@ interface:
   driver_name: driver
 driver:
   type: mpi
-  input_template: {input_file}
-  path_to_executable: {executable}
+  input_template: {{ input_file }}
+  path_to_executable: {{ executable }}
   data_processor_name: data_processor_output
   gradient_data_processor_name: gradient_data_processor
 data_processor_output:
@@ -81,7 +81,7 @@ resources:
     max_concurrent: 1
     max_finished_jobs: 1000
 local_scheduler:
-  experiment_dir: {experiment_dir}
+  experiment_dir: {{ experiment_dir }}
   type: standard
   singularity: false
   num_procs: 1
