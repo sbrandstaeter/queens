@@ -56,6 +56,6 @@ truth_model:
   interface_name: interface
 interface:
   type: direct_python_interface
-  function: {test_fun}
+  function: {{ test_fun }}
 parameters:
-  {variables}
+  {{ variables }}

@@ -20,7 +20,7 @@ _logger = logging.getLogger(__name__)
 
 DEEP_CLUSTER_TYPE = "deep"
 BRUTEFORCE_CLUSTER_TYPE = "bruteforce"
-CHARON_CLUSTER_TYPE = "charon"
+CHARON_CLUSTER_TYPE = "hades"
 
 VALID_PBS_CLUSTER_TYPES = (DEEP_CLUSTER_TYPE,)
 VALID_SLURM_CLUSTER_TYPES = (BRUTEFORCE_CLUSTER_TYPE, CHARON_CLUSTER_TYPE)
@@ -102,7 +102,7 @@ BRUTEFORCE_CONFIG = ClusterConfig(
     ),
 )
 CHARON_CONFIG = ClusterConfig(
-    name="charon",
+    name="hades",
     work_load_scheduler="slurm",
     start_cmd="sbatch",
     jobscript_template=relative_path_from_queens("templates/jobscripts/jobscript_charon.sh"),

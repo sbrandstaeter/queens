@@ -26,7 +26,7 @@ method:
     write_results: true
     plotting_options:
       plot_boolean: false
-      plotting_dir: {plot_dir}
+      plotting_dir: {{ plot_dir }}
       plot_name: variational_params_convergence.eps
       save_bool: false
 optimizer:
@@ -37,17 +37,17 @@ optimizer:
   rel_L2_change_threshold: -1
   max_iter: 10000000
 model:
-  type: {likelihood_model_type}
-  external_python_module: {external_python_module}
-  forward_model_name: {forward_model_name}
+  type: {{ likelihood_model_type }}
+  external_python_module: {{ external_python_module }}
+  forward_model_name: {{ forward_model_name }}
   output_label: y_obs
   coordinate_labels: [x3, x4]
   noise_type: MAP_jeffrey_variance
   nugget_noise_variance: 1.0e-08
   experimental_file_name_identifier: '*.csv'
-  experimental_csv_data_base_dir: {experimental_data_path}
+  experimental_csv_data_base_dir: {{ experimental_data_path }}
 gradient_model:
-  type: {gradient_model_type}
+  type: {{ gradient_model_type }}
   forward_model_name: forward_model
   finite_difference_method: 2-point
   step_size: 1.0e-07
@@ -56,7 +56,7 @@ forward_model:
   interface_name: interface
 interface:
   type: direct_python_interface
-  function: {my_function}
+  function: {{ my_function }}
 parameters:
   x1:
     type: normal
