@@ -72,13 +72,11 @@ class DirectPythonInterface(Interface):
 
         return cls(interface_name=interface_name, function=my_function, pool=pool)
 
-    def evaluate(self, samples, gradient_bool=False):
+    def evaluate(self, samples):
         """Mapping function which orchestrates call to simulator function.
 
         Args:
             samples (list): List of variables objects
-            gradient_bool (bool): Flag to determine whether the gradient of the function at
-                                  the evaluation point is expected (*True*) or not (*False*)
 
         Returns:
             dict: dictionary with
@@ -109,16 +107,20 @@ class DirectPythonInterface(Interface):
         else:
             results = list(map(self.function, tqdm(samples_list)))
 
-        if gradient_bool:
-            result_lst = []
-            gradient_lst = []
-            for result in results:
+        result_lst = []
+        gradient_lst = []
+
+        for result in results:
+            if isinstance(result, tuple):
                 result_lst.append(result[0])
                 gradient_lst.append(result[1].T)
-            output = {'mean': np.array(result_lst)}
+            else:
+                result_lst.append(result)
+
+        output = {'mean': np.array(result_lst)}
+
+        if gradient_lst:
             output['gradient'] = np.array(gradient_lst)
-        else:
-            output = {'mean': np.array(results)}
 
         return output
 

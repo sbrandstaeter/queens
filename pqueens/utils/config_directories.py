@@ -80,3 +80,23 @@ def create_directory(dir_path, remote_connect=None):
 ABS_SINGULARITY_IMAGE_PATH = local_base_directory() / "singularity_image.sif"
 
 LOCAL_TEMPORARY_SUBMISSION_SCRIPT = local_base_directory() / "temporary_submission_script.sh"
+
+
+def current_job_directory(experiment_dir, job_id):
+    """Directory of the latest submitted job.
+
+    Args:
+        experiment_dir (pathlib.Path): Experiment directory
+        job_id (str): Job ID of the current job
+
+    Returns:
+        job_dir (pathlib.Path): Path to the current job directory.
+    """
+    if not isinstance(experiment_dir, pathlib.Path):
+        raise TypeError(
+            "The 'experiment_dir' must be of type 'pathlib.Path'."
+            f"You provided the type {type(experiment_dir)}."
+        )
+
+    job_dir = experiment_dir / str(job_id)
+    return job_dir

@@ -215,7 +215,7 @@ class BMFGaussianModel(LikelihoodModel):
             noise_var_lst,
         )
 
-    def evaluate(self, samples, gradient_bool=False):
+    def evaluate(self, samples, **kwargs):
         """Evaluate multi-fidelity likelihood.
 
         Evaluation with current set of variables
@@ -223,16 +223,10 @@ class BMFGaussianModel(LikelihoodModel):
 
         Args:
             samples (np.ndarray): Evaluated samples
-            gradient_bool (bool, optional): Boolean to determine whether the gradient of the
-                                            likelihood should be evaluated (if set to True)
 
         Returns:
             mf_log_likelihood (np.array): Vector of log-likelihood values per model input.
         """
-        if gradient_bool:
-            raise NotImplementedError(
-                "The gradient response is not implemented, yet for the multi-fidelity likelihood."
-            )
         # Initialize underlying models in the first call
         if self.z_train is None:
             self._initialize()
@@ -243,9 +237,9 @@ class BMFGaussianModel(LikelihoodModel):
 
         # we explicitly cut the array at the variable size as within one batch several chains
         # e.g., in MCMC might be calculated; we only want the last chain here
-        Y_LF_mat = self.forward_model.evaluate(samples)['mean'].reshape(-1, num_coordinates)[
-            :num_samples, :
-        ]
+        Y_LF_mat = self.forward_model.evaluate(samples, **kwargs)['mean'].reshape(
+            -1, num_coordinates
+        )[:num_samples, :]
         # evaluate the modified multi-fidelity likelihood expression with LF model response
         mf_log_likelihood = self._evaluate_mf_likelihood(Y_LF_mat, samples)
         return mf_log_likelihood
@@ -287,7 +281,7 @@ class BMFGaussianModel(LikelihoodModel):
     def _calculate_distance_vector_and_var_y(self, y_lf_mat, x_batch):
         """Calculate the distance vectors.
 
-        Distance is calcualted between the observation vector and
+        Distance is calculated between the observation vector and
         the batch (at x_batch) of simulation vectors. The observation vector is
         a row vector and the simulation vectors are row-wise collected in
         z_mat, respectively m_f_mat and var_y_mat. The resulting difference
@@ -388,11 +382,11 @@ class BMFGaussianModel(LikelihoodModel):
         Args:
             mf_variance_vec (np.array): Vector of predicted posterior variance values of
                                         the probabilistic multi-fidelity regression model.
-                                        This should be a row vecor.
+                                        This should be a row vector.
             diff_vec (np.array): Differences between observation and simulations.
                                  This is a two-dimension
 
-        Retruns:
+        Returns:
             log_lik_mf (np.array): Value of log-likelihood function for difference vector.
                                    A two-dimensional vector containing one scalar.
         """

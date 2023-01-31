@@ -6,8 +6,6 @@ method:
   type: rpvi
   model_name: model
   max_feval: 10
-  likelihood_gradient_method: {gradient_method}
-  finite_difference_method: 2-point
   n_samples_per_iter: 3
   score_function_bool: true
   variational_distribution:
@@ -40,27 +38,40 @@ optimizer:
   max_iter: 10000000
 model:
   type: gaussian
-  forward_model_name: forward_model
+  forward_model_name: {forward_model_name}
   output_label: y_obs
   coordinate_labels: [x3, x4]
   noise_type: MAP_jeffrey_variance
   nugget_noise_variance: 1.0e-08
   experimental_file_name_identifier: experimental_data.csv
   experimental_csv_data_base_dir: {experimental_data_path}
-  parameters: parameters
+gradient_model:
+  type: {gradient_model_type}
+  forward_model_name: forward_model
+  finite_difference_method: 2-point
+  adjoint_file_name: "grad_objective.csv"
+  gradient_interface_name: {gradient_interface}
 forward_model:
   type: simulation_model
   interface_name: interface
   parameters: parameters
+gradient_interface:
+  type: job_interface
+  driver_name: gradient_driver
 interface:
   type: job_interface
   driver_name: driver
+gradient_driver:
+  type: mpi
+  input_template: {input_file}
+  path_to_executable: {adjoint_executable}
+  data_processor_name: gradient_data_processor
 driver:
   type: mpi
   input_template: {input_file}
   path_to_executable: {executable}
   data_processor_name: data_processor_output
-  gradient_data_processor_name: gradient_data_processor
+  gradient_data_processor_name: {gradient_data_processor}
 data_processor_output:
   type: csv
   file_name_identifier: '*_output.csv'

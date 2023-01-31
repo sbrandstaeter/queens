@@ -1,4 +1,5 @@
 """Simulation model class."""
+import numpy as np
 
 from pqueens.interfaces import from_config_create_interface
 
@@ -10,6 +11,7 @@ class SimulationModel(Model):
 
     Attributes:
         interface (interface): Interface to simulations/functions.
+        response_grad (np.array): Gradient of the model response
     """
 
     def __init__(self, model_name, interface):
@@ -21,6 +23,7 @@ class SimulationModel(Model):
         """
         super().__init__(model_name)
         self.interface = interface
+        self.response_grad = None
 
     @classmethod
     def from_config_create_model(cls, model_name, config):
@@ -42,7 +45,7 @@ class SimulationModel(Model):
 
         return cls(model_name, interface)
 
-    def evaluate(self, samples):
+    def evaluate(self, samples, **kwargs):
         """Evaluate model with current set of samples.
 
         Args:
@@ -51,7 +54,7 @@ class SimulationModel(Model):
         Returns:
             self.response (np.array): Response of the underlying model at current variables
         """
-        self.response = self.interface.evaluate(samples)['mean']
+        self.response = self.interface.evaluate(samples)
         return self.response
 
     def _grad(self, samples, upstream):
@@ -61,4 +64,9 @@ class SimulationModel(Model):
             samples (np.array): Evaluated samples
             upstream (np.array): Upstream gradient
         """
-        raise ValueError('You have to define a Gradient model for Simulation model!')
+        if self.response.get('gradient') is None:
+            raise ValueError(
+                'You have to define a Gradient model for Simulation model if the model '
+                'does not return the forward response and the gradient at once.'
+            )
+        return np.sum(upstream[:, :, np.newaxis] * self.response['gradient'], axis=1)

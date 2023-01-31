@@ -169,15 +169,13 @@ class JobInterface(Interface):
             driver_name,
         )
 
-    def evaluate(self, samples, gradient_bool=False):
+    def evaluate(self, samples):
         """Orchestrate call to external simulation software.
 
         Second variant which takes the input samples as argument.
 
         Args:
             samples (np.ndarray): Realization/samples of QUEENS simulation input variables
-            gradient_bool (bool): Flag to determine whether the gradient of the function at
-                                  the evaluation point is expected (*True*) or not (*False*)
 
         Returns:
             output (dict): Output data
@@ -205,7 +203,7 @@ class JobInterface(Interface):
                     time.sleep(self.polling_time)
 
         # get sample and response data
-        output = self.get_output_data(num_samples=samples.shape[0], gradient_bool=gradient_bool)
+        output = self.get_output_data(num_samples=samples.shape[0])
         return output
 
     def attempt_dispatch(self, resource, new_job):
@@ -351,14 +349,11 @@ class JobInterface(Interface):
         self.print_resources_status()
         return True
 
-    def get_output_data(self, num_samples, gradient_bool):
+    def get_output_data(self, num_samples):
         """Extract output data from database and return it.
 
         Args:
             num_samples (int): Number of evaluated samples
-            gradient_bool (bool): Flag to determine whether the gradient
-                                  of the model output w.r.t. the input
-                                  is expected (*True* if yes)
 
         Returns:
             dict: Output dictionary; i
@@ -400,7 +395,8 @@ class JobInterface(Interface):
                 gradient_values.append(gradient_value)
 
         output['mean'] = np.array(mean_values)[-num_samples:]
-        if gradient_bool:
+
+        if gradient_values:
             output['gradient'] = np.array(gradient_values)[-num_samples:]
 
         return output
@@ -559,8 +555,8 @@ class JobInterface(Interface):
         """Print out whats going on on the resources."""
         _logger.info('\n')
         _logger.info('Resources:      ')
-        _logger.info('NAME            PENDING      COMPLETED    FAILED   ')
-        _logger.info('------------    --------     ---------    ---------')
+        _logger.info('NAME            PENDING     COMPLETED    FAILED   ')
+        _logger.info('------------    --------    ---------    ---------')
         total_pending = 0
         total_complete = 0
         total_failed = 0
@@ -582,7 +578,7 @@ class JobInterface(Interface):
             )
         _logger.info(
             '%s    %s    %s    %s',
-            "*TOTAL*".ljust(12),
+            "*TOTAL*".ljust(13),
             str(total_pending).ljust(9),
             str(total_complete).ljust(9),
             str(total_failed).ljust(9),

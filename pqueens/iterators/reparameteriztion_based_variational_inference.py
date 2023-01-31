@@ -46,14 +46,6 @@ class RPVIIterator(VariationalInferenceIterator):
         score_function_bool (bool): Boolean flag to decide whether the score function term
                                     should be considered in the elbo gradient. If *True* the
                                     score function is considered.
-        finite_difference_step (float): Finite difference step size.
-        likelihood_gradient_method (str): Method for how to calculate the gradient
-                                                        of the log-likelihood.
-        finite_difference_method (str): Method to calculate a finite difference based
-                        approximation of the Jacobian matrix:
-
-                        - '2-point': a one sided scheme by definition
-                        - '3-point': more exact but needs twice as many function evaluations
 
     Returns:
         rpvi_obj (obj): Instance of the RPVIIterator
@@ -81,9 +73,6 @@ class RPVIIterator(VariationalInferenceIterator):
         variational_distribution_obj,
         stochastic_optimizer,
         score_function_bool,
-        finite_difference_step,
-        likelihood_gradient_method,
-        finite_difference_method,
         iteration_data,
     ):
         """Initialize RPVI iterator.
@@ -115,15 +104,6 @@ class RPVIIterator(VariationalInferenceIterator):
             score_function_bool (bool): Boolean flag to decide whether the score function term
                                     should be considered in the ELBO gradient. If true the
                                     score function is considered.
-            finite_difference_step (float): Finite difference step size
-            likelihood_gradient_method (str, optional): Method for how to calculate the gradient
-                                                        of the log-likelihood
-            finite_difference_method (str): Method to calculate a finite difference based
-                                            approximation of the Jacobian matrix:
-
-                                            - '2-point': a one sided scheme by definition
-                                            - '3-point': more exact but needs twice as many
-                                              function evaluations
             iteration_data (CollectionObject): Object to store iteration data if desired
         """
         super().__init__(
@@ -149,9 +129,6 @@ class RPVIIterator(VariationalInferenceIterator):
             iteration_data,
         )
         self.score_function_bool = score_function_bool
-        self.finite_difference_step = finite_difference_step
-        self.likelihood_gradient_method = likelihood_gradient_method
-        self.finite_difference_method = finite_difference_method
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -167,15 +144,6 @@ class RPVIIterator(VariationalInferenceIterator):
         """
         method_options = config[iterator_name]
         score_function_bool = method_options.get("score_function_bool", False)
-        finite_difference_step = method_options.get("finite_difference_step")
-        likelihood_gradient_method = method_options.get(
-            "likelihood_gradient_method", "finite_difference"
-        )
-        valid_finite_difference_methods = ["2-point", "3-point"]
-        finite_difference_method = method_options.get("finite_difference_method")
-        if likelihood_gradient_method == "finite_difference":
-            check_if_valid_options(valid_finite_difference_methods, finite_difference_method)
-
         (
             global_settings,
             model,
@@ -222,9 +190,6 @@ class RPVIIterator(VariationalInferenceIterator):
             variational_distribution_obj=variational_distribution_obj,
             stochastic_optimizer=stochastic_optimizer,
             score_function_bool=score_function_bool,
-            finite_difference_step=finite_difference_step,
-            likelihood_gradient_method=likelihood_gradient_method,
-            finite_difference_method=finite_difference_method,
             iteration_data=iteration_data,
         )
 
@@ -268,9 +233,7 @@ class RPVIIterator(VariationalInferenceIterator):
             sample_batch, self.variational_params
         ).reshape(self.n_samples_per_iter, -1)
 
-        log_likelihood_batch, grad_log_likelihood_batch = self.calculate_grad_log_likelihood_params(
-            sample_batch
-        )
+        log_likelihood_batch, grad_log_likelihood_batch = self.evaluate_and_gradient(sample_batch)
 
         # calculate the elbo gradient per sample
         sample_elbo_grad = np.sum(
@@ -298,102 +261,6 @@ class RPVIIterator(VariationalInferenceIterator):
         self._calculate_elbo(log_unnormalized_posterior)
         return grad_elbo.reshape(-1, 1)
 
-    def calculate_grad_log_likelihood_params(self, sample_batch):
-        """Calculate the gradient/Jacobian of the log-likelihood function.
-
-        Gradient is calculated w.r.t. the argument params, not the variational parameters.
-
-        Args:
-            sample_batch (np.array): Current *sample_batch* of the random parameters
-
-        Returns:
-            jacobi_log_likelihood (np.array): Jacobian of the log-likelihood function
-            log_likelihood (float): Value of the log-likelihood function
-        """
-        gradient_methods = {
-            'provided_gradient': self._calculate_grad_log_lik_params_provided_gradient,
-            'finite_difference': self._calculate_grad_log_lik_params_finite_difference,
-        }
-        my_gradient_method = get_option(gradient_methods, self.likelihood_gradient_method)
-        log_likelihood, grad_log_likelihood = my_gradient_method(sample_batch)
-        return log_likelihood, grad_log_likelihood
-
-    def _calculate_grad_log_lik_params_provided_gradient(self, sample_batch):
-        """Calculate gradient of log likelihood based on provided gradient.
-
-        The gradient of the log-likelihood is calculated w.r.t. the input of the underlying forward
-        model, here denoted by params.
-
-        Args:
-            sample_batch (np.array): Current sample batch of the random parameters
-
-        Returns:
-            grad_log_likelihood (np.ndarray): Gradients of the log-likelihood function
-                                              w.r.t. the input sample
-            log_likelihood (float): Value of the log-likelihood function
-        """
-        log_likelihood, grad_log_likelihood = self.eval_log_likelihood(
-            sample_batch, gradient_bool=True
-        )
-        return log_likelihood, grad_log_likelihood
-
-    def _calculate_grad_log_lik_params_finite_difference(self, sample_batch):
-        """Gradient of the log likelihood with finite differences.
-
-        The gradient of the log-likelihood is calculated w.r.t. the input of the underlying forward
-        model, here denoted by params.
-
-        Args:
-            sample_batch (np.array): Current sample batch of the random parameters
-
-        Returns:
-            grad_log_likelihood (np.ndarray): Gradients of the log-likelihood function
-                                              per sample, w.r.t. to the current sample
-            log_likelihood_batch (float): Value of the log-likelihood function for the batch of
-                                          input samples
-        """
-        sample_stencil_lst = []
-        delta_positions_lst = []
-        for sample in sample_batch:
-            sample_stencil, delta_positions = get_positions(
-                sample,
-                method=self.finite_difference_method,
-                rel_step=self.finite_difference_step,
-                bounds=[-np.inf, np.inf],
-            )
-            sample_stencil_lst.append(sample_stencil)
-            delta_positions_lst.append(delta_positions)
-
-        sample_stencil_batch = np.array(sample_stencil_lst).reshape(
-            -1, sample_stencil_lst[0].shape[1]
-        )
-
-        # model response should now correspond to objective function evaluated at positions
-        all_log_likelihood_batch = self.eval_log_likelihood(sample_stencil_batch)
-
-        # get actual likelihood and stencil points
-        num_jump = int(all_log_likelihood_batch.size / self.n_samples_per_iter)
-        log_likelihood_batch = all_log_likelihood_batch[0:-1:num_jump]
-        perturbed_log_likelihood_batch = np.delete(
-            all_log_likelihood_batch, np.arange(0, all_log_likelihood_batch.size, num_jump)
-        ).reshape(self.n_samples_per_iter, -1)
-
-        grad_log_likelihood_lst = []
-        for log_likelihood, delta_positions, perturbed_log_likelihood in zip(
-            log_likelihood_batch, delta_positions_lst, perturbed_log_likelihood_batch
-        ):
-            grad_log_likelihood_lst.append(
-                fd_jacobian(
-                    log_likelihood.reshape(1, 1),
-                    perturbed_log_likelihood.reshape(1, -1),
-                    delta_positions.reshape(1, -1),
-                    False,
-                    method=self.finite_difference_method,
-                )
-            )
-        grad_log_likelihood = np.array(grad_log_likelihood_lst).reshape(sample_batch.shape[0], -1)
-        return log_likelihood_batch, grad_log_likelihood
-
     def _calculate_elbo(self, log_unnormalized_posterior_mean):
         """Calculate the ELBO of the current variational approximation.
 
@@ -413,14 +280,14 @@ class RPVIIterator(VariationalInferenceIterator):
 
     def _verbose_output(self):
         """Give some informative outputs during the VI iterations."""
-        _logger.info("-" * 80)
         _logger.info("Iteration %s of RPVI algorithm", self.stochastic_optimizer.iteration + 1)
 
         super()._verbose_output()
 
         if self.stochastic_optimizer.iteration > 1:
-            _logger.info("Likelihood noise variance: %s", self.model.normal_distribution.covariance)
-        _logger.info("-" * 80)
+            _logger.debug(
+                "Likelihood noise variance: %s", self.model.normal_distribution.covariance
+            )
 
     def _prepare_result_description(self):
         """Creates the dictionary for the result pickle file.
@@ -433,26 +300,25 @@ class RPVIIterator(VariationalInferenceIterator):
             result_description["iteration_data"].update(self.iteration_data.to_dict())
         return result_description
 
-    def eval_log_likelihood(self, sample_batch, gradient_bool=False):
-        """Calculate the log-likelihood of the observation data.
+    def evaluate_and_gradient(self, sample_batch):
+        """Calculate log-likelihood of observation data and its gradient.
 
-        Evaluation of the likelihood model for all inputs of the sample batch will trigger
-        the actual forward simulation (can be executed in parallel as batch-sequential
-        procedure).
+        Evaluation of the likelihood model and its gradient for all inputs of the sample
+        batch will trigger the actual forward simulation (can be executed in parallel as
+        batch-sequential procedure).
 
         Args:
             sample_batch (np.array): Sample-batch with samples row-wise
-            gradient_bool (bool): Flag to determine whether gradient should be provided as well
 
         Returns:
-            likelihood_return_tuple (tuple): Tuple containing vector of the log-likelihood
-            function for all inputs samples of the current batch, and potentially the
-            corresponding gradient
+            log_likelihood (np.array): Vector of log-likelihood values for different input samples.
+            grad_log_likelihood_x (np.array): Row-wise gradients of log-Likelihood w.r.t. to input
+                                              samples.
         """
         # The first samples belong to simulation input
         # get simulation output (run actual forward problem)--> data is saved to DB
-        likelihood_return_tuple = self.model.evaluate(
-            sample_batch.reshape(-1, self.num_parameters), gradient_bool=gradient_bool
+        log_likelihood, grad_log_likelihood_x = self.model.evaluate_and_gradient(
+            sample_batch.reshape(-1, self.num_parameters)
         )
         self.n_sims += len(sample_batch)
         self.iteration_data.add(
@@ -461,4 +327,4 @@ class RPVIIterator(VariationalInferenceIterator):
             samples=sample_batch,
         )
 
-        return likelihood_return_tuple
+        return log_likelihood, grad_log_likelihood_x

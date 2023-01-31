@@ -20,6 +20,11 @@ VALID_TYPES = {
         'pqueens.models.likelihood_models.bayesian_mf_gaussian_likelihood',
         'BMFGaussianModel',
     ],
+    'finite_differences': [
+        'pqueens.models.gradient_models.finite_difference_model',
+        'FiniteDifferenceModel',
+    ],
+    'adjoint': ['pqueens.models.gradient_models.adjoint_model', 'AdjointModel'],
 }
 
 

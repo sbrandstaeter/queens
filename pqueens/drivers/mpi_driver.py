@@ -11,6 +11,7 @@ from pqueens.schedulers.cluster_scheduler import (
     VALID_PBS_CLUSTER_TYPES,
 )
 from pqueens.utils.cluster_utils import get_cluster_job_id
+from pqueens.utils.config_directories import current_job_directory
 from pqueens.utils.injector import inject
 from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.run_subprocess import run_subprocess
@@ -220,7 +221,7 @@ class MpiDriver(Driver):
         else:
             gradient_data_processor = None
 
-        job_dir = experiment_dir / str(job_id)
+        job_dir = current_job_directory(experiment_dir, job_id)
         output_directory = job_dir / 'output'
         output_directory.mkdir(parents=True, exist_ok=True)
 
@@ -270,8 +271,10 @@ class MpiDriver(Driver):
         )
 
     def prepare_input_files(self):
-        """Prepare input file on remote machine."""
-        inject(self.job['params'], str(self.simulation_input_template), str(self.input_file))
+        """Prepare and parse data to input files."""
+        # check if file not already exists (might e.g., happen in restarts or adjoint runs)
+        if not pathlib.Path(self.input_file).is_file():
+            inject(self.job['params'], str(self.simulation_input_template), str(self.input_file))
 
     def run_job(self):
         """Run executable."""

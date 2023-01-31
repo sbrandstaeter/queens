@@ -30,7 +30,8 @@ def test_rpvi_iterator_park91a_hifi(
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
-        "gradient_method": "finite_difference",
+        "forward_model_name": "gradient_model",
+        "gradient_model_type": "finite_differences",
         "my_function": "park91a_hifi_on_grid",
         "likelihood_model_type": "gaussian",
         "external_python_module": "",
@@ -76,7 +77,8 @@ def test_rpvi_iterator_park91a_hifi_external_module(
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
-        "gradient_method": "finite_difference",
+        "forward_model_name": "gradient_model",
+        "gradient_model_type": "finite_differences",
         "my_function": "park91a_hifi_on_grid",
         "likelihood_model_type": "MyLikelihood",
         "external_python_module": module_path,
@@ -116,7 +118,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
-        "gradient_method": "provided_gradient",
+        "forward_model_name": "forward_model",
         "my_function": "park91a_hifi_on_grid_with_gradients",
         "likelihood_model_type": "gaussian",
         "external_python_module": "",
@@ -154,36 +156,35 @@ likelihood_dist = {
 likelihood = from_config_create_distribution(likelihood_dist)
 
 
-def target_density(self, samples, gradient_bool=False):
+def target_density(self, samples):
     """Target posterior density."""
     log_likelihood_output = likelihood.logpdf(samples)
-    if gradient_bool:
-        grad_log_likelihood = likelihood.grad_logpdf(samples)
-        log_likelihood_output = (log_likelihood_output, grad_log_likelihood)
+    grad_log_likelihood = likelihood.grad_logpdf(samples)
 
-    return log_likelihood_output
+    return log_likelihood_output, grad_log_likelihood
 
 
-@pytest.fixture(scope="module", params=['provided_gradient', 'finite_difference'])
-def gradient_method(request):
+@pytest.fixture(scope="module", params=['gradient_model', 'forward_model'])
+def forward_model(request):
     """Gradient method."""
     return request.param
 
 
-def test_gaussian_rpvi(inputdir, tmpdir, dummy_data, gradient_method):
+def test_gaussian_rpvi(inputdir, tmpdir, dummy_data, forward_model):
     """Test RPVI with univariate Gaussian."""
     template = os.path.join(inputdir, "rpvi_gaussian_template.yml")
 
     dir_dict = {
         "plot_dir": tmpdir,
         "experimental_data_path": tmpdir,
-        "gradient_method": gradient_method,
+        "gradient_model_type": 'finite_differences',
+        "forward_model_name": forward_model,
     }
     input_file = os.path.join(tmpdir, "rpvi_gaussian.yml")
     injector.inject(dir_dict, template, input_file)
 
     # mock methods related to likelihood
-    with patch.object(GaussianLikelihood, "evaluate", target_density):
+    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
         run(Path(input_file), Path(tmpdir))
 
     # get the results of the QUEENS run

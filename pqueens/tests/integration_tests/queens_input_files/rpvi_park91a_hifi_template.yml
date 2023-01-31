@@ -6,9 +6,6 @@ method:
   type: rpvi
   model_name: model
   max_feval: 3000
-  likelihood_gradient_method: {gradient_method}
-  finite_difference_method: 2-point
-  finite_difference_step: 1.0e-05
   n_samples_per_iter: 3
   score_function_bool: true
   variational_distribution:
@@ -42,13 +39,18 @@ optimizer:
 model:
   type: {likelihood_model_type}
   external_python_module: {external_python_module}
-  forward_model_name: forward_model
+  forward_model_name: {forward_model_name}
   output_label: y_obs
   coordinate_labels: [x3, x4]
   noise_type: MAP_jeffrey_variance
   nugget_noise_variance: 1.0e-08
   experimental_file_name_identifier: '*.csv'
   experimental_csv_data_base_dir: {experimental_data_path}
+gradient_model:
+  type: {gradient_model_type}
+  forward_model_name: forward_model
+  finite_difference_method: 2-point
+  step_size: 1.0e-07
 forward_model:
   type: simulation_model
   interface_name: interface

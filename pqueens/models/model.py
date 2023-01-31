@@ -2,6 +2,7 @@
 import abc
 
 import numpy as np
+
 import pqueens.parameters.parameters as parameters_module
 
 
@@ -26,22 +27,23 @@ class Model(metaclass=abc.ABCMeta):
         """Init model object.
 
         Args:
-            name (string):                  Name of model
+            name (optional, string): Name of model
         """
         self.name = name
         self.parameters = parameters_module.parameters
         self.response = None
 
     @abc.abstractmethod
-    def evaluate(self, samples):
+    def evaluate(self, samples, **kwargs):
         """Evaluate model with current set of samples.
 
         Args:
-            samples: TODO_doc
+            samples (np.array): Current sample batch for which the model response should be
+                                calculated.
         """
         pass
 
-    @abc.abstractmethod
+    # @abc.abstractmethod
     def _grad(self, samples, upstream):
         """Evaluate gradient of model with current set of samples.
 
@@ -51,7 +53,7 @@ class Model(metaclass=abc.ABCMeta):
         """
         pass
 
-    def evaluate_and_grad(self, samples):
-        model_output = self.evaluate(samples)
+    def evaluate_and_gradient(self, samples):
+        model_output = self.evaluate(samples, gradient=True)
         model_gradient = self._grad(samples, np.ones((samples.shape[0], 1)))
         return model_output, model_gradient

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 """High-fidelity Park91a with x3 and x4 as fixed coordinates as executable."""
+import pathlib
 import sys
 
 import numpy as np
@@ -113,11 +114,17 @@ def park91a_hifi_coords(x1, x2, x3, x4):
     return y, (dy_dx1, dy_dx2)
 
 
-def main(params):
+def main(run_type, params, input_path=None):
     """Interface to Park91a test function.
 
     Args:
+        run_type (str): Run type for the main function:
+
+                        - 's': standard run without gradients
+                        - 'c': callable run that provides forward solution and gradient
+                        - 'a': adjoint run that solves the adjoint equation
         params (dict): Dictionary with parameters
+        adjoint_path (optional, str): Optional adjoint path
 
     Returns:
         float: Value of the function at parameter specified in input dict
@@ -129,23 +136,73 @@ def main(params):
     x3_vec = x3_vec.flatten()
     x4_vec = x4_vec.flatten()
 
-    # evaluate testing functions for coordinates and fixed input
     y_vec = []
     y_grad = []
-    for x3, x4 in zip(x3_vec, x4_vec):
-        y_vec.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[0])
-        y_grad.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[1][:])
-    y_vec = np.array(y_vec)
-    y_grad = np.array(y_grad)
-    return y_vec, y_grad
+    # determine run-type
+    if run_type == 's':
+        for x3, x4 in zip(x3_vec, x4_vec):
+            y_vec.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[0])
+        y_vec = np.array(y_vec)
+        return y_vec
+
+    elif run_type == 'c':
+        for x3, x4 in zip(x3_vec, x4_vec):
+            y_vec.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[0])
+            y_grad.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[1][:])
+        y_vec = np.array(y_vec)
+        y_grad = np.array(y_grad)
+        return y_vec, y_grad
+
+    elif run_type == 'a':
+        for x3, x4 in zip(x3_vec, x4_vec):
+            y_grad.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[1][:])
+
+        # we define g(y,x1,x2) = y - term1 - term2 = 0
+        # as y is explicit in g, dg_dy = 1:
+        # --> 1 * lambda = -do_dy, with o being the objective function, here log-likelihood
+        # and y the value the output of this function, do_dy is here read-in from a csv file
+        # hence: lambda = -do_dy, which we will load in the next lines:
+        adjoint_base_path = pathlib.Path(input_file_path).parent  # not parent but -
+        adjoint_path = pathlib.Path(adjoint_base_path, "grad_objective.csv")
+        do_dy = genfromtxt(adjoint_path, delimiter=',')
+        lambda_var = -np.atleast_2d(np.array(do_dy))
+
+        # now we need to implement g_x, the jacobian of the residuum function w.r.t. the input
+        # afterwards we can calculate the final gradient do_dx, the gradient of the objective fun
+        # w.r.t. to the model input x; for this simple analytical example g_x is simply the
+        # negative gradient/jacobian of the model (for PDEs)
+        dg_dx = -np.array(y_grad)
+
+        # now we can finalize the adjoint:
+        do_dx = np.dot(lambda_var, dg_dx)
+
+        return do_dx
+
+    else:
+        raise ValueError(f"The run_type option {run_type} is not known.")
 
 
-def write_results(y_vec, y_grad, output_path):
+def write_results(run_type, output, output_path):
     """Write solution to csv files."""
-    output_file = output_path + "_output.csv"
-    gradient_file = output_path + "_gradient.csv"
-    np.savetxt(output_file, y_vec, delimiter=",")
-    np.savetxt(gradient_file, np.squeeze(y_grad), delimiter=",")
+    if run_type == "c":
+        y_vec, y_grad = output
+        output_file = output_path + "_output.csv"
+        gradient_file = output_path + "_gradient.csv"
+        np.savetxt(output_file, y_vec, delimiter=",")
+        np.savetxt(gradient_file, np.squeeze(y_grad), delimiter=",")
+
+    elif run_type == "s":
+        y_vec = output
+        output_file = output_path + "_output.csv"
+        np.savetxt(output_file, y_vec, delimiter=",")
+
+    elif run_type == "a":
+        y_grad = output
+        gradient_file = output_path + "_gradient.csv"
+        np.savetxt(gradient_file, np.squeeze(y_grad), delimiter=",")
+
+    else:
+        raise ValueError(f"The run_type option {run_type} is not known.")
 
 
 def read_input_file(input_file_path):
@@ -155,8 +212,9 @@ def read_input_file(input_file_path):
 
 
 if __name__ == "__main__":
-    input_file_path = sys.argv[1]
-    output_path = sys.argv[2]
+    run_type = sys.argv[1]
+    input_file_path = sys.argv[2]
+    output_path = sys.argv[3]
     params = read_input_file(input_file_path)
-    y_vec, y_grad = main({"x1": params[0], "x2": params[1]})
-    write_results(y_vec, y_grad, output_path)
+    output = main(run_type, {"x1": params[0], "x2": params[1]}, input_path=input_file_path)
+    write_results(run_type, output, output_path)
