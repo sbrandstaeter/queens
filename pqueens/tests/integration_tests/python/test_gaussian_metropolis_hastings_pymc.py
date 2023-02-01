@@ -30,7 +30,9 @@ def test_gaussian_mh(inputdir, tmpdir, dummy_data):
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    assert results['mean'].mean(axis=0) == pytest.approx(np.array([-1.06357056, 0.56727088]))
+    assert results['mean'].mean(axis=0) == pytest.approx(
+        np.array([-1.0635705644970397, 0.5672708823010517])
+    )
     assert results['var'].mean(axis=0) == pytest.approx([0.42437488, 0.39927101])
 
 

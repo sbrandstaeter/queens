@@ -24,6 +24,9 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         covariance (np.array): Covariance for proposal distribution
         tune_interval: frequency of tuning
         scaling (float): Initial scale factor for proposal
+        seen_samples (list): The 5 most recent sample batches which were used to evaluate the
+            likelihood function
+        seen_likelihoods (list): The 5 most recent results of the likelihood
     Returns:
         metropolis_hastings_iterator (obj): Instance of Metropolis-Hastings Iterator
     """
@@ -80,6 +83,8 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         self.covariance = covariance
         self.tune_interval = tune_interval
         self.scaling = scaling
+        self.seen_samples = [None, None, None, None, None]
+        self.seen_likelihoods = [None, None, None, None, None]
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -156,8 +161,47 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         Returns:
             (np.array): log-likelihoods
         """
-        log_likelihood = self.model.evaluate(samples, gradient_bool=False)
+        batch_size = samples.shape[0]
+        unknown_samples_index = []
+        log_likelihood = np.zeros(shape=(batch_size,))
+
+        # get index of unknown samples and likelihoods of seen samples
+        for batch_index in range(batch_size):
+            sample_age, sample_index = self.check_sample(samples[batch_index])
+            # if unknown then safe index
+            if sample_age is None:
+                unknown_samples_index.append(batch_index)
+            # if known then get likelihood
+            else:
+                log_likelihood[batch_index] = self.seen_likelihoods[sample_age][sample_index]
+
+        # if unknown samples exist, evalutate likelihood
+        if len(unknown_samples_index) > 0:
+            log_likelihood[unknown_samples_index] = self.model.evaluate(
+                samples[unknown_samples_index], gradient_bool=False
+            )
+
+        # update list of last samples and likelihoods
+        self.seen_samples.pop(0)
+        self.seen_samples.append(samples.copy())
+        self.seen_likelihoods.pop(0)
+        self.seen_likelihoods.append(log_likelihood.copy())
+
         return log_likelihood
+
+    def check_sample(self, sample):
+        """Find if the samples was already evaluated."""
+        sample_age = None
+        index = None
+        # check if sample exist in batch of samples with age age
+        for age, old_sample in enumerate(self.seen_samples):
+            if old_sample is not None:
+                for batch_index in range(old_sample.shape[0]):
+                    if np.array_equal(old_sample[batch_index], sample):
+                        sample_age = age
+                        index = batch_index
+
+        return sample_age, index
 
     def eval_log_likelihood_grad(self, samples):
         """Evaluate the gradient of the log-likelihood.
