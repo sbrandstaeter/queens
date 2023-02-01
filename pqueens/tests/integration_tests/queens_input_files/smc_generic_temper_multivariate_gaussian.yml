@@ -35,7 +35,10 @@ forward_model:
 proposal_distribution:
   type: normal
   mean: [0.0, 0.0, 0.0, 0.0]
-  covariance: [[1.0, 0.0, 0.0, 0.0], [0.0, 1.0, 0.0, 0.0], [0.0, 0.0, 1.0, 0.0], [0.0, 0.0, 0.0, 1.0]]
+  covariance: [[1.0, 0.0, 0.0, 0.0],
+               [0.0, 1.0, 0.0, 0.0],
+               [0.0, 0.0, 1.0, 0.0],
+               [0.0, 0.0, 0.0, 1.0]]
 interface:
   type: direct_python_interface
   function: patch_for_likelihood
