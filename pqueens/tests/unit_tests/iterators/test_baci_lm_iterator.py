@@ -306,7 +306,9 @@ def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator):
     mock_pandas_dataframe_to_csv = mocker.patch('pandas.core.generic.NDFrame.to_csv')
     default_baci_lm_iterator.pre_run()
     if fix_true_false_param:
-        mock_pandas_dataframe_to_csv.assert_called_once_with(Path('dummy_output', 'OptimizeLM' + '.csv'), mode='w', sep='\t', index=None)
+        mock_pandas_dataframe_to_csv.assert_called_once_with(
+            Path('dummy_output', 'OptimizeLM' + '.csv'), mode='w', sep='\t', index=None
+        )
     else:
         assert not mock_pandas_dataframe_to_csv.called
         default_baci_lm_iterator.result_description = None
@@ -481,7 +483,14 @@ def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
     mock_pandas_dataframe_to_csv = mocker.patch('pandas.core.generic.NDFrame.to_csv')
     default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
     if fix_true_false_param:
-        mock_pandas_dataframe_to_csv.assert_called_once_with(Path('dummy_output', 'OptimizeLM' + '.csv'), mode='w', sep='\t', index=None)
+        mock_pandas_dataframe_to_csv.assert_called_once_with(
+            Path('dummy_output/OptimizeLM.csv'),
+            header=None,
+            float_format="%.8f",
+            mode='a',
+            sep='\t',
+            index=None,
+        )
 
     else:
         assert not mock_pandas_dataframe_to_csv.called
