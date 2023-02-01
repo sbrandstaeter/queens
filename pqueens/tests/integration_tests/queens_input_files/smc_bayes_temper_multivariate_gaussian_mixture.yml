@@ -35,7 +35,10 @@ forward_model:
 proposal_distribution:
   type: normal
   mean: [0.0, 0.0, 0.0, 0.0]
-  covariance: [[0.001, 0.0, 0.0, 0.0], [0.0, 0.001, 0.0, 0.0], [0.0, 0.0, 0.001, 0.0], [0.0, 0.0, 0.0, 0.001]]
+  covariance: [[0.001, 0.0, 0.0, 0.0],
+               [0.0, 0.001, 0.0, 0.0],
+               [0.0, 0.0, 0.001, 0.0],
+               [0.0, 0.0, 0.0, 0.001]]
 interface:
   type: direct_python_interface
   num_workers: 1
