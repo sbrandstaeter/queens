@@ -63,7 +63,7 @@ class MF_NAR_GP_Regression_3_Levels(object):
         # check that X_lofi and X_hifi have the same dimension
         dim_x = Xtrain[0].shape[1]
         if dim_x is not Xtrain[1].shape[1] or not Xtrain[2].shape[1]:
-            raise Exception("Dimension of inputs must be the same across levels")
+            raise ValueError("Dimension of inputs must be the same across levels")
         self.num_fidelity_levels = 3
 
         self.X_lofi = Xtrain[0]
@@ -85,7 +85,7 @@ class MF_NAR_GP_Regression_3_Levels(object):
         if not X_hifi_flat_set.issubset(X_medfi_flat_set) or not X_medfi_flat_set.issubset(
             X_lofi_flat_set
         ):
-            raise Exception("Input sets must be nested")
+            raise ValueError("Input sets must be nested")
 
         self.active_dimensions = np.arange(0, self.input_dimension)
         # active_dimensions = np.arange(0,dim)
@@ -196,7 +196,7 @@ class MF_NAR_GP_Regression_3_Levels(object):
         dim_x = x_test.shape[1]
         num_test_points = x_test.shape[0]
         if dim_x is not self.X_lofi.shape[1]:
-            raise Exception("Dimension of inputs does not match dimension of emulator")
+            raise ValueError("Dimension of inputs does not match dimension of emulator")
 
         # compute mean and full covariance matrix
         mu1, C1 = self.m1.predict(x_test, full_cov=True)
