@@ -8,7 +8,7 @@ _logger = logging.getLogger(__name__)
 
 def interrupted():
     """Interruption that is called when input times out."""
-    raise Exception(f"No user input within time limit.")
+    raise ValueError("No user input within time limit.")
 
 
 # initialize the interuptions signal
@@ -28,10 +28,10 @@ def request_user_input(default, timeout):
     try:
         user_input = input()
         return user_input
-    except:
+    except TypeError:
         # timeout
         _logger.info(
-            "\nNo user input within time limit of %s s.\n" "Returning default value: %s \n",
+            "\nNo user input within time limit of %s s.\n Returning default value: %s \n",
             timeout,
             default,
         )
