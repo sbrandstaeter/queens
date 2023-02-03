@@ -34,9 +34,11 @@ def plot_pdf(pdf_estimate, support_points, bayes=False):
         )
         data.append(median_pdf)
 
-    layout = dict(
-        title='Probability Density Function', xaxis=dict(title='QOI'), yaxis=dict(title='PDF')
-    )
+    layout = {
+        "title": "Probability Density Function",
+        "xaxis": {"title": "QOI"},
+        "yaxis": {"title": "PDF"},
+    }
 
     fig = go.Figure(data=data, layout=layout)
     plotly.offline.plot(fig, filename='PDF.html', auto_open=True)
@@ -83,9 +85,11 @@ def plot_cdf(cdf_estimate, support_points, bayes=False):
         #     )
         #     data.append(sample_cdf)
 
-    layout = dict(
-        title='Cumulative Density Function', xaxis=dict(title='QOI'), yaxis=dict(title='CDF')
-    )
+    layout = {
+        "title": "Cumulative Density Function",
+        "xaxis": {"title": "QOI"},
+        "yaxis": {"title": "CDF"},
+    }
 
     fig = go.Figure(data=data, layout=layout)
     plotly.offline.plot(fig, filename='CDF.html', auto_open=True)
@@ -121,11 +125,11 @@ def plot_icdf(icdf_estimate, bayes=False):
         )
         data.append(median_icdf)
 
-    layout = dict(
-        title='Inverse Cumulative Density Function',
-        xaxis=dict(title='QOI'),
-        yaxis=dict(title='ICDF'),
-    )
+    layout = {
+        "title": "Inverse Cumulative Density Function",
+        "xaxis": {"title": "QOI"},
+        "yaxis": {"title": "ICDF"},
+    }
 
     fig = go.Figure(data=data, layout=layout)
     plotly.offline.plot(fig, filename='ICDF.html', auto_open=True)
