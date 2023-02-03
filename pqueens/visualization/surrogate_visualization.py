@@ -219,7 +219,7 @@ class SurrogateVisualization(object):
 
         figs[0].layout.yaxis.range = (y_min, y_max)
         figs[0].layout.xaxis.title = self.parameter_names[free_idx]
-        figs[0].update_layout(font=dict(family="Arial", size=18))
+        figs[0].update_layout(font={"family": 'Arial', "size": 18})
 
         return figs[0]
 

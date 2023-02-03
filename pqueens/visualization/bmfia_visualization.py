@@ -227,9 +227,7 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
                     y=z_train[1, :, num_coord].flatten(),
                     z=y_hf_train[:, num_coord].flatten(),
                     mode='markers',
-                    marker=dict(
-                        size=3,
-                    ),
+                    marker={"size": 3},
                 ),
                 row=row,
                 col=col,
@@ -273,11 +271,11 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
             )
 
             fig.update_layout(
-                scene=dict(
-                    xaxis=dict(title=r'$y_{LF}$'),
-                    yaxis=dict(title=r'$\gamma$'),
-                    zaxis=dict(title=r'$y_{HF}$'),
-                ),
+                scene={
+                    "xaxis": {"title": r'$y_{LF}$'},
+                    "yaxis": {"title": r'$\gamma$'},
+                    "zaxis": {"title": r'$y_{HF}$'},
+                },
                 xaxis_range=[np.min(z_train[0, :, num_coord]), np.max(z_train[0, :, num_coord])],
                 yaxis_range=[np.min(z_train[1, :, num_coord]), np.max(z_train[1, :, num_coord])],
                 scene_aspectmode='cube',
