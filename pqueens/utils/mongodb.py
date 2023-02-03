@@ -92,7 +92,7 @@ def convert_nested_db_dicts_to_lists_or_arrays(db_data):
             try:
                 return convert_db_dict_to_array(db_data)
             except Exception as exception:
-                raise Exception('Container does not contain a valid array.') from exception
+                raise TypeError('Container does not contain a valid array.') from exception
         else:
             udict = {}
             for key, value in db_data.items():
