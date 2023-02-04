@@ -41,7 +41,7 @@ def python_function_driver(job):
         elif param['type'].lower() == 'enum':
             params[name] = vals
         else:
-            raise Exception("Unknown parameter type.")
+            raise TypeError("Unknown parameter type.")
 
     # load module and run
     main_file = job['main-file']

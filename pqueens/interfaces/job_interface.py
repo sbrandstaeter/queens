@@ -113,7 +113,7 @@ class JobInterface(Interface):
         interface_options = config[interface_name]
         driver_name = interface_options.get('driver_name', None)
         if driver_name is None:
-            raise Exception("No driver_name specified for the JobInterface.")
+            raise ValueError("No driver_name specified for the JobInterface.")
 
         # get resources from config
         resources = parse_resources_from_configuration(config, driver_name)

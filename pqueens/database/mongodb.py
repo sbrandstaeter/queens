@@ -203,8 +203,9 @@ class MongoDB(Database):
         # make sure that there will be only one document in the collection that fits field_filters
         # note that the empty field_filers={} fits all documents in a collection
         if dbcollection.count_documents(field_filters) > 1:
-            raise Exception(
-                'Ambiguous save attempted. Field filters returned more than one document.'
+            raise ValueError(
+                'Field filters returned more than one document. '
+                'This means that saving would be ambiguous.'
             )
         result = dbcollection.replace_one(field_filters, save_doc, upsert=True)
         return result.acknowledged
@@ -306,7 +307,7 @@ class MongoDB(Database):
             self._pack_pandas_dataframe(save_doc)
 
         elif isinstance(save_doc.get('result', None), (xr.DataArray, xr.Dataset)):
-            raise Exception('Packing method for xarrays not implemented.')
+            raise NotImplementedError('Packing method for xarrays not implemented.')
 
     @staticmethod
     def _pack_pandas_dataframe(save_doc):
@@ -371,14 +372,14 @@ class MongoDB(Database):
             coordinates = list(zip(*body[:, :index_format].transpose()))
             index = pd.MultiIndex.from_tuples(coordinates, names=coordinate_names)
         else:
-            Exception('No index found')
+            raise ValueError('No index found')
 
         data = body[:, index_format:]
 
         return data, index
 
     def __str__(self):
-        """Creates a string describing the MongoDB object.
+        """Create a string describing the MongoDB object.
 
         Returns:
             string (str): MongoDB obj description

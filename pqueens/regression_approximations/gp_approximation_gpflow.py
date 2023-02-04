@@ -174,7 +174,7 @@ class GPFlowRegression(RegressionApproximation):
                 opt_logs = opt.minimize(
                     self.model.training_loss,
                     self.model.trainable_variables,
-                    options=dict(maxiter=self.number_training_iterations),
+                    options={"maxiter": self.number_training_iterations},
                 )
                 loss[i] = opt_logs.fun
                 train_logs.append(opt_logs)

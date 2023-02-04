@@ -349,7 +349,7 @@ class BaciLMIterator(Iterator):
                             self.parameters.names[1],
                         ],
                     )
-                    fig.update_traces(mode='lines+markers', marker=dict(size=2), line=dict(width=4))
+                    fig.update_traces(mode='lines+markers', marker={"size": 2}, line={"width": 4})
                 elif i == 1:
                     fig = px.line(
                         data,
@@ -364,7 +364,7 @@ class BaciLMIterator(Iterator):
                             self.parameters.names[0],
                         ],
                     )
-                    fig.update_traces(mode='lines+markers', marker=dict(size=7), line=dict(width=3))
+                    fig.update_traces(mode='lines+markers', marker={"size": 7}, line={"width": 3})
                 else:
                     raise ValueError('You shouldn\'t be here without parameters.')
 

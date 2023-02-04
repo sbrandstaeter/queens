@@ -275,17 +275,19 @@ class SobolIndexIterator(Iterator):
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["S1"],
-            error_y=dict(
-                type='data', array=results["sensitivity_indices"]["S1_conf"], visible=True
-            ),
+            error_y={
+                "type": 'data',
+                "array": results['sensitivity_indices']['S1_conf'],
+                "visible": True,
+            },
         )
         data = [bars]
 
-        layout = dict(
-            title='First-Order Sensitivity Indices',
-            xaxis=dict(title='Parameter'),
-            yaxis=dict(title='Main Effect'),
-        )
+        layout = {
+            "title": 'First-Order Sensitivity Indices',
+            "xaxis": {"title": 'Parameter'},
+            "yaxis": {"title": 'Main Effect'},
+        }
 
         fig = go.Figure(data=data, layout=layout)
         fig.write_html(chart_path)
@@ -296,17 +298,19 @@ class SobolIndexIterator(Iterator):
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["ST"],
-            error_y=dict(
-                type='data', array=results["sensitivity_indices"]["ST_conf"], visible=True
-            ),
+            error_y={
+                "type": 'data',
+                "array": results['sensitivity_indices']['ST_conf'],
+                "visible": True,
+            },
         )
         data = [bars]
 
-        layout = dict(
-            title='Total Sensitivity Indices',
-            xaxis=dict(title='Parameter'),
-            yaxis=dict(title='Total Effect'),
-        )
+        layout = {
+            "title": 'Total Sensitivity Indices',
+            "xaxis": {"title": 'Parameter'},
+            "yaxis": {"title": 'Total Effect'},
+        }
 
         fig = go.Figure(data=data, layout=layout)
         fig.write_html(chart_path)
@@ -327,14 +331,16 @@ class SobolIndexIterator(Iterator):
 
             chart_name = experiment_name + '_S2.html'
             chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
-            bars = go.Bar(x=names, y=S2, error_y=dict(type='data', array=S2_conf, visible=True))
+            bars = go.Bar(
+                x=names, y=S2, error_y={"type": 'data', "array": S2_conf, "visible": True}
+            )
             data = [bars]
 
-            layout = dict(
-                title='Second Order Sensitivity Indices',
-                xaxis=dict(title='Parameter'),
-                yaxis=dict(title='Second Order Effects'),
-            )
+            layout = {
+                "title": 'Second Order Sensitivity Indices',
+                "xaxis": {"title": 'Parameter'},
+                "yaxis": {"title": 'Second Order Effects'},
+            }
 
             fig = go.Figure(data=data, layout=layout)
             fig.write_html(chart_path)

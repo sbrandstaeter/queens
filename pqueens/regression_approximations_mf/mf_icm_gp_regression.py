@@ -54,7 +54,7 @@ class MF_ICM_GP_Regression(object):
         # check that X_lofi and X_hifi have the same dimension
         dim_x = Xtrain[0].shape[1]
         if dim_x is not Xtrain[1].shape[1]:
-            raise Exception(
+            raise ValueError(
                 "Dimension of low fidelity inputs and high fidelity inputs must be the same"
             )
 
@@ -115,16 +115,14 @@ class MF_ICM_GP_Regression(object):
         """
         dim_x = Xnew.shape[1]
         if dim_x is not self.Xtrain[0].shape[1]:
-            raise Exception("Dimension of inputs does not match dimension of emulator")
+            raise ValueError("Dimension of inputs does not match dimension of emulator")
 
         if level is None:
             level = self.num_fidelity_levels
 
         if level > self.num_fidelity_levels:
-            raise Exception(
-                "Cannot access level {} since number of levels is {}".format(
-                    self.num_fidelity_levels, level
-                )
+            raise ValueError(
+                f"Cannot access level {self.num_fidelity_levels} since number of levels is {level}"
             )
 
         # add level dimension to input
@@ -151,10 +149,8 @@ class MF_ICM_GP_Regression(object):
             level = self.num_fidelity_levels
 
         if level > self.num_fidelity_levels:
-            raise Exception(
-                "Cannot access level {} since number of levels is {}".format(
-                    self.num_fidelity_levels, level
-                )
+            raise ValueError(
+                f"Cannot access level {self.num_fidelity_levels} since number of levels is {level}"
             )
 
         my_samples = np.hstack([Xnew, level - 1 * np.ones((Xnew.shape[0], 1))])
