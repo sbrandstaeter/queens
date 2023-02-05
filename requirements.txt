@@ -138,7 +138,9 @@ joblib==1.2.0
     # via
     #   particles
     #   scikit-learn
-keras==2.11.0
+keras==2.10.0
+    # via tensorflow
+keras-preprocessing==1.1.2
     # via tensorflow
 kiwisolver==1.4.4
     # via matplotlib
@@ -196,6 +198,7 @@ numpy==1.21.5
     #   h5py
     #   jax
     #   jaxlib
+    #   keras-preprocessing
     #   matplotlib
     #   numba
     #   numpoly
@@ -357,6 +360,7 @@ six==1.16.0
     #   google-auth
     #   google-pasta
     #   gpy
+    #   keras-preprocessing
     #   multipledispatch
     #   paramz
     #   python-dateutil
@@ -370,21 +374,21 @@ tblib==1.7.0
     # via distributed
 tenacity==8.2.1
     # via plotly
-tensorboard==2.11.2
+tensorboard==2.10.1
     # via tensorflow
 tensorboard-data-server==0.6.1
     # via tensorboard
 tensorboard-plugin-wit==1.8.1
     # via tensorboard
-tensorflow==2.11.0
+tensorflow==2.10.1
     # via
     #   -r requirements.in
     #   gpflow
-tensorflow-estimator==2.11.0
+tensorflow-estimator==2.10.0
     # via tensorflow
 tensorflow-io-gcs-filesystem==0.30.0
     # via tensorflow
-tensorflow-probability==0.19.0
+tensorflow-probability==0.18.0
     # via
     #   -r requirements.in
     #   gpflow
