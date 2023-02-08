@@ -83,8 +83,12 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         self.covariance = covariance
         self.tune_interval = tune_interval
         self.scaling = scaling
-        self.seen_samples = [None, None, None, None, None]
-        self.seen_likelihoods = [None, None, None, None, None]
+
+        self.seen_samples = [None, None, None]
+        self.seen_likelihoods = [None, None, None]
+
+        if not use_queens_prior:
+            _logger.warning("PyMC does element wise updates. Consider QUEENS prior instead.")
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -161,25 +165,13 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         Returns:
             (np.array): log-likelihoods
         """
-        batch_size = samples.shape[0]
-        unknown_samples_index = []
-        log_likelihood = np.zeros(shape=(batch_size,))
-
-        # get index of unknown samples and likelihoods of seen samples
-        for batch_index in range(batch_size):
-            sample_age, sample_index = self.check_sample(samples[batch_index])
-            # if unknown then safe index
-            if sample_age is None:
-                unknown_samples_index.append(batch_index)
-            # if known then get likelihood
-            else:
-                log_likelihood[batch_index] = self.seen_likelihoods[sample_age][sample_index]
-
-        # if unknown samples exist, evalutate likelihood
-        if len(unknown_samples_index) > 0:
-            log_likelihood[unknown_samples_index] = self.model.evaluate(
-                samples[unknown_samples_index], gradient_bool=False
-            )
+        # check if sample was seen in previous acceptance step
+        if np.array_equal(self.seen_samples[0], samples):
+            log_likelihood = self.seen_likelihoods[0]
+        elif np.array_equal(self.seen_samples[1], samples):
+            log_likelihood = self.seen_likelihoods[1]
+        else:
+            log_likelihood = self.model.evaluate(samples, gradient_bool=False)
 
         # update list of last samples and likelihoods
         self.seen_samples.pop(0)
@@ -188,20 +180,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         self.seen_likelihoods.append(log_likelihood.copy())
 
         return log_likelihood
-
-    def check_sample(self, sample):
-        """Find if the samples was already evaluated."""
-        sample_age = None
-        index = None
-        # check if sample exist in batch of samples with age age
-        for age, old_sample in enumerate(self.seen_samples):
-            if old_sample is not None:
-                for batch_index in range(old_sample.shape[0]):
-                    if np.array_equal(old_sample[batch_index], sample):
-                        sample_age = age
-                        index = batch_index
-
-        return sample_age, index
 
     def eval_log_likelihood_grad(self, samples):
         """Evaluate the gradient of the log-likelihood.
@@ -222,11 +200,29 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         Returns:
             step (obj): The MCMC Method within the PyMC Model
         """
+        dims = self.num_chains * self.parameters.num_parameters
+        if self.covariance is None:
+            covariance = np.eye(dims)
+        elif self.covariance.shape == (dims, dims):
+            covariance = self.covariance
+        elif self.covariance.shape == (
+            self.parameters.num_parameters,
+            self.parameters.num_parameters,
+        ):
+            covariance = np.kron(np.eye(self.num_chains), self.covariance.shape)
+        else:
+            raise ValueError("Covariance Matrix has not the right shape.")
+
         step = pm.Metropolis(
-            S=self.covariance,
+            S=covariance,
             scaling=self.scaling,
             tune_interval=self.tune_interval,
         )
+        step.elemwise_update = False
+
+        step.accept_rate_iter = np.zeros(1, dtype=float)
+        step.accepted_iter = np.zeros(1, dtype=bool)
+        step.accepted_sum = np.zeros(1, dtype=int)
         return step
 
     def init_distribution_wrapper(self):
