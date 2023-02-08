@@ -44,8 +44,8 @@ def test_cluster_native_baci_elementary_effects(
 
     experiment_name = cluster + "_native_elementary_effects"
 
-    template = inputdir.joinpath("baci_cluster_native_elementary_effects_template.yml")
-    input_file = tmp_path.joinpath(f"elementary_effects_{cluster}_invaaa.yml")
+    template = inputdir / "baci_cluster_native_elementary_effects_template.yml"
+    input_file = tmp_path / f"elementary_effects_{cluster}_invaaa.yml"
 
     baci_input_filename = "invaaa_ee.dat"
     third_party_input_file_local = Path(third_party_inputs, "baci_input_files", baci_input_filename)
@@ -61,5 +61,5 @@ def test_cluster_native_baci_elementary_effects(
     injector.inject(dir_dict, template, input_file)
     run(input_file, tmp_path)
 
-    result_file = tmp_path.joinpath(experiment_name + '.pickle')
+    result_file = tmp_path / f"{experiment_name}.pickle"
     baci_elementary_effects_check_results(result_file)

@@ -23,7 +23,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmp_path, dumm
     template = Path(inputdir, "smc_bayes_temper_multivariate_gaussian_mixture.yml")
     experimental_data_path = tmp_path
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = tmp_path.joinpath("multivariate_gaussian_mixture_smc_bayes_temper_realiz.yml")
+    input_file = tmp_path / "multivariate_gaussian_mixture_smc_bayes_temper_realiz.yml"
     injector.inject(dir_dict, template, input_file)
 
     # mock methods related to likelihood
@@ -31,7 +31,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(inputdir, tmp_path, dumm
         with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
             run(input_file, tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -82,6 +82,6 @@ def dummy_data(tmp_path):
 
     # write the data to a csv file in tmp_path
     data_dict = {'y_obs': pdf}
-    experimental_data_path = tmp_path.joinpath('experimental_data.csv')
+    experimental_data_path = tmp_path / 'experimental_data.csv'
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)

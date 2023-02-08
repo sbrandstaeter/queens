@@ -107,16 +107,16 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     *currin88* function.
     """
     # generate json input file from template
-    template = inputdir.joinpath('bmfmc_currin88_template.yml')
+    template = inputdir / 'bmfmc_currin88_template.yml'
     plot_dir = tmp_path
     lf_mc_data_name = 'LF_MC_data.pickle'
-    path_lf_mc_pickle_file = tmp_path.joinpath(lf_mc_data_name)
+    path_lf_mc_pickle_file = tmp_path / lf_mc_data_name
     dir_dict = {
         'lf_mc_pickle_file': path_lf_mc_pickle_file,
         'plot_dir': plot_dir,
         'design_method': design_method,
     }
-    input_file = tmp_path.joinpath('bmfmc_currin88.yml')
+    input_file = tmp_path / 'bmfmc_currin88.yml'
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -125,7 +125,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     # actual main call of BMFMC
 
     # get the results of the QUEENS run
-    result_file = tmp_path.joinpath('bmfmc_currin88.pickle')
+    result_file = tmp_path / 'bmfmc_currin88.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

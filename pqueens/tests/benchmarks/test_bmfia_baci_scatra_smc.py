@@ -40,14 +40,14 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
         'post_drt_ensight': post_drt_ensight,
         'plot_dir': plot_dir,
     }
-    input_file = tmp_path.joinpath('hf_scatra_baci.yml')
+    input_file = tmp_path / 'hf_scatra_baci.yml'
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
     run(input_file, tmp_path)
 
     # get the results of the QUEENS run
-    result_file = tmp_path.joinpath('bmfia_baci_scatra_smc.pickle')
+    result_file = tmp_path / 'bmfia_baci_scatra_smc.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

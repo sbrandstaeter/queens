@@ -19,7 +19,7 @@ def test_write_random_material_to_dat(
         third_party_inputs, "baci_input_files", "coarse_plate_dirichlet_template.dat"
     )
 
-    dat_file_preprocessed = tmp_path.joinpath("coarse_plate_dirichlet_template_preprocessed.dat")
+    dat_file_preprocessed = tmp_path / "coarse_plate_dirichlet_template_preprocessed.dat"
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 
@@ -29,8 +29,8 @@ def test_write_random_material_to_dat(
         'post_drt_monitor': post_drt_monitor,
         'baci-release': baci_release,
     }
-    template = inputdir.joinpath("baci_random_field_material_mc_template.yml")
-    input_file = tmp_path.joinpath("baci_write_random_field_material.yml")
+    template = inputdir / "baci_random_field_material_mc_template.yml"
+    input_file = tmp_path / "baci_write_random_field_material.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run a MC simulation with random input for now
@@ -40,7 +40,7 @@ def test_write_random_material_to_dat(
     experiment_name = "baci_write_random_field_to_dat"
     result_file_name = experiment_name + ".pickle"
 
-    result_file = tmp_path.joinpath(result_file_name)
+    result_file = tmp_path / result_file_name
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

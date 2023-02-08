@@ -19,7 +19,7 @@ def test_write_random_dirichlet_to_dat(
         third_party_inputs, "baci_input_files", "invaaa_ee_fields_template.dat"
     )
 
-    dat_file_preprocessed = tmp_path.joinpath("invaaa_ee_fields_template_preprocessed.dat")
+    dat_file_preprocessed = tmp_path / "invaaa_ee_fields_template_preprocessed.dat"
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 
     dir_dict = {
@@ -28,8 +28,8 @@ def test_write_random_dirichlet_to_dat(
         'post_drt_monitor': post_drt_monitor,
         'baci-release': baci_release,
     }
-    template = inputdir.joinpath("baci_write_random_field_to_dat_template.yml")
-    input_file = tmp_path.joinpath("baci_write_random_field_to_dat.yml")
+    template = inputdir / "baci_write_random_field_to_dat_template.yml"
+    input_file = tmp_path / "baci_write_random_field_to_dat.yml"
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
@@ -41,7 +41,7 @@ def test_write_random_dirichlet_to_dat(
     experiment_name = "baci_write_random_field_to_dat"
     result_file_name = experiment_name + ".pickle"
 
-    result_file = tmp_path.joinpath(result_file_name)
+    result_file = tmp_path / result_file_name
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

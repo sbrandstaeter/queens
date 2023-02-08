@@ -10,9 +10,9 @@ from pqueens import run
 
 def test_monte_carlo_borehole(inputdir, tmp_path):
     """Test case for Monte Carlo iterator."""
-    run(inputdir.joinpath('monte_carlo_borehole.yml'), tmp_path)
+    run(inputdir / 'monte_carlo_borehole.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(60.4546131041304)

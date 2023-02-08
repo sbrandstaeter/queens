@@ -61,8 +61,8 @@ def test_cluster_baci_data_processor_ensight(
     # unique experiment name
     experiment_name = f"test_{cluster}_data_processor_ensight"
 
-    template = inputdir.joinpath("baci_cluster_data_processor_ensight.yml")
-    input_file = tmp_path.joinpath("baci_cluster_data_processor_ensight.yml")
+    template = inputdir / "baci_cluster_data_processor_ensight.yml"
+    input_file = tmp_path / "baci_cluster_data_processor_ensight.yml"
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
@@ -72,9 +72,9 @@ def test_cluster_baci_data_processor_ensight(
     cluster_experiment_dir = experiment_directory(
         experiment_name, remote_connect=connect_to_resource
     )
-    cluster_baci_input_file_template_dir = cluster_experiment_dir.joinpath("input")
-    cluster_baci_input_file_template = cluster_baci_input_file_template_dir.joinpath(
-        baci_input_template_name
+    cluster_baci_input_file_template_dir = cluster_experiment_dir / "input"
+    cluster_baci_input_file_template = (
+        cluster_baci_input_file_template_dir / baci_input_template_name
     )
 
     command_string = f'mkdir -v -p {cluster_baci_input_file_template_dir}'
@@ -108,8 +108,8 @@ def test_cluster_baci_data_processor_ensight(
         'singularity_remote_ip': singularity_remote_ip,
         'user': user,
     }
-    queens_input_file_template = inputdir.joinpath("baci_cluster_data_processor_ensight.yml")
-    queens_input_file = tmp_path.joinpath("baci_cluster_data_processor_ensight.yml")
+    queens_input_file_template = inputdir / "baci_cluster_data_processor_ensight.yml"
+    queens_input_file = tmp_path / "baci_cluster_data_processor_ensight.yml"
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     # Patch the missing config arguments

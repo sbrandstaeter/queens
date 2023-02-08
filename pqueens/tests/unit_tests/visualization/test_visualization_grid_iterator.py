@@ -14,7 +14,7 @@ from pqueens.visualization.grid_iterator_visualization import GridIteratorVisual
 @pytest.fixture()
 def dummy_vis(tmp_path):
     """TODO_doc."""
-    paths = [tmp_path.joinpath('myplot.png')]
+    paths = [tmp_path / 'myplot.png']
     save_bools = [True]
     plot_booleans = [False]
     scale_types_list = ["lin", "lin"]
@@ -29,7 +29,7 @@ def dummy_vis(tmp_path):
 def test_init(tmp_path):
     """TODO_doc."""
     # expected attributes
-    paths = [tmp_path.joinpath('myplot.png')]
+    paths = [tmp_path / 'myplot.png']
     save_bools = [True]
     plot_booleans = [False]
     scale_types_list = ["lin", "lin"]
@@ -56,7 +56,7 @@ def test_plot_QoI_grid(tmp_path, dummy_vis):
     num_params = 2
     n_grid_p = [2, 2]
     qvis.grid_iterator_visualization_instance.plot_QoI_grid(output, samples, num_params, n_grid_p)
-    filepath = tmp_path.joinpath('myplot.png')
+    filepath = tmp_path / 'myplot.png'
     assert filepath.is_file()
 
 

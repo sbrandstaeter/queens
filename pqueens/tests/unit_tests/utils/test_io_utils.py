@@ -22,7 +22,7 @@ def fixture_input_dict():
 def fixture_input_file(request, input_dict, test_path):
     """Input files for testing."""
     file_type = request.param
-    input_file_path = test_path.joinpath("input_file." + file_type)
+    input_file_path = test_path / f"input_file.{file_type}"
     if file_type == "json":
         dumper = json.dump
     elif file_type in ("yml", "yaml"):
@@ -41,7 +41,7 @@ def test_load_input_file_nonexisting_file():
 
 def test_load_input_file_wrong_file_type(test_path):
     """Test if exception is raised for wrong file type."""
-    input_path = test_path.joinpath("input.file")
+    input_path = test_path / "input.file"
     open(input_path, "a+")
     with pytest.raises(FileTypeError):
         load_input_file(input_path)

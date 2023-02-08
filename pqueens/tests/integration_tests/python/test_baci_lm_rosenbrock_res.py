@@ -11,9 +11,9 @@ from pqueens import run
 
 def test_baci_lm_rosenbrock_res(inputdir, tmp_path):
     """Test case for Levenberg Marquardt iterator."""
-    run(inputdir.joinpath('baci_lm_rosenbrock_res.yml'), tmp_path)
+    run(inputdir / 'baci_lm_rosenbrock_res.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('OptimizeLM.csv')
+    result_file = tmp_path / 'OptimizeLM.csv'
 
     data = pd.read_csv(
         result_file,
@@ -27,6 +27,6 @@ def test_baci_lm_rosenbrock_res(inputdir, tmp_path):
 
     np.testing.assert_allclose(numpyparams, np.array([[+1.0], [+1.0]]), rtol=1.0e-5)
 
-    assert tmp_path.joinpath('OptimizeLM.html').is_file()
+    assert (tmp_path / 'OptimizeLM.html').is_file()
 
     pass

@@ -22,8 +22,8 @@ def test_optimization_paraboloid_constrained(inputdir, tmp_path, algorithm):
 
     SLSQP:  constrained and bounded
     """
-    template = inputdir.joinpath('optimization_paraboloid_template.yml')
-    input_file = tmp_path.joinpath('paraboloid_opt.yml')
+    template = inputdir / 'optimization_paraboloid_template.yml'
+    input_file = tmp_path / 'paraboloid_opt.yml'
 
     algorithm_dict = {'algorithm': algorithm}
 
@@ -31,7 +31,7 @@ def test_optimization_paraboloid_constrained(inputdir, tmp_path, algorithm):
 
     run(input_file, tmp_path)
 
-    result_file = tmp_path.joinpath('Paraboloid.pickle')
+    result_file = tmp_path / 'Paraboloid.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+1.4, +1.7]), rtol=1.0e-4)

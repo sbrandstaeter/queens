@@ -11,9 +11,9 @@ from pqueens import run
 
 def test_grid_iterator(inputdir, tmp_path, expected_response, expected_grid):
     """Integration test for the grid iterator."""
-    run(inputdir.joinpath('grid_iterator_rosenbrock.yml'), tmp_path)
+    run(inputdir / 'grid_iterator_rosenbrock.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('grid_iterator_rosenbrock.pickle')
+    result_file = tmp_path / 'grid_iterator_rosenbrock.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

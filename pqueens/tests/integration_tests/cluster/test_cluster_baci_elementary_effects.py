@@ -68,9 +68,9 @@ def test_cluster_baci_elementary_effects(
     cluster_experiment_dir = experiment_directory(
         experiment_name, remote_connect=connect_to_resource
     )
-    cluster_baci_input_file_template_dir = cluster_experiment_dir.joinpath("input")
-    cluster_baci_input_file_template = cluster_baci_input_file_template_dir.joinpath(
-        baci_input_template_name
+    cluster_baci_input_file_template_dir = cluster_experiment_dir / "input"
+    cluster_baci_input_file_template = (
+        cluster_baci_input_file_template_dir / baci_input_template_name
     )
 
     command_string = f'mkdir -v -p {cluster_baci_input_file_template_dir}'
@@ -103,10 +103,10 @@ def test_cluster_baci_elementary_effects(
         'singularity_remote_ip': singularity_remote_ip,
     }
     queens_input_file_template = Path(inputdir, "baci_cluster_elementary_effects_template.yml")
-    queens_input_file = tmp_path.joinpath(f"elementary_effects_{cluster}_invaaa.yml")
+    queens_input_file = tmp_path / f"elementary_effects_{cluster}_invaaa.yml"
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     run(queens_input_file, tmp_path)
 
-    result_file = tmp_path.joinpath(experiment_name + '.pickle')
+    result_file = tmp_path / f"{experiment_name}.pickle"
     baci_elementary_effects_check_results(result_file)

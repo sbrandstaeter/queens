@@ -11,8 +11,7 @@ from pqueens.visualization.sa_visualization import SAVisualization
 def dummy_vis(tmp_path):
     """Generate dummy instance of class SAVisualization."""
     paths = [
-        tmp_path.joinpath(name)
-        for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
+        tmp_path / name for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
     ]
     saving_paths = dict(zip(["bar", "scatter"], paths))
     save_booleans = {'bar': True, 'scatter': True}
@@ -30,8 +29,7 @@ def test_init(tmp_path, dummy_vis):
     """
     # expected attributes
     paths = [
-        tmp_path.joinpath(name)
-        for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
+        tmp_path / name for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
     ]
     saving_paths = dict(zip(["bar", "scatter"], paths))
     save_booleans = {'bar': True, 'scatter': True}
@@ -70,7 +68,7 @@ def test_sa_visualization_bar(tmp_path, dummy_vis, dummy_sensitivity_indices):
     """
     dummy_vis.plot_si_bar(dummy_sensitivity_indices)
 
-    path_output_image = tmp_path.joinpath("test_sa_visualization_bar.png")
+    path_output_image = tmp_path / "test_sa_visualization_bar.png"
     assert path_output_image.is_file()
 
 
@@ -85,5 +83,5 @@ def test_sa_visualization_scatter(tmp_path, dummy_vis, dummy_sensitivity_indices
     """
     dummy_vis.plot_si_scatter(dummy_sensitivity_indices)
 
-    path_output_image = tmp_path.joinpath("test_sa_visualization_scatter.png")
+    path_output_image = tmp_path / "test_sa_visualization_scatter.png"
     assert path_output_image.is_file()

@@ -13,9 +13,9 @@ _logger = logging.getLogger(__name__)
 
 def test_elementary_effects_ishigami(inputdir, tmp_path):
     """Test case for elementary effects iterator."""
-    run(inputdir.joinpath('elementary_effects_ishigami.yml'), tmp_path)
+    run(inputdir / 'elementary_effects_ishigami.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

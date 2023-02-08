@@ -11,9 +11,9 @@ from pqueens import run
 
 def test_branin_monte_carlo(inputdir, tmp_path):
     """Test case for Monte Carlo iterator."""
-    run(inputdir.joinpath('monte_carlo_branin.yml'), tmp_path)
+    run(inputdir / 'monte_carlo_branin.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(55.81419875080866)

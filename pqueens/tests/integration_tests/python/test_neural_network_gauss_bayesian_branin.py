@@ -11,9 +11,9 @@ from pqueens import run
 
 def test_neural_network_gauss_bayesian_branin(inputdir, tmp_path, expected_mean, expected_var):
     """Test case for Bayesian neural network model."""
-    run(inputdir.joinpath('neural_network_gauss_bayesian_branin.yml'), tmp_path)
+    run(inputdir / 'neural_network_gauss_bayesian_branin.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

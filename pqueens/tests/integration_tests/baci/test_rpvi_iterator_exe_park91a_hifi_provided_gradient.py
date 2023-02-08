@@ -21,8 +21,8 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
 ):
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
-    template = inputdir.joinpath("rpvi_exe_park91a_hifi_template.yml")
-    third_party_input_file = tmp_path.joinpath("input_file_executable_park91a_hifi_on_grid.csv")
+    template = inputdir / "rpvi_exe_park91a_hifi_template.yml"
+    third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
     experimental_data_path = tmp_path
     executable = Path(
         example_simulator_fun_dir, "executable_park91a_hifi_on_grid_with_gradients.py"
@@ -36,7 +36,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         "experiment_dir": tmp_path,
         "gradient_method": gradient_method,
     }
-    input_file = tmp_path.joinpath("rpvi_park91a_hifi.yml")
+    input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -48,7 +48,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     # actual main call of vi_rp
 
     # get the results of the QUEENS run
-    result_file = tmp_path.joinpath("inverse_rpvi_park91a_hifi.pickle")
+    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
 
@@ -68,7 +68,7 @@ def gradient_method(request):
 @pytest.fixture()
 def create_input_file_executable_park91a_hifi_on_grid(tmp_path):
     """Write temporary input file for executable."""
-    input_path = tmp_path.joinpath("input_file_executable_park91a_hifi_on_grid.csv")
+    input_path = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
     with open(input_path, "w", encoding='utf-8') as input_file:
         input_file.write("{x1}\n")
         input_file.write("{x2}")

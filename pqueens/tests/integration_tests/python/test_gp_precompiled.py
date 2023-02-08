@@ -14,8 +14,8 @@ from pqueens.utils import injector
 
 def test_gp_precompiled_one_dim(inputdir, tmp_path):
     """Test case for GPPrecompiled based GP model."""
-    template = inputdir.joinpath('gp_precompiled_template.yml')
-    input_file = tmp_path.joinpath('gp_precompiled.yml')
+    template = inputdir / 'gp_precompiled_template.yml'
+    input_file = tmp_path / 'gp_precompiled.yml'
 
     dir_dict = {
         'test_fun': 'sinus_test_fun',
@@ -33,7 +33,7 @@ def test_gp_precompiled_one_dim(inputdir, tmp_path):
 
     run(input_file, tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -52,8 +52,8 @@ def test_gp_precompiled_one_dim(inputdir, tmp_path):
 
 def test_gp_precompiled_two_dim(inputdir, tmp_path):
     """Test case for GPPrecompiled based GP model."""
-    template = inputdir.joinpath('gp_precompiled_template.yml')
-    input_file = tmp_path.joinpath('gp_precompiled.yml')
+    template = inputdir / 'gp_precompiled_template.yml'
+    input_file = tmp_path / 'gp_precompiled.yml'
 
     dir_dict = {
         'test_fun': 'branin78_hifi',
@@ -77,7 +77,7 @@ def test_gp_precompiled_two_dim(inputdir, tmp_path):
 
     run(input_file, tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

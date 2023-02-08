@@ -21,8 +21,8 @@ def test_geometry_from_dat(
     dir_dict = {
         'baci_input': third_party_input_file,
     }
-    template = inputdir.joinpath("baci_mc_randomfields_from_geometry_template.yml")
-    input_file = tmp_path.joinpath("baci_mc_randomfields_from_geometry.yml")
+    template = inputdir / "baci_mc_randomfields_from_geometry_template.yml"
+    input_file = tmp_path / "baci_mc_randomfields_from_geometry.yml"
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary

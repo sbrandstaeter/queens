@@ -20,8 +20,8 @@ def algorithm(request):
 
 def test_optimization_rosenbrock(inputdir, tmp_path, algorithm):
     """Test different solution algorithms in optimization iterator."""
-    template = inputdir.joinpath('optimization_rosenbrock_template.yml')
-    input_file = tmp_path.joinpath('rosenbrock_opt.yml')
+    template = inputdir / 'optimization_rosenbrock_template.yml'
+    input_file = tmp_path / 'rosenbrock_opt.yml'
 
     algorithm_dict = {'algorithm': algorithm}
 
@@ -29,7 +29,7 @@ def test_optimization_rosenbrock(inputdir, tmp_path, algorithm):
 
     run(input_file, tmp_path)
 
-    result_file = tmp_path.joinpath('Rosenbrock.pickle')
+    result_file = tmp_path / 'Rosenbrock.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]), rtol=1.0e-3)

@@ -22,8 +22,8 @@ def test_ensight_reader_writer(
         'post_drt_ensight': post_drt_ensight,
         'baci-release': baci_release,
     }
-    template = inputdir.joinpath("baci_ensight_template.yml")
-    input_file = tmp_path.joinpath("baci_ensight.yml")
+    template = inputdir / "baci_ensight_template.yml"
+    input_file = tmp_path / "baci_ensight.yml"
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
@@ -35,7 +35,7 @@ def test_ensight_reader_writer(
     experiment_name = "baci_ensight"
     result_file_name = experiment_name + ".pickle"
 
-    result_file = tmp_path.joinpath(result_file_name)
+    result_file = tmp_path / result_file_name
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

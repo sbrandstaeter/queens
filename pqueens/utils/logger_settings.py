@@ -84,7 +84,7 @@ def setup_basic_logging(output_dir, experiment_name):
     library_logger.setLevel(logging.DEBUG)
 
     # set up logging to file
-    logging_file_path = output_dir.joinpath(experiment_name + ".log")
+    logging_file_path = output_dir / f"{experiment_name}.log"
     file_handler = logging.FileHandler(logging_file_path, mode="w")
     file_formatter = NewLineFormatter(
         '%(asctime)s %(name)-12s %(levelname)-8s %(message)s', datefmt='%m-%d %H:%M'

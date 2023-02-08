@@ -14,9 +14,9 @@ def test_optimization_lsq_parabula(inputdir, tmp_path):
 
     Special case: 1 unknown and 1 residual.
     """
-    run(inputdir.joinpath('optimization_lsq_parabula.yml'), tmp_path)
+    run(inputdir / 'optimization_lsq_parabula.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('ParabulaResLSQ.pickle')
+    result_file = tmp_path / 'ParabulaResLSQ.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+0.3]))

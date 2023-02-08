@@ -11,9 +11,9 @@ from pqueens import run
 
 def test_optimization_lsq_rosenbrock(inputdir, tmp_path):
     """Test case for optimization iterator with the least squares."""
-    run(inputdir.joinpath('optimization_lsq_rosenbrock.yml'), tmp_path)
+    run(inputdir / 'optimization_lsq_rosenbrock.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('ResRosenbrockLSQ.pickle')
+    result_file = tmp_path / 'ResRosenbrockLSQ.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]))

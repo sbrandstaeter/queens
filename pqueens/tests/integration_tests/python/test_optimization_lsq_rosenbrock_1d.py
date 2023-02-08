@@ -14,9 +14,9 @@ def test_optimization_lsq_rosenbrock_1d(inputdir, tmp_path):
 
     Special case: 1 unknown but 2 residuals.
     """
-    run(inputdir.joinpath('optimization_lsq_rosenbrock_1d.yml'), tmp_path)
+    run(inputdir / 'optimization_lsq_rosenbrock_1d.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('ResRosenbrock1DLSQ.pickle')
+    result_file = tmp_path / 'ResRosenbrock1DLSQ.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+1.0]))

@@ -77,14 +77,14 @@ def test_bbvi_iterator_park91a_hifi(
 ):
     """Test for the bbvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
-    template = inputdir.joinpath("bbvi_park91a_hifi_template.yml")
+    template = inputdir / "bbvi_park91a_hifi_template.yml"
     experimental_data_path = tmp_path
     plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
     }
-    input_file = tmp_path.joinpath("bbvi_park91a_hifi.yml")
+    input_file = tmp_path / "bbvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
 
     # This seed is fixed so that the variational distribution is initialized so that the park
@@ -95,7 +95,7 @@ def test_bbvi_iterator_park91a_hifi(
     run(input_file, tmp_path)
 
     # get the results of the QUEENS run
-    result_file = tmp_path.joinpath("inverse_bbvi_park91a_hifi.pickle")
+    result_file = tmp_path / "inverse_bbvi_park91a_hifi.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
     elbo_list = results["iteration_data"]["elbo"]

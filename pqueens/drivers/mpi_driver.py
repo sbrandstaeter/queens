@@ -228,14 +228,14 @@ class MpiDriver(Driver):
             working_dir = output_directory
 
         output_prefix = experiment_name + '_' + str(job_id)
-        output_file = output_directory.joinpath(output_prefix)
+        output_file = output_directory / output_prefix
 
         file_extension_obj = Path(simulation_input_template)
         input_file_str = output_prefix + file_extension_obj.suffix
-        input_file = job_dir.joinpath(input_file_str)
+        input_file = job_dir / input_file_str
 
-        log_file = output_directory.joinpath(output_prefix + '.log')
-        error_file = output_directory.joinpath(output_prefix + '.err')
+        log_file = output_directory / f"{output_prefix}.log"
+        error_file = output_directory / f"{output_prefix}.err"
 
         return cls(
             batch=batch,
@@ -292,7 +292,7 @@ class MpiDriver(Driver):
     def post_processor_job(self):
         """Post-process job."""
         output_file = '--file=' + str(self.output_file)
-        target_file = '--output=' + str(self.output_directory.joinpath(self.post_file_prefix))
+        target_file = '--output=' + str(self.output_directory / self.post_file_prefix)
         post_processor_cmd = self._assemble_post_processor_cmd(output_file, target_file)
 
         _logger.debug("Start post-processor with command:")

@@ -10,9 +10,9 @@ from pqueens import run
 
 def test_sobol_indices_borehole(inputdir, tmp_path):
     """Test case for Sobol Index iterator."""
-    run(inputdir.joinpath('sobol_indices_borehole.yml'), tmp_path)
+    run(inputdir / 'sobol_indices_borehole.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

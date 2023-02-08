@@ -9,9 +9,9 @@ from pqueens import run
 
 def test_sobol_indices_ishigami_gp(inputdir, tmp_path):
     """Test Sobol indices estimation with Gaussian process surrogate."""
-    run(inputdir.joinpath('sobol_indices_ishigami_gp.yml'), tmp_path)
+    run(inputdir / 'sobol_indices_ishigami_gp.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

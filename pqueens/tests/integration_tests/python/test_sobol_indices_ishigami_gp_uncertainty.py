@@ -8,9 +8,9 @@ from pqueens import run
 
 def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmp_path):
     """Test case for Sobol indices based on GP realizations."""
-    run(inputdir.joinpath('sobol_indices_ishigami_gp_uncertainty.yml'), tmp_path)
+    run(inputdir / 'sobol_indices_ishigami_gp_uncertainty.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -43,9 +43,9 @@ def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmp_path):
 
 def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmp_path):
     """Test case for third-order Sobol indices."""
-    run(inputdir.joinpath('sobol_indices_ishigami_gp_uncertainty_third_order.yml'), tmp_path)
+    run(inputdir / 'sobol_indices_ishigami_gp_uncertainty_third_order.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -62,9 +62,9 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmp_path):
 
 def test_sobol_indices_ishigami_gp_mean(inputdir, tmp_path):
     """Test case for Sobol indices based on GP mean."""
-    run(inputdir.joinpath('sobol_indices_ishigami_gp_mean.yml'), tmp_path)
+    run(inputdir / 'sobol_indices_ishigami_gp_mean.yml', tmp_path)
 
-    result_file = tmp_path.joinpath("xxx.pickle")
+    result_file = tmp_path / "xxx.pickle"
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

@@ -10,9 +10,9 @@ from pqueens import run
 
 def test_latin_hyper_cube_borehole(inputdir, tmp_path):
     """Test case for latin hyper cube iterator."""
-    run(inputdir.joinpath('latin_hyper_cube_borehole.yml'), tmp_path)
+    run(inputdir / 'latin_hyper_cube_borehole.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(62.05240444441511)

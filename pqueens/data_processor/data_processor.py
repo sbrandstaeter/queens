@@ -153,7 +153,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                         contains wildcards or regex expressions
         """
         file_identifier = self.file_name_identifier
-        file_path_regex = Path(base_dir_file).joinpath(file_identifier)
+        file_path_regex = Path(base_dir_file) / file_identifier
         return str(file_path_regex)
 
     def _check_file_exist_and_is_unique(self, file_path_regex):

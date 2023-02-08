@@ -34,7 +34,7 @@ def test_rpvi_iterator_park91a_hifi(
         "likelihood_model_type": "gaussian",
         "external_python_module": "",
     }
-    input_file = tmp_path.joinpath("rpvi_park91a_hifi.yml")
+    input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -47,7 +47,7 @@ def test_rpvi_iterator_park91a_hifi(
     # actual main call
 
     # get the results of the QUEENS run
-    result_file = tmp_path.joinpath("inverse_rpvi_park91a_hifi.pickle")
+    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
 
@@ -69,7 +69,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 
     Based on the *park91a_hifi* function.
     """
-    template = inputdir.joinpath("rpvi_park91a_hifi_template.yml")
+    template = inputdir / "rpvi_park91a_hifi_template.yml"
     experimental_data_path = tmp_path
     plot_dir = tmp_path
     dir_dict = {
@@ -80,7 +80,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
         "likelihood_model_type": "MyLikelihood",
         "external_python_module": module_path,
     }
-    input_file = tmp_path.joinpath("rpvi_park91a_hifi.yml")
+    input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -93,7 +93,7 @@ def test_rpvi_iterator_park91a_hifi_external_module(
     # actual main call
 
     # get the results of the QUEENS run
-    result_file = tmp_path.joinpath("inverse_rpvi_park91a_hifi.pickle")
+    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
 
@@ -109,7 +109,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
 ):
     """Test for the rpvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
-    template = inputdir.joinpath("rpvi_park91a_hifi_template.yml")
+    template = inputdir / "rpvi_park91a_hifi_template.yml"
     experimental_data_path = tmp_path
     plot_dir = tmp_path
     dir_dict = {
@@ -120,7 +120,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         "likelihood_model_type": "gaussian",
         "external_python_module": "",
     }
-    input_file = tmp_path.joinpath("rpvi_park91a_hifi.yml")
+    input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -132,7 +132,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     # actual main call of vi_rp
 
     # get the results of the QUEENS run
-    result_file = tmp_path.joinpath("inverse_rpvi_park91a_hifi.pickle")
+    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
 
@@ -171,14 +171,14 @@ def gradient_method(request):
 
 def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, gradient_method):
     """Test RPVI with univariate Gaussian."""
-    template = inputdir.joinpath("rpvi_gaussian_template.yml")
+    template = inputdir / "rpvi_gaussian_template.yml"
 
     dir_dict = {
         "plot_dir": tmp_path,
         "experimental_data_path": tmp_path,
         "gradient_method": gradient_method,
     }
-    input_file = tmp_path.joinpath("rpvi_gaussian.yml")
+    input_file = tmp_path / "rpvi_gaussian.yml"
     injector.inject(dir_dict, template, input_file)
 
     # mock methods related to likelihood
@@ -186,7 +186,7 @@ def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, gradient_method):
         run(input_file, tmp_path)
 
     # get the results of the QUEENS run
-    result_file = tmp_path.joinpath("rpvi_gaussian.pickle")
+    result_file = tmp_path / "rpvi_gaussian.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
 
@@ -206,7 +206,7 @@ def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, gradient_method):
 def dummy_data(tmp_path):
     """Fixture for dummy data."""
     data_dict = {'y_obs': np.zeros(1)}
-    experimental_data_path = tmp_path.joinpath('experimental_data.csv')
+    experimental_data_path = tmp_path / 'experimental_data.csv'
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)
 
@@ -214,7 +214,7 @@ def dummy_data(tmp_path):
 @pytest.fixture()
 def module_path(tmp_path):
     """Generate path for new likelihood module."""
-    my_module_path = tmp_path.joinpath("my_likelihood_module.py")
+    my_module_path = tmp_path / "my_likelihood_module.py"
     return str(my_module_path)
 
 

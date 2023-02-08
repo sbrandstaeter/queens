@@ -11,9 +11,9 @@ from pqueens import run
 
 def test_branin_gpy_surrogate(inputdir, tmp_path, expected_pdf):
     """Test case for GP based surrogate model."""
-    run(inputdir.joinpath('gpy_surrogate_branin.yml'), tmp_path)
+    run(inputdir / 'gpy_surrogate_branin.yml', tmp_path)
 
-    result_file = tmp_path.joinpath('xxx.pickle')
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

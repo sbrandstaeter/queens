@@ -17,7 +17,7 @@ def relative_path_from_pqueens(relative_path):
     Returns:
         PosixPath: Absolute path to the file
     """
-    full_path = PATH_TO_PQUEENS.joinpath(relative_path)
+    full_path = PATH_TO_PQUEENS / relative_path
     return full_path
 
 
@@ -34,7 +34,7 @@ def relative_path_from_queens(relative_path):
     Returns:
         PosixPath: Absolute path to the file
     """
-    full_path = PATH_TO_QUEENS.joinpath(relative_path)
+    full_path = PATH_TO_QUEENS / relative_path
     return full_path
 
 

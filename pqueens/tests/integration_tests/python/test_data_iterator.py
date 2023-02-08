@@ -47,8 +47,8 @@ def test_branin_data_iterator(inputdir, tmp_path, mocker):
         return_value=[samples, output],
     )
 
-    run(inputdir.joinpath('data_iterator_branin.yml'), tmp_path)
-    result_file = tmp_path.joinpath('xxx.pickle')
+    run(inputdir / 'data_iterator_branin.yml', tmp_path)
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(1.3273452195599997)

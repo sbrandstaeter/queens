@@ -17,7 +17,7 @@ pytestmark = pytest.mark.unit_tests
 def fixture_input_file(test_path):
     """Fixture to create input file."""
     input_file_dict = {"experiment_name": "test_experiment_name", "Iterator": "A"}
-    input_file_path = test_path.joinpath("input_file.yml")
+    input_file_path = test_path / "input_file.yml"
     with open(input_file_path, "w") as stream:
         json.dump(input_file_dict, stream)
     return input_file_path
