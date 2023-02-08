@@ -58,7 +58,7 @@ scheduler:
   num_procs_post: 1
   cluster:
     script: /lnm/share/donottouch.sh
-    walltime: 00:01:00
+    walltime: 00:10:00
   remote:
     connect: {{ connect_to_resource }}
   singularity: true

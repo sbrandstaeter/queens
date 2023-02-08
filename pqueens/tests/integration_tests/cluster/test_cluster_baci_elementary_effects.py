@@ -36,6 +36,7 @@ def test_cluster_baci_elementary_effects(
     cluster_testsuite_settings,
     baci_cluster_paths,
     baci_elementary_effects_check_results,
+    monkeypatch,
 ):
     """Test for the Elementary Effects Iterator on the clusters with BACI.
 
@@ -47,6 +48,10 @@ def test_cluster_baci_elementary_effects(
         baci_cluster_paths (path): Path to BACI dependencies on the cluster.
         baci_elementary_effects_check_results (function): function to check the results
     """
+    # monkeypatch the "input" function, so that it returns "y".
+    # This simulates the user entering "y" in the terminal:
+    monkeypatch.setattr('builtins.input', lambda _: "y")
+
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
