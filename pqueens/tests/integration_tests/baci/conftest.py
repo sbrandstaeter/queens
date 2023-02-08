@@ -38,69 +38,69 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
     # check if symbolic links are existent
     try:
         # create link to default baci-release location if no link is available
-        if not Path(dst_baci_release).is_symlink():
-            if not Path(src_baci_release).is_file():
+        if not dst_baci_release.is_symlink():
+            if not src_baci_release.is_file():
                 raise FileNotFoundError(
                     f'Failed to create link to default baci-release location.\n'
                     f'No baci-release found under default location:\n'
                     f'\t{src_baci_release}\n'
                 )
             else:
-                Path(dst_baci_release).symlink_to(src_baci_release)
+                dst_baci_release.symlink_to(src_baci_release)
         # create link to default post_drt_monitor location if no link is available
-        if not Path(dst_post_drt_monitor).is_symlink():
-            if not Path(src_post_drt_monitor).is_file():
+        if not dst_post_drt_monitor.is_symlink():
+            if not src_post_drt_monitor.is_file():
                 raise FileNotFoundError(
                     f'Failed to create link to default post_drt_monitor location.\n'
                     f'No post_drt_monitor found under default location:\n'
                     f'\t{src_post_drt_monitor}\n'
                 )
             else:
-                Path(dst_post_drt_monitor).symlink_to(src_post_drt_monitor)
+                dst_post_drt_monitor.symlink_to(src_post_drt_monitor)
         # create link to default post_drt_ensight location if no link is available
-        if not Path(dst_post_drt_ensight).is_symlink():
-            if not Path(src_post_drt_ensight).is_file():
+        if not dst_post_drt_ensight.is_symlink():
+            if not src_post_drt_ensight.is_file():
                 raise FileNotFoundError(
                     f'Failed to create link to default post_drt_ensight location.\n'
                     f'No post_drt_ensight found under default location:\n'
                     f'\t{src_post_drt_ensight}\n'
                 )
             else:
-                Path(dst_post_drt_ensight).symlink_to(src_post_drt_ensight)
+                dst_post_drt_ensight.symlink_to(src_post_drt_ensight)
         # create link to default post_processor location if no link is available
-        if not Path(dst_post_processor).is_symlink():
-            if not Path(src_post_processor).is_file():
+        if not dst_post_processor.is_symlink():
+            if not src_post_processor.is_file():
                 raise FileNotFoundError(
                     f'Failed to create link to default post_processor location.\n'
                     f'No post_processor found under default location:\n'
                     f'\t{src_post_processor}\n'
                 )
             else:
-                Path(dst_post_processor).symlink_to(src_post_processor)
+                dst_post_processor.symlink_to(src_post_processor)
 
         # check if existing link to baci-release works and points to a valid file
-        if not Path(dst_baci_release).resolve().exists():
+        if not dst_baci_release.resolve().exists():
             raise FileNotFoundError(
                 f'The following link seems to be dead: {dst_baci_release}\n'
-                f'It points to (non-existing): {Path(dst_baci_release).resolve()}\n'
+                f'It points to (non-existing): {dst_baci_release.resolve()}\n'
             )
-        # check if exitisting link to post_drt_monitor works and points to a valid file
-        if not Path(dst_post_drt_monitor).resolve().exists():
+        # check if existing link to post_drt_monitor works and points to a valid file
+        if not dst_post_drt_monitor.resolve().exists():
             raise FileNotFoundError(
                 f'The following link seems to be dead: {dst_post_drt_monitor}\n'
-                f'It points to: {Path(dst_post_drt_monitor).resolve()}\n'
+                f'It points to: {dst_post_drt_monitor.resolve()}\n'
             )
-        # check if exitisting link to post_drt_ensight works and points to a valid file
-        if not Path(dst_post_drt_ensight).resolve().exists():
+        # check if existing link to post_drt_ensight works and points to a valid file
+        if not dst_post_drt_ensight.resolve().exists():
             raise FileNotFoundError(
                 f'The following link seems to be dead: {dst_post_drt_ensight}\n'
-                f'It points to: {Path(dst_post_drt_ensight).resolve()}\n'
+                f'It points to: {dst_post_drt_ensight.resolve()}\n'
             )
-        # check if exitisting link to post_processor works and points to a valid file
-        if not Path(dst_post_processor).resolve().exists():
+        # check if existing link to post_processor works and points to a valid file
+        if not dst_post_processor.resolve().exists():
             raise FileNotFoundError(
                 f'The following link seems to be dead: {dst_post_processor}\n'
-                f'It points to: {Path(dst_post_processor).resolve()}\n'
+                f'It points to: {dst_post_processor.resolve()}\n'
             )
     except FileNotFoundError as error:
         raise FileNotFoundError(

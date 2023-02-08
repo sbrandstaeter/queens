@@ -67,8 +67,8 @@ def count_subdirectories(current_directory):
         number_subdirectories (int): Number of subdirectories
     """
     number_subdirectories = 0
-    for current_subdirectory in Path(current_directory).iterdir():
-        path_current_subdirectory = Path(current_directory, current_subdirectory)
+    for current_subdirectory in current_directory.iterdir():
+        path_current_subdirectory = current_directory / current_subdirectory
         if path_current_subdirectory.is_dir():
             number_subdirectories += 1
     return number_subdirectories
@@ -94,9 +94,9 @@ def test_baci_elementary_effects(
     based BACI simulation for elementary effects.
 
     Args:
-        inputdir (str): Path to the JSON input file
-        third_party_inputs (str): Path to the BACI input files
-        baci_link_paths(str): Path to the links pointing to *baci-release* and *post_drt_monitor*
+        inputdir (Path): Path to the JSON input file
+        third_party_inputs (Path): Path to the BACI input files
+        baci_link_paths(Path): Path to the links pointing to *baci-release* and *post_drt_monitor*
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
         experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
         baci_elementary_effects_check_results (function): function to check the results
