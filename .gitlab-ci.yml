@@ -43,23 +43,17 @@ workflow:
 .ubuntu_settings:
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
-    - SINGULARITY_BASE_DIR="$(python pqueens/utils/config_directories.py)"
-    - echo $SINGULARITY_BASE_DIR
-    - mkdir -p $SINGULARITY_BASE_DIR
-    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_BASE_DIR/singularity_image.sif
+    - SINGULARITY_IMAGE_PATH="$(python pqueens/utils/config_directories.py)"
+    - echo $SINGULARITY_IMAGE_PATH
+    - SINGULARITY_DIR="$(dirname "$SINGULARITY_IMAGE_PATH")"
+    - mkdir -p $SINGULARITY_DIR
+    - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_IMAGE_PATH
   rules:
     - if: ($UBUNTU_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
 .default_test_conditions:
   rules:
     - if: $UBUNTU_TESTS == "1"
-.default_test_conditions_custom_branch:
-  rules:
-    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH)
-#----------------------------------------------------------------------------------------------
-.default_test_conditions_default_branch:
-  rules:
-    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
 #----------------------------------------------------------------------------------------------
 .codechecks_settings:
   before_script:
@@ -246,44 +240,14 @@ license_check:
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: tests
 #---------------------------------------------------------------------------------------------------
-# ubuntu tests
+# Ubuntu tests
 #---------------------------------------------------------------------------------------------------
-.ubuntu_full_test_suite_develop:
+.ubuntu_full_test_suite:
   extends:
     - .ubuntu_settings
   stage: tests
   rules:
-    - !reference [.default_test_conditions_custom_branch, rules]
-  script:
-    - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
-  coverage: '/TOTAL.*\s+(\d+%)/'
-
-lnm-ubuntu_full_test_suite_develop:
-  extends:
-    - .ubuntu_full_test_suite_develop
-  needs:
-    - lnm-build_conda_env
-    - lnm-build_singularity
-  tags:
-    - lnm-ubuntu
-
-imcs-ubuntu_full_test_suite_develop:
-  extends:
-    - .ubuntu_full_test_suite_develop
-  needs:
-    - imcs-build_conda_env
-    - imcs-build_singularity
-  tags:
-    - imcs-ubuntu
-#---------------------------------------------------------------------------------------------------
-# main tests
-#---------------------------------------------------------------------------------------------------
-.ubuntu_full_test_suite_main:
-  extends:
-    - .ubuntu_settings
-  stage: tests
-  rules:
-    - !reference [.default_test_conditions_default_branch, rules]
+    - !reference [.default_test_conditions, rules]
   script:
     - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term --cov-report=html:$CI_PROJECT_DIR/html_coverage_report $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
@@ -294,18 +258,18 @@ imcs-ubuntu_full_test_suite_develop:
     when: on_success
     expire_in: 3 days
 
-lnm-ubuntu_full_test_suite_main:
+lnm-ubuntu_full_test_suite:
   extends:
-    - .ubuntu_full_test_suite_main
+    - .ubuntu_full_test_suite
   needs:
     - lnm-build_conda_env
     - lnm-build_singularity
   tags:
     - lnm-ubuntu
 
-imcs-ubuntu_full_test_suite_main:
+imcs-ubuntu_full_test_suite:
   extends:
-    - .ubuntu_full_test_suite_main
+    - .ubuntu_full_test_suite
   needs:
     - imcs-build_conda_env
     - imcs-build_singularity
@@ -488,7 +452,7 @@ pages:
     - !reference [.default_test_conditions_default_branch, rules]
   dependencies:
     - documentation
-    - lnm-ubuntu_full_test_suite_main
+    - lnm-ubuntu_full_test_suite
   script:
     - mkdir public
     - mv html_coverage_report public/coverage_report
