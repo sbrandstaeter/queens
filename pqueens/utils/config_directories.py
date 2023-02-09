@@ -80,3 +80,6 @@ def create_directory(dir_path, remote_connect=None):
 ABS_SINGULARITY_IMAGE_PATH = local_base_directory() / "singularity_image.sif"
 
 LOCAL_TEMPORARY_SUBMISSION_SCRIPT = local_base_directory() / "temporary_submission_script.sh"
+
+if __name__ == '__main__':
+    print(f"{ABS_SINGULARITY_IMAGE_PATH}")

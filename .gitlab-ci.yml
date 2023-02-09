@@ -43,7 +43,7 @@ workflow:
 .ubuntu_settings:
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
-    - SINGULARITY_BASE_DIR="$HOME/queens"
+    - SINGULARITY_BASE_DIR="$(python pqueens/utils/config_directories.py)"
     - echo $SINGULARITY_BASE_DIR
     - mkdir -p $SINGULARITY_BASE_DIR
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_BASE_DIR/singularity_image.sif
