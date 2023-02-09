@@ -55,6 +55,10 @@ workflow:
   rules:
     - if: $UBUNTU_TESTS == "1"
 #----------------------------------------------------------------------------------------------
+.default_test_conditions_default_branch:
+  rules:
+    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
+#----------------------------------------------------------------------------------------------
 .codechecks_settings:
   before_script:
     - conda activate queens-$CI_PIPELINE_ID
