@@ -298,3 +298,8 @@ def baci_elementary_effects_check_results():
         )
 
     return check_results
+
+
+def pytest_sessionfinish():
+    """Register a hook to suppress logging errors after the session."""
+    logging.raiseExceptions = False
