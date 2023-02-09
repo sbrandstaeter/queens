@@ -38,8 +38,6 @@ workflow:
 #---------------------------------------------------------------------------------------------------
 .ubuntu_build_conditions:
   rules:
-    - if: ($CLUSTER_NATIVE_TESTS == "1") && ($CLUSTER_TESTS == "0")
-      when: never
     - if: ($UBUNTU_TESTS == "1") || ($CLUSTER_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
 .ubuntu_settings:
@@ -50,24 +48,17 @@ workflow:
     - mkdir -p $SINGULARITY_BASE_DIR
     - cp /tmp/singularity_image.sif-$CI_PIPELINE_ID  $SINGULARITY_BASE_DIR/singularity_image.sif
   rules:
-    - if: $CLUSTER_NATIVE_TESTS == "1"
-      when: never
-    - if: $CLUSTER_TESTS == "1"
-      when: never
     - if: ($UBUNTU_TESTS == "1") || ($BENCHMARKS == "1")
 #----------------------------------------------------------------------------------------------
 .default_test_conditions:
   rules:
-    - if: $CLUSTER_TESTS == "1"
-      when: never
-    - if: $CLUSTER_NATIVE_TESTS == "1"
-      when: never
-    - if: $BENCHMARKS == "1"
-      when: never
+    - if: $UBUNTU_TESTS == "1"
+.default_test_conditions_custom_branch:
+  rules:
+    - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME != $CI_DEFAULT_BRANCH)
 #----------------------------------------------------------------------------------------------
 .default_test_conditions_default_branch:
   rules:
-    - !reference [.default_test_conditions, rules]
     - if: ($UBUNTU_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
 #----------------------------------------------------------------------------------------------
 .codechecks_settings:
@@ -75,7 +66,6 @@ workflow:
     - conda activate queens-$CI_PIPELINE_ID
   rules:
     - !reference [.default_test_conditions, rules]
-    - if: $UBUNTU_TESTS == "1"
   stage: codechecks
   tags:
     - codechecks
@@ -259,9 +249,11 @@ license_check:
 # ubuntu tests
 #---------------------------------------------------------------------------------------------------
 .ubuntu_full_test_suite_develop:
-  stage: tests
   extends:
     - .ubuntu_settings
+  stage: tests
+  rules:
+    - !reference [.default_test_conditions_custom_branch, rules]
   script:
     - pytest -v -m "unit_tests or integration_tests or integration_tests_baci" --cov --cov-report=term $PYTEST_OPTIONAL_PARAMETERS
   coverage: '/TOTAL.*\s+(\d+%)/'
@@ -466,7 +458,7 @@ trigger_benchmarks_badge_fail:
   stage: badges
   needs: ["lnm-cluster_tests", "imcs-cluster_tests"]
   rules:
-    - if: ($CLUSTER_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
+    - if: ($CLUSTER_TESTS == "1") && ($CLUSTER_NATIVE_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
   trigger:
     project: queens_community/queens_badges/cluster-badge
 #---------------------------------------------------------------------------------------------------
