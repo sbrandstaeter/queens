@@ -173,15 +173,19 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         unknown_samples_index = []
         # check if sample was seen in previous acceptance step
         if self.seen_samples is None:
-            self.seen_samples = [samples, samples, samples]
-            likelihood = self.model.evaluate(samples, gradient_bool=False)
-            self.seen_likelihoods = [likelihood, likelihood, likelihood]
+            self.seen_samples = [samples.copy(), samples.copy(), samples.copy()]
+            log_likelihood = self.model.evaluate(samples, gradient_bool=False)
+            self.seen_likelihoods = [
+                log_likelihood.copy(),
+                log_likelihood.copy(),
+                log_likelihood.copy(),
+            ]
         else:
             for i in range(samples.shape[0]):
                 if np.array_equal(self.seen_samples[0][i], samples[i]):
-                    likelihood[i] = self.seen_likelihoods[0][i]
+                    log_likelihood[i] = self.seen_likelihoods[0][i]
                 elif np.array_equal(self.seen_samples[1][i], samples[i]):
-                    likelihood[i] = self.seen_likelihoods[1][i]
+                    log_likelihood[i] = self.seen_likelihoods[1][i]
                 else:
                     unknown_samples_index.append(i)
 
