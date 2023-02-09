@@ -78,6 +78,8 @@ class PyMCIterator(Iterator):
         super().__init__(model, global_settings)
         self.result_description = result_description
         self.discard_tuned_samples = discard_tuned_samples
+        if num_chains > 1:
+            _logger.warning("Parallel sampling is exerimental.")
         self.num_chains = num_chains
         self.num_burn_in = num_burn_in
 

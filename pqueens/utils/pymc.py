@@ -4,6 +4,9 @@
 import numpy as np
 import pymc as pm
 import pytensor.tensor as pt
+from pymc.blocking import RaveledVars
+from pymc.pytensorf import compile_pymc, floatX, join_nonshared_inputs
+from pymc.step_methods.metropolis import tune
 
 from pqueens.distributions import beta, exponential, lognormal, normal, uniform
 
@@ -172,3 +175,97 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
     else:
         raise NotImplementedError("Not supported distriubtion by QUEENS and/or PyMC")
     return rv
+
+
+def _metropolis_astep(self, sample):
+    """Metropolis Sampler for multiple chains."""
+    point_map_info = sample.point_map_info
+    current_sample = sample.data
+    if not self.steps_until_tune and self.tune:
+        # Tune scaling parameter
+        self.scaling = tune(self.scaling, self.accepted_sum / float(self.tune_interval))
+        # Reset counter
+        self.steps_until_tune = self.tune_interval
+        self.accepted_sum[:] = 0
+
+    delta = self.proposal_dist() * self.scaling
+    proposed_sample = floatX(current_sample + delta)
+
+    # Missuse mode to safe old posterior
+    if self.mode is None:
+        self.mode = np.sum(np.array(self.delta_logp(current_sample)), axis=0)
+
+    logp_proposed = np.sum(np.array(self.delta_logp(proposed_sample)), axis=0)
+
+    accept_rate = logp_proposed - self.mode
+
+    new_sample, accepted = hastings_acceptance(accept_rate, proposed_sample, current_sample)
+    self.mode[accepted] = logp_proposed[accepted]
+
+    self.accept_rate_iter = accept_rate
+    self.accepted_iter = accepted
+    self.accepted_sum += accepted
+
+    self.steps_until_tune -= 1
+
+    stats = {
+        "tune": self.tune,
+        "scaling": np.mean(self.scaling),
+        "accept": np.mean(np.exp(self.accept_rate_iter)),
+        "accepted": np.mean(self.accepted_iter),
+    }
+    return RaveledVars(new_sample, point_map_info), [stats]
+
+
+def hastings_acceptance(accept_rate, proposed_sample, current_sample):
+    """Metropolis acceptance step.
+
+    Args:
+        accept_rate (np.array): Acceptance rate of samples
+        proposed_sample (np.array): New sample
+        current_sample (np.array): Old sample
+
+    Returns:
+        selected_sample (np.array): New sample for chain
+        accept (np.array): Bool vector with acceptance/rejection
+    """
+    num_chains = len(accept_rate)
+    parameter_dim = int(len(proposed_sample) / num_chains)
+
+    accept = (
+        np.log(
+            np.random.uniform(
+                size=num_chains,
+            )
+        )
+        < accept_rate
+    )
+
+    bool_idx = np.kron(
+        np.array(accept).astype(int),
+        np.ones(shape=(parameter_dim,)),
+    ).astype(bool)
+
+    selected_samples = np.where(bool_idx, proposed_sample, current_sample)
+    return selected_samples, accept
+
+
+def logp(model):
+    """Compilation function of likelihood.
+
+    Args:
+        model (obj): PyMC Model
+
+    Returns:
+        posterior_logp (function): Function to evaluate posterior
+    """
+    point = model.initial_point()
+    model_vars = model.value_vars
+    shared = pm.make_shared_replacements(point, model_vars, model)
+    [logp0], inarray0 = join_nonshared_inputs(
+        point=point, outputs=[model.logp(sum=False)], inputs=model_vars, shared_inputs=shared
+    )
+
+    posterior_logp = compile_pymc([inarray0], logp0)
+    posterior_logp.trust_input = True
+    return posterior_logp
