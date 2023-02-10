@@ -56,6 +56,7 @@ DEVELOPER_EXTRAS = [
     'pandoc',
     'pip-tools',
     'vulture>=2.3',
+    'commitizen',
 ]
 
 # Keywords

@@ -5,15 +5,6 @@ repos:
       - id: trailing-whitespace
       - id: end-of-file-fixer
       - id: check-added-large-files
-  - repo: https://github.com/saygox/commitizen
-    rev: 09fa312b7846850f44f7860632685189e37c1bec
-    hooks:
-      - id: commitizen-prepare-commit-msg
-        stages: [prepare-commit-msg]
-        additional_dependencies: ["markupsafe==2.0.1"]
-      - id: commitizen
-        stages: [commit-msg]
-        additional_dependencies: ["markupsafe==2.0.1"]
   - repo: https://github.com/jendrikseipp/vulture
     rev: v2.7
     hooks:
@@ -33,6 +24,13 @@ repos:
         additional_dependencies: ["toml"]
   - repo: local
     hooks:
+      - id: commitizen
+        name: commitizen
+        entry: cz
+        args: ['check', '--commit-msg-file', '.git/COMMIT_EDITMSG']
+        pass_filenames: false
+        language: system
+        stages: [commit-msg]
       - id: isort
         name: isort (python)
         entry: isort
