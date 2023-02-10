@@ -3,8 +3,8 @@
 variables:
   # flags to turn on/ off tests for specific platforms
   UBUNTU_TESTS: "1"
-  CLUSTER_TESTS: "0"
-  CLUSTER_NATIVE_TESTS: "0"
+  CLUSTER_TESTS: "1"
+  CLUSTER_NATIVE_TESTS: "1"
   BENCHMARKS: "0"
   UPDATE_REQUIREMENTS: "0"
   # optional parameters for pytest calls
