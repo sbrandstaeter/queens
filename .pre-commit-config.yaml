@@ -10,11 +10,6 @@ repos:
     hooks:
       - id: docformatter
         args: [--in-place]
-  - repo: https://github.com/PyCQA/pydocstyle
-    rev: 6.3.0
-    hooks:
-      - id: pydocstyle
-        additional_dependencies: ["toml"]
   - repo: local
     hooks:
       - id: vulture
@@ -25,6 +20,12 @@ repos:
         additional_dependencies: ["toml"]
         always_run: false
         pass_filenames: true
+      - id: pydocstyle
+        name: pydocstyle
+        entry: pydocstyle
+        language: python
+        types: ["python"]
+        additional_dependencies: ["toml"]
       - id: commitizen
         name: commitizen
         entry: cz

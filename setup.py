@@ -57,6 +57,7 @@ DEVELOPER_EXTRAS = [
     'pip-tools',
     'vulture>=2.7',
     'commitizen',
+    'pydocstyle>=6.3.0',
 ]
 
 # Keywords
