@@ -55,7 +55,7 @@ DEVELOPER_EXTRAS = [
     'nbsphinx',
     'pandoc',
     'pip-tools',
-    'vulture>=2.3',
+    'vulture>=2.7',
     'commitizen',
 ]
 
