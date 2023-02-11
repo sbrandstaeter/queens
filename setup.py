@@ -50,6 +50,7 @@ DEVELOPER_EXTRAS = [
     'isort>=5.0',
     'black==22.3.0',
     'pre-commit',
+    'pre-commit-hooks>=4.4.0',
     'liccheck',
     'sphinx',
     'nbsphinx',
