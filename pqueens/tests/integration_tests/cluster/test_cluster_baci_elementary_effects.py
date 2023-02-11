@@ -40,11 +40,11 @@ def test_cluster_baci_elementary_effects(
     """Test for the Elementary Effects Iterator on the clusters with BACI.
 
     Args:
-        inputdir (path): Path to the JSON input file
-        tmp_path (path): Temporary directory in which the pytests are run
-        third_party_inputs (str): Path to the BACI input files
+        inputdir (Path): Path to the JSON input file
+        tmp_path (Path): Temporary directory in which the pytests are run
+        third_party_inputs (Path): Path to the BACI input files
         cluster_testsuite_settings (dict): Collection of cluster specific settings
-        baci_cluster_paths (path): Path to BACI dependencies on the cluster.
+        baci_cluster_paths (Path): Path to BACI dependencies on the cluster.
         baci_elementary_effects_check_results (function): function to check the results
     """
     # unpack cluster settings needed for all cluster tests

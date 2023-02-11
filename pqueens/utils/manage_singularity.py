@@ -51,8 +51,8 @@ class SingularityManager:
         remote (bool): *True* if the simulation runs are remote.
         remote_connect (str): String of user@remote_machine .
         singularity_bind (str): Binds for the singularity runs.
-        singularity_path (path): Path to singularity exec.
-        input_file (path): Path to QUEENS input file.
+        singularity_path (Path): Path to singularity exec.
+        input_file (Path): Path to QUEENS input file.
     """
 
     def __init__(

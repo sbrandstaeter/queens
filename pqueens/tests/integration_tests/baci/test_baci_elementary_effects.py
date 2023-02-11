@@ -68,8 +68,7 @@ def count_subdirectories(current_directory):
     """
     number_subdirectories = 0
     for current_subdirectory in current_directory.iterdir():
-        path_current_subdirectory = current_directory / current_subdirectory
-        if path_current_subdirectory.is_dir():
+        if current_subdirectory.is_dir():
             number_subdirectories += 1
     return number_subdirectories
 
@@ -101,9 +100,9 @@ def test_baci_elementary_effects(
         experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
         baci_elementary_effects_check_results (function): function to check the results
     """
-    template = Path(inputdir, "baci_local_elementary_effects_template.yml")
-    input_file = Path(experiment_directory, "elementary_effects_baci_local_invaaa.yml")
-    third_party_input_file = Path(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
+    template = inputdir / "baci_local_elementary_effects_template.yml"
+    input_file = experiment_directory / "elementary_effects_baci_local_invaaa.yml"
+    third_party_input_file = third_party_inputs / "baci_input_files", "invaaa_ee.dat"
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
@@ -137,5 +136,5 @@ def test_baci_elementary_effects(
     np.testing.assert_allclose(
         results["sensitivity_indices"]["mu_star_conf"], np.array([0.136631, 0.140794]), rtol=1.0e-3
     )
-    result_file = Path(experiment_directory, result_file_name)
+    result_file = experiment_directory / result_file_name
     baci_elementary_effects_check_results(result_file)

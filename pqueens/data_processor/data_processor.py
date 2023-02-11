@@ -115,7 +115,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         """Get data of interest from file.
 
         Args:
-            base_dir_file (str): Path of the base directory that
+            base_dir_file (Path): Path of the base directory that
                                            contains the file of interest
 
         Returns:
@@ -126,9 +126,9 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 "The data processor requires a base_directory for the "
                 "files to operate on! Your input was empty! Abort..."
             )
-        if not isinstance(base_dir_file, str):
+        if not isinstance(base_dir_file, Path):
             raise TypeError(
-                "The argument 'base_dir_file' must be of type 'str' "
+                "The argument 'base_dir_file' must be of type 'Path' "
                 f"but is of type {type(base_dir_file)}. Abort..."
             )
 
@@ -146,21 +146,21 @@ class DataProcessor(metaclass=abc.ABCMeta):
         """Generate path to file.
 
         Args:
-            base_dir_file (str): Path to base directory that contains file of interest
+            base_dir_file (Path): Path to base directory that contains file of interest
 
         Returns:
-            file_path_regex (str): Path to file that still
+            file_path_regex (Path): Path to file that still
                                         contains wildcards or regex expressions
         """
         file_identifier = self.file_name_identifier
-        file_path_regex = Path(base_dir_file) / file_identifier
-        return str(file_path_regex)
+        file_path_regex = base_dir_file / file_identifier
+        return file_path_regex
 
     def _check_file_exist_and_is_unique(self, file_path_regex):
         """Check if file exists.
 
         Args:
-            file_path_regex (str): Path to file that still
+            file_path_regex (Path): Path to file that still
                                         contains wildcards or regex expressions
 
         Returns:

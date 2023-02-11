@@ -13,7 +13,7 @@ def relative_path_from_pqueens(relative_path):
     Call *relative_path_from_pqueens("folder/file.A")* .
 
     Args:
-        relative_path (str): Path starting from *queens/pqueens/*
+        relative_path (str): "Path" starting from *queens/pqueens/*
     Returns:
         PosixPath: Absolute path to the file
     """
@@ -29,7 +29,7 @@ def relative_path_from_queens(relative_path):
     Call *relative_path_from_pqueens("pqueens/folder/file.A")* .
 
     Args:
-        relative_path (str): Path starting from *queens/*
+        relative_path (str): "Path" starting from *queens/*
 
     Returns:
         PosixPath: Absolute path to the file
@@ -56,7 +56,7 @@ def check_if_path_exists(path, error_message=""):
     """Check if a path exists.
 
     Args:
-        path (str): Path to be checked
+        path (str): "Path" to be checked
         error_message (str,optional): If an additional message is desired
     Returns:
         path_exists: TODO_doc

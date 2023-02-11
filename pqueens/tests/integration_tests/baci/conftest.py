@@ -17,9 +17,9 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
     """Set-up of BACI symbolic links.
 
     Args:
-        config_dir (str): Path to the config directory of QUEENS containing BACI executables
-        baci_link_paths (str): destination for symbolic links to executables
-        baci_source_paths_for_gitlab_runner (str): Several paths that are needed to build symbolic
+        config_dir (Path): Path to the config directory of QUEENS containing BACI executables
+        baci_link_paths (Path): destination for symbolic links to executables
+        baci_source_paths_for_gitlab_runner (Path): Several paths that are needed to build symbolic
                                                 links to executables
     """
     (

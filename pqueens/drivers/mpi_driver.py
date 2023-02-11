@@ -26,14 +26,14 @@ class MpiDriver(Driver):
                                      stream.
         cluster_job (bool): *True* if job is executed on a cluster.
         cluster_options (dict): Cluster options for pbs or slurm.
-        error_file (path): Path to error file.
-        executable (path): Path to main executable of respective software
+        error_file (Path): Path to error file.
+        executable (Path): Path to main executable of respective software
                            (e.g. BACI).
-        input_file (path): Path to input file.
-        log_file (path): Path to log file.
+        input_file (Path): Path to input file.
+        log_file (Path): Path to log file.
         mpi_cmd (str): mpi command.
         num_procs_post (int): Number of processors for post-processing.
-        output_file (path): Path to output file.
+        output_file (Path): Path to output file.
         output_prefix (str): Output prefix.
         pid (int): Unique process ID.
         post_file_prefix (str): Unique prefix to name the post-processed
@@ -44,7 +44,7 @@ class MpiDriver(Driver):
         simulation_input_template (str): Path to simulation input template
                                          (e.g. dat-file)
         singularity (bool): Flag for use of a singularity container.
-        experiment_dir (path): path to working directory
+        experiment_dir (Path): path to working directory
     """
 
     def __init__(
@@ -84,30 +84,30 @@ class MpiDriver(Driver):
         Args:
             batch (int): current batch of driver calls.
             driver_name (str): name of the driver used for the analysis
-            experiment_dir (path): path to QUEENS experiment directory
-            working_dir (path): folder were simulation is run in on compute node
+            experiment_dir (Path): path to QUEENS experiment directory
+            working_dir (Path): folder were simulation is run in on compute node
             experiment_name (str): name of QUEENS experiment
             job_id (int):  job ID as provided in database within range [1, n_jobs]
             num_procs (int): number of processors for processing
-            output_directory (path): path to output directory (on remote computing resource)
+            output_directory (Path): Path to output directory (on remote computing resource)
             singularity (bool): flag for use of a singularity container
             database (obj): database object
             cae_output_streaming (bool): flag for additional streaming to given stream
             cluster_config (ClusterConfig): configuration data of cluster
             cluster_options (dict): cluster options for pbs or slurm
-            error_file (path): path to error file
-            executable (path): path to main executable of respective software (e.g. baci)
-            input_file (path): path to input file
-            log_file (path): path to log file
+            error_file (Path): Path to error file
+            executable (Path): Path to main executable of respective software (e.g. baci)
+            input_file (Path): Path to input file
+            log_file (Path): Path to log file
             num_procs_post (int): number of processors for post-processing
-            output_file (path): path to output file
+            output_file (Path): Path to output file
             output_prefix (str): output prefix
             post_file_prefix (str): unique prefix to name the post-processed files
             post_options (str): options for post-processing
-            post_processor (path): path to post_processor
+            post_processor (Path): Path to post_processor
             cluster_job (bool): true if job is execute on cluster
             cluster_type (str): type of cluster
-            simulation_input_template (path): path to simulation input template (e.g. dat-file)
+            simulation_input_template (Path): Path to simulation input template (e.g. dat-file)
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
             mpi_cmd (str): mpi command
@@ -171,7 +171,7 @@ class MpiDriver(Driver):
             driver_name (str): Name of driver instance that should be realized
             working_dir (str): Path to working directory on remote resource
             cluster_options (dict): Cluster options for pbs or slurm
-            experiment_dir (path): path to QUEENS experiment directory
+            experiment_dir (Path): Path to QUEENS experiment directory
             cluster_config (ClusterConfig): configuration data of cluster
 
         Returns:

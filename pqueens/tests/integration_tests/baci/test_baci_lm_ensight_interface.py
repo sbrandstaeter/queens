@@ -59,19 +59,17 @@ def test_baci_lm_shape(
     Singularity based BACI simulations.
 
     Args:
-        inputdir (str): Path to the JSON input file
-        third_party_inputs (str): Path to the BACI input files
-        baci_link_paths (str): Symbolic links to executables including BACI
+        inputdir (Path): Path to QUEENS test input files
+        third_party_inputs (Path): Path to the BACI input files
+        baci_link_paths (Path): Symbolic links to executables including BACI
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
         experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
     """
-    template = Path(inputdir, "baci_local_shape_lm_template.yml")
-    input_file = Path(experiment_directory, "baci_local_shape_lm.yml")
-    third_party_input_file = Path(
-        third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_template.dat"
-    )
-    third_party_input_file_monitor = Path(
-        third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_E2000_nue03_p.monitor"
+    template = inputdir / "baci_local_shape_lm_template.yml"
+    input_file = experiment_directory / "baci_local_shape_lm.yml"
+    third_party_input_file = third_party_inputs / "baci_input_files/lm_tri_fsi_shape_template.dat"
+    third_party_input_file_monitor = (
+        third_party_inputs / "baci_input_files/lm_tri_fsi_shape_E2000_nue03_p.monitor"
     )
     experiment_name = "OptmizeBaciLM_" + json.dumps(singularity_bool)
 
@@ -86,7 +84,7 @@ def test_baci_lm_shape(
         'singularity_boolean': json.dumps(singularity_bool),
     }
 
-    injector.inject(dir_dict, template, input_file)
+    injector.inject(dir_dict, str(template), str(input_file))
     run(input_file, experiment_directory)
 
     result_file_name = experiment_name + ".csv"

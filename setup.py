@@ -14,7 +14,7 @@ def read(fname):
     Returns:
         The content of the file fname
     """
-    return Path(__file__).parent.joinpath(fname).read_text(encoding="utf-8")
+    return Path(__file__).parent / fname.read_text(encoding="utf-8")
 
 
 def read_requirements(fname):

@@ -17,17 +17,17 @@ class Driver(metaclass=abc.ABCMeta):
         batch (int):               Current batch of driver calls.
         driver_name (str):         Name of the driver used for the analysis. The name is
                                    specified in the json-input file.
-        experiment_dir (path):     Path to QUEENS experiment directory.
+        experiment_dir (Path):     Path to QUEENS experiment directory.
         experiment_name (str):     Name of QUEENS experiment.
         job (dict, None):          Dictionary containing description of current job.
         job_id (int):              Job ID as provided in database within range [1, n_jobs].
         num_procs (int):           Number of processors for processing.
-        output_directory (path):   Path to output directory (on remote computing resource for
+        output_directory (Path):   Path to output directory (on remote computing resource for
                                    remote scheduling).
         result (np.array):         Simulation result to be stored in database.
         gradient (np.array):       Gradient of the simulation output w.r.t. the input.
         database (obj):            Database object.
-        post_processor (path):     (only for post-processing) Path to *post_processor* of
+        post_processor (Path):     (only for post-processing) Path to *post_processor* of
                                    respective CAE software.
         gradient_data_processor (obj): Instance of data processor class for gradient data.
         data_processor (obj):   Instance of data processor class.
@@ -56,17 +56,17 @@ class Driver(metaclass=abc.ABCMeta):
             batch (int):               Current batch of driver calls.
             driver_name (str):         Name of the driver used for the analysis. The name is
                                        specified in the json-input file.
-            experiment_dir (path):     Path to QUEENS experiment directory
+            experiment_dir (Path):     Path to QUEENS experiment directory
             experiment_name (str):     Name of QUEENS experiment
             job (dict,None):           Dictionary containing description of current job
             job_id (int):              Job ID as provided in database within range [1, n_jobs]
             num_procs (int):           Number of processors for processing
-            output_directory (path):   Path to output directory (on remote computing resource for
+            output_directory (Path):   Path to output directory (on remote computing resource for
                                        remote scheduling)
             result (np.array):         Simulation result to be stored in database
             gradient (np.array): Gradient of the simulation output w.r.t. to the input
             database (obj):            Database object
-            post_processor (path):     (Only for post-processing) path to post_processor of
+            post_processor (Path):     (Only for post-processing) path to post_processor of
                                        respective CAE software
             data_processor (obj):      Instance of data processor class
             gradient_data_processor (obj):   Instance of data processor class for gradient data
@@ -136,7 +136,7 @@ class Driver(metaclass=abc.ABCMeta):
             self.job = self._load_job_from_db()
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
-            self.result = self.data_processor.get_data_from_file(str(self.output_directory))
+            self.result = self.data_processor.get_data_from_file(self.output_directory)
             _logger.debug("Got result: %s", self.result)
 
     def gradient_data_processor_job(self):

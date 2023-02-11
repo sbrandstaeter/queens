@@ -10,7 +10,7 @@ def load_pickle(file_path):
     """Load a pickle file directly from path.
 
     Args:
-        file_path (pathlib.path): Path to pickle-file
+        file_path (Path): Path to pickle-file
 
     Returns:
         Data (dict) in the pickle file
@@ -31,9 +31,9 @@ def print_pickled_data(file_path):
     it a single command and fancy prints.
 
     Args:
-        file_path (str): Path to pickle-file
+        file_path (Path): Path to pickle-file
     """
-    data = load_pickle(Path(file_path))
+    data = load_pickle(file_path)
     _logger.info("\n\npickle file: %s", file_path)
     for key, item in data.items():
         item_type = type(item)
