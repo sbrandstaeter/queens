@@ -59,7 +59,8 @@ DEVELOPER_EXTRAS = [
     'vulture>=2.7',
     'commitizen',
     'pydocstyle>=6.3.0',
-    'docformatter>=1.6.0',
+    'docformatter>=1.5.1',
+    #'https://github.com/PyCQA/docformatter/archive/refs/tags/v1.6.0-rc2.tar.gz',
     'yamllint>=1.17.0',
 ]
 
