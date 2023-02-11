@@ -60,6 +60,7 @@ DEVELOPER_EXTRAS = [
     'commitizen',
     'pydocstyle>=6.3.0',
     'docformatter>=1.6.0',
+    'yamllint>=1.17.0',
 ]
 
 # Keywords

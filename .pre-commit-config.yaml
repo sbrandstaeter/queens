@@ -58,6 +58,16 @@ repos:
         always_run: false
         pass_filenames: true
         additional_dependencies: ["toml"]
+      - id: yamllint
+        name: yamllint
+        entry: yamllint
+        args:
+          - > # This is needed to lint the jinja templates
+            -d={extends: default, rules: {braces: {max-spaces-inside: 1}
+            , brackets: disable, document-start: disable}}
+          - -f=colored
+        language: python
+        types: ["yaml"]
       - id: pylint
         name: pylint
         entry: pylint
@@ -66,12 +76,3 @@ repos:
         additional_dependencies: ["toml"]
         always_run: false
         pass_filenames: true
-  - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.17.0
-    hooks:
-      - id: yamllint
-        args:
-          - > # This is needed to lint the jinja templates
-            -d={extends: default, rules: {braces: {max-spaces-inside: 1}
-            , brackets: disable, document-start: disable}}
-          - -f=colored
