@@ -58,6 +58,7 @@ DEVELOPER_EXTRAS = [
     'vulture>=2.7',
     'commitizen',
     'pydocstyle>=6.3.0',
+    'docformatter>=1.6.0',
 ]
 
 # Keywords
