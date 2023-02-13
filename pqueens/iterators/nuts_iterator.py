@@ -93,6 +93,10 @@ class NUTSIterator(PyMCIterator):
             progressbar,
         )
 
+        if self.num_chains > 1:
+            _logger.warning(
+                "More than 1 chain not supported, use only 1 chain to get valid samples!"
+            )
         self.max_treedepth = max_treedepth
         self.target_accept = target_accept
         self.scaling = scaling

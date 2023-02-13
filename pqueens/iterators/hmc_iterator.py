@@ -84,7 +84,10 @@ class HMCIterator(PyMCIterator):
             use_queens_prior,
             progressbar,
         )
-
+        if self.num_chains > 1:
+            _logger.warning(
+                "More than 1 chain not supported, use only 1 chain to get valid samples!"
+            )
         self.max_steps = max_steps
         self.target_accept = target_accept
         self.path_length = path_length
