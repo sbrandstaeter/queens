@@ -57,7 +57,7 @@ repos:
         always_run: false
         pass_filenames: true
   - repo: https://github.com/adrienverge/yamllint.git
-    rev: v1.17.0
+    rev: v1.29.0
     hooks:
       - id: yamllint
         args:
