@@ -3,8 +3,8 @@
 import logging
 import pathlib
 
-import pqueens.database.database as DB_module
 from pqueens.data_processor import from_config_create_data_processor
+from pqueens.database import from_config_create_database
 from pqueens.drivers.driver import Driver
 from pqueens.schedulers.cluster_scheduler import (
     VALID_CLUSTER_CLUSTER_TYPES,
@@ -179,7 +179,8 @@ class MpiDriver(Driver):
         """
         experiment_name = config['global_settings'].get('experiment_name')
 
-        database = DB_module.database  # pylint: disable=no-member
+        database = from_config_create_database(config)
+        database._connect()
 
         # If multiple resources are passed an error is raised in the resources module.
         resource_name = list(config['resources'])[0]
@@ -426,7 +427,7 @@ class MpiDriver(Driver):
         return ' '.join(command_list)
 
     def __str__(self):
-        """String of mpi driver.
+        """Represent mpi driver as a string.
 
         Returns:
             str: String version of the mpi driver

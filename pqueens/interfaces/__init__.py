@@ -15,6 +15,7 @@ The alternatives are the evaluation of simple python function using the
 from pqueens.utils.import_utils import get_module_class
 
 VALID_TYPES = {
+    'dask_interface': ['pqueens.interfaces.dask_interface', 'DaskInterface'],
     'job_interface': ['pqueens.interfaces.job_interface', 'JobInterface'],
     'direct_python_interface': [
         'pqueens.interfaces.direct_python_interface',
