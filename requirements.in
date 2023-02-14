@@ -4,7 +4,7 @@
 
 # Basic stuff
 cython==0.29.30
-scipy==1.7.3
+scipy==1.10.0
 numpy==1.21.5
 pandas==1.4.3
 
@@ -22,7 +22,7 @@ chaospy # polynomial chaos
 pyyaml # to load yaml files
 jinja2
 
-# Machine learing libraries
+# Machine learning libraries
 scikit-learn==1.1.1
 arviz # Bayesian visualization
 gpy # for Gaussian Processes
@@ -54,3 +54,21 @@ tomli # TOML parser
 
 # Other Python stuff
 pathos # multiprocessing with more complex python objects
+
+# Development
+pylint>=2.16
+pylint-exit
+isort>=5.0
+black==22.3.0
+pre-commit
+pre-commit-hooks>=4.4.0
+liccheck
+sphinx
+nbsphinx
+pandoc
+pip-tools
+vulture>=2.7
+commitizen
+pydocstyle>=6.3.0
+docformatter>=1.5.1
+yamllint>=1.17.0
