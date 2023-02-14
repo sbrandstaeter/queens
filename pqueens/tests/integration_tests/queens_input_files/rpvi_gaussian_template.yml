@@ -6,9 +6,6 @@ method:
   type: rpvi
   model_name: model
   max_feval: 100000
-  likelihood_gradient_method: {{ gradient_method }}
-  finite_difference_method: 2-point
-  finite_difference_step: 1.0e-05
   n_samples_per_iter: 10
   score_function_bool: false
   variational_distribution:
@@ -34,7 +31,7 @@ method:
       save_bool: false
 optimizer:
   type: adam
-  learning_rate: 0.2
+  learning_rate: 0.05
   optimization_type: max
   rel_L1_change_threshold: -1
   rel_L2_change_threshold: -1
@@ -51,6 +48,11 @@ model:
 forward_model:
   type: simulation_model
   interface_name: interface
+  gradient_handler_name: gradient_handler
+gradient_handler:
+  type: {{ gradient_method }}
+  finite_difference_method: 2-point
+  step_size: 1.0e-05
 interface:
   type: direct_python_interface
   function: patch_for_likelihood
