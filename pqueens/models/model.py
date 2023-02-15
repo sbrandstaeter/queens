@@ -25,7 +25,7 @@ class Model(metaclass=abc.ABCMeta):
         """Init model object.
 
         Args:
-            name (string):                  Name of model
+            name (optional, string): Name of model
         """
         self.name = name
         self.parameters = parameters_module.parameters
@@ -36,6 +36,20 @@ class Model(metaclass=abc.ABCMeta):
         """Evaluate model with current set of samples.
 
         Args:
-            samples: TODO_doc
+            samples (np.array): Current sample batch for which the model response should be
+                                calculated.
+        """
+        pass
+
+    @abc.abstractmethod
+    def evaluate_and_gradient(self, samples, upstream_gradient_fun):
+        """Evaluate model and the model gradient with current set of samples.
+
+        Args:
+            samples (np.array): Current sample batch for which the model response should be
+                                calculated.
+            upstream_gradient_fun (obj): The gradient an objective function w.r.t. the model output.
+                                         This function is needed for `adjoint`-based gradient
+                                         calculation.
         """
         pass

@@ -72,13 +72,11 @@ class DirectPythonInterface(Interface):
 
         return cls(interface_name=interface_name, function=my_function, pool=pool)
 
-    def evaluate(self, samples, gradient_bool=False):
-        """Mapping function which orchestrates call to simulator function.
+    def evaluate(self, samples):
+        """Orchestrate call to simulator function.
 
         Args:
             samples (list): List of variables objects
-            gradient_bool (bool): Flag to determine whether the gradient of the function at
-                                  the evaluation point is expected (*True*) or not (*False*)
 
         Returns:
             dict: dictionary with
@@ -109,17 +107,17 @@ class DirectPythonInterface(Interface):
         else:
             results = list(map(self.function, tqdm(samples_list)))
 
-        if gradient_bool:
-            result_lst = []
-            gradient_lst = []
-            for result in results:
-                result_lst.append(result[0])
-                gradient_lst.append(result[1].T)
-            output = {'mean': np.array(result_lst)}
-            output['gradient'] = np.array(gradient_lst)
+        output = {}
+        # check if gradient is returned --> tuple
+        if isinstance(results[0], tuple):
+            results_iterator, gradient_iterator = zip(*results)
+            results_array = np.array(list(results_iterator))
+            gradients_array = np.array(list(gradient_iterator))
+            output["gradient"] = gradients_array
         else:
-            output = {'mean': np.array(results)}
+            results_array = np.array(results)
 
+        output["mean"] = results_array
         return output
 
     @staticmethod
@@ -135,6 +133,7 @@ class DirectPythonInterface(Interface):
         Returns:
             reshaped_output_function (function): Wrapped function
         """
+        pass
 
         def reshaped_output_function(sample_dict):
             """Call function and reshape output.

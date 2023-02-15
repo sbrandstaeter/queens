@@ -94,4 +94,10 @@ class LikelihoodModel(Model):
 
     @abc.abstractmethod
     def evaluate(self, samples):
-        """Evaluate model with current set of variables."""
+        """Evaluate likelihood at sample points."""
+        pass
+
+    @abc.abstractmethod
+    def evaluate_and_gradient(self, samples):
+        """Evaluate likelihood model and its gradient at sample points."""
+        pass

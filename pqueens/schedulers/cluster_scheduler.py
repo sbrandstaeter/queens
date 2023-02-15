@@ -9,7 +9,12 @@ from dataclasses import dataclass
 from pqueens.drivers import from_config_create_driver
 from pqueens.schedulers.scheduler import Scheduler
 from pqueens.utils.cluster_utils import distribute_procs_on_nodes_pbs, get_cluster_job_id
-from pqueens.utils.config_directories import base_directory, create_directory, experiment_directory
+from pqueens.utils.config_directories import (
+    base_directory,
+    create_directory,
+    current_job_directory,
+    experiment_directory,
+)
 from pqueens.utils.manage_singularity import SingularityManager
 from pqueens.utils.path_utils import relative_path_from_queens
 from pqueens.utils.print_utils import get_str_table
@@ -338,7 +343,7 @@ class ClusterScheduler(Scheduler):
         )
 
     def __str__(self):
-        """String description of the ClusterScheduler object.
+        """Return string of the ClusterScheduler object.
 
         Returns:
             string (str): ClusterScheduler object description
@@ -381,7 +386,7 @@ class ClusterScheduler(Scheduler):
                 self._copy_input_file_to_remote()
 
     def _copy_input_file_to_remote(self):
-        """Copies a (temporary) JSON input-file to the remote machine.
+        """Copy a (temporary) JSON input-file to the remote machine.
 
         Is needed to execute some parts of QUEENS within the singularity
         image on the remote, given the input configurations.
@@ -421,15 +426,13 @@ class ClusterScheduler(Scheduler):
                 f"--working_dir"
             )
 
-            job_dir = self.experiment_dir / str(job_id)
+            job_dir = current_job_directory(self.experiment_dir, job_id)
             create_directory(job_dir, remote_connect=self.remote_connect)
 
             self.cluster_options['DESTDIR'] = str(job_dir / "output")
 
             # generate jobscript for submission
-            submission_script_path = (
-                self.experiment_dir / str(job_id) / f"{self.experiment_name}_{job_id}.sh"
-            )
+            submission_script_path = job_dir / f"{self.experiment_name}_{job_id}.sh"
             generate_submission_script(
                 self.cluster_options,
                 submission_script_path,
