@@ -11,3 +11,4 @@ xarray
 scipy
 pyyaml
 pyfiglet
+jinja2

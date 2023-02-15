@@ -11,6 +11,7 @@ from pqueens.schedulers.cluster_scheduler import (
     VALID_PBS_CLUSTER_TYPES,
 )
 from pqueens.utils.cluster_utils import get_cluster_job_id
+from pqueens.utils.config_directories import current_job_directory
 from pqueens.utils.injector import inject
 from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.run_subprocess import run_subprocess
@@ -220,7 +221,7 @@ class MpiDriver(Driver):
         else:
             gradient_data_processor = None
 
-        job_dir = experiment_dir / str(job_id)
+        job_dir = current_job_directory(experiment_dir, job_id)
         output_directory = job_dir / 'output'
         output_directory.mkdir(parents=True, exist_ok=True)
 
@@ -270,7 +271,7 @@ class MpiDriver(Driver):
         )
 
     def prepare_input_files(self):
-        """Prepare input file on remote machine."""
+        """Prepare and parse data to input files."""
         inject(self.job['params'], str(self.simulation_input_template), str(self.input_file))
 
     def run_job(self):
@@ -389,9 +390,8 @@ class MpiDriver(Driver):
         self.cluster_options['INPUT'] = str(self.input_file)
         self.cluster_options['OUTPUTPREFIX'] = self.output_prefix
 
-        submission_script_path = (
-            self.experiment_dir / str(self.job_id) / f"{self.experiment_name}_{self.job_id}.sh"
-        )
+        current_job_dir = current_job_directory(self.experiment_dir, self.job_id)
+        submission_script_path = current_job_dir / f"{self.experiment_name}_{self.job_id}.sh"
         inject(self.cluster_options, self.cluster_config.jobscript_template, submission_script_path)
 
         command_list = [self.cluster_config.start_cmd, str(submission_script_path)]
@@ -426,7 +426,7 @@ class MpiDriver(Driver):
         return ' '.join(command_list)
 
     def __str__(self):
-        """String of mpi driver.
+        """Return string of mpi driver.
 
         Returns:
             str: String version of the mpi driver

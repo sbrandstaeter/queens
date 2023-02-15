@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """High-fidelity Park91a with x3 and x4 as fixed coordinates as executable."""
 import sys
+from pathlib import Path
 
 import numpy as np
 from numpy import genfromtxt
@@ -113,14 +114,22 @@ def park91a_hifi_coords(x1, x2, x3, x4):
     return y, (dy_dx1, dy_dx2)
 
 
-def main(params):
+def main(run_type, params):
     """Interface to Park91a test function.
 
     Args:
+        run_type (str): Run type for the main function:
+
+                        - 's': standard run without gradients
+                        - 'p': provided gradient run
+                        - 'a': adjoint run that solves the adjoint equation
         params (dict): Dictionary with parameters
 
     Returns:
-        float: Value of the function at parameter specified in input dict
+        function_output (np.array): Value of function input parameters
+        evaluated_gradient_expression (np.array): Value of gradient input parameters
+                                                  Note: This can be different gradients
+                                                  depending on the run_type!
     """
     # use x3 and x4 as coordinates and create coordinate grid
     xx3 = np.linspace(0, 1, 4)
@@ -129,23 +138,108 @@ def main(params):
     x3_vec = x3_vec.flatten()
     x4_vec = x4_vec.flatten()
 
-    # evaluate testing functions for coordinates and fixed input
+    run_type_dict = {'s': run_type_standard, 'p': run_type_provided_gradient, 'a': run_type_adjoint}
+    run_function = run_type_dict.get(run_type)
+    if run_function is None:
+        raise ValueError(f'Invalid run_type, run_type must be in {run_type_dict.keys}!')
+
+    function_output, evaluated_gradient_expression = run_function(x3_vec, x4_vec, params)
+
+    return function_output, evaluated_gradient_expression
+
+
+def run_type_standard(x3_vec, x4_vec, params):
+    """Run standard function without gradients.
+
+    Args:
+        x3_vec (np.array): Vector of x3 values from grid points
+        x4_vec (np.array): Vector of x4 values from grid points
+        params (dict): Dictionary with input parameters
+
+    Returns:
+        y_vec (np.array): Vector of function values at grid points
+        y_grad (np.array): Empty dummy vector of gradient values at grid points
+    """
+    y_vec = []
+    y_grad = []
+    for x3, x4 in zip(x3_vec, x4_vec):
+        y_vec.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[0])
+    y_vec = np.array(y_vec)
+    y_grad = np.array(y_grad)
+    return y_vec, y_grad
+
+
+def run_type_provided_gradient(x3_vec, x4_vec, params):
+    """Run with provided gradients.
+
+    Args:
+        x3_vec (np.array): Vector of x3 values from grid points
+        x4_vec (np.array): Vector of x4 values from grid points
+        params (dict): Dictionary with input parameters
+
+    Returns:
+        y_vec (np.array): Vector of function values at grid points
+        y_grad (np.array): Vector of gradient values at grid points
+    """
     y_vec = []
     y_grad = []
     for x3, x4 in zip(x3_vec, x4_vec):
         y_vec.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[0])
         y_grad.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[1][:])
     y_vec = np.array(y_vec)
-    y_grad = np.array(y_grad)
+    y_grad = np.array(y_grad).T
     return y_vec, y_grad
 
 
-def write_results(y_vec, y_grad, output_path):
+def run_type_adjoint(x3_vec, x4_vec, params):
+    """Run that only solves the adjoint problem.
+
+    Args:
+        x3_vec (np.array): Vector of x3 values from grid points
+        x4_vec (np.array): Vector of x4 values from grid points
+        params (dict): Dictionary with input parameters
+
+    Returns:
+        y_vec (np.array): Empty dummy vector of function values at grid points
+        do_dx (np.array): Vector of gradient values of the objective function at grid points
+    """
+    y_vec = []
+    y_grad = []
+    for x3, x4 in zip(x3_vec, x4_vec):
+        y_grad.append(park91a_hifi_coords(params['x1'], params['x2'], x3, x4)[1][:])
+
+    # we define g(y,x1,x2) = y - term1 - term2 = 0
+    # as y is explicit in g, dg_dy = 1:
+    # --> 1 * lambda = -do_dy, with o being the objective function, here log-likelihood
+    # and y the value the output of this function, do_dy is here read-in from a csv file
+    # hence: lambda = -do_dy, which we will load in the next lines:
+    adjoint_base_path = Path(input_file_path).parent  # not parent but -
+    adjoint_path = adjoint_base_path / "grad_objective.csv"
+    do_dy = genfromtxt(adjoint_path, delimiter=',')
+    lambda_var = -np.atleast_2d(np.array(do_dy))
+
+    # now we need to implement g_x, the jacobian of the residuum function w.r.t. the input
+    # afterwards we can calculate the final gradient do_dx, the gradient of the objective fun
+    # w.r.t. to the model input x; for this simple analytical example g_x is simply the
+    # negative gradient/jacobian of the model (for PDEs)
+    dg_dx = -np.array(y_grad)
+
+    # now we can finalize the adjoint:
+    do_dx = np.array(np.dot(lambda_var, dg_dx))
+    y_vec = np.array(y_vec)
+
+    return y_vec, do_dx
+
+
+def write_results(output, output_path):
     """Write solution to csv files."""
-    output_file = output_path + "_output.csv"
-    gradient_file = output_path + "_gradient.csv"
-    np.savetxt(output_file, y_vec, delimiter=",")
-    np.savetxt(gradient_file, np.squeeze(y_grad), delimiter=",")
+    y_vec, y_grad = output
+    output_file = output_path.parent / (output_path.stem + "_output.csv")
+    gradient_file = output_path.parent / (output_path.stem + "_gradient.csv")
+    if y_vec.shape[0] != 0:
+        np.savetxt(output_file, y_vec, delimiter=",")
+    if y_grad.shape[0] != 0:
+        np.savetxt(gradient_file, np.squeeze(y_grad), delimiter=",")
 
 
 def read_input_file(input_file_path):
@@ -155,8 +249,9 @@ def read_input_file(input_file_path):
 
 
 if __name__ == "__main__":
-    input_file_path = sys.argv[1]
-    output_path = sys.argv[2]
+    run_type = sys.argv[1]
+    input_file_path = sys.argv[2]
+    output_path = Path(sys.argv[3])
     params = read_input_file(input_file_path)
-    y_vec, y_grad = main({"x1": params[0], "x2": params[1]})
-    write_results(y_vec, y_grad, output_path)
+    output = main(run_type, {"x1": params[0], "x2": params[1]})
+    write_results(output, output_path)

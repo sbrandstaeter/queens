@@ -1,7 +1,7 @@
 """Estimate Sobol indices."""
 
 import logging
-from pathlib import Path
+import os
 
 import numpy as np
 import pandas as pd
@@ -115,20 +115,20 @@ class SobolIndexIterator(Iterator):
         dists = []
         for key, parameter in self.parameters.dict.items():
             self.parameter_names.append(key)
-            if isinstance(parameter.distribution, distributions.uniform.UniformDistribution):
-                upper_bound = parameter.distribution.upper_bound
-                lower_bound = parameter.distribution.lower_bound
+            if isinstance(parameter, distributions.uniform.UniformDistribution):
+                upper_bound = parameter.upper_bound
+                lower_bound = parameter.lower_bound
                 distribution_name = 'unif'
             # in queens normal distributions are parameterized with mean and var
             # in salib normal distributions are parameterized via mean and std
             # -> we need to reparameterize normal distributions
-            elif isinstance(parameter.distribution, distributions.normal.NormalDistribution):
-                lower_bound = parameter.distribution.mean.squeeze()
-                upper_bound = np.sqrt(parameter.distribution.covariance.squeeze())
+            elif isinstance(parameter, distributions.normal.NormalDistribution):
+                lower_bound = parameter.mean.squeeze()
+                upper_bound = np.sqrt(parameter.covariance.squeeze())
                 distribution_name = 'norm'
-            elif isinstance(parameter.distribution, distributions.lognormal.LogNormalDistribution):
-                lower_bound = parameter.distribution.mu.squeeze()
-                upper_bound = parameter.distribution.sigma.squeeze()
+            elif isinstance(parameter, distributions.lognormal.LogNormalDistribution):
+                lower_bound = parameter.mu.squeeze()
+                upper_bound = parameter.sigma.squeeze()
                 distribution_name = 'lognorm'
             else:
                 raise ValueError("Valid distributions are normal, lognormal and uniform!")
@@ -271,42 +271,46 @@ class SobolIndexIterator(Iterator):
 
         # Plot first-order indices also called main effect
         chart_name = experiment_name + '_S1.html'
-        chart_path = Path(self.global_settings["output_dir"], chart_name)
+        chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["S1"],
-            error_y=dict(
-                type='data', array=results["sensitivity_indices"]["S1_conf"], visible=True
-            ),
+            error_y={
+                "type": 'data',
+                "array": results['sensitivity_indices']['S1_conf'],
+                "visible": True,
+            },
         )
         data = [bars]
 
-        layout = dict(
-            title='First-Order Sensitivity Indices',
-            xaxis=dict(title='Parameter'),
-            yaxis=dict(title='Main Effect'),
-        )
+        layout = {
+            "title": 'First-Order Sensitivity Indices',
+            "xaxis": {"title": 'Parameter'},
+            "yaxis": {"title": 'Main Effect'},
+        }
 
         fig = go.Figure(data=data, layout=layout)
         fig.write_html(chart_path)
 
         # Plot total indices also called total effect
         chart_name = experiment_name + '_ST.html'
-        chart_path = Path(self.global_settings["output_dir"], chart_name)
+        chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["ST"],
-            error_y=dict(
-                type='data', array=results["sensitivity_indices"]["ST_conf"], visible=True
-            ),
+            error_y={
+                "type": 'data',
+                "array": results['sensitivity_indices']['ST_conf'],
+                "visible": True,
+            },
         )
         data = [bars]
 
-        layout = dict(
-            title='Total Sensitivity Indices',
-            xaxis=dict(title='Parameter'),
-            yaxis=dict(title='Total Effect'),
-        )
+        layout = {
+            "title": 'Total Sensitivity Indices',
+            "xaxis": {"title": 'Parameter'},
+            "yaxis": {"title": 'Total Effect'},
+        }
 
         fig = go.Figure(data=data, layout=layout)
         fig.write_html(chart_path)
@@ -326,15 +330,17 @@ class SobolIndexIterator(Iterator):
                     names.append(f"S{i}{j}")
 
             chart_name = experiment_name + '_S2.html'
-            chart_path = Path(self.global_settings["output_dir"], chart_name)
-            bars = go.Bar(x=names, y=S2, error_y=dict(type='data', array=S2_conf, visible=True))
+            chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
+            bars = go.Bar(
+                x=names, y=S2, error_y={"type": 'data', "array": S2_conf, "visible": True}
+            )
             data = [bars]
 
-            layout = dict(
-                title='Second Order Sensitivity Indices',
-                xaxis=dict(title='Parameter'),
-                yaxis=dict(title='Second Order Effects'),
-            )
+            layout = {
+                "title": 'Second Order Sensitivity Indices',
+                "xaxis": {"title": 'Parameter'},
+                "yaxis": {"title": 'Second Order Effects'},
+            }
 
             fig = go.Figure(data=data, layout=layout)
             fig.write_html(chart_path)

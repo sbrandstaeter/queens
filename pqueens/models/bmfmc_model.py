@@ -327,6 +327,22 @@ class BMFMCModel(Model):
         }
         return output
 
+    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
+        """Evaluate model and the model gradient at sample points.
+
+        Args:
+            samples (np.array): Current sample batch for which the model response should be
+                                calculated.
+            upstream_gradient_fun (obj): The gradient an upstream objective function w.r.t. the
+                                         model output.
+                                         This function is needed for `adjoint`-based gradient
+                                         calculation.
+        """
+        raise NotImplementedError(
+            "Gradient method is not implemented in `bmfmc_model` and for"
+            f"upstream gradient function {upstream_gradient_fun}."
+        )
+
     def run_BMFMC(self):
         """Run BMFMC.
 

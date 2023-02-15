@@ -8,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from pqueens import run
+from pqueens.schedulers.cluster_scheduler import BRUTEFORCE_CLUSTER_TYPE, DEEP_CLUSTER_TYPE
 from pqueens.utils import injector
 
 _logger = logging.getLogger(__name__)
@@ -16,8 +17,8 @@ _logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     "cluster",
     [
-        pytest.param("deep", marks=pytest.mark.lnm_cluster_deep_native),
-        pytest.param("bruteforce", marks=pytest.mark.lnm_cluster_bruteforce_native),
+        pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster_deep_native),
+        pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster_bruteforce_native),
     ],
     indirect=True,
 )

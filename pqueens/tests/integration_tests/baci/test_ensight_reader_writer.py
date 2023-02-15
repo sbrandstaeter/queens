@@ -20,7 +20,7 @@ def test_ensight_reader_writer(
     dir_dict = {
         'baci_input': third_party_input_file,
         'post_drt_ensight': post_drt_ensight,
-        'baci-release': baci_release,
+        'baci_release': baci_release,
     }
     template = inputdir / "baci_ensight_template.yml"
     input_file = tmp_path / "baci_ensight.yml"

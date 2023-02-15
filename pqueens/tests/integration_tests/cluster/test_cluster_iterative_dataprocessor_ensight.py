@@ -8,7 +8,13 @@ import pytest
 
 import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
+from pqueens.main import get_config_dict
 from pqueens.models import from_config_create_model
+from pqueens.schedulers.cluster_scheduler import (
+    BRUTEFORCE_CLUSTER_TYPE,
+    CHARON_CLUSTER_TYPE,
+    DEEP_CLUSTER_TYPE,
+)
 from pqueens.utils import injector
 from pqueens.utils.config_directories import experiment_directory
 from pqueens.utils.run_subprocess import run_subprocess
@@ -19,14 +25,20 @@ _logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     "cluster",
     [
-        pytest.param("deep", marks=pytest.mark.lnm_cluster),
-        pytest.param("bruteforce", marks=pytest.mark.lnm_cluster),
-        pytest.param("charon", marks=pytest.mark.imcs_cluster),
+        pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(CHARON_CLUSTER_TYPE, marks=pytest.mark.imcs_cluster),
     ],
     indirect=True,
 )
 def test_cluster_baci_data_processor_ensight(
-    inputdir, tmp_path, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths, user
+    inputdir,
+    tmp_path,
+    third_party_inputs,
+    cluster_testsuite_settings,
+    baci_cluster_paths,
+    user,
+    monkeypatch,
 ):
     """Test remote BACI simulations with ensight data-processor.
 
@@ -48,6 +60,10 @@ def test_cluster_baci_data_processor_ensight(
         baci_cluster_paths: TODO_doc
         user (): TODO_doc
     """
+    # monkeypatch the "input" function, so that it returns "y".
+    # This simulates the user entering "y" in the terminal:
+    monkeypatch.setattr('builtins.input', lambda _: "y")
+
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
@@ -113,14 +129,7 @@ def test_cluster_baci_data_processor_ensight(
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     # Patch the missing config arguments
-    with open(queens_input_file, encoding="utf8") as f:
-        config = json.load(f)
-        global_settings = {
-            "output_dir": tmp_path,
-            "experiment_name": config["experiment_name"],
-        }
-        config["global_settings"] = global_settings
-        config["input_file"] = str(queens_input_file)
+    config = get_config_dict(queens_input_file, tmp_path)
 
     # Initialise db module
     DB_module.from_config_create_database(config)

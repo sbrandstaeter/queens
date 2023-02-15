@@ -61,13 +61,7 @@ class OptimizationIterator(Iterator):
                           - '3-point': more exact but needs twice as many function evaluations
         jac_rel_step: TODO_doc
         max_feval (int): Maximal number of function evaluations.
-                         (**TODO_doc:** max_feval is defined twice)
-        max_feval (int): Maximum number of forward simulation runs.
-                         (**TODO_doc:** max_feval is defined twice)
         result_description (dict): Description of desired post-processing.
-                                   (**TODO_doc:** result_description is defined twice)
-        result_description (dict): Dictionary containing descriptions for result handling.
-                                   (**TODO_doc:** result_description is defined twice)
         experimental_data_path_list (list): List containing the path to base directories with
                                             experimental data csv-files.
         experimental_data_dict: TODO_doc
@@ -278,7 +272,7 @@ class OptimizationIterator(Iterator):
         Returns:
             TODO_doc
         """
-        positions, delta_positions = get_positions(
+        additional_positions, delta_positions = get_positions(
             x0, method=self.jac_method, rel_step=self.jac_rel_step, bounds=self.bounds
         )
         _, use_one_sided = compute_step_with_bounds(
@@ -286,6 +280,7 @@ class OptimizationIterator(Iterator):
         )
 
         # model response should now correspond to objective function evaluated at positions
+        positions = np.vstack((x0, additional_positions))
         f_batch = self.eval_model(positions)
 
         f0 = f_batch[0].reshape(-1)  # first entry corresponds to f(x0)

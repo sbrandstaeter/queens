@@ -1,5 +1,6 @@
 """Benchmark test for BMFIA with Python test function."""
 
+import os
 import pickle
 from pathlib import Path
 
@@ -25,7 +26,7 @@ def test_bmfia_park_hf_smc(
     In this test the park91 function is used instead of a simulation
     code.
     """
-    # generate json input file from template
+    # generate yaml input file from template
     template = Path(inputdir, 'bmfia_smc_park.yml')
     experimental_data_path = tmp_path
     dir_dict = {'experimental_data_path': experimental_data_path, 'plot_dir': tmp_path}

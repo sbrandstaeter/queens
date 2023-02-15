@@ -24,12 +24,12 @@ model:
   noise_value: 1.0
   nugget_noise_var: 1.0e-05
   experimental_file_name_identifier: '*.csv'
-  experimental_csv_data_base_dir: {experimental_data_path}
+  experimental_csv_data_base_dir: {{ experimental_data_path }}
 forward_model:
   type: simulation_model
   interface_name: interface
 proposal_distribution:
-  distribution: normal
+  type: normal
   mean: [0.0, 0.0]
   covariance: [[1.0, 0.0], [0.0, 0.1]]
 interface:
@@ -37,12 +37,10 @@ interface:
   function: patch_for_likelihood
 parameters:
   x1:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 2.0
     covariance: 1.0
   x2:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: -2.0
     covariance: 0.01

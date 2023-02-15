@@ -13,8 +13,8 @@ method:
 pre_processing:
   type: baci_dat
   list_geometric_sets: [DSURFACE 9]
-  input_template: {baci_input}
-  input_template_preprocessed: {baci_input_preprocessed}
+  input_template: {{ baci_input }}
+  input_template_preprocessed: {{ baci_input_preprocessed }}
 model:
   type: simulation_model
   interface_name: interface
@@ -23,9 +23,9 @@ interface:
   driver_name: driver
 driver:
   type: mpi
-  input_template: {baci_input}
-  path_to_executable: {baci-release}
-  path_to_postprocessor: {post_drt_monitor}
+  input_template: {{ baci_input }}
+  path_to_executable: {{ baci_release }}
+  path_to_postprocessor: {{ post_drt_monitor }}
   post_process_options: --field=structure --node=220 --start=1
   data_processor_name: data_processor_baci
 data_processor_baci:
@@ -49,9 +49,7 @@ local_scheduler:
   num_procs_post: 1
 parameters:
   emodul:
-    type: random_variable
-    dimension: 1
-    distribution: lognormal
+    type: lognormal
     normal_mean: 6.392
     normal_covariance: 0.0705
   random_inflow:

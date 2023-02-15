@@ -54,7 +54,7 @@ class RandomField:
         self.initialize()
         self.dim_truncated = self.weighted_eigen_val_mat_truncated.shape[1]
 
-    def draw_samples(self, num_samples):
+    def draw(self, num_samples):
         """Draw samples from the truncated representation of the random field.
 
         Args:

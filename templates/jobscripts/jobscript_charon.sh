@@ -4,15 +4,15 @@
 # Specify your SLURM directives
 ###############################
 # Job name:
-#SBATCH --job-name {job_name}
+#SBATCH --job-name {{ job_name }}
 #SBATCH --output=slurm-%j-%x.out
 #SBATCH --error=slurm-%j-%x.err
 #
 # Standard case: specify only number of cpus
-#SBATCH --ntasks={slurm_ntasks}
+#SBATCH --ntasks={{ slurm_ntasks }}
 #
 # Walltime:
-#SBATCH --time={walltime}
+#SBATCH --time={{ walltime }}
 #
 # If you want to specify a certain number of nodes
 ## and exactly 'ntasks-per-node' cpus on each node.
@@ -25,9 +25,9 @@
 # #SBATCH --cpus-per-task=4
 #
 # Exclusivity:
-#{slurm_exclusive}SBATCH --exclusive
+#{{ slurm_exclusive }}SBATCH --exclusive
 # Exclude nodes: (e.g. exclude node07)
-#{slurm_exclude}SBATCH --exclude={slurm_excl_node}
+#{{ slurm_exclude }}SBATCH --exclude={{ slurm_excl_node }}
 #
 # Request specific hardware features
 # #SBATCH --constraint="skylake|cascadelake"
@@ -52,18 +52,18 @@ RUN_BACI="OFF"
 RUN_ENSIGHT_FILTER="OFF"
 RUN_QUEENS="ON"
 
-EXE='{EXE}'
+EXE='{{ EXE }}'
 
 #####################
 # INPUT SPECIFICATION
 #####################
-INPUT='{INPUT}'
+INPUT='{{ INPUT }}'
 
 ######################
 # OUTPUT SPECIFICATION
 ######################
-OUTPUT_PREFIX={OUTPUTPREFIX}
-BACI_OUTPUT_DIR={DESTDIR}
+OUTPUT_PREFIX={{ OUTPUTPREFIX }}
+BACI_OUTPUT_DIR={{ DESTDIR }}
 WORKDIR=$BACI_OUTPUT_DIR
 ENSIGHT_OUTPUT_DIR=""
 ENSIGHT_OPTIONS=""
@@ -78,7 +78,7 @@ RESTART_FROM_PREFIX="" # <= specify the result prefix from which restart is to b
 ###############################
 # POST PROCESSING SPECIFICATION
 ###############################
-DoDataProcessing={DATAPROCESSINGFLAG} # post- and data-processing flag for singularity run
+DoDataProcessing={{ DATAPROCESSINGFLAG }} # post- and data-processing flag for singularity run
 
 #################################################################
 # BEGIN ############### DO NOT TOUCH ME #########################
@@ -101,6 +101,6 @@ wait
 # (cd back into home since pwd does not exist anymore)
 if [ $DoDataProcessing = true ]
 then
-  $MPI_RUN $MPIFLAGS -np {nposttasks} $EXE $INPUT $WORKDIR '--post=true'
+  $MPI_RUN $MPIFLAGS -np {{ nposttasks }} $EXE $INPUT $WORKDIR '--post=true'
 fi
 # END ################## DO NOT TOUCH ME #########################

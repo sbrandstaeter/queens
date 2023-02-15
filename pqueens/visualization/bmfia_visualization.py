@@ -1,20 +1,4 @@
-"""TODO_doc."""
-
-import os
-import sys
-from pathlib import Path
-
-import matplotlib.pyplot as plt
-import numpy as np
-import plotly.graph_objects as go
-import seaborn as sns
-from plotly.subplots import make_subplots
-
-"""
-
-TODO_doc: This is not in the documentation!
-A module that provides utilities and a class for visualization in BMFIA
-analysis.
+"""Provide utilities and a class for visualization in BMFIA analysis.
 
 It is designed such that the BMFIAVisualization class needs only to be initialized once
 and can then be accessed and modified in the entire project.
@@ -25,6 +9,16 @@ In this context "this" is a pointer to the module object instance itself and can
 Attributes:
     bmfia_visualization_instance (obj): Instance of the BMFIAVisualization class
 """
+
+import os
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+import plotly.graph_objects as go
+import seaborn as sns
+from plotly.subplots import make_subplots
+
 this = sys.modules[__name__]
 this.bmfia_visualization_instance = None
 
@@ -43,7 +37,7 @@ def from_config_create(config, model_name):
     this.bmfia_visualization_instance = BMFIAVisualization.from_config_create(config, model_name)
 
 
-class BMFIAVisualization(object):
+class BMFIAVisualization:
     """TODO_doc: add a one-line explanation.
 
     Visualization class for BMFIA that contains several plotting, storing
@@ -89,7 +83,7 @@ class BMFIAVisualization(object):
         """
         plotting_options = config[model_name].get("plotting_options")
         paths = [
-            Path(plotting_options.get("plotting_dir"), name)
+            os.path.join(plotting_options.get("plotting_dir"), name)
             for name in plotting_options["plot_names"]
         ]
         save_bools = plotting_options.get("save_bool")
@@ -135,7 +129,7 @@ class BMFIAVisualization(object):
         if self.plot_booleans[1] is True:
 
             if samples.shape[1] > 2:
-                RuntimeError(
+                raise RuntimeError(
                     f"At the moment we only support posterior plots up to two dimensions. "
                     f"Your posterior has {samples.shape[1]}-dimensions. Abort ...."
                 )
@@ -228,9 +222,7 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
                     y=z_train[1, :, num_coord].flatten(),
                     z=y_hf_train[:, num_coord].flatten(),
                     mode='markers',
-                    marker=dict(
-                        size=3,
-                    ),
+                    marker={"size": 3},
                 ),
                 row=row,
                 col=col,
@@ -274,11 +266,11 @@ def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
             )
 
             fig.update_layout(
-                scene=dict(
-                    xaxis=dict(title=r'$y_{LF}$'),
-                    yaxis=dict(title=r'$\gamma$'),
-                    zaxis=dict(title=r'$y_{HF}$'),
-                ),
+                scene={
+                    "xaxis": {"title": r'$y_{LF}$'},
+                    "yaxis": {"title": r'$\gamma$'},
+                    "zaxis": {"title": r'$y_{HF}$'},
+                },
                 xaxis_range=[np.min(z_train[0, :, num_coord]), np.max(z_train[0, :, num_coord])],
                 yaxis_range=[np.min(z_train[1, :, num_coord]), np.max(z_train[1, :, num_coord])],
                 scene_aspectmode='cube',

@@ -5,7 +5,7 @@ database:
 method:
   type: optimization
   model_name: model
-  algorithm: {algorithm}
+  algorithm: {{ algorithm }}
   initial_guess: [-3.0, -4.0]
   result_description:
     write_results: true
@@ -14,7 +14,7 @@ model:
   type: simulation_model
   interface_name: interface
 proposal_distribution:
-  distribution: normal
+  type: normal
   mean: 0.0
   covariance: 1.0
 interface:
@@ -22,8 +22,8 @@ interface:
   function: rosenbrock60
 parameters:
   x1:
-    type: random_variable
+    type: free
     dimension: 1
   x2:
-    type: random_variable
+    type: free
     dimension: 1

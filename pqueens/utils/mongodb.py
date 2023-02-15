@@ -92,7 +92,7 @@ def convert_nested_db_dicts_to_lists_or_arrays(db_data):
             try:
                 return convert_db_dict_to_array(db_data)
             except Exception as exception:
-                raise Exception('Container does not contain a valid array.') from exception
+                raise TypeError('Container does not contain a valid array.') from exception
         else:
             udict = {}
             for key, value in db_data.items():
@@ -111,3 +111,18 @@ def convert_nested_db_dicts_to_lists_or_arrays(db_data):
                 ulist.append(value)
 
         return ulist
+
+
+def create_experiment_field_name(driver_name):
+    """Create experiment field name from driver_name.
+
+    Args:
+        driver_name (str): Name of the current driver
+
+    Return:
+        experiment_field_name (str): Name of the experiment field
+                                     in the database where current jobs
+                                     are saved.
+    """
+    experiment_field_name = 'jobs_' + driver_name
+    return experiment_field_name

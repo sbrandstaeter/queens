@@ -18,7 +18,13 @@ bayesian_neural_network:
   subordinate_model_name: truth_model
   subordinate_iterator_name: truth_model_iterator
   eval_fit: null
-  error_measures: [sum_squared, mean_squared, root_mean_squared, sum_abs, mean_abs, abs_max]
+  error_measures:
+    - sum_squared
+    - mean_squared
+    - root_mean_squared
+    - sum_abs
+    - mean_abs
+    - abs_max
 approximation_interface:
   type: approximation_interface
   approximation: bnn_regression
@@ -44,12 +50,10 @@ interface:
   function: branin78_hifi
 parameters:
   x1:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: -5
     upper_bound: 10
   x2:
-    type: random_variable
-    distribution: uniform
+    type: uniform
     lower_bound: 0
     upper_bound: 15

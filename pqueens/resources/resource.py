@@ -27,7 +27,7 @@ def parse_resources_from_configuration(config, driver_name):
         dict: Dictionary with resource objects keyed with resource name
     """
     if "resources" not in config:
-        raise Exception("Resources are not properly specified")
+        raise ValueError("Resources are not properly specified")
 
     resources = {}
     for resource_name, _ in config["resources"].items():
@@ -114,6 +114,14 @@ class Resource:
         if len(self.exp_name) == 0:
             _logger.info("Warning: resource %s has no tasks assigned to it", self.name)
 
+    def _check_job_affiliation(self, job):
+        """Check whether a job belongs to this resource."""
+        if job['resource'] != self.name:
+            raise ValueError(
+                f"This job does not belong to resource: {self.name}.\n"
+                f"It belongs to resource: {job['resource']}"
+            )
+
     def filter_my_jobs(self, jobs):
         """Take a list of jobs and filter those that are on this resource.
 
@@ -144,20 +152,6 @@ class Resource:
 
         return True
 
-    def is_job_alive(self, job):  # TODO this method does not seem to be called
-        """Query if a particular job is alive.
-
-        Args:
-            job (dict): Jobs to query
-
-        Returns:
-            bool: Whether or not job is alive
-        """
-        if job['resource'] != self.name:
-            raise Exception("This job does not belong to me!")
-
-        return self.scheduler.alive(job['proc_id'])
-
     def attempt_dispatch(self, batch, job):
         """Submit a new job using the scheduler of the resource.
 
@@ -168,8 +162,7 @@ class Resource:
         Returns:
             int: Process ID of job
         """
-        if job['resource'] != self.name:
-            raise Exception("This job does not belong to me!")
+        self._check_job_affiliation(job)
 
         process_id = self.scheduler.submit(job['id'], batch)
         if process_id is not None:
@@ -198,9 +191,7 @@ class Resource:
         Returns:
             int: Process ID of job
         """
-        if job['resource'] != self.name:
-            raise Exception("This job does not belong to me!")
-
+        self._check_job_affiliation(job)
         completed, failed = self.scheduler.check_job_completion(job)
 
         return completed, failed
@@ -215,8 +206,7 @@ class Resource:
         Returns:
             int: Process ID of job
         """
-        if job['resource'] != self.name:
-            raise Exception("This job does not belong to me!")
+        self._check_job_affiliation(job)
 
         self.scheduler.submit_data_processor(job['id'], batch)
         _logger.info('Submitted data processor job %d with %s \n', job['id'], self.scheduler_class)

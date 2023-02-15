@@ -115,6 +115,8 @@ jax[cpu]==0.3.16
     # via -r requirements.in
 jaxlib==0.3.15
     # via jax
+jinja2==3.1.2
+    # via -r requirements.in
 joblib==1.1.0
     # via
     #   particles
@@ -134,7 +136,9 @@ llvmlite==0.38.1
 markdown==3.4.1
     # via tensorboard
 markupsafe==2.1.1
-    # via werkzeug
+    # via
+    #   jinja2
+    #   werkzeug
 matplotlib==3.5.3
     # via
     #   -r requirements.in

@@ -14,11 +14,11 @@ pre_processing:
   list_geometric_sets: [DSURFACE 1]
   associated_material_numbers_geometric_set: [[10, 11]]
   random_fields:
-  - name: mat_param
-    type: material
-    external_instance: DSURFACE 1
-  input_template: {baci_input}
-  input_template_preprocessed: {baci_input_preprocessed}
+    - name: mat_param
+      type: material
+      external_instance: DSURFACE 1
+  input_template: {{ baci_input }}
+  input_template_preprocessed: {{ baci_input_preprocessed }}
 model:
   type: simulation_model
   interface_name: interface
@@ -27,9 +27,9 @@ interface:
   driver_name: driver
 driver:
   type: mpi
-  input_template: {baci_input_preprocessed}
-  path_to_executable: {baci-release}
-  path_to_postprocessor: {post_drt_monitor}
+  input_template: {{ baci_input_preprocessed }}
+  path_to_executable: {{ baci_release }}
+  path_to_postprocessor: {{ post_drt_monitor }}
   post_process_options: --field=structure --node=81 --start=1
   post_file_prefix: baci_write_random_field_to_dat
   data_processor_name: data_processor_baci

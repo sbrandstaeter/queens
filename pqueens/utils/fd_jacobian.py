@@ -97,15 +97,22 @@ def get_positions(x0, method, rel_step, bounds):
     *scipy._numdiff.approx_derivative*.
 
     Args:
-       x0: TODO_doc
-       method: TODO_doc
-       rel_step: TODO_doc
-       bounds: TODO_doc
+       x0 (np.array): Position or sample at which the Jacobian shall be computed.
+       method (str): Finite difference method that is used to compute the Jacobian.
+       rel_step (float): Finite difference step size.
+       bounds (tuple of array_like, optional): Lower and upper bounds on independent variables.
+                                               Defaults to no bounds.
+                                               Each bound must match the size of *x0* or be a
+                                               scalar, in the latter case the bound will be the
+                                               same for all variables. Use it to limit the range of
+                                               function evaluation.
+
     Returns:
-        positions (list of numpy.ndarray): List containing all positions that
-            shall be evaluated
+        additional_positions (list of numpy.ndarray): List with additional stencil positions that
+                                                      are necessary to calculate the finite
+                                                      difference approximation to the gradient
         delta_positions (list of numpy.ndarray): Delta between positions used
-          to approximate Jacobian
+                                                  to approximate Jacobian
     """
     h, use_one_sided = compute_step_with_bounds(x0, method, rel_step, bounds)
 
@@ -142,14 +149,13 @@ def get_positions(x0, method, rel_step, bounds):
             x2_stack.append(x2)
         dx_stack.append(np.array([dx]))
 
-    positions = [x0]
-    positions.extend(x1_stack)
-    positions.extend(x2_stack)
+    additional_positions = np.atleast_2d(x1_stack)
+    if x2_stack:
+        additional_positions = np.vstack((additional_positions, np.atleast_2d(x2_stack)))
 
-    positions = np.array(positions)
     delta_positions = np.array(dx_stack)
 
-    return positions, delta_positions
+    return additional_positions, delta_positions
 
 
 def fd_jacobian(f0, f_perturbed, dx, use_one_sided, method):
@@ -180,7 +186,7 @@ def fd_jacobian(f0, f_perturbed, dx, use_one_sided, method):
         method (str): Which scheme was used to calculate the perturbed
                       function values and deltas
     Returns:
-        TODO_doc
+        J_transposed.T (np.array): Jacobian of the underlying model at x0.
     """
     num_feval_perturbed = f_perturbed.shape[0]
 

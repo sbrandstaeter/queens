@@ -6,7 +6,9 @@ from setuptools import find_packages, setup
 
 
 def read(fname):
-    """Function to read the README file.
+    """Read text file.
+
+    used e.g. to read the README.md and the requirements.txt files during setup.
 
     Args:
         fname (str): File name to be read
@@ -43,7 +45,7 @@ QUEENS_DESCRIPTION = (
 
 # Packages useful for developing and documentation not needed to run QUEENS
 DEVELOPER_EXTRAS = [
-    'pylint>=2.12',
+    'pylint>=2.16',
     'pylint-exit',
     'isort>=5.0',
     'black==22.3.0',

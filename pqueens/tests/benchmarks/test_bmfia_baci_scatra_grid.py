@@ -1,5 +1,6 @@
 """Benchmark test for BMFIA using a grid iterator."""
 
+import os
 import pickle
 from pathlib import Path
 
@@ -22,7 +23,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
     baci_release = Path(config_dir, "baci-release")
     post_drt_ensight = Path(config_dir, "post_drt_ensight")
 
-    # ----- generate json input file from template -----
+    # ----- generate yaml input file from template -----
     # template for actual smc evaluation
     template = Path(inputdir, 'bmfia_scatra_baci_template_grid_gp_precompiled.yml')
 

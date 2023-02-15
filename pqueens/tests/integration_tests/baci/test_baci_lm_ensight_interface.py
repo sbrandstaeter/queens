@@ -79,7 +79,7 @@ def test_baci_lm_shape(
         'experiment_name': experiment_name,
         'baci_input': third_party_input_file,
         'baci_input_monitor': third_party_input_file_monitor,
-        'baci-release': baci_release,
+        'baci_release': baci_release,
         'post_processor': post_processor,
         'singularity_boolean': json.dumps(singularity_bool),
     }

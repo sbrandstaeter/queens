@@ -1,9 +1,9 @@
-experiment_name: {experiment_name}
+experiment_name: {{ experiment_name }}
 database:
   type: mongodb
   address: localhost:27017
   reset_existing_db: true
-  name: queens_db_{cluster}_remote_test
+  name: queens_db_{{ cluster }}_remote_test
 method:
   type: dummy
   model_name: model
@@ -16,16 +16,16 @@ interface:
   driver_name: driver
 driver:
   type: mpi
-  experiment_dir: {experiment_dir}
-  input_template: {input_template}
-  path_to_executable: {path_to_executable}
-  path_to_postprocessor: {path_to_drt_ensight}
-  post_file_prefix: {experiment_name}
+  experiment_dir: {{ experiment_dir }}
+  input_template: {{ input_template }}
+  path_to_executable: {{ path_to_executable }}
+  path_to_postprocessor: {{ path_to_drt_ensight }}
+  post_file_prefix: {{ experiment_name }}
   post_process_options: ''
   data_processor_name: data_processor_baci
 data_processor_baci:
   type: ensight
-  file_name_identifier: '{cluster}*.case'
+  file_name_identifier: '{{ cluster }}*.case'
   file_options_dict:
     delete_field_data: false
     geometric_target: [experimental_data]
@@ -42,28 +42,26 @@ resources:
     max_concurrent: 2
     max_finished_jobs: 10
 scheduler:
-  type: {scheduler_type}
-  experiment_dir: {experiment_dir}
+  type: {{ scheduler_type }}
+  experiment_dir: {{ experiment_dir }}
   num_procs: 1
   num_procs_post: 1
   cluster:
     script: /lnm/share/donottouch.sh
     walltime: 00:01:00
   remote:
-    connect: {connect_to_resource}
+    connect: {{ connect_to_resource }}
   singularity: true
   singularity_settings:
-    remote_ip: {singularity_remote_ip}
-    cluster_path: {path_to_singularity}
-    cluster_bind: {cluster_bind}
+    remote_ip: {{ singularity_remote_ip }}
+    cluster_path: {{ path_to_singularity }}
+    cluster_bind: {{ cluster_bind }}
 parameters:
   nue:
-    type: random_variable
-    dimension: 1
+    type: uniform
     lower_bound: 0.45
     upper_bound: 0.49
   pressure:
-    type: random_variable
-    dimension: 1
+    type: uniform
     lower_bound: 28000
     upper_bound: 38000

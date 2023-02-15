@@ -26,7 +26,7 @@ def test_write_random_dirichlet_to_dat(
         'baci_input': third_party_input_file,
         'baci_input_preprocessed': dat_file_preprocessed,
         'post_drt_monitor': post_drt_monitor,
-        'baci-release': baci_release,
+        'baci_release': baci_release,
     }
     template = inputdir / "baci_write_random_field_to_dat_template.yml"
     input_file = tmp_path / "baci_write_random_field_to_dat.yml"

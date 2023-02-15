@@ -20,7 +20,12 @@ gp_surrogate_model:
   subordinate_iterator_name: truth_model_iterator
   testing_iterator_name: testing_iterator
   eval_fit: kfold
-  error_measures: [sum_squared, mean_squared, root_mean_squared, sum_abs, mean_abs, abs_max]
+  error_measures:
+    - sum_squared
+    - mean_squared
+    - root_mean_squared
+    - sum_abs, mean_abs
+    - abs_max
   nash_sutcliffe_efficiency: true
   plotting_options:
     plot_booleans: [false, false]
@@ -55,12 +60,10 @@ interface:
   function: branin78_hifi
 parameters:
   x1:
-    type: random_variable
+    type: uniform
     lower_bound: -5
     upper_bound: 10
-    distribution: uniform
   x2:
-    type: random_variable
+    type: uniform
     lower_bound: 0
     upper_bound: 15
-    distribution: uniform

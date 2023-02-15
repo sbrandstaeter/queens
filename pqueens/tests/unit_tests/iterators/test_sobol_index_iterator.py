@@ -19,8 +19,7 @@ class TestSobolIndices(unittest.TestCase):
     def setUp(self):
         """Set up the iterator."""
         uncertain_parameter = {
-            "type": "random_variable",
-            "distribution": "uniform",
+            "type": "uniform",
             "lower_bound": -3.14159265359,
             "upper_bound": 3.14159265359,
         }

@@ -1,5 +1,6 @@
 """TODO_doc."""
 
+import os
 import pickle
 from pathlib import Path
 
@@ -17,7 +18,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
     Integration test for smc with a simple diffusion problem (scatra) in
     BACI.
     """
-    # generate json input file from template
+    # generate yaml input file from template
     third_party_input_file_hf = Path(third_party_inputs, "baci_input_files", "diffusion_coarse.dat")
     third_party_input_file_lf = Path(
         third_party_inputs, "baci_input_files", "diffusion_very_coarse.dat"
@@ -26,7 +27,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
     baci_release = Path(config_dir, "baci-release")
     post_drt_ensight = Path(config_dir, "post_drt_ensight")
 
-    # ----- generate json input file from template -----
+    # ----- generate yaml input file from template -----
     # template for actual smc evaluation
     template = Path(inputdir, 'bmfia_scatra_baci_template_smc_gp_precompiled_copy.yml')
 

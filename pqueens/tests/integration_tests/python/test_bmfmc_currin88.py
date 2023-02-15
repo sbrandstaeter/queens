@@ -59,21 +59,16 @@ def write_LF_MC_data_to_pickle(tmp_path, generate_X_mc, generate_LF_MC_data):
     """TODO_doc."""
     file_name = 'LF_MC_data'
     input_description = {
-        "random_variables": {
-            "x1": {
-                "dimension": 1,
-                "distribution": "uniform",
-                "lower_bound": 0.0,
-                "upper_bound": 1.0,
-            },
-            "x2": {
-                "dimension": 1,
-                "distribution": "uniform",
-                "lower_bound": 0.0,
-                "upper_bound": 1.0,
-            },
+        "x1": {
+            "type": "uniform",
+            "lower_bound": 0.0,
+            "upper_bound": 1.0,
         },
-        "random_fields": None,
+        "x2": {
+            "type": "uniform",
+            "lower_bound": 0.0,
+            "upper_bound": 1.0,
+        },
     }
     data = {
         'input_data': generate_X_mc,

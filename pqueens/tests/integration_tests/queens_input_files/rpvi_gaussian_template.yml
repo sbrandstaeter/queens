@@ -6,9 +6,6 @@ method:
   type: rpvi
   model_name: model
   max_feval: 100000
-  likelihood_gradient_method: {gradient_method}
-  finite_difference_method: 2-point
-  finite_difference_step: 1.0e-05
   n_samples_per_iter: 10
   score_function_bool: false
   variational_distribution:
@@ -29,12 +26,12 @@ method:
     write_results: true
     plotting_options:
       plot_boolean: false
-      plotting_dir: {plot_dir}
+      plotting_dir: {{ plot_dir }}
       plot_name: variational_params_convergence.eps
       save_bool: false
 optimizer:
   type: adam
-  learning_rate: 0.2
+  learning_rate: 0.05
   optimization_type: max
   rel_L1_change_threshold: -1
   rel_L2_change_threshold: -1
@@ -47,21 +44,24 @@ model:
   noise_type: fixed_variance
   noise_value: 1
   experimental_file_name_identifier: "*.csv"
-  experimental_csv_data_base_dir: {experimental_data_path}
+  experimental_csv_data_base_dir: {{ experimental_data_path }}
 forward_model:
   type: simulation_model
   interface_name: interface
+  gradient_handler_name: gradient_handler
+gradient_handler:
+  type: {{ gradient_method }}
+  finite_difference_method: 2-point
+  step_size: 1.0e-05
 interface:
   type: direct_python_interface
   function: patch_for_likelihood
 parameters:
   x1:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 0.0
     covariance: 1.0
   x2:
-    type: random_variable
-    distribution: normal
+    type: normal
     mean: 10.0
     covariance: 100.0
