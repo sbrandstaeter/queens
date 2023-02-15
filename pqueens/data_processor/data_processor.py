@@ -205,13 +205,13 @@ class DataProcessor(metaclass=abc.ABCMeta):
         """Clean-up files in the output directory.
 
         Args:
-            base_dir_file (str): Path of the base directory that
+            base_dir_file (Path): Path of the base directory that
                                  contains the file of interest.
         """
         current_file = None
         try:
             for regex in self.files_to_be_deleted_regex_lst:
-                for file in sorted(Path(base_dir_file).glob(regex)):
+                for file in sorted(base_dir_file.glob(regex)):
                     current_file = file
                     file.unlink()
         except Exception as exception:

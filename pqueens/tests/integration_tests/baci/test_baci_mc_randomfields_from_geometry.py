@@ -15,8 +15,8 @@ def test_geometry_from_dat(
 ):
     """TODO_doc."""
     # generate json input file from template
-    third_party_input_file = Path(
-        third_party_inputs, "baci_input_files", "bending_wall_channel_flow_fsi_lofi.dat"
+    third_party_input_file = (
+        third_party_inputs / "baci_input_files/bending_wall_channel_flow_fsi_lofi.dat"
     )
     dir_dict = {
         'baci_input': third_party_input_file,

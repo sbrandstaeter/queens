@@ -19,7 +19,7 @@ def get_experimental_data(
     Args:
         config (dict): Input json file with problem description
         data_processor_name (str): DataProcessor name
-        base_dir (str): "Path" to base directory containing experimental data
+        base_dir (Path): Path to base directory containing experimental data
         file_name (str): File name of experimental data
         coordinate_labels (lst): List of column-wise coordinate labels in csv files
         time_label (str): Name of the time variable in csv file

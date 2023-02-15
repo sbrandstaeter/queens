@@ -119,7 +119,7 @@ def test_baci_elementary_effects(
     run(input_file, experiment_directory)
 
     result_file_name = experiment_name + ".pickle"
-    result_file = Path(experiment_directory, result_file_name)
+    result_file = experiment_directory / result_file_name
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

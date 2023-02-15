@@ -53,8 +53,8 @@ def test_cluster_baci_data_processor_ensight(
         - No iterator is used to reduce complexity
 
     Args:
-        inputdir (path): Path to the JSON input file
-        tmp_path (path): Temporary directory in which the pytests are run
+        inputdir (Path): Path to the JSON input file
+        tmp_path (Path): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         cluster_testsuite_settings (dict): Collection of cluster specific settings
         baci_cluster_paths: TODO_doc

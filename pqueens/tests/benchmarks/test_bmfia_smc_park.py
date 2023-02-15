@@ -1,6 +1,5 @@
 """Benchmark test for BMFIA with Python test function."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -27,7 +26,7 @@ def test_bmfia_park_hf_smc(
     code.
     """
     # generate yaml input file from template
-    template = Path(inputdir, 'bmfia_smc_park.yml')
+    template = inputdir / 'bmfia_smc_park.yml'
     experimental_data_path = tmp_path
     dir_dict = {'experimental_data_path': experimental_data_path, 'plot_dir': tmp_path}
     input_file = tmp_path / 'smc_mf_park_realization.yml'

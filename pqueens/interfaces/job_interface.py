@@ -27,7 +27,7 @@ class JobInterface(Interface):
         experiment_name (string): Name of experiment.
         db (mongodb): MongoDB to store results and job info.
         polling_time (int): How frequently do we check if jobs are done?
-        output_dir (path): Directory to write output to.
+        output_dir (Path): Directory to write output to.
         batch_number (int): Number of the current simulation batch.
         num_pending (int): Number of Jobs that are currently pending.
         remote (bool): *True* for remote computation.

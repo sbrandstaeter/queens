@@ -33,8 +33,8 @@ def test_cluster_native_baci_elementary_effects(
     """Test for the Elementary Effects Iterator on the clusters with BACI.
 
     Args:
-        inputdir (path): Path to the JSON input file
-        tmp_path (path): Temporary directory in which the pytests are run
+        inputdir (Path): Path to the JSON input file
+        tmp_path (Path): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         baci_cluster_paths_native (dict): Paths to baci native on cluster
         cluster (str): Cluster name
@@ -49,7 +49,7 @@ def test_cluster_native_baci_elementary_effects(
     input_file = tmp_path / f"elementary_effects_{cluster}_invaaa.yml"
 
     baci_input_filename = "invaaa_ee.dat"
-    third_party_input_file_local = Path(third_party_inputs, "baci_input_files", baci_input_filename)
+    third_party_input_file_local = third_party_inputs / f"baci_input_files/{baci_input_filename}"
 
     dir_dict = {
         'experiment_name': str(experiment_name),
