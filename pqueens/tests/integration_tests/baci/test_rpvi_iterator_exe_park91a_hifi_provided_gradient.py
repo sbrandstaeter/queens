@@ -167,6 +167,4 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
 def create_input_file_executable_park91a_hifi_on_grid(tmp_path):
     """Write temporary input file for executable."""
     input_path = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
-    with open(input_path, "w", encoding='utf-8') as input_file:
-        input_file.write("{{ x1 }}\n")
-        input_file.write("{{ x2 }}")
+    input_path.write_text("{{ x1 }}\n{{ x2 }}", encoding="utf-8")
