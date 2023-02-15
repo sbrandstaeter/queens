@@ -22,8 +22,8 @@ class PymcDistributionWrapper(pt.Op):
         logpdf_grad (obj): Wrapper for the gradient function of the log-pdf
     """
 
-    itypes = [pt.dmatrix]  # input type
-    otypes = [pt.dvector]  # output type
+    itypes = [pt.dmatrix]
+    otypes = [pt.dvector]
 
     def __init__(self, logpdf, logpdf_gradients=None):
         """Initzialise the wrapper for the functions.
@@ -96,7 +96,7 @@ def from_config_create_pymc_distribution_dict(parameters, explicit_shape):
     pymc_distribution_list = []
 
     # loop over rvs and create list
-    for name, parameter in parameters.dict.items():
+    for name, parameter in zip(parameters.names, parameters.to_list()):
         pymc_distribution_list.append(
             from_config_create_pymc_distribution(parameter.distribution, name, explicit_shape)
         )
