@@ -18,8 +18,10 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
     BACI.
     """
     # generate yaml input file from template
-    third_party_input_file_hf = third_party_inputs / "baci_input_files/diffusion_coarse.dat"
-    third_party_input_file_lf = third_party_inputs / "baci_input_files/diffusion_very_coarse.dat"
+    third_party_input_file_hf = third_party_inputs / "baci_input_files" / "diffusion_coarse.dat"
+    third_party_input_file_lf = (
+        third_party_inputs / "baci_input_files" / "diffusion_very_coarse.dat"
+    )
 
     baci_release = config_dir / "baci-release"
     post_drt_ensight = config_dir / "post_drt_ensight"
@@ -28,7 +30,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmp_path, third_party_inputs, config_di
     # template for actual smc evaluation
     template = inputdir / 'bmfia_scatra_baci_template_smc_gp_precompiled_copy.yml'
 
-    experimental_data_path = third_party_inputs / "csv_files/scatra_baci"
+    experimental_data_path = third_party_inputs / "csv_files" / "scatra_baci"
     plot_dir = tmp_path
     dir_dict = {
         'experimental_data_path': experimental_data_path,

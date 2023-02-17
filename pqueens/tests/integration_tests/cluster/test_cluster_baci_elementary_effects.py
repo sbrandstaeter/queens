@@ -67,8 +67,8 @@ def test_cluster_baci_elementary_effects(
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
-    local_baci_input_file_template = Path(
-        third_party_inputs, "baci_input_files", baci_input_template_name
+    local_baci_input_file_template = (
+        third_party_inputs / "baci_input_files" / f"{baci_input_template_name}"
     )
     cluster_experiment_dir = experiment_directory(
         experiment_name, remote_connect=connect_to_resource

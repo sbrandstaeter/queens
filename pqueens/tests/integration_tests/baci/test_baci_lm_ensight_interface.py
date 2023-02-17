@@ -67,10 +67,13 @@ def test_baci_lm_shape(
     """
     template = inputdir / "baci_local_shape_lm_template.yml"
     input_file = experiment_directory / "baci_local_shape_lm.yml"
-    third_party_input_file = third_party_inputs / "baci_input_files/lm_tri_fsi_shape_template.dat"
-    third_party_input_file_monitor = (
-        third_party_inputs / "baci_input_files/lm_tri_fsi_shape_E2000_nue03_p.monitor"
+    third_party_input_file = (
+        third_party_inputs / "baci_input_files" / "lm_tri_fsi_shape_template.dat"
     )
+    third_party_input_file_monitor = (
+        third_party_inputs / "baci_input_files" / "lm_tri_fsi_shape_E2000_nue03_p.monitor"
+    )
+
     experiment_name = "OptmizeBaciLM_" + json.dumps(singularity_bool)
 
     baci_release, _, _, post_processor = baci_link_paths
@@ -84,11 +87,10 @@ def test_baci_lm_shape(
         'singularity_boolean': json.dumps(singularity_bool),
     }
 
-    injector.inject(dir_dict, str(template), str(input_file))
+    injector.inject(dir_dict, template, input_file)
     run(input_file, experiment_directory)
 
-    result_file_name = experiment_name + ".csv"
-    result_file = Path(experiment_directory, result_file_name)
+    result_file = experiment_directory / (experiment_name + ".csv")
 
     result_data = pd.read_csv(
         result_file,

@@ -15,7 +15,7 @@ def test_ensight_reader_writer(
 ):
     """TODO_doc."""
     # generate json input file from template
-    third_party_input_file = Path(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
+    third_party_input_file = third_party_inputs / "baci_input_files" / "invaaa_ee.dat"
     baci_release, _, post_drt_ensight, _ = baci_link_paths
     dir_dict = {
         'baci_input': third_party_input_file,

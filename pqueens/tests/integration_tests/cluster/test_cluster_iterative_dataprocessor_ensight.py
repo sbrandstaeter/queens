@@ -55,7 +55,7 @@ def test_cluster_baci_data_processor_ensight(
     Args:
         inputdir (Path): Path to the JSON input file
         tmp_path (Path): Temporary directory in which the pytests are run
-        third_party_inputs (str): Path to the BACI input files
+        third_party_inputs (Path): Path to the BACI input files
         cluster_testsuite_settings (dict): Collection of cluster specific settings
         baci_cluster_paths: TODO_doc
         user (): TODO_doc
@@ -82,8 +82,8 @@ def test_cluster_baci_data_processor_ensight(
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
-    local_baci_input_file_template = Path(
-        third_party_inputs, "baci_input_files", baci_input_template_name
+    local_baci_input_file_template = (
+        third_party_inputs / "baci_input_files" / f"{baci_input_template_name}"
     )
     cluster_experiment_dir = experiment_directory(
         experiment_name, remote_connect=connect_to_resource

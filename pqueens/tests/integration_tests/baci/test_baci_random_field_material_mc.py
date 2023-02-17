@@ -16,7 +16,7 @@ def test_write_random_material_to_dat(
     """TODO_doc."""
     # generate json input file from template
     third_party_input_file = (
-        third_party_inputs / "baci_input_files/coarse_plate_dirichlet_template.dat"
+        third_party_inputs / "baci_input_files" / "coarse_plate_dirichlet_template.dat"
     )
 
     dat_file_preprocessed = tmp_path / "coarse_plate_dirichlet_template_preprocessed.dat"

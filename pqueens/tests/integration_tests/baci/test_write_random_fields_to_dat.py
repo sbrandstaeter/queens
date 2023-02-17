@@ -15,10 +15,9 @@ def test_write_random_dirichlet_to_dat(
 ):
     """TODO_doc."""
     # generate json input file from template
-    third_party_input_file = Path(
-        third_party_inputs, "baci_input_files", "invaaa_ee_fields_template.dat"
+    third_party_input_file = (
+        third_party_inputs / "baci_input_files" / "invaaa_ee_fields_template.dat"
     )
-
     dat_file_preprocessed = tmp_path / "invaaa_ee_fields_template_preprocessed.dat"
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 

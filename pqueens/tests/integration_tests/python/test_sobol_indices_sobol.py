@@ -17,7 +17,7 @@ def test_sobol_indices_sobol(inputdir, tmp_path):
     """
     run(inputdir / 'sobol_indices_sobol.yml', tmp_path)
 
-    result_file = str(tmp_path) + '/' + 'xxx.pickle'
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

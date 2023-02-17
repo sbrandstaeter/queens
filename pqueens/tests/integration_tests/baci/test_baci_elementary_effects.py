@@ -102,7 +102,7 @@ def test_baci_elementary_effects(
     """
     template = inputdir / "baci_local_elementary_effects_template.yml"
     input_file = experiment_directory / "elementary_effects_baci_local_invaaa.yml"
-    third_party_input_file = third_party_inputs / "baci_input_files", "invaaa_ee.dat"
+    third_party_input_file = third_party_inputs / "baci_input_files" / "invaaa_ee.dat"
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
@@ -118,23 +118,9 @@ def test_baci_elementary_effects(
     injector.inject(dir_dict, template, input_file)
     run(input_file, experiment_directory)
 
-    result_file_name = experiment_name + ".pickle"
-    result_file = experiment_directory / result_file_name
+    result_file = experiment_directory / (experiment_name + ".pickle")
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
     # test results of SA analysis
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu"], np.array([-1.361395, 0.836351]), rtol=1.0e-3
-    )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star"], np.array([1.361395, 0.836351]), rtol=1.0e-3
-    )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["sigma"], np.array([0.198629, 0.198629]), rtol=1.0e-3
-    )
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["mu_star_conf"], np.array([0.136631, 0.140794]), rtol=1.0e-3
-    )
-    result_file = experiment_directory / result_file_name
     baci_elementary_effects_check_results(result_file)
