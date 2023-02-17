@@ -50,6 +50,9 @@ def global_mock_abs_singularity_image_path(monkeypatch):
     monkeypatch.setattr(
         config_directories, "ABS_SINGULARITY_IMAGE_PATH", mock_abs_singularity_image_path
     )
+    _logger.debug(
+        "Singularity image for the tests: %s", config_directories.ABS_SINGULARITY_IMAGE_PATH
+    )
 
 
 if NAME_OF_HOST in ["master.service", "login.cluster"]:
@@ -83,6 +86,7 @@ def global_mock_local_base_dir(monkeypatch, tmp_path):
 
     monkeypatch.setattr(config_directories, "local_base_directory", mock_local_base_dir)
     _logger.debug("Mocking of local base dir was successful.")
+    _logger.debug("local base dir is mocked to: %s", config_directories.local_base_directory())
 
 
 @pytest.fixture(scope="session")
