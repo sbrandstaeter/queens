@@ -179,6 +179,18 @@ class MpiDriver(Driver):
         """
         experiment_name = config['global_settings'].get('experiment_name')
 
+        # manually chosen port:
+        port = 18533
+
+        # this is copied from remote_main.py
+        remote_address = (
+                str(config["scheduler"]["singularity_settings"]["remote_ip"]) + ":" + str(port)
+        )
+        config["database"]["address"] = remote_address
+
+        # Do not delete existing db
+        config["database"]["reset_existing_db"] = False
+
         database = from_config_create_database(config)
         database._connect()
 

@@ -100,8 +100,7 @@ class DaskInterface(Interface):
         self.job_num = 0
 
         # self.cluster = LocalCluster(n_workers=1, threads_per_worker=1)
-        self.cluster = LocalCluster(n_workers=4, threads_per_worker=1)
-        self.client = Client(self.cluster)
+        self.client = Client(address="localhost:44317")
 
         _logger.info(self.client)
         _logger.info(self.client.dashboard_link)
