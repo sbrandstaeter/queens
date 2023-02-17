@@ -181,11 +181,8 @@ class MpiDriver(Driver):
 
         # manually chosen port:
         port = 18533
-
         # this is copied from remote_main.py
-        remote_address = (
-                str(config["scheduler"]["singularity_settings"]["remote_ip"]) + ":" + str(port)
-        )
+        remote_address = "192.168.1.254:" + str(port)
         config["database"]["address"] = remote_address
 
         # Do not delete existing db
