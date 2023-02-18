@@ -16,7 +16,7 @@ from pqueens.utils.logger_settings import setup_basic_logging
 _logger = logging.getLogger(__name__)
 
 
-def run(input_file, output_dir, debug=False):
+def run(input_file, output_dir, debug=False, dask_scheduler_port=None):
     """Do a QUEENS run.
 
     Args:
@@ -27,7 +27,7 @@ def run(input_file, output_dir, debug=False):
     start_time_input = time.time()
 
     # read input and create config
-    config = get_config_dict(input_file, output_dir, debug)
+    config = get_config_dict(input_file, output_dir, debug, dask_scheduler_port)
 
     # set up logging
     setup_basic_logging(
@@ -74,7 +74,7 @@ def run(input_file, output_dir, debug=False):
     _logger.info("")
 
 
-def get_config_dict(input_file, output_dir, debug=False):
+def get_config_dict(input_file, output_dir, debug=False, dask_scheduler_port=None):
     """Create QUEENS run config from input file and output dir.
 
     Args:
@@ -98,6 +98,7 @@ def get_config_dict(input_file, output_dir, debug=False):
     global_settings = {}
     global_settings["output_dir"] = output_dir
     global_settings["experiment_name"] = options["experiment_name"]
+    global_settings["dask_scheduler_port"] = dask_scheduler_port
 
     # remove experiment_name field from options dict
     options["global_settings"] = global_settings
@@ -116,8 +117,8 @@ def main():
 
     if len(args) > 0:
         # do QUEENS run
-        input_file_path, output_dir, debug = get_cli_options(args)
-        run(input_file_path, output_dir, debug)
+        input_file_path, output_dir, debug, dask_scheduler_port = get_cli_options(args)
+        run(input_file_path, output_dir, debug, dask_scheduler_port)
     else:
         # print some infos
         print_greeting_message()

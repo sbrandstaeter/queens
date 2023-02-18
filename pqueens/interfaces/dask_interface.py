@@ -63,6 +63,7 @@ class DaskInterface(Interface):
         time_for_data_copy,
         driver_name,
         scheduler,
+        dask_scheduler_port,
     ):
         """Create JobInterface.
 
@@ -100,7 +101,7 @@ class DaskInterface(Interface):
         self.job_num = 0
 
         # self.cluster = LocalCluster(n_workers=1, threads_per_worker=1)
-        self.client = Client(address="localhost:45206")
+        self.client = Client(address=f"localhost:{dask_scheduler_port}")
 
         _logger.info(self.client)
         _logger.info(self.client.dashboard_link)
@@ -120,6 +121,7 @@ class DaskInterface(Interface):
         """
         # get experiment name and polling time
         experiment_name = config['global_settings']['experiment_name']
+        dask_scheduler_port = config['global_settings']['dask_scheduler_port']
         polling_time = config.get('polling-time', 1.0)
 
         interface_options = config[interface_name]
@@ -193,6 +195,7 @@ class DaskInterface(Interface):
             time_for_data_copy,
             driver_name,
             scheduler,
+            dask_scheduler_port,
         )
 
     def evaluate(self, samples, gradient_bool=False):

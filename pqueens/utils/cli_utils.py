@@ -110,6 +110,8 @@ def get_cli_options(args):
     )
     parser.add_argument('--debug', type=str_to_bool, default=False, help='Debug mode yes/no.')
 
+    parser.add_argument('--dask_scheduler_port', type=int, default=None, help='Port of dask scheduler reached by port-forwarding from localhost to remote HPC cluster')
+
     args = parser.parse_args(args)
 
     if args.input is None:
@@ -121,8 +123,9 @@ def get_cli_options(args):
     debug = args.debug
     output_dir = Path(args.output_dir)
     input_file = Path(args.input)
+    dask_scheduler_port = args.dask_scheduler_port
 
-    return input_file, output_dir, debug
+    return input_file, output_dir, debug, dask_scheduler_port
 
 
 def print_greeting_message():
