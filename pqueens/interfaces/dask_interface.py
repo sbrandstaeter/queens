@@ -161,7 +161,7 @@ class DaskInterface(Interface):
             if (scheduler_type == 'cluster') or (scheduler_type == 'standard' and remote):
                 direct_scheduling = True
 
-        db = DB_module.database
+        db = None
 
         # get waiting time for copying data
         time_for_data_copy = interface_options.get('time_for_data_copy')
@@ -212,113 +212,11 @@ class DaskInterface(Interface):
         self.batch_number += 1
 
         # Main run
-        jobid_for_data_processor = self._manage_jobs(samples)
-
-        # Post run
-        for _ in self.resources:
-            if self.direct_scheduling and jobid_for_data_processor.size != 0:
-                # check tasks to determine completed jobs
-                while not self.all_jobs_finished():
-                    time.sleep(self.polling_time)
-                    self._check_job_completions(jobid_for_data_processor)
-
-                # submit data processor jobs
-                self._manage_data_processor_submission(jobid_for_data_processor)
-
-            # for all other resources:
-            else:
-                # just wait for all jobs to finish
-                while not self.all_jobs_finished():
-                    time.sleep(self.polling_time)
+        jobs = self._manage_jobs(samples)
 
         # get sample and response data
-        output = self.get_output_data(num_samples=samples.shape[0], gradient_bool=gradient_bool)
+        output = self.get_output_data(num_samples=samples.shape[0], gradient_bool=gradient_bool, jobs=jobs)
         return output
-
-    def attempt_dispatch(self, resource, new_job):
-        """Attempt to dispatch job multiple times.
-
-        This is the actual job submission.
-        Submitting jobs to the queue sometimes fails, hence we try multiple times
-        before giving up. We also wait half a second between submit commands.
-
-        Args:
-            resource (resource object): Resource to submit job to
-            new_job (dict):             Dictionary with job
-
-        Returns:
-            int: Process ID of submitted job if successful, None otherwise
-        """
-        process_id = None
-        num_tries = 0
-
-        while process_id is None and num_tries < 5:
-            if num_tries > 0:
-                time.sleep(0.5)
-
-            # Submit the job to the appropriate resource
-            process_id = resource.attempt_dispatch(self.batch_number, new_job)
-            num_tries += 1
-
-        return process_id
-
-    def count_jobs(self, field_filters=None):
-        """Count jobs matching *field_filters* in the database.
-
-        Default: count all jobs in the database.
-
-        Args:
-            field_filters (dict): Criteria that jobs to count have to fulfill
-        Returns:
-            int: Number of jobs matching *field_filters* in the database
-        """
-        total_num_jobs = 0
-        for batch_num in range(1, self.batch_number + 1):
-            num_jobs_in_batch = self.db.count_documents(
-                self.experiment_name, str(batch_num), 'jobs_' + self.driver_name, field_filters
-            )
-            total_num_jobs += num_jobs_in_batch
-
-        return total_num_jobs
-
-    def load_jobs(self, field_filters=None):
-        """Load jobs that match *field_filters* from the jobs database.
-
-        Args:
-            field_filters: TODO_doc
-        Returns:
-            list: List with all jobs that match the criteria
-        """
-        jobs = []
-        for batch_num in range(1, self.batch_number + 1):
-            job = self.db.load(
-                self.experiment_name, str(batch_num), 'jobs_' + self.driver_name, field_filters
-            )
-            if isinstance(job, list):
-                jobs.extend(job)
-            else:
-                if job is not None:
-                    jobs.append(job)
-
-        return jobs
-
-    def save_job(self, job):
-        """Save a job to the job database.
-
-        Args:
-            job (dict): Dictionary with job details
-        """
-        self.db.save(
-            job,
-            self.experiment_name,
-            'jobs_' + self.driver_name,
-            str(self.batch_number),
-            {
-                'id': job['id'],
-                'experiment_dir': str(self.experiment_dir),
-                'experiment_name': self.experiment_name,
-            },
-        )
 
     def create_new_job(self, variables, resource_name, new_id=None):
         """Create new job and save it to database and return it.
@@ -331,12 +229,7 @@ class DaskInterface(Interface):
         Returns:
             job (dict): New job
         """
-        if new_id is None:
-            _logger.info('Created new job')
-            num_jobs = self.count_jobs()
-            job_id = num_jobs + 1
-        else:
-            job_id = int(new_id)
+        job_id = int(new_id)
 
         job = {
             'id': job_id,
@@ -351,34 +244,9 @@ class DaskInterface(Interface):
             'driver_name': self.driver_name,
         }
 
-        self.save_job(job)
-
         return job
 
-    def all_jobs_finished(self):
-        """Determine whether all jobs are finished.
-
-        Finished can either mean: completed or failed.
-
-        Returns:
-            bool: *True* if all jobs in the database have reached completion
-            or failed
-        """
-        num_pending = self.count_jobs({"status": "pending"})
-
-        if (num_pending == self.num_pending) or (self.num_pending is None):
-            pass
-        else:
-            self.num_pending = num_pending
-            self.print_resources_status()
-
-        if num_pending != 0:
-            return False
-
-        self.print_resources_status()
-        return True
-
-    def get_output_data(self, num_samples, gradient_bool):
+    def get_output_data(self, num_samples, gradient_bool, jobs):
         """Extract output data from database and return it.
 
         Args:
@@ -400,31 +268,21 @@ class DaskInterface(Interface):
         output = {}
         mean_values = []
         gradient_values = []
-        if not self.all_jobs_finished():
-            _logger.info('Not all jobs are finished yet, try again later')
-        else:
-            jobs = self.load_jobs(
-                field_filters={
-                    'experiment_dir': str(self.experiment_dir),
-                    'experiment_name': self.experiment_name,
-                }
-            )
+        # Sort job IDs in ascending order to match ordering of samples
+        jobids = [job['id'] for job in jobs]
+        jobids.sort()
 
-            # Sort job IDs in ascending order to match ordering of samples
-            jobids = [job['id'] for job in jobs]
-            jobids.sort()
+        for current_job_id in jobids:
+            current_job = next(job for job in jobs if job['id'] == current_job_id)
+            mean_value = np.squeeze(current_job['result'])
+            gradient_value = np.squeeze(current_job.get('gradient', None))
 
-            for current_job_id in jobids:
-                current_job = next(job for job in jobs if job['id'] == current_job_id)
-                mean_value = np.squeeze(current_job['result'])
-                gradient_value = np.squeeze(current_job.get('gradient', None))
+            if not mean_value.shape:
+                mean_value = np.expand_dims(mean_value, axis=0)
+                gradient_value = np.expand_dims(gradient_value, axis=0)
 
-                if not mean_value.shape:
-                    mean_value = np.expand_dims(mean_value, axis=0)
-                    gradient_value = np.expand_dims(gradient_value, axis=0)
-
-                mean_values.append(mean_value)
-                gradient_values.append(gradient_value)
+            mean_values.append(mean_value)
+            gradient_values.append(gradient_value)
 
         output['mean'] = np.array(mean_values)[-num_samples:]
         if gradient_bool:
@@ -443,57 +301,15 @@ class DaskInterface(Interface):
         Returns:
             jobid_for_data_processor(ndarray): jobids for data-processing
         """
-        num_jobs = self.count_jobs()
+        num_jobs = 0
         if not num_jobs or self.batch_number == 1:
             job_ids_generator = range(1, samples.shape[0] + 1, 1)
         else:
             job_ids_generator = range(num_jobs + 1, num_jobs + samples.shape[0] + 1, 1)
 
-        self._manage_job_submission(samples, job_ids_generator)
+        jobs = self._manage_job_submission(samples, job_ids_generator)
 
-        return np.array(job_ids_generator)
-
-    def _check_job_completions(self, jobid_range):
-        """Check job completion for cluster native workflow."""
-        jobs = self.load_jobs(
-            field_filters={
-                'experiment_dir': str(self.experiment_dir),
-                'experiment_name': self.experiment_name,
-            }
-        )
-        for check_jobid in jobid_range:
-            for resource in self.resources.values():
-                try:
-                    current_check_job = next(job for job in jobs if job['id'] == check_jobid)
-                    if current_check_job['status'] != 'complete':
-                        completed, failed = resource.check_job_completion(current_check_job)
-
-                        # determine if this a failed job and return if yes
-                        if failed:
-                            current_check_job['status'] = 'failed'
-                            return
-
-                        # determine if this a completed job and return if yes
-                        if completed:
-                            current_check_job['status'] = 'complete'
-                            current_check_job['end_time'] = time.time()
-                            computing_time = (
-                                current_check_job['end_time'] - current_check_job['start_time']
-                            )
-                            _logger.info(
-                                'Successfully completed job %d'
-                                'No. of proc.: %d'
-                                'computing time: %E s.\n',
-                                current_check_job["id"],
-                                current_check_job["num_procs"],
-                                computing_time,
-                            )
-
-                            self.save_job(current_check_job)
-                            return
-
-                except (StopIteration, IndexError):
-                    pass
+        return jobs
 
     def _manage_job_submission(self, samples, jobid_range):
         """Iterate over samples and manage submission of jobs.
@@ -504,13 +320,7 @@ class DaskInterface(Interface):
         """
         futures = []
         for jobid in jobid_range:
-            current_job = self.load_jobs(
-                field_filters={
-                    'id': jobid,
-                    'experiment_dir': str(self.experiment_dir),
-                    'experiment_name': self.experiment_name,
-                }
-            )
+            current_job = []
             if len(current_job) == 1:
                 current_job = current_job[0]
             elif not current_job:
@@ -526,75 +336,21 @@ class DaskInterface(Interface):
                 raise ValueError(f"Found more than one job with jobid {jobid} in db.")
 
             current_job['status'] = 'pending'
-            self.save_job(current_job)
 
             futures.append(
                 self.client.submit(
                     self.scheduler.submit,
                     jobid,
                     self.batch_number,
+                    current_job,
                     key=f"job-{jobid}-batch-{self.batch_number}",
                 )
             )
 
         completed_futures = as_completed(futures)
 
+        jobs = []
         for completed_future in completed_futures:
-            completed_future.result()
+            jobs.append(completed_future.result())
 
-    def _manage_data_processor_submission(self, jobid_range):
-        """Manage submission of data processing.
-
-        Args:
-            jobid_range (range):     range of job IDs which are submitted
-        """
-        jobs = self.load_jobs(
-            field_filters={
-                'experiment_dir': str(self.experiment_dir),
-                'experiment_name': self.experiment_name,
-            }
-        )
-        for jobid in jobid_range:
-            for resource in self.resources.values():
-                try:
-                    current_job = next(job for job in jobs if job['id'] == jobid)
-                except (StopIteration, IndexError):
-                    pass
-
-                resource.dispatch_data_processor_job(self.batch_number, current_job)
-
-        self.print_resources_status()
-
-    def print_resources_status(self):
-        """Print out whats going on on the resources."""
-        _logger.info('\n')
-        _logger.info('Resources:      ')
-        _logger.info('NAME            PENDING      COMPLETED    FAILED   ')
-        _logger.info('------------    --------     ---------    ---------')
-        total_pending = 0
-        total_complete = 0
-        total_failed = 0
-
-        # for resource in resources:
-        for resource_name, resource in self.resources.items():
-            pending = self.count_jobs({"status": "pending", "resource": resource_name})
-            complete = self.count_jobs({"status": "complete", "resource": resource_name})
-            failed = self.count_jobs({"status": "failed", "resource": resource_name})
-            total_pending += pending
-            total_complete += complete
-            total_failed += failed
-            _logger.info(
-                '%s    %s    %s    %s',
-                resource.name.ljust(12),
-                str(pending).ljust(9),
-                str(complete).ljust(9),
-                str(failed).ljust(9),
-            )
-        _logger.info(
-            '%s    %s    %s    %s',
-            "*TOTAL*".ljust(12),
-            str(total_pending).ljust(9),
-            str(total_complete).ljust(9),
-            str(total_failed).ljust(9),
-        )
-        _logger.info('\n')
+        return jobs

@@ -78,6 +78,7 @@ class MpiDriver(Driver):
         data_processor,
         gradient_data_processor,
         mpi_cmd,
+        job,
     ):
         """Initialize MpiDriver object.
 
@@ -117,7 +118,7 @@ class MpiDriver(Driver):
             driver_name=driver_name,
             experiment_dir=experiment_dir,
             experiment_name=experiment_name,
-            job=None,
+            job=job,
             job_id=job_id,
             num_procs=num_procs,
             output_directory=output_directory,
@@ -157,6 +158,7 @@ class MpiDriver(Driver):
         driver_name,
         experiment_dir,
         working_dir,
+        job,
         cluster_config=None,
         cluster_options=None,
     ):
@@ -179,8 +181,7 @@ class MpiDriver(Driver):
         """
         experiment_name = config['global_settings'].get('experiment_name')
 
-        database = from_config_create_database(config)
-        database._connect()
+        database = None
 
         # If multiple resources are passed an error is raised in the resources module.
         resource_name = list(config['resources'])[0]
@@ -268,6 +269,7 @@ class MpiDriver(Driver):
             data_processor=data_processor,
             gradient_data_processor=gradient_data_processor,
             mpi_cmd=mpi_cmd,
+            job=job,
         )
 
     def prepare_input_files(self):
@@ -288,7 +290,6 @@ class MpiDriver(Driver):
         else:
             # save potential path set above and number of processes to database
             self.job['num_procs'] = self.num_procs
-            self._save_job_in_db()
 
     def post_processor_job(self):
         """Post-process job."""

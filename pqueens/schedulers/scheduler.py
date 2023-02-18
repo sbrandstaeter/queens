@@ -78,7 +78,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         return print_dict
 
     # ------------------------ AUXILIARY HIGH LEVEL METHODS -----------------------
-    def submit(self, job_id, batch):
+    def submit(self, job_id, batch, job):
         """Function to submit job to scheduling software on a resource.
 
         Args:
@@ -88,14 +88,11 @@ class Scheduler(metaclass=abc.ABCMeta):
         Returns:
             pid (int): Process ID of job
         """
-        if self.singularity:
-            pid = self._submit_singularity(job_id, batch)
-        else:
-            pid = self._submit_driver(job_id, batch)
+        job, pid = self._submit_driver(job_id, batch, job)
 
         self.process_ids[str(job_id)] = pid
 
-        return pid
+        return job
 
     def submit_data_processor(self, job_id, batch):
         """Function to submit data processor job to scheduling software.
