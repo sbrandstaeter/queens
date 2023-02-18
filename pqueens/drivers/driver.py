@@ -94,8 +94,7 @@ class Driver(metaclass=abc.ABCMeta):
 
     def pre_job_run(self):
         """Prepare job run."""
-        if self.job is None:
-            self.initialize_job_in_db()
+        self.initialize_job()
         self.prepare_input_files()
 
     def post_job_run(self):
@@ -112,28 +111,20 @@ class Driver(metaclass=abc.ABCMeta):
             # set result to "no" and load job from database, if there
             # has not been any data-processing before
             self.result = 'no processed data result'
-            if self.job is None:
-                self.job = self._load_job_from_db()
 
-        self.finalize_job_in_db()
+        self.finalize_job()
 
     # ------ Base class methods ------------------------------------------------ #
-    def initialize_job_in_db(self):
+    def initialize_job(self):
         """Initialize job in database."""
-        self.job = self._load_job_from_db()
-
         start_time = time.time()
         self.job['start_time'] = start_time
-        self._save_job_in_db()
 
     def data_processor_job(self):
         """Extract data of interest from post-processed file.
 
         Afterwards save them to the database.
         """
-        # load job from database if existent
-        if self.job is None:
-            self.job = self._load_job_from_db()
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
             self.result = self.data_processor.get_data_from_file(str(self.output_directory))
@@ -144,9 +135,6 @@ class Driver(metaclass=abc.ABCMeta):
 
         Afterwards save them to the database.
         """
-        # load job from database if existent
-        if self.job is None:
-            self.job = self._load_job_from_db()
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
             self.gradient = self.gradient_data_processor.get_data_from_file(
@@ -154,14 +142,13 @@ class Driver(metaclass=abc.ABCMeta):
             )
             _logger.debug("Got gradient: %s", self.gradient)
 
-    def finalize_job_in_db(self):
+    def finalize_job(self):
         """Finalize job in database."""
         if self.result is None:
             self.job['result'] = None
             self.job['gradient'] = None
             self.job['status'] = 'failed'
             self.job['end_time'] = time.time()
-            self._save_job_in_db()
         else:
             self.job['result'] = self.result
             self.job['gradient'] = self.gradient
@@ -175,31 +162,7 @@ class Driver(metaclass=abc.ABCMeta):
                     self.num_procs,
                     computing_time,
                 )
-            self._save_job_in_db()
             _logger.info("Saved job %s to database.", self.job_id)
-
-    def _load_job_from_db(self):
-        """Load job from database."""
-        return self.database.load(
-            self.experiment_name,
-            self.batch,
-            'jobs_' + self.driver_name,
-            {'id': self.job_id},
-        )
-
-    def _save_job_in_db(self):
-        """Save job in database."""
-        self.database.save(
-            self.job,
-            self.experiment_name,
-            'jobs_' + self.driver_name,
-            str(self.batch),
-            {
-                'id': self.job_id,
-                'experiment_dir': str(self.experiment_dir),
-                'experiment_name': self.experiment_name,
-            },
-        )
 
     @abc.abstractmethod
     def prepare_input_files(self):

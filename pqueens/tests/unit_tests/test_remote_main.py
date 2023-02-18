@@ -22,7 +22,7 @@ def port(request):
 def test_exit_conditions_remote_main(mocker, finalize_fail, port):
     """Test if an error is raised."""
     if finalize_fail:
-        error = "Mock finalize_job_in_db error"
+        error = "Mock finalize_job error"
     else:
         error = "Mock singularity error"
 
@@ -58,7 +58,7 @@ def test_exit_conditions_remote_main(mocker, finalize_fail, port):
         def finalize_job_in_db(self):
             """Mock finalization and saving of a job in the DB."""
             if self.raise_error_in_finalize:
-                raise ValueError("Mock finalize_job_in_db error")
+                raise ValueError("Mock finalize_job error")
 
     mocker.patch(
         'pqueens.singularity.remote_main.from_config_create_driver',

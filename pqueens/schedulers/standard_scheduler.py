@@ -177,7 +177,7 @@ class StandardScheduler(Scheduler):
     def post_run(self):
         """Post run routines."""
 
-    def _submit_driver(self, job_id, batch):
+    def _submit_driver(self, job_id, batch, job):
         """Submit job to driver.
 
         Args:
@@ -187,27 +187,15 @@ class StandardScheduler(Scheduler):
         Returns:
             driver_obj.pid (int): Process ID
         """
-        # create driver
-        # TODO we should not create the object here everytime!
-        # TODO instead only update the attributes of the instance.
-        # TODO we should specify the data base sheet as well
-        if self.max_concurrent == 1:
-            # sequential scheduling
-            pid = StandardScheduler.driver_execution_helper_fun(
-                self.config, job_id, batch, self.driver_name, self.experiment_dir
-            )
-        else:
-            # run the drivers in separate threads to enable parallel execution
-            Thread(
-                target=StandardScheduler.driver_execution_helper_fun,
-                args=(self.config, job_id, batch, self.driver_name, self.experiment_dir),
-            ).start()
-            pid = 0
+        # sequential scheduling
+        job, pid = StandardScheduler.driver_execution_helper_fun(
+            self.config, job_id, batch, self.driver_name, self.experiment_dir, job
+        )
 
-        return pid
+        return job, pid
 
     @staticmethod
-    def driver_execution_helper_fun(config, job_id, batch, driver_name, experiment_dir):
+    def driver_execution_helper_fun(config, job_id, batch, driver_name, experiment_dir, job):
         """Helper function to execute driver commands.
 
         Args:
@@ -220,9 +208,10 @@ class StandardScheduler(Scheduler):
         Returns:
             pid (int): Process ID
         """
-        driver_obj = from_config_create_driver(config, job_id, batch, driver_name, experiment_dir)
+        driver_obj = from_config_create_driver(config, job_id, batch, driver_name, experiment_dir, job)
         # run driver and get process ID
         driver_obj.pre_job_run_and_run_job()
         pid = driver_obj.pid
         driver_obj.post_job_run()
-        return pid
+        job = driver_obj.job
+        return job, pid
