@@ -125,8 +125,6 @@ class HMCIterator(PyMCIterator):
             )
         )
 
-        method_options = config[iterator_name]['method_options']
-
         (
             global_settings,
             model,
@@ -140,6 +138,7 @@ class HMCIterator(PyMCIterator):
             progressbar,
         ) = super().get_base_attributes_from_config(config, iterator_name, model)
 
+        method_options = config[iterator_name]
         max_steps = method_options.get('max_steps', 100)
         target_accept = method_options.get('target_accept', 0.65)
         path_length = method_options.get('path_length', 2.0)

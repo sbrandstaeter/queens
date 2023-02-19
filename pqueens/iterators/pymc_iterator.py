@@ -1,4 +1,4 @@
-"""PyMC Iterators base calss."""
+"""PyMC Iterators base class."""
 
 import abc
 import logging
@@ -11,7 +11,7 @@ import pytensor.tensor as pt
 
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
-from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.process_outputs import process_outputs, write_results
 from pqueens.utils.pymc import from_config_create_pymc_distribution_dict
 
 _logger = logging.getLogger(__name__)
@@ -122,9 +122,9 @@ class PyMCIterator(Iterator):
         Returns:
             iterator:PyMC Iterator object
         """
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
         if model is None:
-            model_name = method_options['model']
+            model_name = method_options['model_name']
             model = from_config_create_model(model_name, config)
 
         result_description = method_options.get('result_description', None)
@@ -263,7 +263,7 @@ class PyMCIterator(Iterator):
         swaped_chain = np.swapaxes(self.chains, 0, 1)
 
         # process output takes a dict as input with key 'mean'
-        results = process_ouputs(
+        results = process_outputs(
             {
                 'results': self.results,
                 'mean': swaped_chain,

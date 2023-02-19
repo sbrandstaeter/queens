@@ -112,8 +112,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             )
         )
 
-        method_options = config[iterator_name]['method_options']
-
         (
             global_settings,
             model,
@@ -127,6 +125,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             progressbar,
         ) = super().get_base_attributes_from_config(config, iterator_name, model)
 
+        method_options = config[iterator_name]
         covariance = method_options.get('covariance', None)
         if covariance is not None:
             covariance = np.array(covariance)

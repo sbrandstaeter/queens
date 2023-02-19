@@ -18,10 +18,10 @@ from pqueens.utils import injector
 
 def test_gaussian_mh(inputdir, tmpdir, dummy_data):
     """Test case for mh iterator."""
-    template = os.path.join(inputdir, "mh_gaussian.json")
+    template = os.path.join(inputdir, "mh_gaussian.yml")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = os.path.join(tmpdir, "gaussian_mh_realiz.json")
+    input_file = os.path.join(tmpdir, "gaussian_mh_realiz.yml")
     injector.inject(dir_dict, template, input_file)
     with patch.object(GaussianLikelihood, "evaluate", target_density):
         run(Path(input_file), Path(tmpdir))

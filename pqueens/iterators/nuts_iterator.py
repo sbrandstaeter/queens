@@ -134,8 +134,6 @@ class NUTSIterator(PyMCIterator):
             )
         )
 
-        method_options = config[iterator_name]['method_options']
-
         (
             global_settings,
             model,
@@ -149,6 +147,7 @@ class NUTSIterator(PyMCIterator):
             progressbar,
         ) = super().get_base_attributes_from_config(config, iterator_name, model)
 
+        method_options = config[iterator_name]
         max_treedepth = method_options.get('max_treedepth', 10)
         early_max_treedepth = method_options.get('early_max_treedepth', 8)
         step_size = method_options.get('step_size', 0.25)
