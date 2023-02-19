@@ -24,8 +24,11 @@ class HMCIterator(PyMCIterator):
         max_steps (int): Maximum of leapfrog steps to take in one iteration
         target_accept (float): Target accpetance rate which should be conistent after burn-in
         path_length (float): Maximum length of particle trajectory
+        step_size (float): Step size, scaled by 1/(parameter dimension **0.25)
         scaling (np.array): The inverse mass, or precision matrix
         is_cov (boolean): Setting if the scaling is a mass or covariance matrix
+        init_strategy (str): Strategy to tune mass damping matrix
+        advi_iterations (int): Number of iteration steps of ADVI based init strategies
         current_samples (np.array): Most recent evalutated sample by the likelihood function
         current_gradients (np.array): Gradient of the most recent evaluated sample
     Returns:
@@ -47,8 +50,11 @@ class HMCIterator(PyMCIterator):
         max_steps,
         target_accept,
         path_length,
+        step_size,
         scaling,
         is_cov,
+        init_strategy,
+        advi_iterations,
     ):
         """Initialize HMC iterator.
 
@@ -67,8 +73,11 @@ class HMCIterator(PyMCIterator):
             max_steps (int): Maximum of leapfrog steps to take in one iteration
             target_accept (float): Target accpetance rate which should be conistent after burn-in
             path_length (float): Maximum length of particle trajectory
+            step_size (float): Step size, scaled by 1/(parameter dimension **0.25)
             scaling (np.array): The inverse mass, or precision matrix
             is_cov (boolean): Setting if the scaling is a mass or covariance matrix
+            init_strategy (str): Strategy to tune mass damping matrix
+            advi_iterations (int): Number of iteration steps of ADVI based init strategies
         Returns:
             Initialise pymc iterator
         """
@@ -84,15 +93,14 @@ class HMCIterator(PyMCIterator):
             use_queens_prior,
             progressbar,
         )
-        if self.num_chains > 1:
-            _logger.warning(
-                "More than 1 chain not supported, use only 1 chain to get valid samples!"
-            )
         self.max_steps = max_steps
         self.target_accept = target_accept
         self.path_length = path_length
+        self.step_size = step_size
         self.scaling = scaling
         self.is_cov = is_cov
+        self.init_strategy = init_strategy
+        self.advi_iterations = advi_iterations
         self.current_samples = np.zeros((self.num_chains, self.parameters.num_parameters))
         self.current_gradients = np.zeros((self.num_chains, self.parameters.num_parameters))
 
@@ -132,8 +140,11 @@ class HMCIterator(PyMCIterator):
         max_steps = method_options.get('max_steps', 100)
         target_accept = method_options.get('target_accept', 0.65)
         path_length = method_options.get('path_length', 2.0)
+        step_size = method_options.get('step_size', 0.25)
         scaling = method_options.get('scaling', None)
         is_cov = method_options.get('is_cov', False)
+        init_strategy = method_options.get('init_strategy', 'auto')
+        advi_iterations = method_options.get('advi_iterations', 50000)
 
         return cls(
             global_settings=global_settings,
@@ -149,8 +160,11 @@ class HMCIterator(PyMCIterator):
             max_steps=max_steps,
             target_accept=target_accept,
             path_length=path_length,
+            step_size=step_size,
             scaling=scaling,
             is_cov=is_cov,
+            init_strategy=init_strategy,
+            advi_iterations=advi_iterations,
         )
 
     def eval_log_prior_grad(self, samples):
@@ -192,7 +206,7 @@ class HMCIterator(PyMCIterator):
         # pylint: disable-next=fixme
         # TODO: find better way to do this evaluation
 
-        if np.all(self.current_samples == samples):
+        if np.array_equal(self.current_samples, samples):
             gradient = self.current_gradients
         else:
             _, gradient = self.model.evaluate(samples, gradient_bool=True)
@@ -206,13 +220,34 @@ class HMCIterator(PyMCIterator):
         Returns:
             step (obj): The MCMC Method within the PyMC Model
         """
-        step = pm.HamiltonianMC(
-            target_accept=self.target_accept,
-            max_steps=self.max_steps,
-            path_length=self.path_length,
-            scaling=self.scaling,
-            is_cov=self.is_cov,
-        )
+        # have only scaling or potential as mass matrix
+        if self.scaling is not None:
+            step = pm.HamiltonianMC(
+                target_accept=self.target_accept,
+                max_steps=self.max_steps,
+                path_length=self.path_length,
+                step_scale=self.step_size,
+                scaling=self.scaling,
+                is_cov=self.is_cov,
+            )
+        else:
+            # use NUTS init to get potential for the init
+            self.initvals, step_helper = pm.init_nuts(
+                init=self.init_strategy,
+                chains=1,
+                initvals=self.initvals,
+                progressbar=self.progressbar,
+                n_init=self.advi_iterations,
+            )
+            potentaial = step_helper.potential
+            step = pm.HamiltonianMC(
+                target_accept=self.target_accept,
+                max_steps=self.max_steps,
+                path_length=self.path_length,
+                step_scale=self.step_size,
+                scaling=None,
+                potentaial=potentaial,
+            )
         return step
 
     def init_distribution_wrapper(self):

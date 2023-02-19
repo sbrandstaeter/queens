@@ -5,13 +5,13 @@ algortihm. It implements a random walk.
 """
 
 import logging
-import types
+
 
 import numpy as np
 import pymc as pm
 
 from pqueens.iterators.pymc_iterator import PyMCIterator
-from pqueens.utils.pymc import PymcDistributionWrapper, _metropolis_astep, logp
+from pqueens.utils.pymc import PymcDistributionWrapper
 
 _logger = logging.getLogger(__name__)
 
@@ -88,11 +88,12 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         self.seen_samples = None
         self.seen_likelihoods = None
 
-        if not use_queens_prior and len(self.parameter.to_list()) > 1:
-            _logger.warning("PyMC does element wise updates, using QUEENS prior instead.")
+        if not use_queens_prior and len(self.parameters.to_list()) > 1:
+            _logger.warning(
+                "PyMC does element wise updates if multiple PymC priors are used, "
+                "using QUEENS prior instead."
+            )
             self.use_queens_prior = True
-        if self.num_chains > 1:
-            _logger.warning("Experimental parallel sampling, for safe mode use 1 chain.")
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -170,7 +171,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             (np.array): log-likelihoods
         """
         log_likelihood = np.zeros(shape=(samples.shape[0]))
-        unknown_samples_index = []
         # check if sample was seen in previous acceptance step
         if self.seen_samples is None:
             self.seen_samples = [samples.copy(), samples.copy(), samples.copy()]
@@ -181,18 +181,12 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
                 log_likelihood.copy(),
             ]
         else:
-            for i in range(samples.shape[0]):
-                if np.array_equal(self.seen_samples[0][i], samples[i]):
-                    log_likelihood[i] = self.seen_likelihoods[0][i]
-                elif np.array_equal(self.seen_samples[1][i], samples[i]):
-                    log_likelihood[i] = self.seen_likelihoods[1][i]
-                else:
-                    unknown_samples_index.append(i)
-
-        if len(unknown_samples_index) > 0:
-            log_likelihood[unknown_samples_index] = self.model.evaluate(
-                samples[unknown_samples_index], gradient_bool=False
-            )
+            if np.array_equal(self.seen_samples[0], samples):
+                log_likelihood = self.seen_likelihoods[0]
+            elif np.array_equal(self.seen_samples[1], samples):
+                log_likelihood = self.seen_likelihoods[1]
+            else:
+                log_likelihood = self.model.evaluate(samples, gradient_bool=False)
 
         # update list of last samples and likelihoods
         self.seen_samples.pop(0)
@@ -243,9 +237,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         step.accept_rate_iter = np.zeros(self.num_chains, dtype=float)
         step.accepted_iter = np.zeros(self.num_chains, dtype=bool)
         step.accepted_sum = np.zeros(self.num_chains, dtype=int)
-        if self.num_chains > 1:
-            step.delta_logp = logp(self.pymc_model)
-            step.astep = types.MethodType(_metropolis_astep, step)
+
         return step
 
     def init_distribution_wrapper(self):

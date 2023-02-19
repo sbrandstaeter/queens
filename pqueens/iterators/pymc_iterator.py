@@ -81,8 +81,9 @@ class PyMCIterator(Iterator):
         if num_chains > 1:
             _logger.warning(
                 "Parallel sampling is currently not supported. Multiple chains are not"
-                "indpendent in PyMC"
+                "indpendent in PyMC. Only sampling 1 chain."
             )
+            num_chains = 1
         self.num_chains = num_chains
         self.num_burn_in = num_burn_in
 
@@ -131,7 +132,7 @@ class PyMCIterator(Iterator):
 
         num_chains = method_options.get('num_chains', 1)
 
-        num_burn_in = method_options.get('num_burn_in', 0)
+        num_burn_in = method_options.get('num_burn_in', 100)
 
         discard_tuned_samples = method_options.get('discard_tuned_samples', True)
 
@@ -193,8 +194,7 @@ class PyMCIterator(Iterator):
             def random(*_, **kwargs):
                 if kwargs["size"] == (self.num_chains, self.parameters.num_parameters):
                     return self.parameters.draw_samples(self.num_chains)
-                else:
-                    raise ValueError("Wrong shape of rng values")
+                raise ValueError("Wrong shape of rng values")
 
             name = 'parameters'
             prior = pm.DensityDist(

@@ -30,10 +30,13 @@ class NUTSIterator(PyMCIterator):
 
     Attributes:
         max_treedepth (int): Maximum depth for the tree-search
+        early_max_treedepth (int): Max tree depth of first 200 tuning samples
+        step_size (float): Step size, scaled by 1/(parameter dimension **0.25)
         target_accept (float): Target accpetance rate which should be conistent after burn-in
         scaling (np.array): The inverse mass, or precision matrix
         is_cov (boolean): Setting if the scaling is a mass or covariance matrix
         init_strategy (str): Strategy to tune mass damping matrix
+        advi_iterations (int): Number of iteration steps of ADVI based init strategies
         current_samples (np.array): Most recent evalutated sample by the likelihood function
         current_gradients (np.array): Gradient of the most recent evaluated sample
     Returns:
@@ -53,10 +56,13 @@ class NUTSIterator(PyMCIterator):
         use_queens_prior,
         progressbar,
         max_treedepth,
+        early_max_treedepth,
+        step_size,
         target_accept,
         scaling,
         is_cov,
         init_strategy,
+        advi_iterations,
     ):
         """Initialize NUTS iterator.
 
@@ -73,10 +79,13 @@ class NUTSIterator(PyMCIterator):
             functions
             progressbar (boolean): Setting for printing progress bar while sampling
             max_treedepth (int): Maximum depth for the tree-search
+            early_max_treedepth (int): Max tree depth of first 200 tuning samples
+            step_size (float): Step size, scaled by 1/(parameter dimension **0.25)
             target_accept (float): Target accpetance rate which should be conistent after burn-in
             scaling (np.array): The inverse mass, or precision matrix
             is_cov (boolean): Setting if the scaling is a mass or covariance matrix
             init_strategy (str): Strategy to tune mass damping matrix
+            advi_iterations (int): Number of iteration steps of ADVI based init strategies
         Returns:
             Initialise pymc iterator
         """
@@ -93,15 +102,14 @@ class NUTSIterator(PyMCIterator):
             progressbar,
         )
 
-        if self.num_chains > 1:
-            _logger.warning(
-                "More than 1 chain not supported, use only 1 chain to get valid samples!"
-            )
         self.max_treedepth = max_treedepth
+        self.early_max_treedepth = early_max_treedepth
+        self.step_size = step_size
         self.target_accept = target_accept
         self.scaling = scaling
         self.is_cov = is_cov
         self.init_strategy = init_strategy
+        self.advi_iterations = advi_iterations
         self.current_samples = np.zeros((self.num_chains, self.parameters.num_parameters))
         self.current_gradients = np.zeros((self.num_chains, self.parameters.num_parameters))
 
@@ -139,10 +147,13 @@ class NUTSIterator(PyMCIterator):
         ) = super().get_base_attributes_from_config(config, iterator_name, model)
 
         max_treedepth = method_options.get('max_treedepth', 10)
+        early_max_treedepth = method_options.get('early_max_treedepth', 8)
+        step_size = method_options.get('step_size', 0.25)
         target_accept = method_options.get('target_accept', 0.8)
         scaling = method_options.get('scaling', None)
         is_cov = method_options.get('is_cov', False)
         init_strategy = method_options.get('init_strategy', 'auto')
+        advi_iterations = method_options.get('advi_iterations', '500000')
 
         return cls(
             global_settings=global_settings,
@@ -156,10 +167,13 @@ class NUTSIterator(PyMCIterator):
             use_queens_prior=use_queens_prior,
             progressbar=progressbar,
             max_treedepth=max_treedepth,
+            early_max_treedepth=early_max_treedepth,
+            step_size=step_size,
             target_accept=target_accept,
             scaling=scaling,
             is_cov=is_cov,
             init_strategy=init_strategy,
+            advi_iterations=advi_iterations,
         )
 
     def eval_log_prior_grad(self, samples):
@@ -201,7 +215,7 @@ class NUTSIterator(PyMCIterator):
         # pylint: disable-next=fixme
         # TODO: find better way to do this evaluation
 
-        if np.all(self.current_samples == samples):
+        if np.array_equal(self.current_samples, samples):
             gradient = self.current_gradients
         else:
             _, gradient = self.model.evaluate(samples, gradient_bool=True)
@@ -210,22 +224,33 @@ class NUTSIterator(PyMCIterator):
     def init_mcmc_method(self):
         """Init the PyMC MCMC Model.
 
-        Args:
-
         Returns:
             step (obj): The MCMC Method within the PyMC Model
         """
-        self.initvals, step = pm.init_nuts(
-            init=self.init_strategy,
-            chains=1,
-            random_seed=self.seed,
-            progressbar=self.progressbar,
-            initvals=self.initvals,
-            target_accept=self.target_accept,
-            max_treedepth=self.max_treedepth,
-            scaling=self.scaling,
-            is_cov=self.is_cov,
-        )
+        # can only specify scaling or potential
+        # init strategies are handled by potentials
+        if self.scaling is None:
+            self.initvals, step = pm.init_nuts(
+                init=self.init_strategy,
+                chains=1,
+                random_seed=self.seed,
+                progressbar=self.progressbar,
+                initvals=self.initvals,
+                target_accept=self.target_accept,
+                max_treedepth=self.max_treedepth,
+                early_max_treedepth=self.early_max_treedepth,
+                step_scale=self.step_size,
+                n_init=self.advi_iterations,
+            )
+        else:
+            step = pm.NUTS(
+                target_accept=self.target_accept,
+                max_treedepth=self.max_treedepth,
+                early_max_treedepth=self.early_max_treedepth,
+                step_scale=self.step_size,
+                scaling=self.scaling,
+                is_cov=self.is_cov,
+            )
         return step
 
     def init_distribution_wrapper(self):
