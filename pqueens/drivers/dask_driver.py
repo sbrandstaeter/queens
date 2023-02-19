@@ -48,24 +48,17 @@ class DaskDriver:
         batch,
         driver_name,
         experiment_dir,
-        working_dir,
         initial_working_dir,
         experiment_name,
         job_id,
         num_procs,
-        output_directory,
         singularity,
         database,
         cae_output_streaming,
         cluster_config,
         cluster_options,
-        error_file,
         executable,
-        input_file,
-        log_file,
         num_procs_post,
-        output_file,
-        output_prefix,
         post_file_prefix,
         post_options,
         post_processor,
@@ -82,23 +75,16 @@ class DaskDriver:
             batch (int): current batch of driver calls.
             driver_name (str): name of the driver used for the analysis
             experiment_dir (path): path to QUEENS experiment directory
-            working_dir (path): folder were simulation is run in on compute node
             experiment_name (str): name of QUEENS experiment
             job_id (int):  job ID as provided in database within range [1, n_jobs]
             num_procs (int): number of processors for processing
-            output_directory (path): path to output directory (on remote computing resource)
             singularity (bool): flag for use of a singularity container
             database (obj): database object
             cae_output_streaming (bool): flag for additional streaming to given stream
             cluster_config (ClusterConfig): configuration data of cluster
             cluster_options (dict): cluster options for pbs or slurm
-            error_file (path): path to error file
             executable (path): path to main executable of respective software (e.g. baci)
-            input_file (path): path to input file
-            log_file (path): path to log file
             num_procs_post (int): number of processors for post-processing
-            output_file (path): path to output file
-            output_prefix (str): output prefix
             post_file_prefix (str): unique prefix to name the post-processed files
             post_options (str): options for post-processing
             post_processor (path): path to post_processor
@@ -115,7 +101,6 @@ class DaskDriver:
         self.job = job
         self.job_id = job_id
         self.num_procs = num_procs
-        self.output_directory = output_directory
         self.result = None
         self.gradient = None
         self.database = database
@@ -125,22 +110,26 @@ class DaskDriver:
         self.cae_output_streaming = cae_output_streaming
         self.cluster_config = cluster_config
         self.cluster_options = cluster_options
-        self.error_file = error_file
         self.executable = executable
-        self.input_file = input_file
-        self.log_file = log_file
         self.mpi_cmd = mpi_cmd
         self.num_procs_post = num_procs_post
-        self.output_file = output_file
-        self.output_prefix = output_prefix
         self.pid = None
         self.post_file_prefix = post_file_prefix
         self.post_options = post_options
         self.cluster_type = cluster_type
         self.simulation_input_template = simulation_input_template
         self.singularity = singularity
-        self.working_dir = working_dir
         self.initial_working_dir = initial_working_dir
+
+        (
+            self.output_directory,
+            self.working_dir,
+            self.output_prefix,
+            self.output_file,
+            self.input_file,
+            self.log_file,
+            self.error_file,
+        ) = self.update_directories()
 
     @classmethod
     def from_config_create_driver(
@@ -214,47 +203,21 @@ class DaskDriver:
         else:
             gradient_data_processor = None
 
-        job_dir = experiment_dir / str(job_id)
-        output_directory = job_dir / 'output'
-        output_directory.mkdir(parents=True, exist_ok=True)
-
-        if initial_working_dir is None:
-            working_dir = output_directory
-        else:
-            working_dir = initial_working_dir
-
-        output_prefix = experiment_name + '_' + str(job_id)
-        output_file = output_directory.joinpath(output_prefix)
-
-        file_extension_obj = pathlib.PurePosixPath(simulation_input_template)
-        input_file_str = output_prefix + file_extension_obj.suffix
-        input_file = job_dir.joinpath(input_file_str)
-
-        log_file = output_directory.joinpath(output_prefix + '.log')
-        error_file = output_directory.joinpath(output_prefix + '.err')
-
         return cls(
             batch=batch,
             driver_name=driver_name,
             experiment_dir=experiment_dir,
-            working_dir=working_dir,
             initial_working_dir=initial_working_dir,
             experiment_name=experiment_name,
             job_id=job_id,
             num_procs=num_procs,
-            output_directory=output_directory,
             singularity=singularity,
             database=database,
             cae_output_streaming=cae_output_streaming,
             cluster_config=cluster_config,
             cluster_options=cluster_options,
-            error_file=error_file,
             executable=executable,
-            input_file=input_file,
-            log_file=log_file,
             num_procs_post=num_procs_post,
-            output_file=output_file,
-            output_prefix=output_prefix,
             post_file_prefix=post_file_prefix,
             post_options=post_options,
             post_processor=post_processor,
@@ -272,25 +235,45 @@ class DaskDriver:
         self.batch = batch
         self.job = job
 
-        job_dir = self.experiment_dir / str(job_id)
+        (
+            self.output_directory,
+            self.working_dir,
+            self.output_prefix,
+            self.output_file,
+            self.input_file,
+            self.log_file,
+            self.error_file,
+        ) = self.update_directories()
+
+    def update_directories(self):
+        job_dir = self.experiment_dir / str(self.job_id)
         output_directory = job_dir / 'output'
         output_directory.mkdir(parents=True, exist_ok=True)
-        self.output_directory = output_directory
 
         if self.initial_working_dir is None:
-            self.working_dir = output_directory
+            working_dir = output_directory
         else:
-            self.working_dir = self.initial_working_dir
+            working_dir = self.initial_working_dir
 
-        self.output_prefix = self.experiment_name + '_' + str(job_id)
-        self.output_file = output_directory.joinpath(self.output_prefix)
+        output_prefix = self.experiment_name + '_' + str(self.job_id)
+        output_file = output_directory.joinpath(output_prefix)
 
         file_extension_obj = pathlib.PurePosixPath(self.simulation_input_template)
-        input_file_str = self.output_prefix + file_extension_obj.suffix
-        self.input_file = job_dir.joinpath(input_file_str)
+        input_file_str = output_prefix + file_extension_obj.suffix
+        input_file = job_dir.joinpath(input_file_str)
 
-        self.log_file = output_directory.joinpath(self.output_prefix + '.log')
-        self.error_file = output_directory.joinpath(self.output_prefix + '.err')
+        log_file = output_directory.joinpath(output_prefix + '.log')
+        error_file = output_directory.joinpath(output_prefix + '.err')
+
+        return (
+            output_directory,
+            working_dir,
+            output_prefix,
+            output_file,
+            input_file,
+            log_file,
+            error_file,
+        )
 
     # ------ Core methods ----------------------------------------------------- #
     def pre_job_run_and_run_job(self):
