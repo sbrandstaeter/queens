@@ -291,10 +291,9 @@ class DaskInterface(Interface):
         Returns:
             pid (int): Process ID
         """
-        # run driver and get process ID and result (in job dict)
+        # run driver and get result (in job dict)
         driver_obj.set_job(job_id, batch, job)
         driver_obj.pre_job_run_and_run_job()
-        pid = driver_obj.pid
         driver_obj.post_job_run()
         job = driver_obj.job
-        return job, pid
+        return job
