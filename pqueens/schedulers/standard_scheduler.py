@@ -208,7 +208,9 @@ class StandardScheduler(Scheduler):
         Returns:
             pid (int): Process ID
         """
-        driver_obj = from_config_create_driver(config, job_id, batch, driver_name, experiment_dir, job)
+        driver_obj = from_config_create_driver(
+            config, job_id, batch, driver_name, experiment_dir, job
+        )
         # run driver and get process ID
         driver_obj.pre_job_run_and_run_job()
         pid = driver_obj.pid

@@ -272,6 +272,12 @@ class MpiDriver(Driver):
             job=job,
         )
 
+    def set_job(self, job_id, batch, job):
+        """Set state of job."""
+        self.job_id = job_id
+        self.batch = batch
+        self.job = job
+
     def prepare_input_files(self):
         """Prepare input file on remote machine."""
         inject(self.job['params'], str(self.simulation_input_template), str(self.input_file))

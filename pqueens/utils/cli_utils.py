@@ -110,7 +110,12 @@ def get_cli_options(args):
     )
     parser.add_argument('--debug', type=str_to_bool, default=False, help='Debug mode yes/no.')
 
-    parser.add_argument('--dask_scheduler_port', type=int, default=None, help='Port of dask scheduler reached by port-forwarding from localhost to remote HPC cluster')
+    parser.add_argument(
+        '--dask_scheduler_port',
+        type=int,
+        default=None,
+        help='Port of dask scheduler reached by port-forwarding from localhost to remote HPC cluster',
+    )
 
     args = parser.parse_args(args)
 

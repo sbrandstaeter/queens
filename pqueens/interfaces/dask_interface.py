@@ -67,6 +67,15 @@ class DaskInterface(Interface):
 
         self.config = config
 
+        self.driver_obj = from_config_create_driver(
+            config=self.config,
+            job_id=0,
+            batch=0,
+            driver_name=self.driver_name,
+            experiment_dir=self.experiment_dir,
+            job={},
+        )
+
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
         """Create JobInterface from config dictionary.
@@ -253,6 +262,7 @@ class DaskInterface(Interface):
             futures.append(
                 self.client.submit(
                     self.execute_driver,
+                    self.driver_obj,
                     jobid,
                     self.batch_number,
                     current_job,
@@ -268,10 +278,12 @@ class DaskInterface(Interface):
 
         return jobs
 
-    def execute_driver(self, job_id, batch, job):
+    @staticmethod
+    def execute_driver(driver_obj, job_id, batch, job):
         """Helper function to execute driver commands.
 
         Args:
+            driver_obj (MPIDriver): MPIDriver executing the forward solver
             job_id (int): ID number of the current job
             batch (int): Number of the current batch
             job (dict): contains all data of the job including variable values
@@ -279,10 +291,8 @@ class DaskInterface(Interface):
         Returns:
             pid (int): Process ID
         """
-        driver_obj = from_config_create_driver(
-            self.config, job_id, batch, self.driver_name, self.experiment_dir, job
-        )
         # run driver and get process ID and result (in job dict)
+        driver_obj.set_job(job_id, batch, job)
         driver_obj.pre_job_run_and_run_job()
         pid = driver_obj.pid
         driver_obj.post_job_run()
