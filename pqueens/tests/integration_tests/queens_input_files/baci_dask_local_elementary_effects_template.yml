@@ -25,14 +25,18 @@ model:
 interface:
   type: dask_interface
   driver_name: driver
+  num_workers: 2
+  remote: false
 driver:
-  type: mpi
+  type: dask
   input_template: {{ baci_input }}
   path_to_executable: {{ baci_release }}
   path_to_postprocessor: {{ post_drt_monitor }}
   post_file_prefix: QoI
   post_process_options: --field=structure --node=26 --start=1
   data_processor_name: data_processor_baci
+  num_procs: 2
+  num_procs_post: 1
 data_processor_baci:
   type: csv
   file_name_identifier: QoI*
@@ -45,16 +49,6 @@ data_processor_baci:
       type: by_target_values
       target_values: [0.5]
       tolerance: 0.01
-resources:
-  local_machine:
-    scheduler_name: local_scheduler
-    max_concurrent: 1
-    max_finished_jobs: 1000
-local_scheduler:
-  type: standard
-  singularity: false
-  num_procs: 1
-  num_procs_post: 1
 parameters:
   nue:
     type: uniform
