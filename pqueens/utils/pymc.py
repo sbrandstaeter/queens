@@ -34,19 +34,18 @@ class PymcDistributionWrapper(pt.Op):
         """
         self.logpdf = logpdf
         self.logpdf_gradients = logpdf_gradients
-        # initialise the gradient Op
         self.logpdf_grad = PymcGradientWrapper(self.logpdf_gradients)
 
     # pylint: disable-next=unused-argument
     def perform(self, _node, inputs, outputs):
-        """Evaluate the pdf with this call."""
+        """Call outside pdf function."""
         (sample,) = inputs
 
         value = self.logpdf(sample)
         outputs[0][0] = np.array(value)
 
     def grad(self, inputs, g):
-        """Jacobian product of the gradient."""
+        """Get gradient and multiply with upstream gradient."""
         (sample,) = inputs
         return [g[0] * self.logpdf_grad(sample)]
 
@@ -73,7 +72,7 @@ class PymcGradientWrapper(pt.Op):
 
     # pylint: disable-next=unused-argument
     def perform(self, _node, inputs, outputs):
-        """Evaluate the gradient at the given sample."""
+        """Evaluate the gradient."""
         (sample,) = inputs
         if self.gradient_func is not None:
             grads = self.gradient_func(sample)
