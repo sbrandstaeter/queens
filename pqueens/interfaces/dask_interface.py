@@ -72,6 +72,7 @@ class DaskInterface(Interface):
             batch=0,
             driver_name=self.driver_name,
             experiment_dir=self.experiment_dir,
+            initial_working_dir=None,
             job={},
         )
 
