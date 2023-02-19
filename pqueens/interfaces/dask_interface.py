@@ -3,7 +3,7 @@ import logging
 import time
 
 import numpy as np
-from dask.distributed import Client, as_completed
+from dask.distributed import Client, as_completed, LocalCluster
 
 from pqueens.drivers.dask_driver import DaskDriver
 from pqueens.interfaces.interface import Interface
@@ -40,6 +40,7 @@ class DaskInterface(Interface):
         driver_name,
         config,
         dask_scheduler_port,
+        remote,
     ):
         """Create JobInterface.
 
@@ -48,6 +49,7 @@ class DaskInterface(Interface):
             experiment_name (string):   name of experiment
             experiment_dir (path):          directory to write output to
             driver_name (str):          Name of the associated driver for the current interface
+            remote (bool):              indicate if dask cluster runs locally or remote
         """
         super().__init__(interface_name)
         self.name = interface_name
@@ -57,9 +59,19 @@ class DaskInterface(Interface):
         self.driver_name = driver_name
         self._internal_batch_state = 0
         self.job_num = 0
+        self.remote = remote
 
-        # self.cluster = LocalCluster(n_workers=1, threads_per_worker=1)
-        self.client = Client(address=f"localhost:{dask_scheduler_port}")
+        driver_options = config[driver_name]
+        num_procs = driver_options.get('num_procs', 1)
+        num_procs_post = driver_options.get('num_procs_post', 1)
+        num_threads = max(num_procs, num_procs_post)
+
+        num_workers = config[interface_name].get("num_workers")
+        if self.remote:
+            cluster = LocalCluster(n_workers=num_workers, threads_per_worker=num_threads)
+            self.client = Client(cluster)
+        else:
+            self.client = Client(address=f"localhost:{dask_scheduler_port}")
 
         _logger.info(self.client)
         _logger.info(self.client.dashboard_link)
@@ -96,17 +108,13 @@ class DaskInterface(Interface):
         if driver_name is None:
             raise ValueError("No driver_name specified for the JobInterface.")
 
-        # get various scheduler options
-        # TODO: This is not nice
-        first = list(config['resources'])[0]
-        scheduler_name = config['resources'][first]['scheduler_name']
-        scheduler_options = config[scheduler_name]
-
         # get flag for remote scheduling
-        if scheduler_options.get('remote'):
-            remote_connect = scheduler_options['remote']['connect']
+        if interface_options.get('remote', False):
+            remote = True
+            remote_connect = interface_options['remote']['connect']
         else:
             remote_connect = None
+            remote = False
 
         experiment_dir = experiment_directory(
             experiment_name=experiment_name, remote_connect=remote_connect
@@ -120,6 +128,7 @@ class DaskInterface(Interface):
             driver_name,
             config,
             dask_scheduler_port,
+            remote,
         )
 
     def evaluate(self, samples, gradient_bool=False):

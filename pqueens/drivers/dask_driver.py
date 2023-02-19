@@ -35,11 +35,9 @@ class DaskDriver:
         post_file_prefix (str): Unique prefix to name the post-processed
                                 file.
         post_options (str): Options for post-processing.
-        result (np.array): simulation result to be stored in database
-        cluster_type (str): type of cluster that the jobs are executed on
+        result (np.array): simulation result
         simulation_input_template (str): Path to simulation input template
                                          (e.g. dat-file)
-        singularity (bool): Flag for use of a singularity container.
         experiment_dir (path): path to working directory
     """
 
@@ -52,8 +50,6 @@ class DaskDriver:
         experiment_name,
         job_id,
         num_procs,
-        singularity,
-        database,
         cae_output_streaming,
         cluster_config,
         cluster_options,
@@ -62,7 +58,6 @@ class DaskDriver:
         post_file_prefix,
         post_options,
         post_processor,
-        cluster_type,
         simulation_input_template,
         data_processor,
         gradient_data_processor,
@@ -76,10 +71,8 @@ class DaskDriver:
             driver_name (str): name of the driver used for the analysis
             experiment_dir (path): path to QUEENS experiment directory
             experiment_name (str): name of QUEENS experiment
-            job_id (int):  job ID as provided in database within range [1, n_jobs]
+            job_id (int):  job ID within range [1, n_jobs]
             num_procs (int): number of processors for processing
-            singularity (bool): flag for use of a singularity container
-            database (obj): database object
             cae_output_streaming (bool): flag for additional streaming to given stream
             cluster_config (ClusterConfig): configuration data of cluster
             cluster_options (dict): cluster options for pbs or slurm
@@ -88,7 +81,6 @@ class DaskDriver:
             post_file_prefix (str): unique prefix to name the post-processed files
             post_options (str): options for post-processing
             post_processor (path): path to post_processor
-            cluster_type (str): type of cluster
             simulation_input_template (path): path to simulation input template (e.g. dat-file)
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
@@ -103,7 +95,6 @@ class DaskDriver:
         self.num_procs = num_procs
         self.result = None
         self.gradient = None
-        self.database = database
         self.post_processor = post_processor
         self.gradient_data_processor = gradient_data_processor
         self.data_processor = data_processor
@@ -116,9 +107,7 @@ class DaskDriver:
         self.pid = None
         self.post_file_prefix = post_file_prefix
         self.post_options = post_options
-        self.cluster_type = cluster_type
         self.simulation_input_template = simulation_input_template
-        self.singularity = singularity
         self.initial_working_dir = initial_working_dir
 
         (
@@ -150,7 +139,7 @@ class DaskDriver:
 
         Args:
             config (dict): Dictionary containing configuration from QUEENS input file
-            job_id (int): Job ID as provided in database within range [1, n_jobs]
+            job_id (int): Job ID within range [1, n_jobs]
             batch (int): Job batch number (multiple batches possible)
             driver_name (str): Name of driver instance that should be realized
             initial_working_dir (str): Path to working directory on remote resource
@@ -163,19 +152,9 @@ class DaskDriver:
         """
         experiment_name = config['global_settings'].get('experiment_name')
 
-        database = None
-
-        # If multiple resources are passed an error is raised in the resources module.
-        resource_name = list(config['resources'])[0]
-        scheduler_name = config['resources'][resource_name]['scheduler_name']
-        scheduler_options = config[scheduler_name]
-        num_procs = scheduler_options.get('num_procs', 1)
-        num_procs_post = scheduler_options.get('num_procs_post', 1)
-        singularity = scheduler_options.get('singularity', False)
-
-        cluster_type = scheduler_options.get('cluster_type')
-
         driver_options = config[driver_name]
+        num_procs = driver_options.get('num_procs', 1)
+        num_procs_post = driver_options.get('num_procs_post', 1)
         simulation_input_template = pathlib.Path(driver_options['input_template'])
         executable = pathlib.Path(driver_options['path_to_executable'])
         mpi_cmd = driver_options.get('mpi_cmd', 'mpirun --bind-to none -np')
@@ -211,8 +190,6 @@ class DaskDriver:
             experiment_name=experiment_name,
             job_id=job_id,
             num_procs=num_procs,
-            singularity=singularity,
-            database=database,
             cae_output_streaming=cae_output_streaming,
             cluster_config=cluster_config,
             cluster_options=cluster_options,
@@ -221,7 +198,6 @@ class DaskDriver:
             post_file_prefix=post_file_prefix,
             post_options=post_options,
             post_processor=post_processor,
-            cluster_type=cluster_type,
             simulation_input_template=simulation_input_template,
             data_processor=data_processor,
             gradient_data_processor=gradient_data_processor,
@@ -287,7 +263,7 @@ class DaskDriver:
         self.prepare_input_files()
 
     def post_job_run(self):
-        """Post-process, data processing and finalize job in database."""
+        """Post-process, data processing and finalize job."""
         if self.post_processor:
             self.post_processor_job()
 
@@ -297,7 +273,7 @@ class DaskDriver:
         if self.data_processor:
             self.data_processor_job()
         else:
-            # set result to "no" and load job from database, if there
+            # set result to "no", if there
             # has not been any data-processing before
             self.result = 'no processed data result'
 
@@ -305,25 +281,19 @@ class DaskDriver:
 
     # ------ Base class methods ------------------------------------------------ #
     def initialize_job(self):
-        """Initialize job in database."""
+        """Initialize job."""
         start_time = time.time()
         self.job['start_time'] = start_time
 
     def data_processor_job(self):
-        """Extract data of interest from post-processed file.
-
-        Afterwards save them to the database.
-        """
+        """Extract data of interest from post-processed file."""
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
             self.result = self.data_processor.get_data_from_file(str(self.output_directory))
             _logger.debug("Got result: %s", self.result)
 
     def gradient_data_processor_job(self):
-        """Extract gradient data from post-processed file.
-
-        Afterwards save them to the database.
-        """
+        """Extract gradient data from post-processed file."""
         # only proceed if this job did not fail
         if self.job['status'] != "failed":
             self.gradient = self.gradient_data_processor.get_data_from_file(
@@ -332,7 +302,7 @@ class DaskDriver:
             _logger.debug("Got gradient: %s", self.gradient)
 
     def finalize_job(self):
-        """Finalize job in database."""
+        """Finalize job."""
         if self.result is None:
             self.job['result'] = None
             self.job['gradient'] = None
@@ -351,7 +321,7 @@ class DaskDriver:
                     self.num_procs,
                     computing_time,
                 )
-            _logger.info("Saved job %s to database.", self.job_id)
+            _logger.info("Finalized job %s.", self.job_id)
 
     def prepare_input_files(self):
         """Prepare input file on remote machine."""
@@ -359,7 +329,7 @@ class DaskDriver:
 
     def run_job(self):
         """Run executable."""
-        execute_cmd = self._assemble_execute_cmd_local()
+        execute_cmd = self._assemble_execute_cmd()
 
         _logger.debug("Start executable with command:")
         _logger.debug(execute_cmd)
@@ -379,7 +349,7 @@ class DaskDriver:
             self.result = None
             self.job['status'] = 'failed'
         else:
-            # save potential path set above and number of processes to database
+            # save number of processes used for mpirun
             self.job['num_procs'] = self.num_procs
 
     def post_processor_job(self):
@@ -396,8 +366,8 @@ class DaskDriver:
             raise_error_on_subprocess_failure=True,
         )
 
-    def _assemble_execute_cmd_local(self):
-        """Assemble execute command for local job (native or singularity).
+    def _assemble_execute_cmd(self):
+        """Assemble execute command
 
         Returns:
             execute command
@@ -447,8 +417,6 @@ class DaskDriver:
             "Executable": self.executable,
             "MPI command": self.mpi_cmd,
             "Process ID": self.pid,
-            "Cluster type": self.cluster_type,
-            "Singularity": self.singularity,
             "Post-processor": self.post_processor,
             "Number of procs (main)": self.num_procs,
             "Number of procs (post)": self.num_procs_post,
