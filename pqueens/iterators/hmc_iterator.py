@@ -31,6 +31,7 @@ class HMCIterator(PyMCIterator):
         advi_iterations (int): Number of iteration steps of ADVI based init strategies
         current_samples (np.array): Most recent evalutated sample by the likelihood function
         current_gradients (np.array): Gradient of the most recent evaluated sample
+        current_likelihood (np.array): Most recent evalutated likelihood
     Returns:
         hmc_iterator (obj): Instance of HMC Iterator
     """
@@ -101,8 +102,10 @@ class HMCIterator(PyMCIterator):
         self.is_cov = is_cov
         self.init_strategy = init_strategy
         self.advi_iterations = advi_iterations
-        self.current_samples = np.zeros((self.num_chains, self.parameters.num_parameters))
-        self.current_gradients = np.zeros((self.num_chains, self.parameters.num_parameters))
+
+        self.current_samples = None
+        self.current_gradients = None
+        self.current_likelihood = None
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -187,11 +190,13 @@ class HMCIterator(PyMCIterator):
         Returns:
             (np.array): log-likelihoods
         """
-        self.current_samples = samples
-
-        log_likelihood, gradient = self.model.evaluate(samples, gradient_bool=True)
-
-        self.current_gradients = gradient
+        if np.array_equal(self.current_samples, samples):
+            log_likelihood = self.current_likelihood
+        else:
+            self.current_samples = samples.copy()
+            log_likelihood, gradient = self.model.evaluate(samples, gradient_bool=True)
+            self.current_likelihood = log_likelihood.copy()
+            self.current_gradients = gradient.copy()
         return log_likelihood
 
     def eval_log_likelihood_grad(self, samples):
@@ -232,6 +237,7 @@ class HMCIterator(PyMCIterator):
             )
         else:
             # use NUTS init to get potential for the init
+            _logger.info("Using NUTS initialization to init HMC, ignore next line.")
             self.initvals, step_helper = pm.init_nuts(
                 init=self.init_strategy,
                 chains=1,
