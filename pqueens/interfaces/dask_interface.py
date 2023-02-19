@@ -111,7 +111,7 @@ class DaskInterface(Interface):
         # get flag for remote scheduling
         if interface_options.get('remote', False):
             remote = True
-            remote_connect = interface_options['remote']['connect']
+            remote_connect = interface_options['remote_connect']
         else:
             remote_connect = None
             remote = False
