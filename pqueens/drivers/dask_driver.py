@@ -1,16 +1,13 @@
 """Driver to run an executable with mpi."""
-
 import logging
 import pathlib
+import time
 
 from pqueens.data_processor import from_config_create_data_processor
-from pqueens.database import from_config_create_database
-from pqueens.drivers.driver import Driver
 from pqueens.schedulers.cluster_scheduler import (
     VALID_CLUSTER_CLUSTER_TYPES,
     VALID_PBS_CLUSTER_TYPES,
 )
-from pqueens.utils.cluster_utils import get_cluster_job_id
 from pqueens.utils.injector import inject
 from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.run_subprocess import run_subprocess
@@ -18,13 +15,12 @@ from pqueens.utils.run_subprocess import run_subprocess
 _logger = logging.getLogger(__name__)
 
 
-class MpiDriver(Driver):
+class DaskDriver:
     """Driver to run an executable with mpi.
 
     Attributes:
         cae_output_streaming (bool): Flag for additional streaming to given
                                      stream.
-        cluster_job (bool): *True* if job is executed on a cluster.
         cluster_options (dict): Cluster options for pbs or slurm.
         error_file (path): Path to error file.
         executable (path): Path to main executable of respective software
@@ -73,7 +69,6 @@ class MpiDriver(Driver):
         post_file_prefix,
         post_options,
         post_processor,
-        cluster_job,
         cluster_type,
         simulation_input_template,
         data_processor,
@@ -107,31 +102,27 @@ class MpiDriver(Driver):
             post_file_prefix (str): unique prefix to name the post-processed files
             post_options (str): options for post-processing
             post_processor (path): path to post_processor
-            cluster_job (bool): true if job is execute on cluster
             cluster_type (str): type of cluster
             simulation_input_template (path): path to simulation input template (e.g. dat-file)
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
             mpi_cmd (str): mpi command
         """
-        super().__init__(
-            batch=batch,
-            driver_name=driver_name,
-            experiment_dir=experiment_dir,
-            experiment_name=experiment_name,
-            job=job,
-            job_id=job_id,
-            num_procs=num_procs,
-            output_directory=output_directory,
-            result=None,
-            gradient=None,
-            database=database,
-            post_processor=post_processor,
-            gradient_data_processor=gradient_data_processor,
-            data_processor=data_processor,
-        )
+        self.batch = batch
+        self.driver_name = driver_name
+        self.experiment_dir = experiment_dir
+        self.experiment_name = experiment_name
+        self.job = job
+        self.job_id = job_id
+        self.num_procs = num_procs
+        self.output_directory = output_directory
+        self.result = None
+        self.gradient = None
+        self.database = database
+        self.post_processor = post_processor
+        self.gradient_data_processor = gradient_data_processor
+        self.data_processor = data_processor
         self.cae_output_streaming = cae_output_streaming
-        self.cluster_job = cluster_job
         self.cluster_config = cluster_config
         self.cluster_options = cluster_options
         self.error_file = error_file
@@ -194,7 +185,6 @@ class MpiDriver(Driver):
         singularity = scheduler_options.get('singularity', False)
 
         cluster_type = scheduler_options.get('cluster_type')
-        cluster_job = cluster_type in VALID_CLUSTER_CLUSTER_TYPES
 
         driver_options = config[driver_name]
         simulation_input_template = pathlib.Path(driver_options['input_template'])
@@ -269,7 +259,6 @@ class MpiDriver(Driver):
             post_options=post_options,
             post_processor=post_processor,
             cluster_type=cluster_type,
-            cluster_job=cluster_job,
             simulation_input_template=simulation_input_template,
             data_processor=data_processor,
             gradient_data_processor=gradient_data_processor,
@@ -303,16 +292,104 @@ class MpiDriver(Driver):
         self.log_file = output_directory.joinpath(self.output_prefix + '.log')
         self.error_file = output_directory.joinpath(self.output_prefix + '.err')
 
+    # ------ Core methods ----------------------------------------------------- #
+    def pre_job_run_and_run_job(self):
+        """Prepare and execute job run."""
+        self.pre_job_run()
+        self.run_job()
+
+    def pre_job_run(self):
+        """Prepare job run."""
+        self.initialize_job()
+        self.prepare_input_files()
+
+    def post_job_run(self):
+        """Post-process, data processing and finalize job in database."""
+        if self.post_processor:
+            self.post_processor_job()
+
+        if self.gradient_data_processor:
+            self.gradient_data_processor_job()
+
+        if self.data_processor:
+            self.data_processor_job()
+        else:
+            # set result to "no" and load job from database, if there
+            # has not been any data-processing before
+            self.result = 'no processed data result'
+
+        self.finalize_job()
+
+    # ------ Base class methods ------------------------------------------------ #
+    def initialize_job(self):
+        """Initialize job in database."""
+        start_time = time.time()
+        self.job['start_time'] = start_time
+
+    def data_processor_job(self):
+        """Extract data of interest from post-processed file.
+
+        Afterwards save them to the database.
+        """
+        # only proceed if this job did not fail
+        if self.job['status'] != "failed":
+            self.result = self.data_processor.get_data_from_file(str(self.output_directory))
+            _logger.debug("Got result: %s", self.result)
+
+    def gradient_data_processor_job(self):
+        """Extract gradient data from post-processed file.
+
+        Afterwards save them to the database.
+        """
+        # only proceed if this job did not fail
+        if self.job['status'] != "failed":
+            self.gradient = self.gradient_data_processor.get_data_from_file(
+                str(self.output_directory)
+            )
+            _logger.debug("Got gradient: %s", self.gradient)
+
+    def finalize_job(self):
+        """Finalize job in database."""
+        if self.result is None:
+            self.job['result'] = None
+            self.job['gradient'] = None
+            self.job['status'] = 'failed'
+            self.job['end_time'] = time.time()
+        else:
+            self.job['result'] = self.result
+            self.job['gradient'] = self.gradient
+            self.job['status'] = 'complete'
+            if self.job['start_time']:
+                self.job['end_time'] = time.time()
+                computing_time = self.job['end_time'] - self.job['start_time']
+                _logger.info(
+                    "Successfully completed job %s (No. of proc.: %s, computing time: %s s).\n",
+                    self.job_id,
+                    self.num_procs,
+                    computing_time,
+                )
+            _logger.info("Saved job %s to database.", self.job_id)
+
     def prepare_input_files(self):
         """Prepare input file on remote machine."""
         inject(self.job['params'], str(self.simulation_input_template), str(self.input_file))
 
     def run_job(self):
         """Run executable."""
-        if self.cluster_job:
-            returncode = self._run_job_cluster()
-        else:
-            returncode = self._run_job_local()
+        execute_cmd = self._assemble_execute_cmd_local()
+
+        _logger.debug("Start executable with command:")
+        _logger.debug(execute_cmd)
+        returncode, self.pid, _, _ = run_subprocess(
+            execute_cmd,
+            subprocess_type='simulation',
+            terminate_expr='PROC.*ERROR',
+            loggername=__name__ + f'_{self.job_id}',
+            log_file=str(self.log_file),
+            error_file=str(self.error_file),
+            streaming=self.cae_output_streaming,
+            raise_error_on_subprocess_failure=False,
+        )
 
         # detect failed jobs
         if returncode:
@@ -336,47 +413,6 @@ class MpiDriver(Driver):
             raise_error_on_subprocess_failure=True,
         )
 
-    def _run_job_local(self):
-        """Run executable locally via subprocess."""
-        execute_cmd = self._assemble_execute_cmd_local()
-
-        _logger.debug("Start executable with command:")
-        _logger.debug(execute_cmd)
-        returncode, self.pid, _, _ = run_subprocess(
-            execute_cmd,
-            subprocess_type='simulation',
-            terminate_expr='PROC.*ERROR',
-            loggername=__name__ + f'_{self.job_id}',
-            log_file=str(self.log_file),
-            error_file=str(self.error_file),
-            streaming=self.cae_output_streaming,
-            raise_error_on_subprocess_failure=False,
-        )
-
-        return returncode
-
-    def _run_job_cluster(self):
-        """Run executable on cluster."""
-        if self.singularity:
-            execute_cmd = self._assemble_execute_cmd_cluster_singularity()
-        else:
-            execute_cmd = self._assemble_execute_cmd_cluster_native()
-
-        returncode, self.pid, stdout, stderr = run_subprocess(
-            execute_cmd, subprocess_type='simple', raise_error_on_subprocess_failure=False
-        )
-
-        if not self.singularity:
-            # override the pid with cluster scheduler id
-            # if singularity: pid is handled by ClusterScheduler._submit_singularity
-            self.pid = get_cluster_job_id(self.cluster_type, stdout, VALID_PBS_CLUSTER_TYPES)
-
-        # redirect stdout/stderr output to log and error file
-        self.log_file.write_text(stdout, encoding='utf-8')
-        self.error_file.write_text(stderr, encoding='utf-8')
-
-        return returncode
-
     def _assemble_execute_cmd_local(self):
         """Assemble execute command for local job (native or singularity).
 
@@ -393,44 +429,6 @@ class MpiDriver(Driver):
 
         return ' '.join(command_list)
 
-    def _assemble_execute_cmd_cluster_singularity(self):
-        """Assemble execute command within singularity.
-
-        Returns:
-            execute command within the singularity container
-        """
-        command_list = [
-            'cd',
-            str(self.output_directory),
-            r'&&',
-            str(self.executable),
-            str(self.input_file),
-            str(self.working_dir / self.output_prefix),
-        ]
-
-        return ' '.join(command_list)
-
-    def _assemble_execute_cmd_cluster_native(self):
-        """Assemble execute command for native cluster run.
-
-        Returns:
-            Slurm- or PBS-based jobscript submission command
-        """
-        self.cluster_options['job_name'] = f"{self.experiment_name}_{self.job_id}"
-        self.cluster_options['DESTDIR'] = str(self.output_directory)
-        self.cluster_options['EXE'] = str(self.executable)
-        self.cluster_options['INPUT'] = str(self.input_file)
-        self.cluster_options['OUTPUTPREFIX'] = self.output_prefix
-
-        submission_script_path = (
-            self.experiment_dir / str(self.job_id) / f"{self.experiment_name}_{self.job_id}.sh"
-        )
-        inject(self.cluster_options, self.cluster_config.jobscript_template, submission_script_path)
-
-        command_list = [self.cluster_config.start_cmd, str(submission_script_path)]
-
-        return ' '.join(command_list)
-
     def _assemble_post_processor_cmd(self, output_file, target_file):
         """Assemble command for post-processing.
 
@@ -442,11 +440,7 @@ class MpiDriver(Driver):
         Returns:
             post-processing command
         """
-        if self.cluster_job and self.singularity:
-            # no mpi necessary within the singularity container
-            mpi_wrapper = ''
-        else:
-            mpi_wrapper = self.mpi_cmd + ' ' + str(self.num_procs_post)
+        mpi_wrapper = self.mpi_cmd + ' ' + str(self.num_procs_post)
 
         command_list = [
             mpi_wrapper,
@@ -472,7 +466,6 @@ class MpiDriver(Driver):
             "Process ID": self.pid,
             "Cluster type": self.cluster_type,
             "Singularity": self.singularity,
-            "Cluster job": self.cluster_job,
             "Post-processor": self.post_processor,
             "Number of procs (main)": self.num_procs,
             "Number of procs (post)": self.num_procs_post,

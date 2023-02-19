@@ -5,9 +5,8 @@ import time
 import numpy as np
 from dask.distributed import Client, as_completed
 
-from pqueens.drivers import from_config_create_driver
+from pqueens.drivers.dask_driver import DaskDriver
 from pqueens.interfaces.interface import Interface
-from pqueens.schedulers import from_config_create_scheduler
 from pqueens.utils.config_directories import experiment_directory
 
 _logger = logging.getLogger(__name__)
@@ -67,7 +66,7 @@ class DaskInterface(Interface):
 
         self.config = config
 
-        self.driver_obj = from_config_create_driver(
+        self.driver_obj = DaskDriver.from_config_create_driver(
             config=self.config,
             job_id=0,
             batch=0,
