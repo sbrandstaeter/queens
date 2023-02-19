@@ -6,7 +6,6 @@ algortihm. It implements a random walk.
 
 import logging
 
-
 import numpy as np
 import pymc as pm
 
