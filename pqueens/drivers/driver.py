@@ -87,12 +87,6 @@ class Driver(metaclass=abc.ABCMeta):
         self.data_processor = data_processor
 
     # ------ Core methods ----------------------------------------------------- #
-    def set_job(self, job_id, batch, job):
-        """Set state of job."""
-        self.job_id = job_id
-        self.batch = batch
-        self.job = job
-
     def pre_job_run_and_run_job(self):
         """Prepare and execute job run."""
         self.pre_job_run()

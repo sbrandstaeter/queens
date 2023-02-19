@@ -53,6 +53,7 @@ class MpiDriver(Driver):
         driver_name,
         experiment_dir,
         working_dir,
+        initial_working_dir,
         experiment_name,
         job_id,
         num_procs,
@@ -148,6 +149,7 @@ class MpiDriver(Driver):
         self.simulation_input_template = simulation_input_template
         self.singularity = singularity
         self.working_dir = working_dir
+        self.initial_working_dir = initial_working_dir
 
     @classmethod
     def from_config_create_driver(
@@ -157,7 +159,7 @@ class MpiDriver(Driver):
         batch,
         driver_name,
         experiment_dir,
-        working_dir,
+        initial_working_dir,
         job,
         cluster_config=None,
         cluster_options=None,
@@ -171,7 +173,7 @@ class MpiDriver(Driver):
             job_id (int): Job ID as provided in database within range [1, n_jobs]
             batch (int): Job batch number (multiple batches possible)
             driver_name (str): Name of driver instance that should be realized
-            working_dir (str): Path to working directory on remote resource
+            initial_working_dir (str): Path to working directory on remote resource
             cluster_options (dict): Cluster options for pbs or slurm
             experiment_dir (path): path to QUEENS experiment directory
             cluster_config (ClusterConfig): configuration data of cluster
@@ -226,8 +228,10 @@ class MpiDriver(Driver):
         output_directory = job_dir / 'output'
         output_directory.mkdir(parents=True, exist_ok=True)
 
-        if working_dir is None:
+        if initial_working_dir is None:
             working_dir = output_directory
+        else:
+            working_dir = initial_working_dir
 
         output_prefix = experiment_name + '_' + str(job_id)
         output_file = output_directory.joinpath(output_prefix)
@@ -244,6 +248,7 @@ class MpiDriver(Driver):
             driver_name=driver_name,
             experiment_dir=experiment_dir,
             working_dir=working_dir,
+            initial_working_dir=initial_working_dir,
             experiment_name=experiment_name,
             job_id=job_id,
             num_procs=num_procs,
@@ -271,6 +276,32 @@ class MpiDriver(Driver):
             mpi_cmd=mpi_cmd,
             job=job,
         )
+
+    def set_job(self, job_id, batch, job):
+        """Set state of job."""
+        self.job_id = job_id
+        self.batch = batch
+        self.job = job
+
+        job_dir = self.experiment_dir / str(job_id)
+        output_directory = job_dir / 'output'
+        output_directory.mkdir(parents=True, exist_ok=True)
+        self.output_directory = output_directory
+
+        if self.initial_working_dir is None:
+            self.working_dir = output_directory
+        else:
+            self.working_dir = self.initial_working_dir
+
+        self.output_prefix = self.experiment_name + '_' + str(job_id)
+        self.output_file = output_directory.joinpath(self.output_prefix)
+
+        file_extension_obj = pathlib.PurePosixPath(self.simulation_input_template)
+        input_file_str = self.output_prefix + file_extension_obj.suffix
+        self.input_file = job_dir.joinpath(input_file_str)
+
+        self.log_file = output_directory.joinpath(self.output_prefix + '.log')
+        self.error_file = output_directory.joinpath(self.output_prefix + '.err')
 
     def prepare_input_files(self):
         """Prepare input file on remote machine."""
