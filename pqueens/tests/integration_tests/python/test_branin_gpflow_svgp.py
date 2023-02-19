@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -10,7 +12,7 @@ from pqueens import run
 
 def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
     """Test case for GPflow based SVGP model."""
-    run(Path(os.path.join(inputdir, 'gpflow_svgp_surrogate_branin.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'gpflow_svgp_surrogate_branin.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
@@ -26,6 +28,7 @@ def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
 
 @pytest.fixture()
 def expected_mean():
+    """TODO_doc."""
     mean = np.array(
         [
             [181.62057979],
@@ -45,6 +48,7 @@ def expected_mean():
 
 @pytest.fixture()
 def expected_var():
+    """TODO_doc."""
     var = np.array(
         [
             [4.62061],

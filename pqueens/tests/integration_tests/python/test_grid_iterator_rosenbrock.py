@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -10,7 +12,7 @@ from pqueens import run
 
 def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
     """Integration test for the grid iterator."""
-    run(Path(os.path.join(inputdir, 'grid_iterator_rosenbrock.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'grid_iterator_rosenbrock.yml')), Path(tmpdir))
 
     result_file = os.path.join(tmpdir, 'grid_iterator_rosenbrock.pickle')
     with open(result_file, 'rb') as handle:
@@ -26,6 +28,7 @@ def test_grid_iterator(inputdir, tmpdir, expected_response, expected_grid):
 
 @pytest.fixture()
 def expected_grid():
+    """TODO_doc."""
     input_data = np.array(
         [
             [-2.000, -2.000],
@@ -60,6 +63,7 @@ def expected_grid():
 
 @pytest.fixture()
 def expected_response():
+    """TODO_doc."""
     expected_response = np.atleast_2d(
         np.array(
             [

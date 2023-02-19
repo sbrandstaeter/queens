@@ -1,7 +1,7 @@
 """Elementary Effects iterator module.
 
-Elementary Effects also called Morris method is a global sensitivity
-analysis method which can be used for parameter fixing (ranking).
+Elementary Effects (also called Morris method) is a global sensitivity
+analysis method, which can be used for parameter fixing (ranking).
 """
 
 import logging
@@ -12,6 +12,7 @@ from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
 
 import pqueens.visualization.sa_visualization as qvis
+from pqueens.distributions.uniform import UniformDistribution
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import write_results
@@ -26,21 +27,22 @@ class ElementaryEffectsIterator(Iterator):
     """Iterator to compute Elementary Effects (Morris method).
 
     Attributes:
-        num_trajectories (int): number of trajectories to generate
-        local_optimization (bool):  flag whether to use local optimization according to Ruano et
+        num_trajectories (int): Number of trajectories to generate.
+        local_optimization (bool):  Flag whether to use local optimization according to Ruano et
                                     al. (2012). Speeds up the process tremendously for larger number
-                                    of trajectories and num_levels. If set to ``False`` brute force
+                                    of trajectories and *num_levels*. If set to *False*, brute force
                                     method is used.
-        num_optimal_trajectories (int): number of optimal trajectories to sample (between 2 and N)
-        num_levels (int): number of grid levels
-        seed (int): seed for random number generation
-        confidence_level (float): size of confidence interval
-        num_bootstrap_samples (int): number of bootstrap samples used to compute confidence
-                                     intervals for sensitivity measures
-        samples (np.array): samples at which model is evaluated
-        output (np.array): results at samples
-        salib_problem (dict): dictionary with SALib problem description
-        si (dict): Dictionary with all sensitivity indices
+        num_optimal_trajectories (int): Number of optimal trajectories to sample (between 2 and N).
+        num_levels (int): Number of grid levels.
+        seed (int): Seed for random number generation.
+        confidence_level (float): Size of confidence interval.
+        num_bootstrap_samples (int): Number of bootstrap samples used to compute confidence
+                                     intervals for sensitivity measures.
+        result_description (dict): Dictionary with desired result description.
+        samples (np.array): Samples at which the model is evaluated.
+        output (np.array): Results at samples.
+        salib_problem (dict): Dictionary with SALib problem description.
+        si (dict): Dictionary with all sensitivity indices.
     """
 
     def __init__(
@@ -105,10 +107,10 @@ class ElementaryEffectsIterator(Iterator):
         """
         qvis.from_config_create(config)
 
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
 
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = from_config_create_model(model_name, config)
 
         if "num_traj_chosen" not in method_options:
@@ -131,9 +133,9 @@ class ElementaryEffectsIterator(Iterator):
         """Generate samples for subsequent analysis and update model."""
         bounds = []
         for parameter in self.parameters.dict.values():
-            bounds.append([parameter.lower_bound, parameter.upper_bound])
-            if parameter.distribution is not None:
-                raise ValueError("Parameters must not have probability distributions")
+            if not isinstance(parameter, UniformDistribution) or parameter.dimension != 1:
+                raise ValueError("Parameters must be 1D uniformly distributed.")
+            bounds.append([parameter.lower_bound.squeeze(), parameter.upper_bound.squeeze()])
 
         self.salib_problem = {
             'num_vars': self.parameters.num_parameters,
@@ -187,7 +189,11 @@ class ElementaryEffectsIterator(Iterator):
         return results
 
     def print_results(self, results):
-        """Print results to log."""
+        """Print results to log.
+
+        Args:
+            results: TODO_doc
+        """
         _logger.info(
             "{0:<20} {1:>10} {2:>10} {3:>15} {4:>10}".format(
                 "Parameter", "Mu_Star", "Mu", "Mu_Star_Conf", "Sigma"

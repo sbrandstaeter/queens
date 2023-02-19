@@ -13,14 +13,14 @@ from .data_processor import DataProcessor
 class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
     """Discrepancy measure for boundaries and shapes.
 
-    data_processor class uses full ensight result in vtk to measure distance of
+    *data_processor* class uses full ensight result in vtk to measure distance of
     surface from simulations to experiment.
 
     Attributes:
-        time_tol (float): time tolerance for given reference timepoints
-        visualization_bool (bool): boolean for vtk visualization control
-        displacement_fields (str): String with exact field names for displacement to apply
-        problem_dimension (string): string to determine problems spatial dimension
+        time_tol (float): Time tolerance for given reference time points.
+        visualization_bool (bool): Boolean for vtk visualization control.
+        displacement_fields (str): String with exact field names for displacement to apply.
+        problem_dimension (string): String to determine problems in spatial dimension.
         experimental_ref_data_lst (list): Experimental reference data to which the
                                           discrepancy measure is computed.
     """
@@ -48,7 +48,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
             data_processor_name (str): Name of the data processor.
-            time_tol (float): time tolerance for given reference timepoints
+            time_tol (float): time tolerance for given reference time points
             visualization_bool (bool): boolean for vtk visualization control
             displacement_fields (str): String with exact field names for displacement to apply
             problem_dimension (string): string to determine problems spatial dimension
@@ -72,8 +72,10 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         """Create the class from the problem description.
 
         Args:
-            config (dict): Dictionary with problem description.
+            config (dict): Dictionary with problem description
             data_processor_name (str): Name of the data processor
+        Returns:
+            TODO_doc
         """
         (
             file_name_identifier,
@@ -139,10 +141,10 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
 
         Args:
             path_to_experimental_reference_data (path obj):
-                path to experimental reference data
+                Path to experimental reference data
 
         Returns:
-            monfile_data (list): data from monitor file in numbers
+            monfile_data (list): Data from monitor file in numbers
         """
         with open(path_to_experimental_reference_data) as my_file:
             lines = my_file.readlines()
@@ -217,11 +219,11 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         """Get deformed boundary from vtk.
 
         Create vtk representation of deformed external_geometry_obj and
-        evaluate surface distance measurement for every given timestep from the
+        evaluate surface distance measurement for every given time step from the
         experiment.
 
         Returns:
-            residual (list): full residual from this data_processor class
+            residual (list): Full residual from this data_processor class
         """
         residual_distance_lst = []
         points = vtk.vtkPoints()
@@ -447,14 +449,14 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
     def create_UnstructuredGridFromEnsight_per_time_step(self, time):
         """Read ensight file.
 
-        Afterwards, warpbyvector by displacement of *structure*
+        Afterwards, *warpbyvector* by displacement of *structure*
         result in case files.
 
         Args:
-            time (float): time value for data processing - executed once for every time value
+            time (float): Time value for data processing - executed once for every time value
 
         Returns:
-            grid (vtkUnstructuredGrid): deformed discretization for given time
+            grid (vtkUnstructuredGrid): Deformed discretization for given time
         """
         timestepsinensight = self.raw_file_data.GetTimeSets()
 

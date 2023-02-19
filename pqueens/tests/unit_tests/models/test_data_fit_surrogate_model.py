@@ -12,28 +12,25 @@ from pqueens.models.data_fit_surrogate_model import DataFitSurrogateModel
 
 
 class TestDataFitSurrogateModel(unittest.TestCase):
-    """Unit tests realted to datafit surrogates."""
+    """Unit tests related to datafit surrogates."""
 
     def setUp(self):
         """Set up test."""
         self.dummy_config = {
             "model": {
                 "type": "simulation_model",
-                "interface": "dummy_interface",
-                "subordinate_model": "dummy_model",
+                "interface_name": "dummy_interface",
+                "subordinate_model_name": "dummy_model",
                 "eval_fit": "kfold",
                 "error_measures": ["sum_squared"],
-                "subordinate_iterator": "dummy_iterator",
+                "subordinate_iterator_name": "dummy_iterator",
                 "parameters": "dummy_parameters",
             },
             "dummy_parameters": {
-                "random_variables": {
-                    "youngs": {
-                        "dimension": 1,
-                        "distribution": "normal",
-                        "mean": 1000000,
-                        "covariance": 5000000,
-                    }
+                "youngs": {
+                    "type": "normal",
+                    "mean": 1000000,
+                    "covariance": 5000000,
                 }
             },
         }

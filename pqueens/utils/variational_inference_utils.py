@@ -8,7 +8,11 @@ from numba import njit
 
 
 class VariationalDistribution:
-    """Base class for probability distributions for variational inference."""
+    """Base class for probability distributions for variational inference.
+
+    Attributes:
+        dimension: TODO_doc
+    """
 
     def __init__(self, dimension):
         """Initialize variational distribution."""
@@ -16,21 +20,40 @@ class VariationalDistribution:
 
     @abc.abstractmethod
     def draw(self, variational_params, num_draws=1):
-        """Draw num_draws samples from distribution."""
+        """Draw *num_draws* samples from distribution.
+
+        Args:
+           variational_params: TODO_doc
+           num_draws: TODO_doc
+        """
 
     @abc.abstractmethod
     def logpdf(self, variational_params, x):
-        """Evaluate the natural logarithm of the logpdf at sample."""
+        """Evaluate the natural logarithm of the logpdf at sample.
+
+        Args:
+            variational_params: TODO_doc
+            x: TODO_doc
+        """
 
     @abc.abstractmethod
     def pdf(self, variational_params, x):
-        """Evaluate the probability density function (pdf) at sample."""
+        """Evaluate the probability density function (pdf) at sample.
+
+        Args:
+            variational_params: TODO_doc
+            x: TODO_doc
+        """
 
     @abc.abstractmethod
     def grad_params_logpdf(self, variational_params, x):
-        """Logpdf gradient w.r.t. to the variational parameters.
+        """Logpdf gradient w.r.t. the variational parameters.
 
-        Evaluated at samples x. Also known as the score function.
+        Evaluated at samples  *x*. Also known as the score function.
+
+        Args:
+            variational_params: TODO_doc
+            x: TODO_doc
         """
 
     @abc.abstractmethod
@@ -39,6 +62,10 @@ class VariationalDistribution:
 
         Depends on the variational distribution for the given
         parameterization.
+
+        Args:
+            variational_params: TODO_doc
+            num_samples: TODO_doc
         """
 
     def conduct_reparameterization(self):
@@ -59,18 +86,16 @@ class VariationalDistribution:
 class MeanFieldNormalVariational(VariationalDistribution):
     r"""Mean field multivariate normal distribution.
 
-     Uses the parameterization (as in [1])
-    :math:`parameters=[\mu, \lambda]` where :math:`mu` are the mean values and
-    :math:`\sigma^2=exp(2*\lambda)` the variances allowing for :math:`\lambda` to be
-    unconstrained.
+    Uses the parameterization (as in [1]):  :math:`parameters=[\mu, \lambda]`
+    where :math:`mu` are the mean values and :math:`\sigma^2=exp(2 \lambda)`
+    the variances allowing for :math:`\lambda` to be unconstrained.
 
     References:
         [1]: Kucukelbir, Alp, et al. "Automatic differentiation variational inference."
              The Journal of Machine Learning Research 18.1 (2017): 430-474.
 
     Attributes:
-        dimension (int): Dimension of the random variable
-        num_params (int): Number of parameters used in the parameterization
+        num_params (int): Number of parameters used in the parameterization.
     """
 
     def __init__(self, dimension):
@@ -86,8 +111,8 @@ class MeanFieldNormalVariational(VariationalDistribution):
         r"""Initialize the variational parameters randomly.
 
         Based on
-        :math:`\mu=Uniform(-0.1,0.1)`
-        :math:`\sigma^2=Uniform(0.9,1.1)`
+        :math:`\mu=Uniform(-0.1,0.1)` and
+        :math:`\sigma^2=Uniform(0.9,1.1)`.
 
         Returns:
             variational_params (np.array): Variational parameters
@@ -152,7 +177,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
         return grad_reconstruct_params
 
     def draw(self, variational_params, num_draws=1):
-        """Draw `num_draw` samples from the variational distribution.
+        """Draw *num_draw* samples from the variational distribution.
 
         Args:
             variational_params (np.array): Variational parameters
@@ -175,7 +200,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
             x (np.array): Row-wise samples
 
         Returns:
-            logpdf (np.array): Rowvector of the logpdfs
+            logpdf (np.array): Row vector of the logpdfs
         """
         mean, cov = self.reconstruct_parameters(variational_params)
         x = np.atleast_2d(x)
@@ -187,24 +212,24 @@ class MeanFieldNormalVariational(VariationalDistribution):
         return logpdf.flatten()
 
     def pdf(self, variational_params, x):
-        """Pdf of the variational distribution evaluated at samples `x`.
+        """Pdf of the variational distribution evaluated at samples *x*.
 
-        First computes the logpdf, which numerically more stable for exponential distributions.
+        First computes the logpdf, which is numerically more stable for exponential distributions.
 
         Args:
             variational_params (np.array): Variational parameters
             x (np.array): Row-wise samples
 
         Returns:
-            pdf (np.array): Rowvector of the pdfs
+            pdf (np.array): Row vector of the pdfs
         """
         pdf = np.exp(self.logpdf(variational_params, x))
         return pdf
 
     def grad_params_logpdf(self, variational_params, x):
-        """Logpdf gradient w.r.t. to the variational parameters.
+        """Logpdf gradient w.r.t. the variational parameters.
 
-        Evaluated at samples x. Also known as the score function.
+        Evaluated at samples *x*. Also known as the score function.
 
         Args:
             variational_params (np.array): Variational parameters
@@ -225,19 +250,18 @@ class MeanFieldNormalVariational(VariationalDistribution):
         return score
 
     def grad_logpdf_sample(self, sample_batch, variational_params):
-        """Computes the gradient of the logpdf w.r.t. to the x.
+        """Computes the gradient of the logpdf w.r.t. *x*.
 
         Args:
-            variational_params (np.array): Variational parameters
             sample_batch (np.array): Row-wise samples
+            variational_params (np.array): Variational parameters
 
         Returns:
             gradients_batch (np.array): Gradients of the log-pdf w.r.t. the
-                                        sample x. The first dimension of the
-                                        array corresponds to the different samples.
-                                        The second dimension to different dimensions
-                                        within one sample. (Third dimension is empty
-                                        and just added to keep slices two dimensional.)
+            sample *x*. The first dimension of the array corresponds to
+            the different samples. The second dimension to different dimensions
+            within one sample. (Third dimension is empty and just added to
+            keep slices two dimensional.)
         """
         mean, cov = self.reconstruct_parameters(variational_params)
         gradient_lst = []
@@ -248,13 +272,13 @@ class MeanFieldNormalVariational(VariationalDistribution):
         return gradients_batch
 
     def fisher_information_matrix(self, variational_params):
-        """Compute the Fisher information matrix analytically.
+        r"""Compute the Fisher information matrix analytically.
 
         Args:
             variational_params (np.array): Variational parameters
 
         Returns:
-            FIM (np.array): Matrix (num parameters x num parameters)
+            FIM (np.array): Matrix (num parameters :math:`\times` num parameters)
         """
         fisher_diag = np.exp(-2 * variational_params[self.dimension :])
         fisher_diag = np.hstack((fisher_diag, 2 * np.ones(self.dimension)))
@@ -288,10 +312,10 @@ class MeanFieldNormalVariational(VariationalDistribution):
             n_samples (int): Number of samples for current batch
 
         Returns:
-            samples_mat (np.array): Array of actual samples from the variational
-                                   distribution
-            standard_normal_sample_batch (np.array): Standard normal distributed sample
-                                                     batch
+            * samples_mat (np.array): Array of actual samples from the
+              variational distribution
+            * standard_normal_sample_batch (np.array): Standard normal
+              distributed sample batch
         """
         standard_normal_sample_batch = np.random.normal(0, 1, size=(n_samples, self.dimension))
         mean, cov = self.reconstruct_parameters(variational_params)
@@ -302,30 +326,29 @@ class MeanFieldNormalVariational(VariationalDistribution):
     def jacobi_variational_params_reparameterization(
         self, standard_normal_sample_batch, variational_params
     ):
-        """Calculate the gradient of the reparameterization.
+        r"""Calculate the gradient of the reparameterization.
 
         Args:
             standard_normal_sample_batch (np.array): Standard normal distributed sample
                                                     batch
             variational_params (np.array): Variational parameters
 
+        Returns:
+            jacobi_reparameterization_batch (np.array): Tensor with Jacobi matrices
+            for the reparameterization trick. The first dimension loops over the
+            individual samples, the second dimension over variational parameters and
+            the last dimension over the dimensions within one sample.
+
         Note:
-            We assume that `grad_reconstruct_params` is a row-vector containing the partial
+            We assume that *grad_reconstruct_params* is a row-vector containing the partial
             derivatives of the reconstruction mapping of the actual distribution parameters
             w.r.t. the variational parameters.
 
-            The variable `jacobi_parameters` is the (num_params x dim_sample) Jacobi matrix
-            of the reparameterization w.r.t. the distribution parameters,
+            The variable *jacobi_parameters* is the (num_params :math:`\times` dim_sample)
+            Jacobi matrix of the reparameterization w.r.t. the distribution parameters,
             with differentiating after the distribution
             parameters in different rows and different output dimensions of the sample per
             column.
-
-        Returns:
-            jacobi_reparameterization_batch (np.array): Tensor with Jacobi matrices for the
-                                                  reparameterization trick. The first dimension
-                                                  loops over the individual samples, the second
-                                                  dimension over variational parameters and the last
-                                                  dimension over the dimensions within one sample
         """
         jacobi_reparameterization_lst = []
         grad_reconstruct_params = self._grad_reconstruct_parameters(variational_params)
@@ -342,7 +365,7 @@ class FullRankNormalVariational(VariationalDistribution):
     r"""Fullrank multivariate normal distribution.
 
     Uses the parameterization (as in [1])
-    :math:`parameters=[\mu, \lambda]` where :math:`\mu` are the mean values and
+    :math:`parameters=[\mu, \lambda]`, where :math:`\mu` are the mean values and
     :math:`\lambda` is an array containing the nonzero entries of the lower Cholesky
     decomposition of the covariance matrix :math:`L`:
     :math:`\lambda=[L_{00},L_{10},L_{11},L_{20},L_{21},L_{22}, ...]`.
@@ -353,8 +376,7 @@ class FullRankNormalVariational(VariationalDistribution):
              The Journal of Machine Learning Research 18.1 (2017): 430-474.
 
     Attributes:
-        dimension (int): Dimension of the random variable
-        num_params (int): Number of parameters used in the parameterization
+        num_params (int): Number of parameters used in the parameterization.
     """
 
     def __init__(self, dimension):
@@ -443,7 +465,7 @@ class FullRankNormalVariational(VariationalDistribution):
         return grad_reconstruct_params
 
     def draw(self, variational_params, num_draws=1):
-        """Draw `num_draw` samples from the variational distribution.
+        """Draw *num_draw* samples from the variational distribution.
 
         Args:
             variational_params (np.array): Variational parameters
@@ -457,14 +479,14 @@ class FullRankNormalVariational(VariationalDistribution):
         return sample
 
     def logpdf(self, variational_params, x):
-        """Logpdf evaluated using the at samples `x`.
+        """Logpdf evaluated using the at samples *x*.
 
         Args:
             variational_params (np.array): Variational parameters
             x (np.array): Row-wise samples
 
         Returns:
-            logpdf (np.array): Rowvector of the logpdfs
+            logpdf (np.array): Row vector of the logpdfs
         """
         mean, cov, L = self.reconstruct_parameters(variational_params)
         x = np.atleast_2d(x)
@@ -478,16 +500,16 @@ class FullRankNormalVariational(VariationalDistribution):
         return logpdf.flatten()
 
     def pdf(self, variational_params, x):
-        """Pdf of evaluted at given samples `x`.
+        """Pdf of evaluated at given samples *x*.
 
-        First computes the logpdf, which numerically more stable for exponential distributions.
+        First computes the logpdf, which is numerically more stable for exponential distributions.
 
         Args:
             variational_params (np.array): Variational parameters
             x (np.array): Row-wise samples
 
         Returns:
-            pdf (np.array): Rowvector of the pdfs
+            pdf (np.array): Row vector of the pdfs
         """
         pdf = np.exp(self.logpdf(variational_params, x))
         return pdf
@@ -495,7 +517,7 @@ class FullRankNormalVariational(VariationalDistribution):
     def grad_params_logpdf(self, variational_params, x):
         """Logpdf gradient w.r.t. to the variational parameters.
 
-        Evaluated at samples x. Also known as the score function.
+        Evaluated at samples *x*. Also known as the score function.
 
         Args:
             variational_params (np.array): Variational parameters
@@ -528,19 +550,20 @@ class FullRankNormalVariational(VariationalDistribution):
         return score
 
     def grad_logpdf_sample(self, sample_batch, variational_params):
-        """Computes the gradient of the logpdf w.r.t. to the x.
+        """Computes the gradient of the logpdf w.r.t. to the *x*.
 
         Args:
-            variational_params (np.array): Variational parameters
             sample_batch (np.array): Row-wise samples
+            variational_params (np.array): Variational parameters
+
 
         Returns:
             gradients_batch (np.array): Gradients of the log-pdf w.r.t. the
-                                        sample x. The first dimension of the
-                                        array corresponds to the different samples.
-                                        The second dimension to different dimensions
-                                        within one sample. (Third dimension is empty
-                                        and just added to keep slices two dimensional.)
+            sample *x*. The first dimension of the
+            array corresponds to the different samples.
+            The second dimension to different dimensions
+            within one sample. (Third dimension is empty
+            and just added to keep slices two dimensional.)
         """
         mean, cov, _ = self.reconstruct_parameters(variational_params)
         gradient_lst = []
@@ -621,7 +644,7 @@ class FullRankNormalVariational(VariationalDistribution):
 
         Returns:
             samples_mat (np.array): Array of actual samples from the variational
-                                   distribution
+            distribution
         """
         standard_normal_sample_batch = np.random.normal(0, 1, size=(n_samples, self.dimension))
         mean, _, L = self.reconstruct_parameters(variational_params)
@@ -632,30 +655,30 @@ class FullRankNormalVariational(VariationalDistribution):
     def jacobi_variational_params_reparameterization(
         self, standard_normal_sample_batch, variational_params
     ):
-        """Calculate the gradient of the reparameterization.
+        r"""Calculate the gradient of the reparameterization.
 
         Args:
             standard_normal_sample_batch (np.array): Standard normal distributed sample
                                                     batch
             variational_params (np.array): Variational parameters
 
-        Note:
-            We assume that `grad_reconstruct_params` is a row-vector containing the partial
+        Returns:
+            jacobi_reparameterization_batch (np.array): Tensor with Jacobi matrices for the
+            reparameterization trick. The first dimension
+            loops over the individual samples, the second
+            dimension over variational parameters and the last
+            dimension over the dimensions within one sample
+
+        **Note:**
+            We assume that *grad_reconstruct_params* is a row-vector containing the partial
             derivatives of the reconstruction mapping of the actual distribution parameters
             w.r.t. the variational parameters.
 
-            The variable `jacobi_parameters` is the (num_params x dim_sample) Jacobi matrix
-            of the reparameterization w.r.t. the distribution parameters,
+            The variable *jacobi_parameters* is the (num_params :math:`\times` dim_sample)
+            Jacobi matrix of the reparameterization w.r.t. the distribution parameters,
             with differentiating after the distribution
             parameters in different rows and different output dimensions of the sample per
             column.
-
-        Returns:
-            jacobi_reparameterization_batch (np.array): Tensor with Jacobi matrices for the
-                                                  reparameterization trick. The first dimension
-                                                  loops over the individual samples, the second
-                                                  dimension over variational parameters and the last
-                                                  dimension over the dimensions within one sample
         """
         jacobi_reparameterization_lst = []
         grad_reconstruct_params = self._grad_reconstruct_parameters()
@@ -683,10 +706,9 @@ class MixtureModel(VariationalDistribution):
     This allows the weight parameters :math:`\lambda_{weights}` to be unconstrained.
 
     Attributes:
-        dimension (int): Dimension of the random variable
-        num_params (int): Number of parameters used in the parameterization
-        num_components (int): Number of mixture components
-        base_distribution: Variational distribution object for the components
+        num_components (int): Number of mixture components.
+        base_distribution: Variational distribution object for the components.
+        num_params (int): Number of parameters used in the parameterization.
     """
 
     def __init__(self, base_distribution, dimension, num_components):
@@ -706,13 +728,10 @@ class MixtureModel(VariationalDistribution):
         """Initialize the variational parameters.
 
         The weight parameters are
-        initialized in a random (is said to be beneficial for the optimization)
+        initialized in a random (is said to be beneficial for the optimization),
         but bounded way such that no component has a dominating or extremely
         small weight in the beginning of the optimization. The parameters of the
         base distribution are initialized by the object itself.
-
-        Args:
-            None
 
         Returns:
             variational_params (np.array): Variational parameters
@@ -738,7 +757,7 @@ class MixtureModel(VariationalDistribution):
 
         Returns:
             variational_params_list (list): List of the variational parameters (np.array) of
-                                            the different components.
+              the different components.
             weights (np.array): Weights of the mixture
         """
         num_params_comp = self.base_distribution.num_params
@@ -752,10 +771,10 @@ class MixtureModel(VariationalDistribution):
         return variational_params_list, weights
 
     def draw(self, variational_params, num_draws=1):
-        """Draw `num_draw` samples from the variational distribution.
+        """Draw *num_draw* samples from the variational distribution.
 
         Uses a two step process:
-            1. From a multi-nomial distribution, based on the weights, select a component
+            1. From a multinomial distribution, based on the weights, select a component
             2. Sample from the selected component
 
         Args:
@@ -763,7 +782,7 @@ class MixtureModel(VariationalDistribution):
             num_draw (int): Number of samples to draw
 
         Returns:
-            samples (np.array): Row-wise samples of the variational distribution
+            samples (np.array): Row wise samples of the variational distribution
         """
         parameters_list, weights = self.reconstruct_parameters(variational_params)
         samples = []
@@ -777,20 +796,21 @@ class MixtureModel(VariationalDistribution):
         return samples
 
     def logpdf(self, variational_params, x):
-        """Logpdf evaluated using the variational parameters at samples `x`.
+        """Logpdf evaluated using the variational parameters at samples *x*.
 
         Is a general implementation using the logpdf function of the components. Uses the
         log-sum-exp trick [1] in order to reduce floating point issues.
 
+        References:
         [1] :  David M. Blei, Alp Kucukelbir & Jon D. McAuliffe (2017) Variational Inference: A
-        Review for Statisticians, Journal of the American Statistical Association, 112:518
+               Review for Statisticians, Journal of the American Statistical Association, 112:518
 
         Args:
             variational_params (np.array): Variational parameters
             x (np.array): Row-wise samples
 
         Returns:
-            logpdf (np.array): Rowvector of the logpdfs
+            logpdf (np.array): Row vector of the logpdfs
         """
         parameters_list, weights = self.reconstruct_parameters(variational_params)
         logpdf = []
@@ -813,16 +833,17 @@ class MixtureModel(VariationalDistribution):
             x (np.array): Row-wise samples
 
         Returns:
-            pdf (np.array): Rowvector of the pdfs
+            pdf (np.array): Row vector of the pdfs
         """
         pdf = np.exp(self.logpdf(variational_params, x))
         return pdf
 
     def grad_params_logpdf(self, variational_params, x):
-        """Logpdf gradient w.r.t. to the variational parameters.
+        """Logpdf gradient w.r.t. the variational parameters.
 
-        Evaluated at samples x. Also known as the score function. Is a general implementation using
-        the score functions of the components.
+        Evaluated at samples *x*. Also known as the score function.
+        Is a general implementation using the score functions of
+        the components.
 
         Args:
             variational_params (np.array): Variational parameters
@@ -921,7 +942,7 @@ def create_normal_distribution(dimension, approximation_type):
 
     Args:
         dimension (int): Dimension of latent variable
-        approximation type (str): fullrank or mean field
+        approximation type (str): Full rank or mean field
 
     Returns:
         distribution_obj: Variational distribution object
@@ -943,9 +964,9 @@ def create_mixture_model_distribution(base_distribution, dimension, num_componen
     """Create a mixture model variational distribution.
 
     Args:
+        base_distribution: Variational distribution object
         dimension (int): Dimension of latent variable
         num_components (int): Number of mixture components
-        base_distribution: Variational distribution object
 
     Returns:
         distribution_obj: Variational distribution object

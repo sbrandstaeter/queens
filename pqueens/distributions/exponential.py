@@ -5,15 +5,16 @@ from pqueens.distributions.distributions import Distribution
 
 
 class ExponentialDistribution(Distribution):
-    """Exponential distribution class.
+    r"""Exponential distribution class.
 
     For a multivariate distribution the components are assumed to be independent.
 
     Attributes:
-        rate (np.ndarray): rate parameter(s) of the distribution
-        scale (np.ndarray): scale parameters(s) of the distribution (scale = 1 / rate)
-        pdf_const (float): Constant for the evaluation of the pdf
-        logpdf_const (float): Constant for the evaluation of the log pdf
+        rate (np.ndarray): Rate parameter(s) of the distribution.
+        scale (np.ndarray): Scale parameters(s) of the distribution
+                            (:math:`scale = \frac{1}{rate}`) .
+        pdf_const (float): Constant for the evaluation of the pdf.
+        logpdf_const (float): Constant for the evaluation of the log pdf.
     """
 
     def __init__(self, rate, scale, pdf_const, logpdf_const, mean, covariance, dimension):
@@ -72,7 +73,7 @@ class ExponentialDistribution(Distribution):
             x (np.ndarray): Positions at which the cdf is evaluated
 
         Returns:
-            cdf (np.ndarray): CDF at evaluated positions
+            cdf (np.ndarray): cdf at evaluated positions
         """
         x = x.reshape(-1, self.dimension)
         condition = (x >= 0).all(axis=1)
@@ -106,7 +107,7 @@ class ExponentialDistribution(Distribution):
         return logpdf
 
     def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to x.
+        """Gradient of the log pdf with respect to *x*.
 
         Args:
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated
@@ -126,7 +127,7 @@ class ExponentialDistribution(Distribution):
             x (np.ndarray): Positions at which the pdf is evaluated
 
         Returns:
-            pdf (np.ndarray): pdf at evaluated positions
+            pdf (np.ndarray): Pdf at evaluated positions
         """
         pdf = np.exp(self.logpdf(x))
         return pdf

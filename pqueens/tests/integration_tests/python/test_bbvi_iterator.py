@@ -51,8 +51,8 @@ def test_bbvi_density_match(
             dummy_bbvi_instance._get_gradient_function()
         )
         dummy_bbvi_instance.stochastic_optimizer.current_variational_parameters = (
-            var_params.reshape(-1, 1)  # actual run of the algorithm
-        )
+            var_params.reshape(-1, 1)
+        )  # actual run of the algorithm
         dummy_bbvi_instance.noise_list = [6, 6, 6]
         dummy_bbvi_instance.run()
 
@@ -76,7 +76,7 @@ def test_bbvi_density_match(
 def test_bbvi_iterator_park91a_hifi(
     inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
 ):
-    """Test for the bbvi iterator based on the park91a_hifi function."""
+    """Test for the bbvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
     template = os.path.join(inputdir, "bbvi_park91a_hifi_template.yml")
     experimental_data_path = tmpdir
@@ -140,14 +140,16 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution_obj):
         },
     }
     optimizer_config = {
-        "stochastic_optimizer": "Adam",
+        "type": "adam",
         "learning_rate": 0.01,
         "optimization_type": "max",
         "rel_L1_change_threshold": -1,
         "rel_L2_change_threshold": -1,
         "max_iter": 10000000,
     }
-    stochastic_optimizer = from_config_create_optimizer(optimizer_config)
+    stochastic_optimizer = from_config_create_optimizer(
+        {"optimizer": optimizer_config}, "optimizer"
+    )
 
     # ------ other params ----------------------------------------------------------
     model = namedtuple("model", "normal_distribution")(
@@ -227,14 +229,12 @@ def visualization_obj(tmpdir):
     """Create visualization module."""
     visualization_dict = {
         "method": {
-            "method_options": {
-                "result_description": {
-                    "plotting_options": {
-                        "plotting_dir": tmpdir,
-                        "save_bool": False,
-                        "plot_boolean": False,
-                        "plot_name": "variat_params_convergence.eps",
-                    }
+            "result_description": {
+                "plotting_options": {
+                    "plotting_dir": tmpdir,
+                    "save_bool": False,
+                    "plot_boolean": False,
+                    "plot_name": "variat_params_convergence.eps",
                 }
             }
         }

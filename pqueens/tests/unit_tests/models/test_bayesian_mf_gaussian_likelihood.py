@@ -1,4 +1,4 @@
-"""Unittests for Bayesian multi-fidelity Gaussian likelihood function."""
+"""Unit tests for Bayesian multi-fidelity Gaussian likelihood function."""
 
 import numpy as np
 import pytest
@@ -28,10 +28,8 @@ def global_settings():
 def parameters():
     """Fixture for dummy parameters."""
     params = {
-        "random_variables": {
-            "x1": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
-            "x2": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
-        },
+        "x1": {"type": "uniform", "lower_bound": -2, "upper_bound": 2},
+        "x2": {"type": "uniform", "lower_bound": -2, "upper_bound": 2},
     }
     return params
 
@@ -420,7 +418,7 @@ def test_calculate_likelihood_noise_var(default_mf_likelihood):
 
 
 def test_calculate_rkhs_inner_product(default_mf_likelihood):
-    """Test the calculation of the inner product and the differnt cases."""
+    """Test the calculation of the inner product and the different cases."""
     with pytest.raises(AssertionError):
         diff_vec = np.array([[1], [2]])
         inv_k_mf_mat = np.array([[1], [1]])

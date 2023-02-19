@@ -8,9 +8,9 @@ class Distribution:
     """Base class for probability distributions.
 
     Attributes:
-        mean (np.ndarray): mean of the distribution
-        covariance (np.ndarray): covariance of the distribution
-        dimension (int): dimensionality of the distribution
+        mean (np.ndarray): Mean of the distribution.
+        covariance (np.ndarray): Covariance of the distribution.
+        dimension (int): Dimensionality of the distribution.
     """
 
     def __init__(self, mean, covariance, dimension):
@@ -51,7 +51,7 @@ class Distribution:
 
     @abc.abstractmethod
     def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to x.
+        """Gradient of the log pdf with respect to *x*.
 
         Args:
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated
@@ -74,7 +74,7 @@ class Distribution:
         """
 
     def check_1d(self):
-        """Check if distribution is 1 dimensional."""
+        """Check if distribution is one-dimensional."""
         if self.dimension != 1:
             raise ValueError("Method does not support multivariate distributions!")
 

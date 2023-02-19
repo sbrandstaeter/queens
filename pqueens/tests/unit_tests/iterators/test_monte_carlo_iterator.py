@@ -17,38 +17,34 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
 
 
 class TestMCIterator(unittest.TestCase):
+    """TODO_doc."""
+
     def setUp(self):
+        """TODO_doc."""
         random_variables = {}
-        uncertain_parameters = {}
         uncertain_parameter1 = {}
-        uncertain_parameter1["dimension"] = 1
-        uncertain_parameter1["distribution"] = "uniform"
+        uncertain_parameter1["type"] = "uniform"
         uncertain_parameter1["lower_bound"] = -3.14159265359
         uncertain_parameter1["upper_bound"] = 3.14159265359
 
         uncertain_parameter2 = {}
-        uncertain_parameter2["dimension"] = 1
-        uncertain_parameter2["distribution"] = "normal"
+        uncertain_parameter2["type"] = "normal"
         uncertain_parameter2["mean"] = 0
         uncertain_parameter2["covariance"] = 4
 
         uncertain_parameter3 = {}
-        uncertain_parameter3["type"] = "FLOAT"
-        uncertain_parameter3["dimension"] = 1
-        uncertain_parameter3["distribution"] = "lognormal"
+        uncertain_parameter3["type"] = "lognormal"
         uncertain_parameter3["normal_mean"] = 0.3
         uncertain_parameter3["normal_covariance"] = 1
 
         random_variables['x1'] = uncertain_parameter1
         random_variables['x2'] = uncertain_parameter2
         random_variables['x3'] = uncertain_parameter3
-        uncertain_parameters["random_variables"] = random_variables
         some_settings = {}
         some_settings["experiment_name"] = "test"
-        dummy_obj = None
         dummy_db = None
 
-        parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
+        parameters_module.from_config_create_parameters({"parameters": random_variables})
 
         function = example_simulator_function_by_name("ishigami90")
         # create interface
@@ -93,10 +89,6 @@ class TestMCIterator(unittest.TestCase):
         self.my_iterator.pre_run()
         self.my_iterator.core_run()
 
-        # np.set_printoptions(precision=10)
-        # print("Results first 10 {}".format(self.my_iterator.outputs[0:10]))
-
-        # check if samples are identical too
         ref_results = np.array(
             [
                 [-7.4713449052e-01],

@@ -13,11 +13,15 @@ class LogNormalDistribution(Distribution):
     Support in (0, +inf).
 
     Attributes:
-        normal_mean (np.ndarray): mean of the underlying normal distribution
-        normal_covariance (np.ndarray): covariance of the underlying normal distribution
-        normal_distribution (NormalDistribution): underlying normal distribution
-        logpdf_const (float): Constant for evaluation of log pdf
-        precision (np.ndarray): Precision matrix of underlying normal distribution
+        normal_mean (np.ndarray): Mean of the underlying normal
+                                  distribution.
+        normal_covariance (np.ndarray): Covariance of the underlying
+                                        normal distribution.
+        normal_distribution (NormalDistribution): Underlying normal
+                                                  distribution.
+        logpdf_const (float): Constant for evaluation of log pdf.
+        precision (np.ndarray): Precision matrix of underlying normal
+                                distribution.
     """
 
     def __init__(self, mean, covariance, normal_distribution):
@@ -49,7 +53,7 @@ class LogNormalDistribution(Distribution):
         normal_covariance = distribution_options['normal_covariance']
 
         normal_distribution_dict = {
-            'distribution': 'normal',
+            'type': 'normal',
             'mean': normal_mean,
             'covariance': normal_covariance,
         }
@@ -72,7 +76,7 @@ class LogNormalDistribution(Distribution):
             x (np.ndarray): Positions at which the cdf is evaluated
 
         Returns:
-            cdf (np.ndarray): CDF at evaluated positions
+            cdf (np.ndarray): cdf at evaluated positions
         """
         return self.normal_distribution.cdf(np.log(x))
 
@@ -94,7 +98,7 @@ class LogNormalDistribution(Distribution):
             x (np.ndarray): Positions at which the log pdf is evaluated
 
         Returns:
-            logpdf (np.ndarray): log pdf at evaluated positions
+            logpdf (np.ndarray): pdf at evaluated positions
         """
         log_x = np.log(x).reshape(-1, self.dimension)
         dist = log_x - self.normal_mean
@@ -106,7 +110,7 @@ class LogNormalDistribution(Distribution):
         return logpdf
 
     def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to x.
+        """Gradient of the log pdf with respect to *x*.
 
         Args:
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated

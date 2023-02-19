@@ -15,9 +15,9 @@ class MFDataFitSurrogateModel(Model):
     """Multi-fidelity Surrogate model class.
 
     Attributes:
-        interface (interface):              mf approximation interface
-        subordinate_model (model):          (thruth) model
-        subordinate_iterator (iterator):    Iterator for subordinate model
+        interface (interface):              MF approximation interface.
+        subordinate_model (model):          (Truth) model.
+        subordinate_iterator (iterator):    Iterator for subordinate model.
     """
 
     def __init__(self, model_name, interface, subordinate_model, subordinate_iterator):
@@ -26,8 +26,6 @@ class MFDataFitSurrogateModel(Model):
         Args:
             model_name (string):             Name of model
             interface (interface):           Interface to simulator
-            model_parameters (dict):         Dictionary with description of
-                                             model parameters
             subordinate_model (model):       Model the surrogate is based on
             subordinate_iterator (Iterator): Iterator to evaluate the subordinate
                                              model with the purpose of getting
@@ -47,14 +45,14 @@ class MFDataFitSurrogateModel(Model):
             config (dict):       Dictionary containing problem description
 
         Returns:
-            data_fit_surrogate_model:   Instance of DataFitSurrogateModel
+            data_fit_surrogate_model: Instance of DataFitSurrogateModel
         """
         # get options
         model_options = config[model_name]
-        interface_name = model_options["interface"]
+        interface_name = model_options["interface_name"]
 
-        subordinate_model_name = model_options["subordinate_model"]
-        subordinate_iterator_name = model_options["subordinate_iterator"]
+        subordinate_model_name = model_options["subordinate_model_name"]
+        subordinate_iterator_name = model_options["subordinate_iterator_name"]
 
         # create subordinate model
         subordinate_model = from_config_create_model(subordinate_model_name, config)
@@ -76,13 +74,28 @@ class MFDataFitSurrogateModel(Model):
         """Evaluate model with current set of variables.
 
         Returns:
-            np.array: Results correspoding to current set of variables
+            np.array: Results corresponding to current set of variables
         """
         if not self.interface.is_initialized():
             self.build_approximation()
 
         self.response = self.interface.evaluate(self.variables)
         return self.response
+
+    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
+        """Evaluate model and the model gradient with current set of samples.
+
+        Args:
+            samples (np.array): Current sample batch for which the model response should be
+                                calculated.
+            upstream_gradient_fun (obj): The gradient an upstream objective function w.r.t. the
+                                         model output.
+                                         This function is needed for `adjoint`-based gradient
+                                         calculation.
+        """
+        raise NotImplementedError(
+            "Gradient method is not implemented in `data_fit_surrogate_model_mf`."
+        )
 
     def build_approximation(self):
         """Build underlying approximation."""
@@ -108,7 +121,7 @@ class MFDataFitSurrogateModel(Model):
             measures (list):   Dictionary with desired error measures
 
         Returns:
-            dict: Dictionary with error measures and correspoding error values
+            dict: Dictionary with error measures and corresponding error values
         """
         error_measures = {}
         for measure in measures:
@@ -117,7 +130,7 @@ class MFDataFitSurrogateModel(Model):
 
     # TODO move this to more general place
     def compute_error(self, y_act, y_pred, measure):
-        """Compute error for given a specific error measure.
+        """Compute error for given specific error measure.
 
         Args:
             y_act (np.array):  Actual values
@@ -125,7 +138,7 @@ class MFDataFitSurrogateModel(Model):
             measure (str):     Desired error metric
 
         Returns:
-            float: error based on desired metric
+            float: Error based on desired metric
         """
         # TODO checkout raises field
         if measure == "sum_squared":

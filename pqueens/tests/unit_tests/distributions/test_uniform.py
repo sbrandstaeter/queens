@@ -30,7 +30,7 @@ def upper_bound_1d():
 def uniform_1d(lower_bound_1d, upper_bound_1d):
     """A uniform distribution."""
     distribution_options = {
-        'distribution': 'uniform',
+        'type': 'uniform',
         'lower_bound': lower_bound_1d,
         'upper_bound': upper_bound_1d,
     }
@@ -65,7 +65,7 @@ def upper_bound_2d():
 def uniform_2d(lower_bound_2d, upper_bound_2d):
     """A uniform distribution."""
     distribution_options = {
-        'distribution': 'uniform',
+        'type': 'uniform',
         'lower_bound': lower_bound_2d,
         'upper_bound': upper_bound_2d,
     }
@@ -97,7 +97,7 @@ def test_init_uniform_1d_wrong_interval(lower_bound_1d):
     """Test init method of Uniform Distribution class."""
     with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
         distribution_options = {
-            'distribution': 'uniform',
+            'type': 'uniform',
             'lower_bound': lower_bound_1d,
             'upper_bound': lower_bound_1d - np.abs(lower_bound_1d),
         }
@@ -127,7 +127,7 @@ def test_logpdf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, sample_po
 
 
 def test_grad_logpdf_uniform_1d(uniform_1d, sample_pos_1d):
-    """Test grad_logpdf method of uniform distribution class."""
+    """Test *grad_logpdf* method of uniform distribution class."""
     sample_pos_1d = sample_pos_1d.reshape(-1, 1)
     ref_sol = np.zeros(sample_pos_1d.shape)
     np.testing.assert_allclose(uniform_1d.grad_logpdf(sample_pos_1d), ref_sol)
@@ -177,7 +177,7 @@ def test_init_uniform_2d_wrong_interval(lower_bound_2d):
     """Test init method of Uniform Distribution class."""
     with pytest.raises(ValueError, match=r'Lower bound must be smaller than upper bound*'):
         distribution_options = {
-            'distribution': 'uniform',
+            'type': 'uniform',
             'lower_bound': lower_bound_2d,
             'upper_bound': lower_bound_2d + np.array([0.1, -0.1]),
         }
@@ -213,7 +213,7 @@ def test_logpdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_po
 
 
 def test_grad_logpdf_uniform_2d(uniform_2d, sample_pos_2d):
-    """Test grad_logpdf method of uniform distribution class."""
+    """Test *grad_logpdf* method of uniform distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
     ref_sol = np.zeros(sample_pos_2d.shape)
     np.testing.assert_allclose(uniform_2d.grad_logpdf(sample_pos_2d), ref_sol)

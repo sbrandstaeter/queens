@@ -1,8 +1,11 @@
 """Testing suite for DirectPythonInterface.
 
-Created on April 10th 2019
+Created on April 10th 2019.
+
 @author: Sebastian Brandstaeter
 """
+import logging
+
 import numpy as np
 import pytest
 from pathos.multiprocessing import ProcessingPool as Pool
@@ -16,13 +19,14 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
 from pqueens.utils.path_utils import relative_path_from_pqueens
 from pqueens.utils.pool_utils import create_pool
 
+_logger = logging.getLogger(__name__)
+
 
 @pytest.fixture(scope='module')
 def parameters():
     """Options dictionary to create variables."""
     uncertain_parameter = {}
-    uncertain_parameter['dimension'] = 1
-    uncertain_parameter['distribution'] = "uniform"
+    uncertain_parameter['type'] = "uniform"
     uncertain_parameter['lower_bound'] = -3.14
     uncertain_parameter['upper_bound'] = 3.14
 
@@ -31,8 +35,7 @@ def parameters():
     random_variables['x2'] = uncertain_parameter
     random_variables['x3'] = uncertain_parameter
 
-    parameters = {'parameters': {}}
-    parameters['parameters']['random_variables'] = random_variables
+    parameters = {'parameters': random_variables}
 
     parameters_module.from_config_create_parameters(parameters)
 
@@ -47,13 +50,13 @@ def samples():
 
 @pytest.fixture(scope='module')
 def expected_result():
-    """Expected result of ishigami funciton for [1., 1., 1.]."""
+    """Expected result of ishigami function for [1., 1., 1.]."""
     return np.array([[5.8821320112036846]])
 
 
 @pytest.fixture(scope='module')
 def expected_results(expected_result):
-    """Expected results corresponding to list_of_samples."""
+    """Expected results corresponding to *list_of_samples*."""
     return np.concatenate([expected_result, expected_result])
 
 
@@ -63,7 +66,7 @@ def config(parameters):
     config = {}
     config['test_interface'] = {
         'type': 'direct_python_interface',
-        'function_name': 'ishigami90',
+        'function': 'ishigami90',
     }
 
     return config
@@ -75,11 +78,11 @@ def config_by_path(parameters):
     path_to_file = relative_path_from_pqueens(
         "tests/integration_tests/example_simulator_functions/ishigami90.py", as_str=True
     )
-    print(path_to_file)
+    _logger.info(path_to_file)
     config = {}
     config['test_interface'] = {
         'type': 'direct_python_interface',
-        'function_name': "ishigami90",
+        'function': "ishigami90",
         'external_python_module_function': path_to_file,
     }
 
@@ -159,7 +162,7 @@ def test_create_from_config_parallel(parameters, config_parallel):
 
 
 def test_function_keywords(samples, config, config_by_path):
-    """Test interface using by path and by name."""
+    """Test interface by path and by name."""
     direct_python_interface_function_name = from_config_create_interface('test_interface', config)
     direct_python_interface_path = from_config_create_interface('test_interface', config_by_path)
     results_function_name = direct_python_interface_function_name.evaluate(samples)

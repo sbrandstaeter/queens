@@ -47,7 +47,7 @@ def print_crown(output_width=63):
     """Print crown.
 
     Args:
-        output_width (int): Terminal output width. Default is 63.
+        output_width (int): Terminal output width (default is 63)
     """
     crown = r"""
         *
@@ -65,8 +65,8 @@ def print_banner(message="QUEENS", output_width=63):
     """Print banner.
 
     Args:
-        message (str): Messge in banner
-        output_width (int): Terminal output width. Default is 63.
+        message (str): Message in banner
+        output_width (int): Terminal output width (default is 63)
     """
     print_centered_multiline_block(pyfiglet.figlet_format(message, font="banner3-D"), output_width)
 
@@ -76,7 +76,7 @@ def print_centered_multiline_block(string, output_width=63):
 
     Args:
         string (str): String to be printed
-        output_width (int): Terminal output width. Default is 63.
+        output_width (int): Terminal output width (default is 63)
     """
     lines = string.split("\n")
     max_line_width = max(len(line) for line in lines)
@@ -91,7 +91,7 @@ def print_centered_multiline(string, output_width=63):
 
     Args:
         string (str): String to be printed
-        output_width (int): Terminal output width. Default is 63.
+        output_width (int): Terminal output width (default is 63)
     """
     lines = string.split("\n")
     for line in lines:

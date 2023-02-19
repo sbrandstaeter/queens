@@ -3,7 +3,7 @@ import numpy as np
 
 import pqueens.visualization.grid_iterator_visualization as qvis
 from pqueens.models import from_config_create_model
-from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.process_outputs import process_outputs, write_results
 
 from .iterator import Iterator
 
@@ -11,17 +11,16 @@ from .iterator import Iterator
 class GridIterator(Iterator):
     """Grid Iterator to enable meshgrid evaluations.
 
-    Different axis scaling possiblem: as linear, log10 or ln.
+    Different axis scaling possible: as *linear*, *log10* or *ln*.
 
     Attributes:
-        model (model): Model to be evaluated by iterator
-        grid_dict (dict): Dictionary containing grid information
-        result_description (dict):  Description of desired results
-        num_parameters (int)          :   number of parameters to be varied
-        samples (np.array):   Array with all samples
-        output (np.array):   Array with all model outputs
-        num_grid_points_per_axis (list):  list with number of grid points for each grid axis
-        scale_type (list): list with string entries denoting scaling type for each grid axis
+        grid_dict (dict): Dictionary containing grid information.
+        result_description (dict):  Description of desired results.
+        samples (np.array):   Array with all samples.
+        output (np.array):   Array with all model outputs.
+        num_grid_points_per_axis (list):  List with number of grid points for each grid axis.
+        num_parameters (int):   Number of parameters to be varied.
+        scale_type (list): List with string entries denoting scaling type for each grid axis.
     """
 
     def __init__(
@@ -39,7 +38,6 @@ class GridIterator(Iterator):
             result_description (dict):  Description of desired results
             global_settings (dict, optional): Settings for the QUEENS run.
             grid_dict (dict): Dictionary containing grid information
-            parameters (dict):    dictionary containing parameter information
             num_parameters (int):   number of parameters to be varied
         """
         super().__init__(model, global_settings)
@@ -65,9 +63,9 @@ class GridIterator(Iterator):
         Returns:
             iterator (obj): GridIterator object
         """
-        method_options = config[iterator_name]["method_options"]
+        method_options = config[iterator_name]
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = from_config_create_model(model_name, config)
 
         result_description = method_options.get("result_description", None)
@@ -85,7 +83,7 @@ class GridIterator(Iterator):
         return cls(model, result_description, global_settings, grid_dict, num_parameters)
 
     def pre_run(self):
-        """Generate samples based on description in grid_dict."""
+        """Generate samples based on description in *grid_dict*."""
         # Sanity check for random fields
         if self.parameters.random_field_flag:
             raise RuntimeError(
@@ -99,7 +97,7 @@ class GridIterator(Iterator):
         for index, (parameter_name, parameter) in enumerate(self.parameters.dict.items()):
             start_value = parameter.lower_bound
             stop_value = parameter.upper_bound
-            data_type = parameter.data_type
+            data_type = self.grid_dict[parameter_name].get("data_type", None)
             axis_type = self.grid_dict[parameter_name].get("axis_type", None)
             num_grid_points = self.grid_dict[parameter_name].get("num_grid_points", None)
             self.num_grid_points_per_axis.append(num_grid_points)
@@ -178,7 +176,7 @@ class GridIterator(Iterator):
     def post_run(self):
         """Analyze the results."""
         if self.result_description is not None:
-            results = process_ouputs(self.output, self.result_description, self.samples)
+            results = process_outputs(self.output, self.result_description, self.samples)
             if self.result_description["write_results"] is True:
                 write_results(
                     results,

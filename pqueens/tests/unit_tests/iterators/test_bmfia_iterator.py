@@ -1,4 +1,4 @@
-"""Unittests for Bayesian multi-fidelity inverse analysis iterator."""
+"""Unit tests for Bayesian multi-fidelity inverse analysis iterator."""
 
 from unittest.mock import patch
 
@@ -28,12 +28,8 @@ def global_settings():
 @pytest.fixture()
 def parameters():
     """Fixture for dummy parameters."""
-    params = {
-        "random_variables": {
-            "x1": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
-            "x2": {"dimension": 1, "distribution": "uniform", "lower_bound": -2, "upper_bound": 2},
-        },
-    }
+    rv = {"type": "uniform", "lower_bound": -2, "upper_bound": 2}
+    params = {"x1": rv, "x2": rv}
     parameters_module.from_config_create_parameters({'parameters': params})
     return params
 
@@ -179,9 +175,9 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
 
 
 def test_calculate_optimal_x_train(dummy_model, mocker):
-    """Test calculation of optimal x_train.
+    """Test calculation of optimal *x_train*.
 
-    Note: here we return the input arguments of the design method to
+    **Note:** Here we return the input arguments of the design method to
     later be able to test if the arguments were correct.
     """
     expected_x_train = np.array([[1, 1]])  # return of mock_design

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """Regression Approximations.
 
-This package contains a set of regression approximations, i.e., regression
-models which are the essential building block for surrogate models. For the
+This package contains a set of regression approximations, i.e. regression
+models, which are the essential building block for surrogate models. For the
 actual implementation of the regression models external third party libraries
 are used, such as `GPy`_, `GPFlow`_, and `TensorFlow`_.
 
@@ -49,7 +49,7 @@ VALID_TYPES = {
 
 
 def from_config_create_regression_approximation(config, approx_name, x_train, y_train):
-    """Create approximation from options dict.
+    """Create approximation from options *dict*.
 
     Args:
         config (dict): Dictionary with problem description

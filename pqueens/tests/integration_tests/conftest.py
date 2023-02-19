@@ -53,7 +53,7 @@ def cluster(request):
 @pytest.fixture(scope="session")
 def cluster_address(cluster):
     """String used for ssh connect to the cluster."""
-    if cluster == DEEP_CLUSTER_TYPE or cluster == BRUTEFORCE_CLUSTER_TYPE:
+    if cluster in (DEEP_CLUSTER_TYPE, BRUTEFORCE_CLUSTER_TYPE):
         address = cluster + '.lnm.ed.tum.de'
     elif cluster == CHARON_CLUSTER_TYPE:
         address = cluster + '.bauv.unibw-muenchen.de'
@@ -74,7 +74,7 @@ def cluster_singularity_ip(cluster):
     elif cluster == BRUTEFORCE_CLUSTER_TYPE:
         cluster_singularity_ip = '10.10.0.1'
     elif cluster == CHARON_CLUSTER_TYPE:
-        cluster_singularity_ip = '192.168.1.253'
+        cluster_singularity_ip = '192.168.1.254'
     else:
         cluster_singularity_ip = None
     return cluster_singularity_ip
@@ -108,7 +108,9 @@ def cluster_path_to_singularity(cluster_queens_base_dir):
 def prepare_cluster_testing_environment(connect_to_resource, cluster_queens_testing_folder):
     """Create a clean testing environment on the cluster."""
     # remove old folder
-    print(f"Delete testing folder {cluster_queens_testing_folder} on {connect_to_resource}")
+    _logger.info(
+        "Delete testing folder %s on %s", cluster_queens_testing_folder, connect_to_resource
+    )
     command_string = f'rm -rfv {cluster_queens_testing_folder}'
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
@@ -118,7 +120,9 @@ def prepare_cluster_testing_environment(connect_to_resource, cluster_queens_test
     _logger.info(stdout)
 
     # create generic testing folder
-    _logger.info(f"Create testing folder {cluster_queens_testing_folder} on {connect_to_resource}")
+    _logger.info(
+        "Create testing folder %s on %s", cluster_queens_testing_folder, connect_to_resource
+    )
     command_string = f'mkdir -v -p {cluster_queens_testing_folder}'
     _, _, stdout, _ = run_subprocess(
         command_string=command_string,
@@ -138,8 +142,8 @@ def prepare_singularity(
 ):
     """Build singularity based on the code during test invocation.
 
-    WARNING: needs to be done AFTER prepare_cluster_testing_environment to make sure cluster testing
-     folder is clean and existing
+    **WARNING:** Needs to be done AFTER *prepare_cluster_testing_environment*
+    to make sure cluster testing folder is clean and existing.
     """
     if not prepare_cluster_testing_environment:
         raise RuntimeError("Testing environment on cluster not successful.")
@@ -171,7 +175,7 @@ def cluster_testsuite_settings(
             "Preparation of singularity for cluster failed."
             "Make sure to prepare singularity image before using this fixture. "
         )
-    cluster_testsuite_settings = dict()
+    cluster_testsuite_settings = {}
     cluster_testsuite_settings["cluster"] = cluster
     cluster_testsuite_settings["cluster_user"] = cluster_user
     cluster_testsuite_settings["cluster_address"] = cluster_address
@@ -226,17 +230,20 @@ def prepare_cluster_testing_environment_native(cluster_native_queens_testing_fol
         cluster_native_queens_testing_folder.exists()
         and cluster_native_queens_testing_folder.is_dir()
     ):
-        _logger.info(f"Delete testing folder")
+        _logger.info("Delete testing folder")
         shutil.rmtree(cluster_native_queens_testing_folder)
 
-    _logger.info(f"Create testing folder")
+    _logger.info("Create testing folder")
     cluster_native_queens_testing_folder.mkdir(parents=True, exist_ok=True)
 
     return True
 
 
+# prepare_cluster_testing_environment_native is passed on purpose to force its creation
 @pytest.fixture(scope="session")
-def baci_cluster_paths_native(cluster_user, prepare_cluster_testing_environment_native):
+def baci_cluster_paths_native(
+    cluster_user, prepare_cluster_testing_environment_native
+):  # pylint: disable=unused-argument
     """Paths to baci for native cluster tests."""
     path_to_executable = pathlib.Path(
         "/home", cluster_user, "workspace_for_queens", "build", "baci-release"
@@ -291,3 +298,8 @@ def baci_elementary_effects_check_results():
         )
 
     return check_results
+
+
+def pytest_sessionfinish():
+    """Register a hook to suppress logging errors after the session."""
+    logging.raiseExceptions = False

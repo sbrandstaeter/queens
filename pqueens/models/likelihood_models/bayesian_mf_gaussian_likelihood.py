@@ -157,7 +157,12 @@ class BMFGaussianModel(LikelihoodModel):
         noise_upper_bound = model_options.get("noise_upper_bound")
 
         # ---------- multi-fidelity settings ---------------------------------------------------
-        settings_probab_mapping = {"mf_approx_settings": model_options.get("mf_approx_settings")}
+        mf_approx_settings = model_options.get("mf_approx_settings")
+        stochastic_optimizer_name = mf_approx_settings.get('stochastic_optimizer_name')
+        settings_probab_mapping = {
+            "mf_approx_settings": mf_approx_settings,
+            stochastic_optimizer_name: config[stochastic_optimizer_name],
+        }
         approximation_settings_name = "mf_approx_settings"
         num_processors_multi_processing = settings_probab_mapping['mf_approx_settings'].get(
             "num_processors_multi_processing"
@@ -167,7 +172,7 @@ class BMFGaussianModel(LikelihoodModel):
         )
 
         # ----------------------- create subordinate bmfia iterator ------------------------------
-        bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator"]
+        bmfia_iterator_name = model_options["mf_approx_settings"]["mf_subiterator_name"]
         bmfia_subiterator = from_config_create_iterator(config, bmfia_iterator_name)
 
         # ----------------------- create visualization object(s) ---------------------------------
@@ -210,7 +215,7 @@ class BMFGaussianModel(LikelihoodModel):
             noise_var_lst,
         )
 
-    def evaluate(self, samples, gradient_bool=False):
+    def evaluate(self, samples):
         """Evaluate multi-fidelity likelihood.
 
         Evaluation with current set of variables
@@ -218,16 +223,10 @@ class BMFGaussianModel(LikelihoodModel):
 
         Args:
             samples (np.ndarray): Evaluated samples
-            gradient_bool (bool, optional): Boolean to determine whether the gradient of the
-                                            likelihood should be evaluated (if set to True)
 
         Returns:
             mf_log_likelihood (np.array): Vector of log-likelihood values per model input.
         """
-        if gradient_bool:
-            raise NotImplementedError(
-                "The gradient response is not implemented, yet for the multi-fidelity likelihood."
-            )
         # Initialize underlying models in the first call
         if self.z_train is None:
             self._initialize()
@@ -244,6 +243,12 @@ class BMFGaussianModel(LikelihoodModel):
         # evaluate the modified multi-fidelity likelihood expression with LF model response
         mf_log_likelihood = self._evaluate_mf_likelihood(Y_LF_mat, samples)
         return mf_log_likelihood
+
+    def evaluate_and_gradient(self, _samples):
+        """Evaluate model and its gradient with current set of samples."""
+        raise NotImplementedError(
+            "The gradient response is not implemented for the multi-fidelity likelihood."
+        )
 
     def _evaluate_mf_likelihood(self, y_lf_mat, x_batch):
         """Evaluate the Bayesian multi-fidelity likelihood as described in [1].
@@ -282,7 +287,7 @@ class BMFGaussianModel(LikelihoodModel):
     def _calculate_distance_vector_and_var_y(self, y_lf_mat, x_batch):
         """Calculate the distance vectors.
 
-        Distance is calcualted between the observation vector and
+        Distance is calculated between the observation vector and
         the batch (at x_batch) of simulation vectors. The observation vector is
         a row vector and the simulation vectors are row-wise collected in
         z_mat, respectively m_f_mat and var_y_mat. The resulting difference
@@ -325,9 +330,6 @@ class BMFGaussianModel(LikelihoodModel):
         Args:
             diff_mat (np.array): Matrix containing row-wise difference vectors between the output
                                  observations and the batch of row-wise simulation outputs.
-
-        Returns:
-            None
         """
         # choose likelihood noise type
         if self.likelihood_noise_type == "fixed":
@@ -386,11 +388,11 @@ class BMFGaussianModel(LikelihoodModel):
         Args:
             mf_variance_vec (np.array): Vector of predicted posterior variance values of
                                         the probabilistic multi-fidelity regression model.
-                                        This should be a row vecor.
+                                        This should be a row vector.
             diff_vec (np.array): Differences between observation and simulations.
                                  This is a two-dimension
 
-        Retruns:
+        Returns:
             log_lik_mf (np.array): Value of log-likelihood function for difference vector.
                                    A two-dimensional vector containing one scalar.
         """
@@ -436,11 +438,7 @@ class BMFGaussianModel(LikelihoodModel):
         return np.array(log_lik_mf)
 
     def _initialize(self):
-        """Initialize the multi-fidelity likelihood model.
-
-        Returns:
-            None
-        """
+        """Initialize the multi-fidelity likelihood model."""
         _logger.info("---------------------------------------------------------------------")
         _logger.info("Speed-up through Bayesian multi-fidelity inverse analysis (BMFIA)!")
         _logger.info("---------------------------------------------------------------------")
@@ -454,12 +452,9 @@ class BMFGaussianModel(LikelihoodModel):
     def _build_approximation(self):
         """Construct the probabilistic surrogate / mapping.
 
-        Surrogate is calculated based on the provided training-data
-        and optimize the hyper-parameters by maximizing
-        the data's evidence or its lower bound (ELBO).
-
-        Returns:
-            None
+        Surrogate is calculated based on the provided training-data and
+        optimize the hyper-parameters by maximizing the data's evidence
+        or its lower bound (ELBO).
         """
         # Start the bmfia (sub)iterator to create the training data for the probabilistic mapping
         self.z_train, self.y_hf_train = self.bmfia_subiterator.core_run()
@@ -476,11 +471,7 @@ class BMFGaussianModel(LikelihoodModel):
 
     # ------- TODO: below not needed atm but something similar might be of interest lateron -----
     def input_dim_red(self):
-        """Compression of the input array of the simulation.
-
-        Returns:
-            None
-        """
+        """Compression of the input array of the simulation."""
         self.get_random_fields()
         # TODO: more to come...
 

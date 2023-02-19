@@ -1,8 +1,8 @@
-"""Test suite for the heritage baci Levenberg-Marquardt optimizer.
+"""Test suite for the heritage BACI Levenberg-Marquardt optimizer.
 
 Test local simulations with BACI using a minimal FSI model and the
-data_processor_ensight_interface evaluation and therefore
-post_drt_ensight post-processor.
+*data_processor_ensight_interface* evaluation and therefore
+*post_drt_ensight* post-processor.
 """
 
 import json
@@ -21,13 +21,14 @@ from pqueens.utils import injector
 def output_directory_forward(tmpdir_factory):
     """Create two temporary output directories for test runs with singularity.
 
-    with singularity (<...>_true) and without singularity (<...>_false)
+        * with singularity (<...>_true)
+        * without singularity (<...>_false)
 
     Args:
-        tmpdir_factory: fixture used to create arbitrary temporary directories
+        tmpdir_factory: Fixture used to create arbitrary temporary directories
 
     Returns:
-        output_directory_forward (dict): temporary output directories for simulation without and
+        output_directory_forward (dict): Temporary output directories for simulation without and
                                          with singularity
     """
     path_singularity_true = tmpdir_factory.mktemp("test_baci_lm_shape_singularity")
@@ -38,10 +39,10 @@ def output_directory_forward(tmpdir_factory):
 
 @pytest.fixture()
 def experiment_directory(output_directory_forward, singularity_bool):
-    """Return experiment directory depending on singularity_bool.
+    """Return experiment directory depending on *singularity_bool*.
 
     Returns:
-        experiment_directory (LocalPath): experiment directory depending on singularity_bool
+        experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
     """
     return output_directory_forward[singularity_bool]
 
@@ -61,15 +62,12 @@ def test_baci_lm_shape(
     Args:
         inputdir (str): Path to the JSON input file
         third_party_inputs (str): Path to the BACI input files
-        baci_links_paths (str): symbolic links to executables including BACI
+        baci_link_paths (str): Symbolic links to executables including BACI
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
-        experiment_directory (LocalPath): experiment directory depending on singularity_bool
-
-    Returns:
-        None
+        experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
     """
-    template = os.path.join(inputdir, "baci_local_shape_lm_template.json")
-    input_file = os.path.join(experiment_directory, "baci_local_shape_lm.json")
+    template = os.path.join(inputdir, "baci_local_shape_lm_template.yml")
+    input_file = os.path.join(experiment_directory, "baci_local_shape_lm.yml")
     third_party_input_file = os.path.join(
         third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_template.dat"
     )
@@ -84,7 +82,7 @@ def test_baci_lm_shape(
         'experiment_name': experiment_name,
         'baci_input': third_party_input_file,
         'baci_input_monitor': third_party_input_file_monitor,
-        'baci-release': baci_release,
+        'baci_release': baci_release,
         'post_processor': post_processor,
         'singularity_boolean': json.dumps(singularity_bool),
     }

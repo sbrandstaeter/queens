@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -11,9 +13,12 @@ from pqueens.utils import injector
 
 
 def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir):
-    """Integration test for smc with a simple diffusion problem (scatra) in
-    baci."""
-    # generate json input file from template
+    """TODO_doc: add a one-line description.
+
+    Integration test for smc with a simple diffusion problem (scatra) in
+    BACI.
+    """
+    # generate yaml input file from template
     third_party_input_file_hf = os.path.join(
         third_party_inputs, "baci_input_files", "diffusion_coarse.dat"
     )
@@ -24,9 +29,9 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
     baci_release = os.path.join(config_dir, "baci-release")
     post_drt_ensight = os.path.join(config_dir, "post_drt_ensight")
 
-    # ----- generate json input file from template -----
+    # ----- generate yaml input file from template -----
     # template for actual smc evaluation
-    template = os.path.join(inputdir, 'bmfia_scatra_baci_template_smc_gp_precompiled_copy.json')
+    template = os.path.join(inputdir, 'bmfia_scatra_baci_template_smc_gp_precompiled_copy.yml')
 
     experimental_data_path = os.path.join(third_party_inputs, "csv_files", "scatra_baci")
     plot_dir = tmpdir
@@ -38,7 +43,7 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
         'post_drt_ensight': post_drt_ensight,
         'plot_dir': plot_dir,
     }
-    input_file = os.path.join(tmpdir, 'hf_scatra_baci.json')
+    input_file = os.path.join(tmpdir, 'hf_scatra_baci.yml')
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -61,11 +66,13 @@ def test_bmfia_baci_scatra_smc(inputdir, tmpdir, third_party_inputs, config_dir)
 
 @pytest.fixture()
 def expected_weights():
+    """TODO_doc."""
     weights = 1
     return weights
 
 
 @pytest.fixture()
 def expected_samples():
+    """TODO_doc."""
     samples = 1
     return samples

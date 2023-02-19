@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 from pathlib import Path
 
@@ -12,6 +14,7 @@ from pqueens.utils import injector
 def test_geometry_from_dat(
     inputdir, tmpdir, third_party_inputs, expected_node_coordinates, expected_surface_topology
 ):
+    """TODO_doc."""
     # generate json input file from template
     third_party_input_file = os.path.join(
         third_party_inputs, "baci_input_files", "bending_wall_channel_flow_fsi_lofi.dat"
@@ -19,8 +22,8 @@ def test_geometry_from_dat(
     dir_dict = {
         'baci_input': third_party_input_file,
     }
-    template = os.path.join(inputdir, "baci_mc_randomfields_from_geometry_template.json")
-    input_file = os.path.join(tmpdir, "baci_mc_randomfields_from_geometry.json")
+    template = os.path.join(inputdir, "baci_mc_randomfields_from_geometry_template.yml")
+    input_file = os.path.join(tmpdir, "baci_mc_randomfields_from_geometry.yml")
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
@@ -43,6 +46,7 @@ def test_geometry_from_dat(
 # some lengthy result data as fixtures
 @pytest.fixture()
 def expected_surface_topology():
+    """TODO_doc."""
     expected_topology = [
         {
             'node_mesh': [
@@ -729,6 +733,7 @@ def expected_surface_topology():
 
 @pytest.fixture()
 def expected_node_coordinates():
+    """TODO_doc."""
     node_coordinates = {
         'node_mesh': [
             2242,

@@ -1,5 +1,4 @@
 """Test remote BACI simulations with ensight data-processor."""
-import json
 import logging
 import pathlib
 
@@ -8,7 +7,13 @@ import pytest
 
 import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
+from pqueens.main import get_config_dict
 from pqueens.models import from_config_create_model
+from pqueens.schedulers.cluster_scheduler import (
+    BRUTEFORCE_CLUSTER_TYPE,
+    CHARON_CLUSTER_TYPE,
+    DEEP_CLUSTER_TYPE,
+)
 from pqueens.utils import injector
 from pqueens.utils.config_directories import experiment_directory
 from pqueens.utils.run_subprocess import run_subprocess
@@ -19,14 +24,20 @@ _logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     "cluster",
     [
-        pytest.param("deep", marks=pytest.mark.lnm_cluster),
-        pytest.param("bruteforce", marks=pytest.mark.lnm_cluster),
-        pytest.param("charon", marks=pytest.mark.imcs_cluster),
+        pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        pytest.param(CHARON_CLUSTER_TYPE, marks=pytest.mark.imcs_cluster),
     ],
     indirect=True,
 )
 def test_cluster_baci_data_processor_ensight(
-    inputdir, tmpdir, third_party_inputs, cluster_testsuite_settings, baci_cluster_paths, user
+    inputdir,
+    tmpdir,
+    third_party_inputs,
+    cluster_testsuite_settings,
+    baci_cluster_paths,
+    user,
+    monkeypatch,
 ):
     """Test remote BACI simulations with ensight data-processor.
 
@@ -37,7 +48,7 @@ def test_cluster_baci_data_processor_ensight(
     This integration test is constructed such that:
         - The interface-map function is called twice (mimics feedback-loops)
         - The maximum concurrent job is activated
-        - data_processor_ensight to remotely communicate with the database (besides the driver)
+        - *data_processor_ensight* to remotely communicate with the database (besides the driver)
         - No iterator is used to reduce complexity
 
     Args:
@@ -45,10 +56,13 @@ def test_cluster_baci_data_processor_ensight(
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         cluster_testsuite_settings (dict): Collection of cluster specific settings
-
-    Returns:
-        None
+        baci_cluster_paths: TODO_doc
+        user (): TODO_doc
     """
+    # monkeypatch the "input" function, so that it returns "y".
+    # This simulates the user entering "y" in the terminal:
+    monkeypatch.setattr('builtins.input', lambda _: "y")
+
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
@@ -61,9 +75,6 @@ def test_cluster_baci_data_processor_ensight(
 
     # unique experiment name
     experiment_name = f"test_{cluster}_data_processor_ensight"
-
-    template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.json")
-    input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.json")
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
@@ -109,19 +120,12 @@ def test_cluster_baci_data_processor_ensight(
         'singularity_remote_ip': singularity_remote_ip,
         'user': user,
     }
-    queens_input_file_template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.json")
-    queens_input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.json")
+    queens_input_file_template = pathlib.Path(inputdir, "baci_cluster_data_processor_ensight.yml")
+    queens_input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.yml")
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     # Patch the missing config arguments
-    with open(queens_input_file, encoding="utf8") as f:
-        config = json.load(f)
-        global_settings = {
-            "output_dir": str(tmpdir),
-            "experiment_name": config["experiment_name"],
-        }
-        config["global_settings"] = global_settings
-        config["input_file"] = str(queens_input_file)
+    config = get_config_dict(queens_input_file, pathlib.Path(tmpdir))
 
     # Initialise db module
     DB_module.from_config_create_database(config)

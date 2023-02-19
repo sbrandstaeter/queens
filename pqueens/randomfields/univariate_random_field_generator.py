@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 from scipy.stats import norm
 
 
@@ -5,48 +7,33 @@ class UnivariateRandomFieldSimulator(object):
     """Generator for samples of univariate random fields.
 
     Class for the generation of samples form Gaussian and
-    and non-Gaussian random fields using translation process theory
+    non-Gaussian random fields using translation process theory.
 
     Attributes:
-        spatial_dim (int): spatial dimension of the field, i.e., 1,2, or 3
-        prob_dist (scipy.stats.rv_continuous): marginal probability
-            distribution of the field
-        autocov_type (): autocovariance function of the field
-        truncated (bool): is the field truncated
-        lower_bound (float) lower cutoff value of the field
-        upper_bound (float) upper cutoff value of the field
-        space_discretized (bool): is the generation based on a spatial
-            discretization, i.e., a grid
-        bounding_box (np.array): domain over which samples of the
-            field are generated
-        des_energy_frac (float): desired percentage of variance retained
-            by series approximation of (underlying) Gaussian Field
-        act_energy_frac (float): actual percentage of variance retained by
-            series approximation
-        stoch_dim (int): stochastic dimension, i.e., number of random variable
-            needed to generate samples
+        spatial_dim (int): Spatial dimension of the field, i.e. 1,2, or 3.
+        prob_dist (scipy.stats.rv_continuous): Marginal probability
+            distribution of the field.
+        autocov_type (): Autocovariance function of the field.
+        truncated (bool): Is the field truncated?
+        lower_bound (float): Lower cutoff value of the field.
+        upper_bound (float): Upper cutoff value of the field.
+        space_discretized (bool): Is the generation based on a spatial
+            discretization, i.e. a grid?
+        bounding_box (np.array): Domain over which samples of the
+            field are generated.
+        des_energy_frac (float): Desired percentage of variance retained
+            by series approximation of (underlying) Gaussian Field.
+        act_energy_frac (float): Actual percentage of variance retained by
+            series approximation.
+        stoch_dim (int): Stochastic dimension, i.e. number of random variables
+            needed to generate samples.
     """
 
     def __init__(self, marginal_distribution):
-        """
-        Args:
-            spatial_dim (int): spatial dimension of the field, i.e., 1,2, or 3
-            prob_dist (): marginal probability distribution of the field
-            autocov_type (): autocovariance function of the field
-            truncated (bool): is the field truncated
-            lower_bound (float) lower cutoff value of the field
-            upper_bound (float) upper cutoff value of the field
-            space_discretized (bool): is the generation based on a spatial
-                discretization, i.e., a grid
-            bounding_box (np.array): domain over which samples of the
-                field are generated
-            des_energy_frac (float): desired percentage of variance retained
-                by series approximation of (underlying) Gaussian Field
-            act_energy_frac (float): actual percentage of variance retained by
-                series approximation
-            stoch_dim (int): stochastic dimension, i.e., number of random
-                variable needed to generate samples
+        """TODO_doc.
 
+        Args:
+            marginal_distribution: TODO_doc
         """
         self.spatial_dim = None
         self.prob_dist = None
@@ -69,39 +56,46 @@ class UnivariateRandomFieldSimulator(object):
         self.prob_dist = marginal_distribution
 
     def gen_sample_gauss_field(self, x, xi):
-        """gen_sample_gauss_field(x, xi) input x location(s) at which
-        realization of random field is evaluated xi random phase angles or
-        amplitudes used to generate realization of random field. This mehtod
-        generates sample of standard Gaussian random field and evaluates it at
-        x. The actual generation based on series expansion methods is
+        """TODO_doc: add a one-line explanation.
+
+        This method generates sample of standard Gaussian random field and evaluates it
+        at *x*. The actual generation based on series expansion methods is
         implemented in the subclasses.
 
+        *gen_sample_gauss_field(x, xi)* inputs:
+
+        * *x* location(s) at which realization of random field is evaluated
+        * *xi* random phase angles or amplitudes used to generate realization of random field.
+
         Args:
-            x (np.array): location at which field is evaluated
-            xi (np.array): pseudo random phase angles for field generation
+            x (np.array): Location at which the field is evaluated
+            xi (np.array): Pseudo random phase angles for field generation
 
         Returns:
-            np.array: value of random field at locations x
+            np.array: Value of random field at locations *x*
         """
         raise NotImplementedError()
 
     def get_stoch_dim(self):
-        """return stochastic dimension of the field.
+        """Return stochastic dimension of the field.
 
         Returns:
-            int: stochastic dimension of the field
+            int: Stochastic dimension of the field
         """
         return self.stoch_dim
 
     def evaluate_field_at_location(self, x, xi):
-        """Generate sample of random field based on xi and evaluate it at x.
+        """TODO_doc: add a one-line explanation.
+
+        Generate sample of random field based on *xi* and evaluate it at
+        *x*.
 
         Args:
-            x (np.array): location at which field is evaluated
-            xi (np.array): pseudo random phase angles for field generation
+            x (np.array): Location at which the field is evaluated
+            xi (np.array): Pseudo random phase angles for field generation
 
         Returns:
-            np.array: value of random field at locations x
+            np.array: Value of random field at locations *x*
         """
         values = self.gen_sample_gauss_field(x, xi)
 

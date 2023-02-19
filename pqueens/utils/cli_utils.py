@@ -1,5 +1,6 @@
 """Command Line Interface utils collection."""
 import argparse
+import logging
 import sys
 from pathlib import Path
 
@@ -10,20 +11,21 @@ from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.pickle_utils import print_pickled_data
 from pqueens.utils.run_subprocess import run_subprocess
 
+_logger = logging.getLogger(__name__)
+
 
 def build_singularity_cli():
     """Build singularity image CLI wrapper."""
     ascii_art.print_crown(75)
     ascii_art.print_banner("SINBUILD", 75)
-    print("Singularity image builder for QUEENS runs".center(75))
+    _logger.info('Singularity image builder for QUEENS runs'.center(75))
 
-    print("\n\nBuilding a singularity image! This might take some time ...")
+    _logger.info('\n\nBuilding a singularity image! This might take some time ...')
     try:
         create_singularity_image()
-        print("Done!")
+        _logger.info('Done!')
     except Exception as cli_singularity_error:
-        CLIError("Building singularity failed!\n\n")
-        raise cli_singularity_error
+        raise CLIError("Building singularity failed!\n\n") from cli_singularity_error
 
 
 def print_pickle_data_cli():
@@ -32,7 +34,7 @@ def print_pickle_data_cli():
     ascii_art.print_banner("QUEENS", 60)
     args = sys.argv[1:]
     if len(args) == 0:
-        print("No pickle file was provided!")
+        _logger.info('No pickle file was provided!')
     else:
         file_path = args[0]
         print_pickled_data(file_path)
@@ -40,7 +42,7 @@ def print_pickle_data_cli():
 
 def build_html_coverage_report():
     """Build html coverage report."""
-    print("Build html coverage report...")
+    _logger.info('Build html coverage report...')
 
     pytest_command_string = (
         'pytest -m "unit_tests or integration_tests or integration_tests_baci" '
@@ -53,7 +55,7 @@ def build_html_coverage_report():
 
 def remove_html_coverage_report():
     """Remove html coverage report files."""
-    print("Remove html coverage report...")
+    _logger.info('Remove html coverage report...')
 
     pytest_command_string = "rm -r html_coverage_report/; rm .coverage*"
     command_list = ["cd", str(PATH_TO_QUEENS), "&&", pytest_command_string]
@@ -65,10 +67,10 @@ def str_to_bool(value):
     """Convert string to boolean for cli commands.
 
     Args:
-        value (str): String to convert to a bool.
+        value (str): String to convert to a bool
 
     Returns:
-        bool: bool of the string
+        bool: Bool of the string
     """
     if isinstance(value, bool):
         return value
@@ -77,7 +79,7 @@ def str_to_bool(value):
     true_options = ('true', 't', '1', 'yes', 'y')
     if value.lower() in false_options:
         return False
-    elif value.lower() in true_options:
+    if value.lower() in true_options:
         return True
     raise CLIError(
         f"{value} is not a valid boolean value. Valid options are:\n"
@@ -94,7 +96,7 @@ def get_cli_options(args):
     Returns:
         input_file (pathlib.Path): Path object to input file
         output_dir (pathlib.Path): Path object to the output directory
-        debug (bool): True if debug mode is to be used
+        debug (bool): *True* if debug mode is to be used
     """
     parser = argparse.ArgumentParser(description="QUEENS")
     parser.add_argument(
@@ -127,9 +129,11 @@ def print_greeting_message():
     """Print a greeting message and how to use QUEENS."""
     ascii_art.print_banner_and_description()
     ascii_art.print_centered_multiline("Welcome to the royal family!")
-    print("\nTo use QUEENS run:\n")
-    print("queens --input <inputfile> --output_dir <output_dir>\n")
-    print("or\n")
-    print("python -m pqueens.main --input <inputfile> --output_dir <output_dir>\n")
-    print("or\n")
-    print("python path_to_queens/pqueens/main.py --input <inputfile> --output_dir <output_dir>\n")
+    _logger.info('\nTo use QUEENS run:\n')
+    _logger.info('queens --input <inputfile> --output_dir <output_dir>\n')
+    _logger.info('or\n')
+    _logger.info('python -m pqueens.main --input <inputfile> --output_dir <output_dir>\n')
+    _logger.info('or\n')
+    _logger.info(
+        'python path_to_queens/pqueens/main.py --input <inputfile> --output_dir <output_dir>\n'
+    )

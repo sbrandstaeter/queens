@@ -15,10 +15,10 @@ def python_function_driver(job):
     """Driver for python function specified in job dictionary.
 
     Args:
-        job (dict): dictionary containing function
+        job (dict): Dictionary containing function
 
     Returns:
-        result (float): result of run
+        result (float): Result of run
     """
     # run Python function
     _logger.info("Running job for Python function.\n")
@@ -41,7 +41,7 @@ def python_function_driver(job):
         elif param['type'].lower() == 'enum':
             params[name] = vals
         else:
-            raise Exception("Unknown parameter type.")
+            raise TypeError("Unknown parameter type.")
 
     # load module and run
     main_file = job['main-file']

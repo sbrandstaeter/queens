@@ -1,10 +1,18 @@
+"""TODO_doc."""
+
 import numpy as np
 
 from pqueens.randomfields.random_field_gen_KLE import RandomFieldGenKLE
 
 
 class RandomFieldGenKLE1D(RandomFieldGenKLE):
-    """Generator for 1d random fields based on KLE expansion."""
+    """Generator for 1D random fields based on KLE expansion.
+
+    Attributes:
+        w_n: TODO_doc
+        lambda_n: TODO_doc
+        act_energy_frac: TODO_doc
+    """
 
     def __init__(
         self,
@@ -16,6 +24,17 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
         num_ex_term_per_dim,
         num_terms,
     ):
+        """TODO_doc.
+
+        Args:
+            marginal_distribution: TODO_doc
+            corr_length: TODO_doc
+            energy_frac: TODO_doc
+            field_bbox: TODO_doc
+            dimension: TODO_doc
+            num_ex_term_per_dim: TODO_doc
+            num_terms: TODO_doc
+        """
         # RandomFieldGenKLE1D standard constructor
         # call superclass constructor first
         super().__init__(
@@ -57,17 +76,16 @@ class RandomFieldGenKLE1D(RandomFieldGenKLE):
         """Generate sample of standard Gaussian field.
 
         Compute realization of standard Gaussian field based on passed phase
-        angles phase_angles and location
+        angles *phase_angles* and location.
 
         Arguments:
-            loc (np.array):             Locations at which to evaluate generated
+            loc (np.array):             Locations at which to evaluate the generated
                                         field
             phase_angles (np.array):    Realization of standard normal random
                                         phase angles
         Returns:
-            np.array: values of the random field realization at loc
+            np.array: Values of the random field realization at *loc*
         """
-
         if len(phase_angles) is not self.stoch_dim:
             raise RuntimeError(
                 'Number of random phase angles does not match ' 'stochastic dimension of the field!'

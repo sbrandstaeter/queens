@@ -2,7 +2,7 @@
 """Database.
 
 This package in essence contains a module to store data related to
-computer experiments in a mongodb based database. The class in the
+computer experiments in a mongoDB based database. The class in the
 module provides a convenience layer around certain functions which are
 needed in QUEENS to read and write input/output data of simulation
 models.

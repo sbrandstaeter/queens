@@ -27,33 +27,33 @@ class GPPrecompiled(RegressionApproximation):
     """A custom Gaussian process implementation using numba.
 
     It precompiles linear algebra operations. The GP also allows to specify a Gamma hyper-
-    prior or the length scale but only computes the MAP estimate and does not
+    prior or the length scale, but only computes the MAP estimate and does not
     marginalize the hyper-parameters.
 
     Attributes:
-        x_test_vec (np.array): Testing input points for the GP
-        y_train_vec (np.array): Training outputs for the GP
-        k_mat_inv (np.array): Inverse of the assembled covariance matrix
-        cholesky_k_mat (np.array): Lower cholesky decomposition of the covariance matrix
-        k_mat (np.array): Assembled covariance matrix of the GP
-        gamma_k_prior (float): Parameter of Gamma hyper-prior for length scale
-        gamma_theta_prior (float): Parameter of Gamma hyper-prior for length scale
-        partial_sigma_0_sq (float): Partial derivative of evidence w.r.t. signal variance
-        partial_l_scale_sq (float): Partial derivative of evidence w.r.t. squared length scale
-        partial_sigma_n_sq (float): Partial derivative of evidence w.r.t. noise variance
-        prior_mean_function_type (str): Type of mean function
-        hyper_prior_bool (bool): Boolean for lengthscale hyper-prior. If true, the hyperprior
-                                 is used in the computations
-        stochastic_optimizer (obj): Stochastic optimizer object
-        scaler_x (obj): Scaler for inputs
-        scaler_y (obj): Scaler for outputs
+        x_train_vec: TODO_doc
+        y_train_vec (np.array): Training outputs for the GP.
+        k_mat_inv (np.array): Inverse of the assembled covariance matrix.
+        cholesky_k_mat (np.array): Lower Cholesky decomposition of the covariance matrix.
+        k_mat (np.array): Assembled covariance matrix of the GP.
+        gamma_k_prior (float): Parameter of Gamma hyper-prior for length scale.
+        gamma_theta_prior (float): Parameter of Gamma hyper-prior for length scale.
+        partial_sigma_0_sq (float): Partial derivative of evidence w.r.t. the signal variance.
+        partial_l_scale_sq (float): Partial derivative of evidence w.r.t. the squared length scale.
+        partial_sigma_n_sq (float): Partial derivative of evidence w.r.t. the noise variance.
+        prior_mean_function_type (str): Type of mean function.
+        hyper_prior_bool (bool): Boolean for lengthscale hyper-prior. If *True*, the hyperprior
+                                 is used in the computations.
+        stochastic_optimizer (obj): Stochastic optimizer object.
+        scaler_x (obj): Scaler for inputs.
+        scaler_y (obj): Scaler for outputs.
         grad_log_evidence_value (np.array): Current gradient of the log marginal likelihood w.r.t.
-                                            the parameterization
-        sigma_0_sq (float): Signal variance of the RBF kernel
-        l_scale_sq (float): Squared length scale of the RBF kernel
-        sigma_n_sq (float): Noise variance of the RBF kernel
-        noise_var_lb (float): Lower bound for Gaussian noise variance in RBF kernel
-        plot_refresh_rate (int): Refresh rate of the plot (every n-iterations)
+                                            the parameterization.
+        sigma_0_sq (float): Signal variance of the RBF kernel.
+        l_scale_sq (float): Squared length scale of the RBF kernel.
+        sigma_n_sq (float): Noise variance of the RBF kernel.
+        noise_var_lb (float): Lower bound for Gaussian noise variance in RBF kernel.
+        plot_refresh_rate (int): Refresh rate of the plot (every n-iterations).
     """
 
     def __init__(
@@ -80,7 +80,31 @@ class GPPrecompiled(RegressionApproximation):
         noise_var_lb,
         plot_refresh_rate,
     ):
-        """Instantiate the precompiled Gaussian Process."""
+        """Instantiate the precompiled Gaussian Process.
+
+        Args:
+            x_train_vec: TODO_doc
+            y_train_vec: TODO_doc
+            gamma_k_prior: TODO_doc
+            gamma_theta_prior: TODO_doc
+            prior_mean_function_type: TODO_doc
+            k_mat_inv: TODO_doc
+            cholesky_k_mat: TODO_doc
+            k_mat: TODO_doc
+            partial_sigma_0_sq: TODO_doc
+            partial_l_scale_sq: TODO_doc
+            partial_sigma_n_sq: TODO_doc
+            hyper_prior_bool: TODO_doc
+            stochastic_optimizer: TODO_doc
+            scaler_x: TODO_doc
+            scaler_y: TODO_doc
+            grad_log_evidence_value: TODO_doc
+            sigma_0_sq: TODO_doc
+            l_scale_sq: TODO_doc
+            sigma_n_sq: TODO_doc
+            noise_var_lb: TODO_doc
+            plot_refresh_rate: TODO_doc
+        """
         self.x_train_vec = x_train_vec
         self.y_train_vec = y_train_vec
         self.k_mat_inv = k_mat_inv
@@ -196,7 +220,8 @@ class GPPrecompiled(RegressionApproximation):
             )
 
         # configure the stochastic optimizer and iterative averaging
-        stochastic_optimizer = from_config_create_optimizer(config, approx_name)
+        stochastic_optimizer_name = config[approx_name].get("stochastic_optimizer_name")
+        stochastic_optimizer = from_config_create_optimizer(config, stochastic_optimizer_name)
 
         # get the plot refresh rate
         plot_refresh_rate = config[approx_name].get("plot_refresh_rate", None)
@@ -240,15 +265,15 @@ class GPPrecompiled(RegressionApproximation):
     @staticmethod
     @jit(nopython=True)
     def pre_compile_linalg_gp(x_train_mat, sigma_0_sq, l_scale_sq, sigma_n_sq):
-        """Pre-compile the generation of the covariance matrix.
+        r"""Pre-compile the generation of the covariance matrix.
 
-        Also compute/pre-compile necessary
-        derivatives for finding the MAP estimate of the GP. The covariance
-        function here is the squared exponential covariance function.
+        Also compute/pre-compile necessary derivatives for finding the MAP
+        estimate of the GP. The covariance function here is the squared
+        exponential covariance function.
 
         Args:
             x_train_mat (np.array): Training input points for the GP. Row-wise samples are stored,
-                                    differnt columns correspond to different input dimensions.
+                                    different columns correspond to different input dimensions
             sigma_0_sq (float): Signal standard deviation of the squared exponential covariance
                                 function
             l_scale_sq (float): Length scale of the squared exponential covariance function
@@ -257,10 +282,13 @@ class GPPrecompiled(RegressionApproximation):
         Returns:
             k_mat (np.array): Assembled covariance matrix of the GP
             k_mat_inv (np.array): Inverse of the assembled covariance matrix
-            cholesky_k_mat (np.array): Lower cholesky decomposition of the covariance matrix
-            partial_sigma_0_sq (np.array): Derivative of the covariance function w.r.t. sigma_0**2
-            partial_l_scale_sq (np.array): Derivative of the covariance function w.r.t. l_scale**2
-            partial_sigma_n_sq (np.array): Derivative of the covariance function w.r.t. sigma_n**2
+            cholesky_k_mat (np.array): Lower Cholesky decomposition of the covariance matrix
+            partial_sigma_0_sq (np.ar:): Derivative of the covariance function w.r.t.
+            :math:`\sigma_0^2`
+            partial_l_scale_sq (np.array): Derivative of the covariance function w.r.t.
+            :math:`l_{scale}^2`
+            partial_sigma_n_sq (np.array): Derivative of the covariance function w.r.t.
+            :math:`\sigma_n^2`
         """
         k_mat = np.zeros((x_train_mat.shape[0], x_train_mat.shape[0]), dtype=np.float64)
         partial_l_scale_sq = np.zeros(
@@ -317,17 +345,18 @@ class GPPrecompiled(RegressionApproximation):
         Args:
             k_mat_inv (np.array): Inverse of the assembled covariance matrix
             x_test_mat (np.array): Testing input points for the GP. Individual samples row-wise,
-                        columns correspond to different dimensions.
+                        columns correspond to different dimensions
             x_train_mat (np.array): Training input points for the GP. Individual samples row-wise,
-                                    columns correspond to different dimensions.
+                                    columns correspond to different dimensions
             y_train_vec (np.array): Training outputs for the GP. Column vector where rows correspond
-                                    to different samples.
+                                    to different samples
             sigma_0_sq (float): Signal variance for squared exponential covariance function
             l_scale_sq (float): Squared length scale for squared exponential covariance function
             prior_mean_function_type (str): Type of the prior mean function
 
         Returns:
-            mu_vec (np.array): Posterior mean vector of the Gaussian Process evaluated at x_test_vec
+            mu_vec (np.array): Posterior mean vector of the Gaussian Process evaluated at
+            *x_test_vec*
         """
         k_vec = np.zeros((x_train_mat.shape[0], x_test_mat.shape[0]), dtype=np.float64)
         for j, x_test in enumerate(x_test_mat):
@@ -366,18 +395,19 @@ class GPPrecompiled(RegressionApproximation):
         Args:
             k_mat_inv (np.array): Inverse of the assembled covariance matrix
             x_test_mat (np.array): Testing input points for the GP. Individual samples row-wise,
-                        columns correspond to different dimensions.
+                        columns correspond to different dimensions
             x_train_mat (np.array): Training input points for the GP. Individual samples row-wise,
-                                    columns correspond to different dimensions.
+                                    columns correspond to different dimensions
             sigma_0_sq (float): Signal variance for squared exponential covariance function
             l_scale_sq (float): Squared length scale for squared exponential covariance function
+            sigma_n_sq: TODO_doc
             support (str): Support type for the posterior distribution. For 'y' the posterior
-                        is computed w.r.t. the output data; For 'f' the GP is computed w.r.t. the
-                        latent function f.
+                        is computed w.r.t. the output data; for 'f' the GP is computed w.r.t. the
+                        latent function `f`
 
         Returns:
             posterior_variance_vec (np.array): Posterior variance vector of the GP evaluated
-                                               at the testing points x_test_vec
+            at the testing points *x_test_vec*
         """
         k_mat_test_train = np.zeros((x_train_mat.shape[0], x_test_mat.shape[0]), dtype=np.float64)
         for j, x_test in enumerate(x_test_mat):
@@ -419,8 +449,9 @@ class GPPrecompiled(RegressionApproximation):
 
         Args:
             param_vec (np.array): Vector containing values of hyper-parameters.
-                                    Note this is already used here in some of the other input
-                                    values are computed beforehand and stored as attributes.
+                                    **Note**: This is already used here in some of the other input
+                                    values are computed beforehand and stored as attributes
+                                    (**TODO_doc:** reformulate the note.)
             y_train_vec (np.array): Output training vector of the GP
             x_train_vec (np.array): Input training vector for the GP
             k_mat_inv (np.array): Current inverse of the GP covariance matrix
@@ -433,7 +464,7 @@ class GPPrecompiled(RegressionApproximation):
 
         Returns:
             grad (np.array): Gradient vector of the evidence w.r.t. the parameterization
-                             of the hyperparameters
+            of the hyperparameters
         """
         sigma_0_sq_param, l_scale_sq_param, sigma_n_sq_param = param_vec
         data_minus_prior_mean = y_train_vec - x_train_vec
@@ -455,13 +486,13 @@ class GPPrecompiled(RegressionApproximation):
         return grad
 
     def log_evidence(self):
-        """Log evidence / log marginal likelihood of the GP.
+        """Log evidence/log marginal likelihood of the GP.
 
         Returns:
             evidence_eff (float): Evidence of the GP for current choice of
-                                  hyperparameters
+            hyperparameters
         """
-        # decide which mean prior formulaton shall be used
+        # decide which mean prior formulation shall be used
         y_dim = self.y_train_vec.flatten().size
         if self.prior_mean_function_type is None:
             data_minus_prior_mean = self.y_train_vec.reshape(y_dim, 1)
@@ -501,11 +532,8 @@ class GPPrecompiled(RegressionApproximation):
     def train(self):
         """Train the Gaussian Process.
 
-        Training is conducted by maximizing the evidence / marginal likelihood by
-        minimizing the negative log evidence.
-
-        Returns:
-            None
+        Training is conducted by maximizing the evidence/marginal
+        likelihood by minimizing the negative log evidence.
         """
         # initialize hyperparameters and associated linear algebra
         sigma_0_sq_param_init = np.log(self.sigma_0_sq)
@@ -587,9 +615,14 @@ class GPPrecompiled(RegressionApproximation):
 
                     # Verbose output
                     _logger.info(
-                        f"Iter {iteration}, parameters {params}, gradient log evidence: "
-                        f"{self.grad_log_evidence_value}, rel L2 change "
-                        f"{rel_L2_change_params:.6f}, log-evidence: {log_ev}"
+                        "Iter %s, parameters %s, gradient log evidence: "
+                        "%s, rel L2 change "
+                        "%.6f, log-evidence: %s",
+                        iteration,
+                        params,
+                        self.grad_log_evidence_value,
+                        rel_L2_change_params,
+                        log_ev,
                     )
 
             # store the max value for log evidence along with the parameters
@@ -612,15 +645,16 @@ class GPPrecompiled(RegressionApproximation):
         _logger.info("GP model trained sucessfully!")
 
     def predict(self, x_test_mat, support='f'):
-        """Predict the posterior distribution of the trained GP at x_test.
+        """Predict the posterior distribution of the trained GP at *x_test*.
 
         Args:
             x_test_mat (np.array): Testing matrix for GP with row-wise (vector-valued)
                                    testing points
             support (str): Type of support for which the GP posterior is computed; If:
-                            - 'f': Posterior w.r.t. the latent function f
-                            - 'y': Latent function is marginalized such that posterior is defined
-                                   w.r.t. the output y (intoduces extra variance)
+
+                            * 'f': Posterior w.r.t. the latent function `f`
+                            * 'y': Latent function is marginalized such that posterior is defined
+                              w.r.t. the output 'y' (introduces extra variance)
 
         Returns:
             output (dict): Output dictionary containing the posterior of the GP
@@ -664,7 +698,7 @@ class GPPrecompiled(RegressionApproximation):
 
         Returns:
             state_dict (dict): Dictionary with the current state settings
-                               of the probabilistic mapping object
+            of the probabilistic mapping object
         """
         hyper_params_dict = {
             'sigma_0_sq': self.sigma_0_sq,
@@ -682,9 +716,6 @@ class GPPrecompiled(RegressionApproximation):
         Args:
             state_dict (dict): Dictionary with the current state settings
                                of the probabilistic mapping object
-
-        Returns:
-            None
         """
         # conduct some checks
         valid_keys = [

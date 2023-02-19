@@ -1,8 +1,7 @@
 """A module that provides utilities and a class for visualization in VI.
 
-It is designed such that the
-VIVisualization class needs only to be initialized once and can then be accessed and modified in
- the entire project.
+It is designed such that the VIVisualization class needs only to be
+initialized once and can then be accessed and modified in the entire project.
 
 In this context "this" is a pointer to the module object instance itself and can be compared to the
 "self" keyword in classes.
@@ -18,7 +17,7 @@ this.vi_visualization_instance = None
 
 
 def from_config_create(config):
-    """Calls `from_config_create` and creates a singleton like object.
+    """Calls *from_config_create* and creates a singleton like object.
 
     Args:
         config (dict): Dictionary created from the input file, containing the problem description
@@ -33,8 +32,8 @@ class VIVisualization(object):
        path (str): Paths to save the plots.
        save_bool (bool): Boolean to save plot.
        plot_boolean (bool): Boolean for determining whether should be plotted or not.
-       axs_convergence_plots (matplotlib axes): Axes for the convergence plot
-       fig_convergence_plots (matplotlib figure): Figure for the convergence plot
+       axs_convergence_plots (matplotlib axes): Axes for the convergence plot.
+       fig_convergence_plots (matplotlib figure): Figure for the convergence plot.
     """
 
     # some overall class states
@@ -67,7 +66,7 @@ class VIVisualization(object):
         Returns:
             Instance of VIVisualization (obj)
         """
-        method_options = config["method"].get("method_options")
+        method_options = config["method"]
         plotting_options = method_options["result_description"].get("plotting_options")
         path = os.path.join(plotting_options.get("plotting_dir"), plotting_options["plot_name"])
         save_bool = plotting_options.get("save_bool")
@@ -87,7 +86,7 @@ class VIVisualization(object):
         Args:
             iteration (int): Current iteration
             variational_params_list (list): List of parameters from first to last iteration
-            elbo (np.array): Rowvector elbo values over iterations
+            elbo (np.array): Row vector elbo values over iterations
         """
         if iteration > 1 and self.plot_boolean:
             iterations = np.arange(iteration)
@@ -129,11 +128,10 @@ class VIVisualization(object):
             plt.pause(0.0005)
 
     def save_plots(self):
-        """Save the plot to specified path.
+        """Save the plot to specified path."""
+        ###    Args:
+        #           save_bool (bool): Flag to decide whether saving option is triggered
+        #           path (str): Path where to save the plot
 
-        Args:
-            save_bool (bool): Flag to decide whether saving option is triggered.
-            path (str): Path where to save the plot.
-        """
         if self.save_bool:
             self.fig_convergence_plots.savefig(self.path, dpi=300)

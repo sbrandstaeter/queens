@@ -11,12 +11,9 @@ class SingleSimRunIterator(Iterator):
     """Iterator for single simulation run.
 
     Attributes:
-        model (model):              Model to be evaluated by iterator
-        seed  (int):                Seed for random number generation
-        num_samples (int):          Number of samples to compute
-        result_description (dict):  Description of desired results
-        samples (np.array):         Array with all samples
-        outputs (np.array):         Array with all model outputs
+        num_samples (int): Number of samples to compute.
+        samples (np.array): Array with all samples.
+        output (np.array): Array with all model outputs.
     """
 
     def __init__(self, model, global_settings):
@@ -44,9 +41,9 @@ class SingleSimRunIterator(Iterator):
         Returns:
             iterator: MonteCarloIterator object
         """
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
         if model is None:
-            model_name = method_options['model']
+            model_name = method_options['model_name']
             model = from_config_create_model(model_name, config)
 
         global_settings = config.get('global_settings', None)

@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -12,16 +14,17 @@ from pqueens.utils import injector
 def test_ensight_reader_writer(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, config_dir, expected_mean, expected_var
 ):
+    """TODO_doc."""
     # generate json input file from template
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
     baci_release, _, post_drt_ensight, _ = baci_link_paths
     dir_dict = {
         'baci_input': third_party_input_file,
         'post_drt_ensight': post_drt_ensight,
-        'baci-release': baci_release,
+        'baci_release': baci_release,
     }
-    template = os.path.join(inputdir, "baci_ensight_template.json")
-    input_file = os.path.join(tmpdir, "baci_ensight.json")
+    template = os.path.join(inputdir, "baci_ensight_template.yml")
+    input_file = os.path.join(tmpdir, "baci_ensight.yml")
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary
@@ -44,6 +47,7 @@ def test_ensight_reader_writer(
 
 @pytest.fixture()
 def expected_mean():
+    """TODO_doc."""
     result = np.array(
         [
             [1.74423399, 4.33662133],
@@ -67,6 +71,7 @@ def expected_mean():
 
 @pytest.fixture()
 def expected_var():
+    """TODO_doc."""
     result = np.array(
         [
             [0.03219374, 0.23187617],

@@ -3,11 +3,12 @@
 import json
 from pathlib import Path
 
+import numpy as np
 import pytest
 import yaml
 
 from pqueens.utils.exceptions import FileTypeError
-from pqueens.utils.io_utils import load_input_file
+from pqueens.utils.io_utils import load_input_file, write_to_csv
 
 pytestmark = pytest.mark.unit_tests
 
@@ -48,6 +49,27 @@ def test_load_input_file_wrong_file_type(test_path):
 
 
 def test_load_input_file(input_file, input_dict):
-    """Test load_input_file."""
+    """Test *load_input_file*."""
     loaded_dict = load_input_file(input_file)
     assert loaded_dict == input_dict
+
+
+def test_write_to_csv(tmpdir):
+    """Test csv writer."""
+    data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
+
+    # write out data
+    output_file_path = Path(tmpdir, "my_csv_file.csv")
+    write_to_csv(output_file_path, data)
+
+    # read data from written out file with basic readline routine
+    read_in_data_lst = []
+    with open(output_file_path, "r", encoding="utf-8") as in_file:
+        for line in in_file:
+            values = line.strip().split(',')
+            read_in_data_lst.append(values)
+
+    read_in_data = np.array(read_in_data_lst, dtype=np.float64)
+
+    # read the data in again and compare to original data
+    np.testing.assert_array_equal(data, read_in_data)

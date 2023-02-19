@@ -1,0 +1,22 @@
+experiment_name: ParabulaResLSQ
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  type: optimization
+  model_name: model
+  algorithm: LSQ
+  initial_guess: [0.75]
+  result_description:
+    write_results: true
+  bounds: [[-.inf], [.inf]]
+model:
+  type: simulation_model
+  interface_name: interface
+interface:
+  type: direct_python_interface
+  function: parabula_residual
+parameters:
+  x1:
+    type: free
+    dimension: 1

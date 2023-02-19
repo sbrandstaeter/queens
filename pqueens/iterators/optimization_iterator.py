@@ -1,14 +1,7 @@
-"""Deterministic optimization toolbox.
-
-based on the scipy.optimize optimization toolbox [1]
-
-References:
-    [1]: https://docs.scipy.org/doc/scipy/reference/optimize.html
-
-@author: Sebastian Brandstaeter
-"""
+"""Deterministic optimization toolbox."""
 
 import glob
+import logging
 import os
 import pprint
 import time
@@ -24,62 +17,69 @@ from pqueens.models import from_config_create_model
 from pqueens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
 from pqueens.utils.process_outputs import write_results
 
+_logger = logging.getLogger(__name__)
+
 
 class OptimizationIterator(Iterator):
     """Iterator for deterministic optimization problems.
 
+    Based on the *scipy.optimize* optimization toolbox [1].
+
+    References:
+        [1]: https://docs.scipy.org/doc/scipy/reference/optimize.html
+
     Attributes:
-        initial_guess (np.array): initial guess, i.e. start point of
-                                  optimization
-        max_feval (int): maximal number of function evaluations
-        result_description (dict):  Description of desired
-                                    post-processing
         algorithm (str): String that defines the optimization algorithm to be used:
 
-                         - CG: Conjugate gradient optimization (
-                               unconstrained), using Jacobian
+                         - CG: Conjugate gradient optimization (unconstrained), using Jacobian
                          - BFGS: Broyden–Fletcher–Goldfarb–Shanno algorithm (quasi-Newton) for
                                 optimization (iterative method for unconstrained
-                                nonlinear optimization) using Jacobian
+                                nonlinear optimization), using Jacobian
                          - L-BFGS-B: Limited memory Broyden–Fletcher–Goldfarb–Shanno algorithm
                                      with box constraints (for large number of variables)
                          - TNC: Truncated Newton method (Hessian free) for nonlinear optimization
                                 with bounds involving a large number of variables. Jacobian
-                                necessary.
+                                necessary
                          - SLSQP: Sequential Least Squares Programming minimization with bounds
                                   and constraints using Jacobian
                          - LSQ: Nonlinear least squares with bounds using Jacobian
                          - LM: Levenberg-Marquardt optimization for nonlinear problems without
                                the need for a Jacobian
                          - COBYLA: Constrained Optimization BY Linear Approximation (no Jacobian)
-                         - NELDER-MEAD: Downhill-simplex search method (unconstrained,
-                                        unbounded) without the need for a Jacobian
+                         - NELDER-MEAD: Downhill-simplex search method (unconstrained, unbounded)
+                                        without the need for a Jacobian
                          - POWELL: Powell's conjugate direction method (unconstrained) without the
                                    need for a Jacobian. Minimizes the function by a
-                                   bi-directional search along each search vector.
-
-        bounds (np.array): Boundaries for the optimization (does not work with LM)
-        constraints (np.array): Nonlinear constraints for the optimization (does not work with LM)
-        global_settings (dict): Dictionary with global settings for the analysis
+                                   bi-directional search along each search vector
+        bounds (np.array): Boundaries for the optimization (does not work with LM).
+        cons (np.array): Nonlinear constraints for the optimization (does not work with LM).
+        initial_guess (np.array): Initial guess, i.e. start point of
+                                  optimization.
         jac_method (str): Method to calculate a finite difference based approximation of the
                           Jacobian matrix:
 
                           - '2-point': a one sided scheme by definition
                           - '3-point': more exact but needs twice as many function evaluations
-
-        jac_rel_step ():
-        max_feval (int): Maximum number of forward simulation runs
-        model (obj): Instance of model class to run the optimization on
-        result_description (dict): Dictionary containing descriptions for result handling
-        verbose_output (int): Integer encoding the which kind of verbose information should be
-                              printed by the optimizers (not applicable for LM)
+        jac_rel_step: TODO_doc
+        max_feval (int): Maximal number of function evaluations.
+        result_description (dict): Description of desired post-processing.
         experimental_data_path_list (list): List containing the path to base directories with
-                                            experimental data csv-files
-        output_column (int): species the columns that belong to the y_obs in the experimental
+                                            experimental data csv-files.
+        experimental_data_dict: TODO_doc
+        output_column (int): Specifies the columns that belong to the *y_obs* in the experimental
                              data set (currently only scalar output possible but could be
-                             extended to vector-valued output)
+                             extended to vector-valued output).
+        eval_jacobian: TODO_doc
+        verbose_output (int): Integer encoding which kind of verbose information should be
+                              printed by the optimizers (not applicable for LM).
+        db: TODO_doc
+        experiment_name: TODO_doc
+        coordinate_labels: TODO_doc
+        output_label: TODO_doc
+        axis_scaling_experimental: TODO_doc
+        output_scaling_experimental: TODO_doc
         precalculated_positions (dict): Dictionary containing precalculated positions and
-                                        corresponding model responses
+                                        corresponding model responses.
 
     Returns:
         OptimizationIterator (obj): Instance of the OptimizationIterator
@@ -107,6 +107,29 @@ class OptimizationIterator(Iterator):
         result_description,
         verbose_output,
     ):
+        """TODO_doc.
+
+        Args:
+            algorithm: TODO_doc
+            axis_scaling_experimental: TODO_doc
+            bounds: TODO_doc
+            constraints: TODO_doc
+            coordinate_labels: TODO_doc
+            db: TODO_doc
+            experimental_data_path_list: TODO_doc
+            experiment_name: TODO_doc
+            global_settings: TODO_doc
+            initial_guess: TODO_doc
+            jac_method: TODO_doc
+            jac_rel_step: TODO_doc
+            max_feval: TODO_doc
+            model: TODO_doc
+            output_column: TODO_doc
+            output_label: TODO_doc
+            output_scaling_experimental: TODO_doc
+            result_description: TODO_doc
+            verbose_output: TODO_doc
+        """
         super().__init__(model, global_settings)
 
         self.algorithm = algorithm
@@ -146,14 +169,13 @@ class OptimizationIterator(Iterator):
         Returns:
             iterator: OptimizationIterator object
         """
-        print(
-            "Optimization Iterator for experiment: {0}".format(
-                config.get('global_settings').get('experiment_name')
-            )
+        _logger.info(
+            "Optimization Iterator for experiment: %s",
+            config.get('global_settings').get('experiment_name'),
         )
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
         if model is None:
-            model_name = method_options['model']
+            model_name = method_options['model_name']
             model = from_config_create_model(model_name, config)
 
         result_description = method_options.get('result_description', None)
@@ -190,14 +212,10 @@ class OptimizationIterator(Iterator):
         else:
             db = None
         experiment_name = config['global_settings']['experiment_name']
-        coordinate_labels = config['method']['method_options'].get('coordinate_labels')
-        output_label = config['method']['method_options'].get('output_label')
-        axis_scaling_experimental = config['method']['method_options'].get(
-            'axis_scaling_experimental'
-        )
-        output_scaling_experimental = config['method']['method_options'].get(
-            'output_scaling_experimental'
-        )
+        coordinate_labels = config['method'].get('coordinate_labels')
+        output_label = config['method'].get('output_label')
+        axis_scaling_experimental = config['method'].get('axis_scaling_experimental')
+        output_scaling_experimental = config['method'].get('output_scaling_experimental')
 
         # initialize objective function
         return cls(
@@ -223,19 +241,19 @@ class OptimizationIterator(Iterator):
         )
 
     def objective_function(self, x_vec, coordinates=None):
-        """Evaluate objective function at x_vec (in this sense the parameters).
+        """Evaluate objective function at *x_vec*.
 
         Args:
-            x_vec (np.array): input vector for model/objective function. The variable x_vec
+            x_vec (np.array): Input vector for model/objective function. The variable *x_vec*
                               corresponds to the parameters that should be calibrated in an
                               inverse problem.
             coordinates (np.array): Coordinates that specify where to evaluate the model response.
                                     For inverse problems this corresponds to the input that is
-                                    not part of the parameters which should be calibrated but
-                                    rather coordinates e.g. in space and time.
+                                    not part of the parameters which should be calibrated, but
+                                    rather coordinates, e.g. in space and time.
                                     We already preselect the to the coordinates corresponding
-                                    response vector of the model in the data_processor class to not
-                                    have to store the entire model response.
+                                    response vector of the model in the *data_processor*
+                                    class, to not have to store the entire model response.
 
         Returns:
             f_value (float): Response of objective function or model
@@ -243,13 +261,19 @@ class OptimizationIterator(Iterator):
         f_value = self.eval_model(x_vec)
 
         parameter_list = self.parameters.parameters_keys
-        print(f"The intermediate, iterated parameters " f"{*parameter_list, } are:\n\t{x_vec}")
+        _logger.info("The intermediate, iterated parameters %s are:\n\t%s", parameter_list, x_vec)
 
         return f_value
 
     def jacobian(self, x0):
-        """Evaluate Jacobian of objective function at x0."""
-        positions, delta_positions = get_positions(
+        """Evaluate Jacobian of objective function at *x0*.
+
+        Args:
+            x0: TODO_doc
+        Returns:
+            TODO_doc
+        """
+        additional_positions, delta_positions = get_positions(
             x0, method=self.jac_method, rel_step=self.jac_rel_step, bounds=self.bounds
         )
         _, use_one_sided = compute_step_with_bounds(
@@ -257,6 +281,7 @@ class OptimizationIterator(Iterator):
         )
 
         # model response should now correspond to objective function evaluated at positions
+        positions = np.vstack((x0, additional_positions))
         f_batch = self.eval_model(positions)
 
         f0 = f_batch[0].reshape(-1)  # first entry corresponds to f(x0)
@@ -278,12 +303,12 @@ class OptimizationIterator(Iterator):
 
     def pre_run(self):
         """Get initial guess."""
-        print("Initialize Optimization run.")
+        _logger.info("Initialize Optimization run.")
         self._get_experimental_data_and_write_to_db()
 
     def core_run(self):
         """Core run of Optimization iterator."""
-        print('Welcome to Optimization core run.')
+        _logger.info('Welcome to Optimization core run.')
         start = time.time()
         # nonlinear least squares optimization with Levenberg-Marquardt (without Jacobian here!)
         # Jacobian of the model could be integrated for better performance
@@ -368,20 +393,20 @@ class OptimizationIterator(Iterator):
                 options={'disp': self.verbose_output},
             )
         end = time.time()
-        print(f"Optimization took {end-start} seconds.")
+        _logger.info("Optimization took %E seconds.", end - start)
 
     def post_run(self):
         """Analyze the resulting optimum."""
         if self.algorithm == 'LM':
             parameter_list = self.parameters.parameters_keys()
-            print(
-                f"The optimum of the parameters " f"{*parameter_list, } is:\n\t{self.solution[0]}"
+            _logger.info(
+                "The optimum of the parameters " "%s is:\n\t%s", *parameter_list, self.solution[0]
             )
         else:
-            print(f"The optimum:\n\t{self.solution.x}")
+            _logger.info("The optimum:\n\t%s", self.solution.x)
             if self.algorithm == 'LSQ':
-                print(f"Optimality:\n\t{self.solution.optimality}")
-                print(f"Cost:\n\t{self.solution.cost}")
+                _logger.info("Optimality:\n\t%s", self.solution.optimality)
+                _logger.info("Cost:\n\t%s", self.solution.cost)
 
         if self.result_description:
             if self.result_description["write_results"]:
@@ -409,12 +434,17 @@ class OptimizationIterator(Iterator):
             non_csv_files = [x for x in all_files_list if x not in files_of_interest_list]
 
             if non_csv_files:
-                print('#####################################################################')
-                pprint.pprint(
-                    f'The following experimental data files could not be read-in as they do '
-                    f'not have a .csv file-ending: {non_csv_files}'
+                _logger.info(
+                    '#####################################################################'
                 )
-                print('#####################################################################')
+                _logger.info(
+                    'The following experimental data files could not be read-in as they do '
+                    'not have a .csv file-ending: %s',
+                    non_csv_files,
+                )
+                _logger.info(
+                    '#####################################################################'
+                )
 
             # read all experimental data into one numpy array
             # TODO filter out / handle corrupted data and NaNs
@@ -497,7 +527,7 @@ class OptimizationIterator(Iterator):
             position (np.ndarray): Position at which the model should be evaluated
 
         Returns:
-            (np.ndarray): Precalculated model response or None
+            np.ndarray: Precalculated model response or *None*
         """
         for i, precalculated_position in enumerate(self.precalculated_positions['position']):
             if np.equal(position, precalculated_position).all():

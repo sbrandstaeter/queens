@@ -18,7 +18,13 @@ class DataFitSurrogateModel(Model):
     """Surrogate model class.
 
     Attributes:
-        interface (interface):          approximation interface
+        interface (interface):          Approximation interface.
+        subordinate_model: TODO_doc
+        subordinate_iterator: TODO_doc
+        testing_iterator: TODO_doc
+        eval_fit: TODO_doc
+        error_measures: TODO_doc
+        nash_sutcliffe_efficiency: TODO_doc
     """
 
     def __init__(
@@ -37,8 +43,6 @@ class DataFitSurrogateModel(Model):
         Args:
             model_name (string):        Name of model
             interface (interface):      Interface to simulator
-            model_parameters (dict):    Dictionary with description of
-                                        model parameters
             subordinate_model (model):  Model the surrogate is based on
             subordinate_iterator (Iterator): Iterator to evaluate the subordinate
                                              model with the purpose of getting
@@ -68,15 +72,15 @@ class DataFitSurrogateModel(Model):
             config (dict):       Dictionary containing problem description
 
         Returns:
-            data_fit_surrogate_model:   Instance of DataFitSurrogateModel
+            data_fit_surrogate_model: Instance of DataFitSurrogateModel
         """
         # get options
         model_options = config[model_name]
-        interface_name = model_options["interface"]
+        interface_name = model_options["interface_name"]
 
-        subordinate_model_name = model_options.get("subordinate_model", None)
-        subordinate_iterator_name = model_options["subordinate_iterator"]
-        testing_iterator_name = model_options.get("testing_iterator", None)
+        subordinate_model_name = model_options.get("subordinate_model_name", None)
+        subordinate_iterator_name = model_options["subordinate_iterator_name"]
+        testing_iterator_name = model_options.get("testing_iterator_name", None)
 
         eval_fit = model_options.get("eval_fit", None)
         error_measures = model_options.get("error_measures", None)
@@ -116,6 +120,9 @@ class DataFitSurrogateModel(Model):
     def evaluate(self, samples):
         """Evaluate model with current set of variables.
 
+        Args:
+            samples: TODO_doc
+
         Returns:
             np.array: Results corresponding to current set of variables
         """
@@ -124,6 +131,21 @@ class DataFitSurrogateModel(Model):
 
         self.response = self.interface.evaluate(samples)
         return self.response
+
+    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
+        """Evaluate model and the model gradient with current set of samples.
+
+        Args:
+            samples (np.array): Current sample batch for which the model response should be
+                                calculated.
+            upstream_gradient_fun (obj): The gradient an upstream objective function w.r.t. the
+                                         model output.
+                                         This function is needed for `adjoint`-based gradient
+                                         calculation.
+        """
+        raise NotImplementedError(
+            "Gradient method is not implemented in `data_fit_surrogate_model`."
+        )
 
     def build_approximation(self):
         """Build underlying approximation."""
@@ -143,7 +165,7 @@ class DataFitSurrogateModel(Model):
                 x_test=x_train, y_test=y_train, k_fold=5, measures=self.error_measures
             )
             for measure, error in error_measures.items():
-                _logger.info("Error {} is: {}".format(measure, error))
+                _logger.info("Error %s is: %s", measure, error)
         # TODO check that final surrogate is on all points
 
         if self.testing_iterator:
@@ -153,7 +175,7 @@ class DataFitSurrogateModel(Model):
 
             error_measures = self.eval_surrogate_accuracy(x_test, y_test, self.error_measures)
             for measure, error in error_measures.items():
-                _logger.info("Error {} is: {}".format(measure, error))
+                _logger.info("Error %s is: %s", measure, error)
 
     def eval_surrogate_accuracy(self, x_test, y_test, measures):
         """Evaluate the accuracy of the surrogate model based on test set.
@@ -191,11 +213,11 @@ class DataFitSurrogateModel(Model):
         Args:
             x_test (np.array):       Input array
             y_test (np.array):       Output array
-            k_fold (int):       Split dataset in k_fold subsets for cv
+            k_fold (int):       Split dataset in `k_fold` subsets for cv
             measures (list):    List with desired error metrics
 
         Returns:
-            dict: Dictionary with error measures and corresponding error values
+            dict:y with error measures and corresponding error values
         """
         if not self.interface.is_initialized():
             raise RuntimeError("Cannot compute accuracy on uninitialized model")
@@ -212,8 +234,8 @@ class DataFitSurrogateModel(Model):
         Compute based on difference between predicted and actual values.
 
         Args:
-            y_test (ndarray): output values from testing data set
-            y_posterior_mean (ndarray): posterior mean values of the GP
+            y_test (ndarray): Output values from testing data set
+            y_posterior_mean (ndarray): Posterior mean values of the GP
             measures (list):   Dictionary with desired error measures
 
         Returns:
@@ -229,12 +251,12 @@ class DataFitSurrogateModel(Model):
         """Compute error for given a specific error measure.
 
         Args:
-            y_test (ndarray): output values from testing data set
-            y_posterior_mean (ndarray): posterior mean values of the GP
+            y_test (ndarray): Output values from testing data set
+            y_posterior_mean (ndarray): Posterior mean values of the GP
             measure (str):     Desired error metric
 
         Returns:
-            float: error based on desired metric
+            float: Error based on desired metric
         """
         return {
             "sum_squared": np.sum((y_test - y_posterior_mean) ** 2),
@@ -250,11 +272,11 @@ class DataFitSurrogateModel(Model):
         r"""Compute Nash-Sutcliffe model efficiency.
 
         .. math::
-            NSE = 1-\\frac{\\sum_{i=1}^{N}(e_{i}-s_{i})^2}{\\sum_{i=1}^{N}(e_{i}-\\bar{e})^2}
+            NSE = 1-\frac{\sum_{i=1}^{N}(e_{i}-s_{i})^2}{\sum_{i=1}^{N}(e_{i}-\bar{e})^2}
 
         Args:
-            y_test (ndarray): output values from testing data set
-            y_posterior_mean (ndarray): posterior mean values of the GP
+            y_test (ndarray): Output values from testing data set
+            y_posterior_mean (ndarray): Posterior mean values of the GP
 
         Returns:
             efficiency (float): Nash-Sutcliffe model efficiency

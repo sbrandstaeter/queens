@@ -10,11 +10,11 @@ class UniformDistribution(Distribution):
     """Uniform distribution class.
 
     Attributes:
-        lower_bound (np.ndarray): Lower bound(s) of the distribution
-        upper_bound (np.ndarray): Upper bound(s) of the distribution
-        width (np.ndarray): Width(s) of the distribution
-        pdf_const (float): Constant for the evaluation of the pdf
-        logpdf_const (float): Constant for the evaluation of the log pdf
+        lower_bound (np.ndarray): Lower bound(s) of the distribution.
+        upper_bound (np.ndarray): Upper bound(s) of the distribution.
+        width (np.ndarray): Width(s) of the distribution.
+        pdf_const (float): Constant for the evaluation of the pdf.
+        logpdf_const (float): Constant for the evaluation of the log pdf.
     """
 
     def __init__(
@@ -79,7 +79,7 @@ class UniformDistribution(Distribution):
             x (np.ndarray): Positions at which the cdf is evaluated
 
         Returns:
-            cdf (np.ndarray): CDF at evaluated positions
+            cdf (np.ndarray): Cdf at evaluated positions
         """
         cdf = np.prod(
             np.clip(
@@ -120,7 +120,7 @@ class UniformDistribution(Distribution):
         return logpdf
 
     def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to x.
+        """Gradient of the log pdf with respect to *x*.
 
         Args:
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated

@@ -1,3 +1,6 @@
+"""TODO_doc."""
+
+import logging
 import os
 import pickle
 from pathlib import Path
@@ -6,16 +9,18 @@ import pytest
 
 from pqueens import run
 
+_logger = logging.getLogger(__name__)
+
 
 def test_elementary_effects_ishigami(inputdir, tmpdir):
     """Test case for elementary effects iterator."""
-    run(Path(os.path.join(inputdir, 'elementary_effects_ishigami.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'elementary_effects_ishigami.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    print(results)
+    _logger.info(results)
 
     assert results["sensitivity_indices"]['mu'][0] == pytest.approx(15.46038594, abs=1e-7)
     assert results["sensitivity_indices"]['mu'][1] == pytest.approx(0.0, abs=1e-7)

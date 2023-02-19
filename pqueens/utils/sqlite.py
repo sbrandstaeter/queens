@@ -1,4 +1,4 @@
-"""Sqlite utils."""
+"""SQLite utils."""
 import io
 import pickle
 import sqlite3
@@ -15,13 +15,13 @@ safe_sqlitedb_operation = partial(safe_operation, max_number_of_attempts=10, wai
 
 
 def type_to_sqlite(object_to_be_stored):
-    """Get sqlite type from object.
+    """Get SQLite type from object.
 
     Args:
-        object_to_be_stored: object to be stored in the db
+        object_to_be_stored: Object to be stored in the DB
 
     Returns:
-        (str) sqlite data type
+        str: SQLite data type
     """
     if isinstance(object_to_be_stored, bool):
         return "BOOLEAN"
@@ -49,10 +49,11 @@ def sqlite_binary_wrapper(function):
     Args:
         function (fun): Function to be wrapped
     Returns:
-        (function) binarized function
+        function: Binarized function
     """
 
     def binarizer(*args, **kwargs):
+        """Binarize inputs."""
         binary_out = function(*args, **kwargs)
         return sqlite3.Binary(binary_out)
 
@@ -67,7 +68,7 @@ def np_array_to_binary(np_array):
         np_array (np.ndarray): Array to be encoded
 
     Returns:
-        bytes: encoded array
+        bytes: Encoded array
     """
     out = io.BytesIO()
     np.save(out, np_array)
@@ -79,7 +80,7 @@ def np_array_from_binary(binarized_array):
     """Decode binary back to numpy array.
 
     Args:
-        binarized_array (bytes): binarized array
+        binarized_array (bytes): Binarized array
 
     Returns:
         np.ndarray: Decoded array
@@ -97,7 +98,7 @@ def obj_to_binary(python_object):
         python_object (obj): Object to be encoded
 
     Returns:
-        bytes: encoded object
+        bytes: Encoded object
     """
     out = pickle.dumps(python_object, protocol=-1)
     return out
@@ -107,7 +108,7 @@ def obj_from_binary(binarized_object):
     """Decode binary back to python object.
 
     Args:
-        binarized_object (bytes): binarized object
+        binarized_object (bytes): Binarized object
 
     Returns:
         obj: Python object
@@ -123,7 +124,7 @@ def pd_dataframe_to_binary(pd_dataframe):
         pd_dataframe (pd.DataFrame): Dataframe to be encoded
 
     Returns:
-        bytes: encoded dataframe
+        bytes: Encoded dataframe
     """
     out = io.BytesIO()
     pd_dataframe.to_pickle(out)
@@ -135,7 +136,7 @@ def pd_dataframe_from_binary(binarized_dataframe):
     """Decode binary back to pd dataframe.
 
     Args:
-        binarized_dataframe (bytes): binarized object
+        binarized_dataframe (bytes): Binarized object
 
     Returns:
         pf.dataframe: Dataframe object
@@ -153,7 +154,7 @@ def boolean_to_binary(boolean):
         boolean (bool): Bool to be encoded
 
     Returns:
-        bytes: encoded boolean
+        bytes: Encoded boolean
     """
     return bytes(boolean)
 
@@ -161,10 +162,10 @@ def boolean_to_binary(boolean):
 def boolean_from_binary(binarized_boolean):
     """Decode binary back to bool.
 
-    Args
-        binarized_bool (bytes): binarized bool
+    Args:
+        binarized_bool (bytes): Binarized bool
 
     Returns:
-        bool: decoded bool
+        bool: Decoded bool
     """
     return bool(binarized_boolean)

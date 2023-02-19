@@ -14,19 +14,17 @@ from pqueens.utils.pool_utils import create_pool
 class DirectPythonInterface(Interface):
     """Class for mapping input variables to responses using a python function.
 
-        The DirectPythonInterface class maps input variables to outputs,
-        i.e. responses by making direct calls to a python function. The function
-        has to be defined in a file, which is passed as an argument at runtime.
-        The structure of the file must adhere to the structure of the files
-        in the folder pqueens/example_input_files. In fact the purpose of
-        this class is to be able to call the test examples in said folder.
+    The *DirectPythonInterface* class maps input variables to outputs,
+    i.e. responses, by making direct calls to a python function. The function
+    has to be defined in a file, which is passed as an argument at runtime.
+    The structure of the file must adhere to the structure of the files
+    in the folder *pqueens/example_input_files*. In fact the purpose of
+    this class is to be able to call the test examples in the said folder.
 
     Attributes:
-        name (string):          name of interface
-        variables (dict):       dictionary with variables
-        function (function):    function to evaluate
-        pool (pathos pool):     multiprocessing pool
-        latest_job_id (int):    Latest job id
+        function (function):    Function to evaluate.
+        pool (pathos pool):     Multiprocessing pool.
+        latest_job_id (int):    Latest job ID.
     """
 
     def __init__(self, interface_name, function, pool):
@@ -48,20 +46,20 @@ class DirectPythonInterface(Interface):
         """Create interface from config dictionary.
 
         Args:
-            interface_name (str):   name of interface
-            config(dict):           dictionary containing problem description
+            interface_name (str):   Name of interface
+            config(dict):           Dictionary containing problem description
 
         Returns:
-            interface:              instance of DirectPythonInterface
+            interface: Instance of DirectPythonInterface
         """
         interface_options = config[interface_name]
 
         num_workers = interface_options.get('num_workers', 1)
-        function_name = interface_options.get("function_name", None)
+        function_name = interface_options.get("function", None)
         external_python_function = interface_options.get("external_python_module_function", None)
 
         if function_name is None:
-            raise ValueError(f"Keyword 'function_name' is missing in interface '{interface_name}'")
+            raise ValueError(f"Keyword 'function' is missing in interface '{interface_name}'")
 
         if external_python_function is None:
             # Try to load existing simulator functions
@@ -74,18 +72,19 @@ class DirectPythonInterface(Interface):
 
         return cls(interface_name=interface_name, function=my_function, pool=pool)
 
-    def evaluate(self, samples, gradient_bool=False):
-        """Mapping function which orchestrates call to simulator function.
+    def evaluate(self, samples):
+        """Orchestrate call to simulator function.
 
         Args:
             samples (list): List of variables objects
-            gradient_bool (bool): Flag to determine, whether the gradient of the function at
-                                  the evaluation point is expected (True) or not (False)
 
         Returns:
             dict: dictionary with
-                  key:     value:
-                  'mean' | ndarray shape:(samples size, shape_of_response)
+                +----------+------------------------------------------------+
+                |**key:**  |  **value:**                                    |
+                +----------+------------------------------------------------+
+                |'mean'    | ndarray shape (samples size, shape_of_response)|
+                +----------+------------------------------------------------+
         """
         number_of_samples = len(samples)
 
@@ -108,41 +107,42 @@ class DirectPythonInterface(Interface):
         else:
             results = list(map(self.function, tqdm(samples_list)))
 
-        if gradient_bool:
-            result_lst = []
-            gradient_lst = []
-            for result in results:
-                result_lst.append(result[0])
-                gradient_lst.append(result[1].T)
-            output = {'mean': np.array(result_lst)}
-            output['gradient'] = np.array(gradient_lst)
+        output = {}
+        # check if gradient is returned --> tuple
+        if isinstance(results[0], tuple):
+            results_iterator, gradient_iterator = zip(*results)
+            results_array = np.array(list(results_iterator))
+            gradients_array = np.array(list(gradient_iterator))
+            output["gradient"] = gradients_array
         else:
-            output = {'mean': np.array(results)}
+            results_array = np.array(results)
 
+        output["mean"] = results_array
         return output
 
     @staticmethod
     def function_wrapper(function):
         """Wrap the function to be used.
 
-        This wrapper calls the function by a kwargs dict only and reshapes output as needed. This
-        way if called in a pool the reshaping is also done by the workers.
+        This wrapper calls the function by a kwargs dict only and reshapes the output as needed.
+        This way if called in a pool, the reshaping is also done by the workers.
 
         Args:
-            function (function): function to be wrapped
+            function (function): Function to be wrapped
 
         Returns:
-            reshaped_output_function (function): wrapped function
+            reshaped_output_function (function): Wrapped function
         """
+        pass
 
         def reshaped_output_function(sample_dict):
             """Call function and reshape output.
 
             Args:
-                sample_dict (dict): dictionary containing parameters and `job_id`
+                sample_dict (dict): Dictionary containing parameters and `job_id`
 
             Returns:
-                (np.ndarray): result of the function call
+                (np.ndarray): Result of the function call
             """
             result_array = function(**sample_dict)
             if isinstance(result_array, tuple):

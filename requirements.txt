@@ -134,7 +134,9 @@ jax[cpu]==0.4.1
     # via -r requirements.in
 jaxlib==0.4.1
     # via jax
-joblib==1.2.0
+jinja2==3.1.2
+    # via -r requirements.in
+joblib==1.1.0
     # via
     #   particles
     #   scikit-learn
@@ -158,8 +160,10 @@ logical-unification==0.4.5
 markdown==3.4.1
     # via tensorboard
 markupsafe==2.1.1
-    # via werkzeug
-matplotlib==3.6.2
+    # via
+    #   jinja2
+    #   werkzeug
+matplotlib==3.5.3
     # via
     #   -r requirements.in
     #   arviz

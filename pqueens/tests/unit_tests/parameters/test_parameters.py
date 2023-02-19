@@ -11,21 +11,16 @@ def parameters_set_1():
     """Parameters dict without random field."""
     parameters_dict = {
         "parameters": {
-            "random_variables": {
-                "x1": {
-                    "dimension": 1,
-                    "type": "FLOAT",
-                    "distribution": "uniform",
-                    "lower_bound": -5,
-                    "upper_bound": 10,
-                },
-                "x2": {
-                    "dimension": 2,
-                    "distribution": "normal",
-                    "mean": [0, 1],
-                    "covariance": np.diag([1, 2]),
-                },
-            }
+            "x1": {
+                "type": "uniform",
+                "lower_bound": -5,
+                "upper_bound": 10,
+            },
+            "x2": {
+                "type": "normal",
+                "mean": [0, 1],
+                "covariance": np.diag([1, 2]),
+            },
         }
     }
     return parameters_dict
@@ -36,21 +31,16 @@ def parameters_set_2():
     """Parameters dict without random field."""
     parameters_dict = {
         "parameters": {
-            "random_variables": {
-                "x1": {
-                    "dimension": 1,
-                    "type": "FLOAT",
-                    "distribution": "uniform",
-                    "lower_bound": -5,
-                    "upper_bound": 10,
-                },
-                "x2": {
-                    "dimension": 1,
-                    "distribution": "normal",
-                    "mean": [0],
-                    "covariance": np.diag([1]),
-                },
-            }
+            "x1": {
+                "type": "uniform",
+                "lower_bound": -5,
+                "upper_bound": 10,
+            },
+            "x2": {
+                "type": "normal",
+                "mean": [0],
+                "covariance": np.diag([1]),
+            },
         }
     }
     return parameters_dict
@@ -63,7 +53,7 @@ def create_parameters_singleton(options, pre_processor=None):
 
 
 def test_from_config_create_parameters(parameters_set_1):
-    """Test from_config_create_parameters method."""
+    """Test *from_config_create_parameters* method."""
     parameters = create_parameters_singleton(parameters_set_1)
     rv_x1 = parameters.dict['x1']
     rv_x2 = parameters.dict['x2']
@@ -83,7 +73,7 @@ def test_from_config_create_parameters(parameters_set_1):
 
 
 def test_draw_samples(parameters_set_1):
-    """Test draw_samples method."""
+    """Test *draw_samples* method."""
     parameters = create_parameters_singleton(parameters_set_1)
     np.random.seed(41)
     samples = parameters.draw_samples(1)
@@ -100,7 +90,7 @@ def test_draw_samples(parameters_set_1):
 
 
 def test_joint_logpdf(parameters_set_1):
-    """Test joint_logpdf method."""
+    """Test *joint_logpdf* method."""
     parameters = create_parameters_singleton(parameters_set_1)
     samples = np.array([1, 2, 3])
     logpdf = parameters.joint_logpdf(samples)
@@ -111,7 +101,7 @@ def test_joint_logpdf(parameters_set_1):
 
 
 def test_inverse_cdf_transform(parameters_set_1, parameters_set_2):
-    """Test inverse_cdf_transform method."""
+    """Test *inverse_cdf_transform* method."""
     parameters = create_parameters_singleton(parameters_set_1)
     samples = np.array([0.5, 0.1, 0.6])
     with pytest.raises(ValueError):
@@ -130,7 +120,7 @@ def test_inverse_cdf_transform(parameters_set_1, parameters_set_2):
 
 
 def test_sample_as_dict(parameters_set_1):
-    """Test sample_as_dict method."""
+    """Test *sample_as_dict* method."""
     parameters = create_parameters_singleton(parameters_set_1)
     sample = np.array([0.5, 0.1, 0.6])
     sample_dict = parameters.sample_as_dict(sample)
@@ -138,7 +128,7 @@ def test_sample_as_dict(parameters_set_1):
 
 
 def test_to_list(parameters_set_1):
-    """Test to_list method."""
+    """Test *to_list* method."""
     parameters = create_parameters_singleton(parameters_set_1)
     parameters_list = parameters.to_list()
     assert isinstance(parameters_list, list)
@@ -153,28 +143,22 @@ def parameters_set_3():
     """Parameters dict with random field."""
     parameters_dict = {
         "parameters": {
-            "random_variables": {
-                "x1": {
-                    "dimension": 1,
-                    "type": "FLOAT",
-                    "distribution": "uniform",
-                    "lower_bound": -5,
-                    "upper_bound": 10,
-                },
-                "x2": {
-                    "dimension": 2,
-                    "distribution": "normal",
-                    "mean": [0, 1],
-                    "covariance": np.diag([1, 2]),
-                },
+            "x1": {
+                "type": "uniform",
+                "lower_bound": -5,
+                "upper_bound": 10,
             },
-            "random_fields": {
-                "random_inflow": {
-                    "corr_length": 1.0,
-                    "std_hyperparam_rf": 0.001,
-                    "mean_type": "constant",
-                    "mean_param": 0,
-                }
+            "x2": {
+                "type": "normal",
+                "mean": [0, 1],
+                "covariance": np.diag([1, 2]),
+            },
+            "random_inflow": {
+                "type": "random_field",
+                "corr_length": 1.0,
+                "std_hyperparam_rf": 0.001,
+                "mean_type": "constant",
+                "mean_param": 0,
             },
         }
     }

@@ -13,14 +13,14 @@ def borehole83_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw, **kwargs):
 
     The low-fidelity version is defined as in [1] as:
 
-    :math:`f_{lofi}({\bf x}) = \frac{5 T_u (H_u-H_l)}{\ln(r/r_w)(1.5)
-    + \frac{2 L T_u}{\ln(r/r_w)r_w^2 K_w} + \frac{T_u}{T_l}}`
+    :math:`f_{lofi}({\bf x}) = \frac{5 T_u (H_u-H_l)}{\ln(\frac{r}{r_w})(1.5)
+    + \frac{2 L T_u}{\ln(\frac{r}{r_w})r_w^2 K_w} + \frac{T_u}{T_l}}`
 
     For the purposes of uncertainty quantification, the distributions of the
-    input random variables are often choosen as:
+    input random variables are often chosen as:
 
-    | rw  ~ N(0.10,0.0161812)
-    | r   ~ Lognormal(7.71,1.0056)
+    | rw  ~ N(0.10, 0.0161812)
+    | r   ~ Lognormal(7.71, 1.0056)
     | Tu  ~ Uniform[63070, 115600]
     | Hu  ~ Uniform[990, 1110]
     | Tl  ~ Uniform[63.1, 116]
@@ -29,17 +29,17 @@ def borehole83_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw, **kwargs):
     | Kw  ~ Uniform[9855, 12045]
 
     Args:
-        rw (float): radius of borehole (m) [0.05, 0.15]
-        r  (float): radius of influence (m) [100, 50000]
-        Tu (float): transmissivity of upper aquifer (m2/yr) [63070, 115600]
-        Hu (float): potentiometric head of upper aquifer (m)  [990, 1110]
-        Tl (float): transmissivity of lower aquifer (m2/yr) [63.1, 116]
-        Hl (float): potentiometric head of lower aquifer (m) [700, 820]
-        L  (float): length of borehole (m)  [1120, 1680]
-        Kw (float): hydraulic conductivity of borehole (m/yr)  [9855, 12045]
+        rw (float): Radius of borehole :math:`(m)` [0.05, 0.15]
+        r  (float): Radius of influence :math:`(m)` [100, 50000]
+        Tu (float): Transmissivity of upper aquifer :math:`(\frac{m^2}{yr})` [63070, 115600]
+        Hu (float): Potentiometric head of upper aquifer :math:`(m)` [990, 1110]
+        Tl (float): Transmissivity of lower aquifer :math:`(\frac{m^2}{yr})` [63.1, 116]
+        Hl (float): Potentiometric head of lower aquifer :math:`(m)` [700, 820]
+        L  (float): Length of borehole :math:`(m)` [1120, 1680]
+        Kw (float): Hydraulic conductivity of borehole :math:`(\frac{m}{yr})` [9855, 12045]
 
     Returns:
-        float : The response is water flow rate, in m^3/yr.
+        float: The response is water flow rate, in :math:`(\frac{m^3}{yr})`
 
     References:
         [1] Xiong, S., Qian, P. Z., & Wu, C. J. (2013). Sequential design and
@@ -59,23 +59,23 @@ def borehole83_lofi(rw, r, Tu, Hu, Tl, Hl, L, Kw, **kwargs):
 def borehole83_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw, **kwargs):
     r"""High-fidelity version of Borehole benchmark function.
 
-    Very simple and quick to evaluate eight dimensional function that models
+    Very simple and quick to evaluate eight dimensional function, that models
     water flow through a borehole. Frequently used function for testing a wide
     variety of methods in computer experiments, see, e.g., [1]-[10].
 
     The high-fidelity version is defined as:
 
-    :math:`f_{hifi}({\\bf x}) = \frac{2 \pi T_u(H_u-H_l)}{\ln(r/r_w)
-    (1 + \frac{2LT_u}{\ln(r/r_w)r_w^2K_w})+ \frac{T_u}{T_l}}`
+    :math:`f_{hifi}({\\bf x}) = \frac{2 \pi T_u(H_u-H_l)}{\ln(\frac{r}{r_w})
+    \left(1 + \frac{2LT_u}{\ln(\frac{r}{r_w})r_w^2K_w} \right)+ \frac{T_u}{T_l}}`
 
     For the purpose of multi-fidelity simulation, Xiong et al. (2013) [8] use
     the following function for the lower fidelity code:
 
-    :math:`f_{lofi}({\bf x}) = \frac{5 T_u (H_u-H_l)}{\ln(r/r_w)(1.5)
-    + \frac{2 L T_u}{\ln(r/r_w)r_w^2 K_w} + \frac{T_u}{T_l}}`
+    :math:`f_{lofi}({\bf x}) = \frac{5 T_u (H_u-H_l)}{\ln(\frac{r}{r_w})(1.5)
+    + \frac{2 L T_u}{\ln(\frac{r}{r_w})r_w^2 K_w} + \frac{T_u}{T_l}}`
 
     For the purposes of uncertainty quantification, the distributions of the
-    input random variables are often choosen as:
+    input random variables are often chosen as:
 
     | rw  ~ N(0.10,0.0161812)
     | r   ~ Lognormal(7.71,1.0056)
@@ -87,17 +87,17 @@ def borehole83_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw, **kwargs):
     | Kw  ~ Uniform[9855, 12045]
 
     Args:
-        rw (float): radius of borehole (m) [0.05, 0.15]
-        r  (float): radius of influence (m) [100, 50000]
-        Tu (float): transmissivity of upper aquifer (m2/yr) [63070, 115600]
-        Hu (float): potentiometric head of upper aquifer (m)  [990, 1110]
-        Tl (float): transmissivity of lower aquifer (m2/yr) [63.1, 116]
-        Hl (float): potentiometric head of lower aquifer (m) [700, 820]
-        L  (float): length of borehole (m)  [1120, 1680]
-        Kw (float): hydraulic conductivity of borehole (m/yr)  [9855, 12045]
+        rw (float): Radius of borehole :math:`(m)` [0.05, 0.15]
+        r  (float): Radius of influence :math:`(m)` [100, 50000]
+        Tu (float): Transmissivity of upper aquifer :math:`(\frac{m^2}{yr})` [63070, 115600]
+        Hu (float): Potentiometric head of upper aquifer :math:`(m)`  [990, 1110]
+        Tl (float): Transmissivity of lower aquifer :math:`(\frac{m^2}{yr})` [63.1, 116]
+        Hl (float): Potentiometric head of lower aquifer :math:`(m)` [700, 820]
+        L  (float): Length of borehole :math:`(m)` [1120, 1680]
+        Kw (float): Hydraulic conductivity of borehole :math:`(\frac{m}{yr})`  [9855, 12045]
 
     Returns:
-        float : The response is water flow rate, in m^3/yr.
+        float: The response is water flow rate, in :math:`\frac{m^3}{yr}`
 
     References:
         [1] An, J., & Owen, A. (2001). Quasi-regression. Journal of Complexity,
@@ -138,7 +138,7 @@ def borehole83_hifi(rw, r, Tu, Hu, Tl, Hl, L, Kw, **kwargs):
              emulation for computer models with qualitative and quantitative
              factors. Technometrics, 53(3).
 
-    for further information, see also http://www.sfu.ca/~ssurjano/borehole.html
+    For further information, see also http://www.sfu.ca/~ssurjano/borehole.html
     """
     frac1 = 2 * np.pi * Tu * (Hu - Hl)
 

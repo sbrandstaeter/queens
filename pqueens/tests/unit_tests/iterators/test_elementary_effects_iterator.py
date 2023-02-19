@@ -16,20 +16,18 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
     def setUp(self):
 
         uncertain_parameter = {
-            "type": "FLOAT",
-            "dimension": 1,
+            "type": "uniform",
             "upper_bound": 3.14159265359,
             "lower_bound": -3.14159265359,
         }
 
-        random_variables = {
+        parameters = {
             'x1': uncertain_parameter,
             'x2': uncertain_parameter,
             'x3': uncertain_parameter,
         }
 
-        uncertain_parameters = {"random_variables": random_variables}
-        parameters_module.from_config_create_parameters({"parameters": uncertain_parameters})
+        parameters_module.from_config_create_parameters({"parameters": parameters})
         some_settings = {"experiment_name": "test"}
 
         function = example_simulator_function_by_name("ishigami90")

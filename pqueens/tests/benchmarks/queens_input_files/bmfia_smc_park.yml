@@ -1,0 +1,127 @@
+experiment_name: smc_park_mf
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  type: smc
+  seed: 41
+  num_particles: 100
+  model: model
+  temper_type: bayes
+  plot_trace_every: 0
+  result_description:
+    write_results: true
+    plot_results: false
+    cov: true
+model:
+  type: bmf_gaussian
+  mf_approx_settings:
+    type: gp_precompiled
+    num_processors_multi_processing: 4
+    stochastic_optimizer_name: optimizer
+    plot_refresh_rate: 10
+    noise_var_lb: 1.0e-06
+    data_scaling:
+      type: standard_scaler
+    sigma_0_sq: 0.05
+    l_scale_sq: 1.0
+    sigma_n_sq: 0.05
+    hyper_prior_lengthscale:
+      hyper_prior_bool: false
+      fraction_standard_deviation: 0.15
+      fraction_mean_value: 0.25
+    prior_mean_function_type: lf-identity
+    random_seed: 1
+    features_config: man_features
+    X_cols:
+    - 0
+    num_features: 1
+    mf_subiterator_name: bmfia_iterator
+  forward_model: lf_model
+  output_label: y_obs
+  coordinate_labels:
+  - x3
+  - x4
+  likelihood_noise_type: jeffreys_prior
+  fixed_likelihood_noise_value: 0.001
+  nugget_noise_var: 1.0e-12
+  noise_upper_bound: 2.0
+  data_processor_name: data_processor_experimental_data
+  experimental_csv_data_base_dir: {experimental_data_path}
+  parameters: parameters
+  plotting_options:
+    plotting_dir: {plot_dir}
+    plot_names:
+    - bmfia_plot.png
+    - posterior.png
+    save_bool:
+    - false
+    - false
+    plot_booleans:
+    - false
+    - false
+optimizer:
+  type: adam
+  learning_rate: 0.008
+  optimization_type: max
+  max_iterations: 1000
+  rel_L1_change_threshold: 0.04
+  rel_L2_change_threshold: 0.04
+data_processor_experimental_data:
+  type: csv
+  file_name_identifier: '*.csv'
+  file_options_dict:
+    header_row: 0
+    index_column: false
+    returned_filter_format: dict
+    filter:
+      type: entire_file
+MCMC_Kernel:
+  type: metropolis-hastings
+  as_mcmc_kernel: true
+  num_chains: 15
+  num_samples: 30
+  proposal_distribution: proposal_distribution
+bmfia_iterator:
+  type: bmfia
+  low_fidelity_model: lf_model
+  high_fidelity_model: hf_model
+  initial_design:
+    type: random
+    seed: 1
+    num_HF_eval: 200
+lf_model:
+  type: simulation_model
+  interface_name: lf_interface
+  parameters: parameters
+hf_model:
+  type: simulation_model
+  interface_name: hf_interface
+  parameters: parameters
+proposal_distribution:
+  distribution: normal
+  mean:
+  - 0.0
+  - 0.0
+  covariance:
+  - - 0.001
+    - 0.0
+  - - 0.0
+    - 0.001
+lf_interface:
+  type: direct_python_interface
+  num_workers: 1
+  function: park91a_lofi_on_grid
+hf_interface:
+  type: direct_python_interface
+  num_workers: 1
+  function: park91a_hifi_on_grid
+parameters:
+  x1:
+    type: normal
+    mean: 0.6
+    covariance: 0.2
+  x2:
+    type: normal
+    mean: 0.3
+    covariance: 0.1

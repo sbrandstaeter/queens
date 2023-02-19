@@ -44,7 +44,15 @@ def create_singularity_image():
 
 
 class SingularityManager:
-    """Singularity management class."""
+    """Singularity management class.
+
+    Attributes:
+        remote (bool): *True* if the simulation runs are remote.
+        remote_connect (str): String of user@remote_machine .
+        singularity_bind (str): Binds for the singularity runs.
+        singularity_path (path): Path to singularity exec.
+        input_file (path): Path to QUEENS input file.
+    """
 
     def __init__(
         self, singularity_path, singularity_bind, input_file, remote=False, remote_connect=None
@@ -52,17 +60,17 @@ class SingularityManager:
         """Init method for the singularity object.
 
         Args:
-            singularity_path (path): Path to singularity exec
-            singularity_bind (str): Binds for the singularity runs
-            input_file (path): Path to QUEENS input file
             remote (bool): True if the simulation runs are remote
             remote_connect (str): String of user@remote_machine
+            singularity_bind (str): Binds for the singularity runs
+            singularity_path (path): Path to singularity exec
+            input_file (path): Path to QUEENS input file
         """
-        self.singularity_path = singularity_path
-        self.singularity_bind = singularity_bind
-        self.input_file = input_file
         self.remote = remote
         self.remote_connect = remote_connect
+        self.singularity_bind = singularity_bind
+        self.singularity_path = singularity_path
+        self.input_file = input_file
 
         if self.remote and self.remote_connect is None:
             raise ValueError(
@@ -88,14 +96,11 @@ class SingularityManager:
     def prepare_singularity_files(self):
         """Prepare local and remote singularity images.
 
-        Make sure that an up-to-date singularity image is available where it is needed,
-        locally and remotely.
-        If no image exists or the existing image is outdated, a new image is built.
-        The local image is synced with the remote machine to ensure that the image on the
-        remote machine is up-to-date.
-
-        Returns:
-            None
+        Make sure that an up-to-date singularity image is available
+        where it is needed, locally and remotely. If no image exists or
+        the existing image is outdated, a new image is built. The local
+        image is synced with the remote machine to ensure that the image
+        on the remote machine is up-to-date.
         """
         if new_singularity_image_needed():
             _logger.info(
@@ -121,9 +126,6 @@ class SingularityManager:
 
         Args:
             username (string): Username of person logged in on remote machine
-
-        Returns:
-            None
         """
         # find active queens ssh ports on remote
         command_list = [
@@ -194,7 +196,7 @@ class SingularityManager:
             address_localhost (str): IP-address of localhost
 
         Returns:
-            None
+            TODO_doc
         """
         _logger.info('Establish remote port-forwarding')
         port_fail = 1
@@ -283,8 +285,6 @@ class SingularityManager:
 
         Args:
             port (int): Random port selected previously
-        Returns:
-            None
         """
         # get the process id of open port
         _, _, username, _ = run_subprocess('whoami')
@@ -401,17 +401,18 @@ def _get_python_files_in_folder(relative_path):
 
 
 def sha1sum(file_path, remote_connect=None):
-    """Hash files using sha1sum.
+    """Hash files using *sha1sum*.
 
-    sha1sum is a computer program that calculates hashes and is the default on most Linux
-    distributions. It it is not available on your OS under the same name you can still create a
+    *sha1sum* is a computer program that calculates hashes and is the default on most Linux
+    distributions. If it is not available on your OS under the same name, you can still create a
     symlink.
+
     Args:
-        file_path (str): Absolute path to the file to hash.
-        remote_connect (str, optional): username@machine in case of remote machines.
+        file_path (str): Absolute path to the file to hash
+        remote_connect (str, optional): username@machine in case of remote machines
 
     Returns:
-        str: the hash of the file
+        str: The hash of the file
     """
     command_string = f"sha1sum {file_path}"
     if remote_connect:

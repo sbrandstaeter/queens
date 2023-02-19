@@ -208,8 +208,10 @@ queens-build-singularity
     ```
     With this, all required third party libraries will be installed.
 
-    advanced: for a custom environment name
-    `conda env create -f  <your-path-to-QUEENS>/environment.yml --name <your-custom-queens-env-name>`
+    For a custom environment name:
+    ```
+    conda env create -f  <your-path-to-QUEENS>/environment.yml --name <your-custom-env-name>
+    ```
 1. Activate this newly created environment:
     ```
     conda activate queens
@@ -243,16 +245,21 @@ Updates from time to time are recommended:
 
 - Update Python version of your Conda environment: to be in sync with the latest Python version recommended for QUEENS, act in sync with the latest changes on the  `main` branch and follow the normal update procedure described above. This will keep both your environment-related file `environment.yml` and your environment up to date.
 
-Furthermore, you might be interested in using Jupyter notebooks:
-
-- Use conda environments in Jupyter notebooks: to get your conda environments into your Jupyter kernel, run the following command:
-
-   ```
-   conda install nb_conda_kernels
-   ```
-
 [↑ Contents](#contents)
 
+## Start a *QUEENS* run
+To start a *QUEENS* run with your *QUEENS* input file, run the following command in your activated python environment:
+```
+queens --input <path-to-QUEENS-input> --output_dir <output-folder>
+``` 
+
+Note: the output folder needs to be created by the user before starting the simulation.
+
+More information:
+```
+queens --help
+```
+[↑ Contents](#contents)
 ## Further Topics
 
 ### Remote Computing
@@ -382,4 +389,4 @@ The steps are as follows:
 1. Next, you have to register the runner with your gitlab repo as described
 [here](https://docs.gitlab.com/runner/register/index.html).
 
-[↑ Contents](#contents)
+[↑ Contents](#contents) 

@@ -20,7 +20,7 @@ def run(input_file, output_dir, debug=False):
     """Do a QUEENS run.
 
     Args:
-        input_file (pathlib.Path): Path object to input file
+        input_file (pathlib.Path): Path object to the input file
         output_dir (pathlib.Path): Path object to the output directory
         debug (bool): True if debug mode is to be used
     """
@@ -56,7 +56,7 @@ def run(input_file, output_dir, debug=False):
         end_time_input = time.time()
 
         _logger.info("")
-        _logger.info(f"Time for INPUT: {end_time_input - start_time_input} s")
+        _logger.info("Time for INPUT: %s s", end_time_input - start_time_input)
         _logger.info("")
 
         start_time_calc = time.time()
@@ -70,7 +70,7 @@ def run(input_file, output_dir, debug=False):
 
     end_time_calc = time.time()
     _logger.info("")
-    _logger.info(f"Time for CALCULATION: {end_time_calc - start_time_calc} s")
+    _logger.info("Time for CALCULATION: %s s", end_time_calc - start_time_calc)
     _logger.info("")
 
 
@@ -78,7 +78,7 @@ def get_config_dict(input_file, output_dir, debug=False):
     """Create QUEENS run config from input file and output dir.
 
     Args:
-        input_file (pathlib.Path): Path object to input file
+        input_file (pathlib.Path): Path object to the input file
         output_dir (pathlib.Path): Path object to the output directory
         debug (bool): True if debug mode is to be used
 

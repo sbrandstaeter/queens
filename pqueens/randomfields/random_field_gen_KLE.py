@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import numpy as np
 import scipy
 
@@ -5,7 +7,7 @@ from pqueens.randomfields.univariate_random_field_generator import UnivariateRan
 
 
 class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
-    """Karhuenen Loeve  based random field generator.
+    """Karhuenen-Loeve based random field generator.
 
     Random field generation based on Karhunen-Loeve expansion using the
     analytic solution of the Fredholm equation presented in [#f1]_.
@@ -18,19 +20,23 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
 
 
     Attributes:
-        m (int):                 number of terms in expansion in each direction
-        trunc_thres (int):       truncation threshold for Fourier series
-        largest_length (double): length of random field (for now equal in all
+        m (int):                 Number of terms in expansion in each direction.
+        trunc_thres (int):       Truncation threshold for Fourier series.
+        largest_length (double): Length of random field (for now equal in all
                                  dimensions based on largest dimension of
-                                 bounding box
-        corr_length (double):    correlation length of field
-                                 (so far only isotropic fields)
-        w_n (np.array):          roots of characteristic functions
-        lambda_n (np.array):     eigenvalues of Fredholm equation
+                                 bounding box).
+        corr_length (double):    Correlation length of field
+                                 (so far only isotropic fields).
+        w_n (np.array):          Roots of characteristic functions.
+        lambda_n (np.array):     Eigenvalues of the Fredholm equation.
+        spatial_dim: TODO_doc
+        des_energy_frac: TODO_doc
+        bounding_box: TODO_doc
+        stoch_dim: TODO_doc
     """
 
     EPS = 0.000000001
-    """tolerance for root finding """
+    """Tolerance for root finding. """
 
     def __init__(
         self,
@@ -42,7 +48,17 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         num_ex_term_per_dim,
         num_terms,
     ):
+        """TODO_doc.
 
+        Args:
+            marginal_distribution: TODO_doc
+            corr_length: TODO_doc
+            energy_frac: TODO_doc
+            field_bbox: TODO_doc
+            dimension: TODO_doc
+            num_ex_term_per_dim: TODO_doc
+            num_terms: TODO_doc
+        """
         self.m = None
         self.trunc_thres = None
         self.largest_length = None
@@ -102,10 +118,9 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         Details see (11) in [#f1]_.
 
         Returns:
-            np.array: vector containing the first m roots of the characteristic
-                      equation. Where the number of root is stored in self.m
+            np.array: Vector containing the first *m* roots of the characteristic
+            equation, where the number of root is stored in *self.m*
         """
-
         w_n = np.zeros((self.m, 1))
         index = 0
 
@@ -162,13 +177,13 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         return w_n
 
     def compute_w(self, w):
-        """Compute characteristic function For details see (12) in [#f1]_.
+        """Compute characteristic function. For details see (12) in [#f1]_.
 
         Arguments:
-            w (double): argument of characteristic function
+            w (double): Argument of characteristic function
 
         Returns:
-            double: value of characteristic function at w
+            double: Value of characteristic function at *w*
         """
         return 2 * self.corr_length * w / (self.corr_length**2 * w**2 - 1) - np.tan(
             w * self.largest_length
@@ -178,11 +193,11 @@ class RandomFieldGenKLE(UnivariateRandomFieldSimulator):
         """Compute eigenfunctions of Fredholm equation.
 
         Arguments:
-            loc (np.array): vector of locations
-            dim (int): dimension of location to evaluate
+            loc (np.array): Vector of locations
+            dim (int): Dimension of location to evaluate
 
         Returns:
-            np.array: values of the eigenfunctions at the locations loc
+            np.array: Values of the eigenfunctions at the locations *loc*
         """
         x = loc[:, dim].reshape(-1, 1)
         helper = np.ones((len(x), 1))

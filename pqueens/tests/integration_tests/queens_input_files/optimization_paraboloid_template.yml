@@ -1,0 +1,40 @@
+experiment_name: Paraboloid
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  type: optimization
+  model_name: model
+  initial_guess: [2.0, 0.0]
+  algorithm: {{ algorithm }}
+  result_description:
+    write_results: true
+    plot_results: true
+  bounds: [[0, .inf], [0, .inf]]
+  constraints:
+    cons1:
+      type: ineq
+      fun: 'lambda x:  x[0] - 2 * x[1] + 2'
+    cons2:
+      type: ineq
+      fun: 'lambda x: -x[0] - 2 * x[1] + 6'
+    cons3:
+      type: ineq
+      fun: 'lambda x: -x[0] + 2 * x[1] + 2'
+model:
+  type: simulation_model
+  interface_name: interface
+proposal_distribution:
+  type: normal
+  mean: 0.0
+  covariance: 1.0
+interface:
+  type: direct_python_interface
+  function: paraboloid
+parameters:
+  x1:
+    type: free
+    dimension: 1
+  x2:
+    type: free
+    dimension: 1

@@ -7,7 +7,7 @@ from pqueens.distributions import from_config_create_distribution
 
 
 # 1d standard Gaussian
-standard_normal_dict = {'distribution': 'normal', 'mean': 0.0, 'covariance': 1.0}
+standard_normal_dict = {'type': 'normal', 'mean': 0.0, 'covariance': 1.0}
 standard_normal = from_config_create_distribution(standard_normal_dict)
 
 # 2d Gaussian
@@ -19,7 +19,7 @@ cov = [[1.0, 0.5], [0.5, 1.0]]
 A = np.eye(dim, dim)
 b = np.zeros(dim)
 
-dist_options = {'distribution': 'normal', 'mean': meas_data, 'covariance': cov}
+dist_options = {'type': 'normal', 'mean': meas_data, 'covariance': cov}
 gaussian_2d = from_config_create_distribution(dist_options)
 
 # 4d Gaussian
@@ -32,7 +32,7 @@ cov = [
 
 mean = [0.806500709319150, 2.750827521892630, -3.388270291505472, 1.293259980552181]
 
-dist_options = {'distribution': 'normal', 'mean': mean, 'covariance': cov}
+dist_options = {'type': 'normal', 'mean': mean, 'covariance': cov}
 gaussian_4d = from_config_create_distribution(dist_options)
 
 
@@ -41,11 +41,8 @@ def gaussian_1d_logpdf(x):
 
     Used as a basic test function for MCMC methods.
 
-    Args:
-        x (float):
-
     Returns:
-        float : The logpdf evaluated at x
+        float: The logpdf evaluated at *x*
     """
     y = np.atleast_2d(standard_normal.logpdf(x))
     return y
@@ -55,7 +52,7 @@ def gaussian_2d_logpdf(samples):
     """2D Gaussian logpdf.
 
     Args:
-        samples (np.ndarray): samples to be evaluated
+        samples (np.ndarray): Samples to be evaluated
 
     Returns:
         np.ndarray: logpdf
@@ -69,7 +66,7 @@ def gaussian_4d_logpdf(samples):
     """4D Gaussian logpdf.
 
     Args:
-        samples (np.ndarray): samples to be evaluated
+        samples (np.ndarray): Samples to be evaluated
 
     Returns:
         np.ndarray: logpdf

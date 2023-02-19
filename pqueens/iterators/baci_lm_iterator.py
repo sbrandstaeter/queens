@@ -16,10 +16,27 @@ _logger = logging.getLogger(__name__)
 class BaciLMIterator(Iterator):
     """Iterator for deterministic optimization problems.
 
-    Levenberg Marquardt iterator in the style of baci "gen_inv_analysis"
+    Levenberg Marquardt iterator in the style of BACI *gen_inv_analysis*.
 
-    parts of this class are boldly stolen from optimization_iterator
-    we need to take control in the details, although it is less flexible it is far more simple
+    Parts of this class are boldly stolen from *optimization_iterator*.
+    we need to take control of the details, although it is less flexible it is far more
+    simple. (**TODO_doc**: reformulate this sentence.)
+
+    Attributes:
+        initial_guess: TODO_doc
+        bounds: TODO_doc
+        havebounds: TODO_doc
+        param_current: TODO_doc
+        jac_rel_step: TODO_doc
+        max_feval: TODO_doc
+        result_description: TODO_doc
+        jac_abs_step: TODO_doc
+        reg_param: TODO_doc
+        init_reg: TODO_doc
+        update_reg: TODO_doc
+        tolerance: TODO_doc
+        verbose_output: TODO_doc
+        iter_opt: TODO_doc
     """
 
     def __init__(
@@ -38,6 +55,23 @@ class BaciLMIterator(Iterator):
         result_description,
         verbose_output,
     ):
+        """TODO_doc.
+
+        Args:
+            global_settings: TODO_doc
+            initial_guess: TODO_doc
+            bounds: TODO_doc
+            havebounds: TODO_doc
+            jac_rel_step: TODO_doc
+            jac_abs_step: TODO_doc
+            init_reg: TODO_doc
+            update_reg: TODO_doc
+            tolerance: TODO_doc
+            max_feval: TODO_doc
+            model: TODO_doc
+            result_description: TODO_doc
+            verbose_output: TODO_doc
+        """
         super().__init__(model, global_settings)
 
         self.initial_guess = initial_guess
@@ -74,9 +108,9 @@ class BaciLMIterator(Iterator):
             config.get('global_settings').get('experiment_name'),
         )
 
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
         if model is None:
-            model_name = method_options['model']
+            model_name = method_options['model_name']
             model = from_config_create_model(model_name, config)
 
         result_description = method_options.get('result_description', None)
@@ -119,16 +153,16 @@ class BaciLMIterator(Iterator):
         )
 
     def jacobian_and_residual(self, x0):
-        """Evaluate Jacobian and residual of objective function at x0.
+        """Evaluate Jacobian and residual of objective function at *x0*.
 
         For BACI LM we can restrict to "2-point".
 
         Args:
-            x0 (numpy.ndarray): vector with current parameters
+            x0 (numpy.ndarray): Vector with current parameters
 
         Returns:
             J (numpy.ndarray): Jacobian Matrix approximation from finite differences
-            f0 (numpy.ndarray): residual of objective function at x0
+            f0 (numpy.ndarray): Residual of objective function at `x0`
         """
         positions, delta_positions = self.get_positions_raw_2pointperturb(x0)
 
@@ -269,10 +303,10 @@ class BaciLMIterator(Iterator):
     def post_run(self):
         """Post run.
 
-        Write solution to console and optionally create .html plot from
-        result file.
+        Write solution to the console and optionally create .html plot
+        from result file.
         """
-        _logger.info(f"The optimum:\t{self.solution} occured in iteration #{self.iter_opt}.")
+        _logger.info("The optimum:\t%s occurred in iteration #%s.", self.solution, self.iter_opt)
         if self.result_description:
             if self.result_description["plot_results"] and self.result_description["write_results"]:
                 data = pd.read_csv(
@@ -315,7 +349,7 @@ class BaciLMIterator(Iterator):
                             self.parameters.names[1],
                         ],
                     )
-                    fig.update_traces(mode='lines+markers', marker=dict(size=2), line=dict(width=4))
+                    fig.update_traces(mode='lines+markers', marker={"size": 2}, line={"width": 4})
                 elif i == 1:
                     fig = px.line(
                         data,
@@ -330,7 +364,7 @@ class BaciLMIterator(Iterator):
                             self.parameters.names[0],
                         ],
                     )
-                    fig.update_traces(mode='lines+markers', marker=dict(size=7), line=dict(width=3))
+                    fig.update_traces(mode='lines+markers', marker={"size": 7}, line={"width": 3})
                 else:
                     raise ValueError('You shouldn\'t be here without parameters.')
 
@@ -345,11 +379,12 @@ class BaciLMIterator(Iterator):
         """Get parameter sets for objective function evaluations.
 
         Args:
-            x0 (numpy.ndarray): vector with current parameters
+            x0 (numpy.ndarray): Vector with current parameters
 
         Returns:
-            positions (numpy.ndarray): parameter batch for function evaluation
-            delta_positions (numpy.ndarray): parameter perturbations for finite difference scheme
+            positions (numpy.ndarray): Parameter batch for function evaluation
+            delta_positions (numpy.ndarray): Parameter perturbations for finite difference
+              scheme
         """
         delta_positions = self.jac_abs_step + self.jac_rel_step * np.abs(x0)
         # if bounds do not allow finite difference step, use opposite direction
@@ -376,13 +411,10 @@ class BaciLMIterator(Iterator):
         Opens file in append mode, so that file is updated frequently.
 
         Args:
-            i (int): iteration number
-            resnorm (float): residual norm
-            gradnorm (float): gradient norm
-            param_delta (numpy.ndarray): parameter step
-
-        Returns:
-            None
+            i (int): Iteration number
+            resnorm (float): Residual norm
+            gradnorm (float): Gradient norm
+            param_delta (numpy.ndarray): Parameter step
         """
         # write iteration to file
         if self.result_description:
@@ -407,15 +439,16 @@ class BaciLMIterator(Iterator):
                     df.to_csv(f, sep='\t', header=None, mode='a', index=None, float_format='%.8f')
 
     def checkbounds(self, param_delta, i):
-        """check if proposed step is in bounds, otherwise double regularization
-        and compute new step.
+        """Check if proposed step is in bounds.
+
+        Otherwise double regularization and compute new step.
 
         Args:
-            param_delta (numpy.ndarray): parameter step
-            i (int): iteration number
+            param_delta (numpy.ndarray): Parameter step
+            i (int): Iteration number
 
         Returns:
-            stepisoutside (bool): flag if proposed step is out of bounds
+            stepisoutside (bool): Flag if proposed step is out of bounds
         """
         stepisoutside = False
         nextstep = self.param_current + param_delta

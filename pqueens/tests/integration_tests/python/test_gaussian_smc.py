@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -19,10 +21,10 @@ from pqueens.utils import injector
 
 def test_gaussian_smc(inputdir, tmpdir, dummy_data):
     """Test Sequential Monte Carlo with univariate Gaussian."""
-    template = os.path.join(inputdir, "smc_gaussian.json")
+    template = os.path.join(inputdir, "smc_gaussian.yml")
     experimental_data_path = tmpdir
     dir_dict = {"experimental_data_path": experimental_data_path}
-    input_file = os.path.join(tmpdir, "gaussian_smc_realiz.json")
+    input_file = os.path.join(tmpdir, "gaussian_smc_realiz.yml")
     injector.inject(dir_dict, template, input_file)
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
@@ -43,6 +45,7 @@ def test_gaussian_smc(inputdir, tmpdir, dummy_data):
 
 
 def target_density(self, samples):
+    """TODO_doc."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_1d_logpdf(samples).reshape(-1, 1)
 
@@ -51,6 +54,7 @@ def target_density(self, samples):
 
 @pytest.fixture()
 def dummy_data(tmpdir):
+    """TODO_doc."""
     # generate 10 samples from the same gaussian
     samples = standard_normal.draw(10).flatten()
 

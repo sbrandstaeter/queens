@@ -1,3 +1,5 @@
+"""TODO_doc."""
+
 import os
 import pickle
 from pathlib import Path
@@ -9,8 +11,8 @@ from pqueens import run
 
 
 def test_neural_network_gauss_bayesian_branin(inputdir, tmpdir, expected_mean, expected_var):
-    """Test case for bayesian neural network model."""
-    run(Path(os.path.join(inputdir, 'neural_network_gauss_bayesian_branin.json')), Path(tmpdir))
+    """Test case for Bayesian neural network model."""
+    run(Path(os.path.join(inputdir, 'neural_network_gauss_bayesian_branin.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:
@@ -26,6 +28,7 @@ def test_neural_network_gauss_bayesian_branin(inputdir, tmpdir, expected_mean, e
 
 @pytest.fixture()
 def expected_mean():
+    """TODO_doc."""
     mean = np.array(
         [
             [
@@ -47,6 +50,7 @@ def expected_mean():
 
 @pytest.fixture()
 def expected_var():
+    """TODO_doc."""
     var = np.array(
         [
             [

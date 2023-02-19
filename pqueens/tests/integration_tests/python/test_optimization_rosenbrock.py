@@ -1,6 +1,6 @@
 """Test suite for integration tests of optimization iterator.
 
-based on the Rosenbrock test function
+Based on the Rosenbrock test function.
 """
 import os
 import pickle
@@ -15,14 +15,14 @@ from pqueens.utils import injector
 
 @pytest.fixture(params=['NELDER-MEAD', 'POWELL', 'CG', 'BFGS', 'L-BFGS-B', 'TNC'])
 def algorithm(request):
-
+    """TODO_doc."""
     return request.param
 
 
 def test_optimization_rosenbrock(inputdir, tmpdir, algorithm):
     """Test different solution algorithms in optimization iterator."""
-    template = os.path.join(inputdir, 'optimization_rosenbrock_template.json')
-    input_file = str(tmpdir) + 'rosenbrock_opt.json'
+    template = os.path.join(inputdir, 'optimization_rosenbrock_template.yml')
+    input_file = str(tmpdir) + 'rosenbrock_opt.yml'
 
     algorithm_dict = {'algorithm': algorithm}
 

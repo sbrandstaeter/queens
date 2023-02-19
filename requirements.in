@@ -20,6 +20,7 @@ numba==0.55.1 # numba library for fast computing and jit compilation
 particles # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
 chaospy # polynomial chaos
 pyyaml # to load yaml files
+jinja2
 
 # Machine learing libraries
 scikit-learn==1.1.1

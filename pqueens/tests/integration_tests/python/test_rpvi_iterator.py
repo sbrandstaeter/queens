@@ -22,20 +22,20 @@ def test_rpvi_iterator_park91a_hifi(
 ):
     """Integration test for the rpvi iterator.
 
-    Based on the park91a_hifi function.
+    Based on the *park91a_hifi* function.
     """
-    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
+    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.yml")
     experimental_data_path = tmpdir
     plot_dir = tmpdir
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
-        "gradient_method": "finite_difference",
+        "gradient_method": "finite_differences",
         "my_function": "park91a_hifi_on_grid",
         "likelihood_model_type": "gaussian",
         "external_python_module": "",
     }
-    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
+    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.yml")
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -68,20 +68,20 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 ):
     """Integration test for the rpvi iterator.
 
-    Based on the park91a_hifi function.
+    Based on the *park91a_hifi* function.
     """
-    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
+    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.yml")
     experimental_data_path = tmpdir
     plot_dir = tmpdir
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
-        "gradient_method": "finite_difference",
+        "gradient_method": "finite_differences",
         "my_function": "park91a_hifi_on_grid",
         "likelihood_model_type": "MyLikelihood",
         "external_python_module": module_path,
     }
-    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
+    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.yml")
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -108,20 +108,20 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 def test_rpvi_iterator_park91a_hifi_provided_gradient(
     inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
 ):
-    """Test for the rpvi iterator based on the park91a_hifi function."""
+    """Test for the rpvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
-    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.json")
+    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.yml")
     experimental_data_path = tmpdir
     plot_dir = tmpdir
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
-        "gradient_method": "provided_gradient",
+        "gradient_method": "provided",
         "my_function": "park91a_hifi_on_grid_with_gradients",
         "likelihood_model_type": "gaussian",
         "external_python_module": "",
     }
-    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.json")
+    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.yml")
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
@@ -147,24 +147,22 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
 likelihood_mean = np.array([-2.0, 1.0])
 likelihood_covariance = np.diag(np.array([0.1, 10.0]))
 likelihood_dist = {
-    'distribution': 'normal',
+    'type': 'normal',
     'mean': likelihood_mean,
     'covariance': likelihood_covariance,
 }
 likelihood = from_config_create_distribution(likelihood_dist)
 
 
-def target_density(self, samples, gradient_bool=False):
+def target_density(self, samples):
     """Target posterior density."""
     log_likelihood_output = likelihood.logpdf(samples)
-    if gradient_bool:
-        grad_log_likelihood = likelihood.grad_logpdf(samples)
-        log_likelihood_output = (log_likelihood_output, grad_log_likelihood)
+    grad_log_likelihood = likelihood.grad_logpdf(samples)
 
-    return log_likelihood_output
+    return log_likelihood_output, grad_log_likelihood
 
 
-@pytest.fixture(scope="module", params=['provided_gradient', 'finite_difference'])
+@pytest.fixture(scope="module", params=['provided', 'finite_differences'])
 def gradient_method(request):
     """Gradient method."""
     return request.param
@@ -183,7 +181,7 @@ def test_gaussian_rpvi(inputdir, tmpdir, dummy_data, gradient_method):
     injector.inject(dir_dict, template, input_file)
 
     # mock methods related to likelihood
-    with patch.object(GaussianLikelihood, "evaluate", target_density):
+    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
         run(Path(input_file), Path(tmpdir))
 
     # get the results of the QUEENS run

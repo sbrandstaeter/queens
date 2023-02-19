@@ -1,0 +1,51 @@
+experiment_name: xxx
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  type: monte_carlo
+  seed: 42
+  num_samples: 1000
+  model_name: model
+  result_description:
+    write_results: true
+    plot_results: false
+model:
+  type: simulation_model
+  interface_name: interface
+interface:
+  type: direct_python_interface
+  function: borehole83_lofi
+parameters:
+  rw:
+    type: uniform
+    lower_bound: 0.05
+    upper_bound: 0.15
+  r:
+    type: uniform
+    lower_bound: 100
+    upper_bound: 50000
+  Tu:
+    type: uniform
+    lower_bound: 63070
+    upper_bound: 115600
+  Hu:
+    type: uniform
+    lower_bound: 990
+    upper_bound: 1110
+  Tl:
+    type: uniform
+    lower_bound: 63.1
+    upper_bound: 116
+  Hl:
+    type: uniform
+    lower_bound: 700
+    upper_bound: 820
+  L:
+    type: uniform
+    lower_bound: 1120
+    upper_bound: 1680
+  Kw:
+    type: uniform
+    lower_bound: 9855
+    upper_bound: 12045

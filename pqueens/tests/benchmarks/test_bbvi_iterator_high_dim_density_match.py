@@ -106,7 +106,7 @@ def dummy_bbvi_instance(tmpdir, rv_dimension, my_variational_distribution_obj):
         },
     }
     optimizer_config = {
-        "stochastic_optimizer": "Adam",
+        "stochastic_optimizer": "adam",
         "learning_rate": 0.1,
         "optimization_type": "max",
         "rel_L1_change_threshold": 1e-8,
@@ -151,7 +151,7 @@ def dummy_bbvi_instance(tmpdir, rv_dimension, my_variational_distribution_obj):
 
 
 def target_density(self, target_distribution_obj, x=None, pdf=False):
-    """Function to mock get_log_posterior_unnormalized."""
+    """Function to mock *get_log_posterior_unnormalized*."""
     output_array = []
     if pdf is False:
         for value in x:
@@ -178,7 +178,7 @@ def target_distribution_obj(rv_dimension):
     mean = np.random.rand(rv_dimension)
     std = np.random.rand(rv_dimension) + 0.01
 
-    distribution_options = {"distribution": "normal", "mean": mean, "covariance": np.diag(std**2)}
+    distribution_options = {"type": "normal", "mean": mean, "covariance": np.diag(std**2)}
     target_distribution_object = mcmc_utils.create_proposal_distribution(distribution_options)
     return target_distribution_object
 
@@ -202,14 +202,12 @@ def visualization_obj(tmpdir):
     """Create visualization module."""
     visualization_dict = {
         "method": {
-            "method_options": {
-                "result_description": {
-                    "plotting_options": {
-                        "plotting_dir": tmpdir,
-                        "save_bool": False,
-                        "plot_boolean": False,
-                        "plot_name": "variat_params_convergence.eps",
-                    }
+            "result_description": {
+                "plotting_options": {
+                    "plotting_dir": tmpdir,
+                    "save_bool": False,
+                    "plot_boolean": False,
+                    "plot_name": "variat_params_convergence.eps",
                 }
             }
         }

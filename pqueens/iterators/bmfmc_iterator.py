@@ -9,7 +9,7 @@ from diversipy import psa_select
 import pqueens.visualization.bmfmc_visualization as qvis
 from pqueens.iterators.iterator import Iterator
 from pqueens.models.bmfmc_model import BMFMCModel
-from pqueens.utils.process_outputs import process_ouputs, write_results
+from pqueens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
 
@@ -18,63 +18,61 @@ class BMFMCIterator(Iterator):
     r"""Iterator for the Bayesian multi-fidelity Monte-Carlo method.
 
     The iterator fulfills the following tasks:
-    1.  Load the low-fidelity Monte Carlo data
-    2.  Based on low-fidelity data, calculate optimal X_train to evaluate the high-fidelity model
-    3.  Based on X_train return the corresponding Y_LFs_train
-    4.  Initialize the BMFMC_model (this is not the high-fidelity model but the probabilistic
-        mapping) with X_train and Y_LFs_train. Note that the BMFMC_model itself triggers the
-        computation of the high-fidelity training data Y_HF_train.
-    5.  Trigger the evaluation of the BMFMC_model. Here evaluation refers to computing the
-        posterior statistics of the high-fidelity model. This is implemented in the BMFMC_model
+
+    1.  Load the low-fidelity Monte Carlo data.
+    2.  Based on low-fidelity data, calculate optimal *X_train* to evaluate the high-fidelity model.
+    3.  Based on *X_train* return the corresponding *Y_LFs_train*.
+    4.  Initialize the *BMFMC_model* (this is not the high-fidelity model but the probabilistic
+        mapping) with *X_train* and *Y_LFs_train*. Note that the *BMFMC_model* itself triggers the
+        computation of the high-fidelity training data *Y_HF_train*.
+    5.  Trigger the evaluation of the *BMFMC_model*. Here evaluation refers to computing the
+        posterior statistics of the high-fidelity model. This is implemented in the *BMFMC_model*
         itself.
 
     Attributes:
-        model (obj): Instance of the BMFMCModel
-        result_description (dict): Dictionary containing settings for plotting and saving data/
-                                   results
+        model (obj): Instance of the BMFMCModel.
+        result_description (dict): Dictionary containing settings for plotting and saving
+                                   data/results.
         X_train (np.array): Corresponding input for the simulations that are used to train the
-                            probabilistic mapping
-        Y_HF_train (np.array): Outputs of the high-fidelity model that correspond to the training
-                               inputs X_train such that :math:`Y_{HF}=y_{HF}(X)`
+                            probabilistic mapping.
         Y_LFs_train (np.array): Outputs of the low-fidelity models that correspond to the training
-                                inputs X_train
+                                inputs *X_train*.
         output (dict): Dictionary containing the output quantities:
 
-                       *  "Z_mc": Corresponding Monte-Carlo point in LF informative feature space
-                       *  "m_f_mc": Corresponding Monte-Carlo points of posterior mean of
-                                    the probabilistic mapping
-                       *  "var_y_mc": Corresponding Monte-Carlo posterior variance samples of the
-                                      probabilistic mapping
-                       *  "y_pdf_support": Support vector for QoI output distribution
-                       *  "p_yhf_mean": Vector containing mean function of HF output
-                                        posterior distribution
-                       *  "p_yhf_var": Vector containing posterior variance function of HF output
-                                       distribution
-                       *  "p_yhf_mean_BMFMC": Vector containing mean function of HF output
-                                              posterior distribution calculated without informative
-                                              features :math:`\boldsymbol{\gamma}`
-                       *  "p_yhf_var_BMFMC": Vector containing posterior variance function of HF
-                                             output distribution calculated without informative
-                                             features :math:`\boldsymbol{\gamma}`
-                       *  "p_ylf_mc": Vector with low-fidelity output distribution (kde from MC
-                                      data)
-                       *  "p_yhf_mc": Vector with reference HF output distribution (kde from MC
-                                      reference data)
-                       *  "Z_train": Corresponding training data in LF feature space
-                       *  "Y_HF_train": Outputs of the high-fidelity model that correspond to the
-                                     training inputs X_train such that :math:`Y_{HF}=y_{HF}(X)`
-                       *  "X_train": Corresponding input for the simulations that are used to
-                                     train the probabilistic mapping
+            *  ``Z_mc``: Corresponding Monte-Carlo point in LF informative feature space
+            *  ``m_f_mc``: Corresponding Monte-Carlo points of posterior mean of
+                           the probabilistic mapping
+            *  ``var_y_mc``: Corresponding Monte-Carlo posterior variance samples of the
+                             probabilistic mapping
+            *  ``y_pdf_support``: Support vector for QoI output distribution
+            *  ``p_yhf_mean``: Vector containing mean function of HF output
+                               posterior distribution
+            *  ``p_yhf_var``: Vector containing posterior variance function of HF output
+                              distribution
+            *  ``p_yhf_mean_BMFMC``: Vector containing mean function of HF output
+                                     posterior distribution calculated without informative
+                                     features :math:`\boldsymbol{\gamma}`
+            *  ``p_yhf_var_BMFMC``: Vector containing posterior variance function of HF
+                                    output distribution calculated without informative
+                                    features :math:`\boldsymbol{\gamma}`
+            *  ``p_ylf_mc``: Vector with low-fidelity output distribution (kde from MC
+                             data)
+            *  ``p_yhf_mc``: Vector with reference HF output distribution (kde from MC
+                             reference data)
+            *  ``Z_train``: Corresponding training data in LF feature space
+            *  ``Y_HF_train``: Outputs of the high-fidelity model that correspond to the
+                               training inputs *X_train* such that :math:`Y_{HF}=y_{HF}(X)`
+            *  ``X_train``: Corresponding input for the simulations that are used to
+                            train the probabilistic mapping
 
         initial_design (dict): Dictionary containing settings for the selection strategy/initial
-                               design of training points for the probabilistic mapping
+                               design of training points for the probabilistic mapping.
         predictive_var (bool): Boolean flag that triggers the computation of the posterior variance
                                :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` if
-                               set to True. (default value: False)
+                               set to *True* (default value: *False*).
         BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
                                 features :math:`\boldsymbol{\gamma}` for comparison if set to
-                                True (default
-                                value: False)
+                                *True* (default value: *False*).
 
     Returns:
        BMFMCIterator (obj): Instance of the BMFMCIterator
@@ -130,7 +128,7 @@ class BMFMCIterator(Iterator):
             iterator (obj): BMFMCIterator object
         """
         # Initialize Iterator and model
-        method_options = config[iterator_name]['method_options']
+        method_options = config[iterator_name]
 
         BMFMC_reference = method_options["BMFMC_reference"]
         result_description = method_options["result_description"]
@@ -141,7 +139,7 @@ class BMFMCIterator(Iterator):
 
         # ----------------------------- CREATE BMFMC MODEL ----------------------------
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = BMFMCModel.from_config_create_model(model_name, config)
 
         # ---------------------- CREATE VISUALIZATION BORG ----------------------------
@@ -160,18 +158,16 @@ class BMFMCIterator(Iterator):
         r"""Main run of the BMFMCIterator.
 
         The BMFMCIterator covers the following points:
-        1.  Reading the sampling data from the low-fidelity model in QUEENS
-        2.  Based on LF data, determine optimal X_train for which the high-fidelity model should
-            be evaluated :math:`Y_{HF}=y_{HF}(X)`
-        3.  Update the BMFMCModel with the partial training data set of X_train, Y_LF_train (
-            Y_HF_train is determined in the BMFMCModel)
-        4.  Evaluate the BMFMCModel which means that the posterior statistics
+
+        1.  Reading the sampling data from the low-fidelity model in QUEENS.
+        2.  Based on LF data, determine optimal *X_train* for which the high-fidelity model should
+            be evaluated :math:`Y_{HF}=y_{HF}(X)`.
+        3.  Update the BMFMCModel with the partial training data set of *X_train*, *Y_LF_train*
+            (*Y_HF_train* is determined in the BMFMCModel).
+        4.  Evaluate the BMFMCModel, which means that the posterior statistics
             :math:`\mathbb{E}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` and
             :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` are computed based
-            on the BMFMC algorithm which is implemented in the BMFMCModel
-
-        Returns:
-            None
+            on the BMFMC algorithm, which is implemented in the BMFMCModel.
         """
         # -------- Load MC data from model -----------------------
         self.model.load_sampling_data()
@@ -187,25 +183,23 @@ class BMFMCIterator(Iterator):
         self.output = self.model.evaluate(self.X_train)
 
     def calculate_optimal_X_train(self):
-        r"""Calculate the optimal model inputs X_train.
+        r"""Calculate the optimal model inputs *X_train*.
 
         Based on the low-fidelity sampling data, calculate the optimal model
-        inputs X_train on which the high-fidelity model should be evaluated to
+        inputs *X_train*, on which the high-fidelity model should be evaluated to
         construct the training data set for BMFMC. This selection is performed
         based on the following method options:
 
-        1. **random**: Divides the :math:`y_{LF}` data set in bins and selects training
-                       candidates random from each bin until :math:`n_{train}` is reached
-        2. **diverse subset**: Determine the most important input features :math:`\gamma_i`
-                               (this information is provided by the BMFMCModel) and find a space
-                               filling subset (diverse subset) given the LF sampling data with
-                               respect to the most important features :math:`\gamma_i`. The
-                               number of features to be considered can be set in the input file.
-                               **Remark**: An optimization routine for the optimal number of
-                               features to be considered will be added in the future
+        *   **random**: Divides the :math:`y_{LF}` data set in bins and selects training
+            candidates randomly from each bin until :math:`n_{train}` is reached.
+        *   **diverse subset**: Determine the most important input features :math:`\gamma_i`
+            (this information is provided by the BMFMCModel), and find a space
+            filling subset (diverse subset), given the LF sampling data with
+            respect to the most important features :math:`\gamma_i`. The
+            number of features to be considered can be set in the input file.
 
-        Returns:
-            None
+            **Remark**: An optimization routine for the optimal number of
+            features to be considered will be added in the future.
         """
         design_method = self.initial_design.get('method')
         n_points = self.initial_design.get("num_HF_eval")
@@ -253,9 +247,6 @@ class BMFMCIterator(Iterator):
 
         Args:
              n_points (int): Number of HF training points to be selected
-
-        Returns:
-            None
         """
         design = self.model.gammas_ext_mc
         prelim_subset = psa_select(design, n_points, selection_target='max_dist_from_boundary')
@@ -280,9 +271,6 @@ class BMFMCIterator(Iterator):
 
         Args:
             n_points (int): Number of HF training points to be selected
-
-        Returns:
-            None
         """
         n_bins = self.initial_design.get("num_bins")
         np.random.seed(self.initial_design.get("seed"))
@@ -319,18 +307,16 @@ class BMFMCIterator(Iterator):
         self.Y_LFs_train = self.model.Y_LFs_mc[self.model.training_indices]
         if self.model.training_indices.shape[0] < n_points:
             _logger.warning(
-                f"The chosen number of training points ({self.model.training_indices.shape[0]}) "
-                f"for the HF-LF mapping is smaller than specified ({n_points}). "
-                f"Reduce the number of bins to increase the number of training points!"
+                "The chosen number of training points (%s) "
+                "for the HF-LF mapping is smaller than specified (%s). "
+                "Reduce the number of bins to increase the number of training points!",
+                self.model.training_indices.shape[0],
+                n_points,
             )
 
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
     def post_run(self):
-        """Saving and plotting of the results.
-
-        Returns:
-            None
-        """
+        """Saving and plotting the results."""
         # plot the figures
         qvis.bmfmc_visualization_instance.plot_pdfs(self.output)
         qvis.bmfmc_visualization_instance.plot_manifold(
@@ -338,7 +324,7 @@ class BMFMCIterator(Iterator):
         )
 
         if self.result_description['write_results'] is True:
-            results = process_ouputs(self.output, self.result_description)
+            results = process_outputs(self.output, self.result_description)
             write_results(
                 results, self.global_settings["output_dir"], self.global_settings["experiment_name"]
             )

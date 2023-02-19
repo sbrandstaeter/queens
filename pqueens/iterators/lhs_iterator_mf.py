@@ -1,4 +1,6 @@
-"""Multi-fideliy latin hypercube sampling."""
+"""Multi-fidelity latin hypercube sampling."""
+
+import logging
 
 import numpy as np
 from pyDOE import lhs
@@ -8,6 +10,8 @@ from pqueens.models.multifidelity_model import MultifidelityModel
 
 from .iterator import Iterator
 
+_logger = logging.getLogger(__name__)
+
 
 # TODO add test cases for mf LHS iterator
 class MFLHSIterator(Iterator):
@@ -15,17 +19,16 @@ class MFLHSIterator(Iterator):
 
     Multi-Fidelity LHS Iterator with the purpose to generate multi-fidelity
     experimental design for multi-fidelity models. Currently there are two modes,
-    independent desings for each level or nested designs where each design is
+    independent designs for each level or nested designs where each design is
     a subset of the next higher level.
 
     Attributes:
-        model (model):        multi-fidelity model comprising sub-models
-        seed  (int):          Seed for random number generation
-        num_samples (list):   List of number of samples to compute on each level
-        num_iterations (int): Number of optimization iterations of design
-        mode (str):           Mode of sampling (nested/independent)
-        samples (list):       List of arrays with all samples
-        outputs (list):       List of dicts with all model outputs
+        seed  (int):          Seed for random number generation.
+        num_samples (list):   List of number of samples to compute on each level.
+        num_iterations (int): Number of optimization iterations of design.
+        samples (list):       List of arrays with all samples.
+        outputs (list):       List of dicts with all model outputs.
+        mode (str):           Mode of sampling (nested/independent).
     """
 
     def __init__(self, model, seed, num_samples, num_iterations, mode, global_settings):
@@ -63,10 +66,10 @@ class MFLHSIterator(Iterator):
         Returns:
             iterator: MFLHSIterator object
         """
-        method_options = config[iterator_name]["method_options"]
-        print("Method options {}".format(method_options))
+        method_options = config[iterator_name]
+        _logger.info('Method options %s', method_options)
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = from_config_create_model(model_name, config)
         return cls(
             model,
@@ -120,10 +123,10 @@ class MFLHSIterator(Iterator):
     def post_run(self):
         """Analyze the results."""
         for i in range(self.model.num_levels):
-            print("Size of inputs in LHS{}".format(self.samples[i].shape))
-            print("Inputs {}".format(self.samples[i]))
-            print("Size of outputs {}".format(self.outputs[i]['mean'].shape))
-            print("Outputs {}".format(self.outputs[i]['mean']))
+            _logger.info('Size of inputs in LHS %s', self.samples[i].shape)
+            _logger.info('Inputs %s', self.samples[i])
+            _logger.info('Size of outputs %s', self.outputs[i]['mean'].shape)
+            _logger.info('Outputs %s', self.outputs[i]['mean'])
 
     def select_random_subset(self, samples, subset_size):
         """Select a subset of provided samples and return it.

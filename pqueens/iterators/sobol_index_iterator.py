@@ -21,21 +21,22 @@ _logger = logging.getLogger(__name__)
 class SobolIndexIterator(Iterator):
     """Sobol Index Iterator.
 
-    This class essentially provides a wrapper around the SALib library
+    This class essentially provides a wrapper around the SALib library.
 
     Attributes:
-        seed (int):                         Seed for random number generator
-        num_samples (int):                  Number of samples
-        calc_second_order (bool):           Calculate second-order sensitivities
-        num_bootstrap_samples (int):        Number of bootstrap samples
-        confidence_level (float):           The confidence interval level
-        samples (np.array):                 Array with all samples
-        output (dict)                       Dict with all outputs corresponding to
-                                            samples
-        salib_problem (dict):               Problem definition for SALib
-        num_params (int):                   Number of parameters
-        parameter_names (list):             List with parameter names
-        sensitivity_indices (dict):         Dictionary with sensitivity indices
+        seed (int): Seed for random number generator.
+        num_samples (int): Number of samples.
+        calc_second_order (bool): Calculate second-order sensitivities.
+        num_bootstrap_samples (int): Number of bootstrap samples.
+        confidence_level (float): The confidence interval level.
+        result_description (dict): TODO_doc
+        samples (np.array): Array with all samples.
+        output (dict): Dict with all outputs corresponding to
+                       samples.
+        salib_problem (dict): Problem definition for SALib.
+        num_params (int): Number of parameters.
+        parameter_names (list): List with parameter names.
+        sensitivity_indices (dict): Dictionary with sensitivity indices.
     """
 
     def __init__(
@@ -90,10 +91,10 @@ class SobolIndexIterator(Iterator):
         Returns:
             iterator: Saltelli SALib iterator object
         """
-        method_options = config[iterator_name]["method_options"]
+        method_options = config[iterator_name]
 
         if model is None:
-            model_name = method_options["model"]
+            model_name = method_options["model_name"]
             model = from_config_create_model(model_name, config)
 
         return cls(
@@ -114,20 +115,20 @@ class SobolIndexIterator(Iterator):
         dists = []
         for key, parameter in self.parameters.dict.items():
             self.parameter_names.append(key)
-            if isinstance(parameter.distribution, distributions.uniform.UniformDistribution):
-                upper_bound = parameter.distribution.upper_bound
-                lower_bound = parameter.distribution.lower_bound
+            if isinstance(parameter, distributions.uniform.UniformDistribution):
+                upper_bound = parameter.upper_bound
+                lower_bound = parameter.lower_bound
                 distribution_name = 'unif'
             # in queens normal distributions are parameterized with mean and var
             # in salib normal distributions are parameterized via mean and std
             # -> we need to reparameterize normal distributions
-            elif isinstance(parameter.distribution, distributions.normal.NormalDistribution):
-                lower_bound = parameter.distribution.mean.squeeze()
-                upper_bound = np.sqrt(parameter.distribution.covariance.squeeze())
+            elif isinstance(parameter, distributions.normal.NormalDistribution):
+                lower_bound = parameter.mean.squeeze()
+                upper_bound = np.sqrt(parameter.covariance.squeeze())
                 distribution_name = 'norm'
-            elif isinstance(parameter.distribution, distributions.lognormal.LogNormalDistribution):
-                lower_bound = parameter.distribution.mu.squeeze()
-                upper_bound = parameter.distribution.sigma.squeeze()
+            elif isinstance(parameter, distributions.lognormal.LogNormalDistribution):
+                lower_bound = parameter.mu.squeeze()
+                upper_bound = parameter.sigma.squeeze()
                 distribution_name = 'lognorm'
             else:
                 raise ValueError("Valid distributions are normal, lognormal and uniform!")
@@ -147,7 +148,7 @@ class SobolIndexIterator(Iterator):
             'dists': dists,
         }
 
-        _logger.info(f"Draw {self.num_samples} samples...")
+        _logger.info("Draw %s samples...", self.num_samples)
         self.samples = saltelli.sample(
             self.salib_problem,
             self.num_samples,
@@ -194,7 +195,7 @@ class SobolIndexIterator(Iterator):
         """Print results.
 
         Args:
-            results (dict): dictionary with sobol indices and confidence intervals
+            results (dict): Dictionary with Sobol indices and confidence intervals
         """
         S = results["sensitivity_indices"]
         parameter_names = results["parameter_names"]
@@ -208,7 +209,7 @@ class SobolIndexIterator(Iterator):
         _logger.info("Main and Total Effects:")
         _logger.info(S_df)
         _logger.info("Additivity, sum of main effects (for independent variables):")
-        _logger.info(f'S_i = {additivity}')
+        _logger.info('S_i = %s', additivity)
 
         if self.calc_second_order:
             S2 = S["S2"]
@@ -248,7 +249,7 @@ class SobolIndexIterator(Iterator):
         """Write all results to self contained dictionary.
 
         Returns:
-            results (dict): dictionary with sobol indices and confidence intervals
+            results (dict): Dictionary with Sobol indices and confidence intervals
         """
         results = {
             "parameter_names": self.parameters.names,
@@ -264,7 +265,7 @@ class SobolIndexIterator(Iterator):
         """Create bar graph of first order sensitivity indices.
 
         Args:
-            results (dict): dictionary with sobol indices and confidence intervals
+            results (dict): Dictionary with Sobol indices and confidence intervals
         """
         experiment_name = self.global_settings["experiment_name"]
 
@@ -274,17 +275,19 @@ class SobolIndexIterator(Iterator):
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["S1"],
-            error_y=dict(
-                type='data', array=results["sensitivity_indices"]["S1_conf"], visible=True
-            ),
+            error_y={
+                "type": 'data',
+                "array": results['sensitivity_indices']['S1_conf'],
+                "visible": True,
+            },
         )
         data = [bars]
 
-        layout = dict(
-            title='First-Order Sensitivity Indices',
-            xaxis=dict(title='Parameter'),
-            yaxis=dict(title='Main Effect'),
-        )
+        layout = {
+            "title": 'First-Order Sensitivity Indices',
+            "xaxis": {"title": 'Parameter'},
+            "yaxis": {"title": 'Main Effect'},
+        }
 
         fig = go.Figure(data=data, layout=layout)
         fig.write_html(chart_path)
@@ -295,17 +298,19 @@ class SobolIndexIterator(Iterator):
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["ST"],
-            error_y=dict(
-                type='data', array=results["sensitivity_indices"]["ST_conf"], visible=True
-            ),
+            error_y={
+                "type": 'data',
+                "array": results['sensitivity_indices']['ST_conf'],
+                "visible": True,
+            },
         )
         data = [bars]
 
-        layout = dict(
-            title='Total Sensitivity Indices',
-            xaxis=dict(title='Parameter'),
-            yaxis=dict(title='Total Effect'),
-        )
+        layout = {
+            "title": 'Total Sensitivity Indices',
+            "xaxis": {"title": 'Parameter'},
+            "yaxis": {"title": 'Total Effect'},
+        }
 
         fig = go.Figure(data=data, layout=layout)
         fig.write_html(chart_path)
@@ -326,14 +331,16 @@ class SobolIndexIterator(Iterator):
 
             chart_name = experiment_name + '_S2.html'
             chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
-            bars = go.Bar(x=names, y=S2, error_y=dict(type='data', array=S2_conf, visible=True))
+            bars = go.Bar(
+                x=names, y=S2, error_y={"type": 'data', "array": S2_conf, "visible": True}
+            )
             data = [bars]
 
-            layout = dict(
-                title='Second Order Sensitivity Indices',
-                xaxis=dict(title='Parameter'),
-                yaxis=dict(title='Second Order Effects'),
-            )
+            layout = {
+                "title": 'Second Order Sensitivity Indices',
+                "xaxis": {"title": 'Parameter'},
+                "yaxis": {"title": 'Second Order Effects'},
+            }
 
             fig = go.Figure(data=data, layout=layout)
             fig.write_html(chart_path)

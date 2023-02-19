@@ -66,7 +66,7 @@ class LikelihoodModel(Model):
             coord_labels (list): List of coordinate label names. One name per column in coord_mat
         """
         model_options = config[model_name]
-        forward_model_name = model_options.get("forward_model")
+        forward_model_name = model_options.get("forward_model_name")
         forward_model = from_config_create_model(forward_model_name, config)
 
         # get further model options
@@ -76,7 +76,7 @@ class LikelihoodModel(Model):
         db = DB_module.database
         global_settings = config.get('global_settings', None)
         experiment_name = global_settings["experiment_name"]
-        data_processor_name = model_options.get('data_processor')
+        data_processor_name = model_options.get('data_processor_name')
         file_name = model_options.get('experimental_file_name_identifier')
         base_dir = model_options.get('experimental_csv_data_base_dir')
 
@@ -94,4 +94,10 @@ class LikelihoodModel(Model):
 
     @abc.abstractmethod
     def evaluate(self, samples):
-        """Evaluate model with current set of variables."""
+        """Evaluate likelihood at sample points."""
+        pass
+
+    @abc.abstractmethod
+    def evaluate_and_gradient(self, samples):
+        """Evaluate likelihood model and its gradient at sample points."""
+        pass

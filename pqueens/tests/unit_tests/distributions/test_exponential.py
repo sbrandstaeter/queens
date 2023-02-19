@@ -24,7 +24,7 @@ def rate_1d():
 def exponential_1d(rate_1d):
     """An exponential distribution."""
     distribution_options = {
-        'distribution': 'exponential',
+        'type': 'exponential',
         'rate': rate_1d,
     }
     return from_config_create_distribution(distribution_options)
@@ -51,7 +51,7 @@ def rate_2d():
 @pytest.fixture(scope='module')
 def exponential_2d(rate_2d):
     """An exponential distribution."""
-    distribution_options = {'distribution': 'exponential', 'rate': rate_2d}
+    distribution_options = {'type': 'exponential', 'rate': rate_2d}
     return from_config_create_distribution(distribution_options)
 
 
@@ -77,7 +77,7 @@ def test_init_exponential_1d(exponential_1d, rate_1d):
 def test_init_exponential_1d_wrong_rate(rate_1d):
     """Test init method of Exponential Distribution class."""
     with pytest.raises(ValueError, match=r'The parameter \'rate\' has to be positive.*'):
-        distribution_options = {'distribution': 'exponential', 'rate': -rate_1d}
+        distribution_options = {'type': 'exponential', 'rate': -rate_1d}
         from_config_create_distribution(distribution_options)
 
 
@@ -105,7 +105,7 @@ def test_logpdf_exponential_1d(exponential_1d, rate_1d, sample_pos_1d):
 
 
 def test_grad_logpdf_exponential_1d(exponential_1d, sample_pos_1d):
-    """Test grad_logpdf method of exponential distribution class."""
+    """Test *grad_logpdf* method of exponential distribution class."""
     sample_pos_1d = sample_pos_1d.reshape(-1, 1)
     condition = (sample_pos_1d >= 0).all(axis=1).reshape(-1, 1)
     ref_sol = np.where(condition, -exponential_1d.rate, np.nan)
@@ -154,7 +154,7 @@ def test_init_exponential_2d(exponential_2d, rate_2d):
 def test_init_exponential_2d_wrong_rate():
     """Test init method of Exponential Distribution class."""
     with pytest.raises(ValueError, match=r'The parameter \'rate\' has to be positive.*'):
-        distribution_options = {'distribution': 'exponential', 'rate': np.array([-1, 1])}
+        distribution_options = {'type': 'exponential', 'rate': np.array([-1, 1])}
         from_config_create_distribution(distribution_options)
 
 
@@ -188,7 +188,7 @@ def test_logpdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):
 
 
 def test_grad_logpdf_exponential_2d(exponential_2d, sample_pos_2d):
-    """Test grad_logpdf method of exponential distribution class."""
+    """Test *grad_logpdf* method of exponential distribution class."""
     sample_pos_2d = sample_pos_2d.reshape(-1, 2)
     condition = (sample_pos_2d >= 0).all(axis=1).reshape(-1, 1)
     ref_sol = np.where(condition, -exponential_2d.rate, np.nan)

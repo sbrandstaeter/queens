@@ -1,7 +1,7 @@
 """Visualization for BMFMC-UQ.
 
-A module that provides utilities and a class for visualization in BMFMC-UQ
-It is designed such that the BMFMCVisualization class needs only to be initialized one
+A module that provides utilities and a class for visualization in BMFMC-UQ.
+It is designed such that the BMFMCVisualization class needs only to be initialized once
 and can then be accessed and modified in the entire project.
 
 In this context "this" is a pointer to the module object instance itself and can be compared to the
@@ -9,10 +9,8 @@ In this context "this" is a pointer to the module object instance itself and can
 
 Attributes:
     bmfmc_visualization_instance (obj): Instance of the BMFMCVisualization class
-
-Returns:
-    None
 """
+
 import os
 import sys
 
@@ -27,7 +25,7 @@ this.bmfmc_visualization_instance = None
 def from_config_create(config):
     """Create class from config.
 
-    Module function that calls the class function `from_config_create` and
+    Module function that calls the class function *from_config_create* and
     creates instance of the BMFMCVisualization class from the problem
     description.
 
@@ -81,7 +79,7 @@ class BMFMCVisualization(object):
         Returns:
             Instance of BMFMCVisualization (obj)
         """
-        method_options = config["method"].get("method_options")
+        method_options = config["method"]
         plotting_options = method_options["result_description"].get("plotting_options")
         paths = [
             os.path.join(plotting_options.get("plotting_dir"), name)
@@ -102,10 +100,10 @@ class BMFMCVisualization(object):
         Plot the output distributions of HF output prediction, LF output,
         Monte-Carlo reference, posterior variance or BMFMC reference with no
         features, depending on settings in input file. Animate and save plots
-        dependent on problem description.
+        depending on problem description.
 
         Args:
-            output (dict): dictionary containing key-value paris to plot
+            output (dict): Dictionary containing key-value paris to plot
 
         Returns:
             Plots of model output distribution
@@ -183,7 +181,7 @@ class BMFMCVisualization(object):
         plots.
 
         Args:
-            output (dict): dictionary containing key-value paris to plot
+            output (dict): Dictionary containing key-value paris to plot
             Y_LFs_mc (np.array): Low-fidelity output Monte-Carlo samples
             Y_HF_mc (np.array):  High-fidelity output Monte-Carlo reference samples
             Y_HF_train (np.array): High-fidelity output training points
@@ -208,22 +206,22 @@ class BMFMCVisualization(object):
         r"""Plot feature ranking.
 
         Plot the score/ranking of possible candidates of informative features
-        :math:`\\gamma_i`. Only the candidates with the highest score will be
-        considered for :math:`z_{LF}`
+        :math:`\gamma_i`. Only the candidates with the highest score will be
+        considered for :math:`z_{LF}`.
 
         Args:
             dim_counter: Input dimension corresponding to the scores. In the
                          next iteration counts will change as one informative features
                          was already determined and the counter reset.
-                         Note: In the first iteration dim_counter coincides with the input
+                         *Note:* In the first iteration, *dim_counter* coincides with the input
                          dimensions. Afterwards, it only enumerates the remaining dimensions
                          of the input.
-            ranking: Vector with scores/ranking of candidates :math:`\\gamma_i`
+            ranking: Vector with scores/ranking of candidates :math:`\gamma_i`
             iteration: Current iteration to find most informative input features
 
         Returns:
             Plots of the ranking/scores of candidates for informative features of the
-            input :math:`\\gamma_i`
+            input :math:`\gamma_i`
         """
         if self.plot_booleans[2]:
             fig, ax = plt.subplots()

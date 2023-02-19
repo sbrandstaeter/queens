@@ -25,6 +25,7 @@ def dummy_job():
 
 @pytest.fixture(scope='module')
 def dummy_output_simple_index():
+    """TODO_doc."""
     output_simple_index = [
         [1, 'pd.DataFrame', None],
         ['my_index', 0, 1],
@@ -37,6 +38,7 @@ def dummy_output_simple_index():
 
 @pytest.fixture(scope='module')
 def dummy_output_multi_index():
+    """TODO_doc."""
     output_multi_index = [
         [2, 'pd.DataFrame', None],
         ['name0', 'name1', 0],
@@ -74,6 +76,7 @@ def dummy_job_with_list(dummy_output_multi_index):
 
 @pytest.fixture(scope='module')
 def data_pandas_simple_index():
+    """TODO_doc."""
     data_simple_index = pd.DataFrame(
         np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]]), index=['a', 'b', 'c']
     )
@@ -82,6 +85,7 @@ def data_pandas_simple_index():
 
 @pytest.fixture(scope='module')
 def data_pandas_multi_index():
+    """TODO_doc."""
     arrays = [
         ['bar', 'bar', 'baz', 'baz', 'foo', 'foo', 'qux', 'qux'],
         ['one', 'two', 'one', 'two', 'one', 'two', 'one', 'two'],
@@ -96,6 +100,7 @@ def data_pandas_multi_index():
 
 @pytest.fixture(scope='module')
 def data_xarray_dataarray():
+    """TODO_doc."""
     data = np.random.rand(4, 3)
     locs = ["IA", "IL", "IN"]
     times = pd.date_range("2000-01-01", periods=4)
@@ -142,26 +147,30 @@ def dummy_doc_with_xarray_dataarray(data_xarray_dataarray):
 
 @pytest.fixture(scope='module')
 def experiment_name():
+    """TODO_doc."""
     return 'mongodb_unittests'
 
 
 @pytest.fixture(scope='module')
 def job_id():
+    """TODO_doc."""
     return 1
 
 
 @pytest.fixture(scope='module')
 def batch_id_1():
+    """TODO_doc."""
     return 1
 
 
 @pytest.fixture(scope='module')
 def batch_id_2():
+    """TODO_doc."""
     return 2
 
 
 def test_connection():
-    """Test connection to mongodb service."""
+    """Test connection to mongoDB service."""
     try:
         db = MongoDB.from_config_create_database({"database": {"address": "localhost:27017"}})
     except:
@@ -172,8 +181,11 @@ def test_connection():
 
 
 def test_connection_fails():
-    """Test for correct exception in case of failing connection to MongoDB
-    service."""
+    """TODO_doc: add a one-line explanation.
+
+    Test for correct exception in case of failing connection to MongoDB
+    service.
+    """
     wrong_address = "localhos:2016"
     with pytest.raises(ServerSelectionTimeoutError):
         db = MongoDB.from_config_create_database({"database": {"address": wrong_address}})
@@ -184,12 +196,10 @@ def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
     """Test reading and writing to the database.
 
     Args:
-        dummy_job: a test job that will be written and read to/from the database
-        experiment_name: mock the experiment name of a QUEENS run needed for database name
-        batch_id_1: (int) batch id needed for database name
-        job_id: (int) id of the dummy_job needed for database name and database interaction
-
-    Returns:
+        dummy_job: A test job that will be written and read to/from the database
+        experiment_name: Mock the experiment name of a QUEENS run needed for database name
+        batch_id_1 (int): Batch ID needed for database name
+        job_id (int): ID of the *dummy_job* needed for database name and database interaction
     """
     try:
         db = MongoDB.from_config_create_database(
@@ -231,7 +241,7 @@ def test_read_write_delete(dummy_job, experiment_name, batch_id_1, job_id):
 
 
 def test_write_multiple_entries(dummy_job, experiment_name, batch_id_2, job_id):
-
+    """TODO_doc."""
     try:
         db = MongoDB.from_config_create_database(
             {"database": {"address": "localhost:27017", "reset_existing_db": True}}
@@ -258,6 +268,7 @@ def test_write_multiple_entries(dummy_job, experiment_name, batch_id_2, job_id):
 
 
 def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):
+    """TODO_doc."""
     try:
         db = MongoDB.from_config_create_database(
             {"database": {"address": "localhost:27017", "reset_existing_db": True}}
@@ -287,6 +298,7 @@ def test_pack_pandas_multi_index(dummy_doc_with_pandas_multi):
 
 
 def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
+    """TODO_doc."""
     try:
         db = MongoDB.from_config_create_database(
             {"database": {"address": "localhost:27017", "reset_existing_db": True}}
@@ -315,6 +327,7 @@ def test_pack_pandas_simple_index(dummy_doc_with_pandas_simple):
 
 
 def test_pack_xarrays(dummy_doc_with_xarray_dataarray):
+    """TODO_doc."""
     try:
         db = MongoDB.from_config_create_database(
             {"database": {"address": "localhost:27017", "reset_existing_db": True}}
@@ -331,6 +344,7 @@ def test_pack_xarrays(dummy_doc_with_xarray_dataarray):
 
 
 def test_unpack_labeled_data(dummy_job_with_result):
+    """TODO_doc."""
     try:
         db = MongoDB.from_config_create_database(
             {"database": {"address": "localhost:27017", "reset_existing_db": True}}
@@ -347,6 +361,7 @@ def test_unpack_labeled_data(dummy_job_with_result):
 
 
 def test_unpack_list(dummy_job_with_list):
+    """TODO_doc."""
     try:
         db = MongoDB.from_config_create_database(
             {"database": {"address": "localhost:27017", "reset_existing_db": True}}
@@ -362,7 +377,7 @@ def test_unpack_list(dummy_job_with_list):
 
 
 def test_split_output_no_index():
-
+    """TODO_doc."""
     output_no_index = [
         [None, None, None],
         ['my_index', 0, 1],
@@ -376,14 +391,14 @@ def test_split_output_no_index():
 
 
 def test_split_output_simple_index(dummy_output_simple_index):
-
+    """TODO_doc."""
     data, index = MongoDB._split_output(dummy_output_simple_index)
     expected_data = np.array([[3.50000000e-01, 4.85410116e-05], [3.50000000e-01, 5.11766167e-05]])
     np.testing.assert_array_equal(data, expected_data)
 
 
 def test_split_output_multi_index(dummy_output_multi_index):
-
+    """TODO_doc."""
     data, index = MongoDB._split_output(dummy_output_multi_index)
     expected_data = np.array([4.85410116e-05, 5.11766167e-05]).flatten()
     np.testing.assert_array_equal(data.flatten(), expected_data)

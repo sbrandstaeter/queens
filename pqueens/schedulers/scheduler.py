@@ -8,23 +8,21 @@ class Scheduler(metaclass=abc.ABCMeta):
     """Abstract base class for schedulers in QUEENS.
 
     The scheduler manages simulation runs in QUEENS on local or remote
-    computing resources with or without Singularity containers using
+    computing resources, with or without Singularity containers, using
     various scheduling systems on respective computing resource (see
     also respective Wiki article for more details).
 
     Attributes:
-            experiment_name (str):     name of QUEENS experiment
-            input_file (path):         path to QUEENS input file
-            experiment_dir (path):     path to QUEENS experiment directory
-            driver_name (str):         Name of the driver that shall be used for job submission
-            config (dict):             dictionary containing configuration as provided in
-                                       QUEENS input file
-            remote connect (str):      (only for remote scheduling) address of remote
-                                       computing resource
-            singularity (bool):        flag for use of Singularity containers
-            scheduler_type (str):      type of scheduler chosen in QUEENS input file
-            process_ids (dict): Dict of process-IDs of the submitted process as value with job_ids
-                                as keys
+            experiment_name (str):     Name of QUEENS experiment.
+            input_file (path):         Path to QUEENS input file.
+            experiment_dir (path):     Path to QUEENS experiment directory.
+            driver_name (str):         Name of the driver that shall be used for job submission.
+            config (dict):             Dictionary containing configuration as provided in
+                                       QUEENS input file.
+            scheduler_type (str):      Type of scheduler chosen in QUEENS input file.
+            singularity (bool):        Flag for the use of Singularity containers.
+            process_ids (dict): Dict of process-IDs of the submitted process as value with *job_ids*
+                                as keys.
     """
 
     def __init__(
@@ -63,17 +61,14 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.singularity = singularity
         self.process_ids = {}
 
-    def _create_base_print_dict(self):
+    def _create_base_print_dict(self, resource_info):
         """String description of the ClusterScheduler object.
 
+        Args:
+            resource_info (str): information on location of computing resource
         Returns:
             string (str): ClusterScheduler object description
         """
-        if self.remote:
-            resource_info = f'remote ({self.remote_connect})'
-        else:
-            resource_info = 'local'
-
         print_dict = {
             "Type of scheduler": self.scheduler_type,
             "Jobs will be run": resource_info,
@@ -91,7 +86,7 @@ class Scheduler(metaclass=abc.ABCMeta):
             batch (int):             Batch number of job
 
         Returns:
-            pid (int):               process id of job
+            pid (int): Process ID of job
         """
         if self.singularity:
             pid = self._submit_singularity(job_id, batch)
@@ -134,11 +129,11 @@ class Scheduler(metaclass=abc.ABCMeta):
         """Check whether this job has been completed.
 
         Args:
-            job (dict): Job dict.
+            job (dict): Job dict
 
         Returns:
             completed (bool): If job is completed
-            failed (bool): If job failed.
+            failed (bool): If job failed
         """
 
     @abc.abstractmethod

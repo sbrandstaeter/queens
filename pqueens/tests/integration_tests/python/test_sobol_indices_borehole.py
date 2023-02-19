@@ -11,7 +11,7 @@ from pqueens import run
 
 def test_sobol_indices_borehole(inputdir, tmpdir):
     """Test case for Sobol Index iterator."""
-    run(Path(os.path.join(inputdir, 'sobol_indices_borehole.json')), Path(tmpdir))
+    run(Path(os.path.join(inputdir, 'sobol_indices_borehole.yml')), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
     with open(result_file, 'rb') as handle:

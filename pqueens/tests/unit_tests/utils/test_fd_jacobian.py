@@ -48,13 +48,15 @@ def bounds(request):
 def test_fd_jacobian(x0, method, rel_step, bounds):
     """Test reimplementation of Jacobian against the original.
 
-    cover all possible parameter combinations. Based on the Rosenbrock
-    test function supplied by scipy.optimize.
+    Cover all possible parameter combinations. Based on the Rosenbrock
+    test function supplied by *scipy.optimize*.
     """
     # calculated all necessary inputs
 
-    x_batch, dx = get_positions(x0, method, rel_step, bounds)
+    x_stencil_batch, dx = get_positions(x0, method, rel_step, bounds)
     step, use_one_sided = compute_step_with_bounds(x0, method, rel_step, bounds)
+
+    x_batch = np.vstack((np.atleast_2d(x0), x_stencil_batch))
 
     f_batch = np.array([[rosen(x)] for x in x_batch])
 
@@ -64,7 +66,6 @@ def test_fd_jacobian(x0, method, rel_step, bounds):
     expected_jacobian = approx_derivative(
         rosen, x0, method, rel_step=rel_step, f0=None, bounds=bounds
     )
-
     actual_jacobian = fd_jacobian(f0, f_perturbed, dx, use_one_sided, method)
 
     np.testing.assert_allclose(np.squeeze(expected_jacobian), actual_jacobian)

@@ -1,0 +1,29 @@
+experiment_name: Rosenbrock
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  type: optimization
+  model_name: model
+  algorithm: {{ algorithm }}
+  initial_guess: [-3.0, -4.0]
+  result_description:
+    write_results: true
+  bounds: [[-.inf, .inf], [-.inf, .inf]]
+model:
+  type: simulation_model
+  interface_name: interface
+proposal_distribution:
+  type: normal
+  mean: 0.0
+  covariance: 1.0
+interface:
+  type: direct_python_interface
+  function: rosenbrock60
+parameters:
+  x1:
+    type: free
+    dimension: 1
+  x2:
+    type: free
+    dimension: 1

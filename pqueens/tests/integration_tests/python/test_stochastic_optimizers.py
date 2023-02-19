@@ -44,10 +44,10 @@ def test_Adam(adam_optimizer):
 
 @pytest.fixture()
 def adam_optimizer():
-    """Adam optimzer."""
+    """Adam optimizer."""
     opt_config = {
-        "dummy_section": {
-            "stochastic_optimizer": "Adam",
+        "optimizer": {
+            "type": "adam",
             "learning_rate": 1e-2,
             "optimization_type": "max",
             "rel_L1_change_threshold": 1e-4,
@@ -55,16 +55,16 @@ def adam_optimizer():
             "max_iter": 1000,
         }
     }
-    optimizer = from_config_create_optimizer(opt_config, section_name="dummy_section")
+    optimizer = from_config_create_optimizer(opt_config, optimizer_name="optimizer")
     return optimizer
 
 
 @pytest.fixture()
 def adamax_optimizer():
-    """Adamax optimzer."""
+    """Adamax optimizer."""
     opt_config = {
-        "dummy_section": {
-            "stochastic_optimizer": "Adamax",
+        "optimizer": {
+            "type": "adamax",
             "learning_rate": 1e-2,
             "optimization_type": "min",
             "rel_L1_change_threshold": 1e-4,
@@ -72,7 +72,7 @@ def adamax_optimizer():
             "max_iter": 1000,
         }
     }
-    optimizer = from_config_create_optimizer(opt_config, section_name="dummy_section")
+    optimizer = from_config_create_optimizer(opt_config, optimizer_name="optimizer")
     return optimizer
 
 
@@ -80,8 +80,8 @@ def adamax_optimizer():
 def rmsprop_optimizer():
     """Rmsprop optimzer."""
     opt_config = {
-        "dummy_section": {
-            "stochastic_optimizer": "RMSprop",
+        "optimizer": {
+            "type": "rms_prop",
             "learning_rate": 5e-2,
             "optimization_type": "max",
             "rel_L1_change_threshold": -1,
@@ -89,7 +89,7 @@ def rmsprop_optimizer():
             "max_iter": 500,
         }
     }
-    optimizer = from_config_create_optimizer(opt_config, section_name="dummy_section")
+    optimizer = from_config_create_optimizer(opt_config, optimizer_name="optimizer")
     return optimizer
 
 
