@@ -68,10 +68,10 @@ class DaskInterface(Interface):
 
         num_workers = config[interface_name].get("num_workers")
         if self.remote:
+            self.client = Client(address=f"localhost:{dask_scheduler_port}")
+        else:
             cluster = LocalCluster(n_workers=num_workers, threads_per_worker=num_threads)
             self.client = Client(cluster)
-        else:
-            self.client = Client(address=f"localhost:{dask_scheduler_port}")
 
         _logger.info(self.client)
         _logger.info(self.client.dashboard_link)
