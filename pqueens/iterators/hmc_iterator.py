@@ -238,15 +238,16 @@ class HMCIterator(PyMCIterator):
                 initvals=self.initvals,
                 progressbar=self.progressbar,
                 n_init=self.advi_iterations,
+                random_seed=self.seed,
             )
-            potentaial = step_helper.potential
+            potential = step_helper.potential
             step = pm.HamiltonianMC(
                 target_accept=self.target_accept,
                 max_steps=self.max_steps,
                 path_length=self.path_length,
                 step_scale=self.step_size,
                 scaling=None,
-                potentaial=potentaial,
+                potential=potential,
             )
         return step
 

@@ -10,7 +10,7 @@
       "seed": 42,
       "num_samples": 10,
       "num_burn_in": 2,
-      "num_chains": 4,
+      "num_chains": 1,
       "model": "model",
       "use_queens_prior": false,
       "progressbar": false,

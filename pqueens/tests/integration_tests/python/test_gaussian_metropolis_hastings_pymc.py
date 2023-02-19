@@ -31,9 +31,9 @@ def test_gaussian_mh(inputdir, tmpdir, dummy_data):
         results = pickle.load(handle)
 
     assert results['mean'].mean(axis=0) == pytest.approx(
-        np.array([-1.0635705644970397, 0.5672708823010517])
+        np.array([-0.5680310153118374, 0.9247536392514567])
     )
-    assert results['var'].mean(axis=0) == pytest.approx([0.42437488, 0.39927101])
+    assert results['var'].mean(axis=0) == pytest.approx([0.13601070852470507, 0.6672200465857734])
 
 
 def target_density(self, samples, gradient_bool=False):

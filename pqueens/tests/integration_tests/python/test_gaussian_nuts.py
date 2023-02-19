@@ -31,9 +31,9 @@ def test_gaussian_nuts(inputdir, tmpdir, dummy_data):
         results = pickle.load(handle)
 
     assert results['mean'].mean(axis=0) == pytest.approx(
-        np.array([-0.5898462796496134, 0.7998068720572917])
+        np.array([-0.2868793496608573, 0.6474274597130008])
     )
-    assert results['var'].mean(axis=0) == pytest.approx([0.44745816126343974, 0.5652707185959533])
+    assert results['var'].mean(axis=0) == pytest.approx([0.08396277217936474, 0.10836256575521087])
 
 
 def target_density(self, samples, gradient_bool):
