@@ -3,8 +3,9 @@ import logging
 import time
 
 import numpy as np
-from dask.distributed import Client, LocalCluster, as_completed
+from dask.distributed import Client, as_completed
 
+from pqueens.drivers import from_config_create_driver
 from pqueens.interfaces.interface import Interface
 from pqueens.schedulers import from_config_create_scheduler
 from pqueens.utils.config_directories import experiment_directory
@@ -38,7 +39,7 @@ class DaskInterface(Interface):
         experiment_name,
         experiment_dir,
         driver_name,
-        scheduler,
+        config,
         dask_scheduler_port,
     ):
         """Create JobInterface.
@@ -64,7 +65,7 @@ class DaskInterface(Interface):
         _logger.info(self.client)
         _logger.info(self.client.dashboard_link)
 
-        self.scheduler = scheduler
+        self.config = config
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -92,13 +93,6 @@ class DaskInterface(Interface):
         scheduler_name = config['resources'][first]['scheduler_name']
         scheduler_options = config[scheduler_name]
 
-        # create scheduler from config
-        scheduler = from_config_create_scheduler(
-            scheduler_name=scheduler_name,
-            config=config,
-            driver_name=driver_name,
-        )
-
         # get flag for remote scheduling
         if scheduler_options.get('remote'):
             remote_connect = scheduler_options['remote']['connect']
@@ -109,18 +103,13 @@ class DaskInterface(Interface):
             experiment_name=experiment_name, remote_connect=remote_connect
         )
 
-        # get flag for Singularity
-        singularity = scheduler_options.get('singularity', False)
-        if not isinstance(singularity, bool):
-            raise TypeError("Singularity option has to be a boolean (true or false).")
-
         # instantiate object
         return cls(
             interface_name,
             experiment_name,
             experiment_dir,
             driver_name,
-            scheduler,
+            config,
             dask_scheduler_port,
         )
 
@@ -263,7 +252,7 @@ class DaskInterface(Interface):
 
             futures.append(
                 self.client.submit(
-                    self.scheduler.submit,
+                    self.execute_driver,
                     jobid,
                     self.batch_number,
                     current_job,
@@ -278,3 +267,24 @@ class DaskInterface(Interface):
             jobs.append(completed_future.result())
 
         return jobs
+
+    def execute_driver(self, job_id, batch, job):
+        """Helper function to execute driver commands.
+
+        Args:
+            job_id (int): ID number of the current job
+            batch (int): Number of the current batch
+            job (dict): contains all data of the job including variable values
+
+        Returns:
+            pid (int): Process ID
+        """
+        driver_obj = from_config_create_driver(
+            self.config, job_id, batch, self.driver_name, self.experiment_dir, job
+        )
+        # run driver and get process ID and result (in job dict)
+        driver_obj.pre_job_run_and_run_job()
+        pid = driver_obj.pid
+        driver_obj.post_job_run()
+        job = driver_obj.job
+        return job, pid
