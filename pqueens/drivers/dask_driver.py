@@ -341,7 +341,7 @@ class DaskDriver:
             log_file=str(self.log_file),
             error_file=str(self.error_file),
             streaming=self.cae_output_streaming,
-            raise_error_on_subprocess_failure=False,
+            raise_error_on_subprocess_failure=True,
         )
 
         # detect failed jobs
