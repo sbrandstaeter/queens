@@ -1,7 +1,6 @@
 name: queens
 channels:
   - defaults
-  - conda-forge
 dependencies:
 ###### use requirements without version fixed specifier where possible ######
   - python==3.8
