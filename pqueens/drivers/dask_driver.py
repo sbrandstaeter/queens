@@ -4,10 +4,6 @@ import pathlib
 import time
 
 from pqueens.data_processor import from_config_create_data_processor
-from pqueens.schedulers.cluster_scheduler import (
-    VALID_CLUSTER_CLUSTER_TYPES,
-    VALID_PBS_CLUSTER_TYPES,
-)
 from pqueens.utils.injector import inject
 from pqueens.utils.print_utils import get_str_table
 from pqueens.utils.run_subprocess import run_subprocess
@@ -206,7 +202,13 @@ class DaskDriver:
         )
 
     def set_job(self, job_id, batch, job):
-        """Set state of job."""
+        """Set state of job.
+
+        Args:
+            job_id (int): Job ID within range [1, n_jobs]
+            batch (int): Job batch number (multiple batches possible)
+            job (dict): Container for all job related data
+        """
         self.job_id = job_id
         self.batch = batch
         self.job = job
@@ -222,6 +224,7 @@ class DaskDriver:
         ) = self.update_directories()
 
     def update_directories(self):
+        """Update directories depending on job_id."""
         job_dir = self.experiment_dir / str(self.job_id)
         output_directory = job_dir / 'output'
         output_directory.mkdir(parents=True, exist_ok=True)
@@ -367,7 +370,7 @@ class DaskDriver:
         )
 
     def _assemble_execute_cmd(self):
-        """Assemble execute command
+        """Assemble execute command.
 
         Returns:
             execute command

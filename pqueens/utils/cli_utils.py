@@ -116,7 +116,7 @@ def get_cli_options(args):
         '--dask-scheduler-port',
         type=int,
         default=DEFAULT_DASK_SCHEDULER_PORT,
-        help='Port of dask scheduler reached by port-forwarding from localhost to remote HPC cluster',
+        help='Port of remote dask scheduler',
     )
 
     args = parser.parse_args(args)
