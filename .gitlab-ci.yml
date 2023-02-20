@@ -294,7 +294,7 @@ imcs-ubuntu_full_test_suite:
     - .cluster_tests_conditions
   stage: tests
   script:
-    - pytest -v -m $CLUSTER_MARKER --no-cov $PYTEST_OPTIONAL_PARAMETERS
+    - pytest -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG $PYTEST_OPTIONAL_PARAMETERS
 
 lnm-cluster_tests:
   extends:
