@@ -171,7 +171,8 @@ update:
     - pip-compile --upgrade
     # Update singularity image requirements
     - cd pqueens/singularity
-    - pip-compile --upgrade
+    - pip-compile --upgrade requirements.in --output-file requirements.txt
+    - pip-compile --upgrade dev-requirements.in --output-file dev-requirements.txt
     - cd $CI_PROJECT_DIR
     - conda deactivate
     - UPDATE_BRANCH_NAME="piptools-update-$(date '+%Y-%m-%d')"
