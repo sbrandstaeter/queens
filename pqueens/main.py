@@ -81,6 +81,7 @@ def get_config_dict(input_file, output_dir, debug=False, dask_scheduler_port=Non
         input_file (pathlib.Path): Path object to the input file
         output_dir (pathlib.Path): Path object to the output directory
         debug (bool): True if debug mode is to be used
+        dask_scheduler_port (int): local port where the dask scheduler can be reached
 
     Returns:
         dict: config dict

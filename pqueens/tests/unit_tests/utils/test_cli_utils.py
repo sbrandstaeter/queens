@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-from pqueens.utils.cli_utils import get_cli_options
+from pqueens.utils.cli_utils import get_cli_options, DEFAULT_DASK_SCHEDULER_PORT
 from pqueens.utils.exceptions import CLIError
 
 
@@ -29,17 +29,29 @@ def test_get_cli_options_no_output():
         get_cli_options(args)
 
 
-def test_get_cli_options_default_debug():
+def test_get_cli_options_default():
     """Test if default debug option is set correctly."""
     args = ["--input", "input_file", "--output_dir", "output_dir"]
-    _, _, debug = get_cli_options(args)
+    _, _, debug, dask_scheduler_port = get_cli_options(args)
     assert not debug
+    assert dask_scheduler_port == DEFAULT_DASK_SCHEDULER_PORT
 
 
 def test_get_cli_options_debug(debug_flag):
     """Test if options are read in correctly."""
-    args = ["--input", "input_file", "--output_dir", "output_dir", "--debug", str(debug_flag)]
-    input_file, output_dir, debug = get_cli_options(args)
+    goal_dask_scheduler_port = 12345
+    args = [
+        "--input",
+        "input_file",
+        "--output_dir",
+        "output_dir",
+        "--debug",
+        str(debug_flag),
+        "--dask-scheduler-port",
+        str(goal_dask_scheduler_port),
+    ]
+    input_file, output_dir, debug, dask_scheduler_port = get_cli_options(args)
     assert input_file == Path("input_file")
     assert output_dir == Path("output_dir")
     assert debug == debug_flag
+    assert dask_scheduler_port == goal_dask_scheduler_port
