@@ -1,14 +1,7 @@
 name: queens
 channels:
   - defaults
-  - conda-forge
 dependencies:
 ###### use requirements without version fixed specifier where possible ######
   - python==3.8
-  - cython==0.29.30
-  - numpy==1.21.5
-  - scipy==1.7.3
-  - numba==0.55.1
-  - scikit-learn==1.1.1
-  - pandas==1.4.3
   - pip
