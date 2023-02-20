@@ -3,6 +3,7 @@ from pqueens.utils.import_utils import get_module_class
 
 VALID_TYPES = {
     'normal': ["pqueens.distributions.normal", "NormalDistribution"],
+    'mean_field_normal': ["pqueens.distributions.mean_field_normal", "MeanFieldNormalDistribution"],
     'uniform': ["pqueens.distributions.uniform", "UniformDistribution"],
     'lognormal': ["pqueens.distributions.lognormal", "LogNormalDistribution"],
     'beta': ["pqueens.distributions.beta", "BetaDistribution"],

@@ -16,7 +16,6 @@ def from_config_create_driver(
     batch,
     driver_name,
     experiment_dir,
-    job,
     working_dir=None,
     cluster_config=None,
     cluster_options=None,
@@ -44,9 +43,8 @@ def from_config_create_driver(
         batch=batch,
         driver_name=driver_name,
         experiment_dir=experiment_dir,
-        initial_working_dir=working_dir,
+        working_dir=working_dir,
         cluster_config=cluster_config,
         cluster_options=cluster_options,
-        job=job,
     )
     return driver
