@@ -107,9 +107,8 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             iterator:MetropolisHastingsPyMCIterator object
         """
         _logger.info(
-            "Metropolis Hastings (PyMC) Iterator for experiment: {0}".format(
-                config.get('global_settings').get('experiment_name')
-            )
+            "PyMC Metropolis-Hastings Iterator for experiment: %s",
+            config.get('global_settings').get('experiment_name'),
         )
 
         (

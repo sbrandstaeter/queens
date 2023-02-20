@@ -129,9 +129,7 @@ class NUTSIterator(PyMCIterator):
             iterator:NUTSIterator object
         """
         _logger.info(
-            "NUTS Iterator for experiment: {0}".format(
-                config.get('global_settings').get('experiment_name')
-            )
+            "NUTS Iterator for experiment: %s", config.get('global_settings').get('experiment_name')
         )
 
         (

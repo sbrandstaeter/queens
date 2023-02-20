@@ -120,9 +120,7 @@ class HMCIterator(PyMCIterator):
             iterator:HMCIterator object
         """
         _logger.info(
-            "HMC Iterator for experiment: {0}".format(
-                config.get('global_settings').get('experiment_name')
-            )
+            "HMC Iterator for experiment: %s", config.get('global_settings').get('experiment_name')
         )
 
         (

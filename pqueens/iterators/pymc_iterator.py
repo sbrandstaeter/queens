@@ -186,6 +186,7 @@ class PyMCIterator(Iterator):
 
     def pre_run(self):
         """Prepare MCMC run."""
+        # pylint: disable-next=unnecessary-dunder-call
         self.pymc_model.__enter__()
         self.init_distribution_wrapper()
         if self.use_queens_prior:
@@ -211,6 +212,7 @@ class PyMCIterator(Iterator):
             prior = pm.math.concatenate(prior_list, axis=1)
 
         prior_tensor = pt.as_tensor_variable(prior)
+        # pylint: disable-next=not-callable
         pm.Potential("likelihood", self.log_like(prior_tensor))
         self.step = self.init_mcmc_method()
 
