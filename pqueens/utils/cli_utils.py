@@ -15,6 +15,7 @@ _logger = logging.getLogger(__name__)
 
 DEFAULT_DASK_SCHEDULER_PORT = 44444
 
+
 def build_singularity_cli():
     """Build singularity image CLI wrapper."""
     ascii_art.print_crown(75)
