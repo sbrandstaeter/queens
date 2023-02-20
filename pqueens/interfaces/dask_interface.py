@@ -3,7 +3,7 @@ import logging
 import time
 
 import numpy as np
-from dask.distributed import Client, as_completed, LocalCluster
+from dask.distributed import Client, LocalCluster, as_completed
 
 from pqueens.drivers.dask_driver import DaskDriver
 from pqueens.interfaces.interface import Interface
