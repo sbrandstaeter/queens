@@ -200,9 +200,9 @@ class NUTSIterator(PyMCIterator):
             log_likelihood = self.current_likelihood
         else:
             self.current_samples = samples.copy()
-            log_likelihood, gradient = self.model.evaluate(samples, gradient_bool=True)
+            log_likelihood, gradient = self.model.evaluate_and_gradient(samples)
             self.current_likelihood = log_likelihood.copy()
-            self.current_gradients = gradient.copy()
+            self.current_gradients = gradient.reshape(-1, self.parameters.num_parameters).copy()
         return log_likelihood
 
     def eval_log_likelihood_grad(self, samples):
@@ -220,8 +220,8 @@ class NUTSIterator(PyMCIterator):
         if np.array_equal(self.current_samples, samples):
             gradient = self.current_gradients
         else:
-            _, gradient = self.model.evaluate(samples, gradient_bool=True)
-        return gradient
+            _, gradient = self.model.evaluate_and_gradient(samples)
+        return gradient.reshape(-1, self.parameters.num_parameters)
 
     def init_mcmc_method(self):
         """Init the PyMC MCMC Model.

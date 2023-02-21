@@ -167,11 +167,10 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         Returns:
             (np.array): log-likelihoods
         """
-        log_likelihood = np.zeros(shape=(samples.shape[0]))
         # check if sample was seen in previous acceptance step
         if self.seen_samples is None:
             self.seen_samples = [samples.copy(), samples.copy(), samples.copy()]
-            log_likelihood = self.model.evaluate(samples, gradient_bool=False)
+            log_likelihood = self.model.evaluate(samples)
             self.seen_likelihoods = [
                 log_likelihood.copy(),
                 log_likelihood.copy(),
@@ -183,7 +182,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             elif np.array_equal(self.seen_samples[1], samples):
                 log_likelihood = self.seen_likelihoods[1]
             else:
-                log_likelihood = self.model.evaluate(samples, gradient_bool=False)
+                log_likelihood = self.model.evaluate(samples)
 
         # update list of last samples and likelihoods
         self.seen_samples.pop(0)
