@@ -36,7 +36,7 @@ def test_gaussian_mh(inputdir, tmpdir, dummy_data):
     assert results['var'].mean(axis=0) == pytest.approx([0.13601070852470507, 0.6672200465857734])
 
 
-def target_density(self, samples, gradient_bool=False):
+def target_density(self, samples):
     """Patch likelihood."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_2d_logpdf(samples).flatten()

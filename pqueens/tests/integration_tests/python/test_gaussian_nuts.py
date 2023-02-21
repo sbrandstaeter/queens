@@ -23,7 +23,7 @@ def test_gaussian_nuts(inputdir, tmpdir, dummy_data):
     dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = os.path.join(tmpdir, "gaussian_nuts_realiz.yml")
     injector.inject(dir_dict, template, input_file)
-    with patch.object(GaussianLikelihood, "evaluate", target_density):
+    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
         run(Path(input_file), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
@@ -36,7 +36,7 @@ def test_gaussian_nuts(inputdir, tmpdir, dummy_data):
     assert results['var'].mean(axis=0) == pytest.approx([0.08396277217936474, 0.10836256575521087])
 
 
-def target_density(self, samples, gradient_bool):
+def target_density(self, samples):
     """Patch likelihood."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_2d_logpdf(samples).flatten()

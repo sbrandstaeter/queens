@@ -24,7 +24,7 @@ def test_gaussian_hmc(inputdir, tmpdir, dummy_data):
     input_file = os.path.join(tmpdir, "gaussian_hmc_realiz.yml")
     injector.inject(dir_dict, template, input_file)
 
-    with patch.object(GaussianLikelihood, "evaluate", target_density):
+    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
         run(Path(input_file), Path(tmpdir))
 
     result_file = str(tmpdir) + '/' + 'xxx.pickle'
@@ -37,7 +37,7 @@ def test_gaussian_hmc(inputdir, tmpdir, dummy_data):
     assert results['var'].mean(axis=0) == pytest.approx([0, 0])
 
 
-def target_density(self, samples, gradient_bool):
+def target_density(self, samples):
     """Patch likelihood."""
     samples = np.atleast_2d(samples)
     log_likelihood = gaussian_2d_logpdf(samples).flatten()
