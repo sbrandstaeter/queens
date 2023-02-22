@@ -27,6 +27,7 @@ scikit-learn==1.1.1
 arviz # Bayesian visualization
 gpy # for Gaussian Processes
 gpflow==2.6.4 # LV and variational GPs
+optax # google jax based optimizer
 tensorflow==2.9.1
 tensorflow-probability==0.17.0
 torch
