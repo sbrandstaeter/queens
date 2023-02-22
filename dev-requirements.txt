@@ -223,8 +223,6 @@ snowballstemmer==2.2.0
     #   sphinx
 soupsieve==2.4
     # via beautifulsoup4
-sp==1.1.0
-    # via -r dev-requirements.in
 sphinx==6.1.3
     # via
     #   -r dev-requirements.in
