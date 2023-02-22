@@ -54,20 +54,18 @@ def test_load_input_file(input_file, input_dict):
     assert loaded_dict == input_dict
 
 
-def test_write_to_csv(tmpdir):
+def test_write_to_csv(tmp_path):
     """Test csv writer."""
     data = np.array([[1, 2, 3], [4, 5, 6], [7, 8, 9]])
 
     # write out data
-    output_file_path = Path(tmpdir, "my_csv_file.csv")
+    output_file_path = Path(tmp_path, "my_csv_file.csv")
     write_to_csv(output_file_path, data)
 
     # read data from written out file with basic readline routine
     read_in_data_lst = []
-    with open(output_file_path, "r", encoding="utf-8") as in_file:
-        for line in in_file:
-            values = line.strip().split(',')
-            read_in_data_lst.append(values)
+    in_file = output_file_path.read_text(encoding="utf-8")
+    read_in_data_lst = [line.strip().split(',') for line in in_file]
 
     read_in_data = np.array(read_in_data_lst, dtype=np.float64)
 

@@ -1,6 +1,6 @@
 """Unit tests for gradient handler utils."""
-import pathlib
 from collections import namedtuple
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -415,7 +415,7 @@ def test_evaluate_and_gradient_adjoint(dummy_config, mocker):
         "interface", ["experiment_dir", "evaluate", "batch_number", "experiment_field_name"]
     )
     grad_interface = grad_interface_dummy(
-        experiment_dir=pathlib.Path("some_experiment_dir"),
+        experiment_dir=Path("some_experiment_dir"),
         evaluate=lambda x: {"mean": 2 * x},
         batch_number=1,
         experiment_field_name="test",

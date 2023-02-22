@@ -1,6 +1,5 @@
 """Fixtures needed across all unit_tests."""
 import logging
-from pathlib import Path
 
 import pytest
 
@@ -22,5 +21,5 @@ def fake_database():
 
 @pytest.fixture(name="test_path")
 def fixture_test_path(tmp_path):
-    """Convert *tmpdir* to *pathlib* object."""
+    """Convert *tmp_path* to *pathlib* object."""
     return tmp_path

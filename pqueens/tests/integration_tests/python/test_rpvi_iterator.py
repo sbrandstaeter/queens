@@ -1,6 +1,5 @@
 """Integration test for reparameterization trick VI."""
 
-import os
 import pickle
 from pathlib import Path
 

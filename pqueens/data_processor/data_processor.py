@@ -132,8 +132,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 f"but is of type {type(base_dir_file)}. Abort..."
             )
 
-        file_path_regex = self._generate_path_to_file(base_dir_file)
-        file_exists_bool = self._check_file_exist_and_is_unique(file_path_regex)
+        file_exists_bool = self._check_file_exist_and_is_unique(base_dir_file)
         if file_exists_bool:
             self._get_raw_data_from_file()
             self._filter_and_manipulate_raw_data()
@@ -142,32 +141,18 @@ class DataProcessor(metaclass=abc.ABCMeta):
         self._clean_up(base_dir_file)
         return self.processed_data
 
-    def _generate_path_to_file(self, base_dir_file):
-        """Generate path to file.
+    def _check_file_exist_and_is_unique(self, base_dir_file):
+        """Check if file exists.
 
         Args:
             base_dir_file (Path): Path to base directory that contains file of interest
 
         Returns:
-            file_path_regex (Path): Path to file that still
-                                        contains wildcards or regex expressions
-        """
-        file_identifier = self.file_name_identifier
-        file_path_regex = base_dir_file / file_identifier
-        return file_path_regex
-
-    def _check_file_exist_and_is_unique(self, file_path_regex):
-        """Check if file exists.
-
-        Args:
-            file_path_regex (Path): Path to file that still
-                                        contains wildcards or regex expressions
-
-        Returns:
             file_exists (bool): Boolean determine whether file exists. If true, the file
-                                exists.
+                            exists.
         """
-        file_list = glob.glob(file_path_regex)
+        file_list = list(base_dir_file.glob(self.file_name_identifier))
+
         if len(file_list) > 1:
             raise RuntimeError(
                 "The data_processor module found several files for the "
@@ -179,7 +164,9 @@ class DataProcessor(metaclass=abc.ABCMeta):
             self.file_path = file_list[0]
             file_exists = True
         else:
-            _logger.warning("The file '%s' does not exist!", file_path_regex)
+            _logger.warning(
+                "The file '%s' does not exist!", base_dir_file / self.file_name_identifier
+            )
             file_exists = False
 
         return file_exists
@@ -206,7 +193,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
 
         Args:
             base_dir_file (Path): Path of the base directory that
-                                 contains the file of interest.
+                                    contains the file of interest.
         """
         current_file = None
         try:

@@ -11,12 +11,13 @@ def read(fname):
     used e.g. to read the README.md and the requirements.txt files during setup.
 
     Args:
-        fname (str): File name to be read
+        fname (str | Path): File name to be read
 
     Returns:
         The content of the file fname
     """
-    return Path(__file__).parent / fname.read_text(encoding="utf-8")
+    text_file = Path(__file__).parent / fname
+    return text_file.read_text(encoding="utf-8")
 
 
 def read_requirements(fname):

@@ -272,7 +272,7 @@ class MpiDriver(Driver):
 
     def prepare_input_files(self):
         """Prepare and parse data to input files."""
-        inject(self.job['params'], str(self.simulation_input_template), str(self.input_file))
+        inject(self.job['params'], self.simulation_input_template, self.input_file)
 
     def run_job(self):
         """Run executable."""
