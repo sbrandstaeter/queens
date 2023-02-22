@@ -220,7 +220,6 @@ class PyMCIterator(Iterator):
 
     def core_run(self):
         """Core run of PyMC iterator."""
-        print("start sampling")
         self.results = pm.sample(
             draws=self.num_samples,
             step=self.step,
@@ -232,7 +231,6 @@ class PyMCIterator(Iterator):
             discard_tuned_samples=self.discard_tuned_samples,
             progressbar=self.progressbar,
         )
-        print("finished sampling")
 
     def post_run(self):
         """Post-Processing of Results."""
@@ -265,10 +263,8 @@ class PyMCIterator(Iterator):
                 inference_data_dict[self.parameters.names[num]] = values
 
                 current_index += parameter.dimension
-        print("transfored chains")
         swaped_chain = np.swapaxes(self.chains, 0, 1)
         sample_stats = self.results.sample_stats
-        print("printing results")
         # process output takes a dict as input with key 'mean'
         results = process_outputs(
             {
