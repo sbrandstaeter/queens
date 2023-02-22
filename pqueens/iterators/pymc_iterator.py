@@ -42,6 +42,7 @@ class PyMCIterator(Iterator):
         log_prior (fun): Function to evaluate the QUEENS joint log-prior
         log_like (fun): Function to evaluate QUEENS log-likelihood
         results (obj): PyMC inference object with sampling results
+        results_dict (dict): PyMC inference results as dict
         initvals (dict): Dict with distribution names and starting point of chains
     """
 
@@ -108,6 +109,7 @@ class PyMCIterator(Iterator):
             self.log_prior = None
         self.log_like = None
         self.results = None
+        self.results_dict = None
         self.initvals = None
 
     @staticmethod
@@ -218,6 +220,7 @@ class PyMCIterator(Iterator):
 
     def core_run(self):
         """Core run of PyMC iterator."""
+        print("start sampling")
         self.results = pm.sample(
             draws=self.num_samples,
             step=self.step,
@@ -229,6 +232,7 @@ class PyMCIterator(Iterator):
             discard_tuned_samples=self.discard_tuned_samples,
             progressbar=self.progressbar,
         )
+        print("finished sampling")
 
     def post_run(self):
         """Post-Processing of Results."""
@@ -261,13 +265,14 @@ class PyMCIterator(Iterator):
                 inference_data_dict[self.parameters.names[num]] = values
 
                 current_index += parameter.dimension
-
+        print("transfored chains")
         swaped_chain = np.swapaxes(self.chains, 0, 1)
-
+        sample_stats = self.results.sample_stats
+        print("printing results")
         # process output takes a dict as input with key 'mean'
         results = process_outputs(
             {
-                'results': self.results,
+                'sample_stats': sample_stats,
                 'mean': swaped_chain,
             },
             self.result_description,
@@ -283,24 +288,27 @@ class PyMCIterator(Iterator):
             f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}"
         )
 
-        idata = az.convert_to_inference_data(inference_data_dict)
+        self.results_dict = az.convert_to_inference_data(inference_data_dict)
         _logger.info("Inference summary:")
-        _logger.info(az.summary(idata))
+        _logger.info(az.summary(self.results_dict))
 
-        if self.num_chains > 1 and self.result_description["plot_results"]:
-            _logger.info("Generate convergence plots")
+        if self.result_description["plot_results"]:
+            _logger.info("Generate convergence plots, ignoring divergences for trace plotting.")
 
-            axes = az.plot_trace(idata, combined=True)
-            fig = axes.ravel()[0].figure
-            fig.savefig(filebasename + "_trace.png")
+            _axes = az.plot_trace(self.results_dict, divergences=None)
+            plt.savefig(filebasename + "_trace.png")
 
-            axes = az.plot_autocorr(idata)
-            fig = axes.ravel()[0].figure
-            fig.savefig(filebasename + "_autocorr.png")
+            _axes = az.plot_autocorr(self.results_dict)
+            plt.savefig(filebasename + "_autocorr.png")
 
-            axes = az.plot_forest(idata, combined=True, hdi_prob=0.95, r_hat=True)
-            fig = axes.ravel()[0].figure
-            fig.savefig(filebasename + "_forest.png")
+            _axes = az.plot_forest(
+                self.results_dict, combined=True, hdi_prob=0.95, r_hat=True, ess=True
+            )
+            plt.savefig(filebasename + "_forest.png")
+
+            az.plot_density(self.results_dict, hdi_prob=0.99)
+            plt.savefig(filebasename + "_marginals.png")
+
             plt.close("all")
 
         _logger.info("MCMC by PyMC results finished")
