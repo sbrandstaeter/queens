@@ -33,7 +33,7 @@ class Scaler(metaclass=abc.ABCMeta):
         """Create scaler from problem description.
 
         Args:
-            scaler_settings (str): TODO_doc
+            scaler_settings (dict): Dictionary with the settings for the scaler
 
         Returns:
             Instance of Scaler class (obj)
@@ -71,7 +71,7 @@ class Scaler(metaclass=abc.ABCMeta):
         """Conduct the inverse transformation for the mean.
 
         Args:
-            x_mat: TODO_doc
+            x_mat (np.array): Data matrix that should be standardized
         """
         pass
 
@@ -80,7 +80,7 @@ class Scaler(metaclass=abc.ABCMeta):
         """Conduct the inverse transformation.
 
         Args:
-            x_mat: TODO_doc
+            x_mat (np.array): Data matrix that should be standardized
         """
         pass
 
@@ -166,6 +166,41 @@ class StandardScaler(Scaler):
 
         return transformed_data
 
+    def inverse_transform_grad_mean(self, grad_mean, standard_deviation_input):
+        """Conduct the inverse scaling of the mean gradient.
+
+        Args:
+            grad_mean (np.array): gradient of the transformed mean
+                                  function
+            standard_deviation_input (float): standard deviation of the input data
+
+        Returns:
+            transformed_grad (np.array): Inversely transformed gradient of
+                                         the mean function
+        """
+        factor = self.standard_deviation / standard_deviation_input
+        transformed_grad = factor * grad_mean
+        return transformed_grad
+
+    def inverse_transform_grad_var(self, grad_var, var, trans_var, input_standard_deviation):
+        """Conduct the inverse scaling of the variance gradient.
+
+        Args:
+            grad_var (np.array): gradient of the transformed variance
+            var (np.array): variance of the untransformed data
+            trans_var (np.array): variance of the transformed data
+            input_standard_deviation (float): standard deviation of the input data
+
+        Returns:
+            transformed_grad (np.array): Inversely transformed gradient of
+                                         the variance function
+        """
+        factor = self.standard_deviation / input_standard_deviation
+        grad_std = 1 / (2 * np.sqrt(var)) * grad_var
+        transformed_grad_std = factor * grad_std
+        transformed_grad_var = 2 * np.sqrt(trans_var) * transformed_grad_std
+        return transformed_grad_var
+
 
 class IdentityScaler(Scaler):
     """The identity scaler."""
@@ -234,3 +269,31 @@ class IdentityScaler(Scaler):
             transformed_data (np.array): Transformed data-array
         """
         return x_mat
+
+    def inverse_transform_grad_mean(self, grad_mean, *_args):
+        """Conduct the inverse scaling of the mean gradient.
+
+        Args:
+            grad_mean (np.array): gradient of the transformed mean
+                                  function
+
+        Returns:
+            transformed_grad (np.array): Inversely transformed gradient of
+                                         then mean function
+        """
+        transformed_grad = grad_mean
+        return transformed_grad
+
+    def inverse_transform_grad_var(self, grad_var, *_args):
+        """Conduct the inverse scaling of the variance gradient.
+
+        Args:
+            grad_var (np.array): gradient of the transformed variance
+                                 function
+
+        Returns:
+            transformed_grad (np.array): Inversely transformed gradient of
+                                         then variance function
+        """
+        transformed_grad = grad_var
+        return transformed_grad
