@@ -45,6 +45,10 @@ VALID_TYPES = {
         'pqueens.regression_approximations.gp_approximation_gpflow_svgp',
         'GPflowSVGP',
     ],
+    'gaussian_nn': [
+        'pqueens.regression_approximations.gaussian_neural_network',
+        'GaussianNeuralNetwork',
+    ],
 }
 
 
