@@ -1,7 +1,7 @@
 """Driver to run an executable with mpi."""
 import logging
-import pathlib
 import time
+from pathlib import Path, PurePosixPath
 
 from pqueens.data_processor import from_config_create_data_processor
 from pqueens.utils.injector import inject
@@ -106,15 +106,14 @@ class DaskDriver:
         self.simulation_input_template = simulation_input_template
         self.initial_working_dir = initial_working_dir
 
-        (
-            self.output_directory,
-            self.working_dir,
-            self.output_prefix,
-            self.output_file,
-            self.input_file,
-            self.log_file,
-            self.error_file,
-        ) = self.update_directories()
+        # these have to be set by update_directories once the other states are updated correctly
+        self.output_directory = None
+        self.working_dir = None
+        self.output_prefix = None
+        self.output_file = None
+        self.input_file = None
+        self.log_file = None
+        self.error_file = None
 
     @classmethod
     def from_config_create_driver(
@@ -151,12 +150,12 @@ class DaskDriver:
         driver_options = config[driver_name]
         num_procs = driver_options.get('num_procs', 1)
         num_procs_post = driver_options.get('num_procs_post', 1)
-        simulation_input_template = pathlib.Path(driver_options['input_template'])
-        executable = pathlib.Path(driver_options['path_to_executable'])
+        simulation_input_template = Path(driver_options['input_template'])
+        executable = Path(driver_options['path_to_executable'])
         mpi_cmd = driver_options.get('mpi_cmd', 'mpirun --bind-to none -np')
         post_processor_str = driver_options.get('path_to_postprocessor', None)
         if post_processor_str:
-            post_processor = pathlib.Path(post_processor_str)
+            post_processor = Path(post_processor_str)
         else:
             post_processor = None
         post_file_prefix = driver_options.get('post_file_prefix', None)
@@ -237,7 +236,7 @@ class DaskDriver:
         output_prefix = self.experiment_name + '_' + str(self.job_id)
         output_file = output_directory.joinpath(output_prefix)
 
-        file_extension_obj = pathlib.PurePosixPath(self.simulation_input_template)
+        file_extension_obj = PurePosixPath(self.simulation_input_template)
         input_file_str = output_prefix + file_extension_obj.suffix
         input_file = job_dir.joinpath(input_file_str)
 
