@@ -164,11 +164,11 @@ plumbum==1.8.1
     # via pandoc
 ply==3.11
     # via pandoc
-pre-commit==3.0.4
+pre-commit==3.1.0
     # via -r dev-requirements.in
 pre-commit-hooks==4.4.0
     # via -r dev-requirements.in
-prompt-toolkit==3.0.36
+prompt-toolkit==3.0.37
     # via questionary
 pydocstyle==6.3.0
     # via -r dev-requirements.in

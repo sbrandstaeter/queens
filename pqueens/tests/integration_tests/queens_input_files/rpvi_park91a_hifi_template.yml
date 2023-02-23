@@ -5,11 +5,8 @@ database:
 method:
   type: rpvi
   model_name: model
-  max_feval: 3000
-  likelihood_gradient_method: {{ gradient_method }}
-  finite_difference_method: 2-point
-  finite_difference_step: 1.0e-05
-  n_samples_per_iter: 3
+  max_feval: 1000
+  n_samples_per_iter: 2
   score_function_bool: true
   variational_distribution:
     variational_approximation_type: mean_field
@@ -38,7 +35,7 @@ optimizer:
   learning_rate: 0.025
   rel_L1_change_threshold: -1
   rel_L2_change_threshold: -1
-  max_iter: 10000000
+  max_iter: 500
 model:
   type: {{ likelihood_model_type }}
   external_python_module: {{ external_python_module }}
@@ -52,6 +49,11 @@ model:
 forward_model:
   type: simulation_model
   interface_name: interface
+  gradient_handler_name: gradient_handler
+gradient_handler:
+  type: {{ gradient_method }}
+  finite_difference_method: 2-point
+  step_size: 1.0e-07
 interface:
   type: direct_python_interface
   function: {{ my_function }}

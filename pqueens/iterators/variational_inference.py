@@ -310,13 +310,13 @@ class VariationalInferenceIterator(Iterator):
         _logger.info("The elbo is: %.2f}", self.elbo)
         # Avoids a busy screen
         if self.variational_params.shape[0] > 24:
-            _logger.info(
+            _logger.debug(
                 "First 24 of %s variational parameters : \n", self.variational_params.shape[0]
             )
-            _logger.info(self.variational_params[:24])
+            _logger.debug(self.variational_params[:24])
         else:
-            _logger.info("Values of variational parameters: \n")
-            _logger.info(self.variational_params)
+            _logger.debug("Values of variational parameters: \n")
+            _logger.debug(self.variational_params)
 
     def _write_results(self):
         if self.result_description["write_results"]:
@@ -418,7 +418,7 @@ class VariationalInferenceIterator(Iterator):
         return x_mat_trans
 
     def _prepare_result_description(self):
-        """Creates the dictionary for the result pickle file.
+        """Create the dictionary for the result pickle file.
 
         Returns:
             result_description (dict): Dictionary with result summary of the analysis
@@ -455,6 +455,7 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             elbo gradient as column vector (np.array)
         """
+        pass
 
     def _clearing_and_plots(self):
         """Visualization and clear some internal variables."""
@@ -506,7 +507,7 @@ class VariationalInferenceIterator(Iterator):
         return gradient
 
     def handle_gradient_nan(self, gradient_function):
-        """Method that handles *NaN* in gradient estimations.
+        """Handle *NaN* in gradient estimations.
 
         Args:
             gradient_function (function): Function that estimates the gradient
@@ -514,6 +515,7 @@ class VariationalInferenceIterator(Iterator):
         Returns:
              function: Gradient function wrapped with the counter
         """
+        pass
 
         def nan_counter_and_warner(*args, **kwargs):
             """Count iterations with NaNs and write warning."""
