@@ -87,6 +87,7 @@ class DaskInterface(Interface):
             )
             self.remote_cluster_manager.setup_cluster()
             self.client = Client(address=f"localhost:{scheduler_port}")
+            atexit.register(self.shutdown_remote_dask_cluster)
         else:
             cluster = LocalCluster(n_workers=num_workers, threads_per_worker=cores_per_worker)
             self.client = Client(cluster)
@@ -105,8 +106,6 @@ class DaskInterface(Interface):
             initial_working_dir=None,
             job={},
         )
-
-        atexit.register(self.shutdown_dask)
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -150,7 +149,7 @@ class DaskInterface(Interface):
             remote_connect,
         )
 
-    def shutdown_dask(self):
+    def shutdown_remote_dask_cluster(self):
         """Collect all methods needed to shut down the client and cluster."""
         self.client.close()
         time.sleep(0.5)
