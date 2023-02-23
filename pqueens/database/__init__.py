@@ -10,6 +10,7 @@ models.
 from pqueens.utils.import_utils import get_module_class
 
 VALID_TYPES = {
+    "dummy": ["pqueens.database.dummydb", "DummyDB"],
     "mongodb": ["pqueens.database.mongodb", "MongoDB"],
     "sqlite": ["pqueens.database.sqlite", "SQLite"],
 }
@@ -25,6 +26,9 @@ def from_config_create_database(config):
         database (obj): Database object
     """
     db_options = config.get("database")
+    if db_options is None:
+        db_options = {"type": "dummy"}
+
     db_class = get_module_class(db_options, VALID_TYPES)
     database = db_class.from_config_create_database(config)
     return database

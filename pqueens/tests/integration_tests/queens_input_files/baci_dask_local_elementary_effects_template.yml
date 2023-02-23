@@ -1,7 +1,4 @@
 experiment_name: {{ experiment_name }}
-database:
-  type: mongodb
-  address: localhost:27017
 method:
   type: elementary_effects
   seed: 2
