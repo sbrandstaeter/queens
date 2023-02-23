@@ -80,11 +80,11 @@ class PyMCIterator(Iterator):
         self.result_description = result_description
         self.discard_tuned_samples = discard_tuned_samples
         if num_chains > 1:
-            _logger.warning(
+            raise ValueError(
                 "Parallel sampling is currently not supported. Multiple chains are not"
-                "indpendent in PyMC. Only sampling 1 chain."
+                "indpendent in PyMC."
             )
-            num_chains = 1
+
         self.num_chains = num_chains
         self.num_burn_in = num_burn_in
 
