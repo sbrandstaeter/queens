@@ -28,7 +28,7 @@ class DirectPythonInterface(Interface):
         verbose (boolean):      Verbosity of evaluations.
     """
 
-    def __init__(self, interface_name, function, pool, verbose):
+    def __init__(self, interface_name, function, pool, verbose=True):
         """Create interface.
 
         Args:
