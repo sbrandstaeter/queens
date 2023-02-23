@@ -30,10 +30,7 @@ my_interface:
   remote: true
   remote_connect: {{ connect_to_resource }}
   scheduler_port: 44445
-  scheduler_address: {{ singularity_remote_ip }}
-  singularity: true
-  singularity_settings:
-    remote_ip:
+  scheduler_address: {{ dask_scheduler_ip }}
   dashboard_port: 18532
 my_driver:
   type: mpi

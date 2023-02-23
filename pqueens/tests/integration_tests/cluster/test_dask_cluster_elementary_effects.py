@@ -46,7 +46,7 @@ def test_dask_cluster_elementary_effects(
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
     connect_to_resource = cluster_testsuite_settings["connect_to_resource"]
-    singularity_remote_ip = cluster_testsuite_settings["singularity_remote_ip"]
+    dask_scheduler_ip = cluster_testsuite_settings["dask_scheduler_ip"]
 
     path_to_executable = baci_cluster_paths["path_to_executable"]
     path_to_drt_ensight = baci_cluster_paths["path_to_drt_ensight"]
@@ -96,7 +96,7 @@ def test_dask_cluster_elementary_effects(
         'path_to_post_processor': str(path_to_post_processor),
         'connect_to_resource': connect_to_resource,
         'cluster': cluster,
-        'singularity_remote_ip': '192.168.2.254',
+        'dask_scheduler_ip': dask_scheduler_ip,
     }
     queens_input_file_template = pathlib.Path(
         inputdir, "baci_dask_cluster_elementary_effects_template.yml"
