@@ -1,10 +1,12 @@
 """Job interface class."""
+import atexit
 import logging
 import time
 
 import numpy as np
 from dask.distributed import Client, LocalCluster, as_completed
 
+from pqueens.cluster.manage_cluster import RemoteClusterManager
 from pqueens.drivers.dask_driver import DaskDriver
 from pqueens.interfaces.interface import Interface
 from pqueens.utils.config_directories import experiment_directory
@@ -39,8 +41,8 @@ class DaskInterface(Interface):
         experiment_dir,
         driver_name,
         config,
-        dask_scheduler_port,
         remote,
+        remote_connect,
     ):
         """Create JobInterface.
 
@@ -64,13 +66,29 @@ class DaskInterface(Interface):
         driver_options = config[driver_name]
         num_procs = driver_options.get('num_procs', 1)
         num_procs_post = driver_options.get('num_procs_post', 1)
-        num_threads = max(num_procs, num_procs_post)
+        cores_per_worker = max(num_procs, num_procs_post)
 
-        num_workers = config[interface_name].get("num_workers")
+        num_workers = config[interface_name].get("num_workers", 1)
+
         if self.remote:
-            self.client = Client(address=f"localhost:{dask_scheduler_port}")
+            scheduler_port = config[interface_name].get("scheduler_port", 44444)
+            dashboard_port = config[interface_name].get("dashboard_port", 8787)
+            scheduler_address = config[interface_name].get("scheduler_address")
+            if scheduler_address is None:
+                raise ValueError("You need to provide the IP address the scheduler will run on.")
+
+            self.remote_cluster_manager = RemoteClusterManager(
+                remote_connect=remote_connect,
+                scheduler_port=scheduler_port,
+                scheduler_address=scheduler_address,
+                cores_per_worker=cores_per_worker,
+                num_workers=num_workers,
+                dashboard_port=dashboard_port,
+            )
+            self.remote_cluster_manager.setup_cluster()
+            self.client = Client(address=f"localhost:{scheduler_port}")
         else:
-            cluster = LocalCluster(n_workers=num_workers, threads_per_worker=num_threads)
+            cluster = LocalCluster(n_workers=num_workers, threads_per_worker=cores_per_worker)
             self.client = Client(cluster)
 
         _logger.info(self.client)
@@ -88,6 +106,8 @@ class DaskInterface(Interface):
             job={},
         )
 
+        atexit.register(self.shutdown_dask)
+
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
         """Create JobInterface from config dictionary.
@@ -101,7 +121,6 @@ class DaskInterface(Interface):
         """
         # get experiment name and polling time
         experiment_name = config['global_settings']['experiment_name']
-        dask_scheduler_port = config['global_settings']['dask_scheduler_port']
 
         interface_options = config[interface_name]
         driver_name = interface_options.get('driver_name', None)
@@ -127,9 +146,15 @@ class DaskInterface(Interface):
             experiment_dir,
             driver_name,
             config,
-            dask_scheduler_port,
             remote,
+            remote_connect,
         )
+
+    def shutdown_dask(self):
+        """Collect all methods needed to shut down the client and cluster."""
+        self.client.close()
+        time.sleep(0.5)
+        self.remote_cluster_manager.shutdown_cluster()
 
     def evaluate(self, samples, gradient_bool=False):
         """Orchestrate call to external simulation software.
@@ -147,6 +172,7 @@ class DaskInterface(Interface):
         self.batch_number += 1
 
         # Main run
+        _logger.info("Executing %s jobs.\n", samples.shape[0])
         jobs = self._manage_jobs(samples)
 
         # get sample and response data
@@ -174,7 +200,7 @@ class DaskInterface(Interface):
             'experiment_dir': str(self.experiment_dir),
             'experiment_name': self.experiment_name,
             'resource': resource_name,
-            'status': "",  # TODO: before: 'new'
+            'status': "",
             'submit_time': time.time(),
             'start_time': 0.0,
             'end_time': 0.0,
@@ -289,7 +315,7 @@ class DaskInterface(Interface):
 
     @staticmethod
     def execute_driver(driver_obj, job_id, batch, job):
-        """Helper function to execute driver commands.
+        """Help execute driver.
 
         Args:
             driver_obj (MPIDriver): MPIDriver executing the forward solver

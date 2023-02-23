@@ -8,11 +8,7 @@ import pathlib
 import pytest
 
 from pqueens import run
-from pqueens.schedulers.cluster_scheduler import (
-    BRUTEFORCE_CLUSTER_TYPE,
-    CHARON_CLUSTER_TYPE,
-    DEEP_CLUSTER_TYPE,
-)
+from pqueens.schedulers.cluster_scheduler import BRUTEFORCE_CLUSTER_TYPE, CHARON_CLUSTER_TYPE
 from pqueens.utils import injector
 from pqueens.utils.config_directories import experiment_directory
 from pqueens.utils.run_subprocess import run_subprocess
@@ -23,21 +19,18 @@ _logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     "cluster",
     [
-        pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
         pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
         pytest.param(CHARON_CLUSTER_TYPE, marks=pytest.mark.imcs_cluster),
     ],
     indirect=True,
 )
-def test_cluster_baci_elementary_effects(
+def test_dask_cluster_elementary_effects(
     inputdir,
     tmpdir,
     third_party_inputs,
     cluster_testsuite_settings,
     baci_cluster_paths,
     baci_elementary_effects_check_results,
-    monkeypatch,
-    prepare_singularity,
 ):
     """Test for the Elementary Effects Iterator on the clusters with BACI.
 
@@ -49,14 +42,6 @@ def test_cluster_baci_elementary_effects(
         baci_cluster_paths (path): Path to BACI dependencies on the cluster.
         baci_elementary_effects_check_results (function): function to check the results
     """
-    if not prepare_singularity:
-        raise RuntimeError(
-            "Preparation of singularity for cluster failed."
-            "Make sure to prepare singularity image before using this fixture. "
-        )
-    # monkeypatch the "input" function, so that it returns "y".
-    # This simulates the user entering "y" in the terminal:
-    monkeypatch.setattr('builtins.input', lambda _: "y")
 
     # unpack cluster settings needed for all cluster tests
     cluster = cluster_testsuite_settings["cluster"]
@@ -69,7 +54,7 @@ def test_cluster_baci_elementary_effects(
     path_to_post_processor = baci_cluster_paths["path_to_post_processor"]
 
     # unique experiment name
-    experiment_name = f"test_{cluster}_morris_salib"
+    experiment_name = f"test_dask_{cluster}_elementary_effects"
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
@@ -111,12 +96,12 @@ def test_cluster_baci_elementary_effects(
         'path_to_post_processor': str(path_to_post_processor),
         'connect_to_resource': connect_to_resource,
         'cluster': cluster,
-        'singularity_remote_ip': singularity_remote_ip,
+        'singularity_remote_ip': '192.168.2.254',
     }
     queens_input_file_template = pathlib.Path(
-        inputdir, "baci_cluster_elementary_effects_template.yml"
+        inputdir, "baci_dask_cluster_elementary_effects_template.yml"
     )
-    queens_input_file = pathlib.Path(tmpdir, f"elementary_effects_{cluster}_invaaa.yml")
+    queens_input_file = pathlib.Path(tmpdir, f"baci_dask_cluster_elementary_effects_{cluster}.yml")
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     run(queens_input_file, pathlib.Path(tmpdir))

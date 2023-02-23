@@ -42,7 +42,7 @@ def cluster_user(user, hostname):
 
 @pytest.fixture(scope="session")
 def cluster(request):
-    """Helper fixture to iterate over clusters.
+    """Iterate over clusters.
 
     The actual parameterization is done on a per test basis which also
     defines the parameterized markers of the tests.
@@ -52,7 +52,7 @@ def cluster(request):
 
 @pytest.fixture(scope="session")
 def cluster_address(cluster):
-    """String used for ssh connect to the cluster."""
+    """Use for ssh connect to the cluster."""
     if cluster in (DEEP_CLUSTER_TYPE, BRUTEFORCE_CLUSTER_TYPE):
         address = cluster + '.lnm.ed.tum.de'
     elif cluster == CHARON_CLUSTER_TYPE:
@@ -62,7 +62,7 @@ def cluster_address(cluster):
 
 @pytest.fixture(scope="session")
 def connect_to_resource(cluster_user, cluster_address):
-    """String used for ssh connect to the cluster."""
+    """Use for ssh connect to the cluster."""
     return cluster_user + '@' + cluster_address
 
 
@@ -82,19 +82,19 @@ def cluster_singularity_ip(cluster):
 
 @pytest.fixture(scope="session")
 def cluster_queens_base_dir(connect_to_resource):
-    """Base directory for queens on cluster."""
+    """Hold base directory for queens on cluster."""
     return config_directories.remote_base_directory(remote_connect=connect_to_resource)
 
 
 @pytest.fixture(scope="session")
 def cluster_queens_testing_folder(mock_value_experiments_base_folder_name, cluster_queens_base_dir):
-    """Base directory for experiment data of tests."""
+    """Hold base directory for experiment data of tests."""
     return cluster_queens_base_dir / mock_value_experiments_base_folder_name
 
 
 @pytest.fixture(scope="session")
 def cluster_native_queens_testing_folder(mock_value_experiments_base_folder_name):
-    """Base directory for experiment data of tests."""
+    """Hold base directory for experiment data of tests."""
     return config_directories.local_base_directory() / mock_value_experiments_base_folder_name
 
 
@@ -166,15 +166,12 @@ def cluster_testsuite_settings(
     cluster_user,
     cluster_address,
     connect_to_resource,
-    prepare_singularity,
+    prepare_cluster_testing_environment,
     cluster_singularity_ip,
 ):
-    """Collection of settings needed for cluster tests with singularity."""
-    if not prepare_singularity:
-        raise RuntimeError(
-            "Preparation of singularity for cluster failed."
-            "Make sure to prepare singularity image before using this fixture. "
-        )
+    """Collect settings needed for cluster tests."""
+    if not prepare_cluster_testing_environment:
+        raise RuntimeError("Testing environment on cluster not successful.")
     cluster_testsuite_settings = {}
     cluster_testsuite_settings["cluster"] = cluster
     cluster_testsuite_settings["cluster_user"] = cluster_user

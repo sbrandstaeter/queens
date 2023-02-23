@@ -8,6 +8,7 @@ _logger = logging.getLogger(__name__)
 
 BASE_DATA_DIR = "queens-simulation-data"
 EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
+QUEENS_REPO_BASE_FOLDER_NAME = "repository"
 
 
 def local_base_directory():
@@ -89,6 +90,15 @@ def current_job_directory(experiment_dir, job_id):
     """
     job_dir = experiment_dir / str(job_id)
     return job_dir
+
+
+def remote_queens_directory(remote_connect):
+    """Hold queens source code on remote machine."""
+    queens_directory_on_remote = (
+        remote_base_directory(remote_connect=remote_connect) / QUEENS_REPO_BASE_FOLDER_NAME
+    )
+    create_directory(queens_directory_on_remote, remote_connect=remote_connect)
+    return queens_directory_on_remote
 
 
 ABS_SINGULARITY_IMAGE_PATH = local_base_directory() / "singularity_image.sif"
