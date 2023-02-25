@@ -230,3 +230,21 @@ class Parameters:
         """
         parameter_list = list(self.dict.values())
         return parameter_list
+
+    def latent_grad(self, upstream_gradient):
+        """Gradient of the rvs and rfs w.r.t. latent variables.
+
+        Args:
+            upstream_gradient (np.array): Upstream gradient
+        Returns:
+            gradient (np.ndarray): Gradient of the joint rvs/rfs w.r.t. the samples
+        """
+        return upstream_gradient
+
+    def to_distribution_list(self):
+        """Return the distributions of the parameters as list.
+
+        Returns:
+            parameter_list (list): List of distributions of parameters
+        """
+        return list(self.dict.values())

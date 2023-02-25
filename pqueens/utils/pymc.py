@@ -1,6 +1,4 @@
 """Collection of utility functions and classes for PyMC."""
-
-
 import numpy as np
 import pymc as pm
 import pytensor.tensor as pt
@@ -92,7 +90,7 @@ def from_config_create_pymc_distribution_dict(parameters, explicit_shape):
     pymc_distribution_list = []
 
     # loop over rvs and create list
-    for name, parameter in zip(parameters.names, parameters.to_list()):
+    for name, parameter in zip(parameters.names, parameters.to_distribution_list()):
         pymc_distribution_list.append(
             from_config_create_pymc_distribution(parameter, name, explicit_shape)
         )
