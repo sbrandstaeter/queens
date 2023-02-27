@@ -28,9 +28,6 @@ async def run_cluster(scheduler_port, dashboard_port, cores_per_worker, num_work
 
     _logger.debug(cluster)
 
-    while True:
-        time.sleep(0.0025)
-
 
 if __name__ == "__main__":
     args = sys.argv[1:]
