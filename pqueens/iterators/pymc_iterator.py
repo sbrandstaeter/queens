@@ -43,6 +43,7 @@ class PyMCIterator(Iterator):
         log_like (fun): Function to evaluate QUEENS log-likelihood
         results (obj): PyMC inference object with sampling results
         results_dict (dict): PyMC inference results as dict
+        summary (bool): Print sampler summary
         initvals (dict): Dict with distribution names and starting point of chains
     """
 
@@ -55,6 +56,7 @@ class PyMCIterator(Iterator):
         num_samples,
         discard_tuned_samples,
         result_description,
+        summary,
         seed,
         use_queens_prior,
         progressbar,
@@ -69,6 +71,7 @@ class PyMCIterator(Iterator):
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
             discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
             result_description (dict): Settings for storing and visualizing the results
+            summary (bool):  Print sampler summary
             seed (int): Seed for rng
             use_queens_prior (boolean): Setting for using the PyMC priors or the QUEENS prior
             functions
@@ -78,6 +81,7 @@ class PyMCIterator(Iterator):
         """
         super().__init__(model, global_settings)
         self.result_description = result_description
+        self.summary = summary
         self.discard_tuned_samples = discard_tuned_samples
         if num_chains > 1:
             raise ValueError(
@@ -141,6 +145,7 @@ class PyMCIterator(Iterator):
         use_queens_prior = method_options.get('use_queens_prior', False)
 
         progressbar = method_options.get('progressbar', False)
+        summary = method_options.get('summary', True)
 
         return (
             global_settings,
@@ -150,6 +155,7 @@ class PyMCIterator(Iterator):
             method_options['num_samples'],
             discard_tuned_samples,
             result_description,
+            summary,
             method_options['seed'],
             use_queens_prior,
             progressbar,
@@ -285,8 +291,9 @@ class PyMCIterator(Iterator):
         )
 
         self.results_dict = az.convert_to_inference_data(inference_data_dict)
-        _logger.info("Inference summary:")
-        _logger.info(az.summary(self.results_dict))
+        if self.summary:
+            _logger.info("Inference summary:")
+            _logger.info(az.summary(self.results_dict))
 
         if self.result_description["plot_results"]:
             _logger.info("Generate convergence plots, ignoring divergences for trace plotting.")

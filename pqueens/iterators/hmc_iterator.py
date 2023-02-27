@@ -45,6 +45,7 @@ class HMCIterator(PyMCIterator):
         num_samples,
         discard_tuned_samples,
         result_description,
+        summary,
         seed,
         use_queens_prior,
         progressbar,
@@ -67,6 +68,7 @@ class HMCIterator(PyMCIterator):
             num_samples (int): Number of samples to generate per chain, excluding burn-in period
             discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
             result_description (dict): Settings for storing and visualizing the results
+            summary (bool):  Print sampler summary
             seed (int): Seed for rng
             use_queens_prior (boolean): Setting for using the PyMC
                                         priors or the QUEENS prior functions
@@ -90,6 +92,7 @@ class HMCIterator(PyMCIterator):
             num_samples,
             discard_tuned_samples,
             result_description,
+            summary,
             seed,
             use_queens_prior,
             progressbar,
@@ -131,6 +134,7 @@ class HMCIterator(PyMCIterator):
             num_samples,
             discard_tuned_samples,
             result_description,
+            summary,
             seed,
             use_queens_prior,
             progressbar,
@@ -154,6 +158,7 @@ class HMCIterator(PyMCIterator):
             num_samples=num_samples,
             discard_tuned_samples=discard_tuned_samples,
             result_description=result_description,
+            summary=summary,
             seed=seed,
             use_queens_prior=use_queens_prior,
             progressbar=progressbar,
