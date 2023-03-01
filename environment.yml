@@ -4,7 +4,7 @@ channels:
   - conda-forge
 dependencies:
 ###### use requirements without version fixed specifier where possible ######
-  - python==3.8
+  - python==3.10
   - cython==0.29.30
   - numpy==1.21.5
   - scipy==1.7.3
