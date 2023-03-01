@@ -18,10 +18,10 @@ def my_config():
         "my_regression_model": {
             "type": "gaussian_nn",
             "activation_per_hidden_layer_lst": ["elu", "elu", "elu", "elu"],
-            "nodes_per_hidden_layer_lst": [25, 25, 25, 25],
-            "adams_training_rate": 0.0005,
+            "nodes_per_hidden_layer_lst": [20, 20, 20, 20],
+            "adams_training_rate": 0.001,
             "batch_size": 50,
-            "num_epochs": 2000,
+            "num_epochs": 2500,
             "optimizer_seed": 42,
             "data_scaling": {"type": "standard_scaler"},
             "nugget_std": 1.0e-02,
