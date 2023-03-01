@@ -17,7 +17,6 @@ class DaskDriver:
     Attributes:
         cae_output_streaming (bool): Flag for additional streaming to given
                                      stream.
-        cluster_options (dict): Cluster options for pbs or slurm.
         error_file (path): Path to error file.
         executable (path): Path to main executable of respective software
                            (e.g. BACI).
@@ -47,8 +46,6 @@ class DaskDriver:
         job_id,
         num_procs,
         cae_output_streaming,
-        cluster_config,
-        cluster_options,
         executable,
         num_procs_post,
         post_file_prefix,
@@ -70,8 +67,6 @@ class DaskDriver:
             job_id (int):  job ID within range [1, n_jobs]
             num_procs (int): number of processors for processing
             cae_output_streaming (bool): flag for additional streaming to given stream
-            cluster_config (ClusterConfig): configuration data of cluster
-            cluster_options (dict): cluster options for pbs or slurm
             executable (path): path to main executable of respective software (e.g. baci)
             num_procs_post (int): number of processors for post-processing
             post_file_prefix (str): unique prefix to name the post-processed files
@@ -95,8 +90,6 @@ class DaskDriver:
         self.gradient_data_processor = gradient_data_processor
         self.data_processor = data_processor
         self.cae_output_streaming = cae_output_streaming
-        self.cluster_config = cluster_config
-        self.cluster_options = cluster_options
         self.executable = executable
         self.mpi_cmd = mpi_cmd
         self.num_procs_post = num_procs_post
@@ -125,8 +118,6 @@ class DaskDriver:
         experiment_dir,
         initial_working_dir,
         job,
-        cluster_config=None,
-        cluster_options=None,
     ):
         """Create Driver to run executable from input configuration.
 
@@ -138,9 +129,7 @@ class DaskDriver:
             batch (int): Job batch number (multiple batches possible)
             driver_name (str): Name of driver instance that should be realized
             initial_working_dir (str): Path to working directory on remote resource
-            cluster_options (dict): Cluster options for pbs or slurm
             experiment_dir (path): path to QUEENS experiment directory
-            cluster_config (ClusterConfig): configuration data of cluster
 
         Returns:
             MpiDriver (obj): Instance of MpiDriver class
@@ -186,8 +175,6 @@ class DaskDriver:
             job_id=job_id,
             num_procs=num_procs,
             cae_output_streaming=cae_output_streaming,
-            cluster_config=cluster_config,
-            cluster_options=cluster_options,
             executable=executable,
             num_procs_post=num_procs_post,
             post_file_prefix=post_file_prefix,
