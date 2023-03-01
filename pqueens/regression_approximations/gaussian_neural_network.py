@@ -296,8 +296,7 @@ class GaussianNeuralNetwork(RegressionApproximation):
         self.num_refinements += 1
 
         # set the random seeds for optimization/training
-        np.random.seed(self.optimizer_seed)
-        tf.random.set_seed(self.optimizer_seed)
+        tf.keras.utils.set_random_seed(self.optimizer_seed)
         history = self.nn_model.fit(
             self.x_train,
             self.y_train,
