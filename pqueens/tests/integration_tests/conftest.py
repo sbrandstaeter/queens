@@ -76,8 +76,8 @@ def cluster_ips(cluster):
         cluster_singularity_ip = '10.10.0.1'
         dask_scheduler_ip = '10.10.0.1'
     elif cluster == CHARON_CLUSTER_TYPE:
-        cluster_singularity_ip = '192.168.1.254'
-        dask_scheduler_ip = '192.168.2.254'
+        cluster_singularity_ip = '192.168.1.253'
+        dask_scheduler_ip = '192.168.2.253'
     else:
         cluster_singularity_ip = None
         dask_scheduler_ip = None
