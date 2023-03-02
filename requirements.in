@@ -33,7 +33,7 @@ tensorflow-probability<0.19
 torch
 jax[cpu]
 jax
-pymc==5.0.1
+pymc==5.0.2
 
 # making fancy plots
 matplotlib
