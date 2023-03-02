@@ -46,6 +46,8 @@ class HMCIterator(PyMCIterator):
         discard_tuned_samples,
         result_description,
         summary,
+        pymc_sampler_stats,
+        as_inference_dict,
         seed,
         use_queens_prior,
         progressbar,
@@ -69,6 +71,8 @@ class HMCIterator(PyMCIterator):
             discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
             result_description (dict): Settings for storing and visualizing the results
             summary (bool):  Print sampler summary
+            pymc_sampler_stats (bool): Compute additional sampler statistics
+            as_inference_dict (bool): Return inference_data object instead of trace object
             seed (int): Seed for rng
             use_queens_prior (boolean): Setting for using the PyMC
                                         priors or the QUEENS prior functions
@@ -93,6 +97,8 @@ class HMCIterator(PyMCIterator):
             discard_tuned_samples,
             result_description,
             summary,
+            pymc_sampler_stats,
+            as_inference_dict,
             seed,
             use_queens_prior,
             progressbar,
@@ -135,6 +141,8 @@ class HMCIterator(PyMCIterator):
             discard_tuned_samples,
             result_description,
             summary,
+            pymc_sampler_stats,
+            as_inference_dict,
             seed,
             use_queens_prior,
             progressbar,
@@ -159,6 +167,8 @@ class HMCIterator(PyMCIterator):
             discard_tuned_samples=discard_tuned_samples,
             result_description=result_description,
             summary=summary,
+            pymc_sampler_stats=pymc_sampler_stats,
+            as_inference_dict=as_inference_dict,
             seed=seed,
             use_queens_prior=use_queens_prior,
             progressbar=progressbar,

@@ -44,6 +44,8 @@ class PyMCIterator(Iterator):
         results (obj): PyMC inference object with sampling results
         results_dict (dict): PyMC inference results as dict
         summary (bool): Print sampler summary
+        pymc_sampler_stats (bool): Compute additional sampler statistics
+        as_inference_dict (bool): Return inference_data object instead of trace object
         initvals (dict): Dict with distribution names and starting point of chains
     """
 
@@ -57,6 +59,8 @@ class PyMCIterator(Iterator):
         discard_tuned_samples,
         result_description,
         summary,
+        pymc_sampler_stats,
+        as_inference_dict,
         seed,
         use_queens_prior,
         progressbar,
@@ -72,6 +76,8 @@ class PyMCIterator(Iterator):
             discard_tuned_samples (boolean): Setting to discard the samples of the burin-in period
             result_description (dict): Settings for storing and visualizing the results
             summary (bool):  Print sampler summary
+            pymc_sampler_stats (bool): Compute additional sampler statistics
+            as_inference_dict (bool): Return inference_data object instead of trace object
             seed (int): Seed for rng
             use_queens_prior (boolean): Setting for using the PyMC priors or the QUEENS prior
             functions
@@ -82,7 +88,16 @@ class PyMCIterator(Iterator):
         super().__init__(model, global_settings)
         self.result_description = result_description
         self.summary = summary
+        self.pymc_sampler_stats = pymc_sampler_stats
+        self.as_inference_dict = as_inference_dict
+        if self.as_inference_dict or self.pymc_sampler_stats:
+            _logger.warning(
+                "Returning data as inference dict or getting sampler can lead to "
+                "numpy memory errors for large chains."
+            )
+
         self.discard_tuned_samples = discard_tuned_samples
+
         if num_chains > 1:
             raise ValueError(
                 "Parallel sampling is currently not supported. Multiple chains are not"
@@ -92,10 +107,7 @@ class PyMCIterator(Iterator):
         self.num_chains = num_chains
         self.num_burn_in = num_burn_in
 
-        if discard_tuned_samples:
-            self.num_samples = num_samples
-        else:
-            self.num_samples = num_samples + num_burn_in
+        self.num_samples = num_samples
 
         num_parameters = self.parameters.num_parameters
 
@@ -106,7 +118,10 @@ class PyMCIterator(Iterator):
         self.step = None
         self.use_queens_prior = use_queens_prior
 
-        self.chains = np.zeros((self.num_chains, self.num_samples, num_parameters))
+        draws = self.num_samples
+        if not discard_tuned_samples:
+            draws += num_burn_in
+        self.chains = np.zeros((self.num_chains, draws, num_parameters))
 
         self.progressbar = progressbar
         if self.use_queens_prior:
@@ -146,6 +161,8 @@ class PyMCIterator(Iterator):
 
         progressbar = method_options.get('progressbar', False)
         summary = method_options.get('summary', True)
+        pymc_sampler_stats = method_options.get('pymc_sampler_stats', False)
+        as_inference_dict = method_options.get('as_inference_dict', False)
 
         return (
             global_settings,
@@ -156,6 +173,8 @@ class PyMCIterator(Iterator):
             discard_tuned_samples,
             result_description,
             summary,
+            pymc_sampler_stats,
+            as_inference_dict,
             method_options['seed'],
             use_queens_prior,
             progressbar,
@@ -236,10 +255,8 @@ class PyMCIterator(Iterator):
             random_seed=self.seed,
             discard_tuned_samples=self.discard_tuned_samples,
             progressbar=self.progressbar,
-            # set to true if PyMC fixes their bugs or make it as an option to return inference data
-            # or trace objects
-            compute_convergence_checks=False,
-            return_inferencedata=False,
+            compute_convergence_checks=self.pymc_sampler_stats,
+            return_inferencedata=self.as_inference_dict,
         )
 
     def post_run(self):
@@ -247,7 +264,7 @@ class PyMCIterator(Iterator):
         self.pymc_model.__exit__(None, None, None)
         _logger.info("MCMC by PyMC results:")
 
-        # get the chain as numpy array
+        # get the chain as numpy array and dict
         inference_data_dict = {}
         if isinstance(self.results, az.InferenceData):
             if self.use_queens_prior:
@@ -276,7 +293,7 @@ class PyMCIterator(Iterator):
                     current_index += parameter.dimension
             sample_stats = self.results.sample_stats
         else:
-            # inference data dict
+            # get data from trace
             current_index = 0
             for names in self.results.varnames:
                 chain_values = np.swapaxes(self.results.get_values(names), 0, 1)
@@ -298,8 +315,6 @@ class PyMCIterator(Iterator):
             sample_stats['number_of_tuning_steps'] = self.results.report.n_tune
             # pylint: disable-next=protected-access
             sample_stats['global_warnings'] = self.results.report._global_warnings
-            # pylint: disable-next=protected-access
-            self.results.report._log_summary()
 
         # process output takes a dict as input with key 'mean'
         swaped_chain = np.swapaxes(self.chains, 0, 1).copy()
@@ -336,7 +351,15 @@ class PyMCIterator(Iterator):
             plt.savefig(filebasename + "_autocorr.png")
 
             _axes = az.plot_forest(
-                self.results_dict, combined=True, hdi_prob=0.95, r_hat=True, ess=True
+                self.results_dict,
+                combined=True,
+                hdi_prob=0.95,
+                r_hat=True,
+                ess=True,
+                kind='ridgeplot',
+                ridgeplot_overlap=4,
+                ridgeplot_alpha=0.5,
+                ridgeplot_truncate=False,
             )
             plt.savefig(filebasename + "_forest.png")
 
