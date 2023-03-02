@@ -28,7 +28,7 @@ chaospy # polynomial chaos
 pyyaml # to load yaml files
 jinja2
 
-# Machine learing libraries
+# Machine learning libraries
 scikit-learn==1.1.1
 arviz # Bayesian visualization
 gpy # for Gaussian Processes
@@ -62,3 +62,6 @@ tomli # TOML parser
 
 # Other Python stuff
 pathos # multiprocessing with more complex python objects
+
+# needed for dev-requirements, check if still needed
+charset_normalizer<3.0.0
