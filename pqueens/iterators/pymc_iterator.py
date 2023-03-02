@@ -236,6 +236,10 @@ class PyMCIterator(Iterator):
             random_seed=self.seed,
             discard_tuned_samples=self.discard_tuned_samples,
             progressbar=self.progressbar,
+            # set to true if PyMC fixes their bugs or make it as an option to return inference data
+            # or trace objects
+            compute_convergence_checks=False,
+            return_inferencedata=False,
         )
 
     def post_run(self):
@@ -244,34 +248,61 @@ class PyMCIterator(Iterator):
         _logger.info("MCMC by PyMC results:")
 
         # get the chain as numpy array
-
         inference_data_dict = {}
-        if self.use_queens_prior:
-            values = np.swapaxes(
-                np.squeeze(self.results.posterior.get('parameters').to_numpy(), axis=0),
-                0,
-                1,
-            )
-            self.chains = values
-
-            inference_data_dict['parameters'] = values
-        else:
-            current_index = 0
-            for num, parameter in enumerate(self.parameters.to_list()):
+        if isinstance(self.results, az.InferenceData):
+            if self.use_queens_prior:
                 values = np.swapaxes(
-                    np.squeeze(
-                        self.results.posterior.get(self.parameters.names[num]).to_numpy(), axis=0
-                    ),
+                    np.squeeze(self.results.posterior.get('parameters').to_numpy(), axis=0),
                     0,
                     1,
                 )
-                self.chains[:, :, current_index : current_index + parameter.dimension] = values
-                inference_data_dict[self.parameters.names[num]] = values
+                self.chains = values
 
-                current_index += parameter.dimension
-        swaped_chain = np.swapaxes(self.chains, 0, 1)
-        sample_stats = self.results.sample_stats
+                inference_data_dict['parameters'] = values
+            else:
+                current_index = 0
+                for num, parameter in enumerate(self.parameters.to_list()):
+                    values = np.swapaxes(
+                        np.squeeze(
+                            self.results.posterior.get(self.parameters.names[num]).to_numpy(),
+                            axis=0,
+                        ),
+                        0,
+                        1,
+                    )
+                    self.chains[:, :, current_index : current_index + parameter.dimension] = values
+                    inference_data_dict[self.parameters.names[num]] = values
+
+                    current_index += parameter.dimension
+            sample_stats = self.results.sample_stats
+        else:
+            # inference data dict
+            current_index = 0
+            for names in self.results.varnames:
+                chain_values = np.swapaxes(self.results.get_values(names), 0, 1)
+                self.chains[
+                    :, :, current_index : current_index + chain_values.shape[2]
+                ] = chain_values
+                current_index += chain_values.shape[2]
+                inference_data_dict[names] = chain_values
+
+            # sample_stats
+            sample_stats = {}
+            for sampler_stats in self.results.stat_names:
+                sample_stats[sampler_stats] = self.results.get_sampler_stats(sampler_stats)
+            sample_stats['sampling_time'] = self.results.report.t_sampling
+            sample_stats['chain_ok'] = self.results.report.ok
+            # pylint: disable-next=protected-access
+            sample_stats['chain_warnings'] = self.results.report._chain_warnings
+            sample_stats['number_of_draws'] = self.results.report.n_draws
+            sample_stats['number_of_tuning_steps'] = self.results.report.n_tune
+            # pylint: disable-next=protected-access
+            sample_stats['global_warnings'] = self.results.report._global_warnings
+            # pylint: disable-next=protected-access
+            self.results.report._log_summary()
+
         # process output takes a dict as input with key 'mean'
+        swaped_chain = np.swapaxes(self.chains, 0, 1).copy()
         results = process_outputs(
             {
                 'sample_stats': sample_stats,
