@@ -78,7 +78,6 @@ and your email address to your institute email address with the following comman
     ```bash
     pre-commit install --install-hooks --overwrite
     pre-commit install --hook-type commit-msg
-    pre-commit install --hook-type prepare-commit-msg
     ```
 
 1. In case you are using GitLab for the first time on your machine: Add your public SSH key to your GitLab

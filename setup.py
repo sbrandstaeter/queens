@@ -43,21 +43,6 @@ QUEENS_DESCRIPTION = (
     ", Bayesian Optimization, Inverse Problems and Simulation Analytics"
 )
 
-# Packages useful for developing and documentation not needed to run QUEENS
-DEVELOPER_EXTRAS = [
-    'pylint>=2.16',
-    'pylint-exit',
-    'isort>=5.0',
-    'black==22.3.0',
-    'pre-commit',
-    'liccheck',
-    'sphinx',
-    'nbsphinx',
-    'pandoc',
-    'pip-tools',
-    'vulture>=2.3',
-]
-
 # Keywords
 KEYWORDS = (
     "Gaussian Processes, Uncertainty Quantification, Inverse analysis, Optimization, Sensitivity"
@@ -83,7 +68,7 @@ setup(
     keywords=KEYWORDS,
     packages=find_packages(exclude=["pqueens/tests"]),
     install_requires=read_requirements("requirements.txt"),
-    extras_require={"develop": DEVELOPER_EXTRAS},
+    extras_require={"develop": read_requirements("dev-requirements.txt")},
     long_description=read('README.md'),
     setup_requires='pytest-runner',
     tests_require='pytest',
