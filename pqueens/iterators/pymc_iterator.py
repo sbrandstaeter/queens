@@ -92,7 +92,7 @@ class PyMCIterator(Iterator):
         self.as_inference_dict = as_inference_dict
         if self.as_inference_dict or self.pymc_sampler_stats:
             _logger.warning(
-                "Returning data as inference dict or getting sampler can lead to "
+                "Returning data as inference dict or getting additional sampler stats can lead to "
                 "numpy memory errors for large chains."
             )
 
@@ -291,7 +291,7 @@ class PyMCIterator(Iterator):
                     inference_data_dict[self.parameters.names[num]] = values
 
                     current_index += parameter.dimension
-            sample_stats = self.results.sample_stats
+            sample_stats = self.results
         else:
             # get data from trace
             current_index = 0

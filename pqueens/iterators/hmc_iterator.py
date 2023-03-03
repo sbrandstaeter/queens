@@ -237,16 +237,8 @@ class HMCIterator(PyMCIterator):
             step (obj): The MCMC Method within the PyMC Model
         """
         # have only scaling or potential as mass matrix
-        if self.scaling is not None:
-            step = pm.HamiltonianMC(
-                target_accept=self.target_accept,
-                max_steps=self.max_steps,
-                path_length=self.path_length,
-                step_scale=self.step_size,
-                scaling=self.scaling,
-                is_cov=self.is_cov,
-            )
-        else:
+        potential = None
+        if self.scaling is None:
             # use NUTS init to get potential for the init
             _logger.info("Using NUTS initialization to init HMC, ignore next line.")
             self.initvals, step_helper = pm.init_nuts(
@@ -258,14 +250,15 @@ class HMCIterator(PyMCIterator):
                 random_seed=self.seed,
             )
             potential = step_helper.potential
-            step = pm.HamiltonianMC(
-                target_accept=self.target_accept,
-                max_steps=self.max_steps,
-                path_length=self.path_length,
-                step_scale=self.step_size,
-                scaling=None,
-                potential=potential,
-            )
+        step = pm.HamiltonianMC(
+            target_accept=self.target_accept,
+            max_steps=self.max_steps,
+            path_length=self.path_length,
+            step_scale=self.step_size,
+            scaling=self.scaling,
+            is_cov=self.is_cov,
+            potential=potential,
+        )
         return step
 
     def init_distribution_wrapper(self):

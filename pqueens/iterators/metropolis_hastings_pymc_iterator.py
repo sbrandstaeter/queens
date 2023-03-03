@@ -251,6 +251,14 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
 
         return step
 
+    def post_run(self):
+        """Additional post run for MH."""
+        super().post_run()
+        _logger.info(
+            "Acceptance rate is: %f",
+            self.step.accepted_sum / self.num_samples,
+        )
+
     def init_distribution_wrapper(self):
         """Init the PyMC wrapper for the QUEENS distributions."""
         self.log_like = PymcDistributionWrapper(self.eval_log_likelihood)
