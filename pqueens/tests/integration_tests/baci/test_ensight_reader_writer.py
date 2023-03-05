@@ -45,6 +45,40 @@ def test_ensight_reader_writer(
     np.testing.assert_array_almost_equal(results['var'], expected_var, decimal=4)
 
 
+def test_dask_ensight_reader_writer(
+    inputdir, tmpdir, third_party_inputs, baci_link_paths, config_dir, expected_mean, expected_var
+):
+    """TODO_doc."""
+    # generate json input file from template
+    third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
+    baci_release, _, post_drt_ensight, _ = baci_link_paths
+    dir_dict = {
+        'baci_input': third_party_input_file,
+        'post_drt_ensight': post_drt_ensight,
+        'baci_release': baci_release,
+    }
+    template = os.path.join(inputdir, "baci_dask_ensight_template.yml")
+    input_file = os.path.join(tmpdir, "baci_dask_ensight.yml")
+    injector.inject(dir_dict, template, input_file)
+
+    # get json file as config dictionary
+    run(Path(input_file), Path(tmpdir))
+
+    # run a MC simulation with random input for now
+
+    # Check if we got the expected results
+    experiment_name = "baci_ensight"
+    result_file_name = experiment_name + ".pickle"
+
+    result_file = os.path.join(str(tmpdir), result_file_name)
+    with open(result_file, 'rb') as handle:
+        results = pickle.load(handle)
+
+    # assert statements
+    np.testing.assert_array_almost_equal(results['mean'], expected_mean, decimal=4)
+    np.testing.assert_array_almost_equal(results['var'], expected_var, decimal=4)
+
+
 @pytest.fixture()
 def expected_mean():
     """TODO_doc."""

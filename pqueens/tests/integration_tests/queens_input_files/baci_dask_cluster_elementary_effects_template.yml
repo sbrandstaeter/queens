@@ -1,8 +1,12 @@
 experiment_name: {{ experiment_name }}
+database:
+  type: mongodb
+  name: queens_db_cluster_test_morris_invaaa
+  address: localhost:27017
 method:
   type: elementary_effects
   seed: 2
-  model_name: my_model
+  model_name: model
   num_trajectories: 15
   num_optimal_trajectories: 5
   number_of_levels: 2
@@ -16,29 +20,38 @@ method:
       plotting_dir: dummy
       plot_names: [bars, scatter]
       save_bool: [false, false]
-my_model:
+model:
   type: simulation_model
-  interface_name: my_interface
-my_interface:
-  type: dask_interface
-  driver_name: my_driver
-  num_workers: 2
-  remote: true
-  remote_connect: {{ connect_to_resource }}
-  scheduler_port: 44445
-  scheduler_address: {{ dask_scheduler_ip }}
-  dashboard_port: 18532
-my_driver:
-  type: mpi
+  interface_name: interface
+interface:
+  type: dask_job_interface
+  scheduler_name: scheduler
+  driver_name: driver
+scheduler:
+  type: dask_cluster
+  cluster_type: {{ cluster }}
+  num_procs: 1
+  num_procs_post: 1
+  max_concurrent: 10
+  max_finished_jobs: 1000
+  cluster:
+    script: /lnm/share/donottouch.sh
+    walltime: 00:10:00
+  remote:
+    connect: {{ connect_to_resource }}
+  singularity: true
+  singularity_settings:
+    remote_ip: {{ singularity_remote_ip }}
+driver:
+  type: dask_jobscript
   input_template: {{ input_template }}
   path_to_executable: {{ path_to_executable }}
-  path_to_postprocessor: {{ path_to_drt_monitor }}
+  path_to_jobscript: {{ path_to_jobscript }}
+  path_to_postprocessor: {{ path_to_drt_ensight }}
   post_file_prefix: QoI
-  post_process_options: --field=structure --node=26 --start=1
+  post_process_options: "--filter=post_drt_monitor --field=structure --node=26 --start=1"  # TODO: what is the name of the filter
+  cluster_script_path: /lnm/share/donottouch.sh
   data_processor_name: data_processor_baci
-  mpi_cmd: mpirun --oversubscribe --bind-to none -np
-  num_procs: 2
-  num_procs_post: 1
 data_processor_baci:
   type: csv
   file_name_identifier: QoI*

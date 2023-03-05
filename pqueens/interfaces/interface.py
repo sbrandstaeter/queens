@@ -1,6 +1,8 @@
 """Interface class to map input variables to simulation outputs."""
 import abc
 
+import numpy as np
+
 import pqueens.parameters.parameters as parameters_module
 
 
@@ -16,6 +18,7 @@ class Interface(metaclass=abc.ABCMeta):
     Attributes:
         name (str): Name of the interface.
         parameters (obj): Parameters object.
+        latest_job_id (int):    Latest job ID.
     """
 
     def __init__(self, name):
@@ -26,6 +29,7 @@ class Interface(metaclass=abc.ABCMeta):
         """
         self.name = name
         self.parameters = parameters_module.parameters
+        self.latest_job_id = 0
 
     @abc.abstractmethod
     def evaluate(self, samples):
@@ -37,3 +41,22 @@ class Interface(metaclass=abc.ABCMeta):
         Args:
             samples (list):  List of variables objects
         """
+
+    def create_samples_list(self, samples):
+        """TODO_doc."""
+        number_of_samples = len(samples)
+
+        # List of global sample ids
+        sample_ids = np.arange(self.latest_job_id, self.latest_job_id + number_of_samples) + 1
+
+        # Update the latest job id
+        self.latest_job_id = int(self.latest_job_id + number_of_samples)
+
+        # Create samples list and add job_id to the dicts
+        samples_list = []
+        for job_id, sample in zip(sample_ids, samples):
+            sample_dict = self.parameters.sample_as_dict(sample)
+            sample_dict.update({"job_id": int(job_id)})
+            samples_list.append(sample_dict)
+
+        return samples_list

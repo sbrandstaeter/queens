@@ -16,7 +16,7 @@ from pqueens.utils.logger_settings import setup_basic_logging
 _logger = logging.getLogger(__name__)
 
 
-def run(input_file, output_dir, debug=False, dask_scheduler_port=None):
+def run(input_file, output_dir, debug=False):
     """Do a QUEENS run.
 
     Args:
@@ -27,7 +27,7 @@ def run(input_file, output_dir, debug=False, dask_scheduler_port=None):
     start_time_input = time.time()
 
     # read input and create config
-    config = get_config_dict(input_file, output_dir, debug, dask_scheduler_port)
+    config = get_config_dict(input_file, output_dir, debug)
 
     # set up logging
     setup_basic_logging(
@@ -74,14 +74,13 @@ def run(input_file, output_dir, debug=False, dask_scheduler_port=None):
     _logger.info("")
 
 
-def get_config_dict(input_file, output_dir, debug=False, dask_scheduler_port=None):
+def get_config_dict(input_file, output_dir, debug=False):
     """Create QUEENS run config from input file and output dir.
 
     Args:
         input_file (pathlib.Path): Path object to the input file
         output_dir (pathlib.Path): Path object to the output directory
         debug (bool): True if debug mode is to be used
-        dask_scheduler_port (int): local port where the dask scheduler can be reached
 
     Returns:
         dict: config dict
@@ -99,7 +98,6 @@ def get_config_dict(input_file, output_dir, debug=False, dask_scheduler_port=Non
     global_settings = {}
     global_settings["output_dir"] = output_dir
     global_settings["experiment_name"] = options["experiment_name"]
-    global_settings["dask_scheduler_port"] = dask_scheduler_port
 
     # remove experiment_name field from options dict
     options["global_settings"] = global_settings
@@ -118,8 +116,8 @@ def main():
 
     if len(args) > 0:
         # do QUEENS run
-        input_file_path, output_dir, debug, dask_scheduler_port = get_cli_options(args)
-        run(input_file_path, output_dir, debug, dask_scheduler_port)
+        input_file_path, output_dir, debug = get_cli_options(args)
+        run(input_file_path, output_dir, debug)
     else:
         # print some infos
         print_greeting_message()

@@ -37,3 +37,26 @@ def from_config_create_scheduler(config, scheduler_name=None, driver_name=None):
     scheduler = scheduler_class.from_config_create_scheduler(config, scheduler_name, driver_name)
     _logger.info(scheduler)
     return scheduler
+
+
+VALID_DASK_TYPES = {
+    'dask_local': ['pqueens.schedulers.dask_local_scheduler', 'LocalScheduler'],
+    'dask_cluster': ['pqueens.schedulers.dask_cluster_scheduler', 'ClusterScheduler'],
+}
+
+
+def from_config_create_dask_scheduler(config, scheduler_name):
+    """Create scheduler from problem configuration.
+
+    Args:
+        config (dict):        Dictionary containing configuration
+                              as provided in the QUEENS input file
+        scheduler_name (str): Name of scheduler
+
+    Returns:
+        Scheduler object
+    """
+    scheduler_options = config[scheduler_name]
+    scheduler_class = get_module_class(scheduler_options, VALID_DASK_TYPES, "type")
+    scheduler = scheduler_class.from_config_create_scheduler(config, scheduler_name)
+    return scheduler

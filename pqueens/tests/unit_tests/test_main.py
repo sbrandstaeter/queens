@@ -9,7 +9,6 @@ from mock import patch
 
 import pqueens
 from pqueens.main import get_config_dict, main
-from pqueens.utils.cli_utils import DEFAULT_DASK_SCHEDULER_PORT
 
 pytestmark = pytest.mark.unit_tests
 
@@ -46,15 +45,11 @@ def test_get_config_dict_input_fail(test_path):
 def test_get_config_dict_input(input_file, test_path, debug_flag):
     """Test if config dict is created properly."""
     input_path = input_file
-    config = get_config_dict(input_path, test_path, debug_flag, DEFAULT_DASK_SCHEDULER_PORT)
+    config = get_config_dict(input_path, test_path, debug_flag)
     true_config = {
         "debug": debug_flag,
         "input_file": input_path,
-        "global_settings": {
-            "output_dir": test_path,
-            "experiment_name": "test_experiment_name",
-            "dask_scheduler_port": DEFAULT_DASK_SCHEDULER_PORT,
-        },
+        "global_settings": {"output_dir": test_path, "experiment_name": "test_experiment_name"},
         "Iterator": "A",
     }
     assert config == true_config
@@ -72,7 +67,7 @@ def test_main_greeting_message(caplog):
 
 def test_main_call(mocker):
     """Test if main calls run properly."""
-    run_inputs = ["input", "output", False, DEFAULT_DASK_SCHEDULER_PORT]
+    run_inputs = ["input", "output", False]
     mocker.patch('pqueens.main.run')
     mocker.patch('pqueens.main.get_cli_options', return_value=run_inputs)
     argv = ["python_file.py", "input", "output"]

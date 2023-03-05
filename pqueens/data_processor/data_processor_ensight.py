@@ -100,7 +100,6 @@ class DataProcessorEnsight(DataProcessor):
             data_processor_name,
         )
 
-        self.db = database
         self.experiment_name = experiment_name
         self.experimental_data = experimental_data
         self.coordinates_label_experimental = coordinates_label_experimental
@@ -113,6 +112,7 @@ class DataProcessorEnsight(DataProcessor):
         self.vtk_field_components = vtk_field_components
         self.vtk_array_type = vtk_array_type
         self.geometric_target = geometric_target
+        self.geometric_set_data = None
 
     @classmethod
     def from_config_create_data_processor(cls, config, data_processor_name):
@@ -419,34 +419,32 @@ class DataProcessorEnsight(DataProcessor):
             data (np.array): Array of field values for nodes of geometric set
         """
         geometric_set = self.geometric_target[1]
-        geometric_set_data = self.db.load(self.experiment_name, 1, 'geometric_sets')
-        if geometric_set_data is None:
-            self.write_geometry_coordinates_to_db()
-            geometric_set_data = self.db.load(self.experiment_name, 1, 'geometric_sets')
+        if self.geometric_set_data is None:
+            self.read_geometry_coordinates()
 
         # get node coordinates by geometric set, loop over all topologies
-        for nodes in geometric_set_data['node_topology']:
+        for nodes in self.geometric_set_data['node_topology']:
             if nodes['topology_name'] == geometric_set:
                 nodes_of_interest = nodes['node_mesh']
 
-        for lines in geometric_set_data['line_topology']:
+        for lines in self.geometric_set_data['line_topology']:
             if lines['topology_name'] == geometric_set:
                 nodes_of_interest = lines['node_mesh']
 
-        for surfs in geometric_set_data['surface_topology']:
+        for surfs in self.geometric_set_data['surface_topology']:
             if surfs['topology_name'] == geometric_set:
                 nodes_of_interest = surfs['node_mesh']
 
-        for vols in geometric_set_data['volume_topology']:
+        for vols in self.geometric_set_data['volume_topology']:
             if vols['topology_name'] == geometric_set:
                 nodes_of_interest = vols['node_mesh']
 
         both = set(nodes_of_interest).intersection(
-            geometric_set_data['node_coordinates']['node_mesh']
+            self.geometric_set_data['node_coordinates']['node_mesh']
         )
-        indices = [geometric_set_data['node_coordinates']['node_mesh'].index(x) for x in both]
+        indices = [self.geometric_set_data['node_coordinates']['node_mesh'].index(x) for x in both]
         geometric_set_coordinates = [
-            geometric_set_data['node_coordinates']['coordinates'][index] for index in indices
+            self.geometric_set_data['node_coordinates']['coordinates'][index] for index in indices
         ]
 
         # interpolate vtk solution to experimental coordinates
@@ -565,7 +563,7 @@ class DataProcessorEnsight(DataProcessor):
 
         return vtk_solution_field
 
-    def write_geometry_coordinates_to_db(self):
+    def read_geometry_coordinates(self):
         """Write geometry of interest to the database.
 
         This method uses the QUEENS external geometry module.
@@ -573,7 +571,7 @@ class DataProcessorEnsight(DataProcessor):
         # read in the external geometry
         self.external_geometry_obj.main_run()
 
-        geometric_set_dict = {
+        self.geometric_set_data = {
             "node_topology": self.external_geometry_obj.node_topology,
             "line_topology": self.external_geometry_obj.line_topology,
             "surface_topology": self.external_geometry_obj.surface_topology,
@@ -582,5 +580,3 @@ class DataProcessorEnsight(DataProcessor):
             "element_centers": self.external_geometry_obj.element_centers,
             "element_topology": self.external_geometry_obj.element_topology,
         }
-
-        self.db.save(geometric_set_dict, self.experiment_name, 'geometric_sets', 1)

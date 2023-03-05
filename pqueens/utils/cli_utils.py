@@ -13,8 +13,6 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
-DEFAULT_DASK_SCHEDULER_PORT = 44444
-
 
 def build_singularity_cli():
     """Build singularity image CLI wrapper."""
@@ -112,13 +110,6 @@ def get_cli_options(args):
     )
     parser.add_argument('--debug', type=str_to_bool, default=False, help='Debug mode yes/no.')
 
-    parser.add_argument(
-        '--dask-scheduler-port',
-        type=int,
-        default=DEFAULT_DASK_SCHEDULER_PORT,
-        help='Port of remote dask scheduler',
-    )
-
     args = parser.parse_args(args)
 
     if args.input is None:
@@ -130,9 +121,8 @@ def get_cli_options(args):
     debug = args.debug
     output_dir = Path(args.output_dir)
     input_file = Path(args.input)
-    dask_scheduler_port = args.dask_scheduler_port
 
-    return input_file, output_dir, debug, dask_scheduler_port
+    return input_file, output_dir, debug
 
 
 def print_greeting_message():

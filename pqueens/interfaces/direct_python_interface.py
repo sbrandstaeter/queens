@@ -24,7 +24,6 @@ class DirectPythonInterface(Interface):
     Attributes:
         function (function):    Function to evaluate.
         pool (pathos pool):     Multiprocessing pool.
-        latest_job_id (int):    Latest job ID.
     """
 
     def __init__(self, interface_name, function, pool):
@@ -39,7 +38,6 @@ class DirectPythonInterface(Interface):
         # Wrap function to clean the output
         self.function = self.function_wrapper(function)
         self.pool = pool
-        self.latest_job_id = 1
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -86,20 +84,7 @@ class DirectPythonInterface(Interface):
                 |'mean'    | ndarray shape (samples size, shape_of_response)|
                 +----------+------------------------------------------------+
         """
-        number_of_samples = len(samples)
-
-        # List of global sample ids
-        sample_ids = np.arange(self.latest_job_id, self.latest_job_id + number_of_samples)
-
-        # Update the latest job id
-        self.latest_job_id = self.latest_job_id + number_of_samples
-
-        # Create samples list and add job_id to the dicts
-        samples_list = []
-        for job_id, sample in zip(sample_ids, samples):
-            sample_dict = self.parameters.sample_as_dict(sample)
-            sample_dict.update({"job_id": job_id})
-            samples_list.append(sample_dict)
+        samples_list = self.create_samples_list(samples)
 
         # Pool or no pool
         if self.pool:
