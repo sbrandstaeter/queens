@@ -1,4 +1,4 @@
-"""Standard scheduler for QUEENS runs."""
+"""Local scheduler for QUEENS runs."""
 import logging
 
 from dask.distributed import Client, LocalCluster
@@ -10,7 +10,7 @@ _logger = logging.getLogger(__name__)
 
 
 class LocalScheduler(Scheduler):
-    """Standard scheduler class for QUEENS."""
+    """Local scheduler class for QUEENS."""
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name):
@@ -21,7 +21,7 @@ class LocalScheduler(Scheduler):
             scheduler_name (str): Name of the scheduler
 
         Returns:
-            Instance of standard scheduler class
+            Instance of  LocalScheduler class
         """
         scheduler_options = config[scheduler_name]
         experiment_name = config['global_settings']['experiment_name']

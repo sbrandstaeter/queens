@@ -3,9 +3,13 @@ database:
   type: mongodb
   address: localhost:27017
   reset_existing_db: true
+method:
+  type: dummy
+  model_name: model
 model:
   type: simulation_model
   interface_name: interface
+  coordinate_labels: [x1, x2, x3]
 interface:
   type: dask_job_interface
   scheduler_name: scheduler

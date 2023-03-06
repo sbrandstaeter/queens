@@ -18,6 +18,8 @@ VALID_WORKLOAD_MANAGERS = {"slurm": SLURMCluster, "pbs": PBSCluster}
 
 
 class ClusterScheduler(Scheduler):
+    """Cluster scheduler for QUEENS."""
+
     def __init__(
         self,
         experiment_name,
@@ -31,56 +33,72 @@ class ClusterScheduler(Scheduler):
         cluster_address,
         cluster_python_path,
     ):
+        """Init method for the cluster scheduler.
+
+        Args:
+            experiment_name (str): name of QUEENS experiment
+            max_jobs (int): Maximum number of active workers on the cluster
+            min_jobs (int): Minimum number of active workers for the cluster
+            walltime (str): Walltime for each worker job.
+            num_procs (int): number of cores per job
+            num_procs_post (int): number of cores per job for post-processing
+            scheduler_port (int): Port of dask cluster scheduler
+            dask_cluster_cls (obj): Dask SlurmCluster or PBSCluster class
+            cluster_address (str): address of cluster
+            cluster_python_path (str): Path to Python on cluster
+        """
         login_cluster = SSHCluster(
             hosts=[cluster_address, cluster_address],
             remote_python=[cluster_python_path, cluster_python_path],
         )
-        self.login_client = Client(login_cluster)  # links to cluster master node
-        self.login_client.upload_file(config_directories_dask.__file__)
+        login_client = Client(login_cluster)  # links to cluster master node
+        login_client.upload_file(config_directories_dask.__file__)
 
-        future = self.login_client.submit(experiment_directory, experiment_name)
+        future = login_client.submit(experiment_directory, experiment_name)
         experiment_dir = future.result()
 
-        future = self.login_client.submit(remote_queens_directory)
+        future = login_client.submit(remote_queens_directory)
         repository_dir = future.result()
 
         # TODO: should we use client.upload_file instead?
         self.sync_remote_repository(cluster_address, repository_dir)
 
-        def start_cluster_on_master_node():
+        def start_cluster_on_login_node():
+            """Start dask cluster object on login node"""
+            cores = max(num_procs, num_procs_post)
             cluster = dask_cluster_cls(
                 queue='batch',
-                cores=max(num_procs, num_procs_post),
+                cores=cores,
                 memory='10TB',
                 scheduler_options={"port": scheduler_port},
                 walltime=walltime,
+                job_script_prologue=[f"#PBS -l nodes=1:ppn={cores}"],
             )
             cluster.adapt(minimum_jobs=min_jobs, maximum_jobs=max_jobs)
             while True:
                 time.sleep(1)
 
-        # Start PBS Cluster on master node and run as long as future object (self.cluster_future) exists
-        self.cluster_future = self.login_client.submit(start_cluster_on_master_node)
-        time.sleep(1)
+        # Start PBS Cluster on master node
+        cluster_future = login_client.submit(start_cluster_on_login_node)
 
         try:
             client = Client(address=f"{cluster_address}:{scheduler_port}")
         except OSError as error:
-            self.cluster_future.result()
+            cluster_future.result()
             raise error
 
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
 
     @classmethod
     def from_config_create_scheduler(cls, config, scheduler_name):
-        """Create standard scheduler object from config.
+        """Create scheduler object from config.
 
         Args:
             config (dict): QUEENS input dictionary
             scheduler_name (str): Name of the scheduler
 
         Returns:
-            Instance of standard scheduler class
+            Instance of scheduler class
         """
         scheduler_options = config[scheduler_name]
         experiment_name = config['global_settings']['experiment_name']
@@ -113,7 +131,12 @@ class ClusterScheduler(Scheduler):
 
     @staticmethod
     def sync_remote_repository(cluster_address, repository_dir):
-        """Synchronize local and remote QUEENS source files."""
+        """Synchronize local and remote QUEENS source files.
+
+        Args:
+            cluster_address (str): address of cluster
+            repository_dir (Path): pathlib Path to remote repository
+        """
         _logger.info("Syncing remote QUEENS repository with local one...")
         command_list = [
             "rsync --archive --checksum --verbose --verbose",

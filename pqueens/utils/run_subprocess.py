@@ -116,6 +116,7 @@ def _run_subprocess_simulation(command_string, **kwargs):
         stderr=subprocess.PIPE,
         shell=True,
         universal_newlines=True,
+        env=kwargs['environment'],
     )
 
     # actual logging of job

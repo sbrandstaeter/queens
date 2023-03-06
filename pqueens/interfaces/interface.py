@@ -43,7 +43,14 @@ class Interface(metaclass=abc.ABCMeta):
         """
 
     def create_samples_list(self, samples):
-        """TODO_doc."""
+        """Create a list of sample dictionaries.
+
+        Args:
+            samples (np.array): Samples of simulation input variables
+
+        Returns:
+            samples_list (list): List of dicts containing samples and job ids
+        """
         number_of_samples = len(samples)
 
         # List of global sample ids

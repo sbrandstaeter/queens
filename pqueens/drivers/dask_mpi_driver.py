@@ -16,6 +16,13 @@ class MpiDriver(Driver):
     """Driver to run an executable with mpi.
 
     Attributes:
+        executable (path): path to main executable of respective software
+        cae_output_streaming (bool): flag for additional streaming to given stream
+        post_file_prefix (str): unique prefix to name the post-processed files
+        post_options (str): options for post-processing
+        post_processor (path): path to post_processor
+        mpi_cmd (str): mpi command
+        environment (dict): environment for the executed subprocess of the executable
     """
 
     def __init__(
@@ -35,16 +42,17 @@ class MpiDriver(Driver):
         """Initialize MpiDriver object.
 
         Args:
+            executable (path): path to main executable of respective software
             cae_output_streaming (bool): flag for additional streaming to given stream
-            executable (path): path to main executable of respective software (e.g. baci)
             post_file_prefix (str): unique prefix to name the post-processed files
             post_options (str): options for post-processing
             post_processor (path): path to post_processor
-            simulation_input_template (path): path to simulation input template (e.g. dat-file)
+            simulation_input_suffix (str): suffix of the simulation input file
+            simulation_input_template (str): read in simulation input template as string
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
             mpi_cmd (str): mpi command
-            environment (dict)
+            environment (dict): environment for the executed subprocess of the executable
         """
         super().__init__(
             data_processor,
@@ -67,13 +75,11 @@ class MpiDriver(Driver):
         config,
         driver_name,
     ):
-        """Create Driver to run executable from input configuration.
-
-        Set up required directories and files.
+        """Create Driver to run executable.
 
         Args:
             config (dict): Dictionary containing configuration from QUEENS input file
-            driver_name (str): Name of driver instance that should be realized
+            driver_name (str): Name of the driver
 
         Returns:
             MpiDriver (obj): Instance of MpiDriver class
@@ -131,6 +137,18 @@ class MpiDriver(Driver):
         )
 
     def run(self, sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name):
+        """Run the driver.
+
+        Args:
+            sample_dict (dict): Dict containing sample and job id
+            num_procs (int): number of cores
+            num_procs_post (int): number of cores for post-processing
+            experiment_name (str): name of QUEENS experiment.
+            experiment_dir (Path): Path to QUEENS experiment directory.
+
+        Returns:
+            Result and potentially the gradient
+        """
         job_id = sample_dict.pop('job_id')
         job_dir, output_dir, output_file, input_file, log_file, error_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
@@ -144,7 +162,16 @@ class MpiDriver(Driver):
         return self._get_results(output_dir)
 
     def _run_executable(self, job_id, num_procs, input_file, output_file, log_file, error_file):
-        """Run executable."""
+        """Run executable.
+
+        Args:
+            job_id (int): Job id
+            num_procs (int): number of cores
+            input_file (Path): Path to input file
+            output_file (Path): Path to output file(s)
+            log_file (Path): Path to log file
+            error_file (Path): Path to error file
+        """
         execute_cmd = self._assemble_execute_cmd(num_procs, input_file, output_file)
 
         _logger.debug("Start executable with command:")
@@ -163,7 +190,14 @@ class MpiDriver(Driver):
         )
 
     def _run_post_processing(self, num_procs_post, output_file, output_dir):
-        """Run post-processing."""
+        """Run post-processing.
+
+        Args:
+            num_procs_post (int): number of cores for post-processing
+            output_file (Path): Path to output file(s)
+            output_dir (Path): Path to output directory
+
+        """
         if self.post_processor:
             output_file = '--file=' + str(output_file)
             target_file = '--output=' + str(output_dir.joinpath(self.post_file_prefix))
@@ -184,6 +218,11 @@ class MpiDriver(Driver):
     def _assemble_execute_cmd(self, num_procs, input_file, output_file):
         """Assemble execute command.
 
+        Args:
+            num_procs (int): number of cores
+            input_file (Path): Path to input file
+            output_file (Path): Path to output file(s)
+
         Returns:
             execute command
         """
@@ -201,7 +240,7 @@ class MpiDriver(Driver):
         """Assemble command for post-processing.
 
         Args:
-            num_procs_post
+            num_procs_post (int): number of cores for post-processing
             output_file (str): path with name to the simulation output files without the
                                file extension
             target_file (str): path with name of the post-processed file without the file extension

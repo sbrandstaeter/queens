@@ -108,6 +108,18 @@ class JobscriptDriver(Driver):
         )
 
     def run(self, sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name):
+        """Run the driver.
+
+        Args:
+            sample_dict (dict): Dict containing sample and job id
+            num_procs (int): number of cores
+            num_procs_post (int): number of cores for post-processing
+            experiment_name (str): name of QUEENS experiment.
+            experiment_dir (Path): Path to QUEENS experiment directory.
+
+        Returns:
+            Result and potentially the gradient
+        """
         job_id = sample_dict.pop('job_id')
         job_dir, output_dir, _, input_file, _, _ = self._manage_paths(
             job_id, experiment_dir, experiment_name

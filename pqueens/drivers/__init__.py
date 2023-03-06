@@ -61,7 +61,7 @@ def from_config_create_dask_driver(config, driver_name):
 
     Args:
         config (dict):  Dictionary containing configuration from QUEENS input file
-        driver_name (str): Name of driver instance that should be realized
+        driver_name (str): Name of driver
 
     Returns:
         driver (obj): Driver object

@@ -1,5 +1,4 @@
 """Job interface class."""
-import numpy as np
 
 from pqueens.drivers import from_config_create_dask_driver
 from pqueens.interfaces.interface import Interface
@@ -10,7 +9,9 @@ class JobInterface(Interface):
     """Class for mapping input variables to responses.
 
     Attributes:
+        name (string):    name of interface
         scheduler (Scheduler):      scheduler for the simulations
+        driver (Driver):            driver for the simulations
     """
 
     def __init__(
@@ -63,7 +64,7 @@ class JobInterface(Interface):
         """Evaluate.
 
         Args:
-            samples (np.ndarray): Realization/samples of QUEENS simulation input variables
+            samples (np.array): Samples of simulation input variables
 
         Returns:
             output (dict): Output data
