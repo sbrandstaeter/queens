@@ -29,19 +29,15 @@ interface:
   driver_name: driver
 scheduler:
   type: dask_cluster
-  cluster_type: {{ cluster }}
+  max_jobs: 10
+  min_jobs: 3
+  walltime: 00:10:00
   num_procs: 1
   num_procs_post: 1
-  max_concurrent: 10
-  max_finished_jobs: 1000
-  cluster:
-    script: /lnm/share/donottouch.sh
-    walltime: 00:10:00
-  remote:
-    connect: {{ connect_to_resource }}
-  singularity: true
-  singularity_settings:
-    remote_ip: {{ singularity_remote_ip }}
+  scheduler_port: 37659
+  workload_manager: {{ workload_manager }}
+  cluster_address: {{ cluster_address }}
+  cluster_python_path: {{ cluster_python_path }}
 driver:
   type: dask_jobscript
   input_template: {{ input_template }}

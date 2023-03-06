@@ -3,29 +3,18 @@ import logging
 import pathlib
 
 import numpy as np
-import pytest
 
 import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
 from pqueens.main import get_config_dict
 from pqueens.models import from_config_create_model
-from pqueens.schedulers.cluster_scheduler import (
-    BRUTEFORCE_CLUSTER_TYPE,
-    CHARON_CLUSTER_TYPE,
-    DEEP_CLUSTER_TYPE,
-)
 from pqueens.utils import injector
-from pqueens.utils.config_directories import experiment_directory
-from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
 
 def test_cluster_baci_data_processor_ensight(
-    inputdir,
-    tmpdir,
-    third_party_inputs,
-    monkeypatch,
+    inputdir, tmpdir, third_party_inputs, monkeypatch, dask_cluster_settings
 ):
     """Test remote BACI simulations with ensight data-processor.
 
@@ -43,9 +32,7 @@ def test_cluster_baci_data_processor_ensight(
         inputdir (str): Path to the JSON input file
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
-        cluster_testsuite_settings (dict): Collection of cluster specific settings
-        baci_cluster_paths: TODO_doc
-        user (): TODO_doc
+        dask_cluster_settings (dict): Cluster settings
     """
     # monkeypatch the "input" function, so that it returns "y".
     # This simulates the user entering "y" in the terminal:
@@ -59,7 +46,7 @@ def test_cluster_baci_data_processor_ensight(
     path_to_drt_ensight = base_directory / "post_drt_ensight"
 
     # unique experiment name
-    experiment_name = f"test_deep_data_processor_ensight"
+    experiment_name = f"test_{dask_cluster_settings['name']}_data_processor_ensight"
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
@@ -69,10 +56,10 @@ def test_cluster_baci_data_processor_ensight(
 
     template_options = {
         'experiment_name': str(experiment_name),
-        'workload_manager': 'pbs',
-        'cluster_address': '129.187.58.20',
-        'cluster_python_path': '/home/dinkel/anaconda/miniconda/envs/queens_p310/bin/python',
-        'path_to_jobscript': '/home/dinkel/workspace/queens/templates/jobscripts/jobscript_deep.sh',
+        'workload_manager': dask_cluster_settings['workload_manager'],
+        'cluster_address': dask_cluster_settings['cluster_address'],
+        'cluster_python_path': dask_cluster_settings['cluster_python_path'],
+        'path_to_jobscript': dask_cluster_settings['path_to_jobscript'],
         'input_template': str(baci_input_file_template),
         'path_to_executable': str(path_to_executable),
         'path_to_drt_monitor': str(path_to_drt_monitor),
@@ -82,7 +69,9 @@ def test_cluster_baci_data_processor_ensight(
     queens_input_file_template = pathlib.Path(
         inputdir, "baci_dask_cluster_data_processor_ensight.yml"
     )
-    queens_input_file = pathlib.Path(tmpdir, "baci_cluster_data_processor_ensight.yml")
+    queens_input_file = pathlib.Path(
+        tmpdir, f"baci_cluster_data_processor_ensight_{dask_cluster_settings['name']}.yml"
+    )
     injector.inject(template_options, queens_input_file_template, queens_input_file)
 
     # Patch the missing config arguments

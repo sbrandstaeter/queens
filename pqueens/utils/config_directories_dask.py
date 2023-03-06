@@ -31,6 +31,13 @@ def experiment_directory(experiment_name):
     return experiment_dir
 
 
+def remote_queens_directory():
+    """Hold queens source code on remote machine."""
+    repository_dir = pathlib.Path().home() / "workspace" / "queens"
+    create_directory(repository_dir)
+    return repository_dir
+
+
 def create_directory(dir_path):
     """Create a directory either local or remote."""
     pathlib.Path.mkdir(dir_path, parents=True, exist_ok=True)

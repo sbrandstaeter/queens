@@ -6,7 +6,10 @@ from dask.distributed import Client, SSHCluster
 from dask_jobqueue import PBSCluster, SLURMCluster
 
 from pqueens.schedulers.dask_scheduler import Scheduler
-from pqueens.utils.config_directories_dask import experiment_directory
+from pqueens.utils import config_directories_dask
+from pqueens.utils.config_directories_dask import experiment_directory, remote_queens_directory
+from pqueens.utils.path_utils import PATH_TO_QUEENS
+from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
@@ -33,15 +36,22 @@ class ClusterScheduler(Scheduler):
             remote_python=[cluster_python_path, cluster_python_path],
         )
         self.login_client = Client(login_cluster)  # links to cluster master node
+        self.login_client.upload_file(config_directories_dask.__file__)
 
         future = self.login_client.submit(experiment_directory, experiment_name)
         experiment_dir = future.result()
+
+        future = self.login_client.submit(remote_queens_directory)
+        repository_dir = future.result()
+
+        # TODO: should we use client.upload_file instead?
+        self.sync_remote_repository(cluster_address, repository_dir)
 
         def start_cluster_on_master_node():
             cluster = dask_cluster_cls(
                 queue='batch',
                 cores=max(num_procs, num_procs_post),
-                memory='24GB',
+                memory='10TB',
                 scheduler_options={"port": scheduler_port},
                 walltime=walltime,
             )
@@ -53,7 +63,11 @@ class ClusterScheduler(Scheduler):
         self.cluster_future = self.login_client.submit(start_cluster_on_master_node)
         time.sleep(1)
 
-        client = Client(address=f"{cluster_address}:{scheduler_port}")
+        try:
+            client = Client(address=f"{cluster_address}:{scheduler_port}")
+        except OSError as error:
+            self.cluster_future.result()
+            raise error
 
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
 
@@ -96,3 +110,32 @@ class ClusterScheduler(Scheduler):
             cluster_address,
             cluster_python_path,
         )
+
+    @staticmethod
+    def sync_remote_repository(cluster_address, repository_dir):
+        """Synchronize local and remote QUEENS source files."""
+        _logger.info("Syncing remote QUEENS repository with local one...")
+        command_list = [
+            "rsync --archive --checksum --verbose --verbose",
+            "--exclude '.git'",
+            "--exclude '.eggs'",
+            "--exclude '.gitlab'",
+            "--exclude '.idea'",
+            "--exclude '.vscode'",
+            "--exclude '.pytest_cache'",
+            "--exclude '__pycache__'",
+            "--exclude 'doc'",
+            "--exclude 'html_coverage_report'",
+            "--exclude 'config'",
+            f"{PATH_TO_QUEENS}/",
+            f"{cluster_address}:{repository_dir}",
+        ]
+        command_string = ' '.join(command_list)
+        start_time = time.time()
+        _, _, stdout, _ = run_subprocess(
+            command_string,
+            additional_error_message="Error during sync of local and remote QUEENS repositories! ",
+        )
+        _logger.debug(stdout)
+        _logger.info("Sync of remote repository was successful.")
+        _logger.info("It took: %s s.\n", time.time() - start_time)
