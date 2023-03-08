@@ -343,7 +343,7 @@ class PyMCIterator(Iterator):
             _logger.info("Inference summary:")
             _logger.info(az.summary(self.results_dict))
             _logger.info("Model evaluations:")
-            _logger.info(self.model_evals)
+            _logger.info(str(self.model_evals))
 
         if self.result_description["plot_results"]:
             _logger.info("Generate convergence plots, ignoring divergences for trace plotting.")
