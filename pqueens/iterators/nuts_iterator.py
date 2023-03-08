@@ -235,7 +235,6 @@ class NUTSIterator(PyMCIterator):
         # pylint: disable-next=fixme
         # TODO: find better way to do this evaluation
         if not np.array_equal(self.current_samples, samples):
-            self.model_evals['Gradient Evals'] += self.num_chains
             _ = self.eval_log_likelihood(samples)
 
         gradient = self.parameters.latent_grad(self.current_gradients)

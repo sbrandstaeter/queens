@@ -318,6 +318,7 @@ class PyMCIterator(Iterator):
             sample_stats['number_of_tuning_steps'] = self.results.report.n_tune
             # pylint: disable-next=protected-access
             sample_stats['global_warnings'] = self.results.report._global_warnings
+            sample_stats['Model_evals'] = self.model_evals
 
         # process output takes a dict as input with key 'mean'
         swaped_chain = np.swapaxes(self.chains, 0, 1).copy()
