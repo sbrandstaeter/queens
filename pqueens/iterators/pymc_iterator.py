@@ -322,11 +322,9 @@ class PyMCIterator(Iterator):
 
         # process output takes a dict as input with key 'mean'
         swaped_chain = np.swapaxes(self.chains, 0, 1).copy()
+        results_dict = az.convert_to_inference_data(inference_data_dict)
         results = process_outputs(
-            {
-                'sample_stats': sample_stats,
-                'mean': swaped_chain,
-            },
+            {'sample_stats': sample_stats, 'mean': swaped_chain, 'inference_data': results_dict},
             self.result_description,
         )
         if self.result_description["write_results"]:
@@ -340,7 +338,7 @@ class PyMCIterator(Iterator):
             f"{self.global_settings['output_dir']}/{self.global_settings['experiment_name']}"
         )
 
-        self.results_dict = az.convert_to_inference_data(inference_data_dict)
+        self.results_dict = results_dict
         if self.summary:
             _logger.info("Inference summary:")
             _logger.info(az.summary(self.results_dict))
@@ -369,8 +367,9 @@ class PyMCIterator(Iterator):
             )
             plt.savefig(filebasename + "_forest.png")
 
-            az.plot_density(self.results_dict, hdi_prob=0.99)
-            plt.savefig(filebasename + "_marginals.png")
+            if self.parameters.num_parameters < 17:
+                az.plot_density(self.results_dict, hdi_prob=0.99)
+                plt.savefig(filebasename + "_marginals.png")
 
             plt.close("all")
 
