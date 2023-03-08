@@ -95,6 +95,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
 
         self.seen_samples = None
         self.seen_likelihoods = None
+        self.model_evals = {"Forward Evals": 0}
 
         if not use_queens_prior and len(self.parameters.to_list()) > 1:
             _logger.warning(
