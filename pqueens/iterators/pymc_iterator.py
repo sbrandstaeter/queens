@@ -47,6 +47,7 @@ class PyMCIterator(Iterator):
         pymc_sampler_stats (bool): Compute additional sampler statistics
         as_inference_dict (bool): Return inference_data object instead of trace object
         initvals (dict): Dict with distribution names and starting point of chains
+        model_evals (int): Number of model calls
     """
 
     def __init__(
@@ -130,6 +131,8 @@ class PyMCIterator(Iterator):
         self.results = None
         self.results_dict = None
         self.initvals = None
+
+        self.model_evals = None
 
     @staticmethod
     def get_base_attributes_from_config(config, iterator_name, model=None):
@@ -340,6 +343,8 @@ class PyMCIterator(Iterator):
         if self.summary:
             _logger.info("Inference summary:")
             _logger.info(az.summary(self.results_dict))
+            _logger.info("Model evaluations:")
+            _logger.info(self.model_evals)
 
         if self.result_description["plot_results"]:
             _logger.info("Generate convergence plots, ignoring divergences for trace plotting.")

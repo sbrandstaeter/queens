@@ -184,6 +184,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         """
         # check if sample was seen in previous acceptance step
         if self.seen_samples is None:
+            self.model_evals['Forward Evals'] += self.num_chains
             self.seen_samples = [samples.copy(), samples.copy(), samples.copy()]
             log_likelihood = self.model.evaluate(samples)
             self.seen_likelihoods = [
@@ -197,6 +198,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             elif np.array_equal(self.seen_samples[1], samples):
                 log_likelihood = self.seen_likelihoods[1]
             else:
+                self.model_evals['Forward Evals'] += self.num_chains
                 log_likelihood = self.model.evaluate(samples)
 
         # update list of last samples and likelihoods

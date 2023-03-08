@@ -115,6 +115,7 @@ class HMCIterator(PyMCIterator):
         self.current_samples = None
         self.current_gradients = None
         self.current_likelihood = None
+        self.model_evals = {"Forward Evals": 0, "Gradient Evals": 0}
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -205,6 +206,8 @@ class HMCIterator(PyMCIterator):
         if np.array_equal(self.current_samples, samples):
             log_likelihood = self.current_likelihood
         else:
+            self.model_evals['Forward Evals'] += self.num_chains
+            self.model_evals['Gradient Evals'] += self.num_chains
             self.current_samples = samples.copy()
             log_likelihood, gradient = self.model.evaluate_and_gradient(samples)
             self.current_likelihood = log_likelihood.copy()
@@ -223,6 +226,7 @@ class HMCIterator(PyMCIterator):
         # pylint: disable-next=fixme
         # TODO: find better way to do this evaluation
         if not np.array_equal(self.current_samples, samples):
+            self.model_evals['Gradient Evals'] += self.num_chains
             _ = self.eval_log_likelihood(samples)
 
         gradient = self.parameters.latent_grad(self.current_gradients)
