@@ -15,6 +15,8 @@ class JobscriptDriver(Driver):
     """Driver to run an executable with mpi.
 
     Attributes:
+        jobscript_template (str): read in jobscript template as string
+        jobscript_options (dict): Dictionary containing jobscript options
     """
 
     def __init__(
@@ -29,7 +31,10 @@ class JobscriptDriver(Driver):
         """Initialize MpiDriver object.
 
         Args:
-            simulation_input_template (path): path to simulation input template (e.g. dat-file)
+            jobscript_template (str): read in jobscript template as string
+            jobscript_options (dict): Dictionary containing jobscript options
+            simulation_input_suffix (str): suffix of the simulation input file
+            simulation_input_template (str): read in simulation input template as string
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
         """
@@ -107,13 +112,13 @@ class JobscriptDriver(Driver):
             gradient_data_processor=gradient_data_processor,
         )
 
-    def run(self, sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name):
+    def run(self, sample_dict, _num_procs, _num_procs_post, experiment_dir, experiment_name):
         """Run the driver.
 
         Args:
             sample_dict (dict): Dict containing sample and job id
-            num_procs (int): number of cores
-            num_procs_post (int): number of cores for post-processing
+            _num_procs (int): number of cores
+            _num_procs_post (int): number of cores for post-processing
             experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
 
@@ -137,7 +142,6 @@ class JobscriptDriver(Driver):
         inject_in_template(final_jobscript_options, self.jobscript_template, str(jobscript_file))
 
         execute_cmd = 'bash ' + str(jobscript_file)
-        pathlib.Path('/home/dinkel/execute_cmd').write_text(execute_cmd)
         _logger.debug("Start executable with command:")
         _logger.debug(execute_cmd)
         run_subprocess(
