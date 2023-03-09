@@ -14,7 +14,7 @@ _logger = logging.getLogger(__name__)
 
 
 def test_cluster_baci_data_processor_ensight(
-    inputdir, tmpdir, third_party_inputs, monkeypatch, dask_cluster_settings
+    inputdir, tmpdir, third_party_inputs, monkeypatch, dask_cluster_settings, cluster_user
 ):
     """Test remote BACI simulations with ensight data-processor.
 
@@ -58,6 +58,7 @@ def test_cluster_baci_data_processor_ensight(
         'experiment_name': str(experiment_name),
         'workload_manager': dask_cluster_settings['workload_manager'],
         'cluster_address': dask_cluster_settings['cluster_address'],
+        'cluster_user': cluster_user,
         'cluster_python_path': dask_cluster_settings['cluster_python_path'],
         'path_to_jobscript': dask_cluster_settings['path_to_jobscript'],
         'input_template': str(baci_input_file_template),

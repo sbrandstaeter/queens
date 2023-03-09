@@ -30,13 +30,14 @@ interface:
 scheduler:
   type: dask_cluster
   max_jobs: 10
-  min_jobs: 3
+  min_jobs: 2
   walltime: 00:10:00
   num_procs: 1
   num_procs_post: 1
-  scheduler_port: 37659
+  num_nodes: 1
   workload_manager: {{ workload_manager }}
   cluster_address: {{ cluster_address }}
+  cluster_user: {{ cluster_user }}
   cluster_python_path: {{ cluster_python_path }}
 driver:
   type: dask_jobscript
@@ -45,7 +46,7 @@ driver:
   path_to_jobscript: {{ path_to_jobscript }}
   path_to_postprocessor: {{ path_to_drt_ensight }}
   post_file_prefix: QoI
-  post_process_options: "--filter=post_drt_monitor --field=structure --node=26 --start=1"  # TODO: what is the name of the filter
+  post_process_options: "--filter=post_drt_monitor --field=structure --node=26 --start=1"
   cluster_script_path: /lnm/share/donottouch.sh
   data_processor_name: data_processor_baci
 data_processor_baci:

@@ -1,5 +1,7 @@
 """Cluster scheduler for QUEENS runs."""
+import atexit
 import logging
+import socket
 import time
 
 from dask.distributed import Client, SSHCluster
@@ -14,7 +16,18 @@ from pqueens.utils.valid_options_utils import get_option
 
 _logger = logging.getLogger(__name__)
 
-VALID_WORKLOAD_MANAGERS = {"slurm": SLURMCluster, "pbs": PBSCluster}
+VALID_WORKLOAD_MANAGERS = {
+    "slurm": {
+        "dask_cluster_cls": SLURMCluster,
+        "job_extra_directives": lambda nodes, cores: f"--ntasks={nodes * cores}",
+        "job_directives_skip": "#SBATCH --ntasks=",
+    },
+    "pbs": {
+        "dask_cluster_cls": PBSCluster,
+        "job_extra_directives": lambda nodes, cores: f"-l nodes={nodes}:ppn={cores}",
+        "job_directives_skip": "#PBS -l select",
+    },
+}
 
 
 class ClusterScheduler(Scheduler):
@@ -28,9 +41,11 @@ class ClusterScheduler(Scheduler):
         walltime,
         num_procs,
         num_procs_post,
-        scheduler_port,
-        dask_cluster_cls,
+        num_nodes,
+        queue,
+        workload_manager,
         cluster_address,
+        cluster_user,
         cluster_python_path,
     ):
         """Init method for the cluster scheduler.
@@ -42,49 +57,61 @@ class ClusterScheduler(Scheduler):
             walltime (str): Walltime for each worker job.
             num_procs (int): number of cores per job
             num_procs_post (int): number of cores per job for post-processing
-            scheduler_port (int): Port of dask cluster scheduler
-            dask_cluster_cls (obj): Dask SlurmCluster or PBSCluster class
+            num_nodes (int): Number of cluster nodes
+            queue (str): Destination queue for each worker job
+            workload_manager (str): Workload manager ("pbs" or "slurm")
             cluster_address (str): address of cluster
+            cluster_user (str): cluster username
             cluster_python_path (str): Path to Python on cluster
         """
+        num_cores = max(num_procs, num_procs_post)
+        dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, workload_manager)
+        dask_cluster_cls = dask_cluster_options['dask_cluster_cls']
+        job_extra_directives = dask_cluster_options['job_extra_directives'](num_nodes, num_cores)
+        job_directives_skip = dask_cluster_options['job_directives_skip']
+
         login_cluster = SSHCluster(
             hosts=[cluster_address, cluster_address],
             remote_python=[cluster_python_path, cluster_python_path],
+            connect_options={'username': cluster_user} if cluster_user else {},
         )
-        login_client = Client(login_cluster)  # links to cluster master node
+        login_client = Client(login_cluster)  # links to cluster login node
+        atexit.register(login_client.shutdown)
         login_client.upload_file(config_directories_dask.__file__)
 
-        future = login_client.submit(experiment_directory, experiment_name)
-        experiment_dir = future.result()
+        experiment_dir = login_client.submit(experiment_directory, experiment_name).result()
+        repository_dir = login_client.submit(remote_queens_directory).result()
 
-        future = login_client.submit(remote_queens_directory)
-        repository_dir = future.result()
-
-        # TODO: should we use client.upload_file instead?
+        # Should we use client.upload_file instead?
         self.sync_remote_repository(cluster_address, repository_dir)
 
-        def start_cluster_on_login_node():
-            """Start dask cluster object on login node"""
-            cores = max(num_procs, num_procs_post)
+        def start_cluster_on_login_node(port):
+            """Start dask cluster object on login node."""
             cluster = dask_cluster_cls(
-                queue='batch',
-                cores=cores,
+                job_name=experiment_name,
+                queue=queue,
+                cores=num_cores,
                 memory='10TB',
-                scheduler_options={"port": scheduler_port},
+                scheduler_options={"port": port},
                 walltime=walltime,
-                job_script_prologue=[f"#PBS -l nodes=1:ppn={cores}"],
+                log_directory=str(experiment_dir),
+                job_directives_skip=[job_directives_skip],
+                job_extra_directives=[job_extra_directives],
             )
             cluster.adapt(minimum_jobs=min_jobs, maximum_jobs=max_jobs)
+            (experiment_dir / 'dask_jobscript').write_text(str(cluster.job_script()))
             while True:
                 time.sleep(1)
 
-        # Start PBS Cluster on master node
-        cluster_future = login_client.submit(start_cluster_on_login_node)
-
+        scheduler_port = login_client.submit(self.get_port).result()
+        # Start PBS Cluster on login node
+        cluster_future = login_client.submit(start_cluster_on_login_node, scheduler_port)
         try:
-            client = Client(address=f"{cluster_address}:{scheduler_port}")
+            client = Client(address=f"{cluster_address}:{scheduler_port}", timeout=10)
+            atexit.register(client.shutdown)
+            client.submit(lambda: "Dummy job").result(timeout=60)
         except OSError as error:
-            cluster_future.result()
+            cluster_future.result(timeout=10)
             raise error
 
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
@@ -109,11 +136,12 @@ class ClusterScheduler(Scheduler):
 
         num_procs = scheduler_options.get('num_procs', 1)
         num_procs_post = scheduler_options.get('num_procs_post', 1)
+        num_nodes = scheduler_options.get('num_nodes', 1)
+        queue = scheduler_options.get('queue', 'batch')
 
-        scheduler_port = scheduler_options['scheduler_port']
         workload_manager = scheduler_options['workload_manager']
-        dask_cluster_cls = get_option(VALID_WORKLOAD_MANAGERS, workload_manager)
         cluster_address = scheduler_options['cluster_address']
+        cluster_user = scheduler_options.get('cluster_user')
         cluster_python_path = scheduler_options['cluster_python_path']
 
         return cls(
@@ -123,9 +151,11 @@ class ClusterScheduler(Scheduler):
             walltime,
             num_procs,
             num_procs_post,
-            scheduler_port,
-            dask_cluster_cls,
+            num_nodes,
+            queue,
+            workload_manager,
             cluster_address,
+            cluster_user,
             cluster_python_path,
         )
 
@@ -162,3 +192,14 @@ class ClusterScheduler(Scheduler):
         _logger.debug(stdout)
         _logger.info("Sync of remote repository was successful.")
         _logger.info("It took: %s s.\n", time.time() - start_time)
+
+    @staticmethod
+    def get_port():
+        """Get free port.
+
+        Returns:
+            int: free port
+        """
+        sock = socket.socket()
+        sock.bind(('', 0))
+        return sock.getsockname()[1]

@@ -18,12 +18,13 @@ scheduler:
   type: dask_cluster
   max_jobs: 3
   min_jobs: 3
-  walltime: 00:03:00
-  num_procs: 4
+  walltime: 00:00:60
+  num_procs: 2
   num_procs_post: 1
-  scheduler_port: 37659
+  num_nodes: 2
   workload_manager: {{ workload_manager }}
   cluster_address: {{ cluster_address }}
+  cluster_user: {{ cluster_user }}
   cluster_python_path: {{ cluster_python_path }}
 driver:
   type: dask_jobscript

@@ -1,7 +1,6 @@
 """Driver to run an executable with mpi."""
 
 import logging
-import os
 import pathlib
 
 from pqueens.data_processor import from_config_create_data_processor
@@ -22,7 +21,6 @@ class MpiDriver(Driver):
         post_options (str): options for post-processing
         post_processor (path): path to post_processor
         mpi_cmd (str): mpi command
-        environment (dict): environment for the executed subprocess of the executable
     """
 
     def __init__(
@@ -37,7 +35,6 @@ class MpiDriver(Driver):
         data_processor,
         gradient_data_processor,
         mpi_cmd,
-        environment,
     ):
         """Initialize MpiDriver object.
 
@@ -52,7 +49,6 @@ class MpiDriver(Driver):
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
             mpi_cmd (str): mpi command
-            environment (dict): environment for the executed subprocess of the executable
         """
         super().__init__(
             data_processor,
@@ -63,7 +59,6 @@ class MpiDriver(Driver):
         self.executable = executable
         self.cae_output_streaming = cae_output_streaming
         self.mpi_cmd = mpi_cmd
-        self.environment = environment
         self.pid = None
         self.post_file_prefix = post_file_prefix
         self.post_options = post_options
@@ -88,7 +83,7 @@ class MpiDriver(Driver):
         simulation_input_suffix = pathlib.PurePosixPath(driver_options['input_template']).suffix
         simulation_input_template = read_template(driver_options['input_template'])
         executable = pathlib.Path(driver_options['path_to_executable'])
-        mpi_cmd = driver_options.get('mpi_cmd', 'mpirun --bind-to none -np')
+        mpi_cmd = driver_options.get('mpi_cmd', '/usr/bin/mpirun --bind-to none -np')
         post_processor_str = driver_options.get('path_to_postprocessor', None)
         if post_processor_str:
             post_processor = pathlib.Path(post_processor_str)
@@ -113,15 +108,6 @@ class MpiDriver(Driver):
         else:
             gradient_data_processor = None
 
-        # Remove conda from environment
-        environment = os.environ.copy()
-        path_variables = environment['PATH'].split(":")
-        new_path_variables = []
-        for path_variable in path_variables:
-            if not "conda" in path_variable:
-                new_path_variables.append(path_variable)
-        environment['PATH'] = ':'.join(new_path_variables)
-
         return cls(
             executable=executable,
             cae_output_streaming=cae_output_streaming,
@@ -133,7 +119,6 @@ class MpiDriver(Driver):
             data_processor=data_processor,
             gradient_data_processor=gradient_data_processor,
             mpi_cmd=mpi_cmd,
-            environment=environment,
         )
 
     def run(self, sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name):
@@ -150,7 +135,7 @@ class MpiDriver(Driver):
             Result and potentially the gradient
         """
         job_id = sample_dict.pop('job_id')
-        job_dir, output_dir, output_file, input_file, log_file, error_file = self._manage_paths(
+        _, output_dir, output_file, input_file, log_file, error_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
 
@@ -186,7 +171,6 @@ class MpiDriver(Driver):
             error_file=str(error_file),
             streaming=self.cae_output_streaming,
             raise_error_on_subprocess_failure=False,
-            environment=self.environment,
         )
 
     def _run_post_processing(self, num_procs_post, output_file, output_dir):
@@ -196,7 +180,6 @@ class MpiDriver(Driver):
             num_procs_post (int): number of cores for post-processing
             output_file (Path): Path to output file(s)
             output_dir (Path): Path to output directory
-
         """
         if self.post_processor:
             output_file = '--file=' + str(output_file)
@@ -212,7 +195,6 @@ class MpiDriver(Driver):
                 post_processor_cmd,
                 additional_error_message="Post-processing failed!",
                 raise_error_on_subprocess_failure=True,
-                environment=self.environment,
             )
 
     def _assemble_execute_cmd(self, num_procs, input_file, output_file):

@@ -41,6 +41,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.num_procs = num_procs
         self.num_procs_post = num_procs_post
         self.client = client
+        print(client.dashboard_link)
 
     def evaluate(self, samples_list, driver):
         """Submit jobs to driver.
@@ -87,7 +88,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         Returns:
             Result and potentially the gradient
         """
-        # TODO: This copy is currently necessary because processed data is stored and extended in
+        #  This copy is currently necessary because processed data is stored and extended in
         #  data processor
         driver = copy.deepcopy(driver)
         return driver.run(sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name)

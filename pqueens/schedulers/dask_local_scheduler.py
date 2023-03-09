@@ -36,6 +36,7 @@ class LocalScheduler(Scheduler):
             n_workers=max_concurrent,
             processes=False,
             threads_per_worker=threads_per_worker,
+            silence_logs=False,
         )
         client = Client(cluster)
 

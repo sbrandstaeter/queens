@@ -4,6 +4,7 @@
 #  Specify your paths                    #
 #                                        #
 ##########################################
+WORKSUBDIR={{ JOB_ID }}
 DESTDIR={{ DESTDIR }}  # output directory for run
 EXE={{ EXE }} # CAE executable
 INPUT={{ INPUT }}  # input file
@@ -40,12 +41,10 @@ POSTOPTIONS={{ POSTOPTIONS }}            #
 #################################################################
 # This is not a suggestion, this is a rule.
 # Talk to admin before touching this section.
-source {{ CLUSTERSCRIPT }}
+source '/home/dinkel/queens_donottouch.sh' #{{ CLUSTERSCRIPT }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
 DoChecks
 StageIn
-WORKDIR=$WORKDIR/{{ JOB_ID }}
-mkdir -p $WORKDIR
 RunProgram
 wait
 RunPostprocessor

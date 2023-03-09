@@ -91,7 +91,6 @@ class Driver(metaclass=abc.ABCMeta):
             result (np.array): Result from the driver run
             gradient (np.array, None): Gradient from the driver run (potentially None)
         """
-        (output_dir / 'out_dir').write_text(str(output_dir))
         result = self.data_processor.get_data_from_file(str(output_dir))
         _logger.debug("Got result: %s", result)
 
