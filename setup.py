@@ -50,7 +50,7 @@ KEYWORDS = (
 )
 
 # Exit the installation process in case of incompatibility of the python version
-REQUIRED_PYTHON_VERSION = '3.8'
+REQUIRED_PYTHON_VERSION = '3.10'
 SYSTEM_PYTHON_VERSION = f"{sys.version_info[0]}.{sys.version_info[1]}"
 if SYSTEM_PYTHON_VERSION != REQUIRED_PYTHON_VERSION:
     MESSAGE = (

@@ -6,7 +6,7 @@ pymongo
 matplotlib
 plotly
 pandas
-vtk
+vtk>=9.2.0
 xarray
 scipy
 pyyaml
