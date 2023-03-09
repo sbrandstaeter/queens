@@ -95,7 +95,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
 
         self.seen_samples = None
         self.seen_likelihoods = None
-        self.model_evals = {"Forward Evals": 0}
 
         if not use_queens_prior and len(self.parameters.to_list()) > 1:
             _logger.warning(
@@ -164,14 +163,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         )
 
     def eval_log_prior_grad(self, samples):
-        """Evaluate the gradient of the log-prior.
-
-        Args:
-            samples (np.array): Samples to evaluate the gradient at
-
-        Returns:
-            (np.array): Gradients
-        """
+        """Evaluate the gradient of the log-prior."""
         raise NotImplementedError("No gradients are needed for Metropolis-Hastings")
 
     def eval_log_likelihood(self, samples):
@@ -181,11 +173,11 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
              samples (np.array): Samples to evaluate the likelihood at
 
         Returns:
-            (np.array): log-likelihoods
+            log_likelihood (np.array): Log-likelihoods
         """
         # check if sample was seen in previous acceptance step
         if self.seen_samples is None:
-            self.model_evals['Forward Evals'] += self.num_chains
+            self.model_fwd_evals += self.num_chains
             self.seen_samples = [samples.copy(), samples.copy(), samples.copy()]
             log_likelihood = self.model.evaluate(samples)
             self.seen_likelihoods = [
@@ -199,7 +191,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             elif np.array_equal(self.seen_samples[1], samples):
                 log_likelihood = self.seen_likelihoods[1]
             else:
-                self.model_evals['Forward Evals'] += self.num_chains
+                self.model_fwd_evals += self.num_chains
                 log_likelihood = self.model.evaluate(samples)
 
         # update list of last samples and likelihoods
@@ -211,14 +203,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         return log_likelihood
 
     def eval_log_likelihood_grad(self, samples):
-        """Evaluate the gradient of the log-likelihood.
-
-        Args:
-            samples (np.array): Samples to evaluate the gradient at
-
-        Returns:
-            (np.array): Gradients
-        """
+        """Evaluate the gradient of the log-likelihood."""
         raise NotImplementedError("No gradients are used for Metropolis-Hastings")
 
     def init_mcmc_method(self):

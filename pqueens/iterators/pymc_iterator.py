@@ -12,7 +12,7 @@ import pytensor.tensor as pt
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import process_outputs, write_results
-from pqueens.utils.pymc import from_config_create_pymc_distribution_dict
+from pqueens.utils.pymc import PymcDistributionWrapper, from_config_create_pymc_distribution_dict
 
 _logger = logging.getLogger(__name__)
 
@@ -47,7 +47,8 @@ class PyMCIterator(Iterator):
         pymc_sampler_stats (bool): Compute additional sampler statistics
         as_inference_dict (bool): Return inference_data object instead of trace object
         initvals (dict): Dict with distribution names and starting point of chains
-        model_evals (int): Number of model calls
+        model_fwd_evals (int): Number of model forward calls
+        model_grad_evals (int): Number of model gradient calls
     """
 
     def __init__(
@@ -132,7 +133,8 @@ class PyMCIterator(Iterator):
         self.results_dict = None
         self.initvals = None
 
-        self.model_evals = None
+        self.model_fwd_evals = 0
+        self.model_grad_evals = 0
 
     @staticmethod
     def get_base_attributes_from_config(config, iterator_name, model=None):
@@ -190,29 +192,71 @@ class PyMCIterator(Iterator):
             samples (np.array): Samples to evaluate the prior at
 
         Returns:
-            (np.array): Prior log-pdf
+            log_prior (np.array): Prior log-pdf
         """
-        return self.parameters.joint_logpdf(samples).reshape(-1)
+        log_prior = self.parameters.joint_logpdf(samples).reshape(-1)
+        return log_prior
 
-    @abc.abstractmethod
     def eval_log_prior_grad(self, samples):
-        """Evaluate the gradient of the log-prior."""
+        """Evaluate the gradient of the log-prior.
 
-    @abc.abstractmethod
+        Args:
+            samples (np.array): Samples to evaluate the gradient at
+
+        Returns:
+            log_prior_grad (np.array): Gradients of the log prior
+        """
+        log_prior_grad = self.parameters.grad_joint_logpdf(samples)
+        return log_prior_grad
+
     def eval_log_likelihood(self, samples):
-        """Evaluate the log-likelihood."""
+        """Evaluate the log-likelihood.
 
-    @abc.abstractmethod
+        Args:
+             samples (np.array): Samples to evaluate the likelihood at
+
+        Returns:
+            log_likelihood (np.array): log-likelihoods
+        """
+        if np.array_equal(self.current_samples, samples):
+            log_likelihood = self.current_likelihood
+        else:
+            self.model_fwd_evals += self.num_chains
+            self.model_grad_evals += self.num_chains
+            self.current_samples = samples.copy()
+            log_likelihood, gradient = self.model.evaluate_and_gradient(samples)
+            self.current_likelihood = log_likelihood.copy()
+            self.current_gradients = gradient.copy()
+        return log_likelihood
+
     def eval_log_likelihood_grad(self, samples):
-        """Evaluate the gradient of the log-likelihood."""
+        """Evaluate the gradient of the log-likelihood.
+
+        Args:
+            samples (np.array): Samples to evaluate the gradient at
+
+        Returns:
+            gradient (np.array): Gradients of the log likelihood
+        """
+        # pylint: disable-next=fixme
+        # TODO: find better way to do this evaluation
+        if not np.array_equal(self.current_samples, samples):
+            self.eval_log_likelihood(samples)
+
+        gradient = self.parameters.latent_grad(self.current_gradients)
+        return gradient.reshape(-1, self.parameters.num_parameters)
 
     @abc.abstractmethod
     def init_mcmc_method(self):
         """Init the PyMC MCMC Model."""
 
-    @abc.abstractmethod
     def init_distribution_wrapper(self):
         """Init the PyMC wrapper for the QUEENS distributions."""
+        self.log_like = PymcDistributionWrapper(
+            self.eval_log_likelihood, self.eval_log_likelihood_grad
+        )
+        if self.use_queens_prior:
+            self.log_prior = PymcDistributionWrapper(self.eval_log_prior, self.eval_log_prior_grad)
 
     def pre_run(self):
         """Prepare MCMC run."""
@@ -318,7 +362,8 @@ class PyMCIterator(Iterator):
             sample_stats['number_of_tuning_steps'] = self.results.report.n_tune
             # pylint: disable-next=protected-access
             sample_stats['global_warnings'] = self.results.report._global_warnings
-            sample_stats['Model_evals'] = self.model_evals
+            sample_stats['model_forward_evals'] = self.model_fwd_evals
+            sample_stats['model_gradient_evals'] = self.model_grad_evals
 
         # process output takes a dict as input with key 'mean'
         swaped_chain = np.swapaxes(self.chains, 0, 1).copy()
@@ -342,8 +387,8 @@ class PyMCIterator(Iterator):
         if self.summary:
             _logger.info("Inference summary:")
             _logger.info(az.summary(self.results_dict))
-            _logger.info("Model evaluations:")
-            _logger.info(str(self.model_evals))
+            _logger.info("Model forward evaluations: %i", self.model_fwd_evals)
+            _logger.info("Model gradient evaluations: %i", self.model_grad_evals)
 
         if self.result_description["plot_results"]:
             _logger.info("Generate convergence plots, ignoring divergences for trace plotting.")

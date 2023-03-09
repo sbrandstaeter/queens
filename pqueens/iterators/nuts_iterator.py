@@ -7,11 +7,9 @@ arbitrary probability distributions.
 
 import logging
 
-import numpy as np
 import pymc as pm
 
 from pqueens.iterators.pymc_iterator import PyMCIterator
-from pqueens.utils.pymc import PymcDistributionWrapper
 
 _logger = logging.getLogger(__name__)
 
@@ -124,7 +122,6 @@ class NUTSIterator(PyMCIterator):
         self.current_samples = None
         self.current_gradients = None
         self.current_likelihood = None
-        self.model_evals = {"Forward Evals": 0, "Gradient Evals": 0}
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
@@ -192,54 +189,6 @@ class NUTSIterator(PyMCIterator):
             advi_iterations=advi_iterations,
         )
 
-    def eval_log_prior_grad(self, samples):
-        """Evaluate the gradient of the log-prior.
-
-        Args:
-            samples (np.array): Samples to evaluate the gradient at
-
-        Returns:
-            (np.array): Gradients
-        """
-        return self.parameters.grad_joint_logpdf(samples)
-
-    def eval_log_likelihood(self, samples):
-        """Evaluate the log-likelihood.
-
-        Args:
-             samples (np.array): Samples to evaluate the likelihood at
-
-        Returns:
-            (np.array): log-likelihoods
-        """
-        if np.array_equal(self.current_samples, samples):
-            log_likelihood = self.current_likelihood
-        else:
-            self.model_evals['Forward Evals'] += self.num_chains
-            self.model_evals['Gradient Evals'] += self.num_chains
-            self.current_samples = samples.copy()
-            log_likelihood, gradient = self.model.evaluate_and_gradient(samples)
-            self.current_likelihood = log_likelihood.copy()
-            self.current_gradients = gradient.copy()
-        return log_likelihood
-
-    def eval_log_likelihood_grad(self, samples):
-        """Evaluate the gradient of the log-likelihood.
-
-        Args:
-            samples (np.array): Samples to evaluate the gradient at
-
-        Returns:
-            (np.array): Gradients
-        """
-        # pylint: disable-next=fixme
-        # TODO: find better way to do this evaluation
-        if not np.array_equal(self.current_samples, samples):
-            _ = self.eval_log_likelihood(samples)
-
-        gradient = self.parameters.latent_grad(self.current_gradients)
-        return gradient.reshape(-1, self.parameters.num_parameters)
-
     def init_mcmc_method(self):
         """Init the PyMC MCMC Model.
 
@@ -271,12 +220,3 @@ class NUTSIterator(PyMCIterator):
                 is_cov=self.is_cov,
             )
         return step
-
-    def init_distribution_wrapper(self):
-        """Init the PyMC wrapper for the QUEENS distributions."""
-        self.log_like = PymcDistributionWrapper(
-            self.eval_log_likelihood, self.eval_log_likelihood_grad
-        )
-        if self.use_queens_prior:
-            self.log_prior = PymcDistributionWrapper(self.eval_log_prior, self.eval_log_prior_grad)
-        _logger.info("Initialize NUTS by PyMC run.")
