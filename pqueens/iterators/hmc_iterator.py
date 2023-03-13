@@ -194,6 +194,7 @@ class HMCIterator(PyMCIterator):
                 progressbar=self.progressbar,
                 n_init=self.advi_iterations,
                 random_seed=self.seed,
+                model=self.pymc_model,
             )
             potential = step_helper.potential
         step = pm.HamiltonianMC(
@@ -204,5 +205,6 @@ class HMCIterator(PyMCIterator):
             scaling=self.scaling,
             is_cov=self.is_cov,
             potential=potential,
+            model=self.pymc_model,
         )
         return step

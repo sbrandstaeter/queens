@@ -225,6 +225,7 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
             S=covariance,
             scaling=self.scaling,
             tune_interval=self.tune_interval,
+            model=self.pymc_model,
         )
         step.elemwise_update = False
         step.accept_rate_iter = np.zeros(self.num_chains, dtype=float)

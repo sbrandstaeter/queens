@@ -267,9 +267,9 @@ class PyMCIterator(Iterator):
 
     def pre_run(self):
         """Prepare MCMC run."""
+        self.init_distribution_wrapper()
         # pylint: disable-next=unnecessary-dunder-call
         self.pymc_model.__enter__()
-        self.init_distribution_wrapper()
         if self.use_queens_prior:
             _logger.info("Use QUEENS Priors")
 
@@ -295,6 +295,9 @@ class PyMCIterator(Iterator):
         prior_tensor = pt.as_tensor_variable(prior)
         # pylint: disable-next=not-callable
         pm.Potential("likelihood", self.log_like(prior_tensor))
+
+        # pylint: disable-next=unnecessary-dunder-call
+        self.pymc_model.__exit__(None, None, None)
         self.step = self.init_mcmc_method()
 
     def core_run(self):
@@ -311,11 +314,12 @@ class PyMCIterator(Iterator):
             progressbar=self.progressbar,
             compute_convergence_checks=self.pymc_sampler_stats,
             return_inferencedata=self.as_inference_dict,
+            model=self.pymc_model,
         )
 
     def post_run(self):
         """Post-Processing of Results."""
-        self.pymc_model.__exit__(None, None, None)
+        # self.pymc_model.__exit__(None, None, None)
         _logger.info("MCMC by PyMC results:")
 
         # get the chain as numpy array and dict

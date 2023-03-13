@@ -203,6 +203,7 @@ class NUTSIterator(PyMCIterator):
                 early_max_treedepth=self.early_max_treedepth,
                 step_scale=self.step_size,
                 n_init=self.advi_iterations,
+                model=self.pymc_model,
             )
         else:
             step = pm.NUTS(
@@ -212,5 +213,6 @@ class NUTSIterator(PyMCIterator):
                 step_scale=self.step_size,
                 scaling=self.scaling,
                 is_cov=self.is_cov,
+                model=self.pymc_model,
             )
         return step
