@@ -46,6 +46,7 @@ class JobInterface(Interface):
         _internal_batch_state (int): Helper attribute to compare batch_number with the internal
         experiment_field_name (str): Name of the experiment field in the database to which the
                                         current jobs are saved
+        job_ids (list): List of job ids
     """
 
     def __init__(
@@ -101,6 +102,7 @@ class JobInterface(Interface):
         self._internal_batch_state = 0
         self.job_num = 0
         self.experiment_field_name = experiment_field_name
+        self.job_ids = []
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -315,7 +317,7 @@ class JobInterface(Interface):
         """
         if new_id is None:
             _logger.info('Created new job')
-            num_jobs = self.count_jobs()
+            num_jobs = len(self.job_ids)
             job_id = num_jobs + 1
         else:
             job_id = int(new_id)
@@ -390,10 +392,10 @@ class JobInterface(Interface):
             )
 
             # Sort job IDs in ascending order to match ordering of samples
-            jobids = [job['id'] for job in jobs]
-            jobids.sort()
+            self.job_ids = [job['id'] for job in jobs]
+            self.job_ids.sort()
 
-            for current_job_id in jobids:
+            for current_job_id in self.job_ids:
                 current_job = next(job for job in jobs if job['id'] == current_job_id)
                 mean_value = np.squeeze(current_job['result'])
                 gradient_value = np.squeeze(current_job.get('gradient', None))
@@ -423,7 +425,7 @@ class JobInterface(Interface):
         Returns:
             jobid_for_data_processor(ndarray): jobids for data-processing
         """
-        num_jobs = self.count_jobs()
+        num_jobs = len(self.job_ids)
         if not num_jobs or self.batch_number == 1:
             job_ids_generator = range(1, samples.shape[0] + 1, 1)
         else:

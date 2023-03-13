@@ -14,7 +14,7 @@ xarray # Special array format
 pyDOE # design of experiments
 SALib # for sensitivity analysis
 diversipy # sampling from space filling subsets
-vtk # vtk format handler
+vtk>=9.2.0 # vtk format handler
 autograd # wrapper around numpy for automated differentiation
 numba==0.55.1 # numba library for fast computing and jit compilation
 particles # Chopin et al. sequential Monte-Carlo, filtering/smoothing package

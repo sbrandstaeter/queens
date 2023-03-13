@@ -1,22 +1,16 @@
-# -*- coding: utf-8 -*-
 """Regression Approximations.
 
-This package contains a set of regression approximations, i.e. regression
-models, which are the essential building block for surrogate models. For the
-actual implementation of the regression models external third party libraries
+This package contains a set of regression approximations, i.e.
+regression models, which are the essential building block for
+surrogate models. For the actual implementation of the regression
+models external third party libraries
 are used, such as `GPy`_, `GPFlow`_, and `TensorFlow`_.
 
-Todo:
-    * For module TODOs
-    * You have to also use ``sphinx.ext.todo`` extension
+.. _GPy:
 
-
- .. _GPy:
-     https://github.com/SheffieldML/GPy
- .. _GPFlow:
-     https://github.com/GPflow/GPflow
- .. _TensorFlow:
-     https://www.tensorflow.org/
+https://github.com/SheffieldML/GPy
+ .. _GPFlow:     https://github.com/GPflow/GPflow .. _TensorFlow:
+https://www.tensorflow.org/
 """
 from pqueens.utils.import_utils import get_module_class
 
@@ -37,9 +31,9 @@ VALID_TYPES = {
         'pqueens.regression_approximations.bayesian_neural_network',
         'GaussianBayesianNeuralNetwork',
     ],
-    'gp_precompiled': [
-        'pqueens.regression_approximations.gp_approximation_precompiled',
-        'GPPrecompiled',
+    'gp_jitted': [
+        'pqueens.regression_approximations.gp_approximation_jitted',
+        'GPJitted',
     ],
     'gp_approximation_gpflow_svgp': [
         'pqueens.regression_approximations.gp_approximation_gpflow_svgp',

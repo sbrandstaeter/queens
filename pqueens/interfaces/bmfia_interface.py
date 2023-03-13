@@ -231,6 +231,7 @@ class BmfiaInterface(Interface):
             optimized_mapping_states_lst = pool.map(
                 BmfiaInterface._optimize_hyper_params, self.probabilistic_mapping_obj_lst
             )
+
         return optimized_mapping_states_lst
 
     def _set_optimized_state_of_probabilistic_mappings(self, optimized_mapping_states_lst):

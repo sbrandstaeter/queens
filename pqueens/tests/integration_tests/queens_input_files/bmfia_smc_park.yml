@@ -16,21 +16,16 @@ method:
 model:
   type: bmf_gaussian
   mf_approx_settings:
-    type: gp_precompiled
+    type: gp_jitted
+    kernel_type: squared_exponential
     num_processors_multi_processing: 4
     stochastic_optimizer_name: optimizer
     plot_refresh_rate: 10
     noise_var_lb: 1.0e-06
     data_scaling:
       type: standard_scaler
-    sigma_0_sq: 0.05
-    l_scale_sq: 1.0
-    sigma_n_sq: 0.05
-    hyper_prior_lengthscale:
-      hyper_prior_bool: false
-      fraction_standard_deviation: 0.15
-      fraction_mean_value: 0.25
-    prior_mean_function_type: lf-identity
+    initial_hyper_params_lst: [0.05, 1.0, 0.05]
+    mean_function_type: identity_multi_fidelity
     random_seed: 1
     features_config: man_features
     X_cols: [0]
@@ -39,8 +34,8 @@ model:
   forward_model_name: lf_model
   output_label: y_obs
   coordinate_labels: [x3, x4]
-  likelihood_noise_type: jeffreys_prior
-  noise_value: 0.01
+  likelihood_noise_type: fixed
+  fixed_likelihood_noise_value: 0.001
   nugget_noise_var: 1.0e-08
   experimental_file_name_identifier: '*.csv'
   experimental_csv_data_base_dir: {{ experimental_data_path }}
