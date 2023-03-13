@@ -24,9 +24,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         covariance (np.array): Covariance for proposal distribution
         tune_interval: frequency of tuning
         scaling (float): Initial scale factor for proposal
-        seen_samples (list): The 5 most recent sample batches which were used to evaluate the
-            likelihood function
-        seen_likelihoods (list): The 5 most recent results of the likelihood
     Returns:
         metropolis_hastings_iterator (obj): Instance of Metropolis-Hastings Iterator
     """
@@ -92,9 +89,6 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         self.covariance = covariance
         self.tune_interval = tune_interval
         self.scaling = scaling
-
-        self.seen_samples = None
-        self.seen_likelihoods = None
 
         if not use_queens_prior and len(self.parameters.to_list()) > 1:
             _logger.warning(
@@ -175,30 +169,30 @@ class MetropolisHastingsPyMCIterator(PyMCIterator):
         Returns:
             log_likelihood (np.array): Log-likelihoods
         """
-        # check if sample was seen in previous acceptance step
-        if self.seen_samples is None:
+        # check if sample was buffered in previous acceptance step
+        if self.buffered_samples is None:
             self.model_fwd_evals += self.num_chains
-            self.seen_samples = [samples.copy(), samples.copy(), samples.copy()]
+            self.buffered_samples = [samples.copy(), samples.copy(), samples.copy()]
             log_likelihood = self.model.evaluate(samples)
-            self.seen_likelihoods = [
+            self.buffered_likelihoods = [
                 log_likelihood.copy(),
                 log_likelihood.copy(),
                 log_likelihood.copy(),
             ]
         else:
-            if np.array_equal(self.seen_samples[0], samples):
-                log_likelihood = self.seen_likelihoods[0]
-            elif np.array_equal(self.seen_samples[1], samples):
-                log_likelihood = self.seen_likelihoods[1]
+            if np.array_equal(self.buffered_samples[0], samples):
+                log_likelihood = self.buffered_likelihoods[0]
+            elif np.array_equal(self.buffered_samples[1], samples):
+                log_likelihood = self.buffered_likelihoods[1]
             else:
                 self.model_fwd_evals += self.num_chains
                 log_likelihood = self.model.evaluate(samples)
 
         # update list of last samples and likelihoods
-        self.seen_samples.pop(0)
-        self.seen_samples.append(samples.copy())
-        self.seen_likelihoods.pop(0)
-        self.seen_likelihoods.append(log_likelihood.copy())
+        self.buffered_samples.pop(0)
+        self.buffered_samples.append(samples.copy())
+        self.buffered_likelihoods.pop(0)
+        self.buffered_likelihoods.append(log_likelihood.copy())
 
         return log_likelihood
 

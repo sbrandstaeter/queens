@@ -35,9 +35,7 @@ class NUTSIterator(PyMCIterator):
         is_cov (boolean): Setting if the scaling is a mass or covariance matrix
         init_strategy (str): Strategy to tune mass damping matrix
         advi_iterations (int): Number of iteration steps of ADVI based init strategies
-        current_samples (np.array): Most recent evalutated sample by the likelihood function
-        current_gradients (np.array): Gradient of the most recent evaluated sample
-        current_likelihood (np.array): Most recent evalutated likelihood
+
     Returns:
         nuts_iterator (obj): Instance of NUTS Iterator
     """
@@ -118,10 +116,6 @@ class NUTSIterator(PyMCIterator):
         self.is_cov = is_cov
         self.init_strategy = init_strategy
         self.advi_iterations = advi_iterations
-
-        self.current_samples = None
-        self.current_gradients = None
-        self.current_likelihood = None
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):

@@ -49,6 +49,9 @@ class PyMCIterator(Iterator):
         initvals (dict): Dict with distribution names and starting point of chains
         model_fwd_evals (int): Number of model forward calls
         model_grad_evals (int): Number of model gradient calls
+        buffered_samples (np.array): Most recent evalutated samples by the likelihood function
+        buffered_gradients (np.array): Gradient of the most recent evaluated samples
+        buffered_likelihoods (np.array): Most recent evalutated likelihoods
     """
 
     def __init__(
@@ -136,6 +139,10 @@ class PyMCIterator(Iterator):
         self.model_fwd_evals = 0
         self.model_grad_evals = 0
 
+        self.buffered_samples = None
+        self.buffered_gradients = None
+        self.buffered_likelihoods = None
+
     @staticmethod
     def get_base_attributes_from_config(config, iterator_name, model=None):
         """Create PyMC iterator from problem description.
@@ -218,15 +225,15 @@ class PyMCIterator(Iterator):
         Returns:
             log_likelihood (np.array): log-likelihoods
         """
-        if np.array_equal(self.current_samples, samples):
-            log_likelihood = self.current_likelihood
+        if np.array_equal(self.buffered_samples, samples):
+            log_likelihood = self.buffered_likelihoods
         else:
             self.model_fwd_evals += self.num_chains
             self.model_grad_evals += self.num_chains
-            self.current_samples = samples.copy()
+            self.buffered_samples = samples.copy()
             log_likelihood, gradient = self.model.evaluate_and_gradient(samples)
-            self.current_likelihood = log_likelihood.copy()
-            self.current_gradients = gradient.copy()
+            self.buffered_likelihoods = log_likelihood.copy()
+            self.buffered_gradients = gradient.copy()
         return log_likelihood
 
     def eval_log_likelihood_grad(self, samples):
@@ -240,10 +247,10 @@ class PyMCIterator(Iterator):
         """
         # pylint: disable-next=fixme
         # TODO: find better way to do this evaluation
-        if not np.array_equal(self.current_samples, samples):
+        if not np.array_equal(self.buffered_samples, samples):
             self.eval_log_likelihood(samples)
 
-        gradient = self.parameters.latent_grad(self.current_gradients)
+        gradient = self.parameters.latent_grad(self.buffered_gradients)
         return gradient.reshape(-1, self.parameters.num_parameters)
 
     @abc.abstractmethod
