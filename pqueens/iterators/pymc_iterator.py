@@ -319,7 +319,6 @@ class PyMCIterator(Iterator):
 
     def post_run(self):
         """Post-Processing of Results."""
-        # self.pymc_model.__exit__(None, None, None)
         _logger.info("MCMC by PyMC results:")
 
         # get the chain as numpy array and dict
