@@ -6,28 +6,33 @@ from pqueens.utils.path_utils import relative_path_from_queens
 deep_cluster_settings = {
     'name': 'deep',
     'workload_manager': 'pbs',
-    'cluster_address': '129.187.58.20',
-    'cluster_python_path': '$HOME/anaconda/miniconda/envs/queens_p310/bin/python',
+    'cluster_address': 'deep.lnm.ed.tum.de',
+    'cluster_internal_address': 'null',
+    'cluster_python_path': '$HOME/anaconda/miniconda/envs/queens/bin/python',
     'path_to_jobscript': relative_path_from_queens('templates/jobscripts/jobscript_deep.sh'),
+    'cluster_script_path': '/lnm/share/donottouch.sh',
 }
 
 bruteforce_cluster_settings = {
     'name': 'bruteforce',
     'workload_manager': 'slurm',
-    'cluster_address': '10.10.0.1',
-    'cluster_python_path': '$HOME/anaconda/miniconda/envs/queens_p310/bin/python',
+    'cluster_address': 'bruteforce.lnm.ed.tum.de',
+    'cluster_internal_address': '10.10.0.1',
+    'cluster_python_path': '$HOME/anaconda/miniconda/envs/queens/bin/python',
     'path_to_jobscript': relative_path_from_queens('templates/jobscripts/jobscript_bruteforce.sh'),
+    'cluster_script_path': '/lnm/share/donottouch.sh',
 }
 
 charon_cluster_settings = {
     'name': 'charon',
     'workload_manager': 'slurm',
     'cluster_address': '192.168.1.253',
-    'cluster_python_path': '$HOME/anaconda/miniconda/envs/queens_p310/bin/python',
+    'cluster_python_path': '$HOME/anaconda/miniconda/envs/queens/bin/python',
     'path_to_jobscript': relative_path_from_queens('templates/jobscripts/jobscript_charon.sh'),
 }
 
 
-@pytest.fixture(params=[deep_cluster_settings])
+@pytest.fixture(params=[deep_cluster_settings, bruteforce_cluster_settings])
 def dask_cluster_settings(request):
+    """Fixture for cluster settings."""
     return request.param

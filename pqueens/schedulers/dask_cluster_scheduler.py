@@ -1,6 +1,7 @@
 """Cluster scheduler for QUEENS runs."""
 import atexit
 import logging
+import pathlib
 import socket
 import time
 
@@ -8,8 +9,7 @@ from dask.distributed import Client, SSHCluster
 from dask_jobqueue import PBSCluster, SLURMCluster
 
 from pqueens.schedulers.dask_scheduler import Scheduler
-from pqueens.utils import config_directories_dask
-from pqueens.utils.config_directories_dask import experiment_directory, remote_queens_directory
+from pqueens.utils.config_directories_dask import experiment_directory
 from pqueens.utils.path_utils import PATH_TO_QUEENS
 from pqueens.utils.run_subprocess import run_subprocess
 from pqueens.utils.valid_options_utils import get_option
@@ -20,12 +20,17 @@ VALID_WORKLOAD_MANAGERS = {
     "slurm": {
         "dask_cluster_cls": SLURMCluster,
         "job_extra_directives": lambda nodes, cores: f"--ntasks={nodes * cores}",
-        "job_directives_skip": "#SBATCH --ntasks=",
+        "job_directives_skip": [
+            '#SBATCH -n 1',
+            '#SBATCH -p batch',
+            '#SBATCH --mem=',
+            '#SBATCH --cpus-per-task=',
+        ],
     },
     "pbs": {
         "dask_cluster_cls": PBSCluster,
         "job_extra_directives": lambda nodes, cores: f"-l nodes={nodes}:ppn={cores}",
-        "job_directives_skip": "#PBS -l select",
+        "job_directives_skip": ["#PBS -l select"],
     },
 }
 
@@ -45,6 +50,7 @@ class ClusterScheduler(Scheduler):
         queue,
         workload_manager,
         cluster_address,
+        cluster_internal_address,
         cluster_user,
         cluster_python_path,
     ):
@@ -61,6 +67,7 @@ class ClusterScheduler(Scheduler):
             queue (str): Destination queue for each worker job
             workload_manager (str): Workload manager ("pbs" or "slurm")
             cluster_address (str): address of cluster
+            cluster_internal_address (str): Internal address of cluster
             cluster_user (str): cluster username
             cluster_python_path (str): Path to Python on cluster
         """
@@ -77,25 +84,32 @@ class ClusterScheduler(Scheduler):
         )
         login_client = Client(login_cluster)  # links to cluster login node
         atexit.register(login_client.shutdown)
-        login_client.upload_file(config_directories_dask.__file__)
+
+        def remote_queens_repository():
+            """Hold queens source code on remote machine."""
+            repo_dir = pathlib.Path().home() / "workspace" / "queens"
+            pathlib.Path.mkdir(repo_dir, parents=True, exist_ok=True)
+            return repo_dir
+
+        repository_dir = login_client.submit(remote_queens_repository).result()
+        self.sync_remote_repository(cluster_address, repository_dir)
 
         experiment_dir = login_client.submit(experiment_directory, experiment_name).result()
-        repository_dir = login_client.submit(remote_queens_directory).result()
-
-        # Should we use client.upload_file instead?
-        self.sync_remote_repository(cluster_address, repository_dir)
 
         def start_cluster_on_login_node(port):
             """Start dask cluster object on login node."""
+            scheduler_options = {"port": port}
+            if cluster_internal_address:
+                scheduler_options["contact_address"] = f"{cluster_internal_address}:{port}"
             cluster = dask_cluster_cls(
                 job_name=experiment_name,
                 queue=queue,
                 cores=num_cores,
                 memory='10TB',
-                scheduler_options={"port": port},
+                scheduler_options=scheduler_options,
                 walltime=walltime,
                 log_directory=str(experiment_dir),
-                job_directives_skip=[job_directives_skip],
+                job_directives_skip=job_directives_skip,
                 job_extra_directives=[job_extra_directives],
             )
             cluster.adapt(minimum_jobs=min_jobs, maximum_jobs=max_jobs)
@@ -141,6 +155,7 @@ class ClusterScheduler(Scheduler):
 
         workload_manager = scheduler_options['workload_manager']
         cluster_address = scheduler_options['cluster_address']
+        cluster_internal_address = scheduler_options.get('cluster_internal_address')
         cluster_user = scheduler_options.get('cluster_user')
         cluster_python_path = scheduler_options['cluster_python_path']
 
@@ -155,6 +170,7 @@ class ClusterScheduler(Scheduler):
             queue,
             workload_manager,
             cluster_address,
+            cluster_internal_address,
             cluster_user,
             cluster_python_path,
         )

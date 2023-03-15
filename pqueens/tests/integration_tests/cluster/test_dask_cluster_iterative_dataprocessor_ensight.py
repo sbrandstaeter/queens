@@ -8,7 +8,7 @@ import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
 from pqueens.main import get_config_dict
 from pqueens.models import from_config_create_model
-from pqueens.utils import injector
+from pqueens.utils import config_directories_dask, injector
 
 _logger = logging.getLogger(__name__)
 
@@ -32,7 +32,9 @@ def test_cluster_baci_data_processor_ensight(
         inputdir (str): Path to the JSON input file
         tmpdir (str): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
+        monkeypatch: fixture for monkey-patching
         dask_cluster_settings (dict): Cluster settings
+        cluster_user (str): Cluster user
     """
     # monkeypatch the "input" function, so that it returns "y".
     # This simulates the user entering "y" in the terminal:
@@ -41,12 +43,21 @@ def test_cluster_baci_data_processor_ensight(
     base_directory = pathlib.Path("$HOME", "workspace", "build")
 
     path_to_executable = base_directory / "baci-release"
-    path_to_drt_monitor = base_directory / "post_drt_monitor"
+    path_to_drt_monitor = base_directory / "post_monitor"
     path_to_post_processor = base_directory / "post_processor"
-    path_to_drt_ensight = base_directory / "post_drt_ensight"
+    path_to_drt_ensight = base_directory / "post_ensight"
 
     # unique experiment name
+    pytest_name = pathlib.Path(tmpdir).parents[0].stem
     experiment_name = f"test_{dask_cluster_settings['name']}_data_processor_ensight"
+
+    def patch_experiments_directory(_):
+        """Base directory for all experiments on the computing machine."""
+        experiments_dir = pathlib.Path.home() / 'queens-testing' / pytest_name / experiment_name
+        pathlib.Path.mkdir(experiments_dir, parents=True, exist_ok=True)
+        return experiments_dir
+
+    config_directories_dask.experiment_directory = patch_experiments_directory
 
     # specific folder for this test
     baci_input_template_name = "invaaa_ee.dat"
@@ -58,9 +69,11 @@ def test_cluster_baci_data_processor_ensight(
         'experiment_name': str(experiment_name),
         'workload_manager': dask_cluster_settings['workload_manager'],
         'cluster_address': dask_cluster_settings['cluster_address'],
+        'cluster_internal_address': dask_cluster_settings['cluster_internal_address'],
         'cluster_user': cluster_user,
         'cluster_python_path': dask_cluster_settings['cluster_python_path'],
         'path_to_jobscript': dask_cluster_settings['path_to_jobscript'],
+        'cluster_script_path': dask_cluster_settings['cluster_script_path'],
         'input_template': str(baci_input_file_template),
         'path_to_executable': str(path_to_executable),
         'path_to_drt_monitor': str(path_to_drt_monitor),

@@ -1,8 +1,5 @@
 """Configuration of folder structure of QUEENS experiments."""
-import logging
 import pathlib
-
-_logger = logging.getLogger(__name__)
 
 BASE_DATA_DIR = "queens-simulation-data"
 EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
@@ -29,13 +26,6 @@ def experiment_directory(experiment_name):
     experiment_dir = experiments_base_dir / experiment_name
     create_directory(experiment_dir)
     return experiment_dir
-
-
-def remote_queens_directory():
-    """Hold queens source code on remote machine."""
-    repository_dir = pathlib.Path().home() / "workspace" / "queens"
-    create_directory(repository_dir)
-    return repository_dir
 
 
 def create_directory(dir_path):
