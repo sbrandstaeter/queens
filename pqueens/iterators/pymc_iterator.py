@@ -126,7 +126,7 @@ class PyMCIterator(Iterator):
         draws = self.num_samples
         if not discard_tuned_samples:
             draws += num_burn_in
-        self.chains = np.zeros((self.num_chains, draws, num_parameters))
+        self.chains = np.zeros((draws, self.num_chains, num_parameters))
 
         self.progressbar = progressbar
         if self.use_queens_prior:
@@ -323,44 +323,32 @@ class PyMCIterator(Iterator):
 
         # get the chain as numpy array and dict
         inference_data_dict = {}
-        if isinstance(self.results, az.InferenceData):
-            if self.use_queens_prior:
-                values = np.swapaxes(
-                    np.squeeze(self.results.posterior.get('parameters').to_numpy(), axis=0),
-                    0,
-                    1,
+        is_inference_data = isinstance(self.results, az.InferenceData)
+        parameter_names = list(self.pymc_model.named_vars.keys())
+        # remove 'likelihood' from variable names
+        parameter_names.pop(-1)
+        current_index = 0
+
+        for name in parameter_names:
+            if is_inference_data:
+                # get inference data
+                values = np.squeeze(
+                    self.results.posterior.get(name).to_numpy(),
+                    axis=0,
                 )
-                self.chains = values
-
-                inference_data_dict['parameters'] = values
             else:
-                current_index = 0
-                for num, parameter in enumerate(self.parameters.to_list()):
-                    values = np.swapaxes(
-                        np.squeeze(
-                            self.results.posterior.get(self.parameters.names[num]).to_numpy(),
-                            axis=0,
-                        ),
-                        0,
-                        1,
-                    )
-                    self.chains[:, :, current_index : current_index + parameter.dimension] = values
-                    inference_data_dict[self.parameters.names[num]] = values
+                # get data from trace
+                values = self.results.get_values(name)
 
-                    current_index += parameter.dimension
+            self.chains[:, :, current_index : current_index + values.shape[2]] = values
+            inference_data_dict[name] = np.swapaxes(values, 0, 1)
+
+            current_index += values.shape[2]
+
+        # sample_stats
+        if is_inference_data:
             sample_stats = self.results
         else:
-            # get data from trace
-            current_index = 0
-            for names in self.results.varnames:
-                chain_values = np.swapaxes(self.results.get_values(names), 0, 1)
-                self.chains[
-                    :, :, current_index : current_index + chain_values.shape[2]
-                ] = chain_values
-                current_index += chain_values.shape[2]
-                inference_data_dict[names] = chain_values
-
-            # sample_stats
             sample_stats = {}
             for sampler_stats in self.results.stat_names:
                 sample_stats[sampler_stats] = self.results.get_sampler_stats(sampler_stats)
@@ -376,10 +364,9 @@ class PyMCIterator(Iterator):
             sample_stats['model_gradient_evals'] = self.model_grad_evals
 
         # process output takes a dict as input with key 'mean'
-        swaped_chain = np.swapaxes(self.chains, 0, 1).copy()
         results_dict = az.convert_to_inference_data(inference_data_dict)
         results = process_outputs(
-            {'sample_stats': sample_stats, 'mean': swaped_chain, 'inference_data': results_dict},
+            {'sample_stats': sample_stats, 'mean': self.chains, 'inference_data': results_dict},
             self.result_description,
         )
         if self.result_description["write_results"]:
