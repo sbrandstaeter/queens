@@ -5,7 +5,6 @@ import logging
 
 import numpy as np
 
-import pqueens.database.database as DB_module
 from pqueens.interfaces import from_config_create_interface
 from pqueens.interfaces.job_interface import JobInterface
 from pqueens.utils.config_directories import current_job_directory
@@ -256,7 +255,7 @@ class AdjointGradient(GradientHandler):
     """
 
     def __init__(
-        self, upstream_gradient_file_name, gradient_interface, db, experiment_name, model_interface
+        self, upstream_gradient_file_name, gradient_interface, experiment_name, model_interface
     ):
         """Initialize a AdjointGrad object.
 
@@ -265,14 +264,12 @@ class AdjointGradient(GradientHandler):
                                                derivative of the functional w.r.t. to the
                                                simulation output.
             gradient_interface (obj): Interface object for the adjoint simulation run.
-            db (database_obj): QUEENS database
             experiment_name (str): Name of the current QUEENS experiment
             model_interface (obj): Interface of the associated model.
         """
         super().__init__(model_interface)
         self.gradient_interface = gradient_interface
         self.upstream_gradient_file_name = upstream_gradient_file_name
-        self.db = db
         self.experiment_name = experiment_name
 
     @classmethod
@@ -306,11 +303,10 @@ class AdjointGradient(GradientHandler):
                 " the gradient handler object!"
             )
         gradient_interface = from_config_create_interface(gradient_interface_name, config)
-        db = DB_module.database
         experiment_name = config["global_settings"]["experiment_name"]
 
         return cls(
-            upstream_gradient_file_name, gradient_interface, db, experiment_name, model_interface
+            upstream_gradient_file_name, gradient_interface, experiment_name, model_interface
         )
 
     def evaluate_and_gradient(self, samples, evaluate_fun, upstream_gradient_fun=None):
@@ -341,12 +337,8 @@ class AdjointGradient(GradientHandler):
         # calculate the upstream gradient for entire batch
         upstream_gradient_batch = upstream_gradient_fun(samples, response)
 
-        # get last job_id from data base
-        current_batch_number = self.gradient_interface.batch_number + 1
-        last_job_batch = self.db.load(
-            self.experiment_name, current_batch_number, self.model_interface.experiment_field_name
-        )
-        last_job_ids = [job['id'] for job in last_job_batch]
+        # get last job_ids
+        last_job_ids = self.model_interface.job_ids[-response.shape[0] :]
 
         # write adjoint data for each sample to adjoint files in old job directories
         for job_id, grad_y_objective in zip(last_job_ids, upstream_gradient_batch):
