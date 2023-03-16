@@ -3,9 +3,11 @@ import logging
 import pathlib
 
 import numpy as np
+import pytest
 
 import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
+from conftest import bruteforce_cluster_settings, charon_cluster_settings, deep_cluster_settings
 from pqueens.main import get_config_dict
 from pqueens.models import from_config_create_model
 from pqueens.utils import config_directories_dask, injector
@@ -13,6 +15,14 @@ from pqueens.utils import config_directories_dask, injector
 _logger = logging.getLogger(__name__)
 
 
+@pytest.mark.parametrize(
+    "dask_cluster_settings",
+    [
+        pytest.param(deep_cluster_settings, marks=pytest.mark.lnm_cluster),
+        pytest.param(bruteforce_cluster_settings, marks=pytest.mark.lnm_cluster),
+        pytest.param(charon_cluster_settings, marks=pytest.mark.imcs_cluster),
+    ],
+)
 def test_cluster_baci_data_processor_ensight(
     inputdir, tmpdir, third_party_inputs, monkeypatch, dask_cluster_settings, cluster_user
 ):

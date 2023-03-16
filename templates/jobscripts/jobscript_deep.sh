@@ -1,15 +1,29 @@
-#!/bin/bash:q
+#!/bin/bash
+##########################################
+#                                        #
+#  Specify your PBS directives           #
+#                                        #
+##########################################
+# Job name:
+#PBS -N {{ job_name }}
+# Number of nodes and processors per node (ppn)
+#PBS -l nodes={{ pbs_nodes }}:ppn={{ pbs_ppn }}
+# Walltime: (hours:minutes:seconds)
+#PBS -l walltime={{ walltime }}
+# Executing queue
+#PBS -q {{ pbs_queue }}
+###########################################
+
 ##########################################
 #                                        #
 #  Specify your paths                    #
 #                                        #
 ##########################################
-WORKSUBDIR={{ JOB_ID }}
+WORKDIR=/scratch/PBS_$PBS_JOBID
 DESTDIR={{ DESTDIR }}  # output directory for run
-EXE={{ EXE }} # CAE executable
-INPUT={{ INPUT }}  # input file
+EXE='{{ EXE }}' # either CAE executable or singularity image
+INPUT='{{ INPUT }}'  # either input file or, for singularity, list of arguments specifying run
 OUTPUTPREFIX={{ OUTPUTPREFIX }}
-
 ##########################################
 #                                        #
 #       RESTART SPECIFICATION            #
@@ -19,22 +33,11 @@ RESTART_FROM_PREFIX=xxx                  #
 
 ##########################################
 #                                        #
-#     POSTPROCESSING SPECIFICATION       #
+#     POST- AND DATA-PROCESSING          #
+#     SPECIFICATION                      #
 #                                        #
-DoPostprocess=true          #
-# Note: supported post processor is the  #
-#       post_processor.                  #
-POSTEXE={{ POSTEXE }}                    #
-# Specify everything you need here,      #
-# besides the '--file=' as this is       #
-# already done by default since it is    #
-# clear where your data is stored and    #
-# what OUTPUTPREFIX it has!              #
-# For detailed information on what can   #
-# be specified please use --help         #
-POSTOPTIONS={{ POSTOPTIONS }}            #
 ##########################################
-
+DoDataProcessing={{ DATAPROCESSINGFLAG }} # post- and data-processing flag for singularity run
 
 #################################################################
 # BEGIN ############### DO NOT TOUCH ME #########################
@@ -43,14 +46,21 @@ POSTOPTIONS={{ POSTOPTIONS }}            #
 # Talk to admin before touching this section.
 source {{ CLUSTERSCRIPT }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
+LoadBACIModules
 DoChecks
 StageIn
 RunProgram
 wait
-RunPostprocessor
-wait
 StageOut
-Show
-# END ################## DO NOT TOUCH ME #########################
+#Show
 echo
 echo "Job finished with exit code $? at: `date`"
+# ------- FINISH AND CLEAN SINGULARITY JOB (DONE ON MASTER/LOGIN NODE!) -------
+wait
+# Post- and data-processing for singularity run
+# (cd back into home since pwd does not exist anymore)
+if [ $DoDataProcessing = true ]
+then
+  $MPI_RUN $MPIFLAGS -np {{ nposttasks }} $EXE $INPUT $WORKDIR '--post=true'
+fi
+# END ################## DO NOT TOUCH ME #########################

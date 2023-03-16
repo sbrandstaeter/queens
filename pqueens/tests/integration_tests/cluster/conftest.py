@@ -1,5 +1,4 @@
-"""Collect fixtures used by the cluster tests."""
-import pytest
+"""Settings used by the cluster tests."""
 
 from pqueens.utils.path_utils import relative_path_from_queens
 
@@ -30,9 +29,3 @@ charon_cluster_settings = {
     'cluster_python_path': '$HOME/anaconda/miniconda/envs/queens/bin/python',
     'path_to_jobscript': relative_path_from_queens('templates/jobscripts/jobscript_charon.sh'),
 }
-
-
-@pytest.fixture(params=[deep_cluster_settings, bruteforce_cluster_settings])
-def dask_cluster_settings(request):
-    """Fixture for cluster settings."""
-    return request.param

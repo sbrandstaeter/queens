@@ -75,12 +75,17 @@ AZOUTPUT                        50                            // output every so
 AZSOLVE                         GMRES                         // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          ML                            // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE                         8                             // how often to recompute some preconditioners
+AZDROP                          0.0                           // drop tolerance for ILUT
+IFPACKFILL                      1.0                           // fill-in for ILUT
+IFPACKGFILL                     0                             // graph fill for ILU
 AZTOL                           1.0E-4                        // tolerance in unscaled residual
 AZCONV                          AZ_r0                         // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test
 AZITER                          5000                          // max iterations
 AZSUB                           50                            // size of krylov space for gmres
 AZOMEGA                         1.0                           // unused
 AZGRAPH                         1                             // unused
+AZPOLY                          5                             // polynomial order for Neumann
+IFPACKOVERLAP                   0                             // amount of ASM overlap for ILU, ILU, ICC, LU
 AZSCAL                          none                          // none sym infnorm scaling of the system
 ML_PRINT                        10                            // ML print-out level (0-10)
 ML_MAXCOARSESIZE                3000                          // ML stop coarsening when coarse ndof smaller then this
@@ -587,7 +592,7 @@ MAT 2 MAT_Struct_AAANeoHooke YOUNG 0.8E6 BETA 1.9E6 NUE {{ nue }} DENS 0.001
 //MAT 30 ELAST_IsoYeoh C1 1.74E5 C2 1.881E6 C3 0.0
 //MAT 31 ELAST_VolOgden KAPPA 17.4E6 BETA -2.0
 ----------------------------------------------------------------------FUNCT1
-SYMBOLIC_FUNCTION_OF_SPACE_TIME a
+COMPONENT 0 FUNCTION a
 VARIABLE 0 NAME a TYPE linearinterpolation NUMPOINTS 3 TIMES 0 0.5 23000 VALUES 0.0 {{ pressure }} {{ pressure }}
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
