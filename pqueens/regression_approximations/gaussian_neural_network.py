@@ -136,10 +136,10 @@ class GaussianNeuralNetwork(RegressionApproximation):
 
         # check mean function and subtract from y_train
         valid_mean_function_types = {
-            "zero": (lambda x: 0.0, lambda x: 0.0),
+            "zero": (lambda x: 0, lambda x: 0),
             "identity_multi_fidelity": (
                 lambda x: np.atleast_2d(x[:, 0]).T,
-                lambda x: np.atleast_2d(np.ones(x.shape[0])).T,
+                lambda x: np.hstack((np.ones(x.shape[0]).reshape(-1, 1), np.zeros(x[:, 1:].shape))),
             ),
         }
 
@@ -194,7 +194,7 @@ class GaussianNeuralNetwork(RegressionApproximation):
         We use a regular densely connected
         NN, which is parameterizing mean and variance of a Gaussian
         distribution. The network can be arbitrary deep and wide and can use
-        different ( nonlinear) activation functions.
+        different (nonlinear) activation functions.
 
         Args:
             adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
@@ -329,12 +329,10 @@ class GaussianNeuralNetwork(RegressionApproximation):
         if support == 'f':
             raise NotImplementedError('Support "f" is not implemented yet.')
 
-        x_test_transformed = self.scaler_x.transform(x_test)
-
         if gradient_bool:
-            output = self.predict_and_gradient(x_test_transformed)
+            output = self.predict_and_gradient(x_test)
         else:
-            output = self.predict_y(x_test_transformed)
+            output = self.predict_y(x_test)
 
         output["x_test"] = x_test
         return output
@@ -351,7 +349,8 @@ class GaussianNeuralNetwork(RegressionApproximation):
         Returns:
             output (dict): Dictionary with posterior output statistics
         """
-        yhat = self.nn_model(x_test)
+        x_test_transformed = self.scaler_x.transform(x_test)
+        yhat = self.nn_model(x_test_transformed)
         mean_pred = np.atleast_2d(yhat.mean()).T
         var_pred = np.atleast_2d(yhat.variance()).T
 
@@ -359,9 +358,9 @@ class GaussianNeuralNetwork(RegressionApproximation):
         output["variance"] = (self.scaler_y.inverse_transform_std(np.sqrt(var_pred)) ** 2).reshape(
             -1, 1
         )
-        output["mean"] = (
-            self.scaler_y.inverse_transform_mean(mean_pred) + self.mean_function(x_test)
-        ).reshape(-1, 1)
+        output["mean"] = self.scaler_y.inverse_transform_mean(mean_pred).reshape(
+            -1, 1
+        ) + self.mean_function(x_test)
 
         return output
 
@@ -369,30 +368,31 @@ class GaussianNeuralNetwork(RegressionApproximation):
         """Predict the mean, variance and their gradients at x_test.
 
         Args:
-            x_test (np.array): Testing input vector for which the posterior distribution,
-                               respectively point estimates should be predicted
+            x_test (np.array): Testing input vector for which the posterior
+                               distribution, respectively point estimates should be
+                               predicted
 
         Returns:
             output (dict): Dictionary with posterior output statistics
         """
-        x_test = tf.Variable(x_test)
+        x_test_transformed = self.scaler_x.transform(x_test)
+        x_test_tensorflow = tf.Variable(x_test_transformed)
         with tf.GradientTape(persistent=True) as tape:
-            tape.watch(x_test)
-            yhat = self.nn_model(x_test)
+            tape.watch(x_test_tensorflow)
+            yhat = self.nn_model(x_test_tensorflow)
             mean_pred = yhat.mean()
             var_pred = yhat.variance()
 
-        grad_mean = tape.gradient(mean_pred, x_test).numpy()
-        grad_var = tape.gradient(var_pred, x_test).numpy()
+        grad_mean = tape.gradient(mean_pred, x_test_tensorflow).numpy()
+        grad_var = tape.gradient(var_pred, x_test_tensorflow).numpy()
 
         mean_pred = np.array(mean_pred.numpy()).reshape(-1, 1)
         var_pred_untransformed = np.array(var_pred.numpy()).reshape(-1, 1)
 
         # write mean and variance to output dictionary
         output = {
-            "mean": (
-                self.scaler_y.inverse_transform_mean(mean_pred) + self.mean_function(x_test)
-            ).reshape(-1, 1)
+            "mean": self.scaler_y.inverse_transform_mean(mean_pred).reshape(-1, 1)
+            + self.mean_function(x_test)
         }
         output["variance"] = (
             self.scaler_y.inverse_transform_std(np.sqrt(var_pred_untransformed)) ** 2
