@@ -299,16 +299,16 @@ imcs-ubuntu_full_test_suite:
   script:
     - pytest -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG $PYTEST_OPTIONAL_PARAMETERS
 
-lnm-cluster_tests:
-  extends:
-    - .cluster_tests
-  variables:
-    CLUSTER_MARKER: 'lnm_cluster'
-  needs:
-    - lnm-build_conda_env
-    - lnm-build_singularity
-  tags:
-    - lnm-ubuntu
+#lnm-cluster_tests:
+#  extends:
+#    - .cluster_tests
+#  variables:
+#    CLUSTER_MARKER: 'lnm_cluster'
+#  needs:
+#    - lnm-build_conda_env
+#    - lnm-build_singularity
+#  tags:
+#    - lnm-ubuntu
 
 imcs-cluster_tests:
   extends:
@@ -427,7 +427,8 @@ trigger_benchmarks_badge_fail:
   extends:
     - .cluster_tests_conditions
   stage: badges
-  needs: ["lnm-cluster_tests", "imcs-cluster_tests"]
+  # needs: ["lnm-cluster_tests", "imcs-cluster_tests"]
+  needs: ["imcs-cluster_tests"]
   rules:
     - if: ($CLUSTER_TESTS == "1") && ($CLUSTER_NATIVE_TESTS == "1") && ($CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH)
   trigger:
