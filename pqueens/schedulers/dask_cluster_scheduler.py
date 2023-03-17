@@ -162,7 +162,7 @@ class ClusterScheduler(Scheduler):
         cluster_python_path = scheduler_options['cluster_python_path']
 
         cluster_queens_repository = scheduler_options.get(
-            'cluster_queens_repository', '$HOME/workspace/queens'
+            'cluster_queens_repository', f'/home/{cluster_user}/workspace/queens'
         )
         cluster_build_environment = scheduler_options.get('build_queens_environment', False)
 
