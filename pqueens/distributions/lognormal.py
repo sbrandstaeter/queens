@@ -3,8 +3,8 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 
-from pqueens.distributions import from_config_create_distribution
 from pqueens.distributions.distributions import Distribution
+from pqueens.distributions.normal import NormalDistribution
 
 
 class LogNormalDistribution(Distribution):
@@ -22,22 +22,30 @@ class LogNormalDistribution(Distribution):
         logpdf_const (float): Constant for evaluation of log pdf.
         precision (np.ndarray): Precision matrix of underlying normal
                                 distribution.
+        normal_distribution (obj): underlying normal distribution
     """
 
-    def __init__(self, mean, covariance, normal_distribution):
+    def __init__(self, normal_mean, normal_covariance):
         """Initialize lognormal distribution.
 
         Args:
             mean (np.ndarray): mean of the lognormal distribution
             covariance (np.ndarray): covariance of the lognormal distribution
-            normal_distribution (np.ndarray): underlying normal distribution
         """
-        super().__init__(mean=mean, covariance=covariance, dimension=normal_distribution.dimension)
-        self.normal_mean = normal_distribution.mean
-        self.normal_covariance = normal_distribution.covariance
-        self.normal_distribution = normal_distribution
-        self.logpdf_const = normal_distribution.logpdf_const
-        self.precision = normal_distribution.precision
+        self.normal_distribution = NormalDistribution(normal_mean, normal_covariance)
+
+        normal_covariance_diag = np.diag(self.normal_distribution.covariance)
+
+        mean = np.exp(self.normal_distribution.mean + 0.5 * normal_covariance_diag)
+        covariance = np.exp(
+            self.normal_distribution.mean.reshape(-1, 1)
+            + self.normal_distribution.mean.reshape(1, -1)
+            + 0.5 * (normal_covariance_diag.reshape(-1, 1) + normal_covariance_diag.reshape(1, -1))
+        ) * (np.exp(self.normal_distribution.covariance) - 1)
+
+        super().__init__(
+            mean=mean, covariance=covariance, dimension=self.normal_distribution.dimension
+        )
 
     @classmethod
     def from_config_create_distribution(cls, distribution_options):
@@ -52,22 +60,7 @@ class LogNormalDistribution(Distribution):
         normal_mean = distribution_options['normal_mean']
         normal_covariance = distribution_options['normal_covariance']
 
-        normal_distribution_dict = {
-            'type': 'normal',
-            'mean': normal_mean,
-            'covariance': normal_covariance,
-        }
-        normal_distribution = from_config_create_distribution(normal_distribution_dict)
-
-        normal_covariance_diag = np.diag(normal_distribution.covariance)
-        mean = np.exp(normal_distribution.mean + 0.5 * normal_covariance_diag)
-        covariance = np.exp(
-            normal_distribution.mean.reshape(-1, 1)
-            + normal_distribution.mean.reshape(1, -1)
-            + 0.5 * (normal_covariance_diag.reshape(-1, 1) + normal_covariance_diag.reshape(1, -1))
-        ) * (np.exp(normal_distribution.covariance) - 1)
-
-        return cls(mean=mean, covariance=covariance, normal_distribution=normal_distribution)
+        return cls(normal_mean=normal_mean, normal_covariance=normal_covariance)
 
     def cdf(self, x):
         """Cumulative distribution function.
@@ -101,11 +94,11 @@ class LogNormalDistribution(Distribution):
             logpdf (np.ndarray): pdf at evaluated positions
         """
         log_x = np.log(x).reshape(-1, self.dimension)
-        dist = log_x - self.normal_mean
+        dist = log_x - self.normal_distribution.mean
         logpdf = (
-            self.logpdf_const
+            self.normal_distribution.logpdf_const
             - np.sum(log_x, axis=1)
-            - 0.5 * (np.dot(dist, self.precision) * dist).sum(axis=1)
+            - 0.5 * (np.dot(dist, self.normal_distribution.precision) * dist).sum(axis=1)
         )
         return logpdf
 
@@ -121,7 +114,15 @@ class LogNormalDistribution(Distribution):
         x = x.reshape(-1, self.dimension)
         x[x == 0] = np.nan
         grad_logpdf = (
-            1 / x * (np.dot(self.normal_mean.reshape(1, -1) - np.log(x), self.precision) - 1)
+            1
+            / x
+            * (
+                np.dot(
+                    self.normal_distribution.mean.reshape(1, -1) - np.log(x),
+                    self.normal_distribution.precision,
+                )
+                - 1
+            )
         )
         return grad_logpdf
 
@@ -147,6 +148,8 @@ class LogNormalDistribution(Distribution):
         """
         self.check_1d()
         ppf = scipy.stats.lognorm.ppf(
-            q, s=self.normal_covariance ** (1 / 2), scale=np.exp(self.normal_mean)
+            q,
+            s=self.normal_distribution.covariance ** (1 / 2),
+            scale=np.exp(self.normal_distribution.mean),
         ).reshape(-1)
         return ppf

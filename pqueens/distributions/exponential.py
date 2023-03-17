@@ -17,18 +17,23 @@ class ExponentialDistribution(Distribution):
         logpdf_const (float): Constant for the evaluation of the log pdf.
     """
 
-    def __init__(self, rate, scale, pdf_const, logpdf_const, mean, covariance, dimension):
+    def __init__(self, rate):
         """Initialize exponential distribution.
 
         Args:
             rate (np.ndarray): rate parameter(s) of the distribution
-            scale (np.ndarray): scale parameters(s) of the distribution (scale = 1 / rate)
-            pdf_const (float): Constant for the evaluation of the pdf
-            logpdf_const (float): Constant for the evaluation of the log pdf
-            mean (np.ndarray): Mean of the distribution
-            covariance (np.ndarray): Covariance of the distribution
-            dimension (int): Dimensionality of the distribution
         """
+
+        super().check_positivity({'rate': rate})
+        scale = 1 / rate
+
+        mean = scale
+        covariance = np.diag(scale**2)
+        dimension = mean.size
+
+        pdf_const = np.prod(rate)
+        logpdf_const = np.sum(np.log(rate))
+
         super().__init__(mean=mean, covariance=covariance, dimension=dimension)
         self.rate = rate
         self.scale = scale
@@ -46,25 +51,8 @@ class ExponentialDistribution(Distribution):
             distribution: ExponentialDistribution object
         """
         rate = np.array(distribution_options['rate']).reshape(-1)
-        scale = 1 / rate
-        super().check_positivity({'rate': rate})
 
-        mean = scale
-        covariance = np.diag(scale**2)
-        dimension = mean.size
-
-        pdf_const = np.prod(rate)
-        logpdf_const = np.sum(np.log(rate))
-
-        return cls(
-            rate=rate,
-            scale=scale,
-            pdf_const=pdf_const,
-            logpdf_const=logpdf_const,
-            mean=mean,
-            covariance=covariance,
-            dimension=dimension,
-        )
+        return cls(rate=rate)
 
     def cdf(self, x):
         """Cumulative distribution function.

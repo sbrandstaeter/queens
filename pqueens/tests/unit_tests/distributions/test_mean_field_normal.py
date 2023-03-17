@@ -16,10 +16,9 @@ from pqueens.distributions.mean_field_normal import MeanFieldNormalDistribution
 def mean_field_normal():
     """Create dummy mean-field normal distribution."""
     mean = np.zeros(5).reshape(-1)
-    covariance = np.ones(5).reshape(-1)
-    standard_deviation_vec = np.sqrt(covariance)
+    variance = np.ones(5).reshape(-1)
     dimension = 5
-    distribution = MeanFieldNormalDistribution(mean, covariance, dimension, standard_deviation_vec)
+    distribution = MeanFieldNormalDistribution(mean, variance, dimension)
     return distribution
 
 
@@ -95,13 +94,13 @@ def test_init():
     """Test initialization of normal distribution."""
     mean = np.array([0.0])
     covariance = np.array([1.0])
-    standard_deviation_vec = np.sqrt(covariance)
+    standard_deviation = np.sqrt(covariance)
     dimension = 1
-    distribution = MeanFieldNormalDistribution(mean, covariance, dimension, standard_deviation_vec)
+    distribution = MeanFieldNormalDistribution(mean, covariance, dimension)
     assert distribution.mean == mean
     assert distribution.covariance == covariance
     assert distribution.dimension == dimension
-    assert distribution.standard_deviation_vec == standard_deviation_vec
+    assert distribution.standard_deviation == standard_deviation
 
 
 def test_update_variance(mean_field_normal):
@@ -110,7 +109,7 @@ def test_update_variance(mean_field_normal):
     new_variance = np.ones(5).reshape(-1) * 3
     mean_field_normal.update_variance(new_variance)
     np.testing.assert_array_equal(mean_field_normal.covariance, new_variance)
-    np.testing.assert_array_equal(mean_field_normal.standard_deviation_vec, np.sqrt(new_variance))
+    np.testing.assert_array_equal(mean_field_normal.standard_deviation, np.sqrt(new_variance))
 
     # test update with float --> should fail
     with pytest.raises(TypeError):
@@ -176,7 +175,7 @@ def test_draw(mean_field_normal, mocker):
 
     expected_samples = (
         mean_field_normal.mean.reshape(1, -1)
-        + mean_field_normal.standard_deviation_vec.reshape(1, -1) * uncorrelated_vectors.T
+        + mean_field_normal.standard_deviation.reshape(1, -1) * uncorrelated_vectors.T
     )
     mocker.patch('numpy.random.randn', return_value=uncorrelated_vectors.T)
     multiple_samples = mean_field_normal.draw(num_samples)

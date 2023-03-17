@@ -21,7 +21,7 @@ class BetaDistribution(Distribution):
         scipy_beta (scipy.stats.beta): Scipy beta distribution object.
     """
 
-    def __init__(self, lower_bound, upper_bound, a, b, scipy_beta, mean, covariance):
+    def __init__(self, lower_bound, upper_bound, a, b):
         """Initialize Beta distribution.
 
         Args:
@@ -29,15 +29,20 @@ class BetaDistribution(Distribution):
             upper_bound (np.ndarray): Upper bound of the beta distribution.
             a (float): Shape parameter of the beta distribution, must be > 0.
             b (float): Shape parameter of the beta distribution, must be > 0.
-            scipy_beta (scipy.stats.beta): Scipy beta distribution object.
-            mean (np.ndarray): Mean of the distribution.
-            covariance (np.ndarray): Covariance of the distribution.
         """
+        super().check_positivity({'a': a, 'b': b})
+        super().check_bounds(lower_bound, upper_bound)
+        scale = upper_bound - lower_bound
+        scipy_beta = scipy.stats.beta(scale=scale, loc=lower_bound, a=a, b=b)
+        mean = scipy_beta.mean()
+        covariance = scipy_beta.var().reshape(1, 1)
+
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.a = a
         self.b = b
         self.scipy_beta = scipy_beta
+
         super().__init__(mean=mean, covariance=covariance, dimension=1)
 
     @classmethod
@@ -55,21 +60,11 @@ class BetaDistribution(Distribution):
         a = distribution_options['a']
         b = distribution_options['b']
 
-        super().check_positivity({'a': a, 'b': b})
-        super().check_bounds(lower_bound, upper_bound)
-
-        scale = upper_bound - lower_bound
-        scipy_beta = scipy.stats.beta(scale=scale, loc=lower_bound, a=a, b=b)
-        mean = scipy_beta.mean()
-        covariance = scipy_beta.var().reshape(1, 1)
         return cls(
             lower_bound=lower_bound,
             upper_bound=upper_bound,
             a=a,
             b=b,
-            scipy_beta=scipy_beta,
-            mean=mean,
-            covariance=covariance,
         )
 
     def cdf(self, x):
