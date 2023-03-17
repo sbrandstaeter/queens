@@ -53,9 +53,7 @@ def test_cluster_baci_data_processor_ensight(
     base_directory = pathlib.Path("$HOME", "workspace", "build")
 
     path_to_executable = base_directory / "baci-release"
-    path_to_drt_monitor = base_directory / "post_monitor"
-    path_to_post_processor = base_directory / "post_processor"
-    path_to_drt_ensight = base_directory / "post_ensight"
+    path_to_drt_ensight = base_directory / "post_drt_ensight"
 
     # unique experiment name
     pytest_name = pathlib.Path(tmpdir).parents[0].stem
@@ -86,9 +84,7 @@ def test_cluster_baci_data_processor_ensight(
         'cluster_script_path': dask_cluster_settings['cluster_script_path'],
         'input_template': str(baci_input_file_template),
         'path_to_executable': str(path_to_executable),
-        'path_to_drt_monitor': str(path_to_drt_monitor),
         'path_to_drt_ensight': str(path_to_drt_ensight),
-        'path_to_post_processor': str(path_to_post_processor),
     }
     queens_input_file_template = pathlib.Path(
         inputdir, "baci_dask_cluster_data_processor_ensight.yml"
