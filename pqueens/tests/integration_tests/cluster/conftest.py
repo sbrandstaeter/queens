@@ -8,7 +8,7 @@ deep_cluster_settings = {
     'cluster_address': 'deep.lnm.ed.tum.de',
     'cluster_internal_address': 'null',
     'cluster_python_path': '$HOME/anaconda/miniconda/envs/queens/bin/python',
-    'path_to_jobscript': relative_path_from_queens('templates/jobscripts/jobscript_deep.sh'),
+    'path_to_jobscript': relative_path_from_queens('templates/jobscripts/jobscript_dask_deep.sh'),
     'cluster_script_path': '/lnm/share/donottouch.sh',
 }
 
@@ -18,7 +18,9 @@ bruteforce_cluster_settings = {
     'cluster_address': 'bruteforce.lnm.ed.tum.de',
     'cluster_internal_address': '10.10.0.1',
     'cluster_python_path': '$HOME/anaconda/miniconda/envs/queens/bin/python',
-    'path_to_jobscript': relative_path_from_queens('templates/jobscripts/jobscript_bruteforce.sh'),
+    'path_to_jobscript': relative_path_from_queens(
+        'templates/jobscripts/jobscript_dask_bruteforce.sh'
+    ),
     'cluster_script_path': '/lnm/share/donottouch.sh',
 }
 

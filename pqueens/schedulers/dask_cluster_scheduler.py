@@ -53,6 +53,8 @@ class ClusterScheduler(Scheduler):
         cluster_internal_address,
         cluster_user,
         cluster_python_path,
+        cluster_queens_repository,
+        cluster_build_environment,
     ):
         """Init method for the cluster scheduler.
 
@@ -70,7 +72,16 @@ class ClusterScheduler(Scheduler):
             cluster_internal_address (str): Internal address of cluster
             cluster_user (str): cluster username
             cluster_python_path (str): Path to Python on cluster
+            cluster_queens_repository (str): Path to queens repository on cluster
+            cluster_build_environment (bool): Flag to decide if queens environment should be build
+                                              on cluster
         """
+        self.sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository)
+        if cluster_build_environment:
+            self.build_environment(
+                cluster_address, cluster_user, cluster_queens_repository, cluster_python_path
+            )
+
         num_cores = max(num_procs, num_procs_post)
         dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, workload_manager)
         dask_cluster_cls = dask_cluster_options['dask_cluster_cls']
@@ -84,15 +95,6 @@ class ClusterScheduler(Scheduler):
         )
         login_client = Client(login_cluster)  # links to cluster login node
         atexit.register(login_client.shutdown)
-
-        def remote_queens_repository():
-            """Hold queens source code on remote machine."""
-            repo_dir = pathlib.Path().home() / "workspace" / "queens"
-            pathlib.Path.mkdir(repo_dir, parents=True, exist_ok=True)
-            return repo_dir
-
-        repository_dir = login_client.submit(remote_queens_repository).result()
-        self.sync_remote_repository(cluster_address, repository_dir)
 
         experiment_dir = login_client.submit(experiment_directory, experiment_name).result()
 
@@ -159,30 +161,40 @@ class ClusterScheduler(Scheduler):
         cluster_user = scheduler_options.get('cluster_user')
         cluster_python_path = scheduler_options['cluster_python_path']
 
+        cluster_queens_repository = scheduler_options.get(
+            'cluster_queens_repository', '$HOME/workspace/queens'
+        )
+        cluster_build_environment = scheduler_options.get('build_queens_environment', False)
+
         return cls(
-            experiment_name,
-            max_jobs,
-            min_jobs,
-            walltime,
-            num_procs,
-            num_procs_post,
-            num_nodes,
-            queue,
-            workload_manager,
-            cluster_address,
-            cluster_internal_address,
-            cluster_user,
-            cluster_python_path,
+            experiment_name=experiment_name,
+            max_jobs=max_jobs,
+            min_jobs=min_jobs,
+            walltime=walltime,
+            num_procs=num_procs,
+            num_procs_post=num_procs_post,
+            num_nodes=num_nodes,
+            queue=queue,
+            workload_manager=workload_manager,
+            cluster_address=cluster_address,
+            cluster_internal_address=cluster_internal_address,
+            cluster_user=cluster_user,
+            cluster_python_path=cluster_python_path,
+            cluster_queens_repository=cluster_queens_repository,
+            cluster_build_environment=cluster_build_environment,
         )
 
     @staticmethod
-    def sync_remote_repository(cluster_address, repository_dir):
+    def sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository):
         """Synchronize local and remote QUEENS source files.
 
         Args:
             cluster_address (str): address of cluster
-            repository_dir (Path): pathlib Path to remote repository
+            cluster_user (str): cluster username
+            cluster_queens_repository (str): Path to queens repository on cluster
         """
+        if cluster_user:
+            cluster_address = cluster_user + '@' + cluster_address
         _logger.info("Syncing remote QUEENS repository with local one...")
         command_list = [
             "rsync --archive --checksum --verbose --verbose",
@@ -197,13 +209,45 @@ class ClusterScheduler(Scheduler):
             "--exclude 'html_coverage_report'",
             "--exclude 'config'",
             f"{PATH_TO_QUEENS}/",
-            f"{cluster_address}:{repository_dir}",
+            f"{cluster_address}:{cluster_queens_repository}",
         ]
         command_string = ' '.join(command_list)
         start_time = time.time()
         _, _, stdout, _ = run_subprocess(
             command_string,
             additional_error_message="Error during sync of local and remote QUEENS repositories! ",
+        )
+        _logger.debug(stdout)
+        _logger.info("Sync of remote repository was successful.")
+        _logger.info("It took: %s s.\n", time.time() - start_time)
+
+    @staticmethod
+    def build_environment(
+        cluster_address, cluster_user, cluster_queens_repository, cluster_python_path
+    ):
+        """Build remote QUEENS environment.
+
+        Args:
+            cluster_address (str): address of cluster
+            cluster_user (str): cluster username
+            cluster_queens_repository (str): Path to queens repository on cluster
+            cluster_python_path (str): Path to Python on cluster
+        """
+        if cluster_user:
+            cluster_address = cluster_user + '@' + cluster_address
+        _logger.info("Build remote QUEENS environment...")
+        environment_name = pathlib.Path(cluster_python_path).parents[1].name
+        command_string = (
+            f'ssh {cluster_address} "'
+            f'cd {cluster_queens_repository}; '
+            f'conda env create -f environment.yml --name {environment_name} --force; '
+            f'conda activate {environment_name}; '
+            f'pip install -e ."'
+        )
+        start_time = time.time()
+        _, _, stdout, _ = run_subprocess(
+            command_string,
+            raise_error_on_subprocess_failure=False,
         )
         _logger.debug(stdout)
         _logger.info("Sync of remote repository was successful.")
