@@ -307,7 +307,7 @@ class BMFGaussianModel(LikelihoodModel):
                                   high-fidelity predictions.
         """
         # construct LF feature matrix
-        z_mat = self.bmfia_subiterator._set_feature_strategy(
+        z_mat = self.bmfia_subiterator.set_feature_strategy(
             y_lf_mat, x_batch, self.coords_mat[: y_lf_mat.shape[0]]
         )
         # Get the response matrices of the multi-fidelity mapping

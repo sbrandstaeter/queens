@@ -91,7 +91,6 @@ def default_bmfia_iterator(result_description, global_settings):
     output_label = ['y']
     coord_labels = ['x_1', 'x_2']
     settings_probab_mapping = {'features_config': 'no_features'}
-    db = 'dummy_db'
     x_train = np.array([[1, 2], [3, 4]])
     Y_LF_train = np.array([[2], [3]])
     Y_HF_train = np.array([[2.2], [3.3]])
@@ -109,7 +108,6 @@ def default_bmfia_iterator(result_description, global_settings):
         output_label,
         coord_labels,
         settings_probab_mapping,
-        db,
         x_train,
         Y_LF_train,
         Y_HF_train,
@@ -379,7 +377,7 @@ def test_calculate_distance_vector_and_var_y(default_mf_likelihood, mocker):
     diff_mat_exp = np.array([[1, 0], [0, -1]])
 
     mp1 = mocker.patch(
-        'pqueens.iterators.bmfia_iterator.BMFIAIterator._set_feature_strategy',
+        'pqueens.iterators.bmfia_iterator.BMFIAIterator.set_feature_strategy',
         return_value=z_mat,
     )
     mp2 = mocker.patch(
