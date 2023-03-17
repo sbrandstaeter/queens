@@ -250,7 +250,7 @@ class ClusterScheduler(Scheduler):
             raise_error_on_subprocess_failure=False,
         )
         _logger.debug(stdout)
-        _logger.info("Sync of remote repository was successful.")
+        _logger.info("Build of remote queens environment was successful.")
         _logger.info("It took: %s s.\n", time.time() - start_time)
 
     @staticmethod
