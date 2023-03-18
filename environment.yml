@@ -3,7 +3,7 @@ channels:
   - defaults
   - conda-forge
 dependencies:
-  - python==3.8
+  - python==3.10
 # to ensure that performance optimized backends are used,
 # the following packages are installed from conda
 # for example BLAS libraries like Intel MKL for numpy
