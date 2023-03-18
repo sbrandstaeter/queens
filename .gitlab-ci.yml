@@ -15,7 +15,7 @@ variables:
 stages:
   - build
   - codechecks
-  - tests
+  - testsl
   - badges
   - pages
   - cleanup
@@ -306,7 +306,7 @@ lnm-cluster_tests:
     CLUSTER_MARKER: 'lnm_cluster'
   needs:
     - lnm-build_conda_env
-    - lnm-build_singularity
+#    - lnm-build_singularity
   tags:
     - lnm-ubuntu
 
