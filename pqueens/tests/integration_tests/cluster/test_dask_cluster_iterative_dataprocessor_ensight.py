@@ -20,7 +20,7 @@ _logger = logging.getLogger(__name__)
     [
         pytest.param(deep_cluster_settings, marks=pytest.mark.lnm_cluster),
         pytest.param(bruteforce_cluster_settings, marks=pytest.mark.lnm_cluster),
-        # pytest.param(charon_cluster_settings, marks=pytest.mark.imcs_cluster),
+        pytest.param(charon_cluster_settings, marks=pytest.mark.imcs_cluster),
     ],
 )
 def test_cluster_baci_data_processor_ensight(
