@@ -15,7 +15,7 @@ variables:
 stages:
   - build
   - codechecks
-  - testsl
+  - tests
   - badges
   - pages
   - cleanup
