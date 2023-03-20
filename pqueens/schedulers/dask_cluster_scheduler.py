@@ -242,7 +242,7 @@ class ClusterScheduler(Scheduler):
             f'ssh {cluster_address} "'
             f'cd {cluster_queens_repository}; '
             f'conda env create -f environment.yml --name {environment_name} --force; '
-            f'conda activate {environment_name}; '
+            f'conda activate {environment_name}; which conda; '
             f'pip install -e ."'
         )
         start_time = time.time()
