@@ -11,26 +11,27 @@ def get_str_table(name, print_dict):
     Returns:
         str: Table to print
     """
-    # lines for the table
-    lines = [name]
-    for key, item in print_dict.items():
-        lines.append(f"  {key}: {item}")
+    column_name = [str(k) for k in print_dict.keys()]
+    column_value = [str(v).replace("\n", " ") for v in print_dict.values()]
+    column_width_name = max(len(s) for s in column_name)
+    column_width_value = max(len(s) for s in column_value)
+
+    data_template = f"{{:<{column_width_name}}} : {{:<{column_width_value}}}"
 
     # find max width and create sepreators
-    seperator_width = max(max(len(l) for l in lines), 63)
-    if seperator_width % 2 == 0:
-        # odd width just look better
-        seperator_width += 1
-    main_seperator_line = "+" + "-" * seperator_width + "+"
-    soft_separator_line = "|" + "- " * (seperator_width // 2) + "-|"
+    seperator_width = max(max(len(data_template.format("", "")), len(name)) + 4, 81)
+    line_template = f"| {{:{seperator_width-4}}} |\n"
+    main_seperator_line = "+" + "-" * (seperator_width - 2) + "+\n"
+    soft_separator_line = (
+        "|" + "- " * ((seperator_width - 2) // 2) + "-" * (seperator_width % 2) + "|\n"
+    )
 
     # Create table string
-    string = main_seperator_line + "\n"
-    for i, line in enumerate(lines):
-        if i == 0:
-            string += "|" + line.center(seperator_width) + "|\n"
-            string += soft_separator_line + "\n"
-        else:
-            string += "|" + line.ljust(seperator_width) + "|\n"
-    string += main_seperator_line + "\n"
+    string = "\n" + main_seperator_line
+    string += f"| {{:^{seperator_width-4}}} |\n".format(name)
+    string += soft_separator_line
+    for field_name, value in zip(column_name, column_value):
+        content = data_template.format(field_name, value)
+        string += line_template.format(content)
+    string += main_seperator_line
     return string
