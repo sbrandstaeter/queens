@@ -3,6 +3,8 @@ import abc
 
 import numpy as np
 
+from pqueens.utils.print_utils import get_str_table
+
 
 class Distribution:
     """Base class for probability distributions.
@@ -115,3 +117,11 @@ class Distribution:
         export_dict = vars(self)
         export_dict = {'type': self.__class__.__name__, **export_dict}
         return export_dict
+
+    def __str__(self):
+        """Get string for the given distribution.
+
+        Returns:
+            str: Table with distribution information
+        """
+        return get_str_table(type(self).__name__, self.export_dict())
