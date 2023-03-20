@@ -29,7 +29,7 @@ charon_cluster_settings = {
     'workload_manager': 'slurm',
     'cluster_address': 'charon.bauv.unibw-muenchen.de',
     'cluster_internal_address': '192.168.1.253',
-    'cluster_python_path': '$HOME/anaconda/miniconda/envs/queens/bin/python',
+    'cluster_python_path': '$HOME/miniconda3/envs/queens/bin/python',
     'path_to_jobscript': relative_path_from_queens('templates/jobscripts/jobscript_dask_charon.sh'),
     'cluster_script_path': 'null',
 }

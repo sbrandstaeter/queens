@@ -92,7 +92,7 @@ class ClusterScheduler(Scheduler):
         login_cluster = SSHCluster(
             hosts=[cluster_address, cluster_address],
             remote_python=[cluster_python_path, cluster_python_path],
-            connect_options={'username': cluster_user} if cluster_user else {},
+            connect_options={'username': cluster_user},
         )
         login_client = Client(login_cluster)  # links to cluster login node
         atexit.register(login_client.shutdown)
@@ -159,7 +159,7 @@ class ClusterScheduler(Scheduler):
         workload_manager = scheduler_options['workload_manager']
         cluster_address = scheduler_options['cluster_address']
         cluster_internal_address = scheduler_options.get('cluster_internal_address')
-        cluster_user = scheduler_options.get('cluster_user')
+        cluster_user = scheduler_options['cluster_user']
         cluster_python_path = scheduler_options['cluster_python_path']
 
         cluster_queens_repository = scheduler_options.get(
@@ -194,8 +194,6 @@ class ClusterScheduler(Scheduler):
             cluster_user (str): cluster username
             cluster_queens_repository (str): Path to queens repository on cluster
         """
-        if cluster_user:
-            cluster_address = cluster_user + '@' + cluster_address
         _logger.info("Syncing remote QUEENS repository with local one...")
         command_list = [
             "rsync --archive --checksum --verbose --verbose",
@@ -210,7 +208,7 @@ class ClusterScheduler(Scheduler):
             "--exclude 'html_coverage_report'",
             "--exclude 'config'",
             f"{PATH_TO_QUEENS}/",
-            f"{cluster_address}:{cluster_queens_repository}",
+            f"{cluster_user}@{cluster_address}:{cluster_queens_repository}",
         ]
         command_string = ' '.join(command_list)
         start_time = time.time()
@@ -234,15 +232,13 @@ class ClusterScheduler(Scheduler):
             cluster_queens_repository (str): Path to queens repository on cluster
             cluster_python_path (str): Path to Python on cluster
         """
-        if cluster_user:
-            cluster_address = cluster_user + '@' + cluster_address
         _logger.info("Build remote QUEENS environment...")
         environment_name = pathlib.Path(cluster_python_path).parents[1].name
         command_string = (
-            f'ssh {cluster_address} "'
+            f'ssh {cluster_user}@{cluster_address} "'
             f'cd {cluster_queens_repository}; '
             f'conda env create -f environment.yml --name {environment_name} --force; '
-            f'conda activate {environment_name}; which conda; '
+            f'conda activate {environment_name}; which python; '
             f'pip install -e ."'
         )
         start_time = time.time()
