@@ -67,21 +67,17 @@ def connect_to_resource(cluster_user, cluster_address):
 
 
 @pytest.fixture(scope="session")
-def cluster_ips(cluster):
-    """Identify IP addresses of cluster."""
+def cluster_singularity_ip(cluster):
+    """Identify IP address of cluster."""
     if cluster == DEEP_CLUSTER_TYPE:
         cluster_singularity_ip = '129.187.58.20'
-        dask_scheduler_ip = None
     elif cluster == BRUTEFORCE_CLUSTER_TYPE:
         cluster_singularity_ip = '10.10.0.1'
-        dask_scheduler_ip = '10.10.0.1'
     elif cluster == CHARON_CLUSTER_TYPE:
         cluster_singularity_ip = '192.168.1.253'
-        dask_scheduler_ip = '192.168.2.253'
     else:
         cluster_singularity_ip = None
-        dask_scheduler_ip = None
-    return cluster_singularity_ip, dask_scheduler_ip
+    return cluster_singularity_ip
 
 
 @pytest.fixture(scope="session")
@@ -170,20 +166,22 @@ def cluster_testsuite_settings(
     cluster_user,
     cluster_address,
     connect_to_resource,
-    prepare_cluster_testing_environment,
-    cluster_ips,
+    prepare_singularity,
+    cluster_singularity_ip,
 ):
-    """Collect settings needed for cluster tests."""
-    if not prepare_cluster_testing_environment:
-        raise RuntimeError("Testing environment on cluster not successful.")
+    """Collect settings needed for cluster tests with singularity."""
+    if not prepare_singularity:
+        raise RuntimeError(
+            "Preparation of singularity for cluster failed."
+            "Make sure to prepare singularity image before using this fixture. "
+        )
     cluster_testsuite_settings = {}
     cluster_testsuite_settings["cluster"] = cluster
     cluster_testsuite_settings["cluster_user"] = cluster_user
     cluster_testsuite_settings["cluster_address"] = cluster_address
     cluster_testsuite_settings["connect_to_resource"] = connect_to_resource
-    cluster_singularity_ip, dask_scheduler_ip = cluster_ips
     cluster_testsuite_settings["singularity_remote_ip"] = cluster_singularity_ip
-    cluster_testsuite_settings["dask_scheduler_ip"] = dask_scheduler_ip
+
     return cluster_testsuite_settings
 
 

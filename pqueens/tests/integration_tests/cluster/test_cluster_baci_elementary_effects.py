@@ -37,7 +37,6 @@ def test_cluster_baci_elementary_effects(
     baci_cluster_paths,
     baci_elementary_effects_check_results,
     monkeypatch,
-    prepare_singularity,
 ):
     """Test for the Elementary Effects Iterator on the clusters with BACI.
 
@@ -49,11 +48,6 @@ def test_cluster_baci_elementary_effects(
         baci_cluster_paths (path): Path to BACI dependencies on the cluster.
         baci_elementary_effects_check_results (function): function to check the results
     """
-    if not prepare_singularity:
-        raise RuntimeError(
-            "Preparation of singularity for cluster failed."
-            "Make sure to prepare singularity image before using this fixture. "
-        )
     # monkeypatch the "input" function, so that it returns "y".
     # This simulates the user entering "y" in the terminal:
     monkeypatch.setattr('builtins.input', lambda _: "y")

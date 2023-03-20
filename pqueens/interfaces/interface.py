@@ -1,8 +1,6 @@
 """Interface class to map input variables to simulation outputs."""
 import abc
 
-import numpy as np
-
 import pqueens.parameters.parameters as parameters_module
 
 
@@ -43,7 +41,7 @@ class Interface(metaclass=abc.ABCMeta):
         """
 
     def create_samples_list(self, samples):
-        """Create a list of sample dictionaries.
+        """Create a list of sample dictionaries with job id.
 
         Args:
             samples (np.array): Samples of simulation input variables
@@ -51,19 +49,11 @@ class Interface(metaclass=abc.ABCMeta):
         Returns:
             samples_list (list): List of dicts containing samples and job ids
         """
-        number_of_samples = len(samples)
-
-        # List of global sample ids
-        sample_ids = np.arange(self.latest_job_id, self.latest_job_id + number_of_samples) + 1
-
-        # Update the latest job id
-        self.latest_job_id = int(self.latest_job_id + number_of_samples)
-
-        # Create samples list and add job_id to the dicts
         samples_list = []
-        for job_id, sample in zip(sample_ids, samples):
+        for sample in samples:
+            self.latest_job_id += 1
             sample_dict = self.parameters.sample_as_dict(sample)
-            sample_dict.update({"job_id": int(job_id)})
+            sample_dict['job_id'] = self.latest_job_id
             samples_list.append(sample_dict)
 
         return samples_list
