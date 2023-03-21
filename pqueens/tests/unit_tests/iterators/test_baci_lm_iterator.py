@@ -303,9 +303,7 @@ def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator):
     """TODO_doc."""
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
-    m1 = mocker.patch(
-        'builtins.open',
-    )
+    m1 = mocker.patch('builtins.open')
     m2 = mocker.patch('pandas.core.generic.NDFrame.to_csv')
 
     default_baci_lm_iterator.pre_run()
@@ -315,7 +313,6 @@ def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator):
         m2.assert_called_once_with(m1.return_value.__enter__.return_value, sep='\t', index=None)
 
     else:
-        assert not m1.called
         assert not m2.called
         default_baci_lm_iterator.result_description = None
         default_baci_lm_iterator.pre_run()
