@@ -18,19 +18,6 @@ class FreeVariable(Distribution):
         """
         super().__init__(mean=None, covariance=None, dimension=dimension)
 
-    @classmethod
-    def from_config_create_distribution(cls, distribution_options):
-        """Create FreeVariable object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary with distribution description
-
-        Returns:
-            distribution: FreeVariable object
-        """
-        dimension = distribution_options.get('dimension', 1)
-        return cls(dimension=dimension)
-
     def cdf(self, _):
         """Cumulative distribution function."""
         raise ValueError('cdf method is not supported for FreeVariable.')

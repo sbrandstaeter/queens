@@ -23,7 +23,7 @@ class ExponentialDistribution(Distribution):
         Args:
             rate (np.ndarray): rate parameter(s) of the distribution
         """
-
+        rate = np.array(rate).reshape(-1)
         super().check_positivity({'rate': rate})
         scale = 1 / rate
 
@@ -39,20 +39,6 @@ class ExponentialDistribution(Distribution):
         self.scale = scale
         self.pdf_const = pdf_const
         self.logpdf_const = logpdf_const
-
-    @classmethod
-    def from_config_create_distribution(cls, distribution_options):
-        """Create exponential distribution object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary with distribution description
-
-        Returns:
-            distribution: ExponentialDistribution object
-        """
-        rate = np.array(distribution_options['rate']).reshape(-1)
-
-        return cls(rate=rate)
 
     def cdf(self, x):
         """Cumulative distribution function.

@@ -23,11 +23,8 @@ class NormalDistribution(Distribution):
             mean (np.ndarray): mean of the distribution
             covariance (np.ndarray): covariance of the distribution
         """
-        if isinstance(mean, (float, int)):
-            mean = np.array(mean).reshape(-1)
-
-        if isinstance(covariance, (float, int)):
-            covariance = numpy_utils.at_least_2d(np.array(covariance))
+        mean = np.array(mean).reshape(-1)
+        covariance = numpy_utils.at_least_2d(np.array(covariance))
 
         # sanity checks
         dimension = covariance.shape[0]
@@ -57,24 +54,6 @@ class NormalDistribution(Distribution):
         self.low_chol = low_chol
         self.precision = precision
         self.logpdf_const = logpdf_const
-
-    @classmethod
-    def from_config_create_distribution(cls, distribution_options):
-        """Create normal distribution object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary with distribution description
-
-        Returns:
-            distribution: NormalDistribution object
-        """
-        mean = np.array(distribution_options['mean']).reshape(-1)
-        covariance = numpy_utils.at_least_2d(np.array(distribution_options['covariance']))
-
-        return cls(
-            mean=mean,
-            covariance=covariance,
-        )
 
     def cdf(self, x):
         """Cumulative distribution function.

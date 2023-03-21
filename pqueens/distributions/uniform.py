@@ -24,6 +24,8 @@ class UniformDistribution(Distribution):
             lower_bound (np.ndarray): Lower bound(s) of the distribution
             upper_bound (np.ndarray): Upper bound(s) of the distribution
         """
+        lower_bound = np.array(lower_bound).reshape(-1)
+        upper_bound = np.array(upper_bound).reshape(-1)
         super().check_bounds(lower_bound, upper_bound)
         width = upper_bound - lower_bound
 
@@ -39,21 +41,6 @@ class UniformDistribution(Distribution):
         self.width = width
         self.pdf_const = pdf_const
         self.logpdf_const = logpdf_const
-
-    @classmethod
-    def from_config_create_distribution(cls, distribution_options):
-        """Create uniform distribution object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary with distribution description
-
-        Returns:
-            distribution: UniformDistribution object
-        """
-        lower_bound = np.array(distribution_options['lower_bound']).reshape(-1)
-        upper_bound = np.array(distribution_options['upper_bound']).reshape(-1)
-
-        return cls(lower_bound=lower_bound, upper_bound=upper_bound)
 
     def cdf(self, x):
         """Cumulative distribution function.

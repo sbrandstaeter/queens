@@ -13,10 +13,6 @@ class LogNormalDistribution(Distribution):
     Support in (0, +inf).
 
     Attributes:
-        normal_mean (np.ndarray): Mean of the underlying normal
-                                  distribution.
-        normal_covariance (np.ndarray): Covariance of the underlying
-                                        normal distribution.
         normal_distribution (NormalDistribution): Underlying normal
                                                   distribution.
         logpdf_const (float): Constant for evaluation of log pdf.
@@ -29,8 +25,8 @@ class LogNormalDistribution(Distribution):
         """Initialize lognormal distribution.
 
         Args:
-            mean (np.ndarray): mean of the lognormal distribution
-            covariance (np.ndarray): covariance of the lognormal distribution
+            normal_mean (np.ndarray): mean of the normal distribution
+            normal_covariance (np.ndarray): covariance of the normal distribution
         """
         self.normal_distribution = NormalDistribution(normal_mean, normal_covariance)
 
@@ -46,21 +42,6 @@ class LogNormalDistribution(Distribution):
         super().__init__(
             mean=mean, covariance=covariance, dimension=self.normal_distribution.dimension
         )
-
-    @classmethod
-    def from_config_create_distribution(cls, distribution_options):
-        """Create lognormal distribution object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary with distribution description
-
-        Returns:
-            distribution: LogNormalDistribution object
-        """
-        normal_mean = distribution_options['normal_mean']
-        normal_covariance = distribution_options['normal_covariance']
-
-        return cls(normal_mean=normal_mean, normal_covariance=normal_covariance)
 
     def cdf(self, x):
         """Cumulative distribution function.

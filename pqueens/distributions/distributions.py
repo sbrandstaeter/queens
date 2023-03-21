@@ -27,6 +27,19 @@ class Distribution:
         self.covariance = covariance
         self.dimension = dimension
 
+    @classmethod
+    def from_config_create_distribution(cls, distribution_options):
+        """Create distribution object from parameter dictionary.
+
+        Args:
+            distribution_options (dict): Dictionary with distribution description
+
+        Returns:
+            distribution: Distribution object
+        """
+        distribution_options.pop("type", None)
+        return cls(**distribution_options)
+
     @abc.abstractmethod
     def cdf(self, x):
         """Cumulative distribution function.

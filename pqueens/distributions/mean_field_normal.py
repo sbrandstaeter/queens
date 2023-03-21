@@ -18,35 +18,17 @@ class MeanFieldNormalDistribution(Distribution):
 
         Args:
             mean (np.ndarray): mean of the distribution
-            covariance (np.ndarray): covariance of the distribution
+            variance (np.ndarray): variance of the distribution
             dimension (int): dimensionality of the distribution
         """
+        mean = np.array(mean)
+        variance = np.array(variance)
         mean = MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(mean, dimension)
         covariance = MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(
             variance, dimension
         )
         self.standard_deviation = np.sqrt(covariance)
         super().__init__(mean, covariance, dimension)
-
-    @classmethod
-    def from_config_create_distribution(cls, distribution_options):
-        """Create beta distribution object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary with distribution description
-
-        Returns:
-            distribution: NormalDistribution object
-        """
-        mean = np.array(distribution_options['mean'])
-        variance = np.array(distribution_options['variance'])
-        dimension = distribution_options.get("dimension")
-
-        return cls(
-            mean=mean,
-            variance=variance,
-            dimension=dimension,
-        )
 
     def update_variance(self, variance):
         """Update the variance of the mean field distribution.
