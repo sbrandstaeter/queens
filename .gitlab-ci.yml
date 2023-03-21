@@ -299,16 +299,16 @@ imcs-ubuntu_full_test_suite:
   script:
     - pytest -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG $PYTEST_OPTIONAL_PARAMETERS
 
-#lnm-cluster_tests:
-#  extends:
-#    - .cluster_tests
-#  variables:
-#    CLUSTER_MARKER: 'lnm_cluster'
-#  needs:
-#    - lnm-build_conda_env
-#    - lnm-build_singularity
-#  tags:
-#    - lnm-ubuntu
+lnm-cluster_tests:
+  extends:
+    - .cluster_tests
+  variables:
+    CLUSTER_MARKER: 'lnm_cluster'
+  needs:
+    - lnm-build_conda_env
+    - lnm-build_singularity
+  tags:
+    - lnm-ubuntu
 
 imcs-cluster_tests:
   extends:
