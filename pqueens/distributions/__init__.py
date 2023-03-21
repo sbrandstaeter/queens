@@ -9,6 +9,7 @@ VALID_TYPES = {
     'beta': ["pqueens.distributions.beta", "BetaDistribution"],
     'exponential': ['pqueens.distributions.exponential', 'ExponentialDistribution'],
     'free': ['pqueens.distributions.free', 'FreeVariable'],
+    'mixture': ['pqueens.distributions.mixture', 'MixtureDistribution'],
 }
 
 
