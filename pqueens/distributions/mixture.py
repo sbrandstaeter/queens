@@ -78,8 +78,8 @@ class MixtureDistribution(Distribution):
         covariance = 0
         for weight, component in zip(weights, component_distributions, strict=True):
             mean += weight * component.mean
-            covariance += weight * (component.covariance + component.mean**2)
-        covariance -= mean**2
+            covariance += weight * (component.covariance + np.outer(component.mean, component.mean))
+        covariance -= np.outer(mean, mean)
         return mean, covariance
 
     def draw(self, num_draws=1):
