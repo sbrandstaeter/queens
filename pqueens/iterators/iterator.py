@@ -3,6 +3,7 @@
 import abc
 
 import pqueens.parameters.parameters as parameters_module
+from pqueens.models import from_config_create_model
 
 
 class Iterator(metaclass=abc.ABCMeta):
@@ -10,16 +11,12 @@ class Iterator(metaclass=abc.ABCMeta):
 
     This Iterator class is the base class for one of the primary class
     hierarchies in QUEENS. The job of the iterator hierarchy is to
-    coordinate and execute simulations/function evaluations. The purpose
-    of this base class is twofold. First, it defines the unified
-    interface of the iterator hierarchy. Second, it works as factory
-    which allows unified instantiation of iterator object by calling its
-    class methods.
+    coordinate and execute simulations/function evaluations.
 
     Attributes:
         model (obj, optional): Model to be evaluated by iterator.
         global_settings (dict, optional): Settings for the QUEENS run.
-        parameters: TODO_doc
+        parameters: Parameters object
     """
 
     def __init__(self, model=None, global_settings=None):
@@ -33,28 +30,43 @@ class Iterator(metaclass=abc.ABCMeta):
         self.global_settings = global_settings
         self.parameters = parameters_module.parameters
 
-    def pre_run(self):
-        """Optional pre-run portion of run.
+    @classmethod
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
+        """Create iterator from problem description.
 
-        Implemented by Iterators which can generate all variables a
-        priori.
+        Args:
+            config (dict):       Dictionary with QUEENS problem description
+            iterator_name (str): Name of iterator to identify right section
+                                 in options dict (optional)
+            model (model):       Model to use (optional)
+
+        Returns:
+            iterator: Iterator object
         """
-        pass
+        method_options = config[iterator_name].copy()
+        method_options.pop('type')
+        if model is None:
+            model_name = method_options['model_name']
+            model = from_config_create_model(model_name, config)
+        method_options.pop('model_name', None)
+        global_settings = config['global_settings']
+        return cls(model=model, global_settings=global_settings, **method_options)
+
+    def pre_run(self):
+        """Optional pre-run portion of run."""
 
     @abc.abstractmethod
     def core_run(self):
         """Core part of the run, implemented by all derived classes."""
-        pass
 
     def post_run(self):
         """Optional post-run portion of run.
 
         E.g. for doing some post processing.
         """
-        pass
 
     def run(self):
-        """Orchestrate initialize/pre/core/post/finalize phases."""
+        """Orchestrate pre/core/post phases."""
         self.pre_run()
         self.core_run()
         self.post_run()

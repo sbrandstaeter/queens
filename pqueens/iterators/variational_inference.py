@@ -5,7 +5,6 @@ import time
 
 import numpy as np
 
-import pqueens.database.database as DB_module
 import pqueens.visualization.variational_inference_visualization as vis
 from pqueens.iterators.iterator import Iterator
 from pqueens.models import from_config_create_model
@@ -63,52 +62,43 @@ class VariationalInferenceIterator(Iterator):
 
     def __init__(
         self,
-        global_settings,
         model,
+        global_settings,
         result_description,
-        db,
-        experiment_name,
-        variational_family,
-        variational_params_initialization_approach,
+        variational_distribution,
+        variational_params_initialization,
         n_samples_per_iter,
         variational_transformation,
         random_seed,
         max_feval,
-        num_parameters,
-        natural_gradient_bool,
-        fim_dampening_bool,
-        fim_decay_start_iter,
-        fim_dampening_coefficient,
-        fim_dampening_lower_bound,
-        variational_distribution_obj,
+        natural_gradient,
+        FIM_dampening,
+        decay_start_iter,
+        dampening_coefficient,
+        FIM_dampening_lower_bound,
         stochastic_optimizer,
         iteration_data,
     ):
         """Initialize VI iterator.
 
         Args:
-            global_settings (dict): Global settings of the QUEENS simulations
             model (obj): Underlying simulation model on which the inverse analysis is conducted
+            global_settings (dict): Global settings of the QUEENS simulations
             result_description (dict): Settings for storing and visualizing the results
-            db (obj): QUEENS database object
-            experiment_name (str): Name of the QUEENS simulation
-            variational_family (str): Density type for variational approximation
-            variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                              variational parameters
+            variational_distribution (dict): Description of variational distribution
+            variational_params_initialization (str): Flag to decide how to initialize the
+                                                     variational parameters
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
                                                 to estimate the involved expectations)
             variational_transformation (str): String encoding the transformation that will be
-                                              applied to
-                                              the variational density
+                                              applied to the variational density
             random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
-            num_parameters (int): Actual number of model input parameters that should be calibrated
-            natural_gradient_bool (boolean): True if natural gradient should be used
-            fim_dampening_bool (boolean): True if FIM dampening should be used
-            fim_decay_start_iter (float): Iteration at which the FIM dampening is started
-            fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
-            fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-            variational_distribution_obj (VariationalDistribution): Variational distribution object
+            natural_gradient (boolean): True if natural gradient should be used
+            FIM_dampening (boolean): True if FIM dampening should be used
+            decay_start_iter (int): Iteration at which the FIM dampening is started
+            dampening_coefficient (float): Initial nugget term value for the FIM dampening
+            FIM_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
             iteration_data (CollectionObject): Object to store iteration data if desired
         Returns:
@@ -117,123 +107,61 @@ class VariationalInferenceIterator(Iterator):
         super().__init__(model, global_settings)
 
         self.result_description = result_description
-        self.db = db
-        self.experiment_name = experiment_name
-        self.variational_params_initialization_approach = variational_params_initialization_approach
+        self.variational_params_initialization_approach = variational_params_initialization
         self.n_samples_per_iter = n_samples_per_iter
         self.variational_transformation = variational_transformation
-        self.natural_gradient_bool = natural_gradient_bool
-        self.fim_decay_start_iter = fim_decay_start_iter
-        self.fim_dampening_coefficient = fim_dampening_coefficient
-        self.fim_dampening_lower_bound = fim_dampening_lower_bound
-        self.fim_dampening_bool = fim_dampening_bool
+        self.natural_gradient_bool = natural_gradient
+        self.fim_decay_start_iter = decay_start_iter
+        self.fim_dampening_coefficient = dampening_coefficient
+        self.fim_dampening_lower_bound = FIM_dampening_lower_bound
+        self.fim_dampening_bool = FIM_dampening
         self.random_seed = random_seed
         self.max_feval = max_feval
-        self.num_parameters = num_parameters
-        self.variational_family = variational_family
+        self.num_parameters = self.parameters.num_parameters
         self.stochastic_optimizer = stochastic_optimizer
-        self.variational_distribution_obj = variational_distribution_obj
+
+        variational_distribution.update({"dimension": self.num_parameters})
+        self.variational_distribution_obj = (
+            variational_inference_utils.create_variational_distribution(variational_distribution)
+        )
+        self.variational_family = variational_distribution["variational_family"]
+
         self.n_sims = 0
         self.variational_params = None
         self.elbo = -np.inf
         self.nan_in_gradient_counter = 0
         self.iteration_data = iteration_data
 
-    @staticmethod
-    def get_base_attributes_from_config(config, iterator_name, model=None):
+        vis.from_config_create(result_description['plotting_options'])
+
+    @classmethod
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
         """Create iterator from problem description.
 
         Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator (optional)
+            config (dict):       Dictionary with QUEENS problem description
+            iterator_name (str): Name of iterator to identify right section
+                                 in options dict (optional)
             model (model):       Model to use (optional)
 
         Returns:
-            global_settings (dict): Global settings of the QUEENS simulations
-            model (obj): Underlying simulation model on which the inverse analysis
-            is conducted
-            result_description (dict): Settings for storing and visualizing the
-            results
-            db (obj): QUEENS database object
-            experiment_name (str): Name of the QUEENS simulation
-            variational_family (str): Density type for variational approximation
-            variational_params_initialization_approach (str): Flag to decide how
-            to initialize the variational parameters
-            n_samples_per_iter (int): Batch size per iteration (number of simulations
-            per iteration to estimate the involved expectations)
-            variational_transformation (str): String encoding the transformation that
-            will be applied to the variational density
-            random_seed (int): Seed for the random number generators
-            max_feval (int): Maximum number of simulation runs for this analysis
-            num_parameters (int): Actual number of model input parameters that should be
-            calibrated
-            natural_gradient_bool (boolean): *True* if natural gradient should be used
-            fim_dampening_bool (boolean): *True* if FIM dampening should be used
-            fim_decay_start_iter (float): Iteration at which the FIM dampening is started
-            fim_dampening_coefficient (float): Initial nugget term value for the FIM
-            dampening
-            fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-            variational_distribution_obj (VariationalDistribution): Variational distribution
-            object
-            stochastic_optimizer (obj): QUEENS stochastic optimizer object
+            iterator: Iterator object
         """
-        method_options = config[iterator_name]
+        method_options = config[iterator_name].copy()
+        method_options.pop('type')
         if model is None:
-            model_name = method_options['model_name']
+            model_name = method_options.pop('model_name')
             model = from_config_create_model(model_name, config)
+        global_settings = config['global_settings']
 
-        result_description = method_options.get('result_description')
-        global_settings = config.get('global_settings')
-
-        db = DB_module.database
-        experiment_name = config['global_settings']['experiment_name']
-
-        # set-up of the variational distribution
-        variational_distribution_description = method_options.get("variational_distribution")
-        num_parameters = model.parameters.num_parameters
-        variational_distribution_description.update({"dimension": num_parameters})
-        variational_distribution_obj = variational_inference_utils.create_variational_distribution(
-            variational_distribution_description
-        )
-        variational_family = variational_distribution_description.get("variational_family")
-        n_samples_per_iter = method_options.get("n_samples_per_iter")
-        variational_transformation = method_options.get("variational_transformation")
-        random_seed = method_options.get("random_seed")
-        max_feval = method_options.get("max_feval")
-
-        vis.from_config_create(config)
-
-        stochastic_optimizer_name = method_options.get("stochastic_optimizer_name")
-        natural_gradient_bool = method_options.get("natural_gradient", True)
-        fim_dampening_bool = method_options.get("FIM_dampening", True)
-        fim_decay_start_iter = method_options.get("decay_start_iteration", 50)
-        fim_dampening_coefficient = method_options.get("dampening_coefficient", 1e-2)
-        fim_dampening_lower_bound = method_options.get("FIM_dampening_lower_bound", 1e-8)
-        variational_params_initialization_approach = method_options.get(
-            "variational_parameter_initialization", None
-        )
-
+        stochastic_optimizer_name = method_options.pop('stochastic_optimizer_name')
         stochastic_optimizer = from_config_create_optimizer(config, stochastic_optimizer_name)
-        return (
-            global_settings,
-            model,
-            result_description,
-            db,
-            experiment_name,
-            variational_family,
-            variational_params_initialization_approach,
-            n_samples_per_iter,
-            variational_transformation,
-            random_seed,
-            max_feval,
-            num_parameters,
-            natural_gradient_bool,
-            fim_dampening_bool,
-            fim_decay_start_iter,
-            fim_dampening_coefficient,
-            fim_dampening_lower_bound,
-            variational_distribution_obj,
-            stochastic_optimizer,
+
+        return cls(
+            model=model,
+            global_settings=global_settings,
+            stochastic_optimizer=stochastic_optimizer,
+            **method_options,
         )
 
     def core_run(self):
@@ -297,8 +225,8 @@ class VariationalInferenceIterator(Iterator):
             result_dict = self._prepare_result_description()
             write_results(
                 result_dict,
-                self.global_settings["output_dir"],
-                self.global_settings["experiment_name"],
+                self.global_settings['output_dir'],
+                self.global_settings['experiment_name'],
             )
         vis.vi_visualization_instance.save_plots()
 
@@ -310,21 +238,21 @@ class VariationalInferenceIterator(Iterator):
         _logger.info("The elbo is: %.2f}", self.elbo)
         # Avoids a busy screen
         if self.variational_params.shape[0] > 24:
-            _logger.debug(
+            _logger.info(
                 "First 24 of %s variational parameters : \n", self.variational_params.shape[0]
             )
-            _logger.debug(self.variational_params[:24])
+            _logger.info(self.variational_params[:24])
         else:
-            _logger.debug("Values of variational parameters: \n")
-            _logger.debug(self.variational_params)
+            _logger.info("Values of variational parameters: \n")
+            _logger.info(self.variational_params)
 
     def _write_results(self):
         if self.result_description["write_results"]:
             result_dict = self._prepare_result_description()
             write_results(
                 result_dict,
-                self.global_settings["output_dir"],
-                self.global_settings["experiment_name"],
+                self.global_settings['output_dir'],
+                self.global_settings['experiment_name'],
             )
 
     def _initialize_variational_params(self):
@@ -418,7 +346,7 @@ class VariationalInferenceIterator(Iterator):
         return x_mat_trans
 
     def _prepare_result_description(self):
-        """Create the dictionary for the result pickle file.
+        """Creates the dictionary for the result pickle file.
 
         Returns:
             result_description (dict): Dictionary with result summary of the analysis
@@ -455,7 +383,6 @@ class VariationalInferenceIterator(Iterator):
         Returns:
             elbo gradient as column vector (np.array)
         """
-        pass
 
     def _clearing_and_plots(self):
         """Visualization and clear some internal variables."""
@@ -507,7 +434,7 @@ class VariationalInferenceIterator(Iterator):
         return gradient
 
     def handle_gradient_nan(self, gradient_function):
-        """Handle *NaN* in gradient estimations.
+        """Method that handles *NaN* in gradient estimations.
 
         Args:
             gradient_function (function): Function that estimates the gradient
@@ -515,7 +442,6 @@ class VariationalInferenceIterator(Iterator):
         Returns:
              function: Gradient function wrapped with the counter
         """
-        pass
 
         def nan_counter_and_warner(*args, **kwargs):
             """Count iterations with NaNs and write warning."""

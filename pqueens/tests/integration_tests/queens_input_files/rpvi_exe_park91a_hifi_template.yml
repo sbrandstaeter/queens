@@ -12,8 +12,6 @@ method:
     variational_approximation_type: fullrank
     variational_family: normal
   stochastic_optimizer_name: optimizer
-  gradient_clipping: true
-  gradient_clipping_norm_threshold: 1000000.0
   natural_gradient: true
   FIM_dampening: true
   decay_start_iteration: 50

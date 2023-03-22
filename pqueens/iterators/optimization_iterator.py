@@ -3,7 +3,6 @@
 import glob
 import logging
 import os
-import pprint
 import time
 
 import numpy as np
@@ -13,7 +12,6 @@ from scipy.optimize import curve_fit
 
 import pqueens.database.database as DB_module
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils.fd_jacobian import compute_step_with_bounds, fd_jacobian, get_positions
 from pqueens.utils.process_outputs import write_results
 
@@ -62,7 +60,13 @@ class OptimizationIterator(Iterator):
                           - '3-point': more exact but needs twice as many function evaluations
         jac_rel_step: TODO_doc
         max_feval (int): Maximal number of function evaluations.
+                         (**TODO_doc:** max_feval is defined twice)
+        max_feval (int): Maximum number of forward simulation runs.
+                         (**TODO_doc:** max_feval is defined twice)
         result_description (dict): Description of desired post-processing.
+                                   (**TODO_doc:** result_description is defined twice)
+        result_description (dict): Dictionary containing descriptions for result handling.
+                                   (**TODO_doc:** result_description is defined twice)
         experimental_data_path_list (list): List containing the path to base directories with
                                             experimental data csv-files.
         experimental_data_dict: TODO_doc
@@ -72,8 +76,6 @@ class OptimizationIterator(Iterator):
         eval_jacobian: TODO_doc
         verbose_output (int): Integer encoding which kind of verbose information should be
                               printed by the optimizers (not applicable for LM).
-        db: TODO_doc
-        experiment_name: TODO_doc
         coordinate_labels: TODO_doc
         output_label: TODO_doc
         axis_scaling_experimental: TODO_doc
@@ -87,158 +89,92 @@ class OptimizationIterator(Iterator):
 
     def __init__(
         self,
-        algorithm,
-        axis_scaling_experimental,
-        bounds,
-        constraints,
-        coordinate_labels,
-        db,
-        experimental_data_path_list,
-        experiment_name,
-        global_settings,
-        initial_guess,
-        jac_method,
-        jac_rel_step,
-        max_feval,
         model,
-        output_column,
-        output_label,
-        output_scaling_experimental,
+        initial_guess,
         result_description,
-        verbose_output,
+        global_settings,
+        jac_rel_step=None,
+        verbose_output=False,
+        bounds=None,
+        constraints=None,
+        max_feval=None,
+        algorithm='L-BFGS-B',
+        jac_method='2-point',
+        experimental_csv_data_base_dirs=None,
+        output_observation_column_in_csv=None,
+        coordinate_labels=None,
+        output_label=None,
+        axis_scaling_experimental=None,
+        output_scaling_experimental=None,
     ):
         """TODO_doc.
 
         Args:
-            algorithm: TODO_doc
-            axis_scaling_experimental: TODO_doc
+            model: TODO_doc
+            initial_guess: TODO_doc
+            result_description: TODO_doc
+            global_settings: TODO_doc
+            jac_rel_step: TODO_doc
+            verbose_output: TODO_doc
             bounds: TODO_doc
             constraints: TODO_doc
-            coordinate_labels: TODO_doc
-            db: TODO_doc
-            experimental_data_path_list: TODO_doc
-            experiment_name: TODO_doc
-            global_settings: TODO_doc
-            initial_guess: TODO_doc
-            jac_method: TODO_doc
-            jac_rel_step: TODO_doc
             max_feval: TODO_doc
-            model: TODO_doc
-            output_column: TODO_doc
+            algorithm: TODO_doc
+            jac_method: TODO_doc
+            experimental_csv_data_base_dirs: TODO_doc
+            output_observation_column_in_csv: TODO_doc
+            coordinate_labels: TODO_doc
             output_label: TODO_doc
+            axis_scaling_experimental: TODO_doc
             output_scaling_experimental: TODO_doc
-            result_description: TODO_doc
-            verbose_output: TODO_doc
         """
         super().__init__(model, global_settings)
+        _logger.info(
+            "Optimization Iterator for experiment: %s",
+            self.global_settings['experiment_name'],
+        )
+
+        if experimental_csv_data_base_dirs is not None:
+            self.db = DB_module.database
+        else:
+            self.db = None
+
+        initial_guess = np.atleast_1d(np.array(initial_guess))
+
+        if bounds is None:
+            bounds = [(-np.inf, np.inf)] * initial_guess.shape[0]
+
+        constraints_list = []
+        if constraints:
+            for value in constraints.values():
+                # evaluate string of lambda function into real lambda function
+                value['fun'] = eval(value['fun'])
+                constraints_list.append(value)
+
+        algorithm = algorithm.upper()
 
         self.algorithm = algorithm
         self.bounds = bounds
-        self.cons = constraints
+        self.cons = constraints_list
         self.initial_guess = initial_guess
         self.jac_method = jac_method
         self.jac_rel_step = jac_rel_step
         self.max_feval = max_feval
         self.result_description = result_description
-        self.experimental_data_path_list = experimental_data_path_list
+        self.experimental_data_path_list = experimental_csv_data_base_dirs
         self.experimental_data_dict = None
-        self.output_column = output_column
+        self.output_column = output_observation_column_in_csv
 
         self.eval_jacobian = False
         if self.algorithm in ['CG', 'BFGS', 'L-BFGS-B', 'TNC', 'SLSQP', 'LSQ']:
             self.eval_jacobian = True
 
         self.verbose_output = verbose_output
-        self.db = db
-        self.experiment_name = experiment_name
         self.coordinate_labels = coordinate_labels
         self.output_label = output_label
         self.axis_scaling_experimental = axis_scaling_experimental
         self.output_scaling_experimental = output_scaling_experimental
         self.precalculated_positions = {'position': [], 'output': []}
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create Optimization iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: OptimizationIterator object
-        """
-        _logger.info(
-            "Optimization Iterator for experiment: %s",
-            config.get('global_settings').get('experiment_name'),
-        )
-        method_options = config[iterator_name]
-        if model is None:
-            model_name = method_options['model_name']
-            model = from_config_create_model(model_name, config)
-
-        result_description = method_options.get('result_description', None)
-        global_settings = config.get('global_settings', None)
-
-        initial_guess = np.atleast_1d(np.array(method_options['initial_guess']))
-
-        bounds = method_options.get("bounds", None)
-
-        if bounds is None:
-            bounds = [(-np.inf, np.inf)] * initial_guess.shape[0]
-
-        constraints_dict = method_options.get('constraints', None)
-
-        constraints = list()
-        if constraints_dict:
-            for _, value in constraints_dict.items():
-                # evaluate string of lambda function into real lambda function
-                value['fun'] = eval(value['fun'])
-                constraints.append(value)
-
-        max_feval = method_options.get('max_feval', None)
-        algorithm = method_options.get('algorithm', 'L-BFGS-B')
-        algorithm = algorithm.upper()
-
-        jac_method = method_options.get('jac_method', '2-point')
-        jac_rel_step = method_options.get('jac_rel_step', None)
-
-        verbose_output = method_options.get('verbose_output', False)
-        experimental_data_path_list = method_options.get('experimental_csv_data_base_dirs', None)
-        output_column = method_options.get('output_observation_column_in_csv')
-        if experimental_data_path_list is not None:
-            db = DB_module.database
-        else:
-            db = None
-        experiment_name = config['global_settings']['experiment_name']
-        coordinate_labels = config['method'].get('coordinate_labels')
-        output_label = config['method'].get('output_label')
-        axis_scaling_experimental = config['method'].get('axis_scaling_experimental')
-        output_scaling_experimental = config['method'].get('output_scaling_experimental')
-
-        # initialize objective function
-        return cls(
-            algorithm=algorithm,
-            axis_scaling_experimental=axis_scaling_experimental,
-            bounds=bounds,
-            constraints=constraints,
-            coordinate_labels=coordinate_labels,
-            db=db,
-            experimental_data_path_list=experimental_data_path_list,
-            experiment_name=experiment_name,
-            global_settings=global_settings,
-            initial_guess=initial_guess,
-            jac_method=jac_method,
-            jac_rel_step=jac_rel_step,
-            max_feval=max_feval,
-            model=model,
-            output_column=output_column,
-            output_label=output_label,
-            output_scaling_experimental=output_scaling_experimental,
-            result_description=result_description,
-            verbose_output=verbose_output,
-        )
 
     def objective_function(self, x_vec, coordinates=None):
         """Evaluate objective function at *x_vec*.
@@ -412,8 +348,8 @@ class OptimizationIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(
                     self.solution,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
+                    self.global_settings['output_dir'],
+                    self.global_settings['experiment_name'],
                 )
 
     # -------------- private helper functions --------------------------
@@ -468,7 +404,12 @@ class OptimizationIterator(Iterator):
             # potentially scale experimental data
             self._scale_experimental_data()
 
-            self.db.save(self.experimental_data_dict, self.experiment_name, 'experimental_data', 1)
+            self.db.save(
+                self.experimental_data_dict,
+                self.global_settings['experiment_name'],
+                'experimental_data',
+                1,
+            )
 
     def _scale_experimental_data(self):
         # scale the experimental coordinates

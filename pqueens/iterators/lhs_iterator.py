@@ -6,7 +6,6 @@ import numpy as np
 from pyDOE import lhs
 
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
@@ -33,22 +32,22 @@ class LHSIterator(Iterator):
     def __init__(
         self,
         model,
+        global_settings,
         seed,
         num_samples,
-        num_iterations,
-        result_description,
-        global_settings,
-        criterion,
+        result_description=None,
+        num_iterations=10,
+        criterion='maximin',
     ):
         """Initialise LHSiterator.
 
         Args:
             model (obj, optional): Model to be evaluated by iterator.
-            global_settings (dict, optional): Settings for the QUEENS run.
-            num_samples (int):    Number of samples to compute
-            num_iterations (int): Number of optimization iterations of design
-            result_description (dict):  Description of desired results
+            global_settings (dict): Settings for the QUEENS run.
             seed (int): Seed for numpy random number generator
+            num_samples (int):    Number of samples to compute
+            result_description (dict, opt):  Description of desired results
+            num_iterations (int): Number of optimization iterations of design
             criterion (str): Allowable values are "center" or "c", "maximin" or "m",
                              "centermaximin" or "cm", and "correlation" or "corr"
         """
@@ -60,37 +59,6 @@ class LHSIterator(Iterator):
         self.criterion = criterion
         self.samples = None
         self.output = None
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create LHS iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: LHSIterator object
-        """
-        method_options = config[iterator_name]
-        if model is None:
-            model_name = method_options["model_name"]
-            model = from_config_create_model(model_name, config)
-
-        result_description = method_options.get("result_description", None)
-        global_settings = config.get("global_settings", None)
-
-        return cls(
-            model,
-            method_options["seed"],
-            method_options["num_samples"],
-            method_options.get("num_iterations", 10),
-            result_description,
-            global_settings,
-            method_options.get("criterion", "maximin"),
-        )
 
     def pre_run(self):
         """Generate samples for subsequent LHS analysis."""
@@ -121,8 +89,8 @@ class LHSIterator(Iterator):
             if self.result_description["write_results"] is True:
                 write_results(
                     results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
+                    self.global_settings['output_dir'],
+                    self.global_settings['experiment_name'],
                 )
 
         _logger.info("Size of inputs %s", self.samples.shape)

@@ -7,8 +7,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import pytest
-from mock import patch
+from mock import Mock, patch
 
+import pqueens.parameters.parameters as parameters_module
 from pqueens import run
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf import (
@@ -25,6 +26,10 @@ def test_gaussian_metropolis_hastings(inputdir, tmpdir, dummy_data):
     dir_dict = {"experimental_data_path": experimental_data_path}
     input_file = os.path.join(tmpdir, "gaussian_metropolis_hastings_realiz.yml")
     injector.inject(dir_dict, template, input_file)
+
+    parameters_module.parameters = Mock()
+    parameters_module.parameters.num_parameters = 1
+
     with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
         run(Path(input_file), Path(tmpdir))
 

@@ -12,9 +12,8 @@ from chaospy.distributions.sampler.generator import (
 from chaospy.quadrature.frontend import SHORT_NAME_TABLE as projection_node_location_rules
 
 import pqueens.parameters.parameters as parameters_module
-from pqueens import distributions
+from pqueens.distributions import beta, lognormal, normal, uniform
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import write_results
 from pqueens.utils.valid_options_utils import get_option
 
@@ -41,86 +40,42 @@ class PolynomialChaosIterator(Iterator):
     def __init__(
         self,
         model,
-        seed,
         num_collocation_points,
-        sampling_rule,
         polynomial_order,
-        sparse,
-        polynomial_chaos_approach,
-        distribution,
-        result_description,
+        approach,
         global_settings,
+        result_description,
+        sparse=None,
+        sampling_rule=None,
+        seed=42,
     ):
         """Initialise polynomial chaos iterator.
 
         Args:
             model (model): Model to be evaluated by iterator
-            seed  (int): Seed for random number generation
             num_collocation_points (int): Number of samples to compute
-            sampling_rule (dict): Rule according to which samples are drawn
             polynomial_order (int): Order of polynomial expansion
-            sparse (bool): For pseudo project, if *True* uses sparse collocation points
-            polynomial_chaos_approach (str): Approach for the polynomial chaos approach
-            distribution (cp.distribution): Joint input distribution
+            approach (str): Approach for the polynomial chaos approach
+            global_settings (dict): Settings for the QUEENS run.
             result_description (dict): Description of desired results
-            global_settings (dict, optional): Settings for the QUEENS run.
+            sparse (bool, opt): For pseudo project, if *True* uses sparse collocation points
+            sampling_rule (dict, opt): Rule according to which samples are drawn
+            seed (int, opt): Seed for random number generation
         """
         super().__init__(model, global_settings)
-        self.seed = seed
-        self.num_collocation_points = num_collocation_points
-        self.sampling_rule = sampling_rule
-        self.polynomial_order = polynomial_order
-        self.result_description = result_description
-        self.sparse = sparse
-        self.polynomial_chaos_approach = polynomial_chaos_approach
-        self.distribution = distribution
-        self.samples = None
-        self.expansions = None
-        self.result_dict = None
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create PCM iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: PolynomialChaosIterator object
-        """
-        method_options = config[iterator_name]
-        if model is None:
-            model_name = method_options['model_name']
-            model = from_config_create_model(model_name, config)
-
-        result_description = method_options.get('result_description', None)
-        global_settings = config.get('global_settings', None)
-
-        if config.get('external_geometry', None) is not None:
-            raise NotImplementedError("External geometry not supported with this iterator!")
-
-        seed = method_options.get("seed", 42)
-        polynomial_chaos_approach = method_options.get("approach", None)
         valid_approaches = ["pseudo_spectral", "collocation"]
-        if polynomial_chaos_approach not in valid_approaches or polynomial_chaos_approach is None:
+        if approach not in valid_approaches:
             raise ValueError(
-                f"Approach '{polynomial_chaos_approach}' unknown. Valid options are "
+                f"Approach '{approach}' unknown. Valid options are "
                 f"{', '.join(valid_approaches)}."
             )
 
-        num_collocation_points = method_options.get("num_collocation_points", None)
         if not isinstance(num_collocation_points, int) or num_collocation_points < 1:
             raise ValueError("Number of samples for the polynomial must be a positive integer!")
 
-        sparse = method_options.get("sparse", None)
-
-        sampling_rule = method_options.get("sampling_rule", None)
-        if polynomial_chaos_approach == "collocation":
+        if approach == "collocation":
             valid_sampling_rules = collocation_valid_sampling_rules
-        elif polynomial_chaos_approach == "pseudo_spectral":
+        elif approach == "pseudo_spectral":
             _logger.info(
                 "Maximum number of collocation points was set to %s.", num_collocation_points
             )
@@ -134,32 +89,28 @@ class PolynomialChaosIterator(Iterator):
                     f"Sparse input attribute needs to be set to true or false, not to {sparse}"
                 )
 
-        sampling_rule = get_option(
+        self.sampling_rule = get_option(
             valid_sampling_rules,
             sampling_rule,
             "Chaospy sampling rule unknown",
         )
-        polynomial_order = method_options.get("polynomial_order")
         if not isinstance(polynomial_order, int) or polynomial_order < 0:
             raise ValueError(
-                f"Polynomial expansion order has to be a positive integer. You provided "
+                f"Polynomial expansion order has to be a non-negative integer. You provided "
                 f"{polynomial_order}"
             )
 
-        parameters = parameters_module.parameters
-        distribution = from_config_create_chaospy_joint_distribution(parameters)
-        return cls(
-            model=model,
-            seed=seed,
-            num_collocation_points=num_collocation_points,
-            sampling_rule=sampling_rule,
-            polynomial_order=polynomial_order,
-            result_description=result_description,
-            global_settings=global_settings,
-            sparse=sparse,
-            polynomial_chaos_approach=polynomial_chaos_approach,
-            distribution=distribution,
-        )
+        self.seed = seed
+        self.num_collocation_points = num_collocation_points
+        self.sampling_rule = sampling_rule
+        self.polynomial_order = polynomial_order
+        self.result_description = result_description
+        self.sparse = sparse
+        self.polynomial_chaos_approach = approach
+        self.distribution = create_chaospy_joint_distribution(self.parameters)
+        self.samples = None
+        self.expansions = None
+        self.result_dict = None
 
     def pre_run(self):
         """Initialize run."""
@@ -242,12 +193,12 @@ class PolynomialChaosIterator(Iterator):
             if self.result_description["write_results"] is True:
                 write_results(
                     self.result_dict,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
+                    self.global_settings['output_dir'],
+                    self.global_settings['experiment_name'],
                 )
 
 
-def from_config_create_chaospy_joint_distribution(parameters):
+def create_chaospy_joint_distribution(parameters):
     """Get random variables in chaospy distribution format.
 
     Args:
@@ -263,13 +214,13 @@ def from_config_create_chaospy_joint_distribution(parameters):
         if parameter.dimension != 1:
             raise ValueError("Multidimensional random variables are not supported yet.")
 
-        cp_distribution_list.append(from_config_create_chaospy_distribution(parameter))
+        cp_distribution_list.append(create_chaospy_distribution(parameter))
 
     # Pass the distribution list as arguments
     return cp.J(*cp_distribution_list)
 
 
-def from_config_create_chaospy_distribution(distribution):
+def create_chaospy_distribution(distribution):
     """Create chaospy distribution object from queens distribution.
 
     Args:
@@ -278,19 +229,19 @@ def from_config_create_chaospy_distribution(distribution):
     Returns:
         distribution: Distribution object in chaospy format
     """
-    if isinstance(distribution, distributions.normal.NormalDistribution):
+    if isinstance(distribution, normal.NormalDistribution):
         distribution = cp.Normal(mu=distribution.mean, sigma=distribution.covariance ** (1 / 2))
-    elif isinstance(distribution, distributions.uniform.UniformDistribution):
+    elif isinstance(distribution, uniform.UniformDistribution):
         distribution = cp.Uniform(
             lower=distribution.lower_bound,
             upper=distribution.upper_bound,
         )
-    elif isinstance(distribution, distributions.lognormal.LogNormalDistribution):
+    elif isinstance(distribution, lognormal.LogNormalDistribution):
         distribution = cp.LogNormal(
             mu=distribution.normal_mean,
             sigma=distribution.normal_covariance ** (1 / 2),
         )
-    elif isinstance(distribution, distributions.beta.BetaDistribution):
+    elif isinstance(distribution, beta.BetaDistribution):
         distribution = cp.Beta(
             alpha=distribution.a,
             beta=distribution.b,

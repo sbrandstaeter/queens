@@ -11,7 +11,6 @@ from particles.smc_samplers import AdaptiveTempering
 from pqueens.distributions.normal import NormalDistribution
 from pqueens.distributions.uniform import UniformDistribution
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils import smc_utils
 from pqueens.utils.process_outputs import process_outputs, write_results
 
@@ -31,9 +30,6 @@ class SequentialMonteCarloChopinIterator(Iterator):
 
     Attributes:
         result_description (dict): Settings for storing and visualizing the results.
-                                   (**TODO_doc:** result_description is defined twice)
-        result_description (dict): Description of desired results.
-                                   (**TODO_doc:** result_description is defined twice)
         seed (int): Seed for random number generator.
         num_particles (int): Number of particles.
         num_variables (int): Number of primary variables.
@@ -53,14 +49,10 @@ class SequentialMonteCarloChopinIterator(Iterator):
         self,
         global_settings,
         model,
-        num_particles,
         result_description,
-        seed,
-        n_sims,
+        num_particles,
         max_feval,
-        prior,
-        smc_obj,
-        random_variable_keys,
+        seed,
         resampling_threshold,
         resampling_method,
         feynman_kac_model,
@@ -72,14 +64,10 @@ class SequentialMonteCarloChopinIterator(Iterator):
         Args:
             global_settings (dict): Global settings of the QUEENS simulations
             model (obj): Underlying simulation model on which the inverse analysis is conducted
-            num_particles (int): Number of particles
             result_description (dict): Settings for storing and visualizing the results
-            seed (int): Seed for random number generator
-            n_sims (int): Number of model calls
+            num_particles (int): Number of particles
             max_feval (int): Maximum number of model calls
-            prior (object): Particles Prior object
-            smc_obj (object): Particles SMC object
-            random_variable_keys (list): Random variables names
+            seed (int): Seed for random number generator
             resampling_threshold (float): Ratio of ESS to partice number at which to resample
             resampling_method (str): Resampling method implemented in particles
             feynman_kac_model (str): Feynman Kac model for the smc object
@@ -91,62 +79,16 @@ class SequentialMonteCarloChopinIterator(Iterator):
         self.seed = seed
         self.num_particles = num_particles
         self.num_variables = self.parameters.num_parameters
-        self.n_sims = n_sims
+        self.n_sims = 0
         self.max_feval = max_feval
-        self.prior = prior
-        self.smc_obj = smc_obj
-        self.random_variable_keys = random_variable_keys
+        self.prior = None
+        self.smc_obj = None
+        self.random_variable_keys = []
         self.resampling_threshold = resampling_threshold
         self.resampling_method = resampling_method
         self.feynman_kac_model = feynman_kac_model
         self.num_rejuvenation_steps = num_rejuvenation_steps
         self.waste_free = waste_free
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create SMC Chopin iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator
-            model (model):       Model to use
-
-        Returns:
-            iterator: SequentialMonteCarloChopinIterator object
-        """
-        method_options = config[iterator_name]
-        if model is None:
-            model_name = method_options['model_name']
-            model = from_config_create_model(model_name, config)
-
-        result_description = method_options.get('result_description', None)
-        global_settings = config.get('global_settings', None)
-
-        num_particles = method_options.get("num_particles")
-        max_feval = method_options.get("max_feval")
-        smc_seed = method_options.get("seed")
-        resampling_threshold = method_options.get("resampling_threshold")
-        resampling_method = method_options.get("resampling_method")
-        feynman_kac_model = method_options.get("feynman_kac_model")
-        num_rejuvenation_steps = method_options.get("num_rejuvenation_steps")
-        waste_free = method_options.get("waste_free")
-        return cls(
-            global_settings=global_settings,
-            model=model,
-            num_particles=num_particles,
-            result_description=result_description,
-            seed=smc_seed,
-            max_feval=max_feval,
-            resampling_threshold=resampling_threshold,
-            resampling_method=resampling_method,
-            feynman_kac_model=feynman_kac_model,
-            num_rejuvenation_steps=num_rejuvenation_steps,
-            waste_free=waste_free,
-            n_sims=0,
-            prior=None,
-            smc_obj=None,
-            random_variable_keys=[],
-        )
 
     def eval_log_likelihood(self, samples):
         """Evaluate natural logarithm of likelihood at sample.
@@ -287,7 +229,7 @@ class SequentialMonteCarloChopinIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(
                     results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
+                    self.global_settings['output_dir'],
+                    self.global_settings['experiment_name'],
                 )
             _logger.info("Post run data exported!")

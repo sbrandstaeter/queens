@@ -248,15 +248,13 @@ class BMFIAIterator(Iterator):
         dummy_model = model
         dummy_result_description = {}
         dummy_global_settings = {}
-        dummy_db = 'dummy_db'
 
         mc_iterator = MonteCarloIterator(
-            dummy_model,
-            initial_design_dict['seed'],
-            initial_design_dict['num_HF_eval'],
-            dummy_result_description,
-            dummy_global_settings,
-            dummy_db,
+            model=dummy_model,
+            seed=initial_design_dict['seed'],
+            num_samples=initial_design_dict['num_HF_eval'],
+            result_description=dummy_result_description,
+            global_settings=dummy_global_settings,
         )
         mc_iterator.pre_run()
         x_train = mc_iterator.samples
@@ -281,12 +279,11 @@ class BMFIAIterator(Iterator):
         randomize = True
 
         sobol_iterator = SobolSequenceIterator(
-            dummy_model,
-            initial_design_dict['seed'],
-            initial_design_dict['num_HF_eval'],
-            randomize,
-            dummy_result_description,
-            dummy_global_settings,
+            model=dummy_model,
+            seed=initial_design_dict['seed'],
+            number_of_samples=initial_design_dict['num_HF_eval'],
+            result_description=dummy_result_description,
+            global_settings=dummy_global_settings,
         )
         sobol_iterator.pre_run()
         x_train = sobol_iterator.samples

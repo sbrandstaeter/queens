@@ -15,7 +15,6 @@ from pqueens.iterators.sobol_index_gp_uncertainty.statistics import (
     StatisticsSobolIndexEstimates,
     StatisticsThirdOrderSobolIndexEstimates,
 )
-from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import write_results
 
 from .iterator import Iterator
@@ -68,14 +67,10 @@ class SobolIndexGPUncertaintyIterator(Iterator):
         model,
         global_settings,
         result_description,
-        num_procs,
-        sampler,
-        predictor,
-        index_estimator,
-        parameter_names,
-        statistics,
-        calculate_second_order,
-        calculate_third_order,
+        num_procs=mp.cpu_count() - 2,
+        second_order=False,
+        third_order=False,
+        **additional_options  # Using kwargs should only be an intermediate solution.
     ):
         """Initialize Sobol index iterator with GP uncertainty.
 
@@ -83,94 +78,55 @@ class SobolIndexGPUncertaintyIterator(Iterator):
             model (Model object): QUEENS model to evaluate
             global_settings (dict): dictionary with global (all) settings of the analysis
             result_description (dict): dictionary with desired result description
-            num_procs (int): number of processors
-            sampler (Sampler): sampler object
-            predictor (Predictor object): metamodel predictor object
-            index_estimator (SobolIndexEstimator object): estimator object
-            parameter_names (list): list of names of input parameters
-            statistics (list): list of statistics objects
-            calculate_second_order (bool): true if second-order indices are calculated
-            calculate_third_order (bool): true if third-order indices only are calculated
+            num_procs (int, opt): number of processors
+            second_order (bool, opt): true if second-order indices are calculated
+            third_order (bool, opt): true if third-order indices only are calculated
         """
         super().__init__(model, global_settings)
+
+        additional_options['second_order'] = second_order
+        additional_options['third_order'] = third_order
+
+        sampler_method, estimator_method = self._choose_helpers(third_order)
+        sampler = sampler_method.from_config_create(
+            additional_options, self.parameters.names, self.parameters
+        )
+        index_estimator = estimator_method.from_config_create(
+            additional_options, self.parameters.names
+        )
+        predictor = Predictor.from_config_create(additional_options, model.interface)
+
+        statistics = []
+        if third_order:
+            statistics.append(
+                StatisticsThirdOrderSobolIndexEstimates.from_config_create(
+                    additional_options, self.parameters.names
+                )
+            )
+        else:
+            statistics.append(
+                StatisticsSobolIndexEstimates.from_config_create(
+                    additional_options, self.parameters.names
+                )
+            )
+            if second_order:
+                statistics.append(
+                    StatisticsSecondOrderEstimates.from_config_create(
+                        additional_options, self.parameters.names
+                    )
+                )
+
+        _logger.info('Calculate second-order indices is %s', second_order)
+
         self.result_description = result_description
         self.num_procs = num_procs
         self.sampler = sampler
         self.predictor = predictor
         self.index_estimator = index_estimator
-        self.parameter_names = parameter_names
         self.statistics = statistics
-        self.calculate_second_order = calculate_second_order
-        self.calculate_third_order = calculate_third_order
+        self.calculate_second_order = second_order
+        self.calculate_third_order = third_order
         self.results = {}
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: SobolIndexGPUncertaintyIterator object
-        """
-        method_options = config[iterator_name]
-        result_description = method_options.get("result_description", None)
-
-        if model is None:
-            model_name = method_options['model_name']
-            model = from_config_create_model(model_name, config)
-
-        parameter_names = parameters_module.parameters.names
-
-        calculate_second_order = method_options.get("second_order", False)
-        calculate_third_order = method_options.get("third_order", False)
-
-        sampler_method, estimator_method = cls._choose_helpers(calculate_third_order)
-        sampler = sampler_method.from_config_create(
-            method_options, parameter_names, parameters_module.parameters
-        )
-        index_estimator = estimator_method.from_config_create(method_options, parameter_names)
-        predictor = Predictor.from_config_create(method_options, model.interface)
-
-        statistics = []
-        if calculate_third_order:
-            statistics.append(
-                StatisticsThirdOrderSobolIndexEstimates.from_config_create(
-                    method_options, parameter_names
-                )
-            )
-        else:
-            statistics.append(
-                StatisticsSobolIndexEstimates.from_config_create(method_options, parameter_names)
-            )
-            if calculate_second_order:
-                statistics.append(
-                    StatisticsSecondOrderEstimates.from_config_create(
-                        method_options, parameter_names
-                    )
-                )
-
-        num_procs = method_options.get("num_procs", mp.cpu_count() - 2)
-
-        _logger.info('Calculate second-order indices is %s', calculate_second_order)
-
-        return cls(
-            model,
-            config["global_settings"],
-            result_description,
-            num_procs,
-            sampler,
-            predictor,
-            index_estimator,
-            parameter_names,
-            statistics,
-            calculate_second_order,
-            calculate_third_order,
-        )
 
     def pre_run(self):
         """Pre-run."""

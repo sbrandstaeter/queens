@@ -9,9 +9,8 @@ import plotly.graph_objs as go
 from SALib.analyze import sobol
 from SALib.sample import saltelli
 
-from pqueens import distributions
+from pqueens.distributions import lognormal, normal, uniform
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import write_results
 
 _logger = logging.getLogger(__name__)
@@ -78,36 +77,6 @@ class SobolIndexIterator(Iterator):
         self.parameter_names = []
         self.sensitivity_indices = None
 
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create Saltelli SALib iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                     in options dict (optional)
-            model (model): Model to iterate (optional)
-
-        Returns:
-            iterator: Saltelli SALib iterator object
-        """
-        method_options = config[iterator_name]
-
-        if model is None:
-            model_name = method_options["model_name"]
-            model = from_config_create_model(model_name, config)
-
-        return cls(
-            model,
-            method_options["seed"],
-            method_options["num_samples"],
-            method_options["calc_second_order"],
-            method_options["num_bootstrap_samples"],
-            method_options["confidence_level"],
-            method_options.get("result_description", None),
-            config["global_settings"],
-        )
-
     def pre_run(self):
         """Generate samples for subsequent analysis and update model."""
         # setup SALib problem dict
@@ -115,18 +84,18 @@ class SobolIndexIterator(Iterator):
         dists = []
         for key, parameter in self.parameters.dict.items():
             self.parameter_names.append(key)
-            if isinstance(parameter, distributions.uniform.UniformDistribution):
+            if isinstance(parameter, uniform.UniformDistribution):
                 upper_bound = parameter.upper_bound
                 lower_bound = parameter.lower_bound
                 distribution_name = 'unif'
             # in queens normal distributions are parameterized with mean and var
             # in salib normal distributions are parameterized via mean and std
             # -> we need to reparameterize normal distributions
-            elif isinstance(parameter, distributions.normal.NormalDistribution):
+            elif isinstance(parameter, normal.NormalDistribution):
                 lower_bound = parameter.mean.squeeze()
                 upper_bound = np.sqrt(parameter.covariance.squeeze())
                 distribution_name = 'norm'
-            elif isinstance(parameter, distributions.lognormal.LogNormalDistribution):
+            elif isinstance(parameter, lognormal.LogNormalDistribution):
                 lower_bound = parameter.mu.squeeze()
                 upper_bound = parameter.sigma.squeeze()
                 distribution_name = 'lognorm'
@@ -184,8 +153,8 @@ class SobolIndexIterator(Iterator):
             if self.result_description["write_results"] is True:
                 write_results(
                     results,
-                    self.global_settings["output_dir"],
-                    self.global_settings["experiment_name"],
+                    self.global_settings['output_dir'],
+                    self.global_settings['experiment_name'],
                 )
             self.print_results(results)
             if self.result_description["plot_results"] is True:
@@ -267,11 +236,11 @@ class SobolIndexIterator(Iterator):
         Args:
             results (dict): Dictionary with Sobol indices and confidence intervals
         """
-        experiment_name = self.global_settings["experiment_name"]
+        experiment_name = self.global_settings['experiment_name']
 
         # Plot first-order indices also called main effect
         chart_name = experiment_name + '_S1.html'
-        chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
+        chart_path = os.path.join(self.global_settings['output_dir'], chart_name)
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["S1"],
@@ -294,7 +263,7 @@ class SobolIndexIterator(Iterator):
 
         # Plot total indices also called total effect
         chart_name = experiment_name + '_ST.html'
-        chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
+        chart_path = os.path.join(self.global_settings['output_dir'], chart_name)
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["ST"],
@@ -330,7 +299,7 @@ class SobolIndexIterator(Iterator):
                     names.append(f"S{i}{j}")
 
             chart_name = experiment_name + '_S2.html'
-            chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
+            chart_path = os.path.join(self.global_settings['output_dir'], chart_name)
             bars = go.Bar(
                 x=names, y=S2, error_y={"type": 'data', "array": S2_conf, "visible": True}
             )

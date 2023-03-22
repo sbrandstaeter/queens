@@ -30,7 +30,7 @@ this = sys.modules[__name__]
 this.grid_iterator_visualization_instance = None
 
 
-def from_config_create(config, iterator_name='method'):
+def from_config_create(plotting_options, grid_design):
     """TODO_doc: add a one-line explanation.
 
     Module function that calls the class function *from_config_create* and
@@ -38,11 +38,11 @@ def from_config_create(config, iterator_name='method'):
     description.
 
     Args:
-        config (dict): Dictionary created from the input file, containing the problem description
-        iterator_name (str): Name of iterator to identify right section in options dict (optional)
+        plotting_options (dict): Dictionary containing the plotting options
+        grid_design (dict): Dictionary containing grid information
     """
     this.grid_iterator_visualization_instance = GridIteratorVisualization.from_config_create(
-        config, iterator_name
+        plotting_options, grid_design
     )
 
 
@@ -121,20 +121,16 @@ class GridIteratorVisualization(object):
         self.var_names_list = var_names_list
 
     @classmethod
-    def from_config_create(cls, config, iterator_name):
+    def from_config_create(cls, plotting_options, grid_design):
         """Create the grid visualization object from the problem description.
 
         Args:
-            config (dict): Dictionary containing the problem description
-            iterator_name (str): Name of iterator to identify right section in options dict
-                                 (optional)
+            plotting_options (dict): Dictionary containing the plotting options
+            grid_design (dict): Dictionary containing grid information
 
         Returns:
             Instance of GridIteratorVisualization (obj)
         """
-        method_options = config[iterator_name]
-
-        plotting_options = method_options["result_description"].get("plotting_options")
         paths = [
             os.path.join(plotting_options.get("plotting_dir"), name)
             for name in plotting_options["plot_names"]
@@ -143,7 +139,6 @@ class GridIteratorVisualization(object):
         plot_booleans = plotting_options.get("plot_booleans")
 
         # get the variable names and the grid design
-        grid_design = method_options.get('grid_design')
         var_names_list = []
         scale_types_list = []
         if grid_design is not None:

@@ -8,7 +8,6 @@ method:
   model_name: model
   num_trajectories: 100
   num_optimal_trajectories: 4
-  grid_jump: 2
   number_of_levels: 10
   confidence_level: 0.95
   local_optimization: false
