@@ -81,16 +81,12 @@ def settings_probab_mapping(config, approximation_name):
 
 
 @pytest.fixture()
-def default_bmfia_iterator(result_description, global_settings):
+def default_bmfia_iterator(global_settings):
     """Dummy iterator for testing."""
-    result_description = result_description
     global_settings = global_settings
     features_config = 'no_features'
     hf_model = 'dummy_hf_model'
     lf_model = 'dummy_lf_model'
-    output_label = ['y']
-    coord_labels = ['x_1', 'x_2']
-    settings_probab_mapping = {'features_config': 'no_features'}
     x_train = np.array([[1, 2], [3, 4]])
     Y_LF_train = np.array([[2], [3]])
     Y_HF_train = np.array([[2.2], [3.3]])
@@ -98,16 +94,15 @@ def default_bmfia_iterator(result_description, global_settings):
     coords_experimental_data = np.array([[1, 2], [3, 4]])
     time_vec = np.array([1, 3])
     y_obs = np.array([[2.1], [3.1]])
+    x_cols = None
+    num_features = None
+    coord_cols = None
 
     iterator = BMFIAIterator(
-        result_description,
         global_settings,
         features_config,
         hf_model,
         lf_model,
-        output_label,
-        coord_labels,
-        settings_probab_mapping,
         x_train,
         Y_LF_train,
         Y_HF_train,
@@ -115,6 +110,9 @@ def default_bmfia_iterator(result_description, global_settings):
         coords_experimental_data,
         time_vec,
         y_obs,
+        x_cols,
+        num_features,
+        coord_cols,
     )
 
     return iterator

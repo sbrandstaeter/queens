@@ -49,9 +49,6 @@ def default_bmfia_iterator(result_description, global_settings, dummy_model):
     features_config = 'no_features'
     hf_model = dummy_model
     lf_model = dummy_model
-    output_label = ['y']
-    coord_labels = ['x_1', 'x_2']
-    settings_probab_mapping = {'features_config': 'no_features'}
     x_train = np.array([[1, 2], [3, 4]])
     Y_LF_train = np.array([[2], [3]])
     Y_HF_train = np.array([[2.2], [3.3]])
@@ -59,16 +56,15 @@ def default_bmfia_iterator(result_description, global_settings, dummy_model):
     coords_experimental_data = np.array([[1, 2], [3, 4]])
     time_vec = np.array([1, 3])
     y_obs_vec = np.array([[2.1], [3.1]])
+    x_cols = None
+    num_features = None
+    coord_cols = None
 
     iterator = BMFIAIterator(
-        result_description,
         global_settings,
         features_config,
         hf_model,
         lf_model,
-        output_label,
-        coord_labels,
-        settings_probab_mapping,
         x_train,
         Y_LF_train,
         Y_HF_train,
@@ -76,6 +72,9 @@ def default_bmfia_iterator(result_description, global_settings, dummy_model):
         coords_experimental_data,
         time_vec,
         y_obs_vec,
+        x_cols,
+        num_features,
+        coord_cols,
     )
 
     return iterator
@@ -131,16 +130,15 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
     coords_experimental_data = np.array([[2, 2, 2], [9, 9, 9]])
     time_vec = np.linspace(1, 10, 3)
     y_obs_vec = np.array([[2.2, 3.2, 4.2], [5.2, 6.2, 7.2]])
+    x_cols = [1, 2]
+    num_features = 2
+    coord_cols = [1, 2, 3]
 
     iterator = BMFIAIterator(
-        result_description,
         global_settings,
         features_config,
         hf_model,
         lf_model,
-        output_label,
-        coord_labels,
-        settings_probab_mapping,
         x_train,
         Y_LF_train,
         Y_HF_train,
@@ -148,10 +146,12 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
         coords_experimental_data,
         time_vec,
         y_obs_vec,
+        x_cols,
+        num_features,
+        coord_cols,
     )
 
     # ---- tests / asserts -------------------------
-    assert iterator.result_description == result_description
     np.testing.assert_array_equal(iterator.X_train, x_train)
     np.testing.assert_array_equal(iterator.Y_LF_train, Y_LF_train)
     np.testing.assert_array_equal(iterator.Y_HF_train, Y_HF_train)
@@ -161,10 +161,10 @@ def test_init(result_description, global_settings, dummy_model, settings_probab_
     assert iterator.lf_model == lf_model
     np.testing.assert_array_equal(iterator.coords_experimental_data, coords_experimental_data)
     np.testing.assert_array_equal(iterator.time_vec, time_vec)
-    assert iterator.output_label == output_label
-    assert iterator.coord_labels == coord_labels
     np.testing.assert_array_equal(iterator.y_obs_vec, y_obs_vec)
-    assert iterator.settings_probab_mapping == settings_probab_mapping
+    assert iterator.x_cols == x_cols
+    assert iterator.num_features == num_features
+    assert iterator.coord_cols == coord_cols
 
 
 def test_calculate_optimal_x_train(dummy_model, mocker):
@@ -307,7 +307,7 @@ def test_set_feature_strategy(default_bmfia_iterator, mocker):
     y_lf_mat = np.array([[1, 2, 3]])
     x_mat = np.array([[4, 5, 6]])
     coords_mat = np.array([[7, 8, 9]])
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "dummy"
+    default_bmfia_iterator.features_config = "dummy"
     with pytest.raises(ValueError):
         default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
@@ -331,19 +331,19 @@ def test_set_feature_strategy(default_bmfia_iterator, mocker):
         'pqueens.iterators.bmfia_iterator.BMFIAIterator._get_time_features', return_value=(1, 1)
     )
 
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "man_features"
+    default_bmfia_iterator.features_config = "man_features"
     default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "opt_features"
+    default_bmfia_iterator.features_config = "opt_features"
     default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "coord_features"
+    default_bmfia_iterator.features_config = "coord_features"
     default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "no_features"
+    default_bmfia_iterator.features_config = "no_features"
     default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "time_features"
+    default_bmfia_iterator.features_config = "time_features"
     default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
     mo_man.assert_called_once()
@@ -359,17 +359,17 @@ def test_get_man_features(default_bmfia_iterator):
     x_mat = np.array([[4, 5, 6], [4, 5, 6], [4, 5, 6]])
     coords_mat = np.array([[7, 8, 9], [10, 11, 12], [13, 14, 15]])
 
-    # test man_features without specifing 'X_cols' --> KeyError
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "man_features"
-    with pytest.raises(KeyError):
+    # test man_features without specifying 'X_cols' --> KeyError
+    default_bmfia_iterator.features_config = "man_features"
+    with pytest.raises(AssertionError):
         z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
     # test man_features with X_col not in list format
     y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
     x_mat = np.array([[4, 5, 6], [4, 5, 6], [4, 5, 6]])
     coords_mat = np.array([[7, 8, 9], [10, 11, 12], [13, 14, 15]])
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "man_features"
-    default_bmfia_iterator.settings_probab_mapping['X_cols'] = 0
+    default_bmfia_iterator.features_config = "man_features"
+    default_bmfia_iterator.x_cols = 0
     with pytest.raises(AssertionError):
         z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
@@ -377,8 +377,8 @@ def test_get_man_features(default_bmfia_iterator):
     y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
     x_mat = np.array([[4, 5, 6], [4, 5, 6], [4, 5, 6]])
     coords_mat = np.array([[7, 8, 9], [10, 11, 12], [13, 14, 15]])
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "man_features"
-    default_bmfia_iterator.settings_probab_mapping['X_cols'] = []
+    default_bmfia_iterator.features_config = "man_features"
+    default_bmfia_iterator.x_cols = []
     with pytest.raises(AssertionError):
         z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
@@ -391,8 +391,8 @@ def test_get_man_features(default_bmfia_iterator):
     coords_mat = np.array([[7, 8, 9], [10, 11, 12], [13, 14, 15]])
 
     # test man features with correct settings
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "man_features"
-    default_bmfia_iterator.settings_probab_mapping['X_cols'] = [0]
+    default_bmfia_iterator.features_config = "man_features"
+    default_bmfia_iterator.x_cols = [0]
     z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
     np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
 
@@ -404,14 +404,14 @@ def test_get_opt_features(default_bmfia_iterator):
     coords_mat = np.array([[7, 8, 9], [10, 11, 12], [13, 14, 15]])
 
     # test opt_features with num features < 1 --> error
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "opt_features"
-    default_bmfia_iterator.settings_probab_mapping["num_features"] = 0
+    default_bmfia_iterator.features_config = "opt_features"
+    default_bmfia_iterator.num_features = 0
     with pytest.raises(AssertionError):
         default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
     # test opt_features with num features None --> error
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "opt_features"
-    default_bmfia_iterator.settings_probab_mapping["num_features"] = None
+    default_bmfia_iterator.features_config = "opt_features"
+    default_bmfia_iterator.num_features = None
     with pytest.raises(AssertionError):
         default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
@@ -422,20 +422,20 @@ def test_get_coord_features(default_bmfia_iterator):
     x_mat = np.array([[4, 5, 6], [4, 5, 6], [4, 5, 6]])
     coords_mat = np.array([[7, 8, 9], [10, 11, 12], [13, 14, 15]])
 
-    # test coord_features without specifing 'coord_cols' --> KeyError
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "coord_features"
-    with pytest.raises(KeyError):
+    # test coord_features without specifying 'coord_cols' --> KeyError
+    default_bmfia_iterator.features_config = "coord_features"
+    with pytest.raises(AssertionError):
         z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
     # test coord_features with empty col list
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "coord_features"
-    default_bmfia_iterator.settings_probab_mapping['coords_cols'] = []
+    default_bmfia_iterator.features_config = "coord_features"
+    default_bmfia_iterator.coord_cols = []
     with pytest.raises(AssertionError):
         z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
     # test coord_features without list format for cols
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "coord_features"
-    default_bmfia_iterator.settings_probab_mapping['coords_cols'] = 0
+    default_bmfia_iterator.features_config = "coord_features"
+    default_bmfia_iterator.coord_cols = 0
     with pytest.raises(AssertionError):
         z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
@@ -443,8 +443,8 @@ def test_get_coord_features(default_bmfia_iterator):
     expected_z_mat = np.array(
         [[[1, 2, 3], [1, 2, 3], [1, 2, 3]], [[7, 7, 7], [10, 10, 10], [13, 13, 13]]]
     )
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "coord_features"
-    default_bmfia_iterator.settings_probab_mapping['coords_cols'] = [0]
+    default_bmfia_iterator.features_config = "coord_features"
+    default_bmfia_iterator.coord_cols = [0]
     z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
     np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
 
@@ -456,7 +456,7 @@ def test_get_no_features(default_bmfia_iterator):
     coords_mat = np.array([[7, 8, 9], [10, 11, 12], [13, 14, 15]])
 
     expected_z_mat = y_lf_mat[None, :, :]
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "no_features"
+    default_bmfia_iterator.features_config = "no_features"
     z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
     np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
 
@@ -468,7 +468,7 @@ def test_get_time_features(default_bmfia_iterator):
     coords_mat = np.array([[7, 8, 9], [10, 11, 12], [13, 14, 15]])
 
     expected_z_mat = np.array([[1, 2, 3, 0], [1, 2, 3, 5], [1, 2, 3, 10]])
-    default_bmfia_iterator.settings_probab_mapping["features_config"] = "time_features"
+    default_bmfia_iterator.features_config = "time_features"
     default_bmfia_iterator.time_vec = np.linspace(0, 10, y_lf_mat.shape[1])
     z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
     np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
