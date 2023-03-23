@@ -41,7 +41,7 @@ class ClusterConfig:
         name (str):                         name of cluster
         work_load_scheduler (str):          type of work load scheduling software (PBS or SLURM)
         start_cmd (str):                    command to start a job on the cluster
-        jobscript_template (pathlib.Path):  absolute path to jobscript template file
+        jobscript_template (Path):          absolute path to jobscript template file
         job_status_command (str):           command to check job status on cluster
         job_status_location (int):          location of job status in return of job_status_command
         singularity_bind (str):             variable for binding directories on the host

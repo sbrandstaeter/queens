@@ -7,8 +7,8 @@ INVAAA minimal model.
 import json
 import pickle
 from pathlib import Path
+import shutil
 
-import numpy as np
 import pytest
 
 from pqueens import run
@@ -75,8 +75,7 @@ def count_subdirectories(current_directory):
 
 def remove_job_output_directory(experiment_directory, jobid):
     """Remove output directory of job #jobid from *experiment_directory*."""
-    rm_cmd = "rm -r " + str(experiment_directory) + "/" + str(jobid)
-    run_subprocess(rm_cmd)
+    shutil.rmtree(experiment_directory / str(jobid))
 
 
 def test_baci_elementary_effects(
@@ -119,8 +118,6 @@ def test_baci_elementary_effects(
     run(input_file, experiment_directory)
 
     result_file = experiment_directory / (experiment_name + ".pickle")
-    with open(result_file, 'rb') as handle:
-        results = pickle.load(handle)
 
     # test results of SA analysis
     baci_elementary_effects_check_results(result_file)
