@@ -26,7 +26,6 @@ scheduler:
   num_procs: 2
   num_procs_post: 1
   max_concurrent: 2
-  max_finished_jobs: 10
 driver:
   type: dask_mpi
   input_template: {{ baci_input }}

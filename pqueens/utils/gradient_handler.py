@@ -6,6 +6,7 @@ import logging
 import numpy as np
 
 from pqueens.interfaces import from_config_create_interface
+from pqueens.interfaces.dask_job_interface import JobInterface as DaskJobInterface
 from pqueens.interfaces.job_interface import JobInterface
 from pqueens.utils.config_directories import current_job_directory
 from pqueens.utils.fd_jacobian import fd_jacobian, get_positions
@@ -282,7 +283,7 @@ class AdjointGradient(GradientHandler):
             config (dict): Dictionary with problem description.
         """
         # check if model interface is of type `job_interface`
-        if not isinstance(model_interface, JobInterface):
+        if not isinstance(model_interface, (JobInterface, DaskJobInterface)):
             raise NotImplementedError(
                 "The adjoint-based gradient is at the moment only available for executables"
                 "which use the 'JobInterface'."
@@ -337,12 +338,20 @@ class AdjointGradient(GradientHandler):
         # calculate the upstream gradient for entire batch
         upstream_gradient_batch = upstream_gradient_fun(samples, response)
 
+        num_samples = response.shape[0]
         # get last job_ids
-        last_job_ids = self.model_interface.job_ids[-response.shape[0] :]
+        if isinstance(self.model_interface, DaskJobInterface):
+            last_job_ids = [
+                self.model_interface.latest_job_id - num_samples + i + 1 for i in range(num_samples)
+            ]
+            experiment_dir = self.gradient_interface.scheduler.experiment_dir
+        else:
+            last_job_ids = self.model_interface.job_ids[-response.shape[0] :]
+            experiment_dir = self.gradient_interface.experiment_dir
 
         # write adjoint data for each sample to adjoint files in old job directories
         for job_id, grad_y_objective in zip(last_job_ids, upstream_gradient_batch):
-            job_dir = current_job_directory(self.gradient_interface.experiment_dir, job_id)
+            job_dir = current_job_directory(experiment_dir, job_id)
             adjoint_file_path = job_dir.joinpath(self.upstream_gradient_file_name)
             write_to_csv(adjoint_file_path, np.atleast_2d(grad_y_objective))
 

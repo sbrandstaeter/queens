@@ -11,7 +11,7 @@ from pqueens import run
 from pqueens.utils import injector
 
 
-def test_ensight_reader_writer(
+def test_dask_ensight_reader_writer(
     inputdir, tmpdir, third_party_inputs, baci_link_paths, config_dir, expected_mean, expected_var
 ):
     """TODO_doc."""
@@ -23,8 +23,8 @@ def test_ensight_reader_writer(
         'post_drt_ensight': post_drt_ensight,
         'baci_release': baci_release,
     }
-    template = os.path.join(inputdir, "baci_ensight_template.yml")
-    input_file = os.path.join(tmpdir, "baci_ensight.yml")
+    template = os.path.join(inputdir, "baci_dask_ensight_template.yml")
+    input_file = os.path.join(tmpdir, "baci_dask_ensight.yml")
     injector.inject(dir_dict, template, input_file)
 
     # get json file as config dictionary

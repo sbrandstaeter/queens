@@ -1,0 +1,105 @@
+experiment_name: inverse_rpvi_park91a_hifi
+database:
+  type: mongodb
+  address: localhost:27017
+method:
+  type: rpvi
+  model_name: model
+  max_feval: 10
+  n_samples_per_iter: 3
+  score_function_bool: true
+  variational_distribution:
+    variational_approximation_type: fullrank
+    variational_family: normal
+  stochastic_optimizer_name: optimizer
+  gradient_clipping: true
+  gradient_clipping_norm_threshold: 1000000.0
+  natural_gradient: true
+  FIM_dampening: true
+  decay_start_iteration: 50
+  dampening_coefficient: 0.01
+  FIM_dampening_lower_bound: 1.0e-08
+  variational_transformation: null
+  variational_parameter_initialization: prior
+  random_seed: 1
+  result_description:
+    write_results: true
+    plotting_options:
+      plot_boolean: false
+      plotting_dir: {{ plot_dir }}
+      plot_name: variational_params_convergence.eps
+      save_bool: false
+optimizer:
+  type: adam
+  optimization_type: max
+  learning_rate: 0.02
+  rel_L1_change_threshold: -1
+  rel_L2_change_threshold: -1
+  max_iter: 10000000
+model:
+  type: gaussian
+  forward_model_name: forward_model
+  output_label: y_obs
+  coordinate_labels: [x3, x4]
+  noise_type: MAP_jeffrey_variance
+  nugget_noise_variance: 1.0e-08
+  experimental_file_name_identifier: experimental_data.csv
+  experimental_csv_data_base_dir: {{ experimental_data_path }}
+  parameters: parameters
+forward_model:
+  type: simulation_model
+  interface_name: interface
+  parameters: parameters
+  gradient_handler_name: gradient_handler
+gradient_handler:
+  type: {{ gradient_method }}
+  finite_difference_method: 2-point
+  upstream_gradient_file_name: "grad_objective.csv"
+  gradient_interface_name: {{ gradient_interface }}
+gradient_interface:
+  type: dask_job_interface
+  scheduler_name: scheduler
+  driver_name: gradient_driver
+interface:
+  type: dask_job_interface
+  scheduler_name: scheduler
+  driver_name: driver
+scheduler:
+  type: dask_local
+  num_procs: 1
+  num_procs_post: 1
+  max_concurrent: 1
+gradient_driver:
+  type: dask_mpi
+  input_template: {{ input_file }}
+  path_to_executable: {{ adjoint_executable }}
+  data_processor_name: gradient_data_processor
+driver:
+  type: dask_mpi
+  input_template: {{ input_file }}
+  path_to_executable: {{ executable }}
+  data_processor_name: data_processor_output
+  gradient_data_processor_name: {{ gradient_data_processor }}
+data_processor_output:
+  type: csv
+  file_name_identifier: '*_output.csv'
+  file_options_dict:
+    delete_field_data: false
+    filter:
+      type: entire_file
+gradient_data_processor:
+  type: csv
+  file_name_identifier: '*_gradient.csv'
+  file_options_dict:
+    delete_field_data: false
+    filter:
+      type: entire_file
+parameters:
+  x1:
+    type: normal
+    mean: 0.6
+    covariance: 0.2
+  x2:
+    type: normal
+    mean: 0.3
+    covariance: 0.1
