@@ -12,7 +12,9 @@ absl-py==1.4.0
     #   tensorflow
     #   tensorflow-probability
 arviz==0.15.0
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   pymc
 astunparse==1.6.3
     # via tensorflow
 asyncssh==2.13.1
@@ -24,7 +26,9 @@ autograd==1.5
 bokeh==2.4.3
     # via -r requirements.in
 cachetools==5.3.0
-    # via google-auth
+    # via
+    #   google-auth
+    #   pymc
 certifi==2022.12.7
     # via requests
 cffi==1.15.1
@@ -47,7 +51,13 @@ cloudpickle==2.2.1
     # via
     #   dask
     #   distributed
+    #   pymc
     #   tensorflow-probability
+cons==0.4.5
+    # via
+    #   etuples
+    #   minikanren
+    #   pytensor
 contourpy==1.0.7
     # via matplotlib
 coverage[toml]==7.2.0
@@ -89,10 +99,18 @@ dm-tree==0.1.8
     #   tensorflow-probability
 dnspython==2.3.0
     # via pymongo
+etuples==0.3.8
+    # via
+    #   minikanren
+    #   pytensor
 exceptiongroup==1.1.0
     # via pytest
 execnet==1.9.0
     # via pytest-xdist
+fastprogress==1.0.3
+    # via pymc
+filelock==3.10.2
+    # via pytensor
 flatbuffers==23.1.21
     # via tensorflow
 fonttools==4.38.0
@@ -170,6 +188,11 @@ locket==1.0.0
     # via
     #   distributed
     #   partd
+logical-unification==0.4.5
+    # via
+    #   cons
+    #   minikanren
+    #   pytensor
 markdown==3.4.1
     # via tensorboard
 markupsafe==2.1.2
@@ -183,12 +206,18 @@ matplotlib==3.7.0
     #   salib
     #   seaborn
     #   vtk
+minikanren==1.0.3
+    # via pytensor
 mock==5.0.1
     # via -r requirements.in
 msgpack==1.0.4
     # via distributed
 multipledispatch==0.6.0
-    # via gpflow
+    # via
+    #   etuples
+    #   gpflow
+    #   logical-unification
+    #   minikanren
 multiprocess==0.70.14
     # via
     #   pathos
@@ -225,6 +254,8 @@ numpy==1.21.5
     #   paramz
     #   particles
     #   pydoe
+    #   pymc
+    #   pytensor
     #   salib
     #   scikit-learn
     #   scipy
@@ -270,6 +301,7 @@ pandas==1.4.3
     # via
     #   -r requirements.in
     #   arviz
+    #   pymc
     #   salib
     #   seaborn
     #   xarray
@@ -315,10 +347,14 @@ pydoe==0.3.8
     # via -r requirements.in
 pyfiglet==0.8.post1
     # via -r requirements.in
+pymc==5.0.2
+    # via -r requirements.in
 pymongo==4.3.3
     # via -r requirements.in
 pyparsing==3.0.9
     # via matplotlib
+pytensor==2.9.1
+    # via pymc
 pytest==7.2.1
     # via
     #   -r requirements.in
@@ -371,6 +407,8 @@ scipy==1.10.0
     #   paramz
     #   particles
     #   pydoe
+    #   pymc
+    #   pytensor
     #   salib
     #   scikit-learn
     #   xarray-einstats
@@ -428,6 +466,8 @@ toolz==0.12.0
     #   chex
     #   dask
     #   distributed
+    #   logical-unification
+    #   minikanren
     #   partd
 torch==1.13.1
     # via -r requirements.in
@@ -445,6 +485,8 @@ typing-extensions==4.5.0
     #   chex
     #   gpflow
     #   optax
+    #   pymc
+    #   pytensor
     #   tensorflow
     #   torch
 urllib3==1.26.14

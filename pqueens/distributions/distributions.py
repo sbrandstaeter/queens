@@ -3,6 +3,8 @@ import abc
 
 import numpy as np
 
+from pqueens.utils.print_utils import get_str_table
+
 
 class Distribution:
     """Base class for probability distributions.
@@ -24,6 +26,20 @@ class Distribution:
         self.mean = mean
         self.covariance = covariance
         self.dimension = dimension
+
+    @classmethod
+    def from_config_create_distribution(cls, distribution_options):
+        """Create distribution object from parameter dictionary.
+
+        Args:
+            distribution_options (dict): Dictionary with distribution description
+
+        Returns:
+            distribution: Distribution object
+        """
+        distribution_options_copy = distribution_options.copy()
+        distribution_options_copy.pop("type", None)
+        return cls(**distribution_options_copy)
 
     @abc.abstractmethod
     def cdf(self, x):
@@ -115,3 +131,11 @@ class Distribution:
         export_dict = vars(self)
         export_dict = {'type': self.__class__.__name__, **export_dict}
         return export_dict
+
+    def __str__(self):
+        """Get string for the given distribution.
+
+        Returns:
+            str: Table with distribution information
+        """
+        return get_str_table(type(self).__name__, self.export_dict())

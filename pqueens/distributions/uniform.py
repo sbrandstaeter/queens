@@ -17,40 +17,15 @@ class UniformDistribution(Distribution):
         logpdf_const (float): Constant for the evaluation of the log pdf.
     """
 
-    def __init__(
-        self, lower_bound, upper_bound, width, pdf_const, logpdf_const, mean, covariance, dimension
-    ):
+    def __init__(self, lower_bound, upper_bound):
         """Initialize uniform distribution.
 
         Args:
             lower_bound (np.ndarray): Lower bound(s) of the distribution
             upper_bound (np.ndarray): Upper bound(s) of the distribution
-            width (np.ndarray): Width(s) of the distribution
-            pdf_const (float): Constant for the evaluation of the pdf
-            logpdf_const (float): Constant for the evaluation of the log pdf
-            mean (np.ndarray): Mean of the distribution
-            covariance (np.ndarray): Covariance of the distribution
-            dimension (int): Dimensionality of the distribution
         """
-        super().__init__(mean=mean, covariance=covariance, dimension=dimension)
-        self.lower_bound = lower_bound
-        self.upper_bound = upper_bound
-        self.width = width
-        self.pdf_const = pdf_const
-        self.logpdf_const = logpdf_const
-
-    @classmethod
-    def from_config_create_distribution(cls, distribution_options):
-        """Create uniform distribution object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary with distribution description
-
-        Returns:
-            distribution: UniformDistribution object
-        """
-        lower_bound = np.array(distribution_options['lower_bound']).reshape(-1)
-        upper_bound = np.array(distribution_options['upper_bound']).reshape(-1)
+        lower_bound = np.array(lower_bound).reshape(-1)
+        upper_bound = np.array(upper_bound).reshape(-1)
         super().check_bounds(lower_bound, upper_bound)
         width = upper_bound - lower_bound
 
@@ -60,17 +35,12 @@ class UniformDistribution(Distribution):
 
         pdf_const = 1.0 / np.prod(width)
         logpdf_const = np.log(pdf_const)
-
-        return cls(
-            lower_bound=lower_bound,
-            upper_bound=upper_bound,
-            width=width,
-            pdf_const=pdf_const,
-            logpdf_const=logpdf_const,
-            mean=mean,
-            covariance=covariance,
-            dimension=dimension,
-        )
+        super().__init__(mean=mean, covariance=covariance, dimension=dimension)
+        self.lower_bound = lower_bound
+        self.upper_bound = upper_bound
+        self.width = width
+        self.pdf_const = pdf_const
+        self.logpdf_const = logpdf_const
 
     def cdf(self, x):
         """Cumulative distribution function.

@@ -103,8 +103,10 @@ def test_init_lognormal_1d(lognormal_1d, mean_1d, covariance_1d):
     var_ref = scipy.stats.lognorm.var(scale=np.exp(mean_1d), s=std).reshape(1, 1)
 
     assert lognormal_1d.dimension == 1
-    np.testing.assert_equal(lognormal_1d.normal_mean, np.array(mean_1d).reshape(1))
-    np.testing.assert_equal(lognormal_1d.normal_covariance, np.array(covariance_1d).reshape(1, 1))
+    np.testing.assert_equal(lognormal_1d.normal_distribution.mean, np.array(mean_1d).reshape(1))
+    np.testing.assert_equal(
+        lognormal_1d.normal_distribution.covariance, np.array(covariance_1d).reshape(1, 1)
+    )
     np.testing.assert_allclose(lognormal_1d.mean, mean_ref)
     np.testing.assert_allclose(lognormal_1d.covariance, var_ref)
 
@@ -151,7 +153,10 @@ def test_grad_logpdf_lognormal_1d(lognormal_1d, mean_1d, covariance_1d, sample_p
     for sample in sample_pos_1d:
         ref_sol_list.append(
             grad_logpdf_jax(
-                sample, lognormal_1d.logpdf_const, lognormal_1d.normal_mean, lognormal_1d.precision
+                sample,
+                lognormal_1d.normal_distribution.logpdf_const,
+                lognormal_1d.normal_distribution.mean,
+                lognormal_1d.normal_distribution.precision,
             )
         )
     ref_sol = np.array(ref_sol_list)
@@ -193,8 +198,8 @@ def test_init_lognormal_2d(lognormal_2d, mean_2d, covariance_2d):
     )
 
     assert lognormal_2d.dimension == 2
-    np.testing.assert_equal(lognormal_2d.normal_mean, mean_2d)
-    np.testing.assert_equal(lognormal_2d.normal_covariance, covariance_2d)
+    np.testing.assert_equal(lognormal_2d.normal_distribution.mean, mean_2d)
+    np.testing.assert_equal(lognormal_2d.normal_distribution.covariance, covariance_2d)
     np.testing.assert_allclose(lognormal_2d.mean, mean_ref)
     np.testing.assert_allclose(lognormal_2d.covariance, var_ref)
 
@@ -237,7 +242,10 @@ def test_grad_logpdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_p
     for sample in sample_pos_2d:
         ref_sol_list.append(
             grad_logpdf_jax(
-                sample, lognormal_2d.logpdf_const, lognormal_2d.normal_mean, lognormal_2d.precision
+                sample,
+                lognormal_2d.normal_distribution.logpdf_const,
+                lognormal_2d.normal_distribution.mean,
+                lognormal_2d.normal_distribution.precision,
             )
         )
     np.testing.assert_allclose(lognormal_2d.grad_logpdf(sample_pos_2d), np.array(ref_sol_list))

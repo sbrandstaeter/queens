@@ -24,20 +24,23 @@ class DirectPythonInterface(Interface):
     Attributes:
         function (function):    Function to evaluate.
         pool (pathos pool):     Multiprocessing pool.
+        verbose (boolean):      Verbosity of evaluations.
     """
 
-    def __init__(self, interface_name, function, pool):
+    def __init__(self, interface_name, function, pool, verbose=True):
         """Create interface.
 
         Args:
             interface_name (string):    name of interface
             function (function):        function to evaluate
             pool (pathos pool):         multiprocessing pool
+            verbose (boolean):          verbosity of evaluations
         """
         super().__init__(interface_name)
         # Wrap function to clean the output
         self.function = self.function_wrapper(function)
         self.pool = pool
+        self.verbose = verbose
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):
@@ -55,6 +58,7 @@ class DirectPythonInterface(Interface):
         num_workers = interface_options.get('num_workers', 1)
         function_name = interface_options.get("function", None)
         external_python_function = interface_options.get("external_python_module_function", None)
+        verbose = interface_options.get("verbose", True)
 
         if function_name is None:
             raise ValueError(f"Keyword 'function' is missing in interface '{interface_name}'")
@@ -68,7 +72,7 @@ class DirectPythonInterface(Interface):
 
         pool = create_pool(num_workers)
 
-        return cls(interface_name=interface_name, function=my_function, pool=pool)
+        return cls(interface_name=interface_name, function=my_function, pool=pool, verbose=verbose)
 
     def evaluate(self, samples):
         """Orchestrate call to simulator function.
@@ -89,8 +93,10 @@ class DirectPythonInterface(Interface):
         # Pool or no pool
         if self.pool:
             results = self.pool.map(self.function, samples_list)
-        else:
+        elif self.verbose:
             results = list(map(self.function, tqdm(samples_list)))
+        else:
+            results = list(map(self.function, samples_list))
 
         output = {}
         # check if gradient is returned --> tuple
@@ -118,7 +124,6 @@ class DirectPythonInterface(Interface):
         Returns:
             reshaped_output_function (function): Wrapped function
         """
-        pass
 
         def reshaped_output_function(sample_dict):
             """Call function and reshape output.
@@ -138,10 +143,9 @@ class DirectPythonInterface(Interface):
                     result = np.expand_dims(result, axis=0)
                     gradient = np.expand_dims(gradient, axis=0)
                 return result, gradient
-            else:
-                # here no gradient return
-                if not result_array.shape:
-                    result_array = np.expand_dims(result_array, axis=0)
-                return result_array
+            # here no gradient return
+            if not result_array.shape:
+                result_array = np.expand_dims(result_array, axis=0)
+            return result_array
 
         return reshaped_output_function
