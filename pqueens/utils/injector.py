@@ -10,7 +10,7 @@ from jinja2 import Template
 
 
 def read_template(file_template):
-    """Function to create a jinja template.
+    """Function to read in a template.
 
     Args:
         file_template (str):    File name including path to template
@@ -22,11 +22,11 @@ def read_template(file_template):
 
 
 def inject_in_template(params, template, output_file):
-    """Function to insert parameters into jinja template.
+    """Function to insert parameters into a template.
 
     Args:
         params (dict):          Dict with parameters to inject
-        template (obj):         Jinja template object
+        template (str):         Template file as string
         output_file (str):      Name of output file with injected parameters
     """
     Path(output_file).write_text(Template(template).render(**params), encoding='utf-8')

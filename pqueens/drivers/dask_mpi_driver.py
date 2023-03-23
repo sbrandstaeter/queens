@@ -59,7 +59,6 @@ class MpiDriver(Driver):
         self.executable = executable
         self.cae_output_streaming = cae_output_streaming
         self.mpi_cmd = mpi_cmd
-        self.pid = None
         self.post_file_prefix = post_file_prefix
         self.post_options = post_options
         self.post_processor = post_processor
