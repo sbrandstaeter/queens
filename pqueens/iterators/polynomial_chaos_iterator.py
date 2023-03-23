@@ -193,8 +193,8 @@ class PolynomialChaosIterator(Iterator):
             if self.result_description["write_results"] is True:
                 write_results(
                     self.result_dict,
-                    self.global_settings['output_dir'],
-                    self.global_settings['experiment_name'],
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
                 )
 
 

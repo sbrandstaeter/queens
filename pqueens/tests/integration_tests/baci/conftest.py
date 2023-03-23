@@ -120,7 +120,7 @@ def setup_symbolic_links_baci(config_dir, baci_link_paths, baci_source_paths_for
         )
 
 
-@pytest.fixture(params=[False])
+@pytest.fixture(params=[True, False])
 def singularity_bool(request):
     """Return boolean to run with or without singularity.
 

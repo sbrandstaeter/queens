@@ -465,8 +465,8 @@ class SequentialMonteCarloIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(
                     results,
-                    self.global_settings['output_dir'],
-                    self.global_settings['experiment_name'],
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
                 )
 
             if self.result_description["plot_results"]:

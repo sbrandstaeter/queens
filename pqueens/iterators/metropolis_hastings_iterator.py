@@ -39,8 +39,8 @@ class MetropolisHastingsIterator(Iterator):
         num_samples (int): Number of samples per chain.
         proposal_distribution (obj): Proposal distribution.
         result_description (dict):  Description of desired results.
-        as_rejuvenation_step (bool): Indicates whether the iterator is used as a rejuvenation step
-                                     for a SMC iterator or as the main iterator itself.
+        as_smc_rejuvenation_step (bool): Indicates whether the iterator is used as a rejuvenation
+                                         step for a SMC iterator or as the main iterator itself.
         tune (bool): Tune the scale of covariance.
         scale_covariance (float): Scale of covariance matrix
                                   of gaussian proposal distribution.
@@ -73,7 +73,7 @@ class MetropolisHastingsIterator(Iterator):
         scale_covariance=1.0,
         num_burn_in=0,
         num_chains=1,
-        as_rejuvenation_step=False,
+        as_smc_rejuvenation_step=False,
         temper_type='bayes',
     ):
         """Initialize Metropolis-Hastings iterator.
@@ -91,8 +91,9 @@ class MetropolisHastingsIterator(Iterator):
                                                         proposal distribution.
             num_burn_in (int): Number of burn-in samples.
             num_chains (int): Number of independent chains.
-            as_rejuvenation_step (bool): Indicates whether the iterator is used as a rejuvenation
-                                         step for a SMC iterator or as the main iterator itself.
+            as_smc_rejuvenation_step (bool): Indicates whether the iterator is used as a
+                                             rejuvenation step for a SMC iterator or as the main
+                                             iterator itself.
             temper_type (str): Temper type ('bayes' or 'generic')
         """
         super().__init__(model, global_settings)
@@ -107,7 +108,7 @@ class MetropolisHastingsIterator(Iterator):
         self.proposal_distribution = proposal_distribution
 
         self.result_description = result_description
-        self.as_rejuvenation_step = as_rejuvenation_step
+        self.as_smc_rejuvenation_step = as_smc_rejuvenation_step
 
         self.tune = tune
         # TODO change back to a scalar value.
@@ -205,7 +206,7 @@ class MetropolisHastingsIterator(Iterator):
             accept_rate_interval = np.exp(
                 np.log(self.accepted_interval) - np.log(self.tune_interval)
             )
-            if not self.as_rejuvenation_step:
+            if not self.as_smc_rejuvenation_step:
                 _logger.info("Current acceptance rate: %s.", accept_rate_interval)
             self.scale_covariance = mcmc_utils.tune_scale_covariance(
                 self.scale_covariance, accept_rate_interval
@@ -256,7 +257,7 @@ class MetropolisHastingsIterator(Iterator):
             gamma: TODO_doc
             cov_mat: TODO_doc
         """
-        if not self.as_rejuvenation_step:
+        if not self.as_smc_rejuvenation_step:
             _logger.info("Initialize Metropolis-Hastings run.")
 
             np.random.seed(self.seed)
@@ -285,7 +286,7 @@ class MetropolisHastingsIterator(Iterator):
         1. Burn-in phase
         2. Sampling phase
         """
-        if not self.as_rejuvenation_step:
+        if not self.as_smc_rejuvenation_step:
             _logger.info('Metropolis-Hastings core run.')
 
         # Burn-in phase
@@ -308,7 +309,7 @@ class MetropolisHastingsIterator(Iterator):
         avg_accept_rate = np.exp(
             np.log(np.sum(self.accepted)) - np.log((self.num_samples * self.num_chains))
         )
-        if self.as_rejuvenation_step:
+        if self.as_smc_rejuvenation_step:
             # the iterator is used as MCMC kernel for the Sequential Monte Carlo iterator
             return [
                 self.chains[-1],
@@ -340,8 +341,8 @@ class MetropolisHastingsIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(
                     results,
-                    self.global_settings['output_dir'],
-                    self.global_settings['experiment_name'],
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
                 )
 
             _logger.info("Size of outputs %s", chain_core.shape)

@@ -153,8 +153,8 @@ class SobolIndexIterator(Iterator):
             if self.result_description["write_results"] is True:
                 write_results(
                     results,
-                    self.global_settings['output_dir'],
-                    self.global_settings['experiment_name'],
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
                 )
             self.print_results(results)
             if self.result_description["plot_results"] is True:
@@ -236,11 +236,11 @@ class SobolIndexIterator(Iterator):
         Args:
             results (dict): Dictionary with Sobol indices and confidence intervals
         """
-        experiment_name = self.global_settings['experiment_name']
+        experiment_name = self.global_settings["experiment_name"]
 
         # Plot first-order indices also called main effect
         chart_name = experiment_name + '_S1.html'
-        chart_path = os.path.join(self.global_settings['output_dir'], chart_name)
+        chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["S1"],
@@ -263,7 +263,7 @@ class SobolIndexIterator(Iterator):
 
         # Plot total indices also called total effect
         chart_name = experiment_name + '_ST.html'
-        chart_path = os.path.join(self.global_settings['output_dir'], chart_name)
+        chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["ST"],
@@ -299,7 +299,7 @@ class SobolIndexIterator(Iterator):
                     names.append(f"S{i}{j}")
 
             chart_name = experiment_name + '_S2.html'
-            chart_path = os.path.join(self.global_settings['output_dir'], chart_name)
+            chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
             bars = go.Bar(
                 x=names, y=S2, error_y={"type": 'data', "array": S2_conf, "visible": True}
             )

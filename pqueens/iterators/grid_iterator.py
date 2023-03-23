@@ -148,8 +148,8 @@ class GridIterator(Iterator):
             if self.result_description["write_results"] is True:
                 write_results(
                     results,
-                    self.global_settings['output_dir'],
-                    self.global_settings['experiment_name'],
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
                 )
 
         # plot QoI over grid
