@@ -4,12 +4,16 @@ database:
   address: localhost:27017
   reset_existing_db: true
 method:
-  type: dummy
+  type: monte_carlo
+  seed: 42
+  num_samples: 4
   model_name: model
+  result_description:
+    write_results: true
+    plot_results: false
 model:
   type: simulation_model
   interface_name: interface
-  coordinate_labels: [x1, x2, x3]
 interface:
   type: dask_job_interface
   scheduler_name: scheduler
@@ -27,7 +31,7 @@ scheduler:
   cluster_internal_address: {{ cluster_internal_address }}
   cluster_user: {{ cluster_user }}
   cluster_python_path: {{ cluster_python_path }}
-  build_queens_environment: true
+  build_queens_environment: false
 driver:
   type: dask_jobscript
   input_template: {{ input_template }}

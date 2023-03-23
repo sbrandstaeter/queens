@@ -1,15 +1,19 @@
 """Test remote BACI simulations with ensight data-processor."""
 import logging
 import pathlib
+import pickle
 
+import mock
 import numpy as np
+import pandas as pd
 import pytest
 
 import pqueens.database.database as DB_module
 import pqueens.parameters.parameters as parameters_module
 from conftest import bruteforce_cluster_settings, charon_cluster_settings, deep_cluster_settings
+from pqueens.data_processor.data_processor_ensight import DataProcessorEnsight
+from pqueens.iterators import from_config_create_iterator
 from pqueens.main import get_config_dict
-from pqueens.models import from_config_create_model
 from pqueens.utils import config_directories_dask, injector
 
 _logger = logging.getLogger(__name__)
@@ -39,8 +43,8 @@ def test_cluster_baci_data_processor_ensight(
         - No iterator is used to reduce complexity
 
     Args:
-        inputdir (str): Path to the JSON input file
-        tmpdir (str): Temporary directory in which the pytests are run
+        inputdir (Path): Path to the JSON input file
+        tmpdir (Path): Temporary directory in which the pytests are run
         third_party_inputs (str): Path to the BACI input files
         monkeypatch: fixture for monkey-patching
         dask_cluster_settings (dict): Cluster settings
@@ -100,16 +104,25 @@ def test_cluster_baci_data_processor_ensight(
     # Initialise db module
     DB_module.from_config_create_database(config)
 
-    with DB_module.database as db:  # pylint: disable=no-member
-
-        # Add experimental coordinates to the database
-        experimental_data_dict = {"x1": [-16, 10], "x2": [7, 15], "x3": [0.63, 0.2]}
-        db.save(experimental_data_dict, experiment_name, 'experimental_data', 1)
+    with DB_module.database:  # pylint: disable=no-member
 
         parameters_module.from_config_create_parameters(config)
 
+        def patch_data(*_args):
+            """Patch reading experimental data from database."""
+            return (
+                experiment_name,
+                pd.DataFrame.from_dict({"x1": [-16, 10], "x2": [7, 15], "x3": [0.63, 0.2]}),
+                ['x1', 'x2', 'x3'],
+                None,
+            )
+
+        # create iterator
+        with mock.patch.object(DataProcessorEnsight, '_get_experimental_data_from_db', patch_data):
+            iterator = from_config_create_iterator(config)
+
         # Create a BACI model for the benchmarks
-        model = from_config_create_model("model", config)
+        model = iterator.model
 
         # Evaluate the first batch
         first_sample_batch = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])
@@ -119,6 +132,9 @@ def test_cluster_baci_data_processor_ensight(
         # In order to make sure that no port is closed after one batch
         second_sample_batch = np.array([[0.25, 25], [0.4, 46], [0.47, 211]])
         second_batch = np.array(model.evaluate(second_sample_batch)["mean"]).squeeze()
+
+        # Third batch with MC samples
+        iterator.run()
 
     # Check results
     first_batch_reference_solution = np.array(
@@ -138,3 +154,14 @@ def test_cluster_baci_data_processor_ensight(
 
     np.testing.assert_array_equal(first_batch, first_batch_reference_solution)
     np.testing.assert_array_equal(second_batch, second_batch_reference_solution)
+
+    result_file_name = experiment_name + ".pickle"
+
+    result_file = tmpdir / result_file_name
+    with open(result_file, 'rb') as handle:
+        results = pickle.load(handle)
+
+    reference_mc_mean = np.array([[-1.39371249], [1.72861153]])
+    reference_mc_var = np.array([[0.01399851], [0.02759816]])
+    np.testing.assert_array_almost_equal(reference_mc_mean, results['mean'])
+    np.testing.assert_array_almost_equal(reference_mc_var, results['var'])

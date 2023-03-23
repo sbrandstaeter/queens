@@ -45,15 +45,15 @@ class JobInterface(Interface):
         """
         interface_options = config[interface_name]
 
-        # create scheduler from config
-        scheduler = from_config_create_dask_scheduler(
-            scheduler_name=interface_options["scheduler_name"],
-            config=config,
-        )
-
         # create driver from config
         driver = from_config_create_dask_driver(
             driver_name=interface_options["driver_name"],
+            config=config,
+        )
+
+        # create scheduler from config
+        scheduler = from_config_create_dask_scheduler(
+            scheduler_name=interface_options["scheduler_name"],
             config=config,
         )
 

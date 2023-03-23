@@ -18,12 +18,10 @@ class DataProcessorEnsight(DataProcessor):
     """Class for data-processing ensight output.
 
     Attributes:
-        db (obj): Database object.
         experiment_name (str): Name of the current QUEENS experiment.
         experimental_data (pd.DataFrame): Pandas dataframe with experimental data.
         coordinates_label_experimental (lst): List of (spatial) coordinate labels
                                                 of the experimental data set.
-        output_label_experimental (str): Output label of the experimental data set.
         time_label_experimental (str): Time label of the experimental data set.
         external_geometry_obj (obj): QUEENS external geometry object.
         target_time_lst (lst): Target time list for the ensight data, meaning time for which the
@@ -45,11 +43,9 @@ class DataProcessorEnsight(DataProcessor):
         file_options_dict,
         files_to_be_deleted_regex_lst,
         data_processor_name,
-        database,
         experiment_name,
         experimental_data,
         coordinates_label_experimental,
-        output_label_experimental,
         time_label_experimental,
         external_geometry_obj,
         target_time_lst,
@@ -75,7 +71,6 @@ class DataProcessorEnsight(DataProcessor):
             experimental_data (pd.DataFrame): Pandas dataframe with experimental data
             coordinates_label_experimental (lst): List of (spatial) coordinate labels
                                                   of the experimental data set
-            output_label_experimental (str): Output label of the experimental data set
             time_label_experimental (str): Time label of the experimental data set
             external_geometry_obj (obj): QUEENS external geometry object
             target_time_lst (lst): Target time list for the ensight data, meaning time for which the
@@ -103,7 +98,6 @@ class DataProcessorEnsight(DataProcessor):
         self.experiment_name = experiment_name
         self.experimental_data = experimental_data
         self.coordinates_label_experimental = coordinates_label_experimental
-        self.output_label_experimental = output_label_experimental
         self.time_label_experimental = time_label_experimental
         self.external_geometry_obj = external_geometry_obj
         self.target_time_lst = target_time_lst
@@ -187,7 +181,6 @@ class DataProcessorEnsight(DataProcessor):
             experiment_name,
             experimental_data,
             coordinates_label_experimental,
-            output_label_experimental,
             time_label_experimental,
         ) = cls._get_experimental_data_from_db(config, database)
 
@@ -199,11 +192,9 @@ class DataProcessorEnsight(DataProcessor):
             file_options_dict,
             files_to_be_deleted_regex_lst,
             data_processor_name,
-            database,
             experiment_name,
             experimental_data,
             coordinates_label_experimental,
-            output_label_experimental,
             time_label_experimental,
             external_geometry_obj,
             target_time_lst,
@@ -259,7 +250,6 @@ class DataProcessorEnsight(DataProcessor):
             experimental_data (np.array): Experimental data loaded from the database
             coordinates_label_experimental (lst): List with coordinate labels of the
                                                   experimental data
-            output_label_experimental (str): Output label of the experimental data
             time_label_experimental (str): Time label of the experimental data
         """
         experiment_name = config['global_settings']['experiment_name']
@@ -270,7 +260,6 @@ class DataProcessorEnsight(DataProcessor):
             # get label names of experimental data
             model_name = config['method']['model_name']
             coordinates_label_experimental = config[model_name].get('coordinate_labels')
-            output_label_experimental = config[model_name].get('output_label')
             time_label_experimental = config[model_name].get('time_label')
 
         except KeyError:
@@ -281,16 +270,13 @@ class DataProcessorEnsight(DataProcessor):
             experimental_data = None
 
             # get label names of experimental data
-            model_name = None
             coordinates_label_experimental = None
-            output_label_experimental = None
             time_label_experimental = None
 
         return (
             experiment_name,
             experimental_data,
             coordinates_label_experimental,
-            output_label_experimental,
             time_label_experimental,
         )
 

@@ -98,6 +98,7 @@ class ClusterScheduler(Scheduler):
         atexit.register(login_client.shutdown)
 
         experiment_dir = login_client.submit(experiment_directory, experiment_name).result()
+        _logger.info(experiment_dir)
 
         def start_cluster_on_login_node(port):
             """Start dask cluster object on login node."""
@@ -196,7 +197,7 @@ class ClusterScheduler(Scheduler):
         """
         _logger.info("Syncing remote QUEENS repository with local one...")
         command_list = [
-            "rsync --archive --checksum --verbose --verbose",
+            "rsync --out-format='%n' --archive --checksum --verbose --verbose",
             "--exclude '.git'",
             "--exclude '.eggs'",
             "--exclude '.gitlab'",
