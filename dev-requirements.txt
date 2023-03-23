@@ -16,7 +16,7 @@ attrs==22.2.0
     #   jsonschema
 babel==2.12.1
     # via sphinx
-beautifulsoup4==4.11.2
+beautifulsoup4==4.12.0
     # via nbconvert
 black==22.3.0
     # via -r dev-requirements.in
@@ -65,8 +65,10 @@ docutils==0.19
     #   sphinx
 fastjsonschema==2.16.3
     # via nbformat
-filelock==3.10.0
-    # via virtualenv
+filelock==3.10.2
+    # via
+    #   -c requirements.txt
+    #   virtualenv
 identify==2.5.21
     # via pre-commit
 idna==3.4
@@ -88,7 +90,7 @@ jinja2==3.1.2
     #   sphinx
 jsonschema==4.17.3
     # via nbformat
-jupyter-client==8.0.3
+jupyter-client==8.1.0
     # via nbclient
 jupyter-core==5.3.0
     # via
@@ -117,7 +119,7 @@ nbclient==0.7.2
     # via nbconvert
 nbconvert==7.2.10
     # via nbsphinx
-nbformat==5.7.3
+nbformat==5.8.0
     # via
     #   nbclient
     #   nbconvert
@@ -153,7 +155,7 @@ plumbum==1.8.1
     # via pandoc
 ply==3.11
     # via pandoc
-pre-commit==3.1.1
+pre-commit==3.2.0
     # via -r dev-requirements.in
 pre-commit-hooks==4.4.0
     # via -r dev-requirements.in
@@ -165,7 +167,7 @@ pygments==2.14.0
     # via
     #   nbconvert
     #   sphinx
-pylint==2.17.0
+pylint==2.17.1
     # via -r dev-requirements.in
 pylint-exit==1.2.0
     # via -r dev-requirements.in
@@ -183,7 +185,7 @@ pyyaml==6.0
     #   commitizen
     #   pre-commit
     #   yamllint
-pyzmq==25.0.1
+pyzmq==25.0.2
     # via jupyter-client
 questionary==1.10.0
     # via commitizen
@@ -266,7 +268,7 @@ typing-extensions==4.5.0
     #   commitizen
 untokenize==0.1.1
     # via docformatter
-urllib3==1.26.14
+urllib3==1.26.15
     # via
     #   -c requirements.txt
     #   requests
@@ -280,15 +282,15 @@ webencodings==0.5.1
     # via
     #   bleach
     #   tinycss2
-wheel==0.38.4
+wheel==0.40.0
     # via
     #   -c requirements.txt
     #   pip-tools
-wrapt==1.14.1
+wrapt==1.15.0
     # via
     #   -c requirements.txt
     #   astroid
-yamllint==1.29.0
+yamllint==1.30.0
     # via -r dev-requirements.in
 
 # The following packages are considered to be unsafe in a requirements file:
