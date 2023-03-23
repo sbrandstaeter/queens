@@ -109,7 +109,7 @@ def test_baci_elementary_effects(
     dir_dict = {
         'experiment_name': experiment_name,
         'baci_input': third_party_input_file,
-        'baci-release': baci_release,
+        'baci_release': baci_release,
         'post_drt_monitor': post_drt_monitor,
         'singularity_boolean': json.dumps(singularity_bool),
     }
