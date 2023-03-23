@@ -117,7 +117,7 @@ class SequentialMonteCarloIterator(Iterator):
             scale_covariance=1.0,
             num_burn_in=0,
             num_chains=num_particles,
-            as_rejuvenation_step=True,
+            as_smc_rejuvenation_step=True,
             temper_type=temper_type,
         )
 
