@@ -98,7 +98,6 @@ class ClusterScheduler(Scheduler):
         atexit.register(login_client.shutdown)
 
         experiment_dir = login_client.submit(experiment_directory, experiment_name).result()
-        _logger.info(experiment_dir)
 
         def start_cluster_on_login_node(port):
             """Start dask cluster object on login node."""

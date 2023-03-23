@@ -31,7 +31,7 @@ scheduler:
   cluster_internal_address: {{ cluster_internal_address }}
   cluster_user: {{ cluster_user }}
   cluster_python_path: {{ cluster_python_path }}
-  build_queens_environment: false
+  build_queens_environment: true
 driver:
   type: dask_jobscript
   input_template: {{ input_template }}

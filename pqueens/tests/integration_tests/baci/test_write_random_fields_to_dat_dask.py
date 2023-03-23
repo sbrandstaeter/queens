@@ -55,5 +55,5 @@ def test_write_random_dirichlet_to_dat(
 @pytest.fixture()
 def expected_result():
     """TODO_doc."""
-    result = np.array([[-0.04793531], [-0.04565255], [-0.04865387]]).reshape(3, 1)
+    result = np.array([-0.04793531], [-0.04565255], [-0.04865387])
     return result
