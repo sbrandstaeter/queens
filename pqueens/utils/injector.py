@@ -4,8 +4,6 @@ The module supplies functions to inject parameter values into a template
 text file.
 """
 
-from pathlib import Path
-
 from jinja2 import Template
 
 

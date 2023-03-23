@@ -1,7 +1,6 @@
 """Utils to handle pickle files."""
 import logging
 import pickle
-from pathlib import Path
 
 _logger = logging.getLogger(__name__)
 

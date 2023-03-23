@@ -1,15 +1,12 @@
 """TODO_doc."""
 
-import os
 import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
 import numpy as np
 from matplotlib import cm
 from matplotlib.ticker import FormatStrFormatter, LinearLocator
-from mpl_toolkits.mplot3d import Axes3D
 
 """
 TODO_doc: This is not in the documentation.

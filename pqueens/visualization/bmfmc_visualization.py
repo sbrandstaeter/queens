@@ -11,7 +11,6 @@ Attributes:
     bmfmc_visualization_instance (obj): Instance of the BMFMCVisualization class
 """
 
-import os
 import sys
 from pathlib import Path
 

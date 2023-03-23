@@ -8,7 +8,6 @@ from multiprocessing import get_context
 import numpy as np
 import tqdm
 
-import pqueens.visualization.bmfia_visualization as qvis
 from pqueens.regression_approximations import from_config_create_regression_approximation
 from pqueens.utils.valid_options_utils import get_option
 

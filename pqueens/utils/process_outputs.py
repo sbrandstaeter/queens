@@ -6,11 +6,10 @@ import warnings
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
-from pqueens.utils.plot_outputs import plot_cdf, plot_failprob, plot_icdf, plot_pdf
+from pqueens.utils.plot_outputs import plot_cdf, plot_icdf, plot_pdf
 
 _logger = logging.getLogger(__name__)
 

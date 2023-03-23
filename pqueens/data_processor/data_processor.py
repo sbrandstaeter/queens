@@ -1,7 +1,6 @@
 """Module for data processing of simulation results."""
 
 import abc
-import glob
 import logging
 from pathlib import Path
 

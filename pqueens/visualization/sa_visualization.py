@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import sys
 from pathlib import Path
 
@@ -8,8 +7,6 @@ import matplotlib.pyplot as plt
 import matplotlib.style as style
 import pandas as pd
 import seaborn as sns
-
-import pqueens.visualization.bmfmc_visualization as qvis
 
 cycle_colors = sns.color_palette()
 style.use('seaborn')
