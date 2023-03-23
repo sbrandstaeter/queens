@@ -22,7 +22,7 @@ class MixtureDistribution(Distribution):
         """
         if len(component_distributions) != len(weights):
             raise ValueError(
-                f"The number of weights {len(weights)} does not match the number of distribution"
+                f"The number of weights {len(weights)} does not match the number of distributions"
                 f" {len(component_distributions)}"
             )
 
