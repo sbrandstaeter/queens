@@ -157,3 +157,30 @@ def test_ppf(mixture_model):
     """Test PPF."""
     with pytest.raises(NotImplementedError, match="PPF not available"):
         mixture_model.ppf(None)
+
+
+def test_fcc(reference_mixture_model_data):
+    """Test from config create."""
+    weights, normal0, normal1 = reference_mixture_model_data
+    config = {
+        "type": "mixture",
+        "weights": weights,
+        "component_distributions": ["normal_0", "normal_1"],
+        "normal_0": {
+            "type": "normal",
+            "mean": normal0.mean.tolist(),
+            "covariance": normal0.covariance.tolist(),
+        },
+        "normal_1": {
+            "type": "normal",
+            "mean": normal1.mean.tolist(),
+            "covariance": normal1.covariance.tolist(),
+        },
+    }
+    mixture = MixtureDistribution.from_config_create_distribution(config)
+
+    np.testing.assert_array_equal(weights, mixture.weights)
+    np.testing.assert_array_equal(normal0.mean, mixture.component_distributions[0].mean)
+    np.testing.assert_array_equal(normal1.mean, mixture.component_distributions[1].mean)
+    np.testing.assert_array_equal(normal0.covariance, mixture.component_distributions[0].covariance)
+    np.testing.assert_array_equal(normal1.covariance, mixture.component_distributions[1].covariance)
