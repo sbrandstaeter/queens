@@ -17,6 +17,7 @@ class JobscriptDriver(Driver):
     Attributes:
         jobscript_template (str): read in jobscript template as string
         jobscript_options (dict): Dictionary containing jobscript options
+        jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
     """
 
     def __init__(
@@ -27,6 +28,7 @@ class JobscriptDriver(Driver):
         simulation_input_template,
         data_processor,
         gradient_data_processor,
+        jobscript_file_name,
     ):
         """Initialize MpiDriver object.
 
@@ -37,6 +39,7 @@ class JobscriptDriver(Driver):
             simulation_input_template (str): read in simulation input template as string
             data_processor (obj): instance of data processor class
             gradient_data_processor (obj): instance of data processor class for gradient data
+            jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
         """
         super().__init__(
             data_processor,
@@ -46,6 +49,7 @@ class JobscriptDriver(Driver):
         )
         self.jobscript_template = jobscript_template
         self.jobscript_options = jobscript_options
+        self.jobscript_file_name = jobscript_file_name
 
     @classmethod
     def from_config_create_driver(
@@ -103,6 +107,8 @@ class JobscriptDriver(Driver):
             "CLUSTERSCRIPT": cluster_script_path,
         }
 
+        jobscript_file_name = driver_options.get('jobscript_file_name', 'jobscript.sh')
+
         return cls(
             jobscript_template=jobscript_template,
             jobscript_options=jobscript_options,
@@ -110,6 +116,7 @@ class JobscriptDriver(Driver):
             simulation_input_template=simulation_input_template,
             data_processor=data_processor,
             gradient_data_processor=gradient_data_processor,
+            jobscript_file_name=jobscript_file_name,
         )
 
     def run(self, sample_dict, _num_procs, _num_procs_post, experiment_dir, experiment_name):
@@ -129,7 +136,7 @@ class JobscriptDriver(Driver):
         job_dir, output_dir, _, input_file, _, _ = self._manage_paths(
             job_id, experiment_dir, experiment_name
         )
-        jobscript_file = job_dir.joinpath("jobscript.sh")
+        jobscript_file = job_dir.joinpath(self.jobscript_file_name)
 
         inject_in_template(sample_dict, self.simulation_input_template, str(input_file))
 
