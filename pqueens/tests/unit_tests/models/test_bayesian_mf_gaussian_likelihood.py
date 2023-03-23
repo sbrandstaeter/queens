@@ -542,7 +542,7 @@ def test_build_approximation(default_bmfia_iterator, default_interface, config, 
     """Test for the build stage of the probabilistic regression model."""
     z_train = np.array([[1, 1, 1], [2, 2, 2]])
     y_hf_train = np.array([[1, 1], [2, 2]])
-    coord_labels = default_bmfia_iterator.coord_labels
+    coord_labels = ['x', 'y', 'z']
     time_vec = default_bmfia_iterator.time_vec
     coords_mat = default_bmfia_iterator.coords_experimental_data
     approx_name = 'bmfia'
