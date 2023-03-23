@@ -357,16 +357,14 @@ def test_init_adjoint(model_interface):
     """Test init method of adjoint class."""
     adjoint_file_name = "file"
     gradient_interface = "my_gradient_interface"
-    database = "dummy_db"
     experiment_name = "experiment_name_dummy"
     my_grad_obj = AdjointGradient(
-        adjoint_file_name, gradient_interface, database, experiment_name, model_interface
+        adjoint_file_name, gradient_interface, experiment_name, model_interface
     )
     assert isinstance(my_grad_obj, AdjointGradient)
     assert my_grad_obj.upstream_gradient_file_name == adjoint_file_name
     assert my_grad_obj.gradient_interface == gradient_interface
-    assert my_grad_obj.gradient_interface == gradient_interface
-    assert my_grad_obj.gradient_interface == gradient_interface
+    assert my_grad_obj.experiment_name == experiment_name
     assert my_grad_obj.model_interface == model_interface
 
 
@@ -412,25 +410,24 @@ def test_evaluate_and_gradient_adjoint(dummy_config, mocker):
     """Test evaluate and gradient for adjoint grad object."""
     # create some named tuples to mimic the grad interface
     grad_interface_dummy = namedtuple(
-        "interface", ["experiment_dir", "evaluate", "batch_number", "experiment_field_name"]
+        "interface",
+        ["experiment_dir", "evaluate", "batch_number", "experiment_field_name", "job_ids"],
     )
     grad_interface = grad_interface_dummy(
         experiment_dir=Path("some_experiment_dir"),
         evaluate=lambda x: {"mean": 2 * x},
         batch_number=1,
         experiment_field_name="test",
+        job_ids=[1, 2],
     )
 
     # specify further class arguments
     upstream_gradient_file_name = "adjoint_grad_objective.csv"
     gradient_interface = grad_interface
-    db_dummy = namedtuple("db", ["load"])
-    load_dummy = lambda *args: [{"id": 1}, {"id": 2}]
-    db = db_dummy(load_dummy)
     experiment_name = "test"
     model_interface = grad_interface
     grad_obj = AdjointGradient(
-        upstream_gradient_file_name, gradient_interface, db, experiment_name, model_interface
+        upstream_gradient_file_name, gradient_interface, experiment_name, model_interface
     )
 
     samples = np.array([[1.0]])

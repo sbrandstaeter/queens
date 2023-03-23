@@ -4,9 +4,9 @@ import logging
 
 import numpy as np
 
-import pqueens.database.database as DB_module
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.monte_carlo_iterator import MonteCarloIterator
+from pqueens.iterators.sobol_sequence_iterator import SobolSequenceIterator
 from pqueens.models import from_config_create_model
 
 _logger = logging.getLogger(__name__)
@@ -24,7 +24,6 @@ class BMFIAIterator(Iterator):
     *p(yhf|ylf)*.
 
     Attributes:
-        result_description (dict): Dictionary containing settings for result handling and writing.
         X_train (np.array): Input training matrix for HF and LF model.
         Y_LF_train (np.array): Corresponding LF model response to *X_train* input.
         Y_HF_train (np.array): Corresponding HF model response to *X_train* input.
@@ -34,14 +33,10 @@ class BMFIAIterator(Iterator):
         lf_model (obj): Low-fidelity model object.
         coords_experimental_data (np.array): Coordinates of the experimental data.
         time_vec (np.array): Time vector of experimental observations.
-        output_label (str): Name or label of the output quantity of interest (used to find the
-                            data in the csv file).
-        coord_labels (lst): Label or names of the underlying coordinates for the experimental
-                            data. This should be in the same order as the *experimental_data* array.
         y_obs_vec (np.array): Output data of experimental observations.
-        settings_probab_mapping (dict): Dictionary with settings for the probabilistic
-                                        multi-fidelity mapping.
-        db (obj): Database object.
+        x_cols (list): List of columns for features taken from input variables.
+        num_features (int): Number of features to be selected.
+        coord_cols (list): List of columns for coordinates taken from input variables.
 
     Returns:
        BMFIAIterator (obj): Instance of the BMFIAIterator
@@ -49,15 +44,10 @@ class BMFIAIterator(Iterator):
 
     def __init__(
         self,
-        result_description,
         global_settings,
         features_config,
         hf_model,
         lf_model,
-        output_label,
-        coord_labels,
-        settings_probab_mapping,
-        db,
         x_train,
         Y_LF_train,
         Y_HF_train,
@@ -65,30 +55,30 @@ class BMFIAIterator(Iterator):
         coords_experimental_data,
         time_vec,
         y_obs_vec,
+        x_cols,
+        num_features,
+        coord_cols,
     ):
         """Instantiate the BMFIAIterator object.
 
         Args:
-            result_description: TODO_doc
-            global_settings: TODO_doc
-            features_config: TODO_doc
-            hf_model: TODO_doc
-            lf_model: TODO_doc
-            output_label: TODO_doc
-            coord_labels: TODO_doc
-            settings_probab_mapping: TODO_doc
-            db: TODO_doc
-            x_train: TODO_doc
-            Y_LF_train: TODO_doc
-            Y_HF_train: TODO_doc
-            Z_train: TODO_doc
-            coords_experimental_data: TODO_doc
-            time_vec: TODO_doc
-            y_obs_vec: TODO_doc
+            global_settings (dict): Dictionary containing global settings for the QUEENS run.
+            features_config (str): Type of feature selection method.
+            hf_model (obj): High-fidelity model object.
+            lf_model (obj): Low-fidelity model object.
+            x_train (np.array): Input training matrix for HF and LF model.
+            Y_LF_train (np.array): Corresponding LF model response to *X_train* input.
+            Y_HF_train (np.array): Corresponding HF model response to *X_train* input.
+            Z_train (np.array): Corresponding LF informative features to *X_train* input.
+            coords_experimental_data (np.array): Coordinates of the experimental data.
+            time_vec (np.array): Time vector of experimental observations.
+            y_obs_vec (np.array): Output data of experimental observations.
+            x_cols (list): List of columns for features taken from input variables.
+            num_features (int): Number of features to be selected.
+            coord_cols (list): List of columns for coordinates taken from input variables.
         """
         super().__init__(None, global_settings)  # Input prescribed by iterator.py
 
-        self.result_description = result_description
         self.X_train = x_train
         self.Y_LF_train = Y_LF_train
         self.Y_HF_train = Y_HF_train
@@ -98,19 +88,18 @@ class BMFIAIterator(Iterator):
         self.lf_model = lf_model
         self.coords_experimental_data = coords_experimental_data
         self.time_vec = time_vec
-        self.output_label = output_label
-        self.coord_labels = coord_labels
         self.y_obs_vec = y_obs_vec
-        self.settings_probab_mapping = settings_probab_mapping
-        self.db = db
+        self.x_cols = x_cols
+        self.num_features = num_features
+        self.coord_cols = coord_cols
 
     @classmethod
-    def from_config_create_iterator(cls, config, _iterator_name=None, _model_name=None):
+    def from_config_create_iterator(cls, config, iterator_name, _model_name=None):
         """Build a BMFIAIterator object from the problem description.
 
         Args:
             config (dict): Configuration/input file for QUEENS as dictionary
-            _iterator_name (str): Name of the Iterator (here not used)
+            iterator_name (str): Name of the Iterator (here not used)
             _model_name(str): Name of the underlying model (here not used)
 
         Returns:
@@ -120,21 +109,15 @@ class BMFIAIterator(Iterator):
         method_options = config["method"]
         model_name = method_options["model_name"]
         global_settings = config.get('global_settings', None)
-        result_description = method_options["result_description"]
+        bmfia_iterator_dict = config[iterator_name]
 
         # get mf approx settings
-        mf_approx_settings = config[model_name].get("mf_approx_settings")
-        try:
-            features_config = mf_approx_settings["features_config"]
-        except KeyError:
-            raise KeyError(
-                "The key 'features_config' was not available in the approximation settings! "
-                "Abort..."
-            )
+        features_config = bmfia_iterator_dict["features_config"]
+        x_cols = bmfia_iterator_dict.get("X_cols")
+        num_features = bmfia_iterator_dict.get("num_features")
+        coord_cols = bmfia_iterator_dict.get("coord_cols")
 
         # get the mf subiterator settings
-        bmfia_iterator_name = mf_approx_settings["mf_subiterator_name"]
-        bmfia_iterator_dict = config[bmfia_iterator_name]
         hf_model_name = bmfia_iterator_dict["high_fidelity_model_name"]
         lf_model_name = bmfia_iterator_dict["low_fidelity_model_name"]
         initial_design_dict = bmfia_iterator_dict["initial_design"]
@@ -142,12 +125,8 @@ class BMFIAIterator(Iterator):
         hf_model = from_config_create_model(hf_model_name, config)
         lf_model = from_config_create_model(lf_model_name, config)
 
-        # ---------- create database object to load coordinates --------------------------
-        output_label = config[model_name].get("output_label")
-        coord_labels = config[model_name].get("coordinate_labels")
-        db = DB_module.database
-        # ---------- calculate the optimal training samples via classmethods ----------
-        x_train = cls._calculate_optimal_x_train(initial_design_dict, lf_model)
+        # ---------- calculate the initial training samples via classmethods ----------
+        x_train = cls._calculate_initial_x_train(initial_design_dict, lf_model)
 
         # ---------------------- initialize some variables / attributes ---------------
         Y_LF_train = None
@@ -158,15 +137,10 @@ class BMFIAIterator(Iterator):
         y_obs_vec = None
 
         return cls(
-            result_description,
             global_settings,
             features_config,
             hf_model,
             lf_model,
-            output_label,
-            coord_labels,
-            mf_approx_settings,
-            db,
             x_train,
             Y_LF_train,
             Y_HF_train,
@@ -174,10 +148,13 @@ class BMFIAIterator(Iterator):
             coords_experimental_data,
             time_vec,
             y_obs_vec,
+            x_cols,
+            num_features,
+            coord_cols,
         )
 
     @classmethod
-    def _calculate_optimal_x_train(cls, initial_design_dict, model):
+    def _calculate_initial_x_train(cls, initial_design_dict, model):
         """Optimal training data set for probabilistic model.
 
         Based on the selected design method, determine the optimal set of
@@ -221,21 +198,22 @@ class BMFIAIterator(Iterator):
         # choose design method
         if initial_design_dict['type'] == 'random':
             run_design_method = cls._random_design
+        elif initial_design_dict['type'] == 'sobol':
+            run_design_method = cls._sobol_design
         else:
             raise NotImplementedError(
-                "The design type you chose for selecting trainig data is not valid! "
+                "The design type you chose for selecting training data is not valid! "
                 f"You chose {initial_design_dict['type']} but the only valid options "
-                "is 'radnom'! Abort..."
+                "is 'random'!"
             )
 
         return run_design_method
 
     @classmethod
     def _random_design(cls, initial_design_dict, model):
-        """A uniformly random design strategy.
+        """Generate a uniformly random design strategy.
 
-        Calculate the HF training points from large LF-MC data-set based on
-        random selection from bins over y_LF.
+        Get a random initial design using the Monte-Carlo sampler with a uniform distribution.
 
         Args:
             initial_design_dict (dict): Dictionary with description of initial design.
@@ -263,9 +241,39 @@ class BMFIAIterator(Iterator):
         x_train = mc_iterator.samples
         return x_train
 
+    @classmethod
+    def _sobol_design(cls, initial_design_dict, model):
+        """Generate  quasi random design using the Sobol sequence.
+
+        Args:
+            initial_design_dict (dict): Dictionary with description of initial design.
+            model (obj): A model object on which the calculation is performed (only needed for
+                         interfaces here. The model is not evaluated here)
+
+        Returns:
+            x_train (np.array): Training input samples from Sobol sequence
+        """
+        # Some dummy arguments that are necessary for class initialization but not needed
+        dummy_model = model
+        dummy_result_description = {}
+        dummy_global_settings = {}
+        randomize = True
+
+        sobol_iterator = SobolSequenceIterator(
+            dummy_model,
+            initial_design_dict['seed'],
+            initial_design_dict['num_HF_eval'],
+            randomize,
+            dummy_result_description,
+            dummy_global_settings,
+        )
+        sobol_iterator.pre_run()
+        x_train = sobol_iterator.samples
+        return x_train
+
     # ----------- main methods of the object form here ----------------------------------------
     def core_run(self):
-        """Main or core run of the BMFIA iterator.
+        """Trigger main or core run of the BMFIA iterator.
 
         It summarizes the actual evaluation of the HF and LF models for these data and the
         determination of LF informative features.
@@ -278,7 +286,46 @@ class BMFIAIterator(Iterator):
         self.eval_model()
 
         # ----- Set the feature strategy of the probabilistic mapping (select gammas)
-        self.Z_train = self._set_feature_strategy(
+        self.Z_train = self.set_feature_strategy(
+            self.Y_LF_train, self.X_train, self.coords_experimental_data[: self.Y_LF_train.shape[0]]
+        )
+
+        return self.Z_train, self.Y_HF_train
+
+    def expand_training_data(self, additional_x_train, additional_y_lf_train=None):
+        """Update or expand the training data.
+
+        Data is appended by an additional input/output vector of data.
+
+        Args:
+            additional_x_train (np.array): Additional input vector
+            additional_y_lf_train (np.array, optional): Additional LF model response corresponding
+                                                        to additional input vector. Default to None
+
+        Returns:
+            Z_train (np.array): Matrix with low-fidelity feature training data
+            Y_HF_train (np.array): Matrix with HF training data
+        """
+        if additional_y_lf_train is None:
+            _logger.info("Starting to compute additional Y_LF_train...")
+            num_coords = self.coords_experimental_data.shape[0]
+            additional_y_lf_train = self.lf_model.evaluate(additional_x_train)['mean'].reshape(
+                -1, num_coords
+            )
+            _logger.info("Additional Y_LF_train were successfully computed!")
+
+        _logger.info("Starting to compute additional Y_LF_train...")
+        additional_y_hf_train = self.hf_model.evaluate(additional_x_train)['mean'].reshape(
+            -1, num_coords
+        )
+        _logger.info("Additional Y_HF_train were successfully computed!")
+
+        self.X_train = np.vstack((self.X_train, additional_x_train))
+        self.Y_LF_train = np.vstack((self.Y_LF_train, additional_y_lf_train))
+        self.Y_HF_train = np.vstack((self.Y_HF_train, additional_y_hf_train))
+        _logger.info("Training data was successfully expanded!")
+
+        self.Z_train = self.set_feature_strategy(
             self.Y_LF_train, self.X_train, self.coords_experimental_data[: self.Y_LF_train.shape[0]]
         )
 
@@ -296,7 +343,7 @@ class BMFIAIterator(Iterator):
         num_coords = self.coords_experimental_data.shape[0]
         self.Y_HF_train = self.hf_model.evaluate(self.X_train)['mean'].reshape(-1, num_coords)
 
-    def _set_feature_strategy(self, y_lf_mat, x_mat, coords_mat):
+    def set_feature_strategy(self, y_lf_mat, x_mat, coords_mat):
         """Get the low-fidelity feature matrix.
 
         Compose the low-fidelity feature matrix that consists of the low-
@@ -332,21 +379,20 @@ class BMFIAIterator(Iterator):
             'no_features': self._get_no_features,
             'time_features': self._get_time_features,
         }
-
         try:
-            feature_fun = feature_dict.get(self.settings_probab_mapping['features_config'], None)
-        except KeyError:
+            feature_fun = feature_dict.get(self.features_config, None)
+        except KeyError as my_error:
             raise KeyError(
                 "The key 'features_config' was not available in the dictionary "
-                "'settings_probab_mapping'! Abort..."
-            )
+                "'settings_probab_mapping'!"
+            ) from my_error
 
         if feature_fun:
             z_mat = feature_fun(x_mat, y_lf_mat, coords_mat)
         else:
             raise ValueError(
                 "Feature space method specified in 'features_config' is not valid! "
-                f"You provided: {self.settings_probab_mapping['features_config']} "
+                f"You provided: {self.features_config} "
                 f"but valid options are: {feature_dict.keys()}."
             )
 
@@ -367,7 +413,7 @@ class BMFIAIterator(Iterator):
                               dimensions per column.
         """
         try:
-            idx_lst = self.settings_probab_mapping['X_cols']
+            idx_lst = self.x_cols
             # Catch wrong data type
             assert isinstance(idx_lst, list), "Entries of X_cols must be in list format! Abort..."
             # Catch empty list
@@ -378,19 +424,19 @@ class BMFIAIterator(Iterator):
             assert (
                 gamma_mat.shape[0] == y_lf_mat.shape[0]
             ), "Dimensions of gamma_mat and y_lf_mat do not agree! Abort..."
-
             z_lst = []
             for y_per_coordinate in y_lf_mat.T:
                 z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), gamma_mat]))
 
             z_mat = np.array(z_lst).squeeze().T
+
             assert z_mat.ndim == 3, "z_mat should be a 3d tensor if man features are used! Abort..."
 
-        except KeyError:
+        except KeyError as my_error:
             raise KeyError(
                 "The settings for the probabilistic mapping need a key 'X_cols' if "
-                "you want to use the feature configuration 'man_features'! Abort..."
-            )
+                "you want to use the feature configuration 'man_features'!"
+            ) from my_error
 
         return z_mat
 
@@ -403,14 +449,13 @@ class BMFIAIterator(Iterator):
                               dimensions per column.
         """
         assert isinstance(
-            self.settings_probab_mapping['num_features'], int
+            self.num_features, int
         ), "Number of informative features must be an integer! Abort..."
         assert (
-            self.settings_probab_mapping['num_features'] >= 1
+            self.num_features >= 1
         ), "Number of informative features must be an integer greater than one! Abort..."
 
         z_mat = self._update_probabilistic_mapping_with_features()
-
         return z_mat
 
     def _get_coord_features(self, _, y_lf_mat, coords_mat):
@@ -428,7 +473,7 @@ class BMFIAIterator(Iterator):
                               dimensions per column.
         """
         try:
-            idx_lst = self.settings_probab_mapping['coords_cols']
+            idx_lst = self.coord_cols
             # Catch wrong data type
             assert isinstance(
                 idx_lst, list
@@ -452,15 +497,15 @@ class BMFIAIterator(Iterator):
                 z_mat.ndim == 3
             ), "z_mat should be a 3d tensor if coord_features are used! Abort..."
 
-        except KeyError:
+        except KeyError as my_error:
             raise KeyError(
                 "The settings for the probabilistic mapping need a key 'coord_cols' "
                 "if you want to use the feature configuration 'coord_features'! Abort..."
-            )
+            ) from my_error
 
         return z_mat
 
-    def _get_no_features(self, _, y_lf_mat, __):
+    def _get_no_features(self, _x_mat, y_lf_mat, __):
         """Get the low-fidelity feature matrix without additional features.
 
         Args:
@@ -472,8 +517,7 @@ class BMFIAIterator(Iterator):
                               informative feature dimensions. Every row is one data point with
                               dimensions per column.
         """
-        z_mat = y_lf_mat
-
+        z_mat = y_lf_mat[None, :, :]
         return z_mat
 
     def _get_time_features(self, _, y_lf_mat, __):
@@ -488,15 +532,15 @@ class BMFIAIterator(Iterator):
                               informative feature dimensions. Every row is one data point with
                               dimensions per column.
         """
+        grad_gamma_mat = None
         time_repeat = int(y_lf_mat.shape[0] / self.time_vec.size)
         time_vec = np.repeat(self.time_vec.reshape(-1, 1), repeats=time_repeat, axis=0)
 
         z_mat = np.hstack([y_lf_mat, time_vec])
-
         return z_mat
 
     def _update_probabilistic_mapping_with_features(self):
-        """Update multi-fideliy mapping with optimal lf-features."""
+        """Update multi-fidelity mapping with optimal lf-features."""
         raise NotImplementedError(
             "Optimal features for inverse problems are not yet implemented! Abort..."
         )

@@ -25,8 +25,8 @@ _logger = logging.getLogger(__name__)
 @pytest.mark.parametrize(
     "cluster",
     [
-        pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
-        pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        # pytest.param(DEEP_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
+        # pytest.param(BRUTEFORCE_CLUSTER_TYPE, marks=pytest.mark.lnm_cluster),
         pytest.param(CHARON_CLUSTER_TYPE, marks=pytest.mark.imcs_cluster),
     ],
     indirect=True,

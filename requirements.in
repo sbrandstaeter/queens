@@ -4,7 +4,7 @@
 
 # Basic stuff
 cython==0.29.30
-scipy==1.7.3
+scipy==1.10.0
 numpy==1.21.5
 pandas==1.4.3
 
@@ -14,7 +14,7 @@ xarray # Special array format
 pyDOE # design of experiments
 SALib # for sensitivity analysis
 diversipy # sampling from space filling subsets
-vtk # vtk format handler
+vtk>=9.2.0 # vtk format handler
 autograd # wrapper around numpy for automated differentiation
 numba==0.55.1 # numba library for fast computing and jit compilation
 particles # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
@@ -22,16 +22,18 @@ chaospy # polynomial chaos
 pyyaml # to load yaml files
 jinja2
 
-# Machine learing libraries
+# Machine learning libraries
 scikit-learn==1.1.1
 arviz # Bayesian visualization
 gpy # for Gaussian Processes
 gpflow # LV and variational GPs
-tensorflow
-tensorflow-probability
+optax # google jax based optimizer
+tensorflow<2.11.0
+tensorflow-probability<0.19
 torch
 jax[cpu]
 jax
+pymc==5.0.2
 
 # making fancy plots
 matplotlib
@@ -40,11 +42,13 @@ plotly
 
 # testing framework
 pytest
+py
 pytest-codestyle
 pytest-cov
 pytest-mock
 pytest-xdist
 mock
+py
 
 # Terminal utils
 pyfiglet # make ascii  -art printsc
@@ -54,3 +58,6 @@ tomli # TOML parser
 
 # Other Python stuff
 pathos # multiprocessing with more complex python objects
+
+# needed for dev-requirements, check if still needed
+charset_normalizer<3.0.0

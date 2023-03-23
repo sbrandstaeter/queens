@@ -29,9 +29,9 @@ There are various prerequisites for QUEENS such as (an appropriately configured)
 [Install](http://docs.anaconda.com/anaconda/install/linux/) the latest version of [Anaconda](https://www.anaconda.com/) with Python 3.x.
  *Anaconda* is an open-source Python distribution and provides a [virtual environment manager named *Conda*](https://docs.conda.io/projects/conda/en/latest/user-guide/concepts/environments.html) with many popular data science Python packages. In the following, we will provide some of the most important commands when using Anaconda.
 
-- Create a new Anaconda environment, e.g., using Python 3.8:
+- Create a new Anaconda environment, e.g., using Python 3.10:
 ```
-conda create -n <name_of_your_environment> python=3.8
+conda create -n <name_of_your_environment> python=3.10
 ```
 
 - List all packages linked into an Anaconda environment:
@@ -78,7 +78,6 @@ and your email address to your institute email address with the following comman
     ```bash
     pre-commit install --install-hooks --overwrite
     pre-commit install --hook-type commit-msg
-    pre-commit install --hook-type prepare-commit-msg
     ```
 
 1. In case you are using GitLab for the first time on your machine: Add your public SSH key to your GitLab
