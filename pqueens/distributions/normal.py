@@ -16,34 +16,15 @@ class NormalDistribution(Distribution):
         logpdf_const (float): Constant for evaluation of log pdf.
     """
 
-    def __init__(self, mean, covariance, dimension, low_chol, precision, logpdf_const):
+    def __init__(self, mean, covariance):
         """Initialize normal distribution.
 
         Args:
             mean (np.ndarray): mean of the distribution
             covariance (np.ndarray): covariance of the distribution
-            dimension (int): dimensionality of the distribution
-            low_chol (np.ndarray): lower-triangular Cholesky factor of covariance matrix
-            precision (np.ndarray): Precision matrix corresponding to covariance matrix
-            logpdf_const (float): Constant for evaluation of log pdf
         """
-        super().__init__(mean, covariance, dimension)
-        self.low_chol = low_chol
-        self.precision = precision
-        self.logpdf_const = logpdf_const
-
-    @classmethod
-    def from_config_create_distribution(cls, distribution_options):
-        """Create normal distribution object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary with distribution description
-
-        Returns:
-            distribution: NormalDistribution object
-        """
-        mean = np.array(distribution_options['mean']).reshape(-1)
-        covariance = numpy_utils.at_least_2d(np.array(distribution_options['covariance']))
+        mean = np.array(mean).reshape(-1)
+        covariance = numpy_utils.at_least_2d(np.array(covariance))
 
         # sanity checks
         dimension = covariance.shape[0]
@@ -68,16 +49,11 @@ class NormalDistribution(Distribution):
                 f"Provided dimension of covariance matrix: {dimension}. "
             )
 
-        low_chol, precision, logpdf_const = cls._calculate_distribution_parameters(covariance)
-
-        return cls(
-            mean=mean,
-            covariance=covariance,
-            dimension=dimension,
-            low_chol=low_chol,
-            precision=precision,
-            logpdf_const=logpdf_const,
-        )
+        low_chol, precision, logpdf_const = self._calculate_distribution_parameters(covariance)
+        super().__init__(mean, covariance, dimension)
+        self.low_chol = low_chol
+        self.precision = precision
+        self.logpdf_const = logpdf_const
 
     def cdf(self, x):
         """Cumulative distribution function.

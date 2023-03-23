@@ -10,45 +10,25 @@ class MeanFieldNormalDistribution(Distribution):
     """Mean-field normal distribution.
 
     Attributes:
-        standard_deviation_vec (np.ndarray): standard deviation vector
+        standard_deviation (np.ndarray): standard deviation vector
     """
 
-    def __init__(self, mean, covariance, dimension, standard_deviation_vec):
+    def __init__(self, mean, variance, dimension):
         """Initialize normal distribution.
 
         Args:
             mean (np.ndarray): mean of the distribution
-            covariance (np.ndarray): covariance of the distribution
+            variance (np.ndarray): variance of the distribution
             dimension (int): dimensionality of the distribution
         """
-        self.standard_deviation_vec = standard_deviation_vec
-        super().__init__(mean, covariance, dimension)
-
-    @classmethod
-    def from_config_create_distribution(cls, distribution_options):
-        """Create beta distribution object from parameter dictionary.
-
-        Args:
-            distribution_options (dict): Dictionary with distribution description
-
-        Returns:
-            distribution: NormalDistribution object
-        """
-        mean = np.array(distribution_options['mean'])
-        covariance = np.array(distribution_options['variance'])
-        dimension = distribution_options.get("dimension")
-
-        # sanity checks
+        mean = np.array(mean)
+        variance = np.array(variance)
         mean = MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(mean, dimension)
         covariance = MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(
-            covariance, dimension
+            variance, dimension
         )
-        return cls(
-            mean=mean,
-            covariance=covariance,
-            dimension=dimension,
-            standard_deviation_vec=np.sqrt(covariance),
-        )
+        self.standard_deviation = np.sqrt(covariance)
+        super().__init__(mean, covariance, dimension)
 
     def update_variance(self, variance):
         """Update the variance of the mean field distribution.
@@ -60,7 +40,7 @@ class MeanFieldNormalDistribution(Distribution):
             variance, self.dimension
         )
         self.covariance = covariance
-        self.standard_deviation_vec = np.sqrt(covariance)
+        self.standard_deviation = np.sqrt(covariance)
 
     def update_mean(self, mean):
         """Update the mean of the mean field distribution.
@@ -82,7 +62,7 @@ class MeanFieldNormalDistribution(Distribution):
         Returns:
             cdf (np.ndarray): cdf at evaluated positions
         """
-        z = (x - self.mean) / self.standard_deviation_vec
+        z = (x - self.mean) / self.standard_deviation
         cdf = 0.5 * (1 + erf(z / np.sqrt(2)))
         cdf = np.prod(cdf, axis=1).reshape(x.shape[0], -1)
         return cdf
@@ -96,7 +76,7 @@ class MeanFieldNormalDistribution(Distribution):
         Returns:
             samples (np.ndarray): Drawn samples from the distribution
         """
-        samples = np.random.randn(num_draws, self.dimension) * self.standard_deviation_vec.reshape(
+        samples = np.random.randn(num_draws, self.dimension) * self.standard_deviation.reshape(
             1, -1
         ) + self.mean.reshape(1, -1)
 

@@ -10,13 +10,25 @@ or surrogate based UQ approaches.
 from pqueens.utils.import_utils import get_module_class
 
 VALID_TYPES = {
+    'hmc': [
+        'pqueens.iterators.hmc_iterator',
+        'HMCIterator',
+    ],
     'lhs': ['pqueens.iterators.lhs_iterator', 'LHSIterator'],
     'lhs_mf': ['pqueens.iterators.lhs_iterator_mf', 'MFLHSIterator'],
     'metropolis_hastings': [
         'pqueens.iterators.metropolis_hastings_iterator',
         'MetropolisHastingsIterator',
     ],
+    'metropolis_hastings_pymc': [
+        'pqueens.iterators.metropolis_hastings_pymc_iterator',
+        'MetropolisHastingsPyMCIterator',
+    ],
     'monte_carlo': ['pqueens.iterators.monte_carlo_iterator', 'MonteCarloIterator'],
+    'nuts': [
+        'pqueens.iterators.nuts_iterator',
+        'NUTSIterator',
+    ],
     'optimization': ['pqueens.iterators.optimization_iterator', 'OptimizationIterator'],
     'read_data_from_file': ['pqueens.iterators.data_iterator', 'DataIterator'],
     'elementary_effects': [
