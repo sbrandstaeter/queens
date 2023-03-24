@@ -165,7 +165,7 @@ def test_fcc(reference_mixture_model_data):
     config = {
         "type": "mixture",
         "weights": weights,
-        "component_distributions": ["normal_0", "normal_1"],
+        "component_distributions_names": ["normal_0", "normal_1"],
         "normal_0": {
             "type": "normal",
             "mean": normal0.mean.tolist(),

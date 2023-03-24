@@ -54,7 +54,7 @@ class MixtureDistribution(Distribution):
         """
         distribution_options_copy = distribution_options.copy()
         distribution_options_copy.pop("type")
-        component_keys = distribution_options_copy.pop("component_distributions")
+        component_keys = distribution_options_copy.pop("component_distributions_names")
         component_distributions = []
         for key in component_keys:
             component_options = distribution_options_copy.pop(key)
@@ -131,15 +131,10 @@ class MixtureDistribution(Distribution):
         """
         log_weights = np.log(self.weights)
         weighted_logpdf = []
-        for sample in x:
-            sample_logpdf = []
-            for log_weight, component in zip(
-                log_weights, self.component_distributions, strict=True
-            ):
-                sample_logpdf.append(log_weight + component.logpdf(sample))
-            weighted_logpdf.append(sample_logpdf)
+        for log_weight, component in zip(log_weights, self.component_distributions, strict=True):
+            weighted_logpdf.append(log_weight + component.logpdf(x))
 
-        logpdf = logsumexp(weighted_logpdf, axis=1).flatten()
+        logpdf = logsumexp(weighted_logpdf, axis=0).flatten()
 
         return logpdf
 
@@ -192,26 +187,20 @@ class MixtureDistribution(Distribution):
         """
         log_weights = np.log(self.weights)
         inv_log_responsibility = []
-        for sample in x:
-            data_sample = []
-            for log_weight_i, component_i in zip(
+        for log_weight_i, component_i in zip(
+            log_weights, self.component_distributions, strict=True
+        ):
+            data_component_i = []
+            for log_weight_j, component_j in zip(
                 log_weights, self.component_distributions, strict=True
             ):
-                data_component_i = []
-                for log_weight_j, component_j in zip(
-                    log_weights, self.component_distributions, strict=True
-                ):
-                    log_ratio = (
-                        -log_weight_i
-                        - component_i.logpdf(sample)
-                        + log_weight_j
-                        + component_j.logpdf(sample)
-                    )
-                    data_component_i.append(log_ratio)
-                data_sample.append(logsumexp(data_component_i))
-            inv_log_responsibility.append(data_sample)
-
-        return np.exp(-np.array(inv_log_responsibility))
+                log_ratio = (
+                    -log_weight_i - component_i.logpdf(x) + log_weight_j + component_j.logpdf(x)
+                )
+                data_component_i.append(log_ratio)
+            inv_log_responsibility.append(data_component_i)
+        inv_log_responsibility = -logsumexp(inv_log_responsibility, axis=1)  # pylint: disable=E1130
+        return np.exp(inv_log_responsibility).T
 
     def export_dict(self):
         """Create a dict of the distribution.
