@@ -27,7 +27,7 @@ bruteforce_cluster_settings = {
 charon_cluster_settings = {
     'name': 'charon',
     'workload_manager': 'slurm',
-    'cluster_address': '192.168.2.253',
+    'cluster_address': 'charon.bauv.unibw-muenchen.de',
     'cluster_internal_address': '192.168.1.253',
     'cluster_python_path': '$HOME/miniconda3/envs/queens/bin/python',
     'path_to_jobscript': relative_path_from_queens('templates/jobscripts/jobscript_dask_charon.sh'),
