@@ -56,5 +56,5 @@ def test_write_random_material_to_dat(
 @pytest.fixture()
 def expected_result():
     """TODO_doc."""
-    result = np.array([0.79857, 0.73370, 0.71603])
+    result = np.array([[0.79857, 0.73370, 0.71603]]).reshape(3, 1)
     return result

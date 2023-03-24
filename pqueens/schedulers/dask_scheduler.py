@@ -68,7 +68,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         result_dict = {'mean': [], 'gradient': []}
         for result in results:
             # We should remove this squeeze! It is only introduced for consistency with old test.
-            result_dict['mean'].append(np.array(result[0]).squeeze())
+            result_dict['mean'].append(np.atleast_1d(np.array(result[0]).squeeze()))
             result_dict['gradient'].append(result[1])
         result_dict['mean'] = np.array(result_dict['mean'])
         result_dict['gradient'] = np.array(result_dict['gradient'])
