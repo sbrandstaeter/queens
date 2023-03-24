@@ -37,12 +37,10 @@ class MetropolisHastingsIterator(Iterator):
     Attributes:
         num_chains (int): Number of independent chains.
         num_samples (int): Number of samples per chain.
-        proposal_distribution (scipy.stats.rv_continuous): Proposal distribution
-                                                           giving zero-mean deviates.
+        proposal_distribution (obj): Proposal distribution.
         result_description (dict):  Description of desired results.
-        as_mcmc_kernel (bool): Indicates whether the iterator is used
-                               as an MCMC kernel for a SMC iterator or
-                               as the main iterator itself.
+        as_smc_rejuvenation_step (bool): Indicates whether the iterator is used as a rejuvenation
+                                         step for a SMC iterator or as the main iterator itself.
         tune (bool): Tune the scale of covariance.
         scale_covariance (float): Scale of covariance matrix
                                   of gaussian proposal distribution.
@@ -64,38 +62,45 @@ class MetropolisHastingsIterator(Iterator):
 
     def __init__(
         self,
-        as_mcmc_kernel,
-        global_settings,
         model,
-        num_burn_in,
-        num_chains,
-        num_samples,
-        proposal_distribution,
         result_description,
-        scale_covariance,
+        proposal_distribution,
+        num_samples,
         seed,
-        temper_type,
-        tune,
-        tune_interval,
+        global_settings,
+        tune=False,
+        tune_interval=100,
+        scale_covariance=1.0,
+        num_burn_in=0,
+        num_chains=1,
+        as_smc_rejuvenation_step=False,
+        temper_type='bayes',
     ):
-        """TODO_doc.
+        """Initialize Metropolis-Hastings iterator.
 
         Args:
-            as_mcmc_kernel: TODO_doc
-            global_settings: TODO_doc
-            model: TODO_doc
-            num_burn_in: TODO_doc
-            num_chains: TODO_doc
-            num_samples: TODO_doc
-            proposal_distribution: TODO_doc
-            result_description: TODO_doc
-            scale_covariance: TODO_doc
-            seed: TODO_doc
-            temper_type: TODO_doc
-            tune: TODO_doc
-            tune_interval: TODO_doc
+            model (obj, optional): Model to be evaluated by iterator.
+            result_description (dict): Description of desired results.
+            proposal_distribution (obj): Proposal distribution.
+            num_samples (int): Number of samples per chain.
+            seed (int): Seed for random number generator.
+            global_settings (dict, optional): Settings for the QUEENS run.
+            tune (bool): Tune the scale of covariance.
+            tune_interval (int): Tune the scale of the covariance every *tune_interval*-th step.
+            scale_covariance: scale_covariance (float): Scale of covariance matrix of gaussian
+                                                        proposal distribution.
+            num_burn_in (int): Number of burn-in samples.
+            num_chains (int): Number of independent chains.
+            as_smc_rejuvenation_step (bool): Indicates whether the iterator is used as a
+                                             rejuvenation step for a SMC iterator or as the main
+                                             iterator itself.
+            temper_type (str): Temper type ('bayes' or 'generic')
         """
         super().__init__(model, global_settings)
+        _logger.info(
+            "Metropolis-Hastings Iterator for experiment: %s",
+            self.global_settings['experiment_name'],
+        )
 
         self.num_chains = num_chains
         self.num_samples = num_samples
@@ -103,35 +108,16 @@ class MetropolisHastingsIterator(Iterator):
         self.proposal_distribution = proposal_distribution
 
         self.result_description = result_description
-        self.as_mcmc_kernel = as_mcmc_kernel
+        self.as_smc_rejuvenation_step = as_smc_rejuvenation_step
 
-        if not self.as_mcmc_kernel:
-            # actually this is not completely true: it the generic
-            # tempering type might be useful to generate samples from
-            # generic distributions that are not interpreted as posteriors
-            # in the sense of Bayes rule.
-            # To do so one would need to set temper_type = 'generic'
-            # and fix tempering_parameter = gamma = 1.0
-            if temper_type != 'bayes':
-                raise ValueError(
-                    "Plain MH can not handle tempering.\n"
-                    "Tempering may only be used in conjunction with SMC."
-                )
+        self.tune = tune
+        # TODO change back to a scalar value.
+        #  Otherwise the diagnostics tools might not make sense
+        self.scale_covariance = np.ones((self.num_chains, 1)) * scale_covariance
+        self.num_burn_in = num_burn_in
 
-            self.tune = tune
-            # TODO change back to a scalar value.
-            #  Otherwise the diagnostics tools might not make sense
-            self.scale_covariance = np.ones((self.num_chains, 1)) * scale_covariance
-
-            self.num_burn_in = num_burn_in
-        else:
-            # scaling and tuning of proposal distribution is done within SMC
-            self.tune = False
-            self.scale_covariance = 1.0
-            self.num_burn_in = 0
-
-            if not isinstance(self.proposal_distribution, NormalDistribution):
-                raise RuntimeError("Currently only Normal proposals are supported as MCMC Kernel.")
+        if not isinstance(self.proposal_distribution, NormalDistribution):
+            raise RuntimeError("Currently only Normal proposals are supported as MCMC Kernel.")
 
         self.temper = smc_utils.temper_factory(temper_type)
         # fixed within MH, adapted by SMC if needed
@@ -159,65 +145,31 @@ class MetropolisHastingsIterator(Iterator):
         self.accepted_interval = np.zeros((self.num_chains, 1))
 
     @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None, temper_type='bayes'):
-        """Create Metropolis-Hastings iterator from problem description.
+    def from_config_create_iterator(cls, config, iterator_name, model=None):
+        """Create iterator from problem description.
 
         Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator (optional)
+            config (dict):       Dictionary with QUEENS problem description
+            iterator_name (str): Name of iterator to identify right section
+                                 in options dict (optional)
             model (model):       Model to use (optional)
-            temper_type: TODO_doc
 
         Returns:
-            iterator: MetropolisHastingsIterator object
+            iterator: Iterator object
         """
-        _logger.info(
-            "Metropolis-Hastings Iterator for experiment: %s",
-            config.get('global_settings').get('experiment_name'),
-        )
-        method_options = config[iterator_name]
+        method_options = config[iterator_name].copy()
+        method_options.pop('type')
         if model is None:
-            model_name = method_options['model_name']
+            model_name = method_options.pop('model_name')
             model = from_config_create_model(model_name, config)
-
-        result_description = method_options.get('result_description', None)
-        global_settings = config.get('global_settings', None)
-
-        # initialize proposal distribution
-        name_proposal_distribution = method_options['proposal_distribution']
-        prop_opts = config.get(name_proposal_distribution, None)
-        if prop_opts is not None:
-            proposal_distribution = from_config_create_distribution(prop_opts)
-        else:
-            raise ValueError(
-                f'Could not find proposal distributio'
-                f' "{name_proposal_distribution}" in input file.'
-            )
-
-        tune = method_options.get('tune', False)
-        tune_interval = method_options.get('tune_interval', 100)
-        scale_cov = method_options.get('scale_covariance', 1.0)
-
-        num_chains = method_options.get('num_chains', 1)
-
-        num_burn_in = method_options.get('num_burn_in', 0)
-
-        as_mcmc_kernel = method_options.get('as_mcmc_kernel', False)
-
+        proposal_distribution_name = method_options.pop('proposal_distribution_name')
+        proposal_distribution = from_config_create_distribution(config[proposal_distribution_name])
+        global_settings = config['global_settings']
         return cls(
-            as_mcmc_kernel=as_mcmc_kernel,
-            global_settings=global_settings,
             model=model,
-            num_burn_in=num_burn_in,
-            num_chains=num_chains,
-            num_samples=method_options['num_samples'],
+            global_settings=global_settings,
             proposal_distribution=proposal_distribution,
-            result_description=result_description,
-            scale_covariance=scale_cov,
-            seed=method_options['seed'],
-            temper_type=temper_type,
-            tune=tune,
-            tune_interval=tune_interval,
+            **method_options,
         )
 
     def eval_log_prior(self, samples):
@@ -254,7 +206,7 @@ class MetropolisHastingsIterator(Iterator):
             accept_rate_interval = np.exp(
                 np.log(self.accepted_interval) - np.log(self.tune_interval)
             )
-            if not self.as_mcmc_kernel:
+            if not self.as_smc_rejuvenation_step:
                 _logger.info("Current acceptance rate: %s.", accept_rate_interval)
             self.scale_covariance = mcmc_utils.tune_scale_covariance(
                 self.scale_covariance, accept_rate_interval
@@ -305,7 +257,7 @@ class MetropolisHastingsIterator(Iterator):
             gamma: TODO_doc
             cov_mat: TODO_doc
         """
-        if not self.as_mcmc_kernel:
+        if not self.as_smc_rejuvenation_step:
             _logger.info("Initialize Metropolis-Hastings run.")
 
             np.random.seed(self.seed)
@@ -334,7 +286,7 @@ class MetropolisHastingsIterator(Iterator):
         1. Burn-in phase
         2. Sampling phase
         """
-        if not self.as_mcmc_kernel:
+        if not self.as_smc_rejuvenation_step:
             _logger.info('Metropolis-Hastings core run.')
 
         # Burn-in phase
@@ -357,7 +309,7 @@ class MetropolisHastingsIterator(Iterator):
         avg_accept_rate = np.exp(
             np.log(np.sum(self.accepted)) - np.log((self.num_samples * self.num_chains))
         )
-        if self.as_mcmc_kernel:
+        if self.as_smc_rejuvenation_step:
             # the iterator is used as MCMC kernel for the Sequential Monte Carlo iterator
             return [
                 self.chains[-1],

@@ -8,7 +8,6 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 from gpflow.utilities import print_summary, set_trainable
-from sklearn.preprocessing import StandardScaler
 
 from pqueens.regression_approximations.regression_approximation import RegressionApproximation
 from pqueens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function

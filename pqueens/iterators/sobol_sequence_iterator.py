@@ -5,7 +5,6 @@ import logging
 from torch.quasirandom import SobolEngine
 
 from pqueens.iterators.iterator import Iterator
-from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
@@ -30,9 +29,9 @@ class SobolSequenceIterator(Iterator):
         model,
         seed,
         number_of_samples,
-        randomize,
         result_description,
         global_settings,
+        randomize=False,
     ):
         """Initialize Sobol sequence iterator.
 
@@ -41,52 +40,19 @@ class SobolSequenceIterator(Iterator):
              seed  (int): This is the seed for the scrambling. The seed of the random number
                           generator is set to this, if specified. Otherwise, it uses a random seed.
              number_of_samples (int): Number of samples to compute
+             result_description (dict):  Description of desired results
+             global_settings (dict): Settings for the QUEENS run.
              randomize (bool): Setting this to True will produce scrambled Sobol sequences.
                                Scrambling is capable of producing better Sobol sequences.
-             result_description (dict):  Description of desired results
-             global_settings (dict, optional): Settings for the QUEENS run.
         """
         super().__init__(model, global_settings)
+
         self.seed = seed
         self.number_of_samples = number_of_samples
         self.randomize = randomize
         self.result_description = result_description
         self.samples = None
         self.output = None
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create Sobol sequence iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: SobolSequenceIterator object
-        """
-        method_options = config[iterator_name]
-        if model is None:
-            model_name = method_options["model_name"]
-            model = from_config_create_model(model_name, config)
-
-        seed = method_options["seed"]
-        number_of_samples = method_options["num_samples"]
-        randomize = method_options.get("randomize", False)
-
-        result_description = method_options.get("result_description", None)
-        global_settings = config.get("global_settings", None)
-
-        return cls(
-            model,
-            seed,
-            number_of_samples,
-            randomize,
-            result_description,
-            global_settings,
-        )
 
     def pre_run(self):
         """Generate samples for subsequent Sobol sequence analysis."""

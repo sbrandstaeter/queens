@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 
 import numpy as np
 import pytest
@@ -10,9 +9,9 @@ from pqueens.external_geometry.baci_dat_geometry import BaciDatExternalGeometry
 
 # general input fixtures
 @pytest.fixture()
-def default_geo_obj(tmpdir):
+def default_geo_obj(tmp_path):
     """TODO_doc."""
-    path_to_dat_file = tmpdir.join('myfile.dat')
+    path_to_dat_file = tmp_path / 'myfile.dat'
     list_geometric_sets = ["DSURFACE 9"]
     list_associated_material_numbers = [[10, 11]]
     element_topology = [{"element_number": [], "nodes": [], "material": []}]
@@ -22,7 +21,7 @@ def default_geo_obj(tmpdir):
     volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
     node_coordinates = {"node_mesh": [], "coordinates": []}
 
-    path_to_preprocessed_dat_file = tmpdir.join('preprocessed')
+    path_to_preprocessed_dat_file = tmp_path / 'preprocessed'
     random_fields = (
         [{"name": "mat_param", "type": "material", "external_instance": "DSURFACE 1"}],
     )
@@ -194,7 +193,7 @@ def default_topology_vol():
 
 
 # ----------------- actual unit_tests -------------------------------------------------------------
-def test_init(mocker, tmpdir):
+def test_init(mocker, tmp_path):
     """TODO_doc."""
     path_to_dat_file = 'dummy_path'
     list_geometric_sets = ["DSURFACE 9"]
@@ -207,7 +206,7 @@ def test_init(mocker, tmpdir):
     node_coordinates = {"node_mesh": [], "coordinates": []}
     mp = mocker.patch('pqueens.external_geometry.external_geometry.ExternalGeometry.__init__')
 
-    path_to_preprocessed_dat_file = tmpdir.join('preprocessed')
+    path_to_preprocessed_dat_file = tmp_path / 'preprocessed'
     random_fields = (
         [{"name": "mat_param", "type": "material", "external_instance": "DSURFACE 1"}],
     )
@@ -241,9 +240,9 @@ def test_init(mocker, tmpdir):
     assert geo_obj.random_fields == random_fields
 
 
-def test_read_external_data_comment(mocker, tmpdir, dat_dummy_comment, default_geo_obj):
+def test_read_external_data_comment(mocker, tmp_path, dat_dummy_comment, default_geo_obj):
     """TODO_doc."""
-    filepath = tmpdir.join("myfile.dat")
+    filepath = tmp_path / "myfile.dat"
     write_to_file(dat_dummy_comment, filepath)
 
     mocker.patch(
@@ -291,9 +290,9 @@ def test_read_external_data_comment(mocker, tmpdir, dat_dummy_comment, default_g
     assert default_geo_obj._get_elements_belonging_to_desired_material.call_count == 0
 
 
-def test_read_external_data_get_functions(mocker, tmpdir, dat_dummy_get_fun, default_geo_obj):
+def test_read_external_data_get_functions(mocker, tmp_path, dat_dummy_get_fun, default_geo_obj):
     """TODO_doc."""
-    filepath = tmpdir.join("myfile.dat")
+    filepath = tmp_path / "myfile.dat"
     write_to_file(dat_dummy_get_fun, filepath)
 
     default_geo_obj.current_dat_section = 'dummy'
@@ -390,7 +389,7 @@ def test_check_if_in_desired_dat_section(default_geo_obj):
 
 
 def test_get_topology(
-    tmpdir,
+    tmp_path,
     default_geo_obj,
     current_dat_sections,
     desired_sections,

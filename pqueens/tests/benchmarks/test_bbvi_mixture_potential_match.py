@@ -60,7 +60,7 @@ def test_bbvi_GMM_density_match(
 
 
 @pytest.fixture()
-def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
+def dummy_bbvi_instance(tmp_path, variational_distribution_obj):
     """Initialize BBVI instance."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
@@ -87,7 +87,7 @@ def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
         "write_results": False,
         "plotting_options": {
             "plot_boolean": False,
-            "plotting_dir": tmpdir,
+            "plotting_dir": tmp_path,
             "plot_name": "variational_params_convergence.eps",
             "save_bool": False,
         },
@@ -103,7 +103,7 @@ def dummy_bbvi_instance(tmpdir, variational_distribution_obj):
     stochastic_optimizer = from_config_create_optimizer(optimizer_config)
     # ------ other params ----------------------------------------------------------
     model = 'fake_model'
-    global_settings = {'output_dir': tmpdir, 'experiment_name': experiment_name}
+    global_settings = {'output_dir': tmp_path, 'experiment_name': experiment_name}
     db = 'dummy'
     random_seed = 1
 
@@ -182,13 +182,13 @@ def variational_distribution_obj():
 
 
 @pytest.fixture()
-def visualization_obj(tmpdir):
+def visualization_obj(tmp_path):
     """Create visualization module."""
     visualization_dict = {
         "method": {
             "result_description": {
                 "plotting_options": {
-                    "plotting_dir": tmpdir,
+                    "plotting_dir": tmp_path,
                     "save_bool": False,
                     "plot_boolean": False,
                     "plot_name": "variat_params_convergence.eps",

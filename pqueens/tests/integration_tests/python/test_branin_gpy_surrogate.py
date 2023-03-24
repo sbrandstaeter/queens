@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -10,11 +9,11 @@ import pytest
 from pqueens import run
 
 
-def test_branin_gpy_surrogate(inputdir, tmpdir, expected_pdf):
+def test_branin_gpy_surrogate(inputdir, tmp_path, expected_pdf):
     """Test case for GP based surrogate model."""
-    run(Path(os.path.join(inputdir, 'gpy_surrogate_branin.yml')), Path(tmpdir))
+    run(inputdir / 'gpy_surrogate_branin.yml', tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

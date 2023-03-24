@@ -1,6 +1,6 @@
 """Configuration of folder structure of QUEENS experiments."""
 import logging
-import pathlib
+from pathlib import Path
 
 from pqueens.utils.run_subprocess import run_subprocess
 
@@ -12,7 +12,7 @@ EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
 
 def local_base_directory():
     """Hold all queens related data on local machine."""
-    base_dir = pathlib.Path().home() / BASE_DATA_DIR
+    base_dir = Path().home() / BASE_DATA_DIR
     create_directory(base_dir)
     return base_dir
 
@@ -26,7 +26,7 @@ def remote_base_directory(remote_connect):
         additional_error_message=f"Unable to identify home on remote.\n"
         f"Tried to connect to {remote_connect}.",
     )
-    base_dir = pathlib.Path(remote_home.rstrip()) / BASE_DATA_DIR
+    base_dir = Path(remote_home.rstrip()) / BASE_DATA_DIR
     create_directory(base_dir, remote_connect=remote_connect)
     return base_dir
 
@@ -81,11 +81,11 @@ def current_job_directory(experiment_dir, job_id):
     """Directory of the latest submitted job.
 
     Args:
-        experiment_dir (pathlib.Path): Experiment directory
+        experiment_dir (Path): Experiment directory
         job_id (str): Job ID of the current job
 
     Returns:
-        job_dir (pathlib.Path): Path to the current job directory.
+        job_dir (Path): Path to the current job directory.
     """
     job_dir = experiment_dir / str(job_id)
     return job_dir

@@ -2,7 +2,6 @@
 import numpy as np
 
 import pqueens.visualization.grid_iterator_visualization as qvis
-from pqueens.models import from_config_create_model
 from pqueens.utils.process_outputs import process_outputs, write_results
 
 from .iterator import Iterator
@@ -27,60 +26,29 @@ class GridIterator(Iterator):
         self,
         model,
         result_description,
+        grid_design,
         global_settings,
-        grid_dict,
-        num_parameters,
     ):
         """Initialize grid iterator.
 
         Args:
             model (model): Model to be evaluated by iterator
             result_description (dict):  Description of desired results
+            grid_design (dict): Dictionary containing grid information
             global_settings (dict, optional): Settings for the QUEENS run.
-            grid_dict (dict): Dictionary containing grid information
-            num_parameters (int):   number of parameters to be varied
         """
         super().__init__(model, global_settings)
-        self.grid_dict = grid_dict
+        self.grid_dict = grid_design
         self.result_description = result_description
         self.samples = None
         self.output = None
         self.num_grid_points_per_axis = []
-        self.num_parameters = num_parameters
+        self.num_parameters = self.parameters.num_parameters
         self.scale_type = []
 
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create grid iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-
-        Returns:
-            iterator (obj): GridIterator object
-        """
-        method_options = config[iterator_name]
-        if model is None:
-            model_name = method_options["model_name"]
-            model = from_config_create_model(model_name, config)
-
-        result_description = method_options.get("result_description", None)
-        global_settings = config.get("global_settings", None)
-        grid_dict = method_options.get("grid_design", None)
-        num_parameters = len(grid_dict)
-
-        # take care of wrong user input
-        if num_parameters is None:
-            raise RuntimeError("Number of parameters (num_parameters) not given by user!")
-
         # ---------------------- CREATE VISUALIZATION BORG ----------------------------
-        qvis.from_config_create(config, iterator_name=iterator_name)
-
-        return cls(model, result_description, global_settings, grid_dict, num_parameters)
+        if result_description.get('plotting_options'):
+            qvis.from_config_create(result_description.get('plotting_options'), grid_design)
 
     def pre_run(self):
         """Generate samples based on description in *grid_dict*."""

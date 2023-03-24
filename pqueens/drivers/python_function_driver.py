@@ -5,6 +5,7 @@ This module is outdated and should therefore not be used.
 import logging
 import os
 import sys
+from pathlib import Path
 
 import numpy as np
 
@@ -24,11 +25,11 @@ def python_function_driver(job):
     _logger.info("Running job for Python function.\n")
 
     # add directory to system path.
-    sys.path.append(os.path.realpath(job['experiment_dir']))
+    sys.path.append(str(Path(job['experiment_dir'])))
 
     # change to directory.
     os.chdir(job['experiment_dir'])
-    _logger.info("Changed to directory %s\n", os.getcwd())
+    _logger.info("Changed to directory %s\n", Path.cwd())
 
     # convert dict to vector of parameters.
     params = {}

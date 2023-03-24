@@ -10,7 +10,6 @@ Attributes:
     bmfia_visualization_instance (obj): Instance of the BMFIAVisualization class
 """
 
-import os
 import sys
 
 import matplotlib.pyplot as plt
@@ -83,8 +82,7 @@ class BMFIAVisualization:
         """
         plotting_options = config[model_name].get("plotting_options")
         paths = [
-            os.path.join(plotting_options.get("plotting_dir"), name)
-            for name in plotting_options["plot_names"]
+            plotting_options.get("plotting_dir") / name for name in plotting_options["plot_names"]
         ]
         save_bools = plotting_options.get("save_bool")
         plot_booleans = plotting_options.get("plot_booleans")

@@ -14,7 +14,6 @@ from pqueens.tests.integration_tests.example_simulator_functions import (
 
 class TestElementaryEffectsIshigami(unittest.TestCase):
     def setUp(self):
-
         uncertain_parameter = {
             "type": "uniform",
             "upper_bound": 3.14159265359,
@@ -37,11 +36,11 @@ class TestElementaryEffectsIshigami(unittest.TestCase):
         self.model = SimulationModel("my_model", self.interface)
 
         self.my_iterator = ElementaryEffectsIterator(
-            self.model,
+            model=self.model,
             num_trajectories=20,
             local_optimization=True,
             num_optimal_trajectories=4,
-            num_levels=4,
+            number_of_levels=4,
             seed=42,
             confidence_level=0.95,
             num_bootstrap_samples=1000,

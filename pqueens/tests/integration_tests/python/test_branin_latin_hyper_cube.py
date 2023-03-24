@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -9,11 +8,11 @@ import pytest
 from pqueens import run
 
 
-def test_branin_latin_hyper_cube(inputdir, tmpdir):
+def test_branin_latin_hyper_cube(inputdir, tmp_path):
     """Test case for latin hyper cube iterator."""
-    run(Path(os.path.join(inputdir, 'latin_hyper_cube_branin.yml')), Path(tmpdir))
+    run(inputdir / 'latin_hyper_cube_branin.yml', tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(53.17279969296224)

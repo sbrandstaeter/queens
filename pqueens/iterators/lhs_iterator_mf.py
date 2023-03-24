@@ -5,7 +5,6 @@ import logging
 import numpy as np
 from pyDOE import lhs
 
-from pqueens.models import from_config_create_model
 from pqueens.models.multifidelity_model import MultifidelityModel
 
 from .iterator import Iterator
@@ -52,33 +51,6 @@ class MFLHSIterator(Iterator):
         self.samples = []
         self.outputs = []
         self.mode = mode
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create LHS iterator from problem description.
-
-        Args:
-            config (dict):       Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: MFLHSIterator object
-        """
-        method_options = config[iterator_name]
-        _logger.info('Method options %s', method_options)
-        if model is None:
-            model_name = method_options["model_name"]
-            model = from_config_create_model(model_name, config)
-        return cls(
-            model,
-            method_options["seed"],
-            method_options["num_samples"],
-            method_options["num_iterations"],
-            method_options["mode"],
-            config["global_settings"],
-        )
 
     def pre_run(self):
         """Generate samples for subsequent LHS analysis."""

@@ -2,8 +2,8 @@
 
 import getpass
 import logging
-import pathlib
 import shutil
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -191,7 +191,7 @@ def baci_cluster_paths(cluster_user, connect_to_resource):
 
     Checks also for existence of the executables.
     """
-    base_directory = pathlib.Path("/home", cluster_user, "workspace", "build")
+    base_directory = Path("/home", cluster_user, "workspace", "build")
 
     path_to_executable = base_directory / "baci-release"
     path_to_drt_monitor = base_directory / "post_drt_monitor"
@@ -245,7 +245,7 @@ def baci_cluster_paths_native(
     cluster_user, prepare_cluster_testing_environment_native
 ):  # pylint: disable=unused-argument
     """Paths to baci for native cluster tests."""
-    path_to_executable = pathlib.Path(
+    path_to_executable = Path(
         "/home", cluster_user, "workspace_for_queens", "build", "baci-release"
     )
     if not path_to_executable.is_file():
@@ -254,7 +254,7 @@ def baci_cluster_paths_native(
             f"Was looking here: {path_to_executable}"
         )
 
-    path_to_drt_monitor = pathlib.Path(
+    path_to_drt_monitor = Path(
         "/home", cluster_user, "workspace_for_queens", "build", "post_drt_monitor"
     )
     if not path_to_drt_monitor.is_file():
