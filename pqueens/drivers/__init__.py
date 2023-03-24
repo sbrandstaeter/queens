@@ -27,8 +27,8 @@ def from_config_create_driver(
         job_id (int):   Job ID as provided in database within range [1, n_jobs]
         batch (int):    Job batch number (multiple batches possible)
         driver_name (str): Name of driver instance that should be realized
-        experiment_dir (path):  Path to directory of experiment on remote resource
-        working_dir (path): Path to directory for output of job on compute node
+        experiment_dir (Path):  Path to directory of experiment on remote resource
+        working_dir (Path): Path to directory for output of job on compute node
         cluster_config (ClusterConfig): configuration data of cluster
         cluster_options (dict): options for cluster jobs
 

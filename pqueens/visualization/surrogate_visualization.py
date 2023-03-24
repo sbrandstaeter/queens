@@ -1,7 +1,7 @@
 """TODO_doc."""
 
-import os
 import sys
+from pathlib import Path
 
 import GPy
 import matplotlib
@@ -128,7 +128,7 @@ class SurrogateVisualization(object):
 
         if plotting_options:
             paths = [
-                os.path.join(plotting_options.get("plotting_dir", None), name)
+                Path(plotting_options.get("plotting_dir", None), name)
                 for name in plotting_options["plot_names"]
             ]
             saving_paths = convert_to_dict(paths)

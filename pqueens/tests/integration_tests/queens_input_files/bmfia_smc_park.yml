@@ -29,9 +29,6 @@ model:
     initial_hyper_params_lst: [0.05, 1.0, 0.05]
     mean_function_type: identity_multi_fidelity
     random_seed: 1
-    features_config: man_features
-    X_cols: [0]
-    num_features: 1
     mf_subiterator_name: bmfia_iterator
   forward_model_name: lf_model
   output_label: y_obs
@@ -57,6 +54,9 @@ bmfia_iterator:
   type: bmfia
   low_fidelity_model_name: lf_model
   high_fidelity_model_name: hf_model
+  features_config: man_features
+  X_cols: [0]
+  num_features: 1
   initial_design:
     type: random
     num_HF_eval: 20

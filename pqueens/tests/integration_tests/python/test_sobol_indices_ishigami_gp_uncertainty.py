@@ -1,18 +1,16 @@
 """Test cases for Sobol index estimation with metamodel uncertainty."""
-import os
 import pickle
-from pathlib import Path
 
 import numpy as np
 
 from pqueens import run
 
 
-def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmpdir):
+def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmp_path):
     """Test case for Sobol indices based on GP realizations."""
-    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp_uncertainty.yml')), Path(tmpdir))
+    run(inputdir / 'sobol_indices_ishigami_gp_uncertainty.yml', tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -43,14 +41,11 @@ def test_sobol_indices_ishigami_gp_uncertainty(inputdir, tmpdir):
     np.testing.assert_allclose(results['total_order'].values, expected_st, atol=1e-05)
 
 
-def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmpdir):
+def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmp_path):
     """Test case for third-order Sobol indices."""
-    run(
-        Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp_uncertainty_third_order.yml')),
-        Path(tmpdir),
-    )
+    run(inputdir / 'sobol_indices_ishigami_gp_uncertainty_third_order.yml', tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -65,11 +60,11 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(inputdir, tmpdir):
     np.testing.assert_allclose(results['third_order'].values, expected_s3, atol=1e-01)
 
 
-def test_sobol_indices_ishigami_gp_mean(inputdir, tmpdir):
+def test_sobol_indices_ishigami_gp_mean(inputdir, tmp_path):
     """Test case for Sobol indices based on GP mean."""
-    run(Path(os.path.join(inputdir, 'sobol_indices_ishigami_gp_mean.yml')), Path(tmpdir))
+    run(inputdir / 'sobol_indices_ishigami_gp_mean.yml', tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path / "xxx.pickle"
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

@@ -1,6 +1,5 @@
 """Integration test for reparameterization trick VI."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -17,16 +16,16 @@ from pqueens.utils import injector
 
 def test_rpvi_iterator_park91a_hifi(
     inputdir,
-    tmpdir,
+    tmp_path,
     create_experimental_data_park91a_hifi_on_grid,
 ):
     """Integration test for the rpvi iterator.
 
     Based on the *park91a_hifi* function.
     """
-    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.yml")
-    experimental_data_path = tmpdir
-    plot_dir = tmpdir
+    template = Path(inputdir, "rpvi_park91a_hifi_template.yml")
+    experimental_data_path = tmp_path
+    plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
@@ -35,20 +34,20 @@ def test_rpvi_iterator_park91a_hifi(
         "likelihood_model_type": "gaussian",
         "external_python_module": "",
     }
-    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.yml")
+    input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
     # This seed is fixed so that the variational distribution is initialized so that the park
     # function can be evaluated correctly
     np.random.seed(211)
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
     # actual main call
 
     # get the results of the QUEENS run
-    result_file = os.path.join(tmpdir, "inverse_rpvi_park91a_hifi.pickle")
+    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
 
@@ -61,7 +60,7 @@ def test_rpvi_iterator_park91a_hifi(
 
 def test_rpvi_iterator_park91a_hifi_external_module(
     inputdir,
-    tmpdir,
+    tmp_path,
     create_experimental_data_park91a_hifi_on_grid,
     write_custom_likelihood_model,
     module_path,
@@ -70,9 +69,9 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 
     Based on the *park91a_hifi* function.
     """
-    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.yml")
-    experimental_data_path = tmpdir
-    plot_dir = tmpdir
+    template = inputdir / "rpvi_park91a_hifi_template.yml"
+    experimental_data_path = tmp_path
+    plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
@@ -81,20 +80,20 @@ def test_rpvi_iterator_park91a_hifi_external_module(
         "likelihood_model_type": "MyLikelihood",
         "external_python_module": module_path,
     }
-    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.yml")
+    input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
     # This seed is fixed so that the variational distribution is initialized so that the park
     # function can be evaluated correctly
     np.random.seed(211)
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
     # actual main call
 
     # get the results of the QUEENS run
-    result_file = os.path.join(tmpdir, "inverse_rpvi_park91a_hifi.pickle")
+    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
 
@@ -106,13 +105,13 @@ def test_rpvi_iterator_park91a_hifi_external_module(
 
 
 def test_rpvi_iterator_park91a_hifi_provided_gradient(
-    inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
+    inputdir, tmp_path, create_experimental_data_park91a_hifi_on_grid
 ):
     """Test for the rpvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
-    template = os.path.join(inputdir, "rpvi_park91a_hifi_template.yml")
-    experimental_data_path = tmpdir
-    plot_dir = tmpdir
+    template = inputdir / "rpvi_park91a_hifi_template.yml"
+    experimental_data_path = tmp_path
+    plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
@@ -121,11 +120,11 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         "likelihood_model_type": "gaussian",
         "external_python_module": "",
     }
-    input_file = os.path.join(tmpdir, "rpvi_park91a_hifi.yml")
+    input_file = tmp_path / "rpvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
     # This seed is fixed so that the variational distribution is initialized so that the park
     # function can be evaluated correctly
@@ -133,7 +132,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     # actual main call of vi_rp
 
     # get the results of the QUEENS run
-    result_file = os.path.join(tmpdir, "inverse_rpvi_park91a_hifi.pickle")
+    result_file = tmp_path / "inverse_rpvi_park91a_hifi.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
 
@@ -168,24 +167,24 @@ def gradient_method(request):
     return request.param
 
 
-def test_gaussian_rpvi(inputdir, tmpdir, dummy_data, gradient_method):
+def test_gaussian_rpvi(inputdir, tmp_path, dummy_data, gradient_method):
     """Test RPVI with univariate Gaussian."""
-    template = os.path.join(inputdir, "rpvi_gaussian_template.yml")
+    template = inputdir / "rpvi_gaussian_template.yml"
 
     dir_dict = {
-        "plot_dir": tmpdir,
-        "experimental_data_path": tmpdir,
+        "plot_dir": tmp_path,
+        "experimental_data_path": tmp_path,
         "gradient_method": gradient_method,
     }
-    input_file = os.path.join(tmpdir, "rpvi_gaussian.yml")
+    input_file = tmp_path / "rpvi_gaussian.yml"
     injector.inject(dir_dict, template, input_file)
 
     # mock methods related to likelihood
     with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
-        run(Path(input_file), Path(tmpdir))
+        run(input_file, tmp_path)
 
     # get the results of the QUEENS run
-    result_file = os.path.join(tmpdir, "rpvi_gaussian.pickle")
+    result_file = tmp_path / "rpvi_gaussian.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
 
@@ -202,18 +201,18 @@ def test_gaussian_rpvi(inputdir, tmpdir, dummy_data, gradient_method):
 
 
 @pytest.fixture()
-def dummy_data(tmpdir):
+def dummy_data(tmp_path):
     """Fixture for dummy data."""
     data_dict = {'y_obs': np.zeros(1)}
-    experimental_data_path = os.path.join(tmpdir, 'experimental_data.csv')
+    experimental_data_path = tmp_path / 'experimental_data.csv'
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)
 
 
 @pytest.fixture()
-def module_path(tmpdir):
+def module_path(tmp_path):
     """Generate path for new likelihood module."""
-    my_module_path = Path(tmpdir, "my_likelihood_module.py")
+    my_module_path = tmp_path / "my_likelihood_module.py"
     return str(my_module_path)
 
 

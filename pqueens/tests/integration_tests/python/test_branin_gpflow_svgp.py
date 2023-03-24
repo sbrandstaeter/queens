@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -10,11 +9,11 @@ import pytest
 from pqueens import run
 
 
-def test_branin_gpflow_svgp(inputdir, tmpdir, expected_mean, expected_var):
+def test_branin_gpflow_svgp(inputdir, tmp_path, expected_mean, expected_var):
     """Test case for GPflow based SVGP model."""
-    run(Path(os.path.join(inputdir, 'gpflow_svgp_surrogate_branin.yml')), Path(tmpdir))
+    run(inputdir / 'gpflow_svgp_surrogate_branin.yml', tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 

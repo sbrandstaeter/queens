@@ -54,7 +54,7 @@ def create_db(tmp_path):
     db_dict = {
         "database": {
             "name": "test_db",
-            "file": tmp_path.joinpath("test_sqlite.db"),
+            "file": tmp_path / "test_sqlite.db",
             "reset_existing_db": True,
         },
     }
@@ -152,7 +152,7 @@ def test_remote_option_with_sqlite(tmp_path):
         "database": {
             "name": "test_db",
             "reset_existing_db": False,
-            "file": tmp_path.joinpath("../test_sqlite.db"),
+            "file": tmp_path / "../test_sqlite.db",
         },
         "interface": {"scheduler": {"remote": "True"}},
     }

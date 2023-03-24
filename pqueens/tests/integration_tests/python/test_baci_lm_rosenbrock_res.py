@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 from pathlib import Path
 
 import numpy as np
@@ -10,11 +9,11 @@ import pytest
 from pqueens import run
 
 
-def test_baci_lm_rosenbrock_res(inputdir, tmpdir):
+def test_baci_lm_rosenbrock_res(inputdir, tmp_path):
     """Test case for Levenberg Marquardt iterator."""
-    run(Path(os.path.join(inputdir, 'baci_lm_rosenbrock_res.yml')), Path(tmpdir))
+    run(inputdir / 'baci_lm_rosenbrock_res.yml', tmp_path)
 
-    result_file = os.path.join(tmpdir, 'OptimizeLM.csv')
+    result_file = tmp_path / 'OptimizeLM.csv'
 
     data = pd.read_csv(
         result_file,
@@ -28,6 +27,6 @@ def test_baci_lm_rosenbrock_res(inputdir, tmpdir):
 
     np.testing.assert_allclose(numpyparams, np.array([[+1.0], [+1.0]]), rtol=1.0e-5)
 
-    assert os.path.isfile(os.path.join(tmpdir, 'OptimizeLM.html'))
+    assert (tmp_path / 'OptimizeLM.html').is_file()
 
     pass

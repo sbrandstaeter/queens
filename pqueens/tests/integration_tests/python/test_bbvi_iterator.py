@@ -1,5 +1,4 @@
 """Integration tests for the BBVI iterator."""
-import os
 import pickle
 from collections import namedtuple
 from pathlib import Path
@@ -20,6 +19,7 @@ from pqueens.utils.stochastic_optimizer import from_config_create_optimizer
 def test_bbvi_density_match(
     mocker,
     inputdir,
+    tmp_path,
     dummy_bbvi_instance,
 ):
     """Matching a Gaussian distribution."""
@@ -66,29 +66,29 @@ def test_bbvi_density_match(
 
 
 def test_bbvi_iterator_park91a_hifi(
-    inputdir, tmpdir, create_experimental_data_park91a_hifi_on_grid
+    inputdir, tmp_path, create_experimental_data_park91a_hifi_on_grid
 ):
     """Test for the bbvi iterator based on the *park91a_hifi* function."""
     # generate json input file from template
-    template = os.path.join(inputdir, "bbvi_park91a_hifi_template.yml")
-    experimental_data_path = tmpdir
-    plot_dir = tmpdir
+    template = inputdir / "bbvi_park91a_hifi_template.yml"
+    experimental_data_path = tmp_path
+    plot_dir = tmp_path
     dir_dict = {
         "experimental_data_path": experimental_data_path,
         "plot_dir": plot_dir,
     }
-    input_file = os.path.join(tmpdir, "bbvi_park91a_hifi.yml")
+    input_file = tmp_path / "bbvi_park91a_hifi.yml"
     injector.inject(dir_dict, template, input_file)
 
-    # This seed is fixed so that the variational distribution is initalized so that the park
-    # function can be evaluted correctly
+    # This seed is fixed so that the variational distribution is initialized so that the park
+    # function can be evaluated correctly
     np.random.seed(211)
 
     # run the main routine of QUEENS
-    run(Path(input_file), Path(tmpdir))
+    run(input_file, tmp_path)
 
     # get the results of the QUEENS run
-    result_file = os.path.join(tmpdir, "inverse_bbvi_park91a_hifi.pickle")
+    result_file = tmp_path / "inverse_bbvi_park91a_hifi.pickle"
     with open(result_file, "rb") as handle:
         results = pickle.load(handle)
     elbo_list = results["iteration_data"]["elbo"]
@@ -102,7 +102,7 @@ def test_bbvi_iterator_park91a_hifi(
 
 
 @pytest.fixture()
-def dummy_bbvi_instance(tmpdir, my_variational_distribution):
+def dummy_bbvi_instance(tmp_path, my_variational_distribution):
     """Create visualization module."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
@@ -125,7 +125,7 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution):
         "write_results": False,
         "plotting_options": {
             "plot_boolean": False,
-            "plotting_dir": tmpdir,
+            "plotting_dir": tmp_path,
             "plot_name": "variational_params_convergence.eps",
             "save_bool": False,
         },
@@ -146,7 +146,7 @@ def dummy_bbvi_instance(tmpdir, my_variational_distribution):
     model = namedtuple("model", "normal_distribution")(
         normal_distribution=namedtuple("normal_distribution", "covariance")(covariance=0)
     )
-    global_settings = {'output_dir': tmpdir, 'experiment_name': experiment_name}
+    global_settings = {'output_dir': tmp_path, 'experiment_name': experiment_name}
     random_seed = 1
 
     parameters_module.parameters = Mock()

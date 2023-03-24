@@ -176,7 +176,7 @@ def test_add_cell_array_to_vtu_object_vtkarray(template_file_path, cell_data_vtk
 def test_export_vtu_file(template_file_path, tmp_path):
     """Test exporting vtu file."""
     vtu_input = load_vtu_file(template_file_path)
-    path = tmp_path.joinpath("test.vtu")
+    path = tmp_path / "test.vtu"
     add_cell_array_to_vtu_object(vtu_input, "test", 2 * np.ones((100, 1)))
     export_vtu_file(vtu_input, path)
     vtu_export = load_vtu_file(path)

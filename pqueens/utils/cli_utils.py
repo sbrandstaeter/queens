@@ -94,9 +94,9 @@ def get_cli_options(args):
         args (list): cli arguments
 
     Returns:
-        input_file (pathlib.Path): Path object to input file
-        output_dir (pathlib.Path): Path object to the output directory
-        debug (bool): *True* if debug mode is to be used
+        input_file (Path): Path object to input file
+        output_dir (Path): Path object to the output directory
+        debug (bool):      *True* if debug mode is to be used
     """
     parser = argparse.ArgumentParser(description="QUEENS")
     parser.add_argument(

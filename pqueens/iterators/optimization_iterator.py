@@ -2,8 +2,8 @@
 
 import glob
 import logging
-import os
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -60,13 +60,7 @@ class OptimizationIterator(Iterator):
                           - '3-point': more exact but needs twice as many function evaluations
         jac_rel_step: TODO_doc
         max_feval (int): Maximal number of function evaluations.
-                         (**TODO_doc:** max_feval is defined twice)
-        max_feval (int): Maximum number of forward simulation runs.
-                         (**TODO_doc:** max_feval is defined twice)
         result_description (dict): Description of desired post-processing.
-                                   (**TODO_doc:** result_description is defined twice)
-        result_description (dict): Dictionary containing descriptions for result handling.
-                                   (**TODO_doc:** result_description is defined twice)
         experimental_data_path_list (list): List containing the path to base directories with
                                             experimental data csv-files.
         experimental_data_dict: TODO_doc
@@ -348,8 +342,8 @@ class OptimizationIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(
                     self.solution,
-                    self.global_settings['output_dir'],
-                    self.global_settings['experiment_name'],
+                    self.global_settings["output_dir"],
+                    self.global_settings["experiment_name"],
                 )
 
     # -------------- private helper functions --------------------------
@@ -361,9 +355,9 @@ class OptimizationIterator(Iterator):
             all_files_list = []
             for experimental_data_path in self.experimental_data_path_list:
                 prefix_expr = '*.csv'  # only read csv files
-                files_of_interest_paths = os.path.join(experimental_data_path, prefix_expr)
+                files_of_interest_paths = Path(experimental_data_path, prefix_expr)
                 files_of_interest_list.extend(glob.glob(files_of_interest_paths))
-                all_files_path = os.path.join(experimental_data_path, '*')
+                all_files_path = Path(experimental_data_path, '*')
                 all_files_list.extend(glob.glob(all_files_path))
 
             #  check if some files are not csv files and throw a warning

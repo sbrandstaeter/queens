@@ -1,6 +1,6 @@
 """TODO_doc."""
 
-import os
+from pathlib import Path
 
 import pytest
 
@@ -8,11 +8,10 @@ from pqueens.visualization.sa_visualization import SAVisualization
 
 
 @pytest.fixture()
-def dummy_vis(tmpdir):
+def dummy_vis(tmp_path):
     """Generate dummy instance of class SAVisualization."""
     paths = [
-        os.path.join(tmpdir, name)
-        for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
+        tmp_path / name for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
     ]
     saving_paths = dict(zip(["bar", "scatter"], paths))
     save_booleans = {'bar': True, 'scatter': True}
@@ -22,7 +21,7 @@ def dummy_vis(tmpdir):
     return sa_vis
 
 
-def test_init(tmpdir, dummy_vis):
+def test_init(tmp_path, dummy_vis):
     """Test initialization of SAVisualization.
 
     Raises:
@@ -30,8 +29,7 @@ def test_init(tmpdir, dummy_vis):
     """
     # expected attributes
     paths = [
-        os.path.join(tmpdir, name)
-        for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
+        tmp_path / name for name in ["test_sa_visualization_bar", "test_sa_visualization_scatter"]
     ]
     saving_paths = dict(zip(["bar", "scatter"], paths))
     save_booleans = {'bar': True, 'scatter': True}
@@ -59,7 +57,7 @@ def dummy_sensitivity_indices():
     return results
 
 
-def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
+def test_sa_visualization_bar(tmp_path, dummy_vis, dummy_sensitivity_indices):
     """TODO_doc: add a one-line explanation.
 
     Test whether bar plot of sensitivity indices is plotting and saving the
@@ -70,11 +68,11 @@ def test_sa_visualization_bar(tmpdir, dummy_vis, dummy_sensitivity_indices):
     """
     dummy_vis.plot_si_bar(dummy_sensitivity_indices)
 
-    path_output_image = os.path.join(tmpdir, "test_sa_visualization_bar.png")
-    assert os.path.isfile(path_output_image)
+    path_output_image = tmp_path / "test_sa_visualization_bar.png"
+    assert path_output_image.is_file()
 
 
-def test_sa_visualization_scatter(tmpdir, dummy_vis, dummy_sensitivity_indices):
+def test_sa_visualization_scatter(tmp_path, dummy_vis, dummy_sensitivity_indices):
     """TODO_doc: add a one-line explanation.
 
     Test whether scatter plot of sensitivity indices is plotting and saving
@@ -85,5 +83,5 @@ def test_sa_visualization_scatter(tmpdir, dummy_vis, dummy_sensitivity_indices):
     """
     dummy_vis.plot_si_scatter(dummy_sensitivity_indices)
 
-    path_output_image = os.path.join(tmpdir, "test_sa_visualization_scatter.png")
-    assert os.path.isfile(path_output_image)
+    path_output_image = tmp_path / "test_sa_visualization_scatter.png"
+    assert path_output_image.is_file()

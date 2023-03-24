@@ -17,7 +17,7 @@ def load_input_file(input_file_path):
     """Load inputs from file by path.
 
     Args:
-        input_file_path (pathlib.Path): Path to the input file
+        input_file_path (Path): Path to the input file
 
     Returns:
         dict: Options in the input file.
@@ -48,7 +48,7 @@ def load_result(path_to_result_file):
     """Load QUEENS results.
 
     Args:
-        path_to_result_file (Pathlib.Path): Path to results
+        path_to_result_file (Path): Path to results
     Returns:
         dict: Results
     """

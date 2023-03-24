@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -10,11 +9,11 @@ import pytest
 from pqueens import run
 
 
-def test_optimization_lsq_rosenbrock(inputdir, tmpdir):
-    """Test case for optimization iterator with least squares."""
-    run(Path(os.path.join(inputdir, 'optimization_lsq_rosenbrock.yml')), Path(tmpdir))
+def test_optimization_lsq_rosenbrock(inputdir, tmp_path):
+    """Test case for optimization iterator with the least squares."""
+    run(inputdir / 'optimization_lsq_rosenbrock.yml', tmp_path)
 
-    result_file = str(tmpdir) + '/' + 'ResRosenbrockLSQ.pickle'
+    result_file = tmp_path / 'ResRosenbrockLSQ.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     np.testing.assert_allclose(results.x, np.array([+1.0, +1.0]))
