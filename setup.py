@@ -1,6 +1,6 @@
 """QUEENS setup file."""
-import os
 import sys
+from pathlib import Path
 
 from setuptools import find_packages, setup
 
@@ -11,12 +11,13 @@ def read(fname):
     used e.g. to read the README.md and the requirements.txt files during setup.
 
     Args:
-        fname (str): File name to be read
+        fname (str | Path): File name to be read
 
     Returns:
         The content of the file fname
     """
-    return open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8").read()
+    text_file = Path(__file__).parent / fname
+    return text_file.read_text(encoding="utf-8")
 
 
 def read_requirements(fname):
@@ -29,11 +30,11 @@ def read_requirements(fname):
         packages (list): List of the required packages
     """
     packages = []
-    with open(os.path.join(os.path.dirname(__file__), fname), encoding="utf-8") as f:
-        for line in f:
-            line = line.partition('#')[0].rstrip()
-            if line:
-                packages.append(line)
+    requirements_file = read(fname)
+    for line in iter(requirements_file.splitlines()):
+        requirement = line.partition('#')[0].rstrip()
+        if requirement:
+            packages.append(requirement)
     return packages
 
 

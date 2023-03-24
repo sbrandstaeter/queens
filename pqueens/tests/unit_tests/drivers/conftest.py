@@ -3,10 +3,10 @@ import pytest
 
 
 @pytest.fixture(scope='session')
-def job(tmpdir_factory):
+def job(tmp_path_factory):
     """Generic job dictionary for testing drivers."""
     job_dict = {}
-    job_dict['experiment_dir'] = str(tmpdir_factory.mktemp('experiment_dir'))
+    job_dict['experiment_dir'] = tmp_path_factory.mktemp('experiment_dir')
     job_dict['experiment_name'] = 'experiment_name'
     job_dict['id'] = 666
     job_dict['params'] = {'alpha': 3.14, 'beta': 2.3}
@@ -16,18 +16,18 @@ def job(tmpdir_factory):
 
 
 @pytest.fixture(scope='session')
-def baci_job(job, tmpdir_factory):
+def baci_job(job, tmp_path_factory):
     """Generic job dictionary for testing BACI."""
-    baci_dir = tmpdir_factory.mktemp('baci_dir')
+    baci_dir = tmp_path_factory.mktemp('baci_dir')
 
     job['simulation_input_template'] = str(
-        tmpdir_factory.mktemp('template_dir').join('template.dat')
+        tmp_path_factory.mktemp('template_dir').join('template.dat')
     )
     job['path_to_executable'] = str(baci_dir.join('baci_release'))
     job['path_to_postprocessor'] = str(baci_dir.join('post_processor'))
     job['post_process_options'] = ['post_process_options_1', 'post_process_options_2']
     job['data_processor_script'] = str(
-        tmpdir_factory.mktemp('data_processor_dir').join('data_processor_script.py')
+        tmp_path_factory.mktemp('data_processor_dir').join('data_processor_script.py')
     )
     return job
 
@@ -113,7 +113,7 @@ def driver_base_settings(job):
     base_settings['do_data_processing'] = True
     base_settings['data_processor'] = 'data_processor.py'
     base_settings['cae_output_streaming'] = False
-    base_settings['input_file'] = 'input.json'
+    base_settings['input_file'] = 'input.yml'
     base_settings['input_file_2'] = None
     base_settings['case_run_script'] = None
     base_settings['output_prefix'] = None

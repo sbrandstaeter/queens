@@ -1,6 +1,7 @@
 """Module to define likelihood functions."""
 
 import abc
+from pathlib import Path
 
 import pqueens.database.database as DB_module
 from pqueens.models import from_config_create_model
@@ -78,7 +79,7 @@ class LikelihoodModel(Model):
         experiment_name = global_settings["experiment_name"]
         data_processor_name = model_options.get('data_processor_name')
         file_name = model_options.get('experimental_file_name_identifier')
-        base_dir = model_options.get('experimental_csv_data_base_dir')
+        base_dir = Path(model_options.get('experimental_csv_data_base_dir'))
 
         y_obs, coords_mat, time_vec, experimental_data_dict = get_experimental_data(
             config=config,

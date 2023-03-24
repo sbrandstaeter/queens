@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -10,7 +9,7 @@ import pytest
 from pqueens import run
 
 
-def test_branin_data_iterator(inputdir, tmpdir, mocker):
+def test_branin_data_iterator(inputdir, tmp_path, mocker):
     """Test case for data iterator."""
     output = {}
     output['mean'] = np.array(
@@ -48,8 +47,8 @@ def test_branin_data_iterator(inputdir, tmpdir, mocker):
         return_value=[samples, output],
     )
 
-    run(Path(os.path.join(inputdir, 'data_iterator_branin.yml')), Path(tmpdir))
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    run(inputdir / 'data_iterator_branin.yml', tmp_path)
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
     assert results["mean"] == pytest.approx(1.3273452195599997)

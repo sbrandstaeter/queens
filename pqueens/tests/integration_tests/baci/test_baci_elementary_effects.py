@@ -5,8 +5,9 @@ INVAAA minimal model.
 """
 
 import json
-import os
+import pickle
 from pathlib import Path
+import shutil
 
 import pytest
 
@@ -16,21 +17,21 @@ from pqueens.utils.run_subprocess import run_subprocess
 
 
 @pytest.fixture(scope="session")
-def output_directory_forward(tmpdir_factory):
+def output_directory_forward(tmp_path_factory):
     """Create two temporary output directories for test runs with singularity.
 
         * with singularity (<...>_true)
         * without singularity (<...>_false)
 
     Args:
-        tmpdir_factory: Fixture used to create arbitrary temporary directories
+        tmp_path_factory: Fixture used to create arbitrary temporary directories
 
     Returns:
         output_directory_forward (dict): Temporary output directories for simulation without and
         with singularity
     """
-    path_singularity_true = tmpdir_factory.mktemp("test_baci_elementary_effects_true")
-    path_singularity_false = tmpdir_factory.mktemp("test_baci_elementary_effects_false")
+    path_singularity_true = tmp_path_factory.mktemp("test_baci_elementary_effects_true")
+    path_singularity_false = tmp_path_factory.mktemp("test_baci_elementary_effects_false")
 
     return {True: path_singularity_true, False: path_singularity_false}
 
@@ -66,17 +67,15 @@ def count_subdirectories(current_directory):
         number_subdirectories (int): Number of subdirectories
     """
     number_subdirectories = 0
-    for current_subdirectory in os.listdir(current_directory):
-        path_current_subdirectory = os.path.join(current_directory, current_subdirectory)
-        if os.path.isdir(path_current_subdirectory):
+    for current_subdirectory in current_directory.iterdir():
+        if current_subdirectory.is_dir():
             number_subdirectories += 1
     return number_subdirectories
 
 
 def remove_job_output_directory(experiment_directory, jobid):
     """Remove output directory of job #jobid from *experiment_directory*."""
-    rm_cmd = "rm -r " + str(experiment_directory) + "/" + str(jobid)
-    run_subprocess(rm_cmd)
+    shutil.rmtree(experiment_directory / str(jobid))
 
 
 def test_baci_elementary_effects(
@@ -93,16 +92,16 @@ def test_baci_elementary_effects(
     based BACI simulation for elementary effects.
 
     Args:
-        inputdir (str): Path to the JSON input file
-        third_party_inputs (str): Path to the BACI input files
-        baci_link_paths(str): Path to the links pointing to *baci_release* and *post_drt_monitor*
+        inputdir (Path): Path to the JSON input file
+        third_party_inputs (Path): Path to the BACI input files
+        baci_link_paths(Path): Path to the links pointing to *baci-release* and *post_drt_monitor*
         singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
         experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
         baci_elementary_effects_check_results (function): function to check the results
     """
-    template = os.path.join(inputdir, "baci_local_elementary_effects_template.yml")
-    input_file = os.path.join(experiment_directory, "elementary_effects_baci_local_invaaa.yml")
-    third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
+    template = inputdir / "baci_local_elementary_effects_template.yml"
+    input_file = experiment_directory / "elementary_effects_baci_local_invaaa.yml"
+    third_party_input_file = third_party_inputs / "baci_input_files" / "invaaa_ee.dat"
     experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
@@ -116,8 +115,9 @@ def test_baci_elementary_effects(
     }
 
     injector.inject(dir_dict, template, input_file)
-    run(Path(input_file), Path(experiment_directory))
+    run(input_file, experiment_directory)
 
-    result_file_name = experiment_name + ".pickle"
-    result_file = os.path.join(experiment_directory, result_file_name)
+    result_file = experiment_directory / (experiment_name + ".pickle")
+
+    # test results of SA analysis
     baci_elementary_effects_check_results(result_file)

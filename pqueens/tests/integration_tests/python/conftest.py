@@ -1,6 +1,5 @@
 """TODO_doc."""
 
-import os
 
 import numpy as np
 import pandas as pd
@@ -14,7 +13,7 @@ from pqueens.tests.integration_tests.example_simulator_functions.park91a import 
 
 
 @pytest.fixture()
-def create_experimental_data_park91a_hifi_on_grid(tmpdir):
+def create_experimental_data_park91a_hifi_on_grid(tmp_path):
     """Create experimental data."""
     # Fix random seed
     np.random.seed(seed=1)
@@ -38,6 +37,6 @@ def create_experimental_data_park91a_hifi_on_grid(tmpdir):
         'x4': x4_vec,
         'y_obs': y_fake,
     }
-    experimental_data_path = os.path.join(tmpdir, 'experimental_data.csv')
+    experimental_data_path = tmp_path / 'experimental_data.csv'
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)

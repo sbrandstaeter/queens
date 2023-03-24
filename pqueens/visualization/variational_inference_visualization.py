@@ -6,8 +6,8 @@ initialized once and can then be accessed and modified in the entire project.
 In this context "this" is a pointer to the module object instance itself and can be compared to the
 "self" keyword in classes.
 """
-import os
 import sys
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -68,7 +68,7 @@ class VIVisualization(object):
         """
         method_options = config["method"]
         plotting_options = method_options["result_description"].get("plotting_options")
-        path = os.path.join(plotting_options.get("plotting_dir"), plotting_options["plot_name"])
+        path = Path(plotting_options.get("plotting_dir"), plotting_options["plot_name"])
         save_bool = plotting_options.get("save_bool")
         plot_boolean = plotting_options.get("plot_boolean")
         axs_convergence_plots = None

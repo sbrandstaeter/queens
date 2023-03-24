@@ -1,7 +1,6 @@
 """Estimate Sobol indices."""
 
 import logging
-import os
 
 import numpy as np
 import pandas as pd
@@ -271,7 +270,7 @@ class SobolIndexIterator(Iterator):
 
         # Plot first-order indices also called main effect
         chart_name = experiment_name + '_S1.html'
-        chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
+        chart_path = self.global_settings["output_dir"] / chart_name
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["S1"],
@@ -294,7 +293,7 @@ class SobolIndexIterator(Iterator):
 
         # Plot total indices also called total effect
         chart_name = experiment_name + '_ST.html'
-        chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
+        chart_path = self.global_settings["output_dir"] / chart_name
         bars = go.Bar(
             x=results["parameter_names"],
             y=results["sensitivity_indices"]["ST"],
@@ -330,7 +329,7 @@ class SobolIndexIterator(Iterator):
                     names.append(f"S{i}{j}")
 
             chart_name = experiment_name + '_S2.html'
-            chart_path = os.path.join(self.global_settings["output_dir"], chart_name)
+            chart_path = self.global_settings["output_dir"] / chart_name
             bars = go.Bar(
                 x=names, y=S2, error_y={"type": 'data', "array": S2_conf, "visible": True}
             )

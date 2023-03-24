@@ -15,7 +15,7 @@ def get_module_attribute(path_to_module, function_or_class_name):
     """Load function from python file by path.
 
     Args:
-        path_to_module (str): Path to file
+        path_to_module (str): "Path" to file
         function_or_class_name (str): Name of the function
 
     Returns:

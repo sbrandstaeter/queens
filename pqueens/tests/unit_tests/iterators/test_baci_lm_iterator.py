@@ -1,8 +1,8 @@
 """Test for baci LM iterator."""
 
 import logging
-import os
 from collections import OrderedDict
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -303,20 +303,14 @@ def test_pre_run(mocker, fix_true_false_param, default_baci_lm_iterator):
     """TODO_doc."""
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
-    m1 = mocker.patch(
-        'builtins.open',
-    )
-    m2 = mocker.patch('pandas.core.generic.NDFrame.to_csv')
-
+    mock_pandas_dataframe_to_csv = mocker.patch('pandas.core.generic.NDFrame.to_csv')
     default_baci_lm_iterator.pre_run()
-
     if fix_true_false_param:
-        m1.assert_called_once_with(os.path.join('dummy_output', 'OptimizeLM' + '.csv'), 'w')
-        m2.assert_called_once_with(m1.return_value.__enter__.return_value, sep='\t', index=None)
-
+        mock_pandas_dataframe_to_csv.assert_called_once_with(
+            Path('dummy_output', 'OptimizeLM' + '.csv'), mode='w', sep='\t', index=None
+        )
     else:
-        assert not m1.called
-        assert not m2.called
+        assert not mock_pandas_dataframe_to_csv.called
         default_baci_lm_iterator.result_description = None
         default_baci_lm_iterator.pre_run()
 
@@ -369,7 +363,7 @@ def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator,
     default_baci_lm_iterator.post_run()
 
     if fix_true_false_param:
-        m1.assert_called_once_with(os.path.join('dummy_output', 'OptimizeLM' + '.csv'), sep='\t')
+        m1.assert_called_once_with(Path('dummy_output', 'OptimizeLM' + '.csv'), sep='\t')
         callargs = m2.call_args
         pd.testing.assert_frame_equal(callargs[0][0], checkdata)
         assert callargs[1]['x'] == 'x1'
@@ -384,7 +378,7 @@ def test_post_run_2param(mocker, fix_true_false_param, default_baci_lm_iterator,
             'x1',
             'x2',
         ]
-        m4.assert_called_once_with(os.path.join('dummy_output', 'OptimizeLM' + '.html'))
+        m4.assert_called_once_with(Path('dummy_output', 'OptimizeLM' + '.html'))
         m2.assert_called_once()
 
     else:
@@ -422,7 +416,7 @@ def test_post_run_1param(mocker, default_baci_lm_iterator, fix_plotly_fig):
         'mu',
         'x1',
     ]
-    m4.assert_called_once_with(os.path.join('dummy_output', 'OptimizeLM' + '.html'))
+    m4.assert_called_once_with(Path('dummy_output', 'OptimizeLM' + '.html'))
     m6.assert_called_once()
 
 
@@ -486,27 +480,20 @@ def test_printstep(mocker, default_baci_lm_iterator, fix_true_false_param):
     """TODO_doc."""
     default_baci_lm_iterator.result_description['write_results'] = fix_true_false_param
 
-    m1 = mocker.patch(
-        'builtins.open',
-    )
-    m2 = mocker.patch('pandas.core.generic.NDFrame.to_csv')
-
+    mock_pandas_dataframe_to_csv = mocker.patch('pandas.core.generic.NDFrame.to_csv')
     default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
-
     if fix_true_false_param:
-        m1.assert_called_once_with(os.path.join('dummy_output', 'OptimizeLM' + '.csv'), 'a')
-        m2.assert_called_once_with(
-            m1.return_value.__enter__.return_value,
-            sep='\t',
+        mock_pandas_dataframe_to_csv.assert_called_once_with(
+            Path('dummy_output/OptimizeLM.csv'),
             header=None,
+            float_format="%.8f",
             mode='a',
+            sep='\t',
             index=None,
-            float_format='%.8f',
         )
 
     else:
-        assert not m1.called
-        assert not m2.called
+        assert not mock_pandas_dataframe_to_csv.called
         default_baci_lm_iterator.result_description = None
         default_baci_lm_iterator.printstep(5, 1e-3, 1e-4, np.array([10.1, 11.2]))
 

@@ -1,7 +1,5 @@
 """Collection of utils for Markov Chain Monte Carlo algorithms."""
 
-import abc
-
 import numpy as np
 
 

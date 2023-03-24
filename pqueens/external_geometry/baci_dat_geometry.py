@@ -9,7 +9,6 @@ import shutil
 import numpy as np
 
 from pqueens.external_geometry.external_geometry import ExternalGeometry
-from pqueens.utils.run_subprocess import run_subprocess
 
 
 class BaciDatExternalGeometry(ExternalGeometry):

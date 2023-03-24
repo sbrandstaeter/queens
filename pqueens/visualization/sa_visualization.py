@@ -1,14 +1,12 @@
 """TODO_doc."""
 
-import os
 import sys
+from pathlib import Path
 
 import matplotlib.pyplot as plt
 import matplotlib.style as style
 import pandas as pd
 import seaborn as sns
-
-import pqueens.visualization.bmfmc_visualization as qvis
 
 cycle_colors = sns.color_palette()
 style.use('seaborn')
@@ -139,7 +137,7 @@ class SAVisualization(object):
         plotting_options = method_options["result_description"].get("plotting_options")
 
         paths = [
-            os.path.join(plotting_options.get("plotting_dir"), name)
+            Path(plotting_options.get("plotting_dir"), name)
             for name in plotting_options["plot_names"]
         ]
         saving_paths = convert_to_dict(paths)

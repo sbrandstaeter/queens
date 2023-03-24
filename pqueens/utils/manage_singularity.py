@@ -4,6 +4,7 @@ import os
 import random
 import subprocess
 import time
+from pathlib import Path
 
 from pqueens.utils.config_directories import ABS_SINGULARITY_IMAGE_PATH
 from pqueens.utils.path_utils import PATH_TO_QUEENS, relative_path_from_pqueens
@@ -25,7 +26,7 @@ def create_singularity_image():
         f"cd {PATH_TO_QUEENS}",
         "&& unset SINGULARITY_BIND &&",
         f"singularity build --force --fakeroot {ABS_SINGULARITY_IMAGE_PATH}",
-        abs_definition_path,
+        str(abs_definition_path),
     ]
     command_string = ' '.join(command_list)
 
@@ -50,8 +51,8 @@ class SingularityManager:
         remote (bool): *True* if the simulation runs are remote.
         remote_connect (str): String of user@remote_machine .
         singularity_bind (str): Binds for the singularity runs.
-        singularity_path (path): Path to singularity exec.
-        input_file (path): Path to QUEENS input file.
+        singularity_path (Path): Path to singularity exec.
+        input_file (Path): Path to QUEENS input file.
     """
 
     def __init__(
@@ -362,7 +363,8 @@ def _files_changed():
     files_changed = False
     for file in files_to_compare_list:
         # File path inside the container
-        filepath_in_singularity = '/queens/pqueens/' + file.split("pqueens/")[-1]
+        file = str(file)
+        filepath_in_singularity = '/queens/pqueens/' + file.rsplit("pqueens/", maxsplit=1)[-1]
 
         # Compare the queens source files with the ones inside the container
         command_string = (
@@ -391,12 +393,9 @@ def _get_python_files_in_folder(relative_path):
     Returns:
         file_paths: List of the absolute paths of the python files within the folder.
     """
-    abs_path = relative_path_from_pqueens(relative_path)
-    elements = os.listdir(abs_path)
-    elements.sort()
-    file_paths = [
-        os.path.join(abs_path, ele) for _, ele in enumerate(elements) if ele.endswith('.py')
-    ]
+    abs_path = Path(relative_path_from_pqueens(relative_path))
+    file_paths = list(abs_path.glob("*.py"))
+    file_paths.sort()
     return file_paths
 
 

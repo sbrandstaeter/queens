@@ -68,7 +68,7 @@ class SQLite(Database):
 
         db_path = config['database'].get('file')
         if db_path is None:
-            db_path = Path(config["global_settings"]["output_dir"]).joinpath(db_name + ".sqlite.db")
+            db_path = Path(config["global_settings"]["output_dir"]) / f"{db_name}.sqlite.db"
             _logger.info(
                 "No path for the sqlite database was provided, defaulting to %s", db_path.resolve()
             )

@@ -1,6 +1,5 @@
 """Tests for Chopin SMC module from 'particles'."""
 
-import os
 import pickle
 from pathlib import Path
 
@@ -22,19 +21,19 @@ from pqueens.tests.integration_tests.example_simulator_functions.gaussian_logpdf
 from pqueens.utils import injector
 
 
-def test_gaussian_smc_chopin_adaptive_tempering(inputdir, tmpdir, dummy_data):
+def test_gaussian_smc_chopin_adaptive_tempering(inputdir, tmp_path, dummy_data):
     """Test Sequential Monte Carlo with univariate Gaussian."""
-    template = os.path.join(inputdir, "smc_chopin_gaussian.yml")
-    experimental_data_path = tmpdir
+    template = inputdir / "smc_chopin_gaussian.yml"
+    experimental_data_path = tmp_path
     dir_dict = {"experimental_data_path": experimental_data_path, "fk_method": "adaptive_tempering"}
-    input_file = os.path.join(tmpdir, "gaussian_smc_realiz.yml")
+    input_file = tmp_path / "gaussian_smc_realiz.yml"
     injector.inject(dir_dict, template, input_file)
     # mock methods related to likelihood
     with patch.object(SequentialMonteCarloChopinIterator, "eval_log_likelihood", target_density):
-        run(Path(input_file), Path(tmpdir))
+        run(input_file, tmp_path)
 
 
-    result_file = str(tmpdir) + '/' + 'xxx.pickle'
+    result_file = tmp_path / 'xxx.pickle'
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
@@ -56,7 +55,7 @@ def target_density(self, samples):
 
 
 @pytest.fixture()
-def dummy_data(tmpdir):
+def dummy_data(tmp_path):
     """Fixture for dummy data."""
     # generate 10 samples from the same gaussian
     samples = standard_normal.draw(10).flatten()
@@ -68,8 +67,8 @@ def dummy_data(tmpdir):
 
     pdf = np.array(pdf).flatten()
 
-    # write the data to a csv file in tmpdir
+    # write the data to a csv file in tmp_path
     data_dict = {'y_obs': pdf}
-    experimental_data_path = os.path.join(tmpdir, 'experimental_data.csv')
+    experimental_data_path = tmp_path / 'experimental_data.csv'
     df = pd.DataFrame.from_dict(data_dict)
     df.to_csv(experimental_data_path, index=False)
