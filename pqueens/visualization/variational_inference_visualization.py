@@ -1,9 +1,11 @@
 """A module that provides utilities and a class for visualization in VI.
 
 It is designed such that the VIVisualization class needs only to be
-initialized once and can then be accessed and modified in the entire project.
+initialized once and can then be accessed and modified in the entire
+project.
 
-In this context "this" is a pointer to the module object instance itself and can be compared to the
+In this context "this" is a pointer to the module object instance itself
+and can be compared to the
 "self" keyword in classes.
 """
 import sys
@@ -16,13 +18,13 @@ this = sys.modules[__name__]
 this.vi_visualization_instance = None
 
 
-def from_config_create(config):
+def from_config_create(plotting_options):
     """Calls *from_config_create* and creates a singleton like object.
 
     Args:
-        config (dict): Dictionary created from the input file, containing the problem description
+        plotting_options (dict): Dictionary containing the plotting options
     """
-    this.vi_visualization_instance = VIVisualization.from_config_create(config)
+    this.vi_visualization_instance = VIVisualization.from_config_create(plotting_options)
 
 
 class VIVisualization(object):
@@ -57,17 +59,15 @@ class VIVisualization(object):
         self.fig_convergence_plots = fig_convergence_plots
 
     @classmethod
-    def from_config_create(cls, config):
+    def from_config_create(cls, plotting_options):
         """Create the VIVisualization object from config.
 
         Args:
-            config (dict): Dictionary containing the problem description
+            plotting_options (dict): Dictionary containing the plotting options
 
         Returns:
             Instance of VIVisualization (obj)
         """
-        method_options = config["method"]
-        plotting_options = method_options["result_description"].get("plotting_options")
         path = Path(plotting_options.get("plotting_dir"), plotting_options["plot_name"])
         save_bool = plotting_options.get("save_bool")
         plot_boolean = plotting_options.get("plot_boolean")

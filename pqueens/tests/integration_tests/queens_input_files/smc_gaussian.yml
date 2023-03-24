@@ -9,16 +9,12 @@ method:
   model_name: model
   temper_type: bayes
   plot_trace_every: 0
+  mcmc_proposal_distribution_name: proposal_distribution
+  num_rejuvenation_steps: 3
   result_description:
     write_results: true
     plot_results: true
     cov: false
-MCMC_Kernel:
-  type: metropolis-hastings
-  as_mcmc_kernel: true
-  num_chains: 10
-  num_samples: 3
-  proposal_distribution: proposal_distribution
 model:
   type: gaussian
   forward_model_name: forward_model

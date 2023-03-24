@@ -9,16 +9,12 @@ method:
   model_name: model
   temper_type: generic
   plot_trace_every: 0
+  mcmc_proposal_distribution_name: proposal_distribution
+  num_rejuvenation_steps: 20
   result_description:
     write_results: true
     plot_results: false
     cov: true
-MCMC_Kernel:
-  type: metropolis-hastings
-  as_mcmc_kernel: true
-  num_chains: 200
-  num_samples: 20
-  proposal_distribution: proposal_distribution
 model:
   type: gaussian
   forward_model_name: forward_model

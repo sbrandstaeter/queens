@@ -26,7 +26,7 @@ class DataIterator(Iterator):
         Args:
             path_to_data (string):      Path to pickle file containing data
             result_description (dict):  Description of desired results
-            global_settings (dict, optional): Settings for the QUEENS run.
+            global_settings (dict): Global settings of the QUEENS simulations
         """
         super().__init__(None, global_settings)
         self.samples = None
@@ -48,14 +48,11 @@ class DataIterator(Iterator):
         Returns:
             iterator: DataIterator object
         """
-        _logger.info(config.get("experiment_name"))
-        method_options = config[iterator_name]
+        method_options = config[iterator_name].copy()
+        method_options.pop('type')
+        global_settings = config["global_settings"]
 
-        path_to_data = method_options.get("path_to_data", None)
-        result_description = method_options.get("result_description", None)
-        global_settings = config.get("global_settings", None)
-
-        return cls(path_to_data, result_description, global_settings)
+        return cls(**method_options, global_settings=global_settings)
 
     def core_run(self):
         """Read data from file."""

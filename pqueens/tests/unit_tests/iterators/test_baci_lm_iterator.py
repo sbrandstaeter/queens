@@ -48,7 +48,6 @@ def default_baci_lm_iterator():
             [
                 ('type', 'baci_lm'),
                 ('model_name', 'model'),
-                ('jac_method', '2-point'),
                 ('jac_rel_step', 1e-05),
                 ('jac_abs_step', 0.001),
                 ('max_feval', 99),
@@ -121,7 +120,6 @@ def test_init(mocker):
     global_settings = {'output_dir': 'dummyoutput', 'experiment_name': 'dummy_exp_name'}
     initial_guess = np.array([1, 2.2])
     bounds = np.array([[0.0, 1.0], [1.0, 2.0]])
-    havebounds = True
     jac_rel_step = 1e-3
     jac_abs_step = 1e-2
     init_reg = 1.0
@@ -132,28 +130,25 @@ def test_init(mocker):
     result_description = (True,)
     verbose_output = (True,)
 
-    mp = mocker.patch('pqueens.iterators.iterator.Iterator.__init__')
-
     my_baci_lm_iterator = BaciLMIterator(
-        global_settings,
-        initial_guess,
-        bounds,
-        havebounds,
-        jac_rel_step,
-        jac_abs_step,
-        init_reg,
-        update_reg,
-        tolerance,
-        max_feval,
-        model,
-        result_description,
-        verbose_output,
+        model=model,
+        global_settings=global_settings,
+        result_description=result_description,
+        initial_guess=initial_guess,
+        bounds=bounds,
+        jac_rel_step=jac_rel_step,
+        jac_abs_step=jac_abs_step,
+        init_reg=init_reg,
+        update_reg=update_reg,
+        convergence_tolerance=tolerance,
+        max_feval=max_feval,
+        verbose_output=verbose_output,
     )
-
-    mp.assert_called_once_with(model, global_settings)
 
     np.testing.assert_equal(my_baci_lm_iterator.initial_guess, initial_guess)
     np.testing.assert_equal(my_baci_lm_iterator.param_current, initial_guess)
+    assert my_baci_lm_iterator.model == model
+    assert my_baci_lm_iterator.global_settings == global_settings
     assert my_baci_lm_iterator.jac_rel_step == jac_rel_step
     assert my_baci_lm_iterator.max_feval == max_feval
     assert my_baci_lm_iterator.result_description == result_description
@@ -199,7 +194,7 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
     }
 
     mp = mocker.patch(
-        'pqueens.iterators.baci_lm_iterator.from_config_create_model',
+        'pqueens.models.simulation_model.SimulationModel.from_config_create_model',
         return_value='dummy_model',
     )
 
@@ -227,13 +222,13 @@ def test_from_config_create_iterator(mocker, iterator_name_cases, model_cases):
     assert callargs['jac_abs_step'] == 0.001
     assert callargs['init_reg'] == 1.0
     assert callargs['update_reg'] == 'grad'
-    assert callargs['tolerance'] == 1e-06
+    assert callargs['convergence_tolerance'] == 1e-06
     assert callargs['max_feval'] == 99
     assert callargs['model'] == 'dummy_model'
     assert callargs['result_description'] == OrderedDict(
         [('write_results', True), ('plot_results', True)]
     )
-    assert callargs['verbose_output'] == False
+    assert callargs.get('verbose_output') is None
 
 
 def test_model_evaluate(default_baci_lm_iterator, mocker):

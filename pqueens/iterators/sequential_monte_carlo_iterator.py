@@ -23,13 +23,13 @@ References:
         doi: 10.1111/j.1467-9868.2006.00553.x.
 """
 import logging
-import warnings
 
 import arviz as az
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy
 
+from pqueens.distributions import from_config_create_distribution
 from pqueens.iterators.iterator import Iterator
 from pqueens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from pqueens.models import from_config_create_model
@@ -75,32 +75,54 @@ class SequentialMonteCarloIterator(Iterator):
     def __init__(
         self,
         global_settings,
-        mcmc_kernel,
         model,
         num_particles,
-        plot_trace_every,
         result_description,
         seed,
         temper_type,
+        mcmc_proposal_distribution,
+        num_rejuvenation_steps,
+        plot_trace_every=0,
     ):
         """TODO_doc.
 
         Args:
             global_settings: TODO_doc
-            mcmc_kernel: TODO_doc
             model: TODO_doc
             num_particles: TODO_doc
-            plot_trace_every: TODO_doc
             result_description: TODO_doc
             seed: TODO_doc
             temper_type: TODO_doc
+            mcmc_proposal_distribution: TODO_doc
+            num_rejuvenation_steps: TODO_doc
+            plot_trace_every: TODO_doc
         """
         super().__init__(model, global_settings)
+
+        _logger.info(
+            "Sequential Monte Carlo Iterator for experiment: %s",
+            self.global_settings['experiment_name'],
+        )
+
+        self.mcmc_kernel = MetropolisHastingsIterator(
+            model=model,
+            result_description=None,
+            proposal_distribution=mcmc_proposal_distribution,
+            num_samples=num_rejuvenation_steps,
+            seed=seed,
+            global_settings=global_settings,
+            tune=False,
+            tune_interval=100,
+            scale_covariance=1.0,
+            num_burn_in=0,
+            num_chains=num_particles,
+            as_smc_rejuvenation_step=True,
+            temper_type=temper_type,
+        )
+
         self.plot_trace_every = plot_trace_every
         self.result_description = result_description
         self.seed = seed
-
-        self.mcmc_kernel = mcmc_kernel
 
         self.num_particles = num_particles
 
@@ -124,14 +146,14 @@ class SequentialMonteCarloIterator(Iterator):
         self.log_prior = np.zeros((self.num_particles, 1))
         self.log_posterior = np.zeros((self.num_particles, 1))
 
-        self.ess = list()
+        self.ess = []
         self.ess_cur = 0.0
 
         self.temper = smc_utils.temper_factory(temper_type)
 
         # tempering parameter (linked to counter/ time index)
         self.gamma_cur = 0.0
-        self.gammas = list()
+        self.gammas = []
 
         # parameters for the scaling of the covariance matrix
         # values of a an b are taken from [3] p.1706
@@ -140,65 +162,32 @@ class SequentialMonteCarloIterator(Iterator):
 
     @classmethod
     def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create Sequential Monte Carlo iterator from problem description.
+        """Create iterator from problem description.
 
         Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator (optional)
+            config (dict):       Dictionary with QUEENS problem description
+            iterator_name (str): Name of iterator to identify right section
+                                 in options dict (optional)
             model (model):       Model to use (optional)
 
         Returns:
-            iterator: SequentialMonteCarloIterator object
+            iterator: Iterator object
         """
-        _logger.info(
-            "Sequential Monte Carlo Iterator for experiment: %s",
-            config.get('global_settings').get('experiment_name'),
-        )
-        method_options = config[iterator_name]
+        method_options = config[iterator_name].copy()
+        method_options.pop('type')
         if model is None:
-            model_name = method_options['model_name']
+            model_name = method_options.pop('model_name')
             model = from_config_create_model(model_name, config)
-
-        plot_trace_every = method_options.get('plot_trace_every', 0)
-        result_description = method_options.get('result_description', None)
-        global_settings = config.get('global_settings', None)
-
-        # check sanity of MCMC kernel config
-        kernel_options = config.get('MCMC_Kernel', None)
-        if kernel_options is None:
-            raise ValueError("You need to specify a MCMC Kernel.")
-        if ('as_mcmc_kernel' not in kernel_options) or (
-            not kernel_options['as_mcmc_kernel'] is True
-        ):
-            raise ValueError("MH iterator needs to be specified as MCMC Kernel.")
-        if not (kernel_options.get('num_chains', 1) == method_options['num_particles']):
-            warnings.warn(
-                "Number of chains in the kernel has to be equal to number of particles:"
-                " setting num_chains to num_particles."
-            )
-            config['MCMC_Kernel']['num_chains'] = method_options['num_particles']
-
-        # ensure that the seeds are identical
-        kernel_seed = kernel_options.get('seed', None)
-        smc_seed = method_options['seed']
-        if kernel_seed != smc_seed:
-            kernel_options['seed'] = smc_seed
-
-        temper_type = method_options['temper_type']
-
-        mcmc_kernel = MetropolisHastingsIterator.from_config_create_iterator(
-            config, iterator_name='MCMC_Kernel', model=model, temper_type=temper_type
+        mcmc_proposal_distribution_name = method_options.pop('mcmc_proposal_distribution_name')
+        mcmc_proposal_distribution = from_config_create_distribution(
+            config[mcmc_proposal_distribution_name]
         )
-
+        global_settings = config['global_settings']
         return cls(
-            global_settings=global_settings,
-            mcmc_kernel=mcmc_kernel,
             model=model,
-            num_particles=method_options['num_particles'],
-            plot_trace_every=plot_trace_every,
-            result_description=result_description,
-            seed=smc_seed,
-            temper_type=temper_type,
+            global_settings=global_settings,
+            mcmc_proposal_distribution=mcmc_proposal_distribution,
+            **method_options,
         )
 
     def eval_log_prior(self, sample_batch):
@@ -374,7 +363,7 @@ class SequentialMonteCarloIterator(Iterator):
         # the frequency of individual particles
         particle_freq = np.random.multinomial(self.num_particles, np.squeeze(self.weights))
 
-        idx_list = list()
+        idx_list = []
         for idx, freq in enumerate(particle_freq):
             idx_list += [idx] * freq
 

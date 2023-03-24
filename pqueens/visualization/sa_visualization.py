@@ -30,16 +30,16 @@ this = sys.modules[__name__]
 this.sa_visualization_instance = None
 
 
-def from_config_create(config):
+def from_config_create(plotting_options):
     """TODO_doc: add a one-line explanation.
 
     Module function that calls the class function *from_config_create* and
     creates instance of the SAVisualization class from the problem description.
 
     Args:
-        config (dict): Dictionary created from the input file, containing the problem description
+        plotting_options (dict): Dictionary containing the plotting options
     """
-    this.sa_visualization_instance = SAVisualization.from_config_create(config)
+    this.sa_visualization_instance = SAVisualization.from_config_create(plotting_options)
 
 
 def convert_to_dict(values):
@@ -124,18 +124,15 @@ class SAVisualization(object):
         self.figures = {}
 
     @classmethod
-    def from_config_create(cls, config):
+    def from_config_create(cls, plotting_options):
         """Create the SAVisualization object from the problem description.
 
         Args:
-            config (dict): Dictionary containing the problem description
+            plotting_options (dict): Dictionary containing the plotting options
 
         Returns:
             Instance of SAVisualization (obj)
         """
-        method_options = config["method"]
-        plotting_options = method_options["result_description"].get("plotting_options")
-
         paths = [
             Path(plotting_options.get("plotting_dir"), name)
             for name in plotting_options["plot_names"]

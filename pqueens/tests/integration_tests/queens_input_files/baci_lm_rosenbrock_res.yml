@@ -5,7 +5,6 @@ database:
 method:
   type: baci_lm
   model_name: model
-  jac_method: 2-point
   jac_rel_step: 1.0e-05
   jac_abs_step: 0.001
   max_feval: 99

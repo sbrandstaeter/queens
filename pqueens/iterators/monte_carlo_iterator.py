@@ -5,11 +5,8 @@ import logging
 import matplotlib.pyplot as plt
 import numpy as np
 
-import pqueens.database.database as DB_module
-from pqueens.models import from_config_create_model
+from pqueens.iterators.iterator import Iterator
 from pqueens.utils.process_outputs import process_outputs, write_results
-
-from .iterator import Iterator
 
 _logger = logging.getLogger(__name__)
 
@@ -23,7 +20,6 @@ class MonteCarloIterator(Iterator):
         result_description (dict):  Description of desired results.
         samples (np.array):         Array with all samples.
         output (np.array):          Array with all model outputs.
-        db (obj):                   Data base object.
     """
 
     def __init__(
@@ -31,9 +27,8 @@ class MonteCarloIterator(Iterator):
         model,
         seed,
         num_samples,
-        result_description,
         global_settings,
-        db,
+        result_description=None,
     ):
         """Initialise Monte Carlo iterator.
 
@@ -41,9 +36,8 @@ class MonteCarloIterator(Iterator):
             model (model):              Model to be evaluated by iterator
             seed  (int):                Seed for random number generation
             num_samples (int):          Number of samples to compute
-            result_description (dict):  Description of desired results
-            global_settings (dict, optional): Settings for the QUEENS run.
-            db (obj):                   Data base object
+            global_settings (dict): Settings for the QUEENS run.
+            result_description (dict, opt):  Description of desired results
         """
         super().__init__(model, global_settings)
         self.seed = seed
@@ -51,40 +45,6 @@ class MonteCarloIterator(Iterator):
         self.result_description = result_description
         self.samples = None
         self.output = None
-        self.db = db
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create MC iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator to identify right section
-                                 in options dict (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator: MonteCarloIterator object
-        """
-        _logger.info(config.get('experiment_name'))
-        method_options = config[iterator_name]
-        if model is None:
-            model_name = method_options['model_name']
-            model = from_config_create_model(model_name, config)
-
-        result_description = method_options.get('result_description', None)
-        global_settings = config.get('global_settings', None)
-
-        db = DB_module.database
-
-        return cls(
-            model,
-            method_options['seed'],
-            method_options['num_samples'],
-            result_description,
-            global_settings,
-            db,
-        )
 
     def pre_run(self):
         """Generate samples for subsequent MC analysis and update model."""

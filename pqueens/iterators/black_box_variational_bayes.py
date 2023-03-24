@@ -65,7 +65,6 @@ class BBVIIterator(VariationalInferenceIterator):
                               every iteration.
         sample_set (np.ndarray): Set of samples used to evaluate the probabilistic model is
                                  not needed in other VI methods.
-        iteration_data (CollectionObject): Object to store iteration data if desired.
     """
 
     def __init__(
@@ -73,28 +72,23 @@ class BBVIIterator(VariationalInferenceIterator):
         global_settings,
         model,
         result_description,
-        db,
-        experiment_name,
-        variational_family,
-        variational_params_initialization_approach,
+        variational_distribution,
         n_samples_per_iter,
         variational_transformation,
         random_seed,
         max_feval,
-        num_variables,
-        memory,
-        natural_gradient_bool,
-        fim_dampening_bool,
-        fim_decay_start_iter,
-        fim_dampening_coefficient,
-        fim_dampening_lower_bound,
         control_variates_scaling_type,
-        loo_cv_bool,
-        variational_distribution_obj,
+        loo_control_variates_scaling,
         stochastic_optimizer,
-        model_eval_iteration_period,
-        resample,
-        iteration_data,
+        variational_parameter_initialization=None,
+        memory=0,
+        natural_gradient=True,
+        FIM_dampening=True,
+        decay_start_iteration=50,
+        dampening_coefficient=1e-2,
+        FIM_dampening_lower_bound=1e-8,
+        model_eval_iteration_period=1000,
+        resample=False,
     ):
         """Initialize BBVI iterator.
 
@@ -102,11 +96,7 @@ class BBVIIterator(VariationalInferenceIterator):
             global_settings (dict): Global settings of the QUEENS simulations
             model (obj): Underlying simulation model on which the inverse analysis is conducted
             result_description (dict): Settings for storing and visualizing the results
-            db (obj): QUEENS database object
-            experiment_name (str): Name of the QUEENS simulation
-            variational_family (str): Density type for variational approximation
-            variational_params_initialization_approach (str): Flag to decide how to initialize the
-                                                              variational parameters
+            variational_distribution (dict): Description of variational distribution
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
                                                 to estimate the involved expectations)
             variational_transformation (str): String encoding the transformation that will be
@@ -114,54 +104,59 @@ class BBVIIterator(VariationalInferenceIterator):
                                               the variational density
             random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
-            num_variables (int): Actual number of model input variables that should be calibrated
+            control_variates_scaling_type (str): Flag to decide how to compute control variate
+                                                scaling
+            loo_control_variates_scaling: True if leave-one-out procedure is used for the control
+                                          variate scaling estimations. Is quite slow!
+            stochastic_optimizer (obj): QUEENS stochastic optimizer object
+            variational_parameter_initialization (str): Flag to decide how to initialize the
+                                                        variational parameters
             memory (int): Number of previous iterations that should be included in the MC ELBO
                           gradient estimations. For memory=0 the algorithm reduces to standard the
                           standard BBVI algorithm. (Better variable name is welcome)
-            natural_gradient_bool (boolean): True if natural gradient should be used
-            fim_dampening_bool (boolean): True if FIM dampening should be used
-            fim_decay_start_iter (float): Iteration at which the FIM dampening is started
-            fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening
-            fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
-            control_variates_scaling_type (str): Flag to decide how to compute control variate
-                                                scaling
-            loo_cv_bool (boolean): True if leave-one-out procedure is used for the control variate
-                                   scaling estimations. Is quite slow!
-            variational_distribution_obj (VariationalDistribution): Variational distribution object
-            stochastic_optimizer (obj): QUEENS stochastic optimizer object
+            natural_gradient (boolean): True if natural gradient should be used
+            FIM_dampening (boolean): True if FIM dampening should be used
+            decay_start_iteration (int): Iteration at which the FIM dampening is started
+            dampening_coefficient (float): Initial nugget term value for the FIM dampening
+            FIM_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient
+
             model_eval_iteration_period (int): If the iteration number is a multiple of this number
                                                the probabilistic model is sampled independent of the
                                                other conditions
             resample (bool): True is resampling should be used
-            iteration_data (CollectionObject): Object to store iteration data if desired
+
         Returns:
             bbvi_obj (obj): Instance of the BBVIIterator
         """
+        valid_export_fields = ["ess", "weights"] + VALID_EXPORT_FIELDS
+        iterative_data_names = result_description.get("iterative_field_names", [])
+        check_if_valid_options(valid_export_fields, iterative_data_names)
+        iteration_data = CollectionObject(*iterative_data_names)
+
         super().__init__(
-            global_settings,
-            model,
-            result_description,
-            db,
-            experiment_name,
-            variational_family,
-            variational_params_initialization_approach,
-            n_samples_per_iter,
-            variational_transformation,
-            random_seed,
-            max_feval,
-            num_variables,
-            natural_gradient_bool,
-            fim_dampening_bool,
-            fim_decay_start_iter,
-            fim_dampening_coefficient,
-            fim_dampening_lower_bound,
-            variational_distribution_obj,
-            stochastic_optimizer,
-            iteration_data,
+            model=model,
+            global_settings=global_settings,
+            result_description=result_description,
+            variational_distribution=variational_distribution,
+            variational_params_initialization=variational_parameter_initialization,
+            n_samples_per_iter=n_samples_per_iter,
+            variational_transformation=variational_transformation,
+            random_seed=random_seed,
+            max_feval=max_feval,
+            natural_gradient=natural_gradient,
+            FIM_dampening=FIM_dampening,
+            decay_start_iter=decay_start_iteration,
+            dampening_coefficient=dampening_coefficient,
+            FIM_dampening_lower_bound=FIM_dampening_lower_bound,
+            stochastic_optimizer=stochastic_optimizer,
+            iteration_data=iteration_data,
         )
 
+        if not memory:
+            model_eval_iteration_period = 1
+
         self.control_variates_scaling_type = control_variates_scaling_type
-        self.loo_cv_bool = loo_cv_bool
+        self.loo_cv_bool = loo_control_variates_scaling
         self.random_seed = random_seed
         self.max_feval = max_feval
         self.memory = memory
@@ -176,85 +171,6 @@ class BBVIIterator(VariationalInferenceIterator):
         self.ess = 0
         self.sampling_bool = True
         self.sample_set = None
-        self.iteration_data = iteration_data
-
-    @classmethod
-    def from_config_create_iterator(cls, config, iterator_name, model=None):
-        """Create iterator from problem description.
-
-        Args:
-            config (dict): Dictionary with QUEENS problem description
-            iterator_name (str): Name of iterator (optional)
-            model (model):       Model to use (optional)
-
-        Returns:
-            iterator (obj): BBVI object
-        """
-        method_options = config[iterator_name]
-
-        memory = method_options.get("memory", 0)
-        control_variates_scaling_type = method_options.get("control_variates_scaling_type")
-        loo_cv_bool = method_options.get("loo_control_variates_scaling")
-
-        if memory:
-            model_eval_iteration_period = method_options.get("model_eval_iteration_period", 1000)
-        else:
-            model_eval_iteration_period = 1
-
-        resample = method_options.get("resample", False)
-        valid_export_fields = ["ess", "weights"] + VALID_EXPORT_FIELDS
-        iterative_data_names = method_options["result_description"].get("iterative_field_names", [])
-        check_if_valid_options(valid_export_fields, iterative_data_names)
-        iteration_data = CollectionObject(*iterative_data_names)
-        (
-            global_settings,
-            model,
-            result_description,
-            db,
-            experiment_name,
-            variational_family,
-            variational_params_initialization_approach,
-            n_samples_per_iter,
-            variational_transformation,
-            random_seed,
-            max_feval,
-            num_variables,
-            natural_gradient_bool,
-            fim_dampening_bool,
-            fim_decay_start_iter,
-            fim_dampening_coefficient,
-            fim_dampening_lower_bound,
-            variational_distribution_obj,
-            stochastic_optimizer,
-        ) = super().get_base_attributes_from_config(config, iterator_name)
-
-        return cls(
-            global_settings=global_settings,
-            model=model,
-            result_description=result_description,
-            db=db,
-            experiment_name=experiment_name,
-            variational_family=variational_family,
-            variational_params_initialization_approach=variational_params_initialization_approach,
-            n_samples_per_iter=n_samples_per_iter,
-            variational_transformation=variational_transformation,
-            random_seed=random_seed,
-            max_feval=max_feval,
-            num_variables=num_variables,
-            memory=memory,
-            natural_gradient_bool=natural_gradient_bool,
-            fim_dampening_bool=fim_dampening_bool,
-            fim_decay_start_iter=fim_decay_start_iter,
-            fim_dampening_coefficient=fim_dampening_coefficient,
-            fim_dampening_lower_bound=fim_dampening_lower_bound,
-            control_variates_scaling_type=control_variates_scaling_type,
-            loo_cv_bool=loo_cv_bool,
-            variational_distribution_obj=variational_distribution_obj,
-            stochastic_optimizer=stochastic_optimizer,
-            model_eval_iteration_period=model_eval_iteration_period,
-            resample=resample,
-            iteration_data=iteration_data,
-        )
 
     def core_run(self):
         """Core run for black-box variational inference."""

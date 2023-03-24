@@ -5,13 +5,11 @@ database:
 method:
   type: baci_lm
   model_name: model
-  jac_method: 2-point
   jac_rel_step: 0.001
   jac_abs_step: 1.0e-05
   max_feval: 50
   init_reg: 1
   update_reg: grad
-  algorithm: LSQ
   convergence_tolerance: 0.01
   initial_guess: [1500, 0.4]
   result_description:

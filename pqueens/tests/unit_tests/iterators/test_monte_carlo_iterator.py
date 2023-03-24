@@ -60,7 +60,6 @@ class TestMCIterator(unittest.TestCase):
             num_samples=100,
             result_description=None,
             global_settings=some_settings,
-            db=dummy_db,
         )
 
     def test_correct_sampling(self):
