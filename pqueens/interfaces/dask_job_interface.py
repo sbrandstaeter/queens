@@ -31,6 +31,7 @@ class JobInterface(Interface):
         self.name = interface_name
         self.scheduler = scheduler
         self.driver = driver
+        self.scheduler.copy_file(self.driver.simulation_input_template)
 
     @classmethod
     def from_config_create_interface(cls, interface_name, config):

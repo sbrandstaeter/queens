@@ -1,11 +1,9 @@
 """Driver to run a jobscript."""
 
 import logging
-import pathlib
 
-from pqueens.data_processor import from_config_create_data_processor
 from pqueens.drivers.dask_driver import Driver
-from pqueens.utils.injector import inject_in_template, read_template
+from pqueens.utils.injector import inject, inject_in_template, read_file
 from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -22,102 +20,50 @@ class JobscriptDriver(Driver):
 
     def __init__(
         self,
-        jobscript_template,
-        jobscript_options,
-        simulation_input_suffix,
-        simulation_input_template,
-        data_processor,
-        gradient_data_processor,
-        jobscript_file_name,
+        input_template,
+        path_to_executable,
+        path_to_jobscript,
+        cluster_script_path,
+        post_file_prefix=None,
+        post_process_options='',
+        path_to_postprocessor=None,
+        data_processor=None,
+        gradient_data_processor=None,
+        jobscript_file_name='jobscript.sh',
     ):
         """Initialize MpiDriver object.
 
         Args:
-            jobscript_template (str): read in jobscript template as string
-            jobscript_options (dict): Dictionary containing jobscript options
-            simulation_input_suffix (str): suffix of the simulation input file
-            simulation_input_template (str): read in simulation input template as string
-            data_processor (obj): instance of data processor class
-            gradient_data_processor (obj): instance of data processor class for gradient data
+            input_template (str, Path): path to simulation input template
+            path_to_executable (str, Path): path to main executable of respective software
+            path_to_jobscript (str, Path): path to jobscript template
+            cluster_script_path (str, Path): path to cluster script
+            post_file_prefix (str, opt): unique prefix to name the post-processed files
+            post_process_options (str, opt): options for post-processing
+            path_to_postprocessor (path, opt): path to post_processor
+            data_processor (obj, opt): instance of data processor class
+            gradient_data_processor (obj, opt): instance of data processor class for gradient data
             jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
         """
         super().__init__(
+            input_template,
             data_processor,
             gradient_data_processor,
-            simulation_input_suffix,
-            simulation_input_template,
         )
-        self.jobscript_template = jobscript_template
-        self.jobscript_options = jobscript_options
-        self.jobscript_file_name = jobscript_file_name
-
-    @classmethod
-    def from_config_create_driver(
-        cls,
-        config,
-        driver_name,
-    ):
-        """Create Driver to run executable from input configuration.
-
-        Set up required directories and files.
-
-        Args:
-            config (dict): Dictionary containing configuration from QUEENS input file
-            driver_name (str): Name of driver instance that should be realized
-
-        Returns:
-            MpiDriver (obj): Instance of MpiDriver class
-        """
-        driver_options = config[driver_name]
-        simulation_input_suffix = pathlib.PurePosixPath(driver_options['input_template']).suffix
-        simulation_input_template = read_template(driver_options['input_template'])
-        executable = driver_options['path_to_executable']
-        jobscript_template = read_template(driver_options['path_to_jobscript'])
-        post_processor_str = driver_options.get('path_to_postprocessor', None)
-        if post_processor_str:
-            post_processor = pathlib.Path(post_processor_str)
-        else:
-            post_processor = None
-
-        post_file_prefix = driver_options.get('post_file_prefix', None)
-        post_options = driver_options.get('post_process_options', '')
-
-        cluster_script_path = driver_options['cluster_script_path']
-
-        data_processor_name = driver_options.get('data_processor_name', None)
-        if data_processor_name:
-            data_processor = from_config_create_data_processor(config, data_processor_name)
-        else:
-            data_processor = None
-
-        gradient_data_processor_name = driver_options.get('gradient_data_processor_name', None)
-        if gradient_data_processor_name:
-            gradient_data_processor = from_config_create_data_processor(
-                config, gradient_data_processor_name
-            )
-        else:
-            gradient_data_processor = None
+        post_processor = path_to_postprocessor if path_to_postprocessor else None
 
         jobscript_options = {
-            "EXE": executable,
+            "EXE": path_to_executable,
             "OUTPUTPREFIX": post_file_prefix,
-            "POSTPROCESS": bool(post_processor_str),
+            "POSTPROCESS": bool(post_processor),
             "POSTEXE": str(post_processor),
-            "POSTOPTIONS": post_options,
+            "POSTOPTIONS": post_process_options,
             "CLUSTERSCRIPT": cluster_script_path,
         }
 
-        jobscript_file_name = driver_options.get('jobscript_file_name', 'jobscript.sh')
-
-        return cls(
-            jobscript_template=jobscript_template,
-            jobscript_options=jobscript_options,
-            simulation_input_suffix=simulation_input_suffix,
-            simulation_input_template=simulation_input_template,
-            data_processor=data_processor,
-            gradient_data_processor=gradient_data_processor,
-            jobscript_file_name=jobscript_file_name,
-        )
+        self.jobscript_template = read_file(path_to_jobscript)
+        self.jobscript_options = jobscript_options
+        self.jobscript_file_name = jobscript_file_name
 
     def run(self, sample_dict, _num_procs, _num_procs_post, experiment_dir, experiment_name):
         """Run the driver.
@@ -138,7 +84,7 @@ class JobscriptDriver(Driver):
         )
         jobscript_file = job_dir.joinpath(self.jobscript_file_name)
 
-        inject_in_template(sample_dict, self.simulation_input_template, str(input_file))
+        inject(sample_dict, experiment_dir / self.simulation_input_template, str(input_file))
 
         final_jobscript_options = {
             **self.jobscript_options,

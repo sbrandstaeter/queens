@@ -4,7 +4,6 @@ Estimate Elementary Effects for local simulations with BACI using the
 INVAAA minimal model.
 """
 
-import json
 import os
 from pathlib import Path
 
@@ -17,7 +16,6 @@ def test_baci_elementary_effects(
     inputdir,
     third_party_inputs,
     baci_link_paths,
-    singularity_bool,
     baci_elementary_effects_check_results,
 ):
     """Integration test for the Elementary Effects Iterator together with BACI.
@@ -36,7 +34,7 @@ def test_baci_elementary_effects(
     template = os.path.join(inputdir, "baci_local_elementary_effects_template_dask.yml")
     input_file = os.path.join(tmpdir, "elementary_effects_baci_local_invaaa.yml")
     third_party_input_file = os.path.join(third_party_inputs, "baci_input_files", "invaaa_ee.dat")
-    experiment_name = "ee_invaaa_local_singularity_" + json.dumps(singularity_bool)
+    experiment_name = "ee_invaaa_local"
 
     baci_release, post_drt_monitor, _, _ = baci_link_paths
 
@@ -45,7 +43,6 @@ def test_baci_elementary_effects(
         'baci_input': third_party_input_file,
         'baci_release': baci_release,
         'post_drt_monitor': post_drt_monitor,
-        'singularity_boolean': json.dumps(singularity_bool),
     }
 
     injector.inject(dir_dict, template, input_file)

@@ -9,16 +9,16 @@ from pathlib import Path
 from jinja2 import Template
 
 
-def read_template(file_template):
-    """Function to read in a template.
+def read_file(file_path):
+    """Function to read in a file.
 
     Args:
-        file_template (str):    File name including path to template
+        file_path (str, Path): Path to file
     Returns:
-        template (str):         Template file as string
+        file (str): read in file as string
     """
-    template = Path(file_template).read_text(encoding='utf-8')
-    return template
+    file = Path(file_path).read_text(encoding='utf-8')
+    return file
 
 
 def inject_in_template(params, template, output_file):
@@ -40,5 +40,5 @@ def inject(params, file_template, output_file):
         file_template (str):    File name including path to template
         output_file (str):      Name of output file with injected parameters
     """
-    template = read_template(file_template)
+    template = read_file(file_template)
     inject_in_template(params, template, output_file)

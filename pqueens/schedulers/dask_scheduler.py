@@ -5,6 +5,8 @@ import logging
 
 import numpy as np
 
+from pqueens.utils.injector import read_file
+
 _logger = logging.getLogger(__name__)
 
 
@@ -42,6 +44,22 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.num_procs_post = num_procs_post
         self.client = client
         print(client.dashboard_link)
+
+    @classmethod
+    def from_config_create_scheduler(cls, config, scheduler_name):
+        """Create standard scheduler object from config.
+
+        Args:
+            config (dict): QUEENS input dictionary
+            scheduler_name (str): Name of the scheduler
+
+        Returns:
+            Instance of  LocalScheduler class
+        """
+        scheduler_options = config[scheduler_name].copy()
+        scheduler_options.pop('type')
+        global_settings = config['global_settings']
+        return cls(global_settings=global_settings, **scheduler_options)
 
     def evaluate(self, samples_list, driver):
         """Submit jobs to driver.
@@ -93,3 +111,13 @@ class Scheduler(metaclass=abc.ABCMeta):
         #  data processor
         driver = copy.deepcopy(driver)
         return driver.run(sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name)
+
+    def copy_file(self, file_path):
+        """Copy file to experiment directory.
+
+        Args:
+            file_path (Path): path to file that should be copied to experiment directory
+        """
+        file = read_file(file_path)
+        destination = self.experiment_dir / file_path.name
+        self.client.submit(destination.write_text, file, encoding='utf-8').result()

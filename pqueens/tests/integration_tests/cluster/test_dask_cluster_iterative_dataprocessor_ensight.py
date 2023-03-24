@@ -126,12 +126,12 @@ def test_cluster_baci_data_processor_ensight(
 
         # Evaluate the first batch
         first_sample_batch = np.array([[0.2, 10], [0.3, 20], [0.45, 100]])
-        first_batch = np.array(model.evaluate(first_sample_batch)["mean"]).squeeze()
+        first_batch = np.array(model.evaluate(first_sample_batch)["mean"])
 
         # Evaluate a second batch
         # In order to make sure that no port is closed after one batch
         second_sample_batch = np.array([[0.25, 25], [0.4, 46], [0.47, 211]])
-        second_batch = np.array(model.evaluate(second_sample_batch)["mean"]).squeeze()
+        second_batch = np.array(model.evaluate(second_sample_batch)["mean"])
 
         # Third batch with MC samples
         iterator.run()
@@ -161,7 +161,7 @@ def test_cluster_baci_data_processor_ensight(
     with open(result_file, 'rb') as handle:
         results = pickle.load(handle)
 
-    reference_mc_mean = np.array([[-1.39371249], [1.72861153]])
-    reference_mc_var = np.array([[0.01399851], [0.02759816]])
+    reference_mc_mean = np.array([-1.39371249, 1.72861153])
+    reference_mc_var = np.array([0.01399851, 0.02759816])
     np.testing.assert_array_almost_equal(reference_mc_mean, results['mean'])
     np.testing.assert_array_almost_equal(reference_mc_var, results['var'])

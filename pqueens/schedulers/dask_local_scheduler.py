@@ -12,26 +12,25 @@ _logger = logging.getLogger(__name__)
 class LocalScheduler(Scheduler):
     """Local scheduler class for QUEENS."""
 
-    @classmethod
-    def from_config_create_scheduler(cls, config, scheduler_name):
-        """Create standard scheduler object from config.
+    def __init__(
+        self,
+        global_settings,
+        max_concurrent=1,
+        num_procs=1,
+        num_procs_post=1,
+    ):
+        """Initialize local scheduler.
 
         Args:
-            config (dict): QUEENS input dictionary
-            scheduler_name (str): Name of the scheduler
-
-        Returns:
-            Instance of  LocalScheduler class
+            global_settings (dict): Dictionary containing global settings for the QUEENS run.
+            max_concurrent (int, opt): Number of concurrent jobs
+            num_procs (int, opt): number of cores per job
+            num_procs_post (int, opt): number of cores per job for post-processing
         """
-        scheduler_options = config[scheduler_name]
-        experiment_name = config['global_settings']['experiment_name']
+        experiment_name = global_settings['experiment_name']
         experiment_dir = experiment_directory(experiment_name=experiment_name)
 
-        max_concurrent = scheduler_options.get('max_concurrent', 1)
-        num_procs = scheduler_options.get('num_procs', 1)
-        num_procs_post = scheduler_options.get('num_procs_post', 1)
         threads_per_worker = max(num_procs, num_procs_post)
-
         cluster = LocalCluster(
             n_workers=max_concurrent,
             processes=False,
@@ -39,5 +38,4 @@ class LocalScheduler(Scheduler):
             silence_logs=False,
         )
         client = Client(cluster)
-
-        return cls(experiment_name, experiment_dir, client, num_procs, num_procs_post)
+        super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)

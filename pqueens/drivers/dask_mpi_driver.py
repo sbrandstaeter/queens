@@ -1,11 +1,10 @@
 """Driver to run an executable with mpi."""
 
 import logging
-import pathlib
+from pathlib import Path
 
-from pqueens.data_processor import from_config_create_data_processor
 from pqueens.drivers.dask_driver import Driver
-from pqueens.utils.injector import inject_in_template, read_template
+from pqueens.utils.injector import inject
 from pqueens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -25,100 +24,38 @@ class MpiDriver(Driver):
 
     def __init__(
         self,
-        executable,
-        cae_output_streaming,
-        post_file_prefix,
-        post_options,
-        post_processor,
-        simulation_input_suffix,
-        simulation_input_template,
-        data_processor,
-        gradient_data_processor,
-        mpi_cmd,
+        input_template,
+        path_to_executable,
+        post_file_prefix=None,
+        post_process_options='',
+        path_to_postprocessor=None,
+        data_processor=None,
+        gradient_data_processor=None,
+        mpi_cmd='/usr/bin/mpirun --bind-to none -np',
     ):
         """Initialize MpiDriver object.
 
         Args:
-            executable (path): path to main executable of respective software
-            cae_output_streaming (bool): flag for additional streaming to given stream
-            post_file_prefix (str): unique prefix to name the post-processed files
-            post_options (str): options for post-processing
-            post_processor (path): path to post_processor
-            simulation_input_suffix (str): suffix of the simulation input file
-            simulation_input_template (str): read in simulation input template as string
-            data_processor (obj): instance of data processor class
-            gradient_data_processor (obj): instance of data processor class for gradient data
-            mpi_cmd (str): mpi command
+            input_template (str, Path): path to simulation input template
+            path_to_executable (str, Path): path to main executable of respective software
+            post_file_prefix (str, opt): unique prefix to name the post-processed files
+            post_process_options (str, opt): options for post-processing
+            path_to_postprocessor (path, opt): path to post_processor
+            data_processor (obj, opt): instance of data processor class
+            gradient_data_processor (obj, opt): instance of data processor class for gradient data
+            mpi_cmd (str, opt): mpi command
         """
         super().__init__(
+            input_template,
             data_processor,
             gradient_data_processor,
-            simulation_input_suffix,
-            simulation_input_template,
         )
-        self.executable = executable
-        self.cae_output_streaming = cae_output_streaming
+        self.executable = Path(path_to_executable)
+        self.post_processor = Path(path_to_postprocessor) if path_to_postprocessor else None
+        self.cae_output_streaming = not data_processor
         self.mpi_cmd = mpi_cmd
         self.post_file_prefix = post_file_prefix
-        self.post_options = post_options
-        self.post_processor = post_processor
-
-    @classmethod
-    def from_config_create_driver(
-        cls,
-        config,
-        driver_name,
-    ):
-        """Create Driver to run executable.
-
-        Args:
-            config (dict): Dictionary containing configuration from QUEENS input file
-            driver_name (str): Name of the driver
-
-        Returns:
-            MpiDriver (obj): Instance of MpiDriver class
-        """
-        driver_options = config[driver_name]
-        simulation_input_suffix = pathlib.PurePosixPath(driver_options['input_template']).suffix
-        simulation_input_template = read_template(driver_options['input_template'])
-        executable = pathlib.Path(driver_options['path_to_executable'])
-        mpi_cmd = driver_options.get('mpi_cmd', '/usr/bin/mpirun --bind-to none -np')
-        post_processor_str = driver_options.get('path_to_postprocessor', None)
-        if post_processor_str:
-            post_processor = pathlib.Path(post_processor_str)
-        else:
-            post_processor = None
-        post_file_prefix = driver_options.get('post_file_prefix', None)
-        post_options = driver_options.get('post_process_options', '')
-
-        data_processor_name = driver_options.get('data_processor_name', None)
-        if data_processor_name:
-            data_processor = from_config_create_data_processor(config, data_processor_name)
-            cae_output_streaming = False
-        else:
-            data_processor = None
-            cae_output_streaming = True
-
-        gradient_data_processor_name = driver_options.get('gradient_data_processor_name', None)
-        if gradient_data_processor_name:
-            gradient_data_processor = from_config_create_data_processor(
-                config, gradient_data_processor_name
-            )
-        else:
-            gradient_data_processor = None
-
-        return cls(
-            executable=executable,
-            cae_output_streaming=cae_output_streaming,
-            post_file_prefix=post_file_prefix,
-            post_options=post_options,
-            post_processor=post_processor,
-            simulation_input_suffix=simulation_input_suffix,
-            simulation_input_template=simulation_input_template,
-            data_processor=data_processor,
-            gradient_data_processor=gradient_data_processor,
-            mpi_cmd=mpi_cmd,
-        )
+        self.post_options = post_process_options
 
     def run(self, sample_dict, num_procs, num_procs_post, experiment_dir, experiment_name):
         """Run the driver.
@@ -138,7 +75,7 @@ class MpiDriver(Driver):
             job_id, experiment_dir, experiment_name
         )
 
-        inject_in_template(sample_dict, self.simulation_input_template, str(input_file))
+        inject(sample_dict, experiment_dir / self.simulation_input_template, str(input_file))
 
         self._run_executable(job_id, num_procs, input_file, output_file, log_file, error_file)
         self._run_post_processing(num_procs_post, output_file, output_dir)

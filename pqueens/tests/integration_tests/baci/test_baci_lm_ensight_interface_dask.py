@@ -5,13 +5,11 @@ Test local simulations with BACI using a minimal FSI model and the
 *post_drt_ensight* post-processor.
 """
 
-import json
 import os
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from pqueens import run
 from pqueens.utils import injector
@@ -22,7 +20,6 @@ def test_baci_lm_shape(
     inputdir,
     third_party_inputs,
     baci_link_paths,
-    singularity_bool,
 ):
     """Integration test for the Baci Levenberg Marquardt Iterator with BACI.
 
@@ -33,8 +30,6 @@ def test_baci_lm_shape(
         inputdir (str): Path to the JSON input file
         third_party_inputs (str): Path to the BACI input files
         baci_link_paths (str): Symbolic links to executables including BACI
-        singularity_bool (str): String that encodes a boolean that is parsed to the JSON input file
-        experiment_directory (LocalPath): Experiment directory depending on *singularity_bool*
     """
     template = os.path.join(inputdir, "baci_local_shape_lm_template_dask.yml")
     input_file = os.path.join(tmpdir, "baci_local_shape_lm.yml")
@@ -44,7 +39,7 @@ def test_baci_lm_shape(
     third_party_input_file_monitor = os.path.join(
         third_party_inputs, "baci_input_files", "lm_tri_fsi_shape_E2000_nue03_p.monitor"
     )
-    experiment_name = "OptmizeBaciLM_" + json.dumps(singularity_bool)
+    experiment_name = "OptmizeBaciLM"
 
     baci_release, _, _, post_processor = baci_link_paths
 
@@ -54,7 +49,6 @@ def test_baci_lm_shape(
         'baci_input_monitor': third_party_input_file_monitor,
         'baci_release': baci_release,
         'post_processor': post_processor,
-        'singularity_boolean': json.dumps(singularity_bool),
     }
 
     injector.inject(dir_dict, template, input_file)

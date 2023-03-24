@@ -40,42 +40,46 @@ class ClusterScheduler(Scheduler):
 
     def __init__(
         self,
-        experiment_name,
-        max_jobs,
-        min_jobs,
-        walltime,
-        num_procs,
-        num_procs_post,
-        num_nodes,
-        queue,
+        global_settings,
         workload_manager,
         cluster_address,
-        cluster_internal_address,
         cluster_user,
         cluster_python_path,
-        cluster_queens_repository,
-        cluster_build_environment,
+        walltime,
+        max_jobs=1,
+        min_jobs=0,
+        num_procs=1,
+        num_procs_post=1,
+        num_nodes=1,
+        queue='batch',
+        cluster_internal_address=None,
+        cluster_queens_repository=None,
+        cluster_build_environment=False,
     ):
         """Init method for the cluster scheduler.
 
         Args:
-            experiment_name (str): name of QUEENS experiment
-            max_jobs (int): Maximum number of active workers on the cluster
-            min_jobs (int): Minimum number of active workers for the cluster
-            walltime (str): Walltime for each worker job.
-            num_procs (int): number of cores per job
-            num_procs_post (int): number of cores per job for post-processing
-            num_nodes (int): Number of cluster nodes
-            queue (str): Destination queue for each worker job
+            global_settings (dict): Dictionary containing global settings for the QUEENS run.
             workload_manager (str): Workload manager ("pbs" or "slurm")
             cluster_address (str): address of cluster
-            cluster_internal_address (str): Internal address of cluster
             cluster_user (str): cluster username
             cluster_python_path (str): Path to Python on cluster
-            cluster_queens_repository (str): Path to queens repository on cluster
-            cluster_build_environment (bool): Flag to decide if queens environment should be build
-                                              on cluster
+            walltime (str): Walltime for each worker job.
+            max_jobs (int, opt): Maximum number of active workers on the cluster
+            min_jobs (int, opt): Minimum number of active workers for the cluster
+            num_procs (int, opt): number of cores per job
+            num_procs_post (int, opt): number of cores per job for post-processing
+            num_nodes (int, opt): Number of cluster nodes
+            queue (str, opt): Destination queue for each worker job
+            cluster_internal_address (str, opt): Internal address of cluster
+            cluster_queens_repository (str, opt): Path to Queens repository on cluster
+            cluster_build_environment (bool, opt): Flag to decide if queens environment should be
+                                                   build on cluster
         """
+        if cluster_queens_repository is None:
+            cluster_queens_repository = f'/home/{cluster_user}/workspace/queens'
+        experiment_name = global_settings['experiment_name']
+
         self.sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository)
         if cluster_build_environment:
             self.build_environment(
@@ -132,58 +136,6 @@ class ClusterScheduler(Scheduler):
             raise error
 
         super().__init__(experiment_name, experiment_dir, client, num_procs, num_procs_post)
-
-    @classmethod
-    def from_config_create_scheduler(cls, config, scheduler_name):
-        """Create scheduler object from config.
-
-        Args:
-            config (dict): QUEENS input dictionary
-            scheduler_name (str): Name of the scheduler
-
-        Returns:
-            Instance of scheduler class
-        """
-        scheduler_options = config[scheduler_name]
-        experiment_name = config['global_settings']['experiment_name']
-
-        max_jobs = scheduler_options.get('max_jobs', 1)
-        min_jobs = scheduler_options.get('min_jobs', 0)
-        walltime = scheduler_options['walltime']
-
-        num_procs = scheduler_options.get('num_procs', 1)
-        num_procs_post = scheduler_options.get('num_procs_post', 1)
-        num_nodes = scheduler_options.get('num_nodes', 1)
-        queue = scheduler_options.get('queue', 'batch')
-
-        workload_manager = scheduler_options['workload_manager']
-        cluster_address = scheduler_options['cluster_address']
-        cluster_internal_address = scheduler_options.get('cluster_internal_address')
-        cluster_user = scheduler_options['cluster_user']
-        cluster_python_path = scheduler_options['cluster_python_path']
-
-        cluster_queens_repository = scheduler_options.get(
-            'cluster_queens_repository', f'/home/{cluster_user}/workspace/queens'
-        )
-        cluster_build_environment = scheduler_options.get('build_queens_environment', False)
-
-        return cls(
-            experiment_name=experiment_name,
-            max_jobs=max_jobs,
-            min_jobs=min_jobs,
-            walltime=walltime,
-            num_procs=num_procs,
-            num_procs_post=num_procs_post,
-            num_nodes=num_nodes,
-            queue=queue,
-            workload_manager=workload_manager,
-            cluster_address=cluster_address,
-            cluster_internal_address=cluster_internal_address,
-            cluster_user=cluster_user,
-            cluster_python_path=cluster_python_path,
-            cluster_queens_repository=cluster_queens_repository,
-            cluster_build_environment=cluster_build_environment,
-        )
 
     @staticmethod
     def sync_remote_repository(cluster_address, cluster_user, cluster_queens_repository):
