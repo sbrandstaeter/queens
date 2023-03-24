@@ -11,7 +11,6 @@ from chaospy.distributions.sampler.generator import (
 )
 from chaospy.quadrature.frontend import SHORT_NAME_TABLE as projection_node_location_rules
 
-import pqueens.parameters.parameters as parameters_module
 from pqueens.distributions import beta, lognormal, normal, uniform
 from pqueens.iterators.iterator import Iterator
 from pqueens.utils.process_outputs import write_results

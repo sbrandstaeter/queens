@@ -9,7 +9,7 @@ from pqueens.iterators.variational_inference import (
     VariationalInferenceIterator,
 )
 from pqueens.utils.collection_utils import CollectionObject
-from pqueens.utils.valid_options_utils import check_if_valid_options, get_option
+from pqueens.utils.valid_options_utils import check_if_valid_options
 
 _logger = logging.getLogger(__name__)
 

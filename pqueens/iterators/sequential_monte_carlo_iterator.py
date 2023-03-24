@@ -23,7 +23,6 @@ References:
         doi: 10.1111/j.1467-9868.2006.00553.x.
 """
 import logging
-import warnings
 
 import arviz as az
 import matplotlib.pyplot as plt
@@ -147,14 +146,14 @@ class SequentialMonteCarloIterator(Iterator):
         self.log_prior = np.zeros((self.num_particles, 1))
         self.log_posterior = np.zeros((self.num_particles, 1))
 
-        self.ess = list()
+        self.ess = []
         self.ess_cur = 0.0
 
         self.temper = smc_utils.temper_factory(temper_type)
 
         # tempering parameter (linked to counter/ time index)
         self.gamma_cur = 0.0
-        self.gammas = list()
+        self.gammas = []
 
         # parameters for the scaling of the covariance matrix
         # values of a an b are taken from [3] p.1706
@@ -364,7 +363,7 @@ class SequentialMonteCarloIterator(Iterator):
         # the frequency of individual particles
         particle_freq = np.random.multinomial(self.num_particles, np.squeeze(self.weights))
 
-        idx_list = list()
+        idx_list = []
         for idx, freq in enumerate(particle_freq):
             idx_list += [idx] * freq
 

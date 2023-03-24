@@ -3,7 +3,6 @@ import logging
 import multiprocessing as mp
 import time
 
-import pqueens.parameters.parameters as parameters_module
 from pqueens.iterators.sobol_index_gp_uncertainty.estimator import (
     SobolIndexEstimator,
     SobolIndexEstimatorThirdOrder,
@@ -130,7 +129,6 @@ class SobolIndexGPUncertaintyIterator(Iterator):
 
     def pre_run(self):
         """Pre-run."""
-        pass
 
     def core_run(self):
         """Core-run."""
