@@ -34,7 +34,7 @@ class BetaDistribution(Distribution):
         upper_bound = np.array(upper_bound).reshape(-1)
         a = np.array(a)
         b = np.array(b)
-        super().check_positivity({'a': a, 'b': b})
+        super().check_positivity(a=a, b=b)
         super().check_bounds(lower_bound, upper_bound)
         scale = upper_bound - lower_bound
         scipy_beta = scipy.stats.beta(scale=scale, loc=lower_bound, a=a, b=b)

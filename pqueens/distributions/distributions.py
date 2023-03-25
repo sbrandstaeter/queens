@@ -95,7 +95,7 @@ class Distribution:
             raise ValueError("Method does not support multivariate distributions!")
 
     @staticmethod
-    def check_positivity(parameters):
+    def check_positivity(**parameters):
         """Check if parameters are positive.
 
         Args:
