@@ -7,7 +7,7 @@ import numpy as np
 from pqueens.interfaces import from_config_create_interface
 from pqueens.models.model import Model
 from pqueens.utils.config_directories import current_job_directory
-from pqueens.utils.output_writer import write_to_csv
+from pqueens.utils.io_utils import write_to_csv
 
 _logger = logging.getLogger(__name__)
 
