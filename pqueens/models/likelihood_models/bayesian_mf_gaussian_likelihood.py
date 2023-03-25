@@ -247,11 +247,14 @@ class BMFGaussianModel(LikelihoodModel):
         mf_log_likelihood = self._evaluate_mf_likelihood(Y_LF_mat, samples)
         return mf_log_likelihood
 
-    def evaluate_and_gradient(self, _samples):
-        """Evaluate model and its gradient with current set of samples."""
-        raise NotImplementedError(
-            "The gradient response is not implemented for the multi-fidelity likelihood."
-        )
+    def grad(self, samples, upstream):
+        """Evaluate gradient of model with current set of samples.
+
+        Args:
+            samples (np.array): Evaluated samples
+            upstream (np.array): Upstream gradient
+        """
+        NotImplementedError("Gradient method is not implemented in 'bmf_gaussian'")
 
     def _evaluate_mf_likelihood(self, y_lf_mat, x_batch):
         """Evaluate the Bayesian multi-fidelity likelihood as described in [1].

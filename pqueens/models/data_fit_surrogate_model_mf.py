@@ -82,16 +82,12 @@ class MFDataFitSurrogateModel(Model):
         self.response = self.interface.evaluate(self.variables)
         return self.response
 
-    def evaluate_and_gradient(self, samples, upstream_gradient_fun=None):
-        """Evaluate model and the model gradient with current set of samples.
+    def grad(self, samples, upstream):
+        """Evaluate gradient of model with current set of samples.
 
         Args:
-            samples (np.array): Current sample batch for which the model response should be
-                                calculated.
-            upstream_gradient_fun (obj): The gradient an upstream objective function w.r.t. the
-                                         model output.
-                                         This function is needed for `adjoint`-based gradient
-                                         calculation.
+            samples (np.array): Evaluated samples
+            upstream (np.array): Upstream gradient
         """
         raise NotImplementedError(
             "Gradient method is not implemented in `data_fit_surrogate_model_mf`."

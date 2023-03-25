@@ -100,3 +100,12 @@ class LikelihoodModel(Model):
         Args:
             samples (np.ndarray): Evaluated samples
         """
+
+    @abc.abstractmethod
+    def grad(self, samples, upstream):
+        """Evaluate gradient of model with current set of samples.
+
+        Args:
+            samples (np.array): Evaluated samples
+            upstream (np.array): Upstream gradient
+        """
